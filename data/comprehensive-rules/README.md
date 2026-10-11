@@ -288,7 +288,8 @@ H="node client/engine/scripts/cr/harness.mjs"
 $H keys     --unit U12 --round 1                     # `mutable`: the keys round 1 may replace
 $H keys     --unit U12 --round K --decoy-pool        # K>=2: `decoyPool`, the bases a decoy may copy
 $H plant    --unit U12 --round K --mutants m.json    # -> build/verify-input/U12-rK.json (+ hidden truth)
-#   m.json: round 1 [{key, mutant, why_false}] x2-3; round K>=2 [{baseKey, mutant, why_false}] x1-2
+#   m.json: round 1 [{key, mutant, why_false}] x2-3; round K>=2 [{baseKey, mutant?, examples?, why_false}] x1-2
+#   (a decoy's `examples` [{text, test}] replace its base's: a false example, when examples are what changed)
 #   the verifier writes build/verdicts/U12-rK.json (attempt A>1: U12-rK-aA.json)
 $H judge    --unit U12 --round K [--attempt A]       # batchValid = every mutant caught
 $H feedback --unit U12 --round K                     # the reviser's input, mutants removed

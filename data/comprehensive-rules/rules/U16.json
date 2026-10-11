@@ -6,7 +6,7 @@
     "text": "A continuous effect changes the game for a period of time rather than once. It comes either from a static ability, and lasts as long as that ability is in play, only in its region; or from an effect that says how long it lasts, such as \"until regroup\".",
     "examples": [
       {
-        "text": "Example: Sudden Bloom gives your units in its region +1/+1 until regroup, and the bonus is gone after regroup.",
+        "text": "Sudden Bloom gives your units in its region +1/+1 until regroup, and the bonus is gone after regroup.",
         "test": "25-wood-c.test.ts::Sudden Bloom: your in-region units get +1/+1 until regroup"
       }
     ],
@@ -47,11 +47,11 @@
     "text": "A continuous effect applies to a unit that enters play while the effect applies, from the moment it enters. The unit enters play already changed, so an ability that looks at the unit as it enters sees the changed unit.",
     "examples": [
       {
-        "text": "Example: under Sandstone Defender (\"Your other units gain +0/+2\") a 1/1 enters as a 1/3, so Nectar Ridge Oracle (\"When another ally with greater defense than power spawns, draw a card\") draws.",
+        "text": "under Sandstone Defender (\"Your other units gain +0/+2\") a 1/1 enters as a 1/3, so Nectar Ridge Oracle (\"When another ally with greater defense than power spawns, draw a card\") draws.",
         "test": "393-raq-mods.test.ts::RAQ Nectar Ridge: under Sandstone Defender"
       },
       {
-        "text": "Example: under Infernal Wispweaver a 0/1 Wisp enters as a 2/2, so Nectar Ridge Oracle does not draw.",
+        "text": "under Infernal Wispweaver a 0/1 Wisp enters as a 2/2, so Nectar Ridge Oracle does not draw.",
         "test": "393-raq-mods.test.ts::RAQ Nectar Ridge: under Infernal Wispweaver"
       }
     ],
@@ -93,11 +93,11 @@
     "text": "When the source of a static ability leaves play, its continuous effect ends at once. The units it was changing are again what they would be without it, and they get back any attributes and abilities it had removed.",
     "examples": [
       {
-        "text": "Example: a unit that entered play under Transmogrifant has no attributes; when Transmogrifant leaves play it has them again.",
+        "text": "a unit that entered play under Transmogrifant has no attributes; when Transmogrifant leaves play it has them again.",
         "test": "393-raq-mods.test.ts::RAQ Transmogrifant: a unit that enters play under it has no attributes"
       },
       {
-        "text": "Example: when Infernal Wispweaver leaves play, Wisps sacrifice themselves after combat again.",
+        "text": "when Infernal Wispweaver leaves play, Wisps sacrifice themselves after combat again.",
         "test": "12-fire-a.test.ts::Infernal Wispweaver: the suppression ends the instant the weaver does"
       }
     ],
@@ -135,7 +135,7 @@
     "text": "A unit's stats are worked out layer by layer, in the order of rule 206.4. Every effect in one layer applies before any effect in the next layer, whatever order the effects began in. Within one layer, effects apply in timestamp order (rule 113).",
     "examples": [
       {
-        "text": "Example: an effect that makes a unit base 4/4 applies over a copy effect whether the copy began before it or after it, because base stats are a later layer than the copy.",
+        "text": "An effect that makes a unit base 4/4 applies over Apex Prime's copy effect whether the copy began before it or after it, because base stats are a later layer than the copy.",
         "test": "44-hybrids-ld-a.test.ts::R118: a later setBase wins over a copy"
       }
     ],
@@ -189,7 +189,7 @@
     "text": "Before those layers, a copy effect decides which card the unit's printed stats come from. A unit that is a copy of a card has that card's printed stats as its layer 1, and every later layer applies to them (rule 710).",
     "examples": [
       {
-        "text": "Example: a Unit Token that becomes a copy of Good Whale and is Unaware reads as a 7/5, Good Whale's printed stats.",
+        "text": "a Unit Token that becomes a copy of Good Whale and is Unaware reads as a 7/5, Good Whale's printed stats.",
         "test": "44-hybrids-ld-a.test.ts::R118: {Unaware} reads the COPIED face's printed stats"
       }
     ],
@@ -230,7 +230,7 @@
     "text": "In layer 4, Tough and Balanced apply in the order the unit has them, from top to bottom. A Tough unit that attacks with a Balanced unit behind it has its defense doubled, then its stats balanced. Where a Balanced unit gets Tough from a mod, the Manual's answer gives both orders: Tough \"augmented onto\" a Balanced unit doubles, then balances; Tough \"applied to\" a Balanced unit balances, then doubles (D-U16-1). The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (R19 calls this order its own; engine differs from the \"augmented onto\" reading, see F-U16-4).",
     "examples": [
       {
-        "text": "Example: Tough then Balanced, and Balanced then Tough, give different stats.",
+        "text": null,
         "test": "08-cards2.test.ts::R19: layer-4 application order"
       }
     ],
@@ -299,7 +299,7 @@
     "text": "An attribute is either present or not. A unit that has the same attribute from several sources has it once, and it applies once.",
     "examples": [
       {
-        "text": "Example: two Reality Benders on one unit make it Inverted once; they do not cancel out.",
+        "text": "two Reality Benders on one unit make it Inverted once; they do not cancel out.",
         "test": "79-round17-layers.test.ts::R93 layer 5: {Inverted} applies ONCE however many sources grant it"
       }
     ],
@@ -339,7 +339,7 @@
     "text": "Inverted (layer 5) applies after all of layer 4, whatever order the unit gained its attributes in. A unit that is Tough and Inverted has the same stats whichever of the two it gained first.",
     "examples": [
       {
-        "text": "Example: a 1/4 that is Tough and Inverted is a 1/0, in either grant order.",
+        "text": "a 1/4 that is Tough and Inverted is a 1/0, in either grant order.",
         "test": "79-round17-layers.test.ts::R226: the TWO-attribute case, in either grant order"
       }
     ],
@@ -381,7 +381,7 @@
     "text": "A unit's stats are worked out all at once. A unit whose stats would reach 0 defense partway through the calculation does not die for that; only the final result counts (rule 713).",
     "examples": [
       {
-        "text": "Example: a 1/1 with a -1/-1 counter that is Inverted is a 2/2, never a dead 0/0 on the way.",
+        "text": "a 1/1 with a -1/-1 counter that is Inverted is a 2/2, never a dead 0/0 on the way.",
         "test": "79-round17-layers.test.ts::R93 layer 5: hitting 0 mid-calculation is not death"
       }
     ],
@@ -422,7 +422,7 @@
     "text": "An effect that exchanges the base stats of two units (Body Swap) gives each unit the other's base stats as they are when it resolves. It is a base rewrite of its own, later than any base rewrite already applying, so it wins over one.",
     "examples": [
       {
-        "text": "Example: your 1/1 and an enemy Wisp that Aberrant Statweaver makes base 3/3 are exchanged: your unit becomes base 3/3 and the Wisp base 1/1, until regroup.",
+        "text": "your 1/1 and an enemy Wisp that Aberrant Statweaver makes base 3/3 are exchanged: your unit becomes base 3/3 and the Wisp base 1/1, until regroup.",
         "test": "390-raq-stack.test.ts::RAQ timestamps: Body Swap with a Statweavered unit"
       }
     ],
@@ -465,7 +465,7 @@
     "text": "An effect that doubles a unit's power or defense until regroup gives the unit a temporary stat change (layer 3) of the size that makes the final stat, after every layer, twice what it was. Because the change is in layer 3, it is still there if an attribute in a later layer stops applying.",
     "examples": [
       {
-        "text": "Example: a 1/10 Tough unit (a 1/5, doubled) doubled by Burgeon gets +0/+5 and is a 1/20. If it then loses Tough to Monke, it is a 1/10.",
+        "text": "a 1/10 Tough unit (a 1/5, doubled) doubled by Burgeon gets +0/+5 and is a 1/20. If it then loses Tough to Monke, it is a 1/10.",
         "test": "387-raq-combat.test.ts::RAQ Tough: Burgeon on that 1/10 makes it 1/20"
       }
     ],
@@ -516,11 +516,11 @@
     "text": "Where an effect that switches a unit's power and defense until regroup (Invasive Reassignment) applies in the stat layers is an open ruling. The engine applies it as a temporary stat change worked out from the unit's stats when it resolves, so a stat change that comes afterwards applies on top and is not switched.",
     "examples": [
       {
-        "text": "Example: Invasive Reassignment switches a unit's power and defense until regroup.",
+        "text": null,
         "test": "27-metal-b.test.ts::Invasive Reassignment: switches power and defense until regroup"
       },
       {
-        "text": "Example (illustrative): an 8/3 unit switched by Invasive Reassignment is a 3/8; if it then gets +2/+0 it is a 5/8, not switched again.",
+        "text": "An 8/3 unit switched by Invasive Reassignment is a 3/8; if it then gets +2/+0 it is a 5/8, not switched again.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.continuous.switch — an 8/3 switched by Invasive Reassignment is a 3/8, and a later +2/+0 makes it a 5/8"
       }
     ],
@@ -565,11 +565,11 @@
     "text": "A unit that becomes a copy of a card takes that card's name, printed stats, attributes and text in place of its own. The physical card does not change: in every zone other than play it is still its own card (rule 410.3a).",
     "examples": [
       {
-        "text": "Example: a Borrower of Forms that copies a unit takes its name, its attributes and its text.",
+        "text": "a Borrower of Forms that copies a unit takes its name, its attributes and its text.",
         "test": "26-metal-a.test.ts::R118: Borrower of Forms takes the NAME, the attributes and the card TEXT"
       },
       {
-        "text": "Example: a unit that is a copy dies and its own card goes to the bin, not the copied card.",
+        "text": "a unit that is a copy dies and its own card goes to the bin, not the copied card.",
         "test": "44-hybrids-ld-a.test.ts::R118: a copy DYING puts the PHYSICAL card in the bin"
       }
     ],
@@ -617,11 +617,11 @@
     "text": "While a unit is a copy, its mana cost and its card type are those of the card it copies. A Borrower of Forms that copied a Robot costs 0, and while it copies a unit it is not a spell unit.",
     "examples": [
       {
-        "text": "Example: a Borrower of Forms that copied a Robot costs 0, so Lumengrove Lurker can recall it.",
+        "text": "a Borrower of Forms that copied a Robot costs 0, so Lumengrove Lurker can recall it.",
         "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Robot costs 0"
       },
       {
-        "text": "Example: while it copies a unit, Cosmic Reversal's \"and spell units\" does not recall it.",
+        "text": "while it copies a unit, Cosmic Reversal's \"and spell units\" does not recall it.",
         "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: while it mimics a unit it is not a spell unit"
       }
     ],
@@ -664,7 +664,7 @@
     "text": "Counters and marked damage belong to the unit, not to the card it copies. A unit keeps them when it becomes a copy, and keeps them when the copy ends.",
     "examples": [
       {
-        "text": "Example: a 1/1 that becomes a 7/5 until regroup and takes two -1/-1 counters dies when the copy ends at regroup.",
+        "text": "a 1/1 that becomes a 7/5 until regroup and takes two -1/-1 counters dies when the copy ends at regroup.",
         "test": "44-hybrids-ld-a.test.ts::R118: an until-regroup face lapses at regroup, and the revert can be lethal"
       }
     ],
@@ -699,7 +699,7 @@
     "text": "A unit that becomes an \"exact copy\" (Borrower of Forms) also takes the stat changes and the counters of the unit it copies, and its card text including the text of its mods. Its layer-1 stats are the copied unit's base stats.",
     "examples": [
       {
-        "text": "Example: Borrower of Forms erases its target and takes its stats and counters.",
+        "text": "Borrower of Forms erases its target and takes its stats and counters.",
         "test": "26-metal-a.test.ts::Borrower of Forms: erases the target and takes its stats and counters"
       }
     ],
@@ -745,11 +745,11 @@
     "text": "A copy of a modded unit has what the mods say, but no mod is copied. The copy is not modded, so it is not Unstable. Its copied grafts run as part of its graft cause, and each copied augment gives it that augment's [Augment] box.",
     "examples": [
       {
-        "text": "Example: a Borrower of Forms that copied a unit carrying a Powerful virus is Powerful, and is not modded or Unstable.",
+        "text": "a Borrower of Forms that copied a unit carrying a Powerful virus is Powerful, and is not modded or Unstable.",
         "test": "406-copied-augments.test.ts::R341: a Borrower that copied a unit carrying a Powerful virus is Powerful"
       },
       {
-        "text": "Example: a Borrower of Forms that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite.",
+        "text": "A Borrower of Forms that copied a Bellowing Boulder with Flame Juggle grafted has the Boulder's whole trigger, Flame Juggle's grafted part included.",
         "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder"
       }
     ],
@@ -811,7 +811,7 @@
     "text": "More grafts may be added to a copy of a grafted unit, but they go underneath the copied grafts.",
     "examples": [
       {
-        "text": "Example: a graft added to a Borrower of Forms that copied a graft stack resolves below the copied grafts.",
+        "text": "A graft added to a Borrower of Forms that copied a grafted unit resolves below the copied grafts.",
         "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a graft added to a Borrower"
       }
     ],
@@ -848,7 +848,7 @@
     "text": "When a copy of a modded unit leaves play, only its own card goes anywhere. Nothing is binned or erased for the mods it copied, because it has none. A mod later put on the copy is a real mod, and makes it Unstable as usual.",
     "examples": [
       {
-        "text": "Example: a Borrower of Forms that copied a unit with a virus dies, and only Borrower of Forms goes to the bin.",
+        "text": "a Borrower of Forms that copied a unit with a virus dies, and only Borrower of Forms goes to the bin.",
         "test": "406-copied-augments.test.ts::R341: when that copy dies, only Borrower of Forms goes to the bin"
       }
     ],
@@ -892,7 +892,7 @@
     "text": "A [once] ability from a copied augment can be used once per turn on the copy, exactly as if a real mod of that card were on it.",
     "examples": [
       {
-        "text": "Example: a Borrower of Forms that copied a Graxxlid-augmented unit can use Graxxlid's ability once per turn.",
+        "text": "a Borrower of Forms that copied a Graxxlid-augmented unit can use Graxxlid's ability once per turn.",
         "test": "406-copied-augments.test.ts::R341: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid"
       }
     ],
@@ -929,7 +929,7 @@
     "text": "If a unit becomes a copy more than once, the latest copy applies. It does not have two faces.",
     "examples": [
       {
-        "text": "Example: an Apex Prime copy made when attacking and another made when blocking leave the unit one copy, the later one.",
+        "text": "an Apex Prime copy made when attacking and another made when blocking leave the unit one copy, the later one.",
         "test": "44-hybrids-ld-a.test.ts::R118: attacking and then blocking leaves ONE face, not two"
       }
     ],
@@ -964,11 +964,11 @@
     "text": "A copy of a unit that is itself a copy copies what that unit currently is, not the card printed on it.",
     "examples": [
       {
-        "text": "Example: a copy of a copy chains through what the first copy is.",
+        "text": null,
         "test": "44-hybrids-ld-a.test.ts::R118: a copy of a COPY chains through the face"
       },
       {
-        "text": "Example: a copy of a Borrower of Forms that copied a virused unit carries the copied virus's text too.",
+        "text": "a copy of a Borrower of Forms that copied a virused unit carries the copied virus's text too.",
         "test": "406-copied-augments.test.ts::R341: a copy of the copy chains"
       }
     ],
@@ -1009,7 +1009,7 @@
     "text": "An effect that creates a copy of its own source (\"create a copy of me\") creates a token copy of what the source currently is. The token has none of the source's counters and none of its mods.",
     "examples": [
       {
-        "text": "Example: Hooba-God, killed under its own attack trigger, still creates a copy of what it was.",
+        "text": "Hooba-God, killed under its own attack trigger, still creates a copy of what it was.",
         "test": "108-formation-class.test.ts::R325 Hooba-God: killed under its own attack trigger"
       }
     ],
@@ -1048,7 +1048,7 @@
     "text": "A copy that lasts until regroup (Apex Prime) ends at regroup. The unit is its own card again, still with its counters, and it dies if its own stats cannot survive them.",
     "examples": [
       {
-        "text": "Example: an until-regroup copy ends at regroup, and the unit can die of it.",
+        "text": null,
         "test": "44-hybrids-ld-a.test.ts::R118: an until-regroup face lapses at regroup, and the revert can be lethal"
       }
     ],
@@ -1091,15 +1091,15 @@
     "text": "An ability that gives a unit \"all abilities\" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop.",
     "examples": [
       {
-        "text": "Example: Ancient One radiates an adjacent ally's static ability, and stops when the column breaks.",
+        "text": "Ancient One has an adjacent ally's static ability, and loses it when the column breaks.",
         "test": "26-metal-a.test.ts::R118: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks"
       },
       {
-        "text": "Example: an adjacent ally's attributes are not given to Ancient One.",
+        "text": "an adjacent ally's attributes are not given to Ancient One.",
         "test": "117-copy-everything.test.ts::R127: attributes are the ONE thing an adjacent ally does not donate"
       },
       {
-        "text": "Example: Ancient One keeps its own name and body.",
+        "text": "Ancient One keeps its own name and stats.",
         "test": "26-metal-a.test.ts::R118: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body"
       }
     ],
@@ -1153,7 +1153,7 @@
     "text": "In text a unit gets this way, \"I\" and \"me\" mean the unit that has the text, not the unit it came from.",
     "examples": [
       {
-        "text": "Example: next to Gatekeeper of Souls (\"I must be targeted if able\"), it is the Ancient One that must be targeted.",
+        "text": "next to Gatekeeper of Souls (\"I must be targeted if able\"), it is the Ancient One that must be targeted.",
         "test": "117-copy-everything.test.ts::R127: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted"
       }
     ],
@@ -1188,11 +1188,11 @@
     "text": "A copy of a spell is put on the stack above the spell it copies, so it resolves first. It is an effect on the stack like any other: players may respond to it, and it can be targeted and negated.",
     "examples": [
       {
-        "text": "Example: Earthbound Replicator's copy is pushed above the original.",
+        "text": "Earthbound Replicator's copy goes on the stack above the original, so it resolves first.",
         "test": "138-spell-copy.test.ts::R164 Earthbound Replicator: the copy is a real stack item, pushed ABOVE the original"
       },
       {
-        "text": "Example: the copy can be chosen as a \"target effect\" and negated by Dematerialize.",
+        "text": "the copy can be chosen as a \"target effect\" and negated by Dematerialize.",
         "test": "138-spell-copy.test.ts::the copy is offered as a \"target effect\" and Dematerialize negates it"
       }
     ],
@@ -1242,11 +1242,11 @@
     "text": "A copy of a spell keeps what the original declared when it was cast: its X, its mode and its targets. Additional costs the original paid are not paid again. The copy is given new targets only if the card that makes it says so.",
     "examples": [
       {
-        "text": "Example: Maelstrom Charger's copy of Volatile Toxicity uses the original's sacrifice, which is not paid again.",
+        "text": "Maelstrom Charger's copy of Volatile Toxicity uses the original's sacrifice, which is not paid again.",
         "test": "138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt"
       },
       {
-        "text": "Example: the copy keeps every target the spell declared (Fight).",
+        "text": "A copy of Fight keeps both targets the original declared.",
         "test": "138-spell-copy.test.ts::the copy keeps EVERY target the spell declared"
       }
     ],
@@ -1294,7 +1294,7 @@
     "text": "A copy of a spell targets what it targets: an ability that triggers when something becomes a target sees the copy's targets, although the copy was not played.",
     "examples": [
       {
-        "text": "Example: an enemy plays Burgeon on an attacker beside Earnest Defender and copies it with Maelstrom Charger, keeping the targets. Earnest Defender triggers twice, once for the spell and once for its copy.",
+        "text": "an enemy plays Burgeon on an attacker beside Earnest Defender and copies it with Maelstrom Charger, keeping the targets. Earnest Defender triggers twice, once for the spell and once for its copy.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.copies.spells.targets — Earnest Defender triggers for the targets of a copied Burgeon as well as the original"
       }
     ],
@@ -1335,7 +1335,7 @@
     "text": "A copy of a spell has no card. An instruction on it to erase itself erases nothing, and however many copies resolve, only the original card goes to a bin.",
     "examples": [
       {
-        "text": "Example: a resolved copy of Suspend puts nothing in a bin and its \"Erase me.\" erases nothing; the original Suspend is erased once.",
+        "text": "a resolved copy of Suspend puts nothing in a bin and its \"Erase me.\" erases nothing; the original Suspend is erased once.",
         "test": "138-spell-copy.test.ts::R164 Maelstrom Charger: a resolved copy bins nothing"
       }
     ],
@@ -1376,7 +1376,7 @@
     "text": "A copy of a spell carries the {Modular} mods the original was cast with, so their [Augment] attributes apply to the copy too.",
     "examples": [
       {
-        "text": "Example: Spellbind cast with Primordial Coalescence as a Modular mod and copied with Maelstrom Charger: the copy on the stack carries the same mods as the original.",
+        "text": "Spellbind cast with Primordial Coalescence as a Modular mod and copied with Maelstrom Charger: the copy on the stack carries the same mods as the original.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.copies.spells.modular — a copy of Spellbind cast with Primordial Coalescence carries the same Modular mods"
       }
     ],
@@ -1413,7 +1413,7 @@
     "text": "A card that transforms in play is the same unit with its other face up: its name, stats and text are those of the face that is up. It keeps that face while it stays in play, and turns back over as it leaves play (rule 410.3).",
     "examples": [
       {
-        "text": "Example: Scholar of the Void transforms into Beyond, Codex Incarnate and is still the same unit.",
+        "text": "Scholar of the Void transforms into Beyond, Codex Incarnate and is still the same unit.",
         "test": "43-dark-c.test.ts::R101 — the transform is the SAME unit"
       }
     ],
@@ -1467,7 +1467,7 @@
     "text": "When a player gains control of a unit, the unit changes sides: it becomes that player's unit, an ally of that player's units and an enemy of its former controller's. Its owner does not change.",
     "examples": [
       {
-        "text": "Example: a stolen unit recalled goes to the hand of the player who controls it, and its owner is unchanged.",
+        "text": "a stolen unit recalled goes to the hand of the player who controls it, and its owner is unchanged.",
         "test": "246-zones-follow-control.test.ts::R262 §3: ownership does NOT move"
       }
     ],
@@ -1516,11 +1516,11 @@
     "text": "A unit's mods change controller with it. The unit's new controller controls the mods and their text, so text a mod gives the unit refers to the new controller.",
     "examples": [
       {
-        "text": "Example: a stolen unit takes its mods with it, and they change controller too.",
+        "text": null,
         "test": "25-wood-c.test.ts::R112: a stolen unit takes its MODS with it"
       },
       {
-        "text": "Example: Mindspore Fiend gives away a modded blocker, and its mods go with it.",
+        "text": "Mindspore Fiend gives away a modded blocker, and its mods go with it.",
         "test": "24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker"
       }
     ],
@@ -1568,11 +1568,11 @@
     "text": "A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation for the rest of that battle: it attacks for nobody and blocks for nobody. It joins its new controller's side at regroup.",
     "examples": [
       {
-        "text": "Example: a Robot token stolen by Download mid-battle is out of the formation for the rest of the battle.",
+        "text": "a Robot token stolen by Download mid-battle is out of the formation for the rest of the battle.",
         "test": "145-erase-routes.test.ts::R172 (viii): Download"
       },
       {
-        "text": "Example: the stolen Robot joins its new controller's side at regroup.",
+        "text": "the stolen Robot joins its new controller's side at regroup.",
         "test": "145-erase-routes.test.ts::R172 (ix): Download"
       }
     ],
@@ -1655,7 +1655,7 @@
     "text": "A unit given to a player who is not present in the region where it stands (for example, during deployment) goes at once to that player's home region, with its mods. During a battle both players are present in the battle region, so the unit stays there.",
     "examples": [
       {
-        "text": "Example: Mindspore Fiend gives away a modded blocker after combat, and it stays in the battle region.",
+        "text": "Mindspore Fiend gives away a modded blocker after combat, and it stays in the battle region.",
         "test": "24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker"
       }
     ],
@@ -1698,7 +1698,7 @@
     "text": "An effect that exchanges control of two units and swaps their positions (Organic Exchange) leaves both units in formation: each takes the other's place, which is on its new controller's side.",
     "examples": [
       {
-        "text": "Example: Organic Exchange swaps control, and the attack slot passes to the exchanged unit.",
+        "text": "Organic Exchange swaps control, and the attack slot passes to the exchanged unit.",
         "test": "24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit"
       }
     ],
@@ -1738,7 +1738,7 @@
     "text": "An effect that would give control of a unit to the player who already controls it, or of a unit that has gone, changes nothing. An \"If you do\" that depends on the handover does not happen (rule 101.5a).",
     "examples": [
       {
-        "text": "Example: Ralph grafted under a tripling host is given away on the first pass and makes three 1/1s; on the later passes it cannot be given away again and makes nothing, while the rest of the composite still runs.",
+        "text": "Amphivore carries the grafts Flame Juggle and Ralph, and its trigger runs them three times. The first time, Ralph gives Amphivore to the opponent and creates three 1/1s. The second and third times the opponent already controls it, so nothing changes hands and no more 1/1s are made; Flame Juggle still runs all three times.",
         "test": "393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted"
       }
     ],
@@ -1781,11 +1781,11 @@
     "text": "A unit that leaves play goes to the zones of the player who controls it, not of its owner, unless the effect names another player's zone (rule 405.3).",
     "examples": [
       {
-        "text": "Example: a stolen unit recalled goes to the thief's hand.",
+        "text": "a stolen unit recalled goes to the thief's hand.",
         "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand"
       },
       {
-        "text": "Example: an explicit destination still wins.",
+        "text": null,
         "test": "246-zones-follow-control.test.ts::R262 §2: an explicit destination still wins"
       }
     ],
@@ -1823,7 +1823,7 @@
     "text": "A mod is controlled by the controller of the unit it is on. When a mod is moved onto another unit (Rotbeast, Reconfigure), its controller becomes that unit's controller.",
     "examples": [
       {
-        "text": "Example: an augment Rotbeast moves onto an enemy takes its Unstable and its static ability with it.",
+        "text": "an augment Rotbeast moves onto an enemy takes its Unstable and its static ability with it.",
         "test": "151-copy-and-moved-mods.test.ts::R178 Rotbeast: a moved augment takes {Unstable} and its static with it"
       }
     ],
@@ -1875,7 +1875,7 @@
     "text": "Some effects make a unit lose all its attributes, all its abilities, or both (\"loses all attributes and abilities\"). While the unit has lost them, they do not apply.",
     "examples": [
       {
-        "text": "Example: Monke makes other units lose all attributes and abilities during battle.",
+        "text": "Monke makes other units lose all attributes and abilities during battle.",
         "test": "27-metal-b.test.ts::Monke: R62 — other units lose all attributes and abilities during battle"
       }
     ],
@@ -1921,11 +1921,11 @@
     "text": "Losing all abilities takes everything the unit's text does by itself: its triggered abilities, its activated abilities (which cannot be activated), its static abilities and cost changes, and its replacement effects, whether printed on it, given by its mods or granted to it. A unit that loses its abilities stops applying its static abilities at once, whether a one-time effect (Suppression Field) or a continuous one (Transmogrifant, Monke) took them; two continuous strips that each fall under the other are rule effects.stripping.mutual. Engine differs, see F-U16-3: a unit that a continuous effect strips keeps applying its static abilities.",
     "examples": [
       {
-        "text": "Example: a copy silenced by Suppression Field stops applying the static it copied.",
+        "text": "a copy silenced by Suppression Field stops applying the static it copied.",
         "test": "44-hybrids-ld-a.test.ts::R118: R62 suppression is a veto ABOVE copy — a silenced copy radiates nothing"
       },
       {
-        "text": "Example (illustrative): with Transmogrifant and Sandstone Defender in play, Sandstone Defender has lost its abilities, so a 1/1 token gets only Transmogrifant's +2/+2 and is a 3/3.",
+        "text": "With Transmogrifant and Sandstone Defender in play, Sandstone Defender has lost its abilities, so a 1/1 token gets only Transmogrifant's +2/+2 and is a 3/3.",
         "test": null
       }
     ],
@@ -1986,7 +1986,7 @@
     "text": "Stats are not abilities. A unit that has lost its abilities keeps its stats, its counters and its stat changes; Tough and Balanced stop changing its stats only because they are attributes. It can still be targeted, block, die, and be grafted onto.",
     "examples": [
       {
-        "text": "Example: Formless takes a unit's attributes and leaves its abilities alone.",
+        "text": null,
         "test": "27-metal-b.test.ts::Formless: R62 — \"and loses all attributes\", abilities untouched"
       }
     ],
@@ -2059,15 +2059,15 @@
     "text": "A strip takes what the unit has when the strip applies. An attribute or ability the unit gains afterwards (a mod attached later, an attribute or ability granted later, a static ability that starts applying later) is not taken.",
     "examples": [
       {
-        "text": "Example: after Suppression Field resolves on Bubb, Protective Adaptations gives Bubb Piercing, and it has it.",
+        "text": "after Suppression Field resolves on Bubb, Protective Adaptations gives Bubb Piercing, and it has it.",
         "test": "393-raq-mods.test.ts::RAQ Suppression Field: an attribute granted after it resolved still applies"
       },
       {
-        "text": "Example: a virus applied after Monke still gives its attribute.",
+        "text": "a virus applied after Monke still gives its attribute.",
         "test": "390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke"
       },
       {
-        "text": "Example: a static strip takes a mod attached before it arrived, and leaves one attached after.",
+        "text": "A continuous strip takes a mod attached before it began, and leaves one attached after.",
         "test": "402-raq-fix-stripping.test.ts::§1 a static stripper takes a mod attached BEFORE it arrived"
       }
     ],
@@ -2124,15 +2124,15 @@
     "text": "When an effect that removes attributes (Formless, Suppression Field) is aimed at a unit in a formation, every unit in that unit's column loses its attributes, whichever unit they came from. Only the loss of attributes reaches the column: the rest of the effect, such as the loss of abilities or Formless's \"base 4/4\", applies to the target alone.",
     "examples": [
       {
-        "text": "Example: Formless takes Blessed off the whole column, not just its target.",
+        "text": "Formless takes Blessed off the whole column, not just its target.",
         "test": "299-formless-column.test.ts::R293 §1 the report"
       },
       {
-        "text": "Example: Suppression Field aimed at either unit of a column takes both Unaware and Flying from both.",
+        "text": "Suppression Field aimed at either unit of a column takes both Unaware and Flying from both.",
         "test": "393-raq-mods.test.ts::RAQ Suppression Field: aimed at either unit of a column"
       },
       {
-        "text": "Example: Formless's base 4/4 still hits the target alone.",
+        "text": "Formless's base 4/4 still hits the target alone.",
         "test": "299-formless-column.test.ts::R293 §2 the base rewrite still hits the TARGET alone"
       }
     ],
@@ -2187,7 +2187,7 @@
     "text": "A target that is not in a column (outside battle, or out of formation) loses only its own attributes.",
     "examples": [
       {
-        "text": "Example: a target with no column is stamped alone.",
+        "text": null,
         "test": "299-formless-column.test.ts::R293 §5 a target with no column"
       }
     ],
@@ -2222,11 +2222,11 @@
     "text": "Each unit in the column loses its attributes as its own state, until the effect ends. A unit that leaves the column does not get them back, and a unit that joins the column afterwards keeps its own.",
     "examples": [
       {
-        "text": "Example: the loss outlives the column and ends at regroup.",
+        "text": "Formless is aimed at a unit whose column-mate is Blessed. The column-mate loses Blessed, stays without it for the rest of the battle after combat damage is over, and gets it back at regroup.",
         "test": "299-formless-column.test.ts::R293 §3 the stamp outlives the column"
       },
       {
-        "text": "Example: a unit that joins the column afterwards keeps its own attributes.",
+        "text": null,
         "test": "299-formless-column.test.ts::R293 §4 a unit that joins the column afterwards keeps its own attributes"
       }
     ],
@@ -2263,7 +2263,7 @@
     "text": "A unit that has lost its attributes can still get attributes from a column it joins later, by sharing. It does not share the attributes it lost.",
     "examples": [
       {
-        "text": "Example: a stripped Bubb that later joins a Balanced unit's column is Balanced, and the column is not Unaware.",
+        "text": "a stripped Bubb that later joins a Balanced unit's column is Balanced, and the column is not Unaware.",
         "test": "402-raq-fix-stripping.test.ts::§5 a stripped unit that joins a Balanced column later is Balanced"
       }
     ],
@@ -2298,7 +2298,7 @@
     "text": "An effect that switches off one named behaviour stops only that behaviour; it does not take the unit's other abilities. Only \"loses all abilities\" takes them all.",
     "examples": [
       {
-        "text": "Example: Infernal Wispweaver stops a Wisp sacrificing itself after combat, and the Wisp keeps an ability it was given.",
+        "text": "Infernal Wispweaver stops a Wisp sacrificing itself after combat, and the Wisp keeps an ability it was given.",
         "test": "249-suppression-scope.test.ts::§2 a Wisp keeps an ability it was given"
       }
     ],
@@ -2375,15 +2375,15 @@
     "text": "The Everywhere's controller names a card during the haste step. Every unit with that name in The Everywhere's region loses all abilities, for as long as The Everywhere is in that region. Naming another card replaces the first, and a card that is not in play may be named.",
     "examples": [
       {
-        "text": "Example: naming a card silences every copy of it in The Everywhere's region.",
+        "text": null,
         "test": "38-light-a.test.ts::The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION"
       },
       {
-        "text": "Example: an enemy copy is silenced only once The Everywhere attacks into its region.",
+        "text": "an enemy copy is silenced only once The Everywhere attacks into its region.",
         "test": "38-light-a.test.ts::The Everywhere: the silence is CONTINUOUS"
       },
       {
-        "text": "Example: a second naming replaces the first.",
+        "text": null,
         "test": "38-light-a.test.ts::The Everywhere: a second naming replaces the first"
       }
     ],
@@ -2427,7 +2427,7 @@
     "text": "Text a copy has from the mods of the unit it copied is part of the copy's own card text. An effect that makes the copy lose all attributes and abilities takes it, and \"erase all of its mods\" finds no mod to erase.",
     "examples": [
       {
-        "text": "Example: Suppression Field strips the augment text a Borrower of Forms copied.",
+        "text": "Suppression Field strips the augment text a Borrower of Forms copied.",
         "test": "406-copied-augments.test.ts::R341 / R328: the copied augment text is the copy's card text"
       }
     ],
@@ -2468,7 +2468,7 @@
     "text": "Units in the same column of a formation share their combat attributes: each unit in the column has every combat attribute any unit in it has.",
     "examples": [
       {
-        "text": "Example: Inverted is shared down the column like every other attribute.",
+        "text": null,
         "test": "79-round17-layers.test.ts::R93 layer 5: {Inverted} is shared down the COLUMN"
       }
     ],
@@ -2508,11 +2508,11 @@
     "text": "A unit in a column has the column's attributes for everything it does while it is in the column, not only for combat damage. An ability it activates, or damage it deals by an effect, uses them too.",
     "examples": [
       {
-        "text": "Example: an ability fired by a unit in a Blessed column gains its controller life.",
+        "text": "an ability fired by a unit in a Blessed column gains its controller life.",
         "test": "298-column-attrs-outside-combat.test.ts::R294 §1 the report"
       },
       {
-        "text": "Example: Powerful from the column doubles that damage too.",
+        "text": "Powerful from the column doubles that damage too.",
         "test": "298-column-attrs-outside-combat.test.ts::R294 §2 every source-side attribute rides the same line"
       }
     ],
@@ -2552,7 +2552,7 @@
     "text": "Columns exist only in battle. Outside battle a unit shares no attributes with anything.",
     "examples": [
       {
-        "text": "Example: outside battle there are no columns at all.",
+        "text": null,
         "test": "298-column-attrs-outside-combat.test.ts::R294 §3 outside battle there are no columns at all"
       }
     ],
@@ -2591,7 +2591,7 @@
     "text": "Attributes are shared only within a column, never with the units to the left or right.",
     "examples": [
       {
-        "text": "Example: Good Whale attacks with a unit behind it in its column and another unit in the next column. The unit behind it has Piercing; the unit in the next column does not.",
+        "text": "Good Whale attacks with a unit behind it in its column and another unit in the next column. The unit behind it has Piercing; the unit in the next column does not.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.column-share.columns-only — a unit in the same column as Good Whale shares its Piercing, and one in the next column does not"
       }
     ],
@@ -2628,7 +2628,7 @@
     "text": "When a unit leaves a column, the other units in it lose at once the attributes it was sharing with them.",
     "examples": [
       {
-        "text": "Example: once the Deadly unit leaves Bellowing Boulder's column, the Boulder's ping is not Deadly.",
+        "text": "once the Deadly unit leaves Bellowing Boulder's column, the Boulder's ping is not Deadly.",
         "test": "390-raq-stack.test.ts::once the Deadly partner leaves the column, the Boulder ping is not Deadly"
       }
     ],
@@ -2672,7 +2672,7 @@
     "text": "Non-combat attributes, such as Unstable, Burst and Modular, are not shared. A modded unit is Unstable, but the units in its column are not.",
     "examples": [
       {
-        "text": "Example: a modded (so Unstable) unit does not make its column-mate Unstable.",
+        "text": null,
         "test": "298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable"
       }
     ],
@@ -2719,11 +2719,11 @@
     "text": "Two questions are each unit's own, whatever its column shares: a unit with Feeble cannot block even in a column with other units, and an Alluring trigger comes from the unit that has Alluring.",
     "examples": [
       {
-        "text": "Example: Feeble block legality is still the unit's own question.",
+        "text": null,
         "test": "298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality"
       },
       {
-        "text": "Example: Alluring still comes from the unit that prints it.",
+        "text": null,
         "test": "298-column-attrs-outside-combat.test.ts::R294 §4b {Alluring} still originates from the unit that prints it"
       }
     ],
@@ -2764,7 +2764,7 @@
     "text": "State checks are made by the game itself, at safe points. In a state check, every unit that should be dead dies, and every token that is in a zone where it cannot exist ceases to exist.",
     "examples": [
       {
-        "text": "Example: a lethally damaged unit and a dead unit token both go at the next safe point; the card reaches the bin, the token is erased, and a token recalled to a hand is erased from it.",
+        "text": "a lethally damaged unit and a dead unit token both go at the next safe point; the card reaches the bin, the token is erased, and a token recalled to a hand is erased from it.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.state.what — at a safe point a lethally damaged unit dies, a dead unit token is erased instead of staying in the bin, and a recalled token is erased from the hand"
       }
     ],
@@ -2808,7 +2808,7 @@
     "text": "A unit dies in a state check if its defense is 0 or less, or if the damage marked on it is greater than or equal to its defense.",
     "examples": [
       {
-        "text": "Example: the turn's draw takes Dreadspawn Horror (\"I gain -1/-1 for each card in your hand\") to 0 defense, and it dies.",
+        "text": "the turn's draw takes Dreadspawn Horror (\"I gain -1/-1 for each card in your hand\") to 0 defense, and it dies.",
         "test": "380-no-action-ends-dead.test.ts::R313: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip"
       }
     ],
@@ -2856,15 +2856,15 @@
     "text": "The end of every action is a safe point, so no action ends with a unit standing that should have died: not a draw, a draft, a recycle or a resource activation. An action that is waiting on a player's decision has not ended and is not at a safe point; it is checked when the answer comes and the action finishes. The one exception is Constructed's draw phase, where drawing 4 and putting 2 back are judged as one step: a player's units are not checked while that player still has the 2 cards to put back.",
     "examples": [
       {
-        "text": "Example: a planning action ends with the dead unit gone.",
+        "text": null,
         "test": "380-no-action-ends-dead.test.ts::R313: a planning action that does not settle still ends with the dead unit gone"
       },
       {
-        "text": "Example: in Constructed, Dreadspawn Horror with 3 cards in hand is still in play after the draw of 4, and dies once its controller has put 2 back (5 cards in hand).",
+        "text": "in Constructed, Dreadspawn Horror with 3 cards in hand is still in play after the draw of 4, and dies once its controller has put 2 back (5 cards in hand).",
         "test": "380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5"
       },
       {
-        "text": "Example: in Constructed, Dreadspawn Horror with 1 card in hand is a 4/2 after the draw phase and lives.",
+        "text": "in Constructed, Dreadspawn Horror with 1 card in hand is a 4/2 after the draw phase and lives.",
         "test": "380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back"
       }
     ],
@@ -2916,7 +2916,7 @@
     "text": "Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.",
     "examples": [
       {
-        "text": "Example (illustrative): Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. A 1/1 token dies as soon as it gets its counter, before the next unit gets one.",
+        "text": "Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. A 1/1 token dies as soon as it gets its counter, before the next unit gets one.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.state.when.mid-resolution — the Pestilent Titan trigger kills a 1/1 before the next unit gets its counter"
       }
     ],
@@ -2957,7 +2957,7 @@
     "text": "A unit can die in a state check from a change no damage caused: a new base, a stat change, a mod it loses, or a combination of attributes (Tough and Inverted) that leaves its defense at 0 or less.",
     "examples": [
       {
-        "text": "Example: Rampart Guardian makes a unit Tough, then Reality Bender makes it Inverted, and it dies with no damage on it.",
+        "text": "Rampart Guardian makes a unit Tough, then Reality Bender makes it Inverted, and it dies with no damage on it.",
         "test": "79-round17-layers.test.ts::R226: report #114"
       }
     ],
@@ -3005,7 +3005,7 @@
     "text": "Pure does not save a unit from a state-check death. Pure hides attributes in a combat exchange; it does not change the unit's stats.",
     "examples": [
       {
-        "text": "Example: a Pure 1/3 that is also Tough and Inverted reads 1/0 and dies in the state check.",
+        "text": "a Pure 1/3 that is also Tough and Inverted reads 1/0 and dies in the state check.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.state.no-damage-needed.pure — a Pure 1/3 that is Tough and Inverted reads 1/0 and still dies in the state check"
       }
     ],
@@ -3042,7 +3042,7 @@
     "text": "In a state check, a token that is in any zone other than play or the stack (a hand, a bin, a cache) ceases to exist. This happens before anything its arrival there caused to trigger is put on the stack.",
     "examples": [
       {
-        "text": "Example: a token body exchanged out of play is binned, then erased by the state check.",
+        "text": "A Hooba-Mon token is exchanged out of play by Skittering Blight. It goes to the bin, and the state check then erases it from there.",
         "test": "129-disposal-tail.test.ts::R153 (iv): a TOKEN body with no mods takes the token sweep"
       }
     ],
@@ -3094,7 +3094,7 @@
     "text": "Units that die in the same state check die together. Each of them still sees the others leave: an ability of one that triggers when another unit dies, or when a card is trashed, triggers for the others in the same batch.",
     "examples": [
       {
-        "text": "Example: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in.",
+        "text": "Muck Rummager dies from combat damage in the same batch as an ally, and still triggers on that ally being trashed.",
         "test": "258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in"
       }
     ],
@@ -3132,11 +3132,11 @@
     "text": "A unit that dies in the batch does not see its own departure that way, and it is not a legal target or an ally for a count while the batch is dealt with.",
     "examples": [
       {
-        "text": "Example: Cthyrian Culler dying alone loses nobody any life for its own trash; dying beside an ally, it fires once, for the ally.",
+        "text": "Cthyrian Culler dying alone makes nobody lose life for its own trash; dying beside an ally, it triggers once, for the ally.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.state.together.limits — Cthyrian Culler dying alone does not hear its own trash, and dying beside an ally hears only the ally"
       },
       {
-        "text": "Example: Splort dies in the same batch as an ally; its trigger for the ally offers neither dead body as a target.",
+        "text": "Splort dies in the same batch as an ally; its trigger for the ally cannot target either dead unit.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.state.together.limits — Splort dying with an ally fires for the ally, and neither dead body is offered as a target"
       }
     ],
@@ -3175,11 +3175,11 @@
     "text": "A unit sent out to counterattack, which does not exist until round 1 ends, is not checked for death while it is away. It is checked as it comes back.",
     "examples": [
       {
-        "text": "Example: Prickly Protector, alive only through its own static, survives being declared as a counterattacker.",
+        "text": "Prickly Protector, alive only through its own static, survives being declared as a counterattacker.",
         "test": "250-ally-count-and-absence.test.ts::Prickly Protector survives being declared as a counterattacker"
       },
       {
-        "text": "Example: a counterattacker sent out alone survives the send and dies on arrival.",
+        "text": "a counterattacker sent out alone survives the send and dies on arrival.",
         "test": "250-ally-count-and-absence.test.ts::a counterattacker sent out alone survives the send and dies on arrival"
       }
     ],
@@ -3217,7 +3217,7 @@
     "text": "A unit that stays home does not count a unit that has gone to counterattack as an ally.",
     "examples": [
       {
-        "text": "Example: a unit left at home loses the ally that counterattacked away.",
+        "text": "Prickly Protector, carrying a -1/-1 counter, is alive only because it has one other ally. When that ally is sent to counterattack, the Protector stays home, no longer counts it, and dies.",
         "test": "250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away"
       }
     ],
@@ -3254,7 +3254,7 @@
     "text": "A unit that is destroyed dies: by a state check, by being sacrificed, or by being deleted. An {Unstable} unit that is destroyed still dies. A unit that leaves play any other way, by being recalled, cached, exchanged or erased, does not die.",
     "examples": [
       {
-        "text": "Example: Banishment erases a unit, and no death is recorded.",
+        "text": "Banishment erases a unit, and no death is recorded.",
         "test": "145-erase-routes.test.ts::R172 (vii): Banishment still fires no"
       }
     ],
@@ -3308,7 +3308,7 @@
     "text": "A unit's last-known state is what it was at the instant it left play: its card and the face it showed, its controller, its region, its attributes (including those its column shared with it), its power and defense, and the formation it stood in.",
     "examples": [
       {
-        "text": "Example: Deathglow Strider, sharing Piercing in a Good Whale column with a +1/+1 counter, is destroyed before its after-combat trigger resolves; the trigger remembers a 3/4 Piercing Deathglow Strider of its controller, in that region and formation.",
+        "text": "Deathglow Strider, sharing Piercing in a Good Whale column with a +1/+1 counter, is destroyed before its after-combat trigger resolves; the trigger remembers a 3/4 Piercing Deathglow Strider of its controller, in that region and formation.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.last-known.what — Deathglow Strider gone before its trigger resolves is remembered with its card, face, controller, region, column-shared Piercing, stats and formation"
       }
     ],
@@ -3356,7 +3356,7 @@
     "text": "An effect whose source has left play has the attributes its source had when it left, including attributes shared with it by its column then.",
     "examples": [
       {
-        "text": "Example: Bellowing Boulder dies with a Deadly unit beside it and its ping on the stack; the ping is still Deadly.",
+        "text": "Bellowing Boulder dies with a Deadly unit beside it and its ping on the stack; the ping is still Deadly.",
         "test": "390-raq-stack.test.ts::RAQ dead unit: Bellowing Boulder dead with its ping on the stack"
       }
     ],
@@ -3393,19 +3393,19 @@
     "text": "An effect whose source has left play that uses its source's power or defense uses the power or defense the source had when it left.",
     "examples": [
       {
-        "text": "Example (illustrative): Deathglow Strider (printed 2/3) with a +1/+1 counter is a 3/4. It leaves play before its after-combat trigger resolves; the trigger deals 4 to each opponent, its last-known defense, not its printed 3.",
+        "text": "Deathglow Strider (printed 2/3) with a +1/+1 counter is a 3/4. It leaves play before its after-combat trigger resolves; the trigger deals 4 to each opponent, its last-known defense, not its printed 3.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.last-known.stats — Deathglow Strider 3/4 with a counter, gone before its trigger resolves, deals its last-known 4, not its printed 3"
       },
       {
-        "text": "Example (illustrative): Spewing Mushroom (printed 1/3) gets +2/+0 and leaves play before its attack trigger resolves; the trigger creates a Poison 3, from its last-known power 3.",
+        "text": "Spewing Mushroom (printed 1/3) gets +2/+0 and leaves play before its attack trigger resolves; the trigger creates a Poison 3, from its last-known power 3.",
         "test": "427-cr-continuous-effects.test.ts::cr:effects.last-known.stats — Spewing Mushroom at +2/+0, gone before its attack trigger resolves, makes a Poison 3"
       },
       {
-        "text": "Example: an unmodified Deathglow Strider, gone before its after-combat trigger resolves, still deals damage equal to its defense. (Its last-known and printed defense are the same here.)",
+        "text": null,
         "test": "401-raq-fix-stack.test.ts::R325 Deathglow Strider"
       },
       {
-        "text": "Example: an unmodified Spewing Mushroom, gone before its attack trigger resolves, still creates a Poison of its power. (Its last-known and printed power are the same here.)",
+        "text": null,
         "test": "401-raq-fix-stack.test.ts::R325 Spewing Mushroom"
       }
     ],
@@ -3449,11 +3449,11 @@
     "text": "An effect whose source has left play that refers to the source's formation (\"in my formation\", \"attacking units in my formation\") uses the formation the source stood in when it left, for the rest of that battle.",
     "examples": [
       {
-        "text": "Example: Hooba-Lin, killed under its own attack trigger, remembers its formation and the 1/1 joins it.",
+        "text": "Hooba-Lin, killed under its own attack trigger, remembers its formation and the 1/1 joins it.",
         "test": "108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger"
       },
       {
-        "text": "Example: Embermaw Fledgling, gone before its trigger resolves, still counts the attackers it stood with.",
+        "text": "Embermaw Fledgling, gone before its trigger resolves, still counts the attackers it stood with.",
         "test": "401-raq-fix-stack.test.ts::R325 Embermaw Fledgling"
       }
     ],
@@ -3503,7 +3503,7 @@
     "text": "A count of the allies adjacent to a source that has left play is 0.",
     "examples": [
       {
-        "text": "Example: Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1 (X = 0).",
+        "text": "Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1 (X = 0).",
         "test": "390-raq-stack.test.ts::RAQ dead unit: Flamebreath Initiate removed"
       }
     ],
@@ -3538,7 +3538,7 @@
     "text": "An effect whose source has left play that makes a copy of the source copies what the source was when it left.",
     "examples": [
       {
-        "text": "Example: Echo of Despair, gone before its after-combat trigger resolves, still makes its copy.",
+        "text": "Echo of Despair, gone before its after-combat trigger resolves, still makes its copy.",
         "test": "401-raq-fix-stack.test.ts::R325 Echo of Despair"
       }
     ],
@@ -3581,7 +3581,7 @@
     "text": "While its source is still in play, an effect reads the source as it is when the effect resolves, not as it was when the effect was put on the stack.",
     "examples": [
       {
-        "text": "Example: Deadly given back to Bellowing Boulder before its ping resolves makes the ping Deadly again.",
+        "text": "Deadly given back to Bellowing Boulder before its ping resolves makes the ping Deadly again.",
         "test": "390-raq-stack.test.ts::Deadly given back to the Boulder before its ping resolves makes the ping Deadly again"
       }
     ],
@@ -3623,7 +3623,7 @@
     "text": "A source that is still in play but out of formation (for example, a unit stolen mid-battle, rule 711.3) stands in no formation. An effect that places units in its formation, or counts it, does nothing.",
     "examples": [
       {
-        "text": "Example: a Hooba-Lin alive but out of the formation makes no token.",
+        "text": "a Hooba-Lin alive but out of the formation makes no token.",
         "test": "108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation"
       }
     ],
@@ -3665,7 +3665,7 @@
     "text": "The facts of how a unit left play are fixed as it leaves: the region it left from, the counters it carried, whether it was a token, how it left, and where its card went. Abilities that trigger on its leaving use those facts.",
     "examples": [
       {
-        "text": "Example: the death event carries token, verb, owner, region and destination.",
+        "text": null,
         "test": "62-death-facts.test.ts::R70: the death event carries token, verb, owner, region and destination"
       }
     ],
@@ -3701,7 +3701,7 @@
     "text": "An ability that triggers on its own source leaving play (\"when I die\") resolves in the region the source left from, not in its controller's home region.",
     "examples": [
       {
-        "text": "Example: a \"when I die\" trigger resolves in the region the unit died in.",
+        "text": null,
         "test": "62-death-facts.test.ts::R70: a \"when I die\" trigger resolves in the region the unit DIED in"
       }
     ],

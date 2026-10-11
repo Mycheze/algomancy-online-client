@@ -1,7 +1,7 @@
 [
   {
     "key": "turn.draw.constructed",
-    "textHash": "eea5d978dc65a28c",
+    "textHash": "4a38b5ada635797a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -55,11 +55,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.draw.constructed.choice",
-    "textHash": "29781b74fd8f3c50",
+    "textHash": "a278a65870852edd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -102,11 +103,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "'Until they have, they can take no other planning action' is an engine sequencing choice; no printed source states it."
+    "problem": "'Until they have, they can take no other planning action' is an engine sequencing choice; no printed source states it.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.draw.constructed.first-turn",
-    "textHash": "eeaf8d48d2a09163",
+    "textHash": "c479b34efe526799",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U08-r2",
@@ -151,7 +153,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Sourced by inference from 'every turn'; no printed sentence names turn 1 of constructed."
+    "problem": "Sourced by inference from 'every turn'; no printed sentence names turn 1 of constructed.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.draw.draft",
@@ -242,7 +245,7 @@
   },
   {
     "key": "turn.draw.draft.pass",
-    "textHash": "4da14b862a6d3713",
+    "textHash": "9c4ecbaf1b646198",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -289,7 +292,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.draw.draft.skip",
@@ -331,7 +335,7 @@
   },
   {
     "key": "turn.draw.draft.ten",
-    "textHash": "5d981e7616d8f842",
+    "textHash": "1b380215abe77106",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -375,7 +379,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.draw.draw",
@@ -422,7 +427,7 @@
   },
   {
     "key": "turn.draw.draw.first-turn",
-    "textHash": "e848434671ef92a5",
+    "textHash": "7b68be614dffa496",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -479,35 +484,32 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.draw.draw.order",
-    "textHash": "54359cd38bd88d1f",
+    "textHash": "c8a0401540a6c7e0",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U08-r1",
+    "round": 4,
+    "verifier": "U08-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:startTurn",
+        "loc": "client/engine/src/engine.ts:startTurn (draft draw)",
         "agrees": true,
-        "note": "draft-mode turn draws: for (const seat of this.dealOrder()) this.draw(seat, n)"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:dealOrder",
-        "agrees": true,
-        "note": "clockwise from the initiative player"
+        "note": ""
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
-        "title": "turn.draw.draw.order: turn draws come off the shared deck clockwise from the initiative player",
+        "file": "client/engine/test/419-cr-planning.test.ts",
+        "pattern": "cr:turn.draw.draw.order",
         "passed": true,
-        "demonstrates": true
+        "asserts_claim": true,
+        "passed_note": "yes: on turn 2 the initiative player's last two hand cards are the deck's top 2, the other seat's are cards 3-4"
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.16",
@@ -517,20 +519,20 @@
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "shared deck clockwise starting with the initiative"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "/** clockwise from the initiative player — draw/pack deal order */"
+        "file": "client/engine/test/419-cr-planning.test.ts",
+        "text": "assert.deepEqual(h.state.players[it]!.hand.slice(-2), deckTop.slice(0, 2), 'the initiative player draws first');"
       }
     ],
     "basis_ok": true,
-    "problem": "No test cited; probe demonstrates it."
+    "problem": ""
   },
   {
     "key": "turn.draw.refresh",
-    "textHash": "f17f65d14e623a66",
+    "textHash": "4d23dbf8d04fe80d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U08-r2",
@@ -577,7 +579,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. (Engine sends old pack cards to the shared recycle pile per R296; still 'recycled'.)"
+    "problem": "None. (Engine sends old pack cards to the shared recycle pile per R296; still 'recycled'.)",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.draw.refresh.second-look",
@@ -619,7 +622,7 @@
   },
   {
     "key": "turn.draw.state-checks",
-    "textHash": "5437194dbcc63f0d",
+    "textHash": "14611b85a7cf20d0",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U08-r2",
@@ -660,7 +663,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None."
+    "problem": "None.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "turn.draw.state-checks.constructed",
@@ -970,7 +974,7 @@
   },
   {
     "key": "turn.general.interactive",
-    "textHash": "16a45b687da47560",
+    "textHash": "a510ad77d42f8109",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U08-r4",
@@ -1048,7 +1052,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.general.next-turn",
@@ -1106,7 +1111,7 @@
   },
   {
     "key": "turn.general.phases",
-    "textHash": "4c390e961815e957",
+    "textHash": "105c0904d381a6a7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1149,7 +1154,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.haste.always",
@@ -1205,7 +1211,7 @@
   },
   {
     "key": "turn.haste.always.no-auto-done",
-    "textHash": "b7aecd64d82d8041",
+    "textHash": "a295323af44add6f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1255,11 +1261,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.haste.end-event",
-    "textHash": "acaf40ce1d274420",
+    "textHash": "5677a86330e14106",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1320,7 +1327,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The second example's bound test lives in client/server/test and was not run; the probe measures the same claim in the engine."
+    "problem": "The second example's bound test lives in client/server/test and was not run; the probe measures the same claim in the engine.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.haste.end-event.during",
@@ -1367,7 +1375,7 @@
   },
   {
     "key": "turn.haste.ends",
-    "textHash": "3dccebc9d1cc4fbe",
+    "textHash": "1f3de220a21026fe",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1418,7 +1426,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.haste.grants",
@@ -1594,7 +1603,7 @@
   },
   {
     "key": "turn.haste.mods",
-    "textHash": "a8a836bad282eea3",
+    "textHash": "aa7243957509570d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U08-r2",
@@ -1666,11 +1675,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Designer citation covers grafts only; augments are by printed deployment wording + R95. Not wrong."
+    "problem": "Designer citation covers grafts only; augments are by printed deployment wording + R95. Not wrong.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.haste.mods.slurpr",
-    "textHash": "6e94a6958edb2b7c",
+    "textHash": "5d7a3eefd84430d0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1709,7 +1719,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.haste.plays",
@@ -1760,7 +1771,7 @@
   },
   {
     "key": "turn.haste.plays.battle-stays",
-    "textHash": "07bc8a03eb6f5b39",
+    "textHash": "dfe8051fbafcfd85",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1833,52 +1844,54 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.haste.prophesy",
-    "textHash": "f8de3b846fca5543",
+    "textHash": "7b16734b1b6cc9a2",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U08-r1",
+    "round": 4,
+    "verifier": "U08-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doProphesy window",
+        "loc": "client/engine/src/apply.ts:prophesy legality",
         "agrees": true,
-        "note": "a banner whose condition ends in [Haste] is offered/accepted in the haste step; unmarked refused; marker never widens outside the haste step"
+        "note": "a [Haste]-marked banner is offered in the haste step; unmarked are refused"
       }
     ],
     "tests_run": [
       {
-        "file": "257-prophecy-release-timing.test.ts",
+        "file": "client/engine/test/257-prophecy-release-timing.test.ts",
         "pattern": "R277: a banner marked [Haste] may be prophesied during the haste step",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: loops over every marked banner (the pool has one: Divine Intervention); prophesy offered and performed in the haste step"
       },
       {
-        "file": "257-prophecy-release-timing.test.ts",
-        "pattern": "R277: an UNMARKED banner is still deployment-only — the haste step refuses it",
+        "file": "client/engine/test/257-prophecy-release-timing.test.ts",
+        "pattern": "R277: an UNMARKED banner is still deployment-only",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "bare demonstration: passes; every unmarked banner is refused in the haste step"
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R277",
+        "ref": "R277 (its release-timing and prophesy-window halves)",
         "supports": "yes",
-        "note": "point 2, an owner call"
-      },
-      {
-        "ref": "R277 history",
-        "supports": "yes",
-        "note": "R301 supersedes only the no-affinity aside"
+        "note": "only the no-affinity aside is superseded (R301); R277 amends R42's deployment-only window"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
         "text": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"condition\": \"Your life is 5 or less [Haste]\""
       }
     ],
     "basis_ok": true,
@@ -1886,7 +1899,7 @@
   },
   {
     "key": "turn.haste.prophesy.release",
-    "textHash": "98abf3c724fe549e",
+    "textHash": "80ad6c462b74c359",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1926,11 +1939,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "basis 'owner' is acceptable; R277 point 1 restates R42 (Caleb-backed). Wording 'played from the cache only at its printed timing' is right."
+    "problem": "basis 'owner' is acceptable; R277 point 1 restates R42 (Caleb-backed). Wording 'played from the cache only at its printed timing' is right.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.haste.what",
-    "textHash": "2c303ae019dfc786",
+    "textHash": "a5c207bca1ca9b4a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -1969,11 +1983,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.planning.no-interaction",
-    "textHash": "6bc801cf8823e091",
+    "textHash": "9de28edbf61cf925",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2033,7 +2048,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.planning.order",
@@ -2163,7 +2179,7 @@
   },
   {
     "key": "turn.planning.steps",
-    "textHash": "735cbeb0c078e45a",
+    "textHash": "36ba387d2ed9a98d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U08-r2",
@@ -2201,7 +2217,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None."
+    "problem": "None.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.planning.steps.draft",
@@ -2352,7 +2369,7 @@
   },
   {
     "key": "turn.planning.what",
-    "textHash": "843873bf414b40cf",
+    "textHash": "7d5e0b5272969495",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2377,11 +2394,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.resource.actions",
-    "textHash": "54988c2eec2ef9c7",
+    "textHash": "06d85d9707f63c9d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2408,11 +2426,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.resource.actions.activate",
-    "textHash": "0d5101c8a6779105",
+    "textHash": "3b6d1587d58354af",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2455,7 +2474,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.resource.actions.create",
@@ -2685,7 +2705,7 @@
   },
   {
     "key": "turn.resource.what",
-    "textHash": "5f6ebaee47b27d69",
+    "textHash": "ea6c8875a096704c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U08-r1",
@@ -2712,6 +2732,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   }
 ]

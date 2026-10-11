@@ -6,7 +6,7 @@
     "text": "A turn has four phases, in this order: the planning phase, the battle phase, the regroup phase and the deployment phase.",
     "examples": [
       {
-        "text": "A live-draft turn goes draft, planning, the haste step, then the battle phase.",
+        "text": null,
         "test": "20-draft.test.ts::haste step still works after a draft turn (gates compose)"
       }
     ],
@@ -256,7 +256,7 @@
     "text": "The battle phase is the only phase of the turn in which players can interact, because it is the only time a player can enter another player's region. Outside it, every player is alone in their own region: in deployment a player can do what they like to their own units, but no opponent is there to interact with (see rule combat.regions.presence.outside-battle).",
     "examples": [
       {
-        "text": "Neither the planning phase nor the deployment phase gives anyone priority; in the battle phase the attacking player holds priority once the attack is declared.",
+        "text": null,
         "test": "419-cr-planning.test.ts::cr:turn.general.interactive — planning and deployment give nobody priority; the battle phase does once an attack is declared"
       }
     ],
@@ -398,7 +398,7 @@
     "text": "The planning phase is the first phase of the turn. In it, players prepare for the turn ahead by curating their hands and preparing their resources.",
     "examples": [
       {
-        "text": "In a live draft the turn opens in planning: first only the draft commit is offered, then only the resource actions and done.",
+        "text": null,
         "test": "419-cr-planning.test.ts::cr:turn.planning.what — a turn opens in planning, where the only actions are curating the hand and preparing resources"
       }
     ],
@@ -435,7 +435,7 @@
     "text": "The planning phase has five steps, taken in this order.",
     "examples": [
       {
-        "text": "On turn 2 of a live draft: expended resources are open again and 2 cards are drawn, the draft step is open and resource actions wait for it, and the haste step opens only after the resource step.",
+        "text": null,
         "test": "419-cr-planning.test.ts::cr:turn.planning.steps — refresh and draw at the turn start, then the draft, then resources, then the haste step"
       }
     ],
@@ -649,7 +649,7 @@
     "text": "There is no player interaction in the planning phase. No player receives priority in it, and nothing a player does in it can be responded to.",
     "examples": [
       {
-        "text": "In the resource step nobody holds priority, and an attempt to pass priority is refused.",
+        "text": null,
         "test": "419-cr-planning.test.ts::cr:turn.planning.no-interaction — nobody holds priority in the resource step, and passing priority there is refused"
       }
     ],
@@ -776,7 +776,7 @@
     "text": "The resource step is the step of the planning phase in which players create and activate resources.",
     "examples": [
       {
-        "text": "A player creates a resource and activates one in the resource step; in the haste step both actions are refused.",
+        "text": null,
         "test": "419-cr-planning.test.ts::cr:turn.resource.what — resources are created and activated in the resource step and refused in the haste step"
       }
     ],
@@ -811,7 +811,7 @@
     "text": "In the resource step, a player may take these actions.",
     "examples": [
       {
-        "text": "With an active Prismite, the resource step offers creating a resource, activating a dormant one, and exchanging the Prismite.",
+        "text": null,
         "test": "419-cr-planning.test.ts::cr:turn.resource.actions — the resource step menu offers creating, activating and exchanging a Prismite"
       }
     ],
@@ -893,7 +893,7 @@
     "text": "Activate dormant resources by turning them face up, up to two activations per turn.",
     "examples": [
       {
-        "text": "After two activations in one turn, a third is refused.",
+        "text": null,
         "test": "01-planning.test.ts::setup & planning"
       }
     ],
@@ -1131,7 +1131,7 @@
     "text": "In a live draft, no player draws in the draw step of the first turn: each player's first draw was dealt with their opening hand (see 103).",
     "examples": [
       {
-        "text": "A live draft opens on turn 1 with 6-card hands (4 + the 2 first-turn draws) and 10-card packs, the draft step already open.",
+        "text": null,
         "test": "20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs, draft step open"
       }
     ],
@@ -1177,7 +1177,7 @@
     "text": "Players draw in clockwise order, starting with the initiative player.",
     "examples": [
       {
-        "text": "In a live draft the initiative player takes the top 2 cards of the shared deck at the turn flip, and the other player the next 2.",
+        "text": "In a live draft the initiative player takes the top 2 cards of the shared deck at the start of the turn, and the other player the next 2.",
         "test": "419-cr-planning.test.ts::cr:turn.draw.draw.order — turn draws come off the shared deck clockwise from the initiative player"
       }
     ],
@@ -1264,7 +1264,7 @@
     "text": "A player must leave exactly 10 cards in the pack, so they end the draft step with as many cards in hand as they began it with.",
     "examples": [
       {
-        "text": "A draft that would leave 9 cards in the pack is refused.",
+        "text": null,
         "test": "20-draft.test.ts::bad commits are rejected: wrong count, duplicates, out of range, wrong mode"
       }
     ],
@@ -1337,7 +1337,7 @@
     "text": "When a player has finished drafting, they pass their pack clockwise to the next player. The draft step is complete once every player has passed their pack.",
     "examples": [
       {
-        "text": "In 1v1, once both players have finished, the two packs change hands.",
+        "text": null,
         "test": "20-draft.test.ts::no-op commit preserves hand and pack exactly; both commits pass the packs"
       }
     ],
@@ -1414,7 +1414,7 @@
     "text": "After every cycle of N+1 turns, where N is the number of players, every pack is recycled and each player is dealt a new pack of 10 cards. In 1v1 this happens after the third turn, right before the fourth draft.",
     "examples": [
       {
-        "text": "Turns 2 and 3 reuse the dealt packs; turn 4 opens with every pack recycled and new 10-card packs dealt.",
+        "text": null,
         "test": "20-draft.test.ts::turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 cycle)"
       }
     ],
@@ -1491,7 +1491,7 @@
     "text": "In constructed there are no packs. In the draft step each player draws 2 more cards from their own deck and then recycles 2 cards from their hand. Since this comes straight after the draw step, the two are taken together: draw 4, then recycle 2.",
     "examples": [
       {
-        "text": "On turn 2 of constructed each player draws 4 and must put 2 back before doing anything else.",
+        "text": null,
         "test": "34-constructed.test.ts::turn 2 reopens the draw phase: 4 more cards, bottoming pending again"
       },
       {
@@ -1555,7 +1555,7 @@
     "text": "The player chooses which 2 cards of their hand to recycle. Until they have, they can take no other planning action.",
     "examples": [
       {
-        "text": "While the 2 cards are owed, only the choice of 2 is offered; ending planning or recycling for a resource is refused.",
+        "text": null,
         "test": "34-constructed.test.ts::nothing moves until the 2 cards go back; bottoming keeps the given order"
       }
     ],
@@ -1590,7 +1590,7 @@
     "text": "The draw of 4 and the recycle of 2 happen on the first turn of a constructed game too.",
     "examples": [
       {
-        "text": "A constructed game opens with 8 cards in each hand (an opening 4 and the turn-1 draw of 4) and the recycle of 2 pending.",
+        "text": null,
         "test": "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open"
       }
     ],
@@ -1635,7 +1635,7 @@
     "text": "Drawing and drafting are actions like any other: a unit that a change in hand size leaves with 0 defense, or with damage equal to its defense, dies as soon as the action is over, except as the constructed sub-rule below says (see 713).",
     "examples": [
       {
-        "text": "A Dreadspawn Horror (-1/-1 per card in hand) taken to 0 defense by the turn draw dies at once, before any other action is taken.",
+        "text": "A Dreadspawn Horror (-1/-1 for each card in hand) taken to 0 defense by the turn's draw dies at once, before any other action is taken.",
         "test": "380-no-action-ends-dead.test.ts::R313: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip"
       }
     ],
@@ -1754,7 +1754,7 @@
     "text": "The haste step is the last step of the planning phase. It comes after the resource step.",
     "examples": [
       {
-        "text": "After both players finish the resource step the phase is still planning, with the haste step open.",
+        "text": null,
         "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18)"
       }
     ],
@@ -1845,7 +1845,7 @@
         "test": "26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant"
       },
       {
-        "text": "Nor is a battle spell unit.",
+        "text": null,
         "test": "396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either"
       }
     ],
@@ -1954,7 +1954,7 @@
     "text": "The haste step ends when every player has played all the haste cards they want to play, which may be none.",
     "examples": [
       {
-        "text": "The step closes into the battle phase only after both players have declared they are done.",
+        "text": null,
         "test": "200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step"
       }
     ],
@@ -2041,7 +2041,7 @@
     "text": "No player is treated as finished with the haste step because they have nothing to play. Each player finishes the step themselves, and a player may stay in it holding nothing they could play.",
     "examples": [
       {
-        "text": "A player with nothing playable may sit in the step and finish it whenever they choose.",
+        "text": null,
         "test": "200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing"
       }
     ],
@@ -2090,7 +2090,7 @@
         "test": "38-light-a.test.ts::Keeper of Tithes: at the end of [Haste] it creates an X/X for your expended resources"
       },
       {
-        "text": "The end of the step is announced exactly once.",
+        "text": null,
         "test": "200-haste-step-is-unconditional.test.ts::R228 §5: the step still ENDS properly — endOfHaste fires exactly once"
       }
     ],
@@ -2281,11 +2281,11 @@
     "text": "Mods are applied in deployment, not in the haste step, even when the mod card has haste. The exceptions are a card that allows mods in the haste step (the sub-rule below) and a Virus applied in battle (see 723).",
     "examples": [
       {
-        "text": "A graft with haste is offered in deployment and never in the haste step.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card"
       },
       {
-        "text": "Without a Slurpr, applying a mod in the haste step is refused.",
+        "text": null,
         "test": "40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged — modding is a deployment action"
       }
     ],
@@ -2341,7 +2341,7 @@
     "text": "A card that says so can allow mods in the haste step: Slurpr lets its controller apply other mods, augments and grafts alike, during [Haste] as if it were deployment.",
     "examples": [
       {
-        "text": "With Slurpr in play, a mod is applied during the haste step.",
+        "text": null,
         "test": "40-light-c.test.ts::Slurpr: mods may be applied during [Haste] as if it was deployment"
       }
     ],
@@ -2383,11 +2383,11 @@
     "text": "A card whose prophecy condition ends in [Haste] may be prophesied in the haste step as well as in deployment. Any other prophecy may be prophesied only in deployment.",
     "examples": [
       {
-        "text": "A banner ending in [Haste] may be prophesied in the haste step.",
+        "text": "Divine Intervention's prophecy (\"Your life is 5 or less [Haste]\") may be prophesied in the haste step.",
         "test": "257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step"
       },
       {
-        "text": "An unmarked banner is refused there.",
+        "text": null,
         "test": "257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it"
       }
     ],
@@ -2433,7 +2433,7 @@
     "text": "The [Haste] marker does not move a fulfilled prophecy's release: the card is played from the cache only at its printed timing.",
     "examples": [
       {
-        "text": "A fulfilled battle card with a [Haste]-marked banner is not offered in the haste step.",
+        "text": null,
         "test": "257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step"
       }
     ],

@@ -1,7 +1,7 @@
 [
   {
     "key": "formats.constructed.any-element",
-    "textHash": "df4bfd7494ba3322",
+    "textHash": "9be05bd781c2b429",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -39,7 +39,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.constructed.card-text",
@@ -237,7 +238,7 @@
   },
   {
     "key": "formats.constructed.deck-size",
-    "textHash": "f06c6469e6fb5620",
+    "textHash": "e9b1fefc107988fb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -300,11 +301,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "formats.constructed.draw-phase",
-    "textHash": "d6accc223e0d97c8",
+    "textHash": "779100d84bdcc21a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -371,33 +373,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "formats.constructed.draw-phase.one-step",
-    "textHash": "48895a3ec259ded9",
+    "textHash": "8435ed6481b6312c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U22-r1",
+    "round": 4,
+    "verifier": "U22-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:isLethal",
+        "loc": "client/engine/src/engine.ts:isLethal (R313 bottomPending skip)",
         "agrees": true,
-        "note": "returns false while bottomPending(controller)"
+        "note": "a seat's units are not lethal-checked while it still owes its 2 put-backs"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/380-no-action-ends-dead.test.ts",
-        "pattern": "R313 constructed: drawing 4 does not kill before the 2 go back",
+        "pattern": "R313 constructed: drawing 4",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Dreadspawn Horror (7/5, -1/-1 per card in hand), 1 card in hand, draws to 5, survives, after bottoming 2 is 4/2"
       },
       {
         "file": "client/engine/test/380-no-action-ends-dead.test.ts",
-        "pattern": "R313 constructed: 3 cards in hand nets to 5",
+        "pattern": "R313 constructed: 3 cards",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: 3 in hand, draws 4, survives mid draw phase, bottoms 2 to 5 cards, dies"
       }
     ],
     "probes": [],
@@ -405,17 +408,18 @@
       {
         "ref": "R313",
         "supports": "yes",
-        "note": "constructed draw phase is one step; isLethal skips while bottomPending"
+        "note": "owner 2026-10-06; not superseded"
+      },
+      {
+        "ref": "card: Dreadspawn Horror",
+        "supports": "yes",
+        "note": "7/5, [Augment] I gain -1/-1 for each card in your hand"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (this.bottomPending(u.controller)) return false;"
-      },
-      {
         "file": "client/docs/digital-rules.md",
-        "text": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+        "text": "So a Dreadspawn Horror with 1 card in hand is a 4/2 after the draw phase, not"
       }
     ],
     "basis_ok": true,
@@ -423,7 +427,7 @@
   },
   {
     "key": "formats.constructed.draw-phase.order",
-    "textHash": "cb1fdfb5e6c9e1c9",
+    "textHash": "cecc5f2d870c1e5c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -470,11 +474,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.constructed.no-packs",
-    "textHash": "c44eefec2ff4b7e4",
+    "textHash": "ffed3a1ec1a8b701",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -528,11 +533,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.constructed.single-card",
-    "textHash": "b199c0bee042b362",
+    "textHash": "cf7ab321d6aa28ae",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -575,11 +581,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.constructed.single-card.copies",
-    "textHash": "d347e4eb3f439401",
+    "textHash": "bf0b81ea2f80a7be",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -617,7 +624,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.constructed.single-card.no-draw-phase",
@@ -715,7 +723,7 @@
   },
   {
     "key": "formats.constructed.what",
-    "textHash": "e61bdfcd9933ca03",
+    "textHash": "c69271433d220100",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -767,7 +775,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.cube",
@@ -1111,7 +1120,7 @@
   },
   {
     "key": "formats.draft.custom",
-    "textHash": "fbc4dbf1c409bb19",
+    "textHash": "1b68f40bcaffe4ae",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1155,11 +1164,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.custom.bans",
-    "textHash": "bce136b0a99d24f8",
+    "textHash": "0729d991fb68435a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1212,11 +1222,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.custom.elements",
-    "textHash": "3d871025254747d3",
+    "textHash": "10b1e284b9275098",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1266,11 +1277,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.custom.floor",
-    "textHash": "1250573ce6737b5e",
+    "textHash": "e824d9b0cd999979",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1323,11 +1335,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Confirmed. \"Refused before the game is created\" is enforced server-side (room creation via checkCustomRules); not run here (server tests bind ports), the ui-side refusal is tested."
+    "problem": "Confirmed. \"Refused before the game is created\" is enforced server-side (room creation via checkCustomRules); not run here (server tests bind ports), the ui-side refusal is tested.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.custom.not-printed",
-    "textHash": "830a9adccfdf7bfb",
+    "textHash": "c40ace7ba798fcc7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1369,11 +1382,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.custom.numbers",
-    "textHash": "51cd1bb7e7b7f274",
+    "textHash": "cc152cf354695e3c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1416,11 +1430,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.custom.pack-size",
-    "textHash": "028d79d87474dd27",
+    "textHash": "249fc795feb82744",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U22-r2",
@@ -1483,7 +1498,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "formats.draft.custom.refresh",
@@ -1525,7 +1541,7 @@
   },
   {
     "key": "formats.draft.custom.simple",
-    "textHash": "5044cd199a6f12d3",
+    "textHash": "b8b086ea60afcd97",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1563,7 +1579,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.draft-step",
@@ -1618,7 +1635,7 @@
   },
   {
     "key": "formats.draft.elements",
-    "textHash": "279e6f0c50ca6c65",
+    "textHash": "d2a358bd13067a05",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1674,7 +1691,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.elements.choosing",
@@ -1718,7 +1736,7 @@
   },
   {
     "key": "formats.draft.live-draft",
-    "textHash": "2f0591172fcde1f5",
+    "textHash": "7157e6d28afb21b6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1774,7 +1792,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.live-draft.standard",
@@ -1818,7 +1837,7 @@
   },
   {
     "key": "formats.draft.sixteen",
-    "textHash": "b57e0b28f088ce39",
+    "textHash": "8a295bc84f01e790",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -1870,7 +1889,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.draft.team-draft",
@@ -2612,7 +2632,7 @@
   },
   {
     "key": "formats.general.digital-scope",
-    "textHash": "30777bfea099e8d6",
+    "textHash": "0b3dfa5e8344cec0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -2665,7 +2685,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.general.modes",
@@ -2893,7 +2914,7 @@
   },
   {
     "key": "formats.general.seating.one-v-one",
-    "textHash": "8c96975547881366",
+    "textHash": "5c2dcc1a6d870cb9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -2929,7 +2950,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.general.setups",
@@ -3023,7 +3045,7 @@
   },
   {
     "key": "formats.general.setups.one-v-one",
-    "textHash": "551c1340f64dcc0e",
+    "textHash": "5c09dbfc9b37068a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -3070,7 +3092,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.general.simultaneous-regions",
@@ -3669,7 +3692,7 @@
   },
   {
     "key": "formats.teams.initiative.alternates",
-    "textHash": "5f99e3d7e8da50d9",
+    "textHash": "96fcb7e8ee63de43",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U22-r1",
@@ -3705,7 +3728,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "formats.teams.priority",

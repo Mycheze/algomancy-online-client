@@ -1,7 +1,7 @@
 [
   {
     "key": "card.augment-box.copy",
-    "textHash": "be7181c39f4b36d4",
+    "textHash": "dfa7f0d621de68d5",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -46,7 +46,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Example has no bound test (illustrative); the cited 393 guard is conditionally vacuous — the round-2 probe supplies the missing positive case."
+    "problem": "Example has no bound test (illustrative); the cited 393 guard is conditionally vacuous — the round-2 probe supplies the missing positive case.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "card.augment-box.permission",
@@ -81,7 +82,7 @@
   },
   {
     "key": "card.augment-box.permission.reminder",
-    "textHash": "5ed0432e255d00ea",
+    "textHash": "f9341c4e225e8a0a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -115,7 +116,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "card.augment-box.text-box",
@@ -162,7 +164,7 @@
   },
   {
     "key": "card.augment-box.type-line",
-    "textHash": "d513da0eff753728",
+    "textHash": "b5f44daf85f6660c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -212,7 +214,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.augment-box.what",
@@ -256,7 +259,7 @@
   },
   {
     "key": "card.banner.cost",
-    "textHash": "90498b4805fdc734",
+    "textHash": "575d33587f854878",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -314,7 +317,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.banner.not-the-cards-cost",
@@ -356,7 +360,7 @@
   },
   {
     "key": "card.banner.prophecy",
-    "textHash": "b91fa2c0d943e2a9",
+    "textHash": "c68b479b62484b1b",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -420,7 +424,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Text omits that prophesying is deployment-only (R42/R277) and that only cards that say so may be prophesied from the bin; not wrong, just incomplete."
+    "problem": "Text omits that prophesying is deployment-only (R42/R277) and that only cards that say so may be prophesied from the bin; not wrong, just incomplete.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.banner.timing",
@@ -516,7 +521,7 @@
   },
   {
     "key": "card.banner.timing.prophecy-haste",
-    "textHash": "bc00b3fa326e8504",
+    "textHash": "8601bdba30433c7d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -562,11 +567,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.banner.what",
-    "textHash": "122fd9eeae5b7243",
+    "textHash": "3395bcb76660832a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -605,7 +611,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.complexity.set-symbol",
@@ -639,7 +646,7 @@
   },
   {
     "key": "card.complexity.use",
-    "textHash": "9c8fda40465b644e",
+    "textHash": "41aae21def73c9f5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -673,7 +680,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.cost-orb.copy",
@@ -892,23 +900,24 @@
   },
   {
     "key": "card.cost-orb.x",
-    "textHash": "fd7d02af0dbfb474",
+    "textHash": "bd625b69c1ba9862",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "helpers.ts castCostOf / StackItem.x",
+        "loc": "client/engine/src/engine.ts:commitItem",
         "agrees": true,
-        "note": ""
+        "note": "the paid X rides on spellPlayed and is the spell's cost (R158 §2)"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/133-x-cost-semantics.test.ts",
-        "pattern": "R157 §1 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball",
+        "pattern": "R157 §1 — Unstable Apparition at X = 0",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: D controls Unstable Apparition, casts Wildfire choosing X = 0, asserts no Fireball and that the trigger read 'costs 0'"
       }
     ],
     "probes": [],
@@ -916,13 +925,21 @@
       {
         "ref": "R157 §1",
         "supports": "yes",
-        "note": ""
+        "note": "§1 is not among R157's superseded sections (R326 reversed §20 only)"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "And paying X replaces the letter X on the printed card temporarily"
+        "text": "> And paying X replaces the letter X on the printed card temporarily.\"*"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So \"that spell's cost\" = **the X actually paid**."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "ate a Fireball X, where X is the spell's cost."
       }
     ],
     "basis_ok": true,
@@ -930,34 +947,36 @@
   },
   {
     "key": "card.cost-orb.x-outside-cast",
-    "textHash": "e0915d7fac184283",
+    "textHash": "cb6c25c244e562ac",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U05-r2",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/helpers.ts:manaOf",
+        "loc": "client/engine/src/apply.ts:baseItem",
         "agrees": true,
-        "note": "R158 §1: a card known by name has cost 0 for X"
+        "note": "R111: a free release fixes X = 0"
       },
       {
-        "loc": "client/engine/src/cards/sets/batch-water-b.ts:tidesCanPlay",
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Tides of the Cosmos",
         "agrees": true,
-        "note": "X card with xMin>0 refused; otherwise played inline with no X (0)"
+        "note": "X card offered at [0], played for X = 0"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/396-raq-timing.test.ts",
-        "pattern": "RAQ Tides 6a: an X spell counts as cost 0",
+        "pattern": "RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0",
         "passed": true,
-        "asserts_claim": "yes: Wildfire offered at [0], on the stack with no X, deals 0"
+        "asserts_claim": true,
+        "passed_note": "yes: Wildfire is offered as 'Wildfire [0]' under the budget, goes on the stack with X = 0 and deals 0"
       },
       {
         "file": "client/engine/test/39-light-b.test.ts",
-        "pattern": "Living Vault: an X-cost card in hand is offered at pay",
+        "pattern": "Living Vault: an X-cost card in hand is offered at pay [0]",
         "passed": true,
-        "asserts_claim": "yes: Mindburn offered at [0]"
+        "asserts_claim": true,
+        "passed_note": "yes: Mindburn (mana X) in hand is offered by Living Vault's end-of-turn effect priced [0]"
       }
     ],
     "probes": [],
@@ -965,30 +984,26 @@
       {
         "ref": "RAQ 1396955380000755795#6",
         "supports": "yes",
-        "note": "Tides-specific; the pool's only free-play effect that can reach a spell is Tides (Wake the Dead plays units), so the generalisation is coextensive"
+        "note": "_passer [Solved] write-up; status covered"
       },
       {
         "ref": "R158 §1",
         "supports": "yes",
-        "note": "a card in a zone has had no X paid, so its cost is 0"
+        "note": "the middle row: bin, hand, cache, deck or a unit in play costs 0. The second sentence generalises Tides; the engine applies the same rule to every free release (R111, apply.ts)"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/corpus/algomancy_corpus.jsonl",
-        "text": "6. Any spells with X cost can only be played with X=0 making most of them useless"
+        "file": "client/ledgers/raq.ts",
+        "text": "source: \"_passer (write-up): \\\"6. Any spells with X cost can only be played with X=0 making most of them useless\\\"\","
       },
       {
         "file": "client/docs/digital-rules.md",
         "text": "The middle row is a decision, not an approximation: nobody has paid an X for a"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-water-b.ts",
-        "text": "if (c.mana === 'X' && (c.xMin ?? 0) > 0) return false;"
       }
     ],
     "basis_ok": true,
-    "problem": "'as a unit in play' is vacuous today: every X card in the pool is a spell. A card printing 'X can't be zero' (Frosted Denial) cannot be played by the free effect at all — the text could say so."
+    "problem": ""
   },
   {
     "key": "card.general.parts",
@@ -1022,7 +1037,7 @@
   },
   {
     "key": "card.general.printed-card-governs",
-    "textHash": "3dbe69741f85ecf1",
+    "textHash": "19996d96de8fb845",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1067,7 +1082,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.name.another",
@@ -1171,7 +1187,7 @@
   },
   {
     "key": "card.name.every-card",
-    "textHash": "e2b73a3298481497",
+    "textHash": "d79cd741c773bdfb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1197,7 +1213,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.name.front-face",
@@ -1239,7 +1256,7 @@
   },
   {
     "key": "card.name.unique-token",
-    "textHash": "e93a9c391d66b963",
+    "textHash": "0dd8f39feb4f5f13",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1278,39 +1295,43 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "card.stats.base",
-    "textHash": "f153de47c8c5d475",
+    "textHash": "2fd28f7451166c5e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.baseWith",
+        "loc": "client/engine/src/engine.ts:baseStatsOf",
         "agrees": true,
-        "note": "rewrites sorted by timestamp, last wins; counters on top"
+        "note": "R66: last-wins by timestamp"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "Aberrant Statweaver: \"your units are base 3/3\" — in play and virus-donated",
+        "pattern": "Aberrant Statweaver: \"your units are base 3/3\"",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "bare demonstration: passes"
       },
       {
         "file": "client/engine/test/390-raq-stack.test.ts",
-        "pattern": "RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1",
+        "pattern": "RAQ timestamps: Body Swap with a Statweavered unit",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: A's Statweaver makes A's Wisp 3/3; D's Body Swap on D's 1/1 and the Wisp gives 3/3 and 1/1"
       },
       {
         "file": "client/engine/test/28-metal-c.test.ts",
-        "pattern": "Unmake: deletes only units with BASE power 2 or less (counters don't count)",
+        "pattern": "Unmake: deletes only units with BASE power 2 or less",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Trashling with 5 counters (7/7 live, base 2) is deleted"
       }
     ],
     "probes": [],
@@ -1323,7 +1344,7 @@
       {
         "ref": "RAQ 1357965714807586897#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved]; covered"
       },
       {
         "ref": "R66",
@@ -1333,12 +1354,16 @@
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "last-wins by timestamp"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: This means the units base stats are changed to be"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "3/3 or 5/0, before any other modifiers like +1/+1 and"
+        "file": "client/docs/digital-rules.md",
+        "text": "**last-wins by timestamp** — never by summing. Timestamps come off the shared"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"Delete target unit with base power 2 or less.\""
       }
     ],
     "basis_ok": true,
@@ -1557,7 +1582,7 @@
   },
   {
     "key": "card.stats.printed-and-changed",
-    "textHash": "1bba9440f4f0d384",
+    "textHash": "f4af6442b70fa914",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1596,7 +1621,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "card.stats.units",
@@ -1777,7 +1803,7 @@
   },
   {
     "key": "card.text-box.brackets.symbols",
-    "textHash": "9b1fec7f55759497",
+    "textHash": "30b1c8b73af23953",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -1817,7 +1843,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound test asserts only the second half of the example (\"nothing declares a mode it does not print\"); the first half is the sibling test at line 139, which also passes."
+    "problem": "Bound test asserts only the second half of the example (\"nothing declares a mode it does not print\"); the first half is the sibling test at line 139, which also passes.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.text-box.brackets.unbracketed",
@@ -1863,7 +1890,7 @@
   },
   {
     "key": "card.text-box.brackets.who-and-when",
-    "textHash": "aad328ed5d54e32c",
+    "textHash": "b60e26925b713852",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -1921,27 +1948,29 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None material. Nuance: for the two cost brackets a card imposes on OTHER cards (Arbiter of Armistice, Volatile Toxicity) the payer is whoever plays the taxed card (R284 §3), which 'owner of the effect' covers only if the effect is read as the taxed card's play. Example 1's 'each opponent discards one of that type if able' is exercised only on the miss branch."
+    "problem": "None material. Nuance: for the two cost brackets a card imposes on OTHER cards (Arbiter of Armistice, Volatile Toxicity) the payer is whoever plays the taxed card (R284 §3), which 'owner of the effect' covers only if the effect is read as the taxed card's play. Example 1's 'each opponent discards one of that type if able' is exercised only on the miss branch.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.text-box.graft-symbol",
-    "textHash": "8ac2582d9047f626",
+    "textHash": "ec6638f03410f8dc",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "cards/dsl.ts graftEffect",
+        "loc": "client/engine/src/engine.ts:attachMod",
         "agrees": true,
-        "note": "only post-symbol effect transfers"
+        "note": "grafted text contributes only the effect after the symbol"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/393-raq-mods.test.ts",
-        "pattern": "RAQ Graft 101 point 6: a grafted Omniwield Evoker adds its counter to the host trigger and charges nothing",
+        "pattern": "RAQ Graft 101 point 6: a grafted Omniwield Evoker adds its counter",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Omniwield Evoker grafted onto Bellowing Boulder; on attack the Boulder gets one +1/+1 counter with A holding no mana"
       }
     ],
     "probes": [],
@@ -1954,24 +1983,33 @@
       {
         "ref": "RAQ 1355115946032889914#5",
         "supports": "yes",
-        "note": "verbatim"
+        "note": "_passer [Solved] Graft 101; covered"
       }
     ],
-    "quote_spans": [],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "All graft cards follow the template of cause and effect,"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[three]: [Switch] Put a +1/+1 counter on me.\""
+      }
+    ],
     "basis_ok": true,
     "problem": ""
   },
   {
     "key": "card.text-box.reminder",
-    "textHash": "f002b891d1091d57",
+    "textHash": "6c7c41f8e3e300fb",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "hasAugmentMarker",
+        "loc": "client/engine/src/cards/dsl.ts:hasAugmentMarker",
         "agrees": true,
-        "note": ""
+        "note": "a mention inside {i}(...) is not a marker"
       }
     ],
     "tests_run": [
@@ -1979,7 +2017,8 @@
         "file": "client/engine/test/48-playtest-hotfix.test.ts",
         "pattern": "a spell that merely mentions [Augment] in reminder text is not an augment",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: hasAugmentMarker(Reconfigure text) and isAugment('Reconfigure') are false"
       }
     ],
     "probes": [],
@@ -1997,8 +2036,12 @@
     ],
     "quote_spans": [
       {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "italics to help players remember what each attribute"
+      },
+      {
         "file": "client/docs/digital-rules.md",
-        "text": "text is **not** a marker"
+        "text": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that"
       }
     ],
     "basis_ok": true,
@@ -2006,7 +2049,7 @@
   },
   {
     "key": "card.timing.battle",
-    "textHash": "3384dc9d725a81f1",
+    "textHash": "6a69f6fc2ff2545d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2050,11 +2093,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.timing.battle.gaining-haste",
-    "textHash": "5f2ea13a023e6fdb",
+    "textHash": "fa68b3f87700a7d0",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -2117,11 +2161,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.timing.haste",
-    "textHash": "e1a8c7d6c9858313",
+    "textHash": "c5068e1cd83ea99a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2177,7 +2222,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.timing.ignore",
@@ -2237,7 +2283,7 @@
   },
   {
     "key": "card.timing.ignore.only-when-said",
-    "textHash": "c53fd91546899f5b",
+    "textHash": "26dd231fcdf79e12",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2282,27 +2328,29 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.timing.mods",
-    "textHash": "5a98c37a7d3abb37",
+    "textHash": "5dd445b4e1a21735",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "apply.ts battleAugmentAllowed; graft offers deploy-only",
+        "loc": "client/engine/src/apply.ts:legal graft actions",
         "agrees": true,
-        "note": ""
+        "note": "grafts offered in deployment only"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/393-raq-mods.test.ts",
-        "pattern": "RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card",
+        "pattern": "RAQ Graft 101 point 1: a graft is offered in deployment",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Molten Upheaval ({Haste}) graft onto Bellowing Boulder is offered in deployment, not in the open haste step, not in battle"
       }
     ],
     "probes": [],
@@ -2315,8 +2363,12 @@
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": " Modification is independent of timing modifiers that aren’t virus, so battle cards"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Modification is independent of timing modifiers that aren’t virus, so battle cards"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"type\": \"{Haste} Elemental Spell\""
       }
     ],
     "basis_ok": true,
@@ -2324,7 +2376,7 @@
   },
   {
     "key": "card.timing.none",
-    "textHash": "299f682954c473ee",
+    "textHash": "0671d1eddcdff1e6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2374,11 +2426,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound test shows only the Tides exception; the \"only because\" half (refusal without Tides) is measured by the probe."
+    "problem": "Bound test shows only the Tides exception; the \"only because\" half (refusal without Tides) is measured by the probe.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "card.timing.per-line",
-    "textHash": "960cc94e060b8787",
+    "textHash": "179f585f31208972",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2423,33 +2476,36 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.timing.virus",
-    "textHash": "51f4bac7731eb62e",
+    "textHash": "3014ed8a6b0ad06d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "apply.ts:battleAugmentAllowed (doAugment)",
+        "loc": "client/engine/src/apply.ts:doAugment",
         "agrees": true,
-        "note": "'only Virus cards can augment from hand during battle' unless Rook"
+        "note": "battle augment from hand requires Virus or a permission (Rook)"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/04-mods.test.ts",
-        "pattern": "virus augment during battle: on the stack, donated to an enemy, text-only transfer",
+        "pattern": "virus augment during battle: on the stack, donated to an enemy",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "bare demonstration: passes (Smouldering Inferno augmented from hand in battle)"
       },
       {
         "file": "client/engine/test/29-hybrids-wm-a.test.ts",
-        "pattern": "Rook: a NON-virus augment from HAND during battle — refused without it, legal with it",
+        "pattern": "Rook: a NON-virus augment from HAND during battle",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Emberflame Enlightener (not Virus) refused from hand in battle, accepted once Rook is in the region"
       }
     ],
     "probes": [],
@@ -2457,22 +2513,22 @@
       {
         "ref": "Manual p.13",
         "supports": "yes",
-        "note": "\"Virus cards can also be applied as augments from your hand during battle.\""
+        "note": "VIRUS: 'Virus cards can also be applied as augments from your hand during battle.'"
       },
       {
         "ref": "Rulebook 2023 p.3",
         "supports": "yes",
-        "note": "verbatim"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "'only Virus cards can augment from hand during battle');"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "▪ The virus icon (4) allows you to augment cards from hand during"
       },
       {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "▪ The virus icon (4) allows you to augment cards from hand during"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"type\": \"Arcane Alpaca Unit\""
       }
     ],
     "basis_ok": true,
@@ -2552,7 +2608,7 @@
   },
   {
     "key": "card.type-line.attributes",
-    "textHash": "381612bad8a788de",
+    "textHash": "0c3e0b06bb514409",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2591,11 +2647,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.type-line.card-type",
-    "textHash": "3a54a8999c9c8cd0",
+    "textHash": "b2238f4e526802a5",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -2674,19 +2731,20 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Descriptive, supported by the pool. A Spell Token is also played (R305) yet ends 'Token', which the first sentence's 'card that can be played' does not cover — the second sentence does."
+    "problem": "Descriptive, supported by the pool. A Spell Token is also played (R305) yet ends 'Token', which the first sentence's 'card that can be played' does not cover — the second sentence does.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.type-line.card-type.spell-unit",
-    "textHash": "1a85740aac56e64b",
+    "textHash": "727ec7a2741bd4f7",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "helpers.ts isUnitCard; apply.ts isSpellCard",
+        "loc": "client/engine/src/cards/dsl.ts:isPlayedSpellKind",
         "agrees": true,
-        "note": "spellUnit counted as both"
+        "note": "spellUnit counts as a played spell; Hooba-Pon's 'play a unit from your hand' accepts Jelly"
       }
     ],
     "tests_run": [
@@ -2694,21 +2752,26 @@
         "file": "client/engine/test/396-raq-timing.test.ts",
         "pattern": "RAQ Hooba-Pon spell unit: it counts as playing a spell",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Jelly (Spell Unit) is given to hand, Hooba-Pon attacks, Jelly is chosen from hand, and the test asserts a spellPlayed event for Jelly"
       }
     ],
     "probes": [],
     "source_checks": [
       {
         "ref": "R284",
-        "supports": "partly",
-        "note": "stated for Void Memory's halves; generalised"
+        "supports": "yes",
+        "note": "R284 §1: a Spell Unit answers both halves of Void Memory's [unit or spell], on the printed type line; current (no accepted supersession)"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "A {Spell Unit} answers **both** halves"
+        "text": "A {Spell Unit} answers **both** halves, on the permissive reading, and the"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"type\": \"{Battle} Jellyfish Spell Unit\""
       }
     ],
     "basis_ok": true,
@@ -2716,7 +2779,7 @@
   },
   {
     "key": "card.type-line.icons-not-attributes",
-    "textHash": "90c03af6a7e91c12",
+    "textHash": "8d2bfafd9c77fcdc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U05-r1",
@@ -2755,27 +2818,29 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.type-line.order",
-    "textHash": "a4f06ae8a7cb3cba",
+    "textHash": "049f0ff0f71ff5e9",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.effStats layer 4 (statLayerAttrs order)",
+        "loc": "client/engine/src/engine.ts:effStats",
         "agrees": true,
-        "note": "Tough/Balanced applied in application order"
+        "note": "layer-4 attributes applied in mod order"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/08-cards2.test.ts",
-        "pattern": "R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough",
+        "pattern": "R19: layer-4 application order",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Lonely Forager 3/1 + Rampart Guardian (Tough) then Child of Aether (Balanced) = 3/3; reverse order = 3/6"
       }
     ],
     "probes": [],
@@ -2783,13 +2848,17 @@
       {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": "verbatim"
+        "note": "Q&A on Tough and Balanced: 'Attributes apply in order from top to bottom.'"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "Attributes apply in order from top to bottom. So if"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: Attributes apply in order from top to bottom. So if"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"type\": \"Mystic Axolotl Spell Unit\""
       }
     ],
     "basis_ok": true,
@@ -2797,7 +2866,7 @@
   },
   {
     "key": "card.type-line.subtypes",
-    "textHash": "0ebf9818d224863e",
+    "textHash": "02ca2bd69f6c193c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U05-r2",
@@ -2849,7 +2918,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Definitional; no printed source defines 'subtype'. By this definition the resource cards' element words (Earth, Fire, Water) are subtypes, which the 209 census accepts."
+    "problem": "Definitional; no printed source defines 'subtype'. By this definition the resource cards' element words (Earth, Fire, Water) are subtypes, which the 209 census accepts.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "card.type-line.what",

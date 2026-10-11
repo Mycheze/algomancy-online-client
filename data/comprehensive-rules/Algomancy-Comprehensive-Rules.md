@@ -176,9 +176,7 @@ order.
 
 <a id="r100.1"></a>**100.1.** In Algomancy, each player's goal is to eliminate all of their opponents. A player is eliminated by bringing their life total to 0. See rule 104.
 
-> *Example: A player brought to 0 life is eliminated, and the other player wins the game.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.6; Manual p.6; Rulebook 2023 p.1 · Tests: 412-cr-general.test.ts · Example test: 412-cr-general.test.ts::cr:concepts.general.goal — bringing a player to 0 life eliminates them and the other player wins the game · Key: concepts.general.goal</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.6; Manual p.6; Rulebook 2023 p.1 · Tests: 412-cr-general.test.ts · Demonstrated by test: 412-cr-general.test.ts::cr:concepts.general.goal — bringing a player to 0 life eliminates them and the other player wins the game · Key: concepts.general.goal</sub>
 
 <a id="r100.2"></a>**100.2.** The game is played as a series of global turns. Every player goes through each turn's phases together. See rule 500.
 
@@ -192,11 +190,7 @@ order.
 
 <a id="r100.4"></a>**100.4.** The digital client this document describes plays two-player games only: 1v1 live draft and 1v1 constructed. See rule 900.
 
-> *Example: A new live-draft game deals hands and packs to exactly two seats.*
-
-> *Example: A new constructed game takes one deck per seat, for two seats.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Rulings: R27 (the "Project decisions" block recorded under it, not its own ruling) · Tests: 412-cr-general.test.ts · Example tests: 20-draft.test.ts::createGame draft: 6-card hands, 34-constructed.test.ts::createGame constructed: per-seat decks · Key: concepts.general.digital-scope</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Rulings: R27 (the "Project decisions" block recorded under it, not its own ruling) · Tests: 412-cr-general.test.ts · Demonstrated by tests: 20-draft.test.ts::createGame draft: 6-card hands, 34-constructed.test.ts::createGame constructed: per-seat decks · Key: concepts.general.digital-scope</sub>
 
 <sub>Discrepancies: D-U01-9 (discrepancies.md)</sub>
 
@@ -205,9 +199,7 @@ order.
 
 <a id="r101.1"></a>**101.1.** Printed text beats the general rules and the engine's defaults. Where a card's printed text says something different from a general rule or a default, the card is followed, unless the designer has stated a different intent for that card (rule 101.2). See rules 400.4b, 101.2.
 
-> *Example: Grob prints "Up to one target unit's controller caches it". A unit its controller has stolen goes to the stealing player's cache, as printed.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R157 (its standing steer), R157 (its §27) · Example test: 135-exchange-and-zones.test.ts::R157 §27: Grob caches a STOLEN unit · Key: concepts.golden.printed-text-wins</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R157 (its standing steer), R157 (its §27) · Demonstrated by test: 135-exchange-and-zones.test.ts::R157 §27: Grob caches a STOLEN unit · Key: concepts.golden.printed-text-wins</sub>
 
 <sub>Discrepancies: D-U01-11, D-U01-5 (discrepancies.md)</sub>
 
@@ -231,9 +223,9 @@ order.
 
 > *Example: Recall: "Each player recalls a unit and loses 2 life." A player with no unit to recall still loses 2 life.*
 
-> *Example: Ralph grafted onto Amphivore under a multiplier: control of the host can be given away only once, and the rest of the graft still happens on every pass.*
+> *Example: Amphivore carries two grafts, Flame Juggle and Ralph, and its ability runs three times. The first pass gives Amphivore to the opponent and makes three 1/1s; later passes cannot give it again, so their "If you do" makes nothing, but Flame Juggle still happens all three times.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.43; Manual p.43 · Designer: RAQ 1353859961855148103#3 · Rulings: R30 (provisional, marked ⚠) · Example tests: 179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, 393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted · Key: concepts.golden.as-much-as-possible</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.43; Manual p.43 · Designer: RAQ 1353859961855148103#3 · Rulings: R30 (provisional, marked ⚠) · Example tests: 179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, 393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted · Key: concepts.golden.as-much-as-possible</sub>
 
 <sub>Discrepancies: D-U01-15 (discrepancies.md)</sub>
 
@@ -253,17 +245,13 @@ order.
 
 > *Example: Cosmic Reversal, cast in one region, leaves a spell unit in another region alone.*
 
-> *Example: No ally or enemy target offered by any card can be a unit in another region.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 2 gate test files · Printed: Rulebook 2023 p.8; Manual p.19; Manual p.19; Manual p.42 · Designer: RAQ 1454169054402314362#0 · Rulings: R243 · Example tests: 229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region, 243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot · Key: concepts.golden.regions</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 2 gate test files · Printed: Rulebook 2023 p.8; Manual p.19; Manual p.19; Manual p.42 · Designer: RAQ 1454169054402314362#0 · Rulings: R243 · Example test: 229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot · Key: concepts.golden.regions</sub>
 
 <sub>Discrepancies: D-U01-12 (discrepancies.md)</sub>
 
 <a id="r101.6a"></a>**101.6a** Regions limit what effects can reach and count. In the digital client they do not limit what players may see: a player may read what happens in a region they are not in. See rule 601.
 
-> *Example: A log line for an event in a region the player is not in is still delivered to that player.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R243, R243 · Tests: 412-cr-general.test.ts · Example test: 219-region-scoped-all.test.ts::§2b an event from a region you are not in is still yours to read · Key: concepts.golden.regions.information</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R243, R243 · Tests: 412-cr-general.test.ts · Demonstrated by test: 219-region-scoped-all.test.ts::§2b an event from a region you are not in is still yours to read · Key: concepts.golden.regions.information</sub>
 
 <sub>Discrepancies: D-U01-1 (discrepancies.md)</sub>
 
@@ -272,9 +260,7 @@ order.
 
 <a id="r102.1"></a>**102.1.** Each player has their own region and their own life total. See rules 601, 103.1d.
 
-> *Example: Each player has a different home region, and when one player loses 4 life the other player's life total does not change.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.19; Manual p.6 · Tests: 412-cr-general.test.ts · Example test: 412-cr-general.test.ts::cr:concepts.players.region-and-life — each seat owns a different home region, and a life loss of one seat leaves the life of the other alone · Key: concepts.players.region-and-life</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.19; Manual p.6 · Tests: 412-cr-general.test.ts · Demonstrated by test: 412-cr-general.test.ts::cr:concepts.players.region-and-life — each seat owns a different home region, and a life loss of one seat leaves the life of the other alone · Key: concepts.players.region-and-life</sub>
 
 <a id="r102.2"></a>**102.2.** "Each opponent" means each opponent in the region where the effect happens. See rules 101.6, 601.
 
@@ -296,7 +282,7 @@ order.
 
 <a id="r102.4"></a>**102.4.** A card's owner is the player whose card it is. A card's owner never changes, whoever controls it and whatever zone it goes to. See rules 400.4a, 400.4c. *(Engine differs, see F-U01-1.)*
 
-> *Example: A unit whose control has been taken is recalled: the recall still reports the player it was stolen from as the card's owner.*
+> *Example: A unit whose control has been taken is recalled: the player it was stolen from is still the card's owner.*
 
 > *Example: The same recalled unit goes to the hand of the player who controls it, not its owner's hand.*
 
@@ -330,7 +316,7 @@ order.
 
 <a id="r102.6a"></a>**102.6a** On a mod, "you" means the controller of the unit the mod is on. A mod applied to another player's unit is controlled by that unit's controller, with its ability. See rule 720.
 
-> *Example: Pathogenic Enclave augmented onto an enemy unit: when that unit despawns, its controller's tokens are deleted, not yours (illustrative).*
+> *Example: Pathogenic Enclave augmented onto an enemy unit: when that unit despawns, its controller's tokens are deleted, not yours.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; no gate test · Printed: Manual p.34 · Rulings: R157 (its §6) · Key: concepts.players.you.mod</sub>
 
@@ -344,15 +330,11 @@ order.
 
 > *Example: With an opponent's Crevice Lurker in the battle, a triggered ability asks its own controller whether to pay [one]; paying puts it on the stack.*
 
-> *Example: If the controller declines to pay, the trigger does not happen.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1355103348378042515#4 · Example tests: 16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller, 16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger · Key: concepts.players.you.pays</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1355103348378042515#4 · Example test: 16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller · Demonstrated by test: 16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger · Key: concepts.players.you.pays</sub>
 
 <a id="r102.7"></a>**102.7.** An ally is a unit under your control in the region where the effect is happening. See rules 110, 601.
 
-> *Example: An ally is counted from the controller of the effect, whichever player is making the choice.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Example test: 243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller · Key: concepts.players.ally</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller · Key: concepts.players.ally</sub>
 
 <a id="r102.7a"></a>**102.7a** A unit is its own ally. Only the word "another" leaves the source out. See rule 110.
 
@@ -383,67 +365,47 @@ order.
 
 <a id="r103.1a"></a>**103.1a** Choose the elements the deck is built from. A game of 2 or 3 players uses 3 elements. See rules 105, 902.
 
-> *Example: A standard 1v1 live draft deck is built from 3 elements; a game set up with wood, fire and water uses exactly those three.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.11; Manual p.11 · Tests: 412-cr-general.test.ts · Example test: 412-cr-general.test.ts::cr:concepts.starting.live-draft.elements — a standard 1v1 live draft is built from exactly 3 elements, and a chosen trio is used as given · Key: concepts.starting.live-draft.elements</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.11; Manual p.11 · Tests: 412-cr-general.test.ts · Demonstrated by test: 412-cr-general.test.ts::cr:concepts.starting.live-draft.elements — a standard 1v1 live draft is built from exactly 3 elements, and a chosen trio is used as given · Key: concepts.starting.live-draft.elements</sub>
 
 <a id="r103.1b"></a>**103.1b** Shuffle all the cards of the chosen elements together, with the hybrid cards for each pair of chosen elements, to form the shared deck. See rules 401, 902.
 
-> *Example: A fire + water + earth deck is 54 cards of each element plus 5 hybrid cards for each pair: 177 cards, one copy of each.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.11; Manual p.11 · Example test: 20-draft.test.ts::draft deck: the fire+water+earth trio is Manual-exact · Key: concepts.starting.live-draft.deck</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.11; Manual p.11 · Demonstrated by test: 20-draft.test.ts::draft deck: the fire+water+earth trio is Manual-exact · Key: concepts.starting.live-draft.deck</sub>
 
 <a id="r103.1c"></a>**103.1c** Randomly choose one player to have the initiative. See rules 500, 508.
 
-> *Example: Across new games, either player can start with the initiative.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.11; Rulebook 2023 p.2 · Tests: 412-cr-general.test.ts · Example test: 412-cr-general.test.ts::cr:concepts.starting.live-draft.initiative — the first initiative is a seeded coin flip: either seat can get it, and the same seed gives the same seat · Key: concepts.starting.live-draft.initiative</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.11; Rulebook 2023 p.2 · Tests: 412-cr-general.test.ts · Demonstrated by test: 412-cr-general.test.ts::cr:concepts.starting.live-draft.initiative — the first initiative is a seeded coin flip: either seat can get it, and the same seed gives the same seat · Key: concepts.starting.live-draft.initiative</sub>
 
 <a id="r103.1d"></a>**103.1d** Each player's life total starts at 30. See rule 112.
 
-> *Example: Both players start a new live draft game at 30 life.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.6; Rulebook 2023 p.2 · Rulings: R292 · Tests: 412-cr-general.test.ts · Example test: 412-cr-general.test.ts::cr:concepts.starting.live-draft.life — each seat starts a live draft (and a shared-deck game) at 30 life · Key: concepts.starting.live-draft.life</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.6; Rulebook 2023 p.2 · Rulings: R292 · Tests: 412-cr-general.test.ts · Demonstrated by test: 412-cr-general.test.ts::cr:concepts.starting.live-draft.life — each seat starts a live draft (and a shared-deck game) at 30 life · Key: concepts.starting.live-draft.life</sub>
 
 <a id="r103.1e"></a>**103.1e** Give each player two prismites. They start dormant. See rule 106.
 
-> *Example: At the start of the game each player has exactly two resources, both dormant prismites.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.18 · Rulings: R17 · Example test: 01-planning.test.ts::setup & planning · Key: concepts.starting.live-draft.prismites</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.18 · Rulings: R17 · Demonstrated by test: 01-planning.test.ts::setup & planning · Key: concepts.starting.live-draft.prismites</sub>
 
 <a id="r103.1f"></a>**103.1f** Deal each player 16 cards from the shared deck: 4 for their starting hand, 10 for their pack, and 2 for the draw of their first turn. The 4 and the 2 together are the player's opening hand of 6 cards. See rules 409, 503.
 
-> *Example: A new live-draft game: each player holds 6 cards and a pack of 10, and the shared deck is 32 cards smaller.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.11; Manual p.11 · Rulings: R292 · Tests: 412-cr-general.test.ts · Example test: 20-draft.test.ts::createGame draft: 6-card hands · Key: concepts.starting.live-draft.deal</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.11; Manual p.11 · Rulings: R292 · Tests: 412-cr-general.test.ts · Demonstrated by test: 20-draft.test.ts::createGame draft: 6-card hands · Key: concepts.starting.live-draft.deal</sub>
 
 <sub>Discrepancies: D-U01-2 (discrepancies.md)</sub>
 
 <a id="r103.2"></a>**103.2.** In live draft, the first turn's draw is dealt with the opening hand, so players do not draw in the draw step of the first turn. See rules 503, 103.3a.
 
-> *Example: A new live-draft game is on turn 1's draft step with 6 cards in each hand: the 4-card starting hand and the 2 draws, and no further draw.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.16; Manual p.16; Manual p.16; Rulebook 2023 p.6 · Tests: 412-cr-general.test.ts · Example test: 20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws) · Key: concepts.starting.no-first-draw</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.16; Manual p.16; Manual p.16; Rulebook 2023 p.6 · Tests: 412-cr-general.test.ts · Demonstrated by test: 20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws) · Key: concepts.starting.no-first-draw</sub>
 
 <a id="r103.3"></a>**103.3.** In constructed there is no shared deck and there are no packs. Each player plays from their own deck. See rules 901, 503.
 
-> *Example: A new constructed game has no shared deck, and each player's hand is drawn from their own deck only.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.10 · Example test: 34-constructed.test.ts::createGame constructed: per-seat decks · Key: concepts.starting.constructed</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.10 · Demonstrated by test: 34-constructed.test.ts::createGame constructed: per-seat decks · Key: concepts.starting.constructed</sub>
 
 <a id="r103.3a"></a>**103.3a** In constructed, the first turn has a draw phase like every later turn: each player draws 4 cards, then puts 2 cards from their hand on the bottom of their deck. Print gives the draw phase; no source says the first turn takes it, which is the client's convention. See rules 503, 103.3b, 103.2.
 
-> *Example: A new constructed game starts with 8 cards in each hand (an opening 4 plus the turn-1 draw of 4), and the draw phase stays open until each player puts 2 back.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Rulebook 2023 p.6 · Engine: createGame · Tests: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, 412-cr-general.test.ts · Example test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4 · Key: concepts.starting.constructed.first-draw</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Rulebook 2023 p.6 · Engine: createGame · Tests: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, 412-cr-general.test.ts · Demonstrated by test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4 · Key: concepts.starting.constructed.first-draw</sub>
 
 <sub>Discrepancies: D-U01-13 (discrepancies.md)</sub>
 
 <a id="r103.3b"></a>**103.3b** In constructed, each player's opening hand is 4 cards. No source gives the constructed opening hand; it is the client's convention. See rules 103.3a, 103.2.
 
-> *Example: Each seat of a new constructed game holds its opening 4 before the turn-1 draw phase adds 4 more.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Engine: createGame · Tests: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, 412-cr-general.test.ts · Example test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4 · Key: concepts.starting.constructed.opening-hand</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Engine: createGame · Tests: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, 412-cr-general.test.ts · Demonstrated by test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4 · Key: concepts.starting.constructed.opening-hand</sub>
 
 <a id="r104"></a>
 ### 104. Ending the Game
@@ -460,17 +422,13 @@ order.
 
 <a id="r104.1a"></a>**104.1a** A life total reaching 0 ends the game at once, even in the middle of resolving an effect or paying a cost. Nothing waits for the effect to finish. A life cost that would by itself bring its payer to 0 cannot be paid at all (111). See rules 111, 112.
 
-> *Example: A player's own unblessed spell deals them lethal damage: the game ends as the damage is dealt, with the opponent the winner.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R49 (its life-cost half), R49 (its life-cost half), R197 (its §1, predict your life total) · Tests: 412-cr-general.test.ts · Example test: 37-attrs-wight.test.ts::R48 {Blessed}: without the attribute the same shot is lethal · Key: concepts.ending.elimination.immediate</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R49 (its life-cost half), R49 (its life-cost half), R197 (its §1, predict your life total) · Tests: 412-cr-general.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::R48 {Blessed}: without the attribute the same shot is lethal · Key: concepts.ending.elimination.immediate</sub>
 
 <sub>Discrepancies: D-U01-14 (discrepancies.md)</sub>
 
 <a id="r104.2"></a>**104.2.** A player wins when all of their opponents have been eliminated. In a two-player game, when one player is eliminated the other player wins. See rule 104.1.
 
-> *Example: The attacker reduces the defender to 0 and is the winner.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.1; Manual p.6 · Example test: 02-combat.test.ts::win condition · Key: concepts.ending.win</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.1; Manual p.6 · Demonstrated by test: 02-combat.test.ts::win condition · Key: concepts.ending.win</sub>
 
 <sub>Discrepancies: D-U01-3 (discrepancies.md)</sub>
 
@@ -496,11 +454,9 @@ order.
 
 <a id="r104.4a"></a>**104.4a** A player may concede at any time, with no priority and in any phase, even while a decision is waiting on them. See rule 104.4.
 
-> *Example: A player who must choose a target for their own spell may concede instead, and every other action is still refused.*
+> *Example: A player who must choose a target for their own spell may concede instead; nothing else can be done until they choose.*
 
-> *Example: Either player can concede at every point of a game.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R65 (its concede half), R65 (its concede half) · Example tests: 58-playtest-round9.test.ts::R65: you may concede even while a decision is pending against you, 130-seat-aware-gate.test.ts::R154 §4: concede is always reachable · Key: concepts.ending.concede.any-time</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R65 (its concede half), R65 (its concede half) · Example test: 58-playtest-round9.test.ts::R65: you may concede even while a decision is pending against you · Demonstrated by test: 130-seat-aware-gate.test.ts::R154 §4: concede is always reachable · Key: concepts.ending.concede.any-time</sub>
 
 <a id="r104.5"></a>**104.5.** Running out of cards does not end the game. A player who has to draw from an empty deck draws as many as there are and does not lose. See rules 401, 408.
 
@@ -515,21 +471,17 @@ order.
 
 <a id="r105.1"></a>**105.1.** The printed Manual names five elements: Fire, Water, Earth, Wood and Metal. The card pool this document describes has seven: those five, plus Light and Dark. See rule 902.
 
-> *Example: A game can be built from any three of the seven elements: 35 trios.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.8 · Rulings: R54, R99 · Tests: 31-trios.test.ts · Example test: 31-trios.test.ts::seven elements, 35 trios: Light & Dark joined the canonical element list · Key: concepts.elements.list</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.8 · Rulings: R54, R99 · Tests: 31-trios.test.ts · Demonstrated by test: 31-trios.test.ts::seven elements, 35 trios: Light & Dark joined the canonical element list · Key: concepts.elements.list</sub>
 
 <sub>Discrepancies: D-U02-1 (discrepancies.md)</sub>
 
 <a id="r105.2"></a>**105.2.** A hybrid card belongs to two elements. A live-draft deck is built from the cards of the selected elements together with the hybrid cards for each pair of them. See rule 902.
 
-> *Example: A draft of three base elements is 54 cards of each element plus 5 hybrids for each of the three pairs: 177 cards.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.11 · Tests: 31-trios.test.ts · Example test: 31-trios.test.ts::ALL 10 base trios are Manual-exact: 54 per element + 5 per hybrid pair = 177 · Key: concepts.elements.hybrid</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.11 · Tests: 31-trios.test.ts · Demonstrated by test: 31-trios.test.ts::ALL 10 base trios are Manual-exact: 54 per element + 5 per hybrid pair = 177 · Key: concepts.elements.hybrid</sub>
 
 <a id="r105.3"></a>**105.3.** Affinity is a card's elemental requirement. A card shows it as element pips, and a player must meet it to play the card. See rules 202, 111.
 
-> *Example: With three Shards and no water, Curio Drifter [b] is not offered; one water makes it playable.*
+> *Example: With three Shards and no water, a player cannot play Curio Drifter [b]; with one water resource they can.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Printed: Manual p.13; Manual p.13; Manual p.12 · Designer: RAQ 1358299200953126963#0 · Tests: 396-raq-timing.test.ts, 413-cr-elements-resources.test.ts · Example test: 413-cr-elements-resources.test.ts::cr:concepts.elements.affinity — a card is offered and playable only once its pips are met: one Shard cannot play Curio Drifter, one water can · Key: concepts.elements.affinity</sub>
 
@@ -569,19 +521,13 @@ order.
 
 > *Example: With six fire resources and two active Prismites, a player still cannot meet Dreadwave Devourer's [b][b]; two water resources meet it.*
 
-> *Example: Shards pay mana but never count toward affinity.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 4 gate test files · Printed: Rulebook 2023 p.7 · Rulings: R17 · Tests: 01-planning.test.ts, 21-fixes.test.ts, 48-playtest-hotfix.test.ts, 413-cr-elements-resources.test.ts · Example tests: 01-planning.test.ts::affinity gating: prismites are NOT wild, 21-fixes.test.ts::below 3 affinity no shard; shards give mana but never affinity · Key: concepts.elements.no-affinity-resources</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 4 gate test files · Printed: Rulebook 2023 p.7 · Rulings: R17 · Tests: 01-planning.test.ts, 21-fixes.test.ts, 48-playtest-hotfix.test.ts, 413-cr-elements-resources.test.ts · Example test: 01-planning.test.ts::affinity gating: prismites are NOT wild · Demonstrated by test: 21-fixes.test.ts::below 3 affinity no shard; shards give mana but never affinity · Key: concepts.elements.no-affinity-resources</sub>
 
 <a id="r105.6"></a>**105.6.** Card text can use a player's affinity as a number. "Your [r]" means the player's fire affinity: the number of fire resources they have, not counting dormant ones (see the dormant rule under 105's affinity count). See rule 107.
 
-> *Example: All-Consuming Blaze deals damage equal to your [r].*
+> *Example: A player with two open fire resources and one expended fire resource casts All-Consuming Blaze: their [r] is 3, so it deals 3 damage. A dormant fire resource would not add to it.*
 
-> *Example: Premonition glimpses X, where X is your [b]: your water affinity.*
-
-> *Example: Self-Assembly creates a Robot X, where X is your [m], counted as it resolves.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 6 gate test files · Printed: card: All-Consuming Blaze; card: Premonition · Designer: RAQ 1358299200953126963#0 · Tests: 07-cards.test.ts, 14-water-a.test.ts, 28-metal-c.test.ts, 09-attrs.test.ts, 25-wood-c.test.ts, 413-cr-elements-resources.test.ts · Example tests: 07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not), 14-water-a.test.ts::Premonition: Glimpse X where X is your water affinity; the permission dies with the turn, the card stays, 28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution · Key: concepts.elements.affinity-as-number</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 6 gate test files · Printed: card: All-Consuming Blaze; card: Premonition · Designer: RAQ 1358299200953126963#0 · Tests: 07-cards.test.ts, 14-water-a.test.ts, 28-metal-c.test.ts, 09-attrs.test.ts, 25-wood-c.test.ts, 413-cr-elements-resources.test.ts · Example test: 07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not) · Demonstrated by tests: 14-water-a.test.ts::Premonition: Glimpse X where X is your water affinity; the permission dies with the turn, the card stays, 28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution · Key: concepts.elements.affinity-as-number</sub>
 
 <a id="r105.7"></a>**105.7.** Some effects let a player play a card ignoring affinity. Such a play does not check the card's affinity requirement. Ignoring affinity does not waive the mana cost: the cost is still paid unless the effect also makes the play free. See rules 403, 801.
 
@@ -593,27 +539,19 @@ order.
 
 <a id="r105.8"></a>**105.8.** Applying a modification needs its affinity just as playing the card does. An augment from hand, a Virus applied in battle and a graft from hand or bin each require the card's affinity, and each pays its cost. See rules 720, 721, 722, 723.
 
-> *Example: An augment from hand is refused without its affinity, and pays its cost when applied.*
-
-> *Example: A graft from the bin needs its cost and affinity met.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.32 · Designer: RAQ 1537748882501668934#1; RAQ 1355115946032889914#2 · Tests: 408-raq-new-threads.test.ts, 393-raq-mods.test.ts · Example tests: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost, 393-raq-mods.test.ts::RAQ Graft 101 point 3: a graft comes from the bin as well as the hand, and only when its cost and affinity are met · Key: concepts.elements.mods-need-affinity</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.32 · Designer: RAQ 1537748882501668934#1; RAQ 1355115946032889914#2 · Tests: 408-raq-new-threads.test.ts, 393-raq-mods.test.ts · Demonstrated by tests: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost, 393-raq-mods.test.ts::RAQ Graft 101 point 3: a graft comes from the bin as well as the hand, and only when its cost and affinity are met · Key: concepts.elements.mods-need-affinity</sub>
 
 <a id="r105.9"></a>**105.9.** Each game has a set of elements. In a live draft it is the selected elements; in constructed it is all seven. An element resource a player creates, by recycling or by exchanging a Prismite, must be of one of the game's elements. See rules 106, 901, 902.
 
 > *Example: In a fire-water-earth draft, wood and metal resources are refused and never offered.*
 
-> *Example: A game created for a chosen trio uses that trio for its deck, its elements and its recycle menu.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 4 gate test files · Rulings: R299, R99 · Tests: 21-fixes.test.ts, 31-trios.test.ts, 34-constructed.test.ts, 413-cr-elements-resources.test.ts · Example tests: 21-fixes.test.ts::a fwe draft game refuses wood/metal resources and never offers them, 31-trios.test.ts::createGame honors the chosen trio: deck, elements, and the recycle menu · Key: concepts.elements.game-elements</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 4 gate test files · Rulings: R299, R99 · Tests: 21-fixes.test.ts, 31-trios.test.ts, 34-constructed.test.ts, 413-cr-elements-resources.test.ts · Example test: 21-fixes.test.ts::a fwe draft game refuses wood/metal resources and never offers them · Demonstrated by test: 31-trios.test.ts::createGame honors the chosen trio: deck, elements, and the recycle menu · Key: concepts.elements.game-elements</sub>
 
 <sub>Discrepancies: D-U02-3 (discrepancies.md)</sub>
 
 <a id="r105.9a"></a>**105.9a** In constructed, a player may create a resource of any of the seven elements, including an element their deck has no cards of.
 
-> *Example: A constructed deck records its own elements, but all seven stay legal choices.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R99, R99 · Tests: 34-constructed.test.ts · Example test: 34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal · Key: concepts.elements.game-elements.off-deck</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R99, R99 · Tests: 34-constructed.test.ts · Demonstrated by test: 34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal · Key: concepts.elements.game-elements.off-deck</sub>
 
 <a id="r106"></a>
 ### 106. Resources
@@ -630,9 +568,7 @@ order.
 
 <a id="r106.2a"></a>**106.2a** An element resource counts one toward its controller's affinity for its element, except while it is dormant (see 105). See rule 105.
 
-> *Example: Activating a third fire resource brings fire affinity to three.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Fire Resource; Rulebook 2023 p.4 · Designer: RAQ 1358299200953126963#0 · Tests: 12-fire-a.test.ts, 413-cr-elements-resources.test.ts · Example test: 12-fire-a.test.ts::Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time · Key: concepts.resources.kinds.element</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Fire Resource; Rulebook 2023 p.4 · Designer: RAQ 1358299200953126963#0 · Tests: 12-fire-a.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by test: 12-fire-a.test.ts::Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time · Key: concepts.resources.kinds.element</sub>
 
 <a id="r106.3"></a>**106.3.** A resource is either dormant (face down) or active (face up). Every resource enters play dormant. Activating a resource turns it face up.
 
@@ -642,9 +578,7 @@ order.
 
 <a id="r106.3a"></a>**106.3a** Each player starts the game with two dormant Prismites. See rule 103.
 
-> *Example: At setup each player has exactly two Prismites, both dormant.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.11 · Rulings: R17 · Tests: 01-planning.test.ts, 413-cr-elements-resources.test.ts · Example test: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element · Key: concepts.resources.dormant-active.starting</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.11 · Rulings: R17 · Tests: 01-planning.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by test: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element · Key: concepts.resources.dormant-active.starting</sub>
 
 <sub>Discrepancies: D-U02-4 (discrepancies.md)</sub>
 
@@ -664,15 +598,11 @@ order.
 
 <a id="r106.4a"></a>**106.4a** Resources are created and activated in the resource step of the planning phase. See rule 502.
 
-> *Example: Activating or recycling for a resource is offered in the resource step and refused after it, and in deployment.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.18 · Tests: 413-cr-elements-resources.test.ts · Example test: 413-cr-elements-resources.test.ts::cr:concepts.resources.activation.when — creating and activating a resource is offered in the resource step and refused once it is over · Key: concepts.resources.activation.when</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.18 · Tests: 413-cr-elements-resources.test.ts · Demonstrated by test: 413-cr-elements-resources.test.ts::cr:concepts.resources.activation.when — creating and activating a resource is offered in the resource step and refused once it is over · Key: concepts.resources.activation.when</sub>
 
 <a id="r106.5"></a>**106.5.** A resource can be expended (turned sideways) once per turn for 1 mana, to pay the mana cost of a card or an ability. Expended resources refresh at the beginning of each turn. See rule 111.
 
-> *Example: Resources left expended at the end of a turn are all refreshed when the next planning phase begins.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.14; Manual p.14; Rulebook 2023 p.4 · Tests: 413-cr-elements-resources.test.ts · Example test: 413-cr-elements-resources.test.ts::cr:concepts.resources.expend — expended resources refresh at the beginning of the next turn · Key: concepts.resources.expend</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.14; Manual p.14; Rulebook 2023 p.4 · Tests: 413-cr-elements-resources.test.ts · Demonstrated by test: 413-cr-elements-resources.test.ts::cr:concepts.resources.expend — expended resources refresh at the beginning of the next turn · Key: concepts.resources.expend</sub>
 
 <a id="r106.5a"></a>**106.5a** Mana has no element. Every resource, of whatever kind, pays generic mana.
 
@@ -694,15 +624,11 @@ order.
 
 <a id="r106.6a"></a>**106.6a** Recycling may create a Prismite or a Shard instead of an element resource.
 
-> *Example: Every hand card offers a Prismite and a Shard after the elements.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Rulings: R299 · Tests: 308-recycle-for-prismite.test.ts · Example test: 308-recycle-for-prismite.test.ts::R299 every hand card offers a Prismite, then a Shard, after the elements · Key: concepts.resources.recycle.prismite-shard</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Rulings: R299 · Tests: 308-recycle-for-prismite.test.ts · Demonstrated by test: 308-recycle-for-prismite.test.ts::R299 every hand card offers a Prismite, then a Shard, after the elements · Key: concepts.resources.recycle.prismite-shard</sub>
 
 <a id="r106.6b"></a>**106.6b** A Prismite made by recycling is the same as a starting Prismite: it enters dormant, takes an activation, gives no affinity, and once active may be exchanged.
 
-> *Example: A recycled Prismite behaves exactly as a starting one.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R299 · Tests: 308-recycle-for-prismite.test.ts · Example test: 308-recycle-for-prismite.test.ts::R299 a recycled Prismite behaves like a starting one · Key: concepts.resources.recycle.made-prismite</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R299 · Tests: 308-recycle-for-prismite.test.ts · Demonstrated by test: 308-recycle-for-prismite.test.ts::R299 a recycled Prismite behaves like a starting one · Key: concepts.resources.recycle.made-prismite</sub>
 
 <a id="r106.7"></a>**106.7.** When a player activates an element resource, if they then have at least three affinity of that element, they create a Shard. The Shard enters dormant. See rule 106.
 
@@ -728,37 +654,27 @@ order.
 
 <a id="r106.7c"></a>**106.7c** The bonus applies to every element, including those whose resource face is not among the printed cards.
 
-> *Example: All seven elements pay the bonus at three.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Rulings: R54, R54 · Tests: 12-fire-a.test.ts · Example test: 12-fire-a.test.ts::CONFORMANCE: every element pays the p.18 affinity bonus at 3 — all seven, not just the three with printed faces · Key: concepts.resources.affinity-bonus.all-elements</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Rulings: R54, R54 · Tests: 12-fire-a.test.ts · Demonstrated by test: 12-fire-a.test.ts::CONFORMANCE: every element pays the p.18 affinity bonus at 3 — all seven, not just the three with printed faces · Key: concepts.resources.affinity-bonus.all-elements</sub>
 
 <a id="r106.7d"></a>**106.7d** Activating a Prismite or a Shard never creates a Shard, however many the player has.
 
-> *Example: Prismites and Shards never pay the bonus.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.18 · Rulings: R299, R299 · Tests: 12-fire-a.test.ts, 308-recycle-for-prismite.test.ts · Example test: 12-fire-a.test.ts::CONFORMANCE: a Prismite and a Shard never pay the bonus, however many you have · Key: concepts.resources.affinity-bonus.not-prismite-shard</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.18 · Rulings: R299, R299 · Tests: 12-fire-a.test.ts, 308-recycle-for-prismite.test.ts · Demonstrated by test: 12-fire-a.test.ts::CONFORMANCE: a Prismite and a Shard never pay the bonus, however many you have · Key: concepts.resources.affinity-bonus.not-prismite-shard</sub>
 
 <a id="r106.8"></a>**106.8.** A Prismite is a resource with no element. It gives no affinity, and like any resource it can be expended for 1 mana. See rule 105.
 
-> *Example: Prismites start dormant, give no affinity, and can be exchanged once active.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18; Manual p.18 · Rulings: R17 · Tests: 01-planning.test.ts · Example test: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element · Key: concepts.resources.prismite</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18; Manual p.18 · Rulings: R17 · Tests: 01-planning.test.ts · Demonstrated by test: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element · Key: concepts.resources.prismite</sub>
 
 <a id="r106.8a"></a>**106.8a** A player may exchange an active Prismite for another resource only in the resource step of the planning phase, never in the haste step (which resources: the element-only rule below). The new resource takes the Prismite's place and keeps its current state, so an exchange never adds mana: an expended Prismite becomes an expended resource. See rules 502, 105.
 
-> *Example: An active Prismite is exchanged into a fire resource during planning.*
-
 > *Example: An expended active Prismite exchanged into fire becomes an expended fire resource; once the player has finished the resource step, a further exchange is refused.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.18; Manual p.18; Manual p.18 · Rulings: R17, R17, R132, R132 · Tests: 01-planning.test.ts, 413-cr-elements-resources.test.ts · Example tests: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element, 413-cr-elements-resources.test.ts::cr:concepts.resources.prismite.exchange — only an active Prismite, only in the resource step, and the new resource keeps its state · Key: concepts.resources.prismite.exchange</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.18; Manual p.18; Manual p.18 · Rulings: R17, R17, R132, R132 · Tests: 01-planning.test.ts, 413-cr-elements-resources.test.ts · Example test: 413-cr-elements-resources.test.ts::cr:concepts.resources.prismite.exchange — only an active Prismite, only in the resource step, and the new resource keeps its state · Demonstrated by test: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element · Key: concepts.resources.prismite.exchange</sub>
 
 <sub>Discrepancies: D-U02-7, D-U08-3 (discrepancies.md)</sub>
 
 <a id="r106.8b"></a>**106.8b** A dormant Prismite cannot be exchanged.
 
-> *Example: Exchanging a dormant Prismite is refused.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Rulings: R17 · Tests: 01-planning.test.ts · Example test: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element · Key: concepts.resources.prismite.exchange.dormant</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Rulings: R17 · Tests: 01-planning.test.ts · Demonstrated by test: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element · Key: concepts.resources.prismite.exchange.dormant</sub>
 
 <a id="r106.8c"></a>**106.8c** The exchange activates the new resource. If that gives the player three affinity of its element, the affinity bonus creates a Shard. The exchange does not use one of the player's two activations for the turn. See rule 106.
 
@@ -770,27 +686,21 @@ order.
 
 <a id="r106.8d"></a>**106.8d** A Prismite may be exchanged for any non-Prismite resource: an element resource of one of the game's elements, or a Shard. It cannot be exchanged for another Prismite. *(Engine differs, see F-U02-3.)*
 
-> *Example: Exchanging a Prismite into a Prismite is refused. (The same test also refuses a Shard, which this rule allows: F-U02-3.)*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.18; Manual p.18 · Rulings: R132, R299 (its Prismite-into-Prismite half) · Tests: 308-recycle-for-prismite.test.ts, 413-cr-elements-resources.test.ts · Example test: 308-recycle-for-prismite.test.ts::R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard · Key: concepts.resources.prismite.exchange.element-only</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.18; Manual p.18 · Rulings: R132, R299 (its Prismite-into-Prismite half) · Tests: 308-recycle-for-prismite.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by test: 308-recycle-for-prismite.test.ts::R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard · Key: concepts.resources.prismite.exchange.element-only</sub>
 
 <sub>Discrepancies: D-U02-8 (discrepancies.md)</sub>
 
 <a id="r106.9"></a>**106.9.** A Shard is a resource of its own kind. It enters dormant, pays one generic mana once activated, gives no affinity, and cannot be exchanged.
 
-> *Example: A Shard gives mana but no affinity, and offers no element exchange.*
-
-> *Example: A recycled Shard is mana only.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.7 · Rulings: R54, R54 · Tests: 48-playtest-hotfix.test.ts, 308-recycle-for-prismite.test.ts · Example tests: 48-playtest-hotfix.test.ts::a Shard gives mana but no affinity and no element exchange, 308-recycle-for-prismite.test.ts::R299 a recycled Shard is mana only: no affinity, no Shard of its own, no exchange · Key: concepts.resources.shard</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.7 · Rulings: R54, R54 · Tests: 48-playtest-hotfix.test.ts, 308-recycle-for-prismite.test.ts · Demonstrated by tests: 48-playtest-hotfix.test.ts::a Shard gives mana but no affinity and no element exchange, 308-recycle-for-prismite.test.ts::R299 a recycled Shard is mana only: no affinity, no Shard of its own, no exchange · Key: concepts.resources.shard</sub>
 
 <a id="r106.9a"></a>**106.9a** An effect that creates a Shard creates a Shard, never a Prismite.
 
 > *Example: Swirling Shardform creates two dormant Shards, not Prismites.*
 
-> *Example: Hooba-Lan creates a real dormant Shard.*
+> *Example: Hooba-Lan's attack creates a dormant Shard for its controller.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Swirling Shardform · Rulings: R54 · Tests: 48-playtest-hotfix.test.ts, 16-earth-a.test.ts, 18-earth-c.test.ts · Example tests: 48-playtest-hotfix.test.ts::Swirling Shardform creates two dormant SHARDS, not prismites, 16-earth-a.test.ts::Hooba-Lan: attacking creates a real dormant Shard for its controller · Key: concepts.resources.shard.not-prismite</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Swirling Shardform · Rulings: R54 · Tests: 48-playtest-hotfix.test.ts, 16-earth-a.test.ts, 18-earth-c.test.ts · Example tests: 48-playtest-hotfix.test.ts::Swirling Shardform creates two dormant SHARDS, not prismites, 16-earth-a.test.ts::Hooba-Lan: attacking creates a real dormant Shard for its controller · Key: concepts.resources.shard.not-prismite</sub>
 
 <a id="r107"></a>
 ### 107. Numbers, X and Symbols
@@ -805,25 +715,21 @@ order.
 
 <a id="r107.2"></a>**107.2.** An X spell's mana cost is X alone: the player chooses X, and pays X. Its pips are not part of its cost. See rules 111, 702.
 
-> *Example: With no Stasis Sentry, an X spell costs exactly the X chosen.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R157 §1, R157 §1 · Tests: 133-x-cost-semantics.test.ts, 32-cast-costs.test.ts · Example test: 133-x-cost-semantics.test.ts::R157 §20 — with no Stasis Sentry an X spell costs exactly X · Key: concepts.numbers.x-cost</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R157 §1, R157 §1 · Tests: 133-x-cost-semantics.test.ts, 32-cast-costs.test.ts · Demonstrated by test: 133-x-cost-semantics.test.ts::R157 §20 — with no Stasis Sentry an X spell costs exactly X · Key: concepts.numbers.x-cost</sub>
 
 <a id="r107.2a"></a>**107.2a** X is chosen and paid when the spell is cast, before it goes on the stack. Only values the player can pay are offered. Responses see the X already chosen. See rule 702.
 
-> *Example: Wildfire's X is chosen at cast from the affordable values, paid, and stored on the spell.*
+> *Example: Wildfire: its caster chooses X from the values they can pay and pays it as the spell is cast, so the spell is on the stack with that X.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R35 (its spell X half), R35 (its spell X half) · Tests: 32-cast-costs.test.ts · Example test: 32-cast-costs.test.ts::Wildfire: X is chosen at cast from affordable values, paid, and stored on the item · Key: concepts.numbers.x-cost.chosen-at-cast</sub>
 
 <a id="r107.2b"></a>**107.2b** X may be 0 unless the card says otherwise. Choosing X = 0 is legal even when it makes the effect do nothing.
 
-> *Example: A player with no open mana may still cast an X spell for X = 0.*
-
 > *Example: No Hand Killer can be activated with an empty hand at X = 0, and its [once] is spent.*
 
 > *Example: Torrential Reclamation for X = 0 recalls nothing, but each player still sacrifices a unit.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 4 gate test files · Rulings: R157 §22, R74, R221 · Tests: 32-cast-costs.test.ts, 46-hybrids-ld-c.test.ts, 42-dark-b.test.ts, 182-correctness-sample.test.ts · Example tests: 32-cast-costs.test.ts::X spells resolve from the stored X — a 0-mana caster may still cast for X = 0, 46-hybrids-ld-c.test.ts::R157 §22: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent, 182-correctness-sample.test.ts::Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (R221) · Key: concepts.numbers.x-cost.zero</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 4 gate test files · Rulings: R157 §22, R74, R221 · Tests: 32-cast-costs.test.ts, 46-hybrids-ld-c.test.ts, 42-dark-b.test.ts, 182-correctness-sample.test.ts · Example tests: 46-hybrids-ld-c.test.ts::R157 §22: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent, 182-correctness-sample.test.ts::Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (R221) · Demonstrated by test: 32-cast-costs.test.ts::X spells resolve from the stored X — a 0-mana caster may still cast for X = 0 · Key: concepts.numbers.x-cost.zero</sub>
 
 <a id="r107.2c"></a>**107.2c** An X spell (a card whose mana cost is X) that prints "X can't be zero" must be cast with X of at least 1. A player who cannot pay at least 1 cannot cast it.
 
@@ -837,17 +743,13 @@ order.
 
 > *Example: Squish taxed up to 4 by Stasis Sentry and Tranquility is still a 2 to Arcane Concentrator and Channeled Amalgam.*
 
-> *Example: Channeled Amalgam reads the X paid for an X spell.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353980184042143835#0 · Rulings: R157 §1 · Tests: 390-raq-stack.test.ts, 133-x-cost-semantics.test.ts · Example tests: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2, 133-x-cost-semantics.test.ts::R157 §1 — Channeled Amalgam reads the PAID X of an X spell (was dead against all eleven) · Key: concepts.numbers.cost-reference</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353980184042143835#0 · Rulings: R157 §1 · Tests: 390-raq-stack.test.ts, 133-x-cost-semantics.test.ts · Example test: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2 · Demonstrated by test: 133-x-cost-semantics.test.ts::R157 §1 — Channeled Amalgam reads the PAID X of an X spell (was dead against all eleven) · Key: concepts.numbers.cost-reference</sub>
 
 <a id="r107.3a"></a>**107.3a** An X card that is not being cast has a cost of 0. This holds for an X card in a hand, a bin, the deck or the cache, and for a unit in play.
 
-> *Example: An X card in hand reads as cost 0.*
+> *Example: Living Vault caches a card from hand by paying its cost: an X card in hand costs 0, so it can be cached for [0].*
 
-> *Example: Living Vault offers an X card in hand at [0].*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R158 §1, R158 §1 · Tests: 133-x-cost-semantics.test.ts, 39-light-b.test.ts · Example tests: 133-x-cost-semantics.test.ts::R157 §1 — a card that was never cast has no cost: an X card in hand reads 0, 39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1) · Key: concepts.numbers.cost-reference.not-cast</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R158 §1, R158 §1 · Tests: 133-x-cost-semantics.test.ts, 39-light-b.test.ts · Example test: 39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1) · Demonstrated by test: 133-x-cost-semantics.test.ts::R157 §1 — a card that was never cast has no cost: an X card in hand reads 0 · Key: concepts.numbers.cost-reference.not-cast</sub>
 
 <a id="r107.4"></a>**107.4.** When an effect lets a player play an X spell for free, the spell is played with X = 0. An X that is a bracketed additional cost is not the mana cost: it is still chosen and paid. See rules 111, 803.
 
@@ -861,9 +763,7 @@ order.
 
 > *Example: Tides of the Cosmos cannot pick Frosted Denial; an X card that may be zero is still a pick.*
 
-> *Example: Frosted Denial is not a card Tides can play.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Frosted Denial · Designer: RAQ 1396955380000755795#7 · Rulings: R339 · Tests: 404-raq-fix-tides.test.ts, 396-raq-timing.test.ts · Example tests: 404-raq-fix-tides.test.ts::R339: an X card that may not be zero is never a Tides pick; one that may be zero still is, 396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play · Key: concepts.numbers.free-play.cant-be-zero</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Frosted Denial · Designer: RAQ 1396955380000755795#7 · Rulings: R339 · Tests: 404-raq-fix-tides.test.ts, 396-raq-timing.test.ts · Example test: 404-raq-fix-tides.test.ts::R339: an X card that may not be zero is never a Tides pick; one that may be zero still is · Demonstrated by test: 396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play · Key: concepts.numbers.free-play.cant-be-zero</sub>
 
 <a id="r107.5"></a>**107.5.** Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell it raises the X instead of the price: X must be at least 3, and the spell costs exactly X. See rule 111.
 
@@ -875,57 +775,43 @@ order.
 
 <a id="r107.6"></a>**107.6.** A copy of a spell uses the original's X. The X is not chosen or paid again. See rule 710.
 
-> *Example: Maelstrom Charger's copy of Volatile Toxicity keeps the original's receipt and is not paid again.*
+> *Example: Maelstrom Charger copies Volatile Toxicity: the copy uses the original's X, and no second unit is sacrificed for it.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1379132904931594372#2 · Rulings: R35 (its spell X half) · Tests: 138-spell-copy.test.ts, 413-cr-elements-resources.test.ts · Example test: 138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — Volatile Toxicity is not re-paid · Key: concepts.numbers.copy-x</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1379132904931594372#2 · Rulings: R35 (its spell X half) · Tests: 138-spell-copy.test.ts, 413-cr-elements-resources.test.ts · Example test: 138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — Volatile Toxicity is not re-paid · Key: concepts.numbers.copy-x</sub>
 
 <a id="r107.7"></a>**107.7.** A token's X is set by the card that created it. "Create a Crystal 3" creates a Crystal whose X is 3. See rule 304.
 
-> *Example: A Poison created with X = 5 puts 5 -1/-1 counters.*
+> *Example: A Poison created with X = 5 reads "Put 5 -1/-1 counters on target unit."*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Rulebook 2023 p.4; Rulebook 2023 p.4; Manual p.15 · Tests: 127-token-x-and-dormant.test.ts, 413-cr-elements-resources.test.ts · Example test: 127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine · Key: concepts.numbers.token-x</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Printed: Rulebook 2023 p.4; Rulebook 2023 p.4; Manual p.15 · Tests: 127-token-x-and-dormant.test.ts, 413-cr-elements-resources.test.ts · Example test: 127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine · Key: concepts.numbers.token-x</sub>
 
 <a id="r107.7a"></a>**107.7a** A Robot's X is the number of +1/+1 counters on it. It spawns with X counters, and if the number of counters changes, so does its X.
 
-> *Example: A Robot reads its X off its counters as they change.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Robot · Tests: 127-token-x-and-dormant.test.ts · Example test: 127-token-x-and-dormant.test.ts::R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change · Key: concepts.numbers.token-x.robot</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Robot · Tests: 127-token-x-and-dormant.test.ts · Demonstrated by test: 127-token-x-and-dormant.test.ts::R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change · Key: concepts.numbers.token-x.robot</sub>
 
 <a id="r107.8"></a>**107.8.** A number an effect counts, such as a "where X is …" clause or an amount "equal to" or "for each" something, is counted when the effect resolves, not when it was played or triggered. See rules 704, 706, 714.
 
-> *Example: Self-Assembly counts metal affinity at resolution.*
-
 > *Example: Flamebreath Initiate removed with its trigger on the stack has no adjacent allies, so X = 0 and it still makes a Fireball 1.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 4 gate test files · Printed: card: Flamebreath Initiate · Designer: RAQ 1353895783266516992#3 · Rulings: R1 · Tests: 28-metal-c.test.ts, 390-raq-stack.test.ts, 11-fire-wood.test.ts, 413-cr-elements-resources.test.ts · Example tests: 28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution, 390-raq-stack.test.ts::RAQ dead unit: Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1 · Key: concepts.numbers.amounts-at-resolution</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 4 gate test files · Printed: card: Flamebreath Initiate · Designer: RAQ 1353895783266516992#3 · Rulings: R1 · Tests: 28-metal-c.test.ts, 390-raq-stack.test.ts, 11-fire-wood.test.ts, 413-cr-elements-resources.test.ts · Example test: 390-raq-stack.test.ts::RAQ dead unit: Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1 · Demonstrated by test: 28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution · Key: concepts.numbers.amounts-at-resolution</sub>
 
 <a id="r107.8a"></a>**107.8a** An X that a paid cost defines is read as the cost is paid. Volatile Toxicity's X is the sacrificed unit's defense as it was when the unit was sacrificed.
 
-> *Example: Volatile Toxicity reads the defense snapshotted when the cost was paid.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Volatile Toxicity · Rulings: R35 (its spell X half) · Tests: 32-cast-costs.test.ts, 413-cr-elements-resources.test.ts · Example test: 32-cast-costs.test.ts::Volatile Toxicity: X reads the defense snapshotted when the cost was paid · Key: concepts.numbers.amounts-at-resolution.cost-snapshot</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Volatile Toxicity · Rulings: R35 (its spell X half) · Tests: 32-cast-costs.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by test: 32-cast-costs.test.ts::Volatile Toxicity: X reads the defense snapshotted when the cost was paid · Key: concepts.numbers.amounts-at-resolution.cost-snapshot</sub>
 
 <a id="r107.9"></a>**107.9.** When a card asks a player to choose or predict a number, there is no limit the card does not print. A player may name any number in the card's range.
 
-> *Example: Prediction Prophet's prediction has no ceiling; a prediction above the old cap is accepted and pays out.*
+> *Example: Prediction Prophet: a player predicts a life total nine higher than their current one. They gain 9 life during the battle, the prediction is matched at the start of deployment, and they get the 5/5.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Prediction Prophet · Rulings: R197 §1 · Tests: 168-three-card-divergences.test.ts, 40-light-c.test.ts · Example test: 168-three-card-divergences.test.ts::R197 §1b Prediction Prophet: a prediction ABOVE `life + 5` is accepted and pays out the 5/5 — the old cap would not have offered it · Key: concepts.numbers.chosen-number</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Printed: card: Prediction Prophet · Rulings: R197 §1 · Tests: 168-three-card-divergences.test.ts, 40-light-c.test.ts · Example test: 168-three-card-divergences.test.ts::R197 §1b Prediction Prophet: a prediction ABOVE `life + 5` is accepted and pays out the 5/5 — the old cap would not have offered it · Key: concepts.numbers.chosen-number</sub>
 
 <a id="r107.10"></a>**107.10.** This document writes the game's symbols in brackets, as the card data does. The element pips are [r] Fire, [b] Water, [e] Earth, [g] Wood, [m] Metal, [l] Light and [d] Dark. See rule 202.
 
-> *Example: [r] is fire: All-Consuming Blaze counts fire resources.*
-
-> *Example: [g] is wood: Sylvan Sprouting counts wood resources.*
-
-> *Example: [m] is metal: Self-Assembly counts metal resources.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 5 gate test files · Printed: card: Fire Resource; card: Water Resource; card: Earth Resource; card: Exhume; card: Reap the Due · Rulings: R300 · Engine: ELEMENT_OF_PIP · Tests: 07-cards.test.ts, 25-wood-c.test.ts, 28-metal-c.test.ts, 14-water-a.test.ts, 413-cr-elements-resources.test.ts · Example tests: 07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not), 25-wood-c.test.ts::Sylvan Sprouting: one 1/1 per wood affinity — expended wood still counts, 28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution · Key: concepts.numbers.symbols</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 5 gate test files · Printed: card: Fire Resource; card: Water Resource; card: Earth Resource; card: Exhume; card: Reap the Due · Rulings: R300 · Engine: ELEMENT_OF_PIP · Tests: 07-cards.test.ts, 25-wood-c.test.ts, 28-metal-c.test.ts, 14-water-a.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by tests: 07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not), 25-wood-c.test.ts::Sylvan Sprouting: one 1/1 per wood affinity — expended wood still counts, 28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution · Key: concepts.numbers.symbols</sub>
 
 <a id="r107.10a"></a>**107.10a** [x] is X generic mana. A number in brackets, as a digit or a word ([1], [three]), is that much generic mana. A number followed by pips ([3b]) is that much mana together with that affinity. See rules 202, 111.
 
-> *Example: Lurking Slimebeast's ambush [3b] is 3 mana at one water pip.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Frosted Denial; card: Stasis Sentry · Rulings: R22 · Tests: 14-water-a.test.ts, 413-cr-elements-resources.test.ts · Example test: 14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22) · Key: concepts.numbers.symbols.mana</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Frosted Denial; card: Stasis Sentry · Rulings: R22 · Tests: 14-water-a.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by test: 14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22) · Key: concepts.numbers.symbols.mana</sub>
 
 <a id="r108"></a>
 ### 108. Cards, Tokens, Faces and Copies
@@ -942,19 +828,17 @@ order.
 
 <a id="r108.1b"></a>**108.1b** Every card has a name, and most cards have abilities. The other parts a card can have are described in section 200. See rule 200.
 
-> *Example: Every one of the 492 cards in the pool has a name; most, but not all, have ability text.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.12; Manual p.12 · Tests: 414-cr-cards-abilities-targets.test.ts · Example test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.cards.card.characteristics — every card in the pool has a name, and most have ability text · Key: concepts.cards.card.characteristics</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.12; Manual p.12 · Tests: 414-cr-cards-abilities-targets.test.ts · Demonstrated by test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.cards.card.characteristics — every card in the pool has a name, and most have ability text · Key: concepts.cards.card.characteristics</sub>
 
 <a id="r108.2"></a>**108.2.** A token is a unit or a spell that an effect creates directly into play. A unit token functions as a unit, and a spell token is a spell. See rule 304.
 
-> *Example: Creating a Poison (a spell token) is creating a token, just as creating a 1/1 unit is.*
+> *Example: Mycelial Mentor reads "When you create a token, target ally gains +3/+3." Its controller creates a Poison, a spell token, and the Mentor triggers just as it would for a 1/1 unit.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.15; Manual p.15; Manual p.15 · Tests: 119-play-and-token-events.test.ts · Example test: 119-play-and-token-events.test.ts::Mycelial Mentor: creating a POISON fires "when you create a token" · Key: concepts.cards.token</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.15; Manual p.15; Manual p.15 · Tests: 119-play-and-token-events.test.ts · Example test: 119-play-and-token-events.test.ts::Mycelial Mentor: creating a POISON fires "when you create a token" · Key: concepts.cards.token</sub>
 
 <a id="r108.2a"></a>**108.2a** For card text, a token is not a card: text that refers to a "card" does not include a token, even though a unit token is a unit and a spell token is a spell. The printed rules call tokens "temporary cards" to describe them to players; that does not make a token a card. See rule 702.
 
-> *Example: A spell token being cast is a spell being played, but not a card being played.*
+> *Example: A player casts a Fireball token in battle. That is playing a spell, so abilities that watch for a spell being played see it; it is not playing a card, so abilities that watch for a card being played do not.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.15 · Rulings: R129, R306, R305, R346 · Tests: 119-play-and-token-events.test.ts · Example test: 119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card · Key: concepts.cards.token.not-card</sub>
 
@@ -968,9 +852,9 @@ order.
 
 <a id="r108.2c"></a>**108.2c** A unit that an effect creates is a unit token, including an X/X unit whose X the creating card sets. See rule 304.
 
-> *Example: An X/X unit made by Spawntender is a token that Download can take.*
+> *Example: Spawntender creates an 8/8 unit. That unit is a token, so Download ("Gain control of target token") can take it.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353864175910387742#2 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take · Key: concepts.cards.token.x-units</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353864175910387742#2 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take · Key: concepts.cards.token.x-units</sub>
 
 <a id="r108.2d"></a>**108.2d** A token is created in the region its source is in when the effect that creates it resolves, not in its controller's home region. See rules 304, 601.
 
@@ -1006,9 +890,9 @@ order.
 
 <a id="r108.4"></a>**108.4.** A copy of a spell is a new effect on the stack. It was not played. See rules 701, 710.
 
-> *Example: A copy made by Earthbound Replicator fires no play event and makes no second copy.*
+> *Example: Earthbound Replicator copies a spell that targets it. The copy is not played, so it does not set off the Replicator again: one copy, and no more.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355613076506017894#4; RAQ 1355613076506017894#1 · Tests: 138-spell-copy.test.ts · Example test: 138-spell-copy.test.ts::R164 Earthbound Replicator: a copy is not PLAYED · Key: concepts.cards.copies</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355613076506017894#4; RAQ 1355613076506017894#1 · Tests: 138-spell-copy.test.ts · Example test: 138-spell-copy.test.ts::R164 Earthbound Replicator: a copy is not PLAYED · Key: concepts.cards.copies</sub>
 
 <a id="r108.4a"></a>**108.4a** A copy of a spell is not a token.
 
@@ -1075,21 +959,19 @@ order.
 
 > *Example: A spell played at another unit and then retargeted onto Earthbound Replicator makes no copy: "a spell targeting me" is judged as the spell is played.*
 
-> *Example: A condition false when the event happened stays unmet; an amount is read at resolution.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355613076506017894#3 · Rulings: R1, R1, R178 (§1) · Tests: 05-rulings.test.ts, 151-copy-and-moved-mods.test.ts · Example tests: 151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy, 05-rulings.test.ts::R1: trigger conditions check at event time; amounts compute at resolution · Key: concepts.abilities.triggered.condition</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355613076506017894#3 · Rulings: R1, R1, R178 (§1) · Tests: 05-rulings.test.ts, 151-copy-and-moved-mods.test.ts · Example test: 151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy · Demonstrated by test: 05-rulings.test.ts::R1: trigger conditions check at event time; amounts compute at resolution · Key: concepts.abilities.triggered.condition</sub>
 
 <a id="r109.3b"></a>**109.3b** An amount a triggered ability uses is measured when the ability resolves, so responses can change it.
 
-> *Example: Astral Tidewraith's damage equal to the cards in a hand counts the hand as the trigger resolves (illustrative).*
+> *Example: Astral Tidewraith attacks: its trigger deals each player damage equal to the cards in their hand, counted as the trigger resolves, not when it triggered.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R1 · Tests: 05-rulings.test.ts · Key: concepts.abilities.triggered.amount</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R1 · Tests: 05-rulings.test.ts · Key: concepts.abilities.triggered.amount</sub>
 
 <a id="r109.3c"></a>**109.3c** A triggered ability checks its condition again when it resolves only if its text says so, as "if I am still in formation" does. See rule 110.8.
 
-> *Example: Hooba-Nan gone from play with its trigger on the stack makes nothing.*
+> *Example: Hooba-Nan says "if I am still in formation", so that is checked again on resolution: if Hooba-Nan dies with its attack trigger on the stack, no 1/1s are made.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R1, R1 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing · Key: concepts.abilities.triggered.recheck</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R1, R1 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing · Key: concepts.abilities.triggered.recheck</sub>
 
 <a id="r109.3d"></a>**109.3d** An ability that triggers when an ally becomes the target of a spell triggers once for each targeted ally. See rule 706.
 
@@ -1123,15 +1005,13 @@ order.
 
 > *Example: Crevice Lurker's tax on triggered abilities does not reach Maelstrom Charger's option.*
 
-> *Example: The option is asked while the spell is being played and never reaches the stack.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1379132904931594372#3; RAQ 1379132904931594372#0 · Tests: 151-copy-and-moved-mods.test.ts · Example tests: 151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: Crevice Lurker cannot tax it, 151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack · Key: concepts.abilities.as-you-play</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1379132904931594372#3; RAQ 1379132904931594372#0 · Tests: 151-copy-and-moved-mods.test.ts · Example test: 151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: Crevice Lurker cannot tax it · Demonstrated by test: 151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack · Key: concepts.abilities.as-you-play</sub>
 
 <a id="r109.7"></a>**109.7.** Text after a card's [Augment] or graft symbol is active when the card is played normally, not only when the card is a mod. See rule 720.
 
-> *Example: A Wraith token standing in play uses its own [Augment] line at the start of deployment.*
+> *Example: A Wraith token in play uses its own [Augment] text: at the start of deployment its controller puts a -1/-1 counter on an ally.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.43 · Tests: 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::R71: at the start of deployment a Wraith body shrinks a chosen ally · Key: concepts.abilities.mod-text</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.43 · Tests: 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::R71: at the start of deployment a Wraith body shrinks a chosen ally · Key: concepts.abilities.mod-text</sub>
 
 <a id="r109.8"></a>**109.8.** An effect can give units an ability. The ability goes to the units the effect names as it resolves; a unit that arrives afterwards does not gain it.
 
@@ -1141,27 +1021,21 @@ order.
 
 <a id="r109.8a"></a>**109.8a** A granted ability is an ability the unit has. An effect that removes a unit's abilities removes the granted abilities the unit has when the removal applies; an ability granted to the unit afterwards is not removed. See rule 712.
 
-> *Example: A unit that loses all abilities also loses an ability Reforge the Dead gave it earlier; if Reforge the Dead resolves after the removal, the unit has the new ability (illustrative).*
+> *Example: A unit that loses all abilities also loses an ability Reforge the Dead gave it earlier; if Reforge the Dead resolves after the removal, the unit has the new ability.*
 
-> *Example: The same holds for text a mod gives its host: an [Augment] trigger on a mod attached after the strip still fires, and one attached before it does not.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1355685844467581081#0 · Rulings: R63 (its granted-text-is-an-ability half), R328, R328 · Replaces: R62 (reversed by R328: suppression is no longer a veto, so an ability gained after the strip is not removed) · Tests: 402-raq-fix-stripping.test.ts, 414-cr-cards-abilities-targets.test.ts · Example tests: 414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.granted.is-ability — a Reforge the Dead grant made BEFORE an ability strip is removed; one made AFTER it still fires, 402-raq-fix-stripping.test.ts::§8 a trigger on a mod attached after the strip still fires; one attached before it does not · Key: concepts.abilities.granted.is-ability</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1355685844467581081#0 · Rulings: R63 (its granted-text-is-an-ability half), R328, R328 · Replaces: R62 (reversed by R328: suppression is no longer a veto, so an ability gained after the strip is not removed) · Tests: 402-raq-fix-stripping.test.ts, 414-cr-cards-abilities-targets.test.ts · Example test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.granted.is-ability — a Reforge the Dead grant made BEFORE an ability strip is removed; one made AFTER it still fires · Demonstrated by test: 402-raq-fix-stripping.test.ts::§8 a trigger on a mod attached after the strip still fires; one attached before it does not · Key: concepts.abilities.granted.is-ability</sub>
 
 <sub>Discrepancies: D-U03-11 (discrepancies.md)</sub>
 
 <a id="r109.9"></a>**109.9.** An ability marked [once], and a bounded graft ([Switch1]), can be activated or triggered only once per turn. See rule 722.
 
-> *Example: A [once] ability that has fired stays silent for the rest of the turn and fires again the next turn.*
+> *Example: Unstable Apparition ([once]: when you play a nontoken spell, create a Fireball X) makes a Fireball for the first spell its controller plays this turn, nothing for the second, and a Fireball again next turn.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Rulings: R113 · Tests: 33-trigger-fixes.test.ts, 94-bounded-uses.test.ts · Example test: 33-trigger-fixes.test.ts::Unstable Apparition: [once] resets each turn · Key: concepts.abilities.once</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Rulings: R113 · Tests: 33-trigger-fixes.test.ts, 94-bounded-uses.test.ts · Example test: 33-trigger-fixes.test.ts::Unstable Apparition: [once] resets each turn · Key: concepts.abilities.once</sub>
 
 <a id="r109.9a"></a>**109.9a** The use is spent when the ability is activated or put on the stack, whether or not it then resolves. A fizzle, a negation, or a run that finds nothing to do does not give it back. Only a declined or impossible optional choice leaves the use unspent (rule 109.9b), even when that choice comes as the ability resolves. See rule 109.9b.
 
-> *Example: A bounded trigger negated on the stack has still spent its use.*
-
-> *Example: A bounded ability that fizzles has spent its use.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 3 gate test files · Rulings: R113, R113, R113, R113 · Replaces: R108 (narrowed by R113: a use is kept only on a decline or an impossible offer, and doing nothing no longer refunds it) · Engine: engine.ts:E.refundPart · Tests: 94-bounded-uses.test.ts, 93-engine-defects.test.ts, 37-attrs-wight.test.ts · Example tests: 94-bounded-uses.test.ts::a bounded trigger that is NEGATED on the stack has still spent its use, 93-engine-defects.test.ts::a bounded ability that FIZZLES for want of a target has SPENT its [once] · Key: concepts.abilities.once.spent-on-use</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 3 gate test files · Rulings: R113, R113, R113, R113 · Replaces: R108 (narrowed by R113: a use is kept only on a decline or an impossible offer, and doing nothing no longer refunds it) · Engine: engine.ts:E.refundPart · Tests: 94-bounded-uses.test.ts, 93-engine-defects.test.ts, 37-attrs-wight.test.ts · Demonstrated by tests: 94-bounded-uses.test.ts::a bounded trigger that is NEGATED on the stack has still spent its use, 93-engine-defects.test.ts::a bounded ability that FIZZLES for want of a target has SPENT its [once] · Key: concepts.abilities.once.spent-on-use</sub>
 
 <sub>Discrepancies: D-U03-9 (discrepancies.md)</sub>
 
@@ -1179,9 +1053,7 @@ order.
 
 <a id="r109.9d"></a>**109.9d** A change of controller does not give back a spent use: the limit stays with the unit.
 
-> *Example: A [once] use spent before a change of controller stays spent.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R9, R9 · Tests: 05-rulings.test.ts · Example test: 05-rulings.test.ts::R9: once-per-turn budgets are per card and survive control change · Key: concepts.abilities.once.per-card</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R9, R9 · Tests: 05-rulings.test.ts · Demonstrated by test: 05-rulings.test.ts::R9: once-per-turn budgets are per card and survive control change · Key: concepts.abilities.once.per-card</sub>
 
 <a id="r109.9e"></a>**109.9e** Moving a mod onto another unit (Reconfigure) does not give back its spent use. See rule 720.
 
@@ -1201,9 +1073,7 @@ order.
 
 <a id="r109.9h"></a>**109.9h** If the cause of a graft composite is bounded, the whole composite can trigger only once per turn, unbounded grafts included. See rule 722.
 
-> *Example: A bounded host triggers once per turn, so an unbounded graft under it happens once.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33; Rulebook 2023 p.16 · Designer: RAQ 1355115946032889914#14 · Tests: 393-raq-mods.test.ts, 94-bounded-uses.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn · Key: concepts.abilities.once.bounded-cause</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33; Rulebook 2023 p.16 · Designer: RAQ 1355115946032889914#14 · Tests: 393-raq-mods.test.ts, 94-bounded-uses.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn · Key: concepts.abilities.once.bounded-cause</sub>
 
 <a id="r109.9i"></a>**109.9i** If the cause is unbounded, the composite can trigger any number of times, but each bounded graft in it is included only the first time in a turn. See rule 722.
 
@@ -1219,9 +1089,7 @@ order.
 
 <a id="r109.9k"></a>**109.9k** Each mod has its own use. Two copies of the same bounded graft on one host each have one use.
 
-> *Example: Two copies of one bounded graft card on one host each fire once in a turn.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R113 · Tests: 94-bounded-uses.test.ts · Example test: 94-bounded-uses.test.ts::the bounded budget of a graft rider is per MOD · Key: concepts.abilities.once.per-mod</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R113 · Tests: 94-bounded-uses.test.ts · Demonstrated by test: 94-bounded-uses.test.ts::the bounded budget of a graft rider is per MOD · Key: concepts.abilities.once.per-mod</sub>
 
 <a id="r109.9m"></a>**109.9m** A bounded ability that works while its card is in a bin, such as Rotling's "When I leave your bin", is limited once per turn for each player and card name: copies of one card in one player's bin share one use. See rules 405, 109.9n.
 
@@ -1235,7 +1103,7 @@ order.
 
 <a id="r109.9n"></a>**109.9n** A bounded "When I am trashed" ability is limited for each trashed card, not for each player and card name: two copies of one card trashed in the same turn each trigger. See rule 109.9m.
 
-> *Example: Two Maw of Despair discarded in the same turn each trigger their [Switch1] Glimpse 2 (illustrative).*
+> *Example: Two Maw of Despair discarded in the same turn each trigger their [Switch1] Glimpse 2.*
 
 <sub>Basis: Engine only · Verified: confirmed in round 2; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Rulings: R70 (its trash-trigger anchor half), R70 (its trash-trigger anchor half) · Engine: engine.ts:E.fireOwnTrashTrigger · Tests: 414-cr-cards-abilities-targets.test.ts · Example test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.once.trashed — two copies of Maw of Despair discarded in one turn each trigger their bounded trash ability · Key: concepts.abilities.once.trashed</sub>
 
@@ -1252,9 +1120,9 @@ order.
 
 <a id="r110.1a"></a>**110.1a** Targets are chosen as the effect is put on the stack: when a card is played, when an ability is activated, and when a triggered ability is put on the stack. Every target of the effect is chosen then. See rules 702, 703.
 
-> *Example: A graft composite declares the targets of all its parts as it goes on the stack.*
+> *Example: Plodding Pebble carries a grafted Leaping Lillik ("Delete target unit"). A Fireball damages the Pebble: as the trigger goes on the stack, the delete's target is chosen. With no enemy in the region, it must be one of your own units.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355115946032889914#15 · Rulings: R67 · Tests: 393-raq-mods.test.ts, 68-target-conformance.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example · Key: concepts.targets.what.on-stack</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1355115946032889914#15 · Rulings: R67 · Tests: 393-raq-mods.test.ts, 68-target-conformance.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example · Key: concepts.targets.what.on-stack</sub>
 
 <a id="r110.1b"></a>**110.1b** Each "target" in an effect's text is a separate target. An effect that says "target" twice chooses two targets.
 
@@ -1308,9 +1176,7 @@ order.
 
 > *Example: Boon of Protection is not offered against an effect that targets nothing allied.*
 
-> *Example: Every card whose target noun carries a restrictive clause checks it when targets are chosen.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Rulings: R256 (its cast-time half), R256 (its cast-time half), R88 · Tests: 68-target-conformance.test.ts, 23-wood-a.test.ts, 16-earth-a.test.ts · Example tests: 23-wood-a.test.ts::Boon of Protection: negates an effect aimed at something allied, 68-target-conformance.test.ts::R256: a restrictive clause on a target noun is enforced at CAST · Key: concepts.targets.legal.clause</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Rulings: R256 (its cast-time half), R256 (its cast-time half), R88 · Tests: 68-target-conformance.test.ts, 23-wood-a.test.ts, 16-earth-a.test.ts · Example test: 23-wood-a.test.ts::Boon of Protection: negates an effect aimed at something allied · Demonstrated by test: 68-target-conformance.test.ts::R256: a restrictive clause on a target noun is enforced at CAST · Key: concepts.targets.legal.clause</sub>
 
 <a id="r110.3b"></a>**110.3b** An effect on the stack can be a target. A unit in play is not an effect, so it cannot fill a target that asks for an effect. See rule 700.
 
@@ -1322,9 +1188,7 @@ order.
 
 > *Example: Soul Siphon played in battle offers its own controller as well as the opponent as "target player".*
 
-> *Example: In deployment, "target player" offers only the effect controller and "target opponent" offers nobody; in battle both players are offered.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Rulings: R67, R67, R67, R291, R291 · Tests: 60-cast-time-targets.test.ts, 414-cr-cards-abilities-targets.test.ts · Example tests: 60-cast-time-targets.test.ts::R67: plain "target player" ('player') may legally be YOURSELF, 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.legal.player — in deployment "target player" offers only the controller and "target opponent" offers nobody; in battle both seats · Key: concepts.targets.legal.player</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Rulings: R67, R67, R67, R291, R291 · Tests: 60-cast-time-targets.test.ts, 414-cr-cards-abilities-targets.test.ts · Example test: 60-cast-time-targets.test.ts::R67: plain "target player" ('player') may legally be YOURSELF · Demonstrated by test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.legal.player — in deployment "target player" offers only the controller and "target opponent" offers nobody; in battle both seats · Key: concepts.targets.legal.player</sub>
 
 <a id="r110.3d"></a>**110.3d** "Target formation" targets one player's whole side of a battle in that region: every unit arrayed there, not a column.
 
@@ -1340,9 +1204,7 @@ order.
 
 <a id="r110.4"></a>**110.4.** An ally is a unit under your control in the region the effect is happening in. An enemy is a unit not under your control in that region. See rules 102, 601.
 
-> *Example: An enemy target offers enemy units only: not the source, not an ally.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R265 (its units half: ally, enemy, another and the region boundary), R265 (its units half: ally, enemy, another and the region boundary) · Tests: 243-ally-and-enemy-scope.test.ts · Example test: 243-ally-and-enemy-scope.test.ts::R265 §1d the enemy target is the mirror · Key: concepts.targets.ally</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R265 (its units half: ally, enemy, another and the region boundary), R265 (its units half: ally, enemy, another and the region boundary) · Tests: 243-ally-and-enemy-scope.test.ts · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::R265 §1d the enemy target is the mirror · Key: concepts.targets.ally</sub>
 
 <a id="r110.4a"></a>**110.4a** A unit is its own ally. An effect that targets "an ally" or "target ally" can choose its own source unless the text says "another".
 
@@ -1354,29 +1216,23 @@ order.
 
 <a id="r110.4b"></a>**110.4b** Ally and enemy follow control, not ownership. A unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you control it.
 
-> *Example: An Ambush ("recall target ally") whose ally was stolen before it resolves recalls nothing.*
+> *Example: An opponent ambushes with Orblish Horroth to recall target ally. Before it resolves, you take control of that unit; it is no longer their ally, and the ambush recalls nothing.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355466429788328066#2 · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing · Key: concepts.targets.ally.control</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355466429788328066#2 · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing · Key: concepts.targets.ally.control</sub>
 
 <a id="r110.4c"></a>**110.4c** Ally is measured from the effect's controller, never from the player making the choice.
 
 > *Example: With the opponent's Fight on the stack, an enemy unit cannot fill its ally target, while another of the Fight controller's units can.*
 
-> *Example: The same ally target offers only the effect controller's units, whichever player is the controller.*
-
-<sub>Basis: Designer · Verified: confirmed in round 3; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355466429788328066#4 · Rulings: R58 · Tests: 49-playtest-round6.test.ts, 243-ally-and-enemy-scope.test.ts · Example tests: 49-playtest-round6.test.ts::R58: canFillSlot enforces the slot restriction directly, 243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller · Key: concepts.targets.ally.effect-controller</sub>
+<sub>Basis: Designer · Verified: confirmed in round 3; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355466429788328066#4 · Rulings: R58 · Tests: 49-playtest-round6.test.ts, 243-ally-and-enemy-scope.test.ts · Example test: 49-playtest-round6.test.ts::R58: canFillSlot enforces the slot restriction directly · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller · Key: concepts.targets.ally.effect-controller</sub>
 
 <a id="r110.4d"></a>**110.4d** "Another" excludes whatever the sentence's other noun is. It excludes the source only when that other noun is the source ("I fight another target unit"); in "from target unit onto another target unit" it excludes only the first target. See rule 108.
 
-> *Example: Across every card printing "another target", the word excludes the source only where the other noun is the source.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Tests: 243-ally-and-enemy-scope.test.ts, 121-another-identity.test.ts · Example test: 243-ally-and-enemy-scope.test.ts::R265 §2c across the whole another-target family · Key: concepts.targets.ally.another</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Tests: 243-ally-and-enemy-scope.test.ts, 121-another-identity.test.ts · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::R265 §2c across the whole another-target family · Key: concepts.targets.ally.another</sub>
 
 <a id="r110.5"></a>**110.5.** An effect can target a unit only in the region where the effect is happening. See rule 601.
 
-> *Example: No unit target in the card pool offers a unit standing in another region.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Tests: 243-ally-and-enemy-scope.test.ts · Example test: 243-ally-and-enemy-scope.test.ts::R265 §3b nor can any other unit-shaped target · Key: concepts.targets.region</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Tests: 243-ally-and-enemy-scope.test.ts · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::R265 §3b nor can any other unit-shaped target · Key: concepts.targets.region</sub>
 
 <sub>Discrepancies: D-U03-5 (discrepancies.md)</sub>
 
@@ -1400,9 +1256,9 @@ order.
 
 <a id="r110.6a"></a>**110.6a** Different effects may target the same object. See rule 704.
 
-> *Example: A spell aimed at one of the two units Organic Exchange targets still resolves.*
+> *Example: An opponent's Luminous Arc is aimed at one of your Good Whales; you answer with Organic Exchange targeting both your Good Whales. The Luminous Arc still resolves.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1454169054402314362#2 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units · Key: concepts.targets.distinct.separate-effects</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1454169054402314362#2 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units · Key: concepts.targets.distinct.separate-effects</sub>
 
 <a id="r110.7"></a>**110.7.** A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. A card that targets nothing has no such requirement. See rule 702.
 
@@ -1436,7 +1292,7 @@ order.
 
 <a id="r110.9b"></a>**110.9b** Changing an effect's targets before it resolves can save it from fizzling. See rule 704.
 
-> *Example: A spell whose target is about to become illegal can be given a legal new target by Enigmatic Warder or Gravitational Correction before it resolves, and then it does not fizzle (illustrative).*
+> *Example: A spell whose target is about to become illegal is given a legal new target by Enigmatic Warder before it resolves, and then it does not fizzle.*
 
 <sub>Basis: Designer · Verified: confirmed in round 3; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Designer: RAQ 1354013430805434389#2 · Tests: 414-cr-cards-abilities-targets.test.ts · Example test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.change.rescue — the same spell given a new legal target by Enigmatic Warder resolves instead of fizzling · Key: concepts.targets.change.rescue</sub>
 
@@ -1456,15 +1312,13 @@ order.
 
 <a id="r110.11"></a>**110.11.** An ability that triggers "when I become targeted" triggers whenever its unit is targeted, by a spell, an ability, an augment, a graft or a Virus. When the effect that targeted is put on the stack, the trigger goes on the stack above it and so resolves first. When a graft targets the unit, the unit triggers first, before the graft is applied. *(Engine differs, see F-U03-5.)*
 
-> *Example: A spell aimed at Mohruung makes a Crystal 2.*
-
 > *Example: Mohruung targeted by an augment makes a Crystal 2.*
 
 > *Example: Grafting onto Mohruung makes a Crystal 2.*
 
-> *Example: A spell aimed at Mohruung waits on the stack under Mohruung's trigger, so the Crystal 2 is made before the spell resolves (illustrative).*
+> *Example: A spell aimed at Mohruung waits on the stack under Mohruung's trigger, so the Crystal 2 is made before the spell resolves.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 5 tests (2 probes it wrote), all passed; 4 gate test files · Printed: card: Mohruung · Designer: RAQ 1355115946032889914#4 · Rulings: R53, R53 · Tests: 48-playtest-hotfix.test.ts, 17-earth-b.test.ts, 393-raq-mods.test.ts, 414-cr-cards-abilities-targets.test.ts · Example tests: 48-playtest-hotfix.test.ts::a spell aimed at Mohruung actually creates the Crystal 2, 17-earth-b.test.ts::Mohruung: augment-targeting triggers a Crystal 2, 393-raq-mods.test.ts::RAQ Graft 101 point 5, 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on the stack ABOVE the spell that targeted it, and the Crystal is made while the spell still waits · Key: concepts.targets.becomes-targeted</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 5 tests (2 probes it wrote), all passed; 4 gate test files · Printed: card: Mohruung · Designer: RAQ 1355115946032889914#4 · Rulings: R53, R53 · Tests: 48-playtest-hotfix.test.ts, 17-earth-b.test.ts, 393-raq-mods.test.ts, 414-cr-cards-abilities-targets.test.ts · Example tests: 17-earth-b.test.ts::Mohruung: augment-targeting triggers a Crystal 2, 393-raq-mods.test.ts::RAQ Graft 101 point 5, 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on the stack ABOVE the spell that targeted it, and the Crystal is made while the spell still waits · Demonstrated by test: 48-playtest-hotfix.test.ts::a spell aimed at Mohruung actually creates the Crystal 2 · Key: concepts.targets.becomes-targeted</sub>
 
 <sub>Discrepancies: D-U03-13 (discrepancies.md)</sub>
 
@@ -1488,18 +1342,16 @@ order.
 
 <a id="r110.12c"></a>**110.12c** The compulsion applies only to choosing targets. It never makes a target already chosen illegal.
 
-> *Example: A Gatekeeper that arrives after an effect's targets were chosen does not make those targets illegal (illustrative).*
+> *Example: A Gatekeeper of Souls that arrives after an effect's targets were chosen does not make those targets illegal.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R324 · Tests: 414-cr-cards-abilities-targets.test.ts · Example test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.must-be-targeted.choice-only — a Gatekeeper of Souls arriving after targets were chosen does not make them illegal · Key: concepts.targets.must-be-targeted.choice-only</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R324 · Tests: 414-cr-cards-abilities-targets.test.ts · Example test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.must-be-targeted.choice-only — a Gatekeeper of Souls arriving after targets were chosen does not make them illegal · Key: concepts.targets.must-be-targeted.choice-only</sub>
 
 <a id="r111"></a>
 ### 111. Costs
 
 <a id="r111.1"></a>**111.1.** A cost is something a player must pay to do something: to play a card, to apply a mod, or to activate an ability. A card's mana cost, the additional costs in its brackets, and everything before the colon of an activated ability are costs. See rules 702, 705, 720.
 
-> *Example: an augment applied from hand still pays its mana cost and needs its affinity, although applying it is not playing it.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.13; Manual p.13; Manual p.41 · Designer: RAQ 1537748882501668934#1 · Tests: 408-raq-new-threads.test.ts · Example test: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost · Key: concepts.costs.what-a-cost-is</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.13; Manual p.13; Manual p.41 · Designer: RAQ 1537748882501668934#1 · Tests: 408-raq-new-threads.test.ts · Demonstrated by test: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost · Key: concepts.costs.what-a-cost-is</sub>
 
 <a id="r111.1a"></a>**111.1a** A mana cost is paid by expending resources: each resource can be expended once per turn for 1 mana, to pay the mana cost of a card or of an ability. See rule 106.
 
@@ -1535,9 +1387,9 @@ order.
 
 <a id="r111.4"></a>**111.4.** What was paid is fixed at the moment it is paid. An effect that reads a paid cost (such as "the defense of the sacrificed unit") reads it as it was when it was paid.
 
-> *Example: Volatile Toxicity sacrifices a 2/3 to pay its cost. Its X is 3, whatever happens to the board before it resolves.*
+> *Example: Volatile Toxicity is cast by sacrificing a Good Whale (7/5). Its X is fixed at 5 as the cost is paid, and it makes a Poison 5 and a Fireball 5.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R35 (its cast-time payment half) · Tests: 32-cast-costs.test.ts · Example test: 32-cast-costs.test.ts::Volatile Toxicity: X reads the defense snapshotted when the cost was paid · Key: concepts.costs.receipt</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R35 (its cast-time payment half) · Tests: 32-cast-costs.test.ts · Example test: 32-cast-costs.test.ts::Volatile Toxicity: X reads the defense snapshotted when the cost was paid · Key: concepts.costs.receipt</sub>
 
 <a id="r111.5"></a>**111.5.** A copy of a spell does not pay the original's additional cost again. It uses what the original paid, including the original's X. See rule 710.
 
@@ -1573,7 +1425,7 @@ order.
 
 <a id="r111.7a"></a>**111.7a** When an activated ability's cost sacrifices its own source, the source is in the bin while the ability waits on the stack.
 
-> *Example: Throwing Boulder ("Sacrifice me: I deal 3 damage to any target.") is in the bin as soon as the ability is on the stack. (illustrative)*
+> *Example: Throwing Boulder ("Sacrifice me: I deal 3 damage to any target.") is in the bin as soon as the ability is on the stack.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Rulings: R77 · Key: concepts.costs.activation.sacrifice-me</sub>
 
@@ -1585,13 +1437,11 @@ order.
 
 <a id="r111.8"></a>**111.8.** When a triggered ability's effect says "sacrifice me. If you do, …", the sacrifice is part of the effect, not a cost: the ability goes on the stack with its source still in play, players may respond, and the source is sacrificed as the ability resolves. The sacrifice is not optional. If the source is no longer in play when the ability resolves, it cannot be sacrificed, and the "If you do" part does nothing. *(Engine differs, see F-U04-5.)*
 
-> *Example: Eldritch Dreamtender's column deals combat damage to an opponent. Its ability goes on the stack with Dreamtender still in play; Dreamtender is sacrificed when the ability resolves, and only then is the opponent's hand looked at and a card discarded. (illustrative; the engine sacrifices it as the ability goes on the stack: F-U04-5)*
+> *Example: Eldritch Dreamtender's column deals combat damage to an opponent. Its ability goes on the stack with Dreamtender still in play; Dreamtender is sacrificed when the ability resolves, and only then is the opponent's hand looked at and a card discarded.*
 
-> *Example: Dreamtender is destroyed in response to its ability. When the ability resolves, nothing is sacrificed, so no hand is looked at and nothing is discarded. (illustrative)*
+> *Example: Dreamtender is destroyed in response to its ability. When the ability resolves, nothing is sacrificed, so no hand is looked at and nothing is discarded.*
 
-> *Example: no decline is offered for that sacrifice.*
-
-<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Eldritch Dreamtender; card: Cthyrian Rector; card: Void Mandible · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73) · Key: concepts.costs.trigger-sacrifice-me</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Eldritch Dreamtender; card: Cthyrian Rector; card: Void Mandible · Tests: 26-metal-a.test.ts · Demonstrated by test: 26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73) · Key: concepts.costs.trigger-sacrifice-me</sub>
 
 <sub>Discrepancies: D-U04-2, D-U04-8 (discrepancies.md)</sub>
 
@@ -1659,17 +1509,13 @@ order.
 
 <a id="r111.10g"></a>**111.10g** When a triggered ability would be put on the stack while such a tax applies, the player who would control it chooses whether to pay the tax. If they pay, the ability is put on the stack. If they decline, or cannot pay, it does not trigger.
 
-> *Example: paying [1] puts the taxed trigger on the stack.*
+> *Example: with a Crevice Lurker in the battle, you decline to pay the tax on your own Origon's trigger, so Origon does not negate your first spell of the battle.*
 
-> *Example: declining the tax on your own Origon lets your own first spell of the battle resolve.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Crevice Lurker · Designer: RAQ 1355103348378042515#4 · Rulings: R121 (its ability-tax layer) · Tests: 16-earth-a.test.ts, 390-raq-stack.test.ts · Example tests: 16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [1] puts it on the stack, 390-raq-stack.test.ts::RAQ Crevice Lurker: declining the tax on your own Origon lets your own first spell resolve · Key: concepts.costs.modifiers.trigger-tax</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Crevice Lurker · Designer: RAQ 1355103348378042515#4 · Rulings: R121 (its ability-tax layer) · Tests: 16-earth-a.test.ts, 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ Crevice Lurker: declining the tax on your own Origon lets your own first spell resolve · Demonstrated by test: 16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [1] puts it on the stack · Key: concepts.costs.modifiers.trigger-tax</sub>
 
 <a id="r111.10h"></a>**111.10h** A triggered ability that does not trigger because its tax was declined or could not be paid does not use up a "[once]" or other once-per-turn limit.
 
-> *Example: after declining, the same [once] trigger is asked again later that turn.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R121 (its ability-tax layer) · Tests: 16-earth-a.test.ts · Example test: 16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger and does NOT spend its [once] (R108/R113) · Key: concepts.costs.modifiers.trigger-tax.once</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R121 (its ability-tax layer) · Tests: 16-earth-a.test.ts · Demonstrated by test: 16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger and does NOT spend its [once] (R108/R113) · Key: concepts.costs.modifiers.trigger-tax.once</sub>
 
 <a id="r111.10i"></a>**111.10i** A modifier that gives spells a minimum base cost ("Spells with base cost [three] or less have a base cost of [three]") raises the cost of a spell whose printed cost is a number. For a spell whose cost is X, it instead makes the smallest X that may be chosen equal to that minimum, and the spell costs exactly the X chosen. See rules 107, 702.6.
 
@@ -1697,17 +1543,11 @@ order.
 
 > *Example: Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator.*
 
-> *Example: an X card in hand reads as cost 0.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1353980184042143835#0; RAQ 1396955380000755795#9 · Rulings: R157 (its §1), R158 (its §1 three contexts) · Tests: 390-raq-stack.test.ts, 133-x-cost-semantics.test.ts, 396-raq-timing.test.ts · Example tests: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2, 133-x-cost-semantics.test.ts::R157 §1 — a card that was never cast has no cost: an X card in hand reads 0 · Key: concepts.costs.reading-cost</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1353980184042143835#0; RAQ 1396955380000755795#9 · Rulings: R157 (its §1), R158 (its §1 three contexts) · Tests: 390-raq-stack.test.ts, 133-x-cost-semantics.test.ts, 396-raq-timing.test.ts · Example test: 390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2 · Demonstrated by test: 133-x-cost-semantics.test.ts::R157 §1 — a card that was never cast has no cost: an X card in hand reads 0 · Key: concepts.costs.reading-cost</sub>
 
 <a id="r111.12"></a>**111.12.** Some cards print another way to play or use them, with its own cost: a Prophecy or Ambush banner, or a "Discard me" line. Such a cost is paid like any other cost: its mana is spent and its affinity requirement must be met. See rules 203, 803.
 
-> *Example: mana without the banner's affinity does not buy a prophecy.*
-
-> *Example: a "Discard me" line is refused without its mana.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R301, R301 · Tests: 313-prophecy-affinity.test.ts, 37-attrs-wight.test.ts · Example tests: 313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy, 37-attrs-wight.test.ts::R40: "Discard me" is refused without the mana · Key: concepts.costs.alternative</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R301, R301 · Tests: 313-prophecy-affinity.test.ts, 37-attrs-wight.test.ts · Demonstrated by tests: 313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy, 37-attrs-wight.test.ts::R40: "Discard me" is refused without the mana · Key: concepts.costs.alternative</sub>
 
 <a id="r111.12a"></a>**111.12a** Discarding a card through its "Discard me" line is not playing it. A player may do it whenever they hold priority in battle, and during their own deployment, unless the line itself is marked with a timing. See rule 701.
 
@@ -1739,9 +1579,7 @@ order.
 
 <a id="r111.15"></a>**111.15.** A cost a graft adds ("{graft} [cost]: effect") must be paid; it cannot be declined. If it cannot be paid, none of the composite ability goes on the stack: not the graft's effect, the host's own effect, or any other graft with it. The exception is a played spell that carries a {Modular} graft part: there an unpayable grafted cost skips only that part, and the spell is not withheld. See rule 722.
 
-> *Example: an unpayable grafted cost keeps the host's own ability and the other grafts off the stack too.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1355115946032889914#10; RAQ 1355115946032889914#11 · Rulings: R334, R334 · Replaces: R35 (its declinable / skippable grafted riders were reversed by R334); R110 (narrowed by R334: an unpayable multiplied graft cost withholds the whole composite, not only that graft) · Tests: 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts, 32-cast-costs.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too · Key: concepts.costs.grafted</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1355115946032889914#10; RAQ 1355115946032889914#11 · Rulings: R334, R334 · Replaces: R35 (its declinable / skippable grafted riders were reversed by R334); R110 (narrowed by R334: an unpayable multiplied graft cost withholds the whole composite, not only that graft) · Tests: 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts, 32-cast-costs.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too · Key: concepts.costs.grafted</sub>
 
 <sub>Discrepancies: D-U04-12 (discrepancies.md)</sub>
 
@@ -1750,9 +1588,7 @@ order.
 
 <a id="r112.1"></a>**112.1.** Each player begins the game with 30 life. A player whose life is reduced to 0 is eliminated. See rules 103, 104.
 
-> *Example: both players begin at 30, and a player whose life is reduced to exactly 0 has lost the game.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.6; Manual p.6; Rulebook 2023 p.2 · Tests: 415-cr-costs-life-timestamps.test.ts · Example test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics — players start at 30, and a player reduced to exactly 0 life loses the game · Key: concepts.life.basics</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.6; Manual p.6; Rulebook 2023 p.2 · Tests: 415-cr-costs-life-timestamps.test.ts · Demonstrated by test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics — players start at 30, and a player reduced to exactly 0 life loses the game · Key: concepts.life.basics</sub>
 
 <a id="r112.1a"></a>**112.1a** A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it.
 
@@ -1776,9 +1612,7 @@ order.
 
 > *Example: three Arbiters of Vitality multiply a life loss by 8.*
 
-> *Example: a lethal loss is doubled before the game checks for 0 life.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Arbiter of Vitality · Rulings: R264, R162 (its multiplicative family) · Replaces: R157 (its §23 linear formula (n*2*v) was amended by R264 to 2^n); R162 (its summed fold was superseded by R264) · Tests: 137-multiplier-and-mode.test.ts, 45-hybrids-ld-b.test.ts · Example tests: 137-multiplier-and-mode.test.ts::R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n, 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check · Key: concepts.life.multipliers</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Arbiter of Vitality · Rulings: R264, R162 (its multiplicative family) · Replaces: R157 (its §23 linear formula (n*2*v) was amended by R264 to 2^n); R162 (its summed fold was superseded by R264) · Tests: 137-multiplier-and-mode.test.ts, 45-hybrids-ld-b.test.ts · Example test: 137-multiplier-and-mode.test.ts::R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n · Demonstrated by test: 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check · Key: concepts.life.multipliers</sub>
 
 <sub>Discrepancies: D-U15-4 (discrepancies.md)</sub>
 
@@ -1804,9 +1638,9 @@ order.
 
 <a id="r112.5b"></a>**112.5b** All the damage dealt to a unit is dealt, including any beyond what destroys it, and counts as damage dealt. See rule 608.6d.
 
-> *Example: Arc Lightning keeps all 6 damage on a Vulnerable 3/8 instead of jumping; all 12 land on it.*
+> *Example: Arc Lightning deals 6 to a Vulnerable 3/8 with nowhere for its Electric damage to jump: all 12 are dealt to that unit, not just the 8 that destroy it.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1372451771632320512#2 · Tests: 387-raq-combat.test.ts · Example test: 387-raq-combat.test.ts::RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12 · Key: concepts.damage.basics.all-dealt</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1372451771632320512#2 · Tests: 387-raq-combat.test.ts · Example test: 387-raq-combat.test.ts::RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12 · Key: concepts.damage.basics.all-dealt</sub>
 
 <a id="r112.6"></a>**112.6.** The source of damage is the thing that deals it. When a spell makes a unit deal damage (Squish, Fight, Battle), the unit is the source: its own attributes apply, and the spell's attributes do not. See rule 802.
 
@@ -1832,13 +1666,11 @@ order.
 
 > *Example: Channel Through deals damage to a unit twice; Restitution triggers once, for the total.*
 
-> *Example: "each unit" damage kills simultaneously.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R80, R80 · Tests: 69-damage-batch.test.ts · Example tests: 69-damage-batch.test.ts::R80: Channel Through gives a twice-hit unit ONE damage event (the Restitution report), 69-damage-batch.test.ts::R80: "each unit" damage kills simultaneously — every unit hears the same total · Key: concepts.damage.one-effect</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R80, R80 · Tests: 69-damage-batch.test.ts · Example test: 69-damage-batch.test.ts::R80: Channel Through gives a twice-hit unit ONE damage event (the Restitution report) · Demonstrated by test: 69-damage-batch.test.ts::R80: "each unit" damage kills simultaneously — every unit hears the same total · Key: concepts.damage.one-effect</sub>
 
 <a id="r112.8a"></a>**112.8a** Each copy of an effect is a separate source and deals its damage separately.
 
-> *Example: Meteor Shower's three Rockfalls are three separate dealings of damage. (illustrative)*
+> *Example: Meteor Shower's three Rockfalls are three separate dealings of damage.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R80 · Tests: 415-cr-costs-life-timestamps.test.ts · Example test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.damage.one-effect.copies — the three Meteor Shower rockfalls are three separate dealings of damage · Key: concepts.damage.one-effect.copies</sub>
 
@@ -1856,11 +1688,9 @@ order.
 
 <a id="r112.11"></a>**112.11.** Damage that is prevented is not dealt. It triggers nothing that triggers on damage being dealt, places no -1/-1 counters, and does not destroy a unit, even from a Deadly source. See rules 708, 608.6g.
 
-> *Example: prevented damage fires no "dealt damage" trigger.*
-
 > *Example: a Deadly source cannot kill through Phytochemical Protection.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1354148437355925554#1 · Rulings: R98 (its prevention-is-not-dealing ruling) · Replaces: R98 (its open item 1 (prevention counters capped at lethal) was superseded by R114) · Tests: 24-wood-b.test.ts, 387-raq-combat.test.ts · Example tests: 24-wood-b.test.ts::Phytochemical Protection: prevented damage is NOT dealt — no damage event fires, 24-wood-b.test.ts::Phytochemical Protection: {Deadly} cannot kill through it · Key: concepts.damage.prevented</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1354148437355925554#1 · Rulings: R98 (its prevention-is-not-dealing ruling) · Replaces: R98 (its open item 1 (prevention counters capped at lethal) was superseded by R114) · Tests: 24-wood-b.test.ts, 387-raq-combat.test.ts · Example test: 24-wood-b.test.ts::Phytochemical Protection: {Deadly} cannot kill through it · Demonstrated by test: 24-wood-b.test.ts::Phytochemical Protection: prevented damage is NOT dealt — no damage event fires · Key: concepts.damage.prevented</sub>
 
 <a id="r112.12"></a>**112.12.** Damage that an effect replaces with something else (for example, damage dealt "as" rot) was still dealt. Abilities that care whether damage was dealt see it, even though the recipient took something else instead. See rules 708, 608.8a.
 
@@ -1878,23 +1708,15 @@ order.
 
 <a id="r112.13a"></a>**112.13a** Rot never decreases on its own. It deals its damage again every deployment until an effect removes it.
 
-> *Example: rot deals its full damage again the next turn.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Burn the Blight · Rulings: R38 · Tests: 35-rot-debt-trash.test.ts, 41-dark-a.test.ts · Example test: 35-rot-debt-trash.test.ts::R38: rot never decays — it fires again, at full size, every turn · Key: concepts.rot.never-decays</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Burn the Blight · Rulings: R38 · Tests: 35-rot-debt-trash.test.ts, 41-dark-a.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R38: rot never decays — it fires again, at full size, every turn · Key: concepts.rot.never-decays</sub>
 
 <a id="r112.13b"></a>**112.13b** The source of rot damage is the damaged player's own rot, which is a source that player controls.
 
-> *Example: the damage is recorded as coming from the damaged player.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R38 · Tests: 35-rot-debt-trash.test.ts · Example test: 35-rot-debt-trash.test.ts::R38: the damage source is the damaged player themselves ("your rot is a source you control") · Key: concepts.rot.source</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R38 · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R38: the damage source is the damaged player themselves ("your rot is a source you control") · Key: concepts.rot.source</sub>
 
 <a id="r112.13c"></a>**112.13c** Rot damage is dealt as the deployment phase begins, before abilities that trigger "at the start of deployment". No player can respond to it. See rule 507.
 
-> *Example: the start-of-deployment event fires after rot damage.*
-
-> *Example: rot damage cannot be responded to.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R38, R50 · Tests: 47-costs-events.test.ts, 35-rot-debt-trash.test.ts · Example tests: 47-costs-events.test.ts::R50: 'startOfDeployment' fires AFTER R38's rot damage (the documented order), 35-rot-debt-trash.test.ts::R38: rot damage cannot be responded to — deployment opens no priority window · Key: concepts.rot.timing</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R38, R50 · Tests: 47-costs-events.test.ts, 35-rot-debt-trash.test.ts · Demonstrated by tests: 47-costs-events.test.ts::R50: 'startOfDeployment' fires AFTER R38's rot damage (the documented order), 35-rot-debt-trash.test.ts::R38: rot damage cannot be responded to — deployment opens no priority window · Key: concepts.rot.timing</sub>
 
 <sub>Discrepancies: D-U04-5 (discrepancies.md)</sub>
 
@@ -1914,48 +1736,38 @@ order.
 
 <a id="r112.14"></a>**112.14.** Debt is a counter a player has. At the end of each of their resource steps, a player pays 1 mana for each debt they have, and each mana paid removes one debt. See rule 502.
 
-> *Example: debt is paid automatically as the resource step ends.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R39, R39 · Our glossary (not a source): Debt · Tests: 35-rot-debt-trash.test.ts, 415-cr-costs-life-timestamps.test.ts · Example test: 35-rot-debt-trash.test.ts::R39: debt is paid automatically when the resource step ends — 1 mana per debt · Key: concepts.debt</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R39, R39 · Our glossary (not a source): Debt · Tests: 35-rot-debt-trash.test.ts, 415-cr-costs-life-timestamps.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R39: debt is paid automatically when the resource step ends — 1 mana per debt · Key: concepts.debt</sub>
 
 <a id="r112.14a"></a>**112.14a** Paying debt is not a choice and takes no action. It is the last thing in the resource step, so no resource can be expended after it in that step, and the mana spent on debt cannot be used for anything else that turn.
 
-> *Example: the mana paid for debt is gone, and the card it would have paid for cannot be played.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R39, R39 · Tests: 35-rot-debt-trash.test.ts · Example test: 35-rot-debt-trash.test.ts::R39: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable · Key: concepts.debt.automatic</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R39, R39 · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R39: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable · Key: concepts.debt.automatic</sub>
 
 <a id="r112.14b"></a>**112.14b** If a player cannot pay all their debt, they pay what they can. The rest stays and is charged again at their next resource step. There is no other penalty.
 
-> *Example: partial payment is fine and the remainder carries to the next turn.*
-
-> *Example: debt that cannot be paid does not cost life.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R39 · Tests: 35-rot-debt-trash.test.ts, 38-light-a.test.ts · Example tests: 35-rot-debt-trash.test.ts::R39: partial payment is fine and the remainder carries to the next turn, 38-light-a.test.ts::Greed Angel: unpayable debt carries over instead of costing life · Key: concepts.debt.partial</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R39 · Tests: 35-rot-debt-trash.test.ts, 38-light-a.test.ts · Demonstrated by tests: 35-rot-debt-trash.test.ts::R39: partial payment is fine and the remainder carries to the next turn, 38-light-a.test.ts::Greed Angel: unpayable debt carries over instead of costing life · Key: concepts.debt.partial</sub>
 
 <a id="r112.14c"></a>**112.14c** Gaining debt can be a cost. Debt gained to pay a cost is gained when the cost is paid, and is kept even if the spell or ability is negated. See rule 111.2.
 
-> *Example: a spell with a printed [Gain 2 debt] cost gives its caster the 2 debt as it is played.*
+> *Example: Hyper Beam negated by Dematerialize deals no damage, and the debt its caster gained to play it stays.*
 
-> *Example: Example (illustrative): Hyper Beam negated by Dematerialize deals no damage, and the debt its caster gained to play it stays.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Deferral Drone · Rulings: R49 (its cast-cost and activation-cost body) · Tests: 47-costs-events.test.ts, 44-hybrids-ld-a.test.ts, 415-cr-costs-life-timestamps.test.ts · Example tests: 47-costs-events.test.ts::R49: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt, 415-cr-costs-life-timestamps.test.ts::cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no damage, and the debt gained to play it stays · Key: concepts.debt.as-cost</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Deferral Drone · Rulings: R49 (its cast-cost and activation-cost body) · Tests: 47-costs-events.test.ts, 44-hybrids-ld-a.test.ts, 415-cr-costs-life-timestamps.test.ts · Example test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no damage, and the debt gained to play it stays · Demonstrated by test: 47-costs-events.test.ts::R49: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt · Key: concepts.debt.as-cost</sub>
 
 <a id="r112.15"></a>**112.15.** Rot and debt are counters on players. An effect that removes counters from players removes them. An effect that changes the number of counters "put on" a player does not change how many are removed.
 
 > *Example: Burn the Blight removes rot and debt from players.*
 
-> *Example: Proliferating Slime does not deepen a removal.*
+> *Example: with Proliferating Slime in play, 2 rot put on its controller's opponent arrives as 3, but removing 2 rot from that player removes exactly 2.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Burn the Blight; card: Proliferating Slime · Rulings: R179 · Tests: 41-dark-a.test.ts, 152-hand-entry.test.ts · Example tests: 41-dark-a.test.ts::Burn the Blight: removes counters from units AND the rot/debt on players, 152-hand-entry.test.ts::a counter-amount replacement does NOT scale a REMOVAL (Proliferating Slime says "put on") · Key: concepts.player-counters</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Burn the Blight; card: Proliferating Slime · Rulings: R179 · Tests: 41-dark-a.test.ts, 152-hand-entry.test.ts · Example tests: 41-dark-a.test.ts::Burn the Blight: removes counters from units AND the rot/debt on players, 152-hand-entry.test.ts::a counter-amount replacement does NOT scale a REMOVAL (Proliferating Slime says "put on") · Key: concepts.player-counters</sub>
 
 <a id="r113"></a>
 ### 113. Timestamps
 
 <a id="r113.1"></a>**113.1.** Effects that apply to the same layer apply in timestamp order. Where they conflict, the later effect takes precedence over the earlier one. See rule 709.
 
-> *Example: a virus applied after Monke still gives its attribute.*
+> *Example: Monke resolves in battle, so other units lose all attributes. Afterwards a player augments Chitin Shredder, a Virus, onto their unit: that unit has Powerful, because the virus is later than Monke.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1357965714807586897#0 · Rulings: R328 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke still gives its attribute · Key: concepts.timestamps.order</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1357965714807586897#0 · Rulings: R328 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke still gives its attribute · Key: concepts.timestamps.order</sub>
 
 <a id="r113.2"></a>**113.2.** An effect's timestamp is when it began to apply. A static ability's effect has the timestamp of the card that carries it, a mod's has the time it was applied, and an effect from a resolved spell or ability has the time it resolved. What a card prints is older than any effect.
 
@@ -1979,15 +1791,13 @@ order.
 
 <a id="r113.3b"></a>**113.3b** What a removal effect took stays taken until that effect ends (for a removal that lasts until regroup, at regroup). The unit does not get it back by leaving the column the effect applies to. This does not stop the unit gaining an attribute or ability from a later source (rule 113.3). See rule 113.3.
 
-> *Example: a temporary attribute granted before a strip is taken, and one granted after it is kept.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R328, R293 · Tests: 402-raq-fix-stripping.test.ts · Example test: 402-raq-fix-stripping.test.ts::§3 a temporary attribute granted before a strip is taken, and one granted after is kept · Key: concepts.timestamps.removal.stays-taken</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R328, R293 · Tests: 402-raq-fix-stripping.test.ts · Demonstrated by test: 402-raq-fix-stripping.test.ts::§3 a temporary attribute granted before a strip is taken, and one granted after is kept · Key: concepts.timestamps.removal.stays-taken</sub>
 
 <a id="r113.4"></a>**113.4.** When two effects set a unit's base stats, the later one applies. See rule 206.
 
-> *Example: Body Swap with a unit Statweaver made base 3/3 trades the 3/3 base for the 1/1.*
+> *Example: an opponent's Aberrant Statweaver ("Your units are base 3/3") makes their Wisp base 3/3. You cast Body Swap on your 1/1 and that Wisp: until regroup your unit is base 3/3 and the Wisp base 1/1, though the Statweaver is still in play.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1357965714807586897#1 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1 · Key: concepts.timestamps.base-stats</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1357965714807586897#1 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1 · Key: concepts.timestamps.base-stats</sub>
 
 ## 2. Parts of a Card
 
@@ -2002,11 +1812,7 @@ order.
 
 <a id="r200.2"></a>**200.2.** The physical printed card is the source of truth for what a card says. Where the transcription a client reads differs from the printed card, the printed card governs and the transcription is corrected; the difference is not a ruling on the card. See rule 101.
 
-> *Example: Interdiction Rift's type line is {Battle} Cosmic Spell: the transcription's "AI" is a typo, not a subtype.*
-
-> *Example: Arbiter of Armistice has no {Switch} on its type line, whatever an older transcription said.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R240, R240, R157 §25 · Replaces: R162 (its Interdiction Rift whitespace-only repair superseded by R240) · Tests: 209-interdiction-rift-type-line.test.ts, 137-multiplier-and-mode.test.ts · Example tests: 209-interdiction-rift-type-line.test.ts::§1 Interdiction Rift is "{Battle} Cosmic Spell" — the owner's ruling, exactly, 137-multiplier-and-mode.test.ts::R157 §25: Arbiter of Armistice's printed type line has no {Switch}, and nothing else moved · Key: card.general.printed-card-governs</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R240, R240, R157 §25 · Replaces: R162 (its Interdiction Rift whitespace-only repair superseded by R240) · Tests: 209-interdiction-rift-type-line.test.ts, 137-multiplier-and-mode.test.ts · Demonstrated by tests: 209-interdiction-rift-type-line.test.ts::§1 Interdiction Rift is "{Battle} Cosmic Spell" — the owner's ruling, exactly, 137-multiplier-and-mode.test.ts::R157 §25: Arbiter of Armistice's printed type line has no {Switch}, and nothing else moved · Key: card.general.printed-card-governs</sub>
 
 <sub>Discrepancies: D-U05-12 (discrepancies.md)</sub>
 
@@ -2015,9 +1821,7 @@ order.
 
 <a id="r201.1"></a>**201.1.** Every card has a name.
 
-> *Example: Every one of the 400-odd cards in the pool has a name.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.12; Rulebook 2023 p.3 · Tests: 416-cr-parts-of-a-card.test.ts · Example test: 416-cr-parts-of-a-card.test.ts::cr:card.name.every-card — every card in the pool has a non-empty name, the one it is filed under · Key: card.name.every-card</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.12; Rulebook 2023 p.3 · Tests: 416-cr-parts-of-a-card.test.ts · Demonstrated by test: 416-cr-parts-of-a-card.test.ts::cr:card.name.every-card — every card in the pool has a non-empty name, the one it is filed under · Key: card.name.every-card</sub>
 
 <a id="r201.2"></a>**201.2.** "Other" and "another" compare objects, never names. Two cards with the same name are two different things, and each is "another" to the other. See rule 110.
 
@@ -2027,7 +1831,7 @@ order.
 
 <a id="r201.3"></a>**201.3.** Where a card speaks of a "unique" token, a token is identified by its name and its X together: a Robot 2 and a Robot 5 are two unique tokens. See rule 304.
 
-> *Example: Automaton of Abundance with a batch of a Robot 3, a Robot 2 and a Robot 1 makes three extra Robots.*
+> *Example: Automaton of Abundance: when its controller creates a Robot 3, a Robot 2 and a Robot 1 together, those are three unique tokens, so three extra Robots are made.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R157 §24 · Replaces: R104 (its unique-by-kind (name only) reading reversed by R157 §24) · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::R157 §24: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras · Key: card.name.unique-token</sub>
 
@@ -2078,17 +1882,17 @@ order.
 
 <a id="r202.5"></a>**202.5.** A cost orb may show X. While a card with X in its cost is being cast, X is the amount chosen and paid, and that amount is the card's cost. See rules 107, 111.
 
-> *Example: Unstable Apparition cast at X = 0 really costs 0.*
+> *Example: With Unstable Apparition in play ("create a Fireball X, where X is the spell's cost"), its controller casts Wildfire for X = 0. Wildfire's cost is 0, so no Fireball is made.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R157 §1, R157 §1 · Tests: 133-x-cost-semantics.test.ts · Example test: 133-x-cost-semantics.test.ts::R157 §1 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball · Key: card.cost-orb.x</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R157 §1, R157 §1 · Tests: 133-x-cost-semantics.test.ts · Example test: 133-x-cost-semantics.test.ts::R157 §1 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball · Key: card.cost-orb.x</sub>
 
 <a id="r202.6"></a>**202.6.** A card with X in its cost has a cost of 0 wherever no X has been paid for it: in the deck, the hand, the cache, the bin, or as a unit in play. An X spell played by an effect that plays cards for free is played with X = 0. See rule 107.
 
 > *Example: Tides of the Cosmos counts an X spell as cost 0 against its budget of 8, and plays it at X = 0.*
 
-> *Example: Living Vault offers an X-cost card in hand at pay [0].*
+> *Example: Living Vault caches a card from hand by paying its cost: an X card in hand costs 0, so it can be cached for [0].*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#6 · Rulings: R158 §1 · Tests: 396-raq-timing.test.ts, 39-light-b.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0, 39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1) · Key: card.cost-orb.x-outside-cast</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#6 · Rulings: R158 §1 · Tests: 396-raq-timing.test.ts, 39-light-b.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0, 39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1) · Key: card.cost-orb.x-outside-cast</sub>
 
 <sub>Discrepancies: D-U05-13 (discrepancies.md)</sub>
 
@@ -2103,21 +1907,15 @@ order.
 
 <a id="r203.1"></a>**203.1.** Some cards print a banner that offers another way to play the card, for a cost of its own: Ambush and Prophecy are printed this way. A banner shows its own mana cost and affinity pips, and a Prophecy banner also shows a condition. See rule 803.
 
-> *Example: Every printed Prophecy banner carries affinity pips.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Good Whale; card: Shib · Rulings: R301, R301 · Tests: 313-prophecy-affinity.test.ts · Example test: 313-prophecy-affinity.test.ts::R301 §1: every printed prophecy banner carries affinity pips · Key: card.banner.what</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Good Whale; card: Shib · Rulings: R301, R301 · Tests: 313-prophecy-affinity.test.ts · Demonstrated by test: 313-prophecy-affinity.test.ts::R301 §1: every printed prophecy banner carries affinity pips · Key: card.banner.what</sub>
 
 <sub>Discrepancies: D-U05-9 (discrepancies.md)</sub>
 
 <a id="r203.2"></a>**203.2.** A banner's cost is paid like any other cost, in place of the card's cost orb: its own mana is spent and its own affinity pips are required. See rules 111, 803.
 
-> *Example: Mana without the banner's affinity does not buy a prophecy.*
-
-> *Example: The banner is priced on its own pips, not the card's.*
-
 > *Example: Lurking Slimebeast ambushes for 3 mana with one water pip.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 4 tests (a probe it wrote), all passed; 4 gate test files · Printed: card: Lurking Slimebeast · Rulings: R301 · Replaces: R42 (its 'plain mana number, no affinity' clause corrected by R301); R277 (its no-affinity aside superseded by R301) · Tests: 313-prophecy-affinity.test.ts, 36-cache-prophecy.test.ts, 14-water-a.test.ts, 416-cr-parts-of-a-card.test.ts · Example tests: 313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy, 36-cache-prophecy.test.ts::R42/R301: the banner is priced on its own pips, not the card's, 14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22) · Key: card.banner.cost</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 4 tests (a probe it wrote), all passed; 4 gate test files · Printed: card: Lurking Slimebeast · Rulings: R301 · Replaces: R42 (its 'plain mana number, no affinity' clause corrected by R301); R277 (its no-affinity aside superseded by R301) · Tests: 313-prophecy-affinity.test.ts, 36-cache-prophecy.test.ts, 14-water-a.test.ts, 416-cr-parts-of-a-card.test.ts · Example test: 14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22) · Demonstrated by tests: 313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy, 36-cache-prophecy.test.ts::R42/R301: the banner is priced on its own pips, not the card's · Key: card.banner.cost</sub>
 
 <a id="r203.3"></a>**203.3.** A banner's cost is not the card's cost. Anything that reads the card's cost reads its cost orb, even when the card is played through its banner. See rule 202.
 
@@ -2129,9 +1927,7 @@ order.
 
 > *Example: A fulfilled prophecy whose card needs earth affinity its controller lacks is released from the cache with nothing paid.*
 
-> *Example: A fulfilled {Battle} card is still refused at deployment.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R301, R301, R42 (its prophesy half) · Replaces: R42 (window amended by R277; source zone amended by R308; no-affinity cost corrected by R301) · Tests: 313-prophecy-affinity.test.ts, 36-cache-prophecy.test.ts · Example tests: 36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity, 36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment · Key: card.banner.prophecy</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R301, R301, R42 (its prophesy half) · Replaces: R42 (window amended by R277; source zone amended by R308; no-affinity cost corrected by R301) · Tests: 313-prophecy-affinity.test.ts, 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity · Demonstrated by test: 36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment · Key: card.banner.prophecy</sub>
 
 <a id="r203.5"></a>**203.5.** A timing icon printed in a banner governs only the play the banner offers, not the card. See rule 207.
 
@@ -2147,11 +1943,7 @@ order.
 
 > *Example: Divine Intervention ("Your life is 5 or less [Haste]") may be prophesied in the haste step.*
 
-> *Example: The marker does not move the fulfilled release of a Battle card into the haste step.*
-
-> *Example: An unmarked banner is still refused in the haste step.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Rulings: R277 (its release and prophesy-window halves), R277 (its release and prophesy-window halves), R277 (its release and prophesy-window halves) · Replaces: R42 (its deployment-only prophesy window amended by R277) · Tests: 257-prophecy-release-timing.test.ts · Example tests: 257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step, 257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step, 257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it · Key: card.banner.timing.prophecy-haste</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Rulings: R277 (its release and prophesy-window halves), R277 (its release and prophesy-window halves), R277 (its release and prophesy-window halves) · Replaces: R42 (its deployment-only prophesy window amended by R277) · Tests: 257-prophecy-release-timing.test.ts · Example test: 257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step · Demonstrated by tests: 257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step, 257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it · Key: card.banner.timing.prophecy-haste</sub>
 
 <a id="r204"></a>
 ### 204. Type Line
@@ -2162,31 +1954,25 @@ order.
 
 <a id="r204.2"></a>**204.2.** The type line of a card that can be played ends with its card type: Unit, Spell, or Spell Unit (a spell that is also a unit). A token's type line says so: Token Unit for a unit token, Spell Token for a spell token. A resource card's type line ends with Resource. See rules 301, 302, 303, 304.
 
-> *Example: Every type line in the card pool ends with the card type that matches its kind, with no exceptions.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.13; card: Jelly; card: Robot; card: Fireball; card: Earth Resource · Rulings: R284 · Tests: 416-cr-parts-of-a-card.test.ts · Example test: 416-cr-parts-of-a-card.test.ts::cr:card.type-line.card-type — every printed type line ends Unit / Spell / Spell Unit / Token Unit / Spell Token / Resource, matching its kind · Key: card.type-line.card-type</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.13; card: Jelly; card: Robot; card: Fireball; card: Earth Resource · Rulings: R284 · Tests: 416-cr-parts-of-a-card.test.ts · Demonstrated by test: 416-cr-parts-of-a-card.test.ts::cr:card.type-line.card-type — every printed type line ends Unit / Spell / Spell Unit / Token Unit / Spell Token / Resource, matching its kind · Key: card.type-line.card-type</sub>
 
 <a id="r204.2a"></a>**204.2a** A Spell Unit is both a spell and a unit: an effect that asks for a unit or for a spell accepts it. See rule 303.
 
-> *Example: Hooba-Pon playing a spell unit counts as playing a spell.*
+> *Example: A spell unit played from hand through Hooba-Pon's ability counts as playing a spell.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R284 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell · Key: card.type-line.card-type.spell-unit</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R284 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell · Key: card.type-line.card-type.spell-unit</sub>
 
 <sub>Discrepancies: D-U05-17 (discrepancies.md)</sub>
 
 <a id="r204.3"></a>**204.3.** The words of the type line other than its markers and its card type are subtypes, such as Whale, Squid or Jellyfish. A marker may stand among them. See rule 300.
 
-> *Example: No subtype word appears on exactly one card unexplained.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: card: Good Whale; card: Trashling · Rulings: R240, R240 · Tests: 209-interdiction-rift-type-line.test.ts · Example test: 209-interdiction-rift-type-line.test.ts::§3 signature two: no subtype word appears on exactly one card unexplained · Key: card.type-line.subtypes</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: card: Good Whale; card: Trashling · Rulings: R240, R240 · Tests: 209-interdiction-rift-type-line.test.ts · Demonstrated by test: 209-interdiction-rift-type-line.test.ts::§3 signature two: no subtype word appears on exactly one card unexplained · Key: card.type-line.subtypes</sub>
 
 <sub>Discrepancies: D-U05-7 (discrepancies.md)</sub>
 
 <a id="r204.4"></a>**204.4.** An attribute printed on the type line is part of the card's rules. It is an attribute, not an ability. See rules 109, 802.
 
-> *Example: Whispering Mantid has an empty text box; its whole rules content is {Sneaky} on its type line.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Whispering Mantid · Rulings: R282, R282 · Tests: 262-type-line-attributes.test.ts · Example test: 262-type-line-attributes.test.ts::R282: a card whose only rules content is a type-line attribute stops saying no rules text · Key: card.type-line.attributes</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Whispering Mantid · Rulings: R282, R282 · Tests: 262-type-line-attributes.test.ts · Demonstrated by test: 262-type-line-attributes.test.ts::R282: a card whose only rules content is a type-line attribute stops saying no rules text · Key: card.type-line.attributes</sub>
 
 <a id="r204.5"></a>**204.5.** Attributes are printed in bold yellow (gold) or purple. Yellow attributes are combat attributes, which are shared by the units in the same column of a formation (see 603 and 802). Purple attributes, such as Burst and Unstable, are non-combat attributes and are not shared in formation. See rules 603, 802, 803.
 
@@ -2198,15 +1984,13 @@ order.
 
 <a id="r204.6"></a>**204.6.** Attributes apply in the order they are printed, top to bottom. See rule 709.
 
-> *Example: Tough then Balanced gives a different unit from Balanced then Tough.*
+> *Example: A Lonely Forager (3/1) given Tough and then Balanced is 3/3; given Balanced first and then Tough, it is 3/6.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.42 · Tests: 08-cards2.test.ts · Example test: 08-cards2.test.ts::R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough · Key: card.type-line.order</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.42 · Tests: 08-cards2.test.ts · Example test: 08-cards2.test.ts::R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough · Key: card.type-line.order</sub>
 
 <a id="r204.7"></a>**204.7.** A timing icon is not an attribute. A card whose only marking is its timing icon has no attributes. See rule 207.
 
-> *Example: Tidal Menace ({Haste}, no text) is treated as having no attributes and no rules text.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Tidal Menace · Rulings: R282 · Tests: 262-type-line-attributes.test.ts · Example test: 262-type-line-attributes.test.ts::R282: a card with no attribute and no text still says nothing, and the guard does not reach it · Key: card.type-line.icons-not-attributes</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Tidal Menace · Rulings: R282 · Tests: 262-type-line-attributes.test.ts · Demonstrated by test: 262-type-line-attributes.test.ts::R282: a card with no attribute and no text still says nothing, and the guard does not reach it · Key: card.type-line.icons-not-attributes</sub>
 
 <a id="r205"></a>
 ### 205. Text Box and Bracketed Text
@@ -2217,9 +2001,9 @@ order.
 
 <a id="r205.2"></a>**205.2.** Reminder text, in italics, restates what an attribute or keyword does. An [Augment] mentioned inside reminder text is not an augment symbol (see 208.4a). See rule 208.
 
-> *Example: Reconfigure mentions [Augment] in its reminder text and is not an augment.*
+> *Example: Reconfigure mentions [Augment] in its reminder text, but it cannot be applied as an augment.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Manual p.24 · Rulings: R55 · Tests: 48-playtest-hotfix.test.ts · Example test: 48-playtest-hotfix.test.ts::a spell that merely mentions [Augment] in reminder text is not an augment · Key: card.text-box.reminder</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Manual p.24 · Rulings: R55 · Tests: 48-playtest-hotfix.test.ts · Example test: 48-playtest-hotfix.test.ts::a spell that merely mentions [Augment] in reminder text is not an augment · Key: card.text-box.reminder</sub>
 
 <sub>Discrepancies: D-U05-11 (discrepancies.md)</sub>
 
@@ -2235,9 +2019,7 @@ order.
 
 > *Example: Void Memory's caster declares "unit" or "spell" at cast; each opponent then discards one of that type if able.*
 
-> *Example: A mode fixed at cast is not re-picked when the board changes afterwards.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R284, R284, R157 §21 · Tests: 97-mode-conformance.test.ts, 136-triggers-and-modes.test.ts · Example tests: 97-mode-conformance.test.ts::R284: Void Memory declares its half at cast, and a hand with no card of that type reveals, 136-triggers-and-modes.test.ts::R157 §21: the mode is FIXED at cast — a ledger that moves afterwards does not re-pick it · Key: card.text-box.brackets.who-and-when</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R284, R284, R157 §21 · Tests: 97-mode-conformance.test.ts, 136-triggers-and-modes.test.ts · Example test: 97-mode-conformance.test.ts::R284: Void Memory declares its half at cast, and a hand with no card of that type reveals · Demonstrated by test: 136-triggers-and-modes.test.ts::R157 §21: the mode is FIXED at cast — a ledger that moves afterwards does not re-pick it · Key: card.text-box.brackets.who-and-when</sub>
 
 <a id="r205.3b"></a>**205.3b** A payment written in prose rather than in brackets, such as "unless its controller pays", is not the owner's: the player it names decides it, when the effect resolves. See rule 111.
 
@@ -2245,9 +2027,7 @@ order.
 
 <a id="r205.3c"></a>**205.3c** Only bracketed prose is a cost or a mode. Symbols the transcription writes in brackets, such as [Augment], [Switch1], [once] or a cost like [2] or [4bb], are not bracketed text. See rule 111.
 
-> *Example: Every card printing a modal bracket declares its modes, and nothing declares a mode it does not print.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R284, R284 · Tests: 97-mode-conformance.test.ts · Example test: 97-mode-conformance.test.ts::R57: nothing declares a mode it does not print · Key: card.text-box.brackets.symbols</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R284, R284 · Tests: 97-mode-conformance.test.ts · Demonstrated by test: 97-mode-conformance.test.ts::R57: nothing declares a mode it does not print · Key: card.text-box.brackets.symbols</sub>
 
 <a id="r205.3d"></a>**205.3d** A bracketed additional cost is still paid when an effect lets the card be played for free. See rule 111.
 
@@ -2257,9 +2037,9 @@ order.
 
 <a id="r205.4"></a>**205.4.** On a graft card the graft symbol divides an ability into a cause, before the symbol, and an effect, after it. When the card is grafted onto another, only the text after its graft symbol is added. See rule 722.
 
-> *Example: A grafted Omniwield Evoker adds its counter to the host's trigger and charges nothing for its [three].*
+> *Example: Omniwield Evoker reads "[three]: [Switch] Put a +1/+1 counter on me." Grafted onto another unit, it adds only the +1/+1 counter to the host's ability; the [three] before the symbol is not added, so nothing is paid for it.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#5 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 6: a grafted Omniwield Evoker adds its counter to the host trigger and charges nothing · Key: card.text-box.graft-symbol</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#5 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 6: a grafted Omniwield Evoker adds its counter to the host trigger and charges nothing · Key: card.text-box.graft-symbol</sub>
 
 <a id="r206"></a>
 ### 206. Power and Defense
@@ -2280,7 +2060,7 @@ order.
 
 <a id="r206.3"></a>**206.3.** A unit's printed stats are the numbers shown on the card. Any difference from the printed stats is a stat change. See rule 709.
 
-> *Example: Leave None Pure counts a rewritten base as a stat change.*
+> *Example: A unit whose base stats an effect has set differently has a stat change, so it is not a "unit with no stat changes" for Leave None Pure.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.42 · Rulings: R157 §14, R157 §14 · Tests: 59-base-stats.test.ts · Example test: 59-base-stats.test.ts::Leave None Pure: a rewritten base counts as a stat change · Key: card.stats.printed-and-changed</sub>
 
@@ -2298,13 +2078,11 @@ order.
 
 <a id="r206.5"></a>**206.5.** An effect that makes a unit "base N/N" replaces its base stats; it does not add to them. Counters and other stat changes still apply on top. When two such effects apply, the later one wins. See rules 113, 709.
 
-> *Example: Aberrant Statweaver makes your units base 3/3, in play and when virus-donated.*
-
-> *Example: Body Swap on a Statweavered unit trades its 3/3 base for the other unit's 1/1.*
+> *Example: An opponent's Aberrant Statweaver makes their Wisp base 3/3. Body Swap on your 1/1 and that Wisp makes yours base 3/3 and the Wisp base 1/1 until regroup.*
 
 > *Example: Unmake reads base power, and counters do not count toward it.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.42; Manual p.42 · Designer: RAQ 1357965714807586897#1 · Rulings: R66 · Tests: 26-metal-a.test.ts, 390-raq-stack.test.ts, 28-metal-c.test.ts · Example tests: 26-metal-a.test.ts::Aberrant Statweaver: "your units are base 3/3" — in play and virus-donated, 390-raq-stack.test.ts::RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1, 28-metal-c.test.ts::Unmake: deletes only units with BASE power 2 or less (counters don't count) · Key: card.stats.base</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.42; Manual p.42 · Designer: RAQ 1357965714807586897#1 · Rulings: R66 · Tests: 26-metal-a.test.ts, 390-raq-stack.test.ts, 28-metal-c.test.ts · Example tests: 390-raq-stack.test.ts::RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1, 28-metal-c.test.ts::Unmake: deletes only units with BASE power 2 or less (counters don't count) · Demonstrated by test: 26-metal-a.test.ts::Aberrant Statweaver: "your units are base 3/3" — in play and virus-donated · Key: card.stats.base</sub>
 
 <sub>Discrepancies: D-U05-5 (discrepancies.md)</sub>
 
@@ -2345,45 +2123,37 @@ order.
 
 <a id="r207.2"></a>**207.2.** A card with no timing icon can be played only during deployment. See rule 507.
 
-> *Example: A deployment unit is played in battle only because Tides of the Cosmos lets it ignore timing (207.7).*
+> *Example: A unit with no timing icon cannot be played in battle, except when Tides of the Cosmos lets it ignore timing.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.13; Manual p.12 · Tests: 396-raq-timing.test.ts, 416-cr-parts-of-a-card.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing — a deploy unit and a deploy spell unit, in battle · Key: card.timing.none</sub>
 
 <a id="r207.3"></a>**207.3.** A card with the Haste icon can be played during the haste step as well as during deployment. See rules 504, 507.
 
-> *Example: Haste cards are played between planning and battle, in the haste step.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.13; Manual p.26; Rulebook 2023 p.3 · Rulings: R97 · Tests: 08-cards2.test.ts, 416-cr-parts-of-a-card.test.ts · Example test: 08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18) · Key: card.timing.haste</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.13; Manual p.26; Rulebook 2023 p.3 · Rulings: R97 · Tests: 08-cards2.test.ts, 416-cr-parts-of-a-card.test.ts · Demonstrated by test: 08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18) · Key: card.timing.haste</sub>
 
 <a id="r207.4"></a>**207.4.** A card with the Battle icon can be played only while its player is in battle with another player. It cannot be played during deployment. See rule 505.
 
-> *Example: A fulfilled {Battle} prophecy is still refused at deployment.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.13; Manual p.13; Manual p.26; Rulebook 2023 p.3 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment · Key: card.timing.battle</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.13; Manual p.13; Manual p.26; Rulebook 2023 p.3 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment · Key: card.timing.battle</sub>
 
 <a id="r207.4a"></a>**207.4a** Gaining Haste does not let a Battle card be played outside battle. A Battle card that an effect lets be played as if it had Haste can still be played only in battle. See rules 504, 803.
 
 > *Example: Dispatch Courier's grant does not let a {Battle} unit be played in the haste step.*
 
-> *Example: Nor a {Battle} spell unit.*
-
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1465292396664193171#0; RAQ 1464899726796390433#0; RAQ 1465292396664193171#1 · Rulings: R97 · Tests: 26-metal-a.test.ts, 396-raq-timing.test.ts · Example tests: 26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant, 396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either · Key: card.timing.battle.gaining-haste</sub>
+<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1465292396664193171#0; RAQ 1464899726796390433#0; RAQ 1465292396664193171#1 · Rulings: R97 · Tests: 26-metal-a.test.ts, 396-raq-timing.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant · Demonstrated by test: 396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either · Key: card.timing.battle.gaining-haste</sub>
 
 <sub>Discrepancies: D-U05-3, D-U05-4 (discrepancies.md)</sub>
 
 <a id="r207.5"></a>**207.5.** A card with the Virus icon can also be applied as an augment from hand during battle, as well as being played and augmented normally during deployment (see 723). See rules 721, 723.
 
-> *Example: A virus applied during battle goes on the stack, can be donated to an enemy, and transfers text only.*
+> *Example: In battle a Virus can be augmented from hand; a card without the Virus icon cannot, unless Rook allows it.*
 
-> *Example: A non-virus augment from hand during battle is refused without Rook.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.13; Manual p.13; Rulebook 2023 p.3 · Tests: 04-mods.test.ts, 29-hybrids-wm-a.test.ts · Example tests: 04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer, 29-hybrids-wm-a.test.ts::Rook: a NON-virus augment from HAND during battle — refused without it, legal with it · Key: card.timing.virus</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.13; Manual p.13; Rulebook 2023 p.3 · Tests: 04-mods.test.ts, 29-hybrids-wm-a.test.ts · Example test: 29-hybrids-wm-a.test.ts::Rook: a NON-virus augment from HAND during battle — refused without it, legal with it · Demonstrated by test: 04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer · Key: card.timing.virus</sub>
 
 <a id="r207.6"></a>**207.6.** A timing icon other than Virus does not change when a card can be applied as a mod. A Battle card cannot be applied as a mod during battle, and a Haste card cannot be applied in the haste step. See rule 720.
 
-> *Example: A graft is offered in deployment, never in the haste step or in battle, even for a Haste card.*
+> *Example: Molten Upheaval has Haste, but it can be grafted onto Bellowing Boulder only during deployment: not in the haste step, and not in battle.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32; Manual p.32 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card · Key: card.timing.mods</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32; Manual p.32 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card · Key: card.timing.mods</sub>
 
 <a id="r207.7"></a>**207.7.** An effect may let a card be played ignoring its timing, as Tides of the Cosmos does ("You may play them now"). A card played that way may be played whatever its timing icon, or lack of one. See rule 701.
 
@@ -2393,19 +2163,13 @@ order.
 
 <a id="r207.7a"></a>**207.7a** An effect that only lets a card be played from somewhere else, such as the bin or the cache, does not waive its timing. Cards that waive timing say so. See rules 403, 405, 803.
 
-> *Example: A glimpsed card in the cache still obeys timing.*
-
-> *Example: A fulfilled prophecy still obeys timing.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R157 §12, R42 (its release half) · Tests: 36-cache-prophecy.test.ts · Example tests: 36-cache-prophecy.test.ts::R45: glimpse still obeys timing, and a short deck glimpses fewer, 36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment · Key: card.timing.ignore.only-when-said</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R157 §12, R42 (its release half) · Tests: 36-cache-prophecy.test.ts · Demonstrated by tests: 36-cache-prophecy.test.ts::R45: glimpse still obeys timing, and a short deck glimpses fewer, 36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment · Key: card.timing.ignore.only-when-said</sub>
 
 <a id="r207.8"></a>**207.8.** A timing icon printed on one line of a card, rather than on the card, governs only that line. A "Discard me" line with no icon of its own is usable in battle as well as in deployment; one printed with a Battle icon is usable only in battle. See rules 203, 801.
 
-> *Example: A "Discard me" line works during battle, whatever the card's own timing.*
-
 > *Example: Nothyr's battle-marked discard-me line is refused outside battle.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R65 (its discard-me half), R65 (its discard-me half), R157 §8 · Tests: 58-playtest-round9.test.ts, 37-attrs-wight.test.ts · Example tests: 58-playtest-round9.test.ts::R65: a "Discard me" line works during battle, whatever the card's own timing says, 37-attrs-wight.test.ts::R40: Nothyr's battle-timing discard-me line is refused outside battle · Key: card.timing.per-line</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R65 (its discard-me half), R65 (its discard-me half), R157 §8 · Tests: 58-playtest-round9.test.ts, 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::R40: Nothyr's battle-timing discard-me line is refused outside battle · Demonstrated by test: 58-playtest-round9.test.ts::R65: a "Discard me" line works during battle, whatever the card's own timing says · Key: card.timing.per-line</sub>
 
 <sub>Discrepancies: D-U05-16 (discrepancies.md)</sub>
 
@@ -2424,11 +2188,9 @@ order.
 
 <a id="r208.3"></a>**208.3.** An augment symbol on the type line gives the type line's attributes to the card the augment is applied to. An augment gives text, never stats. See rule 721.
 
-> *Example: Trashling's type-line augment donates {Unaware}, and only that.*
-
 > *Example: Bubb's type-line augment donates {Unaware} and no stats.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.32; card: Trashling; Rulebook 2023 p.15 · Tests: 28-metal-c.test.ts, 16-earth-a.test.ts · Example tests: 28-metal-c.test.ts::Trashling: 2/2 Unaware body; type-line [Augment] donates Unaware (attrs only), 16-earth-a.test.ts::Bubb: 5/6 Unaware; type-line [Augment] donates Unaware (attrs only, no stats) · Key: card.augment-box.type-line</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.32; card: Trashling; Rulebook 2023 p.15 · Tests: 28-metal-c.test.ts, 16-earth-a.test.ts · Example test: 16-earth-a.test.ts::Bubb: 5/6 Unaware; type-line [Augment] donates Unaware (attrs only, no stats) · Demonstrated by test: 28-metal-c.test.ts::Trashling: 2/2 Unaware body; type-line [Augment] donates Unaware (attrs only) · Key: card.augment-box.type-line</sub>
 
 <a id="r208.4"></a>**208.4.** A card that prints the augment symbol can be applied as an augment, from hand, bin or cache (see 721), whether or not its augment text does anything a client can carry out. See rule 721.
 
@@ -2438,13 +2200,13 @@ order.
 
 <a id="r208.4a"></a>**208.4a** An [Augment] mentioned inside reminder text is not an augment symbol, and does not make the card an augment. See rule 205.
 
-> *Example: Reconfigure, which mentions [Augment] in reminder text, is not an augment.*
+> *Example: Reconfigure mentions [Augment] in its reminder text, but it cannot be applied as an augment.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R55 · Tests: 48-playtest-hotfix.test.ts · Example test: 48-playtest-hotfix.test.ts::a spell that merely mentions [Augment] in reminder text is not an augment · Key: card.augment-box.permission.reminder</sub>
 
 <a id="r208.5"></a>**208.5.** A copy does not have the augment symbol printed on the card it copies. See rule 710.
 
-> *Example: A Borrower of Forms that copied Bubb cannot be the first target of Reconfigure, though a real [Augment] unit on the battlefield can be (illustrative).*
+> *Example: A Borrower of Forms that copied Bubb cannot be the first target of Reconfigure, though a real [Augment] unit in play can be.*
 
 <sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1372468222158180424#6 · Tests: 393-raq-mods.test.ts, 416-cr-parts-of-a-card.test.ts · Example test: 416-cr-parts-of-a-card.test.ts::cr:card.augment-box.copy — Reconfigure is castable with a real [Augment] unit present and offers it, but never a Borrower that copied Bubb · Key: card.augment-box.copy</sub>
 
@@ -2457,9 +2219,7 @@ order.
 
 <a id="r209.2"></a>**209.2.** Complexity is used to choose which cards are in a game. The Quick Start suggests that inexperienced players remove the gold-symbol cards from their decks. See rule 902.
 
-> *Example: A live draft with "Simple cards only" leaves out exactly the cards that are not simple.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.2; Rulebook 2023 p.2 · Tests: 297-custom-rules-resolve.test.ts · Example test: 297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple · Key: card.complexity.use</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.2; Rulebook 2023 p.2 · Tests: 297-custom-rules-resolve.test.ts · Demonstrated by test: 297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple · Key: card.complexity.use</sub>
 
 <sub>Discrepancies: D-U05-14 (discrepancies.md)</sub>
 
@@ -2470,25 +2230,19 @@ order.
 
 <a id="r300.1"></a>**300.1.** Apart from resource cards (106), there are three card types: unit, spell and spell unit. There are two kinds of token: unit tokens and spell tokens. See rules 106, 301, 302, 303, 304.
 
-> *Example: Every unit, spell and spell-unit card in a deck is counted in exactly one of the unit, spell and spell-unit buckets.*
-
-> *Example: Every printed card that is not a resource or a token is a unit, a spell or a spell unit; a created Robot is a unit token and a created Fireball a spell token.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test, passed; 2 gate test files · Printed: Rulebook 2023 p.3; Manual p.13; Manual p.15; Rulebook 2023 p.4; Manual p.5; Rulebook 2023 p.6 · Tests: 188-deck-stats.test.ts, 417-cr-card-types.test.ts · Example tests: 188-deck-stats.test.ts::§2 the unit / spell / spellUnit buckets sum to the deck, 417-cr-card-types.test.ts::cr:types.general.kinds — every non-resource card is a unit, spell or spell unit, and every token is a unit token or a spell token · Key: types.general.kinds</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test, passed; 2 gate test files · Printed: Rulebook 2023 p.3; Manual p.13; Manual p.15; Rulebook 2023 p.4; Manual p.5; Rulebook 2023 p.6 · Tests: 188-deck-stats.test.ts, 417-cr-card-types.test.ts · Demonstrated by tests: 188-deck-stats.test.ts::§2 the unit / spell / spellUnit buckets sum to the deck, 417-cr-card-types.test.ts::cr:types.general.kinds — every non-resource card is a unit, spell or spell unit, and every token is a unit token or a spell token · Key: types.general.kinds</sub>
 
 <sub>Discrepancies: D-U06-12 (discrepancies.md)</sub>
 
 <a id="r300.2"></a>**300.2.** A card's type line names its type. A unit's type line ends "Unit", a spell's ends "Spell", and a spell unit's ends "Spell Unit". A token's type line also contains the word "Token": "Robot Token Unit" is a unit token, and "Spell Token" a spell token. See rule 204.
 
-> *Example: Robot reads "Robot Token Unit" and is a unit token; Fireball reads "Spell Token" and is a spell token.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: card: Bloomcaster; card: Download; card: Hush Mush; card: Robot; card: Fireball · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.general.type-line — the type line ends Unit, Spell or Spell Unit by type, and a token type line reads Token Unit or Spell Token · Key: types.general.type-line</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: card: Bloomcaster; card: Download; card: Hush Mush; card: Robot; card: Fireball · Tests: 417-cr-card-types.test.ts · Demonstrated by test: 417-cr-card-types.test.ts::cr:types.general.type-line — the type line ends Unit, Spell or Spell Unit by type, and a token type line reads Token Unit or Spell Token · Key: types.general.type-line</sub>
 
 <a id="r300.3"></a>**300.3.** Units, unit tokens and spell units have stats: power and defense. Spells and spell tokens have no stats. See rules 206, 301.3, 301.4.
 
-> *Example: A Good Whale is 7/5 and a Robot token has stats; a Crystal cannot target the Fireball token beside them.*
+> *Example: A Good Whale is 7/5 and a Robot token with two counters is 2/2. A Crystal ("Put X +1/+1 counters on target unit") can target the Whale, but not the Fireball token beside it: a spell token is not a unit and has no stats.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.3; Rulebook 2023 p.3; Manual p.15 · Rulings: R129 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.general.stats — units, unit tokens and spell units carry power and defense; a spell token is no unit and takes no stat change · Key: types.general.stats</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.3; Rulebook 2023 p.3; Manual p.15 · Rulings: R129 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.general.stats — units, unit tokens and spell units carry power and defense; a spell token is no unit and takes no stat change · Key: types.general.stats</sub>
 
 <a id="r300.4"></a>**300.4.** Every unit, spell and spell unit is a card, including a unit that is in play. A token is not a card (see 304). See rule 304.
 
@@ -2526,9 +2280,7 @@ order.
 
 > *Example: Arbiter of Armistice makes cards played during battle cost 2 life more; casting a spell token costs no life.*
 
-> *Example: A spell token cast fires the "spell played" event but not the "card played" one.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R305, R129 · Tests: 337-spell-tokens-are-played.test.ts, 119-play-and-token-events.test.ts · Example tests: 337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards, 119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card · Key: types.general.nouns.card</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R305, R129 · Tests: 337-spell-tokens-are-played.test.ts, 119-play-and-token-events.test.ts · Example test: 337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards · Demonstrated by test: 119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card · Key: types.general.nouns.card</sub>
 
 <a id="r300.5e"></a>**300.5e** "Nontoken" excludes every token.
 
@@ -2571,9 +2323,7 @@ order.
 
 <a id="r301.5"></a>**301.5.** When a unit dies or is deleted, it is put into the bin. See rules 405, 304.10, 803.
 
-> *Example: A unit that dies, or is deleted, is put into the bin.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.13 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.units.dies-to-bin — a unit that dies, or is deleted, is put into the bin · Key: types.units.dies-to-bin</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.13 · Tests: 417-cr-card-types.test.ts · Demonstrated by test: 417-cr-card-types.test.ts::cr:types.units.dies-to-bin — a unit that dies, or is deleted, is put into the bin · Key: types.units.dies-to-bin</sub>
 
 <a id="r301.6"></a>**301.6.** A unit does not have to wait before it can attack or block: as long as a unit is in play, it can attack and block. See rules 604, 606, 301.7.
 
@@ -2626,9 +2376,7 @@ order.
 
 <a id="r302.2"></a>**302.2.** When a spell resolves, it goes directly to the bin. See rules 405, 704, 303.3, 304.10.
 
-> *Example: A spell that resolves goes to the bin; because it came from the stack, it is not trashed.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.13; Rulebook 2023 p.3; Manual p.13 · Tests: 35-rot-debt-trash.test.ts · Example test: 35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed · Key: types.spells.to-bin</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.13; Rulebook 2023 p.3; Manual p.13 · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed · Key: types.spells.to-bin</sub>
 
 <a id="r302.3"></a>**302.3.** A spell token is a spell. See rule 304.11.
 
@@ -2641,11 +2389,9 @@ order.
 
 <a id="r303.1"></a>**303.1.** A spell unit is both a spell and a unit. Like a spell it has a one-time effect; like a unit it has stats. See rule 300.5.
 
-> *Example: A card search treats a spell unit as both a unit and a spell.*
-
 > *Example: A played Jelly is a played spell, gives the target -2/-2, and then its body is a 2/1 unit in play.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.13; Rulebook 2023 p.3; Rulebook 2023 p.3 · Tests: 210-cardsearch.test.ts, 417-cr-card-types.test.ts · Example tests: 210-cardsearch.test.ts::a spell unit is a unit AND a spell, 417-cr-card-types.test.ts::cr:types.spell-units.what — a played Jelly is a played spell with a one-time -2/-2, and then a unit with stats · Key: types.spell-units.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.13; Rulebook 2023 p.3; Rulebook 2023 p.3 · Tests: 210-cardsearch.test.ts, 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.spell-units.what — a played Jelly is a played spell with a one-time -2/-2, and then a unit with stats · Demonstrated by test: 210-cardsearch.test.ts::a spell unit is a unit AND a spell · Key: types.spell-units.what</sub>
 
 <a id="r303.2"></a>**303.2.** A spell unit that has been played goes on the stack. It is not in play while it is on the stack. See rule 406.
 
@@ -2663,21 +2409,17 @@ order.
 
 > *Example: A spell unit played through Hooba-Pon and negated never enters play.*
 
-> *Example: A spell unit whose targets are all gone fizzles and never spawns.*
-
-> *Example: A Bloomcaster 1/1 created because a spell unit was played is still created when that spell unit is negated.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.13; Manual p.13; Manual p.43 · Designer: RAQ 1461450216874967235#1 · Tests: 396-raq-timing.test.ts, 05-rulings.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: negated, the unit does not enter play, 05-rulings.test.ts::a fizzled spell unit never spawns, 396-raq-timing.test.ts::RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind · Key: types.spell-units.prevented</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.13; Manual p.13; Manual p.43 · Designer: RAQ 1461450216874967235#1 · Tests: 396-raq-timing.test.ts, 05-rulings.test.ts · Example test: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: negated, the unit does not enter play · Demonstrated by tests: 05-rulings.test.ts::a fizzled spell unit never spawns, 396-raq-timing.test.ts::RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind · Key: types.spell-units.prevented</sub>
 
 <a id="r303.5"></a>**303.5.** Playing a spell unit is playing a spell, and while it is on the stack it is a spell: anything that refers to a spell, or to an allied spell, applies to it. See rules 300.5a, 701. *(Engine differs, see F-U06-1.)*
 
 > *Example: A spell unit played through Hooba-Pon counts as playing a spell.*
 
-> *Example: Origon negates it when it is the first spell its controller plays in the battle.*
+> *Example: Origon negates a spell unit when it is the first spell a player plays in the battle.*
 
-> *Example: Molten Riftbreaker dying negates it as an allied spell.*
+> *Example: If Molten Riftbreaker despawns while an allied spell unit is on the stack, its "negate all allied spells" negates that spell unit.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 1 gate test file · Designer: RAQ 1461450216874967235#2; RAQ 1461450216874967235#3; RAQ 1461450216874967235#4 · Tests: 396-raq-timing.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell, 396-raq-timing.test.ts::Origon negates it as the first spell, 396-raq-timing.test.ts::Molten Riftbreaker dying negates it as an allied spell · Key: types.spell-units.is-a-spell</sub>
+<sub>Basis: Designer · Verified: partial in round 4; verifier ran 5 tests (2 probes it wrote), all passed; 1 gate test file · Designer: RAQ 1461450216874967235#2; RAQ 1461450216874967235#3; RAQ 1461450216874967235#4 · Tests: 396-raq-timing.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell, 396-raq-timing.test.ts::Origon negates it as the first spell, 396-raq-timing.test.ts::Molten Riftbreaker dying negates it as an allied spell · Key: types.spell-units.is-a-spell</sub>
 
 <a id="r303.6"></a>**303.6.** A spell unit is also a unit card. An effect that lets a player play a unit lets them play a spell unit, and it is played as a spell. See rule 300.5b. *(Engine differs, see F-U06-1.)*
 
@@ -2695,23 +2437,23 @@ order.
 
 <a id="r303.8"></a>**303.8.** A spell unit that enters play without being played (for example, one put into play from a bin) does not produce its spell effect. See rules 301.9, 701.
 
-> *Example: Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play.*
+> *Example: Exhume puts a Jelly from the bin into play: its -2/-2 does not happen, and Bloomcaster does not trigger, because the Jelly was not played.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.43; Manual p.43 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.spell-units.not-played — Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play · Key: types.spell-units.not-played</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.43; Manual p.43 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.spell-units.not-played — Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play · Key: types.spell-units.not-played</sub>
 
 <a id="r303.9"></a>**303.9.** A spell unit that an effect lets a player play from somewhere other than the hand is still played: its spell effect happens, and the unit enters play only if the spell resolves. See rules 301.9, 701. *(Engine differs, see F-U06-1.)*
 
-> *Example: A Jelly that Wake the Dead plays from a bin has its spell part happen, and its body enters play only if that spell resolves. (illustrative)*
+> *Example: A Jelly that Wake the Dead plays from a bin has its spell part happen, and its body enters play only if that spell resolves.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (2 probes it wrote), 1 failed; no gate test · Printed: Manual p.43 · Designer: RAQ 1461450216874967235#0; RAQ 1461450216874967235#2 · Rulings: R165 · Key: types.spell-units.played-by-effect</sub>
 
 <a id="r303.10"></a>**303.10.** If a spell unit's own text says that another player gains control of it, it enters play under that player's control. There is no moment when its caster controls it. Its owner does not change. See rules 102, 711.
 
-> *Example: Hush Mush negates an opponent's effect and enters play as that opponent's unit, with no trigger and no handover.*
+> *Example: Hush Mush negates an opponent's effect and enters play already under that opponent's control; its caster never controls it.*
 
-> *Example: An ability of the caster's that watches allies spawn does not see Hush Mush arrive.*
+> *Example: The caster's Flourishing Flora, which watches allies spawn, does not see Hush Mush arrive.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R143 (its enters-as-that-player's-unit half), R143 (its enters-as-that-player's-unit half), R143 (its enters-as-that-player's-unit half) · Replaces: R143 (partly superseded: its "still your bin it dies to" clause was replaced by R250 (zones follow control)) · Tests: 23-wood-a.test.ts · Example tests: 23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated effect's controller, 23-wood-a.test.ts::R143 #96: the CASTER's Flourishing Flora takes NO counter off Hush Mush · Key: types.spell-units.control</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R143 (its enters-as-that-player's-unit half), R143 (its enters-as-that-player's-unit half), R143 (its enters-as-that-player's-unit half) · Replaces: R143 (partly superseded: its "still your bin it dies to" clause was replaced by R250 (zones follow control)) · Tests: 23-wood-a.test.ts · Example tests: 23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated effect's controller, 23-wood-a.test.ts::R143 #96: the CASTER's Flourishing Flora takes NO counter off Hush Mush · Key: types.spell-units.control</sub>
 
 <sub>Discrepancies: D-U06-8 (discrepancies.md)</sub>
 
@@ -2719,9 +2461,7 @@ order.
 
 > *Example: Borrower of Forms has the copied unit's name, stats and attributes from the instant it enters play.*
 
-> *Example: Becoming the copy puts nothing on the stack, so no trigger-ordering question is asked.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R147, R147 · Tests: 26-metal-a.test.ts · Example tests: 26-metal-a.test.ts::R147: the body wears the borrowed IDENTITY from the instant it enters play, 26-metal-a.test.ts::R147: becoming the copy is NOT a trigger · Key: types.spell-units.copy</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R147, R147 · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::R147: the body wears the borrowed IDENTITY from the instant it enters play · Demonstrated by test: 26-metal-a.test.ts::R147: becoming the copy is NOT a trigger · Key: types.spell-units.copy</sub>
 
 <a id="r303.11a"></a>**303.11a** While a spell unit is a copy of a unit, it is not a spell unit. See rule 710.
 
@@ -2740,23 +2480,19 @@ order.
 
 <a id="r304.2"></a>**304.2.** A token is not a card. See rules 300.4, 300.5d.
 
-> *Example: A spell token being cast is a spell played but not a card played.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R133 (its tokens-are-not-cards half), R306, R129, R346 · Replaces: R133 (partly superseded: its second half ("Tokens are trashed, yes") was withdrawn by R306) · Tests: 119-play-and-token-events.test.ts · Example test: 119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card · Key: types.tokens.not-cards</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R133 (its tokens-are-not-cards half), R306, R129, R346 · Replaces: R133 (partly superseded: its second half ("Tokens are trashed, yes") was withdrawn by R306) · Tests: 119-play-and-token-events.test.ts · Demonstrated by test: 119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card · Key: types.tokens.not-cards</sub>
 
 <sub>Discrepancies: D-U06-1 (discrepancies.md)</sub>
 
 <a id="r304.3"></a>**304.3.** A token is either a unit token or a spell token. See rule 300.1.
 
-> *Example: Created Robots and Wisps are unit tokens; created Fireballs, Poisons and Crystals are spell tokens.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.15; Manual p.15 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.tokens.kinds — a created token is either a unit token (a unit with the token flag) or a spell token · Key: types.tokens.kinds</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.15; Manual p.15 · Tests: 417-cr-card-types.test.ts · Demonstrated by test: 417-cr-card-types.test.ts::cr:types.tokens.kinds — a created token is either a unit token (a unit with the token flag) or a spell token · Key: types.tokens.kinds</sub>
 
 <a id="r304.4"></a>**304.4.** A unit that an effect creates is a unit token, whether or not the effect calls it a token.
 
-> *Example: Download ("Gain control of target token") can take an X/X unit that an effect created.*
+> *Example: Spawntender creates an 8/8 unit without calling it a token; it is still a token, so Download ("Gain control of target token") can take it.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Spawntender · Designer: RAQ 1353864175910387742#2 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take · Key: types.tokens.created-units</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Spawntender · Designer: RAQ 1353864175910387742#2 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take · Key: types.tokens.created-units</sub>
 
 <a id="r304.4a"></a>**304.4a** A copy of a unit that an effect creates is a token, even when the unit copied is not. See rule 710.
 
@@ -2774,7 +2510,7 @@ order.
 
 > *Example: A Borrower of Forms that copies a Robot token is a nontoken unit.*
 
-> *Example: With that Borrower on the board beside a real token, Download offers the token but not the Borrower. (illustrative)*
+> *Example: With that Borrower in play beside a real token, Download can take the token but not the Borrower.*
 
 <sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1372468222158180424#9 · Tests: 393-raq-mods.test.ts, 417-cr-card-types.test.ts · Example tests: 393-raq-mods.test.ts::copying a Robot token makes a nontoken unit, 417-cr-card-types.test.ts::cr:types.tokens.copying-a-token — Download is playable with a Borrower copy of a Robot on board and does not offer the Borrower · Key: types.tokens.copying-a-token</sub>
 
@@ -2796,9 +2532,7 @@ order.
 
 > *Example: Tidelurker's 2/2, created mid-attack, stays in the enemy region and cannot block the counterattack.*
 
-> *Example: The stranded 1/1s return home at regroup.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.15 · Rulings: R115, R115, R115 · Tests: 98-spawn-region.test.ts · Example tests: 98-spawn-region.test.ts::Tidelurker's mid-attack 2/2 stays in the enemy region, 98-spawn-region.test.ts::the stranded 1/1s walk home at regroup · Key: types.tokens.region.mid-attack</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.15 · Rulings: R115, R115, R115 · Tests: 98-spawn-region.test.ts · Example test: 98-spawn-region.test.ts::Tidelurker's mid-attack 2/2 stays in the enemy region · Demonstrated by test: 98-spawn-region.test.ts::the stranded 1/1s walk home at regroup · Key: types.tokens.region.mid-attack</sub>
 
 <a id="r304.9"></a>**304.9.** A unit token is a unit. It works exactly as a unit card does, except as these rules say otherwise. See rules 301, 304.10.
 
@@ -2816,13 +2550,11 @@ order.
 
 > *Example: A unit token that dies enters the bin, is not trashed, and is then erased.*
 
-> *Example: The erase happens before anything the token's visit triggered can resolve.*
-
 > *Example: Rider of the Tides, which watches cards entering a hand during battle, sees a recalled unit token.*
 
 > *Example: A Fireball recalled off the stack enters its controller's hand, Rider of the Tides sees it, and it is erased.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests, all passed; 3 gate test files · Designer: RAQ 1355689559609839787#4; RAQ 1355689559609839787#3 · Rulings: R69 (its zone-visit half), R335 · Replaces: R69 (partly superseded: its token-trash subsection reversed by R306; its Unstable order amended by R137) · Tests: 35-rot-debt-trash.test.ts, 15-water-b.test.ts, 393-raq-mods.test.ts · Example tests: 35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased, 35-rot-debt-trash.test.ts::R69: the erase lands before anything the visit queued can RESOLVE, 15-water-b.test.ts::Rider of the Tides: recalling a TOKEN triggers it too, 393-raq-mods.test.ts::RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand · Key: types.tokens.leaving-play</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests, all passed; 3 gate test files · Designer: RAQ 1355689559609839787#4; RAQ 1355689559609839787#3 · Rulings: R69 (its zone-visit half), R335 · Replaces: R69 (partly superseded: its token-trash subsection reversed by R306; its Unstable order amended by R137) · Tests: 35-rot-debt-trash.test.ts, 15-water-b.test.ts, 393-raq-mods.test.ts · Example tests: 35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased, 15-water-b.test.ts::Rider of the Tides: recalling a TOKEN triggers it too, 393-raq-mods.test.ts::RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand · Demonstrated by test: 35-rot-debt-trash.test.ts::R69: the erase lands before anything the visit queued can RESOLVE · Key: types.tokens.leaving-play</sub>
 
 <sub>Discrepancies: D-U06-10, D-U06-2 (discrepancies.md)</sub>
 
@@ -2834,23 +2566,17 @@ order.
 
 <a id="r304.10b"></a>**304.10b** A unit token that dies still dies: abilities that trigger when a unit dies see it, unless they say "nontoken". See rule 713.
 
-> *Example: A dying unit token is seen by "whenever another unit dies" but not by a "nontoken unit dies" watcher.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R306 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.tokens.leaving-play.still-dies — a dying unit token is seen by "whenever another unit dies" but not by a "nontoken unit dies" watcher · Key: types.tokens.leaving-play.still-dies</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R306 · Tests: 417-cr-card-types.test.ts · Demonstrated by test: 417-cr-card-types.test.ts::cr:types.tokens.leaving-play.still-dies — a dying unit token is seen by "whenever another unit dies" but not by a "nontoken unit dies" watcher · Key: types.tokens.leaving-play.still-dies</sub>
 
 <a id="r304.11"></a>**304.11.** A spell token is a spell that is in play. Its controller may cast it from play; casting it works the same way as casting a spell from the hand. See rules 302.3, 702.
 
-> *Example: A Fireball token goes to the stack in battle when cast.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Tests: 03-stack.test.ts · Example test: 03-stack.test.ts::Fireball goes to the stack in battle, Burst casts them all at once · Key: types.tokens.spell-tokens</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Tests: 03-stack.test.ts · Demonstrated by test: 03-stack.test.ts::Fireball goes to the stack in battle, Burst casts them all at once · Key: types.tokens.spell-tokens</sub>
 
 <sub>Discrepancies: D-GL-1 (discrepancies.md)</sub>
 
 <a id="r304.11a"></a>**304.11a** A spell token can be cast only in the region it is in. See rule 601.
 
-> *Example: A spell token left at home cannot be cast in a battle in another region.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.15; Rulebook 2023 p.4 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.region — a spell token left at home cannot be cast in a battle in another region · Key: types.tokens.spell-tokens.region</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.15; Rulebook 2023 p.4 · Tests: 417-cr-card-types.test.ts · Demonstrated by test: 417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.region — a spell token left at home cannot be cast in a battle in another region · Key: types.tokens.spell-tokens.region</sub>
 
 <a id="r304.11b"></a>**304.11b** Casting a spell token is playing a spell. It is played from play, so it is played from somewhere other than the hand. See rules 701, 702, 300.5d.
 
@@ -2884,9 +2610,7 @@ order.
 
 <a id="r304.11g"></a>**304.11g** A spell token with Burst is cast together with every other spell token of the same name that its controller has in that region. They are still separate spells. See rules 803, 702.
 
-> *Example: Burst casts all of a player's tokens of that name and leaves their other burst tokens alone.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.15; Manual p.15 · Rulings: R81 (its group-by-name half) · Tests: 69-damage-batch.test.ts, 417-cr-card-types.test.ts · Example test: 69-damage-batch.test.ts::R81: Burst casts all your tokens OF THAT NAME · Key: types.tokens.spell-tokens.burst</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.15; Manual p.15 · Rulings: R81 (its group-by-name half) · Tests: 69-damage-batch.test.ts, 417-cr-card-types.test.ts · Demonstrated by test: 69-damage-batch.test.ts::R81: Burst casts all your tokens OF THAT NAME · Key: types.tokens.spell-tokens.burst</sub>
 
 <a id="r304.11h"></a>**304.11h** A spell token is not a unit and has no stats. An ability that refers to a unit token does not apply to a spell token. See rule 300.5b.
 
@@ -2896,17 +2620,13 @@ order.
 
 <a id="r304.12"></a>**304.12.** A spell token cannot move to another region on its own. Its controller may bring it into the enemy region with an attack, but only together with at least one attacking unit, and the move cannot be undone. See rule 604.
 
-> *Example: Spell tokens travel only with units, and only from the region they stand in.*
-
 > *Example: A Fireball rides into the enemy region with an attacking The Foretold and stays there after the Foretold dies; with no attacking unit it stays home.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts · Example tests: 78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in, 417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.moving — a spell token rides into the enemy region only with an attacking unit, and stays there · Key: types.tokens.spell-tokens.moving</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.moving — a spell token rides into the enemy region only with an attacking unit, and stays there · Demonstrated by test: 78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in · Key: types.tokens.spell-tokens.moving</sub>
 
 <a id="r304.12a"></a>**304.12a** A counterattack may bring spell tokens the same way: spell tokens that stand in the region the counterattacking units leave from may go with them. See rule 610.
 
-> *Example: A counterattacking player sends spell tokens along with their counterattacking units.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R87 · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R87: declareBlocks takes spellTokens · Key: types.tokens.spell-tokens.moving.counterattack</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R87 · Tests: 78-round17-core.test.ts · Demonstrated by test: 78-round17-core.test.ts::R87: declareBlocks takes spellTokens · Key: types.tokens.spell-tokens.moving.counterattack</sub>
 
 <sub>Discrepancies: D-U06-6 (discrepancies.md)</sub>
 
@@ -2918,23 +2638,21 @@ order.
 
 <a id="r304.13"></a>**304.13.** During regroup, every spell token still in play is erased, including unused spell tokens in their controller's own region. See rules 506, 304.9a.
 
-> *Example: With no Harbinger of Immolation anywhere, spell tokens are erased at regroup.*
-
 > *Example: With Harbinger of Immolation in play, its controller's spell tokens stay through regroup.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.15; Manual p.15; Manual p.15; Rulebook 2023 p.4 · Tests: 12-fire-a.test.ts · Example tests: 12-fire-a.test.ts::regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased, 12-fire-a.test.ts::Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup · Key: types.tokens.spell-tokens.regroup</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.15; Manual p.15; Manual p.15; Rulebook 2023 p.4 · Tests: 12-fire-a.test.ts · Example test: 12-fire-a.test.ts::Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup · Demonstrated by test: 12-fire-a.test.ts::regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased · Key: types.tokens.spell-tokens.regroup</sub>
 
 <a id="r304.14"></a>**304.14.** When an effect refers to each unique token (Automaton of Abundance), two tokens are the same unique token only if they have both the same name and the same X.
 
-> *Example: Manufacture creates a Robot 3, a Robot 2 and a Robot 1: three unique tokens.*
+> *Example: With Automaton of Abundance in play, Manufacture creates a Robot 3, a Robot 2 and a Robot 1: three unique tokens, so one extra of each is made.*
 
 > *Example: Three Robot 2s are one unique token.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R157 §24, R161 · Replaces: R104 (partly reversed by R157 §24: R104 counted unique tokens by name alone) · Tests: 136-triggers-and-modes.test.ts · Example tests: 136-triggers-and-modes.test.ts::R157 §24: end to end, 136-triggers-and-modes.test.ts::R157 §24: three IDENTICAL Robot 2s · Key: types.tokens.unique</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R157 §24, R161 · Replaces: R104 (partly reversed by R157 §24: R104 counted unique tokens by name alone) · Tests: 136-triggers-and-modes.test.ts · Example tests: 136-triggers-and-modes.test.ts::R157 §24: end to end, 136-triggers-and-modes.test.ts::R157 §24: three IDENTICAL Robot 2s · Key: types.tokens.unique</sub>
 
 <a id="r304.15"></a>**304.15.** Creating a token is not playing it. A unit token that an effect created was not played. See rules 701, 304.11b.
 
-> *Example: Manufacture creating Robot tokens is not playing them (Bloomcaster, Stalwart Sentinel silent).*
+> *Example: Manufacture creates Robot tokens. That is not playing them, so Bloomcaster and Stalwart Sentinel do not trigger.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R26 (its token-creation half), R342 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.tokens.creating-not-playing — Manufacture creating Robot tokens is not playing them (Bloomcaster, Stalwart Sentinel silent) · Key: types.tokens.creating-not-playing</sub>
 
@@ -2943,31 +2661,25 @@ order.
 
 <a id="r305.1"></a>**305.1.** A modification (mod) is a card that is applied to another card instead of being played. A modified card is treated as a single card with all of the text its mods add, except that a spell or a spell token that is modified gains only the mod's attributes (721). The two kinds of modification are augment and graft. See rules 720, 721, 722, 723, 724.
 
-> *Example: An augment that grants only text gives a spell token nothing.*
-
 > *Example: Curio Drifter augmented onto a Good Whale is not played and gives the Whale Evasive; Biotoxicity is grafted; a Fireball augmented with Bloomcaster does not create 1/1s.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.32; Manual p.32; Manual p.32; Rulebook 2023 p.15 · Designer: RAQ 1537748882501668934#0 · Rulings: R89 · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts · Example tests: 78-round17-core.test.ts::R89: a text-only augment on a token grants nothing, 417-cr-card-types.test.ts::cr:types.mods.what — an augment is applied not played and makes one card; a graft is the other kind; a text-only augment gives a spell token nothing · Key: types.mods.what</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.32; Manual p.32; Manual p.32; Rulebook 2023 p.15 · Designer: RAQ 1537748882501668934#0 · Rulings: R89 · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.mods.what — an augment is applied not played and makes one card; a graft is the other kind; a text-only augment gives a spell token nothing · Demonstrated by test: 78-round17-core.test.ts::R89: a text-only augment on a token grants nothing · Key: types.mods.what</sub>
 
 <sub>Discrepancies: D-U06-11 (discrepancies.md)</sub>
 
 <a id="r305.2"></a>**305.2.** Applying a mod is not playing a card, so an ability that triggers on playing a unit or a spell does not trigger on it. See rules 701, 720.
 
-> *Example: Applying a Virus during battle fires neither the "spell played" nor the "card played" event.*
+> *Example: A Virus applied from hand during battle is not a card being played, so Void Mandible ("When a nontoken card is played during battle…") does not trigger.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1537748882501668934#0 · Tests: 119-play-and-token-events.test.ts · Example test: 119-play-and-token-events.test.ts::R37 holds: applying a VIRUS fires neither event · Key: types.mods.applied-not-played</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1537748882501668934#0 · Tests: 119-play-and-token-events.test.ts · Example test: 119-play-and-token-events.test.ts::R37 holds: applying a VIRUS fires neither event · Key: types.mods.applied-not-played</sub>
 
 <a id="r305.3"></a>**305.3.** Modifying is done during the deployment phase. A Virus can also be applied from the hand during battle. See rules 507, 723.
 
-> *Example: A non-Virus augment cannot be applied from hand during battle, but can in deployment.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.32; Manual p.13; Manual p.13 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.mods.when — a non-Virus augment cannot be applied from hand during battle, but can in deployment · Key: types.mods.when</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.32; Manual p.13; Manual p.13 · Tests: 417-cr-card-types.test.ts · Demonstrated by test: 417-cr-card-types.test.ts::cr:types.mods.when — a non-Virus augment cannot be applied from hand during battle, but can in deployment · Key: types.mods.when</sub>
 
 <a id="r305.4"></a>**305.4.** A card's augment and graft text works when the card is played normally, not only when it is applied as a mod. See rules 721, 722.
 
-> *Example: A card played normally still reads its own [Augment] text.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.35; Manual p.43 · Tests: 248-augment-box-scope.test.ts · Example test: 248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box · Key: types.mods.text-live</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.35; Manual p.43 · Tests: 248-augment-box-scope.test.ts · Demonstrated by test: 248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box · Key: types.mods.text-live</sub>
 
 <a id="r305.5"></a>**305.5.** A spell or spell unit with a graft symbol resolves normally when it is played, and can later be applied as a graft from the bin. See rule 722.
 
@@ -2979,15 +2691,11 @@ order.
 
 <a id="r305.6"></a>**305.6.** During deployment, a spell token in play may be augmented, with any augment and not only a Virus. The spell token gains only the mod's attributes, not its text. See rule 721.
 
-> *Example: A spell token is offered as an augment host during deployment.*
-
 > *Example: A Fireball augmented with a mod granting {Powerful} deals double damage when cast.*
 
-> *Example: An augment that grants only text gives a spell token nothing.*
+> *Example: Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment.*
 
-> *Example: Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment. (illustrative)*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R89, R89, R89 · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts · Example tests: 78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment, 78-round17-core.test.ts::R89: only ATTRIBUTES transfer, 78-round17-core.test.ts::R89: a text-only augment on a token grants nothing, 417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment · Key: types.mods.spell-token-host</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R89, R89, R89 · Tests: 78-round17-core.test.ts, 417-cr-card-types.test.ts · Example tests: 78-round17-core.test.ts::R89: only ATTRIBUTES transfer, 417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment · Demonstrated by tests: 78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment, 78-round17-core.test.ts::R89: a text-only augment on a token grants nothing · Key: types.mods.spell-token-host</sub>
 
 <sub>Discrepancies: D-U06-7, D-U06-9 (discrepancies.md)</sub>
 
@@ -2998,9 +2706,7 @@ order.
 
 <a id="r400.1"></a>**400.1.** The zones of the game are the deck, the hand, the cache, play, the bin, the stack, the erased pile, the recycle pile and the pack. See rules 401, 402, 403, 404, 405, 406, 407, 408, 409.
 
-> *Example: The engine keeps cards in exactly nine zones: deck, hand, cache, play, bin, stack, erased pile, recycle pile and pack.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16 · Rulings: R145, R145, R296 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.general.list — the engine keeps cards in exactly nine zones: deck, hand, cache, play, bin, stack, erased pile, recycle pile and pack · Key: zones.general.list</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16 · Rulings: R145, R145, R296 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.general.list — the engine keeps cards in exactly nine zones: deck, hand, cache, play, bin, stack, erased pile, recycle pile and pack · Key: zones.general.list</sub>
 
 <sub>Discrepancies: D-U07-11 (discrepancies.md)</sub>
 
@@ -3022,9 +2728,7 @@ order.
 
 <a id="r400.3"></a>**400.3.** Each player has their own hand, cache, bin and erased pile. See rules 402, 403, 405, 407.
 
-> *Example: A card put in one player hand, cache, bin or erased pile leaves the other player four zones untouched.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.19 · Rulings: R250 (its §4 zones-follow-control half), R262 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.general.per-player — a card put in one player hand, cache, bin or erased pile leaves the other player four zones untouched · Key: zones.general.per-player</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.19 · Rulings: R250 (its §4 zones-follow-control half), R262 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.general.per-player — a card put in one player hand, cache, bin or erased pile leaves the other player four zones untouched · Key: zones.general.per-player</sub>
 
 <a id="r400.4"></a>**400.4.** A card that leaves play for a bin, a hand, a cache or an erased pile goes to that zone of the player who controlled it when it left play, not to its owner's. See rules 102, 711. *(Engine differs, see F-U07-7.)*
 
@@ -3048,15 +2752,11 @@ order.
 
 > *Example: Pull Under: "Delete target unit. If you do, put it and all of its mods into your bin." The deleted unit and its mods go to the bin of Pull Under's caster, whoever controlled the unit.*
 
-> *Example: Grob makes the target unit's controller cache it, so a stolen unit goes to the thief's cache.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Pull Under; card: Cosmic Reversal · Rulings: R262, R157 (§27) · Tests: 246-zones-follow-control.test.ts, 15-water-b.test.ts, 135-exchange-and-zones.test.ts · Example tests: 15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin, 135-exchange-and-zones.test.ts::Grob caches a STOLEN unit into the CONTROLLER · Key: zones.general.follow-control.printed-destination</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Pull Under; card: Cosmic Reversal · Rulings: R262, R157 (§27) · Tests: 246-zones-follow-control.test.ts, 15-water-b.test.ts, 135-exchange-and-zones.test.ts · Example test: 15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin · Demonstrated by test: 135-exchange-and-zones.test.ts::Grob caches a STOLEN unit into the CONTROLLER · Key: zones.general.follow-control.printed-destination</sub>
 
 <a id="r400.4c"></a>**400.4c** In constructed, a card's owner is the player who brought it to the game. See rule 901.
 
-> *Example: In constructed every card a seat holds comes from the deck that seat brought, and a unit it plays is owned by it even after control changes.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R262 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.general.follow-control.constructed-owner — in constructed every card a seat holds comes from the deck that seat brought, and a unit it plays is owned by it even after control changes · Key: zones.general.follow-control.constructed-owner</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R262 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.general.follow-control.constructed-owner — in constructed every card a seat holds comes from the deck that seat brought, and a unit it plays is owned by it even after control changes · Key: zones.general.follow-control.constructed-owner</sub>
 
 <sub>Discrepancies: D-U07-8 (discrepancies.md)</sub>
 
@@ -3083,9 +2783,7 @@ order.
 
 <a id="r401.1"></a>**401.1.** The deck is the face-down pile that cards are drawn from and that packs are dealt from. See rule 503.
 
-> *Example: The deck is face down to every seat, a draw takes its top card, and the live-draft packs are dealt out of it.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16; Rulebook 2023 p.2 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.deck.what — the deck is face down to every seat, a draw takes its top card, and the live-draft packs are dealt out of it · Key: zones.deck.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16; Rulebook 2023 p.2 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.deck.what — the deck is face down to every seat, a draw takes its top card, and the live-draft packs are dealt out of it · Key: zones.deck.what</sub>
 
 <a id="r401.2"></a>**401.2.** The cards in the deck are hidden: no player may look at them or at their order. A card put on the bottom of the deck is not revealed unless the effect says so. See rule 408.
 
@@ -3093,15 +2791,11 @@ order.
 
 <a id="r401.3"></a>**401.3.** In live draft, all players draw from one shared deck. See rule 902.
 
-> *Example: In live draft both players draw from the one shared deck.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.11; Manual p.16 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.deck.shared — in live draft both players draw from the one shared deck · Key: zones.deck.shared</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.11; Manual p.16 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.deck.shared — in live draft both players draw from the one shared deck · Key: zones.deck.shared</sub>
 
 <a id="r401.3a"></a>**401.3a** In constructed, there is no shared deck: each player has their own deck. See rule 901.
 
-> *Example: In constructed there is no shared deck and each seat draws from its own.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.10; Manual p.16 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.deck.shared.constructed — in constructed there is no shared deck and each seat draws from its own · Key: zones.deck.shared.constructed</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.10; Manual p.16 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.deck.shared.constructed — in constructed there is no shared deck and each seat draws from its own · Key: zones.deck.shared.constructed</sub>
 
 <a id="r401.3b"></a>**401.3b** "The deck" in card text means the deck of the effect's controller: the shared deck in live draft, that player's own deck in constructed.
 
@@ -3120,15 +2814,11 @@ order.
 
 <a id="r402.1"></a>**402.1.** Each player has a hand. Drawn cards go to the hand, and cards in the hand are played from there. See rules 503, 702.
 
-> *Example: A drawn card goes to the hand, and a card is played out of the hand.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16; Rulebook 2023 p.15 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.hand.what — a drawn card goes to the hand, and a card is played out of the hand · Key: zones.hand.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16; Rulebook 2023 p.15 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.hand.what — a drawn card goes to the hand, and a card is played out of the hand · Key: zones.hand.what</sub>
 
 <a id="r402.2"></a>**402.2.** A hand is hidden from the other players.
 
-> *Example: The server view shows a hand to its holder and only card backs to the other player.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R197b · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.hand.hidden — the server view shows a hand to its holder and only card backs to the other player · Key: zones.hand.hidden</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R197b · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.hand.hidden — the server view shows a hand to its holder and only card backs to the other player · Key: zones.hand.hidden</sub>
 
 <a id="r402.2a"></a>**402.2a** An effect that lets a player "look at" a hand shows it to that player only. An effect that makes a player "reveal" their hand shows it to every player.
 
@@ -3140,23 +2830,21 @@ order.
 
 > *Example: Dreadspawn Horror does not count spell tokens as cards in hand.*
 
-> *Example: Nor does Astral Tidewraith.*
+> *Example: Astral Tidewraith's damage, equal to the number of cards in each player's hand, does not count spell tokens either.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1355689559609839787#0; RAQ 1355689559609839787#1 · Rulings: R342 · Tests: 408-raq-new-threads.test.ts · Example tests: 408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: Dreadspawn Horror does not count spell tokens, 408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: Astral Tidewraith · Key: zones.hand.spell-tokens</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1355689559609839787#0; RAQ 1355689559609839787#1 · Rulings: R342 · Tests: 408-raq-new-threads.test.ts · Example tests: 408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: Dreadspawn Horror does not count spell tokens, 408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: Astral Tidewraith · Key: zones.hand.spell-tokens</sub>
 
 <a id="r402.4"></a>**402.4.** A card enters a hand whenever an effect puts it there: a draw, a recall, or a move out of a bin, the stack, a cache or another hand. Several cards that enter one hand in a single move enter it together, as one event ("one or more cards enter a hand"). See rule 706.
 
 > *Example: Collect Remains puts a card from a bin into its caster's hand during battle; Rider of the Tides sees a card enter a hand, though it was neither drawn nor recalled.*
 
-> *Example: A recall of two cards from a bin is one entry, not two.*
+> *Example: Two cards that move from a bin to a hand in one move enter it together: an ability watching for cards entering a hand triggers once, not twice.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R179 · Tests: 152-hand-entry.test.ts · Example tests: 152-hand-entry.test.ts::Rider of the Tides: a BIN recursion (Collect Remains) is a card entering a hand, 152-hand-entry.test.ts::a multi-card move fires exactly ONE handEntered · Key: zones.hand.entering</sub>
 
 <a id="r402.5"></a>**402.5.** Discarding a card moves it from its hand to the bin. Discarding is not playing the card: nothing goes on the stack. See rules 405, 701, 801.
 
-> *Example: A card discarded from a hand goes to the bin and is trashed.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R65 (its discard-me and erased-pile halves), R40 (its definition: a card entering a bin from anywhere but the stack) · Tests: 35-rot-debt-trash.test.ts · Example test: 35-rot-debt-trash.test.ts::R40: discarding from hand trashes · Key: zones.hand.discard</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R65 (its discard-me and erased-pile halves), R40 (its definition: a card entering a bin from anywhere but the stack) · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R40: discarding from hand trashes · Key: zones.hand.discard</sub>
 
 <a id="r402.6"></a>**402.6.** Card text that restricts playing a card "from your hand" restricts only the hand. The card may still be played from any other zone an effect allows.
 
@@ -3169,21 +2857,15 @@ order.
 
 <a id="r403.1"></a>**403.1.** The cache is a zone of its own, beside the hand, the bin and the deck. Effects put cards into it ("cache"), out of the hand, the bin, the deck or play. See rules 801, 803.
 
-> *Example: Cards can be cached out of the hand, the bin and the top of the deck.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R41 · Our glossary (not a source): Cache · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R41: the cache primitives move cards out of hand, bin and deck · Key: zones.cache.what</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R41 · Our glossary (not a source): Cache · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R41: the cache primitives move cards out of hand, bin and deck · Key: zones.cache.what</sub>
 
 <a id="r403.2"></a>**403.2.** The cache is public. Every player can see every cached card, and any prophecy attached to it.
 
-> *Example: Both players read the same cache, with nothing hidden.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R41 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R41: the cache is PUBLIC · Key: zones.cache.public</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R41 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R41: the cache is PUBLIC · Key: zones.cache.public</sub>
 
 <a id="r403.3"></a>**403.3.** Being in the cache does not by itself let a player do anything with a card.
 
-> *Example: A card cached with no permission can never be played.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R303, R303 · Our glossary (not a source): Cache · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R41: being in the cache is NOT permission · Key: zones.cache.no-permission</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R303, R303 · Our glossary (not a source): Cache · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R41: being in the cache is NOT permission · Key: zones.cache.no-permission</sub>
 
 <a id="r403.3a"></a>**403.3a** A cached card can be used only while a permission on it is live: a prophecy on it that has been fulfilled, or a glimpse that cached it this turn. See rules 801, 803.
 
@@ -3193,27 +2875,17 @@ order.
 
 > *Example: A glimpsed Virus in the cache is augmented onto an enemy unit during battle.*
 
-> *Example: A live glimpse lets the cached card be grafted.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1537748882501668934#3; RAQ 1537748882501668934#4 · Rulings: R311 · Tests: 370-cached-virus-in-battle.test.ts, 315-cache-mod-permission.test.ts, 369-cache-is-the-hand.test.ts · Example tests: 370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, 315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity · Key: zones.cache.no-permission.like-hand</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1537748882501668934#3; RAQ 1537748882501668934#4 · Rulings: R311 · Tests: 370-cached-virus-in-battle.test.ts, 315-cache-mod-permission.test.ts, 369-cache-is-the-hand.test.ts · Example test: 370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle · Demonstrated by test: 315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity · Key: zones.cache.no-permission.like-hand</sub>
 
 <sub>Discrepancies: D-U07-2 (discrepancies.md)</sub>
 
 <a id="r403.3c"></a>**403.3c** A card used under a fulfilled prophecy costs nothing and ignores affinity. A card used under a glimpse costs its mana but ignores affinity. This holds for every way of using it, mods included.
 
-> *Example: A released prophecy is played for free, ignoring affinity.*
-
-> *Example: A live glimpse does not waive the mana: a player who cannot pay is refused.*
-
-> *Example: A live glimpse grafts for the card's mana, ignoring affinity.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 4 tests, all passed; 2 gate test files · Rulings: R311, R311 · Tests: 36-cache-prophecy.test.ts, 315-cache-mod-permission.test.ts · Example tests: 36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity, 315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana, 315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity · Key: zones.cache.no-permission.price</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 4 tests, all passed; 2 gate test files · Rulings: R311, R311 · Tests: 36-cache-prophecy.test.ts, 315-cache-mod-permission.test.ts · Demonstrated by tests: 36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity, 315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana, 315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity · Key: zones.cache.no-permission.price</sub>
 
 <a id="r403.3d"></a>**403.3d** A cached card keeps its printed timing. A permission says that the card may be used, not when.
 
-> *Example: A released {Battle} card is refused in deployment.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R311 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R42: normal TIMING still applies · Key: zones.cache.no-permission.timing</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R311 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R42: normal TIMING still applies · Key: zones.cache.no-permission.timing</sub>
 
 <a id="r403.4"></a>**403.4.** The cache is not the hand. A cached card cannot be discarded, and card text that names the hand does not reach the cache. See rule 402.6.
 
@@ -3221,9 +2893,7 @@ order.
 
 <a id="r403.5"></a>**403.5.** When a glimpse permission ends, the card stays in the cache, with no permission.
 
-> *Example: The glimpse permission ends at end of turn; the card is still in the cache.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R303, R45 · Tests: 36-cache-prophecy.test.ts, 315-cache-mod-permission.test.ts · Example test: 36-cache-prophecy.test.ts::R45: the glimpse permission expires at end of turn · Key: zones.cache.lapse</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R303, R45 · Tests: 36-cache-prophecy.test.ts, 315-cache-mod-permission.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R45: the glimpse permission expires at end of turn · Key: zones.cache.lapse</sub>
 
 <sub>Discrepancies: D-U07-6 (discrepancies.md)</sub>
 
@@ -3237,24 +2907,18 @@ order.
 
 <a id="r403.7"></a>**403.7.** When a unit in play is cached, only the card goes to the cache. Its mods go to the bin. See rules 410, 720.
 
-> *Example: A cached unit's mods go to the bin (and are trashed there).*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R46 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin · Key: zones.cache.from-play</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R46 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin · Key: zones.cache.from-play</sub>
 
 <a id="r403.8"></a>**403.8.** A card in the cache under a live glimpse permission may be prophesied where it stands. It does not move and is not cached a second time, and the glimpse permission is used up. See rule 803.
 
-> *Example: A glimpsed card with a prophecy banner is prophesied in deployment without leaving the cache.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R308, R308 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache · Key: zones.cache.prophesy-in-place</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R308, R308 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache · Key: zones.cache.prophesy-in-place</sub>
 
 <a id="r404"></a>
 ### 404. Play
 
 <a id="r404.1"></a>**404.1.** Play is the zone of the units, resources and tokens on the table. A unit stays in play until something removes it. See rules 601, 602.
 
-> *Example: A unit in play stays there through whole turns until something removes it.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13; Manual p.13; Manual p.18 · Rulings: R145 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.play.what — a unit in play stays there through whole turns until something removes it · Key: zones.play.what</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13; Manual p.13; Manual p.18 · Rulings: R145 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.play.what — a unit in play stays there through whole turns until something removes it · Key: zones.play.what</sub>
 
 <a id="r404.1a"></a>**404.1a** A token is created directly into play, in the region where it was created. See rule 304.
 
@@ -3273,17 +2937,13 @@ order.
 
 <a id="r405.1"></a>**405.1.** The bin is a player's discard pile. See rule 400.3.
 
-> *Example: A discarded card goes to the bin of the player who discarded it.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13; Manual p.44 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.bin.what — a discarded card goes to the bin of the player who discarded it · Key: zones.bin.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13; Manual p.44 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.bin.what — a discarded card goes to the bin of the player who discarded it · Key: zones.bin.what</sub>
 
 <sub>Discrepancies: D-U07-7 (discrepancies.md)</sub>
 
 <a id="r405.2"></a>**405.2.** A card goes to the bin when: a unit dies or is deleted; a unit is sacrificed; a spell resolves; a card is discarded; or a card that was being played is negated or fails to resolve, unless a rule sends it elsewhere. See rules 704, 801.
 
-> *Example: A unit that dies, is deleted or is sacrificed, and a discarded card, each go to the bin.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13; Manual p.41; Rulebook 2023 p.3; Manual p.34 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.bin.entering — a unit that dies, is deleted or is sacrificed, and a discarded card, each go to the bin · Key: zones.bin.entering</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13; Manual p.41; Rulebook 2023 p.3; Manual p.34 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.bin.entering — a unit that dies, is deleted or is sacrificed, and a discarded card, each go to the bin · Key: zones.bin.entering</sub>
 
 <a id="r405.2a"></a>**405.2a** A spell unit that is prevented from resolving (for example because its targets became invalid) does not spawn. It goes to the bin.
 
@@ -3297,23 +2957,15 @@ order.
 
 <a id="r405.3"></a>**405.3.** A unit that dies goes to the bin of the player who controlled it when it died, unless the effect that kills it names another bin or the unit is {Unstable} (see rule 405.5). If it is a card, the player whose bin it enters trashes it; a token is never trashed. See rules 400.4, 801, 405.5, 405.4.
 
-> *Example: Every unit-shaped card in the pool, dying under a controller who is not its owner, goes to the controller's bin.*
-
 > *Example: Pull Under deletes an enemy unit and puts it into its caster's bin; the caster trashes it.*
 
 > *Example: A token that Pull Under deletes enters the caster's bin but is not trashed.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Pull Under · Rulings: R250 (its §4 zones-follow-control half), R306 · Replaces: R140 (its Biomass Devourer premise that a dying card bins to its OWNER, superseded by R250) · Tests: 229-cosmic-and-control.test.ts, 15-water-b.test.ts, 338-tokens-are-not-trashed.test.ts · Example tests: 229-cosmic-and-control.test.ts::R250 whole pool: every unit-shaped card dies into the bin of whoever controls it, 15-water-b.test.ts::Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once, 15-water-b.test.ts::Pull Under: a TOKEN victim enters the CASTER bin untrashed · Key: zones.bin.controller</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Pull Under · Rulings: R250 (its §4 zones-follow-control half), R306 · Replaces: R140 (its Biomass Devourer premise that a dying card bins to its OWNER, superseded by R250) · Tests: 229-cosmic-and-control.test.ts, 15-water-b.test.ts, 338-tokens-are-not-trashed.test.ts · Example tests: 15-water-b.test.ts::Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once, 15-water-b.test.ts::Pull Under: a TOKEN victim enters the CASTER bin untrashed · Demonstrated by test: 229-cosmic-and-control.test.ts::R250 whole pool: every unit-shaped card dies into the bin of whoever controls it · Key: zones.bin.controller</sub>
 
 <a id="r405.4"></a>**405.4.** A card that enters a bin from any zone except the stack is trashed. A card that comes from the stack is not, and a token is never trashed. A nontoken mod erased together with its {Unstable} host is not trashed either. See 801. See rule 801.
 
-> *Example: A spell going to the bin after resolving is not trashed.*
-
-> *Example: A dying token enters the bin but is not trashed.*
-
-> *Example: A nontoken mod on an {Unstable} host that dies is erased with it and is not trashed.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Rulings: R40 (its definition: a card entering a bin from anywhere but the stack), R306, R244 (its §2: a mod erased with its host) · Replaces: R40 (its 2026-08-21 amendment that tokens CAN be trashed, reversed by R306); R137 (its section "The mods ride with it" (a mod erased with its host is trashed), reversed by R244) · Tests: 35-rot-debt-trash.test.ts, 338-tokens-are-not-trashed.test.ts, 224-mod-trash.test.ts · Example tests: 35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed, 35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased, 224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all · Key: zones.bin.trash</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Rulings: R40 (its definition: a card entering a bin from anywhere but the stack), R306, R244 (its §2: a mod erased with its host) · Replaces: R40 (its 2026-08-21 amendment that tokens CAN be trashed, reversed by R306); R137 (its section "The mods ride with it" (a mod erased with its host is trashed), reversed by R244) · Tests: 35-rot-debt-trash.test.ts, 338-tokens-are-not-trashed.test.ts, 224-mod-trash.test.ts · Demonstrated by tests: 35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed, 35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased, 224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all · Key: zones.bin.trash</sub>
 
 <a id="r405.4a"></a>**405.4a** A spell played for free while another effect resolves (for example by Tides of the Cosmos) and then put into the bin counts as coming from the stack, so it is not trashed.
 
@@ -3331,9 +2983,7 @@ order.
 
 <a id="r405.6"></a>**405.6.** Copies of one card in a bin cannot be told apart. A card in a bin is identified only by its name and by which copy of that name it is.
 
-> *Example: A bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R140 (its rule: a responder names the copy the event named), R131 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.bin.identity — a bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy · Key: zones.bin.identity</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R140 (its rule: a responder names the copy the event named), R131 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.bin.identity — a bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy · Key: zones.bin.identity</sub>
 
 <a id="r405.6a"></a>**405.6a** "Another" said by a card in a bin excludes that one copy, not every card with its name. See rule 110.
 
@@ -3343,9 +2993,9 @@ order.
 
 <a id="r405.6b"></a>**405.6b** An effect that refers back to a card that just entered a bin ("that card", "it") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name.
 
-> *Example: A token or {Unstable} copy is swept out of the bin before Biomass Devourer resolves; an older copy of the same card in that bin is not erased.*
+> *Example: An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's "erase it" then finds nothing, and does not erase an older copy of the same card already in that bin.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R140 (its rule: a responder names the copy the event named) · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::R140: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept · Key: zones.bin.identity.that-card</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R140 (its rule: a responder names the copy the event named) · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::R140: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept · Key: zones.bin.identity.that-card</sub>
 
 <a id="r405.7"></a>**405.7.** A card leaves a bin whenever an effect takes it out, for any reason: recalled, played, cached, erased, recycled, prophesied, or applied as a mod. A "when I leave your bin" ability triggers on every such departure.
 
@@ -3355,9 +3005,7 @@ order.
 
 <a id="r405.8"></a>**405.8.** An augment or graft may be applied from the bin as well as from the hand, during deployment, if its cost is paid and its affinity met. See rules 720, 721, 722.
 
-> *Example: A graft comes from the bin as well as the hand, and only when its cost and affinity are met.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.15; Manual p.34 · Designer: RAQ 1355115946032889914#2 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 3 · Key: zones.bin.mods-from-bin</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.15; Manual p.34 · Designer: RAQ 1355115946032889914#2 · Tests: 393-raq-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 3 · Key: zones.bin.mods-from-bin</sub>
 
 <a id="r405.8a"></a>**405.8a** A {Virus} card in a bin can be applied only as an ordinary mod during deployment. It cannot be used as a mod during battle. See rule 723.
 
@@ -3382,9 +3030,7 @@ order.
 
 <a id="r406.1"></a>**406.1.** The stack is the zone where cards being played, and abilities, wait to resolve. The last thing put on the stack resolves first. See 703. See rules 703, 704.
 
-> *Example: Two spells wait on the stack and the one put there last resolves first.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.14; Manual p.34 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.stack.what — two spells wait on the stack and the one put there last resolves first · Key: zones.stack.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.14; Manual p.34 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.stack.what — two spells wait on the stack and the one put there last resolves first · Key: zones.stack.what</sub>
 
 <a id="r406.2"></a>**406.2.** A spell unit on the stack is not yet in play. It enters play only when it resolves. See rule 303.
 
@@ -3402,9 +3048,7 @@ order.
 
 > *Example: A non-{Unstable} virus negated off the stack goes to the bin.*
 
-> *Example: A negated spell is not trashed.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.3; Manual p.34; card: Cosmic Reversal · Rulings: R145, R40 (its definition: a card entering a bin from anywhere but the stack), R145 (its stack route) · Tests: 125-active-zone.test.ts, 35-rot-debt-trash.test.ts · Example tests: 125-active-zone.test.ts::R145 negative control: a NON-Unstable virus negated off the stack still BINS, 35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either · Key: zones.stack.leaving</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.3; Manual p.34; card: Cosmic Reversal · Rulings: R145, R40 (its definition: a card entering a bin from anywhere but the stack), R145 (its stack route) · Tests: 125-active-zone.test.ts, 35-rot-debt-trash.test.ts · Example test: 125-active-zone.test.ts::R145 negative control: a NON-Unstable virus negated off the stack still BINS · Demonstrated by test: 35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either · Key: zones.stack.leaving</sub>
 
 <a id="r406.4a"></a>**406.4a** A spell whose text says "Erase me" goes to the erased pile when it resolves, instead of the bin. See rule 407.
 
@@ -3414,11 +3058,7 @@ order.
 
 <a id="r406.4b"></a>**406.4b** A self-erasing spell that is negated or fails to resolve goes to the bin. Its "Erase me" never happened.
 
-> *Example: A negated self-erase spell is binned.*
-
-> *Example: So is one whose target went away.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 89-self-erase.test.ts · Example tests: 89-self-erase.test.ts::a NEGATED self-erase spell is binned, not erased, 89-self-erase.test.ts::a FIZZLED self-erase spell is binned too · Key: zones.stack.leaving.self-erase-negated</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 89-self-erase.test.ts · Demonstrated by tests: 89-self-erase.test.ts::a NEGATED self-erase spell is binned, not erased, 89-self-erase.test.ts::a FIZZLED self-erase spell is binned too · Key: zones.stack.leaving.self-erase-negated</sub>
 
 <sub>Discrepancies: D-U07-13 (discrepancies.md)</sub>
 
@@ -3433,15 +3073,11 @@ order.
 
 <a id="r407.1a"></a>**407.1a** The erased pile is public.
 
-> *Example: The server view shows each erased pile in full to both seats.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R65 (its erased-pile half) · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.erased.public — the server view shows each erased pile in full to both seats · Key: zones.erased.public</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R65 (its erased-pile half) · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.erased.public — the server view shows each erased pile in full to both seats · Key: zones.erased.public</sub>
 
 <a id="r407.1b"></a>**407.1b** Nothing takes a card back out of the erased pile.
 
-> *Example: A card on the erased pile adds nothing to the legal actions, where the same card in the bin does.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R65 (its erased-pile half), R137 (its body-trash ruling and its Rector and Distiller notes) · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.erased.final — a card on the erased pile adds nothing to the legal actions, where the same card in the bin does · Key: zones.erased.final</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R65 (its erased-pile half), R137 (its body-trash ruling and its Rector and Distiller notes) · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.erased.final — a card on the erased pile adds nothing to the legal actions, where the same card in the bin does · Key: zones.erased.final</sub>
 
 <a id="r407.1c"></a>**407.1c** Erasing is not dying and not trashing: an erased card never enters a bin. See rule 410.2.
 
@@ -3455,23 +3091,19 @@ order.
 
 <a id="r407.2a"></a>**407.2a** A mod taken off its host and put into play as a card of its own (Reclaim the Fallen) does not leave the game and does not go to the erased pile.
 
-> *Example: Reclaim the Fallen: the card stands in play and no erase names it.*
+> *Example: A Pile of Runes is augmented onto a unit. Reclaim the Fallen targets that unit: A Pile of Runes comes off it and stands in play as a unit of its own. It never goes to the erased pile.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R219 · Tests: 178-played-item-and-erased-mods.test.ts · Example test: 178-played-item-and-erased-mods.test.ts::R208 Reclaim the Fallen: leavesGame:false · Key: zones.erased.says-erase.into-play</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R219 · Tests: 178-played-item-and-erased-mods.test.ts · Example test: 178-played-item-and-erased-mods.test.ts::R208 Reclaim the Fallen: leavesGame:false · Key: zones.erased.says-erase.into-play</sub>
 
 <a id="r407.3"></a>**407.3.** A token that ceases to exist after entering a zone is recorded on the erased pile. See rule 410.5.
 
-> *Example: A dying token enters the bin, is erased from it, and is recorded on the erased pile.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R306 · Tests: 35-rot-debt-trash.test.ts, 418-cr-zones.test.ts · Example test: 35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased · Key: zones.erased.tokens</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R306 · Tests: 35-rot-debt-trash.test.ts, 418-cr-zones.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased · Key: zones.erased.tokens</sub>
 
 <sub>Discrepancies: D-U07-5 (discrepancies.md)</sub>
 
 <a id="r407.3a"></a>**407.3a** A token mod is recorded on the erased pile once when its host leaves play, however the host leaves.
 
-> *Example: One token mod reaches the erased pile once on a death, a recall and a cache alike.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R167, R156 (its announcement on every route) · Tests: 129-disposal-tail.test.ts, 141-despawn-mods.test.ts · Example test: 129-disposal-tail.test.ts::R65: a TOKEN mod reaches the erased pile however its host leaves play · Key: zones.erased.tokens.mods</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R167, R156 (its announcement on every route) · Tests: 129-disposal-tail.test.ts, 141-despawn-mods.test.ts · Demonstrated by test: 129-disposal-tail.test.ts::R65: a TOKEN mod reaches the erased pile however its host leaves play · Key: zones.erased.tokens.mods</sub>
 
 <a id="r407.4"></a>**407.4.** A transformed card is recorded on the erased pile as its front face. See rule 410.3.
 
@@ -3490,45 +3122,29 @@ order.
 
 <a id="r408.2"></a>**408.2.** A deck has a mark where it originally ended. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.
 
-> *Example: A recycled card stays behind the mark while the deck still has cards.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R296, R296 · Tests: 300-recycle-mark.test.ts · Example test: 300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark · Key: zones.recycle.mark</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R296, R296 · Tests: 300-recycle-mark.test.ts · Demonstrated by test: 300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark · Key: zones.recycle.mark</sub>
 
 <sub>Discrepancies: D-U07-12 (discrepancies.md)</sub>
 
 <a id="r408.2a"></a>**408.2a** Every card put on the bottom of the deck goes past the mark, whatever put it there: recycling for a resource, the constructed put-back, the cards a glimpse did not cache, and recycled packs alike.
 
-> *Example: Every effect that reads the deck reshuffles at the mark, not only drawing.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R296, R296 · Tests: 300-recycle-mark.test.ts · Example test: 300-recycle-mark.test.ts::R296 §6 every reader of the deck reshuffles at the mark · Key: zones.recycle.mark.scope</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R296, R296 · Tests: 300-recycle-mark.test.ts · Demonstrated by test: 300-recycle-mark.test.ts::R296 §6 every reader of the deck reshuffles at the mark · Key: zones.recycle.mark.scope</sub>
 
 <a id="r408.2b"></a>**408.2b** When the deck runs out and more cards are needed, the recycle pile is shuffled and becomes the new deck, with a new mark and an empty recycle pile. See rule 401.4.
 
-> *Example: The deck runs out, the pile is shuffled in, and drawing continues.*
-
-> *Example: A glimpse wider than the deck reshuffles mid-reveal and still reveals N.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R296, R296 · Tests: 300-recycle-mark.test.ts · Example tests: 300-recycle-mark.test.ts::R296 §2 when the deck runs out the pile is shuffled in, 300-recycle-mark.test.ts::R296 §6b a glimpse WIDER than the deck · Key: zones.recycle.mark.reshuffle</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R296, R296 · Tests: 300-recycle-mark.test.ts · Demonstrated by tests: 300-recycle-mark.test.ts::R296 §2 when the deck runs out the pile is shuffled in, 300-recycle-mark.test.ts::R296 §6b a glimpse WIDER than the deck · Key: zones.recycle.mark.reshuffle</sub>
 
 <a id="r408.2c"></a>**408.2c** Every player can see how many cards are in the recycle pile. No player may look at them.
 
-> *Example: Nothing in the pile is named to any player.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R296 · Tests: 300-recycle-mark.test.ts · Example test: 300-recycle-mark.test.ts::R296 §7 nothing in the pile is a card anybody can name · Key: zones.recycle.mark.public-count</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R296 · Tests: 300-recycle-mark.test.ts · Demonstrated by test: 300-recycle-mark.test.ts::R296 §7 nothing in the pile is a card anybody can name · Key: zones.recycle.mark.public-count</sub>
 
 <a id="r408.2d"></a>**408.2d** The order in which cards were recycled does not matter to the game.
 
-> *Example: The recycle pile is hidden from both seats and is shuffled before it is drawn again.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R296 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.recycle.mark.order — the recycle pile is hidden from both seats and is shuffled before it is drawn again · Key: zones.recycle.mark.order</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R296 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.recycle.mark.order — the recycle pile is hidden from both seats and is shuffled before it is drawn again · Key: zones.recycle.mark.order</sub>
 
 <a id="r408.2e"></a>**408.2e** Each deck has its own recycle pile. In live draft, all players share one pile; in constructed, each player has their own. See rule 401.3.
 
-> *Example: In a shared-deck game both players recycle into one pile.*
-
-> *Example: In constructed, a card one player recycles goes into that player's own pile, not the opponent's. (illustrative)*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R296, R157 (§18) · Tests: 300-recycle-mark.test.ts, 418-cr-zones.test.ts · Example test: 300-recycle-mark.test.ts::R296 §5 constructed gives each seat its own pile · Key: zones.recycle.mark.whose</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R296, R157 (§18) · Tests: 300-recycle-mark.test.ts, 418-cr-zones.test.ts · Demonstrated by test: 300-recycle-mark.test.ts::R296 §5 constructed gives each seat its own pile · Key: zones.recycle.mark.whose</sub>
 
 <a id="r408.3"></a>**408.3.** A card recycled out of a hand is not revealed unless the effect says so.
 
@@ -3545,27 +3161,19 @@ order.
 
 <a id="r409.1"></a>**409.1.** In live draft, each player has a pack: a face-down pile of 10 cards dealt from the deck at the start of the game, which that player drafts from. See rules 503, 902.
 
-> *Example: A live draft deals each seat a 10-card pack from the deck at the start, and the pack is what that seat drafts from.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16; Rulebook 2023 p.6 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.pack.what — a live draft deals each seat a 10-card pack from the deck at the start, and the pack is what that seat drafts from · Key: zones.pack.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16; Rulebook 2023 p.6 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.pack.what — a live draft deals each seat a 10-card pack from the deck at the start, and the pack is what that seat drafts from · Key: zones.pack.what</sub>
 
 <a id="r409.1a"></a>**409.1a** Constructed has no packs. See rule 901.
 
-> *Example: A constructed game has no packs and no draft step.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.pack.what.constructed — a constructed game has no packs and no draft step · Key: zones.pack.what.constructed</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.pack.what.constructed — a constructed game has no packs and no draft step · Key: zones.pack.what.constructed</sub>
 
 <a id="r409.2"></a>**409.2.** A pack may be looked at and used only during the draft step, and no player may look at another player's pack.
 
-> *Example: A seat sees its own pack only while its draft step is open, and never the other pack.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16; Manual p.16 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.pack.private — a seat sees its own pack only while its draft step is open, and never the other pack · Key: zones.pack.private</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.16; Manual p.16 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.pack.private — a seat sees its own pack only while its draft step is open, and never the other pack · Key: zones.pack.private</sub>
 
 <a id="r409.3"></a>**409.3.** In the draft step, a player combines the non-token, non-resource cards in their hand with their pack, keeps any of them, and passes the pack on with exactly 10 cards in it. See 503. See rule 503.
 
-> *Example: The draft commit merges hand and pack, keeps any cards, and passes on a pack of exactly 10.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.6; Manual p.17 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.pack.drafting — the draft commit merges hand and pack, keeps any cards, and passes on a pack of exactly 10 · Key: zones.pack.drafting</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.6; Manual p.17 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.pack.drafting — the draft commit merges hand and pack, keeps any cards, and passes on a pack of exactly 10 · Key: zones.pack.drafting</sub>
 
 <a id="r409.4"></a>**409.4.** After each cycle of N+1 turns, where N is the number of players, every pack is recycled and each player is dealt a new pack of 10 cards.
 
@@ -3590,13 +3198,13 @@ order.
 
 <a id="r410.1a"></a>**410.1a** An effect aimed at a card that has since changed zones does not affect it. An effect aimed at a card that is still in the same zone affects it only if the card is still a legal target for the slot it was chosen for; otherwise that target is lost as well. If every target is lost, the effect fails to resolve. See rules 704, 110.
 
-> *Example: Organic Exchange may target two of its caster's own units, and another spell aimed at one of them still resolves.*
+> *Example: An opponent's Luminous Arc is aimed at one of your units; you answer with Organic Exchange on two of your own units. They are still in play, so the Luminous Arc still resolves.*
 
-> *Example: An Ambush whose target ally was stolen in response recalls nothing: the unit is no longer its controller's ally.*
+> *Example: An opponent ambushes with Orblish Horroth to recall target ally; you take control of that unit in response. It is no longer their ally, so nothing is recalled.*
 
 > *Example: Minor Kraken's target grows past 5 defense before it resolves, and is not recalled.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Printed: Manual p.40 · Designer: RAQ 1454169054402314362#2; RAQ 1355466429788328066#1; RAQ 1355466429788328066#2 · Rulings: R324 · Tests: 396-raq-timing.test.ts, 390-raq-stack.test.ts, 418-cr-zones.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units, 390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing, 390-raq-stack.test.ts::RAQ valid targets: a target that grows past 5 defense before Minor Kraken resolves is not recalled · Key: zones.changes.new-object.targets</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.40 · Designer: RAQ 1454169054402314362#2; RAQ 1355466429788328066#1; RAQ 1355466429788328066#2 · Rulings: R324 · Tests: 396-raq-timing.test.ts, 390-raq-stack.test.ts, 418-cr-zones.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units, 390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing, 390-raq-stack.test.ts::RAQ valid targets: a target that grows past 5 defense before Minor Kraken resolves is not recalled · Key: zones.changes.new-object.targets</sub>
 
 <sub>Discrepancies: D-U07-15 (discrepancies.md)</sub>
 
@@ -3608,11 +3216,11 @@ order.
 
 <a id="r410.2"></a>**410.2.** A unit despawns whenever it leaves play, by any route: dying, being recalled, being cached, being exchanged or being erased. A "when I despawn" ability triggers whichever way the unit leaves. See rule 706.
 
-> *Example: A donated "[Augment] When I despawn" triggers when its host is recalled.*
+> *Example: A Pile of Runes ("[Augment] When I despawn, create a Crystal X") is augmented onto Rune Channeler. Rune Channeler is recalled to its owner's hand: that despawn ability triggers, and a Crystal is created.*
 
-> *Example: An erased ally is seen despawning by Demon of the Depths.*
+> *Example: Demon of the Depths ("Whenever one of your units despawns…") triggers when one of your units is erased.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 4 tests, all passed; 2 gate test files · Rulings: R167, R172 (its §1 erase-is-a-despawn and §4 Download halves) · Tests: 141-despawn-mods.test.ts, 145-erase-routes.test.ts · Example tests: 141-despawn-mods.test.ts::R167 (i): a donated, 145-erase-routes.test.ts::R172 (i): an ERASE fires 'despawned' · Key: zones.changes.despawn</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R167, R172 (its §1 erase-is-a-despawn and §4 Download halves) · Tests: 141-despawn-mods.test.ts, 145-erase-routes.test.ts · Example tests: 141-despawn-mods.test.ts::R167 (i): a donated, 145-erase-routes.test.ts::R172 (i): an ERASE fires 'despawned' · Key: zones.changes.despawn</sub>
 
 <a id="r410.2a"></a>**410.2a** A unit exchanged out of play (Hooba-Mon, Necromorph) despawns and goes to the bin, where it is trashed, but it does not die.
 
@@ -3638,9 +3246,7 @@ order.
 
 <a id="r410.4"></a>**410.4.** When a modded unit is recalled or cached, its mods go to the bin and the unit goes on alone. A token mod ceases to exist instead (see rule 410.4c). See rules 720, 403.7, 410.4d, 410.4c.
 
-> *Example: A recalled modded unit goes to the hand; its mods go to the bin and are trashed there.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.35; Manual p.35; Rulebook 2023 p.15 · Designer: RAQ 1372468222158180424#8 · Rulings: R46 · Tests: 35-rot-debt-trash.test.ts, 141-despawn-mods.test.ts · Example test: 35-rot-debt-trash.test.ts::R40: recalling a modded unit trashes its MODS · Key: zones.changes.mods</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.35; Manual p.35; Rulebook 2023 p.15 · Designer: RAQ 1372468222158180424#8 · Rulings: R46 · Tests: 35-rot-debt-trash.test.ts, 141-despawn-mods.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R40: recalling a modded unit trashes its MODS · Key: zones.changes.mods</sub>
 
 <a id="r410.4a"></a>**410.4a** A mod that goes to a bin when its host leaves play goes to the bin of the host's controller. See rule 400.4.
 
@@ -3654,9 +3260,7 @@ order.
 
 <a id="r410.4c"></a>**410.4c** A token mod has no card of its own. It never enters a bin; when its host leaves play it ceases to exist.
 
-> *Example: A token mod on a dying {Unstable} unit is erased, never binned or trashed.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R244 (its §2 and token-mod sentence) · Tests: 35-rot-debt-trash.test.ts, 141-despawn-mods.test.ts · Example test: 35-rot-debt-trash.test.ts::R137: a TOKEN mod on a dying Unstable carrier is erased, never binned or trashed · Key: zones.changes.mods.token-mod</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R244 (its §2 and token-mod sentence) · Tests: 35-rot-debt-trash.test.ts, 141-despawn-mods.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R137: a TOKEN mod on a dying Unstable carrier is erased, never binned or trashed · Key: zones.changes.mods.token-mod</sub>
 
 <a id="r410.4d"></a>**410.4d** An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased, just as they would be if it died. See rules 410.4b, 405.5, 801.
 
@@ -3676,9 +3280,7 @@ order.
 
 <a id="r410.5a"></a>**410.5a** A unit token that dies enters the bin and is then erased. It is not trashed. See rule 801.
 
-> *Example: A dying token enters the bin, is not trashed, and is then erased.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355689559609839787#4 · Rulings: R306 · Tests: 35-rot-debt-trash.test.ts, 338-tokens-are-not-trashed.test.ts · Example test: 35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased · Key: zones.changes.tokens.dies</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355689559609839787#4 · Rulings: R306 · Tests: 35-rot-debt-trash.test.ts, 338-tokens-are-not-trashed.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased · Key: zones.changes.tokens.dies</sub>
 
 <a id="r410.5b"></a>**410.5b** A recalled token, unit or spell, enters its controller's hand and is then erased. It counts as a card entering a hand for anything that is watching. See rule 402.4.
 
@@ -3690,17 +3292,13 @@ order.
 
 <a id="r410.5c"></a>**410.5c** A token put into a cache enters the cache and is then erased.
 
-> *Example: A cached token is in the cache while the cache event happens, then is swept out.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R69 (its zone-visit and timing halves) · Tests: 35-rot-debt-trash.test.ts · Example test: 35-rot-debt-trash.test.ts::R69: a CACHED token visits the cache and is erased out of it · Key: zones.changes.tokens.cached</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R69 (its zone-visit and timing halves) · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::R69: a CACHED token visits the cache and is erased out of it · Key: zones.changes.tokens.cached</sub>
 
 <sub>Discrepancies: D-U07-14 (discrepancies.md)</sub>
 
 <a id="r410.5d"></a>**410.5d** Any spell tokens still in play are erased during regroup. See rule 506.
 
-> *Example: A Fireball spell token left unused is erased at regroup.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.15; Manual p.15 · Tests: 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.changes.tokens.spell-tokens-regroup — a Fireball spell token left unused is erased at regroup · Key: zones.changes.tokens.spell-tokens-regroup</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.15; Manual p.15 · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.changes.tokens.spell-tokens-regroup — a Fireball spell token left unused is erased at regroup · Key: zones.changes.tokens.spell-tokens-regroup</sub>
 
 <a id="r410.6"></a>**410.6.** A card is played from the zone it came out of, even when another effect plays it as it resolves. A card played from the cache, a bin or the deck is not played from the hand. See rules 701, 702.
 
@@ -3716,7 +3314,7 @@ order.
 
 <a id="r410.6b"></a>**410.6b** A token created by an effect was not played and came from no zone.
 
-> *Example: An effect-created token fires neither Proph nor Stalwart Sentinel.*
+> *Example: A token created by an effect was not played, so neither Proph nor Stalwart Sentinel triggers.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R263 · Tests: 241-played-from-zone.test.ts · Example test: 241-played-from-zone.test.ts::R263 §7: an effect-created token carries no zone at all · Key: zones.changes.played-from.created</sub>
 
@@ -3727,9 +3325,7 @@ order.
 
 <a id="r500.1"></a>**500.1.** A turn has four phases, in this order: the planning phase, the battle phase, the regroup phase and the deployment phase. See rules 501, 505, 506, 507.
 
-> *Example: A live-draft turn goes draft, planning, the haste step, then the battle phase.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Printed: Manual p.7; Manual p.7; Manual p.7; Manual p.7; Manual p.7 · Tests: 20-draft.test.ts, 08-cards2.test.ts, 419-cr-planning.test.ts · Example test: 20-draft.test.ts::haste step still works after a draft turn (gates compose) · Key: turn.general.phases</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Printed: Manual p.7; Manual p.7; Manual p.7; Manual p.7; Manual p.7 · Tests: 20-draft.test.ts, 08-cards2.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 20-draft.test.ts::haste step still works after a draft turn (gates compose) · Key: turn.general.phases</sub>
 
 <a id="r500.2"></a>**500.2.** Turns are global: all players share the same phases and sync up at the end of each step. In a 1v1 or team game, the printed rules take some steps in initiative order: the initiative player, or team, acts first, and the non-initiative player waits to see what they did before acting (see rule 501.4 and rule 507.3). See rule 100. *(Engine differs, see F-U08-4.)*
 
@@ -3751,9 +3347,7 @@ order.
 
 <a id="r500.4"></a>**500.4.** The battle phase is the only phase of the turn in which players can interact, because it is the only time a player can enter another player's region. Outside it, every player is alone in their own region: in deployment a player can do what they like to their own units, but no opponent is there to interact with (see rule 601.4b). See rules 501.3, 505, 703.
 
-> *Example: Neither the planning phase nor the deployment phase gives anyone priority; in the battle phase the attacking player holds priority once the attack is declared.*
-
-<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.7; Manual p.19; Manual p.26; Rulebook 2023 p.8; Manual p.19; Manual p.26; Rulebook 2023 p.8; Manual p.19; Manual p.26; Rulebook 2023 p.8; Manual p.19; Manual p.26; Rulebook 2023 p.8; Manual p.19; Manual p.26; Rulebook 2023 p.8 · Tests: 419-cr-planning.test.ts · Example test: 419-cr-planning.test.ts::cr:turn.general.interactive — planning and deployment give nobody priority; the battle phase does once an attack is declared · Key: turn.general.interactive</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.7; Manual p.19; Manual p.26; Rulebook 2023 p.8; Manual p.19; Manual p.26; Rulebook 2023 p.8; Manual p.19; Manual p.26; Rulebook 2023 p.8; Manual p.19; Manual p.26; Rulebook 2023 p.8; Manual p.19; Manual p.26; Rulebook 2023 p.8 · Tests: 419-cr-planning.test.ts · Demonstrated by test: 419-cr-planning.test.ts::cr:turn.general.interactive — planning and deployment give nobody priority; the battle phase does once an attack is declared · Key: turn.general.interactive</sub>
 
 <a id="r500.5"></a>**500.5.** When the deployment phase and its end-of-turn step are over, the turn is over. The initiative and any packs pass to the next player clockwise (see 508), and the next turn begins with its planning phase. See rules 507, 508.
 
@@ -3766,15 +3360,11 @@ order.
 
 <a id="r501.1"></a>**501.1.** The planning phase is the first phase of the turn. In it, players prepare for the turn ahead by curating their hands and preparing their resources.
 
-> *Example: In a live draft the turn opens in planning: first only the draft commit is offered, then only the resource actions and done.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.7; Manual p.7 · Tests: 419-cr-planning.test.ts · Example test: 419-cr-planning.test.ts::cr:turn.planning.what — a turn opens in planning, where the only actions are curating the hand and preparing resources · Key: turn.planning.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.7; Manual p.7 · Tests: 419-cr-planning.test.ts · Demonstrated by test: 419-cr-planning.test.ts::cr:turn.planning.what — a turn opens in planning, where the only actions are curating the hand and preparing resources · Key: turn.planning.what</sub>
 
 <a id="r501.2"></a>**501.2.** The planning phase has five steps, taken in this order.
 
-> *Example: On turn 2 of a live draft: expended resources are open again and 2 cards are drawn, the draft step is open and resource actions wait for it, and the haste step opens only after the resource step.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.27; Manual p.27; Manual p.27; Manual p.27; Manual p.27 · Tests: 20-draft.test.ts, 419-cr-planning.test.ts · Example test: 419-cr-planning.test.ts::cr:turn.planning.steps — refresh and draw at the turn start, then the draft, then resources, then the haste step · Key: turn.planning.steps</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.27; Manual p.27; Manual p.27; Manual p.27; Manual p.27 · Tests: 20-draft.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 419-cr-planning.test.ts::cr:turn.planning.steps — refresh and draw at the turn start, then the draft, then resources, then the haste step · Key: turn.planning.steps</sub>
 
 <a id="r501.2a"></a>**501.2a** Refresh: each player's expended resources refresh. See rule 106.
 
@@ -3802,9 +3392,7 @@ order.
 
 <a id="r501.3"></a>**501.3.** There is no player interaction in the planning phase. No player receives priority in it, and nothing a player does in it can be responded to. See rules 504.3, 703.
 
-> *Example: In the resource step nobody holds priority, and an attempt to pass priority is refused.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 3 gate test files · Printed: Rulebook 2023 p.7 · Rulings: R97 · Tests: 08-cards2.test.ts, 15-water-b.test.ts, 419-cr-planning.test.ts · Example test: 419-cr-planning.test.ts::cr:turn.planning.no-interaction — nobody holds priority in the resource step, and passing priority there is refused · Key: turn.planning.no-interaction</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 3 gate test files · Printed: Rulebook 2023 p.7 · Rulings: R97 · Tests: 08-cards2.test.ts, 15-water-b.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 419-cr-planning.test.ts::cr:turn.planning.no-interaction — nobody holds priority in the resource step, and passing priority there is refused · Key: turn.planning.no-interaction</sub>
 
 <a id="r501.4"></a>**501.4.** In a 1v1 game, the refresh, the draw step and the draft step happen for both players simultaneously. The resource step and the haste step are taken first by the initiative player and then by the non-initiative player. See rules 500.3, 502, 504. *(Engine differs, see F-U08-1.)*
 
@@ -3823,15 +3411,11 @@ order.
 
 <a id="r502.1"></a>**502.1.** The resource step is the step of the planning phase in which players create and activate resources. See rule 106.
 
-> *Example: A player creates a resource and activates one in the resource step; in the haste step both actions are refused.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.18 · Tests: 419-cr-planning.test.ts · Example test: 419-cr-planning.test.ts::cr:turn.resource.what — resources are created and activated in the resource step and refused in the haste step · Key: turn.resource.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.18 · Tests: 419-cr-planning.test.ts · Demonstrated by test: 419-cr-planning.test.ts::cr:turn.resource.what — resources are created and activated in the resource step and refused in the haste step · Key: turn.resource.what</sub>
 
 <a id="r502.2"></a>**502.2.** In the resource step, a player may take these actions. See rule 106.
 
-> *Example: With an active Prismite, the resource step offers creating a resource, activating a dormant one, and exchanging the Prismite.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Printed: Manual p.18 · Tests: 01-planning.test.ts, 419-cr-planning.test.ts · Example test: 419-cr-planning.test.ts::cr:turn.resource.actions — the resource step menu offers creating, activating and exchanging a Prismite · Key: turn.resource.actions</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Printed: Manual p.18 · Tests: 01-planning.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 419-cr-planning.test.ts::cr:turn.resource.actions — the resource step menu offers creating, activating and exchanging a Prismite · Key: turn.resource.actions</sub>
 
 <a id="r502.2a"></a>**502.2a** Create a resource by recycling a card from their hand. The resource enters play dormant. There is no limit to how many resources a player may create. See rules 106, 408.
 
@@ -3841,9 +3425,7 @@ order.
 
 <a id="r502.2b"></a>**502.2b** Activate dormant resources by turning them face up, up to two activations per turn. See rule 106.
 
-> *Example: After two activations in one turn, a third is refused.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Tests: 01-planning.test.ts · Example test: 01-planning.test.ts::setup & planning · Key: turn.resource.actions.activate</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Tests: 01-planning.test.ts · Demonstrated by test: 01-planning.test.ts::setup & planning · Key: turn.resource.actions.activate</sub>
 
 <a id="r502.2c"></a>**502.2c** Exchange an active Prismite for a resource of one of the game's elements. A dormant Prismite cannot be exchanged. See rule 106.
 
@@ -3882,15 +3464,13 @@ order.
 
 <a id="r503.1a"></a>**503.1a** In a live draft, no player draws in the draw step of the first turn: each player's first draw was dealt with their opening hand (see 103). See rule 103.
 
-> *Example: A live draft opens on turn 1 with 6-card hands (4 + the 2 first-turn draws) and 10-card packs, the draft step already open.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.16; Rulebook 2023 p.6 · Designer: RAQ 1451507918171013252#0 · Tests: 20-draft.test.ts · Example test: 20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs, draft step open · Key: turn.draw.draw.first-turn</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.16; Rulebook 2023 p.6 · Designer: RAQ 1451507918171013252#0 · Tests: 20-draft.test.ts · Demonstrated by test: 20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs, draft step open · Key: turn.draw.draw.first-turn</sub>
 
 <a id="r503.1b"></a>**503.1b** Players draw in clockwise order, starting with the initiative player. See rule 500.3.
 
-> *Example: In a live draft the initiative player takes the top 2 cards of the shared deck at the turn flip, and the other player the next 2.*
+> *Example: In a live draft the initiative player takes the top 2 cards of the shared deck at the start of the turn, and the other player the next 2.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.16; Manual p.16 · Tests: 419-cr-planning.test.ts · Example test: 419-cr-planning.test.ts::cr:turn.draw.draw.order — turn draws come off the shared deck clockwise from the initiative player · Key: turn.draw.draw.order</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.16; Manual p.16 · Tests: 419-cr-planning.test.ts · Example test: 419-cr-planning.test.ts::cr:turn.draw.draw.order — turn draws come off the shared deck clockwise from the initiative player · Key: turn.draw.draw.order</sub>
 
 <a id="r503.2"></a>**503.2.** In the draft step of a live draft, each player combines the cards in their hand with the cards in their pack, then chooses which cards of the combined pile to keep in hand. The rest go back into the pack. See rules 409, 902.
 
@@ -3900,9 +3480,7 @@ order.
 
 <a id="r503.2a"></a>**503.2a** A player must leave exactly 10 cards in the pack, so they end the draft step with as many cards in hand as they began it with. See rule 409.
 
-> *Example: A draft that would leave 9 cards in the pack is refused.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.16; Manual p.16 · Tests: 20-draft.test.ts · Example test: 20-draft.test.ts::bad commits are rejected: wrong count, duplicates, out of range, wrong mode · Key: turn.draw.draft.ten</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.16; Manual p.16 · Tests: 20-draft.test.ts · Demonstrated by test: 20-draft.test.ts::bad commits are rejected: wrong count, duplicates, out of range, wrong mode · Key: turn.draw.draft.ten</sub>
 
 <a id="r503.2b"></a>**503.2b** Within that limit the choice is free: a player may keep their whole hand and take nothing, exchange their whole hand for pack cards, or anything in between.
 
@@ -3912,9 +3490,7 @@ order.
 
 <a id="r503.2c"></a>**503.2c** When a player has finished drafting, they pass their pack clockwise to the next player. The draft step is complete once every player has passed their pack. See rules 409, 501.4.
 
-> *Example: In 1v1, once both players have finished, the two packs change hands.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.16; Manual p.16; Manual p.16 · Tests: 20-draft.test.ts · Example test: 20-draft.test.ts::no-op commit preserves hand and pack exactly; both commits pass the packs · Key: turn.draw.draft.pass</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.16; Manual p.16; Manual p.16 · Tests: 20-draft.test.ts · Demonstrated by test: 20-draft.test.ts::no-op commit preserves hand and pack exactly; both commits pass the packs · Key: turn.draw.draft.pass</sub>
 
 <a id="r503.2d"></a>**503.2d** An effect may make a player skip their draft step.
 
@@ -3924,9 +3500,7 @@ order.
 
 <a id="r503.3"></a>**503.3.** After every cycle of N+1 turns, where N is the number of players, every pack is recycled and each player is dealt a new pack of 10 cards. In 1v1 this happens after the third turn, right before the fourth draft. See rules 408, 409.
 
-> *Example: Turns 2 and 3 reuse the dealt packs; turn 4 opens with every pack recycled and new 10-card packs dealt.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.16; Manual p.16; Rulebook 2023 p.6 · Tests: 20-draft.test.ts · Example test: 20-draft.test.ts::turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 cycle) · Key: turn.draw.refresh</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.16; Manual p.16; Rulebook 2023 p.6 · Tests: 20-draft.test.ts · Demonstrated by test: 20-draft.test.ts::turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 cycle) · Key: turn.draw.refresh</sub>
 
 <a id="r503.3a"></a>**503.3a** So each player drafts a second time from the pack they were first dealt before the packs are refreshed.
 
@@ -3936,29 +3510,23 @@ order.
 
 <a id="r503.4"></a>**503.4.** In constructed there are no packs. In the draft step each player draws 2 more cards from their own deck and then recycles 2 cards from their hand. Since this comes straight after the draw step, the two are taken together: draw 4, then recycle 2. See rules 408, 901.
 
-> *Example: On turn 2 of constructed each player draws 4 and must put 2 back before doing anything else.*
-
 > *Example: Worldbender skips the constructed draft step: its controller draws only the draw step's 2 plus Worldbender's 1, recycles nothing, and loses 3 life.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.16; Manual p.16; Manual p.16; Manual p.16; Rulebook 2023 p.6 · Designer: RAQ 1451507918171013252#1 · Tests: 34-constructed.test.ts, 28-metal-c.test.ts · Example tests: 34-constructed.test.ts::turn 2 reopens the draw phase: 4 more cards, bottoming pending again, 28-metal-c.test.ts::Worldbender in constructed: no draw-4-put-2-back — the hand gains 3 and 3 life is paid · Key: turn.draw.constructed</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.16; Manual p.16; Manual p.16; Manual p.16; Rulebook 2023 p.6 · Designer: RAQ 1451507918171013252#1 · Tests: 34-constructed.test.ts, 28-metal-c.test.ts · Example test: 28-metal-c.test.ts::Worldbender in constructed: no draw-4-put-2-back — the hand gains 3 and 3 life is paid · Demonstrated by test: 34-constructed.test.ts::turn 2 reopens the draw phase: 4 more cards, bottoming pending again · Key: turn.draw.constructed</sub>
 
 <a id="r503.4a"></a>**503.4a** The player chooses which 2 cards of their hand to recycle. Until they have, they can take no other planning action. See rule 408.
 
-> *Example: While the 2 cards are owed, only the choice of 2 is offered; ending planning or recycling for a resource is refused.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.6 · Tests: 34-constructed.test.ts · Example test: 34-constructed.test.ts::nothing moves until the 2 cards go back; bottoming keeps the given order · Key: turn.draw.constructed.choice</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.6 · Tests: 34-constructed.test.ts · Demonstrated by test: 34-constructed.test.ts::nothing moves until the 2 cards go back; bottoming keeps the given order · Key: turn.draw.constructed.choice</sub>
 
 <a id="r503.4b"></a>**503.4b** The draw of 4 and the recycle of 2 happen on the first turn of a constructed game too. See rules 103, 901.
 
-> *Example: A constructed game opens with 8 cards in each hand (an opening 4 and the turn-1 draw of 4) and the recycle of 2 pending.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.16; Manual p.16; Manual p.16 · Tests: 34-constructed.test.ts, 419-cr-planning.test.ts · Example test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open · Key: turn.draw.constructed.first-turn</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.16; Manual p.16; Manual p.16 · Tests: 34-constructed.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open · Key: turn.draw.constructed.first-turn</sub>
 
 <sub>Discrepancies: D-U01-13 (discrepancies.md)</sub>
 
 <a id="r503.5"></a>**503.5.** Drawing and drafting are actions like any other: a unit that a change in hand size leaves with 0 defense, or with damage equal to its defense, dies as soon as the action is over, except as the constructed sub-rule below says (see 713). See rule 713.
 
-> *Example: A Dreadspawn Horror (-1/-1 per card in hand) taken to 0 defense by the turn draw dies at once, before any other action is taken.*
+> *Example: A Dreadspawn Horror (-1/-1 for each card in hand) taken to 0 defense by the turn's draw dies at once, before any other action is taken.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R313 · Tests: 380-no-action-ends-dead.test.ts, 419-cr-planning.test.ts · Example test: 380-no-action-ends-dead.test.ts::R313: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip · Key: turn.draw.state-checks</sub>
 
@@ -3983,9 +3551,7 @@ order.
 
 <a id="r504.1"></a>**504.1.** The haste step is the last step of the planning phase. It comes after the resource step. See rule 501.2.
 
-> *Example: After both players finish the resource step the phase is still planning, with the haste step open.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Rulings: R97 · Tests: 08-cards2.test.ts · Example test: 08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18) · Key: turn.haste.what</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.18 · Rulings: R97 · Tests: 08-cards2.test.ts · Demonstrated by test: 08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18) · Key: turn.haste.what</sub>
 
 <sub>Discrepancies: D-U08-3 (discrepancies.md)</sub>
 
@@ -3999,9 +3565,7 @@ order.
 
 > *Example: Under Dispatch Courier, a battle unit in hand is still not playable in the haste step.*
 
-> *Example: Nor is a battle spell unit.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1465292396664193171#0; RAQ 1465292396664193171#1; RAQ 1464899726796390433#0 · Rulings: R97 · Tests: 26-metal-a.test.ts, 396-raq-timing.test.ts · Example tests: 26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant, 396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either · Key: turn.haste.plays.battle-stays</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1465292396664193171#0; RAQ 1465292396664193171#1; RAQ 1464899726796390433#0 · Rulings: R97 · Tests: 26-metal-a.test.ts, 396-raq-timing.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant · Demonstrated by test: 396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either · Key: turn.haste.plays.battle-stays</sub>
 
 <sub>Discrepancies: D-U05-3 (discrepancies.md)</sub>
 
@@ -4013,9 +3577,7 @@ order.
 
 <a id="r504.4"></a>**504.4.** The haste step ends when every player has played all the haste cards they want to play, which may be none. See rule 505.
 
-> *Example: The step closes into the battle phase only after both players have declared they are done.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 3 tests (a probe it wrote), 1 failed; 3 gate test files · Printed: Manual p.18; Manual p.18 · Tests: 08-cards2.test.ts, 200-haste-step-is-unconditional.test.ts, 419-cr-planning.test.ts · Example test: 200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step · Key: turn.haste.ends</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 3 tests (a probe it wrote), 1 failed; 3 gate test files · Printed: Manual p.18; Manual p.18 · Tests: 08-cards2.test.ts, 200-haste-step-is-unconditional.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step · Key: turn.haste.ends</sub>
 
 <a id="r504.5"></a>**504.5.** The haste step happens every turn, whether or not any player has anything they could play in it.
 
@@ -4027,17 +3589,13 @@ order.
 
 <a id="r504.5a"></a>**504.5a** No player is treated as finished with the haste step because they have nothing to play. Each player finishes the step themselves, and a player may stay in it holding nothing they could play.
 
-> *Example: A player with nothing playable may sit in the step and finish it whenever they choose.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), 1 failed; 2 gate test files · Rulings: R228, R228 · Replaces: R18 (reversed in part: its "a player with no legal haste play is auto-marked done" (by R224 and R228)) · Tests: 200-haste-step-is-unconditional.test.ts, 419-cr-planning.test.ts · Example test: 200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing · Key: turn.haste.always.no-auto-done</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), 1 failed; 2 gate test files · Rulings: R228, R228 · Replaces: R18 (reversed in part: its "a player with no legal haste play is auto-marked done" (by R224 and R228)) · Tests: 200-haste-step-is-unconditional.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing · Key: turn.haste.always.no-auto-done</sub>
 
 <a id="r504.6"></a>**504.6.** The end of the haste step is an event. An ability that triggers "at the end of [Haste]" triggers then, before the battle phase begins, including in a turn in which nobody played anything in the step. See rule 706.
 
 > *Example: Keeper of Tithes creates an X/X for its controller's expended resources as the step closes.*
 
-> *Example: The end of the step is announced exactly once.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests (a probe it wrote), 1 failed; 4 gate test files · Printed: card: Keeper of Tithes; card: Debt Plant · Rulings: R50, R50 · Tests: 38-light-a.test.ts, 200-haste-step-is-unconditional.test.ts, 44-hybrids-ld-a.test.ts, 419-cr-planning.test.ts · Example tests: 38-light-a.test.ts::Keeper of Tithes: at the end of [Haste] it creates an X/X for your expended resources, 200-haste-step-is-unconditional.test.ts::R228 §5: the step still ENDS properly — endOfHaste fires exactly once · Key: turn.haste.end-event</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests (a probe it wrote), 1 failed; 4 gate test files · Printed: card: Keeper of Tithes; card: Debt Plant · Rulings: R50, R50 · Tests: 38-light-a.test.ts, 200-haste-step-is-unconditional.test.ts, 44-hybrids-ld-a.test.ts, 419-cr-planning.test.ts · Example test: 38-light-a.test.ts::Keeper of Tithes: at the end of [Haste] it creates an X/X for your expended resources · Demonstrated by test: 200-haste-step-is-unconditional.test.ts::R228 §5: the step still ENDS properly — endOfHaste fires exactly once · Key: turn.haste.end-event</sub>
 
 <a id="r504.6a"></a>**504.6a** An instruction a card carries out "during [Haste]" happens in the haste step. This client asks for it as the step ends.
 
@@ -4063,48 +3621,38 @@ order.
 
 <a id="r504.8"></a>**504.8.** Mods are applied in deployment, not in the haste step, even when the mod card has haste. The exceptions are a card that allows mods in the haste step (the sub-rule below) and a Virus applied in battle (see 723). See rules 507, 720, 723.
 
-> *Example: A graft with haste is offered in deployment and never in the haste step.*
-
-> *Example: Without a Slurpr, applying a mod in the haste step is refused.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests (2 probes it wrote), all passed; 3 gate test files · Printed: Manual p.26; Manual p.26 · Designer: RAQ 1355115946032889914#0 · Rulings: R95 (its Slurpr haste-sibling half) · Tests: 393-raq-mods.test.ts, 40-light-c.test.ts, 419-cr-planning.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card, 40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged — modding is a deployment action · Key: turn.haste.mods</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests (2 probes it wrote), all passed; 3 gate test files · Printed: Manual p.26; Manual p.26 · Designer: RAQ 1355115946032889914#0 · Rulings: R95 (its Slurpr haste-sibling half) · Tests: 393-raq-mods.test.ts, 40-light-c.test.ts, 419-cr-planning.test.ts · Demonstrated by tests: 393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card, 40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged — modding is a deployment action · Key: turn.haste.mods</sub>
 
 <a id="r504.8a"></a>**504.8a** A card that says so can allow mods in the haste step: Slurpr lets its controller apply other mods, augments and grafts alike, during [Haste] as if it were deployment. See rule 720.
 
-> *Example: With Slurpr in play, a mod is applied during the haste step.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Slurpr · Rulings: R95 (its Slurpr haste-sibling half) · Tests: 40-light-c.test.ts · Example test: 40-light-c.test.ts::Slurpr: mods may be applied during [Haste] as if it was deployment · Key: turn.haste.mods.slurpr</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Slurpr · Rulings: R95 (its Slurpr haste-sibling half) · Tests: 40-light-c.test.ts · Demonstrated by test: 40-light-c.test.ts::Slurpr: mods may be applied during [Haste] as if it was deployment · Key: turn.haste.mods.slurpr</sub>
 
 <a id="r504.9"></a>**504.9.** A card whose prophecy condition ends in [Haste] may be prophesied in the haste step as well as in deployment. Any other prophecy may be prophesied only in deployment. See rule 803.
 
-> *Example: A banner ending in [Haste] may be prophesied in the haste step.*
+> *Example: Divine Intervention's prophecy ("Your life is 5 or less [Haste]") may be prophesied in the haste step.*
 
-> *Example: An unmarked banner is refused there.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R277 (its release-timing and prophesy-window halves), R277 (its release-timing and prophesy-window halves) · Replaces: R277 (its aside that the banner cost is plain mana with no affinity superseded by R301) · Tests: 257-prophecy-release-timing.test.ts · Example tests: 257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step, 257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it · Key: turn.haste.prophesy</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R277 (its release-timing and prophesy-window halves), R277 (its release-timing and prophesy-window halves) · Replaces: R277 (its aside that the banner cost is plain mana with no affinity superseded by R301) · Tests: 257-prophecy-release-timing.test.ts · Example test: 257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step · Demonstrated by test: 257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it · Key: turn.haste.prophesy</sub>
 
 <sub>Discrepancies: D-U08-9 (discrepancies.md)</sub>
 
 <a id="r504.9a"></a>**504.9a** The [Haste] marker does not move a fulfilled prophecy's release: the card is played from the cache only at its printed timing. See rule 803.
 
-> *Example: A fulfilled battle card with a [Haste]-marked banner is not offered in the haste step.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R277 (its release-timing and prophesy-window halves) · Tests: 257-prophecy-release-timing.test.ts · Example test: 257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step · Key: turn.haste.prophesy.release</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R277 (its release-timing and prophesy-window halves) · Tests: 257-prophecy-release-timing.test.ts · Demonstrated by test: 257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step · Key: turn.haste.prophesy.release</sub>
 
 <a id="r505"></a>
 ### 505. Battle Phase
 
 <a id="r505.1"></a>**505.1.** The battle phase is the only interactive phase of the game. In it players manage their units across the regions: they attack into other regions or keep units back to defend. See rules 601, 604.
 
-> *Example: Player A attacks with a unit; it moves into Player B's region, and Player A enters that region too.*
+> *Example: Player A attacks with a Good Whale: the Whale moves into Player B's region, and Player A enters that region too.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.7; Manual p.7 · Tests: 02-combat.test.ts · Example test: 02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths · Key: turn.battle.what-it-is</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.7; Manual p.7 · Tests: 02-combat.test.ts · Example test: 02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths · Key: turn.battle.what-it-is</sub>
 
 <a id="r505.1a"></a>**505.1a** A player can interact with opponents and their units only during the battle phase. See rules 507, 601.
 
-> *Example: In deployment an effect that targets a cached card reaches only its controller's own cache; in battle it reaches the opponent's cache too.*
+> *Example: In deployment, an effect that targets a cached card can reach only its controller's own cache; once an attack brings both players into a region in battle, it can reach the opponent's cache too.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.19; Manual p.19 · Tests: 293-cached-targets-are-regional.test.ts · Example test: 293-cached-targets-are-regional.test.ts::R291 §1 in deployment a home region reaches only its own seat · Key: turn.battle.what-it-is.only-interaction</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.19; Manual p.19 · Tests: 293-cached-targets-are-regional.test.ts · Example test: 293-cached-targets-are-regional.test.ts::R291 §1 in deployment a home region reaches only its own seat · Key: turn.battle.what-it-is.only-interaction</sub>
 
 <a id="r505.1b"></a>**505.1b** An effect that applies "during battle" applies only in the battle phase. It does not apply in the haste step or in deployment. See rules 504, 507.
 
@@ -4116,9 +3664,7 @@ order.
 
 <a id="r505.2"></a>**505.2.** Battle is made of four steps: the attack step, the block step, the combat step and the after-combat step. They take place separately inside each region. See rules 604, 606, 608, 609.
 
-> *Example: Round 1 of a 1v1 battle runs attack, a priority window, blocks, a priority window, combat damage and the after-combat window in the defender's region.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.20; Manual p.20 · Tests: 02-combat.test.ts, 420-cr-battle-regroup-deploy.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.steps</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.20; Manual p.20 · Tests: 02-combat.test.ts, 420-cr-battle-regroup-deploy.test.ts · Demonstrated by test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.steps</sub>
 
 <a id="r505.2a"></a>**505.2a** In a region that is not attacked, the combat step and the after-combat step are skipped. See rule 609.
 
@@ -4128,9 +3674,9 @@ order.
 
 <a id="r505.2b"></a>**505.2b** An attack step in which no attack is declared opens no priority window. If both battle rounds are declined, the battle phase has no priority window at all. See rules 506, 605.
 
-> *Example: The initiative player declines, then the non-initiative player declines: the game goes to regroup without either player getting priority, so spell tokens held for the battle are erased unused.*
+> *Example: The initiative player declines to attack, then the non-initiative player declines too: the game goes to regroup without either player getting priority, so a Fireball token held for the battle is erased unused.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R194 · Tests: 165-token-loss-warning.test.ts, 21-fixes.test.ts · Example test: 165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all · Key: turn.battle.steps.declined-no-window</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Rulings: R194 · Tests: 165-token-loss-warning.test.ts, 21-fixes.test.ts · Example test: 165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all · Key: turn.battle.steps.declined-no-window</sub>
 
 <sub>Discrepancies: D-U09-3 (discrepancies.md)</sub>
 
@@ -4142,27 +3688,25 @@ order.
 
 <a id="r505.3a"></a>**505.3a** Round 1 runs in this order: (1) the initiative team declares its attacks, sending units into non-initiative regions; (2) a priority window; (3) the non-initiative team declares its blocking formations and may at the same time send units out to counterattack; (4) a priority window; (5) the combat step, in which all units in formation deal combat damage at the same time; (6) the after-combat step, the last priority window in that region. See rules 604, 605, 606, 607, 608, 609, 610.
 
-> *Example: The NIT blocks nothing and sends a Rune Channeler to counterattack; the IT's unblocked 2/2 deals 2 to the NIT; after the after-combat window, round 2 begins.*
+> *Example: The initiative player attacks with a 2/2 Curio Drifter; the non-initiative player blocks nothing and sends a Rune Channeler to counterattack. The unblocked Drifter deals 2, and after the after-combat window round 2 begins.*
 
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Printed: Manual p.20; Manual p.20; Manual p.20; Manual p.20; Manual p.20 · Tests: 02-combat.test.ts, 420-cr-battle-regroup-deploy.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.round-1</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.20; Manual p.20; Manual p.20; Manual p.20; Manual p.20 · Tests: 02-combat.test.ts, 420-cr-battle-regroup-deploy.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.round-1</sub>
 
 <a id="r505.3b"></a>**505.3b** Units sent out to counterattack leave the region at once, and are treated as if they do not exist until round 1 is finished. See rule 610.
 
-> *Example: A unit sent to counterattack is absent during round 1 and arrives in the initiative player's region for round 2.*
+> *Example: A Rune Channeler sent to counterattack is absent for the rest of round 1, and arrives in the initiative player's region for round 2.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20 · Tests: 02-combat.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.counterattackers-absent</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20 · Tests: 02-combat.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.counterattackers-absent</sub>
 
 <a id="r505.3c"></a>**505.3c** Round 2 runs in this order: (1) the non-initiative team puts its counterattacking units into formation; (2) a priority window; (3) the initiative team declares its blocking formation; (4) a priority window; (5) the combat step; (6) the after-combat step, the last priority window in that region before regroup. See rule 610.
 
-> *Example: The counterattacker arrives in the initiative player's region, attacks, is not blocked and deals 4; after the after-combat window the game goes through regroup to deployment.*
+> *Example: The counterattacking Rune Channeler arrives in the initiative player's region, attacks, is not blocked and deals 4; after the after-combat window the game goes through regroup to deployment.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Manual p.20 · Tests: 02-combat.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.round-2</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Manual p.20 · Tests: 02-combat.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.round-2</sub>
 
 <a id="r505.3d"></a>**505.3d** Each team gets only one chance to attack in a battle phase. There is no counterattack in round 2. See rule 610.
 
-> *Example: In round 2 the initiative player blocks, but cannot send units back out to attack. (illustrative)*
-
-> *Example: The NIT sends a Rune Channeler and counterattacks with it in round 2; the initiative player may block it but cannot send a unit of its own out, and the battle phase ends after round 2.*
+> *Example: The non-initiative player sent a Rune Channeler at blocks and attacks with it in round 2; the initiative player may block it but cannot send a unit of their own out, and the battle phase ends after round 2.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Rulebook 2023 p.5; Rulebook 2023 p.5 · Tests: 420-cr-battle-regroup-deploy.test.ts · Example test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.rounds.one-attack-each — in round 2 the initiative player cannot send units out to counterattack, and the battle phase ends after round 2 · Key: turn.battle.rounds.one-attack-each</sub>
 
@@ -4170,7 +3714,7 @@ order.
 
 > *Example: The initiative player could attack and declines; the non-initiative player then attacks in round 2 with a unit that was never sent.*
 
-> *Example: Only the non-initiative player has a unit; the initiative player's empty declaration leads to round 2, where that unit attacks from home.*
+> *Example: Only the non-initiative player has a unit; the initiative player declares no attack, and in round 2 that unit attacks from home.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.20 · Rulings: R15 · Tests: 396-raq-timing.test.ts, 21-fixes.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines, 21-fixes.test.ts::REGRESSION: NIT can attack in round 2 when IT had no units in round 1 · Key: turn.battle.rounds.nit-attacks-alone</sub>
 
@@ -4180,9 +3724,9 @@ order.
 
 > *Example: The initiative player attacks, the non-initiative player blocks and sends nobody: the battle phase ends after round 1, and the unit that stayed home is untouched.*
 
-> *Example: A unit that stayed home cannot be declared as a round-2 attacker.*
+> *Example: A Good Whale that stayed home while a Rune Channeler was sent out cannot be declared as a round-2 attacker.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.21 · Rulings: R15 · Tests: 21-fixes.test.ts, 02-combat.test.ts · Example tests: 21-fixes.test.ts::round 2 after a real round-1 battle still restricts to the sent counterattackers, 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.no-round-2</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.21 · Rulings: R15 · Tests: 21-fixes.test.ts, 02-combat.test.ts · Example tests: 21-fixes.test.ts::round 2 after a real round-1 battle still restricts to the sent counterattackers, 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.no-round-2</sub>
 
 <sub>Discrepancies: D-U09-4 (discrepancies.md)</sub>
 
@@ -4194,7 +3738,7 @@ order.
 
 <a id="r505.4a"></a>**505.4a** The regions resolve in clockwise order, starting with the region to the left of the initiative player, so the initiative player's region resolves last. See rule 904.
 
-> *Example: In a four-player game the region to the initiative player's left resolves first and the initiative player's own region last. (illustrative)*
+> *Example: In a four-player game the region to the initiative player's left resolves first and the initiative player's own region last.*
 
 > *Example: In 1v1, round 1 is fought in the non-initiative home region and the initiative home region comes last, in round 2.*
 
@@ -4202,29 +3746,23 @@ order.
 
 <a id="r505.4b"></a>**505.4b** In 1v1, round 1 is fought in the non-initiative player's region, and round 2, if there is one, in the initiative player's region. See rules 601, 610.
 
-> *Example: The counterattacker ends up in the initiative player's region, where round 2 is fought.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.21; Manual p.21 · Rulings: R194 · Tests: 02-combat.test.ts, 420-cr-battle-regroup-deploy.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.region-order.one-v-one</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.21; Manual p.21 · Rulings: R194 · Tests: 02-combat.test.ts, 420-cr-battle-regroup-deploy.test.ts · Demonstrated by test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.region-order.one-v-one</sub>
 
 <a id="r505.4c"></a>**505.4c** While a region's battle is being resolved, units in any other region, including units that stayed home and counterattackers that were sent away, are treated as if they do not exist. See rules 601, 610.
 
-> *Example: An attacked player's spell can target the attacker in the battle region but not the attacker's unit that stayed home.*
+> *Example: Player A attacks with a Rune Channeler and leaves a Good Whale at home. Player B casts Luminous Arc: it can target the attacking Channeler, but not the Whale that stayed home.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.21; Manual p.21 · Tests: 05-rulings.test.ts · Example test: 05-rulings.test.ts::R12: regions are exclusive · Key: turn.battle.region-order.others-absent</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.21; Manual p.21 · Tests: 05-rulings.test.ts · Example test: 05-rulings.test.ts::R12: regions are exclusive · Key: turn.battle.region-order.others-absent</sub>
 
 <a id="r505.5"></a>**505.5.** In free-for-all games there are no battle rounds: all players declare their attacks at the same time, using intent cards. See rules 903, 905. *(Untested: no executed test demonstrates it.)*
-
-> *Example: Each player places face-down intent cards in front of their units; all are flipped at once and the attacks happen. (illustrative)*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; no gate test · Printed: Manual p.7; Rulebook 2023 p.9 · Key: turn.battle.ffa</sub>
 
 <a id="r505.6"></a>**505.6.** Anything counted "in this battle" is counted separately for each region, and the count starts again at the start of each battle phase. Things that happen outside the battle phase are not counted. See rule 601.
 
-> *Example: Trashes are counted per battle and the count is reset between battles.*
+> *Example: During a battle a player discards a card, then their attacking unit dies in combat: two cards have been trashed in this battle. At the next battle phase the count starts again from zero.*
 
-> *Example: A card trashed outside battle counts for nothing.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Burning Vengeance · Rulings: R14, R14 · Tests: 35-rot-debt-trash.test.ts, 11-fire-wood.test.ts, 47-costs-events.test.ts · Example tests: 35-rot-debt-trash.test.ts::R40: battleCounters count trashes per battle and reset between battles, 35-rot-debt-trash.test.ts::R40: a trash outside battle counts for nothing · Key: turn.battle.this-battle</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Burning Vengeance · Rulings: R14, R14 · Tests: 35-rot-debt-trash.test.ts, 11-fire-wood.test.ts, 47-costs-events.test.ts · Example test: 35-rot-debt-trash.test.ts::R40: battleCounters count trashes per battle and reset between battles · Demonstrated by test: 35-rot-debt-trash.test.ts::R40: a trash outside battle counts for nothing · Key: turn.battle.this-battle</sub>
 
 <sub>Discrepancies: D-U09-6 (discrepancies.md)</sub>
 
@@ -4239,15 +3777,11 @@ order.
 
 <a id="r506.1"></a>**506.1.** Regroup is a global step that takes place once battle has ended in every region. It resets the game between battles. See rule 505.
 
-> *Example: Every way a battle round can end leads into the same regroup.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.26; Manual p.26 · Tests: 183-end-battle-round-paths.test.ts · Example test: 183-end-battle-round-paths.test.ts::R213 §2: every path funnels through startRegroup · Key: turn.regroup.what-it-is</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.26; Manual p.26 · Tests: 183-end-battle-round-paths.test.ts · Demonstrated by test: 183-end-battle-round-paths.test.ts::R213 §2: every path funnels through startRegroup · Key: turn.regroup.what-it-is</sub>
 
 <a id="r506.1a"></a>**506.1a** No player gets priority or takes any game action during regroup.
 
-> *Example: After the last after-combat window passes, the game is next in the deployment phase; nobody was asked anything in between. (illustrative)*
-
-> *Example: The last pass of the after-combat window regroups and lands the game in deployment within that one action; nobody holds priority afterwards.*
+> *Example: When the last player passes in the after-combat window, the game goes through regroup and straight into deployment; no one is given priority in between.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.26 · Tests: 420-cr-battle-regroup-deploy.test.ts · Example test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.regroup.what-it-is.no-actions — the last after-combat pass lands straight in deployment, with nobody holding priority · Key: turn.regroup.what-it-is.no-actions</sub>
 
@@ -4275,9 +3809,7 @@ order.
 
 <a id="r506.2b"></a>**506.2b** Each player who entered another region during battle stops being present there, and is present only in their own region again. See rule 601.
 
-> *Example: After regroup, each region holds only its own player.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.19; Manual p.19 · Tests: 05-rulings.test.ts · Example test: 05-rulings.test.ts::R11: regroup runs its exact sequence · Key: turn.regroup.sequence.players</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.19; Manual p.19 · Tests: 05-rulings.test.ts · Demonstrated by test: 05-rulings.test.ts::R11: regroup runs its exact sequence · Key: turn.regroup.sequence.players</sub>
 
 <a id="r506.2c"></a>**506.2c** All damage on units is removed. See rule 112.
 
@@ -4295,25 +3827,19 @@ order.
 
 <a id="r506.2e"></a>**506.2e** All units leave formation. See rule 602.
 
-> *Example: After regroup there is no battle formation left on either side.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.26; Manual p.7 · Tests: 05-rulings.test.ts · Example test: 05-rulings.test.ts::R11: regroup runs its exact sequence · Key: turn.regroup.sequence.formation</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.26; Manual p.7 · Tests: 05-rulings.test.ts · Demonstrated by test: 05-rulings.test.ts::R11: regroup runs its exact sequence · Key: turn.regroup.sequence.formation</sub>
 
 <a id="r506.2f"></a>**506.2f** All spell tokens in play are erased, including unused spell tokens in a player's own region. See rules 304, 407.
 
-> *Example: With no Harbinger of Immolation anywhere, every spell token is erased at regroup.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.26; Manual p.15; Manual p.15 · Tests: 12-fire-a.test.ts · Example test: 12-fire-a.test.ts::regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased · Key: turn.regroup.sequence.spell-tokens</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.26; Manual p.15; Manual p.15 · Tests: 12-fire-a.test.ts · Demonstrated by test: 12-fire-a.test.ts::regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased · Key: turn.regroup.sequence.spell-tokens</sub>
 
 <a id="r506.2g"></a>**506.2g** A card can keep spell tokens through regroup. While Harbinger of Immolation's [Augment] text applies, its controller's spell tokens are not erased; they keep their X, and they still lose their temporary changes. Other players' spell tokens are still erased. See rules 721, 101.
 
 > *Example: With Harbinger of Immolation in play as a unit, your spell tokens stay through regroup.*
 
-> *Example: A surviving token keeps its X but loses its temporary changes.*
+> *Example: With Harbinger of Immolation in play, your Fireball 7 token survives regroup still a Fireball 7, but any temporary changes on it are gone.*
 
-> *Example: Only the Harbinger controller's tokens stay; the opponent's are erased.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: Harbinger of Immolation · Rulings: R89 · Tests: 12-fire-a.test.ts · Example tests: 12-fire-a.test.ts::Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup, 12-fire-a.test.ts::Harbinger of Immolation: a surviving token keeps its X, 12-fire-a.test.ts::Harbinger of Immolation: only YOUR tokens stay · Key: turn.regroup.sequence.spell-tokens.harbinger</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: Harbinger of Immolation · Rulings: R89 · Tests: 12-fire-a.test.ts · Example tests: 12-fire-a.test.ts::Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup, 12-fire-a.test.ts::Harbinger of Immolation: a surviving token keeps its X · Demonstrated by test: 12-fire-a.test.ts::Harbinger of Immolation: only YOUR tokens stay · Key: turn.regroup.sequence.spell-tokens.harbinger</sub>
 
 <a id="r506.2h"></a>**506.2h** A spell token erased at regroup takes its mods with it. See rules 720, 304.
 
@@ -4338,9 +3864,9 @@ order.
 
 <a id="r507.1a"></a>**507.1a** Any card can be played during deployment except a battle card, which can be played only in the battle phase. See rules 207, 803.
 
-> *Example: Jelly, a battle card, cannot be played in deployment, and a Fireball token cannot be cast there.*
+> *Example: In deployment a player plays Flame Juggle and gets a Fireball token. Fireball is a battle card, so the token cannot be cast until the battle phase.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.26; Manual p.26 · Tests: 01-planning.test.ts · Example test: 01-planning.test.ts::battle-timed Fireball is NOT castable during deployment · Key: turn.deploy.what-it-is.no-battle-cards</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.26; Manual p.26 · Tests: 01-planning.test.ts · Example test: 01-planning.test.ts::battle-timed Fireball is NOT castable during deployment · Key: turn.deploy.what-it-is.no-battle-cards</sub>
 
 <a id="r507.1b"></a>**507.1b** During deployment each player is alone in their own region. A player cannot interact with other players or their units, and treats every other player as if they did not exist. See rules 601, 505.
 
@@ -4356,31 +3882,25 @@ order.
 
 <a id="r507.2"></a>**507.2.** Modifications are applied during deployment. A mod may be applied from the hand or the bin, and a glimpsed mod also from the cache. See rules 720, 403.
 
-> *Example: A graft is offered from the bin as well as from the hand, when its cost and affinity are met.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.27 · Designer: RAQ 1537748882501668934#4 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 3 · Key: turn.deploy.mods</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.27 · Designer: RAQ 1537748882501668934#4 · Tests: 393-raq-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 3 · Key: turn.deploy.mods</sub>
 
 <a id="r507.2a"></a>**507.2a** Grafting is done during deployment, whatever the card's speed, even for a card with Haste, and never in battle. A graft can be applied in the haste step only where an effect lets mods be applied then as if it were deployment, such as Slurpr's. See rules 722, 504.
 
-> *Example: A graft is offered in deployment and never in the haste step or in battle, even for a Haste card.*
-
 > *Example: With a Slurpr in its controller's region, a graft lands during the haste step.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Slurpr · Designer: RAQ 1355115946032889914#0; RAQ 1355115946032889914#0 · Rulings: R95 (its haste sibling, Slurpr) · Engine: apply.ts:doGraft, apply.ts:hasteModAllowed · Tests: 393-raq-mods.test.ts, 40-light-c.test.ts, 420-cr-battle-regroup-deploy.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment, 40-light-c.test.ts::Slurpr: a GRAFT lands during [Haste] too · Key: turn.deploy.mods.graft-only</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Slurpr · Designer: RAQ 1355115946032889914#0; RAQ 1355115946032889914#0 · Rulings: R95 (its haste sibling, Slurpr) · Engine: apply.ts:doGraft, apply.ts:hasteModAllowed · Tests: 393-raq-mods.test.ts, 40-light-c.test.ts, 420-cr-battle-regroup-deploy.test.ts · Example test: 40-light-c.test.ts::Slurpr: a GRAFT lands during [Haste] too · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment · Key: turn.deploy.mods.graft-only</sub>
 
 <sub>Discrepancies: D-U09-11 (discrepancies.md)</sub>
 
 <a id="r507.2b"></a>**507.2b** During deployment a player may augment a spell token they have in play. Only the augment's attributes pass to the token. See rules 721, 304.
 
-> *Example: A spell token is offered as an augment host during deployment.*
+> *Example: A Fireball 3 token augmented in deployment with Chitin Shredder gains {Powerful}, and when cast in battle it deals 6.*
 
-> *Example: A Fireball token augmented with a {Powerful} mod deals double damage when cast.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 1 gate test file · Rulings: R89, R89 · Engine: apply.ts:doAugment, engine.ts:stackAugmentAttrs · Tests: 78-round17-core.test.ts · Example tests: 78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment, 78-round17-core.test.ts::R89: only ATTRIBUTES transfer · Key: turn.deploy.mods.spell-token</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R89, R89 · Engine: apply.ts:doAugment, engine.ts:stackAugmentAttrs · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R89: only ATTRIBUTES transfer · Demonstrated by test: 78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment · Key: turn.deploy.mods.spell-token</sub>
 
 <a id="r507.3"></a>**507.3.** In 1v1 and team games the printed rules have the initiative team deploy first. Its players deploy in any order they wish, and then the non-initiative team does the same. See rules 500, 904. *(Engine differs, see F-U09-3.) (Untested: no executed test demonstrates it.)*
 
-> *Example: In a 2v2 game both initiative players finish deploying before either non-initiative player begins. (illustrative)*
+> *Example: In a 2v2 game both initiative players finish deploying before either non-initiative player begins.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; no gate test · Printed: Manual p.38; Manual p.38; Rulebook 2023 p.5 · Key: turn.deploy.order</sub>
 
@@ -4388,43 +3908,35 @@ order.
 
 > *Example: The non-initiative player is offered plays at once, and can finish deploying while the initiative player is still acting.*
 
-> *Example: legalActions offers deployment plays to both players at the same time.*
+> *Example: During deployment Player A plays Ignis Sprite; nothing of it appears in Player B's game log while deployment is under way.*
 
-> *Example: A deployment play produces events for the player who made it, and not one of them reaches the opponent or moves the opponent's log.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R144 (its "hidden simultaneous segment" words; its no-priority clause amended by R286), R286 · Tests: 21-fixes.test.ts, 203-reveal-waits-for-the-barrier.test.ts · Example tests: 21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT, 21-fixes.test.ts::legalActions OFFERS deploy plays to both seats at once, 203-reveal-waits-for-the-barrier.test.ts::R310 §4: a hidden step with no reveal in it leaks nothing either (the negative control) · Key: turn.deploy.order.simultaneous</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R144 (its "hidden simultaneous segment" words; its no-priority clause amended by R286), R286 · Tests: 21-fixes.test.ts, 203-reveal-waits-for-the-barrier.test.ts · Example tests: 21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT, 203-reveal-waits-for-the-barrier.test.ts::R310 §4: a hidden step with no reveal in it leaks nothing either (the negative control) · Demonstrated by test: 21-fixes.test.ts::legalActions OFFERS deploy plays to both seats at once · Key: turn.deploy.order.simultaneous</sub>
 
 <sub>Discrepancies: D-U08-1 (discrepancies.md)</sub>
 
 <a id="r507.4"></a>**507.4.** The deployment phase begins in this order: (1) each player is dealt damage equal to their rot, in initiative order; (2) then abilities that trigger "at the start of deployment" trigger. See rule 112.
 
-> *Example: Rot deals its damage at the start of deployment, initiative player first.*
+> *Example: A player controls Beyond, Codex Incarnate and has 2 rot. At the start of deployment the rot comes first: Beyond asks them to pick a unit (they pick their Good Whale), and only after that do 'at the start of deployment' abilities trigger.*
 
-> *Example: The start-of-deployment event still fires after Beyond's rot replacement has stopped to ask for a target.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R38, R50 · Tests: 35-rot-debt-trash.test.ts, 43-dark-c.test.ts · Example tests: 35-rot-debt-trash.test.ts::R38: rot deals damage equal to itself at the start of deployment, in initiative order, 43-dark-c.test.ts::R102 — the start-of-deployment event still fires after the rot replacement stopped to ask · Key: turn.deploy.start</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R38, R50 · Tests: 35-rot-debt-trash.test.ts, 43-dark-c.test.ts · Example test: 43-dark-c.test.ts::R102 — the start-of-deployment event still fires after the rot replacement stopped to ask · Demonstrated by test: 35-rot-debt-trash.test.ts::R38: rot deals damage equal to itself at the start of deployment, in initiative order · Key: turn.deploy.start</sub>
 
 <a id="r507.4a"></a>**507.4a** All abilities that trigger at the start of deployment are put on the stack before any of them resolves. See rules 703, 706.
 
-> *Example: Three start-of-deployment watchers see the stack at sizes 2, 1, 0 as they resolve: all three were on it first.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R144 (its half (a), as amended by R286) · Replaces: R144 (its half (a), one shared deployment stack, amended by R286 to one isolated stack per player) · Tests: 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves · Key: turn.deploy.start.triggers</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R144 (its half (a), as amended by R286) · Replaces: R144 (its half (a), one shared deployment stack, amended by R286 to one isolated stack per player) · Tests: 37-attrs-wight.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves · Key: turn.deploy.start.triggers</sub>
 
 <a id="r507.5"></a>**507.5.** Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack normally resolves without anyone having to act. See rule 703.
 
-> *Example: A card played in deployment really goes on a stack before it resolves.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R286, R286 · Replaces: R144 (its half (a) put only deployment triggers on one shared stack; amended by R286) · Tests: 276-deployment-stack.test.ts · Example test: 276-deployment-stack.test.ts::R286 §1: the play really went ON a stack · Key: turn.deploy.stack</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R286, R286 · Replaces: R144 (its half (a) put only deployment triggers on one shared stack; amended by R286) · Tests: 276-deployment-stack.test.ts · Demonstrated by test: 276-deployment-stack.test.ts::R286 §1: the play really went ON a stack · Key: turn.deploy.stack</sub>
 
 <sub>Discrepancies: D-U09-2 (discrepancies.md)</sub>
 
 <a id="r507.5a"></a>**507.5a** A decision one player must answer during deployment does not make the other player wait: the other player may keep playing, and their own deployment stack keeps resolving. See rule D6.
 
-> *Example: Seat 1 is answering a question; seat 0 plays a card in deployment and it resolves.*
+> *Example: Player B is answering a choice; meanwhile Player A plays a card in deployment and it resolves.*
 
-> *Example: A start-of-deployment Wraith pile suspends only its own seat.*
+> *Example: Player B has three Wraiths, and their start-of-deployment triggers are asking B to choose. Meanwhile Player A can still act, and can even finish deploying; B's triggers then resolve normally.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R286, R154 (its seat-aware decision gate) · Tests: 276-deployment-stack.test.ts, 130-seat-aware-gate.test.ts · Example tests: 276-deployment-stack.test.ts::R286 §1: seat 1 is mid-question and seat 0, 130-seat-aware-gate.test.ts::R154 §1: a Wraith pile suspends its own seat, not the other one · Key: turn.deploy.stack.no-waiting</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R286, R154 (its seat-aware decision gate) · Tests: 276-deployment-stack.test.ts, 130-seat-aware-gate.test.ts · Example tests: 276-deployment-stack.test.ts::R286 §1: seat 1 is mid-question and seat 0, 130-seat-aware-gate.test.ts::R154 §1: a Wraith pile suspends its own seat, not the other one · Key: turn.deploy.stack.no-waiting</sub>
 
 <a id="r508"></a>
 ### 508. Passing the Initiative
@@ -4433,13 +3945,9 @@ order.
 
 > *Example: Harbinger of Immolation creates a Fireball X at the end of turn.*
 
-> *Example: A choice raised by an end-of-turn trigger is asked and answered, and then the turn ends.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.26; Manual p.27; card: Harbinger of Immolation · Tests: 12-fire-a.test.ts, 99-endofturn.test.ts · Example tests: 12-fire-a.test.ts::Harbinger of Immolation: end of turn → Fireball X, 99-endofturn.test.ts::a choice raised inside a real endTurn() is asked, answered, and the turn still flips · Key: turn.initiative.end-of-turn</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.26; Manual p.27; card: Harbinger of Immolation · Tests: 12-fire-a.test.ts, 99-endofturn.test.ts · Example test: 12-fire-a.test.ts::Harbinger of Immolation: end of turn → Fireball X · Demonstrated by test: 99-endofturn.test.ts::a choice raised inside a real endTurn() is asked, answered, and the turn still flips · Key: turn.initiative.end-of-turn</sub>
 
 <a id="r508.1a"></a>**508.1a** No player can play cards during the end-of-turn step, either after the end-of-turn triggers or in response to them.
-
-> *Example: With an end-of-turn trigger resolving, neither player can cast anything in response. (illustrative)*
 
 > *Example: While a General Smof end-of-turn trigger is asking its question, neither player is offered a card, spell token, ability, graft or augment, and an Ignis Sprite play is refused.*
 
@@ -4453,8 +3961,6 @@ order.
 
 <a id="r508.3"></a>**508.3.** When the turn is over, the initiative token is passed to the next player clockwise. In 1v1 and team games this means the initiative alternates between the teams every turn. See rules 500, 904.
 
-> *Example: In 1v1, the player who did not have the initiative this turn has it next turn, and attacks first in its battle phase. (illustrative)*
-
 > *Example: The player without the initiative this turn has it once the turn ends, declares the first attack of the next battle, and the turn after that it passes back.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.26; Manual p.26; Rulebook 2023 p.5 · Tests: 420-cr-battle-regroup-deploy.test.ts · Example test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.initiative.pass — when the turn ends the initiative goes to the other player, who attacks first in the next battle, and it alternates back · Key: turn.initiative.pass</sub>
@@ -4463,17 +3969,17 @@ order.
 
 <a id="r508.3a"></a>**508.3a** Draft packs are passed in the draft step: each player passes their pack clockwise to the next player when they finish drafting, and the draft step is complete once all players have passed their pack. The end-of-turn passing of "any draft packs" with the initiative names this same pass; a pack is not passed a second time when the turn ends. See rules 503, 902.
 
-> *Example: After both players commit their draft, each holds the pack the other drafted from.*
+> *Example: After both players finish drafting, each holds the pack the other drafted from.*
 
 <sub>Basis: Mixed · Verified: partial in round 3; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.16; Manual p.16; Rulebook 2023 p.6; Manual p.26; Rulebook 2023 p.5 · Engine: apply.ts:doDraftCommit, engine.ts:passPacks · Tests: 20-draft.test.ts, 420-cr-battle-regroup-deploy.test.ts · Example test: 20-draft.test.ts::no-op commit preserves hand and pack exactly; both commits pass the packs · Key: turn.initiative.pass.packs</sub>
 
 <sub>Discrepancies: D-U09-10 (discrepancies.md)</sub>
 
-<a id="r508.4"></a>**508.4.** The initiative token is not a token. An effect that refers to tokens never affects it. See rule 304. *(Untested: no executed test demonstrates it.)*
+<a id="r508.4"></a>**508.4.** The initiative token is not a token. An effect that refers to tokens never affects it. See rule 304.
 
-> *Example: Download, which takes a token, cannot take the initiative. (illustrative)*
+> *Example: Download says "Gain control of target token"; it cannot be used to take the initiative token.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran no tests; no gate test · Designer: RAQ 1353864175910387742#7 · Key: turn.initiative.not-a-token</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test (a probe it wrote), passed; no gate test · Designer: RAQ 1353864175910387742#7 · Key: turn.initiative.not-a-token</sub>
 
 ## 6. Regions, Formations and Battle
 
@@ -4491,9 +3997,7 @@ order.
 
 <a id="r601.1"></a>**601.1.** All gameplay takes place inside regions. There is one region for each player, and each player starts in their own region.
 
-> *Example: At the start of a two-player game there are two regions, and each player is present only in their own.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.19; Rulebook 2023 p.8 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.definition — a new game has one region per player, and each player starts present only in their own region · Key: combat.regions.definition</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.19; Rulebook 2023 p.8 · Tests: 421-cr-regions-formations.test.ts · Demonstrated by test: 421-cr-regions-formations.test.ts::cr:combat.regions.definition — a new game has one region per player, and each player starts present only in their own region · Key: combat.regions.definition</sub>
 
 <a id="r601.1a"></a>**601.1a** Each region is isolated from every other region. Nothing in one region interacts with anything in another region, and each region treats the players and cards in other regions as if they don't exist. See rule 601.8.
 
@@ -4523,9 +4027,9 @@ order.
 
 <a id="r601.1e"></a>**601.1e** A player cannot sacrifice a unit that is in a different region, even a unit they control, and cannot do so to pay a cost in their current region.
 
-> *Example: Example (illustrative): A player with no units in the battle region plays an effect that says “Each player sacrifices a unit.” They sacrifice nothing, even though they have units at home.*
+> *Example: A player's only units are at home, outside the battle region, when Cull says "Each player sacrifices a unit." They sacrifice nothing.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.41; Manual p.42 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.definition.sacrifice — Cull makes each player sacrifice a unit, and a player whose only units are in another region sacrifices nothing · Key: combat.regions.definition.sacrifice</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.41; Manual p.42 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.definition.sacrifice — Cull makes each player sacrifice a unit, and a player whose only units are in another region sacrifices nothing · Key: combat.regions.definition.sacrifice</sub>
 
 <a id="r601.2"></a>**601.2.** Every unit and every spell token in play is in exactly one region at a time.
 
@@ -4537,7 +4041,7 @@ order.
 
 > *Example: During deployment, an effect that targets a cached card can reach only its controller's own cache. In battle, where both players are present, it can reach either cache.*
 
-> *Example: Frosted Denial, cast while battle resolves in one region, cannot negate an effect that was played in another region. (illustrative; the engine lets it: F-U01-2)*
+> *Example: Frosted Denial, cast while battle resolves in one region, cannot negate an effect that was played in another region.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.19; Manual p.19; Manual p.19; Manual p.19 · Designer: RAQ 1454169054402314362#0 · Rulings: R12, R344, R344, R344, R286 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.exclusive.no-region-zones — cached and binned cards carry no region, no region holds a stack, and a cache is reachable only where its owner is present · Key: combat.regions.exclusive.no-region-zones</sub>
 
@@ -4545,7 +4049,7 @@ order.
 
 <a id="r601.3"></a>**601.3.** The regions are arranged in a circle. Each player's region has two neighbouring regions, one to the left and one to the right, except in a two-player game, where each region has one neighbouring region. See rules 903, 904.
 
-> *Example: In a two-player game a player declares an attack without naming a region. The attackers go into the opponent region, and the counterattack goes into the first attacker region.*
+> *Example: In a two-player game there is only one region to attack into: the attackers go into the opponent's region, and the counterattack goes into the first attacker's region.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.19; Manual p.19; Manual p.19 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.arrangement — in a two-player game each region has one neighbour: an attack names no destination and goes into the opponent region, and the counterattack into the attacker region · Key: combat.regions.arrangement</sub>
 
@@ -4565,9 +4069,7 @@ order.
 
 <a id="r601.4a"></a>**601.4a** Attacking is the only way a player enters another player's region. A player who declares no attack does not enter the region they could have attacked. See rule 604.
 
-> *Example: A player declares no attack. They do not become present in the region they could have attacked.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Rulebook 2023 p.8 · Rulings: R302 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.presence.only-by-attacking — a player who declares no attack does not enter the region it could have attacked · Key: combat.regions.presence.only-by-attacking</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Rulebook 2023 p.8 · Rulings: R302 · Tests: 421-cr-regions-formations.test.ts · Demonstrated by test: 421-cr-regions-formations.test.ts::cr:combat.regions.presence.only-by-attacking — a player who declares no attack does not enter the region it could have attacked · Key: combat.regions.presence.only-by-attacking</sub>
 
 <a id="r601.4b"></a>**601.4b** Outside the battle phase, every player is alone in their own region. A player cannot interact with any other player, or with another player's units, outside the battle phase. See rules 505, 507.
 
@@ -4591,9 +4093,7 @@ order.
 
 <a id="r601.4e"></a>**601.4e** An ally is a unit under your control in the region where the effect is happening. An enemy is a unit in that region that is not under your control. A unit in another region is neither. See rule 110.
 
-> *Example: No “target ally” or “target enemy” in the card pool offers a unit standing in a different region.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Tests: 243-ally-and-enemy-scope.test.ts · Example test: 243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot in the pool can see a unit in another region · Key: combat.regions.presence.ally-enemy</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R265 (its units half: ally, enemy, another and the region boundary) · Tests: 243-ally-and-enemy-scope.test.ts · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot in the pool can see a unit in another region · Key: combat.regions.presence.ally-enemy</sub>
 
 <a id="r601.4f"></a>**601.4f** At regroup, every player and every unit returns to its own region: a unit returns to its controller's region (see rule 506). See rule 506.
 
@@ -4635,9 +4135,7 @@ order.
 
 <a id="r601.8"></a>**601.8.** Regions limit what effects can reach and count. The printed statement that there is “zero information or interaction between regions” is read as a limit on effects: no effect carries information from one region into another. It does not hide anything from players: a player may see what happens in a region they are not present in. See rule 601.1a.
 
-> *Example: The log line of an effect in the battle region is shown to a player who is not present in that region.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.19 · Rulings: R243, R91 (its region rule) · Replaces: R239 (its visibility half ('can even see that it exists') narrowed by R243) · Tests: 421-cr-regions-formations.test.ts, 219-region-scoped-all.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.information — a log line stamped with another region is visible to both seats · Key: combat.regions.information</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.19 · Rulings: R243, R91 (its region rule) · Replaces: R239 (its visibility half ('can even see that it exists') narrowed by R243) · Tests: 421-cr-regions-formations.test.ts, 219-region-scoped-all.test.ts · Demonstrated by test: 421-cr-regions-formations.test.ts::cr:combat.regions.information — a log line stamped with another region is visible to both seats · Key: combat.regions.information</sub>
 
 <sub>Discrepancies: D-U01-1 (discrepancies.md)</sub>
 
@@ -4758,9 +4256,7 @@ order.
 
 > *Example: An attacking line has two columns, the first with two units and the second with one. The legal positions are a new column at the left end, the back slot of the second column, and a new column at the right end.*
 
-> *Example: A unit placed into the formation may fill a hole left after blocks. No placement ever creates a hole.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R75 (its placement rule), R75 (its placement rule), R75 (its placement rule), R75 (its placement rule) · Tests: 66-formation-placement.test.ts · Example tests: 66-formation-placement.test.ts::R75: a two-unit column offers no back slot, 66-formation-placement.test.ts::R75: a placement can FILL an R72 hole, and can never create one · Key: combat.formations.placement.legal-positions</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R75 (its placement rule), R75 (its placement rule), R75 (its placement rule), R75 (its placement rule) · Tests: 66-formation-placement.test.ts · Example test: 66-formation-placement.test.ts::R75: a two-unit column offers no back slot · Demonstrated by test: 66-formation-placement.test.ts::R75: a placement can FILL an R72 hole, and can never create one · Key: combat.formations.placement.legal-positions</sub>
 
 <sub>Discrepancies: D-U10-4 (discrepancies.md)</sub>
 
@@ -4782,9 +4278,7 @@ order.
 
 <a id="r602.6d"></a>**602.6d** If exactly one position is legal, the unit goes there and no choice is asked. If no position is legal, the effect places nothing.
 
-> *Example: Only one position is open in the formation. The unit goes there without its controller being asked.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R75 (its placement rule) · Tests: 66-formation-placement.test.ts · Example test: 66-formation-placement.test.ts::R75: exactly one legal placement is auto-picked · Key: combat.formations.placement.one-or-none</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R75 (its placement rule) · Tests: 66-formation-placement.test.ts · Demonstrated by test: 66-formation-placement.test.ts::R75: exactly one legal placement is auto-picked · Key: combat.formations.placement.one-or-none</sub>
 
 <a id="r602.6e"></a>**602.6e** “My formation” means the formation the effect's source is in. If the source is in play but not in any formation when the effect resolves, the effect places nothing and creates nothing. See rule 602.2b.
 
@@ -4830,7 +4324,7 @@ order.
 
 > *Example: The attacker has attacked and the defender has not yet declared blocks. The defender stands in no formation, so an effect that puts a unit into the defender's formation has nowhere to put it.*
 
-> *Example: After blocks, every attacking unit dies. The attacker then plays Tiderunner Initiate; it cannot be played into the attacking line, not even into a hole, and enters play outside any formation. (illustrative)*
+> *Example: After blocks, every attacking unit dies. The attacker then plays Tiderunner Initiate; it cannot be played into the attacking line, not even into a hole, and enters play outside any formation.*
 
 > *Example: The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.*
 
@@ -4854,7 +4348,7 @@ order.
 
 <a id="r602.7b"></a>**602.7b** Playing such a card into the formation is optional. Its controller may instead play it so that it enters the region outside the formation.
 
-> *Example: When Tiderunner Initiate is cast, “stay out of formation” is one of the answers offered.*
+> *Example: When casting Tiderunner Initiate, its controller may choose to have it stay out of the formation.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Tiderunner Initiate · Rulings: R29 (its play-time placement) · Tests: 73-play-into-formation.test.ts · Example test: 73-play-into-formation.test.ts::R29 "stay out of formation" is still on the menu · Key: combat.formations.play-into.optional</sub>
 
@@ -4864,7 +4358,7 @@ order.
 
 > *Example: After blocks, the defender plays a unit in front of an unblocked attacking column. That column is blocked, and stays blocked when the unit is removed.*
 
-> *Example: After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation. (illustrative)*
+> *Example: After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Rulings: R29 (its play-time placement), R322, R75 (its placement rule), R322 · Replaces: R29 (its no-formation case ('nothing to join and no prompt') amended by R322) · Tests: 73-play-into-formation.test.ts, 388-raq-blocks-and-windows.test.ts, 421-cr-regions-formations.test.ts · Example tests: 73-play-into-formation.test.ts::R29 with NO formation of your own the play is legal and asks nothing, 388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks blocks that column, 421-cr-regions-formations.test.ts::cr:combat.formations.play-into.needs-formation — after blocks every attacker dies, and the attacker casts Tiderunner Initiate: nothing is asked and it enters play outside any formation · Key: combat.formations.play-into.needs-formation</sub>
 
@@ -4887,15 +4381,13 @@ order.
 
 > *Example: Two defending units block where no attacker is, each in its own column beside the attack.*
 
-> *Example: A side-block on the left opens a column before the first attacking column, and the attacking columns are counted from it.*
+> *Example: A single 2/5 attacks; the defender side-blocks to its left with a 1/1. The 1/1 stands in a new column left of the attack, the attacking column stays unblocked, and it deals 2 to the defender.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.23; Manual p.23 · Designer: RAQ 1366447016653361192#3 · Rulings: R321 · Tests: 400-raq-fix-blocks.test.ts · Example tests: 400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is, each its own column, 400-raq-fix-blocks.test.ts::R321 a side-block on the left opens a column before column 1 · Key: combat.columns.definition.side-blocks</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.23; Manual p.23 · Designer: RAQ 1366447016653361192#3 · Rulings: R321 · Tests: 400-raq-fix-blocks.test.ts · Example tests: 400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is, each its own column, 400-raq-fix-blocks.test.ts::R321 a side-block on the left opens a column before column 1 · Key: combat.columns.definition.side-blocks</sub>
 
 <a id="r603.1c"></a>**603.1c** Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot. See rule 603.1b.
 
-> *Example: The defender side-blocks with two units in one column to the right of the attack, one behind the other.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 1 test, passed; 1 gate test file · Rulings: R321 (its side-block columns, context only) · Engine: checkBlocks · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.side-block-shared-column — two units side-block in one column beside the attack, one in the front slot and one in the back slot · Key: combat.columns.definition.side-block-shared-column</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 1 test, passed; 1 gate test file · Rulings: R321 (its side-block columns, context only) · Engine: checkBlocks · Tests: 421-cr-regions-formations.test.ts · Demonstrated by test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.side-block-shared-column — two units side-block in one column beside the attack, one in the front slot and one in the back slot · Key: combat.columns.definition.side-block-shared-column</sub>
 
 <sub>Discrepancies: D-U10-8 (discrepancies.md)</sub>
 
@@ -4903,7 +4395,7 @@ order.
 
 > *Example: Inspiration gives +2/+2 to its controller's units adjacent to it in formation, and to no others.*
 
-> *Example: The defender blocks the first and third attacking columns and leaves the second unblocked. The two blockers are not neighbours, so an Inspiration in one does not buff the other. (illustrative)*
+> *Example: The defender blocks the first and third attacking columns and leaves the second unblocked. The two blockers are not neighbours, so an Inspiration in one does not buff the other.*
 
 <sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.22; Rulebook 2023 p.10; Manual p.23 · Tests: 23-wood-a.test.ts, 421-cr-regions-formations.test.ts · Example test: 23-wood-a.test.ts::Inspiration: +2/+2 to your units adjacent to it in formation · Key: combat.columns.adjacency</sub>
 
@@ -4927,7 +4419,7 @@ order.
 
 > *Example: Flamebreath Initiate attacks with one ally in the column beside it. X is 1, so it creates a Fireball 2. Attacking alone, X is 0 and the Fireball is 1.*
 
-> *Example: Flamebreath Initiate attacks beside an ally, and the ally is destroyed while the trigger waits. X is 0 when the trigger resolves. (illustrative)*
+> *Example: Flamebreath Initiate attacks beside an ally, and the ally is destroyed while the trigger waits. X is 0 when the trigger resolves.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Flamebreath Initiate · Rulings: R1 · Tests: 11-fire-wood.test.ts, 421-cr-regions-formations.test.ts · Example tests: 11-fire-wood.test.ts::Flamebreath Initiate: attack → Fireball X+1, X = adjacent allies, 421-cr-regions-formations.test.ts::cr:combat.columns.adjacency.at-resolution — Flamebreath Initiate attacks beside an ally, the ally is destroyed while the trigger waits, and X is 0 when it resolves · Key: combat.columns.adjacency.at-resolution</sub>
 
@@ -4953,9 +4445,7 @@ order.
 
 <a id="r603.3b"></a>**603.3b** A defending formation has no adjacent slots past its ends.
 
-> *Example: A blocking unit at the end of the defending formation has no adjacent slot past that end.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R304 · Tests: 66-formation-placement.test.ts · Example test: 66-formation-placement.test.ts::R304 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge · Key: combat.columns.edges.attacking-only</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R304 · Tests: 66-formation-placement.test.ts · Demonstrated by test: 66-formation-placement.test.ts::R304 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge · Key: combat.columns.edges.attacking-only</sub>
 
 <a id="r603.4"></a>**603.4.** Text that names positions relative to the unit itself, such as “my empty adjacent slots” or “the empty slot behind me”, refers to exactly those positions. Its controller does not choose among positions as they do under rule 602.6. See rule 602.6.
 
@@ -4965,19 +4455,15 @@ order.
 
 <a id="r603.5"></a>**603.5.** A formation can grow at either end without limit.
 
-> *Example: New columns are opened at the left end of an attacking line again and again, and every one of them is accepted.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.22; Manual p.22; Rulebook 2023 p.10 · Tests: 66-formation-placement.test.ts · Example test: 66-formation-placement.test.ts::R75: formations scale infinitely in width · Key: combat.columns.width</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.22; Manual p.22; Rulebook 2023 p.10 · Tests: 66-formation-placement.test.ts · Demonstrated by test: 66-formation-placement.test.ts::R75: formations scale infinitely in width · Key: combat.columns.width</sub>
 
 <a id="r603.5a"></a>**603.5a** When the columns of a line move (a new column opens at the left end, or the line closes up under rule 602.5), each block and each effect that applies to a particular column moves with that column.
 
 > *Example: A new column opens at the left end of a line that has already been blocked. Every blocker still blocks the same attackers as before.*
 
-> *Example: Before blocks, a column-based battle effect stays with its column when a column to its left empties and the line closes up.*
+> *Example: A Swift column led by Dune Drifter has already dealt its damage first. Its controller then plays Tiderunner Initiate into a new column on the left; the Drifter's column shifts right but still counts as having struck, so it does not deal damage again.*
 
-> *Example: A column that has already struck in a damage sub-step keeps that mark when a new column opens to its left.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Rulings: R72 (its gravity rule), R72 (its gravity rule) · Tests: 66-formation-placement.test.ts, 64-formation-collapse.test.ts, 400-raq-fix-blocks.test.ts · Example tests: 66-formation-placement.test.ts::R75: opening a column on the LEFT re-keys every block and every column counter, 64-formation-collapse.test.ts::R72: a column-scoped battle counter rides the collapse to the new index, 400-raq-fix-blocks.test.ts::R320 a struck mark moves with its column when a new column opens on the left · Key: combat.columns.width.columns-keep-identity</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Rulings: R72 (its gravity rule), R72 (its gravity rule) · Tests: 66-formation-placement.test.ts, 64-formation-collapse.test.ts, 400-raq-fix-blocks.test.ts · Example tests: 66-formation-placement.test.ts::R75: opening a column on the LEFT re-keys every block and every column counter, 400-raq-fix-blocks.test.ts::R320 a struck mark moves with its column when a new column opens on the left · Demonstrated by test: 64-formation-collapse.test.ts::R72: a column-scoped battle counter rides the collapse to the new index · Key: combat.columns.width.columns-keep-identity</sub>
 
 <a id="r604"></a>
 ### 604. Attacking
@@ -4990,9 +4476,7 @@ order.
 
 <a id="r604.1a"></a>**604.1a** Units attack players directly. They do not attack individual units unless a spell directs them to. See rule 608.
 
-> *Example: An attacking column that is not blocked deals its combat damage to the defending player.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20 · Tests: 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.pairing — an unblocked attacking column hits the player · Key: combat.attack.general.players</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20 · Tests: 423-cr-combat-damage.test.ts · Demonstrated by test: 423-cr-combat-damage.test.ts::cr:combat.damage.pairing — an unblocked attacking column hits the player · Key: combat.attack.general.players</sub>
 
 <a id="r604.1b"></a>**604.1b** In a two-player game and in team games, each team gets one chance to attack per turn. In the first battle round the initiative player attacks into the non-initiative player's region; in the second battle round the non-initiative player attacks with the units it sent to counterattack or, if the first round had no attack, with any of its units (see 505, 610 and rule 604.4a). See rules 505, 610, 604.4a.
 
@@ -5002,7 +4486,7 @@ order.
 
 <a id="r604.2"></a>**604.2.** To attack, the attacking player chooses which of its units go and places them in an attacking formation (see 602). The attacking formation is set in the attack step, and from then on its units are locked in position. See rule 602.
 
-> *Example: Example (illustrative): A player with three units attacks with two of them, side by side in two columns. The third stays at home.*
+> *Example: A player with three units attacks with two of them, side by side in two columns. The third stays at home.*
 
 <sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: Manual p.22; Manual p.22 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring — a player with three units attacks with two side by side; the third stays home, and the formation cannot be declared again · Key: combat.attack.declaring</sub>
 
@@ -5014,19 +4498,19 @@ order.
 
 <a id="r604.2b"></a>**604.2b** There is no summoning sickness. A unit may attack, or block, however recently it entered play. See rules 504, 606.2a.
 
-> *Example: Example (illustrative): A unit played in the haste step attacks in the battle phase of the same turn (see 504).*
+> *Example: A 2/2 enters play during the battle phase, just before attacks are declared. It may attack at once, and it deals 2 to the defending player.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.43; Manual p.43 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.no-summoning-sickness — a unit that entered play during the battle phase, before the declaration, may attack · Key: combat.attack.declaring.no-summoning-sickness</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.43; Manual p.43 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.no-summoning-sickness — a unit that entered play during the battle phase, before the declaration, may attack · Key: combat.attack.declaring.no-summoning-sickness</sub>
 
 <sub>Discrepancies: D-U11-8 (discrepancies.md)</sub>
 
 <a id="r604.2c"></a>**604.2c** Spell tokens may go with an attack, but only together with at least one unit, and only spell tokens the attacking player controls in the region the attack leaves from. See rules 304, 606.5a.
 
-> *Example: A player counterattacking names a spell token and no unit when declaring blocks. The declaration is refused.*
+> *Example: A player sending a counterattack names a Poison token and no unit when declaring blocks. The declaration is refused.*
 
-> *Example: Example (illustrative): A player declares an attack naming a Poison token and no unit. The Poison does not go: with no unit, the declaration is no attack at all (see rule 604.4). With a unit beside it, the Poison goes along.*
+> *Example: A player declares an attack naming a Poison token and no unit. The Poison does not go: with no unit, the declaration is no attack at all.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Rulings: R87, R87 · Tests: 78-round17-core.test.ts, 422-cr-attacking-blocking.test.ts · Example tests: 78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in, 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.spell-tokens — an attack naming a spell token and no unit is not refused: it is taken as declining to attack, and the token stays home · Key: combat.attack.declaring.spell-tokens</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Rulings: R87, R87 · Tests: 78-round17-core.test.ts, 422-cr-attacking-blocking.test.ts · Example tests: 78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in, 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.spell-tokens — an attack naming a spell token and no unit is not refused: it is taken as declining to attack, and the token stays home · Key: combat.attack.declaring.spell-tokens</sub>
 
 <sub>Discrepancies: D-U11-10 (discrepancies.md)</sub>
 
@@ -5034,15 +4518,13 @@ order.
 
 > *Example: A Poison token goes along with an attack into the enemy region. In the counterattack, fought in its owner home region, the token is still in the enemy region and cannot be cast.*
 
-<sub>Basis: Printed · Verified: not verified (the text changed after verification); 1 gate test file · Printed: Rulebook 2023 p.4 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.tokens-irreversible — a spell token brought along with an attack stays in that region for the rest of the battle and cannot be cast back home in the counterattack · Key: combat.attack.declaring.tokens-irreversible</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.4 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.tokens-irreversible — a spell token brought along with an attack stays in that region for the rest of the battle and cannot be cast back home in the counterattack · Key: combat.attack.declaring.tokens-irreversible</sub>
 
 <a id="r604.2e"></a>**604.2e** A unit targeted by an Alluring trigger may not be declared as an attacker, or sent to counterattack, for the rest of the battle phase (see 802.15). See rules 802.15, 610.
 
 > *Example: An Alluring attacker targets a defending unit. That unit cannot be sent out to counterattack when blocks are declared.*
 
-> *Example: The same lured unit, put by hand into the second round's attacker pool, still cannot be declared as an attacker.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R84 · Replaces: R76 (its Alluring rule was replaced by R84) · Tests: 53-playtest-round7.test.ts · Example tests: 53-playtest-round7.test.ts::R84: a lured unit cannot be sent out to counterattack, 53-playtest-round7.test.ts::R84: a lured unit may not be declared as an attacker (a guard, by hand) · Key: combat.attack.declaring.lured</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R84 · Replaces: R76 (its Alluring rule was replaced by R84) · Tests: 53-playtest-round7.test.ts · Example test: 53-playtest-round7.test.ts::R84: a lured unit cannot be sent out to counterattack · Demonstrated by test: 53-playtest-round7.test.ts::R84: a lured unit may not be declared as an attacker (a guard, by hand) · Key: combat.attack.declaring.lured</sub>
 
 <a id="r604.2f"></a>**604.2f** In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). See rules 610, 604.4a.
 
@@ -5072,9 +4554,7 @@ order.
 
 > *Example: Tempest Wrangler attacks and its Alluring trigger goes on the stack. In the attack window the defending player negates it with Containment Protocol, and no unit is lured.*
 
-> *Example: Hooba-Bot attacks; its trigger asks where the Robot goes, and the Robot lands in the chosen slot.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Palewing · Rulings: R84 · Tests: 390-raq-stack.test.ts, 108-formation-class.test.ts, 53-playtest-round7.test.ts · Example tests: 390-raq-stack.test.ts::RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger, 108-formation-class.test.ts::BL-24 Hooba-Bot (played as a unit): attack → the ask · Key: combat.attack.effects.triggers</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Palewing · Rulings: R84 · Tests: 390-raq-stack.test.ts, 108-formation-class.test.ts, 53-playtest-round7.test.ts · Example test: 390-raq-stack.test.ts::RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger · Demonstrated by test: 108-formation-class.test.ts::BL-24 Hooba-Bot (played as a unit): attack → the ask · Key: combat.attack.effects.triggers</sub>
 
 <sub>Discrepancies: D-U11-9 (discrepancies.md)</sub>
 
@@ -5111,15 +4591,13 @@ order.
 
 <a id="r605.1a"></a>**605.1a** The initiative player receives priority first in the attack window (see 703). See rule 703.
 
-> *Example: In the first round's attack window the initiative player is asked first; the other player is asked after the initiative player passes.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.30; Rulebook 2023 p.13 · Tests: 425-cr-casting-and-stack.test.ts, 422-cr-attacking-blocking.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window — in an empty attack window each player receives priority in turn · Key: combat.attack-window.general.initiative-first</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.30; Rulebook 2023 p.13 · Tests: 425-cr-casting-and-stack.test.ts, 422-cr-attacking-blocking.test.ts · Demonstrated by test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window — in an empty attack window each player receives priority in turn · Key: combat.attack-window.general.initiative-first</sub>
 
 <a id="r605.1b"></a>**605.1b** When all players pass priority in succession with the stack empty, the attack window ends and the block step begins (see 606). See rules 606, 703.
 
-> *Example: A spell cast in the attack window resolves after two passes and a new window opens; two more passes on the empty stack end the attack window.*
+> *Example: Luminous Arc is cast in the attack window; two passes resolve it and a new window opens. Two more passes on the empty stack end the attack window.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.13 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve — two passes resolve the top item · Key: combat.attack-window.general.end</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: Rulebook 2023 p.13 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve — two passes resolve the top item · Key: combat.attack-window.general.end</sub>
 
 <a id="r605.1c"></a>**605.1c** Until blocks are declared, a column of the attacking formation that loses its last unit closes up: the columns on its sides move in to fill the gap (see 602). See rules 602, 607.1b.
 
@@ -5129,7 +4607,7 @@ order.
 
 <a id="r605.1d"></a>**605.1d** If every attacking unit is removed during the attack window, the attacking player is still present in the region for the rest of the battle phase. See rules 601, 606.7.
 
-> *Example: Example (illustrative): The only attacker is destroyed in the attack window. Its controller may still cast spells in that region later in the battle phase.*
+> *Example: The only attacker is destroyed in the attack window. Its controller may still cast spells in that region later in the battle phase.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.19; Manual p.19 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.attack-window.general.still-present — the attacking player stays present after its only attacker is destroyed in the attack window · Key: combat.attack-window.general.still-present</sub>
 
@@ -5146,7 +4624,7 @@ order.
 
 > *Example: Two units block one attacking column, one in the front row and one behind it. The attacker damages the front one.*
 
-<sub>Basis: Printed · Verified: not verified (the text changed after verification); 1 gate test file · Printed: Manual p.23; Manual p.22 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.general.formation — two blockers in one column stand front and back: they are adjacent to each other and the front one takes the damage · Key: combat.blocks.general.formation</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.23; Manual p.22 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.general.formation — two blockers in one column stand front and back: they are adjacent to each other and the front one takes the damage · Key: combat.blocks.general.formation</sub>
 
 <a id="r606.1b"></a>**606.1b** Unlike an attacking formation, the defending formation may have empty columns: the defending player need not block every attacking column, and an empty blocking column is never closed up. See rule 602.
 
@@ -5162,13 +4640,13 @@ order.
 
 <a id="r606.1d"></a>**606.1d** Blocks are declared once. Once declared, the defending formation is set and its units are locked in position. A unit can join it later only by an effect that puts a unit into formation (see 607). See rules 602, 607.2.
 
-> *Example: Example (illustrative): After declaring blocks, the defending player cannot move a blocker from one column to another.*
+> *Example: After declaring blocks, the defending player cannot declare them again to move a blocker from one column to another.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.22; Manual p.22 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.general.locked — blocks cannot be declared a second time in the block window · Key: combat.blocks.general.locked</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.22; Manual p.22 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.general.locked — blocks cannot be declared a second time in the block window · Key: combat.blocks.general.locked</sub>
 
 <a id="r606.1e"></a>**606.1e** A blocking unit stands in one slot of the defending formation, so it blocks only the attacking column it stands in front of. See rule 602.
 
-> *Example: Example (illustrative): One blocker cannot block two attacking columns at once; to block both, the defending player needs a unit in front of each.*
+> *Example: One blocker cannot block two attacking columns at once; to block both, the defending player needs a unit in front of each.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.23 · Engine: apply.ts:checkBlocks · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.general.one-column — one unit may not block two attacking columns · Key: combat.blocks.general.one-column</sub>
 
@@ -5176,7 +4654,7 @@ order.
 
 <a id="r606.1f"></a>**606.1f** An empty blocking column keeps its place in the defending formation. Two blockers with an empty blocking column between them are not neighbours, so they are not adjacent (see 603). See rules 603, 606.4g. *(Engine differs, see F-U11-3.)*
 
-> *Example: Example (illustrative): Against a three-column attack, the defending player blocks the first and third columns. The two blockers are not adjacent: the empty middle blocking column lies between them.*
+> *Example: Against a three-column attack, the defending player blocks the first and third columns. The two blockers are not adjacent: the empty middle blocking column lies between them.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (2 probes it wrote), all passed; 1 gate test file · Printed: Manual p.22; Manual p.23 · Rulings: R75 its adjacency definition · Tests: 422-cr-attacking-blocking.test.ts · Key: combat.blocks.general.gap-adjacency</sub>
 
@@ -5188,7 +4666,7 @@ order.
 
 <a id="r606.2a"></a>**606.2a** A unit may block however recently it entered play (see 604). See rule 604.2b.
 
-> *Example: Example (illustrative): A unit that entered the defending player's region during the attack window may be declared as a blocker.*
+> *Example: A unit that entered the defending player's region during the attack window may be declared as a blocker.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.43 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.who.recent — a unit that entered the defending region during the attack window may block · Key: combat.blocks.who.recent</sub>
 
@@ -5204,13 +4682,13 @@ order.
 
 > *Example: Wisps are Feeble and cannot block.*
 
-> *Example: An Evasive column needs two blockers.*
+> *Example: Curio Drifter is Evasive, so its column needs two blockers.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Air Plant; card: Spectrogenesis; card: Just a Unit · Rulings: R84 · Tests: 40-light-c.test.ts, 08-cards2.test.ts, 07-cards.test.ts · Example tests: 40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can, 08-cards2.test.ts::Spectrogenesis: three Wisps; Feeble means they cannot block, 07-cards.test.ts::Curio Drifter: Evasive requires two blockers · Key: combat.blocks.who.attributes</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Air Plant; card: Spectrogenesis; card: Just a Unit · Rulings: R84 · Tests: 40-light-c.test.ts, 08-cards2.test.ts, 07-cards.test.ts · Example tests: 40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can, 08-cards2.test.ts::Spectrogenesis: three Wisps; Feeble means they cannot block, 07-cards.test.ts::Curio Drifter: Evasive requires two blockers · Key: combat.blocks.who.attributes</sub>
 
 <a id="r606.2d"></a>**606.2d** A unit sent to counterattack leaves the region and is treated as if it does not exist until the first battle round is over, so it cannot also block (see 610). See rules 610, 606.5.
 
-> *Example: Example (illustrative): The defending player has one unit. It may block, or it may be sent to counterattack, but not both.*
+> *Example: The defending player has one unit. It may block, or it may be sent to counterattack, but not both.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.20; Manual p.20 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.who.not-sent — a unit may not both block and be sent to counterattack · Key: combat.blocks.who.not-sent</sub>
 
@@ -5276,7 +4754,7 @@ order.
 
 <a id="r606.4e"></a>**606.4e** A side-block blocks no attacker. It does not count as blocking a lone Sneaky attacker, and no Flying or Evasive rule applies to it. See rules 802.2, 802.13, 802.14.
 
-> *Example: Example (illustrative): A lone Sneaky unit attacks. A unit side-blocking beside it is allowed, and the Sneaky unit is still unblocked.*
+> *Example: A lone Sneaky unit attacks. A unit side-blocking beside it is allowed, and the Sneaky unit is still unblocked.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Rulings: R321, R321 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.blocks-nothing — a side-block beside a lone Sneaky attacker is allowed and the Sneaky unit is still unblocked · Key: combat.blocks.side.blocks-nothing</sub>
 
@@ -5288,7 +4766,7 @@ order.
 
 <a id="r606.4g"></a>**606.4g** Side-blocking units are part of the defending formation, so they are adjacent to their neighbours in it (see 603). See rule 603.
 
-> *Example: Example (illustrative): A unit side-blocks next to a unit blocking the attacking column. The two are adjacent, which matters to cards that count adjacent units.*
+> *Example: A unit side-blocks next to a unit blocking the attacking column. The two are adjacent, which matters to cards that count adjacent units.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: Manual p.23; Manual p.23 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.adjacency — a side-blocker is adjacent to the blocker beside it · Key: combat.blocks.side.adjacency</sub>
 
@@ -5300,13 +4778,13 @@ order.
 
 <a id="r606.5a"></a>**606.5a** Spell tokens may go with the counterattacking units, under the same conditions as with an attack (see 604). See rules 604.2c, 610.
 
-> *Example: The defending player sends a unit to counterattack and names two Poison tokens to go with it. The tokens leave with the unit.*
+> *Example: The defending player sends a unit to counterattack and names a Poison token to go with it. The token leaves with the unit and arrives with it for round 2.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R87 · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R87: declareBlocks takes spellTokens · Key: combat.blocks.counterattack.tokens</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R87 · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R87: declareBlocks takes spellTokens · Key: combat.blocks.counterattack.tokens</sub>
 
 <a id="r606.5b"></a>**606.5b** In the second battle round the defending player declares blocks only. There are no further counterattacks. See rule 610.
 
-> *Example: Example (illustrative): In the second round the initiative player blocks the counterattack; it cannot send units to attack back.*
+> *Example: In the second round the initiative player blocks the counterattack; it cannot send units to attack back.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Rulebook 2023 p.5; Manual p.20 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.counterattack.second-round — in round 2 the defender may not send counterattackers · Key: combat.blocks.counterattack.second-round</sub>
 
@@ -5331,9 +4809,7 @@ order.
 
 <a id="r607.1"></a>**607.1.** The block window is the priority window that follows the declaration of blocks. See rule 703.
 
-> *Example: Blocks are declared. The game is now in a priority window, not yet in the combat damage step; one pass is not enough to deal damage.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.27; Manual p.30 · Tests: 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.overview — the step begins only once blocks are declared · Key: combat.block-window.general</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.27; Manual p.30 · Tests: 423-cr-combat-damage.test.ts · Demonstrated by test: 423-cr-combat-damage.test.ts::cr:combat.damage.overview — the step begins only once blocks are declared · Key: combat.block-window.general</sub>
 
 <a id="r607.1a"></a>**607.1a** When all players pass priority in succession with the stack empty, the block window ends and the combat damage step begins (see 608). See rule 608.
 
@@ -5381,7 +4857,7 @@ order.
 
 <a id="r607.2d"></a>**607.2d** A unit can be placed this way from the block window until the combat damage step is over. See rule 608.
 
-> *Example: Example (illustrative): In the window between the Swift and normal damage sub-steps, the defending player plays Tiderunner Initiate in front of an unblocked attacking column. The column is blocked for the normal sub-step.*
+> *Example: In the window between the Swift and normal damage sub-steps, the defending player plays Tiderunner Initiate in front of an unblocked attacking column. The column is blocked for the normal sub-step.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Rulings: R322 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.block-window.late-blocker.when — between the Swift and normal sub-steps a Tiderunner put in front of the unblocked normal column blocks it for the normal sub-step · Key: combat.block-window.late-blocker.when</sub>
 
@@ -5389,9 +4865,9 @@ order.
 
 <a id="r607.2e"></a>**607.2e** A unit placed this way was not declared as a blocker, so the events of the block declaration do not happen for it. See rule 606.6.
 
-> *Example: Example (illustrative): A unit that says 'When I block' is played into a blocking spot after blocks. Whether its trigger fires is not settled by any designer source; under R322 no block event is fired for it.*
+> *Example: After blocks, the defending player plays Tiderunner Initiate in front of an unblocked attacker. It now blocks that column, but it was never declared as a blocker, so nothing that happens when blocks are declared happens for it.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R322 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.block-window.late-blocker.not-declared — no blocked event fires for a unit placed in front of an attacker after blocks · Key: combat.block-window.late-blocker.not-declared</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R322 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.block-window.late-blocker.not-declared — no blocked event fires for a unit placed in front of an attacker after blocks · Key: combat.block-window.late-blocker.not-declared</sub>
 
 <a id="r607.3"></a>**607.3.** An ability that triggers "after the blocking step" triggers once blocks have been declared, and resolves in the block window. See rule 706.
 
@@ -5404,19 +4880,19 @@ order.
 
 <a id="r608.1"></a>**608.1.** The combat damage step is the step of a battle in which the units in formation deal combat damage. It begins once blocks have been declared and all players have passed priority in the window that follows them, and it is followed by the after combat step (see rule 609). See rules 607, 609.
 
-> *Example: Example (illustrative): A 2/5 attacks and is blocked by a 2/5. After blocks, the block window opens; once both players pass, each deals 2 to the other, and then the after combat step begins.*
+> *Example: A 2/5 attacks and is blocked by a 2/5. After blocks, the block window opens; once both players pass, each deals 2 to the other, and then the after combat step begins.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.20; Rulebook 2023 p.11; Manual p.27 · Tests: 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.overview — the step begins only once blocks are declared and both players pass, and the after combat step follows it · Key: combat.damage.overview</sub>
 
 <a id="r608.1a"></a>**608.1a** The combat damage step takes place separately in each region where a battle takes place. A region that was not attacked has no combat damage step. See rules 601, 609.
 
-> *Example: Example (illustrative): The first attacker declares no attack, so the defending player’s region has no combat damage step. The second player then attacks, and the only combat damage step of the turn is in the first player’s region.*
+> *Example: The first attacker declares no attack, so the defending player's region has no combat damage step. The second player then attacks, and the only combat damage step of the turn is in the first player's region.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.20; Manual p.20 · Tests: 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.overview.per-region — a battle round with no attack has no combat damage step · Key: combat.damage.overview.per-region</sub>
 
 <a id="r608.1b"></a>**608.1b** All combat damage is dealt simultaneously, unless an ability changes when a column deals its damage. Swift and Sluggish are the attributes that do (see rule 608.2). See rules 608.2, 802.4, 802.5.
 
-> *Example: Example (illustrative): A 3/3 attacks and is blocked by a 3/3. Both are dealt 3 at the same time, so both die.*
+> *Example: A 3/3 attacks and is blocked by a 3/3. Both are dealt 3 at the same time, so both die.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.23; Manual p.23; card: Rime Wraith · Tests: 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.overview.simultaneous — two 3/3s in one exchange both deal their damage before either dies · Key: combat.damage.overview.simultaneous</sub>
 
@@ -5428,7 +4904,7 @@ order.
 
 <a id="r608.2"></a>**608.2.** The combat damage step has three damage sub-steps, taken in this order: the Swift sub-step, the normal sub-step and the Sluggish sub-step. Each half-column strikes (deals its combat damage) only in the sub-steps that rule 608.2a gives it. The two halves of one column are scheduled separately. See rules 802.4, 802.5.
 
-> *Example: Example (illustrative): Dune Drifter (2/1, Swift) is blocked by a 1/5, and Ambling Mountaintop (Sluggish) attacks unblocked. The Drifter deals 2 in the Swift sub-step, the 1/5 strikes back in the normal sub-step and kills it, and the Mountaintop deals its damage last.*
+> *Example: Dune Drifter (2/1, Swift) is blocked by a 1/5, and Ambling Mountaintop (Sluggish) attacks unblocked. The Drifter deals 2 in the Swift sub-step, the 1/5 strikes back in the normal sub-step and kills it, and the Mountaintop deals its damage last.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Printed: Manual p.43; Manual p.43 · Designer: RAQ 1540678747953569832#2 · Rulings: R295, R320 · Replaces: R3 (its first clause (immediate recalculation between sub-steps) stands; its second clause (no priority window between sub-steps) was amended by R295); R117 (states the order 'Swift → normal → Sluggish' and attributes it to R3, which does not state it) · Tests: 297-damage-substeps-are-steps.test.ts, 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish, and the two halves of one column strike in their own sub-steps · Key: combat.damage.substeps</sub>
 
@@ -5468,9 +4944,7 @@ order.
 
 > *Example: After Dune Drifter's column strikes in the Swift sub-step, Dune Drifter is recalled and Tiderunner Initiate is played into the emptied column. Tiderunner Initiate deals no normal combat damage.*
 
-> *Example: A column that struck in the Swift sub-step keeps its record when a new column is opened on its left.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1363298910528864318#1; RAQ 1363298910528864318#3; RAQ 1363298910528864318#4 · Rulings: R320 · Engine: struck · Tests: 388-raq-blocks-and-windows.test.ts, 400-raq-fix-blocks.test.ts · Example tests: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt Swift damage deals no normal damage, 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage, 400-raq-fix-blocks.test.ts::R320 a struck mark moves with its column when a new column opens on the left · Key: combat.damage.substeps.struck-mark</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1363298910528864318#1; RAQ 1363298910528864318#3; RAQ 1363298910528864318#4 · Rulings: R320 · Engine: struck · Tests: 388-raq-blocks-and-windows.test.ts, 400-raq-fix-blocks.test.ts · Example tests: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt Swift damage deals no normal damage, 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage · Demonstrated by test: 400-raq-fix-blocks.test.ts::R320 a struck mark moves with its column when a new column opens on the left · Key: combat.damage.substeps.struck-mark</sub>
 
 <sub>Discrepancies: D-U12-16 (discrepancies.md)</sub>
 
@@ -5482,7 +4956,7 @@ order.
 
 <a id="r608.3"></a>**608.3.** A combat damage step is split if, when the step begins, half-columns are scheduled to strike in two or more different sub-steps. Otherwise it is unsplit. Only Swift and Sluggish can split a step. See rules 802.4, 802.5.
 
-> *Example: Example (illustrative): Dune Drifter (Swift) is blocked by a unit without Swift or Sluggish. The attacking half strikes in the Swift sub-step and the blocking half in the normal one, so the step is split.*
+> *Example: Dune Drifter (Swift) is blocked by a unit without Swift or Sluggish. The attacking half strikes in the Swift sub-step and the blocking half in the normal one, so the step is split.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Designer: RAQ 1363298910528864318#0; RAQ 1540678747953569832#2 · Rulings: R295 · Replaces: R261 (made the hold of combat-damage triggers unconditional; R295 made it apply only to an unsplit step); R3 (its second clause ('no priority window between damage sub-steps') was amended by R295) · Tests: 297-damage-substeps-are-steps.test.ts, 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.split — a Swift attacking half over a normal blocking half splits the step into two sub-steps with a window between them · Key: combat.damage.split</sub>
 
@@ -5508,7 +4982,7 @@ order.
 
 > *Example: Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps.*
 
-> *Example: Example (illustrative): Dune Drifter (Swift) and a 1/1 attack in separate columns and are not blocked. At the window after the Swift sub-step, Dune Drifter's column gains Sluggish. The 1/1 strikes in the normal sub-step and no window follows; Dune Drifter's column then strikes in the Sluggish sub-step, and the after combat step begins.*
+> *Example: Dune Drifter (Swift) and a 1/1 attack in separate columns and are not blocked. At the window after the Swift sub-step, Dune Drifter's column gains Sluggish. The 1/1 strikes in the normal sub-step and no window follows; Dune Drifter's column then strikes in the Sluggish sub-step, and the after combat step begins.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Rulings: R295, R295 · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 423-cr-combat-damage.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::R295 §3b an EMPTY sub-step opens no window, 423-cr-combat-damage.test.ts::cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step strikes with no window before it, then after combat begins · Key: combat.damage.split.empty-substep</sub>
 
@@ -5532,7 +5006,7 @@ order.
 
 <a id="r608.4"></a>**608.4.** Each attacking half-column deals its combat damage either to the defending player or to the blocking half-column in front of it, and each blocking half-column deals its combat damage to the attacking half-column it blocks. Piercing can also carry combat damage to a player (see rule 802.16). An attacking column is blocked once a blocking unit has been placed in front of it, normally in the block step (see rule 606) or later as rule 608.4d allows. See rules 606, 802.16.
 
-> *Example: Example (illustrative): A 3/5 and a 4/5 attack in two columns; a 2/5 blocks the 3/5. The 3/5 deals 3 to the blocker, the blocker deals 2 to the 3/5, and the 4/5 deals 4 to the defending player.*
+> *Example: A 3/5 and a 4/5 attack in two columns; a 2/5 blocks the 3/5. The 3/5 deals 3 to the blocker, the blocker deals 2 to the 3/5, and the 4/5 deals 4 to the defending player.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.11; Rulebook 2023 p.11; Manual p.23 · Rulings: R322 · Tests: 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.pairing — an unblocked attacking column hits the player, a blocked one hits its blocker, and the blocker hits the column it blocks · Key: combat.damage.pairing</sub>
 
@@ -5544,7 +5018,7 @@ order.
 
 <a id="r608.4b"></a>**608.4b** An attacking half-column that is blocked deals its combat damage to the units of the blocking half-column in front of it, and that blocking half-column deals its combat damage to the units of the attacking half-column. A blocked attacking half-column deals no combat damage to the defending player, except as Piercing allows (see rule 802.16). See rule 802.16.
 
-> *Example: Example (illustrative, from the Manual p.23): The column of Living Forge and A Pile of Rubbish deals a combined 3 damage to the Tiderunner Initiate blocking it; the Tiderunner deals 2 back, all to Living Forge because it is in the front.*
+> *Example: The column of Living Forge and A Pile of Rubbish deals a combined 3 damage to the Tiderunner Initiate blocking it; the Tiderunner deals 2 back, all to Living Forge because it is in the front. (from the Manual p.23)*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 2 gate test files · Printed: Manual p.23; Manual p.23; Manual p.23 · Tests: 02-combat.test.ts, 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.pairing.blocked — the Manual p.23 example: Living Forge and A Pile of Rubbish deal 3 to the blocking Tiderunner Initiate, which deals 2 back, and the player takes nothing · Key: combat.damage.pairing.blocked</sub>
 
@@ -5582,7 +5056,7 @@ order.
 
 <a id="r608.5"></a>**608.5.** A half-column's combat damage is the combined power of the units in it when it strikes, counted as rule 608.5c describes. See rule 206.
 
-> *Example: Example (illustrative): A 1/1 and a 2/2 attack in one column beside a Swift column. In the window after the Swift sub-step the 1/1 gets two +1/+1 counters, so the column deals 3 + 2 = 5 in the normal sub-step.*
+> *Example: A 1/1 and a 2/2 attack in one column beside a Swift column. In the window after the Swift sub-step the 1/1 gets two +1/+1 counters, so the column deals 3 + 2 = 5 in the normal sub-step.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Printed: Manual p.23; Rulebook 2023 p.10 · Tests: 02-combat.test.ts, 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.amount — a column deals the combined power of its units as it is when it strikes, read after a pump between sub-steps · Key: combat.damage.amount</sub>
 
@@ -5606,17 +5080,17 @@ order.
 
 <a id="r608.5c"></a>**608.5c** When a half-column's combined power is counted, a unit with negative power counts as 0: it deals no damage and does not reduce its column's damage. In an exchange in which Unaware applies, each unit's printed power is used. See rule 802.9.
 
-> *Example: Example (illustrative): Lithoghul (4/4) and a -2/3 token attack in one column and are not blocked. The column deals 4.*
+> *Example: Lithoghul (4/4) and a -2/3 token attack in one column and are not blocked. The column deals 4.*
 
-> *Example: An Unaware blocker and the column it blocks both read their printed stats.*
+> *Example: A Robot token with nine +1/+1 counters (a 9/9) attacks and is blocked by Bubb, which is Unaware. In that exchange both read their printed stats: the Robot is a 0/0, so it dies and deals Bubb no damage.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.42; Manual p.42 · Rulings: R106 · Tests: 05-rulings.test.ts, 423-cr-combat-damage.test.ts · Example tests: 423-cr-combat-damage.test.ts::cr:combat.damage.amount.counting — a negative-power unit counts as 0 and does not reduce its column, 05-rulings.test.ts::R10/R106: an Unaware blocker and what it blocks BOTH read at printed · Key: combat.damage.amount.counting</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.42; Manual p.42 · Rulings: R106 · Tests: 05-rulings.test.ts, 423-cr-combat-damage.test.ts · Example tests: 423-cr-combat-damage.test.ts::cr:combat.damage.amount.counting — a negative-power unit counts as 0 and does not reduce its column, 05-rulings.test.ts::R10/R106: an Unaware blocker and what it blocks BOTH read at printed · Key: combat.damage.amount.counting</sub>
 
 <sub>Discrepancies: D-U12-6 (discrepancies.md)</sub>
 
 <a id="r608.6"></a>**608.6.** When a half-column deals combat damage to the units of the opposing half-column, its damage is divided among those units, starting with the front unit and then the unit behind it. See rule 602.
 
-> *Example: Example (from the Manual p.23): Living Forge and A Pile of Rubbish attack in one column and are blocked by Tiderunner Initiate. All 2 of the Tiderunner’s damage goes to Living Forge, in front; none goes to A Pile of Rubbish behind it.*
+> *Example: Living Forge and A Pile of Rubbish attack in one column and are blocked by Tiderunner Initiate. All 2 of the Tiderunner’s damage goes to Living Forge, in front; none goes to A Pile of Rubbish behind it. (from the Manual p.23)*
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.23 · Designer: RAQ 1353888077625561108#2 · Rulings: R114 (its elective-split and dealt-in-full halves) · Tests: 100-elective-assign.test.ts, 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.assignment — the Manual p.23 example: the blocking half-column damage goes to the front unit first, none to the unit behind it · Key: combat.damage.assignment</sub>
 
@@ -5630,9 +5104,9 @@ order.
 
 <a id="r608.6b"></a>**608.6b** Lethal damage (rule 608.6e) must be assigned to a unit before any damage is assigned to the unit behind it.
 
-> *Example: Amounts below the front unit's lethal damage are never offered while any damage could go behind it.*
+> *Example: Rune Channeler (4 power) is blocked by a 2/3 in front of a 1/1. Its controller may put 3 or 4 on the 2/3, but not less than 3, since 3 is the 2/3's lethal damage.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.23 · Designer: RAQ 1353888077625561108#2 · Rulings: R114 (its elective-split and dealt-in-full halves) · Tests: 100-elective-assign.test.ts · Example test: 100-elective-assign.test.ts::R120 (c): amounts below the front unit · Key: combat.damage.assignment.lethal-first</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.23 · Designer: RAQ 1353888077625561108#2 · Rulings: R114 (its elective-split and dealt-in-full halves) · Tests: 100-elective-assign.test.ts · Example test: 100-elective-assign.test.ts::R120 (c): amounts below the front unit · Key: combat.damage.assignment.lethal-first</sub>
 
 <a id="r608.6c"></a>**608.6c** A unit may be assigned more than lethal damage. The dealing player may assign all of a half-column's damage to the front unit and none to the unit behind it, even if there is enough to destroy both.
 
@@ -5654,11 +5128,9 @@ order.
 
 <a id="r608.6e"></a>**608.6e** Lethal damage, for assignment, is the smallest amount of the half-column's damage that would destroy the unit, given the damage already marked on it: its remaining defense; half of that, rounded up, if the unit is Vulnerable; 1 if the half-column has Deadly. In an exchange in which Unaware applies, the unit's printed defense, less the damage already marked on it, is used. In an exchange involving a Pure card, neither Vulnerable nor Deadly changes lethal damage. See rules 802.3, 802.9, 802.11, 802.25.
 
-> *Example: A Deadly half-column's lethal damage for each blocker is 1.*
-
 > *Example: A 10-power Piercing half-column blocked by a Vulnerable 3/8 must assign 4 to it, and the other 6 may go to the player.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 7 tests (5 probes it wrote), all passed; 4 gate test files · Designer: RAQ 1353888077625561108#3; RAQ 1372451771632320512#3 · Rulings: R120 (the dealing side is asked), R61 · Tests: 100-elective-assign.test.ts, 387-raq-combat.test.ts, 134-column-and-substep.test.ts, 423-cr-combat-damage.test.ts · Example tests: 100-elective-assign.test.ts::R120 (e): {Deadly} floors are 1, 387-raq-combat.test.ts::RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4 and 6 goes to the player · Key: combat.damage.assignment.lethal-defined</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 7 tests (5 probes it wrote), all passed; 4 gate test files · Designer: RAQ 1353888077625561108#3; RAQ 1372451771632320512#3 · Rulings: R120 (the dealing side is asked), R61 · Tests: 100-elective-assign.test.ts, 387-raq-combat.test.ts, 134-column-and-substep.test.ts, 423-cr-combat-damage.test.ts · Example test: 387-raq-combat.test.ts::RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4 and 6 goes to the player · Demonstrated by test: 100-elective-assign.test.ts::R120 (e): {Deadly} floors are 1 · Key: combat.damage.assignment.lethal-defined</sub>
 
 <sub>Discrepancies: D-U12-17 (discrepancies.md)</sub>
 
@@ -5676,7 +5148,7 @@ order.
 
 <a id="r608.6h"></a>**608.6h** In each sub-step, every half-column's damage is divided before any damage in that sub-step is dealt.
 
-> *Example: Example (illustrative): Two 10/20 attackers are each blocked by two 1/3s. Both attackers are asked how to divide their damage, and no damage is dealt until both have answered.*
+> *Example: Two 10/20 attackers are each blocked by two 1/3s. Both attackers are asked how to divide their damage, and no damage is dealt until both have answered.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Rulings: R120 (the dealing side is asked) · Tests: 100-elective-assign.test.ts, 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.assignment.timing — both columns are asked for their split before any damage of the sub-step is dealt · Key: combat.damage.assignment.timing</sub>
 
@@ -5740,9 +5212,9 @@ order.
 
 <a id="r608.9"></a>**608.9.** An ability that triggers on combat damage, or on something combat damage causes (such as a unit being destroyed), triggers when that event happens, during the combat damage step, and its trigger condition is checked then. It is put on the stack later, as rules 608.9b and 608.9c describe, and only then are its targets chosen. See rules 706, 703.
 
-> *Example: A combat-damage trigger is announced inside the damage step and pushed to the stack after it.*
+> *Example: Lithoghul attacks and is blocked by a Geode. In the damage step the Geode deals 1 to Lithoghul, and Lithoghul's 'whenever I am dealt damage' ability triggers then; nothing goes on the stack or resolves until the after combat step.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1540678747953569832#0 · Rulings: R261 (its announce-then-hold mechanism), R300 · Replaces: R31 (said such triggers resolve immediately inside the damage step; superseded by R261 and R295) · Tests: 239-damage-triggers-after-combat.test.ts · Example test: 239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step · Key: combat.damage.triggers</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Designer: RAQ 1540678747953569832#0 · Rulings: R261 (its announce-then-hold mechanism), R300 · Replaces: R31 (said such triggers resolve immediately inside the damage step; superseded by R261 and R295) · Tests: 239-damage-triggers-after-combat.test.ts · Example test: 239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step · Key: combat.damage.triggers</sub>
 
 <a id="r608.9a"></a>**608.9a** An ability that triggers 'when my column deals combat damage' triggers in each sub-step in which its own column deals combat damage, and only for damage its own column dealt; another column's damage does not trigger it. A 0-power unit with such an ability triggers if its column's combined power is greater than 0. See rule 706.
 
@@ -5756,7 +5228,7 @@ order.
 
 <a id="r608.9b"></a>**608.9b** In an unsplit step, every ability that triggered during the combat damage step is put on the stack in the after combat step, together with the abilities that trigger at the start of the after combat step, as one batch. The initiative player puts all of theirs on the stack first, in the order they choose, and then the other player puts theirs; each player may interleave the two kinds in any order. All players may respond to them. See rules 609, 706.
 
-> *Example: One player's combat-damage trigger and after-combat trigger are ordered together, in one decision.*
+> *Example: One player's combat-damage trigger and after-combat trigger are put in order together, in one choice.*
 
 > *Example: The initiative player's triggers go on the stack first and sit at the bottom.*
 
@@ -5789,9 +5261,7 @@ order.
 
 <a id="r609.1"></a>**609.1.** The after combat step is the last step of a battle round. It follows the combat damage step, in the region where that battle is fought, and it is the last priority window for interaction in that region before regroup. See rules 505.2, 608.
 
-> *Example: A battle round steps through the declaration, the attack window, blocks and the block window, and ends with the after-combat window.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Manual p.27 · Tests: 420-cr-battle-regroup-deploy.test.ts · Example test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.steps — a battle round steps through · Key: combat.after.what-it-is</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Manual p.27 · Tests: 420-cr-battle-regroup-deploy.test.ts · Demonstrated by test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.steps — a battle round steps through · Key: combat.after.what-it-is</sub>
 
 <a id="r609.1a"></a>**609.1a** A region in which no battle takes place has no after combat step. A battle round in which no attack is declared has no after combat step. See rules 505.2a, 604.4.
 
@@ -5801,13 +5271,11 @@ order.
 
 <a id="r609.1b"></a>**609.1b** In a game with two battle rounds, each round that has a battle has its own after combat step, in the region where that round is fought: the first round's in the non-initiative player's region, and the second round's in the initiative player's region. See rules 505.3, 505.4b, 610.
 
-> *Example: Round 1 walks the declaration, the attack window, blocks, the block window and then the after-combat window, all in the non-initiative player's region.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Manual p.27 · Tests: 420-cr-battle-regroup-deploy.test.ts · Example test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.rounds.round-1 — round 1 walks · Key: combat.after.what-it-is.each-round</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Manual p.27 · Tests: 420-cr-battle-regroup-deploy.test.ts · Demonstrated by test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.rounds.round-1 — round 1 walks · Key: combat.after.what-it-is.each-round</sub>
 
 <a id="r609.2"></a>**609.2.** The after combat step is a priority window. The initiative player receives priority first, then priority passes to the non-initiative player in the region. When all players pass priority in succession with the stack empty, the after combat step ends. See rule 703.
 
-> *Example: Example (illustrative): After combat, the initiative player passes, the non-initiative player casts a spell, and both then pass. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends.*
+> *Example: After combat, the initiative player passes, the non-initiative player casts a spell, and both then pass. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.30; Manual p.30; Manual p.30; Manual p.30 · Tests: 424-cr-after-combat.test.ts · Example test: 424-cr-after-combat.test.ts::cr:combat.after.window — initiative first; a spell cast in the window resolves after both pass, priority returns to the initiative player; two passes on an empty stack end the step · Key: combat.after.window</sub>
 
@@ -5819,7 +5287,7 @@ order.
 
 <a id="r609.2b"></a>**609.2b** When the after combat step of the last battle round ends, the battle phase ends and regroup begins. The last battle round is the second round, or the first round if no units were sent to counterattack. See rules 506, 610.4.
 
-> *Example: The last pass in the after-combat window moves the game through regroup and into deployment, with nobody holding priority.*
+> *Example: When the last player passes in the final after-combat window, the game goes through regroup and into deployment; no one is given priority in between.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.20; Manual p.20; Manual p.27 · Rulings: R15 · Tests: 420-cr-battle-regroup-deploy.test.ts, 21-fixes.test.ts · Example test: 420-cr-battle-regroup-deploy.test.ts::cr:turn.regroup.what-it-is.no-actions · Key: combat.after.window.then-regroup</sub>
 
@@ -5837,13 +5305,13 @@ order.
 
 <a id="r609.3b"></a>**609.3b** An "after combat" ability does not trigger in a region where no battle took place. A unit in a region other than the one where the battle is fought does not trigger. See rules 505.4c, 601.7.
 
-> *Example: A unit with an after-combat ability in another region makes nothing.*
+> *Example: A unit with an after-combat ability that stays in another region does not trigger.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.43; Manual p.43 · Designer: RAQ 1356667460211966060#0 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ after combat: the control, an after-combat unit in ANOTHER region makes nothing · Key: combat.after.triggers.no-battle</sub>
 
 <a id="r609.3c"></a>**609.3c** Abilities that triggered during the combat damage step and are still waiting are put on the stack in the after combat step together with the "after combat" abilities, as one batch. The initiative player puts all of theirs on the stack first, then the non-initiative player puts theirs, so the non-initiative player's resolve first. Each player chooses the order of their own and may interleave the two kinds. See rules 608.9b, 706.
 
-> *Example: One player's combat-damage trigger and after-combat trigger are ordered together, in one decision.*
+> *Example: One player's combat-damage trigger and after-combat trigger are put in order together, in one choice.*
 
 > *Example: The initiative player's triggers go on the stack first and sit at the bottom.*
 
@@ -5864,49 +5332,41 @@ order.
 
 <a id="r610.1"></a>**610.1.** A counterattack is the non-initiative team's attack in a battle phase with two battle rounds. The non-initiative team sends its counterattacking units out during the block step of the first battle round, and they attack in the second battle round. See rules 505.3, 606.5.
 
-> *Example: The non-initiative player sends units at block time, and they attack in round 2.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Rulebook 2023 p.5 · Tests: 02-combat.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: combat.counterattack.what-it-is</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Rulebook 2023 p.5 · Tests: 02-combat.test.ts · Demonstrated by test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: combat.counterattack.what-it-is</sub>
 
 <a id="r610.1a"></a>**610.1a** Units are sent to counterattack only in the first battle round, at the same time as the non-initiative team declares its blocks. Sending counterattackers is optional. See rules 606.5, 606.5b.
 
-> *Example: In round 2 the defending player may not send counterattackers.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.27; Manual p.20 · Tests: 422-cr-attacking-blocking.test.ts, 21-fixes.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.counterattack.second-round · Key: combat.counterattack.what-it-is.when-sent</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.27; Manual p.20 · Tests: 422-cr-attacking-blocking.test.ts, 21-fixes.test.ts · Demonstrated by test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.counterattack.second-round · Key: combat.counterattack.what-it-is.when-sent</sub>
 
 <a id="r610.2"></a>**610.2.** Counterattacking units leave their region as soon as they are sent. From then until the first battle round ends they are in no region, and they are treated as if they do not exist. See rules 505.3b, 606.2d.
 
-> *Example: A sent Towering Colossus host radiates nothing in the region it left.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Rulebook 2023 p.5 · Rulings: R32 · Tests: 22-playtest3.test.ts · Example test: 22-playtest3.test.ts::a SENT Towering Colossus host radiates nothing in the region it left · Key: combat.counterattack.sent</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Rulebook 2023 p.5 · Rulings: R32 · Tests: 22-playtest3.test.ts · Demonstrated by test: 22-playtest3.test.ts::a SENT Towering Colossus host radiates nothing in the region it left · Key: combat.counterattack.sent</sub>
 
 <a id="r610.2a"></a>**610.2a** A sent counterattacker's static abilities apply to nothing while it is away, not even to itself. See rule 707.
 
-> *Example: A sent Towering Colossus host radiates nothing in the region it left.*
+> *Example: Bubb carries Towering Colossus ("Enemies gain +2/+2"), so an enemy 1/1 attacking into Bubb's region is a 3/3. When Bubb is sent to counterattack, the attacker is a 1/1 again at once.*
 
-> *Example: Example (illustrative): A sent Prickly Protector ("I gain +1/+1 for each other ally") does not give itself that bonus while it is away.*
+> *Example: A sent Prickly Protector ("I gain +1/+1 for each other ally") does not give itself that bonus while it is away.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.20 · Rulings: R32, R270 · Tests: 424-cr-after-combat.test.ts, 22-playtest3.test.ts · Example tests: 22-playtest3.test.ts::a SENT Towering Colossus host radiates nothing in the region it left, 424-cr-after-combat.test.ts::cr:combat.counterattack.sent.no-statics — a sent Prickly Protector does not give itself its own bonus while away · Key: combat.counterattack.sent.no-statics</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.20 · Rulings: R32, R270 · Tests: 424-cr-after-combat.test.ts, 22-playtest3.test.ts · Example tests: 22-playtest3.test.ts::a SENT Towering Colossus host radiates nothing in the region it left, 424-cr-after-combat.test.ts::cr:combat.counterattack.sent.no-statics — a sent Prickly Protector does not give itself its own bonus while away · Key: combat.counterattack.sent.no-statics</sub>
 
 <a id="r610.2b"></a>**610.2b** A sent counterattacker cannot be targeted and cannot be sacrificed while it is away. See rule 110.
 
-> *Example: Example (illustrative): The initiative player casts a spell that targets a unit in the round-1 battle region. A unit that was sent to counterattack is not offered as a target.*
+> *Example: The initiative player casts a spell that targets a unit in the round-1 battle region. A unit that was sent to counterattack is not offered as a target.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: Manual p.20 · Rulings: R32, R270 · Tests: 424-cr-after-combat.test.ts · Example test: 424-cr-after-combat.test.ts::cr:combat.counterattack.sent.not-targetable — a sent counterattacker is not offered as a target; a unit that stayed is · Key: combat.counterattack.sent.not-targetable</sub>
 
 <a id="r610.2c"></a>**610.2c** A sent counterattacker does not count as a unit in the region it left. A unit that stays behind does not count a sent counterattacker as an ally. See rule 601.
 
-> *Example: A unit left at home loses the ally that counterattacked away.*
+> *Example: Prickly Protector, carrying a -1/-1 counter, is alive only because it has one other ally. When that ally is sent to counterattack, the Protector stays home, no longer counts it, and dies.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20 · Rulings: R270 · Tests: 250-ally-count-and-absence.test.ts · Example test: 250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away · Key: combat.counterattack.sent.not-counted</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20 · Rulings: R270 · Tests: 250-ally-count-and-absence.test.ts · Example test: 250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away · Key: combat.counterattack.sent.not-counted</sub>
 
 <sub>Discrepancies: D-U13-6 (discrepancies.md)</sub>
 
 <a id="r610.2d"></a>**610.2d** Spell tokens sent with counterattackers are away with them, and cannot be cast until they return. See rule 610.3.
 
-> *Example: A sent spell token is not offered for casting while it is away.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20 · Rulings: R32 · Tests: 22-playtest3.test.ts · Example test: 22-playtest3.test.ts::a sent spell token is not enumerable (castSpellToken) while absent · Key: combat.counterattack.sent.tokens</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20 · Rulings: R32 · Tests: 22-playtest3.test.ts · Demonstrated by test: 22-playtest3.test.ts::a sent spell token is not enumerable (castSpellToken) while absent · Key: combat.counterattack.sent.tokens</sub>
 
 <a id="r610.2e"></a>**610.2e** A sent counterattacker is not checked for death while it is away. It is checked as soon as it returns at the start of the second battle round. See rule 713.
 
@@ -5920,31 +5380,25 @@ order.
 
 <a id="r610.3"></a>**610.3.** Spell tokens may go with counterattacking units, under the same conditions as with an attack (see rule 604.2c). A counterattack made only of spell tokens is not allowed: spell tokens need at least one counterattacking unit to go with. See rules 604.2c, 606.5a.
 
-> *Example: A block declaration's spell tokens ride out with the counterattackers.*
-
-> *Example: A counterattack of spell tokens alone is refused.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.20 · Rulings: R87 · Tests: 78-round17-core.test.ts, 77-playtest-round17.test.ts, 424-cr-after-combat.test.ts · Example tests: 78-round17-core.test.ts::R87: declareBlocks takes spellTokens, and they ride out with the counterattackers, 77-playtest-round17.test.ts::[67] a token-only counterattack is refused by the engine · Key: combat.counterattack.tokens</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.20 · Rulings: R87 · Tests: 78-round17-core.test.ts, 77-playtest-round17.test.ts, 424-cr-after-combat.test.ts · Demonstrated by tests: 78-round17-core.test.ts::R87: declareBlocks takes spellTokens, and they ride out with the counterattackers, 77-playtest-round17.test.ts::[67] a token-only counterattack is refused by the engine · Key: combat.counterattack.tokens</sub>
 
 <a id="r610.4"></a>**610.4.** The second battle round begins only once the first battle round has completely finished, its after combat step included. In a two-player game it is fought in the initiative player's region. See rules 505.4b, 609.2.
 
-> *Example: The first battle round runs every one of its steps in the defending region before the counterattack round begins in the other region.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.5; Manual p.21; Manual p.21 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.one-at-a-time — the first battle round runs every one of its steps · Key: combat.counterattack.round-two</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.5; Manual p.21; Manual p.21 · Tests: 421-cr-regions-formations.test.ts · Demonstrated by test: 421-cr-regions-formations.test.ts::cr:combat.regions.one-at-a-time — the first battle round runs every one of its steps · Key: combat.counterattack.round-two</sub>
 
 <sub>Discrepancies: D-U09-4 (discrepancies.md)</sub>
 
 <a id="r610.4a"></a>**610.4a** When the second battle round begins, the sent counterattackers, and the spell tokens sent with them, reappear in the region they are attacking. See rule 610.2.
 
-> *Example: Example (illustrative): The non-initiative player sent two units. When round 1's after combat step ends, both appear in the initiative player's region, ready to be put into formation.*
+> *Example: The non-initiative player sent two units. When round 1's after combat step ends, both appear in the initiative player's region, ready to be put into formation.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.27 · Rulings: R32 · Tests: 424-cr-after-combat.test.ts, 02-combat.test.ts · Example test: 424-cr-after-combat.test.ts::cr:combat.counterattack.round-two.return — sent units and a sent spell token reappear in the region they attack when round 2 begins · Key: combat.counterattack.round-two.return</sub>
 
 <a id="r610.4b"></a>**610.4b** If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round. In its attack step, the non-initiative team puts them into formation. See rule 604.2f.
 
-> *Example: In round 2 the attacker's pool holds exactly the unit it sent at block time.*
+> *Example: The non-initiative player sent Conduit of Pain at block time. In round 2 it is the only unit they can attack with.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.20; Manual p.27 · Rulings: R15 · Tests: 32-cast-costs.test.ts, 02-combat.test.ts · Example test: 32-cast-costs.test.ts::forcedAction: a single sent counterattacker is NOT auto-formed · Key: combat.counterattack.round-two.attackers</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.20; Manual p.27 · Rulings: R15 · Tests: 32-cast-costs.test.ts, 02-combat.test.ts · Example test: 32-cast-costs.test.ts::forcedAction: a single sent counterattacker is NOT auto-formed · Key: combat.counterattack.round-two.attackers</sub>
 
 <a id="r610.4c"></a>**610.4c** If the first battle round had a battle and no units were sent to counterattack, there is no second battle round. The battle phase ends after the first round's after combat step. See rules 505.3f, 609.2b.
 
@@ -5964,7 +5418,7 @@ order.
 
 > *Example: One unit was sent to counterattack. In round 2 both attacking with it and declining are legal.*
 
-> *Example: When the round-2 attacker declines, the initiative player's spell tokens at home, castable in no round-1 window, are never castable this battle.*
+> *Example: The initiative player's spell tokens at home cannot be cast in any round-1 window. If the non-initiative player then declines to attack in round 2, those tokens never become castable this battle.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Rulings: R194, R194 · Tests: 424-cr-after-combat.test.ts, 32-cast-costs.test.ts, 165-token-loss-warning.test.ts · Example tests: 32-cast-costs.test.ts::forcedAction: a single sent counterattacker is NOT auto-formed, 165-token-loss-warning.test.ts::[CT-55] the premise: a round-2 defender really is holding castable tokens when the attacker declines · Key: combat.counterattack.round-two.may-decline</sub>
 
@@ -5972,15 +5426,11 @@ order.
 
 <a id="r610.4f"></a>**610.4f** In the second battle round the initiative team declares blocks only. It cannot send units to counterattack, because each team gets only one chance to attack. See rules 505.3d, 606.5b.
 
-> *Example: In round 2 the defending initiative player may not send units to attack back.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.20; Rulebook 2023 p.5 · Tests: 422-cr-attacking-blocking.test.ts, 420-cr-battle-regroup-deploy.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.attack.general.rounds · Key: combat.counterattack.round-two.no-counter</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.20; Rulebook 2023 p.5 · Tests: 422-cr-attacking-blocking.test.ts, 420-cr-battle-regroup-deploy.test.ts · Demonstrated by test: 422-cr-attacking-blocking.test.ts::cr:combat.attack.general.rounds · Key: combat.counterattack.round-two.no-counter</sub>
 
 <a id="r610.4g"></a>**610.4g** In every priority window of the second battle round, the initiative player receives priority first, although it is now the defending player. See rules 605.1a, 703.
 
-> *Example: In the round 2 attack window the initiative player, who is defending, gets priority first.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.30 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.attack-window.general.initiative-first · Key: combat.counterattack.round-two.initiative-priority</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.30 · Tests: 422-cr-attacking-blocking.test.ts · Demonstrated by test: 422-cr-attacking-blocking.test.ts::cr:combat.attack-window.general.initiative-first · Key: combat.counterattack.round-two.initiative-priority</sub>
 
 <a id="r610.4h"></a>**610.4h** While the second battle round is resolved, units in the region where the first round was fought are treated as if they do not exist. They include the units the initiative team attacked with and any unit created there during the first round, so none of them can block in the second round. See rules 505.4c, 304.8a.
 
@@ -5998,7 +5448,7 @@ order.
 
 <a id="r610.6"></a>**610.6.** In team games, combat is first resolved completely in every region the initiative team attacked. Then combat is resolved in the regions the non-initiative team counterattacked. See rules 505.4, 904. *(Untested: no executed test demonstrates it.)*
 
-> *Example: Example (illustrative): In a 2v2 game the initiative team attacks both non-initiative regions. Both of those battles are resolved, one region at a time, before any counterattack battle in an initiative region begins.*
+> *Example: In a 2v2 game the initiative team attacks both non-initiative regions. Both of those battles are resolved, one region at a time, before any counterattack battle in an initiative region begins.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Printed: Rulebook 2023 p.9; Rulebook 2023 p.9; Manual p.27 · Key: combat.counterattack.teams</sub>
 
@@ -6033,9 +5483,7 @@ order.
 
 <a id="r700.3"></a>**700.3.** Players interact by playing cards and activating abilities in response to one another. All interaction uses the stack (rule 703). See rule 703.
 
-> *Example: in a battle, a spell, a {Battle} unit, a Virus and an activated ability are each put on the stack as they are played or activated.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.14 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.general.interaction — a spell, a battle unit, a virus and an activated ability played in battle all go on the stack · Key: effects.general.interaction</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.14 · Tests: 425-cr-casting-and-stack.test.ts · Demonstrated by test: 425-cr-casting-and-stack.test.ts::cr:effects.general.interaction — a spell, a battle unit, a virus and an activated ability played in battle all go on the stack · Key: effects.general.interaction</sub>
 
 <a id="r701"></a>
 ### 701. Playing and Applying
@@ -6078,23 +5526,19 @@ order.
 
 <a id="r701.2"></a>**701.2.** Applying a modification (an augment, a graft, or a Virus) is not playing a card. A modification is applied, whether it comes from a hand, a bin, a cache or elsewhere. Applying a modification is a special action. See rule 720.
 
-> *Example: a graft applied from hand and a Virus applied from the cache are not plays.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran no tests; 3 gate test files · Printed: Manual p.32 · Designer: RAQ 1537748882501668934#0 · Rulings: R37 · Tests: 105-semantics-playwatch.test.ts, 119-play-and-token-events.test.ts, 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.playing.applying — a graft from hand and a virus from the cache are applied, never played · Key: effects.playing.applying</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran no tests; 3 gate test files · Printed: Manual p.32 · Designer: RAQ 1537748882501668934#0 · Rulings: R37 · Tests: 105-semantics-playwatch.test.ts, 119-play-and-token-events.test.ts, 425-cr-casting-and-stack.test.ts · Demonstrated by test: 425-cr-casting-and-stack.test.ts::cr:effects.playing.applying — a graft from hand and a virus from the cache are applied, never played · Key: effects.playing.applying</sub>
 
 <a id="r701.2a"></a>**701.2a** An ability that triggers when a player plays a unit, a spell or a card does not trigger when a modification is applied, including one applied from the bin.
 
 > *Example: Ravenous Fireslinger does not trigger when its controller applies an augment, and does trigger on a real spell.*
 
-> *Example: a Virus applied during battle fires no play event, and Void Mandible does not react to it.*
+> *Example: Applying a Virus during battle is not playing a card, so Void Mandible does not react to it.*
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#0 · Rulings: R37 · Tests: 105-semantics-playwatch.test.ts, 119-play-and-token-events.test.ts · Example tests: 105-semantics-playwatch.test.ts::Ravenous Fireslinger: R37, 119-play-and-token-events.test.ts::R37 holds: applying a VIRUS fires neither event · Key: effects.playing.applying.no-play-triggers</sub>
 
 <a id="r701.2b"></a>**701.2b** A modifier to the cost of playing cards does not change the cost of applying a modification. A modification still needs its own affinity and its own mana cost to be applied. See rule 111.
 
-> *Example: a Virus applied in battle needs its affinity and pays its cost.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32 · Rulings: R59 (its play-versus-apply half), R60 (its life-tax half) · Tests: 408-raq-new-threads.test.ts · Example test: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost · Key: effects.playing.applying.cost</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32 · Rulings: R59 (its play-versus-apply half), R60 (its life-tax half) · Tests: 408-raq-new-threads.test.ts · Demonstrated by test: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost · Key: effects.playing.applying.cost</sub>
 
 <a id="r701.2c"></a>**701.2c** Tides of the Cosmos is the one exception. Although it says "play", it may put a Virus card onto a unit as a Virus, and it may play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment.
 
@@ -6116,17 +5560,17 @@ order.
 
 <a id="r701.4"></a>**701.4.** A card played during the resolution of another effect is played. During battle it is put on the stack and can be responded to (rule 703.5), and abilities that trigger on a play see it. See rule 703.5. *(Engine differs, see F-U14-3.)*
 
-> *Example: Bloomcaster hears a unit that Tides of the Cosmos plays.*
+> *Example: Tides of the Cosmos plays a unit, and Bloomcaster's "Whenever you play a unit" triggers on it.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), 1 failed; 2 gate test files · Designer: RAQ 1396955380000755795#8 · Rulings: R198 · Tests: 169-mid-resolution-window.test.ts, 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 7: a free play is a play · Key: effects.playing.mid-resolution</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1396955380000755795#8 · Rulings: R198 · Tests: 169-mid-resolution-window.test.ts, 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 7: a free play is a play · Key: effects.playing.mid-resolution</sub>
 
 <a id="r701.4a"></a>**701.4a** A card played by an effect is played from the zone it came out of. If it came out of a hand, it is played from the hand. If it came out of the cache, a bin, the deck or anywhere else, it is not played from the hand.
 
 > *Example: Tides of the Cosmos plays a card off the top of the deck, so Proph and Stalwart Sentinel see a play from somewhere other than the hand.*
 
-> *Example: Hooba-Pon plays a unit from its controller's hand, so neither watcher fires.*
+> *Example: Hooba-Pon plays a unit from its controller's hand, so neither Proph nor Stalwart Sentinel triggers.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R263, R263 · Tests: 241-played-from-zone.test.ts · Example tests: 241-played-from-zone.test.ts::R263 §5: Tides of the Cosmos plays off the top of the deck, 241-played-from-zone.test.ts::R263 §3: Hooba-Pon plays from the hand · Key: effects.playing.mid-resolution.zone</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R263, R263 · Tests: 241-played-from-zone.test.ts · Example tests: 241-played-from-zone.test.ts::R263 §5: Tides of the Cosmos plays off the top of the deck, 241-played-from-zone.test.ts::R263 §3: Hooba-Pon plays from the hand · Key: effects.playing.mid-resolution.zone</sub>
 
 <a id="r701.5"></a>**701.5.** A copy of a spell is not played. It does not trigger abilities that trigger on playing, and it is not counted as a played spell. See rule 710.
 
@@ -6157,7 +5601,7 @@ order.
 
 <a id="r702.1c"></a>**702.1c** A card can be played only when its timing allows (rule 207). A card with no timing icon can be played only during deployment. See rules 207, 504.
 
-> *Example: Lonely Forager has no timing icon: it is offered in deployment and refused in battle.*
+> *Example: Lonely Forager has no timing icon: it can be played in deployment but not in battle.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.casting.requirements.timing — a card with no timing icon is playable in deployment and not in battle · Key: effects.casting.requirements.timing</sub>
 
@@ -6203,7 +5647,7 @@ order.
 
 <a id="r702.3b"></a>**702.3b** Step 2: the player chooses any {Modular} modifications for the card. See rule 724.
 
-> *Example: Spellbind asks for its {Modular} mods as it is played; the chosen mod is on the stack item with it.*
+> *Example: Spellbind asks for its {Modular} mods as it is played; the chosen mod goes on the stack with it.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R57 (its fixed-cost order) · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.modular — Spellbind asks for its Modular mods as it is played, and the chosen mod rides onto the stack with it · Key: effects.casting.procedure.modular</sub>
 
@@ -6291,8 +5735,6 @@ order.
 
 <a id="r702.6b"></a>**702.6b** A variable additional cost sets X. The player pays it one unit at a time until they stop, and the amount paid is X.
 
-> *Example: Discharge ("[Remove X +1/+1 counters from allies]: I deal X damage to target unit") deals as much damage as the counters removed (illustrative).*
-
 > *Example: a player removes two +1/+1 counters for Discharge, one at a time, then stops; X is 2 and Discharge deals 2 damage.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R64 (its cost half) · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.casting.x.variable-cost — Discharge with two counters removed one at a time has X = 2 and deals 2 · Key: effects.casting.x.variable-cost</sub>
@@ -6305,9 +5747,9 @@ order.
 
 <a id="r702.7"></a>**702.7.** A spell token is cast from play, and only in the region the token is in. Otherwise it is cast the same way as a spell from the hand. See rule 304.
 
-> *Example: a Fireball in the battle region is cast with a target and goes on the stack like a spell from hand; a Fireball in another region cannot be cast.*
+> *Example: In the attack window the defending player casts their Fireball 3 token in the battle region. They choose its target, the attacking player, and it goes on the stack, where the attacker may respond; when both pass it deals 3.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.4; Rulebook 2023 p.4 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens — casting a spell token asks for its target and puts it on the stack, as a spell from hand would · Key: effects.casting.spell-tokens</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.4; Rulebook 2023 p.4 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens — casting a spell token asks for its target and puts it on the stack, as a spell from hand would · Key: effects.casting.spell-tokens</sub>
 
 <a id="r702.7a"></a>**702.7a** A modifier to the cost of playing spells applies to casting a spell token, and a spell token cast counts as a spell played. See rule 111.
 
@@ -6317,7 +5759,7 @@ order.
 
 <a id="r702.7b"></a>**702.7b** A spell token with Burst is cast together with all of its controller's spell tokens of the same name in the same region as it. They are still separate spells. See rules 803, 703.4.
 
-> *Example: a player with two Fireballs in the battle region casts one; both go on the stack. A Fireball the same player has in another region is not cast (illustrative).*
+> *Example: A player with two Fireballs in the battle region casts one; both go on the stack. A Fireball the same player has in another region is not cast.*
 
 <sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Printed: Rulebook 2023 p.4; Rulebook 2023 p.4; Rulebook 2023 p.4 · Rulings: R309 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens.burst — both battle-region Fireballs are cast together and one in another region is not · Key: effects.casting.spell-tokens.burst</sub>
 
@@ -6374,9 +5816,9 @@ order.
 
 <a id="r703.2"></a>**703.2.** Priority is the ability to take game actions such as playing cards or activating abilities. A player with priority can take such actions; a player without priority cannot.
 
-> *Example: in the attack window only the initiative player, who holds priority, is offered a card; the other player’s play is refused.*
+> *Example: In the attack window only the initiative player, who holds priority, may play a card; the other player cannot until they receive priority.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.30; Manual p.30 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.priority — only the player with priority may play a card · Key: effects.priority.priority</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.30; Manual p.30 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.priority — only the player with priority may play a card · Key: effects.priority.priority</sub>
 
 <a id="r703.2a"></a>**703.2a** A player who uses priority to take an action may keep priority and take further actions. Each action goes on the stack as an effect; none of them happens immediately. *(Engine differs, see F-U14-2.) (Untested: no executed test demonstrates it.)*
 
@@ -6456,9 +5898,9 @@ order.
 
 <a id="r703.7"></a>**703.7.** Deployment uses the stack, but each player has a stack of their own there. Only that player sees it and holds priority over it; no other player can respond to it or is made to wait on it. See rule 507.
 
-> *Example: a deploy-timing spell played in deployment is a real stack item, so Earthbound Replicator can copy it.*
+> *Example: In deployment a player plays a deploy-timing spell at their Earthbound Replicator; the spell goes on that player's own stack, so the Replicator can copy it.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R286, R286 · Replaces: R144 (its half (a) (deployment triggers on one shared stack) was amended by R286); R250 (its §3 deployment half (no priority in deployment) was amended by R286) · Tests: 138-spell-copy.test.ts · Example test: 138-spell-copy.test.ts::R286/CT-176: a deploy-timing play names a REAL stack item · Key: effects.priority.deployment</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R286, R286 · Replaces: R144 (its half (a) (deployment triggers on one shared stack) was amended by R286); R250 (its §3 deployment half (no priority in deployment) was amended by R286) · Tests: 138-spell-copy.test.ts · Example test: 138-spell-copy.test.ts::R286/CT-176: a deploy-timing play names a REAL stack item · Key: effects.priority.deployment</sub>
 
 <a id="r703.8"></a>**703.8.** There is no priority in the haste step. Haste cards are played there as special actions. See rule 504.
 
@@ -6533,15 +5975,11 @@ order.
 
 <a id="r704.4a"></a>**704.4a** A negated spell, spell unit, unit, ambush or Virus goes to its controller's bin, and a negated Virus cannot be used as a Virus again. A negated spell token is erased. A negated triggered or activated ability just leaves the stack, because it has no card of its own.
 
-> *Example: a negated spell token is erased, never binned.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.34; Manual p.34 · Rulings: R68 (its removal-and-destination half), R68 (its removal-and-destination half) · Replaces: R68 (narrowed by R79: a negated card that is Unstable is erased instead of binned) · Tests: 61-negation.test.ts · Example test: 61-negation.test.ts::R68: a negated spell TOKEN is erased, never binned · Key: effects.resolution.negation.destination</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.34; Manual p.34 · Rulings: R68 (its removal-and-destination half), R68 (its removal-and-destination half) · Replaces: R68 (narrowed by R79: a negated card that is Unstable is erased instead of binned) · Tests: 61-negation.test.ts · Demonstrated by test: 61-negation.test.ts::R68: a negated spell TOKEN is erased, never binned · Key: effects.resolution.negation.destination</sub>
 
 <a id="r704.4b"></a>**704.4b** A negated unit or spell unit never enters play.
 
-> *Example: negating a unit on the stack: it never arrives, and its card goes to the bin.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1461450216874967235#1 · Rulings: R128 · Tests: 118-stack-effect.test.ts, 396-raq-timing.test.ts · Example test: 118-stack-effect.test.ts::R128: negating a unit on the stack · Key: effects.resolution.negation.no-arrival</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1461450216874967235#1 · Rulings: R128 · Tests: 118-stack-effect.test.ts, 396-raq-timing.test.ts · Demonstrated by test: 118-stack-effect.test.ts::R128: negating a unit on the stack · Key: effects.resolution.negation.no-arrival</sub>
 
 <a id="r704.5"></a>**704.5.** As an effect begins to resolve, each target it declared is checked again by the rule it was chosen under: its kind, its printed restriction, its region, and being different from the other targets. A target that fails the check is lost, exactly like a target that has left play. See rule 110.
 
@@ -6577,23 +6015,19 @@ order.
 
 <a id="r704.6a"></a>**704.6a** When an effect fizzles, none of it happens, including parts of it that had no target.
 
-> *Example: a graft composite that loses its only target fizzles whole; its untargeted grafts make no Poison.*
+> *Example: Spewing Mushroom carries the grafts Biotoxicity ("create three Poison 1") and Technological Superiority, which targets the Mushroom itself. The Mushroom attacks, and the opponent deletes it with Leaping Lillik before its trigger resolves. Its only target is gone, so the whole trigger fizzles: not even Biotoxicity's Poisons are made.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1354013430805434389#0 · Rulings: R86 · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole · Key: effects.resolution.fizzle.whole</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1354013430805434389#0 · Rulings: R86 · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole · Key: effects.resolution.fizzle.whole</sub>
 
 <a id="r704.6b"></a>**704.6b** If an effect has lost some but not all of its targets, it resolves as best it can against those that remain, untargeted parts included.
 
-> *Example: an effect with two targets and an untargeted draw loses one target before it resolves; it acts on the remaining target and the draw still happens (illustrative).*
-
 > *Example: Tidal Reversion still recalls the other unit when one of its targets is removed.*
-
-> *Example: a graft composite whose one target survives also carries out its untargeted grafts.*
 
 > *Example: Twin Flame loses one of its two targets before it resolves; the remaining target still takes its 2 damage.*
 
-> *Example: a graft composite with two targeted grafts loses one of the targets; the untargeted grafts still make their Poison tokens.*
+> *Example: Spewing Mushroom carries Biotoxicity and two Technological Superiority grafts; when it attacks, the two targeted parts aim at the Mushroom and at an enemy 1/1. The 1/1 dies before the trigger resolves. One target remains, so it still resolves: all four Poison tokens are made.*
 
-<sub>Basis: Designer · Verified: confirmed in round 3; verifier ran 5 tests (2 probes it wrote), all passed; 3 gate test files · Printed: Manual p.43 · Designer: RAQ 1410252965276684418#4; RAQ 1354013430805434389#0 · Rulings: R86 · Tests: 78-round17-core.test.ts, 390-raq-stack.test.ts, 425-cr-casting-and-stack.test.ts · Example tests: 390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion still recalls the other unit when one target is removed, 78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through, 425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — Twin Flame with one of two targets gone still damages the other, 425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — a graft composite with two targets losing one still runs its untargeted part · Key: effects.resolution.fizzle.partial</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.43 · Designer: RAQ 1410252965276684418#4; RAQ 1354013430805434389#0 · Rulings: R86 · Tests: 78-round17-core.test.ts, 390-raq-stack.test.ts, 425-cr-casting-and-stack.test.ts · Example tests: 390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion still recalls the other unit when one target is removed, 425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — Twin Flame with one of two targets gone still damages the other, 425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — a graft composite with two targets losing one still runs its untargeted part · Demonstrated by test: 78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through · Key: effects.resolution.fizzle.partial</sub>
 
 <a id="r704.6c"></a>**704.6c** An effect that needs two of its targets together (a fight or an exchange) does nothing if it loses one of them. It does not fizzle.
 
@@ -6607,9 +6041,7 @@ order.
 
 <a id="r704.6d"></a>**704.6d** An effect that has no targeting part anywhere cannot fizzle. Nor can a part whose target was optional ("up to") and was left empty: declaring no target was a legal choice, and the rest of the effect still happens. See rule 704.6g.
 
-> *Example: an item with no targeting part anywhere never fizzles.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R86, R86, R86 · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles · Key: effects.resolution.fizzle.untargeted</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R86, R86, R86 · Tests: 78-round17-core.test.ts · Demonstrated by test: 78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles · Key: effects.resolution.fizzle.untargeted</sub>
 
 <a id="r704.6e"></a>**704.6e** An ambush is a targeted effect. If its target is removed, the ambush fizzles and the ambushing unit is put into the bin. See rule 803.
 
@@ -6625,15 +6057,11 @@ order.
 
 <a id="r704.6g"></a>**704.6g** An effect with a required target that never had a legal candidate fizzles, although it declared no target. See rule 704.6d.
 
-> *Example: an item whose required target had no legal candidate when it was cast fizzles.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R86 · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R86: a required target with no legal candidate at cast still fizzles · Key: effects.resolution.fizzle.never-had-target</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R86 · Tests: 78-round17-core.test.ts · Demonstrated by test: 78-round17-core.test.ts::R86: a required target with no legal candidate at cast still fizzles · Key: effects.resolution.fizzle.never-had-target</sub>
 
 <a id="r704.7"></a>**704.7.** An effect stays on the stack, and still resolves, if its source leaves play. See rule 714.
 
-> *Example: an effect stays on the stack when its unit dies, and still resolves.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353895783266516992#0 · Rulings: R325 · Replaces: R225 (its first grade (a source that died with its trigger on the stack places nothing) was reversed by R325) · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ dead unit: an effect stays on the stack when its unit dies and still resolves · Key: effects.resolution.source-gone</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353895783266516992#0 · Rulings: R325 · Replaces: R225 (its first grade (a source that died with its trigger on the stack places nothing) was reversed by R325) · Tests: 390-raq-stack.test.ts · Demonstrated by test: 390-raq-stack.test.ts::RAQ dead unit: an effect stays on the stack when its unit dies and still resolves · Key: effects.resolution.source-gone</sub>
 
 <a id="r704.7a"></a>**704.7a** Where such an effect reads its source (its attributes, power, defense, or the formation it stood in), it uses the source's last-known state: what the source was at the moment it left play. See rule 714.
 
@@ -6643,9 +6071,9 @@ order.
 
 <a id="r704.7b"></a>**704.7b** An effect that acts on its source itself, or that says "if I am still in formation", does nothing if the source is gone. See rule 714.
 
-> *Example: Hooba-Nan gone with its trigger on the stack makes nothing.*
+> *Example: Hooba-Nan dies with its attack trigger on the stack; the trigger creates no 1/1s.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1353895783266516992#1 · Rulings: R325 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing · Key: effects.resolution.source-gone.needs-body</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1353895783266516992#1 · Rulings: R325 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing · Key: effects.resolution.source-gone.needs-body</sub>
 
 <a id="r705"></a>
 ### 705. Activated Abilities
@@ -6666,13 +6094,11 @@ order.
 
 <a id="r705.3"></a>**705.3.** To activate an ability, the player takes the steps below, in order. Everything is chosen and paid before the ability is put on the stack, so no player can respond between the payment of its cost and the ability going on the stack. See rules 111.7, 703.
 
-> *Example: while the steps are being taken, the opponent has no legal action.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R57 (targets before fixed costs; costs paid before the stack), R49 (its costs-at-cast rule) · Tests: 167-variable-ability-costs.test.ts · Example test: 167-variable-ability-costs.test.ts::R196 nothing may act INSIDE the cast window · Key: effects.activated.procedure</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R57 (targets before fixed costs; costs paid before the stack), R49 (its costs-at-cast rule) · Tests: 167-variable-ability-costs.test.ts · Demonstrated by test: 167-variable-ability-costs.test.ts::R196 nothing may act INSIDE the cast window · Key: effects.activated.procedure</sub>
 
 <a id="r705.3a"></a>**705.3a** Step 1: the game checks that the ability can be activated: its timing allows it, any printed condition on it ("Activate this ability only if …") is met, every part of its cost can be paid, and every target it requires has a legal choice. If any check fails, the ability cannot be activated and nothing is paid. See rules 111.6a, 111.7b.
 
-> *Example: Instrument of Reassignment costs [x] and "sacrifice another nontoken unit". With only a token beside it, it is not offered and cannot be activated, and the 3 open mana are not spent either.*
+> *Example: Instrument of Reassignment costs [x] and "sacrifice another nontoken unit". With only a token beside it, it cannot be activated, and the 3 open mana are not spent either.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R77, R77, R77, R77, R196 · Tests: 167-variable-ability-costs.test.ts, 426-cr-abilities-and-replacement.test.ts · Example test: 167-variable-ability-costs.test.ts::R196 the COMPOUND half-pay hazard · Key: effects.activated.procedure.gates</sub>
 
@@ -6702,7 +6128,7 @@ order.
 
 <a id="r705.4"></a>**705.4.** If a part of an ability's cost names something that is not there to pay with (no other ally to recall, no mod to erase), the ability cannot be activated. Nothing is paid, and a [once] on the ability is not used. See rules 111.6, 109.9b.
 
-> *Example: Auric Ascendant with no other ally is not offered, so its [one] is not paid and its [once] is kept.*
+> *Example: Auric Ascendant with no other ally cannot be activated, so its [one] is not paid and its [once] is kept.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R196, R196 · Tests: 167-variable-ability-costs.test.ts · Example test: 167-variable-ability-costs.test.ts::R196 Auric Ascendant with no other ally is NOT OFFERED · Key: effects.activated.cost-cannot-whiff</sub>
 
@@ -6759,9 +6185,7 @@ order.
 
 <a id="r706.3c"></a>**706.3c** During deployment: on the deployment stack of the player who controls them (rule 703.7). All the abilities that trigger at the same moment are put on that stack before any of them resolves. See rule 703.7.
 
-> *Example: three start-of-deployment abilities are all on the stack before the first of them resolves.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R144 (deployment triggers use the stack), R102 · Replaces: R144 (its single shared deployment stack and its "no priority in deployment" were amended by R286: one stack per player, and that player holds priority over it) · Tests: 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves · Key: effects.triggered.when-stacked.deployment</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R144 (deployment triggers use the stack), R102 · Replaces: R144 (its single shared deployment stack and its "no priority in deployment" were amended by R286: one stack per player, and that player holds priority over it) · Tests: 37-attrs-wight.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves · Key: effects.triggered.when-stacked.deployment</sub>
 
 <a id="r706.3d"></a>**706.3d** In the end-of-turn step: they resolve as special actions. No player can play cards in response to them (rule 508.1a). See rule 508.1a.
 
@@ -6791,9 +6215,9 @@ order.
 
 <a id="r706.6a"></a>**706.6a** Several cards that enter a hand together in one move are one event. An ability that triggers when a card, or one or more cards, enters a hand triggers once for that move.
 
-> *Example: recalling two units out of a bin in one move is one entry into the hand, as a two-card draw is.*
+> *Example: Rider of the Tides is attacking. Its controller plays Tilling the Graves, returning Curio Drifter and Bumblecrab from the bin to hand in one move. That is one entry into the hand, so the Rider triggers once and gets +2/+2, not +4/+4.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R179, R179 · Tests: 152-hand-entry.test.ts · Example test: 152-hand-entry.test.ts::a multi-card move fires exactly ONE handEntered, like a multi-card draw · Key: effects.triggered.once-per-event.one-move</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R179, R179 · Tests: 152-hand-entry.test.ts · Example test: 152-hand-entry.test.ts::a multi-card move fires exactly ONE handEntered, like a multi-card draw · Key: effects.triggered.once-per-event.one-move</sub>
 
 <a id="r706.6b"></a>**706.6b** Each mod that Reconfigure moves onto a new host is applied to that host separately. An ability that triggers whenever a mod is applied triggers once for each of them. See rule 721.
 
@@ -6809,7 +6233,7 @@ order.
 
 <a id="r706.7a"></a>**706.7a** An "after combat" ability triggers only in a region where a battle took place. See rule 609.
 
-> *Example: a unit with an "after combat" ability in a region where no battle happened makes nothing.*
+> *Example: A unit with an "after combat" ability in a region where no battle happened does not trigger.*
 
 > *Example: a unit with an "after combat" ability that stands in the battle region but in no formation still triggers.*
 
@@ -6817,7 +6241,7 @@ order.
 
 <a id="r706.8"></a>**706.8.** An ability of a unit that triggers on its own death ("When I die") triggers when the unit dies, although the unit has then left play. The ability is put on the stack in the region where the unit died. See rule 714.
 
-> *Example: a "when I die" ability of a unit that died in the battle region offers targets in the battle region, not in its controller's home region.*
+> *Example: A "when I die" ability of a unit that died in the battle region can target things in the battle region, not in its controller's home region.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R278, R70 · Tests: 62-death-facts.test.ts · Example test: 62-death-facts.test.ts::R70: a "when I die" trigger resolves in the region the unit DIED in · Key: effects.triggered.own-death</sub>
 
@@ -6850,8 +6274,6 @@ order.
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1355613076506017894#3 · Rulings: R178 (its §1) · Tests: 151-copy-and-moved-mods.test.ts · Example tests: 151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy, 151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy · Key: effects.triggered.targets-as-played</sub>
 
 <a id="r706.10"></a>**706.10.** An "If you do" clause in a triggered ability is part of that ability, not a separate triggered ability. It resolves as part of the ability, and it is not put on the stack or taxed separately.
-
-> *Example: Example (illustrative): Eminence of the Barrens' "you may pay [one]. If you do, I fight another target unit" is one triggered ability.*
 
 > *Example: Eminence of the Barrens attacks under an enemy Crevice Lurker and is damaged by a spell. Its controller is asked the Crevice Lurker tax once for the trigger, and the [one] to fight is asked while that same trigger resolves, and is never taxed itself: each trigger costs 2 in all, the tax plus the fight.*
 
@@ -6904,11 +6326,7 @@ order.
 
 <a id="r707.3"></a>**707.3.** Only triggered abilities and activated abilities put anything on the stack. A triggered ability says "When" or "Whenever" or names a time such as "After combat"; {Alluring} and {Resonant} also work as triggered abilities; an activated ability is written with a colon. A sentence that states a standing fact ("I gain +2/+2", "Spells cost [one] more to play during battle") is a static ability, and a sentence that says "instead", "as" or "if" and names no target is a replacement effect. Neither goes on the stack, except that a replacement whose substitute names a target puts that substitute on the stack. See rules 708.1, 109.5a, 706.1, 706.11, 705.1, 708.2a.
 
-> *Example: a card whose whole printed text states standing facts has nothing that can reach the stack.*
-
-> *Example: a card whose whole printed text is a replacement that names no target has no ability that goes on the stack.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.41; Manual p.41 · Rulings: R104 (its stack rule), R104 (its stack rule), R168, R315 (its ruling), R102 · Tests: 142-static-conformance.test.ts, 88-replacement-conformance.test.ts · Example tests: 142-static-conformance.test.ts::a card whose whole printed text is continuous declares NOTHING that reaches the stack, 88-replacement-conformance.test.ts::a card whose whole text is an untargeted replacement declares NO ability at all · Key: effects.static.printed-form</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.41; Manual p.41 · Rulings: R104 (its stack rule), R104 (its stack rule), R168, R315 (its ruling), R102 · Tests: 142-static-conformance.test.ts, 88-replacement-conformance.test.ts · Demonstrated by tests: 142-static-conformance.test.ts::a card whose whole printed text is continuous declares NOTHING that reaches the stack, 88-replacement-conformance.test.ts::a card whose whole text is an untargeted replacement declares NO ability at all · Key: effects.static.printed-form</sub>
 
 <sub>Discrepancies: D-U15-12 (discrepancies.md)</sub>
 
@@ -6932,9 +6350,7 @@ order.
 
 <a id="r707.4b"></a>**707.4b** A static ability that changes stats ("I gain +2/+2") puts no counters on the unit. Effects that count, move, double or remove counters do not see the change, and it ends as soon as its source stops applying it.
 
-> *Example: Aetherflux Golem's "+2/+2" is a static change in both of its forms, like the other cards that print "I gain ±N/±N".*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R168, R168 · Tests: 142-static-conformance.test.ts · Example test: 142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC, like the two cards printing its sentence · Key: effects.static.continuous.not-counters</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R168, R168 · Tests: 142-static-conformance.test.ts · Demonstrated by test: 142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC, like the two cards printing its sentence · Key: effects.static.continuous.not-counters</sub>
 
 <a id="r707.5"></a>**707.5.** A card's statement that it enters play with counters ("I spawn with two +1/+1 counters") is not a triggered ability. The unit enters play already holding those counters; nothing goes on the stack, and an ability that triggers on the unit entering play sees it with them.
 
@@ -6968,9 +6384,9 @@ order.
 
 <a id="r707.7a"></a>**707.7a** A static ability that names "spells" applies to spell tokens too, because spell tokens are spells. See rule 108.2.
 
-> *Example: Emberflame Enlightener ("Your units and spells gain {Powerful}") doubles the damage of its controller's Burst Fireball.*
+> *Example: Emberflame Enlightener says "Your units and spells gain {Powerful}". Its controller's Fireball token is a spell, so it has {Powerful} too.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R157 (its §13), R94 · Tests: 111-literal-fire.test.ts · Example test: 111-literal-fire.test.ts::Emberflame and Envoy of Lightning ask the SAME question about a spell token · Key: effects.static.literal.spell-tokens</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R157 (its §13), R94 · Tests: 111-literal-fire.test.ts · Example test: 111-literal-fire.test.ts::Emberflame and Envoy of Lightning ask the SAME question about a spell token · Key: effects.static.literal.spell-tokens</sub>
 
 <a id="r707.8"></a>**707.8.** A static ability that applies to effects with a number of targets ("spell effects with a single target") counts the targets the effect declared as it was played, including targets that have since become illegal.
 
@@ -6984,13 +6400,11 @@ order.
 
 > *Example: Crevice Lurker as a mod taxes abilities in its host's region.*
 
-> *Example: a replacement effect on a mod reads from its host.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Rulings: R157 (its §6), R94, R94 · Tests: 28-metal-c.test.ts, 16-earth-a.test.ts, 87-replacement-layer.test.ts · Example tests: 28-metal-c.test.ts::Transmogrifant: the augment-donated static anchors on the host, 16-earth-a.test.ts::Crevice Lurker: R121 — donated as an augment, the HOST's region carries the tax, 87-replacement-layer.test.ts::a donated [Augment] replacement reads from its HOST · Key: effects.static.from-mod</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Rulings: R157 (its §6), R94, R94 · Tests: 28-metal-c.test.ts, 16-earth-a.test.ts, 87-replacement-layer.test.ts · Example tests: 28-metal-c.test.ts::Transmogrifant: the augment-donated static anchors on the host, 16-earth-a.test.ts::Crevice Lurker: R121 — donated as an augment, the HOST's region carries the tax · Demonstrated by test: 87-replacement-layer.test.ts::a donated [Augment] replacement reads from its HOST · Key: effects.static.from-mod</sub>
 
 <a id="r707.10"></a>**707.10.** A permission a card grants ("You may play one unit with no abilities from your bin each deployment") is a standing fact, not an ability that goes on the stack. Using it cannot be responded to, and an effect that negates activated or triggered abilities cannot stop it. (engine differs, see F-U15-1) *(Engine differs, see F-U15-1.)*
 
-> *Example: Example (illustrative): Containment Protocol cannot negate The Bonesculptor's permission, because there is nothing on the stack to negate.*
+> *Example: Containment Protocol cannot stop a player using The Bonesculptor's permission, because there is nothing on the stack to negate.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; no gate test · Rulings: R165, R168 · Key: effects.static.permission</sub>
 
@@ -7073,9 +6487,7 @@ order.
 
 > *Example: Arbiter of Vitality doubles a lethal loss before the game checks whether the player has lost.*
 
-> *Example: one "loses life" event carries the whole doubled number.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R162 (its Arbiter of Vitality section) · Tests: 137-multiplier-and-mode.test.ts · Example tests: 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check, 137-multiplier-and-mode.test.ts::the multiplier is a REPLACEMENT, not a second helping · Key: effects.replacement.multipliers.lethal</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R162 (its Arbiter of Vitality section) · Tests: 137-multiplier-and-mode.test.ts · Example test: 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check · Demonstrated by test: 137-multiplier-and-mode.test.ts::the multiplier is a REPLACEMENT, not a second helping · Key: effects.replacement.multipliers.lethal</sub>
 
 <a id="r708.7"></a>**708.7.** When a replacement that changes the number of counters and a replacement that redirects them both apply to the same placement, the number is changed first, and the redirect then moves the whole changed number.
 
@@ -7123,9 +6535,7 @@ order.
 
 > *Example: a unit shielded by Phytochemical Protection and hit by a {Poisonous} unit takes no -1/-1 counters and does not trigger on being dealt damage.*
 
-> *Example: prevented damage fires nothing that triggers on damage being dealt.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1354148437355925554#1 · Rulings: R98 (its prevention rules) · Tests: 387-raq-combat.test.ts, 24-wood-b.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Poisonous: a shielded Jollyglop, 24-wood-b.test.ts::Phytochemical Protection: prevented damage is NOT dealt · Key: effects.replacement.prevention</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1354148437355925554#1 · Rulings: R98 (its prevention rules) · Tests: 387-raq-combat.test.ts, 24-wood-b.test.ts · Example test: 387-raq-combat.test.ts::RAQ Poisonous: a shielded Jollyglop · Demonstrated by test: 24-wood-b.test.ts::Phytochemical Protection: prevented damage is NOT dealt · Key: effects.replacement.prevention</sub>
 
 <sub>Discrepancies: D-U15-5 (discrepancies.md)</sub>
 
@@ -7168,9 +6578,9 @@ order.
 
 <a id="r709.4"></a>**709.4.** A unit's stats are worked out layer by layer, in the order of rule 206.4. Every effect in one layer applies before any effect in the next layer, whatever order the effects began in. Within one layer, effects apply in timestamp order (rule 113). See rules 206.4, 113.1.
 
-> *Example: an effect that makes a unit base 4/4 applies over a copy effect whether the copy began before it or after it, because base stats are a later layer than the copy.*
+> *Example: An effect that makes a unit base 4/4 applies over Apex Prime's copy effect whether the copy began before it or after it, because base stats are a later layer than the copy.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.42 · Designer: RAQ 1357965714807586897#0 · Rulings: R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127) · Replaces: R118 (its ruling-2 Unstable half reversed by R336 and its text half amended by R341; its layer order stands) · Tests: 44-hybrids-ld-a.test.ts · Example test: 44-hybrids-ld-a.test.ts::R118: a later setBase wins over a copy · Key: effects.continuous.layers</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.42 · Designer: RAQ 1357965714807586897#0 · Rulings: R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127) · Replaces: R118 (its ruling-2 Unstable half reversed by R336 and its text half amended by R341; its layer order stands) · Tests: 44-hybrids-ld-a.test.ts · Example test: 44-hybrids-ld-a.test.ts::R118: a later setBase wins over a copy · Key: effects.continuous.layers</sub>
 
 <a id="r709.4a"></a>**709.4a** Before those layers, a copy effect decides which card the unit's printed stats come from. A unit that is a copy of a card has that card's printed stats as its layer 1, and every later layer applies to them (rule 710). See rule 710.
 
@@ -7180,9 +6590,7 @@ order.
 
 <a id="r709.4b"></a>**709.4b** In layer 4, Tough and Balanced apply in the order the unit has them, from top to bottom. A Tough unit that attacks with a Balanced unit behind it has its defense doubled, then its stats balanced. Where a Balanced unit gets Tough from a mod, the Manual's answer gives both orders: Tough "augmented onto" a Balanced unit doubles, then balances; Tough "applied to" a Balanced unit balances, then doubles (D-U16-1). The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (R19 calls this order its own; engine differs from the "augmented onto" reading, see F-U16-4). See rule 802. *(Engine differs, see F-U16-4.)*
 
-> *Example: Tough then Balanced, and Balanced then Tough, give different stats.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42 · Rulings: R19, R19 · Tests: 08-cards2.test.ts · Example test: 08-cards2.test.ts::R19: layer-4 application order · Key: effects.continuous.layers.attribute-order</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42 · Rulings: R19, R19 · Tests: 08-cards2.test.ts · Demonstrated by test: 08-cards2.test.ts::R19: layer-4 application order · Key: effects.continuous.layers.attribute-order</sub>
 
 <sub>Discrepancies: D-U16-1 (discrepancies.md)</sub>
 
@@ -7222,11 +6630,9 @@ order.
 
 <a id="r709.8"></a>**709.8.** Where an effect that switches a unit's power and defense until regroup (Invasive Reassignment) applies in the stat layers is an open ruling. The engine applies it as a temporary stat change worked out from the unit's stats when it resolves, so a stat change that comes afterwards applies on top and is not switched.
 
-> *Example: Invasive Reassignment switches a unit's power and defense until regroup.*
+> *Example: An 8/3 unit switched by Invasive Reassignment is a 3/8; if it then gets +2/+0 it is a 5/8, not switched again.*
 
-> *Example: Example (illustrative): an 8/3 unit switched by Invasive Reassignment is a 3/8; if it then gets +2/+0 it is a 5/8, not switched again.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Invasive Reassignment · Rulings: R66, R66 · Tests: 27-metal-b.test.ts, 427-cr-continuous-effects.test.ts · Example tests: 27-metal-b.test.ts::Invasive Reassignment: switches power and defense until regroup, 427-cr-continuous-effects.test.ts::cr:effects.continuous.switch — an 8/3 switched by Invasive Reassignment is a 3/8, and a later +2/+0 makes it a 5/8 · Key: effects.continuous.switch</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Invasive Reassignment · Rulings: R66, R66 · Tests: 27-metal-b.test.ts, 427-cr-continuous-effects.test.ts · Example test: 427-cr-continuous-effects.test.ts::cr:effects.continuous.switch — an 8/3 switched by Invasive Reassignment is a 3/8, and a later +2/+0 makes it a 5/8 · Demonstrated by test: 27-metal-b.test.ts::Invasive Reassignment: switches power and defense until regroup · Key: effects.continuous.switch</sub>
 
 <sub>Discrepancies: D-U16-4 (discrepancies.md)</sub>
 
@@ -7265,13 +6671,13 @@ order.
 
 > *Example: a Borrower of Forms that copied a unit carrying a Powerful virus is Powerful, and is not modded or Unstable.*
 
-> *Example: a Borrower of Forms that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite.*
+> *Example: A Borrower of Forms that copied a Bellowing Boulder with Flame Juggle grafted has the Boulder's whole trigger, Flame Juggle's grafted part included.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1372468222158180424#1; RAQ 1372468222158180424#4 · Rulings: R336, R341 · Replaces: R118 (its ruling 2 said a copy of a modded unit counts as modded and is Unstable; reversed by R336) · Tests: 406-copied-augments.test.ts, 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts · Example tests: 406-copied-augments.test.ts::R341: a Borrower that copied a unit carrying a Powerful virus is Powerful, 393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder · Key: effects.copies.exact.mods</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1372468222158180424#1; RAQ 1372468222158180424#4 · Rulings: R336, R341 · Replaces: R118 (its ruling 2 said a copy of a modded unit counts as modded and is Unstable; reversed by R336) · Tests: 406-copied-augments.test.ts, 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts · Example tests: 406-copied-augments.test.ts::R341: a Borrower that copied a unit carrying a Powerful virus is Powerful, 393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder · Key: effects.copies.exact.mods</sub>
 
 <a id="r710.2b"></a>**710.2b** More grafts may be added to a copy of a grafted unit, but they go underneath the copied grafts. See rule 722.
 
-> *Example: a graft added to a Borrower of Forms that copied a graft stack resolves below the copied grafts.*
+> *Example: A graft added to a Borrower of Forms that copied a grafted unit resolves below the copied grafts.*
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1372468222158180424#5 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Borrower of Forms: a graft added to a Borrower · Key: effects.copies.exact.mods.underneath</sub>
 
@@ -7295,11 +6701,9 @@ order.
 
 <a id="r710.4"></a>**710.4.** A copy of a unit that is itself a copy copies what that unit currently is, not the card printed on it.
 
-> *Example: a copy of a copy chains through what the first copy is.*
-
 > *Example: a copy of a Borrower of Forms that copied a virused unit carries the copied virus's text too.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127), R341 · Tests: 44-hybrids-ld-a.test.ts, 406-copied-augments.test.ts · Example tests: 44-hybrids-ld-a.test.ts::R118: a copy of a COPY chains through the face, 406-copied-augments.test.ts::R341: a copy of the copy chains · Key: effects.copies.of-a-copy</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127), R341 · Tests: 44-hybrids-ld-a.test.ts, 406-copied-augments.test.ts · Example test: 406-copied-augments.test.ts::R341: a copy of the copy chains · Demonstrated by test: 44-hybrids-ld-a.test.ts::R118: a copy of a COPY chains through the face · Key: effects.copies.of-a-copy</sub>
 
 <a id="r710.5"></a>**710.5.** An effect that creates a copy of its own source ("create a copy of me") creates a token copy of what the source currently is. The token has none of the source's counters and none of its mods. See rules 304.4a, 714.
 
@@ -7309,19 +6713,17 @@ order.
 
 <a id="r710.6"></a>**710.6.** A copy that lasts until regroup (Apex Prime) ends at regroup. The unit is its own card again, still with its counters, and it dies if its own stats cannot survive them. See rules 506.2d, 713.
 
-> *Example: an until-regroup copy ends at regroup, and the unit can die of it.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Apex Prime · Rulings: R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127) · Tests: 44-hybrids-ld-a.test.ts · Example test: 44-hybrids-ld-a.test.ts::R118: an until-regroup face lapses at regroup, and the revert can be lethal · Key: effects.copies.until-regroup</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Apex Prime · Rulings: R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127) · Tests: 44-hybrids-ld-a.test.ts · Demonstrated by test: 44-hybrids-ld-a.test.ts::R118: an until-regroup face lapses at regroup, and the revert can be lethal · Key: effects.copies.until-regroup</sub>
 
 <a id="r710.7"></a>**710.7.** An ability that gives a unit "all abilities" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop.
 
-> *Example: Ancient One radiates an adjacent ally's static ability, and stops when the column breaks.*
+> *Example: Ancient One has an adjacent ally's static ability, and loses it when the column breaks.*
 
 > *Example: an adjacent ally's attributes are not given to Ancient One.*
 
-> *Example: Ancient One keeps its own name and body.*
+> *Example: Ancient One keeps its own name and stats.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Ancient One; card: Ancient One · Rulings: R127, R127, R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127) · Tests: 26-metal-a.test.ts, 117-copy-everything.test.ts · Example tests: 26-metal-a.test.ts::R118: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks, 117-copy-everything.test.ts::R127: attributes are the ONE thing an adjacent ally does not donate, 26-metal-a.test.ts::R118: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body · Key: effects.copies.all-abilities</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Ancient One; card: Ancient One · Rulings: R127, R127, R118 (ruling 1 split identity, the copy layer and its defaults; ruling 2 Unstable half reversed by R336, its text half amended by R341, its no-radiating bullet reversed by R127) · Tests: 26-metal-a.test.ts, 117-copy-everything.test.ts · Example tests: 26-metal-a.test.ts::R118: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks, 117-copy-everything.test.ts::R127: attributes are the ONE thing an adjacent ally does not donate, 26-metal-a.test.ts::R118: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body · Key: effects.copies.all-abilities</sub>
 
 <a id="r710.7a"></a>**710.7a** In text a unit gets this way, "I" and "me" mean the unit that has the text, not the unit it came from.
 
@@ -7331,7 +6733,7 @@ order.
 
 <a id="r710.8"></a>**710.8.** A copy of a spell is put on the stack above the spell it copies, so it resolves first. It is an effect on the stack like any other: players may respond to it, and it can be targeted and negated. See rules 108.4, 703, 704.2d.
 
-> *Example: Earthbound Replicator's copy is pushed above the original.*
+> *Example: Earthbound Replicator's copy goes on the stack above the original, so it resolves first.*
 
 > *Example: the copy can be chosen as a "target effect" and negated by Dematerialize.*
 
@@ -7341,7 +6743,7 @@ order.
 
 > *Example: Maelstrom Charger's copy of Volatile Toxicity uses the original's sacrifice, which is not paid again.*
 
-> *Example: the copy keeps every target the spell declared (Fight).*
+> *Example: A copy of Fight keeps both targets the original declared.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Earthbound Replicator · Designer: RAQ 1379132904931594372#2 · Rulings: R164 · Tests: 138-spell-copy.test.ts · Example tests: 138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt, 138-spell-copy.test.ts::the copy keeps EVERY target the spell declared · Key: effects.copies.spells.declared</sub>
 
@@ -7382,11 +6784,9 @@ order.
 
 <a id="r711.2"></a>**711.2.** A unit's mods change controller with it. The unit's new controller controls the mods and their text, so text a mod gives the unit refers to the new controller. See rules 102.6a, 720.
 
-> *Example: a stolen unit takes its mods with it, and they change controller too.*
-
 > *Example: Mindspore Fiend gives away a modded blocker, and its mods go with it.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.15; Manual p.34 · Rulings: R112 · Tests: 25-wood-c.test.ts, 24-wood-b.test.ts · Example tests: 25-wood-c.test.ts::R112: a stolen unit takes its MODS with it, 24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker · Key: effects.control.mods</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.15; Manual p.34 · Rulings: R112 · Tests: 25-wood-c.test.ts, 24-wood-b.test.ts · Example test: 24-wood-b.test.ts::Mindspore Fiend gives away a MODDED blocker · Demonstrated by test: 25-wood-c.test.ts::R112: a stolen unit takes its MODS with it · Key: effects.control.mods</sub>
 
 <a id="r711.3"></a>**711.3.** A unit whose controller changes leaves its formation. If this happens during a battle, the unit stays in the battle out of formation for the rest of that battle: it attacks for nobody and blocks for nobody. It joins its new controller's side at regroup. See rules 602, 506.2a.
 
@@ -7416,17 +6816,15 @@ order.
 
 <a id="r711.6"></a>**711.6.** An effect that would give control of a unit to the player who already controls it, or of a unit that has gone, changes nothing. An "If you do" that depends on the handover does not happen (rule 101.5a). See rule 101.5a.
 
-> *Example: Ralph grafted under a tripling host is given away on the first pass and makes three 1/1s; on the later passes it cannot be given away again and makes nothing, while the rest of the composite still runs.*
+> *Example: Amphivore carries the grafts Flame Juggle and Ralph, and its trigger runs them three times. The first time, Ralph gives Amphivore to the opponent and creates three 1/1s. The second and third times the opponent already controls it, so nothing changes hands and no more 1/1s are made; Flame Juggle still runs all three times.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353859961855148103#3 · Rulings: R148 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted · Key: effects.control.no-change</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353859961855148103#3 · Rulings: R148 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted · Key: effects.control.no-change</sub>
 
 <a id="r711.7"></a>**711.7.** A unit that leaves play goes to the zones of the player who controls it, not of its owner, unless the effect names another player's zone (rule 405.3). See rules 405.3, 410.4a.
 
 > *Example: a stolen unit recalled goes to the thief's hand.*
 
-> *Example: an explicit destination still wins.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R262 · Tests: 246-zones-follow-control.test.ts · Example tests: 246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand, 246-zones-follow-control.test.ts::R262 §2: an explicit destination still wins · Key: effects.control.zones</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R262 · Tests: 246-zones-follow-control.test.ts · Example test: 246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand · Demonstrated by test: 246-zones-follow-control.test.ts::R262 §2: an explicit destination still wins · Key: effects.control.zones</sub>
 
 <a id="r711.8"></a>**711.8.** A mod is controlled by the controller of the unit it is on. When a mod is moved onto another unit (Rotbeast, Reconfigure), its controller becomes that unit's controller. See rules 720, 410.1b.
 
@@ -7447,7 +6845,7 @@ order.
 
 > *Example: a copy silenced by Suppression Field stops applying the static it copied.*
 
-> *Example: Example (illustrative): with Transmogrifant and Sandstone Defender in play, Sandstone Defender has lost its abilities, so a 1/1 token gets only Transmogrifant's +2/+2 and is a 3/3.*
+> *Example: With Transmogrifant and Sandstone Defender in play, Sandstone Defender has lost its abilities, so a 1/1 token gets only Transmogrifant's +2/+2 and is a 3/3.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Printed: card: Transmogrifant · Designer: RAQ 1355845893219287132#0 · Rulings: R62 (what losing abilities covers; its veto reversed by R328), R62 (what losing abilities covers; its veto reversed by R328) · Replaces: R62 (its veto (nothing switches a stripped half back on) was reversed by R328: rule 712.2) · Tests: 44-hybrids-ld-a.test.ts, 427-cr-continuous-effects.test.ts · Example test: 44-hybrids-ld-a.test.ts::R118: R62 suppression is a veto ABOVE copy — a silenced copy radiates nothing · Key: effects.stripping.what.abilities</sub>
 
@@ -7455,9 +6853,7 @@ order.
 
 <a id="r712.1b"></a>**712.1b** Stats are not abilities. A unit that has lost its abilities keeps its stats, its counters and its stat changes; Tough and Balanced stop changing its stats only because they are attributes. It can still be targeted, block, die, and be grafted onto.
 
-> *Example: Formless takes a unit's attributes and leaves its abilities alone.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328), R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328) · Tests: 27-metal-b.test.ts, 427-cr-continuous-effects.test.ts · Example test: 27-metal-b.test.ts::Formless: R62 — "and loses all attributes", abilities untouched · Key: effects.stripping.what.not-stats</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328), R62 (what losing abilities covers, and static-vs-static; its veto reversed by R328) · Tests: 27-metal-b.test.ts, 427-cr-continuous-effects.test.ts · Demonstrated by test: 27-metal-b.test.ts::Formless: R62 — "and loses all attributes", abilities untouched · Key: effects.stripping.what.not-stats</sub>
 
 <a id="r712.1c"></a>**712.1c** Erasing a unit's mods is a separate instruction from making it lose its abilities. Losing abilities silences the text its mods give it; erasing the mods removes them.
 
@@ -7469,9 +6865,9 @@ order.
 
 > *Example: a virus applied after Monke still gives its attribute.*
 
-> *Example: a static strip takes a mod attached before it arrived, and leaves one attached after.*
+> *Example: A continuous strip takes a mod attached before it began, and leaves one attached after.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1355685844467581081#0; RAQ 1355845893219287132#1 · Rulings: R328 · Replaces: R62 (made suppression a veto that nothing could switch back on; reversed by R328) · Tests: 393-raq-mods.test.ts, 390-raq-stack.test.ts, 402-raq-fix-stripping.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Suppression Field: an attribute granted after it resolved still applies, 390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke, 402-raq-fix-stripping.test.ts::§1 a static stripper takes a mod attached BEFORE it arrived · Key: effects.stripping.timestamp</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1355685844467581081#0; RAQ 1355845893219287132#1 · Rulings: R328 · Replaces: R62 (made suppression a veto that nothing could switch back on; reversed by R328) · Tests: 393-raq-mods.test.ts, 390-raq-stack.test.ts, 402-raq-fix-stripping.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Suppression Field: an attribute granted after it resolved still applies, 390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke, 402-raq-fix-stripping.test.ts::§1 a static stripper takes a mod attached BEFORE it arrived · Key: effects.stripping.timestamp</sub>
 
 <a id="r712.3"></a>**712.3.** When an effect that removes attributes (Formless, Suppression Field) is aimed at a unit in a formation, every unit in that unit's column loses its attributes, whichever unit they came from. Only the loss of attributes reaches the column: the rest of the effect, such as the loss of abilities or Formless's "base 4/4", applies to the target alone. See rule 712.8.
 
@@ -7485,17 +6881,13 @@ order.
 
 <a id="r712.3a"></a>**712.3a** A target that is not in a column (outside battle, or out of formation) loses only its own attributes.
 
-> *Example: a target with no column is stamped alone.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R293 · Tests: 299-formless-column.test.ts · Example test: 299-formless-column.test.ts::R293 §5 a target with no column · Key: effects.stripping.column.alone</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R293 · Tests: 299-formless-column.test.ts · Demonstrated by test: 299-formless-column.test.ts::R293 §5 a target with no column · Key: effects.stripping.column.alone</sub>
 
 <a id="r712.3b"></a>**712.3b** Each unit in the column loses its attributes as its own state, until the effect ends. A unit that leaves the column does not get them back, and a unit that joins the column afterwards keeps its own. See rule 113.3b.
 
-> *Example: the loss outlives the column and ends at regroup.*
+> *Example: Formless is aimed at a unit whose column-mate is Blessed. The column-mate loses Blessed, stays without it for the rest of the battle after combat damage is over, and gets it back at regroup.*
 
-> *Example: a unit that joins the column afterwards keeps its own attributes.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R293 · Tests: 299-formless-column.test.ts · Example tests: 299-formless-column.test.ts::R293 §3 the stamp outlives the column, 299-formless-column.test.ts::R293 §4 a unit that joins the column afterwards keeps its own attributes · Key: effects.stripping.column.per-unit</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R293 · Tests: 299-formless-column.test.ts · Example test: 299-formless-column.test.ts::R293 §3 the stamp outlives the column · Demonstrated by test: 299-formless-column.test.ts::R293 §4 a unit that joins the column afterwards keeps its own attributes · Key: effects.stripping.column.per-unit</sub>
 
 <a id="r712.3c"></a>**712.3c** A unit that has lost its attributes can still get attributes from a column it joins later, by sharing. It does not share the attributes it lost.
 
@@ -7517,13 +6909,9 @@ order.
 
 <a id="r712.6"></a>**712.6.** The Everywhere's controller names a card during the haste step. Every unit with that name in The Everywhere's region loses all abilities, for as long as The Everywhere is in that region. Naming another card replaces the first, and a card that is not in play may be named.
 
-> *Example: naming a card silences every copy of it in The Everywhere's region.*
-
 > *Example: an enemy copy is silenced only once The Everywhere attacks into its region.*
 
-> *Example: a second naming replaces the first.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: The Everywhere · Rulings: R91 (naming a card and the region rule; its duration note replaced by R118), R91 (naming a card and the region rule; its duration note replaced by R118) · Tests: 38-light-a.test.ts · Example tests: 38-light-a.test.ts::The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION, 38-light-a.test.ts::The Everywhere: the silence is CONTINUOUS, 38-light-a.test.ts::The Everywhere: a second naming replaces the first · Key: effects.stripping.named-card</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: The Everywhere · Rulings: R91 (naming a card and the region rule; its duration note replaced by R118), R91 (naming a card and the region rule; its duration note replaced by R118) · Tests: 38-light-a.test.ts · Example test: 38-light-a.test.ts::The Everywhere: the silence is CONTINUOUS · Demonstrated by tests: 38-light-a.test.ts::The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION, 38-light-a.test.ts::The Everywhere: a second naming replaces the first · Key: effects.stripping.named-card</sub>
 
 <a id="r712.7"></a>**712.7.** Text a copy has from the mods of the unit it copied is part of the copy's own card text. An effect that makes the copy lose all attributes and abilities takes it, and "erase all of its mods" finds no mod to erase. See rule 710.2a.
 
@@ -7535,9 +6923,7 @@ order.
 
 <a id="r712.8"></a>**712.8.** Units in the same column of a formation share their combat attributes: each unit in the column has every combat attribute any unit in it has. See rules 204.5, 802.
 
-> *Example: Inverted is shared down the column like every other attribute.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Rulebook 2023 p.12 · Tests: 79-round17-layers.test.ts · Example test: 79-round17-layers.test.ts::R93 layer 5: {Inverted} is shared down the COLUMN · Key: effects.column-share</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Rulebook 2023 p.12 · Tests: 79-round17-layers.test.ts · Demonstrated by test: 79-round17-layers.test.ts::R93 layer 5: {Inverted} is shared down the COLUMN · Key: effects.column-share</sub>
 
 <a id="r712.8a"></a>**712.8a** A unit in a column has the column's attributes for everything it does while it is in the column, not only for combat damage. An ability it activates, or damage it deals by an effect, uses them too.
 
@@ -7549,9 +6935,7 @@ order.
 
 <a id="r712.8b"></a>**712.8b** Columns exist only in battle. Outside battle a unit shares no attributes with anything.
 
-> *Example: outside battle there are no columns at all.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Example test: 298-column-attrs-outside-combat.test.ts::R294 §3 outside battle there are no columns at all · Key: effects.column-share.battle-only</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Demonstrated by test: 298-column-attrs-outside-combat.test.ts::R294 §3 outside battle there are no columns at all · Key: effects.column-share.battle-only</sub>
 
 <a id="r712.8c"></a>**712.8c** Attributes are shared only within a column, never with the units to the left or right.
 
@@ -7567,17 +6951,11 @@ order.
 
 <a id="r712.8e"></a>**712.8e** Non-combat attributes, such as Unstable, Burst and Modular, are not shared. A modded unit is Unstable, but the units in its column are not. See rules 204.5, 803.
 
-> *Example: a modded (so Unstable) unit does not make its column-mate Unstable.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.25 · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Example test: 298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable · Key: effects.column-share.non-combat</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.25 · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Demonstrated by test: 298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable · Key: effects.column-share.non-combat</sub>
 
 <a id="r712.8f"></a>**712.8f** Two questions are each unit's own, whatever its column shares: a unit with Feeble cannot block even in a column with other units, and an Alluring trigger comes from the unit that has Alluring. See rule 802.
 
-> *Example: Feeble block legality is still the unit's own question.*
-
-> *Example: Alluring still comes from the unit that prints it.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Example tests: 298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality, 298-column-attrs-outside-combat.test.ts::R294 §4b {Alluring} still originates from the unit that prints it · Key: effects.column-share.own-questions</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Demonstrated by tests: 298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality, 298-column-attrs-outside-combat.test.ts::R294 §4b {Alluring} still originates from the unit that prints it · Key: effects.column-share.own-questions</sub>
 
 <a id="r713"></a>
 ### 713. State Checks
@@ -7596,19 +6974,17 @@ order.
 
 <a id="r713.3"></a>**713.3.** The end of every action is a safe point, so no action ends with a unit standing that should have died: not a draw, a draft, a recycle or a resource activation. An action that is waiting on a player's decision has not ended and is not at a safe point; it is checked when the answer comes and the action finishes. The one exception is Constructed's draw phase, where drawing 4 and putting 2 back are judged as one step: a player's units are not checked while that player still has the 2 cards to put back. See rules 503.5, 503.5b, 112.8, 713.3a.
 
-> *Example: a planning action ends with the dead unit gone.*
-
 > *Example: in Constructed, Dreadspawn Horror with 3 cards in hand is still in play after the draw of 4, and dies once its controller has put 2 back (5 cards in hand).*
 
 > *Example: in Constructed, Dreadspawn Horror with 1 card in hand is a 4/2 after the draw phase and lives.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 4 tests, all passed; 1 gate test file · Rulings: R313, R313, R313, R313 · Tests: 380-no-action-ends-dead.test.ts · Example tests: 380-no-action-ends-dead.test.ts::R313: a planning action that does not settle still ends with the dead unit gone, 380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5, 380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back · Key: effects.state.when</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 4 tests, all passed; 1 gate test file · Rulings: R313, R313, R313, R313 · Tests: 380-no-action-ends-dead.test.ts · Example tests: 380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5, 380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back · Demonstrated by test: 380-no-action-ends-dead.test.ts::R313: a planning action that does not settle still ends with the dead unit gone · Key: effects.state.when</sub>
 
 <sub>Discrepancies: D-U08-7 (discrepancies.md)</sub>
 
 <a id="r713.3a"></a>**713.3a** Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens. See rules 713.3, 713.6.
 
-> *Example: Example (illustrative): Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. A 1/1 token dies as soon as it gets its counter, before the next unit gets one.*
+> *Example: Pestilent Titan attacks and its trigger puts a -1/-1 counter on each unit. A 1/1 token dies as soon as it gets its counter, before the next unit gets one.*
 
 <sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R237 · Engine: engine.ts:addCounters, engine.ts:checkDeaths · Tests: 427-cr-continuous-effects.test.ts · Example test: 427-cr-continuous-effects.test.ts::cr:effects.state.when.mid-resolution — the Pestilent Titan trigger kills a 1/1 before the next unit gets its counter · Key: effects.state.when.mid-resolution</sub>
 
@@ -7628,23 +7004,23 @@ order.
 
 <a id="r713.5"></a>**713.5.** In a state check, a token that is in any zone other than play or the stack (a hand, a bin, a cache) ceases to exist. This happens before anything its arrival there caused to trigger is put on the stack. See rules 410.5, 407.3.
 
-> *Example: a token body exchanged out of play is binned, then erased by the state check.*
+> *Example: A Hooba-Mon token is exchanged out of play by Skittering Blight. It goes to the bin, and the state check then erases it from there.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R152 (the owner quote on tokens ceasing to exist at state checks; its section 2 replaced by R244 and R250, section 4 amended by R306), R152 (the owner quote on tokens ceasing to exist at state checks; its section 2 replaced by R244 and R250, section 4 amended by R306), R69 (the token zone sweep and its timing; its Unstable order amended by R137, its token-trash part reversed by R306) · Replaces: R69 (its subsection that a dying token is trashed was reversed by R306) · Tests: 129-disposal-tail.test.ts · Example test: 129-disposal-tail.test.ts::R153 (iv): a TOKEN body with no mods takes the token sweep · Key: effects.state.tokens</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R152 (the owner quote on tokens ceasing to exist at state checks; its section 2 replaced by R244 and R250, section 4 amended by R306), R152 (the owner quote on tokens ceasing to exist at state checks; its section 2 replaced by R244 and R250, section 4 amended by R306), R69 (the token zone sweep and its timing; its Unstable order amended by R137, its token-trash part reversed by R306) · Replaces: R69 (its subsection that a dying token is trashed was reversed by R306) · Tests: 129-disposal-tail.test.ts · Example test: 129-disposal-tail.test.ts::R153 (iv): a TOKEN body with no mods takes the token sweep · Key: effects.state.tokens</sub>
 
 <sub>Discrepancies: D-U16-13 (discrepancies.md)</sub>
 
 <a id="r713.6"></a>**713.6.** Units that die in the same state check die together. Each of them still sees the others leave: an ability of one that triggers when another unit dies, or when a card is trashed, triggers for the others in the same batch. See rules 112.8, 706.
 
-> *Example: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in.*
+> *Example: Muck Rummager dies from combat damage in the same batch as an ally, and still triggers on that ally being trashed.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R278 · Tests: 258-simultaneous-disposal-listeners.test.ts · Example test: 258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in · Key: effects.state.together</sub>
 
 <a id="r713.6a"></a>**713.6a** A unit that dies in the batch does not see its own departure that way, and it is not a legal target or an ally for a count while the batch is dealt with.
 
-> *Example: Cthyrian Culler dying alone loses nobody any life for its own trash; dying beside an ally, it fires once, for the ally.*
+> *Example: Cthyrian Culler dying alone makes nobody lose life for its own trash; dying beside an ally, it triggers once, for the ally.*
 
-> *Example: Splort dies in the same batch as an ally; its trigger for the ally offers neither dead body as a target.*
+> *Example: Splort dies in the same batch as an ally; its trigger for the ally cannot target either dead unit.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R278, R278 · Tests: 427-cr-continuous-effects.test.ts · Example tests: 427-cr-continuous-effects.test.ts::cr:effects.state.together.limits — Cthyrian Culler dying alone does not hear its own trash, and dying beside an ally hears only the ally, 427-cr-continuous-effects.test.ts::cr:effects.state.together.limits — Splort dying with an ally fires for the ally, and neither dead body is offered as a target · Key: effects.state.together.limits</sub>
 
@@ -7660,9 +7036,9 @@ order.
 
 <a id="r713.7a"></a>**713.7a** A unit that stays home does not count a unit that has gone to counterattack as an ally. See rule 102.7.
 
-> *Example: a unit left at home loses the ally that counterattacked away.*
+> *Example: Prickly Protector, carrying a -1/-1 counter, is alive only because it has one other ally. When that ally is sent to counterattack, the Protector stays home, no longer counts it, and dies.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R270 · Tests: 250-ally-count-and-absence.test.ts · Example test: 250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away · Key: effects.state.absent.home</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R270 · Tests: 250-ally-count-and-absence.test.ts · Example test: 250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away · Key: effects.state.absent.home</sub>
 
 <sub>Discrepancies: D-U13-6 (discrepancies.md)</sub>
 
@@ -7691,15 +7067,11 @@ order.
 
 <a id="r714.3"></a>**714.3.** An effect whose source has left play that uses its source's power or defense uses the power or defense the source had when it left.
 
-> *Example: Example (illustrative): Deathglow Strider (printed 2/3) with a +1/+1 counter is a 3/4. It leaves play before its after-combat trigger resolves; the trigger deals 4 to each opponent, its last-known defense, not its printed 3.*
+> *Example: Deathglow Strider (printed 2/3) with a +1/+1 counter is a 3/4. It leaves play before its after-combat trigger resolves; the trigger deals 4 to each opponent, its last-known defense, not its printed 3.*
 
-> *Example: Example (illustrative): Spewing Mushroom (printed 1/3) gets +2/+0 and leaves play before its attack trigger resolves; the trigger creates a Poison 3, from its last-known power 3.*
+> *Example: Spewing Mushroom (printed 1/3) gets +2/+0 and leaves play before its attack trigger resolves; the trigger creates a Poison 3, from its last-known power 3.*
 
-> *Example: an unmodified Deathglow Strider, gone before its after-combat trigger resolves, still deals damage equal to its defense. (Its last-known and printed defense are the same here.)*
-
-> *Example: an unmodified Spewing Mushroom, gone before its attack trigger resolves, still creates a Poison of its power. (Its last-known and printed power are the same here.)*
-
-<sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 2 gate test files · Rulings: R325, R325, R325 · Tests: 401-raq-fix-stack.test.ts, 427-cr-continuous-effects.test.ts · Example tests: 427-cr-continuous-effects.test.ts::cr:effects.last-known.stats — Deathglow Strider 3/4 with a counter, gone before its trigger resolves, deals its last-known 4, not its printed 3, 427-cr-continuous-effects.test.ts::cr:effects.last-known.stats — Spewing Mushroom at +2/+0, gone before its attack trigger resolves, makes a Poison 3, 401-raq-fix-stack.test.ts::R325 Deathglow Strider, 401-raq-fix-stack.test.ts::R325 Spewing Mushroom · Key: effects.last-known.stats</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 2 gate test files · Rulings: R325, R325, R325 · Tests: 401-raq-fix-stack.test.ts, 427-cr-continuous-effects.test.ts · Example tests: 427-cr-continuous-effects.test.ts::cr:effects.last-known.stats — Deathglow Strider 3/4 with a counter, gone before its trigger resolves, deals its last-known 4, not its printed 3, 427-cr-continuous-effects.test.ts::cr:effects.last-known.stats — Spewing Mushroom at +2/+0, gone before its attack trigger resolves, makes a Poison 3 · Demonstrated by tests: 401-raq-fix-stack.test.ts::R325 Deathglow Strider, 401-raq-fix-stack.test.ts::R325 Spewing Mushroom · Key: effects.last-known.stats</sub>
 
 <a id="r714.4"></a>**714.4.** An effect whose source has left play that refers to the source's formation ("in my formation", "attacking units in my formation") uses the formation the source stood in when it left, for the rest of that battle. See rules 602, 704.7a.
 
@@ -7737,15 +7109,11 @@ order.
 
 <a id="r714.9"></a>**714.9.** The facts of how a unit left play are fixed as it leaves: the region it left from, the counters it carried, whether it was a token, how it left, and where its card went. Abilities that trigger on its leaving use those facts.
 
-> *Example: the death event carries token, verb, owner, region and destination.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R70 · Tests: 62-death-facts.test.ts, 427-cr-continuous-effects.test.ts · Example test: 62-death-facts.test.ts::R70: the death event carries token, verb, owner, region and destination · Key: effects.last-known.departure-facts</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R70 · Tests: 62-death-facts.test.ts, 427-cr-continuous-effects.test.ts · Demonstrated by test: 62-death-facts.test.ts::R70: the death event carries token, verb, owner, region and destination · Key: effects.last-known.departure-facts</sub>
 
 <a id="r714.9a"></a>**714.9a** An ability that triggers on its own source leaving play ("when I die") resolves in the region the source left from, not in its controller's home region. See rule 101.6.
 
-> *Example: a "when I die" trigger resolves in the region the unit died in.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R70, R70 · Tests: 62-death-facts.test.ts · Example test: 62-death-facts.test.ts::R70: a "when I die" trigger resolves in the region the unit DIED in · Key: effects.last-known.departure-facts.region</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R70, R70 · Tests: 62-death-facts.test.ts · Demonstrated by test: 62-death-facts.test.ts::R70: a "when I die" trigger resolves in the region the unit DIED in · Key: effects.last-known.departure-facts.region</sub>
 
 <a id="r720"></a>
 ### 720. Modifications, General
@@ -7758,15 +7126,11 @@ order.
 
 <a id="r720.1a"></a>**720.1a** Virus and Modular are not further kinds of mod. A Virus is a card that can also be applied as an augment during battle (723). Modular lets mods be applied to a card as it is played (724). See rules 723, 724.
 
-> *Example: A Virus applied in battle is an ordinary augment action, and attaches as an augment.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.34; card: Spellbind · Tests: 428-cr-modifications.test.ts · Example test: 428-cr-modifications.test.ts::cr:effects.mods.what.virus-modular — a Virus applied in battle is an augment action and attaches as an augment; no virus or modular kind of mod exists · Key: effects.mods.what.virus-modular</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.34; card: Spellbind · Tests: 428-cr-modifications.test.ts · Demonstrated by test: 428-cr-modifications.test.ts::cr:effects.mods.what.virus-modular — a Virus applied in battle is an augment action and attaches as an augment; no virus or modular kind of mod exists · Key: effects.mods.what.virus-modular</sub>
 
 <a id="r720.2"></a>**720.2.** Applying a mod is a special action, which a player may perform during the deployment phase. See rule 507.2.
 
-> *Example: A graft is offered in deployment and is not offered in the haste step or in battle.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32; Manual p.32 · Designer: RAQ 1357483405276614856#1 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 1: · Key: effects.mods.special-action</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32; Manual p.32 · Designer: RAQ 1357483405276614856#1 · Tests: 393-raq-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 1: · Key: effects.mods.special-action</sub>
 
 <a id="r720.2a"></a>**720.2a** A timing icon other than Virus does not change when a card can be applied as a mod. A Battle card cannot be applied as a mod during battle, except under a card that lets cards be augmented as if they were Viruses (723.5) or to a Modular card as it is played (724). See rules 207.6, 723.5, 724, 720.2b.
 
@@ -7778,33 +7142,23 @@ order.
 
 <a id="r720.2b"></a>**720.2b** A mod can be applied outside deployment only where a rule or a card says so: a Virus during battle (723.2); a card augmented in battle under a card that lets it be augmented as if it were a Virus, such as Rook (723.5); a mod applied in the haste step under a card that allows it, such as Slurpr (504.8a); and a mod applied to a Modular card as it is played (724). No other card widens the window. See rules 723, 504.8a, 724.
 
-> *Example: Without a Slurpr, a mod is refused in the haste step.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rook; card: Slurpr; Manual p.34 · Rulings: R95 (its opt-in permission half) · Tests: 40-light-c.test.ts · Example test: 40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged · Key: effects.mods.special-action.exceptions</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rook; card: Slurpr; Manual p.34 · Rulings: R95 (its opt-in permission half) · Tests: 40-light-c.test.ts · Demonstrated by test: 40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged · Key: effects.mods.special-action.exceptions</sub>
 
 <a id="r720.2c"></a>**720.2c** An effect that lets a player play cards does not let them apply mods. Tides of the Cosmos cannot graft a card or apply a non-Virus augment; it may only put a Virus card onto a unit as a Virus. See rule 701.2c.
 
-> *Example: Tides plays a card and is never offered a graft or a plain augment.*
-
-> *Example: A Virus card picked by Tides augments a unit as a Virus and never enters play.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#3; RAQ 1357483405276614856#1; RAQ 1537748882501668934#2 · Rulings: R337 · Tests: 396-raq-timing.test.ts, 404-raq-fix-tides.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 4:, 404-raq-fix-tides.test.ts::R337: a Virus card played by Tides as a Virus augments a unit and never enters play · Key: effects.mods.special-action.tides</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#3; RAQ 1357483405276614856#1; RAQ 1537748882501668934#2 · Rulings: R337 · Tests: 396-raq-timing.test.ts, 404-raq-fix-tides.test.ts · Demonstrated by tests: 396-raq-timing.test.ts::RAQ Tides 4:, 404-raq-fix-tides.test.ts::R337: a Virus card played by Tides as a Virus augments a unit and never enters play · Key: effects.mods.special-action.tides</sub>
 
 <a id="r720.3"></a>**720.3.** Applying a mod is not playing a card, from whatever zone the mod comes. An ability that triggers when a player plays a unit, a spell or a card does not trigger when a mod is applied. See rules 701.2, 701.2a.
 
 > *Example: Stalwart Sentinel counts a spell played from the bin, but not a mod applied from the bin.*
 
-> *Example: A Virus applied during battle is not a spell: Origon does not negate it, and its first-spell count is untouched.*
+> *Example: A Virus applied during battle is not a spell: Origon does not negate it, and it does not count as a spell played.*
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#0 · Rulings: R37 · Tests: 105-semantics-playwatch.test.ts, 119-play-and-token-events.test.ts · Example tests: 105-semantics-playwatch.test.ts::Stalwart Sentinel: R96/R123, 105-semantics-playwatch.test.ts::Origon: a virus applied during battle is not a spell · Key: effects.mods.not-played</sub>
 
 <a id="r720.4"></a>**720.4.** To apply a mod, a player must meet the mod card's affinity requirement and pay its mana cost, wherever the mod comes from. See rules 105.8, 720.4b.
 
-> *Example: An augment from hand needs its affinity and pays its cost.*
-
-> *Example: A Virus applied in battle needs its affinity and pays its cost.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.32; Manual p.32 · Designer: RAQ 1537748882501668934#1 · Tests: 408-raq-new-threads.test.ts · Example tests: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost, 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost · Key: effects.mods.cost</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.32; Manual p.32 · Designer: RAQ 1537748882501668934#1 · Tests: 408-raq-new-threads.test.ts · Demonstrated by tests: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost, 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost · Key: effects.mods.cost</sub>
 
 <a id="r720.4a"></a>**720.4a** A modifier to the cost of playing cards or spells does not change the cost of applying a mod, and a modifier to the cost of activating or triggering abilities does not apply to applying a mod either. See rules 701.2b, 111.10.
 
@@ -7814,29 +7168,15 @@ order.
 
 <a id="r720.4b"></a>**720.4b** A mod applied from the cache is priced by the permission that lets it be used. Under a fulfilled prophecy it costs nothing and ignores affinity. Under a glimpse this turn it costs its mana but ignores affinity. See rules 403.3c, 720.5a.
 
-> *Example: A live glimpse grafts for the card's mana, ignoring affinity.*
-
-> *Example: A fulfilled prophecy grafts for free, affinity and all.*
-
-> *Example: A glimpse waives the pips but not the mana: with too little mana the mod is refused.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R303, R303, R303 · Tests: 315-cache-mod-permission.test.ts, 36-cache-prophecy.test.ts · Example tests: 315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity, 315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free, affinity and all, 315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana · Key: effects.mods.cost.cache</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R303, R303, R303 · Tests: 315-cache-mod-permission.test.ts, 36-cache-prophecy.test.ts · Demonstrated by tests: 315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity, 315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free, affinity and all, 315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana · Key: effects.mods.cost.cache</sub>
 
 <a id="r720.5"></a>**720.5.** A mod may be applied from the player's hand or from their bin. See rule 405.8.
 
-> *Example: A graft is applied from the bin.*
-
-> *Example: A graft comes from the bin as well as the hand, when its cost and affinity are met.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.32; Manual p.32; Rulebook 2023 p.15 · Designer: RAQ 1355115946032889914#2 · Tests: 04-mods.test.ts, 393-raq-mods.test.ts · Example tests: 04-mods.test.ts::grafts can be applied from the bin, 393-raq-mods.test.ts::RAQ Graft 101 point 3 · Key: effects.mods.zones</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.32; Manual p.32; Rulebook 2023 p.15 · Designer: RAQ 1355115946032889914#2 · Tests: 04-mods.test.ts, 393-raq-mods.test.ts · Demonstrated by tests: 04-mods.test.ts::grafts can be applied from the bin, 393-raq-mods.test.ts::RAQ Graft 101 point 3 · Key: effects.mods.zones</sub>
 
 <a id="r720.5a"></a>**720.5a** A mod may also be applied from the cache, but only while a permission to use that card is live: a fulfilled prophecy, or a glimpse this turn. A cached card with no live permission cannot be applied as a mod. See rules 403.3b, 720.4b.
 
-> *Example: An expired glimpse cannot be grafted or augmented.*
-
-> *Example: An unfulfilled prophecy cannot be grafted.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#4 · Rulings: R303, R303 · Tests: 315-cache-mod-permission.test.ts, 36-cache-prophecy.test.ts · Example tests: 315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything, 315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted · Key: effects.mods.zones.cache</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#4 · Rulings: R303, R303 · Tests: 315-cache-mod-permission.test.ts, 36-cache-prophecy.test.ts · Demonstrated by tests: 315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything, 315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted · Key: effects.mods.zones.cache</sub>
 
 <a id="r720.6"></a>**720.6.** A mod becomes part of the card it is applied to, its host. A modified card is treated as a single card with all of the additional text from its mods; the mods are not separate from it. See rule 305.1.
 
@@ -7846,13 +7186,13 @@ order.
 
 <a id="r720.6a"></a>**720.6a** A mod is controlled by its host's controller. A player who augments a card onto an opponent's unit gives that opponent control of the mod and all of its text. See rule 102.6a.
 
-> *Example: Corrupting Blight applied as a Virus to an enemy unit steals that unit for the Virus's new controller's choice of player after combat.*
+> *Example: In battle, a player applies Corrupting Blight as a Virus to an opponent's Bubb. The opponent now controls the Blight, so its "you" is the opponent: after combat, a player who doesn't control Bubb gains control of it, and Bubb ends up with the player who applied the Blight.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.34; Manual p.34; Rulebook 2023 p.15 · Rulings: R244 (its trasher half) · Tests: 23-wood-a.test.ts · Example test: 23-wood-a.test.ts::Corrupting Blight: defects after combat when played normally; steals the host as a Virus · Key: effects.mods.one-card.control</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.34; Manual p.34; Rulebook 2023 p.15 · Rulings: R244 (its trasher half) · Tests: 23-wood-a.test.ts · Example test: 23-wood-a.test.ts::Corrupting Blight: defects after combat when played normally; steals the host as a Virus · Key: effects.mods.one-card.control</sub>
 
 <a id="r720.6b"></a>**720.6b** On a mod's text, "you" means the host's controller. See rule 102.6a.
 
-> *Example: Oorblak applied as a Virus to an enemy unit redirects the combat damage that would be dealt to that enemy, onto that enemy's own unit.*
+> *Example: Oorblak applied as a Virus to an opponent's unit: the combat damage that would be dealt to that opponent is dealt to their own unit instead.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R216, R157 (its §6) · Tests: 17-earth-b.test.ts · Example test: 17-earth-b.test.ts::Oorblak: as a Virus, "me" is the HOST · Key: effects.mods.one-card.you</sub>
 
@@ -7870,7 +7210,7 @@ order.
 
 <a id="r720.6e"></a>**720.6e** When a unit changes controller, its mods change controller with it. See rule 711.
 
-> *Example: Download steals a modded unit token, and its augment changes controller with it.*
+> *Example: Download steals a unit token that carries an augment; the augment changes controller with it.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Rulings: R112, R148 · Tests: 26-metal-a.test.ts, 24-wood-b.test.ts, 04-mods.test.ts · Example test: 26-metal-a.test.ts::Download steals a MODDED unit token · Key: effects.mods.one-card.control-change</sub>
 
@@ -7882,27 +7222,23 @@ order.
 
 <a id="r720.7"></a>**720.7.** As long as a card is modded, it has {Unstable}: when it dies or is erased, it and all of its mods are erased. See rules 410.4b, 803.
 
-> *Example: A host carrying Ephemeral Skywalker is destroyed; neither card reaches the bin.*
+> *Example: A unit carrying Ephemeral Skywalker as an augment dies; both cards are erased and neither reaches the bin.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.35; Rulebook 2023 p.15 · Tests: 04-mods.test.ts, 224-mod-trash.test.ts · Example test: 04-mods.test.ts::augments: type-line attribute grant, unstable erasure · Key: effects.mods.unstable</sub>
 
 <a id="r720.7a"></a>**720.7a** If a modded card leaves play without dying or being erased, for example when it is returned to a hand, its mods are put into the bin and the card goes on alone. See rules 410.4, 410.4a.
 
-> *Example: A nontoken mod on a host that is recalled, cached or killed is binned and trashed exactly once on each route.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.35; Manual p.35; Manual p.35 · Tests: 141-despawn-mods.test.ts · Example test: 141-despawn-mods.test.ts::R167 (iv): a nontoken mod is binned and trashed exactly once on all three routes · Key: effects.mods.unstable.leave-play</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.35; Manual p.35; Manual p.35 · Tests: 141-despawn-mods.test.ts · Demonstrated by test: 141-despawn-mods.test.ts::R167 (iv): a nontoken mod is binned and trashed exactly once on all three routes · Key: effects.mods.unstable.leave-play</sub>
 
 <a id="r720.7b"></a>**720.7b** When a modded unit is cached, its mods do not follow it into the cache; they go to the bin. See rule 403.7.
 
-> *Example: Caching a unit sheds its mods to the bin.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R46 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin · Key: effects.mods.unstable.cache</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R46 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin · Key: effects.mods.unstable.cache</sub>
 
 <a id="r720.7c"></a>**720.7c** A token mod has no card of its own. It never enters a bin: however its host leaves play, the token mod is erased. See rules 410.4c, 407.3a.
 
-> *Example: A token mod reaches the erased pile exactly once, and no bin, whether its host is recalled, cached or killed.*
+> *Example: A unit carrying a Wraith token as an augment is recalled, cached or killed. Whichever way it leaves, the Wraith goes to no bin and is not trashed: it is erased.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R156 (its announce-on-every-route half) · Tests: 141-despawn-mods.test.ts, 129-disposal-tail.test.ts · Example test: 141-despawn-mods.test.ts::R167 (v): a token mod reaches the erased pile exactly once · Key: effects.mods.unstable.token-mod</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Rulings: R156 (its announce-on-every-route half) · Tests: 141-despawn-mods.test.ts, 129-disposal-tail.test.ts · Example test: 141-despawn-mods.test.ts::R167 (v): a token mod reaches the erased pile exactly once · Key: effects.mods.unstable.token-mod</sub>
 
 <a id="r720.7d"></a>**720.7d** The {Unstable} that a mod gives goes with the mod. A unit stops having {Unstable} for this reason when its last mod leaves it, and a unit a mod is moved onto has it from then on. See rule 720.10.
 
@@ -7914,29 +7250,21 @@ order.
 
 > *Example: A Borrower of Forms that has resolved becomes Unstable when a mod is attached to it.*
 
-> *Example: A Borrower that copied a modded unit dies to the bin.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1372468222158180424#3 · Rulings: R336 · Replaces: R118 (ruling 2's 'the copy IS Unstable' half reversed by R336) · Tests: 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts, 26-metal-a.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable, 403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin · Key: effects.mods.unstable.copy</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1372468222158180424#3 · Rulings: R336 · Replaces: R118 (ruling 2's 'the copy IS Unstable' half reversed by R336) · Tests: 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts, 26-metal-a.test.ts · Example test: 393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable · Demonstrated by test: 403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin · Key: effects.mods.unstable.copy</sub>
 
 <a id="r720.8"></a>**720.8.** When a host is recalled or cached and its nontoken mods are left in a bin, each of those mods is trashed, and the host's controller is the player who trashes it. See rule 405.4.
 
-> *Example: A mod left behind by a recall is trashed by the host's controller, not by the mod's owner.*
-
-> *Example: A cached host's left-behind mods are attributed the same way.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R244 (its trasher half), R244 (its trasher half) · Replaces: R244 (§1's 'THE DESTINATION DOES NOT MOVE' paragraph (owner's bin) reversed by R250: the mod goes to the controller's bin); R152 (§2 (each mod to its owner's bin; trashed before the sweep) superseded by R244 and R250) · Tests: 224-mod-trash.test.ts · Example tests: 224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner, 224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does · Key: effects.mods.trash</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R244 (its trasher half), R244 (its trasher half) · Replaces: R244 (§1's 'THE DESTINATION DOES NOT MOVE' paragraph (owner's bin) reversed by R250: the mod goes to the controller's bin); R152 (§2 (each mod to its owner's bin; trashed before the sweep) superseded by R244 and R250) · Tests: 224-mod-trash.test.ts · Demonstrated by tests: 224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner, 224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does · Key: effects.mods.trash</sub>
 
 <a id="r720.8a"></a>**720.8a** A nontoken mod erased together with its {Unstable} host is not trashed. The host's single trash counts for the whole unit. See rule 405.4.
 
-> *Example: A Virus on a host that dies is erased with it and is not trashed.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R244 (its erased-with-host half) · Replaces: R152 (§2's trash of a nontoken mod on an {Unstable} host superseded by R244) · Tests: 224-mod-trash.test.ts · Example test: 224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all · Key: effects.mods.trash.erased-with-host</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R244 (its erased-with-host half) · Replaces: R152 (§2's trash of a nontoken mod on an {Unstable} host superseded by R244) · Tests: 224-mod-trash.test.ts · Demonstrated by test: 224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all · Key: effects.mods.trash.erased-with-host</sub>
 
 <a id="r720.9"></a>**720.9.** An effect or a cost can erase a mod off a host that stays in play. The mod card goes to the erased pile of the mod's controller. The host stays in play, and can die if losing the mod leaves it unable to survive. See rules 407.2, 407.2a. *(Engine differs, see F-U17-1.)*
 
 > *Example: Return to Nature negates everything on the stack and erases all mods in the region.*
 
-> *Example: A mod on a stolen host, erased off it, is filed on the thief's erased pile, not its owner's.*
+> *Example: A mod on a stolen unit is erased off it; it goes to the erased pile of the player who stole the unit, not its owner's.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 5 tests (2 probes it wrote), all passed; 4 gate test files · Rulings: R219, R208 (its primitive half), R262 · Replaces: R208 (its held behaviour that a mod erased off a living host files nothing reversed by R219) · Tests: 17-earth-b.test.ts, 178-played-item-and-erased-mods.test.ts, 246-zones-follow-control.test.ts, 428-cr-modifications.test.ts · Example tests: 17-earth-b.test.ts::Return to Nature: negates everything on the stack and erases all mods in the region, 246-zones-follow-control.test.ts::R262 §5: the erased pile files a stolen mod under the THIEF · Key: effects.mods.erase-off-host</sub>
 
@@ -7956,7 +7284,7 @@ order.
 
 <a id="r720.10a"></a>**720.10a** A moved mod is controlled by its new host's controller. See rule 720.6a.
 
-> *Example: Rotbeast's augments moved onto an enemy now work for that enemy. (illustrative)*
+> *Example: Rotbeast moves augments onto an enemy unit; the enemy now controls them, along with their text.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Rulings: R178 (its §4 controller half) · Key: effects.mods.moving.control</sub>
 
@@ -7964,9 +7292,7 @@ order.
 
 > *Example: A Graxxlid used this turn and moved by Reconfigure cannot be used again this turn.*
 
-> *Example: The spent mark is copied to the new host, so nothing is refreshed anywhere.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353848722974445658#0 · Rulings: R331 · Replaces: R178 (§4's claim that every bounded budget rides with the moved mod entity corrected by R331) · Tests: 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Reconfigure vs Once per Turn, 403-raq-fix-mods.test.ts::R331: a moved mod carries its spent augment budget · Key: effects.mods.moving.once</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353848722974445658#0 · Rulings: R331 · Replaces: R178 (§4's claim that every bounded budget rides with the moved mod entity corrected by R331) · Tests: 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Reconfigure vs Once per Turn · Demonstrated by test: 403-raq-fix-mods.test.ts::R331: a moved mod carries its spent augment budget · Key: effects.mods.moving.once</sub>
 
 <a id="r720.10c"></a>**720.10c** Moving a mod is not applying it. An ability that triggers when a mod is applied does not trigger when a mod is moved, unless the moving effect says the mods are augmented (721.5a). See rule 721.5a.
 
@@ -8011,31 +7337,23 @@ order.
 
 <a id="r721.1c"></a>**721.1c** On a host, only the augment's own augment text works. The rest of the augment card's text, including body text printed outside the augment paragraph and attributes printed before a text-box augment symbol, does nothing for the host. See rule 208.1.
 
-> *Example: Infernal Wispweaver's body text radiates when it is played as a unit, and never from a mod.*
+> *Example: Infernal Wispweaver played as a unit gives your wisps +2/+1. Applied as an augment, it gives its host only "At the end of turn, create a wisp"; the +2/+1 for your wisps, printed outside the augment paragraph, does nothing.*
 
-> *Example: Smouldering Inferno, whose {Piercing} is on its type line before no augment symbol, gives its host only its text-box line.*
+> *Example: Smouldering Inferno has {Piercing} on its type line and "[Augment] After combat, sacrifice me" in its text box. Applied as a Virus to an attacking Rune Channeler, it does not give the Channeler Piercing, and after combat the Channeler sacrifices itself.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R268, R268 · Tests: 248-augment-box-scope.test.ts, 04-mods.test.ts · Example tests: 248-augment-box-scope.test.ts::§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod, 04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer · Key: effects.augment.what.box-only</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R268, R268 · Tests: 248-augment-box-scope.test.ts, 04-mods.test.ts · Example tests: 248-augment-box-scope.test.ts::§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod, 04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer · Key: effects.augment.what.box-only</sub>
 
 <a id="r721.1d"></a>**721.1d** A card that is played normally reads its whole text, its augment text included. See rules 305.4, 109.7.
 
-> *Example: A card played normally still reads its own augment paragraph.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.43; Manual p.35 · Rulings: R268 · Tests: 248-augment-box-scope.test.ts, 16-earth-a.test.ts · Example test: 248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box · Key: effects.augment.what.played</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.43; Manual p.35 · Rulings: R268 · Tests: 248-augment-box-scope.test.ts, 16-earth-a.test.ts · Demonstrated by test: 248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box · Key: effects.augment.what.played</sub>
 
 <a id="r721.1e"></a>**721.1e** Augment text keeps its kind on the host. A static ability given by an augment ("I gain +2/+2") is a continuous effect on the host for as long as the mod is attached; it is not a triggered ability and does not use the stack. See rule 707.
 
-> *Example: Aetherflux Golem's "[Augment] I gain +2/+2" is a static, like the two other cards printing that sentence.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R168, R168 · Tests: 142-static-conformance.test.ts, 16-earth-a.test.ts · Example test: 142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC · Key: effects.augment.what.kind-kept</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R168, R168 · Tests: 142-static-conformance.test.ts, 16-earth-a.test.ts · Demonstrated by test: 142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC · Key: effects.augment.what.kind-kept</sub>
 
 <a id="r721.1f"></a>**721.1f** Augment text that triggers on the host's own departure ("When I despawn") triggers whichever way the host leaves play: when it dies, is recalled or is cached. See rule 410.
 
-> *Example: A donated "When I despawn" fires on a recall.*
-
-> *Example: It fires on a cache too.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R167 · Tests: 141-despawn-mods.test.ts · Example tests: 141-despawn-mods.test.ts::R167 (i): a donated "[Augment] When I despawn" fires on a RECALL, 141-despawn-mods.test.ts::R167 (ii): a donated "[Augment] When I despawn" fires on a CACHE · Key: effects.augment.what.despawn</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R167 · Tests: 141-despawn-mods.test.ts · Demonstrated by tests: 141-despawn-mods.test.ts::R167 (i): a donated "[Augment] When I despawn" fires on a RECALL, 141-despawn-mods.test.ts::R167 (ii): a donated "[Augment] When I despawn" fires on a CACHE · Key: effects.augment.what.despawn</sub>
 
 <a id="r721.2"></a>**721.2.** A card can be applied as an augment if it prints the augment symbol, in its text box or on its type line, whether or not its augment text does anything. See rule 208.4.
 
@@ -8045,9 +7363,7 @@ order.
 
 <a id="r721.3"></a>**721.3.** To apply an augment, the player takes these steps in order: (1) meets the augment's affinity requirement; (2) pays its mana cost; (3) selects a target to apply it onto; (4) places the augment card beneath the target, with its text box visible beneath the target's. See rules 720.4, 110.10.
 
-> *Example: An augment from hand needs its affinity and pays its cost.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32; Manual p.32; Manual p.32; Manual p.32 · Tests: 408-raq-new-threads.test.ts · Example test: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost · Key: effects.augment.procedure</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.32; Manual p.32; Manual p.32; Manual p.32 · Tests: 408-raq-new-threads.test.ts · Demonstrated by test: 408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost · Key: effects.augment.procedure</sub>
 
 <a id="r721.4"></a>**721.4.** During deployment a player can augment only their own units. An opponent's unit can be augmented only with a Virus during battle (723.2), or under a card that lets cards be augmented as if they were Viruses (723.5). See rules 723.2, 723.5.
 
@@ -8057,27 +7373,21 @@ order.
 
 <a id="r721.4a"></a>**721.4a** During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. The token gains only the augment's attributes. See rules 305.6, 507.2b.
 
-> *Example: A spell token is offered as an augment host during deployment.*
-
 > *Example: An augmented token deals {Powerful} damage when cast.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R89, R89, R89 · Replaces: R79 (its 'not in scope' bullet excluding deployment augmenting of a spell token superseded by R89) · Tests: 78-round17-core.test.ts · Example tests: 78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment, 78-round17-core.test.ts::R89: only ATTRIBUTES transfer · Key: effects.augment.hosts.spell-token</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R89, R89, R89 · Replaces: R79 (its 'not in scope' bullet excluding deployment augmenting of a spell token superseded by R89) · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R89: only ATTRIBUTES transfer · Demonstrated by test: 78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment · Key: effects.augment.hosts.spell-token</sub>
 
 <sub>Discrepancies: D-U06-9 (discrepancies.md)</sub>
 
 <a id="r721.4b"></a>**721.4b** An augment applied to a spell, on the stack (723.4) or as it is played through Modular (724), gives the spell only its type-line attributes. Augment text and static abilities give a spell nothing, but applying such an augment is still legal. See rules 723.4, 724.4.
 
-> *Example: A text-only augment on a spell token grants nothing.*
-
 > *Example: An augment-text mod applied to Spellbind is accepted and does nothing.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Rulings: R79 (its stack-host half), R79 (its stack-host half) · Tests: 78-round17-core.test.ts, 91-modular.test.ts, 67-resolving-and-stack-viruses.test.ts · Example tests: 78-round17-core.test.ts::R89: a text-only augment on a token grants nothing, and says so, 91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing · Key: effects.augment.hosts.spell</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Rulings: R79 (its stack-host half), R79 (its stack-host half) · Tests: 78-round17-core.test.ts, 91-modular.test.ts, 67-resolving-and-stack-viruses.test.ts · Example test: 91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing · Demonstrated by test: 78-round17-core.test.ts::R89: a text-only augment on a token grants nothing, and says so · Key: effects.augment.hosts.spell</sub>
 
 <a id="r721.5"></a>**721.5.** Reconfigure augments a unit and all of its mods onto another unit. Its first target must have the augment symbol. See rule 720.10.
 
-> *Example: Reconfigure moves an augment unit and its mods onto another unit.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Reconfigure; card: Reconfigure · Tests: 29-hybrids-wm-a.test.ts, 151-copy-and-moved-mods.test.ts · Example test: 29-hybrids-wm-a.test.ts::Reconfigure: moves target augment unit AND its mods onto another target unit · Key: effects.augment.reconfigure</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Reconfigure; card: Reconfigure · Tests: 29-hybrids-wm-a.test.ts, 151-copy-and-moved-mods.test.ts · Demonstrated by test: 29-hybrids-wm-a.test.ts::Reconfigure: moves target augment unit AND its mods onto another target unit · Key: effects.augment.reconfigure</sub>
 
 <a id="r721.5a"></a>**721.5a** Each mod Reconfigure moves is applied to the new host. An ability that triggers when a mod is applied to that unit triggers once for each moved mod. See rule 720.12.
 
@@ -8087,66 +7397,54 @@ order.
 
 <a id="r721.5b"></a>**721.5b** A unit that has become a copy of a card with the augment symbol does not have that symbol, so it cannot be Reconfigure's first target. See rules 208.5, 710.
 
-> *Example: A Borrower of Forms that copied an augment unit is not offered as Reconfigure's first target. (illustrative)*
+> *Example: A Borrower of Forms that copied an augment unit cannot be chosen as Reconfigure's first target.*
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Designer: RAQ 1372468222158180424#6 · Rulings: R336 · Key: effects.augment.reconfigure.copy</sub>
 
 <a id="r721.6"></a>**721.6.** An effect can augment a card onto a unit when it resolves. When the effect augments a token ("Augment a Wraith onto an ally"), the token is created directly as a mod of that unit. See rule 304.
 
-> *Example: "Augment a Wraith onto a unit" makes the Wraith token directly as a mod.*
+> *Example: An augmented Wraith gives its host its first line: at the start of deployment the host puts a -1/-1 counter on an ally, here itself, its only ally, so a 4/4 host becomes 3/3.*
 
-> *Example: An augmented Wraith gives its host its first line: at the start of deployment the host puts a -1/-1 counter on an ally (itself, its only ally), so a 4/4 host becomes 3/3. The test does not exercise the second line.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Wraith; card: Blight's End; card: Xzydris · Tests: 37-attrs-wight.test.ts · Example tests: 37-attrs-wight.test.ts::R71: "augment a Wraith onto a unit" makes the same token, directly as a mod, 37-attrs-wight.test.ts::R71: an augmented Wraith donates BOTH lines to its host · Key: effects.augment.by-effect</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Wraith; card: Blight's End; card: Xzydris · Tests: 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::R71: an augmented Wraith donates BOTH lines to its host · Demonstrated by test: 37-attrs-wight.test.ts::R71: "augment a Wraith onto a unit" makes the same token, directly as a mod · Key: effects.augment.by-effect</sub>
 
 <a id="r722"></a>
 ### 722. Graft
 
 <a id="r722.1"></a>**722.1.** Graft is a modification that combines several effects under a single cause. It is marked by the graft symbol, written [Switch] (unbounded) or [Switch1] (bounded) in the card text this document quotes. See rule 205.4.
 
-> *Example: Flame Juggle grafted onto Oracle of the Flame: one sacrifice makes the Oracle Fireball 1 and Flame Juggle three Fireball 1s.*
+> *Example: Flame Juggle grafted onto Oracle of the Flame: one sacrifice of the Oracle creates its own Fireball 1 and Flame Juggle's three Fireball 1s.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.33; Manual p.33; card: Oracle of the Flame · Tests: 428-cr-modifications.test.ts · Example test: 428-cr-modifications.test.ts::cr:effects.graft.what — a graft puts a second effect under the host cause: one sacrifice of Oracle of the Flame makes both effects · Key: effects.graft.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.33; Manual p.33; card: Oracle of the Flame · Tests: 428-cr-modifications.test.ts · Example test: 428-cr-modifications.test.ts::cr:effects.graft.what — a graft puts a second effect under the host cause: one sacrifice of Oracle of the Flame makes both effects · Key: effects.graft.what</sub>
 
 <a id="r722.1a"></a>**722.1a** A graft card's ability has a cause, before the graft symbol, and an effect, after it. Oracle of the Flame's cause is "Sacrifice me" and its effect is "Create a Fireball 1". See rule 205.4.
 
-> *Example: Activating Oracle of the Flame sacrifices it and creates one Fireball 1.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Tests: 428-cr-modifications.test.ts · Example test: 428-cr-modifications.test.ts::cr:effects.graft.what.cause-effect — Oracle of the Flame cause is Sacrifice me and its effect is Create a Fireball 1 · Key: effects.graft.what.cause-effect</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Tests: 428-cr-modifications.test.ts · Demonstrated by test: 428-cr-modifications.test.ts::cr:effects.graft.what.cause-effect — Oracle of the Flame cause is Sacrifice me and its effect is Create a Fireball 1 · Key: effects.graft.what.cause-effect</sub>
 
 <a id="r722.1b"></a>**722.1b** When a card is grafted, only what follows its graft symbol is added to the host. Everything printed before the symbol, its cost and cause included, is ignored. See rule 205.4.
 
-> *Example: A grafted Omniwield Evoker adds its counter to the host's trigger and charges nothing of its [three].*
+> *Example: A grafted Omniwield Evoker adds "Put a +1/+1 counter on me" to the host's ability; its own cost of three, printed before the graft symbol, is not paid.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355115946032889914#5 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 6 · Key: effects.graft.what.after-symbol</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355115946032889914#5 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 6 · Key: effects.graft.what.after-symbol</sub>
 
 <a id="r722.1c"></a>**722.1c** A graft card still works as written when it is played normally. A spell or spell unit with a graft symbol resolves normally when it is played, and can later be grafted from the bin. See rules 305.5, 305.4.
 
-> *Example: A dead Leaping Lillik is a graft from the bin.*
+> *Example: Once Leaping Lillik has died, it can be grafted from the bin.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.35 · Designer: RAQ 1355115946032889914#3 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 4 · Key: effects.graft.what.played</sub>
 
 <a id="r722.2"></a>**722.2.** Both cards must have the graft symbol. The host must be a unit in play with a graft cause of its own.
 
-> *Example: A graft is refused onto a card without the graft symbol and a cause.*
-
-> *Example: Only a unit with a graft cause of its own can be grafted onto.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.33; Rulebook 2023 p.16 · Designer: RAQ 1355115946032889914#1 · Tests: 04-mods.test.ts, 393-raq-mods.test.ts · Example tests: 04-mods.test.ts::grafting requires the graft symbol on both cards and a cause on the host, 393-raq-mods.test.ts::RAQ Graft 101 point 2 · Key: effects.graft.requirements</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.33; Rulebook 2023 p.16 · Designer: RAQ 1355115946032889914#1 · Tests: 04-mods.test.ts, 393-raq-mods.test.ts · Demonstrated by tests: 04-mods.test.ts::grafting requires the graft symbol on both cards and a cause on the host, 393-raq-mods.test.ts::RAQ Graft 101 point 2 · Key: effects.graft.requirements</sub>
 
 <a id="r722.3"></a>**722.3.** Applying a graft follows the same cost and timing as an augment: from the hand or the bin, during deployment, paying the card's cost and meeting its affinity. See rules 720.4, 720.5.
 
-> *Example: A graft comes from the bin as well as the hand, only when its cost and affinity are met.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.33; Manual p.33; Manual p.33 · Designer: RAQ 1355115946032889914#2 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 3 · Key: effects.graft.applying</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.33; Manual p.33; Manual p.33 · Designer: RAQ 1355115946032889914#2 · Tests: 393-raq-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 3 · Key: effects.graft.applying</sub>
 
 <a id="r722.3a"></a>**722.3a** A graft is applied only in deployment, never in the haste step or in battle, even when the graft card has Haste. The exceptions are a card that allows mods in the haste step, such as Slurpr (504.8a), and a Modular card, to which a graft card may be applied as the Modular card is played, in battle too (724). See rules 504.8a, 507.2a, 724, 720.2b.
 
-> *Example: A graft is never offered in the haste step or in battle, even for a Haste card.*
+> *Example: With Slurpr in play, a graft can be applied during the haste step.*
 
-> *Example: Under Slurpr a graft lands during the haste step.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Slurpr; card: Spellbind · Designer: RAQ 1355115946032889914#0; RAQ 1355115946032889914#0 · Rulings: R105 · Tests: 393-raq-mods.test.ts, 40-light-c.test.ts, 428-cr-modifications.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Graft 101 point 1:, 40-light-c.test.ts::Slurpr: a GRAFT lands during [Haste] too · Key: effects.graft.applying.deployment-only</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Slurpr; card: Spellbind · Designer: RAQ 1355115946032889914#0; RAQ 1355115946032889914#0 · Rulings: R105 · Tests: 393-raq-mods.test.ts, 40-light-c.test.ts, 428-cr-modifications.test.ts · Example test: 40-light-c.test.ts::Slurpr: a GRAFT lands during [Haste] too · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 1: · Key: effects.graft.applying.deployment-only</sub>
 
 <sub>Discrepancies: D-U17-12 (discrepancies.md)</sub>
 
@@ -8170,41 +7468,33 @@ order.
 
 > *Example: A new graft slides between two already applied, whose order stays fixed.*
 
-> *Example: The insert position decides the order the composite resolves in.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.33; Manual p.33; Manual p.43 · Designer: RAQ 1355115946032889914#9 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Graft 101 point 10, 04-mods.test.ts::graft insert position: below the base, order controls resolution · Key: effects.graft.applying.position</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.33; Manual p.33; Manual p.43 · Designer: RAQ 1355115946032889914#9 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 10 · Demonstrated by test: 04-mods.test.ts::graft insert position: below the base, order controls resolution · Key: effects.graft.applying.position</sub>
 
 <a id="r722.4"></a>**722.4.** Each grafted effect is added to the cause of the host's own card. The host's ability then reads "cause: effect 1 AND effect 2 AND effect 3 …", in the order the grafts sit.
 
-> *Example: Accelerated Germination grafted onto Oracle of the Flame reads "Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units." (illustrative)*
+> *Example: Accelerated Germination grafted onto Oracle of the Flame reads "Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units."*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Key: effects.graft.composite</sub>
 
 <a id="r722.4a"></a>**722.4a** The host's own graft cause decides when the whole composite triggers or can be activated.
 
-> *Example: The host's attack trigger fires the host's effect and every graft under it.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1355115946032889914#6 · Tests: 04-mods.test.ts, 393-raq-mods.test.ts · Example test: 04-mods.test.ts::graft composition: composite fires as ONE stack item, top-to-bottom · Key: effects.graft.composite.top-cause</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1355115946032889914#6 · Tests: 04-mods.test.ts, 393-raq-mods.test.ts · Demonstrated by test: 04-mods.test.ts::graft composition: composite fires as ONE stack item, top-to-bottom · Key: effects.graft.composite.top-cause</sub>
 
 <a id="r722.4b"></a>**722.4b** The composite is a single ability. It goes on the stack as one item, resolves all at once, and a single negation stops all of it. See rule 703.
 
-> *Example: The host trigger and every graft under it are one stack item, and one negate stops all of it.*
-
-> *Example: In battle a single negation kills the whole composite.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Designer: RAQ 1355115946032889914#7 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Graft 101 point 8, 04-mods.test.ts::composite is ONE stack item in battle · Key: effects.graft.composite.one-ability</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Designer: RAQ 1355115946032889914#7 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Demonstrated by tests: 393-raq-mods.test.ts::RAQ Graft 101 point 8, 04-mods.test.ts::composite is ONE stack item in battle · Key: effects.graft.composite.one-ability</sub>
 
 <a id="r722.4c"></a>**722.4c** The composite resolves from top to bottom: the host's own effect first, then each graft in the order it sits. See rule 704.
 
-> *Example: Under Mohruung, Overbloom above Spewing Mushroom makes a Poison 8; below it, a Poison 1.*
+> *Example: On a Mohruung host, Overbloom grafted above Spewing Mushroom makes a Poison 8; grafted below it, a Poison 1.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.33; Manual p.33 · Designer: RAQ 1355115946032889914#8 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 9 · Key: effects.graft.composite.order</sub>
 
 <a id="r722.4d"></a>**722.4d** Every target of the composite is declared when it is put on the stack. A part that requires a target must take one if any is legal, even one of the player's own units. See rules 110, 702.8b.
 
-> *Example: With no enemy on the board, the grafted delete must take one of the player's own units.*
+> *Example: Plodding Pebble, with Leaping Lillik ("Delete target unit") grafted under it, attacks into an empty region and is hit by a Fireball 1. As its trigger goes on the stack, the delete must take a target: with no enemy unit there, Plodding Pebble itself is legal, and the player cannot choose no target.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355115946032889914#15; RAQ 1355115946032889914#15 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example · Key: effects.graft.composite.targets</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355115946032889914#15; RAQ 1355115946032889914#15 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example · Key: effects.graft.composite.targets</sub>
 
 <a id="r722.4e"></a>**722.4e** A triggered composite with a part that requires a target, when that part has no legal target, is not put on the stack at all. Its untargeted parts do not happen either. See rule 702.8b. *(Engine differs, see F-U14-1.)*
 
@@ -8214,21 +7504,15 @@ order.
 
 <a id="r722.4f"></a>**722.4f** A composite fizzles only when it has lost all of its targets, and then none of it happens, its untargeted parts included. While at least one target remains, every part resolves as far as it can. A composite that declared no target anywhere never fizzles. See rule 704.
 
-> *Example: A composite that loses its only target fizzles whole: no Poison from the untargeted grafts.*
+> *Example: Spewing Mushroom carries Biotoxicity and Technological Superiority as grafts. It attacks, and its composite trigger targets Spewing Mushroom, the only target it declares. The opponent deletes the Mushroom with Leaping Lillik in response: the composite fizzles, and Biotoxicity's untargeted Poisons are not created either.*
 
-> *Example: One surviving target carries the untargeted grafts through.*
-
-> *Example: An item that declares no target anywhere never fizzles.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Rulings: R86, R86, R86 · Tests: 78-round17-core.test.ts · Example tests: 78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole, 78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through, 78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles · Key: effects.graft.composite.fizzle</sub>
+<sub>Basis: Owner call · Verified: partial in round 4; verifier ran 5 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R86, R86, R86 · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole · Demonstrated by tests: 78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through, 78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles · Key: effects.graft.composite.fizzle</sub>
 
 <sub>Discrepancies: D-U17-6 (discrepancies.md)</sub>
 
 <a id="r722.4g"></a>**722.4g** A graft composite is a triggered or activated ability like any other. A modifier to the cost of activating or triggering abilities (Crevice Lurker) applies to it. See rule 111.10f.
 
-> *Example: Crevice Lurker taxes a graft trigger like any other.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355103348378042515#1 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ Crevice Lurker: a graft trigger is taxed like any other · Key: effects.graft.composite.tax</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355103348378042515#1 · Tests: 390-raq-stack.test.ts · Demonstrated by test: 390-raq-stack.test.ts::RAQ Crevice Lurker: a graft trigger is taxed like any other · Key: effects.graft.composite.tax</sub>
 
 <a id="r722.5"></a>**722.5.** A graft is either unbounded ([Switch]) or bounded ([Switch1]). An unbounded graft can trigger any number of times; a bounded graft can trigger only once per turn. See rule 109.9.
 
@@ -8238,15 +7522,11 @@ order.
 
 <a id="r722.5a"></a>**722.5a** Under an unbounded cause, the composite can fire any number of times, but each bounded graft in it is included only the first time in a turn. See rule 109.9i.
 
-> *Example: An unbounded host activated twice carries its bounded graft only the first time.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#13 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice · Key: effects.graft.bounded.unbounded-cause</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#13 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice · Key: effects.graft.bounded.unbounded-cause</sub>
 
 <a id="r722.5b"></a>**722.5b** Under a bounded cause, the whole composite fires only once per turn, its unbounded grafts included. See rule 109.9h.
 
-> *Example: A bounded host triggers once per turn, so an unbounded graft under it happens once.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#14 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn · Key: effects.graft.bounded.bounded-cause</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#14 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn · Key: effects.graft.bounded.bounded-cause</sub>
 
 <a id="r722.5c"></a>**722.5c** Each grafted card has its own use. Two copies of the same bounded graft on one host each have one use. See rule 109.9k.
 
@@ -8260,25 +7540,17 @@ order.
 
 <a id="r722.6"></a>**722.6.** A graft printed "{graft} [cost]: effect" adds a cost to the composite. That cost must be paid; it cannot be declined. See rule 111.15.
 
-> *Example: A payable [cost] graft must be paid; there is no opting out.*
+> *Example: A grafted Immolate's sacrifice is paid as the composite goes on the stack, and the player cannot decline it.*
 
-> *Example: A grafted Immolate's sacrifice is paid at composite cast time, with no decline offered.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355115946032889914#11 · Rulings: R334 · Replaces: R35 (its grafted riders 'may be declined' and 'an unpayable rider is skipped' reversed by R334) · Tests: 393-raq-mods.test.ts, 32-cast-costs.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Graft 101 point 11: a payable [cost] graft must be paid, 32-cast-costs.test.ts::grafted Immolate: the carrier must pay the cost at composite cast time · Key: effects.graft.costs</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355115946032889914#11 · Rulings: R334 · Replaces: R35 (its grafted riders 'may be declined' and 'an unpayable rider is skipped' reversed by R334) · Tests: 393-raq-mods.test.ts, 32-cast-costs.test.ts · Example test: 32-cast-costs.test.ts::grafted Immolate: the carrier must pay the cost at composite cast time · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 11: a payable [cost] graft must be paid · Key: effects.graft.costs</sub>
 
 <a id="r722.6a"></a>**722.6a** If a grafted cost cannot be paid, the whole composite stays off the stack: the host's own effect and every other graft with it. See rule 111.15.
 
-> *Example: An unpayable [cost] graft keeps the host and the other grafts off the stack too.*
-
-> *Example: An activated graft cause whose grafted cost cannot be paid is not offered.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355115946032889914#10 · Rulings: R334 · Replaces: R110 (narrowed by R334: an unpayable multiplied graft cost withholds the whole composite, not just that graft) · Tests: 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack, 403-raq-fix-mods.test.ts::R334: an activated graft cause whose grafted [cost] cannot be paid is not offered at all · Key: effects.graft.costs.unpayable</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355115946032889914#10 · Rulings: R334 · Replaces: R110 (narrowed by R334: an unpayable multiplied graft cost withholds the whole composite, not just that graft) · Tests: 393-raq-mods.test.ts, 403-raq-fix-mods.test.ts · Demonstrated by tests: 393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack, 403-raq-fix-mods.test.ts::R334: an activated graft cause whose grafted [cost] cannot be paid is not offered at all · Key: effects.graft.costs.unpayable</sub>
 
 <a id="r722.6b"></a>**722.6b** The cost is paid as the composite goes on the stack. No player can respond to the payment, and units the composite itself would create cannot pay it. See rule 111.
 
-> *Example: A "[cost]: effect" graft under Lost Guardian pays its cost twice and resolves twice.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355115946032889914#12 · Tests: 17-earth-b.test.ts · Example test: 17-earth-b.test.ts::graft under Lost Guardian pays its cost TWICE and resolves twice · Key: effects.graft.costs.instant</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355115946032889914#12 · Tests: 17-earth-b.test.ts · Demonstrated by test: 17-earth-b.test.ts::graft under Lost Guardian pays its cost TWICE and resolves twice · Key: effects.graft.costs.instant</sub>
 
 <a id="r722.7"></a>**722.7.** Some graft causes trigger several copies of the graft ability as one single trigger: Lost Guardian two, Amphivore and Witness of the Crossing three. The copies are one effect on the stack. See rule 111.14.
 
@@ -8300,15 +7572,11 @@ order.
 
 > *Example: Amphivore triples a bounded "Create three" graft into nine Fireballs.*
 
-> *Example: Lost Guardian repeats a bounded graft too.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353859961855148103#2 · Tests: 14-water-a.test.ts, 17-earth-b.test.ts · Example tests: 14-water-a.test.ts::R110: Amphivore triples a BOUNDED [Switch1] graft, 17-earth-b.test.ts::R110: Lost Guardian repeats a BOUNDED [Switch1] graft too · Key: effects.graft.multiplier.bounded</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353859961855148103#2 · Tests: 14-water-a.test.ts, 17-earth-b.test.ts · Example test: 14-water-a.test.ts::R110: Amphivore triples a BOUNDED [Switch1] graft · Demonstrated by test: 17-earth-b.test.ts::R110: Lost Guardian repeats a BOUNDED [Switch1] graft too · Key: effects.graft.multiplier.bounded</sub>
 
 <a id="r722.7c"></a>**722.7c** Each copy of a targeted graft chooses its targets separately. See rule 110.
 
-> *Example: A targeted graft under Amphivore aims each of its three copies separately.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R110 (its copy-targeting half) · Tests: 14-water-a.test.ts, 40-light-c.test.ts · Example test: 14-water-a.test.ts::R110: a TARGETED graft under Amphivore aims each of its three copies separately · Key: effects.graft.multiplier.targets</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R110 (its copy-targeting half) · Tests: 14-water-a.test.ts, 40-light-c.test.ts · Demonstrated by test: 14-water-a.test.ts::R110: a TARGETED graft under Amphivore aims each of its three copies separately · Key: effects.graft.multiplier.targets</sub>
 
 <a id="r722.7d"></a>**722.7d** A cost in a repeated graft is paid once for each copy. If the multiplied cost cannot be paid in full, none of it is paid, and the composite stays off the stack (722.6a). See rules 111.14, 722.6a.
 
@@ -8365,11 +7633,7 @@ order.
 
 > *Example: A glimpsed Virus in the cache goes onto an enemy unit in battle, ignoring affinity.*
 
-> *Example: A Virus whose prophecy is fulfilled is applied in battle for free.*
-
-> *Example: An expired glimpse is nothing in battle.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#3 · Rulings: R311 · Replaces: R95 (its sentence that the base battle-augment rule refuses the cache corrected by R311) · Tests: 370-cached-virus-in-battle.test.ts, 369-cache-is-the-hand.test.ts · Example tests: 370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, 370-cached-virus-in-battle.test.ts::R311: a Virus whose prophecy is fulfilled augments in battle for FREE, 370-cached-virus-in-battle.test.ts::R311: an EXPIRED glimpse is still nothing in battle · Key: effects.virus.battle.cache</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#3 · Rulings: R311 · Replaces: R95 (its sentence that the base battle-augment rule refuses the cache corrected by R311) · Tests: 370-cached-virus-in-battle.test.ts, 369-cache-is-the-hand.test.ts · Example test: 370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle · Demonstrated by tests: 370-cached-virus-in-battle.test.ts::R311: a Virus whose prophecy is fulfilled augments in battle for FREE, 370-cached-virus-in-battle.test.ts::R311: an EXPIRED glimpse is still nothing in battle · Key: effects.virus.battle.cache</sub>
 
 <a id="r723.2b"></a>**723.2b** A Virus in a bin cannot be applied during battle by its Virus ability. From the bin it can be applied as an ordinary mod during deployment, and outside deployment only where another card opens a window: augmenting in battle under a card such as Rook (723.5), applying to a Modular card as it is played (724), or applying in the haste step under a card such as Slurpr (504.8a). See rules 405.8a, 723.5, 724, 504.8a, 720.2b.
 
@@ -8395,93 +7659,63 @@ order.
 
 <a id="r723.3a"></a>**723.3a** A Virus that is negated, or whose target has become invalid, is put into the bin and cannot be used as a Virus again. See rules 704.4a, 704.6f.
 
-> *Example: A Virus whose host leaves the stack first fizzles to the bin.*
+> *Example: A Virus aimed at a spell on the stack: the spell leaves the stack first, so the Virus fizzles and goes to the bin.*
 
-> *Example: Negating the Virus itself bins it.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.34; Manual p.34 · Tests: 67-resolving-and-stack-viruses.test.ts, 04-mods.test.ts · Example tests: 67-resolving-and-stack-viruses.test.ts::R79: a virus whose host leaves the stack first fizzles to the bin, 67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it · Key: effects.virus.stack.negated</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.34; Manual p.34 · Tests: 67-resolving-and-stack-viruses.test.ts, 04-mods.test.ts · Example test: 67-resolving-and-stack-viruses.test.ts::R79: a virus whose host leaves the stack first fizzles to the bin · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it · Key: effects.virus.stack.negated</sub>
 
 <a id="r723.3b"></a>**723.3b** A Virus being applied is not a spell. An effect that negates spells, or counts the spells played, does not see it. See rule 700.1b.
 
-> *Example: A spell-only negation cannot reach a Virus, and a negated Virus does not mod.*
-
 > *Example: Origon does not negate a Virus applied in battle, and its first-spell count is untouched.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#0 · Rulings: R37 · Tests: 04-mods.test.ts, 105-semantics-playwatch.test.ts · Example tests: 04-mods.test.ts::a virus is not a "spell effect" (negation scoping); a negated virus does not mod, 105-semantics-playwatch.test.ts::Origon: a virus applied during battle is not a spell · Key: effects.virus.stack.not-a-spell</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#0 · Rulings: R37 · Tests: 04-mods.test.ts, 105-semantics-playwatch.test.ts · Example test: 105-semantics-playwatch.test.ts::Origon: a virus applied during battle is not a spell · Demonstrated by test: 04-mods.test.ts::a virus is not a "spell effect" (negation scoping); a negated virus does not mod · Key: effects.virus.stack.not-a-spell</sub>
 
 <a id="r723.4"></a>**723.4.** During battle a Virus may be augmented onto a spell on the stack, the player's own or an opponent's. The spell gains only the Virus's attributes (721.4b). See rule 721.4b.
 
 > *Example: Chitin Shredder on Arc Lightning doubles its damage.*
 
-> *Example: A Virus can go onto an enemy spell.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R79 (its stack-host half), R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts · Example tests: 67-resolving-and-stack-viruses.test.ts::R79: the powerful guy on a giant fireball, 67-resolving-and-stack-viruses.test.ts::R79: you can hit an ENEMY spell · Key: effects.virus.spell-host</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R79 (its stack-host half), R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts · Example test: 67-resolving-and-stack-viruses.test.ts::R79: the powerful guy on a giant fireball · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::R79: you can hit an ENEMY spell · Key: effects.virus.spell-host</sub>
 
 <a id="r723.4a"></a>**723.4a** Spells, spell units and spell tokens on the stack are legal hosts for a Virus. See rule 723.4e.
 
-> *Example: A spell token on the stack is a legal host.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts · Example test: 67-resolving-and-stack-viruses.test.ts::R79: a spell TOKEN is a legal host too · Key: effects.virus.spell-host.which</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::R79: a spell TOKEN is a legal host too · Key: effects.virus.spell-host.which</sub>
 
 <a id="r723.4b"></a>**723.4b** A spell carrying a Virus is modded, so it is {Unstable}: the spell and the Virus are erased instead of going to a bin, whether the spell resolves, fizzles or is negated. See rule 704.2c.
 
-> *Example: A spell that carried a Virus is erased, never binned.*
-
-> *Example: Negating the carrier erases it too.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.35 · Rulings: R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts, 91-modular.test.ts · Example tests: 67-resolving-and-stack-viruses.test.ts::R79 ⚠: a spell that carried a virus is Unstable, 67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too · Key: effects.virus.spell-host.erased</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.35 · Rulings: R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts, 91-modular.test.ts · Demonstrated by tests: 67-resolving-and-stack-viruses.test.ts::R79 ⚠: a spell that carried a virus is Unstable, 67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too · Key: effects.virus.spell-host.erased</sub>
 
 <a id="r723.4c"></a>**723.4c** A spell unit carrying a Virus is not erased when it resolves. It enters play with the Virus attached as an augment, and so has {Unstable}. See rule 303.
 
-> *Example: A spell unit carries its Virus into play as an augment mod.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R79 (its stack-host half), R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts · Example test: 67-resolving-and-stack-viruses.test.ts::R79: a spell UNIT carries its virus into play as an augment mod · Key: effects.virus.spell-host.spell-unit</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R79 (its stack-host half), R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::R79: a spell UNIT carries its virus into play as an augment mod · Key: effects.virus.spell-host.spell-unit</sub>
 
 <sub>Discrepancies: D-U17-3 (discrepancies.md)</sub>
 
 <a id="r723.4d"></a>**723.4d** A spell that has begun to resolve cannot have a Virus applied to it. See rule 703.6.
 
-> *Example: A resolving item cannot be responded to, negated or targeted.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts · Example test: 67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted · Key: effects.virus.spell-host.resolving</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R79 (its stack-host half) · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted · Key: effects.virus.spell-host.resolving</sub>
 
 <a id="r723.4e"></a>**723.4e** Triggered and activated abilities, Viruses, units being cast and Ambushes on the stack are not legal hosts for a Virus. See rule 723.4a.
 
-> *Example: A triggered ability on the stack is not offered as a Virus host, and is refused if asked for anyway.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R79 (its stack-host half) · Engine: apply.ts:STACK_VIRUS_HOSTS · Tests: 67-resolving-and-stack-viruses.test.ts · Example test: 67-resolving-and-stack-viruses.test.ts::R79: only SPELLS are legal hosts · Key: effects.virus.spell-host.not-hosts</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R79 (its stack-host half) · Engine: apply.ts:STACK_VIRUS_HOSTS · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::R79: only SPELLS are legal hosts · Key: effects.virus.spell-host.not-hosts</sub>
 
 <sub>Discrepancies: D-U17-2 (discrepancies.md)</sub>
 
 <a id="r723.5"></a>**723.5.** A card can let other cards be augmented during battle as if they were Viruses. Rook: "You may augment cards from hand and bin during battle as if they were [Virus]." See rule 720.2b.
 
-> *Example: A non-Virus augment from hand during battle is refused without Rook and legal with it.*
+> *Example: Applying a non-Virus augment from hand during battle is not allowed without Rook, and is with it.*
 
-> *Example: Rook's bin augment takes the card out of the bin.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Rook · Tests: 29-hybrids-wm-a.test.ts · Example tests: 29-hybrids-wm-a.test.ts::Rook: a NON-virus augment from HAND during battle, 29-hybrids-wm-a.test.ts::Rook: augmenting from the BIN during battle takes the card out of the BIN, not the hand · Key: effects.virus.permission</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Rook · Tests: 29-hybrids-wm-a.test.ts · Example test: 29-hybrids-wm-a.test.ts::Rook: a NON-virus augment from HAND during battle · Demonstrated by test: 29-hybrids-wm-a.test.ts::Rook: augmenting from the BIN during battle takes the card out of the BIN, not the hand · Key: effects.virus.permission</sub>
 
 <a id="r723.5a"></a>**723.5a** Such a card gives the augmented card the Virus ability itself, so the augment may go onto an opponent's unit or onto a spell on the stack. See rule 723.4.
 
-> *Example: A Rook-enabled augment lands on an enemy unit during battle.*
-
-> *Example: A Rook-enabled augment reaches a spell on the stack.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R157 (its §26), R161 · Replaces: R95 (its OPEN question 2 default (Rook grants only the timing permission) reversed by R157 §26) · Tests: 136-triggers-and-modes.test.ts · Example tests: 136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment lands on an ENEMY unit during battle, 136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment reaches a SPELL ON THE STACK · Key: effects.virus.permission.confers</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R157 (its §26), R161 · Replaces: R95 (its OPEN question 2 default (Rook grants only the timing permission) reversed by R157 §26) · Tests: 136-triggers-and-modes.test.ts · Demonstrated by tests: 136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment lands on an ENEMY unit during battle, 136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment reaches a SPELL ON THE STACK · Key: effects.virus.permission.confers</sub>
 
 <a id="r723.5b"></a>**723.5b** Such a card reaches only the zones it names. Rook names the hand and the bin, so a non-Virus card in the cache cannot be augmented in battle through Rook. See rule 723.2a.
 
-> *Example: Rook prints "hand and bin", so the cache stays shut.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rook · Rulings: R311 · Tests: 29-hybrids-wm-a.test.ts · Example test: 29-hybrids-wm-a.test.ts::Rook: it prints "hand and bin", so the CACHE stays shut · Key: effects.virus.permission.zones</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rook · Rulings: R311 · Tests: 29-hybrids-wm-a.test.ts · Demonstrated by test: 29-hybrids-wm-a.test.ts::Rook: it prints "hand and bin", so the CACHE stays shut · Key: effects.virus.permission.zones</sub>
 
 <a id="r723.5c"></a>**723.5c** Such a permission belongs to the controller of the card that grants it (the host's controller, when it is a mod), and works only in that card's region. See rule 720.6b.
 
-> *Example: Rook's permission is region-scoped and does not reach the opponent.*
-
-> *Example: Rook worn as an augment gives the permission to the host's controller.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R95 (its Rook-grant half), R95 (its Rook-grant half) · Tests: 29-hybrids-wm-a.test.ts, 136-triggers-and-modes.test.ts · Example tests: 29-hybrids-wm-a.test.ts::Rook: the permission is REGION-scoped, and does not reach the opponent, 29-hybrids-wm-a.test.ts::Rook: the [Augment] half works, and the permission belongs to the HOST · Key: effects.virus.permission.region</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R95 (its Rook-grant half), R95 (its Rook-grant half) · Tests: 29-hybrids-wm-a.test.ts, 136-triggers-and-modes.test.ts · Demonstrated by tests: 29-hybrids-wm-a.test.ts::Rook: the permission is REGION-scoped, and does not reach the opponent, 29-hybrids-wm-a.test.ts::Rook: the [Augment] half works, and the permission belongs to the HOST · Key: effects.virus.permission.region</sub>
 
 <sub>Discrepancies: D-U17-10 (discrepancies.md)</sub>
 
@@ -8490,23 +7724,15 @@ order.
 
 <a id="r724.1"></a>**724.1.** Modular is an attribute. A player may apply mods from their hand and/or bin to a Modular card as it is played, paying their costs. See rule 802.26.
 
-> *Example: Spellbind's mods are applied at cast time, paid for, and ride on the stack item.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Spellbind · Tests: 37-attrs-wight.test.ts, 91-modular.test.ts · Example test: 37-attrs-wight.test.ts::{Modular}: mods are applied at cast time, paid for, and ride on the stack item · Key: effects.modular.what</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: card: Spellbind · Tests: 37-attrs-wight.test.ts, 91-modular.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::{Modular}: mods are applied at cast time, paid for, and ride on the stack item · Key: effects.modular.what</sub>
 
 <a id="r724.1a"></a>**724.1a** Spellbind is the only card that prints Modular.
 
-> *Example: Spellbind is the only card in the pool that prints Modular.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: card: Spellbind · Rulings: R105 · Tests: 428-cr-modifications.test.ts · Example test: 428-cr-modifications.test.ts::cr:effects.modular.what.pool — Spellbind is the only card in the pool with Modular · Key: effects.modular.what.pool</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: card: Spellbind · Rulings: R105 · Tests: 428-cr-modifications.test.ts · Demonstrated by test: 428-cr-modifications.test.ts::cr:effects.modular.what.pool — Spellbind is the only card in the pool with Modular · Key: effects.modular.what.pool</sub>
 
 <a id="r724.2"></a>**724.2.** Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card: a graft, an augment, a Virus, or a card that can do nothing on a spell.
 
-> *Example: The Modular menu offers every card the player can pay for.*
-
-> *Example: A card in the bin is offered beside the hand; an unaffordable one is not.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R105, R105 · Tests: 91-modular.test.ts · Example tests: 91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for, 91-modular.test.ts::R105: a card in the BIN is offered beside the hand, and an unaffordable one is not · Key: effects.modular.any-card</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R105, R105 · Tests: 91-modular.test.ts · Demonstrated by tests: 91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for, 91-modular.test.ts::R105: a card in the BIN is offered beside the hand, and an unaffordable one is not · Key: effects.modular.any-card</sub>
 
 <a id="r724.2a"></a>**724.2a** A mod that does nothing on a spell is still a legal choice, and its cost is still paid. See rule 721.4b.
 
@@ -8516,23 +7742,17 @@ order.
 
 <a id="r724.2b"></a>**724.2b** Each mod's cost is paid as it is applied, while the Modular card is cast. Applying it is not playing it. See rule 720.3.
 
-> *Example: The mod is charged at cast, and applying it is not playing it.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Spellbind · Tests: 91-modular.test.ts · Example test: 91-modular.test.ts::R105: "you still pay their costs" · Key: effects.modular.any-card.cost</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Spellbind · Tests: 91-modular.test.ts · Demonstrated by test: 91-modular.test.ts::R105: "you still pay their costs" · Key: effects.modular.any-card.cost</sub>
 
 <a id="r724.3"></a>**724.3.** The mods are chosen and paid for while the Modular card is being cast, before it reaches the stack, and they go on the stack with it. The caster may apply none. See rule 702.3b.
 
-> *Example: The caster may decline, and a non-Modular spell is never asked.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Spellbind · Rulings: R105 · Tests: 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::{Modular}: the caster may decline, and a non-modular spell is never asked · Key: effects.modular.when</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Spellbind · Rulings: R105 · Tests: 37-attrs-wight.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::{Modular}: the caster may decline, and a non-modular spell is never asked · Key: effects.modular.when</sub>
 
 <a id="r724.4"></a>**724.4.** A graft applied to a Modular spell adds its effect to the spell's ability as an extra part. See rule 722.4.
 
-> *Example: A graft mod contributes its effect as an extra part.*
+> *Example: A player casts Spellbind and applies Primordial Coalescence from their bin to it. When Spellbind resolves, Primordial Coalescence's graft effect happens too: three Wraiths, and its 2 Rot on top of Spellbind's one.*
 
-> *Example: A graft card in the bin is played again through Spellbind, happens, and is erased.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R105 · Tests: 91-modular.test.ts · Example tests: 91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part, 91-modular.test.ts::R105: the flashback line · Key: effects.modular.effects</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R105 · Tests: 91-modular.test.ts · Example test: 91-modular.test.ts::R105: the flashback line · Demonstrated by test: 91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part · Key: effects.modular.effects</sub>
 
 <a id="r724.4a"></a>**724.4a** A type-line augment applied to a Modular spell gives its attributes to the spell's effect. See rule 721.4b.
 
@@ -8548,7 +7768,7 @@ order.
 
 <a id="r724.4c"></a>**724.4c** A grafted cost on a Modular spell's graft part must be paid if it can be. If it cannot, only that part is skipped, and the spell still resolves. See rule 722.6.
 
-> *Example: Spellbind carrying a grafted Immolate with no unit to sacrifice: the Immolate part is skipped and Spellbind still gives its rot. (illustrative)*
+> *Example: Spellbind carrying a grafted Immolate with no unit to sacrifice: the Immolate part is skipped, and Spellbind still gives its rot.*
 
 > *Example: Spellbind carrying a grafted Immolate, with a unit to sacrifice: the cost is paid, the unit is sacrificed and a card is drawn. Declining is not offered.*
 
@@ -8560,17 +7780,11 @@ order.
 
 > *Example: A graft card replayed from the bin by Spellbind is erased, so it cannot be used that way twice.*
 
-> *Example: A negated modded Spellbind is erased too.*
-
-> *Example: A mod applied through Modular and a Virus applied on the stack end the same way.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.35 · Rulings: R105 · Tests: 91-modular.test.ts, 43-dark-c.test.ts · Example tests: 91-modular.test.ts::R105: the flashback line, 91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too, 91-modular.test.ts::R105 = R79 · Key: effects.modular.unstable</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.35 · Rulings: R105 · Tests: 91-modular.test.ts, 43-dark-c.test.ts · Example test: 91-modular.test.ts::R105: the flashback line · Demonstrated by tests: 91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too, 91-modular.test.ts::R105 = R79 · Key: effects.modular.unstable</sub>
 
 <a id="r724.5a"></a>**724.5a** A Modular card with no mod applied does not have {Unstable}, and goes to the bin like any other spell.
 
-> *Example: An unmodded Modular spell is binned like any other spell.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R105 · Tests: 91-modular.test.ts · Example test: 91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable · Key: effects.modular.unstable.unmodded</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R105 · Tests: 91-modular.test.ts · Demonstrated by test: 91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable · Key: effects.modular.unstable.unmodded</sub>
 
 ## 8. Keywords
 
@@ -8584,9 +7798,7 @@ order.
 
 <a id="r801.1"></a>**801.1.** Card text uses some verbs with a fixed game meaning: these are keyword actions, defined in this section. Where a card prints reminder text for a keyword action, the printed reminder states its meaning, and it wins over any paraphrase of it. See rules 802, 803.
 
-> *Example: Premonition prints the reminder for glimpse, so the glimpse reminder a player is shown is that printed sentence, and our longer paraphrase is kept only as the rule behind it.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R206 (its rule 1: printed text wins), R206 (its rule 1: printed text wins) · Tests: 429-cr-keyword-actions.test.ts · Example test: 429-cr-keyword-actions.test.ts::cr:keywords.actions.general — where a card prints the reminder for a keyword action, the reminder a player is shown is that printed sentence and not our paraphrase · Key: keywords.actions.general</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R206 (its rule 1: printed text wins), R206 (its rule 1: printed text wins) · Tests: 429-cr-keyword-actions.test.ts · Demonstrated by test: 429-cr-keyword-actions.test.ts::cr:keywords.actions.general — where a card prints the reminder for a keyword action, the reminder a player is shown is that printed sentence and not our paraphrase · Key: keywords.actions.general</sub>
 
 <a id="r801.2"></a>**801.2.** A card is trashed when it enters a bin from any zone except the stack. See rule 405.4.
 
@@ -8600,23 +7812,15 @@ order.
 
 <a id="r801.2a"></a>**801.2a** Discarding a card, sacrificing it, milling it and a card dying into a bin are all ways of trashing it. See rules 801.3, 801.4, 801.5.
 
-> *Example: Milling a card from the deck trashes it, one trash per card.*
-
-> *Example: A unit card that is sacrificed, or that dies, enters a bin from play and is trashed.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R40 (its bin-entry definition, for cards) · Tests: 35-rot-debt-trash.test.ts · Example tests: 35-rot-debt-trash.test.ts::R40: milling from the deck trashes one event per card, 35-rot-debt-trash.test.ts::R40: sacrificing and dying both trash — the card enters a bin from PLAY · Key: keywords.actions.trash.ways</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R40 (its bin-entry definition, for cards) · Tests: 35-rot-debt-trash.test.ts · Demonstrated by tests: 35-rot-debt-trash.test.ts::R40: milling from the deck trashes one event per card, 35-rot-debt-trash.test.ts::R40: sacrificing and dying both trash — the card enters a bin from PLAY · Key: keywords.actions.trash.ways</sub>
 
 <sub>Discrepancies: D-U18-3 (discrepancies.md)</sub>
 
 <a id="r801.2b"></a>**801.2b** A card that goes to a bin from the stack is not trashed, whether it resolved, was negated or failed to resolve. A card played for free during another effect's resolution and then put into the bin counts as coming from the stack. See rules 405.4a, 704.2a.
 
-> *Example: A spell going to the bin after it resolves is not trashed.*
-
-> *Example: A negated spell going to the bin is not trashed.*
-
 > *Example: A spell Tides of the Cosmos plays for free off the deck goes to the bin afterwards and is not trashed.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R40 (its bin-entry definition, for cards), R40 (its bin-entry definition, for cards), R146 · Tests: 35-rot-debt-trash.test.ts, 15-water-b.test.ts · Example tests: 35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed (it comes from the stack), 35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either, 15-water-b.test.ts::R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash · Key: keywords.actions.trash.not-from-stack</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R40 (its bin-entry definition, for cards), R40 (its bin-entry definition, for cards), R146 · Tests: 35-rot-debt-trash.test.ts, 15-water-b.test.ts · Example test: 15-water-b.test.ts::R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash · Demonstrated by tests: 35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed (it comes from the stack), 35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either · Key: keywords.actions.trash.not-from-stack</sub>
 
 <a id="r801.2c"></a>**801.2c** Erasing a card is not trashing it: an erased card never enters a bin. See rules 407.1c, 801.6.
 
@@ -8626,17 +7830,15 @@ order.
 
 <a id="r801.2d"></a>**801.2d** A token is never trashed, because only a card can be trashed. A unit token that dies still enters the bin and still dies, but its trip through the bin is not a trash: no "when I am trashed" ability triggers for it, its own included. See rules 108.2e, 304.10a.
 
-> *Example: A token unit dying in battle does not raise the count of cards trashed in that battle.*
-
 > *Example: A token copy of Dropslime that dies does not trigger its own "When I am trashed".*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R306, R306, R306, R306 · Replaces: R40 (its 2026-08-21 amendment (tokens can be trashed) reversed by R306); R133 (its second half (tokens are trashed) withdrawn by R306); R137 (its token-symmetry argument amended by R306) · Tests: 338-tokens-are-not-trashed.test.ts · Example tests: 338-tokens-are-not-trashed.test.ts::R306: a token unit dying in battle does not bump the trashed ledger that Dropslime reads, 338-tokens-are-not-trashed.test.ts::R306: a token copy of an own-trash card does not fire its own when-I-am-trashed · Key: keywords.actions.trash.tokens</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R306, R306, R306, R306 · Replaces: R40 (its 2026-08-21 amendment (tokens can be trashed) reversed by R306); R133 (its second half (tokens are trashed) withdrawn by R306); R137 (its token-symmetry argument amended by R306) · Tests: 338-tokens-are-not-trashed.test.ts · Example test: 338-tokens-are-not-trashed.test.ts::R306: a token copy of an own-trash card does not fire its own when-I-am-trashed · Demonstrated by test: 338-tokens-are-not-trashed.test.ts::R306: a token unit dying in battle does not bump the trashed ledger that Dropslime reads · Key: keywords.actions.trash.tokens</sub>
 
 <a id="r801.2e"></a>**801.2e** The player whose bin the card enters is the player who trashes it. A unit that dies goes to its controller's bin, so its controller trashes it; when an effect sends the card to another player's bin, that player trashes it. See rules 405.3, 711.
 
 > *Example: A stolen unit that dies goes to the bin of the player who controls it, and that player trashes it.*
 
-> *Example: Pull Under deletes an enemy unit and puts it into the caster's bin: the caster trashes it, once.*
+> *Example: Pull Under deletes an enemy unit and puts it into the caster's bin: the caster trashes it.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R40 (its trasher sentence, for a card that is not a mod), R250 (its §4, zones follow control), R250 (its §4, zones follow control) · Replaces: R244 (its §1 destination paragraph (a card goes to its owner's bin) reversed by R250) · Tests: 229-cosmic-and-control.test.ts, 15-water-b.test.ts · Example tests: 229-cosmic-and-control.test.ts::R250: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin, 15-water-b.test.ts::Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once (R40, binTo) · Key: keywords.actions.trash.trasher</sub>
 
@@ -8644,17 +7846,11 @@ order.
 
 <a id="r801.2f"></a>**801.2f** When a modded unit is recalled or cached, each nontoken mod it carried is left behind in a bin and is trashed there. The host's controller trashes it, not the mod's owner. See rules 410.4, 403.7.
 
-> *Example: A mod left in the bin when its host is recalled is trashed by the host's controller.*
-
-> *Example: Caching the host attributes the left-behind mods the same way.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R244 (its attribution and mod-erase halves), R244 (its attribution and mod-erase halves), R244 (its attribution and mod-erase halves) · Replaces: R137 (its section 'The mods ride with it' reversed by R244) · Tests: 224-mod-trash.test.ts · Example tests: 224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner, 224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does · Key: keywords.actions.trash.mods-left-behind</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R244 (its attribution and mod-erase halves), R244 (its attribution and mod-erase halves), R244 (its attribution and mod-erase halves) · Replaces: R137 (its section 'The mods ride with it' reversed by R244) · Tests: 224-mod-trash.test.ts · Demonstrated by tests: 224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner, 224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does · Key: keywords.actions.trash.mods-left-behind</sub>
 
 <a id="r801.2g"></a>**801.2g** A nontoken mod that is erased together with its {Unstable} host is not trashed. The host's departure is the whole unit's; the mod has no trash of its own. See rules 405.4, 720.
 
-> *Example: A nontoken mod on an {Unstable} host that dies is erased with it and fires no trash ability.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R244 (its attribution and mod-erase halves) · Replaces: R137 (its section 'The mods ride with it' reversed by R244); R152 (its §2 (a nontoken mod on an Unstable host is trashed) superseded by R244); R153 (its step 4 (each nontoken mod is trashed) superseded by R244) · Tests: 224-mod-trash.test.ts · Example test: 224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all · Key: keywords.actions.trash.mods-erased-with-host</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R244 (its attribution and mod-erase halves) · Replaces: R137 (its section 'The mods ride with it' reversed by R244); R152 (its §2 (a nontoken mod on an Unstable host is trashed) superseded by R244); R153 (its step 4 (each nontoken mod is trashed) superseded by R244) · Tests: 224-mod-trash.test.ts · Demonstrated by test: 224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all · Key: keywords.actions.trash.mods-erased-with-host</sub>
 
 <a id="r801.2h"></a>**801.2h** An {Unstable} card that dies in play is erased instead of entering the bin, so it is not trashed. An {Unstable} card that goes to a bin from an inactive zone (a hand, the deck or a cache) enters the bin and is trashed. See rules 405.5, 400, 803. *(Engine differs, see F-U18-1.)*
 
@@ -8672,11 +7868,7 @@ order.
 
 <a id="r801.3"></a>**801.3.** To discard a card is to put it from a hand into the bin. A discarded card is trashed. Discarding is not playing the card, and a cached card cannot be discarded. See rules 402.5, 403.4, 801.2.
 
-> *Example: A card discarded from a hand is trashed by the player whose bin it enters.*
-
-> *Example: A card held in a cache offers no discard, and an attempt to discard it from there is refused.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R40 (its bin-entry definition, for cards), R65 (its discard-me section), R311 (its "Discard me" bullet) · Tests: 35-rot-debt-trash.test.ts, 429-cr-keyword-actions.test.ts · Example tests: 35-rot-debt-trash.test.ts::R40: discarding from hand trashes, by the owner of the bin it enters, 429-cr-keyword-actions.test.ts::cr:keywords.actions.discard — a discard from a hand puts nothing on the stack and is not played, and a cached card cannot be discarded · Key: keywords.actions.discard</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R40 (its bin-entry definition, for cards), R65 (its discard-me section), R311 (its "Discard me" bullet) · Tests: 35-rot-debt-trash.test.ts, 429-cr-keyword-actions.test.ts · Demonstrated by tests: 35-rot-debt-trash.test.ts::R40: discarding from hand trashes, by the owner of the bin it enters, 429-cr-keyword-actions.test.ts::cr:keywords.actions.discard — a discard from a hand puts nothing on the stack and is not played, and a cached card cannot be discarded · Key: keywords.actions.discard</sub>
 
 <a id="r801.4"></a>**801.4.** To sacrifice a unit is for a player to choose a unit they control and put it into their bin. A sacrificed unit dies. See rules 111.3, 111.8.
 
@@ -8712,9 +7904,7 @@ order.
 
 <a id="r801.5a"></a>**801.5a** An effect that deletes a unit and names where it goes overrides the usual bin. Pull Under puts the deleted unit and all of its mods into its caster's bin, where they stay. See rule 801.2e.
 
-> *Example: Pull Under deletes the target; it and its mods land in the caster's bin, not erased and not in the owner's bin.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Pull Under · Tests: 15-water-b.test.ts · Example test: 15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin (not erased, not owner-binned) · Key: keywords.actions.delete.named-bin</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Pull Under · Tests: 15-water-b.test.ts · Demonstrated by test: 15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin (not erased, not owner-binned) · Key: keywords.actions.delete.named-bin</sub>
 
 <a id="r801.6"></a>**801.6.** To erase a card is to take it out of the game: it goes to the erased pile. When card text says "erase", the erased pile is where the card goes. See rules 407.1, 407.2, 410.2.
 
@@ -8724,13 +7914,13 @@ order.
 
 <a id="r801.6a"></a>**801.6a** Erasing a unit is neither a death nor a trash. It is a despawn. See rules 407.1c, 410.2.
 
-> *Example: Banishment erases a unit: no death and no trash, but its despawn is seen.*
+> *Example: Banishment erases a unit: it does not die and is not trashed, but it does despawn.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R40 (its bin-entry definition, for cards), R172 (§1 and its what-did-not-widen note), R172 (§1 and its what-did-not-widen note) · Tests: 145-erase-routes.test.ts · Example test: 145-erase-routes.test.ts::R172 (vii): Banishment still fires no 'died' and no 'trashed' · Key: keywords.actions.erase.not-death</sub>
 
 <a id="r801.7"></a>**801.7.** To recall a card is to put it into a hand. Printed recalls take a card from play, from a bin, from the stack or from a cache. See rules 402.4, 410.2.
 
-> *Example: Vaporweave Eidolon recalls itself from play for [zero].*
+> *Example: Vaporweave Eidolon recalls itself from play to its controller's hand, at no cost.*
 
 > *Example: Eldritch Reclaimer recalls a unit from its controller's bin to their hand.*
 
@@ -8742,7 +7932,7 @@ order.
 
 > *Example: A stolen unit that is recalled goes to the thief's hand, not its owner's.*
 
-> *Example: Cosmic Reversal recalls a stolen spell unit to the seat that controls it.*
+> *Example: Cosmic Reversal recalls a stolen spell unit to the hand of the player who controls it.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R262, R262, R262 · Tests: 246-zones-follow-control.test.ts, 229-cosmic-and-control.test.ts · Example tests: 246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand, not the owner, 229-cosmic-and-control.test.ts::R250: a STOLEN spell unit is recalled to the seat that CONTROLS it · Key: keywords.actions.recall.destination</sub>
 
@@ -8750,15 +7940,13 @@ order.
 
 <a id="r801.7b"></a>**801.7b** A recalled {Unstable} unit goes to the hand as a card. {Unstable} changes only a move into a bin, so a recall is not affected by it. See rules 803, 410.4.
 
-> *Example: Recalling an {Unstable} unit puts the card in its hand; it is not erased.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Abyssal Evocation · Tests: 125-active-zone.test.ts · Example test: 125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never fires · Key: keywords.actions.recall.unstable</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Abyssal Evocation · Tests: 125-active-zone.test.ts · Demonstrated by test: 125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never fires · Key: keywords.actions.recall.unstable</sub>
 
 <a id="r801.7c"></a>**801.7c** Recalling a card from a bin moves it from that bin to its player's hand. "Recall target unit in your bin" can reach only a card in that player's own bin. See rule 405.7.
 
 > *Example: Delver of Mysteries recalls a chosen spell from its controller's bin.*
 
-> *Example: Eldritch Reclaimer, cast with both players in the battle, offers a unit in its caster's own bin and never one in the opponent's bin.*
+> *Example: Eldritch Reclaimer, cast with both players in the battle, can pick a unit in its caster's own bin, never one in the opponent's bin.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Eldritch Reclaimer; card: Delver of Mysteries · Tests: 12-fire-a.test.ts, 429-cr-keyword-actions.test.ts · Example tests: 12-fire-a.test.ts::Delver of Mysteries: recalls a chosen spell from the bin, then spawns 2/2, 429-cr-keyword-actions.test.ts::cr:keywords.actions.recall.from-bin — Eldritch Reclaimer offers a unit in its own bin and never one in the opponent bin, even with both players in the battle · Key: keywords.actions.recall.from-bin</sub>
 
@@ -8766,9 +7954,9 @@ order.
 
 > *Example: Cosmic Reversal recalls the other spell effects on the stack to their controllers' hands.*
 
-> *Example: Dream Lapse recalls a cast Fireball token: it enters the hand (Rider of the Tides hears it) and is erased.*
+> *Example: Dream Lapse recalls a cast Fireball token: it enters its controller's hand, so Rider of the Tides grows, and then it is erased.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Cosmic Reversal · Rulings: R335 · Tests: 14-water-a.test.ts, 403-raq-fix-mods.test.ts · Example tests: 14-water-a.test.ts::Cosmic Reversal: recalls all other spell effects on the stack to hands, 403-raq-fix-mods.test.ts::R335: Dream Lapse recalls a cast Fireball token · Key: keywords.actions.recall.from-stack</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Cosmic Reversal · Rulings: R335 · Tests: 14-water-a.test.ts, 403-raq-fix-mods.test.ts · Example tests: 14-water-a.test.ts::Cosmic Reversal: recalls all other spell effects on the stack to hands, 403-raq-fix-mods.test.ts::R335: Dream Lapse recalls a cast Fireball token · Key: keywords.actions.recall.from-stack</sub>
 
 <a id="r801.7e"></a>**801.7e** When an effect tells a player to recall a unit and they have none to recall, the recall does nothing, but the rest of the effect still happens unless it depends on the recall ("If you do"). See rule 101.5.
 
@@ -8798,23 +7986,19 @@ order.
 
 > *Example: Oracle of Foretelling's Glimpse 5 caches one of the five revealed cards.*
 
-> *Example: Glimpse N reveals N, caches exactly one of the glimpser's choice and recycles the rest.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Premonition · Rulings: R45 · Tests: 14-water-a.test.ts, 36-cache-prophecy.test.ts · Example tests: 14-water-a.test.ts::Oracle of Foretelling: Glimpse 5 caches ONE of the five, 36-cache-prophecy.test.ts::R45: Glimpse N reveals N, caches exactly ONE of the glimpser's choice and recycles the rest · Key: keywords.actions.glimpse</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Premonition · Rulings: R45 · Tests: 14-water-a.test.ts, 36-cache-prophecy.test.ts · Example test: 14-water-a.test.ts::Oracle of Foretelling: Glimpse 5 caches ONE of the five · Demonstrated by test: 36-cache-prophecy.test.ts::R45: Glimpse N reveals N, caches exactly ONE of the glimpser's choice and recycles the rest · Key: keywords.actions.glimpse</sub>
 
 <sub>Discrepancies: D-U18-7 (discrepancies.md)</sub>
 
 <a id="r801.9a"></a>**801.9a** The player who glimpses chooses which of the revealed cards to cache.
 
-> *Example: Choosing the last revealed card caches it and recycles the two above it.*
+> *Example: In a Glimpse 3, choosing the last revealed card caches it and recycles the two above it.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R45 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R45: choosing the LAST revealed card recycles the two above it, in order · Key: keywords.actions.glimpse.choice</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R45 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R45: choosing the LAST revealed card recycles the two above it, in order · Key: keywords.actions.glimpse.choice</sub>
 
 <a id="r801.9b"></a>**801.9b** Glimpse 1 reveals the top card of the deck and caches it. There is no choice to make and nothing to recycle.
 
-> *Example: Glimpse 1 raises no decision.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Visionary Construct · Rulings: R45 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R45: Glimpse 1 raises no decision · Key: keywords.actions.glimpse.one</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Visionary Construct · Rulings: R45 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R45: Glimpse 1 raises no decision · Key: keywords.actions.glimpse.one</sub>
 
 <a id="r801.9c"></a>**801.9c** "Glimpse 1, X times" is X separate glimpses of one card each, not one Glimpse X.
 
@@ -8824,7 +8008,7 @@ order.
 
 <a id="r801.9d"></a>**801.9d** A glimpse reveals from the glimpser's own deck. When an effect makes another player glimpse ("Its controller Glimpses 3"), that player reveals from their own deck, not from the deck of the player who controls the effect. In live draft every player's deck is the one shared deck. See rules 401, 902.
 
-> *Example: Celestial Purge cast by one player erases an enemy unit; the unit's controller is the glimpser, chooses the card to cache and caches it in their own cache. (The test game uses one shared deck, so it does not show whose deck is read.)*
+> *Example: Celestial Purge cast by one player erases an enemy unit; that unit's controller glimpses, chooses the card to cache and caches it in their own cache.*
 
 > *Example: In constructed, a player who glimpses reveals the top of their own deck, caches from it and recycles the rest into their own pile; the other player's deck is untouched.*
 
@@ -8840,33 +8024,25 @@ order.
 
 <a id="r801.9f"></a>**801.9f** A card played under a glimpse permission still costs its mana, and still obeys its printed timing. Only the affinity requirement is waived. See rules 403.3c, 403.3d.
 
-> *Example: A glimpsed card whose mana cannot be paid is refused.*
-
 > *Example: A glimpsed {Battle} card cannot be played in deployment.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R45, R45 · Tests: 315-cache-mod-permission.test.ts, 36-cache-prophecy.test.ts · Example tests: 315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana — broke means refused, 36-cache-prophecy.test.ts::R45: glimpse still obeys timing, and a short deck glimpses fewer · Key: keywords.actions.glimpse.permission.cost-timing</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R45, R45 · Tests: 315-cache-mod-permission.test.ts, 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R45: glimpse still obeys timing, and a short deck glimpses fewer · Demonstrated by test: 315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana — broke means refused · Key: keywords.actions.glimpse.permission.cost-timing</sub>
 
 <a id="r801.9g"></a>**801.9g** The same permission lets the glimpser apply the cached card as a mod, on the same terms (its mana, ignoring affinity): an augment or graft during deployment, and a {Virus} during battle. See rules 403.3b, 721, 722, 723.
 
-> *Example: A live glimpse grafts for the card's mana, ignoring affinity.*
-
 > *Example: A glimpsed {Virus} in the cache goes onto an enemy unit in battle.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#3; RAQ 1537748882501668934#4 · Rulings: R303 · Tests: 315-cache-mod-permission.test.ts, 370-cached-virus-in-battle.test.ts · Example tests: 315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity, 370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity · Key: keywords.actions.glimpse.permission.mods</sub>
+<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1537748882501668934#3; RAQ 1537748882501668934#4 · Rulings: R303 · Tests: 315-cache-mod-permission.test.ts, 370-cached-virus-in-battle.test.ts · Example test: 370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity · Demonstrated by test: 315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity · Key: keywords.actions.glimpse.permission.mods</sub>
 
 <a id="r801.9h"></a>**801.9h** While the permission is live, a glimpsed card with a prophecy banner may be prophesied where it stands in the cache, in the same window and for the same cost as from the hand. Doing so uses up the glimpse permission. See rules 403.8, 801.14, 803.
 
-> *Example: A glimpsed card with a banner may be prophesied where it stands in the cache.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R308, R308 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache · Key: keywords.actions.glimpse.permission.prophesy</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R308, R308 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache · Key: keywords.actions.glimpse.permission.prophesy</sub>
 
 <a id="r801.9i"></a>**801.9i** The permission ends at end of turn. The card stays in the cache, and it can no longer be played, prophesied or applied as a mod there. See rule 403.5.
 
-> *Example: An expired glimpse is not a graft, not an augment, not anything.*
-
 > *Example: Premonition's permission dies with the turn; the card stays cached.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Premonition · Rulings: R45, R303, R308 · Replaces: R190 (its Glimpse glossary row's "stays cached, inert" amended by R206; R303 later restored "inert" (D-U18-10)) · Tests: 315-cache-mod-permission.test.ts, 14-water-a.test.ts · Example tests: 315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything, 14-water-a.test.ts::Premonition: Glimpse X where X is your water affinity; the permission dies with the turn, the card stays · Key: keywords.actions.glimpse.permission.ends</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Premonition · Rulings: R45, R303, R308 · Replaces: R190 (its Glimpse glossary row's "stays cached, inert" amended by R206; R303 later restored "inert" (D-U18-10)) · Tests: 315-cache-mod-permission.test.ts, 14-water-a.test.ts · Example test: 14-water-a.test.ts::Premonition: Glimpse X where X is your water affinity; the permission dies with the turn, the card stays · Demonstrated by test: 315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything · Key: keywords.actions.glimpse.permission.ends</sub>
 
 <sub>Discrepancies: D-U07-6 (discrepancies.md)</sub>
 
@@ -8874,15 +8050,13 @@ order.
 
 > *Example: Tides of the Cosmos recycles the revealed cards it did not play.*
 
-> *Example: A recycled card stays behind the mark while the deck still has cards.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.7; Manual p.16 · Rulings: R190 (its Recycle row), R296, R296 · Tests: 15-water-b.test.ts, 300-recycle-mark.test.ts · Example tests: 15-water-b.test.ts::Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for free, recycle the rest, 300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark while the deck still has cards · Key: keywords.actions.recycle</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.7; Manual p.16 · Rulings: R190 (its Recycle row), R296, R296 · Tests: 15-water-b.test.ts, 300-recycle-mark.test.ts · Example test: 15-water-b.test.ts::Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for free, recycle the rest · Demonstrated by test: 300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark while the deck still has cards · Key: keywords.actions.recycle</sub>
 
 <sub>Discrepancies: D-U07-12 (discrepancies.md)</sub>
 
 <a id="r801.11"></a>**801.11.** When two units fight, each deals damage equal to its power to the other. See rule 112.
 
-> *Example: Battle: two target units fight, dealing damage to each other.*
+> *Example: The spell Battle makes two target units fight: each deals damage equal to its power to the other.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Fight; card: Eminence of the Barrens · Tests: 16-earth-a.test.ts · Example test: 16-earth-a.test.ts::Battle: two target units fight (mutual power damage; both targets at cast) · Key: keywords.actions.fight</sub>
 
@@ -8898,7 +8072,7 @@ order.
 
 <a id="r801.11b"></a>**801.11b** Damage dealt in a fight is dealt by the units, not by the spell or ability that made them fight. Abilities that look for damage dealt by a spell effect do not see it. See rule 112.6.
 
-> *Example: Squish damage is the unit dealing it, so Ember of Life does not trigger; the designer's answer covers Fight and Battle the same way.*
+> *Example: Squish's damage is dealt by the unit, so Ember of Life does not trigger; Fight and Battle work the same way.*
 
 > *Example: Fight makes a 3-power unit deal 3 damage, and Ember of Life does not trigger; a spell dealing damage in the same setup does trigger it.*
 
@@ -8906,9 +8080,7 @@ order.
 
 <a id="r801.11c"></a>**801.11c** A fight needs both of its units. If one of them is gone when the fight would happen, nothing happens: the remaining unit deals and is dealt no damage. The effect does not fizzle. See rules 704.6c, 101.5.
 
-> *Example: Fight that loses one of its two targets does nothing to the survivor.*
-
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.43 · Designer: RAQ 1354013430805434389#1 · Tests: 390-raq-stack.test.ts, 429-cr-keyword-actions.test.ts · Example test: 390-raq-stack.test.ts::RAQ fizzles: Fight that loses one of its two targets does nothing to the survivor · Key: keywords.actions.fight.lost-one</sub>
+<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.43 · Designer: RAQ 1354013430805434389#1 · Tests: 390-raq-stack.test.ts, 429-cr-keyword-actions.test.ts · Demonstrated by test: 390-raq-stack.test.ts::RAQ fizzles: Fight that loses one of its two targets does nothing to the survivor · Key: keywords.actions.fight.lost-one</sub>
 
 <a id="r801.12"></a>**801.12.** Rockfall N means: each player chooses one of their units, and the source of the rockfall deals N damage to each chosen unit. See rule 112.
 
@@ -8924,9 +8096,7 @@ order.
 
 <a id="r801.12b"></a>**801.12b** Each player must choose a living unit of theirs in the region. A player with no unit there chooses none, and takes no part in that rockfall. See rule 601.1b.
 
-> *Example: Meteor Shower with no unit anywhere to hit announces each empty rockfall.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353899470156206152#4 · Tests: 93-engine-defects.test.ts · Example test: 93-engine-defects.test.ts::Meteor Shower with no unit anywhere to hit announces each empty rockfall · Key: keywords.actions.rockfall.living-unit</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353899470156206152#4 · Tests: 93-engine-defects.test.ts · Demonstrated by test: 93-engine-defects.test.ts::Meteor Shower with no unit anywhere to hit announces each empty rockfall · Key: keywords.actions.rockfall.living-unit</sub>
 
 <a id="r801.12c"></a>**801.12c** "Rockfall N, X times" is X rockfalls carried out one after another. Each player chooses again for each of them, and each rockfall is a separate source of damage. Abilities that trigger during one of the rockfalls wait until the whole effect has resolved: none is put on the stack between rockfalls. See rule 112.
 
@@ -8938,13 +8108,9 @@ order.
 
 <a id="r801.13"></a>**801.13.** "Exchange" is printed in four senses, each read from its card: exchanging a unit in play for a unit card in a bin (Hooba-Mon, Necromorph), exchanging control of two units (Organic Exchange), exchanging control of a unit for a spell another player played (Hexbane Shiitake), and exchanging the base stats of two units (Body Swap). See rules 711, 106.8.
 
-> *Example: Organic Exchange swaps control of two units.*
-
 > *Example: Hexbane Shiitake gives itself away and takes control of an enemy spell.*
 
-> *Example: Body Swap exchanges two units' base stats.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 5 tests, all passed; 3 gate test files · Printed: card: Necromorph; card: Organic Exchange; card: Body Swap; card: Hexbane Shiitake · Tests: 24-wood-b.test.ts, 23-wood-a.test.ts, 26-metal-a.test.ts · Example tests: 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit, 23-wood-a.test.ts::Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets it ([once]), 26-metal-a.test.ts::Body Swap: exchanges the base stats of two target units until regroup · Key: keywords.actions.exchange</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 5 tests, all passed; 3 gate test files · Printed: card: Necromorph; card: Organic Exchange; card: Body Swap; card: Hexbane Shiitake · Tests: 24-wood-b.test.ts, 23-wood-a.test.ts, 26-metal-a.test.ts · Example test: 23-wood-a.test.ts::Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets it ([once]) · Demonstrated by tests: 24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit, 26-metal-a.test.ts::Body Swap: exchanges the base stats of two target units until regroup · Key: keywords.actions.exchange</sub>
 
 <a id="r801.13a"></a>**801.13a** When a unit in play is exchanged for a unit card in a bin, the unit leaving play despawns and goes to the bin, where it is trashed, but it does not die. See rules 410.2a, 410.4d, 704.6c.
 
@@ -8956,9 +8122,7 @@ order.
 
 <a id="r801.14"></a>**801.14.** To prophesy a card is to pay the cost on its prophecy banner and put it into the cache with its prophecy attached. Prophecy itself is 803. See rules 803, 403.8.
 
-> *Example: A glimpsed Vengeance is offered its prophecy in deployment.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R42 (its cache-with-the-prophecy-attached definition), R308 · Replaces: R42 (its no-affinity cost corrected by R301; its window amended by R277; its source zone amended by R308) · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R308: the real card — a glimpsed Vengeance is offered its prophecy in deployment · Key: keywords.actions.prophesy</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R42 (its cache-with-the-prophecy-attached definition), R308 · Replaces: R42 (its no-affinity cost corrected by R301; its window amended by R277; its source zone amended by R308) · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R308: the real card — a glimpsed Vengeance is offered its prophecy in deployment · Key: keywords.actions.prophesy</sub>
 
 <a id="r802"></a>
 ### 802. Attributes
@@ -8993,11 +8157,11 @@ order.
 
 <a id="r802.1e"></a>**802.1e** A unit has the attributes of its column for everything it does while it is in the column, not only for combat damage. Damage it deals with its abilities has those attributes too. See rule 112.6.
 
-> *Example: An ability of a unit in a column with a Blessed unit gains its controller life when it deals damage.*
+> *Example: Lithoghul stands in a battle column with Flzzz, which is Blessed. An ability of Lithoghul deals 3 damage to an enemy unit: Lithoghul has Blessed from its column, so its controller gains 3 life.*
 
 > *Example: Bellowing Boulder, in a column with a Deadly unit, pings with Deadly.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353895783266516992#5 · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts, 390-raq-stack.test.ts · Example tests: 298-column-attrs-outside-combat.test.ts::R294 §1 the report, 390-raq-stack.test.ts::RAQ dead unit: Bellowing Boulder in a column with a Deadly unit pings with Deadly · Key: attr.general.shared.all-purposes</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353895783266516992#5 · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts, 390-raq-stack.test.ts · Example tests: 298-column-attrs-outside-combat.test.ts::R294 §1 the report, 390-raq-stack.test.ts::RAQ dead unit: Bellowing Boulder in a column with a Deadly unit pings with Deadly · Key: attr.general.shared.all-purposes</sub>
 
 <a id="r802.1f"></a>**802.1f** Columns exist only during a battle. Outside a battle no unit is in a column, so no attribute is shared. See rules 602, 603.
 
@@ -9007,11 +8171,9 @@ order.
 
 <a id="r802.1g"></a>**802.1g** When a unit leaves a column, the other units in that column immediately lose the attributes it was sharing with them. See rules 603.1a, 608.2b.
 
-> *Example: A unit leaving a Swift column takes the Swift it shared with it.*
-
 > *Example: Once the Deadly unit leaves Bellowing Boulder's column, the Boulder's ping is not Deadly.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.24; Manual p.24; Rulebook 2023 p.12 · Designer: RAQ 1353895783266516992#5 · Tests: 423-cr-combat-damage.test.ts, 390-raq-stack.test.ts · Example tests: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps.column-attributes — a unit leaving a column takes the Swift it shared with it, 390-raq-stack.test.ts::RAQ dead unit: once the Deadly partner leaves the column, the Boulder ping is not Deadly · Key: attr.general.shared.leaving</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.24; Manual p.24; Rulebook 2023 p.12 · Designer: RAQ 1353895783266516992#5 · Tests: 423-cr-combat-damage.test.ts, 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ dead unit: once the Deadly partner leaves the column, the Boulder ping is not Deadly · Demonstrated by test: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps.column-attributes — a unit leaving a column takes the Swift it shared with it · Key: attr.general.shared.leaving</sub>
 
 <a id="r802.1h"></a>**802.1h** Non-combat attributes are not shared in formation. A unit that is Unstable, or has Burst or Modular, does not give that attribute to the other units in its column. See rule 803.
 
@@ -9027,7 +8189,7 @@ order.
 
 <a id="r802.1j"></a>**802.1j** Four attributes change a unit's stats. Tough and Balanced apply in the fourth stat layer, Inverted in the fifth and Unaware in the sixth and last (see rule 206.4). See rules 206.4, 709.
 
-> *Example: Caleb's worked example: a 1/4 with Tough, Balanced and Inverted is a -6/0.*
+> *Example: A 1/4 with Tough, Balanced and Inverted is a -6/0.*
 
 > *Example: A unit with both Inverted and Unaware is read at its printed stats: Unaware applies last.*
 
@@ -9047,7 +8209,7 @@ order.
 
 > *Example: A 3/1 augmented with Rampart Guardian (Tough) and then Child of Aether (Balanced) is a 3/3; augmented in the other order it is a 3/6.*
 
-> *Example: Child of Aether prints Balanced and is a 2/0. Augmented with Rampart Guardian (Tough), its defense is doubled (2/0), then its stats balanced: it is a 2/2. (illustrative; engine differs, F-U19-5: the engine balances first and makes it a 2/4)*
+> *Example: Child of Aether prints Balanced and is a 2/0. Augmented with Rampart Guardian (Tough), its defense is doubled (still 2/0), then its stats balanced: it is a 2/2.*
 
 > *Example: Rampart Guardian (0/4, Tough) attacks with Child of Aether (Balanced) behind it: its defense is doubled (0/8), then its stats balanced, and it is an 8/8.*
 
@@ -9057,7 +8219,7 @@ order.
 
 <a id="r802.1n"></a>**802.1n** A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply. See rule 802.25. *(Engine differs, see F-U19-1, F-U19-2.)*
 
-> *Example: Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies. (illustrative; engine differs, F-U19-1: the engine keeps Tough on and it survives as a 0/8)*
+> *Example: Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies.*
 
 > *Example: An Unaware source dealing 3 damage to a Pure unit pumped from 2/3 to 4/5 does not read it at its printed 2/3: it survives, where a pumped non-Pure 2/3 dies.*
 
@@ -9077,21 +8239,15 @@ order.
 
 > *Example: A ground 2/2 cannot block a column holding Ephemeral Skywalker (Flying).*
 
-> *Example: A plain ground unit is neither offered nor allowed as a blocker against a Flying column.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Greed Angel; Manual p.24 · Tests: 02-combat.test.ts, 40-light-c.test.ts, 422-cr-attacking-blocking.test.ts · Example tests: 02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths, 40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can · Key: attr.flying.blocking</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Greed Angel; Manual p.24 · Tests: 02-combat.test.ts, 40-light-c.test.ts, 422-cr-attacking-blocking.test.ts · Example test: 02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths · Demonstrated by test: 40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can · Key: attr.flying.blocking</sub>
 
 <sub>Discrepancies: D-U19-5 (discrepancies.md)</sub>
 
 <a id="r802.2b"></a>**802.2b** Because Flying is shared, a unit attacking in the same column as a Flying unit has Flying too, and the whole column can't be blocked by units that do not have Flying (see rule 802.1). See rule 802.1.
 
-> *Example: A token attacking behind a Flying unit has Flying while it is in that column.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Rulebook 2023 p.12 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared · Key: attr.flying.column</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Rulebook 2023 p.12 · Tests: 421-cr-regions-formations.test.ts · Demonstrated by test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared · Key: attr.flying.column</sub>
 
 <a id="r802.2c"></a>**802.2c** If the Flying unit leaves an attacking column before blockers are declared, the other units in that column lose Flying, and the column can then be blocked by units without Flying. See rules 802.1, 606.
-
-> *Example: A player attacks with Smoke Ghost (Flying) and a plain 1/1 token in one column; the opponent kills Smoke Ghost before combat and blocks the token with a unit that does not fly. (illustrative)*
 
 > *Example: Ephemeral Skywalker (Flying) attacks with a 1/1 token in one column; the Skywalker is destroyed before blocks, the token loses Flying, and Rune Channeler, which does not fly, blocks it.*
 
@@ -9119,9 +8275,7 @@ order.
 
 > *Example: A Deadly source dealing 2 noncombat damage destroys a 5/6.*
 
-> *Example: Zero damage from a Deadly source destroys nothing.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Rotspore Herald · Rulings: R21 (its nonzero-kill sentence) · Tests: 82-attr-interactions.test.ts · Example tests: 82-attr-interactions.test.ts::Deadly: 2 points of NON-COMBAT damage kills a 5/6 outright, 82-attr-interactions.test.ts::Deadly: ZERO damage kills nothing · Key: attr.deadly.any-amount</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Rotspore Herald · Rulings: R21 (its nonzero-kill sentence) · Tests: 82-attr-interactions.test.ts · Example test: 82-attr-interactions.test.ts::Deadly: 2 points of NON-COMBAT damage kills a 5/6 outright · Demonstrated by test: 82-attr-interactions.test.ts::Deadly: ZERO damage kills nothing · Key: attr.deadly.any-amount</sub>
 
 <a id="r802.3b"></a>**802.3b** Deadly does not reduce the damage its source deals. A Deadly source deals all of its damage; Deadly changes only how much of it is lethal. See rule 608.6d.
 
@@ -9137,37 +8291,29 @@ order.
 
 <a id="r802.3d"></a>**802.3d** A unit dealt combat damage by a Deadly source is destroyed in the same damage sub-step, before the next sub-step begins (see rule 608.7b). See rule 608.7b.
 
-> *Example: Paired with a Swift unit in its column, a Deadly unit kills what it hits before that unit can strike back. (illustrative)*
+> *Example: Paired with a Swift unit in its column, a Deadly unit kills what it hits before that unit can strike back.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.25 · Rulings: R21 (its same-sub-step kill) · Tests: 430-cr-attributes-1.test.ts · Example test: 430-cr-attributes-1.test.ts::cr:attr.deadly.timing — a Deadly and Swift column kills its blocker in the Swift sub-step, before the blocker strikes · Key: attr.deadly.timing</sub>
 
 <a id="r802.3e"></a>**802.3e** Deadly applies to all damage its source deals, not only combat damage, including damage dealt through spells and abilities. See rule 112.7.
 
-> *Example: A plain Deadly effect source destroys a unit it could never damage to death.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R237, R21 (its effect-damage sentence) · Tests: 206-deadly-everywhere.test.ts, 82-attr-interactions.test.ts · Example test: 206-deadly-everywhere.test.ts::R237: a plain {Deadly} effect source kills a unit · Key: attr.deadly.noncombat</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R237, R21 (its effect-damage sentence) · Tests: 206-deadly-everywhere.test.ts, 82-attr-interactions.test.ts · Demonstrated by test: 206-deadly-everywhere.test.ts::R237: a plain {Deadly} effect source kills a unit · Key: attr.deadly.noncombat</sub>
 
 <a id="r802.3f"></a>**802.3f** A spell or a spell token can have Deadly. Damage it deals is then Deadly damage. See rules 302, 304.
 
 > *Example: With Rotspore Herald in the region, a Fireball 1 kills any unit it hits.*
 
-> *Example: Deadly donated to a spell on the stack kills through that spell.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R237, R125 · Tests: 206-deadly-everywhere.test.ts · Example tests: 206-deadly-everywhere.test.ts::R237: "a fireball 1 with deadly would kill any unit", 206-deadly-everywhere.test.ts::R237: a {Deadly} donated to a SPELL on the stack kills through the spell · Key: attr.deadly.spells</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R237, R125 · Tests: 206-deadly-everywhere.test.ts · Example test: 206-deadly-everywhere.test.ts::R237: "a fireball 1 with deadly would kill any unit" · Demonstrated by test: 206-deadly-everywhere.test.ts::R237: a {Deadly} donated to a SPELL on the stack kills through the spell · Key: attr.deadly.spells</sub>
 
 <a id="r802.3g"></a>**802.3g** A source with both Deadly and Poisonous that deals damage to a unit both destroys it and puts the -1/-1 counters on it (see rule 112.10). See rules 112.10, 802.18.
 
-> *Example: Deadly and Poisonous effect damage still destroys the unit: the counter form is still damage.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R237 · Tests: 206-deadly-everywhere.test.ts, 82-attr-interactions.test.ts · Example test: 206-deadly-everywhere.test.ts::R237: {Deadly} + {Poisonous} effect damage still kills · Key: attr.deadly.poisonous</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R237 · Tests: 206-deadly-everywhere.test.ts, 82-attr-interactions.test.ts · Demonstrated by test: 206-deadly-everywhere.test.ts::R237: {Deadly} + {Poisonous} effect damage still kills · Key: attr.deadly.poisonous</sub>
 
 <a id="r802.3h"></a>**802.3h** If all the damage a Deadly source would deal to a unit is prevented, no damage is dealt, and Deadly does not destroy the unit (see rule 112.11). See rules 112.11, 608.7a.
 
-> *Example: Prevention stops both the Deadly kill and the Poisonous counters.*
-
 > *Example: A shielded blocker dealt combat damage by a Deadly column is not destroyed.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R98 (its prevented-damage-is-not-dealt rule) · Tests: 82-attr-interactions.test.ts, 423-cr-combat-damage.test.ts · Example tests: 82-attr-interactions.test.ts::Deadly + Poisonous: PREVENTION still stops both halves, 423-cr-combat-damage.test.ts::cr:combat.damage.dealing.prevention — a shielded blocker dealt COMBAT damage gets no damage event, nothing marked, and no Deadly kill · Key: attr.deadly.prevention</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R98 (its prevented-damage-is-not-dealt rule) · Tests: 82-attr-interactions.test.ts, 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.dealing.prevention — a shielded blocker dealt COMBAT damage gets no damage event, nothing marked, and no Deadly kill · Demonstrated by test: 82-attr-interactions.test.ts::Deadly + Poisonous: PREVENTION still stops both halves · Key: attr.deadly.prevention</sub>
 
 <a id="r802.3i"></a>**802.3i** Deadly has no effect on damage dealt to a player. See rule 112.5.
 
@@ -9179,9 +8325,7 @@ order.
 
 > *Example: Just a Unit (Pure) blocking a Deadly unit is not killed by 1 damage.*
 
-> *Example: A Pure recipient is not destroyed by a Deadly source's noncombat damage.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Just a Unit · Rulings: R61, R289 (its per-pairing switch) · Tests: 40-light-c.test.ts, 290-pure-outside-combat.test.ts · Example tests: 40-light-c.test.ts::Just a Unit: {Pure} switches off Deadly, 290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it · Key: attr.deadly.pure</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Just a Unit · Rulings: R61, R289 (its per-pairing switch) · Tests: 40-light-c.test.ts, 290-pure-outside-combat.test.ts · Example test: 40-light-c.test.ts::Just a Unit: {Pure} switches off Deadly · Demonstrated by test: 290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it · Key: attr.deadly.pure</sub>
 
 <a id="r802.4"></a>**802.4. Swift.** Swift is a combat attribute. Its reminder text reads "Swift units deal combat damage first."
 
@@ -9193,9 +8337,7 @@ order.
 
 <a id="r802.4a"></a>**802.4a** A half-column that has Swift deals its combat damage in the Swift sub-step, before the normal and Sluggish sub-steps (see rule 608.2a). See rules 608.2, 608.2a.
 
-> *Example: Swift strikes first, then normal, then Sluggish.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rime Wraith; Manual p.25 · Tests: 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish · Key: attr.swift.schedule</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rime Wraith; Manual p.25 · Tests: 423-cr-combat-damage.test.ts · Demonstrated by test: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish · Key: attr.swift.schedule</sub>
 
 <a id="r802.4b"></a>**802.4b** A unit destroyed by Swift damage in the Swift sub-step deals no combat damage in the later sub-steps. See rule 608.7b.
 
@@ -9205,23 +8347,19 @@ order.
 
 <a id="r802.4c"></a>**802.4c** A half-column with both Swift and Sluggish deals combat damage twice: once in the Swift sub-step and once in the Sluggish sub-step, with normal damage from other units in between (see rule 608.2c). See rules 608.2c, 802.5.
 
-> *Example: A Swift and Sluggish column strikes in the Swift and Sluggish sub-steps, not in normal.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Printed: Manual p.43; Manual p.43 · Designer: RAQ 1363298910528864318#2 · Rulings: R157 §5 · Tests: 423-cr-combat-damage.test.ts, 297-damage-substeps-are-steps.test.ts, 134-column-and-substep.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps.swift-and-sluggish · Key: attr.swift.with-sluggish</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Printed: Manual p.43; Manual p.43 · Designer: RAQ 1363298910528864318#2 · Rulings: R157 §5 · Tests: 423-cr-combat-damage.test.ts, 297-damage-substeps-are-steps.test.ts, 134-column-and-substep.test.ts · Demonstrated by test: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps.swift-and-sluggish · Key: attr.swift.with-sluggish</sub>
 
 <a id="r802.4d"></a>**802.4d** A half-column that has dealt combat damage in the Swift sub-step does not deal combat damage in the normal sub-step, even if it has since lost Swift (see rule 608.2e). See rule 608.2e.
 
-> *Example: A column that dealt Swift damage deals no normal damage, even once its Swift unit is gone.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1363298910528864318#1 · Rulings: R320 · Tests: 388-raq-blocks-and-windows.test.ts · Example test: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt Swift damage deals no normal damage · Key: attr.swift.struck</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1363298910528864318#1 · Rulings: R320 · Tests: 388-raq-blocks-and-windows.test.ts · Demonstrated by test: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt Swift damage deals no normal damage · Key: attr.swift.struck</sub>
 
 <a id="r802.4e"></a>**802.4e** When a Swift half-column strikes and another half-column will strike in a later sub-step, the combat damage step is split: the abilities that triggered on the Swift damage go on the stack and resolve, with priority, before normal damage is dealt (see rules 608.3b and 608.9c). See rules 608.3b, 608.9c.
 
-> *Example: A Swift-only battle gets one boundary between the Swift and normal sub-steps, not two.*
+> *Example: Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. The damage step splits once: Dune Drifter strikes, then there is a window to respond, then Lithoghul strikes. No Sluggish unit is in the battle, so there is no second split.*
 
 > *Example: Flowstone Arcanite's counters from the Swift step land at the boundary, in time to save an ally.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1540678747953569832#2; RAQ 1363298910528864318#0 · Rulings: R295 · Replaces: R31 (superseded: it resolved sub-step triggers at once as special actions, with no priority); R261 (narrowed by R295: its hold of combat-damage triggers until after combat now applies only to an unsplit step) · Our glossary (not a source): Swift · Tests: 297-damage-substeps-are-steps.test.ts, 21-fixes.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::R295 §3b an EMPTY sub-step opens no window, 21-fixes.test.ts::Flowstone Arcanite (R295): the Swift-step counters land at the boundary · Key: attr.swift.split</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1540678747953569832#2; RAQ 1363298910528864318#0 · Rulings: R295 · Replaces: R31 (superseded: it resolved sub-step triggers at once as special actions, with no priority); R261 (narrowed by R295: its hold of combat-damage triggers until after combat now applies only to an unsplit step) · Our glossary (not a source): Swift · Tests: 297-damage-substeps-are-steps.test.ts, 21-fixes.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::R295 §3b an EMPTY sub-step opens no window, 21-fixes.test.ts::Flowstone Arcanite (R295): the Swift-step counters land at the boundary · Key: attr.swift.split</sub>
 
 <a id="r802.4f"></a>**802.4f** In an exchange involving a Pure card, Swift does not apply, so the exchange strikes in the normal sub-step (see rule 608.2d). See rules 608.2d, 802.25.
 
@@ -9237,9 +8375,7 @@ order.
 
 <a id="r802.5a"></a>**802.5a** A half-column that has Sluggish deals its combat damage in the Sluggish sub-step, after the Swift and normal sub-steps (see rule 608.2a). See rules 608.2, 608.2a.
 
-> *Example: Swift strikes first, then normal, then Sluggish.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rime Wraith · Tests: 423-cr-combat-damage.test.ts · Example test: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish · Key: attr.sluggish.schedule</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Rime Wraith · Tests: 423-cr-combat-damage.test.ts · Demonstrated by test: 423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish · Key: attr.sluggish.schedule</sub>
 
 <a id="r802.5b"></a>**802.5b** Because a Sluggish half-column strikes in a later sub-step of a split step, abilities that triggered on the earlier sub-steps' damage resolve before it deals its damage (see rule 608.9c). See rules 608.9c, 608.3b.
 
@@ -9249,11 +8385,7 @@ order.
 
 <a id="r802.5c"></a>**802.5c** A half-column that has dealt combat damage in the normal sub-step does not deal combat damage in the Sluggish sub-step, even if it has since gained Sluggish. A half-column that dealt damage in the Swift sub-step and has gained Sluggish deals damage again in the Sluggish sub-step (see rule 608.2e). See rule 608.2e.
 
-> *Example: A plain column strikes in the normal sub-step, then gains Sluggish; it does not strike again.*
-
-> *Example: A Swift column strikes in the Swift sub-step, gains Sluggish, and strikes again in the Sluggish sub-step.*
-
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1363298910528864318#3; RAQ 1363298910528864318#2 · Rulings: R320 · Tests: 388-raq-blocks-and-windows.test.ts · Example tests: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt normal damage deals no Sluggish damage, 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again · Key: attr.sluggish.after-normal</sub>
+<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1363298910528864318#3; RAQ 1363298910528864318#2 · Rulings: R320 · Tests: 388-raq-blocks-and-windows.test.ts · Demonstrated by tests: 388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt normal damage deals no Sluggish damage, 388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again · Key: attr.sluggish.after-normal</sub>
 
 <a id="r802.5d"></a>**802.5d** In an exchange involving a Pure card, Sluggish does not apply, so the exchange strikes in the normal sub-step (see rule 608.2d). See rules 608.2d, 802.25.
 
@@ -9277,7 +8409,7 @@ order.
 
 <a id="r802.6b"></a>**802.6b** Tough does not change a unit's power.
 
-> *Example: A 0/4 Tough unit with a -1/-1 counter is a -1/6: its power is not doubled. (illustrative)*
+> *Example: A 0/4 Tough unit with a -1/-1 counter is a -1/6: its power is not doubled.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.42 · Rulings: R226 · Tests: 430-cr-attributes-1.test.ts · Example test: 430-cr-attributes-1.test.ts::cr:attr.tough.power — a 0/4 Tough unit with a -1/-1 counter is a -1/6: its power is not doubled · Key: attr.tough.power</sub>
 
@@ -9285,9 +8417,7 @@ order.
 
 > *Example: Burgeon on a 1/10 Tough unit makes it 1/20 (a +0/+5 under Tough); if Monke then takes its Tough, it is a 1/10.*
 
-> *Example: Burgeon doubling Rampart Guardian's defense shows the doubled number, not four times its defense.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1362832912579559664#1 · Tests: 387-raq-combat.test.ts, 140-layers-and-riders.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Tough: Burgeon on that 1/10 makes it 1/20, and losing Tough to Monke leaves 1/10, 140-layers-and-riders.test.ts::Burgeon doubling a {Tough} unit's defense gives the printed number · Key: attr.tough.doubling</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1362832912579559664#1 · Tests: 387-raq-combat.test.ts, 140-layers-and-riders.test.ts · Example test: 387-raq-combat.test.ts::RAQ Tough: Burgeon on that 1/10 makes it 1/20, and losing Tough to Monke leaves 1/10 · Demonstrated by test: 140-layers-and-riders.test.ts::Burgeon doubling a {Tough} unit's defense gives the printed number · Key: attr.tough.doubling</sub>
 
 <a id="r802.7"></a>**802.7. Balanced.** Balanced is an attribute. Its reminder text reads "The power and defense of balanced units are equal to the greater of the two."
 
@@ -9297,7 +8427,7 @@ order.
 
 <a id="r802.7a"></a>**802.7a** Balanced compares the unit's power and defense after its counters and other stat changes, and after any attribute that applied before it, have been applied. See rules 206.4, 802.1.
 
-> *Example: A 1/4 with Tough and Balanced: Tough makes it 1/8, then Balanced makes it 8/8. (illustrative)*
+> *Example: A 1/4 with Tough and Balanced: Tough makes it 1/8, then Balanced makes it 8/8.*
 
 > *Example: A 1/3 with two +1/+1 counters and Balanced is a 5/5.*
 
@@ -9305,17 +8435,13 @@ order.
 
 <a id="r802.8"></a>**802.8. Inverted.** Inverted is an attribute. Its reminder text reads "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
 
-> *Example: Its Dark Bubb's reminder, verbatim: a -1/+2 change on an Inverted unit becomes +1/-2.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Its Dark Bubb; Manual p.25 · Our glossary (not a source): Inverted · Tests: 43-dark-c.test.ts · Example test: 43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim · Key: attr.inverted</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Its Dark Bubb; Manual p.25 · Our glossary (not a source): Inverted · Tests: 43-dark-c.test.ts · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim · Key: attr.inverted</sub>
 
 <a id="r802.8a"></a>**802.8a** Inverted inverts the net change to a unit's stats. An Inverted unit's power is its base power minus the net change to its power, and its defense is its base defense minus the net change to its defense. It is worked out on the total change, not on each change separately. See rule 206.4.
 
 > *Example: Malformed Monstrosity (10/9) with its -7/-7, in a column with Reality Bender, is a 17/16.*
 
-> *Example: With several sources changing its stats, an Inverted unit inverts the net change, not each source.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.25; Manual p.25 · Rulings: R93, R93 · Tests: 79-round17-layers.test.ts, 43-dark-c.test.ts · Example tests: 79-round17-layers.test.ts::R93 layer 5: the owner's Malformed Monstrosity, 43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own · Key: attr.inverted.net</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.25; Manual p.25 · Rulings: R93, R93 · Tests: 79-round17-layers.test.ts, 43-dark-c.test.ts · Example test: 79-round17-layers.test.ts::R93 layer 5: the owner's Malformed Monstrosity · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own · Key: attr.inverted.net</sub>
 
 <a id="r802.8b"></a>**802.8b** The changes Inverted inverts include those that Tough and Balanced make. Inverting Tough removes the defense Tough added; it does not halve the defense. See rules 802.6, 802.7.
 
@@ -9357,9 +8483,9 @@ order.
 
 > *Example: Tough donated onto Bubb does nothing.*
 
-> *Example: A Robot token given Unaware by Bubb ignores its own +1/+1 counters and dies a 0/0.*
+> *Example: Reconfigure moves Bubb onto a Robot token, which gains Unaware: it ignores its own +1/+1 counters and dies as a 0/0.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 4 tests, all passed; 3 gate test files · Designer: RAQ 1353847640214999170#1 · Rulings: R106, R106 · Tests: 92-unaware.test.ts, 393-raq-mods.test.ts, 79-round17-layers.test.ts · Example tests: 92-unaware.test.ts::a +1/+1 counter on Bubb leaves it a 5/6, 92-unaware.test.ts::Bubb would also survive 100 -1/-1 counters just fine, 92-unaware.test.ts::{Tough} donated onto Bubb does nothing, 393-raq-mods.test.ts::RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robot · Key: attr.unaware.self</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Designer: RAQ 1353847640214999170#1 · Rulings: R106, R106 · Tests: 92-unaware.test.ts, 393-raq-mods.test.ts, 79-round17-layers.test.ts · Example tests: 92-unaware.test.ts::a +1/+1 counter on Bubb leaves it a 5/6, 92-unaware.test.ts::Bubb would also survive 100 -1/-1 counters just fine, 92-unaware.test.ts::{Tough} donated onto Bubb does nothing, 393-raq-mods.test.ts::RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robot · Key: attr.unaware.self</sub>
 
 <a id="r802.9b"></a>**802.9b** Setting a unit's base stats is a stat change too. An Unaware unit whose base stats an effect sets is still read at its printed stats. See rule 206.5.
 
@@ -9383,11 +8509,7 @@ order.
 
 > *Example: Bubb blocks a 3/3 pumped to 5/5 and takes 3, the attacker's printed power.*
 
-> *Example: An Unaware attacker reads its exchange the same way an Unaware blocker does.*
-
-> *Example: In an Unaware exchange the front blocker is priced at its printed defense, less marked damage.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Rulings: R106, R106 · Tests: 92-unaware.test.ts, 05-rulings.test.ts, 423-cr-combat-damage.test.ts · Example tests: 92-unaware.test.ts::Bubb blocks a pumped 3/3 and takes the attacker's PRINTED 3, 92-unaware.test.ts::an Unaware ATTACKER collapses the exchange the same way a blocker does, 423-cr-combat-damage.test.ts::cr:combat.damage.assignment.lethal-defined — in an Unaware exchange · Key: attr.unaware.combat</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Rulings: R106, R106 · Tests: 92-unaware.test.ts, 05-rulings.test.ts, 423-cr-combat-damage.test.ts · Example test: 92-unaware.test.ts::Bubb blocks a pumped 3/3 and takes the attacker's PRINTED 3 · Demonstrated by tests: 92-unaware.test.ts::an Unaware ATTACKER collapses the exchange the same way a blocker does, 423-cr-combat-damage.test.ts::cr:combat.damage.assignment.lethal-defined — in an Unaware exchange · Key: attr.unaware.combat</sub>
 
 <a id="r802.9e"></a>**802.9e** A unit dealt damage in such an interaction is destroyed if the damage is lethal for its printed defense, even if the stats it has outside the interaction would let it survive. See rule 713.
 
@@ -9399,9 +8521,7 @@ order.
 
 <a id="r802.9f"></a>**802.9f** Outside such an interaction, an Unaware card does not change the stats of the other cards.
 
-> *Example: A Robot token that nobody Unaware is fighting is its full size.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R106 · Tests: 92-unaware.test.ts · Example test: 92-unaware.test.ts::NEGATIVE CONTROL: a Robot token that nobody Unaware is fighting is its full size · Key: attr.unaware.outside</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R106 · Tests: 92-unaware.test.ts · Demonstrated by test: 92-unaware.test.ts::NEGATIVE CONTROL: a Robot token that nobody Unaware is fighting is its full size · Key: attr.unaware.outside</sub>
 
 <a id="r802.9g"></a>**802.9g** A spell can be Unaware. A spell has no stats of its own, so its Unaware only makes the cards it deals damage to be read at their printed stats. See rule 302.
 
@@ -9411,7 +8531,7 @@ order.
 
 <a id="r802.9h"></a>**802.9h** Unaware does not stop a card being targeted. An effect can put counters or other stat changes on an Unaware card; they stay on it but do not change its stats while it is Unaware. See rule 110.
 
-> *Example: Poison with X = 6, targeting Bubb (a 5/6, Unaware), puts six -1/-1 counters on it; Bubb is still a 5/6. (illustrative)*
+> *Example: Poison with X = 6, targeting Bubb (a 5/6, Unaware), puts six -1/-1 counters on it; Bubb is still a 5/6.*
 
 > *Example: A Robot 10 may Squish Unaware Bubb, targeting Bubb. The Robot, interacting with Unaware Bubb, is read at its printed 0/0, so it deals 0 and Bubb takes no harm.*
 
@@ -9421,7 +8541,7 @@ order.
 
 <a id="r802.10"></a>**802.10. Powerful.** Powerful is a combat attribute. Its reminder text reads "Powerful sources deal double damage".
 
-> *Example: Chitin Shredder (1/2 Powerful) deals 3 effect damage as 6, and unblocked costs the defending player 2 life.*
+> *Example: When Chitin Shredder (1/2, Powerful) is the source of 3 damage from an effect, 6 is dealt; attacking unblocked, it costs the defending player 2 life.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: card: Emberflame Enlightener · Our glossary (not a source): Powerful · Tests: 430-cr-attributes-1.test.ts · Example test: 430-cr-attributes-1.test.ts::cr:attr.powerful — Emberflame Enlightener prints the reminder, and a Powerful source deals double in combat and by effect · Key: attr.powerful</sub>
 
@@ -9441,9 +8561,7 @@ order.
 
 <a id="r802.10c"></a>**802.10c** Powerful also doubles damage its source deals through spells and abilities, to units and players alike. See rule 112.9.
 
-> *Example: Powerful doubles effect damage from a Powerful source.*
-
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1362838395298119912#4; RAQ 1362838395298119912#3 · Rulings: R237 · Tests: 09-attrs.test.ts, 206-deadly-everywhere.test.ts · Example test: 09-attrs.test.ts::Powerful: doubles effect damage from a Powerful source · Key: attr.powerful.noncombat</sub>
+<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1362838395298119912#4; RAQ 1362838395298119912#3 · Rulings: R237 · Tests: 09-attrs.test.ts, 206-deadly-everywhere.test.ts · Demonstrated by test: 09-attrs.test.ts::Powerful: doubles effect damage from a Powerful source · Key: attr.powerful.noncombat</sub>
 
 <a id="r802.10d"></a>**802.10d** A spell can have Powerful. Damage a Powerful spell deals is doubled. See rule 302.
 
@@ -9463,9 +8581,7 @@ order.
 
 <a id="r802.10f"></a>**802.10f** Powerful does not apply in an interaction with a Pure card (see rule 802.25). See rule 802.25.
 
-> *Example: A Pure source's own Powerful does not double its damage.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61 · Tests: 290-pure-outside-combat.test.ts · Example test: 290-pure-outside-combat.test.ts::§1 a Pure source: its own Powerful does not double · Key: attr.powerful.pure</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61 · Tests: 290-pure-outside-combat.test.ts · Demonstrated by test: 290-pure-outside-combat.test.ts::§1 a Pure source: its own Powerful does not double · Key: attr.powerful.pure</sub>
 
 <a id="r802.11"></a>**802.11. Vulnerable.** Vulnerable is an attribute. A Vulnerable unit is dealt double the damage that would be dealt to it.
 
@@ -9497,35 +8613,27 @@ order.
 
 <a id="r802.11d"></a>**802.11d** If a Powerful source deals damage to a Vulnerable unit, both apply: the source's damage is doubled, and the unit is dealt double that. See rule 112.9.
 
-> *Example: Powerful (source) and Vulnerable (receiver) both apply to one effect hit.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R103 (its pricing order), R103 (its pricing order), R23 · Tests: 82-attr-interactions.test.ts · Example test: 82-attr-interactions.test.ts::Powerful (source) and Vulnerable (receiver) both apply to one effect hit · Key: attr.vulnerable.powerful</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R103 (its pricing order), R103 (its pricing order), R23 · Tests: 82-attr-interactions.test.ts · Demonstrated by test: 82-attr-interactions.test.ts::Powerful (source) and Vulnerable (receiver) both apply to one effect hit · Key: attr.vulnerable.powerful</sub>
 
 <a id="r802.11e"></a>**802.11e** A Pure Vulnerable unit, and a Vulnerable unit in an interaction with a Pure card, is not dealt double damage. See rule 802.25. *(Engine differs, see F-U19-3.)*
 
-> *Example: A Pure source hitting a Vulnerable unit deals only what it says.*
+> *Example: Chitin Shredder (Powerful), made Pure, deals 2 damage to Crumbling Ancient (Vulnerable, 3/8). It is dealt 2: neither Powerful nor Vulnerable doubles it, and the Ancient survives.*
 
 > *Example: Crumbling Ancient (Vulnerable) made Pure is dealt 2 by a 2-damage effect, not 4.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Just a Unit · Rulings: R61, R289 (its per-pairing switch) · Tests: 290-pure-outside-combat.test.ts, 430-cr-attributes-1.test.ts · Example tests: 290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too, 430-cr-attributes-1.test.ts::cr:attr.vulnerable.pure — a Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4 · Key: attr.vulnerable.pure</sub>
+<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Just a Unit · Rulings: R61, R289 (its per-pairing switch) · Tests: 290-pure-outside-combat.test.ts, 430-cr-attributes-1.test.ts · Example tests: 290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too, 430-cr-attributes-1.test.ts::cr:attr.vulnerable.pure — a Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4 · Key: attr.vulnerable.pure</sub>
 
 <a id="r802.12"></a>**802.12. Feeble.** Feeble is an attribute. A Feeble unit can't block.
 
 > *Example: Spectrogenesis creates three Wisps (Feeble); none of them can block.*
 
-> *Example: When a Feeble unit is refused as a blocker, the client names it.*
-
-> *Example: Bripp prints Feeble.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Spectrogenesis · Rulings: R294 (all but its premise from the 2022 Rules Glossary) · Our glossary (not a source): Feeble · Tests: 08-cards2.test.ts, 86-ui-block-refusal.test.ts, 430-cr-attributes-1.test.ts · Example tests: 08-cards2.test.ts::Spectrogenesis: three Wisps; Feeble means they cannot block, 86-ui-block-refusal.test.ts::#77: {Feeble} — the unit that cannot block is the one that is named, 430-cr-attributes-1.test.ts::cr:attr.feeble — Bripp prints Feeble, so the block-refusal guards that use it are not vacuous · Key: attr.feeble</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Spectrogenesis · Rulings: R294 (all but its premise from the 2022 Rules Glossary) · Our glossary (not a source): Feeble · Tests: 08-cards2.test.ts, 86-ui-block-refusal.test.ts, 430-cr-attributes-1.test.ts · Example test: 08-cards2.test.ts::Spectrogenesis: three Wisps; Feeble means they cannot block · Demonstrated by tests: 86-ui-block-refusal.test.ts::#77: {Feeble} — the unit that cannot block is the one that is named, 430-cr-attributes-1.test.ts::cr:attr.feeble — Bripp prints Feeble, so the block-refusal guards that use it are not vacuous · Key: attr.feeble</sub>
 
 <sub>Discrepancies: D-U19-11 (discrepancies.md)</sub>
 
 <a id="r802.12a"></a>**802.12a** Whether a unit can block depends on its own Feeble only. A Feeble unit can't block even if it shares a column with units that are not Feeble, and Feeble that a unit would share from its column does not stop it blocking. See rules 802.1, 606.2.
 
-> *Example: The block check asks Feeble of the unit, not of its column.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Example test: 298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality is still the unit's own question · Key: attr.feeble.own</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary), R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Demonstrated by test: 298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality is still the unit's own question · Key: attr.feeble.own</sub>
 
 <a id="r802.12b"></a>**802.12b** A Pure unit that is Feeble can block: Pure makes it ignore its own Feeble (see rule 802.25). See rule 802.25.
 
@@ -9535,15 +8643,11 @@ order.
 
 <a id="r802.12c"></a>**802.12c** A Feeble unit is not able to block, so an Alluring trigger that targets it cannot compel it to block (see rules 606.2e and 802.15). See rules 606.2e, 802.15.
 
-> *Example: A lured Feeble unit is not compelled to block the Alluring column.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R84 · Tests: 53-playtest-round7.test.ts · Example test: 53-playtest-round7.test.ts::R84: a {Feeble} lured unit is not able, so it is not compelled · Key: attr.feeble.lured</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R84 · Tests: 53-playtest-round7.test.ts · Demonstrated by test: 53-playtest-round7.test.ts::R84: a {Feeble} lured unit is not able, so it is not compelled · Key: attr.feeble.lured</sub>
 
 <a id="r802.13"></a>**802.13. Evasive.** Evasive is an attribute. Its reminder text, printed under the type line, reads "Evasive units require two blockers." See rules 802.1, 606.2c.
 
-> *Example: Curio Drifter is Evasive.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1460216519731577027#0 · Rulings: R84 · Our glossary (not a source): Evasive · Tests: 07-cards.test.ts · Example test: 07-cards.test.ts::Curio Drifter: Evasive requires two blockers · Key: attr.evasive</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1460216519731577027#0 · Rulings: R84 · Our glossary (not a source): Evasive · Tests: 07-cards.test.ts · Demonstrated by test: 07-cards.test.ts::Curio Drifter: Evasive requires two blockers · Key: attr.evasive</sub>
 
 <sub>Discrepancies: D-U20-1 (discrepancies.md)</sub>
 
@@ -9561,9 +8665,7 @@ order.
 
 <a id="r802.14"></a>**802.14. Sneaky.** Sneaky is an attribute. Its reminder text, printed under the type line, reads "Sneaky units can't be blocked if attacking alone." See rules 802.1, 606.2c.
 
-> *Example: Whispering Mantid is Sneaky.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R20 · Our glossary (not a source): Sneaky · Tests: 08-cards2.test.ts · Example test: 08-cards2.test.ts::Whispering Mantid: Sneaky · Key: attr.sneaky</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R20 · Our glossary (not a source): Sneaky · Tests: 08-cards2.test.ts · Demonstrated by test: 08-cards2.test.ts::Whispering Mantid: Sneaky · Key: attr.sneaky</sub>
 
 <a id="r802.14a"></a>**802.14a** An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation. See rule 606.
 
@@ -9575,33 +8677,29 @@ order.
 
 <a id="r802.14b"></a>**802.14b** Spell tokens that go with an attack do not count as attacking units for Sneaky. A Sneaky unit attacking with only spell tokens beside it is attacking alone. See rule 604.2c.
 
-> *Example: Example (illustrative): A Sneaky unit attacks together with two Fireball spell tokens. It is still attacking alone and cannot be blocked.*
+> *Example: A Sneaky unit attacks together with two Fireball spell tokens. It is still attacking alone and cannot be blocked.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R20 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.sneaky.spell-tokens — a Sneaky unit attacking with two riding Fireball spell tokens is still alone and cannot be blocked · Key: attr.sneaky.spell-tokens</sub>
 
 <a id="r802.14c"></a>**802.14c** Two Sneaky units attacking together are not alone. Both can be blocked.
 
-> *Example: Example (illustrative): Two Whispering Mantids attack in different columns. The defender may block either or both.*
+> *Example: Two Whispering Mantids attack in different columns. The defender may block either or both.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R20 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.sneaky.two-sneaky — two Whispering Mantids attacking in two columns are not alone, and both can be blocked · Key: attr.sneaky.two-sneaky</sub>
 
 <a id="r802.14d"></a>**802.14d** A side-block does not block a lone Sneaky attacker. The defending player may side-block beside it, and it stays unblocked (see rule 606.4e). See rule 606.4e.
 
-> *Example: A side-block beside a lone Sneaky attacker is allowed, and the Sneaky unit is still unblocked.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R321 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.blocks-nothing — a side-block beside a lone Sneaky attacker · Key: attr.sneaky.side-block</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R321 · Tests: 422-cr-attacking-blocking.test.ts · Demonstrated by test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.blocks-nothing — a side-block beside a lone Sneaky attacker · Key: attr.sneaky.side-block</sub>
 
 <a id="r802.14e"></a>**802.14e** A Pure unit ignores Sneaky, so it can block a lone Sneaky attacker (see rule 802.25). See rule 802.25.
 
-> *Example: Example (illustrative): A lone Sneaky unit attacks. The defender can block it with Just a Unit (Pure), and with no other unit.*
+> *Example: A lone Sneaky unit attacks. The defender can block it with Just a Unit (Pure), and with no other unit.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R61 · Replaces: R76 (its 'able' sub-findings (a Pure blocker still sees through lone Sneaky) survive in R84; its Alluring rule was replaced by R84) · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.sneaky.pure — Just a Unit (Pure) can block a lone Sneaky attacker, and a plain unit cannot · Key: attr.sneaky.pure</sub>
 
 <a id="r802.15"></a>**802.15. Alluring.** Alluring is an attribute. Its reminder text, printed under the type line, reads "When an alluring column attacks, target enemy can't attack and must block it this combat if able." See rules 802.1, 604.2e, 606.2e.
 
-> *Example: Tempest Wrangler is Alluring, and donates Alluring when applied as an augment.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R84 · Our glossary (not a source): Alluring · Tests: 15-water-b.test.ts · Example test: 15-water-b.test.ts::Tempest Wrangler: {Alluring} 1/3 · Key: attr.alluring</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R84 · Our glossary (not a source): Alluring · Tests: 15-water-b.test.ts · Demonstrated by test: 15-water-b.test.ts::Tempest Wrangler: {Alluring} 1/3 · Key: attr.alluring</sub>
 
 <a id="r802.15a"></a>**802.15a** When an attacking column with Alluring is declared, Alluring triggers. The trigger goes on the stack and targets one enemy unit, chosen by the attacking player from the enemy units in the battle region as the trigger is put on the stack. See rules 706, 110.
 
@@ -9637,7 +8735,7 @@ order.
 
 <a id="r802.15f"></a>**802.15f** When the Alluring trigger resolves, its target must block the Alluring column in that battle round if it is able to. If the column is blocked at all, the target must be one of its blockers (see rule 606.2e). See rule 606.2e.
 
-> *Example: The defender has two units able to block and leaves the Alluring column unblocked by putting both on other columns. The declaration is refused: the lured unit must block the Alluring column.*
+> *Example: The defender has two units able to block and tries to leave the Alluring column unblocked by putting both on other columns. That is not allowed: the lured unit must block the Alluring column.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1460216519731577027#2 · Rulings: R84, R84 · Tests: 53-playtest-round7.test.ts · Example test: 53-playtest-round7.test.ts::R84 UFAB · Key: attr.alluring.must-block</sub>
 
@@ -9669,7 +8767,7 @@ order.
 
 <a id="r802.15k"></a>**802.15k** If two Alluring triggers have targeted the same unit, it cannot block both columns. Blocking either of those columns with it satisfies both triggers, and the other column may then be blocked by other units or left unblocked.
 
-> *Example: Example (illustrative): Two Alluring columns both target unit A. A blocks the first column. The second column may be blocked by B alone, or left unblocked.*
+> *Example: Two Alluring columns both target unit A. A blocks the first column. The second column may be blocked by B alone, or left unblocked.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 2 gate test files · Rulings: R84 · Tests: 53-playtest-round7.test.ts, 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.alluring.two-duties — one unit lured by two columns blocks one of them, and the other column may be blocked by another unit or left unblocked · Key: attr.alluring.two-duties</sub>
 
@@ -9707,9 +8805,7 @@ order.
 
 <a id="r802.16"></a>**802.16. Piercing.** Piercing is an attribute. Its reminder text reads "Excess damage from piercing sources is dealt to the recipient's controller." See rules 802.1, 608.
 
-> *Example: Protective Adaptations gives a unit +1/+1 and Piercing until regroup.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Protective Adaptations; Rulebook 2023 p.11 · Replaces: R7 (Piercing half ('automatic, not elective') reversed by R319); R103 (its 'automatic, not elective' half reversed by R340); R319 (its closing note that noncombat Piercing is automatic reversed by R340) · Our glossary (not a source): Piercing · Tests: 14-water-a.test.ts · Example test: 14-water-a.test.ts::Protective Adaptations: the target also gains piercing until regroup · Key: attr.piercing</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Protective Adaptations; Rulebook 2023 p.11 · Replaces: R7 (Piercing half ('automatic, not elective') reversed by R319); R103 (its 'automatic, not elective' half reversed by R340); R319 (its closing note that noncombat Piercing is automatic reversed by R340) · Our glossary (not a source): Piercing · Tests: 14-water-a.test.ts · Demonstrated by test: 14-water-a.test.ts::Protective Adaptations: the target also gains piercing until regroup · Key: attr.piercing</sub>
 
 <a id="r802.16a"></a>**802.16a** Excess damage, for Piercing, is the damage a source deals to a unit beyond that unit's lethal damage. A unit's lethal damage is worked out after Powerful has doubled the source's damage; it is reduced for a Vulnerable unit, which is dealt double what reaches it; it is 1 if the source has Deadly; and damage already dealt to the unit counts towards it, including damage dealt to it earlier by the same effect (see rule 608.6e). See rules 608.6e, 802.3, 802.10, 802.11.
 
@@ -9731,15 +8827,11 @@ order.
 
 > *Example: A 10-power Piercing attacker is blocked by a lone Vulnerable 3/8. The attacker may put all 10 into it (dealt as 20), and none reaches the player.*
 
-> *Example: A Piercing split may keep part of the excess on the back unit and send the rest to the player.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1353888077625561108#5; RAQ 1372451771632320512#4 · Rulings: R319 (its combat ruling) · Replaces: R7 ('Piercing is automatic, not elective' reversed by R319); R21 ('a Deadly Piercing column sends everything past 1-per-blocker through' amended by R319: that is the default only) · Tests: 399-raq-fix-combat.test.ts · Example tests: 399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8, 399-raq-fix-combat.test.ts::R319: a Piercing split may keep part of the excess on the back unit and send the rest · Key: attr.piercing.elective</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1353888077625561108#5; RAQ 1372451771632320512#4 · Rulings: R319 (its combat ruling) · Replaces: R7 ('Piercing is automatic, not elective' reversed by R319); R21 ('a Deadly Piercing column sends everything past 1-per-blocker through' amended by R319: that is the default only) · Tests: 399-raq-fix-combat.test.ts · Example test: 399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8 · Demonstrated by test: 399-raq-fix-combat.test.ts::R319: a Piercing split may keep part of the excess on the back unit and send the rest · Key: attr.piercing.elective</sub>
 
 <a id="r802.16d"></a>**802.16d** An unblocked attacking half-column with Piercing deals its combat damage to the defending player, as any unblocked half-column does. See rule 608.4a.
 
-> *Example: An unblocked Piercing column hits the defending player.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1365594171867664445#0 · Tests: 387-raq-combat.test.ts · Example test: 387-raq-combat.test.ts::RAQ Piercing: an unblocked Piercing column hits the player · Key: attr.piercing.unblocked</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1365594171867664445#0 · Tests: 387-raq-combat.test.ts · Demonstrated by test: 387-raq-combat.test.ts::RAQ Piercing: an unblocked Piercing column hits the player · Key: attr.piercing.unblocked</sub>
 
 <a id="r802.16e"></a>**802.16e** If an attacking half-column with Piercing is blocked but no blocking unit is left in front of it when it strikes, all of its damage is excess and is dealt to the defending player. A blocked half-column without Piercing deals no damage in that case (see rule 608.4c). See rules 608.4c, 606.3a.
 
@@ -9751,11 +8843,9 @@ order.
 
 <a id="r802.16f"></a>**802.16f** A blocking half-column with Piercing deals excess combat damage to the attacking player only if there is an attacking unit in front of it when it strikes. If no attacking unit is in front of it (its attackers are all gone, or it is a side-block), it deals no combat damage at all (see rules 608.4e and 608.4f). See rules 608.4e, 608.4f.
 
-> *Example: A Piercing blocking column with an attacker in front of it deals its excess to the attacking player.*
-
 > *Example: A Piercing side-blocker deals no combat damage to the attacking player.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1365594171867664445#3 · Rulings: R72 (its attackers-gone half), R321 · Replaces: R72 (its no-side-block note replaced by R321) · Tests: 387-raq-combat.test.ts, 400-raq-fix-blocks.test.ts, 64-formation-collapse.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Piercing: a defending Piercing column with an attacker in front of it carries its excess to the attacker, 400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player · Key: attr.piercing.defending</sub>
+<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1365594171867664445#3 · Rulings: R72 (its attackers-gone half), R321 · Replaces: R72 (its no-side-block note replaced by R321) · Tests: 387-raq-combat.test.ts, 400-raq-fix-blocks.test.ts, 64-formation-collapse.test.ts · Example test: 400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player · Demonstrated by test: 387-raq-combat.test.ts::RAQ Piercing: a defending Piercing column with an attacker in front of it carries its excess to the attacker · Key: attr.piercing.defending</sub>
 
 <a id="r802.16g"></a>**802.16g** If the Piercing source also has Deadly, lethal damage is 1 for each unit, so all damage beyond 1 for each unit may be excess. See rule 802.3.
 
@@ -9769,9 +8859,7 @@ order.
 
 > *Example: A Piercing column is blocked by a shielded 0/5 in front of a 5/6. It must assign 5 to the shielded unit and 6 to the unit behind; the rest may go to the player.*
 
-> *Example: A Piercing effect hits a shielded unit. The shield changes what is dealt to the unit, never what pierces.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353888077625561108#10 · Rulings: R103 (its order of operations) · Tests: 387-raq-combat.test.ts, 82-attr-interactions.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Excessive: with Piercing, 5 to the shielded Tomb, 82-attr-interactions.test.ts::Piercing vs a damage-shielded unit · Key: attr.piercing.prevention</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1353888077625561108#10 · Rulings: R103 (its order of operations) · Tests: 387-raq-combat.test.ts, 82-attr-interactions.test.ts · Example test: 387-raq-combat.test.ts::RAQ Excessive: with Piercing, 5 to the shielded Tomb · Demonstrated by test: 82-attr-interactions.test.ts::Piercing vs a damage-shielded unit · Key: attr.piercing.prevention</sub>
 
 <a id="r802.16i"></a>**802.16i** Piercing excess is dealt as part of the same damage as the rest, at the same time. It is not a triggered ability, and no player can act between the damage dealt to the units and the excess dealt to the player.
 
@@ -9783,9 +8871,7 @@ order.
 
 > *Example: Squish makes Bubb, in a column with Good Whale (Piercing), deal 6 to a 1/1. The dealing player may keep all 6 on the 1/1, or send up to 5 to its controller.*
 
-> *Example: A non-Piercing source's overkill stays on the unit, and no question is asked.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1402292180499955884#5 · Rulings: R340, R340, R340 · Replaces: R103 (its 'automatic, not elective' half reversed by R340); R319 (its closing note that noncombat Piercing is unchanged (automatic) reversed by R340) · Tests: 405-raq-noncombat-piercing.test.ts, 82-attr-interactions.test.ts · Example tests: 405-raq-noncombat-piercing.test.ts::R340 Squish: Bubb with Good Whale's Piercing, 405-raq-noncombat-piercing.test.ts::R340 control: no Piercing, no question · Key: attr.piercing.noncombat</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1402292180499955884#5 · Rulings: R340, R340, R340 · Replaces: R103 (its 'automatic, not elective' half reversed by R340); R319 (its closing note that noncombat Piercing is unchanged (automatic) reversed by R340) · Tests: 405-raq-noncombat-piercing.test.ts, 82-attr-interactions.test.ts · Example test: 405-raq-noncombat-piercing.test.ts::R340 Squish: Bubb with Good Whale's Piercing · Demonstrated by test: 405-raq-noncombat-piercing.test.ts::R340 control: no Piercing, no question · Key: attr.piercing.noncombat</sub>
 
 <a id="r802.16k"></a>**802.16k** For noncombat damage, the dealing player is the controller of the source unit, even if another player controls the spell that made it deal damage (for Squish, Fight and Battle the unit is the source; see rule 112.6). If the source is not a unit in play (a spell, or a unit that has left play), the controller of the effect decides. See rule 112.6.
 
@@ -9795,9 +8881,7 @@ order.
 
 <a id="r802.16m"></a>**802.16m** Each unit's excess is dealt to that unit's controller. If one effect deals Piercing damage to units controlled by different players, each player is dealt the excess from their own units.
 
-> *Example: A Piercing effect damages units on both sides. Each unit's excess goes to that unit's controller.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Protective Adaptations · Tests: 82-attr-interactions.test.ts · Example test: 82-attr-interactions.test.ts::Piercing in a BATCH: each unit's excess goes to THAT unit's controller · Key: attr.piercing.recipients</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Protective Adaptations · Tests: 82-attr-interactions.test.ts · Demonstrated by test: 82-attr-interactions.test.ts::Piercing in a BATCH: each unit's excess goes to THAT unit's controller · Key: attr.piercing.recipients</sub>
 
 <a id="r802.16n"></a>**802.16n** A unit in a column with a Piercing unit has Piercing while that column exists, for the noncombat damage it deals as well as for combat damage (see rule 802.1). See rule 802.1.
 
@@ -9823,15 +8907,13 @@ order.
 
 <a id="r802.16r"></a>**802.16r** Piercing does not apply in an interaction involving a Pure card (see rule 802.25). See rule 802.25.
 
-> *Example: Example (illustrative): A 6-power Piercing column is blocked by Just a Unit (Pure). All 6 are dealt to Just a Unit; none reaches the defending player.*
+> *Example: A 6-power Piercing column is blocked by Just a Unit (Pure). All 6 are dealt to Just a Unit; none reaches the defending player.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 2 gate test files · Printed: card: Just a Unit · Rulings: R61, R61 · Tests: 40-light-c.test.ts, 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.piercing.pure — a 6-power Piercing column blocked by Just a Unit sends nothing to the defending player · Key: attr.piercing.pure</sub>
 
 <a id="r802.17"></a>**802.17. Electric.** Electric is an attribute. Its reminder text reads "Excess damage from electric sources can be directed to an adjacent unit, recursively." See rule 802.1.
 
-> *Example: Arc Lightning is an Electric spell: "I deal 6 damage to any target."*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Envoy of Lightning; card: Arc Lightning · Our glossary (not a source): Electric · Tests: 387-raq-combat.test.ts · Example test: 387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8 · Key: attr.electric</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Envoy of Lightning; card: Arc Lightning · Our glossary (not a source): Electric · Tests: 387-raq-combat.test.ts · Demonstrated by test: 387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8 · Key: attr.electric</sub>
 
 <sub>Discrepancies: D-U20-15 (discrepancies.md)</sub>
 
@@ -9843,17 +8925,13 @@ order.
 
 <a id="r802.17b"></a>**802.17b** The excess never jumps to a unit it has already been dealt to in that chain.
 
-> *Example: Electric excess follows a non-overlapping path chosen by the controller.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R206 (its Electric row) · Our glossary (not a source): Electric · Tests: 05-rulings.test.ts · Example test: 05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically · Key: attr.electric.no-revisit</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R206 (its Electric row) · Our glossary (not a source): Electric · Tests: 05-rulings.test.ts · Demonstrated by test: 05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically · Key: attr.electric.no-revisit</sub>
 
 <sub>Discrepancies: D-U20-7 (discrepancies.md)</sub>
 
 <a id="r802.17c"></a>**802.17c** The Electric source's controller chooses where the excess goes at each jump. *(Engine differs, see F-U20-1.)*
 
-> *Example: Arc Lightning's caster, who controls the source, is asked where the excess goes.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R4 (its who-chooses and atomic halves), R317 (its optional-hop and dead-end ruling) · Tests: 05-rulings.test.ts · Example test: 05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically · Key: attr.electric.chooser</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R4 (its who-chooses and atomic halves), R317 (its optional-hop and dead-end ruling) · Tests: 05-rulings.test.ts · Demonstrated by test: 05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically · Key: attr.electric.chooser</sub>
 
 <a id="r802.17d"></a>**802.17d** Each jump is optional. At any jump, the source's controller may instead keep all the remaining excess on the unit it has reached; it is then all dealt to that unit and goes no further. This is so even when there is only one unit to jump to.
 
@@ -9871,7 +8949,7 @@ order.
 
 <a id="r802.17f"></a>**802.17f** Adjacency for Electric is adjacency in a formation (see rule 603.2). A unit that is not in a formation has no adjacent unit, so Electric excess dealt to it has nowhere to jump. See rule 603.2b.
 
-> *Example: Example (illustrative): During the deployment phase no unit is in a formation, so an Electric spell's excess stays on the unit it hit.*
+> *Example: During the deployment phase no unit is in a formation, so an Electric spell's excess stays on the unit it hit.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: Envoy of Lightning · Engine: engine.ts:adjacentInFormation · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.electric.adjacency — outside a battle no unit is adjacent, so Electric excess stays on the unit it hit and nothing is asked · Key: attr.electric.adjacency</sub>
 
@@ -9885,9 +8963,7 @@ order.
 
 <a id="r802.17h"></a>**802.17h** Lethal damage along the chain is worked out as it is for Piercing (see rule 802.16): a Vulnerable unit needs only half, and damage already dealt to it by the same effect counts. See rule 802.16a.
 
-> *Example: Arc Lightning on a Vulnerable 3/8: 4 is its lethal damage, so 2 is left to jump.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1372451771632320512#0 · Rulings: R103 (its one lethal arithmetic), R80 · Tests: 387-raq-combat.test.ts · Example test: 387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8 · Key: attr.electric.lethal</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1372451771632320512#0 · Rulings: R103 (its one lethal arithmetic), R80 · Tests: 387-raq-combat.test.ts · Demonstrated by test: 387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8 · Key: attr.electric.lethal</sub>
 
 <a id="r802.17i"></a>**802.17i** Envoy of Lightning makes "your spell effects with a single target" Electric. A spell effect has a single target if it was cast with exactly one target.
 
@@ -9903,23 +8979,17 @@ order.
 
 <a id="r802.18"></a>**802.18. Poisonous.** Poisonous is an attribute. Its reminder text reads "Poisonous sources damage units in the form of -1/-1 counters." See rule 802.1.
 
-> *Example: Noxious Sporefiend is Poisonous.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Blightmound · Our glossary (not a source): Poisonous · Tests: 09-attrs.test.ts · Example test: 09-attrs.test.ts::Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters · Key: attr.poisonous</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Blightmound · Our glossary (not a source): Poisonous · Tests: 09-attrs.test.ts · Demonstrated by test: 09-attrs.test.ts::Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters · Key: attr.poisonous</sub>
 
 <a id="r802.18a"></a>**802.18a** Damage a Poisonous source deals to a unit is put on that unit as that many -1/-1 counters instead of being marked on it. See rule 112.5.
 
 > *Example: Noxious Sporefiend deals 2 combat damage to a unit; the unit gets two -1/-1 counters and no marked damage.*
 
-> *Example: Poisonous effect damage becomes -1/-1 counters, and can kill.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Blightmound · Rulings: R237 · Tests: 09-attrs.test.ts, 206-deadly-everywhere.test.ts · Example tests: 09-attrs.test.ts::Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters, 09-attrs.test.ts::Poisonous: effect damage becomes -1/-1 counters and can kill · Key: attr.poisonous.form</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Blightmound · Rulings: R237 · Tests: 09-attrs.test.ts, 206-deadly-everywhere.test.ts · Example test: 09-attrs.test.ts::Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters · Demonstrated by test: 09-attrs.test.ts::Poisonous: effect damage becomes -1/-1 counters and can kill · Key: attr.poisonous.form</sub>
 
 <a id="r802.18b"></a>**802.18b** Poisonous damage is damage dealt. Abilities that trigger when a unit is dealt damage trigger on it (see rule 112.10). See rule 112.10.
 
-> *Example: Noxious Sporefiend deals 2 to Awoken Tomb, which gets two -1/-1 counters and makes its 2/2.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1354148437355925554#0 · Rulings: R237 · Tests: 206-deadly-everywhere.test.ts, 431-cr-attributes-2.test.ts · Example test: 206-deadly-everywhere.test.ts::R237: an un-prevented {Poisonous} hit fires "whenever I am dealt damage" · Key: attr.poisonous.is-damage</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1354148437355925554#0 · Rulings: R237 · Tests: 206-deadly-everywhere.test.ts, 431-cr-attributes-2.test.ts · Demonstrated by test: 206-deadly-everywhere.test.ts::R237: an un-prevented {Poisonous} hit fires "whenever I am dealt damage" · Key: attr.poisonous.is-damage</sub>
 
 <sub>Discrepancies: D-U20-9 (discrepancies.md)</sub>
 
@@ -9943,25 +9013,25 @@ order.
 
 <a id="r802.18f"></a>**802.18f** If a Poisonous source's damage to a unit is prevented, no damage is dealt and no -1/-1 counters are put on it. See rules 112.11, 708.
 
-> *Example: Phytochemical Protection on Jollyglop prevents a Poisonous hit: no counters, no damage trigger, and the shield pays its +1/+1 counters.*
+> *Example: Sporebloom Siren (2/2, Poisonous) attacks; the defender casts Phytochemical Protection on Jollyglop and blocks with it. The 2 damage is prevented: Jollyglop gets no -1/-1 counters and makes no 1/1s, and Phytochemical Protection puts two +1/+1 counters on it.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Designer: RAQ 1354148437355925554#1 · Rulings: R98 (its prevention ruling) · Tests: 24-wood-b.test.ts, 387-raq-combat.test.ts, 82-attr-interactions.test.ts · Example test: 387-raq-combat.test.ts::RAQ Poisonous: a shielded Jollyglop hit by a Poisonous unit · Key: attr.poisonous.prevention</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 3 gate test files · Designer: RAQ 1354148437355925554#1 · Rulings: R98 (its prevention ruling) · Tests: 24-wood-b.test.ts, 387-raq-combat.test.ts, 82-attr-interactions.test.ts · Example test: 387-raq-combat.test.ts::RAQ Poisonous: a shielded Jollyglop hit by a Poisonous unit · Key: attr.poisonous.prevention</sub>
 
 <a id="r802.18g"></a>**802.18g** Poisonous changes only damage dealt to units. Damage a Poisonous source deals to a player is ordinary damage.
 
-> *Example: Example (illustrative): An unblocked Poisonous column with 3 power makes the defending player lose 3 life.*
+> *Example: An unblocked Poisonous column with 3 power makes the defending player lose 3 life.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 2 gate test files · Printed: card: Blightmound · Tests: 42-dark-b.test.ts, 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.poisonous.players — an unblocked Poisonous column with 3 power makes the defending player lose 3 life · Key: attr.poisonous.players</sub>
 
 <a id="r802.18h"></a>**802.18h** Poisonous damage triggers Resonant like any other damage (see rule 802.19). See rule 802.19.
 
-> *Example: Example (illustrative): A Poisonous and Resonant source deals 2 to a unit. The unit gets two -1/-1 counters, and the Resonant trigger deals 2 to its controller.*
+> *Example: A Poisonous and Resonant source deals 2 to a unit. The unit gets two -1/-1 counters, and the Resonant trigger deals 2 to its controller.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R237 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.poisonous.resonant — a Poisonous Resonant hit of 2 puts two -1/-1 counters on the unit, and the Resonant trigger deals 2 to its controller · Key: attr.poisonous.resonant</sub>
 
 <a id="r802.18i"></a>**802.18i** Poisonous does not apply in an interaction involving a Pure card (see rule 802.25). See rule 802.25.
 
-> *Example: Example (illustrative): A Poisonous column is blocked by Just a Unit. Just a Unit is dealt ordinary marked damage, not -1/-1 counters.*
+> *Example: A Poisonous column is blocked by Just a Unit. Just a Unit is dealt ordinary marked damage, not -1/-1 counters.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.poisonous.pure — a Poisonous column blocked by Just a Unit marks ordinary damage, not -1/-1 counters · Key: attr.poisonous.pure</sub>
 
@@ -9987,7 +9057,7 @@ order.
 
 <a id="r802.19c"></a>**802.19c** "That much damage" is the damage the unit was dealt: after Vulnerable doubled it and after any prevention. If all of the damage to the unit is prevented, Resonant does not trigger. See rules 802.11, 112.11.
 
-> *Example: Example (illustrative): A Resonant source deals 2 to a Vulnerable unit, which is dealt 4. The Resonant trigger deals 4 to that unit's controller.*
+> *Example: A Resonant source deals 2 to a Vulnerable unit, which is dealt 4. The Resonant trigger deals 4 to that unit's controller.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R315 (its trigger ruling), R315 (its trigger ruling) · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.resonant.amount — a Resonant source dealing 2 to a Vulnerable unit, which is dealt 4, makes a Resonant trigger that deals 4 to its controller · Key: attr.resonant.amount</sub>
 
@@ -10015,29 +9085,21 @@ order.
 
 <a id="r802.19g"></a>**802.19g** Resonant triggers only on damage dealt to a unit. Damage a Resonant source deals to a player does not trigger it.
 
-> *Example: Example (illustrative): An unblocked Resonant column deals 3 combat damage to the defending player. Resonant does not trigger.*
+> *Example: An unblocked Resonant column deals 3 combat damage to the defending player. Resonant does not trigger.*
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Designer: RAQ 1362838395298119912#1 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.resonant.units-only — an unblocked Resonant column dealing 3 combat damage to the defending player does not trigger Resonant · Key: attr.resonant.units-only</sub>
 
 <a id="r802.19h"></a>**802.19h** Because Resonant is a triggered ability, an effect that makes triggered abilities cost more to trigger (Crevice Lurker) applies to it, and if that cost is not paid the trigger does not happen. It can be negated while it is on the stack. See rule 111.10f.
 
-> *Example: Crevice Lurker taxes the Resonant trigger.*
-
-> *Example: The Resonant trigger can be negated while it waits on the stack after combat.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1366446116274442291#1 · Rulings: R315 (its trigger ruling) · Tests: 390-raq-stack.test.ts, 399-raq-fix-combat.test.ts · Example tests: 390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes Resonant, 399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat · Key: attr.resonant.tax-and-negate</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1366446116274442291#1 · Rulings: R315 (its trigger ruling) · Tests: 390-raq-stack.test.ts, 399-raq-fix-combat.test.ts · Demonstrated by tests: 390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes Resonant, 399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat · Key: attr.resonant.tax-and-negate</sub>
 
 <sub>Discrepancies: D-U20-10, D-U20-6 (discrepancies.md)</sub>
 
 <a id="r802.19i"></a>**802.19i** A Resonant trigger caused by combat damage is put on the stack and resolved as other triggers caused by combat damage are (see rules 608 and 609). See rule 609.
 
-> *Example: A Resonant column's trigger from an unsplit combat damage step waits until after combat.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R315 (its trigger ruling) · Replaces: R261 (its unconditional hold narrowed by R295: in a split damage step, triggers resolve at the sub-step boundary) · Tests: 399-raq-fix-combat.test.ts · Example test: 399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat · Key: attr.resonant.combat-timing</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R315 (its trigger ruling) · Replaces: R261 (its unconditional hold narrowed by R295: in a split damage step, triggers resolve at the sub-step boundary) · Tests: 399-raq-fix-combat.test.ts · Demonstrated by test: 399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat · Key: attr.resonant.combat-timing</sub>
 
 <a id="r802.19j"></a>**802.19j** If the Resonant source has left play by the time its trigger resolves, the trigger still deals its damage, reading the source as it last was in play. See rule 714.
-
-> *Example: Example (illustrative): A Powerful Resonant unit dies in combat with its trigger waiting. The trigger still deals double damage, because the unit was Powerful when it left play.*
 
 > *Example: A Powerful Resonant unit deals 1 to a unit, which is dealt 2, and then leaves play with its Resonant trigger waiting. The trigger still deals double damage, 4, because the unit was Powerful when it left play.*
 
@@ -10045,15 +9107,13 @@ order.
 
 <a id="r802.19k"></a>**802.19k** Resonant does not apply in an interaction involving a Pure card (see rule 802.25). See rule 802.25.
 
-> *Example: Example (illustrative): A Resonant column is blocked by Just a Unit. No Resonant trigger happens for the damage dealt to Just a Unit.*
+> *Example: A Resonant column is blocked by Just a Unit. No Resonant trigger happens for the damage dealt to Just a Unit.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.resonant.pure — a Resonant column blocked by Just a Unit triggers no Resonant · Key: attr.resonant.pure</sub>
 
 <a id="r802.20"></a>**802.20. Thieving.** Thieving is an attribute. Its reminder text, printed under the type line, reads "Whenever a thieving source deals combat damage to an opponent, draw a card." See rule 802.1.
 
-> *Example: Slink is Thieving.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R24 · Our glossary (not a source): Thieving · Tests: 09-attrs.test.ts · Example test: 09-attrs.test.ts::Thieving: Slink draws when its column deals combat damage to a player · Key: attr.thieving</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R24 · Our glossary (not a source): Thieving · Tests: 09-attrs.test.ts · Demonstrated by test: 09-attrs.test.ts::Thieving: Slink draws when its column deals combat damage to a player · Key: attr.thieving</sub>
 
 <a id="r802.20a"></a>**802.20a** When a column with Thieving deals combat damage to an opponent, the column's controller draws a card.
 
@@ -10071,13 +9131,13 @@ order.
 
 <a id="r802.20c"></a>**802.20c** Piercing excess counts: a blocked Thieving column whose Piercing excess is dealt to the opponent draws a card. See rule 802.16.
 
-> *Example: Example (illustrative): A Thieving and Piercing column is blocked by a 1/1 and deals 3 of excess to the defending player. Its controller draws a card.*
+> *Example: A Thieving and Piercing column is blocked by a 1/1 and deals 3 of excess to the defending player. Its controller draws a card.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R24 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.thieving.piercing — a Thieving and Piercing column blocked by a 1/1 deals 3 of excess to the defending player, and its controller draws a card · Key: attr.thieving.piercing</sub>
 
 <a id="r802.20d"></a>**802.20d** If combat damage a Thieving column deals to an opponent is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, and the column's controller still draws a card (see rule 608.8a). See rules 608.8a, 112.12.
 
-> *Example: Example (illustrative): Blightsea Polyp turns a Thieving column's combat damage to the defending player into 1 rot. The attacker still draws a card.*
+> *Example: Blightsea Polyp turns a Thieving column's combat damage to the defending player into 1 rot. The attacker still draws a card.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R238, R238 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.thieving.replaced — a Thieving column whose hit to the defending player Blightsea Polyp turns into 1 rot costs no life, and its controller still draws a card · Key: attr.thieving.replaced</sub>
 
@@ -10085,17 +9145,13 @@ order.
 
 <a id="r802.20e"></a>**802.20e** Thieving applies only to combat damage. Noncombat damage a Thieving source deals to an opponent does not draw a card.
 
-> *Example: Example (illustrative): A unit in a Thieving column uses an ability that deals 2 damage to an opponent. No card is drawn.*
-
 > *Example: A Thieving unit deals 2 noncombat damage to an opponent. No card is drawn.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R24 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.thieving.combat-only — 2 noncombat damage from a Thieving source to an opponent draws nothing · Key: attr.thieving.combat-only</sub>
 
 <a id="r802.21"></a>**802.21. Reaping.** Reaping is an attribute. Its reminder text, printed under the type line, reads "When a reaping source kills one or more units, draw a card. It loses reaping until regroup." See rule 802.1.
 
-> *Example: Flame of History is a Reaping spell: "I deal 1 damage to any target."*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R283 · Replaces: R184 (its premise that Reaping prints no reminder, and its per-body payout, corrected by R283) · Our glossary (not a source): Reaping · Tests: 07-cards.test.ts · Example test: 07-cards.test.ts::Flame of History: Reaping · Key: attr.reaping</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R283 · Replaces: R184 (its premise that Reaping prints no reminder, and its per-body payout, corrected by R283) · Our glossary (not a source): Reaping · Tests: 07-cards.test.ts · Demonstrated by test: 07-cards.test.ts::Flame of History: Reaping · Key: attr.reaping</sub>
 
 <a id="r802.21a"></a>**802.21a** When a Reaping source kills one or more units, its controller draws one card, however many units it killed.
 
@@ -10111,13 +9167,11 @@ order.
 
 > *Example: Noxious Demise kills a 1/1 with a -1/-1 counter. Reaping draws a card.*
 
-> *Example: Invasive Reassignment kills nobody, and nothing is drawn.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Rulings: R184 (its kill-rider half), R21 (its Deadly half) · Tests: 156-reaping-and-formation.test.ts · Example tests: 156-reaping-and-formation.test.ts::Invasive Reassignment: a kill by a STAT SWAP pays {Reaping}, 156-reaping-and-formation.test.ts::Noxious Demise: a kill by a -1/-1 COUNTER pays {Reaping}, 156-reaping-and-formation.test.ts::Invasive Reassignment: a swap that kills NOBODY draws nothing · Key: attr.reaping.any-kill</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Rulings: R184 (its kill-rider half), R21 (its Deadly half) · Tests: 156-reaping-and-formation.test.ts · Example tests: 156-reaping-and-formation.test.ts::Invasive Reassignment: a kill by a STAT SWAP pays {Reaping}, 156-reaping-and-formation.test.ts::Noxious Demise: a kill by a -1/-1 COUNTER pays {Reaping} · Demonstrated by test: 156-reaping-and-formation.test.ts::Invasive Reassignment: a swap that kills NOBODY draws nothing · Key: attr.reaping.any-kill</sub>
 
 <a id="r802.21c"></a>**802.21c** After a Reaping source's kill has drawn a card, the source loses Reaping until regroup. *(Engine differs, see F-U20-4.)*
 
-> *Example: Example (illustrative): If a unit had Reaping and killed a blocker in the first battle round, it would draw a card and then have no Reaping in the second round.*
+> *Example: If a unit had Reaping and killed a blocker in the first battle round, it would draw a card and then have no Reaping in the second round.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; no gate test · Rulings: R283 · Key: attr.reaping.loses</sub>
 
@@ -10131,13 +9185,7 @@ order.
 
 <a id="r802.22a"></a>**802.22a** When a Blessed source deals damage, its controller gains that much life. This applies to combat and noncombat damage, and to damage dealt to units and to players.
 
-> *Example: A Blessed column's combat damage to a player gains its controller that much life.*
-
-> *Example: A Blessed column's combat damage to a unit gains its controller that much life as well.*
-
-> *Example: A Blessed effect's damage gains its controller exactly that much life.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Blessed Thing · Tests: 37-attrs-wight.test.ts, 44-hybrids-ld-a.test.ts · Example tests: 37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a player gains too, 37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a UNIT gains as well, 37-attrs-wight.test.ts::R48 {Blessed}: effect damage gains its controller exactly that much life · Key: attr.blessed.gain</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Blessed Thing · Tests: 37-attrs-wight.test.ts, 44-hybrids-ld-a.test.ts · Demonstrated by tests: 37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a player gains too, 37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a UNIT gains as well, 37-attrs-wight.test.ts::R48 {Blessed}: effect damage gains its controller exactly that much life · Key: attr.blessed.gain</sub>
 
 <a id="r802.22b"></a>**802.22b** The life is gained at the same time as the damage is dealt. It is not a triggered ability and does not use the stack, and it is gained before it is checked whether any player has reached 0 life.
 
@@ -10159,21 +9207,17 @@ order.
 
 <a id="r802.22e"></a>**802.22e** A unit in a column with a Blessed unit has Blessed while that column exists, so damage its abilities deal gains its controller life too (see rule 802.1). See rule 802.1.
 
-> *Example: A unit attacking in a column with Flzzz (Blessed) uses an ability to deal 1 damage. Its controller gains 1 life.*
+> *Example: Lithoghul attacks in a column with Flzzz (Blessed) and uses an ability to deal 3 damage. Lithoghul has Blessed from its column, so its controller gains 3 life.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Example test: 298-column-attrs-outside-combat.test.ts::R294 §1 the report · Key: attr.blessed.column</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Example test: 298-column-attrs-outside-combat.test.ts::R294 §1 the report · Key: attr.blessed.column</sub>
 
 <a id="r802.22f"></a>**802.22f** Blessed does not apply in an interaction involving a Pure card (see rule 802.25). See rule 802.25.
 
-> *Example: A Pure Blessed source deals damage, and its controller gains nothing.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61 · Tests: 290-pure-outside-combat.test.ts · Example test: 290-pure-outside-combat.test.ts::§4 a Pure {Blessed} source gains nothing · Key: attr.blessed.pure</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61 · Tests: 290-pure-outside-combat.test.ts · Demonstrated by test: 290-pure-outside-combat.test.ts::§4 a Pure {Blessed} source gains nothing · Key: attr.blessed.pure</sub>
 
 <a id="r802.23"></a>**802.23. Afflicting.** Afflicting is an attribute. Its reminder text reads "When an afflicting source kills one or more units, those units' controllers gain a rot." See rules 802.1, 112.13.
 
-> *Example: Umbral Decay is an Afflicting spell that puts two -1/-1 counters on target unit.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Umbral Decay · Our glossary (not a source): Afflicting · Tests: 42-dark-b.test.ts · Example test: 42-dark-b.test.ts::Umbral Decay: two -1/-1 counters · Key: attr.afflicting</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Umbral Decay · Our glossary (not a source): Afflicting · Tests: 42-dark-b.test.ts · Demonstrated by test: 42-dark-b.test.ts::Umbral Decay: two -1/-1 counters · Key: attr.afflicting</sub>
 
 <a id="r802.23a"></a>**802.23a** When an Afflicting source kills one or more units, each player who controlled one of those units gains one rot.
 
@@ -10193,43 +9237,35 @@ order.
 
 <a id="r802.23c"></a>**802.23c** A unit counts as killed by an Afflicting source however the source killed it: by damage, by -1/-1 counters, by changing its stats, or by destroying it outright.
 
-> *Example: A -1/-1 counter kill by an Afflicting source gives a rot.*
-
 > *Example: Umbral Decay's counter kill gives a rot and draws nothing.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R48, R184 (its kill-rider half) · Tests: 37-attrs-wight.test.ts, 156-reaping-and-formation.test.ts · Example tests: 37-attrs-wight.test.ts::R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot, 156-reaping-and-formation.test.ts::Umbral Decay: an {Afflicting} counter-kill rots and draws NOTHING · Key: attr.afflicting.any-kill</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R48, R184 (its kill-rider half) · Tests: 37-attrs-wight.test.ts, 156-reaping-and-formation.test.ts · Example test: 156-reaping-and-formation.test.ts::Umbral Decay: an {Afflicting} counter-kill rots and draws NOTHING · Demonstrated by test: 37-attrs-wight.test.ts::R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot · Key: attr.afflicting.any-kill</sub>
 
 <a id="r802.23d"></a>**802.23d** Afflicting applies to kills by combat damage as well. An Afflicting column that kills units in combat gives their controllers rot.
 
-> *Example: An Afflicting column kills a blocker in combat. The blocker's controller gains a rot.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Umbral Decay · Rulings: R48 (its Afflicting half) · Tests: 37-attrs-wight.test.ts, 431-cr-attributes-2.test.ts · Example test: 37-attrs-wight.test.ts::R48 {Afflicting}: a plain COMBAT kill counts too · Key: attr.afflicting.combat</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Umbral Decay · Rulings: R48 (its Afflicting half) · Tests: 37-attrs-wight.test.ts, 431-cr-attributes-2.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::R48 {Afflicting}: a plain COMBAT kill counts too · Key: attr.afflicting.combat</sub>
 
 <a id="r802.23e"></a>**802.23e** Afflicting does not apply in an interaction involving a Pure card (see rule 802.25). See rule 802.25.
 
-> *Example: Example (illustrative): An Afflicting column kills Just a Unit (Pure) in combat. Its controller gains no rot.*
+> *Example: An Afflicting column kills Just a Unit (Pure) in combat. Its controller gains no rot.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.afflicting.pure — an Afflicting column that kills Just a Unit gives its controller no rot · Key: attr.afflicting.pure</sub>
 
 <a id="r802.24"></a>**802.24. Lethal.** Lethal is an attribute. Its reminder text reads "Any combat damage from a lethal unit will kill a player." See rule 802.1.
 
-> *Example: Gublin is Lethal.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Gublin · Our glossary (not a source): Lethal · Tests: 44-hybrids-ld-a.test.ts · Example test: 44-hybrids-ld-a.test.ts::Gublin: {Lethal} · Key: attr.lethal</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Gublin · Our glossary (not a source): Lethal · Tests: 44-hybrids-ld-a.test.ts · Demonstrated by test: 44-hybrids-ld-a.test.ts::Gublin: {Lethal} · Key: attr.lethal</sub>
 
 <a id="r802.24a"></a>**802.24a** If a column with Lethal deals any combat damage to a player, however little, that player is killed (see rule 104). See rule 104.1.
 
 > *Example: Gublin (1/4) attacks unblocked and deals 1 combat damage to the defending player, who is killed.*
 
-> *Example: Any combat damage from a Lethal unit kills the player.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Gublin · Tests: 44-hybrids-ld-a.test.ts, 37-attrs-wight.test.ts · Example tests: 44-hybrids-ld-a.test.ts::Gublin: {Lethal}, 37-attrs-wight.test.ts::R48 {Lethal}: any combat damage from a lethal unit kills the player · Key: attr.lethal.kills</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Gublin · Tests: 44-hybrids-ld-a.test.ts, 37-attrs-wight.test.ts · Example test: 44-hybrids-ld-a.test.ts::Gublin: {Lethal} · Demonstrated by test: 37-attrs-wight.test.ts::R48 {Lethal}: any combat damage from a lethal unit kills the player · Key: attr.lethal.kills</sub>
 
 <sub>Discrepancies: D-U20-17 (discrepancies.md)</sub>
 
 <a id="r802.24b"></a>**802.24b** Lethal applies only to combat damage dealt to a player. It does not change noncombat damage, or damage dealt to units.
 
-> *Example: Example (illustrative): A Lethal unit blocked by a 2/2 kills it as any unit would; Lethal does nothing to the blocker.*
+> *Example: A Lethal unit blocked by a 2/2 kills it as any unit would; Lethal does nothing to the blocker.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: Gublin · Rulings: R166 · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.lethal.combat-only — a Lethal unit blocked by a 2/2 kills it as any unit would, and the defending player is untouched · Key: attr.lethal.combat-only</sub>
 
@@ -10249,23 +9285,19 @@ order.
 
 <a id="r802.25"></a>**802.25. Pure.** Pure is an attribute. Its reminder text reads "Pure cards and cards they are interacting with ignore all other attributes." See rule 802.1.
 
-> *Example: Just a Unit is Pure.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Our glossary (not a source): Pure · Tests: 40-light-c.test.ts · Example test: 40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions · Key: attr.pure</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Our glossary (not a source): Pure · Tests: 40-light-c.test.ts · Demonstrated by test: 40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions · Key: attr.pure</sub>
 
 <a id="r802.25a"></a>**802.25a** A Pure card ignores its own other attributes too. See rule 802.12.
 
 > *Example: An Alluring column that is itself Pure ignores its own Alluring and never triggers.*
 
-> *Example: Example (illustrative): A Pure unit that is also Feeble can block.*
+> *Example: A Pure unit that is also Feeble can block.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61 · Tests: 53-playtest-round7.test.ts · Example test: 53-playtest-round7.test.ts::R84 + R61: an Alluring column that is itself {Pure} never even triggers · Key: attr.pure.own</sub>
 
 <a id="r802.25b"></a>**802.25b** In combat, an interaction is one attacking half-column and the blocking half-column paired with it. If either contains a Pure card, the attributes of both are ignored for that exchange. See rule 608.4.
 
-> *Example: A Pure unit blocks a column; the exchange is attribute-blind in both directions.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61, R61 · Tests: 40-light-c.test.ts · Example test: 40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions · Key: attr.pure.combat-interaction</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Rulings: R61, R61 · Tests: 40-light-c.test.ts · Demonstrated by test: 40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions · Key: attr.pure.combat-interaction</sub>
 
 <a id="r802.25c"></a>**802.25c** In a combat exchange involving a Pure card, neither side has Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting or Thieving, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d). See rules 608.2d, 608.6e.
 
@@ -10285,7 +9317,7 @@ order.
 
 <a id="r802.25e"></a>**802.25e** Pure does not change a unit's printed stats: a Pure 2/3 is destroyed by 3 damage. But Tough, Balanced and Inverted are attributes, so in an interaction involving a Pure card they do not apply (rule 802.1n). See rules 802.6, 802.7, 802.8. *(Engine differs, see F-U19-1.)*
 
-> *Example: A Tough 0/4 blocks a column containing Just a Unit (Pure). Tough does not apply in that exchange, so the blocker has 4 defense, not 8. (illustrative; the engine keeps Tough on: F-U19-1)*
+> *Example: A Tough 0/4 blocks a column containing Just a Unit (Pure). Tough does not apply in that exchange, so the blocker has 4 defense, not 8.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (3 probes it wrote), all passed; no gate test · Printed: card: Just a Unit; Manual p.42 · Rulings: R61 · Key: attr.pure.stat-attributes</sub>
 
@@ -10293,29 +9325,21 @@ order.
 
 <a id="r802.25f"></a>**802.25f** Unaware is an attribute, so in combat it does not apply in an exchange involving a Pure card: the units in that exchange are read at their current stats, not their printed ones (rule 802.1n). See rule 802.9. *(Engine differs, see F-U19-2.)*
 
-> *Example: Bubb (Unaware) blocks a column containing Just a Unit (Pure) that has a +1/+1 counter. Unaware does not apply in that exchange, so the counter counts. (illustrative; the engine keeps the Unaware collapse on: F-U19-2)*
+> *Example: Bubb (Unaware) blocks a column containing Just a Unit (Pure) that has a +1/+1 counter. Unaware does not apply in that exchange, so the counter counts.*
 
 <sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test (a probe it wrote), passed; no gate test · Printed: card: Just a Unit; Manual p.42 · Key: attr.pure.unaware-combat</sub>
 
 <a id="r802.25g"></a>**802.25g** Outside combat, an interaction is one effect and one recipient of its damage. Pure applies to each such pairing separately.
 
-> *Example: One batch damages two recipients; only the pairing with the Pure unit is attribute-blind.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R289 (its per-pairing ruling) · Replaces: R289 (its sentence that the recipient is read with its own attributes only (not its column's) superseded by R294) · Tests: 290-pure-outside-combat.test.ts · Example test: 290-pure-outside-combat.test.ts::§3 one batch, two recipients · Key: attr.pure.noncombat</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R289 (its per-pairing ruling) · Replaces: R289 (its sentence that the recipient is read with its own attributes only (not its column's) superseded by R294) · Tests: 290-pure-outside-combat.test.ts · Demonstrated by test: 290-pure-outside-combat.test.ts::§3 one batch, two recipients · Key: attr.pure.noncombat</sub>
 
 <a id="r802.25h"></a>**802.25h** A Pure source deals plain damage to every recipient: its own Powerful, Deadly, Piercing, Electric, Poisonous, Resonant, Blessed and Unaware do not apply, against units or players.
 
-> *Example: A Pure source's own Powerful does not double and its granted Deadly does not kill.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R289 (its per-pairing ruling), R289 (its per-pairing ruling) · Tests: 290-pure-outside-combat.test.ts · Example test: 290-pure-outside-combat.test.ts::§1 a Pure source · Key: attr.pure.noncombat.source</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R289 (its per-pairing ruling), R289 (its per-pairing ruling) · Tests: 290-pure-outside-combat.test.ts · Demonstrated by test: 290-pure-outside-combat.test.ts::§1 a Pure source · Key: attr.pure.noncombat.source</sub>
 
 <a id="r802.25i"></a>**802.25i** A Pure recipient is dealt plain damage by any source: the source's attributes do not apply to it, and neither do its own Vulnerable and Unaware.
 
-> *Example: The source's Powerful and Deadly do nothing to a Pure recipient.*
-
-> *Example: A Pure recipient's own Vulnerable is off.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R289 (its per-pairing ruling) · Tests: 290-pure-outside-combat.test.ts · Example tests: 290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it, 290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too · Key: attr.pure.noncombat.recipient</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R289 (its per-pairing ruling) · Tests: 290-pure-outside-combat.test.ts · Demonstrated by tests: 290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it, 290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too · Key: attr.pure.noncombat.recipient</sub>
 
 <a id="r802.25j"></a>**802.25j** A recipient that is not Pure, damaged by the same effect as a Pure recipient, is dealt damage with all attributes applying.
 
@@ -10325,7 +9349,7 @@ order.
 
 <a id="r802.25k"></a>**802.25k** During a battle, a unit in a column with a Pure unit has Pure for noncombat damage too, as a source and as a recipient (see rule 802.1). See rule 802.1.
 
-> *Example: Example (illustrative): A unit stands in a column with Just a Unit. A Powerful spell deals 1 damage to it: it is dealt 1, not 2.*
+> *Example: A unit stands in a column with Just a Unit. A Powerful spell deals 1 damage to it: it is dealt 1, not 2.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary) · Replaces: R289 (its sentence that the recipient is read with its own attributes only superseded by R294) · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.pure.column — a unit attacking in a column with Just a Unit is dealt 1, not 2, by a Powerful effect dealing 1 · Key: attr.pure.column</sub>
 
@@ -10333,43 +9357,29 @@ order.
 
 <a id="r802.25m"></a>**802.25m** Pure does not change what can be targeted. See rule 110.
 
-> *Example: Example (illustrative): A spell that says "target unit" can target Just a Unit like any other unit.*
+> *Example: Arc Lightning, which says "any target", can target Just a Unit like any other unit.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R289 (its per-pairing ruling) · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.pure.not-targeting — a target-unit damage spell (Arc Lightning) can target Just a Unit · Key: attr.pure.not-targeting</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R289 (its per-pairing ruling) · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.pure.not-targeting — a target-unit damage spell (Arc Lightning) can target Just a Unit · Key: attr.pure.not-targeting</sub>
 
 <a id="r802.26"></a>**802.26. Modular.** Modular is an attribute. Its reminder text reads "You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs." See rule 720.
 
-> *Example: Spellbind is a Modular spell.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Spellbind · Our glossary (not a source): Modular · Tests: 43-dark-c.test.ts · Example test: 43-dark-c.test.ts::Spellbind: {Modular} carrier · Key: attr.modular</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Spellbind · Our glossary (not a source): Modular · Tests: 43-dark-c.test.ts · Demonstrated by test: 43-dark-c.test.ts::Spellbind: {Modular} carrier · Key: attr.modular</sub>
 
 <a id="r802.26a"></a>**802.26a** As a Modular card is played, its controller may apply mods to it from their hand and from their bin, paying each mod's cost. The mods go onto the stack with the card (see rule 702.3b). See rule 702.3b.
 
-> *Example: Mods are applied to a Modular spell as it is cast, paid for, and ride on the stack with it.*
-
-> *Example: The caster may decline to apply any mod.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 4 tests, all passed; 3 gate test files · Printed: card: Spellbind · Tests: 37-attrs-wight.test.ts, 91-modular.test.ts, 425-cr-casting-and-stack.test.ts · Example tests: 37-attrs-wight.test.ts::{Modular}: mods are applied at cast time, 37-attrs-wight.test.ts::{Modular}: the caster may decline · Key: attr.modular.when</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 4 tests, all passed; 3 gate test files · Printed: card: Spellbind · Tests: 37-attrs-wight.test.ts, 91-modular.test.ts, 425-cr-casting-and-stack.test.ts · Demonstrated by tests: 37-attrs-wight.test.ts::{Modular}: mods are applied at cast time, 37-attrs-wight.test.ts::{Modular}: the caster may decline · Key: attr.modular.when</sub>
 
 <a id="r802.26b"></a>**802.26b** Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card, including a card that will do nothing as a mod there. No other condition restricts what may be applied.
 
-> *Example: The menu offers every card the player can pay for: a graft, a Virus, a non-Virus augment, and a card that can do nothing.*
-
-> *Example: A card in the bin is offered beside the hand, and one the player cannot pay for is not.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R105, R105, R105 · Tests: 91-modular.test.ts · Example tests: 91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for, 91-modular.test.ts::R105: a card in the BIN is offered beside the hand · Key: attr.modular.anything</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R105, R105, R105 · Tests: 91-modular.test.ts · Demonstrated by tests: 91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for, 91-modular.test.ts::R105: a card in the BIN is offered beside the hand · Key: attr.modular.anything</sub>
 
 <a id="r802.26c"></a>**802.26c** Applying a mod to a Modular card is not playing that mod (see rule 701.2). See rule 701.2.
 
-> *Example: The mod is charged as the Modular spell is cast, and applying it is not playing it.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1537748882501668934#0 · Rulings: R37 · Tests: 91-modular.test.ts · Example test: 91-modular.test.ts::R105: "you still pay their costs" · Key: attr.modular.not-played</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1537748882501668934#0 · Rulings: R37 · Tests: 91-modular.test.ts · Demonstrated by test: 91-modular.test.ts::R105: "you still pay their costs" · Key: attr.modular.not-played</sub>
 
 <a id="r802.26d"></a>**802.26d** A graft mod applied to a Modular spell adds its graft effect to the spell as an extra part, and the spell and its grafted effects resolve as one. See rule 722.
 
-> *Example: A graft mod contributes its [Switch] effect as an extra part of Spellbind.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.33 · Rulings: R105 · Tests: 91-modular.test.ts · Example test: 91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part · Key: attr.modular.graft</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.33 · Rulings: R105 · Tests: 91-modular.test.ts · Demonstrated by test: 91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part · Key: attr.modular.graft</sub>
 
 <a id="r802.26e"></a>**802.26e** A mod whose type line grants attributes as an augment gives those attributes to the Modular spell's effect. See rule 721.
 
@@ -10379,25 +9389,17 @@ order.
 
 <a id="r802.26f"></a>**802.26f** An augment mod's text-box ability does nothing on a Modular spell: a spell cannot gain static or triggered abilities that way.
 
-> *Example: An [Augment]-text mod applied to Spellbind is accepted and does nothing.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R105 · Tests: 91-modular.test.ts · Example test: 91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing · Key: attr.modular.text-augment</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R105 · Tests: 91-modular.test.ts · Demonstrated by test: 91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing · Key: attr.modular.text-augment</sub>
 
 <a id="r802.26g"></a>**802.26g** A Modular card with a mod applied is modded, so it is Unstable: when it leaves the stack, whether it resolved, failed to resolve or was negated, it and its mods are erased instead of going to a bin. An unmodded Modular card goes to the bin as usual. See rules 803, 405.
 
 > *Example: A graft card in the bin is applied to Spellbind, resolves with it, and is erased, so it cannot be applied this way again.*
 
-> *Example: A negated modded Spellbind is erased too.*
-
-> *Example: An unmodded Modular spell is binned like any other spell.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Printed: Manual p.35 · Rulings: R105, R105 · Tests: 91-modular.test.ts · Example tests: 91-modular.test.ts::R105: the flashback line, 91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too, 91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable · Key: attr.modular.unstable</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Printed: Manual p.35 · Rulings: R105, R105 · Tests: 91-modular.test.ts · Example test: 91-modular.test.ts::R105: the flashback line · Demonstrated by tests: 91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too, 91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable · Key: attr.modular.unstable</sub>
 
 <sub>Discrepancies: D-U20-14 (discrepancies.md)</sub>
 
 <a id="r802.26h"></a>**802.26h** Modular is not shared with the other units of a column. See rule 802.1. *(Engine differs, see F-U20-3.)*
-
-> *Example: Example (illustrative): If a unit printed Modular, the other units in its column would not gain Modular.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts · Key: attr.modular.not-shared</sub>
 
@@ -10414,49 +9416,41 @@ order.
 
 > *Example: A modded unit is Unstable; a unit in the same column is not, and when it dies it goes to the bin.*
 
-> *Example: A modded unit does not make its column-mate Unstable.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.25 · Rulings: R145, R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts, 125-active-zone.test.ts · Example tests: 125-active-zone.test.ts::R145: Unstable is NOT shared in formation, 298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable · Key: keywords.abilities.non-combat.not-shared</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.25 · Rulings: R145, R294 (all but its premise from the 2022 Rules Glossary) · Tests: 298-column-attrs-outside-combat.test.ts, 125-active-zone.test.ts · Example test: 125-active-zone.test.ts::R145: Unstable is NOT shared in formation · Demonstrated by test: 298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable · Key: keywords.abilities.non-combat.not-shared</sub>
 
 <a id="r803.2"></a>**803.2.** Haste is a timing keyword. A card with Haste can be played during the haste step as well as during deployment. See rules 207.3, 504.
 
 > *Example: Tidal Menace, a {Haste} 7/2, can be played in the haste step.*
 
-> *Example: Tidal Menace, a {Haste} unit, is also offered and played during deployment.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.13; Manual p.13; Manual p.13 · Rulings: R206 (its Haste row) · Tests: 15-water-b.test.ts, 432-cr-keyword-abilities.test.ts · Example tests: 15-water-b.test.ts::Tidal Menace: {Haste} 7/2, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.haste — a Haste card is also offered and playable during deployment, not only in the haste step · Key: keywords.abilities.haste</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.13; Manual p.13; Manual p.13 · Rulings: R206 (its Haste row) · Tests: 15-water-b.test.ts, 432-cr-keyword-abilities.test.ts · Example test: 15-water-b.test.ts::Tidal Menace: {Haste} 7/2 · Demonstrated by test: 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.haste — a Haste card is also offered and playable during deployment, not only in the haste step · Key: keywords.abilities.haste</sub>
 
 <a id="r803.2a"></a>**803.2a** Printed text that names the "mana step" means the haste step. See rule 504.1.
 
-> *Example: Dispatch Courier lets its controller play a unit in the haste step as if it had Haste.*
+> *Example: Dispatch Courier says "play a unit during the mana step as if it had [Haste]": its controller may play a unit in the haste step.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.3; card: Dispatch Courier · Rulings: R97, R97 · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: "play a unit during the mana step as if it had [Haste]" · Key: keywords.abilities.haste.mana-step</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.3; card: Dispatch Courier · Rulings: R97, R97 · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: "play a unit during the mana step as if it had [Haste]" · Key: keywords.abilities.haste.mana-step</sub>
 
 <sub>Discrepancies: D-U05-1 (discrepancies.md)</sub>
 
 <a id="r803.2b"></a>**803.2b** An effect can let a card without Haste be played in the haste step "as if it had [Haste]", as Dispatch Courier does. This changes only when the card may be played. See rules 504.7, 803.3a.
 
-> *Example: With a Dispatch Courier in play, a deploy-timing unit is offered and accepted in the haste step, and the Courier's once-each-turn budget is charged.*
+> *Example: With Dispatch Courier in play, its controller can play a unit without Haste in the haste step, once each turn.*
 
-> *Example: Without a Dispatch Courier, a deploy-timing unit is not offered in the haste step.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Dispatch Courier · Rulings: R97 · Tests: 26-metal-a.test.ts · Example tests: 26-metal-a.test.ts::Dispatch Courier: "play a unit during the mana step as if it had [Haste]", 26-metal-a.test.ts::Dispatch Courier: no Courier, no OFFER · Key: keywords.abilities.haste.grants</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: Dispatch Courier · Rulings: R97 · Tests: 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: "play a unit during the mana step as if it had [Haste]" · Demonstrated by test: 26-metal-a.test.ts::Dispatch Courier: no Courier, no OFFER · Key: keywords.abilities.haste.grants</sub>
 
 <sub>Discrepancies: D-U05-4 (discrepancies.md)</sub>
 
 <a id="r803.3"></a>**803.3.** Battle is a timing keyword. A card with Battle can be played only while its player is in battle with another player. It cannot be played during deployment. See rules 207.4, 505.
 
-> *Example: A fulfilled prophecy on a {Battle} card does not let it be played at deployment: its Battle timing still applies.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.13; Manual p.13; Manual p.13; Rulebook 2023 p.3; Rulebook 2023 p.3 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R42: normal TIMING still applies · Key: keywords.abilities.battle</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.13; Manual p.13; Manual p.13; Rulebook 2023 p.3; Rulebook 2023 p.3 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R42: normal TIMING still applies · Key: keywords.abilities.battle</sub>
 
 <a id="r803.3a"></a>**803.3a** Gaining Haste does not let a Battle card be played outside battle. A Battle unit or Battle spell unit that an effect lets be played "as if it had [Haste]" still cannot be played in the haste step. See rules 207.4a, 504.2a.
 
 > *Example: Dispatch Courier's grant does not let a {Battle} unit be played in the haste step.*
 
-> *Example: Nor does it let a {Battle} spell unit be played there.*
+> *Example: Nor does Dispatch Courier let a {Battle} spell unit be played in the haste step.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1464899726796390433#0; RAQ 1465292396664193171#0; RAQ 1465292396664193171#1 · Tests: 26-metal-a.test.ts, 396-raq-timing.test.ts · Example tests: 26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant, 396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either · Key: keywords.abilities.battle.haste</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1464899726796390433#0; RAQ 1465292396664193171#0; RAQ 1465292396664193171#1 · Tests: 26-metal-a.test.ts, 396-raq-timing.test.ts · Example tests: 26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant, 396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either · Key: keywords.abilities.battle.haste</sub>
 
 <sub>Discrepancies: D-U05-3 (discrepancies.md)</sub>
 
@@ -10496,17 +9490,13 @@ order.
 
 <a id="r803.5c"></a>**803.5c** Each spell token in a Burst group chooses its own targets. The tokens do not have to share a target. See rule 110.
 
-> *Example: Each Fireball is aimed as it is picked.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R81 (its name-grouping half), R16 (its name-grouping half, as amended by R81) · Tests: 358-burst-order.test.ts · Example test: 358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it · Key: keywords.abilities.burst.targets</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R81 (its name-grouping half), R16 (its name-grouping half, as amended by R81) · Tests: 358-burst-order.test.ts · Demonstrated by test: 358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it · Key: keywords.abilities.burst.targets</sub>
 
 <a id="r803.5d"></a>**803.5d** A Burst group goes on the stack all at once. Its caster chooses the order one token at a time, in the order the tokens will resolve, and aims each as it is chosen; the token chosen first resolves first. The other players receive priority only when the whole group is on the stack. A lone token is not ordered. See rule 703.4b.
 
 > *Example: The Fireball picked first ends on top of the stack.*
 
-> *Example: A single Fireball is cast without an ordering question.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R309, R309, R309 · Replaces: R16 (its fixed entity-id stacking order replaced by R309); R81 (its entity-id order sentence replaced by R309) · Tests: 358-burst-order.test.ts, 358-burst-order-ui.test.ts · Example tests: 358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it, 358-burst-order.test.ts::R309: a lone token is not asked to be ordered · Key: keywords.abilities.burst.order</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R309, R309, R309 · Replaces: R16 (its fixed entity-id stacking order replaced by R309); R81 (its entity-id order sentence replaced by R309) · Tests: 358-burst-order.test.ts, 358-burst-order-ui.test.ts · Example test: 358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it · Demonstrated by test: 358-burst-order.test.ts::R309: a lone token is not asked to be ordered · Key: keywords.abilities.burst.order</sub>
 
 <a id="r803.6"></a>**803.6.** Ambush is a keyword that lets a unit card be played during battle with the effect "Recall target ally, put me into their position in play." See rule 203.1.
 
@@ -10526,19 +9516,17 @@ order.
 
 > *Example: Good Whale, a deploy-timing unit, is played as an Ambush in battle into the attacking column.*
 
-> *Example: During deployment, Lurking Slimebeast can be played normally, but its Ambush is neither offered nor accepted.*
+> *Example: During deployment, Lurking Slimebeast can be played normally, but not as an Ambush.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.40; Manual p.40; Manual p.40 · Rulings: R22 (its during-battle half) · Tests: 08-cards2.test.ts, 432-cr-keyword-abilities.test.ts · Example tests: 08-cards2.test.ts::Good Whale: the parked Ambush mode works, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.timing — an Ambush is neither offered nor accepted during deployment · Key: keywords.abilities.ambush.timing</sub>
 
 <a id="r803.6c"></a>**803.6c** The target of an Ambush must be an ally of the Ambush's controller in the battle region. An opponent's unit is never a legal target, even through an effect that redirects targets. See rule 110.
 
-> *Example: The client offers an Ambush only against the same ally the Ambush effect would accept.*
-
-> *Example: An Ambush offers the attacking ally, but not an enemy unit in the battle region nor an ally that stayed home.*
+> *Example: An Ambush can target the attacking ally, but not an enemy unit in the battle region, nor an ally that stayed home.*
 
 > *Example: An opposing Enigmatic Warder tries to redirect an Ambush onto itself: the Ambush still recalls its own ally, and the Warder stays in play.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (2 probes it wrote), all passed; 3 gate test files · Designer: RAQ 1355466429788328066#4 · Rulings: R22 · Tests: 243-ally-and-enemy-scope.test.ts, 49-playtest-round6.test.ts, 432-cr-keyword-abilities.test.ts · Example tests: 243-ally-and-enemy-scope.test.ts::R265 §4a the ambush legality gate asks for the same ally the ambush effect will, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.target — the Ambush menu holds only allies of the caster in the battle region, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.target — a redirect (Enigmatic Warder) cannot move an Ambush onto a unit of the opponent · Key: keywords.abilities.ambush.target</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (2 probes it wrote), all passed; 3 gate test files · Designer: RAQ 1355466429788328066#4 · Rulings: R22 · Tests: 243-ally-and-enemy-scope.test.ts, 49-playtest-round6.test.ts, 432-cr-keyword-abilities.test.ts · Example tests: 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.target — the Ambush menu holds only allies of the caster in the battle region, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.target — a redirect (Enigmatic Warder) cannot move an Ambush onto a unit of the opponent · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::R265 §4a the ambush legality gate asks for the same ally the ambush effect will · Key: keywords.abilities.ambush.target</sub>
 
 <a id="r803.6d"></a>**803.6d** An Ambush is a targeted effect on the stack. Players can respond to it before it resolves. See rule 703.
 
@@ -10558,19 +9546,15 @@ order.
 
 <a id="r803.6f"></a>**803.6f** If, as the Ambush resolves, its target is gone or is no longer an ally of the Ambush's controller, the Ambush fizzles: nothing is recalled, and the ambushing card is put into the bin. Its controller loses both units. See rules 704.6e, 405.2b.
 
-> *Example: An Ambush whose target was removed fizzles and its ambusher goes to the bin.*
-
 > *Example: An Ambush whose ally changed sides before it resolved recalls nothing.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.40; Manual p.40; Manual p.40 · Designer: RAQ 1355466429788328066#2 · Rulings: R22 · Tests: 08-cards2.test.ts, 390-raq-stack.test.ts · Example tests: 08-cards2.test.ts::Ambush fizzles when the target is removed, 390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing · Key: keywords.abilities.ambush.fizzle</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.40; Manual p.40; Manual p.40 · Designer: RAQ 1355466429788328066#2 · Rulings: R22 · Tests: 08-cards2.test.ts, 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing · Demonstrated by test: 08-cards2.test.ts::Ambush fizzles when the target is removed · Key: keywords.abilities.ambush.fizzle</sub>
 
 <a id="r803.6g"></a>**803.6g** Ambushing a unit that is the target of another effect saves it. The other effect does not change targets to the ambushing unit; it fails to resolve (fizzles). See rule 704.
 
-> *Example: (illustrative) A Fireball aimed at a 2/2 is answered by an Ambush on that 2/2. The 2/2 returns to its hand; the Fireball fizzles and the ambusher is not hit.*
+> *Example: A Fireball is aimed at a unit, and that unit's controller answers with an Ambush on it. The unit returns to its hand; the Fireball fizzles, and the ambusher takes no damage.*
 
-> *Example: A Fireball is aimed at a unit, and its controller answers with an Ambush on that unit. The unit returns to its hand; the Fireball fizzles, and the ambusher takes no damage.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.40; Manual p.40; Manual p.40; Manual p.40 · Tests: 432-cr-keyword-abilities.test.ts · Example test: 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.saves — ambushing the target of a Fireball saves it; the Fireball fizzles and does not hit the ambusher · Key: keywords.abilities.ambush.saves</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.40; Manual p.40; Manual p.40; Manual p.40 · Tests: 432-cr-keyword-abilities.test.ts · Example test: 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.saves — ambushing the target of a Fireball saves it; the Fireball fizzles and does not hit the ambusher · Key: keywords.abilities.ambush.saves</sub>
 
 <a id="r803.6h"></a>**803.6h** An Ambush on the stack counts as a spell effect, so an effect that negates spell effects can negate it. A negated Ambush puts its ambushing card into the bin. See rules 700.1a, 704.4a.
 
@@ -10586,65 +9570,47 @@ order.
 
 <a id="r803.6i"></a>**803.6i** A card in the cache under a live permission can be played as an Ambush, as it could from the hand. Under a fulfilled prophecy it is free; under a glimpse its controller pays the Ambush mana but ignores the affinity. See rules 702.2d, 403.3c.
 
-> *Example: A glimpsed Ambush card ambushes out of the cache, paying the Ambush mana and ignoring affinity.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R311, R311 · Tests: 370-cached-virus-in-battle.test.ts, 369-cache-is-the-hand.test.ts · Example test: 370-cached-virus-in-battle.test.ts::R311: a glimpsed Ambush card ambushes out of the cache · Key: keywords.abilities.ambush.cache</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R311, R311 · Tests: 370-cached-virus-in-battle.test.ts, 369-cache-is-the-hand.test.ts · Demonstrated by test: 370-cached-virus-in-battle.test.ts::R311: a glimpsed Ambush card ambushes out of the cache · Key: keywords.abilities.ambush.cache</sub>
 
 <a id="r803.6j"></a>**803.6j** An effect that plays a card for free, such as Tides of the Cosmos, may play an Ambush card as an Ambush. The Ambush cost is not paid, and a limit on the card's cost reads its main cost, not its Ambush cost. See rule 701.2c.
 
 > *Example: Tides of the Cosmos plays Mirrorback Ambusher as an Ambush: the ally leaves play and the ambusher stands in its place.*
 
-> *Example: With 3 of the Tides budget left, Lurking Slimebeast (main cost 4, Ambush 3) is not offered but Mirage Walker (main cost 3, Ambush 4) is, and playing it as an Ambush spends no mana.*
+> *Example: With 3 of the Tides budget left, Lurking Slimebeast (main cost 4, Ambush 3) cannot be chosen, but Mirage Walker (main cost 3, Ambush 4) can, and playing it as an Ambush spends no mana.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1396955380000755795#2 · Rulings: R337, R337 · Tests: 404-raq-fix-tides.test.ts, 432-cr-keyword-abilities.test.ts · Example tests: 404-raq-fix-tides.test.ts::R337: an Ambush card played by Tides as an Ambush takes an ally place, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.tides — the Tides budget reads the MAIN cost, and an Ambush via Tides pays nothing · Key: keywords.abilities.ambush.tides</sub>
 
 <a id="r803.7"></a>**803.7.** Prophecy is a keyword printed on a card's banner as a cost and a condition. A card with a Prophecy banner may be prophesied: its controller pays the banner's cost, and the card moves to the cache with its prophecy attached. See rules 203.4, 801.14, 403.
 
-> *Example: A card with no banner cannot be prophesied.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R42 (its cache-and-release half), R301 · Replaces: R42 (window amended by R277; source zone amended by R308; no-affinity cost corrected by R301) · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R42: a card with no banner cannot be prophesied at all · Key: keywords.abilities.prophecy</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R42 (its cache-and-release half), R301 · Replaces: R42 (window amended by R277; source zone amended by R308; no-affinity cost corrected by R301) · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R42: a card with no banner cannot be prophesied at all · Key: keywords.abilities.prophecy</sub>
 
 <a id="r803.7a"></a>**803.7a** An effect can give a card a prophecy as it caches the card. The prophecy works as a printed one does once the card is in the cache. See rule 403.
 
 > *Example: Grob caches a unit with 'One Battle Passes' attached, and the prophecy is fulfilled once a battle has passed.*
 
-> *Example: A unit cached with a granted prophecy carries it in the cache and it counts forward.*
-
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Waxen Witness; card: Grob · Tests: 36-cache-prophecy.test.ts, 39-light-b.test.ts · Example tests: 39-light-b.test.ts::Grob: on attack, up to one unit's controller caches it with 'One Battle Passes', 36-cache-prophecy.test.ts::R46: a cached unit can carry a granted prophecy (Grob / Waxen Witness) · Key: keywords.abilities.prophecy.granted</sub>
+<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Waxen Witness; card: Grob · Tests: 36-cache-prophecy.test.ts, 39-light-b.test.ts · Example test: 39-light-b.test.ts::Grob: on attack, up to one unit's controller caches it with 'One Battle Passes' · Demonstrated by test: 36-cache-prophecy.test.ts::R46: a cached unit can carry a granted prophecy (Grob / Waxen Witness) · Key: keywords.abilities.prophecy.granted</sub>
 
 <a id="r803.7b"></a>**803.7b** A card may be prophesied only during deployment. A card whose prophecy condition ends in a [Haste] icon may also be prophesied during the haste step. See rule 504.9.
 
-> *Example: Prophesying is refused in planning, in the haste step and in battle.*
-
-> *Example: A banner marked [Haste] may be prophesied in the haste step.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R42 (its deployment-only window, as widened by R277), R277 (its prophesy-window half), R277 (its prophesy-window half) · Replaces: R42 (its deployment-only window amended by R277) · Tests: 36-cache-prophecy.test.ts, 257-prophecy-release-timing.test.ts · Example tests: 36-cache-prophecy.test.ts::R42: prophesying is a DEPLOYMENT action, 257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step · Key: keywords.abilities.prophecy.window</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R42 (its deployment-only window, as widened by R277), R277 (its prophesy-window half), R277 (its prophesy-window half) · Replaces: R42 (its deployment-only window amended by R277) · Tests: 36-cache-prophecy.test.ts, 257-prophecy-release-timing.test.ts · Demonstrated by tests: 36-cache-prophecy.test.ts::R42: prophesying is a DEPLOYMENT action, 257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step · Key: keywords.abilities.prophecy.window</sub>
 
 <a id="r803.7c"></a>**803.7c** A card is prophesied from its controller's hand. It may be prophesied from the bin only if the card says so, and from the cache only while a glimpse permission on it is live; a card prophesied in the cache stays where it is. See rules 403.8, 801.9h.
 
-> *Example: Only a card that says so may be prophesied from the bin.*
-
-> *Example: A glimpsed card with a banner may be prophesied where it stands in the cache.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Angel of Anguish · Rulings: R42 (its source-zone half, as amended by R308), R308 · Replaces: R42 (its source zone amended by R308) · Tests: 36-cache-prophecy.test.ts · Example tests: 36-cache-prophecy.test.ts::R42: only a card that SAYS SO may be prophesied from the bin, 36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache · Key: keywords.abilities.prophecy.from</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Angel of Anguish · Rulings: R42 (its source-zone half, as amended by R308), R308 · Replaces: R42 (its source zone amended by R308) · Tests: 36-cache-prophecy.test.ts · Demonstrated by tests: 36-cache-prophecy.test.ts::R42: only a card that SAYS SO may be prophesied from the bin, 36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache · Key: keywords.abilities.prophecy.from</sub>
 
 <a id="r803.7d"></a>**803.7d** Prophesying costs the banner's cost: its mana is spent and its affinity pips are required. See rules 203.2, 111.12.
 
-> *Example: Mana without the banner's affinity does not buy a prophecy.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R301 · Replaces: R42 (its "plain mana number, no affinity" clause corrected by R301); R277 (its no-affinity aside superseded by R301) · Tests: 313-prophecy-affinity.test.ts · Example test: 313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy · Key: keywords.abilities.prophecy.cost</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R301 · Replaces: R42 (its "plain mana number, no affinity" clause corrected by R301); R277 (its no-affinity aside superseded by R301) · Tests: 313-prophecy-affinity.test.ts · Demonstrated by test: 313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy · Key: keywords.abilities.prophecy.cost</sub>
 
 <a id="r803.7e"></a>**803.7e** A prophecy's condition counts forward from the moment the card is prophesied. "Two Turns Pass" means two turns after the card was prophesied, not two turns of the game.
 
-> *Example: "One Turn Passes" counts from the prophesying, not from turn 1.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R43, R43 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R43: "One Turn Passes" counts from the PROPHESYING · Key: keywords.abilities.prophecy.forward</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R43, R43 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R43: "One Turn Passes" counts from the PROPHESYING · Key: keywords.abilities.prophecy.forward</sub>
 
 <a id="r803.7f"></a>**803.7f** In a 1v1 game, both battles of a turn count toward "One Battle Passes". See rule 505.
 
-> *Example: A prophecy made after both battle rounds of a turn ignores those rounds, and the next turn's first completed battle round fulfils "One Battle Passes".*
+> *Example: A card prophesied with "One Battle Passes" in deployment, after that turn's two battle rounds, is fulfilled once the first battle round of the next turn is over.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Rulings: R43 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R43: "One Battle Passes" · Key: keywords.abilities.prophecy.battles</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R43 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R43: "One Battle Passes" · Key: keywords.abilities.prophecy.battles</sub>
 
 <a id="r803.7g"></a>**803.7g** Once a prophecy's condition has been met, the prophecy stays fulfilled, even if the state that met it goes away.
 
@@ -10656,45 +9622,29 @@ order.
 
 <a id="r803.7h"></a>**803.7h** Once the prophecy is fulfilled, the card may be played from the cache for free, ignoring affinity, as if it were in its controller's hand. See rules 403.3c, 111.13.
 
-> *Example: A released prophecy costs nothing and needs no affinity.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R42 (its cache-and-release half), R301 · Tests: 36-cache-prophecy.test.ts, 313-prophecy-affinity.test.ts · Example test: 36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity · Key: keywords.abilities.prophecy.release</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R42 (its cache-and-release half), R301 · Tests: 36-cache-prophecy.test.ts, 313-prophecy-affinity.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity · Key: keywords.abilities.prophecy.release</sub>
 
 <a id="r803.7i"></a>**803.7i** A fulfilled prophecy changes what the card costs, not when it may be played. The card is played at its own printed timing, and a [Haste] icon in the banner does not move the release. See rule 504.9a.
 
-> *Example: A fulfilled {Battle} card is refused at deployment.*
-
-> *Example: A fulfilled prophecy on a battle card is offered at a battle window.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R42 (its cache-and-release half), R277 (its release half), R277 (its release half) · Replaces: R206 (its Prophecy row (release at the banner's [Haste]) corrected by R279) · Tests: 36-cache-prophecy.test.ts, 257-prophecy-release-timing.test.ts · Example tests: 36-cache-prophecy.test.ts::R42: normal TIMING still applies, 257-prophecy-release-timing.test.ts::R277: a fulfilled prophecy on a battle card is offered at a BATTLE window · Key: keywords.abilities.prophecy.release-timing</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R42 (its cache-and-release half), R277 (its release half), R277 (its release half) · Replaces: R206 (its Prophecy row (release at the banner's [Haste]) corrected by R279) · Tests: 36-cache-prophecy.test.ts, 257-prophecy-release-timing.test.ts · Demonstrated by tests: 36-cache-prophecy.test.ts::R42: normal TIMING still applies, 257-prophecy-release-timing.test.ts::R277: a fulfilled prophecy on a battle card is offered at a BATTLE window · Key: keywords.abilities.prophecy.release-timing</sub>
 
 <a id="r803.7j"></a>**803.7j** An X spell released by a fulfilled prophecy is cast with X = 0. A variable bracketed cost on it is a cost, not its X, and is still paid. See rule 702.6c.
 
-> *Example: A fulfilled prophecy releases an X spell for X = 0: no X is asked and no mana paid.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R111, R111 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R111: a fulfilled prophecy releases an X spell for X = 0 · Key: keywords.abilities.prophecy.x</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R111, R111 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R111: a fulfilled prophecy releases an X spell for X = 0 · Key: keywords.abilities.prophecy.x</sub>
 
 <a id="r803.7k"></a>**803.7k** A card whose prophecy is fulfilled may also be grafted or augmented from the cache, for free and ignoring affinity. Until the prophecy is fulfilled, the card cannot be played, grafted or augmented from the cache at all. See rules 403.3a, 403.3c, 720.
 
-> *Example: An unfulfilled prophecy cannot be grafted.*
-
-> *Example: A fulfilled prophecy grafts for free.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R303, R303, R303 · Tests: 315-cache-mod-permission.test.ts · Example tests: 315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted, 315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free · Key: keywords.abilities.prophecy.mods</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R303, R303, R303 · Tests: 315-cache-mod-permission.test.ts · Demonstrated by tests: 315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted, 315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free · Key: keywords.abilities.prophecy.mods</sub>
 
 <a id="r803.7m"></a>**803.7m** A condition that counts units dying, such as Vengeance's "13 Units Die", counts only the deaths its controller witnessed: deaths in a region where that player was present. A player is present in their own region, and in an enemy region once they have attacked into it, until regroup. See rules 601, 604.3a.
 
-> *Example: A death is counted only by the players who were in its region.*
+> *Example: A player attacks into the opponent's region with a unit, so both players are present there. Two of the opponent's units die in that region: each player counts two deaths toward "Units Die".*
 
-> *Example: An attack puts the attacker in the region, so both players see every death in that battle.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R302, R302, R302 · Tests: 314-prophecy-units-die.test.ts · Example tests: 314-prophecy-units-die.test.ts::R302 §2: a death is counted only by the seats that were in the region, 314-prophecy-units-die.test.ts::R302 §3: combat puts the attacker in the region · Key: keywords.abilities.prophecy.units-die</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R302, R302, R302 · Tests: 314-prophecy-units-die.test.ts · Example test: 314-prophecy-units-die.test.ts::R302 §3: combat puts the attacker in the region · Demonstrated by test: 314-prophecy-units-die.test.ts::R302 §2: a death is counted only by the seats that were in the region · Key: keywords.abilities.prophecy.units-die</sub>
 
 <a id="r803.7n"></a>**803.7n** An effect that plays a card for free, such as Tides of the Cosmos, may play a card with a Prophecy banner as a Prophecy: the card is cached with its prophecy attached, and the banner cost is not paid. See rule 701.2c.
 
-> *Example: A card played by Tides as a Prophecy is cached with its banner, for free, and not binned.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1396955380000755795#2 · Rulings: R337 · Tests: 404-raq-fix-tides.test.ts · Example test: 404-raq-fix-tides.test.ts::R337: a card played by Tides as a Prophecy is cached with its banner · Key: keywords.abilities.prophecy.tides</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1396955380000755795#2 · Rulings: R337 · Tests: 404-raq-fix-tides.test.ts · Demonstrated by test: 404-raq-fix-tides.test.ts::R337: a card played by Tides as a Prophecy is cached with its banner · Key: keywords.abilities.prophecy.tides</sub>
 
 <a id="r803.8"></a>**803.8.** Unstable is a non-combat attribute. If an Unstable card would enter a bin from an active zone (play or the stack), it is erased instead. See rules 405.5, 407, 803.8a.
 
@@ -10704,11 +9654,7 @@ order.
 
 <a id="r803.8a"></a>**803.8a** Unstable applies only to a card leaving an active zone. The active zones are play and the stack. An Unstable card that goes to a bin from a hand, the deck, a bin or the cache is put into the bin normally, and is trashed. See rules 400.2a, 405.5.
 
-> *Example: A printed-Unstable card discarded from the hand is binned and trashed.*
-
-> *Example: A printed-Unstable card binned from the cache is binned and trashed.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R145, R145, R145 · Tests: 125-active-zone.test.ts · Example tests: 125-active-zone.test.ts::R145: a printed-Unstable card DISCARDED FROM HAND, 125-active-zone.test.ts::R145: a printed-Unstable card binned from the CACHE · Key: keywords.abilities.unstable.active-zone</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R145, R145, R145 · Tests: 125-active-zone.test.ts · Demonstrated by tests: 125-active-zone.test.ts::R145: a printed-Unstable card DISCARDED FROM HAND, 125-active-zone.test.ts::R145: a printed-Unstable card binned from the CACHE · Key: keywords.abilities.unstable.active-zone</sub>
 
 <sub>Discrepancies: D-U21-6, D-U21-9 (discrepancies.md)</sub>
 
@@ -10728,11 +9674,9 @@ order.
 
 <a id="r803.8d"></a>**803.8d** Unstable given "until regroup" lasts until regroup, even after the permission that came with it has ended. A spell unit played under such a grant passes it to the unit it puts into play. See rule 506.
 
-> *Example: A bin-played spell unit's body carries the Unstable stamp and is erased, not binned, when it dies.*
-
 > *Example: A bin-played spell unit body is still Unstable in the second battle round, after the permission to play spells from the bin has ended, and stops being Unstable at regroup.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Rulings: R96, R96 · Tests: 12-fire-a.test.ts, 432-cr-keyword-abilities.test.ts · Example tests: 12-fire-a.test.ts::Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.unstable.until-regroup — the stamp outlives the in-this-battle permission into round 2, and ends at regroup · Key: keywords.abilities.unstable.until-regroup</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Rulings: R96, R96 · Tests: 12-fire-a.test.ts, 432-cr-keyword-abilities.test.ts · Example test: 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.unstable.until-regroup — the stamp outlives the in-this-battle permission into round 2, and ends at regroup · Demonstrated by test: 12-fire-a.test.ts::Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY · Key: keywords.abilities.unstable.until-regroup</sub>
 
 <a id="r803.8e"></a>**803.8e** A card is Unstable for as long as it is modded. When a modded card dies or is erased, it and all of its mods are erased. See rules 410.4b, 720.
 
@@ -10742,31 +9686,19 @@ order.
 
 <a id="r803.8f"></a>**803.8f** A spell is modded, and so Unstable, when a Virus is applied to it on the stack or a mod is applied to it through {Modular}. When it leaves the stack it is erased with its mods. See rules 704.2c, 723, 802.26.
 
-> *Example: Either way, the virus window or the {Modular} window, the carrier and the mod are erased.*
-
-> *Example: An unmodded {Modular} spell is binned like any other spell.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R79 (its virus-on-a-spell half), R105 · Replaces: R79 (its spell-token exclusion bullet superseded by R89) · Tests: 91-modular.test.ts, 125-active-zone.test.ts · Example tests: 91-modular.test.ts::R105 = R79: the {Modular} window and the virus window agree, 91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable · Key: keywords.abilities.unstable.modded-spell</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R79 (its virus-on-a-spell half), R105 · Replaces: R79 (its spell-token exclusion bullet superseded by R89) · Tests: 91-modular.test.ts, 125-active-zone.test.ts · Demonstrated by tests: 91-modular.test.ts::R105 = R79: the {Modular} window and the virus window agree, 91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable · Key: keywords.abilities.unstable.modded-spell</sub>
 
 <a id="r803.8g"></a>**803.8g** A copy of a modded unit is not Unstable when it is made, because it has no mods of its own. A mod attached to it afterwards makes it Unstable in the usual way. See rule 710.2a.
 
 > *Example: A Borrower of Forms that copied a modded unit is not Unstable and dies to the bin.*
 
-> *Example: A fresh Borrower of Forms that copied a modded unit is not Unstable; a mod attached to it afterwards makes it Unstable.*
-
-> *Example: A mod attached to Borrower of Forms after it resolved makes it Unstable.*
-
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1372468222158180424#1; RAQ 1372468222158180424#3 · Replaces: R118 (its ruling 2 Unstable half reversed by R336) · Tests: 403-raq-fix-mods.test.ts, 393-raq-mods.test.ts, 26-metal-a.test.ts · Example tests: 26-metal-a.test.ts::R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}, 403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin, 393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable · Key: keywords.abilities.unstable.copy</sub>
+<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1372468222158180424#1; RAQ 1372468222158180424#3 · Replaces: R118 (its ruling 2 Unstable half reversed by R336) · Tests: 403-raq-fix-mods.test.ts, 393-raq-mods.test.ts, 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable} · Demonstrated by tests: 403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin, 393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable · Key: keywords.abilities.unstable.copy</sub>
 
 <a id="r803.8h"></a>**803.8h** Moving a mod moves its Unstable with it. The unit the mod leaves stops being Unstable when its last mod is gone, unless something else makes it Unstable; the unit it moves to becomes Unstable. See rule 720.
 
-> *Example: A moved augment takes Unstable and its static with it.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R178 (its §4 owner ruling on moving mods), R178 (its §4 owner ruling on moving mods) · Replaces: R178 (its §4 bounded-budget claim corrected by R331) · Tests: 151-copy-and-moved-mods.test.ts · Example test: 151-copy-and-moved-mods.test.ts::R178 Rotbeast: a moved augment takes {Unstable} · Key: keywords.abilities.unstable.moved-mod</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R178 (its §4 owner ruling on moving mods), R178 (its §4 owner ruling on moving mods) · Replaces: R178 (its §4 bounded-budget claim corrected by R331) · Tests: 151-copy-and-moved-mods.test.ts · Demonstrated by test: 151-copy-and-moved-mods.test.ts::R178 Rotbeast: a moved augment takes {Unstable} · Key: keywords.abilities.unstable.moved-mod</sub>
 
 <a id="r803.8i"></a>**803.8i** Unstable replaces where the card goes, not its death. An Unstable unit that is destroyed still dies: its death triggers and other abilities that watch for a unit dying see it. See rules 713.8, 801.2h.
-
-> *Example: (illustrative) A modded unit dies in combat. A "whenever a unit dies" ability triggers, then the unit and its mods are erased.*
 
 > *Example: A modded unit is destroyed. A whenever-another-unit-dies ability triggers, then the unit is erased, not binned.*
 
@@ -10774,9 +9706,7 @@ order.
 
 <a id="r803.8j"></a>**803.8j** Unstable does not stop a unit from being recalled. A recalled Unstable unit goes to the hand as a card; if it was modded, its mods are put into the bin. See rule 801.7b.
 
-> *Example: Recalling an Unstable unit puts the card in its hand, and nothing is erased.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.35; Manual p.35; Manual p.35 · Rulings: R145 · Tests: 125-active-zone.test.ts · Example test: 125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND · Key: keywords.abilities.unstable.recall</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.35; Manual p.35; Manual p.35 · Rulings: R145 · Tests: 125-active-zone.test.ts · Demonstrated by test: 125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND · Key: keywords.abilities.unstable.recall</sub>
 
 <a id="r803.8k"></a>**803.8k** An Unstable card that leaves the stack for a bin, because it resolved, fizzled or was negated, is erased instead. See rules 704.2c, 406.4.
 
@@ -10788,9 +9718,7 @@ order.
 
 <a id="r803.8m"></a>**803.8m** An effect that itself says to put a card into a bin overrides Unstable. Pull Under ("Delete target unit. If you do, put it and all of its mods into your bin.") leaves a modded unit and its mods in that bin. See rule 101.
 
-> *Example: Pull Under deletes the target, and it and its mods land in the caster's bin, not erased.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R137 (its Pull Under section), R137 (its Pull Under section) · Tests: 15-water-b.test.ts · Example test: 15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin · Key: keywords.abilities.unstable.card-says-bin</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R137 (its Pull Under section), R137 (its Pull Under section) · Tests: 15-water-b.test.ts · Demonstrated by test: 15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin · Key: keywords.abilities.unstable.card-says-bin</sub>
 
 <sub>Discrepancies: D-U21-8 (discrepancies.md)</sub>
 
@@ -10813,9 +9741,7 @@ order.
 
 <a id="r900.2a"></a>**900.2a** A 1v1 game is played between two players. It is the recommended setup for a first game. See rules 903, 904.
 
-> *Example: Every game the client creates is a 1v1 game: two seats, two regions.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.6; Rulebook 2023 p.1 · Tests: 412-cr-general.test.ts · Example test: 412-cr-general.test.ts::cr:concepts.general.digital-scope · Key: formats.general.setups.one-v-one</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.6; Rulebook 2023 p.1 · Tests: 412-cr-general.test.ts · Demonstrated by test: 412-cr-general.test.ts::cr:concepts.general.digital-scope · Key: formats.general.setups.one-v-one</sub>
 
 <a id="r900.2b"></a>**900.2b** Free-for-all is described in 903. Team games and archenemy are described in 904. See rules 903, 904. *(Untested: no executed test demonstrates it.)*
 
@@ -10833,9 +9759,7 @@ order.
 
 <a id="r900.4a"></a>**900.4a** In 1v1 the players sit across from each other. Each has one neighbouring region. See rule 601.
 
-> *Example: A 1v1 game has two regions. An attack names no region: it is always fought in the opponent region, the only neighbouring one.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.11; Manual p.19 · Tests: 433-cr-formats.test.ts · Example test: 433-cr-formats.test.ts::cr:formats.general.seating.one-v-one — a two-player game has two regions, one per player, and an attack is fought in the one other region with no region to choose · Key: formats.general.seating.one-v-one</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.11; Manual p.19 · Tests: 433-cr-formats.test.ts · Demonstrated by test: 433-cr-formats.test.ts::cr:formats.general.seating.one-v-one — a two-player game has two regions, one per player, and an attack is fought in the one other region with no region to choose · Key: formats.general.seating.one-v-one</sub>
 
 <a id="r900.4b"></a>**900.4b** In a game of more than two players the players sit in a circle, so each player has a player to their left and a player to their right. Each player has two neighbouring regions. See rule 601. *(Untested: no executed test demonstrates it.)*
 
@@ -10849,24 +9773,18 @@ order.
 
 <a id="r900.6"></a>**900.6.** The client plays 1v1 live draft and 1v1 constructed only. It has no free-for-all, team, archenemy, cube-draft or team-draft games, and no intent cards. Rules 903, 904 and 905, and the parts of 902 about cube draft and team draft, describe the printed game, which the client does not enforce. See rule 100.
 
-> *Example: Every game the engine creates has exactly two seats, two regions and two packs.*
-
-> *Example: A card text that would misbehave only with a third player cannot be reached: the engine is 1v1 by construction.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R27 (the "Project decisions" block recorded under it), R197 (its §3 two-seat measurement, which stands) · Tests: 412-cr-general.test.ts, 168-three-card-divergences.test.ts · Example tests: 412-cr-general.test.ts::cr:concepts.general.digital-scope, 168-three-card-divergences.test.ts::R197 §3a Cinder Scuttler · Key: formats.general.digital-scope</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R27 (the "Project decisions" block recorded under it), R197 (its §3 two-seat measurement, which stands) · Tests: 412-cr-general.test.ts, 168-three-card-divergences.test.ts · Demonstrated by tests: 412-cr-general.test.ts::cr:concepts.general.digital-scope, 168-three-card-divergences.test.ts::R197 §3a Cinder Scuttler · Key: formats.general.digital-scope</sub>
 
 <a id="r901"></a>
 ### 901. Constructed
 
 <a id="r901.1"></a>**901.1.** In constructed, each player brings their own deck, built before the game, and plays from it. See rules 103, 401.
 
-> *Example: A constructed game takes one deck per seat.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.6; Manual p.16 · Designer: RAQ 1451507918171013252#1 · Tests: 34-constructed.test.ts · Example test: 34-constructed.test.ts::createGame constructed: per-seat decks · Key: formats.constructed.what</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.6; Manual p.16 · Designer: RAQ 1451507918171013252#1 · Tests: 34-constructed.test.ts · Demonstrated by test: 34-constructed.test.ts::createGame constructed: per-seat decks · Key: formats.constructed.what</sub>
 
 <a id="r901.2"></a>**901.2.** A constructed deck has at least 30 cards. No source sets a maximum.
 
-> *Example: A 29-card deck is refused.*
+> *Example: A 29-card deck is not a legal constructed deck.*
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.6; Manual p.16; Rulebook 2023 p.1 · Tests: 34-constructed.test.ts, 433-cr-formats.test.ts · Example test: 34-constructed.test.ts::checkDeck: min 30, max 2 copies · Key: formats.constructed.deck-size</sub>
 
@@ -10880,37 +9798,29 @@ order.
 
 <a id="r901.4"></a>**901.4.** Constructed has no shared deck and no packs. See rules 103, 401, 409.
 
-> *Example: A constructed game starts with an empty shared deck and two empty packs.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.16; Manual p.10 · Tests: 433-cr-formats.test.ts · Example test: 433-cr-formats.test.ts::cr:formats.constructed.no-packs — a constructed game has no shared deck and no packs · Key: formats.constructed.no-packs</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.16; Manual p.10 · Tests: 433-cr-formats.test.ts · Demonstrated by test: 433-cr-formats.test.ts::cr:formats.constructed.no-packs — a constructed game has no shared deck and no packs · Key: formats.constructed.no-packs</sub>
 
 <a id="r901.5"></a>**901.5.** In constructed, the draw step and the draft step are taken together as one draw phase: each player draws 4 cards from their own deck, then puts 2 cards from their hand on the bottom of their deck. See rules 503, 408.
 
-> *Example: Turn 1 of a constructed game: each player has 4 cards, draws 4, and the put-back of 2 is pending.*
+> *Example: Turn 1 of a constructed game: each player has their 4-card opening hand, draws 4, and must then put 2 back.*
 
-> *Example: On turn 2 the draw phase opens again: 4 more cards, and 2 to put back.*
-
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Rulebook 2023 p.6; Manual p.16; Manual p.16 · Designer: RAQ 1451507918171013252#1 · Tests: 34-constructed.test.ts · Example tests: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open, 34-constructed.test.ts::turn 2 reopens the draw phase · Key: formats.constructed.draw-phase</sub>
+<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: Rulebook 2023 p.6; Manual p.16; Manual p.16 · Designer: RAQ 1451507918171013252#1 · Tests: 34-constructed.test.ts · Example test: 34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open · Demonstrated by test: 34-constructed.test.ts::turn 2 reopens the draw phase · Key: formats.constructed.draw-phase</sub>
 
 <a id="r901.5a"></a>**901.5a** The player chooses the 2 cards and puts them on the bottom in any order. Because every card put on the bottom of a deck goes into the recycle pile, which is shuffled before it is drawn from again, the order has no effect on play. See rule 408.
 
-> *Example: Nothing moves until the 2 cards go back, and they go back in the order given.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.6 · Rulings: R296, R296 · Tests: 34-constructed.test.ts · Example test: 34-constructed.test.ts::nothing moves until the 2 cards go back · Key: formats.constructed.draw-phase.order</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.6 · Rulings: R296, R296 · Tests: 34-constructed.test.ts · Demonstrated by test: 34-constructed.test.ts::nothing moves until the 2 cards go back · Key: formats.constructed.draw-phase.order</sub>
 
 <a id="r901.5b"></a>**901.5b** For state checks the draw of 4 and the put-back of 2 are one step: a player's units are not checked for death while that player still has 2 cards to put back, so they are judged on the hand that remains. See rules 503, 713.
 
 > *Example: Dreadspawn Horror with 1 card in hand: drawing 4 does not kill it, and after the put-back it is a 4/2.*
 
-> *Example: With 3 cards in hand it reaches 5 and dies once its controller has put 2 back.*
+> *Example: With 3 cards in hand, Dreadspawn Horror's controller draws 4 and puts 2 back, keeping 5 cards: the Horror then dies.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R313, R313 · Tests: 380-no-action-ends-dead.test.ts · Example tests: 380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back, 380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5 · Key: formats.constructed.draw-phase.one-step</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R313, R313 · Tests: 380-no-action-ends-dead.test.ts · Example tests: 380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back, 380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5 · Key: formats.constructed.draw-phase.one-step</sub>
 
 <a id="r901.6"></a>**901.6.** A player in a constructed game may make a resource of any element, whether or not their deck holds a card of that element. See rules 106, 502.
 
-> *Example: All seven elements stay legal for a resource, whatever the deck holds.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R99, R99 · Tests: 34-constructed.test.ts · Example test: 34-constructed.test.ts::deckElements: it is a PRESENTATION default · Key: formats.constructed.any-element</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R99, R99 · Tests: 34-constructed.test.ts · Demonstrated by test: 34-constructed.test.ts::deckElements: it is a PRESENTATION default · Key: formats.constructed.any-element</sub>
 
 <a id="r901.7"></a>**901.7.** Card text that refers to a constructed format applies in a constructed game. See rule 503.
 
@@ -10934,17 +9844,13 @@ order.
 
 <a id="r901.8"></a>**901.8.** Single Card Duel is a variant of constructed that the client offers. Each player picks a single card before the game, and their deck is 30 copies of that card. See rule 901.3.
 
-> *Example: A Single Card Duel deck is 30 copies of the one card chosen, and a constructed game starts with it.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298 · Tests: 433-cr-formats.test.ts · Example test: 433-cr-formats.test.ts::cr:formats.constructed.single-card — a duel deck is 30 copies of one card, and a constructed game accepts it · Key: formats.constructed.single-card</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298 · Tests: 433-cr-formats.test.ts · Demonstrated by test: 433-cr-formats.test.ts::cr:formats.constructed.single-card — a duel deck is 30 copies of one card, and a constructed game accepts it · Key: formats.constructed.single-card</sub>
 
 <sub>Discrepancies: D-U22-8 (discrepancies.md)</sub>
 
 <a id="r901.8a"></a>**901.8a** A Single Card Duel deck is the one exception to the limit of 2 copies of a card. See rule 901.3.
 
-> *Example: Thirty copies of one card fail the ordinary deck check but are accepted as a Single Card Duel deck.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298 · Tests: 433-cr-formats.test.ts · Example test: 433-cr-formats.test.ts::cr:formats.constructed.single-card.copies — the duel deck breaks the two-copy cap: checkDeck refuses it, checkSingleDeck and createGame accept it · Key: formats.constructed.single-card.copies</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298 · Tests: 433-cr-formats.test.ts · Demonstrated by test: 433-cr-formats.test.ts::cr:formats.constructed.single-card.copies — the duel deck breaks the two-copy cap: checkDeck refuses it, checkSingleDeck and createGame accept it · Key: formats.constructed.single-card.copies</sub>
 
 <a id="r901.8b"></a>**901.8b** A Single Card Duel has no draw phase. Each turn, each player simply draws 2 cards; nothing is put back. The opening hand is still 4 cards. See rule 503.
 
@@ -10963,9 +9869,7 @@ order.
 
 <a id="r902.1"></a>**902.1.** In live draft, the players share one deck, built from the chosen elements, and draft cards from it during the game. See rules 103, 401, 409.
 
-> *Example: A live draft deals each seat a hand and a pack from one shared deck.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.6; Manual p.6; Rulebook 2023 p.1 · Tests: 20-draft.test.ts · Example test: 20-draft.test.ts::createGame draft: 6-card hands · Key: formats.draft.live-draft</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.6; Manual p.6; Rulebook 2023 p.1 · Tests: 20-draft.test.ts · Demonstrated by test: 20-draft.test.ts::createGame draft: 6-card hands · Key: formats.draft.live-draft</sub>
 
 <a id="r902.1a"></a>**902.1a** Live draft is the standard Algomancy format, and 1v1 live draft is the format suggested for learning the game. *(Untested: no executed test demonstrates it.)*
 
@@ -10973,9 +9877,7 @@ order.
 
 <a id="r902.2"></a>**902.2.** A live draft uses 3 elements for 2–3 players and 4 elements for 4–6 players. For 6 or more players, a cube draft with all 5 elements is recommended instead of a live draft. See rules 105, 103.
 
-> *Example: A standard 1v1 live draft is built from exactly 3 elements.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.11; Manual p.11 · Tests: 412-cr-general.test.ts · Example test: 412-cr-general.test.ts::cr:concepts.starting.live-draft.elements · Key: formats.draft.elements</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.11; Manual p.11 · Tests: 412-cr-general.test.ts · Demonstrated by test: 412-cr-general.test.ts::cr:concepts.starting.live-draft.elements · Key: formats.draft.elements</sub>
 
 <a id="r902.2a"></a>**902.2a** In casual games, players take turns choosing the elements, or assign them randomly. The printed rules defer the competitive procedure to Algomancy.io. *(Untested: no executed test demonstrates it.)*
 
@@ -10985,9 +9887,7 @@ order.
 
 <a id="r902.3"></a>**902.3.** In live draft each player begins with 16 cards to draft from: a 6-card hand (the 4-card starting hand plus the first turn's 2 draws) and a 10-card pack. See rules 103, 503.
 
-> *Example: A new live draft deals 6-card hands and 10-card packs, with the draft step open.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.11 · Designer: RAQ 1451507918171013252#0 · Tests: 20-draft.test.ts · Example test: 20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs · Key: formats.draft.sixteen</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.11; Manual p.11 · Designer: RAQ 1451507918171013252#0 · Tests: 20-draft.test.ts · Demonstrated by test: 20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs · Key: formats.draft.sixteen</sub>
 
 <a id="r902.4"></a>**902.4.** The draft step is described in 503, and the pack, its refresh every N+1 turns and an eliminated player's pack in 409. See rules 503, 409.
 
@@ -10997,45 +9897,31 @@ order.
 
 <a id="r902.5"></a>**902.5.** The client lets a live draft be created with custom rules. Custom rules change the deal and nothing else: they never change how a card works.
 
-> *Example: A custom deal changes the draft for the same seed.*
-
-> *Example: A custom deal is ignored outside a live draft.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts · Example tests: 296-custom-draft-deal.test.ts::BL-43 §1a control, 296-custom-draft-deal.test.ts::BL-43 §1c a custom deal is ignored outside a live draft · Key: formats.draft.custom</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts · Demonstrated by tests: 296-custom-draft-deal.test.ts::BL-43 §1a control, 296-custom-draft-deal.test.ts::BL-43 §1c a custom deal is ignored outside a live draft · Key: formats.draft.custom</sub>
 
 <sub>Discrepancies: D-U22-9 (discrepancies.md)</sub>
 
 <a id="r902.5a"></a>**902.5a** Pack size may be set from 3 to 15 cards (standard 10). Every pack is dealt and refreshed at that size, and the draft step leaves exactly that many cards in the pack. See rules 409, 503.
 
-> *Example: Packs of 5: 5 at the deal, the draft commit leaves 5, and the turn-4 refresh deals 5.*
+> *Example: With packs of 5, each pack is dealt with 5 cards, the draft step leaves 5 in it, and the turn-4 refresh deals 5.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts, 433-cr-formats.test.ts · Example test: 296-custom-draft-deal.test.ts::BL-43 §2a pack size · Key: formats.draft.custom.pack-size</sub>
 
 <a id="r902.5b"></a>**902.5b** The number of elements may be set from 2 to 7 (standard 3). The pool is every deck card whose elements all lie within the chosen set. Two elements default to fire and wood. See rule 105.
 
-> *Example: Two elements: fire and wood by default, or a chosen pair; 113 cards.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts, 433-cr-formats.test.ts · Example test: 296-custom-draft-deal.test.ts::BL-43 §2c two elements · Key: formats.draft.custom.elements</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts, 433-cr-formats.test.ts · Demonstrated by test: 296-custom-draft-deal.test.ts::BL-43 §2c two elements · Key: formats.draft.custom.elements</sub>
 
 <a id="r902.5c"></a>**902.5c** The opening hand may be set from 1 to 15 cards (standard 6), the draws per turn after turn 1 from 0 to 5 (standard 2), and the starting life from 1 to 99 (standard 30). See rules 103, 503.
 
-> *Example: Opening hand, draws per turn and starting life each follow the custom rules.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts · Example test: 296-custom-draft-deal.test.ts::BL-43 §2b opening hand, draws per turn and starting life · Key: formats.draft.custom.numbers</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts · Demonstrated by test: 296-custom-draft-deal.test.ts::BL-43 §2b opening hand, draws per turn and starting life · Key: formats.draft.custom.numbers</sub>
 
 <a id="r902.5d"></a>**902.5d** With "simple cards only", the pool holds only cards with the silver (Simple) complexity symbol. See rule 209.
 
-> *Example: Simple cards only leaves out exactly the cards that are not simple.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292 · Tests: 297-custom-rules-resolve.test.ts · Example test: 297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple · Key: formats.draft.custom.simple</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292 · Tests: 297-custom-rules-resolve.test.ts · Demonstrated by test: 297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple · Key: formats.draft.custom.simple</sub>
 
 <a id="r902.5e"></a>**902.5e** Cards may be banned by name, and an advanced card filter may be set: only cards that match it are in the pool. A banned or filtered-out card is nowhere in the game.
 
-> *Example: An excluded card is nowhere in the game, at the deal or after a fuzzed game.*
-
-> *Example: Bans and the card filter add up.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts, 297-custom-rules-resolve.test.ts · Example tests: 296-custom-draft-deal.test.ts::BL-43 §3 an excluded card is nowhere in the game, 297-custom-rules-resolve.test.ts::BL-43 resolve §5 bans and the card filter add up · Key: formats.draft.custom.bans</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts, 297-custom-rules-resolve.test.ts · Demonstrated by tests: 296-custom-draft-deal.test.ts::BL-43 §3 an excluded card is nowhere in the game, 297-custom-rules-resolve.test.ts::BL-43 resolve §5 bans and the card filter add up · Key: formats.draft.custom.bans</sub>
 
 <a id="r902.5f"></a>**902.5f** Custom rules do not change the pack refresh: it still comes every N+1 turns. See rule 409.
 
@@ -11047,15 +9933,11 @@ order.
 
 > *Example: The standard game needs 64 cards, the beginner deal 44.*
 
-> *Example: Too small a pool is refused with a message that names the fix.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts, 297-custom-rules-resolve.test.ts · Example tests: 296-custom-draft-deal.test.ts::BL-43 §5 minPool, 297-custom-rules-resolve.test.ts::BL-43 resolve §8 too small a pool is refused · Key: formats.draft.custom.floor</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts, 297-custom-rules-resolve.test.ts · Example test: 296-custom-draft-deal.test.ts::BL-43 §5 minPool · Demonstrated by test: 297-custom-rules-resolve.test.ts::BL-43 resolve §8 too small a pool is refused · Key: formats.draft.custom.floor</sub>
 
 <a id="r902.5h"></a>**902.5h** Custom rules are not printed rules. Packs of other than 10 cards are not in the printed rules, and the client's Beginner preset (two elements, simple cards only, packs of 5) is the client's own softening of the Quick Start.
 
-> *Example: The Beginner preset sends two elements, simple cards and packs of 5.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292 · Tests: 298-custom-rules-ui.test.ts · Example test: 298-custom-rules-ui.test.ts::BL-43 ui §2 the Beginner preset · Key: formats.draft.custom.not-printed</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292 · Tests: 298-custom-rules-ui.test.ts · Demonstrated by test: 298-custom-rules-ui.test.ts::BL-43 ui §2 the Beginner preset · Key: formats.draft.custom.not-printed</sub>
 
 <a id="r902.6"></a>**902.6.** Cube draft is a format for large groups (6 to 10 or more players). The players draft decks before the game, then use them to play constructed matches, often in a 1v1 tournament bracket. See rule 901. *(Untested: no executed test demonstrates it.)*
 
@@ -11193,9 +10075,7 @@ order.
 
 <a id="r904.6a"></a>**904.6a** The teams trade the initiative every turn. See rule 508.
 
-> *Example: In 1v1, where each player is a team, the initiative changes hands at the end of every turn.*
-
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.5; Rulebook 2023 p.5 · Tests: 433-cr-formats.test.ts · Example test: 433-cr-formats.test.ts::cr:formats.teams.initiative.alternates — in a two-player game, where each player is a team, the initiative changes hands every turn · Key: formats.teams.initiative.alternates</sub>
+<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.5; Rulebook 2023 p.5 · Tests: 433-cr-formats.test.ts · Demonstrated by test: 433-cr-formats.test.ts::cr:formats.teams.initiative.alternates — in a two-player game, where each player is a team, the initiative changes hands every turn · Key: formats.teams.initiative.alternates</sub>
 
 <a id="r904.7"></a>**904.7.** In the deployment phase, the initiative team deploys first, its players in any order they wish, and then passes to the non-initiative team, whose players do the same. See rule 507. *(Untested: no executed test demonstrates it.)*
 
@@ -11274,13 +10154,13 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 
 | verdict | rules |
 |---|---|
-| confirmed | 1776 |
-| partial | 9 |
+| confirmed | 1775 |
+| partial | 12 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
 | not verified | 1 |
-| text changed | 2 |
+| text changed | 0 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 

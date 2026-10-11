@@ -1,7 +1,7 @@
 [
   {
     "key": "concepts.elements.affinity",
-    "textHash": "411d3d4d11947916",
+    "textHash": "ce70e29ad0f0ca3d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -42,59 +42,43 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "concepts.elements.affinity-as-number",
-    "textHash": "e3eeaec394748ebe",
+    "textHash": "5f7704642801aa56",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U02-r2",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/registry.ts:All-Consuming Blaze",
+        "loc": "client/engine/src/engine.ts:affinity",
         "agrees": true,
-        "note": "dealToAnyTarget(g.affinity(controller, fire))"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Premonition",
-        "agrees": true,
-        "note": "x = g.affinity(controller, water)"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-metal-c.ts:Self-Assembly",
-        "agrees": true,
-        "note": "x = g.affinity(controller, metal) inside the effect"
+        "note": "counts resources of the element, skips dormant, expended still counts, prismites/shards add none"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/07-cards.test.ts",
-        "pattern": "All-Consuming Blaze: damage equals",
+        "pattern": "All-Consuming Blaze: damage equals your fire affinity",
         "passed": true,
-        "asserts_claim": "yes: 2 open + 1 expended fire = 3, dormant excluded"
+        "asserts_claim": "yes: 2 open + 1 expended + 1 dormant fire; Blaze deals 3 to Good Whale"
       },
       {
         "file": "client/engine/test/14-water-a.test.ts",
-        "pattern": "Premonition: Glimpse X",
+        "pattern": "Premonition: Glimpse X where X is your water affinity",
         "passed": true,
-        "asserts_claim": "yes: 3 water -> three glimpse options"
+        "asserts_claim": "bare demonstration: 3 water affinity gives 3 Glimpse options"
       },
       {
         "file": "client/engine/test/28-metal-c.test.ts",
-        "pattern": "Self-Assembly: creates a Robot X",
+        "pattern": "Self-Assembly: creates a Robot X at the source",
         "passed": true,
-        "asserts_claim": "partly: X = 3 asserted, but affinity never changes between cast and resolution, so \"counted as it resolves\" is not shown"
+        "asserts_claim": "bare demonstration: 3 metal (2 expended for the cost) makes Robot 3"
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
-        "title": "concepts.numbers.amounts-at-resolution / concepts.elements.affinity-as-number: All-Consuming Blaze reads your [r] when it resolves, not when cast",
-        "passed": true,
-        "demonstrates": "yes: cast at 2 fire, a third added with the spell on the stack, damage 3"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: All-Consuming Blaze",
@@ -108,26 +92,22 @@
       },
       {
         "ref": "RAQ 1358299200953126963#0",
-        "supports": "partly",
-        "note": "about pip thresholds, not \"your [r]\" as a number; on-topic only"
+        "supports": "yes",
+        "note": "calebgannon, status covered: affinity counts resources of that type anywhere in the manabase, tapped or not; the dormant exclusion rests on the engine and the executed test"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/cards/registry.ts",
-        "text": "(g, ctx) => g.affinity(ctx.controller, 'fire'),"
+        "file": "client/engine/src/engine.ts",
+        "text": "      if (r.state === 'dormant') continue;   // dormant gives no affinity"
       },
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "file": "client/engine/src/cards/printed.json",
         "text": "I deal damage to any target equal to your [r]."
-      },
-      {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Glimpse X, where X is your [b]."
       }
     ],
     "basis_ok": true,
-    "problem": "The RAQ citation is merely on-topic. Self-Assembly example test does not show resolution timing (probe does)."
+    "problem": ""
   },
   {
     "key": "concepts.elements.affinity-count",
@@ -362,7 +342,7 @@
   },
   {
     "key": "concepts.elements.game-elements",
-    "textHash": "ced2b8214505a018",
+    "textHash": "759342b530decf2d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -432,11 +412,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Omits the shared (non-draft, non-constructed) mode, which also has all seven; not wrong."
+    "problem": "Omits the shared (non-draft, non-constructed) mode, which also has all seven; not wrong.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.elements.game-elements.off-deck",
-    "textHash": "a898168aa38211f5",
+    "textHash": "8a9bf72efec61459",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -470,11 +451,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.elements.hybrid",
-    "textHash": "f43fcf8712ef27d7",
+    "textHash": "f009f8f3cbb9aba7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -508,7 +490,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.elements.ignoring-affinity",
@@ -571,7 +554,7 @@
   },
   {
     "key": "concepts.elements.list",
-    "textHash": "bafe063ee1173ddf",
+    "textHash": "b17311cbae2880b9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -615,11 +598,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.elements.mods-need-affinity",
-    "textHash": "5cc49130c8da0357",
+    "textHash": "04f7de0bcc572748",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -684,11 +668,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Note: a cache permission (glimpse/prophecy) waives the affinity for a mod as it does for a play (R303); the rule is the default."
+    "problem": "Note: a cache permission (glimpse/prophecy) waives the affinity for a mod as it does for a play (R303); the rule is the default.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.elements.no-affinity-resources",
-    "textHash": "c6dc900001bf79cb",
+    "textHash": "3039f00dd40298aa",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -748,11 +733,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.amounts-at-resolution",
-    "textHash": "6eefdc36c1288954",
+    "textHash": "a8a19444ff87c3a3",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -818,11 +804,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Edge note only: a \"where X is\" that reads a cast-cost receipt (Volatile Toxicity, the sacrificed unit's defense) is snapshotted at payment (R35); since the sacrificed unit cannot change afterwards this matches last-known information at resolution, but the rule could say so."
+    "problem": "Edge note only: a \"where X is\" that reads a cast-cost receipt (Volatile Toxicity, the sacrificed unit's defense) is snapshotted at payment (R35); since the sacrificed unit cannot change afterwards this matches last-known information at resolution, but the rule could say so.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.amounts-at-resolution.cost-snapshot",
-    "textHash": "01b49ab85fdb124c",
+    "textHash": "38f9c28459cee014",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -865,27 +852,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.chosen-number",
-    "textHash": "c974c20697ab6ff0",
+    "textHash": "bedec2dba38abe35",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "engine DecisionKind number (R197)",
+        "loc": "client/engine/src/apply.ts:decisionValue",
         "agrees": true,
-        "note": "numeric decision with max null; apply accepts any value in range"
+        "note": "R197 'number' DecisionKind: any value in range accepted, max null for Prediction Prophet"
       }
     ],
     "tests_run": [
       {
-        "file": "168-three-card-divergences.test.ts",
-        "pattern": "R197 §1b Prediction Prophet: a prediction ABOVE `life + 5` is accepted and pays out the 5/5 — the old cap would not have offered it",
+        "file": "client/ui/test/168-three-card-divergences.test.ts",
+        "pattern": "R197 §1b Prediction Prophet: a prediction ABOVE ",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: predicts life+9, gains 9 life during battle, at start of deployment 'the prediction of N was matched' and one 5/5 token is made"
       }
     ],
     "probes": [],
@@ -893,18 +881,22 @@
       {
         "ref": "card: Prediction Prophet",
         "supports": "yes",
-        "note": "\"predict your life total\" — no cap printed"
+        "note": ""
       },
       {
         "ref": "R197 §1",
         "supports": "yes",
-        "note": "owner steer"
+        "note": "owner steer 'Don't assume that cards are limited'; the cap was removed, range is 0..unbounded"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/docs/digital-rules.md",
+        "text": "that shape: *\"Don't assume that cards are limited, they're designed to be open"
+      },
+      {
         "file": "client/engine/src/cards/printed.json",
-        "text": "predict your life total"
+        "text": "During [Haste], predict your life total. At the start of deployment, create a 5/5 unit if you matched the prediction."
       }
     ],
     "basis_ok": true,
@@ -912,57 +904,46 @@
   },
   {
     "key": "concepts.numbers.copy-x",
-    "textHash": "770eba5c0832eae5",
+    "textHash": "ed1355ed90f5b712",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U02-r2",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.pushSpellCopy",
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:Maelstrom Charger",
         "agrees": true,
-        "note": "structuredClone of the original stack item, x and receipt included"
+        "note": "copy inherits the original's receipt and X"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/138-spell-copy.test.ts",
-        "pattern": "R164 Maelstrom Charger: the copy inherits",
+        "pattern": "R164 Maelstrom Charger: the copy inherits the cast-cost receipt ",
         "passed": true,
-        "asserts_claim": "yes for the example (receipt, no re-payment); Volatile Toxicity is a \"where X is\" spell, not an X-cost one"
+        "asserts_claim": "yes: Volatile Toxicity sacrifices Rampart Guardian once, Charger copies, no second sacrifice asked, both Poisons carry x === the sacrificed defense"
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
-        "title": "concepts.numbers.copy-x: a Maelstrom Charger copy of Wildfire uses the original X = 2; no X is asked or paid again",
-        "passed": true,
-        "demonstrates": "yes: X-cost spell copied at X = 2, one X menu, 2 mana paid, 4 damage"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1379132904931594372#2",
         "supports": "yes",
-        "note": ""
+        "note": "_passer, status covered"
       },
       {
         "ref": "R35 (its spell X half)",
         "supports": "yes",
-        "note": ""
+        "note": "'a spell COPY inherits the original's receipt and X instead of paying again'; R196/R334 supersede other halves of R35, not this one"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/raq.ts",
-        "text": "you DON'T pay additional cost again and the X value is the one from original spell."
+        "text": "the X value is the one from original spell."
       },
       {
         "file": "client/docs/digital-rules.md",
         "text": "receipt and X instead of paying again. GRAFTED riders pay the same cost when"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "const copy = structuredClone(orig) as StackItem;"
       }
     ],
     "basis_ok": true,
@@ -970,7 +951,7 @@
   },
   {
     "key": "concepts.numbers.cost-reference",
-    "textHash": "8d07b8896f7047a8",
+    "textHash": "88bf3cc6f0d354e8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1019,33 +1000,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.cost-reference.not-cast",
-    "textHash": "d6a32f90f8714f11",
+    "textHash": "e7e447ef366c406d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "cards/dsl.ts manaOf",
+        "loc": "client/engine/src/cards/sets/helpers.ts:manaOf",
         "agrees": true,
-        "note": "returns 0 for mana X"
+        "note": "R158 §1: a card known only by name has cost 0"
       }
     ],
     "tests_run": [
       {
-        "file": "133-x-cost-semantics.test.ts",
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
         "pattern": "R157 §1 — a card that was never cast has no cost: an X card in hand reads 0",
         "passed": true,
-        "asserts_claim": "yes: Prophecy Bug halves 0"
+        "asserts_claim": "bare demonstration: Prophecy Bug caches Wildfire with '0 Turns Pass'"
       },
       {
-        "file": "39-light-b.test.ts",
-        "pattern": "Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)",
+        "file": "client/engine/test/39-light-b.test.ts",
+        "pattern": "Living Vault: an X-cost card in hand is offered at pay ",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: Mindburn (mana 'X') in hand is offered by Living Vault's augment effect, labelled [0]"
       }
     ],
     "probes": [],
@@ -1053,7 +1035,7 @@
       {
         "ref": "R158 §1",
         "supports": "yes",
-        "note": "table row: bin, hand, cache, deck, unit in play -> 0"
+        "note": "table row: a card known only by name — bin, hand, cache, deck, or a unit standing in play → 0; no superseding edge touches §1 (R326 reverses §3 only)"
       }
     ],
     "quote_spans": [
@@ -1125,7 +1107,7 @@
   },
   {
     "key": "concepts.numbers.free-play.cant-be-zero",
-    "textHash": "1e5df91dd5d029e5",
+    "textHash": "79b51c7cff66a6f9",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -1183,11 +1165,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The general \"an effect that plays cards for free\" is only exercised by Tides; the other free plays in the pool (Wake the Dead: units only; a fulfilled prophecy: Frosted Denial has none) cannot reach Frosted Denial, so the generalisation holds."
+    "problem": "The general \"an effect that plays cards for free\" is only exercised by Tides; the other free plays in the pool (Wake the Dead: units only; a fulfilled prophecy: Frosted Denial has none) cannot reach Frosted Denial, so the generalisation holds.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.symbols",
-    "textHash": "2e041902dd6c43ef",
+    "textHash": "ebbf4fd71c6fe1bc",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -1263,11 +1246,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.symbols.mana",
-    "textHash": "b37ec03d15e746bb",
+    "textHash": "1cef4bb992795303",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1315,27 +1299,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.token-x",
-    "textHash": "55b585ace8af5136",
+    "textHash": "a48a64b41790104e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.createSpellToken",
+        "loc": "client/engine/src/engine.ts:createSpellToken",
         "agrees": true,
-        "note": "stamps x on the token instance"
+        "note": "the creating effect passes X; stamped on the instance"
       }
     ],
     "tests_run": [
       {
         "file": "client/ui/test/127-token-x-and-dormant.test.ts",
-        "pattern": "R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine",
+        "pattern": "R151/CT-33: a Poison created with X=5 says ",
         "passed": true,
-        "asserts_claim": "partly: tok.x = 5 and the text box reads 5; the Poison is never cast to show 5 counters land"
+        "asserts_claim": "yes: createSpellToken(A,'Poison',5) gives tok.x 5 and the text box 'Put 5 -1/-1 counters on target unit.'"
       }
     ],
     "probes": [],
@@ -1343,18 +1328,18 @@
       {
         "ref": "Rulebook 2023 p.4",
         "supports": "yes",
-        "note": "\"Create a Crystal 3\" would set the X value as 3"
+        "note": "'Many tokens have an X value (7), which is determined by the card that created them. For example \"Create a Crystal 3\" would set the X value of the created token as 3.'"
       },
       {
         "ref": "Manual p.15",
         "supports": "yes",
-        "note": "\"X is determined by the card that created them\""
+        "note": "TOKENS WITH AN X: 'X is determined by the card that created them.'"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "would set the X value of the created token as 3."
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Put X -1/-1 counters on target unit."
       }
     ],
     "basis_ok": true,
@@ -1362,7 +1347,7 @@
   },
   {
     "key": "concepts.numbers.token-x.robot",
-    "textHash": "5bb15384c4b88b98",
+    "textHash": "e80fc4b4636b04f7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1396,7 +1381,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.x",
@@ -1445,7 +1431,7 @@
   },
   {
     "key": "concepts.numbers.x-cost",
-    "textHash": "338d453dc5afa078",
+    "textHash": "d43050982d13ccd2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1483,7 +1469,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.x-cost.cant-be-zero",
@@ -1543,7 +1530,7 @@
   },
   {
     "key": "concepts.numbers.x-cost.chosen-at-cast",
-    "textHash": "287077232b6c40ca",
+    "textHash": "ee2eb020da22a996",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1581,11 +1568,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "concepts.numbers.x-cost.zero",
-    "textHash": "1fc48b79573a7330",
+    "textHash": "521a5d1da7641e80",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1645,7 +1633,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.numbers.x-minimum",
@@ -1764,7 +1753,7 @@
   },
   {
     "key": "concepts.resources.activation.when",
-    "textHash": "a7a5e39618645b9c",
+    "textHash": "480720aa147f4742",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1795,7 +1784,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Note: card effects (Swirling Shardform, Hooba-Lan) create Shards outside the resource step; the rule describes the player action only."
+    "problem": "Note: card effects (Swirling Shardform, Hooba-Lan) create Shards outside the resource step; the rule describes the player action only.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.affinity-bonus",
@@ -1857,7 +1847,7 @@
   },
   {
     "key": "concepts.resources.affinity-bonus.all-elements",
-    "textHash": "c9602d72f65fe4b1",
+    "textHash": "b71b2968a2cbf4f2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1900,7 +1890,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.affinity-bonus.every-time",
@@ -1947,7 +1938,7 @@
   },
   {
     "key": "concepts.resources.affinity-bonus.not-prismite-shard",
-    "textHash": "91fbf218c7ea1bf2",
+    "textHash": "d953ffe3ee96e38a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -1990,7 +1981,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.affinity-bonus.self-counts",
@@ -2129,7 +2121,7 @@
   },
   {
     "key": "concepts.resources.dormant-active.starting",
-    "textHash": "a80952cae8b0f41f",
+    "textHash": "c61b90677d8dfc02",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2179,11 +2171,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.expend",
-    "textHash": "572c9344d82ec99b",
+    "textHash": "0fd7d3ebf6412c10",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2235,7 +2228,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.expend.generic",
@@ -2388,7 +2382,7 @@
   },
   {
     "key": "concepts.resources.kinds.element",
-    "textHash": "08d640b9cbb5a08d",
+    "textHash": "2e6caeccfd351c0e",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -2447,11 +2441,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Dormant exception rests on the engine and the cross-referenced dormant rule, not on a source cited here."
+    "problem": "Dormant exception rests on the engine and the cross-referenced dormant rule, not on a source cited here.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.prismite",
-    "textHash": "e7fd3324f885582c",
+    "textHash": "fc0883e78640123f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2499,11 +2494,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.prismite.exchange",
-    "textHash": "867d53137a76d7cb",
+    "textHash": "dab8aa4788949b44",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U02-r4",
@@ -2591,7 +2587,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None in the text. The R132 citation is on-topic only (it concerns the affinity Shard owed on exchange) and does not support any clause stated."
+    "problem": "None in the text. The R132 citation is on-topic only (it concerns the affinity Shard owed on exchange) and does not support any clause stated.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.prismite.exchange.activation",
@@ -2654,7 +2651,7 @@
   },
   {
     "key": "concepts.resources.prismite.exchange.dormant",
-    "textHash": "6600d05a3ef0d42a",
+    "textHash": "31b5826477c32fb2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2697,11 +2694,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.prismite.exchange.element-only",
-    "textHash": "1fa44bc228e3a082",
+    "textHash": "3455e9b2a3874653",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U02-r2",
@@ -2764,7 +2762,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling holds on the printed Prismite text (printed > R-rulings) and the divergence is real. But note: current R299/R17 say element-only, so this rule overrules a current ruling without a designer source; and the KEY \"element-only\" now misdescribes the text."
+    "problem": "Ruling holds on the printed Prismite text (printed > R-rulings) and the divergence is real. But note: current R299/R17 say element-only, so this rule overrules a current ruling without a designer source; and the KEY \"element-only\" now misdescribes the text.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.recycle",
@@ -2813,7 +2812,7 @@
   },
   {
     "key": "concepts.resources.recycle.made-prismite",
-    "textHash": "2c94d9849d7caace",
+    "textHash": "bb37d60b0b2e1c8d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2852,11 +2851,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.recycle.prismite-shard",
-    "textHash": "958db1dd5d8834f3",
+    "textHash": "b904b25de200a9e3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2895,11 +2895,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.shard",
-    "textHash": "e301ad99e23f074d",
+    "textHash": "33e70a456a4d60de",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U02-r1",
@@ -2958,33 +2959,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.resources.shard.not-prismite",
-    "textHash": "73117eeaec6e9d89",
+    "textHash": "0ccfbaddfff171e6",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.createShard",
+        "loc": "client/engine/src/engine.ts:createShard",
         "agrees": true,
-        "note": "kind 'shard'"
+        "note": "creates kind 'shard', dormant"
       }
     ],
     "tests_run": [
       {
-        "file": "48-playtest-hotfix.test.ts",
+        "file": "client/engine/test/48-playtest-hotfix.test.ts",
         "pattern": "Swirling Shardform creates two dormant SHARDS, not prismites",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: two resources, kind 'shard', state 'dormant'"
       },
       {
-        "file": "16-earth-a.test.ts",
+        "file": "client/engine/test/16-earth-a.test.ts",
         "pattern": "Hooba-Lan: attacking creates a real dormant Shard for its controller",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: one resource of kind 'shard', dormant, for the attacker's seat"
       }
     ],
     "probes": [],
@@ -2997,13 +2999,17 @@
       {
         "ref": "R54",
         "supports": "yes",
-        "note": ""
+        "note": "'Create a Shard' creates a resource of kind shard, not a Prismite"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R54 — A Shard is not a Prismite"
+      },
+      {
         "file": "client/engine/src/cards/printed.json",
-        "text": "When I spawn, create two Shards"
+        "text": "[Augment] When I attack or block, create a Shard. {i}(It will spawn dormant.)"
       }
     ],
     "basis_ok": true,

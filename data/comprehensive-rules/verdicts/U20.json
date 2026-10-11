@@ -1,7 +1,7 @@
 [
   {
     "key": "attr.afflicting",
-    "textHash": "b8e74aca020acf07",
+    "textHash": "7c9582dd501c0f87",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -40,11 +40,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.afflicting.any-kill",
-    "textHash": "f358a0587b150ecc",
+    "textHash": "d259e52191769725",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -89,11 +90,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.afflicting.combat",
-    "textHash": "4de872acdcc946e6",
+    "textHash": "6b1b2bcea9d26b60",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -139,11 +141,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.afflicting.one-rot",
-    "textHash": "eaac9e36bdb6f1da",
+    "textHash": "43babd288e4c7550",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -177,11 +180,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.afflicting.pure",
-    "textHash": "dc216ebbc3b43ed8",
+    "textHash": "2523b70c8acdc9d3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -226,11 +230,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.afflicting.rot",
-    "textHash": "54e870c2bc6fafdf",
+    "textHash": "3bdf80881f9c79c5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -270,11 +275,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring",
-    "textHash": "061519f266d21287",
+    "textHash": "b4514f971d13279c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -318,11 +324,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Text is right. The only cited sources are ours + R84; the printed reminder is in client/ui/scan-reminders.json and should be cited as printed."
+    "problem": "Text is right. The only cited sources are ours + R84; the printed reminder is in client/ui/scan-reminders.json and should be cited as printed.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.alluring.able",
-    "textHash": "952e834bb38f7954",
+    "textHash": "eef7e98e48c2abee",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -361,11 +368,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.after-resolution",
-    "textHash": "891eb53c42762f96",
+    "textHash": "f58b4c3c650b8b58",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -399,11 +407,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.allurer-gone",
-    "textHash": "cb9ee23494fb25b5",
+    "textHash": "e55054c28400ef73",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -441,11 +450,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.cannot-attack",
-    "textHash": "59a1446d10290e00",
+    "textHash": "7d9b4eaca91c60d7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -484,11 +494,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.evasive",
-    "textHash": "3d89bb6317599f5d",
+    "textHash": "a1ffd019b614b73d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -538,11 +549,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.lone-sneaky",
-    "textHash": "71b5b68708a258c5",
+    "textHash": "12ac0b9ddec25e9d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -580,11 +592,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.must-block",
-    "textHash": "559b6b8b499254ed",
+    "textHash": "de0348fea9202df0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -623,11 +636,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "attr.alluring.one-per-column",
-    "textHash": "6b92482f85d45749",
+    "textHash": "94f522f6bf3e549e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -661,11 +675,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.per-column",
-    "textHash": "248416bb533a6357",
+    "textHash": "4ccbb64528a55bc5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -705,11 +720,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.pure-column",
-    "textHash": "11118c5ddbb5dc71",
+    "textHash": "f297b0c656412bdc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -748,11 +764,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.pure-target",
-    "textHash": "70fe9a2975b11874",
+    "textHash": "5f000a09200cedb6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -792,11 +809,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.source",
-    "textHash": "5c0938b78bc1caad",
+    "textHash": "392273b503487aff",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -835,11 +853,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.tax-and-negate",
-    "textHash": "08a2025dd603c451",
+    "textHash": "0e1cbb05631e2bee",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -884,11 +903,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.trigger",
-    "textHash": "82a17a0ed4122835",
+    "textHash": "91106155fea6da36",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -947,11 +967,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.alluring.two-duties",
-    "textHash": "25d605220a4b2c6d",
+    "textHash": "e83b44120078f68e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -989,11 +1010,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.blessed",
-    "textHash": "e31013f8389025ec",
+    "textHash": "18fa1827b7127b2e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1037,41 +1059,46 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.blessed.column",
-    "textHash": "ad99311b4af107de",
+    "textHash": "17c4380fb1742d86",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effectSourceAttrs",
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
         "agrees": true,
-        "note": "effAttrs (column-shared)"
+        "note": "source attributes via effAttrs (column-shared in battle); blessedGain on damage dealt"
       }
     ],
     "tests_run": [
       {
-        "file": "298-column-attrs-outside-combat.test.ts",
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
         "pattern": "R294 §1 the report",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Lithoghul attacking in a column with Flzzz; effect damage 3 sourced from Lithoghul gains its controller 3"
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R294",
+        "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
         "supports": "yes",
-        "note": ""
+        "note": "owner: the whole card gets the column's attributes while in the column, abilities included; column exists only in battle"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
         "text": "> The whole card gets the attributes while it's in the column. And so when it"
+      },
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "text": "assert.equal(h.state.players[A]!.life, life0 + 3,"
       }
     ],
     "basis_ok": true,
@@ -1079,7 +1106,7 @@
   },
   {
     "key": "attr.blessed.damage-only",
-    "textHash": "21e245b00d5dca9f",
+    "textHash": "cbcbe6f884f0799f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1113,11 +1140,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.blessed.gain",
-    "textHash": "4a6725bd256e9cbb",
+    "textHash": "451e0df5c552d70e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1173,11 +1201,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.blessed.own-damage",
-    "textHash": "eb20c32e1fa43c7f",
+    "textHash": "cf2ab615ad2d8f0b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1218,11 +1247,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Confirmed. The bound example (Godray aimed at the OPPONENT) does not exercise the own-controller case; the probe does."
+    "problem": "Confirmed. The bound example (Godray aimed at the OPPONENT) does not exercise the own-controller case; the probe does.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.blessed.pure",
-    "textHash": "c28d9915edb4f38e",
+    "textHash": "1e9c9124f2eab790",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1261,11 +1291,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.blessed.simultaneous",
-    "textHash": "af90c1a4b7d23c4c",
+    "textHash": "aea66d16613ac258",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1304,11 +1335,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.electric",
-    "textHash": "4d0890407a89f7aa",
+    "textHash": "07a7fea7fd373f18",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1352,11 +1384,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.electric.adjacency",
-    "textHash": "09b8bc10e9c68f8a",
+    "textHash": "266f5d96711afc37",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -1410,11 +1443,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: the text cites \"rule 603.2\" while see[] lists 603.2b. R75 (adjacent means sides and above/below, in a formation) would be a better ruling citation than Envoy alone."
+    "problem": "Minor: the text cites \"rule 603.2\" while see[] lists 603.2b. R75 (adjacent means sides and above/below, in a formation) would be a better ruling citation than Envoy alone.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.electric.atomic",
-    "textHash": "2c655d2d96efd318",
+    "textHash": "43f38216483f4086",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1448,11 +1482,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.electric.chooser",
-    "textHash": "9d26bdc987b00d3b",
+    "textHash": "891659a6c377a03c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1502,11 +1537,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed (R4, R317) and the flagged divergence (F-U20-1) is real: with an opponent's unit as the source (as Battle/Fight make it), the probe shows the path is asked of the effect's controller. The bound example cannot see this (caster = source controller)."
+    "problem": "Ruling confirmed (R4, R317) and the flagged divergence (F-U20-1) is real: with an opponent's unit as the source (as Battle/Fight make it), the probe shows the path is asked of the effect's controller. The bound example cannot see this (caster = source controller).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.electric.dead-end",
-    "textHash": "692f6628c473d622",
+    "textHash": "4b02d91aecaadff6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1545,11 +1581,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.electric.jump",
-    "textHash": "5492e6164d672320",
+    "textHash": "afa7146e9d61c1a5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1588,11 +1625,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.electric.lethal",
-    "textHash": "0447114be234ce70",
+    "textHash": "b4f3ad19ff7dc6cf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1636,11 +1674,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.electric.no-revisit",
-    "textHash": "12c2bc73cf003c25",
+    "textHash": "f640b118c2bbbf51",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1679,11 +1718,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.electric.optional",
-    "textHash": "8196fe987b3353ff",
+    "textHash": "eb95acbf409f09ef",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1722,11 +1762,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.electric.single-target",
-    "textHash": "4c0228046f2d2519",
+    "textHash": "2f81cffcfdb2d41d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1765,11 +1806,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.electric.single-target.declared",
-    "textHash": "ebcbd35d03f3b65b",
+    "textHash": "30d4be27029d8aa7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1808,11 +1850,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.evasive",
-    "textHash": "adc051b1b8e2b9e3",
+    "textHash": "f20e2becec62217e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1861,11 +1904,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.evasive.pure",
-    "textHash": "e72753c3afa1f97e",
+    "textHash": "d3e3ada7fd6a6f23",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1904,11 +1948,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.evasive.two-blockers",
-    "textHash": "736435aaf9758813",
+    "textHash": "2bb98f93fb186256",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1947,11 +1992,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.lethal",
-    "textHash": "003c90924ac0d146",
+    "textHash": "209503dcff3965fe",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -1990,11 +2036,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.lethal.combat-only",
-    "textHash": "2886b7300bc52f1f",
+    "textHash": "8053a5bd94813125",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2039,11 +2086,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.lethal.kills",
-    "textHash": "0bc4ea5aec872495",
+    "textHash": "f2a7e92a0a3203e1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2083,11 +2131,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.lethal.replaced",
-    "textHash": "8174bb164668e8cd",
+    "textHash": "492b9d4def118949",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2133,11 +2182,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Confirmed for Blightsea Polyp (Caleb was shown exactly Lethal + Rot Jelly). Note the engine applies the same to Oorblak, whose damage is dealt to Oorblak instead of the player: a Lethal column fully redirected into Oorblak still kills the player (measured). No source rules on that case; the rule's \"replaced\" wording would cover it."
+    "problem": "Confirmed for Blightsea Polyp (Caleb was shown exactly Lethal + Rot Jelly). Note the engine applies the same to Oorblak, whose damage is dealt to Oorblak instead of the player: a Lethal column fully redirected into Oorblak still kills the player (measured). No source rules on that case; the rule's \"replaced\" wording would cover it.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.modular",
-    "textHash": "3d356743412099db",
+    "textHash": "5e4d4c0be9c5e295",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2176,11 +2226,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.modular.anything",
-    "textHash": "007f6cd33238b13c",
+    "textHash": "830d2861ca9fa973",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2220,11 +2271,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.modular.attributes",
-    "textHash": "0e01cad483732344",
+    "textHash": "2693a7258d93aa22",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2258,11 +2310,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.modular.graft",
-    "textHash": "a442e65f546b0b3c",
+    "textHash": "2bcd47bad843491d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2301,11 +2354,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.modular.not-played",
-    "textHash": "c7ba2a2d66a6a2a2",
+    "textHash": "5a65dbc02e9d29de",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2344,11 +2398,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.modular.not-shared",
-    "textHash": "a0462af8a7d5703a",
+    "textHash": "bb77665ec3a6d4b1",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -2394,11 +2449,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.modular.text-augment",
-    "textHash": "8510e755b0836f5c",
+    "textHash": "9f4979b93b6a863c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2432,11 +2488,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.modular.unstable",
-    "textHash": "59fba2a24a3b9c1d",
+    "textHash": "2645f310d878cf9b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2487,11 +2544,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.modular.when",
-    "textHash": "6b1977f8456c731c",
+    "textHash": "0fa279ab2053122c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -2552,11 +2610,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.piercing",
-    "textHash": "014ce04ac4fbf2cc",
+    "textHash": "449bfb5d3460b6d9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2605,11 +2664,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.piercing.column",
-    "textHash": "6671141f31266331",
+    "textHash": "cfe128b6b85854c2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2648,11 +2708,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.combat",
-    "textHash": "f94cb3e7f2b842a9",
+    "textHash": "6c801f461d9699a4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -2717,11 +2778,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.dead-block",
-    "textHash": "2310b344ee6c6ed2",
+    "textHash": "318d96121766476e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2771,11 +2833,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.deadly",
-    "textHash": "e27ed9dac95b1c97",
+    "textHash": "4c1824f1223e3ccd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2820,11 +2883,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.defending",
-    "textHash": "7a80b9debbc2d7b4",
+    "textHash": "da38e96c71bc9d54",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -2888,11 +2952,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.piercing.elective",
-    "textHash": "b236216d6a08ddad",
+    "textHash": "2968dabc4961591d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2942,11 +3007,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.piercing.electric",
-    "textHash": "a02eacd28bf200a8",
+    "textHash": "802a60fa70df7675",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -2989,11 +3055,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.excess",
-    "textHash": "2e85e9196bd2f990",
+    "textHash": "9dedb21f4a781938",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3054,11 +3121,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.noncombat",
-    "textHash": "257c1980d46ac5cb",
+    "textHash": "07e6db1ac11ca656",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3103,11 +3171,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.piercing.noncombat-chooser",
-    "textHash": "d32cf6954e8759c1",
+    "textHash": "6a3ae156715e238a",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -3162,11 +3231,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.prevention",
-    "textHash": "3cce3180478448b0",
+    "textHash": "4531a687ace18b86",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3211,11 +3281,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.piercing.pure",
-    "textHash": "8e5fdb2a59a09cbc",
+    "textHash": "161d1948125b81b3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3260,11 +3331,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.recipients",
-    "textHash": "01a91f834bfd2c65",
+    "textHash": "dd2aeda7038af96a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3298,11 +3370,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.piercing.redirect",
-    "textHash": "6fe3e19b739d5cba",
+    "textHash": "55b06acf24fc2630",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -3363,11 +3436,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed against the designer; the flagged divergence is real (two Oorblaks: the leftover is redirected a second time). Whether \"apply once\" forbids a SECOND Oorblak redirecting is a reading of Caleb's line, not something the thread states."
+    "problem": "Ruling confirmed against the designer; the flagged divergence is real (two Oorblaks: the leftover is redirected a second time). Whether \"apply once\" forbids a SECOND Oorblak redirecting is a reading of Caleb's line, not something the thread states.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.same-damage",
-    "textHash": "03934cea17fb9e9d",
+    "textHash": "fdbdf69bedc8ddfa",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3411,11 +3485,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.piercing.unblocked",
-    "textHash": "544eda62d0a6f1fb",
+    "textHash": "e5c4b95a3ce152cb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3449,11 +3524,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.poisonous",
-    "textHash": "567366ef5fa3e8cc",
+    "textHash": "8abfe1879ef2793c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3492,11 +3568,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.poisonous.deadly",
-    "textHash": "5c7e44e3668bc65b",
+    "textHash": "b9ebc1d90b9dd464",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -3530,11 +3607,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Basis \"owner\" undersells it: R237 quotes Caleb directly (designer), though not via RAQ."
+    "problem": "Basis \"owner\" undersells it: R237 quotes Caleb directly (designer), though not via RAQ.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.poisonous.form",
-    "textHash": "971f7738ddd7782e",
+    "textHash": "acc8551d41abd9c5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3584,11 +3662,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.poisonous.is-damage",
-    "textHash": "6ad50b161862762d",
+    "textHash": "a4c6a7be2cc9fea7",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -3642,11 +3721,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None in the rule. The bound test asserts only that the trigger fired; the probe measures the counters and the 2/2 the example names."
+    "problem": "None in the rule. The bound test asserts only that the trigger fired; the probe measures the counters and the 2/2 the example names.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.poisonous.lethal",
-    "textHash": "cafd7f13adeefc08",
+    "textHash": "86e241019a06f692",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3680,11 +3760,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.poisonous.players",
-    "textHash": "01cf03a5321b80ac",
+    "textHash": "d58c6949b9ffb9a2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3718,11 +3799,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.poisonous.powerful",
-    "textHash": "0937a805878ebd23",
+    "textHash": "060ce7603fedec88",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3756,27 +3838,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.poisonous.prevention",
-    "textHash": "16ad2814fd100341",
+    "textHash": "19ae0bab2f3eddff",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "loc": "client/engine/src/engine.ts:preventUnitDamage",
         "agrees": true,
-        "note": "received <= 0 -> continue before counters"
+        "note": "prevention happens before Poisonous's counters are placed; prevented damage is never dealt"
       }
     ],
     "tests_run": [
       {
-        "file": "387-raq-combat.test.ts",
-        "pattern": "RAQ Poisonous: a shielded Jollyglop hit by a Poisonous unit",
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Poisonous: a shielded Jollyglop",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Sporebloom Siren attacks, defender casts Phytochemical Protection on Jollyglop and blocks with it; Jollyglop ends with +2 counters (no -1/-1) and no 1/1s were made"
       }
     ],
     "probes": [],
@@ -3784,26 +3867,30 @@
       {
         "ref": "RAQ 1354148437355925554#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer, covered"
       },
       {
-        "ref": "R98",
+        "ref": "R98 (its prevention ruling)",
         "supports": "yes",
-        "note": ""
+        "note": "if there is not damage being dealt, then no counters are placed; R114 replaced only its lethal-cap item"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "Jollyglop doesn't trigger, won't get -2/-2 from Poisonous but will receive +2/+2 counters from Phytochemical Protection."
+        "file": "client/docs/digital-rules.md",
+        "text": "> means **if there is not damage being dealt, then no counters are placed.**"
+      },
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "text": "assert.equal(g.counters, 2, '\"won\\'t get -2/-2 from Poisonous but will receive +2/+2 counters\"');"
       }
     ],
-    "basis_ok": true,
-    "problem": ""
+    "basis_ok": false,
+    "problem": "Content holds. Basis is 'designer' but the record also cites R98 (a ruling); 'mixed' would match its sources."
   },
   {
     "key": "attr.poisonous.pure",
-    "textHash": "ec641e82b67324ba",
+    "textHash": "5074087f5aa0aae9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3852,11 +3939,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.poisonous.resonant",
-    "textHash": "6fa9e84f2597ebe8",
+    "textHash": "b4fabec48c3e318e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3890,11 +3978,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.pure",
-    "textHash": "30c918363d5d1355",
+    "textHash": "8ebf612e7f3da8a2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3933,11 +4022,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.pure.blocking",
-    "textHash": "7b62f505551c575e",
+    "textHash": "66c6adb95f8b16c9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -3981,11 +4071,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.pure.column",
-    "textHash": "4f466d3261a997a0",
+    "textHash": "602fd4bab787ad02",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4019,11 +4110,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.pure.combat-damage",
-    "textHash": "6297dae8fce879ca",
+    "textHash": "30f42a47e78060f6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4077,11 +4169,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.pure.combat-interaction",
-    "textHash": "2bbfe5801daf288f",
+    "textHash": "8ff0b3969f066dbe",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4120,11 +4213,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.pure.noncombat",
-    "textHash": "8f2421d85392332d",
+    "textHash": "9541357615032e25",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4158,11 +4252,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.pure.noncombat.others",
-    "textHash": "93697e8c6502aaa6",
+    "textHash": "bee7b7e708518167",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4196,11 +4291,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.pure.noncombat.recipient",
-    "textHash": "54d1460322dd9c59",
+    "textHash": "2577d28495d857e7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4240,11 +4336,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.pure.noncombat.source",
-    "textHash": "24623c69b5fbf3a9",
+    "textHash": "65d2d423219bf0dc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4282,41 +4379,46 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.pure.not-targeting",
-    "textHash": "ffdcd986d09eb864",
+    "textHash": "4004660a56eb1345",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:castable (target menu)",
+        "loc": "client/engine/src/engine.ts (target restriction seam, R64)",
         "agrees": true,
-        "note": "no Pure read in target legality"
+        "note": "no Pure check in targeting; Just a Unit is offered as a target"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
-        "title": "attr.pure.not-targeting: a \"target\" damage spell can target Just a Unit",
+        "file": "client/engine/test/431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.pure.not-targeting",
         "passed": true,
-        "demonstrates": true
+        "asserts_claim": "yes: casting Arc Lightning offers Just a Unit as a target"
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R289",
+        "ref": "R289 (its per-pairing ruling)",
         "supports": "yes",
-        "note": ""
+        "note": "'NOT TOUCHED … Targeting': Pure leaves target choice alone"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
         "text": "**NOT TOUCHED, and why.** Targeting. No printed target restriction in the pool"
+      },
+      {
+        "file": "client/engine/test/431-cr-attributes-2.test.ts",
+        "text": "assert.ok(offered(h).includes(JSON.stringify({ unit: jau })), `menu: ${offered(h)}`);"
       }
     ],
     "basis_ok": true,
@@ -4324,7 +4426,7 @@
   },
   {
     "key": "attr.pure.own",
-    "textHash": "5599fb29d9a072e0",
+    "textHash": "9d843357c5667867",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4368,11 +4470,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.pure.stat-attributes",
-    "textHash": "54b3debeb75b70b6",
+    "textHash": "0e6049b352b83e80",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U20-r4",
@@ -4449,11 +4552,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling follows printed literal and the engineDiffers flag is real (probe). Caveat: R289 explicitly rules that Tough/Balanced/Inverted still read under Pure; the rule should cite that ruling as the superseded/contrary reading rather than present the divergence as engine-only."
+    "problem": "Ruling follows printed literal and the engineDiffers flag is real (probe). Caveat: R289 explicitly rules that Tough/Balanced/Inverted still read under Pure; the rule should cite that ruling as the superseded/contrary reading rather than present the divergence as engine-only.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "attr.pure.unaware-combat",
-    "textHash": "effdf8c3ebb2db1a",
+    "textHash": "27be9a091c17f5a9",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U20-r4",
@@ -4522,11 +4626,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling follows printed literal; divergence confirmed by probe. Caveat: R106 explicitly rules the opposite ('The collapse survives {Pure}') and should be named as the contrary reading; R289 already treats Unaware as switched off by Pure outside combat, so the engine is inconsistent between combat and noncombat."
+    "problem": "Ruling follows printed literal; divergence confirmed by probe. Caveat: R106 explicitly rules the opposite ('The collapse survives {Pure}') and should be named as the contrary reading; R289 already treats Unaware as switched off by Pure outside combat, so the engine is inconsistent between combat and noncombat.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "attr.reaping",
-    "textHash": "827654dcd8623afa",
+    "textHash": "97344a171df16474",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4570,11 +4675,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.reaping.any-kill",
-    "textHash": "b6d3de64c6a38320",
+    "textHash": "bf3cebab7b9b124f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4625,11 +4731,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.reaping.draw",
-    "textHash": "42b7fcb1dd55c814",
+    "textHash": "5cc5ae5c8629e581",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4683,11 +4790,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.reaping.loses",
-    "textHash": "99f3e1ebccda5192",
+    "textHash": "92c41924acb65609",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -4732,11 +4840,12 @@
       }
     ],
     "basis_ok": false,
-    "problem": "Ruling text is right and the engine divergence is real (probe). Basis should be printed: the sentence is the printed type-line reminder on every Reaping card (client/ui/scan-reminders.json), which R283 quotes; add it as a printed source. Note: the illustrative example has a unit kill a blocker in combat, and the engine pays no Reaping draw for combat kills at all (see bugs), so the example is doubly unreachable."
+    "problem": "Ruling text is right and the engine divergence is real (probe). Basis should be printed: the sentence is the printed type-line reminder on every Reaping card (client/ui/scan-reminders.json), which R283 quotes; add it as a printed source. Note: the illustrative example has a unit kill a blocker in combat, and the engine pays no Reaping draw for combat kills at all (see bugs), so the example is doubly unreachable.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant",
-    "textHash": "2809e8c0fe12d0b7",
+    "textHash": "c4fb951bf9291280",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4785,11 +4894,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant.amount",
-    "textHash": "06fc2fd70cf98dfe",
+    "textHash": "993e0026bc7402c3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4832,11 +4942,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant.combat-timing",
-    "textHash": "37110e8cb2e419be",
+    "textHash": "8bbc3644ffb9de4a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4870,11 +4981,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.resonant.each-unit",
-    "textHash": "20a8a72ca4f2ec4f",
+    "textHash": "9aac8442606ae85f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4913,11 +5025,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant.modifiers",
-    "textHash": "11abf7f344b1b85b",
+    "textHash": "e0a5bce1b84fd4ea",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -4967,11 +5080,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant.not-combat",
-    "textHash": "f2e2d6abf3a5e26b",
+    "textHash": "51e2fb3519d532eb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5005,11 +5119,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant.order",
-    "textHash": "e5659c4b650351f2",
+    "textHash": "cfa2759b7174fa70",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5048,11 +5163,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant.pure",
-    "textHash": "33cde1ccea0a0efa",
+    "textHash": "52f1ed219c8346c8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5097,11 +5213,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant.source-gone",
-    "textHash": "054723f3a589ed67",
+    "textHash": "d4a452d0bb037acf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5139,11 +5256,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.resonant.tax-and-negate",
-    "textHash": "9f798fbfb975530f",
+    "textHash": "5f6d683836cafab8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5188,11 +5306,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.resonant.trigger",
-    "textHash": "84c36f1e1143d331",
+    "textHash": "0e248969c2669fa4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5237,11 +5356,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.resonant.units-only",
-    "textHash": "4526dc5a9b5fd58e",
+    "textHash": "e891da1e8806a8d5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5275,11 +5395,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.sneaky",
-    "textHash": "36f8eeb67b1f75df",
+    "textHash": "dfd18520bc9844f7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5323,11 +5444,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.sneaky.alone",
-    "textHash": "c1d787496de14285",
+    "textHash": "ea401f32da27e384",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5361,11 +5483,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.sneaky.pure",
-    "textHash": "7e755dfad5183c50",
+    "textHash": "a74cee30cf161032",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5399,11 +5522,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.sneaky.side-block",
-    "textHash": "180bfc98ee39c8f3",
+    "textHash": "4c8c554d8586a231",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5437,11 +5561,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.sneaky.spell-tokens",
-    "textHash": "2d8f1f161a21c735",
+    "textHash": "77530a6fffa75bea",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5479,11 +5604,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.sneaky.two-sneaky",
-    "textHash": "8e46c09c3d41a2c9",
+    "textHash": "5c972b43b6d84f20",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5517,11 +5643,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.thieving",
-    "textHash": "fdab3cc9be995f28",
+    "textHash": "ff99ead8a77cd177",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5565,11 +5692,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.thieving.combat-only",
-    "textHash": "c751de60502ec9af",
+    "textHash": "3974e661dc8e4a1d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5603,11 +5731,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.thieving.draw",
-    "textHash": "06ee708b7881c714",
+    "textHash": "a600685914f03a6e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5646,11 +5775,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.thieving.per-column",
-    "textHash": "0ada30e7a59f2aeb",
+    "textHash": "1c72c6ce049d01c9",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U20-r2",
@@ -5702,11 +5832,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.thieving.piercing",
-    "textHash": "ba1608d84cd5dd0e",
+    "textHash": "e97941ead3d3d8c9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5740,11 +5871,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.thieving.replaced",
-    "textHash": "4f2abad67ab9e6a4",
+    "textHash": "029297df527e5aa3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U20-r1",
@@ -5771,6 +5903,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   }
 ]

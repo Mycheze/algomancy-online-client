@@ -6,7 +6,7 @@
     "text": "The pacing and concurrency conventions in this annex are not rules changes: none of them changes what is legal.",
     "examples": [
       {
-        "text": "The pacing conventions change no legality: a standing pass, a playback hold and full control leave the offered actions equal to the engine, and an action offered during the opponent decision is legal by the engine once it closes.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.not-rules — the pacing conventions change no legality: a standing pass, a playback hold and full control leave the offered actions equal to the engine, and an action offered during the opponent decision is legal by the engine once it closes"
       }
     ],
@@ -43,12 +43,7 @@
     "parent": "annexd.general.not-rules",
     "order": 1,
     "text": "A warning or a confirmation never removes a legal option. Where a choice looks like a misclick, the client may ask the player; it does not refuse the choice.",
-    "examples": [
-      {
-        "text": "Fight aimed at two of the caster's own units asks \"did you mean to target allies?\"; answering yes resolves the spell exactly as chosen (illustrative).",
-        "test": null
-      }
-    ],
+    "examples": [],
     "see": [
       "annexd.auto-pass.misclick-confirm"
     ],
@@ -80,7 +75,7 @@
     "text": "The client never makes a choice that belongs to a player. A real choice is always put to the player who makes it.",
     "examples": [
       {
-        "text": "Every action answered for a player is the only move either seat has, so no real choice is ever taken.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides — every action answered for a player is the only move either seat has, so no real choice is ever taken"
       }
     ],
@@ -115,7 +110,7 @@
     "text": "An option the rules would refuse is not offered. The client shows only legal options; it does not show an option and then refuse it.",
     "examples": [
       {
-        "text": "Every option the engine offers is accepted when taken; none is shown and then refused.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.unoffered — every option the engine offers is accepted when taken; none is shown and then refused"
       }
     ],
@@ -152,15 +147,15 @@
     "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them, and a defender with no unit in the battle region has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
     "examples": [
       {
-        "text": "A battle on an empty board steps itself through to deployment by forced actions.",
+        "text": null,
         "test": "21-fixes.test.ts::a whole empty-board battle drains through forced actions to deployment"
       },
       {
-        "text": "An attacker with a unit is not forced: declaring is a real choice.",
+        "text": null,
         "test": "21-fixes.test.ts::forcedAction is null whenever a real choice exists"
       },
       {
-        "text": "With full control on, the drain stops and the player is left the window.",
+        "text": null,
         "test": "273-full-control-both-seats.test.ts::BL-18 §2 with full control ON the drain stops and the player is left the window"
       }
     ],
@@ -210,11 +205,11 @@
     "text": "In round 2, a counterattack pool that holds exactly one unit, and no spell token that could ride along, declares the one-unit formation by itself. Engine differs, see F-U23-4.",
     "examples": [
       {
-        "text": "A player who sent one unit to counterattack and no spell token is not asked to form it (illustrative).",
+        "text": "A player who sent one unit to counterattack, and no spell token, is not asked to form it: the one-unit formation is declared for them.",
         "test": null
       },
       {
-        "text": "Today the engine still asks: a player who sent one unit and no spell token gets no forced declare in round 2, and is offered both declining and attacking with it (F-U23-4).",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — the engine still asks a lone sent counterattacker with no token to declare (engine differs)"
       }
     ],
@@ -260,7 +255,7 @@
     "text": "When all of one player's simultaneously queued triggers are identical (the same card, the same ability and the same composed parts), the player is not asked to order them. They go on in the order they fired. Triggers from different cards or abilities, or composites whose parts differ, are still ordered by the player.",
     "examples": [
       {
-        "text": "Flourishing Flora queuing three copies of its trigger asks nothing (illustrative).",
+        "text": "Three allies spawn at once beside Flourishing Flora: its three identical triggers go on the stack without the player being asked to order them.",
         "test": null
       }
     ],
@@ -350,7 +345,7 @@
     "text": "A target is asked for even when exactly one candidate is legal. A forced target is still a click.",
     "examples": [
       {
-        "text": "Divine Foresight (\"target opponent\") cast in battle opens a target question with exactly one option, and no forced action answers it.",
+        "text": "Divine Foresight (\"target opponent\") cast in battle still asks its caster to choose the target, though the opponent is the only choice.",
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced-target — a target with exactly one legal candidate is still a decision put to the caster"
       }
     ],
@@ -391,7 +386,7 @@
     "text": "Where a choice has a usual answer, the client may offer it as the first option, but it never picks it. The elective combat-damage split leads with \"default — share front-to-back\", and no automatic action answers that question.",
     "examples": [
       {
-        "text": "The elective damage split leads with the default share, and nothing picks it for the player.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.default-first — the elective damage split leads with the default share, and nothing picks it for the player"
       }
     ],
@@ -437,7 +432,7 @@
     "text": "The caster always chooses the order of a Burst group, one token at a time; the client offers no automatic order. A lone token is not asked to be ordered.",
     "examples": [
       {
-        "text": "A single Fireball token cast alone goes on the stack with no ordering question.",
+        "text": null,
         "test": "358-burst-order.test.ts::R309: a lone token is not asked to be ordered"
       }
     ],
@@ -508,7 +503,7 @@
     "text": "A highlighted card, a clickable unit, a drop target or a one-click shortcut claims that the engine will take the action. The client draws one only where the engine would accept it.",
     "examples": [
       {
-        "text": "A unit the engine would refuse for a counterattack is not ringed, and clicking it does nothing.",
+        "text": "A unit that cannot be sent to counterattack is not highlighted, and clicking it does nothing.",
         "test": "223-client-legality.test.ts::[127] a unit the engine would refuse is not ringed and does not pick up on a click"
       }
     ],
@@ -547,7 +542,7 @@
     "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments.",
     "examples": [
       {
-        "text": "The resource step, the haste step and deployment are hidden simultaneous segments; battle is not.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not"
       }
     ],
@@ -601,7 +596,7 @@
     "text": "The hiding is done by the server's view of the game, the same way hands are hidden. The rules engine itself hides nothing.",
     "examples": [
       {
-        "text": "The engine state holds the hidden play; only the server per-seat view leaves it out.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.redaction — the engine state holds the hidden play; only the server per-seat view leaves it out"
       }
     ],
@@ -640,7 +635,7 @@
     "text": "A segment ends at a barrier, when every player is done. At the barrier each player is shown what the other did, in the recap.",
     "examples": [
       {
-        "text": "The step ends only when every player is done, and then each is played back what the other did.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.barrier — the step ends only when every player is done, and then each is played back what the other did"
       }
     ],
@@ -678,7 +673,7 @@
     "text": "Battle is not a hidden segment. Nothing that happens in battle is held back from either player.",
     "examples": [
       {
-        "text": "In battle nothing is held: a cast is on the opponent view and in their events at once.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.battle-open — in battle nothing is held: a cast is on the opponent view and in their events at once"
       }
     ],
@@ -713,7 +708,7 @@
     "text": "While a decision is open for a player (a question the game is waiting on them to answer), that player must answer it, or concede, before taking any other action.",
     "examples": [
       {
-        "text": "A seat with its own question open cannot play a card until it answers.",
+        "text": null,
         "test": "130-seat-aware-gate.test.ts::R154 §4: your own question still gates your own input"
       }
     ],
@@ -755,7 +750,7 @@
     "text": "In battle, a decision open for one player stops the other player too: nobody may act until it is answered.",
     "examples": [
       {
-        "text": "A real battle decision for one seat leaves the other seat with nothing it may do.",
+        "text": null,
         "test": "130-seat-aware-gate.test.ts::R154 §4: a REAL battle decision blocks the other seat"
       }
     ],
@@ -792,7 +787,7 @@
     "text": "Inside a hidden simultaneous segment, a decision open for one player does not stop the other player, who keeps every action they had, except as described in the next sub-rule.",
     "examples": [
       {
-        "text": "While one seat answers its pile of Wraith triggers at the start of deployment, the other seat goes on deploying.",
+        "text": "While one player answers their Wraith triggers at the start of deployment, the other player goes on deploying.",
         "test": "130-seat-aware-gate.test.ts::R154 §1: every kind of action seat 0 had is still theirs"
       }
     ],
@@ -833,7 +828,7 @@
     "text": "Exception: when answering the open decision would rewind the game to before the other player acted (a resolution that stopped halfway), the other player is stopped as in battle. Online, an action they send meanwhile waits and is applied when the decision closes; they are told it is waiting, not that it is illegal.",
     "examples": [
       {
-        "text": "A mid-resolution question for one seat still blocks the other seat's deployment play.",
+        "text": null,
         "test": "130-seat-aware-gate.test.ts::R154 §3: a mid-resolution suspension still blocks the other seat"
       }
     ],
@@ -877,7 +872,7 @@
     "text": "Only one decision can be open at a time. An action that would change what the other player's open decision reads when it is answered is refused, and the game stays as it was before the action.",
     "examples": [
       {
-        "text": "Seat 0 cannot raise a question of its own while seat 1's question is open.",
+        "text": null,
         "test": "130-seat-aware-gate.test.ts::R154 §2: seat 0 may not overwrite seat 1's open decision"
       }
     ],
@@ -918,7 +913,7 @@
     "text": "Conceding is never blocked by an open decision, whichever player it belongs to.",
     "examples": [
       {
-        "text": "Either seat may concede while a question is open.",
+        "text": null,
         "test": "130-seat-aware-gate.test.ts::R154 §4: concede is always reachable, from either seat"
       }
     ],
@@ -1019,7 +1014,7 @@
     "text": "Pass passes priority once. It sets up nothing for later windows.",
     "examples": [
       {
-        "text": "Pass sends one pass and arms nothing: the next window the seat holds is left to them.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.auto-pass.pass-buttons.pass — Pass sends one pass and arms nothing: the next window the seat holds is left to them"
       }
     ],
@@ -1054,11 +1049,11 @@
     "text": "Pass through stack passes for the player until the stack items that were there when it was clicked have resolved, and then ends. It hands priority back sooner if a stack item outside that set appears, or if the player is offered an option they did not have when they clicked.",
     "examples": [
       {
-        "text": "A spell the opponent casts in answer is outside the armed set, so priority comes back to the player.",
+        "text": "A player clicks Pass through stack; the opponent answers with a new spell, so priority comes back to the player.",
         "test": "230-pass-modes.test.ts::[123] a stack item outside the armed scope hands priority back"
       },
       {
-        "text": "Once the stack it was clicked on has resolved, the promise is over.",
+        "text": null,
         "test": "230-pass-modes.test.ts::[123] pass through stack finishes when the stack it was armed on has resolved"
       }
     ],
@@ -1101,7 +1096,7 @@
     "text": "Pass through stack is offered only while there is a stack to pass through.",
     "examples": [
       {
-        "text": "With an empty stack the battle bar shows Pass and Pass all only.",
+        "text": null,
         "test": "230-pass-modes.test.ts::[123] the battle bar offers pass through stack only while there is a stack"
       }
     ],
@@ -1175,7 +1170,7 @@
     "text": "Both standing passes still stop before the one pass that would end the battle phase while the player holds spell tokens they could cast, so that that pass is the player's own click.",
     "examples": [
       {
-        "text": "Pass all armed with a castable Fireball token runs through the battle and hands the last pass back.",
+        "text": "A player clicks Pass all while holding a castable Fireball token: it passes through the battle but hands back the last pass, the one that would end the battle phase.",
         "test": "230-pass-modes.test.ts::[123] pass all still stops on the one pass that would erase castable spell tokens"
       }
     ],
@@ -1218,7 +1213,7 @@
     "text": "What counts as new for a standing pass is measured against the moment it was clicked. An option the player already had then is not new when it comes back later.",
     "examples": [
       {
-        "text": "An activated ability on offer at the click, gone for a window and back again, does not stop the pass.",
+        "text": "An activated ability the player could use when they clicked Pass all becomes unusable for a window and then usable again: the pass does not stop for it.",
         "test": "230-pass-modes.test.ts::[123] an option that was on offer at the arm is not news several windows later"
       }
     ],
@@ -1253,7 +1248,7 @@
     "text": "A standing pass is set up only by a click and can be cancelled at any time: one stop control drops whichever is running. The client shows which promise is running and how it ends.",
     "examples": [
       {
-        "text": "Each pass button arms a chip naming its own promise, and one stop drops it.",
+        "text": null,
         "test": "230-pass-modes.test.ts::[123] each pass button arms a chip that names its own promise, and one stop drops it"
       }
     ],
@@ -1326,7 +1321,7 @@
         "test": "70-playtest-round15.test.ts::[59] the C4 toggle passes only when passing is the ONLY thing I could do"
       },
       {
-        "text": "A pending decision is never answered by auto-pass.",
+        "text": null,
         "test": "70-playtest-round15.test.ts::[59] a pending decision is never passed through, by any of the three"
       }
     ],
@@ -1354,7 +1349,7 @@
     "text": "An answer the client sends without a click (an automatic pass, or the automatic haste-step ready) is sent once for each time it is owed. It is latched by being unanswered, not by counting game updates, so updates that arrive while it is outstanding do not send it again. Engine differs, see F-U23-2.",
     "examples": [
       {
-        "text": "However many states arrive inside the haste step, one automatic ready goes out per unanswered send.",
+        "text": null,
         "test": "223-client-legality.test.ts::[122] one automatic doneHaste per unanswered send, however many states arrive"
       }
     ],
@@ -1397,7 +1392,7 @@
     "text": "If the server refuses an action the client sent on its own, the refusal is not shown as the player's error. It goes to the log and to a plain notice that says the client sent it.",
     "examples": [
       {
-        "text": "A refused automatic ready does not light the red error bar.",
+        "text": null,
         "test": "223-client-legality.test.ts::[122] a refusal of an action the CLIENT chose to send is not the player refusal"
       }
     ],
@@ -1436,7 +1431,7 @@
     "text": "When the haste step opens and the only legal action a player has in it is to finish the step, the client finishes it for them at once, unless they have turned on bluff haste.",
     "examples": [
       {
-        "text": "With bluff haste off and nothing hasteable, the client sends the ready by itself.",
+        "text": null,
         "test": "205-haste-auto-ready.test.ts::R236 §2a: with the preference OFF and nothing hasteable, the client sends doneHaste by itself"
       }
     ],
@@ -1513,7 +1508,7 @@
     "text": "Bluff haste is a preference, off by default and remembered by the browser. With it on, the client never finishes the haste step for the player; they stay in the step until they finish it themselves, whether or not they hold anything to play.",
     "examples": [
       {
-        "text": "With bluff haste on, the client sits in the step and offers the button.",
+        "text": null,
         "test": "205-haste-auto-ready.test.ts::R236 §2c: with the preference ON the client sits in the step and offers the button"
       }
     ],
@@ -1555,7 +1550,7 @@
     "text": "The server never finishes the haste step for a player. The automatic ready, when there is one, comes from the player's own client.",
     "examples": [
       {
-        "text": "Both seats have to close the step; neither is marked done for them.",
+        "text": null,
         "test": "200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step"
       }
     ],
@@ -1602,11 +1597,11 @@
     "text": "While the haste step is open, neither player is shown whether the other has finished it. Each player sees their own readiness, and the end of the step is shown to both.",
     "examples": [
       {
-        "text": "The opponent's view of my readiness reads not-done until the step ends.",
+        "text": null,
         "test": "205-haste-auto-ready.test.ts::R236 §3a: the opponent is not served my haste readiness while the step is open"
       },
       {
-        "text": "The step's end still reaches both seats.",
+        "text": null,
         "test": "205-haste-auto-ready.test.ts::R236 §3b: the step's END is still public"
       }
     ],
@@ -1649,7 +1644,7 @@
     "text": "The game's action counter is still sent to both players and rises on every action, in every hidden segment, so a modified client can tell that its opponent acted and when. The shipped client shows nothing from it.",
     "examples": [
       {
-        "text": "Across the haste step the only field that moves for the other seat is the action counter.",
+        "text": null,
         "test": "205-haste-auto-ready.test.ts::R236 §3d: the residual, named and measured"
       }
     ],
@@ -1690,7 +1685,7 @@
     "text": "When passing would end the battle phase while the player still holds spell tokens they could cast, the client asks before sending the pass, because moving to regroup erases them. It asks on that pass only, not in the battle's other windows.",
     "examples": [
       {
-        "text": "The Pass button asks before the pass that reaches Regroup, and only that one.",
+        "text": null,
         "test": "77-playtest-round17.test.ts::[66] the Pass button asks before the pass that reaches Regroup, and only that one"
       }
     ],
@@ -1732,7 +1727,7 @@
         "test": "165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all, and the loss is still announced"
       },
       {
-        "text": "The announcement is per seat, in a fixed order, and silent when nothing is lost.",
+        "text": null,
         "test": "165-token-loss-warning.test.ts::[CT-55] the announcement is per seat, in a fixed order, and silent when there is nothing to lose"
       }
     ],
@@ -1771,7 +1766,7 @@
     "text": "A battle ended by a card while it resolves (Temporal Rift) cannot be warned about before the pass, since that cannot be known when the pass is made. The announcement covers it, as it covers every way a battle ends.",
     "examples": [
       {
-        "text": "The pass under Temporal Rift does not read as ending the battle, yet the regroup announcement still fires when the Rift ends it.",
+        "text": "Under Temporal Rift, a pass does not look like it will end the battle, so the client does not ask; when the Rift ends the battle, the lost spell tokens are still announced as regroup starts.",
         "test": "434-cr-digital-1.test.ts::cr:annexd.auto-pass.regroup-confirm.card-ended — the pass under Temporal Rift does not read as ending the battle, yet the regroup announcement still fires when the Rift ends it"
       }
     ],
@@ -1810,11 +1805,11 @@
     "text": "Full control is held, not set. While a player holds the Control key, the client gives them every stop: auto-pass, standing passes, auto-yields and the automatic haste-step ready all stand down. When they let go, everything returns to how it was.",
     "examples": [
       {
-        "text": "With full control held, the auto-pass preference sends nothing.",
+        "text": null,
         "test": "272-full-control.test.ts::BL-18 §2 with full control ON, the auto-pass preference sends nothing"
       },
       {
-        "text": "Letting go restores the previous behaviour in one keyup.",
+        "text": null,
         "test": "272-full-control.test.ts::CT-183 §6 letting go goes right back to the way it was"
       }
     ],
@@ -1896,7 +1891,7 @@
     "text": "The client's own automatic actions stop at once when Control is pressed. The server's automatic actions stop only once the message reaches it, and an automatic action already sent is not recalled, so full control should be held before acting, not after.",
     "examples": [
       {
-        "text": "The switch reaches the server on the join and on every change.",
+        "text": null,
         "test": "272-full-control.test.ts::BL-18 §3 the switch reaches the SERVER, on the join and on every change"
       }
     ],
@@ -2011,7 +2006,7 @@
     "text": "Full control is not remembered between sessions. The client shows whether it is being held.",
     "examples": [
       {
-        "text": "The hold is not written to the browser.",
+        "text": null,
         "test": "272-full-control.test.ts::CT-183 §6 the hold is not written to the browser"
       }
     ],
@@ -2046,7 +2041,7 @@
     "text": "When a spell has one target slot that must be an ally and another that may be any unit, and the player picks an ally for the second slot, the client asks whether they meant to target their own unit. It never refuses: yes resolves exactly as chosen, and no returns to the same target pick with nothing sent.",
     "examples": [
       {
-        "text": "Fight with both picks on the caster's own units asks once before the cast goes out (illustrative).",
+        "text": "A player casts Fight and picks two of their own units: the client asks once before the cast goes out.",
         "test": null
       }
     ],
@@ -2090,7 +2085,7 @@
     "text": "The cards that ask are found from their target slots, not listed by name. Today they are Fight and Squish. Organic Exchange, which targets two units with no ally slot, does not ask.",
     "examples": [
       {
-        "text": "Reading every card's target slots over the whole pool finds exactly Fight and Squish; Organic Exchange is not among them.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.auto-pass.misclick-confirm.family — the family derived from target slots over the whole pool is exactly Fight and Squish"
       }
     ],
@@ -2129,7 +2124,7 @@
     "text": "A game may be played with a chess clock, in which each player has a bank of time. The home screen offers three settings: no clock, 45 minutes and 60 minutes.",
     "examples": [
       {
-        "text": "The picker offers Off, 45m and 60m.",
+        "text": null,
         "test": "271-clock-picker-and-warning.test.ts::BL-26 §4 the home screen offers the owner's three banks, including no clock at all"
       }
     ],
@@ -2157,7 +2152,7 @@
     "text": "Unless the player chooses otherwise, the bank is 45 minutes for a constructed game and 60 minutes for a live draft.",
     "examples": [
       {
-        "text": "The default is looked up by mode when the game is created.",
+        "text": null,
         "test": "271-clock-picker-and-warning.test.ts::BL-26 §4 the default follows the MODE"
       }
     ],
@@ -2185,7 +2180,7 @@
     "text": "A game with no clock shows no clocks.",
     "examples": [
       {
-        "text": "A client never sent a clock draws none.",
+        "text": null,
         "test": "271-clock-picker-and-warning.test.ts::BL-26 §1 a client that was never sent a clock draws no clocks at all"
       }
     ],
@@ -2213,7 +2208,7 @@
     "text": "Choosing a clock setting does not make a game a custom game.",
     "examples": [
       {
-        "text": "Changing the clock leaves the game standard.",
+        "text": null,
         "test": "366-clock-in-options.test.ts::366 changing the clock does not make the game custom"
       }
     ],
@@ -2245,7 +2240,7 @@
         "test": "271-clock-picker-and-warning.test.ts::BL-27 §2 the threshold is a tenth of the ROOM'S bank, not a constant"
       },
       {
-        "text": "On the 45- and 60-minute banks the warning comes at one minute (illustrative).",
+        "text": "On the 45- and 60-minute banks the clock turns critical at one minute.",
         "test": null
       }
     ],
@@ -2273,7 +2268,7 @@
     "text": "A player's clock runs only while the game is waiting on that player, and only while both players are connected.",
     "examples": [
       {
-        "text": "A clock runs only for a seat the game is waiting on, and only while both players are connected.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.running — a clock runs only for a seat the game is waiting on, and only while both players are connected"
       }
     ],
@@ -2302,7 +2297,7 @@
     "text": "In a step both players take at once, both clocks run; a player's clock stops when that player finishes the step.",
     "examples": [
       {
-        "text": "After one player finishes the resource step, the haste step or deployment, that player has nothing left to do while the other still has legal actions.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.running.simultaneous — in planning and the haste step both seats are waited on, and a seat that has finished has no legal action left"
       }
     ],
@@ -2333,7 +2328,7 @@
     "text": "A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other.",
     "examples": [
       {
-        "text": "The armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.running.standing-pass — the armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log"
       }
     ],
@@ -2364,11 +2359,11 @@
     "text": "A player watching a recap is off the clock until the playback ends or the server's hold on it lapses. Acting ends the hold.",
     "examples": [
       {
-        "text": "A seat watching a playback is not billed.",
+        "text": null,
         "test": "360-playback-frames.test.ts::§8 a seat watching a playback is off the clock until it is done, or the hold lapses"
       },
       {
-        "text": "The hold starts when the playback is sent and ends when the client says so or the seat acts.",
+        "text": null,
         "test": "360-playback-frames.test.ts::§8b the server holds the clock when it sends a playback"
       }
     ],
@@ -2400,7 +2395,7 @@
     "text": "A player whose clock runs out loses the game, and the log says they ran out of time. This happens even if neither player acts.",
     "examples": [
       {
-        "text": "A seat whose clock runs out loses with no move made, and the log says they ran out of time.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.out-of-time — a seat whose clock runs out loses with no move made, and the log says they ran out of time"
       }
     ],
@@ -2431,15 +2426,15 @@
     "text": "A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open.",
     "examples": [
       {
-        "text": "A short game left alone closes after an hour.",
+        "text": null,
         "test": "367-idle-rooms-close.test.ts::367 §1 a room with fewer than five actions closes after an hour without a move, not before"
       },
       {
-        "text": "A longer game left alone closes after twelve hours.",
+        "text": null,
         "test": "367-idle-rooms-close.test.ts::367 §2 a room with five or more actions closes after twelve hours without a move, not before"
       },
       {
-        "text": "A connected seat or a watcher keeps an idle room open; an empty one gets a grace to reconnect.",
+        "text": null,
         "test": "367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect"
       }
     ],
@@ -2468,7 +2463,7 @@
     "text": "A connected player or a watcher keeps an idle game open, and an empty game is given a grace period for a player to reconnect.",
     "examples": [
       {
-        "text": "A connected seat or a watcher keeps the room open.",
+        "text": null,
         "test": "367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open"
       }
     ],
@@ -2497,7 +2492,7 @@
     "text": "A game closed for being idle has no winner, is not rated, and is recorded as unfinished.",
     "examples": [
       {
-        "text": "A closed game reads as unfinished.",
+        "text": null,
         "test": "367-idle-rooms-close.test.ts::367 §6 a closed game has no winner, is not rated and reads as unfinished"
       }
     ],
@@ -2526,7 +2521,7 @@
     "text": "Inside a hidden simultaneous segment, a player may undo their own actions, one at a time, back toward the start of the step, within the limits of the rules below.",
     "examples": [
       {
-        "text": "An earlier deployment play can be undone when nothing hidden has been seen since.",
+        "text": null,
         "test": "374-undo-locks-on-reveal.test.ts::R312 §2: an undo of an earlier play BEFORE any glimpse still works"
       }
     ],
@@ -2565,7 +2560,7 @@
     "text": "The opponent acting in the same step does not stop a player's undo.",
     "examples": [
       {
-        "text": "The opponent acting in the same step does not stop my undo.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.opponent — the opponent acting in the same step does not stop my undo"
       }
     ],
@@ -2623,11 +2618,11 @@
     "text": "Actions taken in battle are not undone. For that reason an irreversible activated ability asks for confirmation in battle, while in deployment it activates on the click and undo is the safety net.",
     "examples": [
       {
-        "text": "In deployment an irreversible ability activates on the click.",
+        "text": null,
         "test": "373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click"
       },
       {
-        "text": "In battle the same ability asks \"Yes, activate\" first.",
+        "text": null,
         "test": "373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks"
       }
     ],
@@ -2657,7 +2652,7 @@
     "text": "A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled. A Burst group is cancelled whole.",
     "examples": [
       {
-        "text": "A cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.undo.cast-cancel — a cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack"
       }
     ],
@@ -2744,7 +2739,7 @@
     "text": "Actions the player took after that one can still be undone, back to just after it.",
     "examples": [
       {
-        "text": "A spawn after the glimpse is undoable back to the glimpse, and not past it.",
+        "text": "A unit played after the glimpse can be undone, back to just after the glimpse, and not past it.",
         "test": "374-undo-locks-on-reveal.test.ts::R312 §3: a plain spawn after the glimpse is undoable back to the glimpse"
       }
     ],
@@ -2784,7 +2779,7 @@
     "text": "The refusal reads \"you've seen those cards — that can't be taken back\".",
     "examples": [
       {
-        "text": "The refusal reads: you have seen those cards and that cannot be taken back.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.undo.seen-cards.message — the refusal reads: you have seen those cards and that cannot be taken back"
       }
     ],
@@ -2820,7 +2815,7 @@
     "text": "Only the player who saw the cards is locked. The opponent looking at a shared deck does not lock a player's undo, since inside a hidden step it shows that player nothing.",
     "examples": [
       {
-        "text": "The opponent's glimpse of the shared deck leaves my undo free.",
+        "text": "The opponent glimpsing from the shared deck does not lock the player's undo.",
         "test": "374-undo-locks-on-reveal.test.ts::R312 §5: the opponent's glimpse of the SHARED deck does not lock your undo"
       }
     ],
@@ -2856,11 +2851,7 @@
     "text": "An undo is refused if it would change cards the opponent has already been shown.",
     "examples": [
       {
-        "text": "Taking back a shuffle after the opponent glimpsed the deck it shuffled is refused (illustrative).",
-        "test": null
-      },
-      {
-        "text": "My undo is refused when it would change the cards the opponent has since been shown.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.undo.seen-cards.opponent-shown — my undo is refused when it would change the cards the opponent has since been shown"
       }
     ],
@@ -2895,7 +2886,7 @@
     "text": "Whether an action showed a player hidden cards is measured, not listed: an action counts if what it shows the player depends on the order of hidden cards. A glimpse, a draw, a reveal or a look at a hand counts. Playing a card from hand, recycling, or putting a card on the bottom of a deck does not. In a Single Card Duel nothing locks, since every card in the deck is the same.",
     "examples": [
       {
-        "text": "A spawn trigger's Glimpse 1 in the haste step locks too.",
+        "text": "A unit's spawn trigger that glimpses 1 in the haste step locks undo too.",
         "test": "374-undo-locks-on-reveal.test.ts::R312 §6: measured, not listed"
       }
     ],
@@ -2941,7 +2932,7 @@
     "text": "The lock survives a server restart and an undo.",
     "examples": [
       {
-        "text": "A restored room measures the lock again.",
+        "text": null,
         "test": "374-undo-locks-on-reveal.test.ts::R312 §4: the lock survives a restart"
       }
     ],
@@ -2977,7 +2968,7 @@
     "text": "In Learn to Play, undo works in every phase, under the same lock: a turn's draw, a glimpse or a look at the Bot's hand ends the undo of whatever came before it. Starting a turn again after a loss is a fresh attempt, not an undo.",
     "examples": [
       {
-        "text": "A turn's draw ends the undo of the turn before.",
+        "text": null,
         "test": "374-undo-locks-on-reveal.test.ts::R312 §7: Learn to Play applies the same floor"
       }
     ],
@@ -3024,7 +3015,7 @@
     "text": "When the haste step or deployment ends, each player is shown what the other did there as a playback (the recap): one frame per move, in the order the moves were made.",
     "examples": [
       {
-        "text": "A haste step closes into frames the same way as deployment.",
+        "text": null,
         "test": "360-playback-frames.test.ts::§7 a haste step closes into frames the same way"
       }
     ],
@@ -3066,7 +3057,7 @@
     "text": "The recap changes nothing in the game. A game played with recap frames is the same game, action for action, as one without them.",
     "examples": [
       {
-        "text": "Frames do not alter the action log.",
+        "text": null,
         "test": "360-playback-frames.test.ts::§1 a game with frames is the same game without them"
       }
     ],
@@ -3095,7 +3086,7 @@
     "text": "A frame of the opponent's move shows that move on their side, their hand still face down, and the player's own side as the player left it.",
     "examples": [
       {
-        "text": "Their move on their half, their hand face down, your half as you left it.",
+        "text": null,
         "test": "360-playback-frames.test.ts::§3 an opponent frame"
       }
     ],
@@ -3124,7 +3115,7 @@
     "text": "A move with nothing to show is not given a frame, but its log line is kept.",
     "examples": [
       {
-        "text": "An empty move is not a step, and its line is not lost.",
+        "text": null,
         "test": "360-playback-frames.test.ts::§4 a move with nothing to show is not a step"
       }
     ],
@@ -3153,7 +3144,7 @@
     "text": "The end of turn is played as one frame per trigger, in order.",
     "examples": [
       {
-        "text": "Each end-of-turn trigger gets its own frame.",
+        "text": null,
         "test": "360-playback-frames.test.ts::§2 the end of turn is a frame per trigger"
       }
     ],
@@ -3182,7 +3173,7 @@
     "text": "The resource step is not played back: its close arrives whole, in one update.",
     "examples": [
       {
-        "text": "The resource step close is sent whole in one update, with no playback.",
+        "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.recap.what.resource-step — the resource step close is sent whole in one update, with no playback"
       }
     ],
@@ -3223,7 +3214,7 @@
     "text": "Undoing a move inside the step removes that move's frame and keeps the others.",
     "examples": [
       {
-        "text": "An undone move leaves no frame behind.",
+        "text": null,
         "test": "360-playback-frames.test.ts::§6 undoing a move inside the step takes its frame with it"
       }
     ],
@@ -3254,11 +3245,11 @@
     "text": "A Glimpse made in a hidden step is shown to the opponent in the recap, exactly once, in the frame of the action that made it, with its card notice. The player who glimpsed sees their own reveal at once. A Glimpse in battle reaches the opponent at once.",
     "examples": [
       {
-        "text": "The opponent's glimpse notice pops when its recap frame plays, not before.",
+        "text": null,
         "test": "371-glimpse-in-the-recap.test.ts::R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before"
       },
       {
-        "text": "The reveal plays in the frame of the Oracle play and nowhere else.",
+        "text": "A player plays Oracle of Foretelling in deployment: the opponent sees its glimpse in the recap frame of that play, and nowhere else.",
         "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §3: the reveal plays in the recap"
       }
     ],
@@ -3310,11 +3301,11 @@
     "text": "The deployment recap pauses after the opponent's moves and again after the end of turn; the haste step's recap pauses the same way. Skip jumps to the next pause, never past it. A quiet end of turn does not pause twice.",
     "examples": [
       {
-        "text": "The deployment recap stops after their moves and after the end of turn.",
+        "text": null,
         "test": "383-recap-stops.test.ts::report #198: the deployment recap stops after their moves"
       },
       {
-        "text": "Skip jumps to the next stop, never past it.",
+        "text": null,
         "test": "383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it"
       }
     ],
@@ -3342,7 +3333,7 @@
     "text": "A recap can be watched again. Watching again pauses at the same places, shows the glimpse notices again, and hands back the board.",
     "examples": [
       {
-        "text": "Watch again stops at the same places and hands back the board.",
+        "text": null,
         "test": "383-recap-stops.test.ts::report #198: \"watch again\" stops at the same places"
       }
     ],
@@ -3377,11 +3368,11 @@
     "text": "The hand-over to the next turn at the end of a recap pauses longer than a frame. Every recap, live, watched again or in Learn to Play, is paced by the same rule.",
     "examples": [
       {
-        "text": "The hand-over waits longer than a frame.",
+        "text": null,
         "test": "372-recap-end-pause.test.ts::the hand-over to the next turn waits PLAYBACK_END_MS, longer than a frame"
       },
       {
-        "text": "Live, watch-again and Learn to Play use one gap rule.",
+        "text": null,
         "test": "372-recap-end-pause.test.ts::every playback goes through the one gap rule"
       }
     ],
@@ -3409,7 +3400,7 @@
     "text": "The client shows play no faster than one step per second. This one tempo paces both the updates the client receives and the steps within a single update.",
     "examples": [
       {
-        "text": "The beat tempo is the client-wide ceiling.",
+        "text": null,
         "test": "218-one-tempo.test.ts::§1a the beat tempo IS the client-wide ceiling"
       }
     ],
@@ -3450,11 +3441,11 @@
     "text": "Items that happen at the same time under the rules arrive on screen together, then leave one at a time, in resolution order, one tempo step apart. The next group waits until this one has finished.",
     "examples": [
       {
-        "text": "A simultaneous batch shares one arrival.",
+        "text": null,
         "test": "218-one-tempo.test.ts::§2a \"all at once\": a simultaneous batch shares ONE arrival"
       },
       {
-        "text": "They leave in resolution order.",
+        "text": null,
         "test": "218-one-tempo.test.ts::§2c they leave in RESOLUTION order"
       }
     ],
@@ -3493,11 +3484,11 @@
     "text": "Only an update the player cannot act on is held back to keep the tempo. A decision for the player, the echo of the player's own action and the end of the game are never held, and an update with legal actions is never held unless auto-pass will answer it.",
     "examples": [
       {
-        "text": "A decision of mine is never held.",
+        "text": null,
         "test": "128-ui-pace.test.ts::R150 #94: a decision of MINE is never held"
       },
       {
-        "text": "The game ending is never held.",
+        "text": null,
         "test": "128-ui-pace.test.ts::R150 #94: the game ending is never held"
       }
     ],
@@ -3538,7 +3529,7 @@
     "text": "When an update the player can act on arrives, everything held before it is released with it, in order, so the player is never asked a question over an old board.",
     "examples": [
       {
-        "text": "An urgent arrival flushes the backlog rather than jumping it.",
+        "text": null,
         "test": "128-ui-pace.test.ts::R150 #94: an urgent arrival FLUSHES the backlog rather than jumping it"
       }
     ],
@@ -3573,7 +3564,7 @@
     "text": "The player's own input is never delayed by the tempo.",
     "examples": [
       {
-        "text": "My own action's echo is never held.",
+        "text": null,
         "test": "128-ui-pace.test.ts::R150 #94: my OWN action's echo is never held"
       }
     ],
@@ -3608,7 +3599,7 @@
     "text": "The screen never falls more than a fixed number of tempo steps behind the live game.",
     "examples": [
       {
-        "text": "The queue never falls further than its bound behind.",
+        "text": null,
         "test": "128-ui-pace.test.ts::R150 #94: the queue never falls further than PACE_MAX_HELD intervals behind"
       }
     ],
@@ -3644,11 +3635,11 @@
     "text": "Outside a recap playback, while play is being held back, the S key jumps to the live state. Skipping drops pending animations but still delivers the held log lines. No skip control is drawn for this.",
     "examples": [
       {
-        "text": "Several held arrivals draw nothing on screen, and S releases them all.",
+        "text": null,
         "test": "237-live-while-held.test.ts::R258 several held arrivals still draw nothing, and S releases them all"
       },
       {
-        "text": "Skipping releases the beats rather than dropping them.",
+        "text": null,
         "test": "218-one-tempo.test.ts::§4b skipping RELEASES the beats rather than dropping them"
       }
     ],
@@ -3696,11 +3687,11 @@
     "text": "While play is held, whether the opponent is connected, and the clocks, stay current; nothing else on the board changes until the held updates are released.",
     "examples": [
       {
-        "text": "A disconnect that arrives while play is held is on screen at once.",
+        "text": null,
         "test": "237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once"
       },
       {
-        "text": "A plain held update moves nothing on screen.",
+        "text": null,
         "test": "237-live-while-held.test.ts::R258 a held update moves the live slots and NOTHING else on the board"
       }
     ],
@@ -3735,7 +3726,7 @@
     "text": "A disconnect is shown at once, not queued behind held updates, and showing it does not release them.",
     "examples": [
       {
-        "text": "A disconnect that arrives while the throttle is holding is on screen at once.",
+        "text": null,
         "test": "237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once"
       }
     ],
@@ -3770,7 +3761,7 @@
     "text": "During a recap playback, skipping does not jump to the live state. Skip (the S key, Space, or the Skip button drawn on the play bar) jumps to the next stop, and on a stop it continues the playback.",
     "examples": [
       {
-        "text": "Skip jumps to the next stop, never past it.",
+        "text": null,
         "test": "383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it"
       }
     ],

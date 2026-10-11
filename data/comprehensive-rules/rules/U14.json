@@ -6,7 +6,7 @@
     "text": "An effect is anything on the stack. Whenever a card is played, or an ability is activated or triggered, it is added to the stack as an effect. A unit or spell unit on the stack is an effect too.",
     "examples": [
       {
-        "text": "Example: a {Battle} unit being played sits on the stack and can be chosen by an effect that says \"target effect\" (Dematerialize).",
+        "text": "a {Battle} unit being played sits on the stack and can be chosen by an effect that says \"target effect\" (Dematerialize).",
         "test": "118-stack-effect.test.ts::R128: a unit on the stack is a legal \"target effect\" (Dematerialize)"
       }
     ],
@@ -57,7 +57,7 @@
     "text": "A spell effect is an effect that is a spell: a spell, a spell unit or a spell token on the stack, or an ambush. A unit on the stack is an effect but not a spell effect, so a card that says \"spell effect\" cannot affect it.",
     "examples": [
       {
-        "text": "Example: Null Drone (\"target spell effect\") cannot choose a plain unit on the stack, but can choose a spell unit.",
+        "text": "Null Drone (\"target spell effect\") cannot choose a plain unit on the stack, but can choose a spell unit.",
         "test": "118-stack-effect.test.ts::\"target spell effect\" refuses a plain unit but takes a spell unit"
       }
     ],
@@ -96,7 +96,7 @@
     "text": "A nonspell effect is any effect that is not a spell effect: a triggered ability, an activated ability, a Virus being applied, or a unit on the stack.",
     "examples": [
       {
-        "text": "Example: Nothyr (\"negate up to one target nonspell effect\") can choose a {Battle} unit on the stack.",
+        "text": "Nothyr (\"negate up to one target nonspell effect\") can choose a {Battle} unit on the stack.",
         "test": "118-stack-effect.test.ts::Nothyr's \"target nonspell effect\" reaches a unit on the stack"
       }
     ],
@@ -180,7 +180,7 @@
     "text": "Players interact by playing cards and activating abilities in response to one another. All interaction uses the stack (rule 703).",
     "examples": [
       {
-        "text": "Example: in a battle, a spell, a {Battle} unit, a Virus and an activated ability are each put on the stack as they are played or activated.",
+        "text": null,
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.general.interaction — a spell, a battle unit, a virus and an activated ability played in battle all go on the stack"
       }
     ],
@@ -215,7 +215,7 @@
     "text": "Only units and spells are played, whatever zone they are played from. Applying a modification is not playing a card (701.2).",
     "examples": [
       {
-        "text": "Example: Godray and Monke played from hand, and Trench Stalker played from the bin, are plays; a Virus applied to the attacker is not.",
+        "text": "Godray and Monke played from hand, and Trench Stalker played from the bin, are plays; a Virus applied to the attacker is not.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.playing.what-is-played — a unit and a spell played from hand and a unit played from the bin are plays; a virus applied is not"
       }
     ],
@@ -258,7 +258,7 @@
     "text": "Playing a spell unit is playing a spell.",
     "examples": [
       {
-        "text": "Example: a spell unit played through Hooba-Pon counts as a spell played.",
+        "text": "a spell unit played through Hooba-Pon counts as a spell played.",
         "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell"
       }
     ],
@@ -293,7 +293,7 @@
     "text": "Casting a spell token is playing a spell. A spell token is never in a hand; it is cast from play, so it is played from somewhere other than the hand.",
     "examples": [
       {
-        "text": "Example: casting a Fireball token triggers Stalwart Sentinel (\"when you play a card from anywhere other than your hand\").",
+        "text": "casting a Fireball token triggers Stalwart Sentinel (\"when you play a card from anywhere other than your hand\").",
         "test": "408-raq-new-threads.test.ts::casting a Fireball token triggers Stalwart Sentinel"
       }
     ],
@@ -347,7 +347,7 @@
     "text": "A token is not a card. An ability or cost modifier that refers to a \"card\" being played does not apply to a spell token being cast; one that refers to a \"spell\" does; one that refers to a \"nontoken spell\" does not.",
     "examples": [
       {
-        "text": "Example: Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") does not make a spell token cost life.",
+        "text": "Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") does not make a spell token cost life.",
         "test": "337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards, so a token cast pays no life"
       }
     ],
@@ -462,7 +462,7 @@
     "text": "Applying a modification (an augment, a graft, or a Virus) is not playing a card. A modification is applied, whether it comes from a hand, a bin, a cache or elsewhere. Applying a modification is a special action.",
     "examples": [
       {
-        "text": "Example: a graft applied from hand and a Virus applied from the cache are not plays.",
+        "text": null,
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.playing.applying — a graft from hand and a virus from the cache are applied, never played"
       }
     ],
@@ -512,11 +512,11 @@
     "text": "An ability that triggers when a player plays a unit, a spell or a card does not trigger when a modification is applied, including one applied from the bin.",
     "examples": [
       {
-        "text": "Example: Ravenous Fireslinger does not trigger when its controller applies an augment, and does trigger on a real spell.",
+        "text": "Ravenous Fireslinger does not trigger when its controller applies an augment, and does trigger on a real spell.",
         "test": "105-semantics-playwatch.test.ts::Ravenous Fireslinger: R37"
       },
       {
-        "text": "Example: a Virus applied during battle fires no play event, and Void Mandible does not react to it.",
+        "text": "Applying a Virus during battle is not playing a card, so Void Mandible does not react to it.",
         "test": "119-play-and-token-events.test.ts::R37 holds: applying a VIRUS fires neither event"
       }
     ],
@@ -558,7 +558,7 @@
     "text": "A modifier to the cost of playing cards does not change the cost of applying a modification. A modification still needs its own affinity and its own mana cost to be applied.",
     "examples": [
       {
-        "text": "Example: a Virus applied in battle needs its affinity and pays its cost.",
+        "text": null,
         "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost"
       }
     ],
@@ -605,7 +605,7 @@
     "text": "Tides of the Cosmos is the one exception. Although it says \"play\", it may put a Virus card onto a unit as a Virus, and it may play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment.",
     "examples": [
       {
-        "text": "Example: a Virus card that Tides of the Cosmos plays as a Virus is attached to a unit and never enters play.",
+        "text": "a Virus card that Tides of the Cosmos plays as a Virus is attached to a unit and never enters play.",
         "test": "404-raq-fix-tides.test.ts::R337: a Virus card played by Tides as a Virus augments a unit and never enters play"
       }
     ],
@@ -662,7 +662,7 @@
     "text": "Putting a card into play is not playing it. Whether an effect plays a card or puts it into play is decided by the verb the effect prints.",
     "examples": [
       {
-        "text": "Example: Covenant of the Damned puts a unit from the bin into play; only Covenant itself was played.",
+        "text": "Covenant of the Damned puts a unit from the bin into play; only Covenant itself was played.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.playing.put-into-play — a unit put into play by Covenant of the Damned is not played"
       }
     ],
@@ -702,7 +702,7 @@
     "text": "A spell unit that enters play without being played (for example, one put into play from a bin) does not produce its spell effect.",
     "examples": [
       {
-        "text": "Example: Covenant of the Damned puts Lonely Forager into play from the bin; Forager does not draw a card.",
+        "text": "Covenant of the Damned puts Lonely Forager into play from the bin; Forager does not draw a card.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.playing.put-into-play.spell-unit — Lonely Forager put into play from the bin by Covenant of the Damned draws no card"
       }
     ],
@@ -739,7 +739,7 @@
     "text": "A card played during the resolution of another effect is played. During battle it is put on the stack and can be responded to (rule 703.5), and abilities that trigger on a play see it.",
     "examples": [
       {
-        "text": "Example: Bloomcaster hears a unit that Tides of the Cosmos plays.",
+        "text": "Tides of the Cosmos plays a unit, and Bloomcaster's \"Whenever you play a unit\" triggers on it.",
         "test": "396-raq-timing.test.ts::RAQ Tides 7: a free play is a play"
       }
     ],
@@ -786,11 +786,11 @@
     "text": "A card played by an effect is played from the zone it came out of. If it came out of a hand, it is played from the hand. If it came out of the cache, a bin, the deck or anywhere else, it is not played from the hand.",
     "examples": [
       {
-        "text": "Example: Tides of the Cosmos plays a card off the top of the deck, so Proph and Stalwart Sentinel see a play from somewhere other than the hand.",
+        "text": "Tides of the Cosmos plays a card off the top of the deck, so Proph and Stalwart Sentinel see a play from somewhere other than the hand.",
         "test": "241-played-from-zone.test.ts::R263 §5: Tides of the Cosmos plays off the top of the deck"
       },
       {
-        "text": "Example: Hooba-Pon plays a unit from its controller's hand, so neither watcher fires.",
+        "text": "Hooba-Pon plays a unit from its controller's hand, so neither Proph nor Stalwart Sentinel triggers.",
         "test": "241-played-from-zone.test.ts::R263 §3: Hooba-Pon plays from the hand"
       }
     ],
@@ -829,7 +829,7 @@
     "text": "A copy of a spell is not played. It does not trigger abilities that trigger on playing, and it is not counted as a played spell.",
     "examples": [
       {
-        "text": "Example: Earthbound Replicator does not copy its own copy.",
+        "text": "Earthbound Replicator does not copy its own copy.",
         "test": "138-spell-copy.test.ts::a copy is not PLAYED, so it fires no play event"
       }
     ],
@@ -872,7 +872,7 @@
     "text": "To play a card, a player must meet its affinity requirement, pay its mana cost, select its targets as it is played, and resolve whatever is inside its brackets (an additional cost to pay or a mode to choose).",
     "examples": [
       {
-        "text": "Example: Arc Lightning (rr, cost 4) cannot be played with four water resources (no affinity) or with only two fire resources (not enough mana); with two fire and two water it can.",
+        "text": "Arc Lightning (rr, cost 4) cannot be played with four water resources (no affinity) or with only two fire resources (not enough mana); with two fire and two water it can.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.requirements — Arc Lightning is not playable without its affinity, nor without its mana, and is with both"
       }
     ],
@@ -921,7 +921,7 @@
     "text": "A player must meet a card's affinity requirement to be able to play it, unless an effect lets it be played ignoring affinity.",
     "examples": [
       {
-        "text": "Example: Tides of the Cosmos plays a fire unit for a player who has only water resources.",
+        "text": "Tides of the Cosmos plays a fire unit for a player who has only water resources.",
         "test": "396-raq-timing.test.ts::RAQ Tides 1: a free play ignores affinity"
       }
     ],
@@ -963,7 +963,7 @@
     "text": "To pay a card's mana cost, the player expends a number of unexpended resources equal to that cost.",
     "examples": [
       {
-        "text": "Example: playing Arc Lightning, cost 4, expends four of the player’s unexpended resources.",
+        "text": "playing Arc Lightning, cost 4, expends four of the player’s unexpended resources.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.requirements.mana — playing Arc Lightning (cost 4) expends four unexpended resources"
       }
     ],
@@ -1002,7 +1002,7 @@
     "text": "A card can be played only when its timing allows (rule 207). A card with no timing icon can be played only during deployment.",
     "examples": [
       {
-        "text": "Example: Lonely Forager has no timing icon: it is offered in deployment and refused in battle.",
+        "text": "Lonely Forager has no timing icon: it can be played in deployment but not in battle.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.requirements.timing — a card with no timing icon is playable in deployment and not in battle"
       }
     ],
@@ -1038,7 +1038,7 @@
     "text": "A card in the cache under a live permission may be played in every way it could be played from the hand. It is still not in the hand.",
     "examples": [
       {
-        "text": "Example: a glimpsed Virus in the cache can be applied onto an enemy unit in battle.",
+        "text": "a glimpsed Virus in the cache can be applied onto an enemy unit in battle.",
         "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle"
       }
     ],
@@ -1076,7 +1076,7 @@
     "text": "A card played from the cache or a bin under a permission still obeys its own printed timing; the permission itself never waives timing. Apart from the timing grants that also work from the cache (rule effects.casting.other-zones.cache-widening), only an effect that says the card may be played now, such as Tides of the Cosmos, lets it ignore its timing.",
     "examples": [
       {
-        "text": "Example: Tides of the Cosmos plays a deploy-timing unit in battle.",
+        "text": "Tides of the Cosmos plays a deploy-timing unit in battle.",
         "test": "396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing"
       }
     ],
@@ -1161,7 +1161,7 @@
     "text": "Permission to play a card \"as if it had [Haste]\" does not let a {Battle} card be played outside battle.",
     "examples": [
       {
-        "text": "Example: Dispatch Courier cannot let a {Battle} spell unit be played in the haste step.",
+        "text": "Dispatch Courier cannot let a {Battle} spell unit be played in the haste step.",
         "test": "396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either"
       }
     ],
@@ -1204,7 +1204,7 @@
     "text": "The rules that widen a card's timing when it is played from hand also widen it when it is played from the cache: a haste grant such as Dispatch Courier's, the erase-funded haste play of Writhing Host, Ambush, and the battle {Virus} augment window.",
     "examples": [
       {
-        "text": "Example: a glimpsed {Virus} card in the cache can be augmented onto a unit in a battle window, as it could from hand.",
+        "text": "a glimpsed {Virus} card in the cache can be augmented onto a unit in a battle window, as it could from hand.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.other-zones.cache-widening — a glimpsed Virus in the cache augments onto a unit in a battle window"
       }
     ],
@@ -1248,7 +1248,7 @@
     "text": "Playing a card follows the steps below, in order. Everything the play needs is declared and paid before the card is put on the stack, so no player can respond to an undeclared or unpaid play.",
     "examples": [
       {
-        "text": "Example: while Sacrificial Burst’s target and sacrifice are being chosen, nothing is on the stack and the opponent has no action; it reaches the stack only once both are done.",
+        "text": "while Sacrificial Burst’s target and sacrifice are being chosen, nothing is on the stack and the opponent has no action; it reaches the stack only once both are done.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure — while Sacrificial Burst is being declared and paid it is not on the stack and the opponent cannot act"
       }
     ],
@@ -1334,7 +1334,7 @@
     "text": "Step 2: the player chooses any {Modular} modifications for the card.",
     "examples": [
       {
-        "text": "Example: Spellbind asks for its {Modular} mods as it is played; the chosen mod is on the stack item with it.",
+        "text": "Spellbind asks for its {Modular} mods as it is played; the chosen mod goes on the stack with it.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.modular — Spellbind asks for its Modular mods as it is played, and the chosen mod rides onto the stack with it"
       }
     ],
@@ -1408,7 +1408,7 @@
     "text": "Step 4: if a bracket in the card's text offers a choice of modes, the owner of the effect chooses one.",
     "examples": [
       {
-        "text": "Example: Wither and Bloom declares which half it is before anyone may respond.",
+        "text": "Wither and Bloom declares which half it is before anyone may respond.",
         "test": "97-mode-conformance.test.ts::R57: Wither and Bloom declares which half before anyone may respond"
       }
     ],
@@ -1445,7 +1445,7 @@
     "text": "Step 5: a card that may be played into a formation has its place in the formation chosen.",
     "examples": [
       {
-        "text": "Example: Tiderunner Initiate’s place in the formation is chosen as it is played, before it is on the stack.",
+        "text": "Tiderunner Initiate’s place in the formation is chosen as it is played, before it is on the stack.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.spot — Tiderunner Initiate has its formation spot chosen as it is played, and the spot rides on the stack"
       }
     ],
@@ -1482,7 +1482,7 @@
     "text": "Step 6: the player pays the card's fixed additional costs, after everything else has been declared.",
     "examples": [
       {
-        "text": "Example: Sacrificial Burst asks for its target before its sacrifice; Trench Stalker asks for its formation spot before its two discards.",
+        "text": "Sacrificial Burst asks for its target before its sacrifice; Trench Stalker asks for its formation spot before its two discards.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.fixed-costs — Sacrificial Burst asks for its target before its sacrifice, and Trench Stalker for its spot before its discards"
       }
     ],
@@ -1524,7 +1524,7 @@
     "text": "Step 7: options that a card offers \"as you play\" a spell (Maelstrom Charger) are taken. Such an option is not an effect: it never goes on the stack and cannot be responded to.",
     "examples": [
       {
-        "text": "Example: the Maelstrom Charger option is asked while the spell is played and never reaches the stack.",
+        "text": "the Maelstrom Charger option is asked while the spell is played and never reaches the stack.",
         "test": "151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack"
       }
     ],
@@ -1567,7 +1567,7 @@
     "text": "Step 8: the card is put on the stack as an effect (rule 703).",
     "examples": [
       {
-        "text": "Example: once Arc Lightning has been declared and paid, it is on the stack as a spell effect controlled by its player, and no longer in hand.",
+        "text": "once Arc Lightning has been declared and paid, it is on the stack as a spell effect controlled by its player, and no longer in hand.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.stack — once declared and paid, Arc Lightning is on the stack as a spell effect, out of the hand"
       }
     ],
@@ -1642,7 +1642,7 @@
     "text": "A card whose costs cannot all be paid cannot be played.",
     "examples": [
       {
-        "text": "Example: with nothing to sacrifice, Tides of the Cosmos does not offer Volatile Toxicity.",
+        "text": "with nothing to sacrifice, Tides of the Cosmos does not offer Volatile Toxicity.",
         "test": "404-raq-fix-tides.test.ts::R338: with nothing to sacrifice, Tides does not offer Volatile Toxicity"
       }
     ],
@@ -1712,7 +1712,7 @@
     "text": "A unit sacrificed to pay a cost is gone before the card is played, so it does not see that card being played.",
     "examples": [
       {
-        "text": "Example: Ravenous Fireslinger sacrificed to pay for Sacrificial Burst does not trigger on it.",
+        "text": "Ravenous Fireslinger sacrificed to pay for Sacrificial Burst does not trigger on it.",
         "test": "390-raq-stack.test.ts::RAQ cost vs trigger: a unit sacrificed to pay a spell cost never sees that spell played"
       }
     ],
@@ -1747,7 +1747,7 @@
     "text": "A cost cannot be paid with something that does not exist yet: not with units the effect itself would create, and not with a unit played by the same effect, which is on the stack and not in play.",
     "examples": [
       {
-        "text": "Example: Volatile Toxicity played by Tides of the Cosmos cannot sacrifice a Towering Colossus played by the same Tides.",
+        "text": "Volatile Toxicity played by Tides of the Cosmos cannot sacrifice a Towering Colossus played by the same Tides.",
         "test": "396-raq-timing.test.ts::RAQ Tides 5:"
       }
     ],
@@ -1788,7 +1788,7 @@
     "text": "A card played during another effect's resolution pays its bracketed additional cost exactly as if it were played from a hand.",
     "examples": [
       {
-        "text": "Example: a Trench Stalker played through Hooba-Pon discards two cards.",
+        "text": "a Trench Stalker played through Hooba-Pon discards two cards.",
         "test": "404-raq-fix-tides.test.ts::R338: a unit played by Hooba-Pon pays its additional cost"
       }
     ],
@@ -1956,11 +1956,7 @@
     "text": "A variable additional cost sets X. The player pays it one unit at a time until they stop, and the amount paid is X.",
     "examples": [
       {
-        "text": "Example: Discharge (\"[Remove X +1/+1 counters from allies]: I deal X damage to target unit\") deals as much damage as the counters removed (illustrative).",
-        "test": null
-      },
-      {
-        "text": "Example: a player removes two +1/+1 counters for Discharge, one at a time, then stops; X is 2 and Discharge deals 2 damage.",
+        "text": "a player removes two +1/+1 counters for Discharge, one at a time, then stops; X is 2 and Discharge deals 2 damage.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.x.variable-cost — Discharge with two counters removed one at a time has X = 2 and deals 2"
       }
     ],
@@ -1995,7 +1991,7 @@
     "text": "An X spell released for free by a fulfilled prophecy is cast with X = 0. A variable bracketed cost on it is still collected.",
     "examples": [
       {
-        "text": "Example: a fulfilled prophecy releases an X spell; no X is asked, X is 0 and no mana is paid.",
+        "text": "a fulfilled prophecy releases an X spell; no X is asked, X is 0 and no mana is paid.",
         "test": "36-cache-prophecy.test.ts::R111: a fulfilled prophecy releases an X spell for X = 0"
       }
     ],
@@ -2036,7 +2032,7 @@
     "text": "A spell token is cast from play, and only in the region the token is in. Otherwise it is cast the same way as a spell from the hand.",
     "examples": [
       {
-        "text": "Example: a Fireball in the battle region is cast with a target and goes on the stack like a spell from hand; a Fireball in another region cannot be cast.",
+        "text": "In the attack window the defending player casts their Fireball 3 token in the battle region. They choose its target, the attacking player, and it goes on the stack, where the attacker may respond; when both pass it deals 3.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens — casting a spell token asks for its target and puts it on the stack, as a spell from hand would"
       }
     ],
@@ -2075,7 +2071,7 @@
     "text": "A modifier to the cost of playing spells applies to casting a spell token, and a spell token cast counts as a spell played.",
     "examples": [
       {
-        "text": "Example: Tranquility makes a spell token cost [1] more in battle.",
+        "text": "Tranquility makes a spell token cost [1] more in battle.",
         "test": "337-spell-tokens-are-played.test.ts::R305: Tranquility taxes a spell token [1] in battle"
       }
     ],
@@ -2117,7 +2113,7 @@
     "text": "A spell token with Burst is cast together with all of its controller's spell tokens of the same name in the same region as it. They are still separate spells.",
     "examples": [
       {
-        "text": "Example: a player with two Fireballs in the battle region casts one; both go on the stack. A Fireball the same player has in another region is not cast (illustrative).",
+        "text": "A player with two Fireballs in the battle region casts one; both go on the stack. A Fireball the same player has in another region is not cast.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens.burst — both battle-region Fireballs are cast together and one in another region is not"
       }
     ],
@@ -2168,11 +2164,11 @@
     "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others.",
     "examples": [
       {
-        "text": "Example: Fight cannot be played unless the region holds an ally and another unit.",
+        "text": "Fight cannot be played unless the region holds an ally and another unit.",
         "test": "390-raq-stack.test.ts::RAQ target requirements: Fight cannot be played without an ally and another unit in the region"
       },
       {
-        "text": "Example: Tidal Reversion cannot be played while one player has no unit to recall.",
+        "text": "Tidal Reversion cannot be played while one player has no unit to recall.",
         "test": "390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall"
       }
     ],
@@ -2226,7 +2222,7 @@
     "text": "A card that targets nothing has no target requirement.",
     "examples": [
       {
-        "text": "Example: Rebalance can be played by a player with no unit.",
+        "text": "Rebalance can be played by a player with no unit.",
         "test": "396-raq-timing.test.ts::Rebalance is playable with no unit of your own"
       }
     ],
@@ -2261,7 +2257,7 @@
     "text": "A triggered graft composite whose targeted part has no legal target is not put on the stack at all, and its untargeted parts do not happen either.",
     "examples": [
       {
-        "text": "Example: Megadeath grafted with Resurrect, and no unit of cost 2 or less in the bin: no Poison 5 is made.",
+        "text": "Megadeath grafted with Resurrect, and no unit of cost 2 or less in the bin: no Poison 5 is made.",
         "test": "390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all"
       }
     ],
@@ -2302,7 +2298,7 @@
     "text": "The stack is \"first in, last out\". A new effect is put on top of the effects already there. When it is time to resolve, the top effect resolves first, so the effect put on last resolves first.",
     "examples": [
       {
-        "text": "Example: Mycelial Mentor is played with Bloomcaster out. Bloomcaster's trigger goes on the stack above the Mentor, so its 1/1 is made before the Mentor arrives and the Mentor never sees it.",
+        "text": "Mycelial Mentor is played with Bloomcaster out. Bloomcaster's trigger goes on the stack above the Mentor, so its 1/1 is made before the Mentor arrives and the Mentor never sees it.",
         "test": "396-raq-timing.test.ts::RAQ Bloomcaster: its 1/1 resolves before the Mycelial Mentor it was played with arrives"
       }
     ],
@@ -2339,7 +2335,7 @@
     "text": "An effect put on the stack does not resolve immediately. This gives the other players in the region a chance to respond to it.",
     "examples": [
       {
-        "text": "Example: Luminous Arc is cast at a unit; the unit is undamaged while the Arc waits on the stack, and the other player may respond.",
+        "text": "Luminous Arc is cast at a unit; the unit is undamaged while the Arc waits on the stack, and the other player may respond.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.stack.not-immediate — a cast Luminous Arc waits on the stack, its target untouched, while the other player may respond"
       }
     ],
@@ -2376,7 +2372,7 @@
     "text": "New effects can be added on top of the stack after it has started resolving, between the resolutions of the effects on it.",
     "examples": [
       {
-        "text": "Example: two Luminous Arcs are on the stack; after the top one resolves, a third Arc is cast and resolves before the one still waiting.",
+        "text": "two Luminous Arcs are on the stack; after the top one resolves, a third Arc is cast and resolves before the one still waiting.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.stack.add-while-resolving — after the top of a two-item stack resolves, a new spell goes on above the remaining item and resolves first"
       }
     ],
@@ -2413,7 +2409,7 @@
     "text": "A triggered ability put on the stack can be responded to like any other effect.",
     "examples": [
       {
-        "text": "Example: Xenopod Progenitor's trigger is negated on the stack, and its controller is never asked to pay its [1].",
+        "text": "Xenopod Progenitor's trigger is negated on the stack, and its controller is never asked to pay its [1].",
         "test": "390-raq-stack.test.ts::RAQ Xenopod: negated on the stack, it never asks for the [1]"
       }
     ],
@@ -2467,7 +2463,7 @@
     "text": "Priority is the ability to take game actions such as playing cards or activating abilities. A player with priority can take such actions; a player without priority cannot.",
     "examples": [
       {
-        "text": "Example: in the attack window only the initiative player, who holds priority, is offered a card; the other player’s play is refused.",
+        "text": "In the attack window only the initiative player, who holds priority, may play a card; the other player cannot until they receive priority.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.priority — only the player with priority may play a card"
       }
     ],
@@ -2538,7 +2534,7 @@
     "text": "When a player passes priority after taking one or more actions, each other player receives priority, so that they can respond. This continues until all players pass priority in succession.",
     "examples": [
       {
-        "text": "Example: after a cast the other player receives priority and responds; the first player then receives priority again, and the top item resolves only after both pass in succession.",
+        "text": "after a cast the other player receives priority and responds; the first player then receives priority again, and the top item resolves only after both pass in succession.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.pass — after an action the other player receives priority, and the item resolves only once both pass in succession"
       }
     ],
@@ -2575,7 +2571,7 @@
     "text": "A player cannot respond to another player passing priority. A player who passes may not get another chance to act.",
     "examples": [
       {
-        "text": "Example: the defender passes on an Arc and the attacker passes; the Arc resolves at once, with no further chance for the defender.",
+        "text": "the defender passes on an Arc and the attacker passes; the Arc resolves at once, with no further chance for the defender.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.no-response-to-pass — after one player passes, the other passing resolves the item with no further chance for the first"
       }
     ],
@@ -2642,7 +2638,7 @@
     "text": "A priority window is a sequence in which the players (or teams) each receive priority in order.",
     "examples": [
       {
-        "text": "Example: in an empty attack window the initiative player receives priority, then the other player; when both have passed the step ends.",
+        "text": "in an empty attack window the initiative player receives priority, then the other player; when both have passed the step ends.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window — in an empty attack window each player receives priority in turn, initiative first, and then the step moves on"
       }
     ],
@@ -2679,7 +2675,7 @@
     "text": "In a priority window the initiative player receives priority first. If they decline to act, priority passes clockwise to the next non-initiative player in the region. If the initiative player is not in the region, priority begins with the player nearest to the initiative player, clockwise.",
     "examples": [
       {
-        "text": "Example: the defender casts a spell, which resolves; the new window opens with the initiative player, not the caster.",
+        "text": "the defender casts a spell, which resolves; the new window opens with the initiative player, not the caster.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window.order — a new window opens with the initiative player even when the other player cast the item that just resolved"
       }
     ],
@@ -2764,7 +2760,7 @@
     "text": "When all players pass priority in succession with an effect on the stack, the top effect resolves. All players then receive priority in order again, which is a new priority window. When all players pass priority with the stack empty, the game moves to the next step.",
     "examples": [
       {
-        "text": "Example: two passes resolve Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step.",
+        "text": "two passes resolve Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve — two passes resolve the top item, a new window opens, and two passes on the empty stack end the step"
       }
     ],
@@ -2805,7 +2801,7 @@
     "text": "When several effects are put on the stack at the same time, each player chooses the order of their own. The initiative player puts all of theirs on first, then the non-initiative player, so the non-initiative player's effects resolve first.",
     "examples": [
       {
-        "text": "Example: with one trigger per player, the initiative player's trigger is at the bottom of the stack.",
+        "text": "with one trigger per player, the initiative player's trigger is at the bottom of the stack.",
         "test": "239-damage-triggers-after-combat.test.ts::R261 RAQ STACK ORDER"
       }
     ],
@@ -2887,7 +2883,7 @@
     "text": "A Burst group of spell tokens goes on the stack all at once. Its caster chooses the order, one token at a time, and aims each; the token chosen first resolves first. The other players receive priority only when the whole group is on the stack.",
     "examples": [
       {
-        "text": "Example: the first Fireball picked ends on top of the stack.",
+        "text": "the first Fireball picked ends on top of the stack.",
         "test": "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it"
       }
     ],
@@ -2928,7 +2924,7 @@
     "text": "A card played during another effect's resolution waits on the stack until that resolution has finished. Only then do players receive priority, and they may respond to the played card before it resolves.",
     "examples": [
       {
-        "text": "Example: a card Tides of the Cosmos plays for free can be answered on the stack.",
+        "text": "a card Tides of the Cosmos plays for free can be answered on the stack.",
         "test": "169-mid-resolution-window.test.ts::a free play is still a play, so it can be answered on the stack"
       }
     ],
@@ -2974,7 +2970,7 @@
     "text": "Once an effect has begun to resolve, no player can respond to it. It can no longer be targeted, negated or augmented.",
     "examples": [
       {
-        "text": "Example: while Premonition is resolving, the other player is offered nothing, it is not a legal target, and a negation or a Virus aimed at it is refused.",
+        "text": "while Premonition is resolving, the other player is offered nothing, it is not a legal target, and a negation or a Virus aimed at it is refused.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.resolving — while Premonition is resolving it cannot be targeted, negated, augmented or responded to"
       }
     ],
@@ -3014,7 +3010,7 @@
     "text": "Deployment uses the stack, but each player has a stack of their own there. Only that player sees it and holds priority over it; no other player can respond to it or is made to wait on it.",
     "examples": [
       {
-        "text": "Example: a deploy-timing spell played in deployment is a real stack item, so Earthbound Replicator can copy it.",
+        "text": "In deployment a player plays a deploy-timing spell at their Earthbound Replicator; the spell goes on that player's own stack, so the Replicator can copy it.",
         "test": "138-spell-copy.test.ts::R286/CT-176: a deploy-timing play names a REAL stack item"
       }
     ],
@@ -3064,7 +3060,7 @@
     "text": "There is no priority in the haste step. Haste cards are played there as special actions.",
     "examples": [
       {
-        "text": "Example: Molten Upheaval played in the haste step makes its Fireball at once; no one has priority and nothing waits on a stack.",
+        "text": "Molten Upheaval played in the haste step makes its Fireball at once; no one has priority and nothing waits on a stack.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.haste-step — in the haste step nobody has priority and a haste card resolves at once with no stack"
       }
     ],
@@ -3106,7 +3102,7 @@
     "text": "When an effect resolves, its instructions are carried out in the order printed, and a later instruction sees the results of an earlier one. The exception is target legality: it is judged once, as the effect begins to resolve (effects.resolution.recheck), so an earlier instruction cannot make a later instruction's target illegal.",
     "examples": [
       {
-        "text": "Example: Finality (\"Negate all other effects. Erase all cards in bins.\") erases the cards it has just negated, because they are in bins by its second sentence.",
+        "text": "Finality (\"Negate all other effects. Erase all cards in bins.\") erases the cards it has just negated, because they are in bins by its second sentence.",
         "test": "61-negation.test.ts::Finality erases the very cards it just negated"
       }
     ],
@@ -3150,7 +3146,7 @@
     "text": "Choices an effect makes that are not targets (how to divide damage among a player's units, which card to discard, whether to pay an optional amount inside the effect) are made while it resolves.",
     "examples": [
       {
-        "text": "Example: Xenopod Progenitor's trigger goes on the stack with no payment asked; its [1] is asked as it resolves.",
+        "text": "Xenopod Progenitor's trigger goes on the stack with no payment asked; its [1] is asked as it resolves.",
         "test": "390-raq-stack.test.ts::RAQ Xenopod: the trigger goes on the stack with no payment asked"
       }
     ],
@@ -3193,7 +3189,7 @@
     "text": "No priority window opens around a payment or choice made while an effect resolves.",
     "examples": [
       {
-        "text": "Example: while Premonition asks its controller which card to cache, the other player has no action; the choice made, Premonition finishes without any pass.",
+        "text": "while Premonition asks its controller which card to cache, the other player has no action; the choice made, Premonition finishes without any pass.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.order.no-window — the choice Premonition asks while resolving opens no priority window, and the item finishes as soon as it is made"
       }
     ],
@@ -3228,7 +3224,7 @@
     "text": "When a spell resolves it goes to its controller's bin. When a spell unit resolves it enters play as a unit instead.",
     "examples": [
       {
-        "text": "Example: a resolved Luminous Arc is in its controller’s bin; a resolved Jelly is in play as a unit.",
+        "text": "a resolved Luminous Arc is in its controller’s bin; a resolved Jelly is in play as a unit.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.destination — a resolved spell goes to its controller bin, and a resolved spell unit enters play"
       }
     ],
@@ -3274,7 +3270,7 @@
     "text": "A card that goes to a bin from the stack is not trashed.",
     "examples": [
       {
-        "text": "Example: two Luminous Arcs reach the bin from the stack, one resolved and one fizzled; neither is trashed.",
+        "text": "two Luminous Arcs reach the bin from the stack, one resolved and one fizzled; neither is trashed.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.destination.not-trashed — a spell that resolves into the bin and one that fizzles into it fire no trashed event"
       }
     ],
@@ -3352,11 +3348,11 @@
     "text": "A spell that is Unstable, or that carries a Virus applied to it on the stack, is erased instead of going to a bin, whether it resolves, fizzles or is negated.",
     "examples": [
       {
-        "text": "Example: a spell played from the bin under Abyssal Evocation is Unstable, so it is erased and not put back in the bin.",
+        "text": "a spell played from the bin under Abyssal Evocation is Unstable, so it is erased and not put back in the bin.",
         "test": "12-fire-a.test.ts::Abyssal Evocation: a bin-played spell is {Unstable}"
       },
       {
-        "text": "Example: a spell played from the bin under Abyssal Evocation that fizzles is erased too.",
+        "text": "a spell played from the bin under Abyssal Evocation that fizzles is erased too.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.destination.unstable — a spell played from the bin under Abyssal Evocation that fizzles is erased, not binned"
       }
     ],
@@ -3404,7 +3400,7 @@
     "text": "A copy of a spell has no card. When it resolves or leaves the stack, nothing goes to a bin.",
     "examples": [
       {
-        "text": "Example: a resolved copy of Suspend bins nothing, and its \"Erase me.\" erases nothing.",
+        "text": "a resolved copy of Suspend bins nothing, and its \"Erase me.\" erases nothing.",
         "test": "138-spell-copy.test.ts::a resolved copy bins nothing"
       }
     ],
@@ -3441,7 +3437,7 @@
     "text": "A spell unit's spell effect happens first; if it resolves, the unit then enters play. If the spell unit is prevented from resolving (negated, or with its targets made invalid), the unit does not enter play and the card goes to the bin.",
     "examples": [
       {
-        "text": "Example: a spell unit played through Hooba-Pon has its spell part happen, then spawns into the formation.",
+        "text": "a spell unit played through Hooba-Pon has its spell part happen, then spawns into the formation.",
         "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation"
       }
     ],
@@ -3489,7 +3485,7 @@
     "text": "A negated effect is removed from the stack at once, when the effect that negates it resolves. It does not resolve.",
     "examples": [
       {
-        "text": "Example: one mass negate removes all its victims from the stack together, with no extra priority rounds.",
+        "text": "one mass negate removes all its victims from the stack together, with no extra priority rounds.",
         "test": "61-negation.test.ts::R68: a mass negate empties the stack of its victims AT ONCE"
       }
     ],
@@ -3524,7 +3520,7 @@
     "text": "A negated spell, spell unit, unit, ambush or Virus goes to its controller's bin, and a negated Virus cannot be used as a Virus again. A negated spell token is erased. A negated triggered or activated ability just leaves the stack, because it has no card of its own.",
     "examples": [
       {
-        "text": "Example: a negated spell token is erased, never binned.",
+        "text": null,
         "test": "61-negation.test.ts::R68: a negated spell TOKEN is erased, never binned"
       }
     ],
@@ -3577,7 +3573,7 @@
     "text": "A negated unit or spell unit never enters play.",
     "examples": [
       {
-        "text": "Example: negating a unit on the stack: it never arrives, and its card goes to the bin.",
+        "text": null,
         "test": "118-stack-effect.test.ts::R128: negating a unit on the stack"
       }
     ],
@@ -3619,7 +3615,7 @@
     "text": "As an effect begins to resolve, each target it declared is checked again by the rule it was chosen under: its kind, its printed restriction, its region, and being different from the other targets. A target that fails the check is lost, exactly like a target that has left play.",
     "examples": [
       {
-        "text": "Example: an Ambush whose ally was stolen in response recalls nothing.",
+        "text": "an Ambush whose ally was stolen in response recalls nothing.",
         "test": "390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing"
       }
     ],
@@ -3717,7 +3713,7 @@
     "text": "A target remains the same object while it stays where it is. A target that changes zone (to a hand, a bin, and so on) is gone, and the effect does not follow it to a new object. A target that stays put is still a legal target even if another effect also targets it.",
     "examples": [
       {
-        "text": "Example: Organic Exchange may target two of its controller's own units, and another spell aimed at one of them still resolves.",
+        "text": "Organic Exchange may target two of its controller's own units, and another spell aimed at one of them still resolves.",
         "test": "396-raq-timing.test.ts::Organic Exchange may target two of your own units"
       }
     ],
@@ -3823,7 +3819,7 @@
     "text": "An effect fizzles if, as it resolves, it has lost all of its targets. A fizzled effect does nothing, and a fizzled spell goes to the bin.",
     "examples": [
       {
-        "text": "Example: Arc Lightning’s only target dies before it resolves; Arc Lightning fizzles, deals no damage and goes to the bin.",
+        "text": "Arc Lightning’s only target dies before it resolves; Arc Lightning fizzles, deals no damage and goes to the bin.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle — Arc Lightning whose only target died fizzles, does nothing, and goes to the bin"
       }
     ],
@@ -3872,7 +3868,7 @@
     "text": "When an effect fizzles, none of it happens, including parts of it that had no target.",
     "examples": [
       {
-        "text": "Example: a graft composite that loses its only target fizzles whole; its untargeted grafts make no Poison.",
+        "text": "Spewing Mushroom carries the grafts Biotoxicity (\"create three Poison 1\") and Technological Superiority, which targets the Mushroom itself. The Mushroom attacks, and the opponent deletes it with Leaping Lillik before its trigger resolves. Its only target is gone, so the whole trigger fizzles: not even Biotoxicity's Poisons are made.",
         "test": "78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole"
       }
     ],
@@ -3913,23 +3909,19 @@
     "text": "If an effect has lost some but not all of its targets, it resolves as best it can against those that remain, untargeted parts included.",
     "examples": [
       {
-        "text": "Example: an effect with two targets and an untargeted draw loses one target before it resolves; it acts on the remaining target and the draw still happens (illustrative).",
-        "test": null
-      },
-      {
-        "text": "Example: Tidal Reversion still recalls the other unit when one of its targets is removed.",
+        "text": "Tidal Reversion still recalls the other unit when one of its targets is removed.",
         "test": "390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion still recalls the other unit when one target is removed"
       },
       {
-        "text": "Example: a graft composite whose one target survives also carries out its untargeted grafts.",
+        "text": null,
         "test": "78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through"
       },
       {
-        "text": "Example: Twin Flame loses one of its two targets before it resolves; the remaining target still takes its 2 damage.",
+        "text": "Twin Flame loses one of its two targets before it resolves; the remaining target still takes its 2 damage.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — Twin Flame with one of two targets gone still damages the other"
       },
       {
-        "text": "Example: a graft composite with two targeted grafts loses one of the targets; the untargeted grafts still make their Poison tokens.",
+        "text": "Spewing Mushroom carries Biotoxicity and two Technological Superiority grafts; when it attacks, the two targeted parts aim at the Mushroom and at an enemy 1/1. The 1/1 dies before the trigger resolves. One target remains, so it still resolves: all four Poison tokens are made.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — a graft composite with two targets losing one still runs its untargeted part"
       }
     ],
@@ -3982,11 +3974,11 @@
     "text": "An effect that needs two of its targets together (a fight or an exchange) does nothing if it loses one of them. It does not fizzle.",
     "examples": [
       {
-        "text": "Example: Fight that loses one of its two targets does nothing to the survivor.",
+        "text": "Fight that loses one of its two targets does nothing to the survivor.",
         "test": "390-raq-stack.test.ts::RAQ fizzles: Fight that loses one of its two targets does nothing to the survivor"
       },
       {
-        "text": "Example: Organic Exchange that loses one of its two targets exchanges nothing; the survivor stays with its controller.",
+        "text": "Organic Exchange that loses one of its two targets exchanges nothing; the survivor stays with its controller.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.pair — Organic Exchange that loses one target exchanges nothing"
       }
     ],
@@ -4027,7 +4019,7 @@
     "text": "An effect that has no targeting part anywhere cannot fizzle. Nor can a part whose target was optional (\"up to\") and was left empty: declaring no target was a legal choice, and the rest of the effect still happens.",
     "examples": [
       {
-        "text": "Example: an item with no targeting part anywhere never fizzles.",
+        "text": null,
         "test": "78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles"
       }
     ],
@@ -4072,7 +4064,7 @@
     "text": "An ambush is a targeted effect. If its target is removed, the ambush fizzles and the ambushing unit is put into the bin.",
     "examples": [
       {
-        "text": "Example: the ally targeted by Lurking Slimebeast’s ambush dies; the ambush fizzles and Slimebeast goes to the bin.",
+        "text": "the ally targeted by Lurking Slimebeast’s ambush dies; the ambush fizzles and Slimebeast goes to the bin.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.ambush — Lurking Slimebeast whose ambush target died fizzles and goes to the bin"
       }
     ],
@@ -4111,7 +4103,7 @@
     "text": "A Virus whose target has become invalid when it resolves is put into the bin, and cannot be used as a Virus again.",
     "examples": [
       {
-        "text": "Example: a Virus’s host dies before the Virus resolves; the Virus goes to the bin and is not offered as a Virus from there.",
+        "text": "a Virus’s host dies before the Virus resolves; the Virus goes to the bin and is not offered as a Virus from there.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.virus — a virus whose host died before it resolved goes to the bin and is not offered as a virus again"
       }
     ],
@@ -4150,7 +4142,7 @@
     "text": "An effect with a required target that never had a legal candidate fizzles, although it declared no target.",
     "examples": [
       {
-        "text": "Example: an item whose required target had no legal candidate when it was cast fizzles.",
+        "text": null,
         "test": "78-round17-core.test.ts::R86: a required target with no legal candidate at cast still fizzles"
       }
     ],
@@ -4187,7 +4179,7 @@
     "text": "An effect stays on the stack, and still resolves, if its source leaves play.",
     "examples": [
       {
-        "text": "Example: an effect stays on the stack when its unit dies, and still resolves.",
+        "text": null,
         "test": "390-raq-stack.test.ts::RAQ dead unit: an effect stays on the stack when its unit dies and still resolves"
       }
     ],
@@ -4235,7 +4227,7 @@
     "text": "Where such an effect reads its source (its attributes, power, defense, or the formation it stood in), it uses the source's last-known state: what the source was at the moment it left play.",
     "examples": [
       {
-        "text": "Example: Bellowing Boulder dies with its ping on the stack; the ping is still Deadly, from its last state.",
+        "text": "Bellowing Boulder dies with its ping on the stack; the ping is still Deadly, from its last state.",
         "test": "390-raq-stack.test.ts::RAQ dead unit: Bellowing Boulder dead with its ping on the stack still pings with Deadly, its last state"
       }
     ],
@@ -4279,7 +4271,7 @@
     "text": "An effect that acts on its source itself, or that says \"if I am still in formation\", does nothing if the source is gone.",
     "examples": [
       {
-        "text": "Example: Hooba-Nan gone with its trigger on the stack makes nothing.",
+        "text": "Hooba-Nan dies with its attack trigger on the stack; the trigger creates no 1/1s.",
         "test": "390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing"
       }
     ],

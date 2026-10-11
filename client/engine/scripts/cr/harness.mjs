@@ -181,14 +181,17 @@ export function decoyKey(baseKey, text, taken) {
  *  and what feedback and finalize must never pass on */
 export const plantedKeys = (truth) => new Set([...(truth.mutants ?? []), ...(truth.decoys ?? [])].map((m) => m.key));
 
+const sigEx = (xs) => JSON.stringify((xs ?? []).map((x) => [norm(x?.text ?? ''), x?.test ?? null]));
 const order = (unit, round) => (a, b) => (shuffleRank(unit, round, a.key) < shuffleRank(unit, round, b.key) ? -1 : 1);
 
 /**
  * Plant a round. → {input, truth}. Throws HarnessError on a bad mutants file.
  *   Round 1   mutants [{key, mutant, why_false}], 2–3, keys from sel.mutable:
  *             the key's text is replaced.
- *   Round ≥2  mutants [{baseKey, mutant, why_false}], 1–2, bases from
- *             sel.decoyPool: each becomes a decoy added to the batch.
+ *   Round ≥2  mutants [{baseKey, mutant?, examples?, why_false}], 1–2, bases
+ *             from sel.decoyPool: each becomes a decoy added to the batch, its
+ *             text and/or its examples ([{text, test}]) false — a round whose
+ *             new claims are examples needs a decoy with a false example.
  * Rejected: a false text identical to its original, a key outside the list,
  * a key used twice, an empty text or why_false, a count out of range.
  *   numOf    key → its ledger number (round 1 only)
@@ -210,8 +213,13 @@ export function plant({ unit, round, records, sel, mutants, numOf = () => undefi
     if (seen.has(k)) problems.push(`${k}: used twice`);
     seen.add(k);
     if (!allowed.includes(k)) problems.push(`${k}: not ${decoys ? `in round ${round}'s decoy pool` : `mutable in round ${round}`} (${allowed.join(', ') || 'none'})`);
-    if (typeof m.mutant !== 'string' || !m.mutant.trim()) problems.push(`${k}: the mutant text is empty`);
-    else if (norm(m.mutant) === norm(byKey.get(k).text)) problems.push(`${k}: the mutant is identical to the original`);
+    // a decoy (round ≥2) may falsify the rule's text, its examples, or both
+    const exs = decoys && m.examples !== undefined;
+    if (exs && (!Array.isArray(m.examples) || !m.examples.length || m.examples.some((x) => typeof x?.text !== 'string' || !x.text.trim()))) problems.push(`${k}: the decoy's examples must be a non-empty list of {text, test}`);
+    else if (exs && m.mutant === undefined) {
+      if (sigEx(m.examples) === sigEx(byKey.get(k).examples ?? [])) problems.push(`${k}: the mutant is identical to the original`);
+    } else if (typeof m.mutant !== 'string' || !m.mutant.trim()) problems.push(`${k}: the mutant text is empty`);
+    else if (norm(m.mutant) === norm(byKey.get(k).text) && (!exs || sigEx(m.examples) === sigEx(byKey.get(k).examples ?? []))) problems.push(`${k}: the mutant is identical to the original`);
     if (typeof m.why_false !== 'string' || !m.why_false.trim()) problems.push(`${k}: why_false is empty`);
   }
   if (problems.length) fail(`rejected:\n${problems.join('\n')}`);
@@ -235,13 +243,17 @@ export function plant({ unit, round, records, sel, mutants, numOf = () => undefi
   }
   const taken = new Set(records.map((r) => r?.key));
   const planted = mutants.map((m) => {
-    const key = decoyKey(m.baseKey, m.mutant, taken);
+    const base = byKey.get(m.baseKey);
+    const mutant = m.mutant ?? base.text;
+    const key = decoyKey(m.baseKey, m.mutant ?? m.examples[0].text, taken);
     taken.add(key);
-    return { key, baseKey: m.baseKey, original: byKey.get(m.baseKey).text, mutant: m.mutant, why_false: m.why_false };
+    const d = { key, baseKey: m.baseKey, original: base.text, mutant, why_false: m.why_false };
+    if (m.examples !== undefined) Object.assign(d, { originalExamples: structuredClone(base.examples ?? []), examples: m.examples.map((x) => ({ text: x.text, test: x.test ?? null })) });
+    return d;
   });
   const input = [
     ...sel.keys.map((k) => stripForVerifier(byKey.get(k))),
-    ...planted.map((d) => ({ ...stripForVerifier(byKey.get(d.baseKey)), key: d.key, text: d.mutant })),
+    ...planted.map((d) => ({ ...stripForVerifier(byKey.get(d.baseKey)), key: d.key, text: d.mutant, ...(d.examples ? { examples: structuredClone(d.examples) } : {}) })),
   ].map((v) => { delete v.num; return v; }).sort(order(unit, round));
   for (const k of sel.keys) pin(k);
   return { input, truth: {

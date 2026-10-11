@@ -39,7 +39,7 @@
   },
   {
     "key": "types.general.kinds",
-    "textHash": "fee7c35d5b699c7b",
+    "textHash": "f03cf907252dcf6e",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -102,7 +102,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.general.nouns",
@@ -137,7 +138,7 @@
   },
   {
     "key": "types.general.nouns.card",
-    "textHash": "1267d433574e6e11",
+    "textHash": "9c52b08928a1b630",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -187,7 +188,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.general.nouns.nontoken",
@@ -373,18 +375,26 @@
   },
   {
     "key": "types.general.stats",
-    "textHash": "6c6ca63a484f12d3",
+    "textHash": "8836a55f8fb959c6",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U06-r1",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:createSpellToken",
+        "loc": "client/engine/src/engine.ts:effStats",
         "agrees": true,
-        "note": "spell tokens are not units and take no stats"
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/417-cr-card-types.test.ts",
+        "pattern": "cr:types.general.stats",
+        "passed": true,
+        "asserts_claim": true,
+        "passed_note": "yes: Good Whale 7/5, a Robot token with 2 counters 2/2; D's Crystal offers the Whale and never the Fireball token"
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
@@ -407,6 +417,10 @@
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "that token.\" A Poison is not a body; it has no stats and could not take the"
       }
     ],
     "basis_ok": true,
@@ -414,7 +428,7 @@
   },
   {
     "key": "types.general.type-line",
-    "textHash": "01d6f853ac559cb2",
+    "textHash": "9c6589f99c9e143d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -465,32 +479,29 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.mods.applied-not-played",
-    "textHash": "163e10166dbff249",
+    "textHash": "9dd567ab92c9681c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U06-r1",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doAugment",
+        "loc": "client/engine/src/engine.ts:commitItem",
         "agrees": true,
-        "note": "battle virus apply pushes a virus item; no spellPlayed/cardPlayed fired"
-      },
-      {
-        "loc": "client/engine/src/cards/dsl.ts:CARD_PLAY_KINDS",
-        "agrees": true,
-        "note": "excludes 'virus' (applying a mod is not playing)"
+        "note": "a virus item fires neither spellPlayed nor cardPlayed"
       }
     ],
     "tests_run": [
       {
-        "file": "119-play-and-token-events.test.ts",
+        "file": "client/engine/test/119-play-and-token-events.test.ts",
         "pattern": "R37 holds: applying a VIRUS fires neither event",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Gzxyclop applied as a Virus in battle; no cardPlayed/spellPlayed, no Void Mandible trigger, the Mandible survives"
       }
     ],
     "probes": [],
@@ -498,17 +509,17 @@
       {
         "ref": "RAQ 1537748882501668934#0",
         "supports": "yes",
-        "note": "_passer [Solved] write-up quote is verbatim in the source field"
+        "note": "_passer [Solved] 'Mods are NOT Played'; covered"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/raq.ts",
-        "text": "They are Applied."
+        "text": "source: \"_passer: \\\"Mods are not considered 'played', so they wouldn't trigger any \\\"whenever you PLAY <unit/spell>\\\". They are Applied.\\\"\","
       },
       {
-        "file": "client/engine/src/cards/dsl.ts",
-        "text": "  new Set<StackItem['kind']>(['unit', 'spell', 'spellUnit', 'ambush']);"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[Augment] When a nontoken card is played during battle, sacrifice me. If you do, negate that effect. {i}(This is not optional.)\""
       }
     ],
     "basis_ok": true,
@@ -516,7 +527,7 @@
   },
   {
     "key": "types.mods.spell-token-host",
-    "textHash": "55a66caecbddbcd2",
+    "textHash": "9c1d15330aadbb3f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -578,7 +589,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.mods.spells",
@@ -635,7 +647,7 @@
   },
   {
     "key": "types.mods.text-live",
-    "textHash": "f0fa4561f0fdb34c",
+    "textHash": "b7b776c9fea088f3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -680,11 +692,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.mods.what",
-    "textHash": "ebd7826e25ccbd98",
+    "textHash": "797f16650b26d9e4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -745,11 +758,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.mods.when",
-    "textHash": "7f9c1d0d7ba88950",
+    "textHash": "fe9973dcdeed74a3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -788,47 +802,54 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Accurate as far as it goes; R95 permissions (Rook) and a Virus from a live cache (R311) also allow battle mods, not mentioned."
+    "problem": "Accurate as far as it goes; R95 permissions (Rook) and a Virus from a live cache (R311) also allow battle mods, not mentioned.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.spell-units.control",
-    "textHash": "a109e4d223397e47",
+    "textHash": "d51e5f773d2a98d3",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U06-r1",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:afterParts",
+        "loc": "client/engine/src/engine.ts:afterParts / spawnUnder",
         "agrees": true,
-        "note": "spawnUnit(item.spawnUnder ?? item.controller, …, { owner: item.controller })"
+        "note": "R143: the body spawns as the new controller's unit, owner unchanged"
       }
     ],
     "tests_run": [
       {
-        "file": "23-wood-a.test.ts",
-        "pattern": "R143 #95: Hush Mush ENTERS under the negated effect's controller",
+        "file": "client/engine/test/23-wood-a.test.ts",
+        "pattern": "R143 #95: Hush Mush ENTERS under the negated effect",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: the spawned event names seat A (the negated effect's controller), owner D, no handover trigger"
       },
       {
-        "file": "23-wood-a.test.ts",
-        "pattern": "R143 #96: the CASTER's Flourishing Flora takes NO counter off Hush Mush",
+        "file": "client/engine/test/23-wood-a.test.ts",
+        "pattern": "R143 #96: the CASTER",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: D's Flourishing Flora in the battle region takes no counter when D's Hush Mush resolves"
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R143",
+        "ref": "R143 (its enters-as-that-player's-unit half)",
         "supports": "yes",
-        "note": "its enters-as half stands; owner's-bin clause replaced by R250, not used here"
+        "note": "only the owner's-bin clause is superseded (R250); the enters-as half stands"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "      const u = this.spawnUnit(item.spawnUnder ?? item.controller, item.card!, item.region, {"
+        "file": "client/docs/digital-rules.md",
+        "text": "**A spell unit whose text says another player gains control of it ENTERS as"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**OWNERSHIP DOES NOT FOLLOW.**"
       }
     ],
     "basis_ok": true,
@@ -836,7 +857,7 @@
   },
   {
     "key": "types.spell-units.copy",
-    "textHash": "980b82bb8851853f",
+    "textHash": "0bd541606494edcc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -876,7 +897,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.spell-units.copy.not-spell-unit",
@@ -972,55 +994,74 @@
   },
   {
     "key": "types.spell-units.is-a-spell",
-    "textHash": "b36455e87e56eebb",
-    "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U06-r2",
+    "textHash": "67ce40e58137593c",
+    "verdict": "partial",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:playCard/commit (spellUnit stack item)",
+        "loc": "client/engine/src/cards/dsl.ts:isPlayedSpellKind",
         "agrees": true,
-        "note": "a spell unit played from hand (incl. via Hooba-Pon) emits spellPlayed and is a spell on the stack"
+        "note": "spellUnit is a played spell kind"
       },
       {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
-        "agrees": false,
-        "note": "engineDiffers real: a spell unit played from a bin is spawned inline with asPlay (cardPlayed only) — no stack item, no spellPlayed"
+        "loc": "client/engine/src/engine.ts:commitItem",
+        "agrees": true,
+        "note": "a spell unit play fires spellPlayed and bumps both spell ledgers"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-c.ts:Tranquility",
+        "agrees": true,
+        "note": "taxes a spell unit (probe)"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-wood-a.ts:Earnest Defender",
+        "agrees": true,
+        "note": "isSpellEffect accepts a spell unit (probe)"
       }
     ],
     "tests_run": [
       {
-        "file": "396-raq-timing.test.ts",
-        "pattern": "it counts as playing a spell",
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Hooba-Pon spell unit: it counts as playing a spell",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: spellPlayed event for Jelly played through Hooba-Pon"
       },
       {
-        "file": "396-raq-timing.test.ts",
+        "file": "client/engine/test/396-raq-timing.test.ts",
         "pattern": "Origon negates it as the first spell",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Origon negates the Jelly, no body arrives, Jelly in bin"
       },
       {
-        "file": "396-raq-timing.test.ts",
+        "file": "client/engine/test/396-raq-timing.test.ts",
         "pattern": "Molten Riftbreaker dying negates it as an allied spell",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: passes; Riftbreaker's despawn negates the allied Jelly"
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U06/u06-r2-probes.test.ts",
-        "title": "types.spell-units.played-by-effect (engine divergence measured): a Jelly that Wake the Dead plays from a bin arrives with NO spell part and NO spellPlayed event",
+        "file": "client/engine/test/zz-probe-U06-1.test.ts",
+        "test": "probe U06-1a: Tranquility taxes a spell unit (Jelly) and Sparkwraith hears it as a spell",
         "passed": true,
-        "demonstrates": "yes — confirms the flagged divergence is real"
+        "demonstrates": "yes: the engine treats a spell unit as a spell for a 'Spells cost more' tax and a 'whenever you play a spell' trigger"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U06-1.test.ts",
+        "test": "probe U06-1b: Earnest Defender sees a spell unit (Jelly) targeting its ally as an enemy spell",
+        "passed": true,
+        "demonstrates": "yes: 'target of an enemy spell' accepts a spell unit"
       }
     ],
     "source_checks": [
       {
         "ref": "RAQ 1461450216874967235#2",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved]; covered"
       },
       {
         "ref": "RAQ 1461450216874967235#3",
@@ -1036,23 +1077,15 @@
     "quote_spans": [
       {
         "file": "client/ledgers/raq.ts",
-        "text": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+        "text": "source: \"_passer (write-up): \\\"Q: Does that count as 'playing a spell' for some triggers? A: Yes.\\\"\","
       },
       {
         "file": "client/ledgers/raq.ts",
-        "text": "Q: Would Origon try to negate it? A: Yes"
-      },
-      {
-        "file": "client/ledgers/raq.ts",
-        "text": "Q: Molten Riftbreaker dying would negate that as 'allied SPELL'? A: Yes"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "**A SPELL UNIT raised by Wake the Dead does not cast its spell.**"
+        "text": "source: \"_passer (write-up): \\\"Q: Would Origon try to negate it? A: Yes\\\"\","
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed; the engine divergence (Wake the Dead path) is real."
+    "problem": "engineDiffers [F-U06-1] is not borne out: the ruling and all three examples hold, but the engine AGREES with the rule. All three bound tests pass, and probes zz-probe-U06-1 (Tranquility taxes Jelly, Sparkwraith hears it, Earnest Defender treats it as an enemy spell) found no divergence. The engine's spell predicates (isPlayedSpellKind, isSpellEffect, stackSpell, NEGATE_BINS, Flame Shield, Dream Lapse, Cosmic Reversal) all include spellUnit; only cards printing 'nonunit spell' exclude it."
   },
   {
     "key": "types.spell-units.is-a-unit",
@@ -1121,37 +1154,42 @@
   },
   {
     "key": "types.spell-units.not-played",
-    "textHash": "2de6dd6a014df4ef",
+    "textHash": "6fbcad5bac77bbd3",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U06-r1",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Exhume",
+        "loc": "client/engine/src/cards/sets (Exhume)",
         "agrees": true,
-        "note": "removeFromBin then spawnUnit — no stack item, no parts"
+        "note": "a spell unit put into play from the bin spawns a body with no spell part and no play event"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
-        "title": "types.spell-units.not-played: Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play",
+        "file": "client/engine/test/417-cr-card-types.test.ts",
+        "pattern": "cr:types.spell-units.not-played",
         "passed": true,
-        "demonstrates": true
+        "asserts_claim": true,
+        "passed_note": "yes: Exhume puts Jelly from the bin into play; no -2/-2 anywhere, and Bloomcaster makes no 1/1"
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.43",
         "supports": "yes",
-        "note": "literal Q&A"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "A: No, spell effects only happen when the card is"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[Augment] Whenever you play a unit, create a 1/1 unit.\""
       }
     ],
     "basis_ok": true,
@@ -1213,7 +1251,7 @@
   },
   {
     "key": "types.spell-units.played-by-effect",
-    "textHash": "e25298f7d6a5b546",
+    "textHash": "197299f8613b0467",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -1280,11 +1318,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling holds by composition (Manual p.43 + R165 + the Hooba-Pon RAQ); no source states the from-bin case directly. Engine divergence is real and documented in R165 'Left open'."
+    "problem": "Ruling holds by composition (Manual p.43 + R165 + the Hooba-Pon RAQ); no source states the from-bin case directly. Engine divergence is real and documented in R165 'Left open'.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "types.spell-units.prevented",
-    "textHash": "bdb1502b7d0ea4e9",
+    "textHash": "263bc6a6a561b82b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1344,7 +1383,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.spell-units.resolution",
@@ -1402,7 +1442,7 @@
   },
   {
     "key": "types.spell-units.what",
-    "textHash": "72bf8a5a0dc02411",
+    "textHash": "6e22163da9fec600",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1446,7 +1486,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.spells.spell-tokens",
@@ -1493,7 +1534,7 @@
   },
   {
     "key": "types.spells.to-bin",
-    "textHash": "c3f31475e3001233",
+    "textHash": "8c8f0a166060a819",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1532,7 +1573,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.spells.what",
@@ -1610,7 +1652,7 @@
   },
   {
     "key": "types.tokens.copying-a-token",
-    "textHash": "03e623b1674af1f3",
+    "textHash": "801477d4fc72e3bf",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -1660,27 +1702,29 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "types.tokens.created-units",
-    "textHash": "c9fb0def44e508d5",
+    "textHash": "4e403983e49d4dfc",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U06-r1",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:createToken",
+        "loc": "client/engine/src/engine.ts:spawnUnit",
         "agrees": true,
-        "note": "every effect-created unit carries token: true"
+        "note": "Spawntender's 8/8 is a token entity"
       }
     ],
     "tests_run": [
       {
-        "file": "393-raq-mods.test.ts",
-        "pattern": "RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take",
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a Fireball in the region and an X/X unit token",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: D's Spawntender creates the 8/8 (found with u.token); Download offers it as a target"
       }
     ],
     "probes": [],
@@ -1693,13 +1737,17 @@
       {
         "ref": "RAQ 1353864175910387742#2",
         "supports": "yes",
-        "note": "verbatim"
+        "note": "_passer [Solved]; covered"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "3. 8/8 unit from Spawntender (or any X/X unit created by Awoken Tomb or similiar) ✅"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[Switch1] Create an 8/8 unit.\""
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"Gain control of target token. You may choose new targets for spells controlled this way.\""
       }
     ],
     "basis_ok": true,
@@ -1750,7 +1798,7 @@
   },
   {
     "key": "types.tokens.creating-not-playing",
-    "textHash": "5ba2c1a49d1fed28",
+    "textHash": "afc280fec3b4c152",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1793,11 +1841,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "types.tokens.kinds",
-    "textHash": "d3f66d3afaa74b37",
+    "textHash": "bc0f9dd041a2cadd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1824,11 +1873,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.leaving-play",
-    "textHash": "7daa4d360543016b",
+    "textHash": "d28c36df57eca4e0",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -1907,7 +1957,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.leaving-play.not-trashed",
@@ -1953,7 +2004,7 @@
   },
   {
     "key": "types.tokens.leaving-play.still-dies",
-    "textHash": "2d0dafa76caf155f",
+    "textHash": "b7398c2bdade9808",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -1987,11 +2038,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.not-cards",
-    "textHash": "f47b7c9d946af571",
+    "textHash": "89dc941a9f858e9e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2035,7 +2087,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.region",
@@ -2082,7 +2135,7 @@
   },
   {
     "key": "types.tokens.region.mid-attack",
-    "textHash": "51fd94731fb9d6bb",
+    "textHash": "d81cb3753737711d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2132,7 +2185,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.spell-copies",
@@ -2184,7 +2238,7 @@
   },
   {
     "key": "types.tokens.spell-tokens",
-    "textHash": "7a708ba1deb8e9cc",
+    "textHash": "5d8b6053530ba75c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2223,11 +2277,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.spell-tokens.burst",
-    "textHash": "d1bc89a263c78b29",
+    "textHash": "571b33ea13e37046",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U06-r2",
@@ -2281,7 +2336,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.spell-tokens.cost",
@@ -2332,7 +2388,7 @@
   },
   {
     "key": "types.tokens.spell-tokens.moving",
-    "textHash": "c8503097dbbc4df0",
+    "textHash": "097ba770b16623ac",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2376,11 +2432,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.spell-tokens.moving.counterattack",
-    "textHash": "294154a5a27ac76d",
+    "textHash": "9b5a6907aaf3db73",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2414,7 +2471,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.spell-tokens.moving.created-there",
@@ -2642,7 +2700,7 @@
   },
   {
     "key": "types.tokens.spell-tokens.region",
-    "textHash": "59f22c869c30aaec",
+    "textHash": "e609260cc92957eb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2681,11 +2739,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.spell-tokens.regroup",
-    "textHash": "7f48df1d15e0a938",
+    "textHash": "1c8f1d5050664f25",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -2730,7 +2789,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Fine; Harbinger of Immolation is a card exception the rule text does not mention (it is in the example)."
+    "problem": "Fine; Harbinger of Immolation is a card exception the rule text does not mention (it is in the example).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.tokens.spell-tokens.x",
@@ -2781,29 +2841,31 @@
   },
   {
     "key": "types.tokens.unique",
-    "textHash": "72c658599c134ef2",
+    "textHash": "b778ca673631e10b",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U06-r2",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:Automaton of Abundance batch (R104/R157 §24)",
+        "loc": "client/engine/src/cards (Automaton of Abundance)",
         "agrees": true,
-        "note": "uniqueness keyed by (name, X)"
+        "note": "uniqueness keyed on (name, X)"
       }
     ],
     "tests_run": [
       {
-        "file": "136-triggers-and-modes.test.ts",
+        "file": "client/engine/test/136-triggers-and-modes.test.ts",
         "pattern": "R157 §24: end to end",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: Manufacture with Automaton in play yields 6 Robots with counters [1,1,2,2,3,3]"
       },
       {
-        "file": "136-triggers-and-modes.test.ts",
+        "file": "client/engine/test/136-triggers-and-modes.test.ts",
         "pattern": "R157 §24: three IDENTICAL Robot 2s",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": true,
+        "passed_note": "yes: three Robot 2 requests yield one extra"
       }
     ],
     "probes": [],
@@ -2816,13 +2878,13 @@
       {
         "ref": "R161",
         "supports": "yes",
-        "note": "scoped to the one card's word"
+        "note": "§24: one card's word, not a redefinition"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "'Unique' means unique (name, X) pair — you get two extras."
+        "text": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*"
       },
       {
         "file": "client/docs/digital-rules.md",
@@ -3002,7 +3064,7 @@
   },
   {
     "key": "types.units.dies-to-bin",
-    "textHash": "51edeefb099543e0",
+    "textHash": "f887b90e43e99b6d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U06-r1",
@@ -3036,7 +3098,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "types.units.no-summoning-sickness",

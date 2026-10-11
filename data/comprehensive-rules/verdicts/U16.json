@@ -1,7 +1,7 @@
 [
   {
     "key": "effects.column-share",
-    "textHash": "0b50ad9a8428c0ad",
+    "textHash": "57ee8cb98ba3f2ad",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -44,11 +44,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.column-share.battle-only",
-    "textHash": "71c6a8e6abb50a4a",
+    "textHash": "87bd7e371ab1ba23",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -86,11 +87,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.column-share.columns-only",
-    "textHash": "1780eb28734c6e58",
+    "textHash": "5d0b8fa58981c4ff",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -133,11 +135,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.column-share.everything",
-    "textHash": "094c024f1b82f857",
+    "textHash": "d3aae815d48dd204",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -186,11 +189,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.column-share.leaving",
-    "textHash": "5ebaf5c3c70ccdbe",
+    "textHash": "fcac8ec23976bb03",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -233,11 +237,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.column-share.non-combat",
-    "textHash": "ee832f2a60779d5b",
+    "textHash": "1e850f58c198dbbf",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -285,11 +290,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: Modular is in the engine's attribute set and is unshared only because no unit carries it."
+    "problem": "Minor: Modular is in the engine's attribute set and is unshared only because no unit carries it.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.column-share.own-questions",
-    "textHash": "81819b94838ab154",
+    "textHash": "20c931863ba66873",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -333,11 +339,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.continuous.base-exchange",
-    "textHash": "e697fce91c9cf776",
+    "textHash": "a2a2a25cbbd4901f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -376,11 +383,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.continuous.doubling",
-    "textHash": "cf029d946a61b993",
+    "textHash": "02f3f0859ecdb910",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -424,11 +432,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.continuous.ends",
-    "textHash": "10d341e0774992e1",
+    "textHash": "40acd5784ac85d01",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -472,11 +481,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.continuous.enters-modified",
-    "textHash": "28c4be3725d9875b",
+    "textHash": "62a7efbb11cf309f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -525,27 +535,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.continuous.layers",
-    "textHash": "b887825371350bf3",
+    "textHash": "cbf879ac61a60153",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:effStats",
         "agrees": true,
-        "note": "copy 0 · printed 1 · base 2 · counters/temp 3 · Tough/Balanced 4 · Inverted 5 · Unaware 6; layer 2 last-wins by timestamp"
+        "note": "layer 0 copy, then layer 1, layer 2 rewrites in timestamp order, layer 3 counters/temps/statics, then 4-6"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/44-hybrids-ld-a.test.ts",
-        "pattern": "R118: a later setBase wins over a copy",
+        "pattern": "R118: a later setBase wins",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: copy then setBase -> 4/4; setBase then copy -> 4/4 (face still Good Whale): both orders"
       }
     ],
     "probes": [],
@@ -553,23 +564,23 @@
       {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": ""
+        "note": "'Stats have 6 layers to them, which are applied in sequence'"
       },
       {
         "ref": "RAQ 1357965714807586897#0",
-        "supports": "partly",
-        "note": "timestamps within a layer"
+        "supports": "yes",
+        "note": "_passer [Solved]: effects in the same layer as Monke but played after it are not affected (timestamp within a layer)"
       },
       {
-        "ref": "R118",
+        "ref": "R118 (ruling 1 ...)",
         "supports": "yes",
-        "note": ""
+        "note": "'Layer 2 rewrites whatever layer 1 currently says, so the order the two land in does not matter.' (line-wrapped in the source, matches whitespace-normalised)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "0 COPY  ·  1 printed/tokenStats  ·  2 baseSet + StaticMod baseP/baseT"
+        "file": "client/engine/src/engine.ts",
+        "text": "// layer 2: collect the rewrites, then apply them in timestamp order"
       },
       {
         "file": "client/engine/test/44-hybrids-ld-a.test.ts",
@@ -581,7 +592,7 @@
   },
   {
     "key": "effects.continuous.layers.attribute-order",
-    "textHash": "b18aaa335ffe7e93",
+    "textHash": "a584a5924ecde266",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -640,11 +651,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The ruling quotes the Manual's internal conflict honestly (D-U16-1). The engine divergence from the 'augmented onto' clause is real."
+    "problem": "The ruling quotes the Manual's internal conflict honestly (D-U16-1). The engine divergence from the 'augmented onto' clause is real.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.continuous.layers.copy",
-    "textHash": "3785a147dfe70988",
+    "textHash": "509254e45e16055e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -687,11 +699,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.continuous.layers.inverted-last",
-    "textHash": "a5f110097835916e",
+    "textHash": "592f2ff3c9517ae3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -734,11 +747,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Note only: R93 keeps an OPEN question (Caleb: \"Tough inverted balanced would be different\") on whether Inverted is interleaved into layer 4; the rule follows the printed layer list and the shipped engine."
+    "problem": "Note only: R93 keeps an OPEN question (Caleb: \"Tough inverted balanced would be different\") on whether Inverted is interleaved into layer 4; the rule follows the printed layer list and the shipped engine.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.continuous.layers.once",
-    "textHash": "aec5948588be07f4",
+    "textHash": "ca447555f1b02460",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -781,11 +795,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.continuous.one-calculation",
-    "textHash": "d136c7c75fc1cc74",
+    "textHash": "3b3ffe95984a47b8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -823,11 +838,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.continuous.switch",
-    "textHash": "088e5deb172135e2",
+    "textHash": "d22a1c3da2c24714",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -881,11 +897,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.continuous.what",
-    "textHash": "f13de77f8f5f789f",
+    "textHash": "ba332f1cb4e26017",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -928,11 +945,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.control.exchange-positions",
-    "textHash": "a477af5afc5b852c",
+    "textHash": "3b847a9fd244e79f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -971,11 +989,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.control.formation",
-    "textHash": "318c1ae0292c17ea",
+    "textHash": "4211f91f3ce98a17",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1024,7 +1043,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.control.formation.block-stays",
@@ -1066,7 +1086,7 @@
   },
   {
     "key": "effects.control.mod-moved",
-    "textHash": "b3e4fe40c3880e8c",
+    "textHash": "e80cef01e85d5c2e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1110,11 +1130,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.control.mods",
-    "textHash": "6b8195d32f0abb27",
+    "textHash": "2495c586b97fa238",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1168,19 +1189,20 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.control.no-change",
-    "textHash": "cb3931f313dff128",
+    "textHash": "eed8183867d0cdf4",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:giveControl",
+        "loc": "client/engine/src/engine.ts:giveControl",
         "agrees": true,
-        "note": "returns false (nothing changes hands) when the unit is gone or already the recipient's"
+        "note": "returns false with 'nothing changes hands' when the unit is gone or the seat already controls it"
       }
     ],
     "tests_run": [
@@ -1188,7 +1210,7 @@
         "file": "client/engine/test/393-raq-mods.test.ts",
         "pattern": "RAQ Amphivore with Ralph grafted",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Amphivore with Flame Juggle + Ralph grafted connects; host goes to D, exactly three 1/1s, nine Fireballs (Flame Juggle three times)"
       }
     ],
     "probes": [],
@@ -1196,18 +1218,22 @@
       {
         "ref": "RAQ 1353859961855148103#3",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved]: on the 2nd and 3rd passes you can't give control; the rest of the graft still happens"
       },
       {
         "ref": "R148",
         "supports": "yes",
-        "note": ""
+        "note": "the two 'nothing changes hands' branches (unit gone; seat already controls it) emit info and dispatch nothing"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
         "text": "if (u.controller === to) { this.ev('info', `${this.pname(to)} already controls ${u.card} — nothing changes hands.`); return false; }"
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.equal(tokensOf(h, A).filter(t => t.card === 'Fireball').length, 9, 'and Flame Juggle still ran all three times');"
       }
     ],
     "basis_ok": true,
@@ -1215,7 +1241,7 @@
   },
   {
     "key": "effects.control.region",
-    "textHash": "1b6299e42855746e",
+    "textHash": "0380ed7c5530514f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1260,11 +1286,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.control.what",
-    "textHash": "6c74e079360fdd21",
+    "textHash": "98c96f54e9eee956",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1307,11 +1334,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.control.zones",
-    "textHash": "712a1d5b3395dd1a",
+    "textHash": "10cce0d17d25a803",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -1365,39 +1393,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.copies.all-abilities",
-    "textHash": "168572b09dacbf66",
+    "textHash": "ece4d975fe7308df",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:facesOf / facesWith (FaceProjection)",
+        "loc": "client/engine/src/engine.ts:PROJECTED_FACETS",
         "agrees": true,
-        "note": "projected faces carry no name/stats/attrs facets; recomputed on each read, so adjacency loss drops them"
+        "note": "Ancient One projects statics/activated/triggered/behavior, never name, stats or attrs; continuous, re-read every time"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "R118: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks",
+        "pattern": "R118: Ancient One",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Glowhaven Elder's static radiated by Ancient One and gone when the Elder leaves the column; Ancient One keeps its name and 1/1"
       },
       {
         "file": "client/engine/test/117-copy-everything.test.ts",
-        "pattern": "R127: attributes are the ONE thing an adjacent ally does not donate",
+        "pattern": "R127: attributes are the ONE",
         "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "R118: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body",
-        "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: adjacent Good Whale's Piercing is not on Ancient One"
       }
     ],
     "probes": [],
@@ -1405,27 +1428,27 @@
       {
         "ref": "card: Ancient One",
         "supports": "yes",
-        "note": ""
+        "note": "'I have all abilities of adjacent allies. (This includes modded abilities.)'"
       },
       {
         "ref": "R127",
         "supports": "yes",
-        "note": ""
+        "note": "owner: 'It basically just copies the whole text box of adjacent allies (so only during combat) right in its text box'; the only thing it doesn't copy is attributes"
       },
       {
-        "ref": "R118",
+        "ref": "R118 (ruling 1 ...)",
         "supports": "yes",
-        "note": ""
+        "note": "'A projected face never carries name or stats.' Ruling 1 is current"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "* **A projected face never carries `name` or `stats`.** `facesOf(e)[0]` is always the"
+        "file": "client/engine/src/engine.ts",
+        "text": "const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'triggered', 'behavior'];"
       },
       {
-        "file": "client/engine/test/117-copy-everything.test.ts",
-        "text": "'{Piercing} is an ATTRIBUTE: the one thing the whole text box does not include'"
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "text": "assert.deepEqual(effStats(h, ancient), [1, 1], 'and it is still a 1/1');"
       }
     ],
     "basis_ok": true,
@@ -1433,7 +1456,7 @@
   },
   {
     "key": "effects.copies.all-abilities.i-is-me",
-    "textHash": "8a63e1272aa61a22",
+    "textHash": "56dcab2a0fe3a156",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1467,11 +1490,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.becoming",
-    "textHash": "ee9a826e36a53787",
+    "textHash": "5f1c478533f727b9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1530,11 +1554,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.becoming.cost-and-type",
-    "textHash": "90d3f632a8005704",
+    "textHash": "940129e3b6a74d23",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1588,11 +1613,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.becoming.unit-facts",
-    "textHash": "36e15ed8ffefb35a",
+    "textHash": "55a05d3245b56240",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1630,11 +1656,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.create-copy-of-me",
-    "textHash": "83849c932e345ad7",
+    "textHash": "580f5107ff9775ee",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1675,11 +1702,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.exact",
-    "textHash": "551947cb1cba8946",
+    "textHash": "a3125c399ae26a4b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1727,33 +1755,39 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.exact.mods",
-    "textHash": "9bb5a6db800b564a",
+    "textHash": "26140047a672cfeb",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:becomeCopy (CopyRef.mods) / isUnstable",
+        "loc": "client/engine/src/engine.ts:isUnstable",
         "agrees": true,
-        "note": "no mod entity cloned; face records mods; isUnstable reads real mods (R336); augment boxes read via behaviorBlocks (R341)"
+        "note": "Unstable if mods.length > 0 or stamped; a copy carries no mod entity"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:copiedAugments / graft cause",
+        "agrees": true,
+        "note": "copied augments' [Augment] boxes and copied grafts run as the copy's text (R336/R341)"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/406-copied-augments.test.ts",
-        "pattern": "R341: a Borrower that copied a unit carrying a Powerful virus is Powerful",
+        "pattern": "R341: a Borrower that copied a unit carrying a Powerful",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Borrower copied a Good Whale carrying Chitin Shredder; 0 mods, has Powerful, isUnstable false"
       },
       {
         "file": "client/engine/test/393-raq-mods.test.ts",
-        "pattern": "RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder",
+        "pattern": "RAQ Borrower of Forms: a Borrower that copied a Bellowing",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: the copy attacks; three Fireballs (Flame Juggle) and the Boulder's 'deals 1 to' both happen"
       }
     ],
     "probes": [],
@@ -1761,28 +1795,32 @@
       {
         "ref": "RAQ 1372468222158180424#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved]: freshly resolved BoFy has no mods so he isn't Unstable"
       },
       {
         "ref": "RAQ 1372468222158180424#4",
         "supports": "yes",
-        "note": ""
+        "note": "'it inherits all of the combined text'"
       },
       {
         "ref": "R336",
         "supports": "yes",
-        "note": ""
+        "note": "'A fresh copy of a modded unit is NOT Unstable.'"
       },
       {
         "ref": "R341",
         "supports": "yes",
-        "note": ""
+        "note": "'a copy of a unit with an augment mod has that mod's [Augment] box as its own text'"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (e.mods.length > 0 || e.unstable === true) return true;"
+      },
+      {
         "file": "client/engine/test/406-copied-augments.test.ts",
-        "text": "'and the copy is not Unstable (R336 / CT-225)'"
+        "text": "assert.equal(u.mods.length, 0, 'no mod entity was cloned (R336)');"
       }
     ],
     "basis_ok": true,
@@ -1790,7 +1828,7 @@
   },
   {
     "key": "effects.copies.exact.mods.leaving",
-    "textHash": "db7a3df1b81a295b",
+    "textHash": "85ed4660fbbed3f3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1829,11 +1867,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.exact.mods.once",
-    "textHash": "0bd0e00395c935f9",
+    "textHash": "f7767e2812682293",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1867,11 +1906,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.exact.mods.underneath",
-    "textHash": "af808ba1c2e5f72e",
+    "textHash": "7bc6ad9c43d49a4e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1905,11 +1945,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.copies.latest",
-    "textHash": "b9acac8fe6ee27e6",
+    "textHash": "e105e257cd07cf80",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1943,11 +1984,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.of-a-copy",
-    "textHash": "b9457cab12324351",
+    "textHash": "5c92f746d145d391",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -1992,11 +2034,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.copies.spells",
-    "textHash": "6b1ececc6ef4b606",
+    "textHash": "80e94bbd561b42d4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -2054,11 +2097,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.copies.spells.declared",
-    "textHash": "9096eabdce594e77",
+    "textHash": "4efca42e2babacde",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2112,11 +2156,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.copies.spells.modular",
-    "textHash": "7c1e256f1fd30714",
+    "textHash": "e63e16ec775c710c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2164,11 +2209,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.spells.no-card",
-    "textHash": "89e9c7fb38cc57e3",
+    "textHash": "b7ae7c94708b3f86",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -2217,11 +2263,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.spells.targets",
-    "textHash": "eaf87e458c81906a",
+    "textHash": "6df9eceb2d23d6fb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2259,11 +2306,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.copies.until-regroup",
-    "textHash": "68f81d4086bc21ff",
+    "textHash": "08751ecbf97f4c96",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2302,11 +2350,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.faces.face-up",
-    "textHash": "a0175d452c0e7277",
+    "textHash": "335685e9bc39a671",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2359,11 +2408,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.last-known.adjacent",
-    "textHash": "f7d532b5fa28e690",
+    "textHash": "eea800323b403cd3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2397,11 +2447,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.last-known.attributes",
-    "textHash": "9ae80a8365c03d7f",
+    "textHash": "f9436b7cc5577fde",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2435,11 +2486,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.last-known.departure-facts",
-    "textHash": "a467185040024fdf",
+    "textHash": "db5b572725264a76",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2484,11 +2536,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.last-known.departure-facts.region",
-    "textHash": "92df6c4819c9ce8e",
+    "textHash": "bc3247a55276f098",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -2526,11 +2579,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.last-known.face",
-    "textHash": "f992b5956ec31e25",
+    "textHash": "94c2ddf5cdcfaaab",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -2586,11 +2640,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: Echo of Despair's code spawns its printed name rather than reading lk.face; it agrees with the rule in every reachable case found."
+    "problem": "Minor: Echo of Despair's code spawns its printed name rather than reading lk.face; it agrees with the rule in every reachable case found.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.last-known.formation",
-    "textHash": "261bf2bfa4b6b862",
+    "textHash": "1ff5656b78b1904e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2639,11 +2694,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.last-known.live-source",
-    "textHash": "a15ba54b90bde66a",
+    "textHash": "72760175a02a2a34",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2681,11 +2737,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.last-known.out-of-formation",
-    "textHash": "64fbeeeb0a48b37b",
+    "textHash": "b0d78b6555bffb55",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2724,11 +2781,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.last-known.stats",
-    "textHash": "0ba4ea93a8f9ebd3",
+    "textHash": "28bb5113bac9b4fa",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U16-r3",
@@ -2803,11 +2861,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. Engine implements it per card (Deathglow, Spewing Mushroom, Slag Spewer) rather than generally, which matches the pool."
+    "problem": "None. Engine implements it per card (Deathglow, Spewing Mushroom, Slag Spewer) rather than generally, which matches the pool.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.last-known.what",
-    "textHash": "c8aef3f65acd14e8",
+    "textHash": "6f3c34615456a84f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2843,11 +2902,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.state.absent",
-    "textHash": "bc31c87539293056",
+    "textHash": "2a0a9506d9af5601",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -2896,27 +2956,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.state.absent.home",
-    "textHash": "b81149bcdd9a9b3a",
+    "textHash": "6777e0d1e6fb323f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:unitsOf",
+        "loc": "client/engine/src/engine.ts:unitsOf",
         "agrees": true,
-        "note": "excludes absent units, so a counterattacker is not counted as an ally at home"
+        "note": "absent units are excluded from every region/ally count"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/250-ally-count-and-absence.test.ts",
-        "pattern": "scope: a unit left at home still loses the ally that counterattacked away",
+        "pattern": "scope: a unit left at home",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: the Protector at 0/1 on one ally dies when that ally is sent"
       }
     ],
     "probes": [],
@@ -2924,17 +2985,17 @@
       {
         "ref": "R270",
         "supports": "yes",
-        "note": ""
+        "note": "'so an ally is a unit that is here, and a counterattacker is not here'. R270 itself says this half is the engine's current answer pending an owner call; classification.json lists R270 as current, ownerOnly"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "so an \"ally\" is a unit that is *here*, and a counterattacker is not here. The"
+        "file": "client/engine/src/engine.ts",
+        "text": "e.kind === 'unit' && e.controller === seat && !e.absent &&"
       },
       {
         "file": "client/engine/test/250-ally-count-and-absence.test.ts",
-        "text": "'the Protector, still present and still swept, has no other ally left to count'"
+        "text": "'the Protector, still present and still swept, has no other ally left to count');"
       }
     ],
     "basis_ok": true,
@@ -2942,7 +3003,7 @@
   },
   {
     "key": "effects.state.dying",
-    "textHash": "a6c1a15741fa8980",
+    "textHash": "282474e3cae3c320",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3000,11 +3061,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.state.lethal",
-    "textHash": "471e2ea98164de2b",
+    "textHash": "98625c8699faaea9",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U16-r2",
@@ -3072,11 +3134,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.state.no-damage-needed",
-    "textHash": "83a85283016b9427",
+    "textHash": "6468c431f995320b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3120,11 +3183,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.state.no-damage-needed.pure",
-    "textHash": "10ab61fd6d76d7ab",
+    "textHash": "fdb3bda3cffe2fcd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3162,11 +3226,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.state.together",
-    "textHash": "fb75b3d79fb97a04",
+    "textHash": "4f1416f924866d13",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3204,11 +3269,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.state.together.limits",
-    "textHash": "4808986a29962635",
+    "textHash": "6f0bd791ac88a2d9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3239,50 +3305,58 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No test or probe isolates the target/ally-count half; judged on engine code and R278."
+    "problem": "No test or probe isolates the target/ally-count half; judged on engine code and R278.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.state.tokens",
-    "textHash": "634efe29163b44fa",
+    "textHash": "e389519e0c131981",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:destroy / disposal tail",
+        "loc": "client/engine/src/engine.ts:eraseFromZone (the token sweep, generalised from eraseFromBin)",
         "agrees": true,
-        "note": "token body binned, died fires, then the sweep erases it; fireEvent only queues triggers, so the token is gone before anything queued is put on the stack (R69)"
+        "note": "a token that reaches a bin/hand/cache is erased by the state-based sweep before queued triggers resolve or are pushed"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/129-disposal-tail.test.ts",
-        "pattern": "R153 (iv): a TOKEN body with no mods takes the token sweep",
+        "pattern": "R153 (iv)",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: a Hooba-Mon token exchanged for Skittering Blight leaves play, is not in the bin, is on the erased pile, erased FROM the bin"
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U16-2.test.ts",
+        "test": "probe U16-2: a Geode token destroyed in battle is erased from the bin before its die trigger reaches the stack",
+        "passed": true,
+        "demonstrates": "yes: the event order is died, triggered, leftBin, erased, stackPushed (the second sentence of the rule)"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R152",
+        "ref": "R152 (the owner quote ...)",
         "supports": "yes",
-        "note": "owner quote: tokens cease to exist in all zones other than play/stack at SBA checks"
+        "note": "owner: a token 'just ceases to exist in all zones other than in play/stack whenever SBAs are checked'"
       },
       {
-        "ref": "R69",
+        "ref": "R69 (the token zone sweep and its timing ...)",
         "supports": "yes",
-        "note": "Caleb: erase happens, then the trigger goes on the stack"
+        "note": "Caleb: 'state based effects happen to erase it and then the trigger goes on the stack'; only R69's trash subsection is reversed (R306)"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "state based effects happen to erase it and then"
+        "text": "> to exist in all zones other than in play/stack whenever SBAs are checked.**\""
       },
       {
         "file": "client/engine/test/129-disposal-tail.test.ts",
-        "text": "a TOKEN body with no mods takes the token sweep"
+        "text": "assert.equal(sweep?.data!['from'], 'bin', 'it was erased FROM THE BIN — it really did enter one (R69)');"
       }
     ],
     "basis_ok": true,
@@ -3290,7 +3364,7 @@
   },
   {
     "key": "effects.state.what",
-    "textHash": "25fd76f39b0df45b",
+    "textHash": "5200a03d44552d42",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3331,11 +3405,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.state.when",
-    "textHash": "dc6c61edee3a25f7",
+    "textHash": "2764538f03088b92",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U16-r3",
@@ -3400,11 +3475,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. Recycle is not exercised by a test but is named in R313 and covered by the general backstop."
+    "problem": "None. Recycle is not exercised by a test but is named in R313 and covered by the general backstop.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.state.when.mid-resolution",
-    "textHash": "e9f7fea3d033875a",
+    "textHash": "2b215089ebb0e121",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U16-r3",
@@ -3456,11 +3532,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None in substance. Only source is an engine note in R237; the multi-part clause is engine-only (no ruling cites it). The illustrative Pestilent Titan example is measured true by probe."
+    "problem": "None in substance. Only source is an engine note in R237; the multi-part clause is engine-only (no ruling cites it). The illustrative Pestilent Titan example is measured true by probe.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.stripping.column",
-    "textHash": "0afebb3aad3a8b5f",
+    "textHash": "f01ebf84792ac199",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3531,11 +3608,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.stripping.column.alone",
-    "textHash": "bf984ed9824db08e",
+    "textHash": "e9ba73accfa0e83a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3569,51 +3647,53 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.stripping.column.per-unit",
-    "textHash": "7d75cccbea6141e7",
+    "textHash": "2ef5e4e496dad725",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:suppress (column stamp)",
+        "loc": "client/engine/src/engine.ts:suppress",
         "agrees": true,
-        "note": "each column unit gets its own suppressed.attrs stamp, cleared at regroup"
+        "note": "Formless stamps each unit of the column with suppressed.attrs at resolution; the stamp lasts until regroup"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/299-formless-column.test.ts",
-        "pattern": "R293 §3 the stamp outlives the column",
+        "pattern": "R293",
         "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/299-formless-column.test.ts",
-        "pattern": "R293 §4 a unit that joins the column afterwards keeps its own attributes",
-        "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: §3 the Blessed Flzzz column-mate is still stamped and without Blessed after damage (its regroup check is inside an if), §4 a later Flzzz keeps Blessed; all 8 pass"
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U16-1.test.ts",
+        "test": "probe U16-1: the Blessed column-mate is without Blessed after damage and Blessed again after regroup",
+        "passed": true,
+        "demonstrates": "yes: the regroup half of example 0, asserted unconditionally"
+      }
+    ],
     "source_checks": [
       {
         "ref": "R293",
         "supports": "yes",
-        "note": ""
+        "note": "'So the stamp is per unit, and is that unit's own state until regroup.' Owner quote: removing attributes for the turn, it would not make sense to get them back"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "So the stamp is **per unit**, and is that unit's own state until regroup."
+        "file": "client/engine/src/engine.ts",
+        "text": "suppress(target: Entity, by: CardName, what: { attrs?: boolean; abilities?: boolean }): void {"
       },
       {
         "file": "client/engine/test/299-formless-column.test.ts",
-        "text": "'a Flzzz that was not on the board when Formless resolved is Blessed like any other'"
+        "text": "assert.equal(alive.suppressed?.attrs, 'Formless', 'still stamped once the damage step is over');"
       }
     ],
     "basis_ok": true,
@@ -3621,7 +3701,7 @@
   },
   {
     "key": "effects.stripping.column.regain",
-    "textHash": "757485c324c7af34",
+    "textHash": "47e91ecf8a4cfbf8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3655,11 +3735,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.stripping.copied-text",
-    "textHash": "bf5abcf611294ee1",
+    "textHash": "610444654747c541",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3693,7 +3774,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.stripping.mutual",
@@ -3744,7 +3826,7 @@
   },
   {
     "key": "effects.stripping.named-card",
-    "textHash": "695be56af0adf65b",
+    "textHash": "e7711c079e6cdd2b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3799,11 +3881,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.stripping.one-clause",
-    "textHash": "d964f02b7d238e3a",
+    "textHash": "111434619f1901c7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3842,39 +3925,40 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.stripping.timestamp",
-    "textHash": "7bb909ec392f0ecb",
+    "textHash": "bc356a59a5f2734f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:strippersOf / ownAttrs",
+        "loc": "client/engine/src/engine.ts:suppress (R328 stampNow)",
         "agrees": true,
-        "note": "each attribute source is kept unless it is older than every stripper (R328 Stamp ordering)"
+        "note": "a strip records the time it applies; later grants are not taken"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/393-raq-mods.test.ts",
-        "pattern": "RAQ Suppression Field: an attribute granted after it resolved still applies",
+        "pattern": "RAQ Suppression Field: an attribute granted",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: suppressed Bubb then given Piercing by Protective Adaptations: Unaware still gone, Piercing present"
       },
       {
         "file": "client/engine/test/390-raq-stack.test.ts",
-        "pattern": "RAQ timestamps: a virus applied AFTER Monke",
+        "pattern": "RAQ timestamps: a virus applied AFTER",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Monke resolves, then Chitin Shredder is applied; the host has Powerful"
       },
       {
         "file": "client/engine/test/402-raq-fix-stripping.test.ts",
-        "pattern": "§1 a static stripper takes a mod attached BEFORE it arrived",
+        "pattern": "§1 a static stripper",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: under Transmogrifant the virus attached before is taken, the one attached after is not"
       }
     ],
     "probes": [],
@@ -3882,27 +3966,27 @@
       {
         "ref": "RAQ 1355685844467581081#0",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon: 'Suppression field just removes attributes from the time it was played, so anything after that will still apply'"
       },
       {
         "ref": "RAQ 1355845893219287132#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved]: later gains are not affected by Monke or Transmogrifant (timestamps)"
       },
       {
         "ref": "R328",
         "supports": "yes",
-        "note": ""
+        "note": "'takes what the unit has when the strip applies'; reverses R62's veto"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A card that takes attributes or abilities away takes **what the unit has when the"
+        "file": "client/engine/src/engine.ts",
+        "text": "// R328: a strip is a timestamp. It takes what is there NOW; a later strip"
       },
       {
         "file": "client/engine/test/402-raq-fix-stripping.test.ts",
-        "text": "'the virus attached AFTER it is not'"
+        "text": "assert.ok(ownAttrs(h, late).has('Powerful'), 'the virus attached AFTER it is not');"
       }
     ],
     "basis_ok": true,
@@ -3910,7 +3994,7 @@
   },
   {
     "key": "effects.stripping.what",
-    "textHash": "1a0679f212ce0327",
+    "textHash": "173e33ec0c999faf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -3954,11 +4038,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.stripping.what.abilities",
-    "textHash": "fe958fd292c1b979",
+    "textHash": "23db9bfaa436add5",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U16-r3",
@@ -4028,7 +4113,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling supported by printed text plus R62; divergence real. Caveat: our own R62/R328 describe the static-vs-static one-pass behaviour as intended, so the divergence is between the printed reading and an engine choice the register endorses, not a mere bug."
+    "problem": "Ruling supported by printed text plus R62; divergence real. Caveat: our own R62/R328 describe the static-vs-static one-pass behaviour as intended, so the divergence is between the printed reading and an engine choice the register endorses, not a mere bug.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.stripping.what.erase-mods",
@@ -4075,7 +4161,7 @@
   },
   {
     "key": "effects.stripping.what.not-stats",
-    "textHash": "db34bfd4b9132ca3",
+    "textHash": "223d24f59ff3bc17",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U16-r1",
@@ -4116,6 +4202,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   }
 ]

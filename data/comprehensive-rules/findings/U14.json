@@ -88,10 +88,6 @@
       {
         "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
         "quote": "    type: 'triggered', events: ['cardPlayed'],"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
-        "quote": "// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12)."
       }
     ],
     "ct": "CT-254",
@@ -143,10 +139,6 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "(no \"another\") **fires on its own"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
-        "quote": "// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12)."
       }
     ],
     "ct": "CT-254",

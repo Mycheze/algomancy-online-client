@@ -53,7 +53,7 @@
   },
   {
     "key": "keywords.abilities.ambush.cache",
-    "textHash": "b22fb5135ef58791",
+    "textHash": "a4bd6a3ce4e14129",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -91,7 +91,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.ambush.cost",
@@ -163,7 +164,7 @@
   },
   {
     "key": "keywords.abilities.ambush.fizzle",
-    "textHash": "2a549e8ce9f1ac23",
+    "textHash": "ef0a2c9c8521b66b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -217,7 +218,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.ambush.resolution",
@@ -274,45 +276,52 @@
   },
   {
     "key": "keywords.abilities.ambush.saves",
-    "textHash": "2926c8c840511037",
+    "textHash": "a1d09088685e333b",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U21-r1",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:ambushSwap + resolveItem",
+        "loc": "client/engine/src/engine.ts:resolveItem (R5 fizzle on a lost target)",
         "agrees": true,
-        "note": "the recalled target is gone when the Fireball resolves; its slot is not re-aimed, it fizzles"
+        "note": "the Fireball's only target left play, so it fizzles; it is not re-aimed at the ambusher"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/432-cr-keyword-abilities.test.ts",
+        "pattern": "cr:keywords.abilities.ambush.saves",
+        "passed": true,
+        "asserts_claim": "yes: Fireball aimed at D's unit, D ambushes with Orblish Horroth on it; asserts victim left play, Horroth undamaged, Fireball fizzled. Its victim is a Unit Token so it does not assert the return to hand; the probe does"
+      }
+    ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
-        "title": "keywords.abilities.ambush.saves: ambushing a Fireball's target saves it; the Fireball fizzles and does not hit the ambusher",
+        "file": "client/engine/test/zz-probe-U21-1.test.ts",
+        "test": "probe U21-1: an ambushed Fireball target (a real card) returns to its owner's hand; Fireball fizzles; ambusher undamaged",
         "passed": true,
-        "demonstrates": "yes"
+        "demonstrates": "yes: with a real card (Rune Channeler) as the target, the recalled unit is in its owner's hand, the Fireball fizzles and the ambusher takes no damage"
       }
     ],
     "source_checks": [
       {
         "ref": "Manual p.40",
         "supports": "yes",
-        "note": ""
+        "note": "the four quoted lines are one sentence pair: ambush recalls the targeted unit, the spell does not change targets and fizzles"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "save it. The spell will not change targets to the new"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "unit, and will fail to resolve (fizzle). This makes ambush"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Battle] Ambush [3bb] {i}(Play me with the effect \\\"Recall target ally, put me into their position in play.\\\")"
       }
     ],
     "basis_ok": true,
-    "problem": "No bound test (the example is illustrative); probe demonstrates it."
+    "problem": ""
   },
   {
     "key": "keywords.abilities.ambush.spell-effect",
@@ -429,7 +438,7 @@
   },
   {
     "key": "keywords.abilities.ambush.target",
-    "textHash": "6bf13593fa3724a7",
+    "textHash": "3943787a40dc5177",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -490,11 +499,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None; the bound example is weak (it checks gate/effect agreement, not the ally restriction) — the probes carry the claim."
+    "problem": "None; the bound example is weak (it checks gate/effect agreement, not the ally restriction) — the probes carry the claim.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.abilities.ambush.tides",
-    "textHash": "31cc9ddc4811335a",
+    "textHash": "759402a7314482fa",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -553,11 +563,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. The example's test does not assert the cost clauses; the probe does."
+    "problem": "None. The example's test does not assert the cost clauses; the probe does.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.abilities.ambush.timing",
-    "textHash": "8efb830ad120d333",
+    "textHash": "ab49a0a8749e046b",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -612,11 +623,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. Shib prints the [Battle] icon after the keyword ('[4lb] Ambush [Battle]'); 'in front of' describes the other five."
+    "problem": "None. Shib prints the [Battle] icon after the keyword ('[4lb] Ambush [Battle]'); 'in front of' describes the other five.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.abilities.battle",
-    "textHash": "70b3e02d1d879656",
+    "textHash": "558fdeb65208fbbf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -659,33 +671,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.battle.haste",
-    "textHash": "cbed8c2bc0d79f62",
+    "textHash": "eeddec655a235bc5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U21-r1",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:mayPlayAtHaste",
+        "loc": "client/engine/src/engine.ts:hastePlayAllowance",
         "agrees": true,
-        "note": "a {Battle} card is refused in the haste step even with a grant"
+        "note": "if (ctx.card.timing === 'battle') return 0"
       }
     ],
     "tests_run": [
       {
-        "file": "26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: a {Battle} unit stays a battle card even with the grant",
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: a {Battle} unit",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: Monke ({Battle} unit) not offered and refused in the haste step with Courier in play"
       },
       {
-        "file": "396-raq-timing.test.ts",
-        "pattern": "RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either",
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Dispatch Courier: a Battle spell unit",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: Jelly ({Battle} spell unit) not offered and refused in the haste step with the grant live"
       }
     ],
     "probes": [],
@@ -693,23 +706,33 @@
       {
         "ref": "RAQ 1464899726796390433#0",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon, status covered"
       },
       {
         "ref": "RAQ 1465292396664193171#0",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved] write-up, covered"
       },
       {
         "ref": "RAQ 1465292396664193171#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer, spell units too, covered"
+      },
+      {
+        "ref": "card: Monke",
+        "supports": "yes",
+        "note": "{Battle} unit"
+      },
+      {
+        "ref": "card: Jelly",
+        "supports": "yes",
+        "note": "{Battle} Jellyfish Spell Unit"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "text": "'the {Battle} unit is NOT offered');"
+        "file": "client/engine/src/engine.ts",
+        "text": "if (ctx.card.timing === 'battle') return 0;  // RAQ: a battle card stays one"
       }
     ],
     "basis_ok": true,
@@ -913,7 +936,7 @@
   },
   {
     "key": "keywords.abilities.burst.order",
-    "textHash": "c88b51e4cb34d5e1",
+    "textHash": "5c54a7b436c615c7",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -975,11 +998,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. Note: in deployment the group resolves immediately rather than sitting on a stack (then='resolve'); the ordering engine path is gated on the action's `ordered` flag, which the client always sets."
+    "problem": "None. Note: in deployment the group resolves immediately rather than sitting on a stack (then='resolve'); the ordering engine path is gated on the action's `ordered` flag, which the client always sets.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.burst.targets",
-    "textHash": "0d4850c2732964c8",
+    "textHash": "0b53e85300eada7e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1018,11 +1042,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.haste",
-    "textHash": "38bc3bc03398da34",
+    "textHash": "6cbfa7ff91eb930d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -1077,38 +1102,40 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None."
+    "problem": "None.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.haste.grants",
-    "textHash": "552545a156410aa1",
+    "textHash": "6e4f536a3f771a92",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U21-r2",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:mayPlayAtHaste / hastePlayAllowance",
+        "loc": "client/engine/src/engine.ts:hastePlayAllowance / mayPlayAtHaste",
         "agrees": true,
-        "note": "a seat-level play-timing grant; the card's attributes are untouched"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:pushSourcePlays (haste window)",
-        "agrees": true,
-        "note": "offers a non-Haste card when mayPlayAtHaste grants it"
+        "note": "seat-level play-timing grant, budgeted by hastePlaysUsed"
       }
     ],
     "tests_run": [
       {
-        "file": "26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\"",
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: \"play a unit",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Courier in play, a deploy unit is offered and played in the haste step, budget charged to 1"
       },
       {
-        "file": "26-metal-a.test.ts",
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: the \"Each turn\" allowance",
+        "passed": true,
+        "asserts_claim": "yes: the second play in the same haste step is refused (the 'once each turn' half)"
+      },
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
         "pattern": "Dispatch Courier: no Courier, no OFFER",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "bare demonstration; passes"
       }
     ],
     "probes": [],
@@ -1121,41 +1148,37 @@
       {
         "ref": "R97",
         "supports": "yes",
-        "note": "play-timing grant"
+        "note": "a grant of PLAY timing; not superseded"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "Each turn, you may play a unit during the mana step as if it had [Haste]."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "## R97 — A card may be granted permission to be PLAYED at a timing its printed line refuses"
+        "text": "[Augment] Each turn, you may play a unit during the mana step as if it had [Haste]."
       }
     ],
     "basis_ok": true,
-    "problem": "Accurate as far as it goes. It omits that a {Battle} card granted Haste still cannot be played in the haste step (RAQ 1465292396664193171#0, R97), so 'can let a card without Haste be played' must not be read as covering Battle cards; state that or point to the rule that does."
+    "problem": ""
   },
   {
     "key": "keywords.abilities.haste.mana-step",
-    "textHash": "727947add795e93d",
+    "textHash": "1e30e2d5b10e0061",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U21-r1",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:mayPlayAtHaste",
         "agrees": true,
-        "note": "Dispatch Courier's grant opens the haste step and offers the play"
+        "note": "the Courier's 'mana step' grant is applied in the haste step"
       }
     ],
     "tests_run": [
       {
-        "file": "26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\"",
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: \"play a unit",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: the grant opens and allows a play in the haste step"
       }
     ],
     "probes": [],
@@ -1163,23 +1186,23 @@
       {
         "ref": "Rulebook 2023 p.3",
         "supports": "yes",
-        "note": ""
+        "note": "haste cards are played during the mana step"
       },
       {
         "ref": "card: Dispatch Courier",
         "supports": "yes",
-        "note": "oracle has \"[Augment]\" prefix and a double space; wording otherwise matches"
+        "note": ""
       },
       {
         "ref": "R97",
         "supports": "yes",
-        "note": ""
+        "note": "Caleb quoted: the haste symbol means playable during the mana step"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "Cards with the haste icon (10) can be played during the mana step"
+        "file": "client/docs/digital-rules.md",
+        "text": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
       }
     ],
     "basis_ok": true,
@@ -1212,7 +1235,7 @@
   },
   {
     "key": "keywords.abilities.non-combat.not-shared",
-    "textHash": "b2afb4ca22fb29d4",
+    "textHash": "9912014e04b4a3a7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1266,7 +1289,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.once",
@@ -1313,7 +1337,7 @@
   },
   {
     "key": "keywords.abilities.prophecy",
-    "textHash": "92e5a2f0fcb8705c",
+    "textHash": "3df3b4124a92b950",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1352,32 +1376,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.battles",
-    "textHash": "3ebd93924d8944c0",
+    "textHash": "67c8c0ff8cbbf3e9",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U21-r2",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:endBattleRound",
+        "loc": "client/engine/src/engine.ts:PROPHECY_RULES Battle Passes (battlesCompleted - p.battles)",
         "agrees": true,
-        "note": "battlesCompleted +1 every battle round, both rounds, declined ones included"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:battlesPass condition",
-        "agrees": true,
-        "note": "met when battlesCompleted - anchor >= N"
+        "note": "battlesCompleted increments once per battle round (endBattleRound)"
       }
     ],
     "tests_run": [
       {
-        "file": "36-cache-prophecy.test.ts",
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
         "pattern": "R43: \"One Battle Passes\"",
         "passed": true,
-        "asserts_claim": "yes: both rounds already counted (>=2 after one turn), anchored forward, first next round fulfils"
+        "asserts_claim": "yes: at deployment the turn has already run both battle rounds (before >= 2) and they are not counted; after the next turn's first battle round the prophecy is fulfilled"
       }
     ],
     "probes": [],
@@ -1385,25 +1405,21 @@
       {
         "ref": "R43",
         "supports": "yes",
-        "note": "quotes Caleb 2024-09-24"
+        "note": "Caleb 2024-09-24, both battles tick; not superseded"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
         "text": "battles in a turn tick \"One Battle Passes\" (Caleb 2024-09-24)."
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.s.battlesCompleted = (this.s.battlesCompleted ?? 0) + 1;"
       }
     ],
     "basis_ok": true,
-    "problem": "None. Basis could be 'designer-via-ruling' (Caleb is quoted inside R43)."
+    "problem": ""
   },
   {
     "key": "keywords.abilities.prophecy.cost",
-    "textHash": "4e33e3cae4731a65",
+    "textHash": "44e2b91e9e120d49",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1437,11 +1453,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.forward",
-    "textHash": "e563d9ba6b525d5e",
+    "textHash": "7f4b5413faeb9811",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1475,11 +1492,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.from",
-    "textHash": "5457d2b5057c7cc0",
+    "textHash": "b0db713ab1e4ea2e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1538,11 +1556,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.granted",
-    "textHash": "43384cd23b59218e",
+    "textHash": "465db3e367dd3def",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -1596,7 +1615,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None."
+    "problem": "None.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.latch",
@@ -1638,7 +1658,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.mods",
-    "textHash": "f00bc2c846429b7b",
+    "textHash": "83717b90ab6698ba",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1678,11 +1698,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.release",
-    "textHash": "a4b2f95d8a888500",
+    "textHash": "552b58bf587eb3d3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1721,11 +1742,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.release-timing",
-    "textHash": "52f43aef477ff2d3",
+    "textHash": "c929a12c5fc60c3a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1775,11 +1797,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.tides",
-    "textHash": "a0bc2370c731f814",
+    "textHash": "58a4e2e96c64f88d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1818,33 +1841,39 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.units-die",
-    "textHash": "db554a22ebf04135",
+    "textHash": "4be53453914b7118",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U21-r1",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:deathsSeen / presentSeats",
+        "loc": "client/engine/src/engine.ts:died announcement (deathsSeen per presentSeats)",
         "agrees": true,
-        "note": "per-seat tally at the died event; attack adds the attacker to presentSeats until regroup"
+        "note": "each seat in the region's presentSeats increments its own deathsSeen"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:PROPHECY_RULES Units Die (deathsSeen[seat] - p.deaths)",
+        "agrees": true,
+        "note": "the condition reads the controller's own tally"
       }
     ],
     "tests_run": [
       {
-        "file": "314-prophecy-units-die.test.ts",
-        "pattern": "R302 §2: a death is counted only by the seats that were in the region",
+        "file": "client/engine/test/314-prophecy-units-die.test.ts",
+        "pattern": "R302 §2",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: deployment deaths in D's region are counted by D only"
       },
       {
-        "file": "314-prophecy-units-die.test.ts",
-        "pattern": "R302 §3: combat puts the attacker in the region",
+        "file": "client/engine/test/314-prophecy-units-die.test.ts",
+        "pattern": "R302 §3",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: A attacks into D's region with a unit, both seats present, two D units die, both seats' tallies rise by 2"
       }
     ],
     "probes": [],
@@ -1852,13 +1881,22 @@
       {
         "ref": "R302",
         "supports": "yes",
-        "note": "owner ruling"
+        "note": "owner ruling; R302 also states presentSeats = owner plus any seat that attacked into it, until regroup. Not superseded in supersession.json"
+      },
+      {
+        "ref": "card: Vengeance",
+        "supports": "yes",
+        "note": "banner prophecy condition '13 Units Die'"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "region, and from then until regroup both sides witness everything that dies in it."
+        "text": "holds its owner, plus any seat that attacked into it, until regroup sends everyone home"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "[2lr] Prophecy — 13 Units Die"
       }
     ],
     "basis_ok": true,
@@ -1866,7 +1904,7 @@
   },
   {
     "key": "keywords.abilities.prophecy.window",
-    "textHash": "8da3f5181f00ceab",
+    "textHash": "84645e674bad9e14",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1911,11 +1949,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.prophecy.x",
-    "textHash": "e921b01e0edbea81",
+    "textHash": "aeef3b995e0884c3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -1949,7 +1988,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Second sentence (bracketed variable cost still paid) is supported by R111 and the code path, but no test exercises it."
+    "problem": "Second sentence (bracketed variable cost still paid) is supported by R111 and the code path, but no test exercises it.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.unstable",
@@ -2014,7 +2054,7 @@
   },
   {
     "key": "keywords.abilities.unstable.active-zone",
-    "textHash": "45c9ecec5a41a44d",
+    "textHash": "0f01378f67dd9417",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2058,11 +2098,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.unstable.card-says-bin",
-    "textHash": "481bba939a4b219a",
+    "textHash": "f2b0c024f85b26af",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2109,11 +2150,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.unstable.copy",
-    "textHash": "9373d7d53c9e00da",
+    "textHash": "fbf37e97995ba5af",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -2177,7 +2219,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. The text generalises from Borrower of Forms to any copy; the engine has one isUnstable, so the generalisation holds, but a copy of a PRINTED-Unstable unit is still Unstable through its face (not a contradiction, the rule is about modded units)."
+    "problem": "None. The text generalises from Borrower of Forms to any copy; the engine has one isUnstable, so the generalisation holds, but a copy of a PRINTED-Unstable unit is still Unstable through its face (not a contradiction, the rule is about modded units).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.unstable.granted",
@@ -2291,7 +2334,7 @@
   },
   {
     "key": "keywords.abilities.unstable.modded-spell",
-    "textHash": "e6f301a00b7e5359",
+    "textHash": "4c84cf7b6679b3dc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2336,11 +2379,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.unstable.moved-mod",
-    "textHash": "30b29f769a6112ed",
+    "textHash": "d6e200de2a74ec83",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2374,7 +2418,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.unstable.printed",
@@ -2421,7 +2466,7 @@
   },
   {
     "key": "keywords.abilities.unstable.recall",
-    "textHash": "772404ed29896a92",
+    "textHash": "737238a4662b9670",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2468,7 +2513,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.unstable.stack",
@@ -2516,7 +2562,7 @@
   },
   {
     "key": "keywords.abilities.unstable.still-dies",
-    "textHash": "49825c7d5ecbfdf1",
+    "textHash": "efd91d3f1b89085d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U21-r1",
@@ -2559,11 +2605,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Example is illustrative with no bound test; probe (Refuse Reclaimer) demonstrates it."
+    "problem": "Example is illustrative with no bound test; probe (Refuse Reclaimer) demonstrates it.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.abilities.unstable.until-regroup",
-    "textHash": "9fc4991e3a1e94b8",
+    "textHash": "fc75ee764d4a5057",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U21-r2",
@@ -2638,6 +2685,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. The example's test proves stamp + erase but not 'until regroup' (despite its title); the probe proves the duration."
+    "problem": "None. The example's test proves stamp + erase but not 'until regroup' (despite its title); the probe proves the duration.",
+    "carried": "demoted-example 2026-10-11"
   }
 ]

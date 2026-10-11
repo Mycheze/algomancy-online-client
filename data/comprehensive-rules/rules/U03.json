@@ -71,7 +71,7 @@
     "text": "Every card has a name, and most cards have abilities. The other parts a card can have are described in section 200.",
     "examples": [
       {
-        "text": "Every one of the 492 cards in the pool has a name; most, but not all, have ability text.",
+        "text": null,
         "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.cards.card.characteristics — every card in the pool has a name, and most have ability text"
       }
     ],
@@ -110,7 +110,7 @@
     "text": "A token is a unit or a spell that an effect creates directly into play. A unit token functions as a unit, and a spell token is a spell.",
     "examples": [
       {
-        "text": "Creating a Poison (a spell token) is creating a token, just as creating a 1/1 unit is.",
+        "text": "Mycelial Mentor reads \"When you create a token, target ally gains +3/+3.\" Its controller creates a Poison, a spell token, and the Mentor triggers just as it would for a 1/1 unit.",
         "test": "119-play-and-token-events.test.ts::Mycelial Mentor: creating a POISON fires \"when you create a token\""
       }
     ],
@@ -153,7 +153,7 @@
     "text": "For card text, a token is not a card: text that refers to a \"card\" does not include a token, even though a unit token is a unit and a spell token is a spell. The printed rules call tokens \"temporary cards\" to describe them to players; that does not make a token a card.",
     "examples": [
       {
-        "text": "A spell token being cast is a spell being played, but not a card being played.",
+        "text": "A player casts a Fireball token in battle. That is playing a spell, so abilities that watch for a spell being played see it; it is not playing a card, so abilities that watch for a card being played do not.",
         "test": "119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card"
       }
     ],
@@ -270,7 +270,7 @@
     "text": "A unit that an effect creates is a unit token, including an X/X unit whose X the creating card sets.",
     "examples": [
       {
-        "text": "An X/X unit made by Spawntender is a token that Download can take.",
+        "text": "Spawntender creates an 8/8 unit. That unit is a token, so Download (\"Gain control of target token\") can take it.",
         "test": "393-raq-mods.test.ts::RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take"
       }
     ],
@@ -533,7 +533,7 @@
     "text": "A copy of a spell is a new effect on the stack. It was not played.",
     "examples": [
       {
-        "text": "A copy made by Earthbound Replicator fires no play event and makes no second copy.",
+        "text": "Earthbound Replicator copies a spell that targets it. The copy is not played, so it does not set off the Replicator again: one copy, and no more.",
         "test": "138-spell-copy.test.ts::R164 Earthbound Replicator: a copy is not PLAYED"
       }
     ],
@@ -988,7 +988,7 @@
         "test": "151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy"
       },
       {
-        "text": "A condition false when the event happened stays unmet; an amount is read at resolution.",
+        "text": null,
         "test": "05-rulings.test.ts::R1: trigger conditions check at event time; amounts compute at resolution"
       }
     ],
@@ -1039,7 +1039,7 @@
     "text": "An amount a triggered ability uses is measured when the ability resolves, so responses can change it.",
     "examples": [
       {
-        "text": "Astral Tidewraith's damage equal to the cards in a hand counts the hand as the trigger resolves (illustrative).",
+        "text": "Astral Tidewraith attacks: its trigger deals each player damage equal to the cards in their hand, counted as the trigger resolves, not when it triggered.",
         "test": null
       }
     ],
@@ -1074,7 +1074,7 @@
     "text": "A triggered ability checks its condition again when it resolves only if its text says so, as \"if I am still in formation\" does.",
     "examples": [
       {
-        "text": "Hooba-Nan gone from play with its trigger on the stack makes nothing.",
+        "text": "Hooba-Nan says \"if I am still in formation\", so that is checked again on resolution: if Hooba-Nan dies with its attack trigger on the stack, no 1/1s are made.",
         "test": "390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing"
       }
     ],
@@ -1231,7 +1231,7 @@
         "test": "151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: Crevice Lurker cannot tax it"
       },
       {
-        "text": "The option is asked while the spell is being played and never reaches the stack.",
+        "text": null,
         "test": "151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack"
       }
     ],
@@ -1273,7 +1273,7 @@
     "text": "Text after a card's [Augment] or graft symbol is active when the card is played normally, not only when the card is a mod.",
     "examples": [
       {
-        "text": "A Wraith token standing in play uses its own [Augment] line at the start of deployment.",
+        "text": "A Wraith token in play uses its own [Augment] text: at the start of deployment its controller puts a -1/-1 counter on an ally.",
         "test": "37-attrs-wight.test.ts::R71: at the start of deployment a Wraith body shrinks a chosen ally"
       }
     ],
@@ -1348,11 +1348,11 @@
     "text": "A granted ability is an ability the unit has. An effect that removes a unit's abilities removes the granted abilities the unit has when the removal applies; an ability granted to the unit afterwards is not removed.",
     "examples": [
       {
-        "text": "A unit that loses all abilities also loses an ability Reforge the Dead gave it earlier; if Reforge the Dead resolves after the removal, the unit has the new ability (illustrative).",
+        "text": "A unit that loses all abilities also loses an ability Reforge the Dead gave it earlier; if Reforge the Dead resolves after the removal, the unit has the new ability.",
         "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.granted.is-ability — a Reforge the Dead grant made BEFORE an ability strip is removed; one made AFTER it still fires"
       },
       {
-        "text": "The same holds for text a mod gives its host: an [Augment] trigger on a mod attached after the strip still fires, and one attached before it does not.",
+        "text": null,
         "test": "402-raq-fix-stripping.test.ts::§8 a trigger on a mod attached after the strip still fires; one attached before it does not"
       }
     ],
@@ -1410,7 +1410,7 @@
     "text": "An ability marked [once], and a bounded graft ([Switch1]), can be activated or triggered only once per turn.",
     "examples": [
       {
-        "text": "A [once] ability that has fired stays silent for the rest of the turn and fires again the next turn.",
+        "text": "Unstable Apparition ([once]: when you play a nontoken spell, create a Fireball X) makes a Fireball for the first spell its controller plays this turn, nothing for the second, and a Fireball again next turn.",
         "test": "33-trigger-fixes.test.ts::Unstable Apparition: [once] resets each turn"
       }
     ],
@@ -1461,11 +1461,11 @@
     "text": "The use is spent when the ability is activated or put on the stack, whether or not it then resolves. A fizzle, a negation, or a run that finds nothing to do does not give it back. Only a declined or impossible optional choice leaves the use unspent (concepts.abilities.once.decline), even when that choice comes as the ability resolves.",
     "examples": [
       {
-        "text": "A bounded trigger negated on the stack has still spent its use.",
+        "text": null,
         "test": "94-bounded-uses.test.ts::a bounded trigger that is NEGATED on the stack has still spent its use"
       },
       {
-        "text": "A bounded ability that fizzles has spent its use.",
+        "text": null,
         "test": "93-engine-defects.test.ts::a bounded ability that FIZZLES for want of a target has SPENT its [once]"
       }
     ],
@@ -1603,7 +1603,7 @@
     "text": "A change of controller does not give back a spent use: the limit stays with the unit.",
     "examples": [
       {
-        "text": "A [once] use spent before a change of controller stays spent.",
+        "text": null,
         "test": "05-rulings.test.ts::R9: once-per-turn budgets are per card and survive control change"
       }
     ],
@@ -1764,7 +1764,7 @@
     "text": "If the cause of a graft composite is bounded, the whole composite can trigger only once per turn, unbounded grafts included.",
     "examples": [
       {
-        "text": "A bounded host triggers once per turn, so an unbounded graft under it happens once.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn"
       }
     ],
@@ -1898,7 +1898,7 @@
     "text": "Each mod has its own use. Two copies of the same bounded graft on one host each have one use.",
     "examples": [
       {
-        "text": "Two copies of one bounded graft card on one host each fire once in a turn.",
+        "text": null,
         "test": "94-bounded-uses.test.ts::the bounded budget of a graft rider is per MOD"
       }
     ],
@@ -2028,7 +2028,7 @@
     "text": "Targets are chosen as the effect is put on the stack: when a card is played, when an ability is activated, and when a triggered ability is put on the stack. Every target of the effect is chosen then.",
     "examples": [
       {
-        "text": "A graft composite declares the targets of all its parts as it goes on the stack.",
+        "text": "Plodding Pebble carries a grafted Leaping Lillik (\"Delete target unit\"). A Fireball damages the Pebble: as the trigger goes on the stack, the delete's target is chosen. With no enemy in the region, it must be one of your own units.",
         "test": "393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example"
       }
     ],
@@ -2411,7 +2411,7 @@
         "test": "23-wood-a.test.ts::Boon of Protection: negates an effect aimed at something allied"
       },
       {
-        "text": "Every card whose target noun carries a restrictive clause checks it when targets are chosen.",
+        "text": null,
         "test": "68-target-conformance.test.ts::R256: a restrictive clause on a target noun is enforced at CAST"
       }
     ],
@@ -2505,7 +2505,7 @@
         "test": "60-cast-time-targets.test.ts::R67: plain \"target player\" ('player') may legally be YOURSELF"
       },
       {
-        "text": "In deployment, \"target player\" offers only the effect controller and \"target opponent\" offers nobody; in battle both players are offered.",
+        "text": null,
         "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.legal.player — in deployment \"target player\" offers only the controller and \"target opponent\" offers nobody; in battle both seats"
       }
     ],
@@ -2639,7 +2639,7 @@
     "text": "An ally is a unit under your control in the region the effect is happening in. An enemy is a unit not under your control in that region.",
     "examples": [
       {
-        "text": "An enemy target offers enemy units only: not the source, not an ally.",
+        "text": null,
         "test": "243-ally-and-enemy-scope.test.ts::R265 §1d the enemy target is the mirror"
       }
     ],
@@ -2727,7 +2727,7 @@
     "text": "Ally and enemy follow control, not ownership. A unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you control it.",
     "examples": [
       {
-        "text": "An Ambush (\"recall target ally\") whose ally was stolen before it resolves recalls nothing.",
+        "text": "An opponent ambushes with Orblish Horroth to recall target ally. Before it resolves, you take control of that unit; it is no longer their ally, and the ambush recalls nothing.",
         "test": "390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing"
       }
     ],
@@ -2772,7 +2772,7 @@
         "test": "49-playtest-round6.test.ts::R58: canFillSlot enforces the slot restriction directly"
       },
       {
-        "text": "The same ally target offers only the effect controller's units, whichever player is the controller.",
+        "text": null,
         "test": "243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller"
       }
     ],
@@ -2814,7 +2814,7 @@
     "text": "\"Another\" excludes whatever the sentence's other noun is. It excludes the source only when that other noun is the source (\"I fight another target unit\"); in \"from target unit onto another target unit\" it excludes only the first target.",
     "examples": [
       {
-        "text": "Across every card printing \"another target\", the word excludes the source only where the other noun is the source.",
+        "text": null,
         "test": "243-ally-and-enemy-scope.test.ts::R265 §2c across the whole another-target family"
       }
     ],
@@ -2852,7 +2852,7 @@
     "text": "An effect can target a unit only in the region where the effect is happening.",
     "examples": [
       {
-        "text": "No unit target in the card pool offers a unit standing in another region.",
+        "text": null,
         "test": "243-ally-and-enemy-scope.test.ts::R265 §3b nor can any other unit-shaped target"
       }
     ],
@@ -3037,7 +3037,7 @@
     "text": "Different effects may target the same object.",
     "examples": [
       {
-        "text": "A spell aimed at one of the two units Organic Exchange targets still resolves.",
+        "text": "An opponent's Luminous Arc is aimed at one of your Good Whales; you answer with Organic Exchange targeting both your Good Whales. The Luminous Arc still resolves.",
         "test": "396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units"
       }
     ],
@@ -3282,7 +3282,7 @@
     "text": "Changing an effect's targets before it resolves can save it from fizzling.",
     "examples": [
       {
-        "text": "A spell whose target is about to become illegal can be given a legal new target by Enigmatic Warder or Gravitational Correction before it resolves, and then it does not fizzle (illustrative).",
+        "text": "A spell whose target is about to become illegal is given a legal new target by Enigmatic Warder before it resolves, and then it does not fizzle.",
         "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.change.rescue — the same spell given a new legal target by Enigmatic Warder resolves instead of fizzling"
       }
     ],
@@ -3413,7 +3413,7 @@
     "text": "An ability that triggers \"when I become targeted\" triggers whenever its unit is targeted, by a spell, an ability, an augment, a graft or a Virus. When the effect that targeted is put on the stack, the trigger goes on the stack above it and so resolves first. When a graft targets the unit, the unit triggers first, before the graft is applied.",
     "examples": [
       {
-        "text": "A spell aimed at Mohruung makes a Crystal 2.",
+        "text": null,
         "test": "48-playtest-hotfix.test.ts::a spell aimed at Mohruung actually creates the Crystal 2"
       },
       {
@@ -3425,7 +3425,7 @@
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 5"
       },
       {
-        "text": "A spell aimed at Mohruung waits on the stack under Mohruung's trigger, so the Crystal 2 is made before the spell resolves (illustrative).",
+        "text": "A spell aimed at Mohruung waits on the stack under Mohruung's trigger, so the Crystal 2 is made before the spell resolves.",
         "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on the stack ABOVE the spell that targeted it, and the Crystal is made while the spell still waits"
       }
     ],
@@ -3598,7 +3598,7 @@
     "text": "The compulsion applies only to choosing targets. It never makes a target already chosen illegal.",
     "examples": [
       {
-        "text": "A Gatekeeper that arrives after an effect's targets were chosen does not make those targets illegal (illustrative).",
+        "text": "A Gatekeeper of Souls that arrives after an effect's targets were chosen does not make those targets illegal.",
         "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.must-be-targeted.choice-only — a Gatekeeper of Souls arriving after targets were chosen does not make them illegal"
       }
     ],
@@ -3633,7 +3633,7 @@
     "text": "A bounded \"When I am trashed\" ability is limited for each trashed card, not for each player and card name: two copies of one card trashed in the same turn each trigger.",
     "examples": [
       {
-        "text": "Two Maw of Despair discarded in the same turn each trigger their [Switch1] Glimpse 2 (illustrative).",
+        "text": "Two Maw of Despair discarded in the same turn each trigger their [Switch1] Glimpse 2.",
         "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.once.trashed — two copies of Maw of Despair discarded in one turn each trigger their bounded trash ability"
       }
     ],

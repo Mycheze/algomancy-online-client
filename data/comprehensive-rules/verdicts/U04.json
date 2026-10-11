@@ -1,7 +1,7 @@
 [
   {
     "key": "concepts.costs.activation",
-    "textHash": "7cdc6b30d97422e2",
+    "textHash": "0852b090181c86be",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -90,11 +90,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.activation.gate-first",
-    "textHash": "6dd05856f958f09b",
+    "textHash": "76b27a3cf58bd1ab",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -144,11 +145,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.activation.sacrifice-me",
-    "textHash": "420f53dc6d986fb0",
+    "textHash": "9ba44e46908072eb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -186,11 +188,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The example is unbound (illustrative); 18-earth-c \"R77: Throwing Boulder with an adjacent ally\" demonstrates it and can be bound."
+    "problem": "The example is unbound (illustrative); 18-earth-c \"R77: Throwing Boulder with an adjacent ally\" demonstrates it and can be bound.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.alternative",
-    "textHash": "5c2e6f3b63c1d94a",
+    "textHash": "4fab10c7095624e6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -230,11 +233,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Exceptions live elsewhere (a cached/glimpsed card ignores affinity, a fulfilled prophecy is free)."
+    "problem": "Exceptions live elsewhere (a cached/glimpsed card ignores affinity, a fulfilled prophecy is free).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.costs.alternative.discard-me",
-    "textHash": "8da5998b9b7d5140",
+    "textHash": "a0ba77b87b78c519",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -286,11 +290,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: the engine also lets the CARD's own {Battle} timing restrict the line (timing ?? c.timing), not only a marker on the line itself; no pool card is known to make that differ."
+    "problem": "Minor: the engine also lets the CARD's own {Battle} timing restrict the line (timing ?? c.timing), not only a marker on the line itself; no pool card is known to make that differ.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.copies",
-    "textHash": "0b111c04c8ce08a6",
+    "textHash": "cf31931cb0d1fff7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -329,11 +334,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.free",
-    "textHash": "ad412696be94ae8b",
+    "textHash": "3be1f43af8857a8f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -378,11 +384,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.free.x",
-    "textHash": "3ab8bd25ecaa640e",
+    "textHash": "68bcbcd3e26bc455",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -421,11 +428,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Second sentence generalises a Tides-only ruling to every free play (e.g. a prophecy release); plausible but only Tides is tested."
+    "problem": "Second sentence generalises a Tides-only ruling to every free play (e.g. a prophecy release); plausible but only Tides is tested.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.grafted",
-    "textHash": "8ebeea74e00cc552",
+    "textHash": "f16a29f3944fd244",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -490,11 +498,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The {Modular}-spell exception has no direct test."
+    "problem": "The {Modular}-spell exception has no direct test.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.costs.kinds",
-    "textHash": "41902d3e86b00e35",
+    "textHash": "17937fb0d94bce3c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -558,11 +567,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers",
-    "textHash": "d7fb1c26cf2860b1",
+    "textHash": "ae95a82b7fb71c29",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -612,11 +622,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers.abilities",
-    "textHash": "0baac69347813667",
+    "textHash": "829d38e5650a2655",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -682,7 +693,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers.floor-zero",
@@ -728,7 +740,7 @@
   },
   {
     "key": "concepts.costs.modifiers.imposed",
-    "textHash": "8a5406e9d6606576",
+    "textHash": "271395a1f45dc59f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -778,7 +790,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Does not cover an Ambush (see concepts.costs.modifiers.imposed.ambush)."
+    "problem": "Does not cover an Ambush (see concepts.costs.modifiers.imposed.ambush).",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers.imposed.ambush",
@@ -842,7 +855,7 @@
   },
   {
     "key": "concepts.costs.modifiers.minimum",
-    "textHash": "a02b7e4a1d499f69",
+    "textHash": "2b060259a7f963ce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -891,11 +904,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers.minimum.tokens",
-    "textHash": "d5c06c2da01484a6",
+    "textHash": "ab2d2696a84ed409",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -929,11 +943,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers.noun",
-    "textHash": "399f13a013d0ceda",
+    "textHash": "b5ccebcd4433e4b7",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -1021,11 +1036,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The designer citation quotes our paraphrase as if it were the designer's words."
+    "problem": "The designer citation quotes our paraphrase as if it were the designer's words.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers.paid-reduction",
-    "textHash": "b0dc58326b47b6a1",
+    "textHash": "5b1145c5e63ee8f1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1070,11 +1086,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers.sum",
-    "textHash": "d276e1df9355f816",
+    "textHash": "4f97bc0a71ee3862",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1108,33 +1125,40 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.modifiers.trigger-tax",
-    "textHash": "7c0e1e64a7e3bf40",
+    "textHash": "3402c9c6b92ca3c0",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.gateTaxedTrigger",
+        "loc": "client/engine/src/engine.ts:gateTaxedTrigger",
         "agrees": true,
-        "note": "controller asked payOrDecline; zero open mana prevents outright; decline prevents"
+        "note": "payOrDecline to the trigger's controller; zero open mana prevents it outright"
       }
     ],
     "tests_run": [
       {
-        "file": "16-earth-a.test.ts",
-        "pattern": "Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [1] puts it on the stack",
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying ",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "bare demonstration: Pestilent Titan's controller is asked, pays [1], trigger resolves"
       },
       {
-        "file": "390-raq-stack.test.ts",
+        "file": "client/engine/test/390-raq-stack.test.ts",
         "pattern": "RAQ Crevice Lurker: declining the tax on your own Origon lets your own first spell resolve",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: D plays Accumulated Nucleation on its own Origon with a Lurker in the battle; D is asked for the tax, declines, and the Nucleation resolves"
+      },
+      {
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — zero open mana: the trigger is prevented",
+        "passed": true,
+        "asserts_claim": "yes: the 'cannot pay' half — prevented with no prompt"
       }
     ],
     "probes": [],
@@ -1142,23 +1166,27 @@
       {
         "ref": "card: Crevice Lurker",
         "supports": "yes",
-        "note": ""
+        "note": "'(Choosing to not pay this prevents the abilities from triggering.)'"
       },
       {
         "ref": "RAQ 1355103348378042515#4",
         "supports": "yes",
-        "note": "verbatim"
+        "note": "_passer, status covered: the would-be controller pays"
       },
       {
         "ref": "R121 (its ability-tax layer)",
         "supports": "yes",
-        "note": ""
+        "note": "R261 amends only the untaxed combat-step statement"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "goes on the stack; decline and it simply does not happen. **The decision is"
+        "text": "  goes on the stack; decline and it simply does not happen. **The decision is"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "The cost is paid by player who would become controller of the effect and if it's not paid, then effect is negated."
       }
     ],
     "basis_ok": true,
@@ -1166,7 +1194,7 @@
   },
   {
     "key": "concepts.costs.modifiers.trigger-tax.once",
-    "textHash": "b223d398bcc7733a",
+    "textHash": "54f04830840a558e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1200,11 +1228,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Example wording says \"[once]\"; the bound test exercises [Switch1]."
+    "problem": "Example wording says \"[once]\"; the bound test exercises [Switch1].",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.costs.multiplied",
-    "textHash": "a6a5cedc4d962f3f",
+    "textHash": "b325138f0727c0e9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1254,11 +1283,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Note: under R334 more than \"that effect\" fails — the whole composite is withheld; the rule is not wrong, only narrower than the current ruling."
+    "problem": "Note: under R334 more than \"that effect\" fails — the whole composite is withheld; the rule is not wrong, only narrower than the current ruling.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.reading-cost",
-    "textHash": "89f716d0a1d61a32",
+    "textHash": "585330a9cc4783bf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1313,27 +1343,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.costs.receipt",
-    "textHash": "2a91e71c3ba92ec5",
+    "textHash": "fa95a81568e12933",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.chargeCastCost",
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts:Volatile Toxicity",
         "agrees": true,
-        "note": "snapshots the sacrificed unit's stats into costPaid"
+        "note": "reads costPaid.sacrificed.defense snapshotted at payment"
       }
     ],
     "tests_run": [
       {
-        "file": "32-cast-costs.test.ts",
+        "file": "client/engine/test/32-cast-costs.test.ts",
         "pattern": "Volatile Toxicity: X reads the defense snapshotted when the cost was paid",
         "passed": true,
-        "asserts_claim": "yes — X = defense at payment; the test uses a 7/5 Good Whale (X = 5), not the example's 2/3"
+        "asserts_claim": "yes: Good Whale (7/5) sacrificed at cast; receipt defense 5; resolves into Poison 5 and Fireball 5"
       }
     ],
     "probes": [],
@@ -1341,21 +1372,25 @@
       {
         "ref": "R35 (its cast-time payment half)",
         "supports": "yes",
-        "note": ""
+        "note": "'The payment receipt is snapshotted at payment (Volatile Toxicity / Structural Collapse read the sacrificed unit's defense as it was then)'; R196/R334 supersede other halves"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/32-cast-costs.test.ts",
-        "text": "assert.equal(item.parts[0]!.costPaid!.sacrificed!.defense, 5, 'receipt on the part');"
+        "file": "client/docs/digital-rules.md",
+        "text": "snapshotted at payment (Volatile Toxicity / Structural Collapse read the"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch] /[Sacrifice a unit]: Create a Poison X and a Fireball X, where X is the defense of the sacrificed unit."
       }
     ],
     "basis_ok": true,
-    "problem": "The bound test does not change the board between payment and resolution, so \"whatever happens to the board\" is not exercised, only the snapshot."
+    "problem": ""
   },
   {
     "key": "concepts.costs.region",
-    "textHash": "9067a6d4bbe5f972",
+    "textHash": "9742838c8d3211f8",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -1407,11 +1442,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No gate test; the round-1 probe covers it."
+    "problem": "No gate test; the round-1 probe covers it.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.region.other-units",
-    "textHash": "75641e8d8977df0f",
+    "textHash": "cb8240d10d47f9e0",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -1474,11 +1510,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No test in the gate covers it; the two probes do."
+    "problem": "No test in the gate covers it; the two probes do.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.resolution-payments",
-    "textHash": "198745afcb218563",
+    "textHash": "e2345049aa0a7623",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1517,11 +1554,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me",
-    "textHash": "5e39b3b7288e4551",
+    "textHash": "171770c115db3075",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U04-r4",
@@ -1607,7 +1645,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The ruling is right and the divergence is real. The citations are incomplete: add the designer's 2025-04-20 answer on Eldritch Dreamtender (calebgannon, rules-questions msg 1363535826436493614 and the follow-up 1363536741386162508), which states the rule's response case directly. Also name R73 as the current owner ruling this overrides. Examples 1 and 2 are illustrative; the engine cannot reproduce them (no window exists before the sacrifice)."
+    "problem": "The ruling is right and the divergence is real. The citations are incomplete: add the designer's 2025-04-20 answer on Eldritch Dreamtender (calebgannon, rules-questions msg 1363535826436493614 and the follow-up 1363536741386162508), which states the rule's response case directly. Also name R73 as the current owner ruling this overrides. Examples 1 and 2 are illustrative; the engine cannot reproduce them (no window exists before the sacrifice).",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me.optional",
@@ -1681,7 +1720,7 @@
   },
   {
     "key": "concepts.costs.unpayable",
-    "textHash": "03cc80b716664521",
+    "textHash": "87460bc1c985e6f9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1725,11 +1764,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.unpayable.all-or-nothing",
-    "textHash": "31e9796937e0988d",
+    "textHash": "71031166f143bb59",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1768,11 +1808,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.unpayable.life",
-    "textHash": "e2fa1a0a13466172",
+    "textHash": "940550f45611b1b2",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -1821,11 +1862,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.what-a-cost-is",
-    "textHash": "20a6949e274844bd",
+    "textHash": "32b615330bdb3dfb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1869,11 +1911,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.costs.what-a-cost-is.affinity-not-a-cost",
-    "textHash": "02668c67060a9860",
+    "textHash": "86ac38b72be847d2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1912,11 +1955,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.costs.what-a-cost-is.mana",
-    "textHash": "50b6659970f7418d",
+    "textHash": "bc58d4c9f8b1db6a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -1948,11 +1992,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.amount-order",
-    "textHash": "7edb68001e8f9ef1",
+    "textHash": "99377d5b0e759aca",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2007,11 +2052,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.basics",
-    "textHash": "1d126b5e89695fef",
+    "textHash": "2fbc1255a9ac929c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2055,27 +2101,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.basics.all-dealt",
-    "textHash": "5472d0d542ecf655",
+    "textHash": "40a5766cf4cc1754",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts damage commit (R114/R317)",
+        "loc": "client/engine/src/engine.ts:dealEffectDamage",
         "agrees": true,
-        "note": "excess beyond lethal is still dealt and counted"
+        "note": "R114/R317: the whole doubled amount is one damage event of 12"
       }
     ],
     "tests_run": [
       {
-        "file": "387-raq-combat.test.ts",
-        "pattern": "RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12",
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: Electric damage with nowhere to jump is still dealt",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Arc Lightning on a lone blocking Crumbling Ancient (3/8 Vulnerable); the damage events on it are exactly [12]"
       }
     ],
     "probes": [],
@@ -2083,13 +2130,17 @@
       {
         "ref": "RAQ 1372451771632320512#2",
         "supports": "yes",
-        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+        "note": "claim of a _passer [Solved] write-up ('All 12 damage sink into Crumbling'), status covered"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/387-raq-combat.test.ts",
-        "text": "assert.deepEqual(dealt, [12],"
+        "file": "client/ledgers/raq.ts",
+        "text": "Damage kept on the unit is all dealt — 12 lands, which is what Ember of Life would count."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "I deal 6 damage to any target."
       }
     ],
     "basis_ok": true,
@@ -2097,7 +2148,7 @@
   },
   {
     "key": "concepts.damage.basics.regroup",
-    "textHash": "d7ebd963040231d0",
+    "textHash": "14b84bcb5656fa5a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2136,11 +2187,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.combat-and-noncombat",
-    "textHash": "7fed37fcece39d20",
+    "textHash": "790b00e17468adbd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2179,11 +2231,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.one-effect",
-    "textHash": "bd2224813d506628",
+    "textHash": "b15fa0e2dc0342fb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2223,11 +2276,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.damage.one-effect.copies",
-    "textHash": "54758ce5250b8a6e",
+    "textHash": "1ef4bcb2ca6e9bd0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2261,11 +2315,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Example is unbound (illustrative); the probe can be bound."
+    "problem": "Example is unbound (illustrative); the probe can be bound.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.poisonous",
-    "textHash": "1a8cc1fa7db9c0cc",
+    "textHash": "bbe19c78ee3dd7b7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2304,11 +2359,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.prevented",
-    "textHash": "f02f0ff0545a2ed4",
+    "textHash": "aaa9bd6e83e05fa9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2363,11 +2419,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.damage.replaced",
-    "textHash": "dc6295c2651bb2d7",
+    "textHash": "52c20888b5cb1602",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2406,11 +2463,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.source",
-    "textHash": "5c1802c0fe5d9cae",
+    "textHash": "892123f497db0be7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2460,11 +2518,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.damage.source.unit-not-spell-effect",
-    "textHash": "c79fa80782793aa4",
+    "textHash": "7495e0dfc27538f3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2498,11 +2557,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.debt",
-    "textHash": "de85fd1d8eded657",
+    "textHash": "7a15fda8562a5ee4",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -2552,11 +2612,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.debt.as-cost",
-    "textHash": "084ded797ce1ad16",
+    "textHash": "8f83677e2ebf8e7d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -2611,11 +2672,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.debt.automatic",
-    "textHash": "fadfc8957531344a",
+    "textHash": "a2528c9dbcf77030",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2649,11 +2711,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.debt.partial",
-    "textHash": "424d31ccd62f09d8",
+    "textHash": "a9463271b378da23",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2693,11 +2756,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.life.basics",
-    "textHash": "6e27feb06309a7e5",
+    "textHash": "7192247035f95cb8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2741,11 +2805,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.life.basics.gain-and-loss",
-    "textHash": "fec971d3a9c58b70",
+    "textHash": "78428b3aa294d4bb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2792,11 +2857,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Engine-only exception: the sandbox (test mode) setter writes life directly; not a game rule."
+    "problem": "Engine-only exception: the sandbox (test mode) setter writes life directly; not a game rule.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.life.basics.region",
-    "textHash": "96153131ed193de0",
+    "textHash": "42018ec97d0ed810",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2837,11 +2903,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The printed Q&A is about \"each opponent\"; the first sentence generalises it to every life effect."
+    "problem": "The printed Q&A is about \"each opponent\"; the first sentence generalises it to every life effect.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.life.cant-change",
-    "textHash": "8e987d9a2a39f2a2",
+    "textHash": "789c236eb3728d9a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2875,11 +2942,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.life.lost-in-battle",
-    "textHash": "3832349b38ef0877",
+    "textHash": "3e62dcbee9bbffd2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2913,11 +2981,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.life.multipliers",
-    "textHash": "62307b980bee7dcb",
+    "textHash": "0da7c59eb4d76746",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -2971,33 +3040,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.player-counters",
-    "textHash": "5ecab4e7c01ee713",
+    "textHash": "7ca1743b1a406789",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.loseRot / E.loseDebt",
+        "loc": "client/engine/src/engine.ts:loseRot",
         "agrees": true,
-        "note": "removal not scaled by a \"put on\" replacement; clamps at what is there"
+        "note": "no amountDelta on removal; gainRot/gainDebt are scaled by Proliferating Slime"
       }
     ],
     "tests_run": [
       {
-        "file": "41-dark-a.test.ts",
+        "file": "client/engine/test/41-dark-a.test.ts",
         "pattern": "Burn the Blight: removes counters from units AND the rot/debt on players",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: rot on both players and debt on D go to 0, unit counters gone"
       },
       {
-        "file": "152-hand-entry.test.ts",
-        "pattern": "a counter-amount replacement does NOT scale a REMOVAL (Proliferating Slime says \"put on\")",
+        "file": "client/engine/test/152-hand-entry.test.ts",
+        "pattern": "a counter-amount replacement does NOT scale a REMOVAL ",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: with Proliferating Slime, 2 rot on its enemy arrives as 3; loseRot 2 leaves 1 (removes exactly 2)"
       }
     ],
     "probes": [],
@@ -3010,18 +3080,22 @@
       {
         "ref": "card: Proliferating Slime",
         "supports": "yes",
-        "note": ""
+        "note": "'put on' wording"
       },
       {
         "ref": "R179",
         "supports": "yes",
-        "note": ""
+        "note": "owner: 'Removing counters isn't putting on'"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "isn't 'putting on'"
+        "text": "> isn't 'putting on'.\"*"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Remove all counters from units and players."
       }
     ],
     "basis_ok": true,
@@ -3029,7 +3103,7 @@
   },
   {
     "key": "concepts.rot",
-    "textHash": "195f7709497fbe41",
+    "textHash": "9080b5dc72e1c1ba",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3068,11 +3142,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.rot.never-decays",
-    "textHash": "f13bcb63e373fef7",
+    "textHash": "a0e9d2c8243398ff",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3111,11 +3186,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.rot.replacement",
-    "textHash": "5600d20536d5a627",
+    "textHash": "03ff129a8c329e70",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3164,11 +3240,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.rot.source",
-    "textHash": "7ab9270b181e7150",
+    "textHash": "fa8323c870a3b754",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3202,11 +3279,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.rot.timing",
-    "textHash": "09e5d876ae6b4f3e",
+    "textHash": "2d216cf14b28191f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3255,11 +3333,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.rot.who-gains",
-    "textHash": "049c8835eac139f0",
+    "textHash": "44d19fcce99d027a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3293,27 +3372,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.timestamps.base-stats",
-    "textHash": "9ec00eb9170fceb0",
+    "textHash": "c476ce014ebbf424",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts layer 2 (base rewrites sorted by stamp)",
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Body Swap",
         "agrees": true,
-        "note": "Body Swap's later setBase beats the Statweaver static"
+        "note": "later base-stat replacement wins over the Statweaver's static"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
+        "file": "client/engine/test/390-raq-stack.test.ts",
         "pattern": "RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: A's Statweaver makes A's Wisp 3/3; D Body Swaps its 1/1 and the Wisp; D's unit is 3/3, the Wisp 1/1 with the Statweaver still in play"
       }
     ],
     "probes": [],
@@ -3321,13 +3401,17 @@
       {
         "ref": "RAQ 1357965714807586897#1",
         "supports": "yes",
-        "note": "verbatim _passer line"
+        "note": "_passer, status covered"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/390-raq-stack.test.ts",
-        "text": "assert.deepEqual(effStats(h, wisp), [1, 1], 'the Wisp is base 1/1 although the Statweaver still stands');"
+        "file": "client/ledgers/raq.ts",
+        "text": "Your unit becomes base 3/3 until regroup and enemy Wisp is now base 1/1 until regroup."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Your units are base 3/3."
       }
     ],
     "basis_ok": true,
@@ -3335,28 +3419,23 @@
   },
   {
     "key": "concepts.timestamps.order",
-    "textHash": "f19c3c421b16b545",
+    "textHash": "5f0a755fa85f1b2e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.ownAttrs / strippersOf (R328)",
+        "loc": "client/engine/src/cards/sets/batch-metal-b.ts:Monke",
         "agrees": true,
-        "note": "a later mod beats an earlier stripper on the same layer"
-      },
-      {
-        "loc": "engine.ts staticsFor",
-        "agrees": "partly",
-        "note": "R328: static-vs-static still resolves in one pass, not by timestamp"
+        "note": "Monke's attribute strip does not override a later-applied virus"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
+        "file": "client/engine/test/390-raq-stack.test.ts",
         "pattern": "RAQ timestamps: a virus applied AFTER Monke still gives its attribute",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Monke resolves in battle, then D augments Chitin Shredder onto its unit; the unit has Powerful"
       }
     ],
     "probes": [],
@@ -3364,26 +3443,30 @@
       {
         "ref": "RAQ 1357965714807586897#0",
         "supports": "yes",
-        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+        "note": "claim text of a _passer [Solved] write-up, status covered"
       },
       {
         "ref": "R328",
         "supports": "yes",
-        "note": "verbatim _passer"
+        "note": "'Effects on the same layer have timestamps and latter ones take precedence over former.'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "the same layer have timestamps and latter ones take precedence over former"
+        "file": "client/ledgers/raq.ts",
+        "text": "Effects on the same layer apply by timestamp: a mod applied AFTER Monke still grants its attribute and ability."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "If I spawned this turn, other units lose all attributes and abilities during battle."
       }
     ],
     "basis_ok": true,
-    "problem": "Engine caveat: R328 says static-vs-static is still one pass, not timestamp-ordered; no conflicting static pair is known to make this observable."
+    "problem": ""
   },
   {
     "key": "concepts.timestamps.removal",
-    "textHash": "7ba0037857ce853e",
+    "textHash": "bcee3d398aff7712",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3428,11 +3511,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.timestamps.removal.entering",
-    "textHash": "ba4d3792fd0fffaf",
+    "textHash": "6b911ed1a0ae60d4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3466,11 +3550,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Basis is labelled owner but the substance is designer (_passer, quoted inside R328)."
+    "problem": "Basis is labelled owner but the substance is designer (_passer, quoted inside R328).",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.timestamps.removal.stays-taken",
-    "textHash": "e5d65de9823de5f4",
+    "textHash": "325830bfffcb622d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U04-r2",
@@ -3519,11 +3604,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The leaves-the-column clause is shown by the engine's per-unit data model, not by a test that moves a unit."
+    "problem": "The leaves-the-column clause is shown by the engine's per-unit data model, not by a test that moves a unit.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.timestamps.when",
-    "textHash": "73df46a41f55ae48",
+    "textHash": "b39ec1d31ab583d2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U04-r1",
@@ -3555,6 +3641,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No test or probe pins the definition directly; supported by the R328 encoding and the removal/order tests."
+    "problem": "No test or probe pins the definition directly; supported by the R328 encoding and the removal/order tests.",
+    "carried": "example-label 2026-10-11"
   }
 ]

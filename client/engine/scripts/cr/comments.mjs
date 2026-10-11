@@ -63,8 +63,6 @@ export function threadsOf(items, { all = false } = {}) {
     .map((root) => ({ root, replies: list.filter((c) => c.parent === root.id && !c.deleted).sort((a, b) => a.at.localeCompare(b.at)) }));
 }
 
-/** open threads only: what the process still owes an answer */
-export const openThreads = (items) => threadsOf(items);
 
 /* ── pure: a thread's live context ─────────────────────────────────────── */
 

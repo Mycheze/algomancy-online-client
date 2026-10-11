@@ -17,12 +17,14 @@ export interface RoundSel { keys: string[]; carried: string[]; mutable: string[]
 export function roundKeys(records: RuleRecord[], round: number,
   prev: { changed: string[]; unverified: string[]; preferred?: string[] } | null): RoundSel;
 
-/** round 1: `key` (replaced in place); round ≥2: `baseKey` (a decoy built from it) */
-export interface Mutant { key?: string; baseKey?: string; mutant: string; why_false: string }
+/** round 1: `key` (replaced in place); round ≥2: `baseKey` (a decoy built from it), whose
+ *  false `mutant` text and/or false `examples` replace the base rule's */
+export interface Mutant { key?: string; baseKey?: string; mutant?: string; examples?: { text: string; test: string | null }[]; why_false: string }
 export interface Truth {
   unit: string; round: number; keys: string[];
   mutants: { key: string; original: string; mutant: string; why_false: string }[];
-  decoys: { key: string; baseKey: string; original: string; mutant: string; why_false: string }[];
+  decoys: { key: string; baseKey: string; original: string; mutant: string; why_false: string;
+    originalExamples?: { text: string | null; test?: string | null }[]; examples?: { text: string; test: string | null }[] }[];
   /** the record as the verifier saw it, per non-mutated key */
   verified: Record<string, { text: string; examples: RuleRecord['examples'] }>;
 }

@@ -134,7 +134,7 @@
     "text": "A 1v1 game is played between two players. It is the recommended setup for a first game.",
     "examples": [
       {
-        "text": "Every game the client creates is a 1v1 game: two seats, two regions.",
+        "text": null,
         "test": "412-cr-general.test.ts::cr:concepts.general.digital-scope"
       }
     ],
@@ -279,7 +279,7 @@
     "text": "In 1v1 the players sit across from each other. Each has one neighbouring region.",
     "examples": [
       {
-        "text": "A 1v1 game has two regions. An attack names no region: it is always fought in the opponent region, the only neighbouring one.",
+        "text": null,
         "test": "433-cr-formats.test.ts::cr:formats.general.seating.one-v-one — a two-player game has two regions, one per player, and an attack is fought in the one other region with no region to choose"
       }
     ],
@@ -400,11 +400,11 @@
     "text": "The client plays 1v1 live draft and 1v1 constructed only. It has no free-for-all, team, archenemy, cube-draft or team-draft games, and no intent cards. Rules 903, 904 and 905, and the parts of 902 about cube draft and team draft, describe the printed game, which the client does not enforce.",
     "examples": [
       {
-        "text": "Every game the engine creates has exactly two seats, two regions and two packs.",
+        "text": null,
         "test": "412-cr-general.test.ts::cr:concepts.general.digital-scope"
       },
       {
-        "text": "A card text that would misbehave only with a third player cannot be reached: the engine is 1v1 by construction.",
+        "text": null,
         "test": "168-three-card-divergences.test.ts::R197 §3a Cinder Scuttler"
       }
     ],
@@ -447,7 +447,7 @@
     "text": "In constructed, each player brings their own deck, built before the game, and plays from it.",
     "examples": [
       {
-        "text": "A constructed game takes one deck per seat.",
+        "text": null,
         "test": "34-constructed.test.ts::createGame constructed: per-seat decks"
       }
     ],
@@ -494,7 +494,7 @@
     "text": "A constructed deck has at least 30 cards. No source sets a maximum.",
     "examples": [
       {
-        "text": "A 29-card deck is refused.",
+        "text": "A 29-card deck is not a legal constructed deck.",
         "test": "34-constructed.test.ts::checkDeck: min 30, max 2 copies"
       }
     ],
@@ -576,7 +576,7 @@
     "text": "Constructed has no shared deck and no packs.",
     "examples": [
       {
-        "text": "A constructed game starts with an empty shared deck and two empty packs.",
+        "text": null,
         "test": "433-cr-formats.test.ts::cr:formats.constructed.no-packs — a constructed game has no shared deck and no packs"
       }
     ],
@@ -617,11 +617,11 @@
     "text": "In constructed, the draw step and the draft step are taken together as one draw phase: each player draws 4 cards from their own deck, then puts 2 cards from their hand on the bottom of their deck.",
     "examples": [
       {
-        "text": "Turn 1 of a constructed game: each player has 4 cards, draws 4, and the put-back of 2 is pending.",
+        "text": "Turn 1 of a constructed game: each player has their 4-card opening hand, draws 4, and must then put 2 back.",
         "test": "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open"
       },
       {
-        "text": "On turn 2 the draw phase opens again: 4 more cards, and 2 to put back.",
+        "text": null,
         "test": "34-constructed.test.ts::turn 2 reopens the draw phase"
       }
     ],
@@ -672,7 +672,7 @@
     "text": "The player chooses the 2 cards and puts them on the bottom in any order. Because every card put on the bottom of a deck goes into the recycle pile, which is shuffled before it is drawn from again, the order has no effect on play.",
     "examples": [
       {
-        "text": "Nothing moves until the 2 cards go back, and they go back in the order given.",
+        "text": null,
         "test": "34-constructed.test.ts::nothing moves until the 2 cards go back"
       }
     ],
@@ -722,7 +722,7 @@
         "test": "380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back"
       },
       {
-        "text": "With 3 cards in hand it reaches 5 and dies once its controller has put 2 back.",
+        "text": "With 3 cards in hand, Dreadspawn Horror's controller draws 4 and puts 2 back, keeping 5 cards: the Horror then dies.",
         "test": "380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5"
       }
     ],
@@ -764,7 +764,7 @@
     "text": "A player in a constructed game may make a resource of any element, whether or not their deck holds a card of that element.",
     "examples": [
       {
-        "text": "All seven elements stay legal for a resource, whatever the deck holds.",
+        "text": null,
         "test": "34-constructed.test.ts::deckElements: it is a PRESENTATION default"
       }
     ],
@@ -921,7 +921,7 @@
     "text": "Single Card Duel is a variant of constructed that the client offers. Each player picks a single card before the game, and their deck is 30 copies of that card.",
     "examples": [
       {
-        "text": "A Single Card Duel deck is 30 copies of the one card chosen, and a constructed game starts with it.",
+        "text": null,
         "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card — a duel deck is 30 copies of one card, and a constructed game accepts it"
       }
     ],
@@ -962,7 +962,7 @@
     "text": "A Single Card Duel deck is the one exception to the limit of 2 copies of a card.",
     "examples": [
       {
-        "text": "Thirty copies of one card fail the ordinary deck check but are accepted as a Single Card Duel deck.",
+        "text": null,
         "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.copies — the duel deck breaks the two-copy cap: checkDeck refuses it, checkSingleDeck and createGame accept it"
       }
     ],
@@ -1081,7 +1081,7 @@
     "text": "In live draft, the players share one deck, built from the chosen elements, and draft cards from it during the game.",
     "examples": [
       {
-        "text": "A live draft deals each seat a hand and a pack from one shared deck.",
+        "text": null,
         "test": "20-draft.test.ts::createGame draft: 6-card hands"
       }
     ],
@@ -1158,7 +1158,7 @@
     "text": "A live draft uses 3 elements for 2–3 players and 4 elements for 4–6 players. For 6 or more players, a cube draft with all 5 elements is recommended instead of a live draft.",
     "examples": [
       {
-        "text": "A standard 1v1 live draft is built from exactly 3 elements.",
+        "text": null,
         "test": "412-cr-general.test.ts::cr:concepts.starting.live-draft.elements"
       }
     ],
@@ -1234,7 +1234,7 @@
     "text": "In live draft each player begins with 16 cards to draft from: a 6-card hand (the 4-card starting hand plus the first turn's 2 draws) and a 10-card pack.",
     "examples": [
       {
-        "text": "A new live draft deals 6-card hands and 10-card packs, with the draft step open.",
+        "text": null,
         "test": "20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs"
       }
     ],
@@ -1321,11 +1321,11 @@
     "text": "The client lets a live draft be created with custom rules. Custom rules change the deal and nothing else: they never change how a card works.",
     "examples": [
       {
-        "text": "A custom deal changes the draft for the same seed.",
+        "text": null,
         "test": "296-custom-draft-deal.test.ts::BL-43 §1a control"
       },
       {
-        "text": "A custom deal is ignored outside a live draft.",
+        "text": null,
         "test": "296-custom-draft-deal.test.ts::BL-43 §1c a custom deal is ignored outside a live draft"
       }
     ],
@@ -1364,7 +1364,7 @@
     "text": "Pack size may be set from 3 to 15 cards (standard 10). Every pack is dealt and refreshed at that size, and the draft step leaves exactly that many cards in the pack.",
     "examples": [
       {
-        "text": "Packs of 5: 5 at the deal, the draft commit leaves 5, and the turn-4 refresh deals 5.",
+        "text": "With packs of 5, each pack is dealt with 5 cards, the draft step leaves 5 in it, and the turn-4 refresh deals 5.",
         "test": "296-custom-draft-deal.test.ts::BL-43 §2a pack size"
       }
     ],
@@ -1407,7 +1407,7 @@
     "text": "The number of elements may be set from 2 to 7 (standard 3). The pool is every deck card whose elements all lie within the chosen set. Two elements default to fire and wood.",
     "examples": [
       {
-        "text": "Two elements: fire and wood by default, or a chosen pair; 113 cards.",
+        "text": null,
         "test": "296-custom-draft-deal.test.ts::BL-43 §2c two elements"
       }
     ],
@@ -1449,7 +1449,7 @@
     "text": "The opening hand may be set from 1 to 15 cards (standard 6), the draws per turn after turn 1 from 0 to 5 (standard 2), and the starting life from 1 to 99 (standard 30).",
     "examples": [
       {
-        "text": "Opening hand, draws per turn and starting life each follow the custom rules.",
+        "text": null,
         "test": "296-custom-draft-deal.test.ts::BL-43 §2b opening hand, draws per turn and starting life"
       }
     ],
@@ -1491,7 +1491,7 @@
     "text": "With \"simple cards only\", the pool holds only cards with the silver (Simple) complexity symbol.",
     "examples": [
       {
-        "text": "Simple cards only leaves out exactly the cards that are not simple.",
+        "text": null,
         "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple"
       }
     ],
@@ -1528,11 +1528,11 @@
     "text": "Cards may be banned by name, and an advanced card filter may be set: only cards that match it are in the pool. A banned or filtered-out card is nowhere in the game.",
     "examples": [
       {
-        "text": "An excluded card is nowhere in the game, at the deal or after a fuzzed game.",
+        "text": null,
         "test": "296-custom-draft-deal.test.ts::BL-43 §3 an excluded card is nowhere in the game"
       },
       {
-        "text": "Bans and the card filter add up.",
+        "text": null,
         "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §5 bans and the card filter add up"
       }
     ],
@@ -1613,7 +1613,7 @@
         "test": "296-custom-draft-deal.test.ts::BL-43 §5 minPool"
       },
       {
-        "text": "Too small a pool is refused with a message that names the fix.",
+        "text": null,
         "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §8 too small a pool is refused"
       }
     ],
@@ -1653,7 +1653,7 @@
     "text": "Custom rules are not printed rules. Packs of other than 10 cards are not in the printed rules, and the client's Beginner preset (two elements, simple cards only, packs of 5) is the client's own softening of the Quick Start.",
     "examples": [
       {
-        "text": "The Beginner preset sends two elements, simple cards and packs of 5.",
+        "text": null,
         "test": "298-custom-rules-ui.test.ts::BL-43 ui §2 the Beginner preset"
       }
     ],
@@ -2799,7 +2799,7 @@
     "text": "The teams trade the initiative every turn.",
     "examples": [
       {
-        "text": "In 1v1, where each player is a team, the initiative changes hands at the end of every turn.",
+        "text": null,
         "test": "433-cr-formats.test.ts::cr:formats.teams.initiative.alternates — in a two-player game, where each player is a team, the initiative changes hands every turn"
       }
     ],

@@ -51,7 +51,7 @@
         "test": "125-active-zone.test.ts::R145: Unstable is NOT shared in formation"
       },
       {
-        "text": "A modded unit does not make its column-mate Unstable.",
+        "text": null,
         "test": "298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable"
       }
     ],
@@ -104,7 +104,7 @@
         "test": "15-water-b.test.ts::Tidal Menace: {Haste} 7/2"
       },
       {
-        "text": "Tidal Menace, a {Haste} unit, is also offered and played during deployment.",
+        "text": null,
         "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.haste — a Haste card is also offered and playable during deployment, not only in the haste step"
       }
     ],
@@ -156,7 +156,7 @@
     "text": "Printed text that names the \"mana step\" means the haste step.",
     "examples": [
       {
-        "text": "Dispatch Courier lets its controller play a unit in the haste step as if it had Haste.",
+        "text": "Dispatch Courier says \"play a unit during the mana step as if it had [Haste]\": its controller may play a unit in the haste step.",
         "test": "26-metal-a.test.ts::Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\""
       }
     ],
@@ -206,11 +206,11 @@
     "text": "An effect can let a card without Haste be played in the haste step \"as if it had [Haste]\", as Dispatch Courier does. This changes only when the card may be played.",
     "examples": [
       {
-        "text": "With a Dispatch Courier in play, a deploy-timing unit is offered and accepted in the haste step, and the Courier's once-each-turn budget is charged.",
+        "text": "With Dispatch Courier in play, its controller can play a unit without Haste in the haste step, once each turn.",
         "test": "26-metal-a.test.ts::Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\""
       },
       {
-        "text": "Without a Dispatch Courier, a deploy-timing unit is not offered in the haste step.",
+        "text": null,
         "test": "26-metal-a.test.ts::Dispatch Courier: no Courier, no OFFER"
       }
     ],
@@ -253,7 +253,7 @@
     "text": "Battle is a timing keyword. A card with Battle can be played only while its player is in battle with another player. It cannot be played during deployment.",
     "examples": [
       {
-        "text": "A fulfilled prophecy on a {Battle} card does not let it be played at deployment: its Battle timing still applies.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies"
       }
     ],
@@ -309,7 +309,7 @@
         "test": "26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant"
       },
       {
-        "text": "Nor does it let a {Battle} spell unit be played there.",
+        "text": "Nor does Dispatch Courier let a {Battle} spell unit be played in the haste step.",
         "test": "396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either"
       }
     ],
@@ -613,7 +613,7 @@
     "text": "Each spell token in a Burst group chooses its own targets. The tokens do not have to share a target.",
     "examples": [
       {
-        "text": "Each Fireball is aimed as it is picked.",
+        "text": null,
         "test": "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it"
       }
     ],
@@ -659,7 +659,7 @@
         "test": "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it"
       },
       {
-        "text": "A single Fireball is cast without an ordering question.",
+        "text": null,
         "test": "358-burst-order.test.ts::R309: a lone token is not asked to be ordered"
       }
     ],
@@ -818,7 +818,7 @@
         "test": "08-cards2.test.ts::Good Whale: the parked Ambush mode works"
       },
       {
-        "text": "During deployment, Lurking Slimebeast can be played normally, but its Ambush is neither offered nor accepted.",
+        "text": "During deployment, Lurking Slimebeast can be played normally, but not as an Ambush.",
         "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.timing — an Ambush is neither offered nor accepted during deployment"
       }
     ],
@@ -870,11 +870,11 @@
     "text": "The target of an Ambush must be an ally of the Ambush's controller in the battle region. An opponent's unit is never a legal target, even through an effect that redirects targets.",
     "examples": [
       {
-        "text": "The client offers an Ambush only against the same ally the Ambush effect would accept.",
+        "text": null,
         "test": "243-ally-and-enemy-scope.test.ts::R265 §4a the ambush legality gate asks for the same ally the ambush effect will"
       },
       {
-        "text": "An Ambush offers the attacking ally, but not an enemy unit in the battle region nor an ally that stayed home.",
+        "text": "An Ambush can target the attacking ally, but not an enemy unit in the battle region, nor an ally that stayed home.",
         "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.target — the Ambush menu holds only allies of the caster in the battle region"
       },
       {
@@ -1018,7 +1018,7 @@
     "text": "If, as the Ambush resolves, its target is gone or is no longer an ally of the Ambush's controller, the Ambush fizzles: nothing is recalled, and the ambushing card is put into the bin. Its controller loses both units.",
     "examples": [
       {
-        "text": "An Ambush whose target was removed fizzles and its ambusher goes to the bin.",
+        "text": null,
         "test": "08-cards2.test.ts::Ambush fizzles when the target is removed"
       },
       {
@@ -1080,11 +1080,7 @@
     "text": "Ambushing a unit that is the target of another effect saves it. The other effect does not change targets to the ambushing unit; it fails to resolve (fizzles).",
     "examples": [
       {
-        "text": "(illustrative) A Fireball aimed at a 2/2 is answered by an Ambush on that 2/2. The 2/2 returns to its hand; the Fireball fizzles and the ambusher is not hit.",
-        "test": null
-      },
-      {
-        "text": "A Fireball is aimed at a unit, and its controller answers with an Ambush on that unit. The unit returns to its hand; the Fireball fizzles, and the ambusher takes no damage.",
+        "text": "A Fireball is aimed at a unit, and that unit's controller answers with an Ambush on it. The unit returns to its hand; the Fireball fizzles, and the ambusher takes no damage.",
         "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.saves — ambushing the target of a Fireball saves it; the Fireball fizzles and does not hit the ambusher"
       }
     ],
@@ -1183,7 +1179,7 @@
     "text": "A card in the cache under a live permission can be played as an Ambush, as it could from the hand. Under a fulfilled prophecy it is free; under a glimpse its controller pays the Ambush mana but ignores the affinity.",
     "examples": [
       {
-        "text": "A glimpsed Ambush card ambushes out of the cache, paying the Ambush mana and ignoring affinity.",
+        "text": null,
         "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Ambush card ambushes out of the cache"
       }
     ],
@@ -1230,7 +1226,7 @@
         "test": "404-raq-fix-tides.test.ts::R337: an Ambush card played by Tides as an Ambush takes an ally place"
       },
       {
-        "text": "With 3 of the Tides budget left, Lurking Slimebeast (main cost 4, Ambush 3) is not offered but Mirage Walker (main cost 3, Ambush 4) is, and playing it as an Ambush spends no mana.",
+        "text": "With 3 of the Tides budget left, Lurking Slimebeast (main cost 4, Ambush 3) cannot be chosen, but Mirage Walker (main cost 3, Ambush 4) can, and playing it as an Ambush spends no mana.",
         "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.tides — the Tides budget reads the MAIN cost, and an Ambush via Tides pays nothing"
       }
     ],
@@ -1278,7 +1274,7 @@
     "text": "Prophecy is a keyword printed on a card's banner as a cost and a condition. A card with a Prophecy banner may be prophesied: its controller pays the banner's cost, and the card moves to the cache with its prophecy attached.",
     "examples": [
       {
-        "text": "A card with no banner cannot be prophesied.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R42: a card with no banner cannot be prophesied at all"
       }
     ],
@@ -1331,7 +1327,7 @@
         "test": "39-light-b.test.ts::Grob: on attack, up to one unit's controller caches it with 'One Battle Passes'"
       },
       {
-        "text": "A unit cached with a granted prophecy carries it in the cache and it counts forward.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R46: a cached unit can carry a granted prophecy (Grob / Waxen Witness)"
       }
     ],
@@ -1371,11 +1367,11 @@
     "text": "A card may be prophesied only during deployment. A card whose prophecy condition ends in a [Haste] icon may also be prophesied during the haste step.",
     "examples": [
       {
-        "text": "Prophesying is refused in planning, in the haste step and in battle.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R42: prophesying is a DEPLOYMENT action"
       },
       {
-        "text": "A banner marked [Haste] may be prophesied in the haste step.",
+        "text": null,
         "test": "257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step"
       }
     ],
@@ -1427,11 +1423,11 @@
     "text": "A card is prophesied from its controller's hand. It may be prophesied from the bin only if the card says so, and from the cache only while a glimpse permission on it is live; a card prophesied in the cache stays where it is.",
     "examples": [
       {
-        "text": "Only a card that says so may be prophesied from the bin.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R42: only a card that SAYS SO may be prophesied from the bin"
       },
       {
-        "text": "A glimpsed card with a banner may be prophesied where it stands in the cache.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache"
       }
     ],
@@ -1484,7 +1480,7 @@
     "text": "Prophesying costs the banner's cost: its mana is spent and its affinity pips are required.",
     "examples": [
       {
-        "text": "Mana without the banner's affinity does not buy a prophecy.",
+        "text": null,
         "test": "313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy"
       }
     ],
@@ -1531,7 +1527,7 @@
     "text": "A prophecy's condition counts forward from the moment the card is prophesied. \"Two Turns Pass\" means two turns after the card was prophesied, not two turns of the game.",
     "examples": [
       {
-        "text": "\"One Turn Passes\" counts from the prophesying, not from turn 1.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R43: \"One Turn Passes\" counts from the PROPHESYING"
       }
     ],
@@ -1570,7 +1566,7 @@
     "text": "In a 1v1 game, both battles of a turn count toward \"One Battle Passes\".",
     "examples": [
       {
-        "text": "A prophecy made after both battle rounds of a turn ignores those rounds, and the next turn's first completed battle round fulfils \"One Battle Passes\".",
+        "text": "A card prophesied with \"One Battle Passes\" in deployment, after that turn's two battle rounds, is fulfilled once the first battle round of the next turn is over.",
         "test": "36-cache-prophecy.test.ts::R43: \"One Battle Passes\""
       }
     ],
@@ -1646,7 +1642,7 @@
     "text": "Once the prophecy is fulfilled, the card may be played from the cache for free, ignoring affinity, as if it were in its controller's hand.",
     "examples": [
       {
-        "text": "A released prophecy costs nothing and needs no affinity.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity"
       }
     ],
@@ -1690,11 +1686,11 @@
     "text": "A fulfilled prophecy changes what the card costs, not when it may be played. The card is played at its own printed timing, and a [Haste] icon in the banner does not move the release.",
     "examples": [
       {
-        "text": "A fulfilled {Battle} card is refused at deployment.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies"
       },
       {
-        "text": "A fulfilled prophecy on a battle card is offered at a battle window.",
+        "text": null,
         "test": "257-prophecy-release-timing.test.ts::R277: a fulfilled prophecy on a battle card is offered at a BATTLE window"
       }
     ],
@@ -1746,7 +1742,7 @@
     "text": "An X spell released by a fulfilled prophecy is cast with X = 0. A variable bracketed cost on it is a cost, not its X, and is still paid.",
     "examples": [
       {
-        "text": "A fulfilled prophecy releases an X spell for X = 0: no X is asked and no mana paid.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R111: a fulfilled prophecy releases an X spell for X = 0"
       }
     ],
@@ -1787,11 +1783,11 @@
     "text": "A card whose prophecy is fulfilled may also be grafted or augmented from the cache, for free and ignoring affinity. Until the prophecy is fulfilled, the card cannot be played, grafted or augmented from the cache at all.",
     "examples": [
       {
-        "text": "An unfulfilled prophecy cannot be grafted.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted"
       },
       {
-        "text": "A fulfilled prophecy grafts for free.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free"
       }
     ],
@@ -1838,11 +1834,11 @@
     "text": "A condition that counts units dying, such as Vengeance's \"13 Units Die\", counts only the deaths its controller witnessed: deaths in a region where that player was present. A player is present in their own region, and in an enemy region once they have attacked into it, until regroup.",
     "examples": [
       {
-        "text": "A death is counted only by the players who were in its region.",
+        "text": null,
         "test": "314-prophecy-units-die.test.ts::R302 §2: a death is counted only by the seats that were in the region"
       },
       {
-        "text": "An attack puts the attacker in the region, so both players see every death in that battle.",
+        "text": "A player attacks into the opponent's region with a unit, so both players are present there. Two of the opponent's units die in that region: each player counts two deaths toward \"Units Die\".",
         "test": "314-prophecy-units-die.test.ts::R302 §3: combat puts the attacker in the region"
       }
     ],
@@ -1888,7 +1884,7 @@
     "text": "An effect that plays a card for free, such as Tides of the Cosmos, may play a card with a Prophecy banner as a Prophecy: the card is cached with its prophecy attached, and the banner cost is not paid.",
     "examples": [
       {
-        "text": "A card played by Tides as a Prophecy is cached with its banner, for free, and not binned.",
+        "text": null,
         "test": "404-raq-fix-tides.test.ts::R337: a card played by Tides as a Prophecy is cached with its banner"
       }
     ],
@@ -1983,11 +1979,11 @@
     "text": "Unstable applies only to a card leaving an active zone. The active zones are play and the stack. An Unstable card that goes to a bin from a hand, the deck, a bin or the cache is put into the bin normally, and is trashed.",
     "examples": [
       {
-        "text": "A printed-Unstable card discarded from the hand is binned and trashed.",
+        "text": null,
         "test": "125-active-zone.test.ts::R145: a printed-Unstable card DISCARDED FROM HAND"
       },
       {
-        "text": "A printed-Unstable card binned from the cache is binned and trashed.",
+        "text": null,
         "test": "125-active-zone.test.ts::R145: a printed-Unstable card binned from the CACHE"
       }
     ],
@@ -2117,7 +2113,7 @@
     "text": "Unstable given \"until regroup\" lasts until regroup, even after the permission that came with it has ended. A spell unit played under such a grant passes it to the unit it puts into play.",
     "examples": [
       {
-        "text": "A bin-played spell unit's body carries the Unstable stamp and is erased, not binned, when it dies.",
+        "text": null,
         "test": "12-fire-a.test.ts::Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY"
       },
       {
@@ -2208,11 +2204,11 @@
     "text": "A spell is modded, and so Unstable, when a Virus is applied to it on the stack or a mod is applied to it through {Modular}. When it leaves the stack it is erased with its mods.",
     "examples": [
       {
-        "text": "Either way, the virus window or the {Modular} window, the carrier and the mod are erased.",
+        "text": null,
         "test": "91-modular.test.ts::R105 = R79: the {Modular} window and the virus window agree"
       },
       {
-        "text": "An unmodded {Modular} spell is binned like any other spell.",
+        "text": null,
         "test": "91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable"
       }
     ],
@@ -2266,11 +2262,11 @@
         "test": "26-metal-a.test.ts::R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}"
       },
       {
-        "text": "A fresh Borrower of Forms that copied a modded unit is not Unstable; a mod attached to it afterwards makes it Unstable.",
+        "text": null,
         "test": "403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin"
       },
       {
-        "text": "A mod attached to Borrower of Forms after it resolved makes it Unstable.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable"
       }
     ],
@@ -2319,7 +2315,7 @@
     "text": "Moving a mod moves its Unstable with it. The unit the mod leaves stops being Unstable when its last mod is gone, unless something else makes it Unstable; the unit it moves to becomes Unstable.",
     "examples": [
       {
-        "text": "A moved augment takes Unstable and its static with it.",
+        "text": null,
         "test": "151-copy-and-moved-mods.test.ts::R178 Rotbeast: a moved augment takes {Unstable}"
       }
     ],
@@ -2364,10 +2360,6 @@
     "order": 9,
     "text": "Unstable replaces where the card goes, not its death. An Unstable unit that is destroyed still dies: its death triggers and other abilities that watch for a unit dying see it.",
     "examples": [
-      {
-        "text": "(illustrative) A modded unit dies in combat. A \"whenever a unit dies\" ability triggers, then the unit and its mods are erased.",
-        "test": null
-      },
       {
         "text": "A modded unit is destroyed. A whenever-another-unit-dies ability triggers, then the unit is erased, not binned.",
         "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.unstable.still-dies — a modded (Unstable) unit that is destroyed still dies: a death watcher triggers, then it is erased"
@@ -2423,7 +2415,7 @@
     "text": "Unstable does not stop a unit from being recalled. A recalled Unstable unit goes to the hand as a card; if it was modded, its mods are put into the bin.",
     "examples": [
       {
-        "text": "Recalling an Unstable unit puts the card in its hand, and nothing is erased.",
+        "text": null,
         "test": "125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND"
       }
     ],
@@ -2519,7 +2511,7 @@
     "text": "An effect that itself says to put a card into a bin overrides Unstable. Pull Under (\"Delete target unit. If you do, put it and all of its mods into your bin.\") leaves a modded unit and its mods in that bin.",
     "examples": [
       {
-        "text": "Pull Under deletes the target, and it and its mods land in the caster's bin, not erased.",
+        "text": null,
         "test": "15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin"
       }
     ],

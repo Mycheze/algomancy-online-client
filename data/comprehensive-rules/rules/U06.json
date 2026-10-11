@@ -6,11 +6,11 @@
     "text": "Apart from resource cards (106), there are three card types: unit, spell and spell unit. There are two kinds of token: unit tokens and spell tokens.",
     "examples": [
       {
-        "text": "Every unit, spell and spell-unit card in a deck is counted in exactly one of the unit, spell and spell-unit buckets.",
+        "text": null,
         "test": "188-deck-stats.test.ts::§2 the unit / spell / spellUnit buckets sum to the deck"
       },
       {
-        "text": "Every printed card that is not a resource or a token is a unit, a spell or a spell unit; a created Robot is a unit token and a created Fireball a spell token.",
+        "text": null,
         "test": "417-cr-card-types.test.ts::cr:types.general.kinds — every non-resource card is a unit, spell or spell unit, and every token is a unit token or a spell token"
       }
     ],
@@ -70,7 +70,7 @@
     "text": "A card's type line names its type. A unit's type line ends \"Unit\", a spell's ends \"Spell\", and a spell unit's ends \"Spell Unit\". A token's type line also contains the word \"Token\": \"Robot Token Unit\" is a unit token, and \"Spell Token\" a spell token.",
     "examples": [
       {
-        "text": "Robot reads \"Robot Token Unit\" and is a unit token; Fireball reads \"Spell Token\" and is a spell token.",
+        "text": null,
         "test": "417-cr-card-types.test.ts::cr:types.general.type-line — the type line ends Unit, Spell or Spell Unit by type, and a token type line reads Token Unit or Spell Token"
       }
     ],
@@ -121,7 +121,7 @@
     "text": "Units, unit tokens and spell units have stats: power and defense. Spells and spell tokens have no stats.",
     "examples": [
       {
-        "text": "A Good Whale is 7/5 and a Robot token has stats; a Crystal cannot target the Fireball token beside them.",
+        "text": "A Good Whale is 7/5 and a Robot token with two counters is 2/2. A Crystal (\"Put X +1/+1 counters on target unit\") can target the Whale, but not the Fireball token beside it: a spell token is not a unit and has no stats.",
         "test": "417-cr-card-types.test.ts::cr:types.general.stats — units, unit tokens and spell units carry power and defense; a spell token is no unit and takes no stat change"
       }
     ],
@@ -393,7 +393,7 @@
         "test": "337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards"
       },
       {
-        "text": "A spell token cast fires the \"spell played\" event but not the \"card played\" one.",
+        "text": null,
         "test": "119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card"
       }
     ],
@@ -666,7 +666,7 @@
     "text": "When a unit dies or is deleted, it is put into the bin.",
     "examples": [
       {
-        "text": "A unit that dies, or is deleted, is put into the bin.",
+        "text": null,
         "test": "417-cr-card-types.test.ts::cr:types.units.dies-to-bin — a unit that dies, or is deleted, is put into the bin"
       }
     ],
@@ -971,7 +971,7 @@
     "text": "When a spell resolves, it goes directly to the bin.",
     "examples": [
       {
-        "text": "A spell that resolves goes to the bin; because it came from the stack, it is not trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed"
       }
     ],
@@ -1059,7 +1059,7 @@
     "text": "A spell unit is both a spell and a unit. Like a spell it has a one-time effect; like a unit it has stats.",
     "examples": [
       {
-        "text": "A card search treats a spell unit as both a unit and a spell.",
+        "text": null,
         "test": "210-cardsearch.test.ts::a spell unit is a unit AND a spell"
       },
       {
@@ -1202,11 +1202,11 @@
         "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: negated, the unit does not enter play"
       },
       {
-        "text": "A spell unit whose targets are all gone fizzles and never spawns.",
+        "text": null,
         "test": "05-rulings.test.ts::a fizzled spell unit never spawns"
       },
       {
-        "text": "A Bloomcaster 1/1 created because a spell unit was played is still created when that spell unit is negated.",
+        "text": null,
         "test": "396-raq-timing.test.ts::RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind"
       }
     ],
@@ -1262,11 +1262,11 @@
         "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell"
       },
       {
-        "text": "Origon negates it when it is the first spell its controller plays in the battle.",
+        "text": "Origon negates a spell unit when it is the first spell a player plays in the battle.",
         "test": "396-raq-timing.test.ts::Origon negates it as the first spell"
       },
       {
-        "text": "Molten Riftbreaker dying negates it as an allied spell.",
+        "text": "If Molten Riftbreaker despawns while an allied spell unit is on the stack, its \"negate all allied spells\" negates that spell unit.",
         "test": "396-raq-timing.test.ts::Molten Riftbreaker dying negates it as an allied spell"
       }
     ],
@@ -1418,7 +1418,7 @@
     "text": "A spell unit that enters play without being played (for example, one put into play from a bin) does not produce its spell effect.",
     "examples": [
       {
-        "text": "Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play.",
+        "text": "Exhume puts a Jelly from the bin into play: its -2/-2 does not happen, and Bloomcaster does not trigger, because the Jelly was not played.",
         "test": "417-cr-card-types.test.ts::cr:types.spell-units.not-played — Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play"
       }
     ],
@@ -1458,7 +1458,7 @@
     "text": "A spell unit that an effect lets a player play from somewhere other than the hand is still played: its spell effect happens, and the unit enters play only if the spell resolves.",
     "examples": [
       {
-        "text": "A Jelly that Wake the Dead plays from a bin has its spell part happen, and its body enters play only if that spell resolves. (illustrative)",
+        "text": "A Jelly that Wake the Dead plays from a bin has its spell part happen, and its body enters play only if that spell resolves.",
         "test": null
       }
     ],
@@ -1514,11 +1514,11 @@
     "text": "If a spell unit's own text says that another player gains control of it, it enters play under that player's control. There is no moment when its caster controls it. Its owner does not change.",
     "examples": [
       {
-        "text": "Hush Mush negates an opponent's effect and enters play as that opponent's unit, with no trigger and no handover.",
+        "text": "Hush Mush negates an opponent's effect and enters play already under that opponent's control; its caster never controls it.",
         "test": "23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated effect's controller"
       },
       {
-        "text": "An ability of the caster's that watches allies spawn does not see Hush Mush arrive.",
+        "text": "The caster's Flourishing Flora, which watches allies spawn, does not see Hush Mush arrive.",
         "test": "23-wood-a.test.ts::R143 #96: the CASTER's Flourishing Flora takes NO counter off Hush Mush"
       }
     ],
@@ -1573,7 +1573,7 @@
         "test": "26-metal-a.test.ts::R147: the body wears the borrowed IDENTITY from the instant it enters play"
       },
       {
-        "text": "Becoming the copy puts nothing on the stack, so no trigger-ordering question is asked.",
+        "text": null,
         "test": "26-metal-a.test.ts::R147: becoming the copy is NOT a trigger"
       }
     ],
@@ -1690,7 +1690,7 @@
     "text": "A token is not a card.",
     "examples": [
       {
-        "text": "A spell token being cast is a spell played but not a card played.",
+        "text": null,
         "test": "119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card"
       }
     ],
@@ -1748,7 +1748,7 @@
     "text": "A token is either a unit token or a spell token.",
     "examples": [
       {
-        "text": "Created Robots and Wisps are unit tokens; created Fireballs, Poisons and Crystals are spell tokens.",
+        "text": null,
         "test": "417-cr-card-types.test.ts::cr:types.tokens.kinds — a created token is either a unit token (a unit with the token flag) or a spell token"
       }
     ],
@@ -1787,7 +1787,7 @@
     "text": "A unit that an effect creates is a unit token, whether or not the effect calls it a token.",
     "examples": [
       {
-        "text": "Download (\"Gain control of target token\") can take an X/X unit that an effect created.",
+        "text": "Spawntender creates an 8/8 unit without calling it a token; it is still a token, so Download (\"Gain control of target token\") can take it.",
         "test": "393-raq-mods.test.ts::RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take"
       }
     ],
@@ -1920,7 +1920,7 @@
         "test": "393-raq-mods.test.ts::copying a Robot token makes a nontoken unit"
       },
       {
-        "text": "With that Borrower on the board beside a real token, Download offers the token but not the Borrower. (illustrative)",
+        "text": "With that Borrower in play beside a real token, Download can take the token but not the Borrower.",
         "test": "417-cr-card-types.test.ts::cr:types.tokens.copying-a-token — Download is playable with a Borrower copy of a Robot on board and does not offer the Borrower"
       }
     ],
@@ -2064,7 +2064,7 @@
         "test": "98-spawn-region.test.ts::Tidelurker's mid-attack 2/2 stays in the enemy region"
       },
       {
-        "text": "The stranded 1/1s return home at regroup.",
+        "text": null,
         "test": "98-spawn-region.test.ts::the stranded 1/1s walk home at regroup"
       }
     ],
@@ -2192,7 +2192,7 @@
         "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
       },
       {
-        "text": "The erase happens before anything the token's visit triggered can resolve.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R69: the erase lands before anything the visit queued can RESOLVE"
       },
       {
@@ -2301,7 +2301,7 @@
     "text": "A unit token that dies still dies: abilities that trigger when a unit dies see it, unless they say \"nontoken\".",
     "examples": [
       {
-        "text": "A dying unit token is seen by \"whenever another unit dies\" but not by a \"nontoken unit dies\" watcher.",
+        "text": null,
         "test": "417-cr-card-types.test.ts::cr:types.tokens.leaving-play.still-dies — a dying unit token is seen by \"whenever another unit dies\" but not by a \"nontoken unit dies\" watcher"
       }
     ],
@@ -2338,7 +2338,7 @@
     "text": "A spell token is a spell that is in play. Its controller may cast it from play; casting it works the same way as casting a spell from the hand.",
     "examples": [
       {
-        "text": "A Fireball token goes to the stack in battle when cast.",
+        "text": null,
         "test": "03-stack.test.ts::Fireball goes to the stack in battle, Burst casts them all at once"
       }
     ],
@@ -2382,7 +2382,7 @@
     "text": "A spell token can be cast only in the region it is in.",
     "examples": [
       {
-        "text": "A spell token left at home cannot be cast in a battle in another region.",
+        "text": null,
         "test": "417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.region — a spell token left at home cannot be cast in a battle in another region"
       }
     ],
@@ -2645,7 +2645,7 @@
     "text": "A spell token with Burst is cast together with every other spell token of the same name that its controller has in that region. They are still separate spells.",
     "examples": [
       {
-        "text": "Burst casts all of a player's tokens of that name and leaves their other burst tokens alone.",
+        "text": null,
         "test": "69-damage-batch.test.ts::R81: Burst casts all your tokens OF THAT NAME"
       }
     ],
@@ -2730,7 +2730,7 @@
     "text": "A spell token cannot move to another region on its own. Its controller may bring it into the enemy region with an attack, but only together with at least one attacking unit, and the move cannot be undone.",
     "examples": [
       {
-        "text": "Spell tokens travel only with units, and only from the region they stand in.",
+        "text": null,
         "test": "78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in"
       },
       {
@@ -2778,7 +2778,7 @@
     "text": "A counterattack may bring spell tokens the same way: spell tokens that stand in the region the counterattacking units leave from may go with them.",
     "examples": [
       {
-        "text": "A counterattacking player sends spell tokens along with their counterattacking units.",
+        "text": null,
         "test": "78-round17-core.test.ts::R87: declareBlocks takes spellTokens"
       }
     ],
@@ -2854,7 +2854,7 @@
     "text": "During regroup, every spell token still in play is erased, including unused spell tokens in their controller's own region.",
     "examples": [
       {
-        "text": "With no Harbinger of Immolation anywhere, spell tokens are erased at regroup.",
+        "text": null,
         "test": "12-fire-a.test.ts::regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased"
       },
       {
@@ -2906,7 +2906,7 @@
     "text": "When an effect refers to each unique token (Automaton of Abundance), two tokens are the same unique token only if they have both the same name and the same X.",
     "examples": [
       {
-        "text": "Manufacture creates a Robot 3, a Robot 2 and a Robot 1: three unique tokens.",
+        "text": "With Automaton of Abundance in play, Manufacture creates a Robot 3, a Robot 2 and a Robot 1: three unique tokens, so one extra of each is made.",
         "test": "136-triggers-and-modes.test.ts::R157 §24: end to end"
       },
       {
@@ -2955,7 +2955,7 @@
     "text": "Creating a token is not playing it. A unit token that an effect created was not played.",
     "examples": [
       {
-        "text": "Manufacture creating Robot tokens is not playing them (Bloomcaster, Stalwart Sentinel silent).",
+        "text": "Manufacture creates Robot tokens. That is not playing them, so Bloomcaster and Stalwart Sentinel do not trigger.",
         "test": "417-cr-card-types.test.ts::cr:types.tokens.creating-not-playing — Manufacture creating Robot tokens is not playing them (Bloomcaster, Stalwart Sentinel silent)"
       }
     ],
@@ -2998,7 +2998,7 @@
     "text": "A modification (mod) is a card that is applied to another card instead of being played. A modified card is treated as a single card with all of the text its mods add, except that a spell or a spell token that is modified gains only the mod's attributes (721). The two kinds of modification are augment and graft.",
     "examples": [
       {
-        "text": "An augment that grants only text gives a spell token nothing.",
+        "text": null,
         "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing"
       },
       {
@@ -3067,7 +3067,7 @@
     "text": "Applying a mod is not playing a card, so an ability that triggers on playing a unit or a spell does not trigger on it.",
     "examples": [
       {
-        "text": "Applying a Virus during battle fires neither the \"spell played\" nor the \"card played\" event.",
+        "text": "A Virus applied from hand during battle is not a card being played, so Void Mandible (\"When a nontoken card is played during battle…\") does not trigger.",
         "test": "119-play-and-token-events.test.ts::R37 holds: applying a VIRUS fires neither event"
       }
     ],
@@ -3105,7 +3105,7 @@
     "text": "Modifying is done during the deployment phase. A Virus can also be applied from the hand during battle.",
     "examples": [
       {
-        "text": "A non-Virus augment cannot be applied from hand during battle, but can in deployment.",
+        "text": null,
         "test": "417-cr-card-types.test.ts::cr:types.mods.when — a non-Virus augment cannot be applied from hand during battle, but can in deployment"
       }
     ],
@@ -3149,7 +3149,7 @@
     "text": "A card's augment and graft text works when the card is played normally, not only when it is applied as a mod.",
     "examples": [
       {
-        "text": "A card played normally still reads its own [Augment] text.",
+        "text": null,
         "test": "248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box"
       }
     ],
@@ -3231,7 +3231,7 @@
     "text": "During deployment, a spell token in play may be augmented, with any augment and not only a Virus. The spell token gains only the mod's attributes, not its text.",
     "examples": [
       {
-        "text": "A spell token is offered as an augment host during deployment.",
+        "text": null,
         "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
       },
       {
@@ -3239,11 +3239,11 @@
         "test": "78-round17-core.test.ts::R89: only ATTRIBUTES transfer"
       },
       {
-        "text": "An augment that grants only text gives a spell token nothing.",
+        "text": null,
         "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing"
       },
       {
-        "text": "Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment. (illustrative)",
+        "text": "Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment.",
         "test": "417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment"
       }
     ],

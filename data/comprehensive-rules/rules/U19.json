@@ -280,7 +280,7 @@
     "text": "A unit has the attributes of its column for everything it does while it is in the column, not only for combat damage. Damage it deals with its abilities has those attributes too.",
     "examples": [
       {
-        "text": "An ability of a unit in a column with a Blessed unit gains its controller life when it deals damage.",
+        "text": "Lithoghul stands in a battle column with Flzzz, which is Blessed. An ability of Lithoghul deals 3 damage to an enemy unit: Lithoghul has Blessed from its column, so its controller gains 3 life.",
         "test": "298-column-attrs-outside-combat.test.ts::R294 §1 the report"
       },
       {
@@ -371,7 +371,7 @@
     "text": "When a unit leaves a column, the other units in that column immediately lose the attributes it was sharing with them.",
     "examples": [
       {
-        "text": "A unit leaving a Swift column takes the Swift it shared with it.",
+        "text": null,
         "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps.column-attributes — a unit leaving a column takes the Swift it shared with it"
       },
       {
@@ -509,7 +509,7 @@
     "text": "Four attributes change a unit's stats. Tough and Balanced apply in the fourth stat layer, Inverted in the fifth and Unaware in the sixth and last (see rule 206.4).",
     "examples": [
       {
-        "text": "Caleb's worked example: a 1/4 with Tough, Balanced and Inverted is a -6/0.",
+        "text": "A 1/4 with Tough, Balanced and Inverted is a -6/0.",
         "test": "79-round17-layers.test.ts::R93 layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0"
       },
       {
@@ -608,7 +608,7 @@
         "test": "08-cards2.test.ts::R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
       },
       {
-        "text": "Child of Aether prints Balanced and is a 2/0. Augmented with Rampart Guardian (Tough), its defense is doubled (2/0), then its stats balanced: it is a 2/2. (illustrative; engine differs, F-U19-5: the engine balances first and makes it a 2/4)",
+        "text": "Child of Aether prints Balanced and is a 2/0. Augmented with Rampart Guardian (Tough), its defense is doubled (still 2/0), then its stats balanced: it is a 2/2.",
         "test": null
       },
       {
@@ -687,7 +687,7 @@
     "text": "A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply.",
     "examples": [
       {
-        "text": "Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies. (illustrative; engine differs, F-U19-1: the engine keeps Tough on and it survives as a 0/8)",
+        "text": "Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies.",
         "test": null
       },
       {
@@ -788,7 +788,7 @@
         "test": "02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths"
       },
       {
-        "text": "A plain ground unit is neither offered nor allowed as a blocker against a Flying column.",
+        "text": null,
         "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can"
       }
     ],
@@ -829,7 +829,7 @@
     "text": "Because Flying is shared, a unit attacking in the same column as a Flying unit has Flying too, and the whole column can't be blocked by units that do not have Flying (see rule 802.1).",
     "examples": [
       {
-        "text": "A token attacking behind a Flying unit has Flying while it is in that column.",
+        "text": null,
         "test": "421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared"
       }
     ],
@@ -867,10 +867,6 @@
     "order": 3,
     "text": "If the Flying unit leaves an attacking column before blockers are declared, the other units in that column lose Flying, and the column can then be blocked by units without Flying.",
     "examples": [
-      {
-        "text": "A player attacks with Smoke Ghost (Flying) and a plain 1/1 token in one column; the opponent kills Smoke Ghost before combat and blocks the token with a unit that does not fly. (illustrative)",
-        "test": null
-      },
       {
         "text": "Ephemeral Skywalker (Flying) attacks with a 1/1 token in one column; the Skywalker is destroyed before blocks, the token loses Flying, and Rune Channeler, which does not fly, blocks it.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.flying.removed — after the Flying unit leaves the attacking column, a ground unit may block the rest"
@@ -1046,7 +1042,7 @@
         "test": "82-attr-interactions.test.ts::Deadly: 2 points of NON-COMBAT damage kills a 5/6 outright"
       },
       {
-        "text": "Zero damage from a Deadly source destroys nothing.",
+        "text": null,
         "test": "82-attr-interactions.test.ts::Deadly: ZERO damage kills nothing"
       }
     ],
@@ -1179,7 +1175,7 @@
     "text": "A unit dealt combat damage by a Deadly source is destroyed in the same damage sub-step, before the next sub-step begins (see rule 608.7b).",
     "examples": [
       {
-        "text": "Paired with a Swift unit in its column, a Deadly unit kills what it hits before that unit can strike back. (illustrative)",
+        "text": "Paired with a Swift unit in its column, a Deadly unit kills what it hits before that unit can strike back.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.deadly.timing — a Deadly and Swift column kills its blocker in the Swift sub-step, before the blocker strikes"
       }
     ],
@@ -1221,7 +1217,7 @@
     "text": "Deadly applies to all damage its source deals, not only combat damage, including damage dealt through spells and abilities.",
     "examples": [
       {
-        "text": "A plain Deadly effect source destroys a unit it could never damage to death.",
+        "text": null,
         "test": "206-deadly-everywhere.test.ts::R237: a plain {Deadly} effect source kills a unit"
       }
     ],
@@ -1268,7 +1264,7 @@
         "test": "206-deadly-everywhere.test.ts::R237: \"a fireball 1 with deadly would kill any unit\""
       },
       {
-        "text": "Deadly donated to a spell on the stack kills through that spell.",
+        "text": null,
         "test": "206-deadly-everywhere.test.ts::R237: a {Deadly} donated to a SPELL on the stack kills through the spell"
       }
     ],
@@ -1311,7 +1307,7 @@
     "text": "A source with both Deadly and Poisonous that deals damage to a unit both destroys it and puts the -1/-1 counters on it (see rule 112.10).",
     "examples": [
       {
-        "text": "Deadly and Poisonous effect damage still destroys the unit: the counter form is still damage.",
+        "text": null,
         "test": "206-deadly-everywhere.test.ts::R237: {Deadly} + {Poisonous} effect damage still kills"
       }
     ],
@@ -1350,7 +1346,7 @@
     "text": "If all the damage a Deadly source would deal to a unit is prevented, no damage is dealt, and Deadly does not destroy the unit (see rule 112.11).",
     "examples": [
       {
-        "text": "Prevention stops both the Deadly kill and the Poisonous counters.",
+        "text": null,
         "test": "82-attr-interactions.test.ts::Deadly + Poisonous: PREVENTION still stops both halves"
       },
       {
@@ -1434,7 +1430,7 @@
         "test": "40-light-c.test.ts::Just a Unit: {Pure} switches off Deadly"
       },
       {
-        "text": "A Pure recipient is not destroyed by a Deadly source's noncombat damage.",
+        "text": null,
         "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it"
       }
     ],
@@ -1525,7 +1521,7 @@
     "text": "A half-column that has Swift deals its combat damage in the Swift sub-step, before the normal and Sluggish sub-steps (see rule 608.2a).",
     "examples": [
       {
-        "text": "Swift strikes first, then normal, then Sluggish.",
+        "text": null,
         "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish"
       }
     ],
@@ -1604,7 +1600,7 @@
     "text": "A half-column with both Swift and Sluggish deals combat damage twice: once in the Swift sub-step and once in the Sluggish sub-step, with normal damage from other units in between (see rule 608.2c).",
     "examples": [
       {
-        "text": "A Swift and Sluggish column strikes in the Swift and Sluggish sub-steps, not in normal.",
+        "text": null,
         "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps.swift-and-sluggish"
       }
     ],
@@ -1659,7 +1655,7 @@
     "text": "A half-column that has dealt combat damage in the Swift sub-step does not deal combat damage in the normal sub-step, even if it has since lost Swift (see rule 608.2e).",
     "examples": [
       {
-        "text": "A column that dealt Swift damage deals no normal damage, even once its Swift unit is gone.",
+        "text": null,
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt Swift damage deals no normal damage"
       }
     ],
@@ -1699,7 +1695,7 @@
     "text": "When a Swift half-column strikes and another half-column will strike in a later sub-step, the combat damage step is split: the abilities that triggered on the Swift damage go on the stack and resolve, with priority, before normal damage is dealt (see rules 608.3b and 608.9c).",
     "examples": [
       {
-        "text": "A Swift-only battle gets one boundary between the Swift and normal sub-steps, not two.",
+        "text": "Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. The damage step splits once: Dune Drifter strikes, then there is a window to respond, then Lithoghul strikes. No Sluggish unit is in the battle, so there is no second split.",
         "test": "297-damage-substeps-are-steps.test.ts::R295 §3b an EMPTY sub-step opens no window"
       },
       {
@@ -1845,7 +1841,7 @@
     "text": "A half-column that has Sluggish deals its combat damage in the Sluggish sub-step, after the Swift and normal sub-steps (see rule 608.2a).",
     "examples": [
       {
-        "text": "Swift strikes first, then normal, then Sluggish.",
+        "text": null,
         "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish"
       }
     ],
@@ -1925,11 +1921,11 @@
     "text": "A half-column that has dealt combat damage in the normal sub-step does not deal combat damage in the Sluggish sub-step, even if it has since gained Sluggish. A half-column that dealt damage in the Swift sub-step and has gained Sluggish deals damage again in the Sluggish sub-step (see rule 608.2e).",
     "examples": [
       {
-        "text": "A plain column strikes in the normal sub-step, then gains Sluggish; it does not strike again.",
+        "text": null,
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt normal damage deals no Sluggish damage"
       },
       {
-        "text": "A Swift column strikes in the Swift sub-step, gains Sluggish, and strikes again in the Sluggish sub-step.",
+        "text": null,
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again"
       }
     ],
@@ -2111,7 +2107,7 @@
     "text": "Tough does not change a unit's power.",
     "examples": [
       {
-        "text": "A 0/4 Tough unit with a -1/-1 counter is a -1/6: its power is not doubled. (illustrative)",
+        "text": "A 0/4 Tough unit with a -1/-1 counter is a -1/6: its power is not doubled.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.tough.power — a 0/4 Tough unit with a -1/-1 counter is a -1/6: its power is not doubled"
       }
     ],
@@ -2155,7 +2151,7 @@
         "test": "387-raq-combat.test.ts::RAQ Tough: Burgeon on that 1/10 makes it 1/20, and losing Tough to Monke leaves 1/10"
       },
       {
-        "text": "Burgeon doubling Rampart Guardian's defense shows the doubled number, not four times its defense.",
+        "text": null,
         "test": "140-layers-and-riders.test.ts::Burgeon doubling a {Tough} unit's defense gives the printed number"
       }
     ],
@@ -2232,7 +2228,7 @@
     "text": "Balanced compares the unit's power and defense after its counters and other stat changes, and after any attribute that applied before it, have been applied.",
     "examples": [
       {
-        "text": "A 1/4 with Tough and Balanced: Tough makes it 1/8, then Balanced makes it 8/8. (illustrative)",
+        "text": "A 1/4 with Tough and Balanced: Tough makes it 1/8, then Balanced makes it 8/8.",
         "test": null
       },
       {
@@ -2279,7 +2275,7 @@
     "text": "Inverted is an attribute. Its reminder text reads \"Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.\"",
     "examples": [
       {
-        "text": "Its Dark Bubb's reminder, verbatim: a -1/+2 change on an Inverted unit becomes +1/-2.",
+        "text": null,
         "test": "43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim"
       }
     ],
@@ -2325,7 +2321,7 @@
         "test": "79-round17-layers.test.ts::R93 layer 5: the owner's Malformed Monstrosity"
       },
       {
-        "text": "With several sources changing its stats, an Inverted unit inverts the net change, not each source.",
+        "text": null,
         "test": "43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own"
       }
     ],
@@ -2568,7 +2564,7 @@
         "test": "92-unaware.test.ts::{Tough} donated onto Bubb does nothing"
       },
       {
-        "text": "A Robot token given Unaware by Bubb ignores its own +1/+1 counters and dies a 0/0.",
+        "text": "Reconfigure moves Bubb onto a Robot token, which gains Unaware: it ignores its own +1/+1 counters and dies as a 0/0.",
         "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robot"
       }
     ],
@@ -2721,11 +2717,11 @@
         "test": "92-unaware.test.ts::Bubb blocks a pumped 3/3 and takes the attacker's PRINTED 3"
       },
       {
-        "text": "An Unaware attacker reads its exchange the same way an Unaware blocker does.",
+        "text": null,
         "test": "92-unaware.test.ts::an Unaware ATTACKER collapses the exchange the same way a blocker does"
       },
       {
-        "text": "In an Unaware exchange the front blocker is priced at its printed defense, less marked damage.",
+        "text": null,
         "test": "423-cr-combat-damage.test.ts::cr:combat.damage.assignment.lethal-defined — in an Unaware exchange"
       }
     ],
@@ -2814,7 +2810,7 @@
     "text": "Outside such an interaction, an Unaware card does not change the stats of the other cards.",
     "examples": [
       {
-        "text": "A Robot token that nobody Unaware is fighting is its full size.",
+        "text": null,
         "test": "92-unaware.test.ts::NEGATIVE CONTROL: a Robot token that nobody Unaware is fighting is its full size"
       }
     ],
@@ -2890,7 +2886,7 @@
     "text": "Unaware does not stop a card being targeted. An effect can put counters or other stat changes on an Unaware card; they stay on it but do not change its stats while it is Unaware.",
     "examples": [
       {
-        "text": "Poison with X = 6, targeting Bubb (a 5/6, Unaware), puts six -1/-1 counters on it; Bubb is still a 5/6. (illustrative)",
+        "text": "Poison with X = 6, targeting Bubb (a 5/6, Unaware), puts six -1/-1 counters on it; Bubb is still a 5/6.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.unaware.targets — Poison X=6 may target Unaware Bubb: six -1/-1 counters go on, and Bubb stays a 5/6"
       },
       {
@@ -2951,7 +2947,7 @@
     "text": "Powerful is a combat attribute. Its reminder text reads \"Powerful sources deal double damage\".",
     "examples": [
       {
-        "text": "Chitin Shredder (1/2 Powerful) deals 3 effect damage as 6, and unblocked costs the defending player 2 life.",
+        "text": "When Chitin Shredder (1/2, Powerful) is the source of 3 damage from an effect, 6 is dealt; attacking unblocked, it costs the defending player 2 life.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.powerful — Emberflame Enlightener prints the reminder, and a Powerful source deals double in combat and by effect"
       }
     ],
@@ -3081,7 +3077,7 @@
     "text": "Powerful also doubles damage its source deals through spells and abilities, to units and players alike.",
     "examples": [
       {
-        "text": "Powerful doubles effect damage from a Powerful source.",
+        "text": null,
         "test": "09-attrs.test.ts::Powerful: doubles effect damage from a Powerful source"
       }
     ],
@@ -3226,7 +3222,7 @@
     "text": "Powerful does not apply in an interaction with a Pure card (see rule 802.25).",
     "examples": [
       {
-        "text": "A Pure source's own Powerful does not double its damage.",
+        "text": null,
         "test": "290-pure-outside-combat.test.ts::§1 a Pure source: its own Powerful does not double"
       }
     ],
@@ -3453,7 +3449,7 @@
     "text": "If a Powerful source deals damage to a Vulnerable unit, both apply: the source's damage is doubled, and the unit is dealt double that.",
     "examples": [
       {
-        "text": "Powerful (source) and Vulnerable (receiver) both apply to one effect hit.",
+        "text": null,
         "test": "82-attr-interactions.test.ts::Powerful (source) and Vulnerable (receiver) both apply to one effect hit"
       }
     ],
@@ -3496,7 +3492,7 @@
     "text": "A Pure Vulnerable unit, and a Vulnerable unit in an interaction with a Pure card, is not dealt double damage.",
     "examples": [
       {
-        "text": "A Pure source hitting a Vulnerable unit deals only what it says.",
+        "text": "Chitin Shredder (Powerful), made Pure, deals 2 damage to Crumbling Ancient (Vulnerable, 3/8). It is dealt 2: neither Powerful nor Vulnerable doubles it, and the Ancient survives.",
         "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too"
       },
       {
@@ -3555,11 +3551,11 @@
         "test": "08-cards2.test.ts::Spectrogenesis: three Wisps; Feeble means they cannot block"
       },
       {
-        "text": "When a Feeble unit is refused as a blocker, the client names it.",
+        "text": null,
         "test": "86-ui-block-refusal.test.ts::#77: {Feeble} — the unit that cannot block is the one that is named"
       },
       {
-        "text": "Bripp prints Feeble.",
+        "text": null,
         "test": "430-cr-attributes-1.test.ts::cr:attr.feeble — Bripp prints Feeble, so the block-refusal guards that use it are not vacuous"
       }
     ],
@@ -3606,7 +3602,7 @@
     "text": "Whether a unit can block depends on its own Feeble only. A Feeble unit can't block even if it shares a column with units that are not Feeble, and Feeble that a unit would share from its column does not stop it blocking.",
     "examples": [
       {
-        "text": "The block check asks Feeble of the unit, not of its column.",
+        "text": null,
         "test": "298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality is still the unit's own question"
       }
     ],
@@ -3696,7 +3692,7 @@
     "text": "A Feeble unit is not able to block, so an Alluring trigger that targets it cannot compel it to block (see rules 606.2e and 802.15).",
     "examples": [
       {
-        "text": "A lured Feeble unit is not compelled to block the Alluring column.",
+        "text": null,
         "test": "53-playtest-round7.test.ts::R84: a {Feeble} lured unit is not able, so it is not compelled"
       }
     ],

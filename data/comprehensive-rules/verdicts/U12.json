@@ -1,7 +1,7 @@
 [
   {
     "key": "combat.damage.amount",
-    "textHash": "26312b7cb2da7b0f",
+    "textHash": "f9d611c33f6b2e01",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -37,47 +37,47 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.amount.counting",
-    "textHash": "8e3355922ff90c06",
+    "textHash": "1e2bdb9e3e65836e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:colPower",
         "agrees": true,
-        "note": "Math.max(0, p) per unit; collapsed (Unaware) exchanges read printedStats"
+        "note": "each member contributes Math.max(0, p); collapsed (Unaware) exchanges read printedStats"
       }
     ],
     "tests_run": [
       {
-        "file": "05-rulings.test.ts",
-        "pattern": "R10/R106: an Unaware blocker and what it blocks BOTH read at printed",
+        "file": "client/engine/test/423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.amount.counting",
         "passed": true,
-        "asserts_claim": true
-      }
-    ],
-    "probes": [
+        "asserts_claim": "yes: Lithoghul 4/4 + a -2/3 token, unblocked, D goes to 26 ('the column deals 4, not 2')"
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
-        "title": "combat.damage.amount.counting: a negative-power unit counts as 0 and does not reduce its column",
+        "file": "client/engine/test/05-rulings.test.ts",
+        "pattern": "R10/R106: an Unaware blocker",
         "passed": true,
-        "demonstrates": "yes: Lithoghul + a -2/3 token unblocked deal 4, not 2 (the illustrative example)"
+        "asserts_claim": "yes: Robot token with 9 counters (9/9) blocked by Bubb dies and deals Bubb 0 damage"
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": "negative power deals 0"
+        "note": "Q: What happens when a unit has negative power? A: It deals 0 damage."
       },
       {
         "ref": "R106",
         "supports": "yes",
-        "note": "Unaware reads printed"
+        "note": "owner: Unaware looks only at printed text on all cards involved; Bubb blocking a Robot token kills it. Not superseded."
       }
     ],
     "quote_spans": [
@@ -88,10 +88,6 @@
       {
         "file": "client/engine/src/engine.ts",
         "text": "const [p] = collapsed ? this.printedStats(u) : this.effStats(u);"
-      },
-      {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "A: It deals 0 damage."
       }
     ],
     "basis_ok": true,
@@ -99,7 +95,7 @@
   },
   {
     "key": "combat.damage.amount.modifier-order",
-    "textHash": "17f0b697ae3445ac",
+    "textHash": "c1c848c988550e12",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -147,11 +143,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.amount.zero-power",
-    "textHash": "41c509c16bbd4b60",
+    "textHash": "2ee8059db6a6cb3c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -191,11 +188,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.assignment",
-    "textHash": "cf4ca6d6bfd5b2f0",
+    "textHash": "a7c9eb7b6bb7c30e",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U12-r2",
@@ -256,11 +254,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.assignment.chooser",
-    "textHash": "abc9f3cc864aca01",
+    "textHash": "057a775e513f6243",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U12-r2",
@@ -326,11 +325,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.assignment.dealt-in-full",
-    "textHash": "38ad4218be3aeedc",
+    "textHash": "2bd1c41e859e0db2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -388,11 +388,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.assignment.lethal-defined",
-    "textHash": "f4932988c4d5a1be",
+    "textHash": "1b36adfd1ea18448",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U12-r2",
@@ -507,55 +508,56 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.damage.assignment.lethal-first",
-    "textHash": "8df15d53f5935090",
+    "textHash": "e70bd55d4c30d35e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:electionWalk/victimShare",
+        "loc": "client/engine/src/engine.ts:assignCombatDamage / R120 election planner",
         "agrees": true,
-        "note": "options offered are [share..remaining]; below-lethal never offered while damage could go behind"
+        "note": "the assignDamage menu offers only amounts at or above the front unit's lethal"
       }
     ],
     "tests_run": [
       {
-        "file": "100-elective-assign.test.ts",
+        "file": "client/engine/test/100-elective-assign.test.ts",
         "pattern": "R120 (c): amounts below the front unit",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Rune Channeler (4 power) blocked by a 2/3 front and 1/1 back; the menu's numeric options are exactly [3, 4]"
       }
     ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.23",
-        "supports": "partly",
-        "note": "describes default overflow, not the elective constraint"
+        "supports": "yes",
+        "note": "excess beyond what kills the front row goes to the back unit"
       },
       {
         "ref": "RAQ 1353888077625561108#2",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved], status covered: lethal must be assigned to the front unit before any goes behind it"
       },
       {
-        "ref": "R114",
+        "ref": "R114 (its elective-split and dealt-in-full halves)",
         "supports": "yes",
-        "note": ""
+        "note": "'The only rule is that the front unit must be assigned lethal'; R319 amends only R114's Piercing leftover"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "before you can start assigning the damage to the back unit, you have to assign damage which would be required to kill unit in the front"
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "text": "assert.deepEqual(nums, [3, 4],"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "enough to kill them both. The only rule is that the front unit must be assigned lethal"
+        "file": "client/ledgers/raq.ts",
+        "text": "before you can start assigning the damage to the back unit, you have to assign damage which would be required to kill unit in the front"
       }
     ],
     "basis_ok": true,
@@ -563,7 +565,7 @@
   },
   {
     "key": "combat.damage.assignment.lone-unit",
-    "textHash": "595f65a5b4b82391",
+    "textHash": "69060ea9e579c7ef",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -611,11 +613,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.assignment.overkill",
-    "textHash": "2a964f5fbd7a99b3",
+    "textHash": "f76e946372796cf6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -663,11 +666,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.assignment.shields-ignored",
-    "textHash": "b4974ba7032f5bbb",
+    "textHash": "0b979ee8085a9115",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -710,11 +714,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.assignment.timing",
-    "textHash": "55b6e6b4d4cb74b2",
+    "textHash": "2a39a0cc2297c102",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -741,11 +746,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No bound example test; supported by engine reading and R120."
+    "problem": "No bound example test; supported by engine reading and R120.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.dealing",
-    "textHash": "710d7845e8d35367",
+    "textHash": "7c92e65d6126d92b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -802,11 +808,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.dealing.deaths",
-    "textHash": "173a1b80bd98c774",
+    "textHash": "8883754126f7b740",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -854,11 +861,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.dealing.prevention",
-    "textHash": "1c953517319323be",
+    "textHash": "c38fe0afbefe0701",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U12-r2",
@@ -935,11 +943,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.dealing.regroup",
-    "textHash": "04f5c858c9059c65",
+    "textHash": "8f87d3188595aef2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -975,11 +984,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No bound test; cited test file 05-rulings.test.ts not tied to a specific case. Supported by printed text + engine reading."
+    "problem": "No bound test; cited test file 05-rulings.test.ts not tied to a specific case. Supported by printed text + engine reading.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.overview",
-    "textHash": "6a67628ab16d89c4",
+    "textHash": "202935b9d178681c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1020,11 +1030,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.overview.column-source",
-    "textHash": "25010668318b19da",
+    "textHash": "7e7affa2acb05c6a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1077,11 +1088,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.overview.per-region",
-    "textHash": "b831aa0cf547b8ce",
+    "textHash": "f664cf53707a487c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1112,11 +1124,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "combat.damage.overview.simultaneous",
-    "textHash": "70d6f77998997fe6",
+    "textHash": "1adca6959c307132",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1152,11 +1165,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.pairing",
-    "textHash": "b681607aeb6a78a2",
+    "textHash": "e9e00b21112024f4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1206,11 +1220,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.pairing.attackers-gone",
-    "textHash": "ebdf6d6b7494b9f2",
+    "textHash": "6f8ab5a5a493b6cd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1257,11 +1272,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.pairing.blocked",
-    "textHash": "f69098a184aeb03b",
+    "textHash": "267755a3aaa7b230",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1299,11 +1315,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.pairing.late-blocker",
-    "textHash": "8c07409e3afc5b5d",
+    "textHash": "3ba73964f3bff60d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1346,11 +1363,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.pairing.side-block",
-    "textHash": "d4f5fcce793dcb15",
+    "textHash": "620cae764dabfebc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1407,11 +1425,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.pairing.stays-blocked",
-    "textHash": "04355216d5cd0d5b",
+    "textHash": "397b9472ee2c08f6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1489,11 +1508,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.pairing.unblocked",
-    "textHash": "c289927fe47f9fd4",
+    "textHash": "2262d8250ef37d3d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1536,11 +1556,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.player",
-    "textHash": "f90542c7957b0d22",
+    "textHash": "58f4358ebbf5d0bb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1594,11 +1615,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.player.not-combat",
-    "textHash": "e499201ff4d64327",
+    "textHash": "ff2936b8de7e9116",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1637,11 +1659,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.player.redirect",
-    "textHash": "a3e21ad5e0e11e68",
+    "textHash": "bda7f8161a37bcb7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1694,11 +1717,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.player.replaced-still-dealt",
-    "textHash": "c2941771c9ed5a5b",
+    "textHash": "f337e7642c17adea",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1741,11 +1765,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.split",
-    "textHash": "c301c10674f73973",
+    "textHash": "4cc681b419d79ac8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1795,11 +1820,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.split.boundary-window",
-    "textHash": "34edbb990e3d5c4d",
+    "textHash": "8dab32ab7771f69b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1862,11 +1888,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.split.empty-substep",
-    "textHash": "3b80eab157db3c2e",
+    "textHash": "ce9b4bae093e4669",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1921,11 +1948,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.split.schedule-fixed",
-    "textHash": "fac52a1dbca406ca",
+    "textHash": "332c4e9340a87d8d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -1963,11 +1991,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.split.state-between",
-    "textHash": "0f71b68e3ac6b871",
+    "textHash": "a3d148e42bbde9e5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2036,11 +2065,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.split.unsplit",
-    "textHash": "abf4bc4244b17d2b",
+    "textHash": "41cc6c8895fd90d8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2094,11 +2124,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.substeps",
-    "textHash": "c2f9b56d7d740d4e",
+    "textHash": "b995b012918d7ca8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2149,11 +2180,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.substeps.column-attributes",
-    "textHash": "550ed3586276bac5",
+    "textHash": "f9d1cacabf94d5fc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2196,11 +2228,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.substeps.live-attributes",
-    "textHash": "5e557f9160d0f32c",
+    "textHash": "02e1c7f18c87374c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2244,11 +2277,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.substeps.pure",
-    "textHash": "c6435ccda0b73055",
+    "textHash": "253463c8afb5e08f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2300,11 +2334,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.substeps.schedule",
-    "textHash": "d4dafe944aec8bb2",
+    "textHash": "6cafcf5e56a1d0a1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2347,11 +2382,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.substeps.struck-mark",
-    "textHash": "536c04a035ccc40d",
+    "textHash": "3133f3158e066f86",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2420,11 +2456,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.damage.substeps.swift-and-sluggish",
-    "textHash": "02238b98e4fc38c1",
+    "textHash": "ec3857bc6bc8b791",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U12-r2",
@@ -2498,51 +2535,63 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: in a Pure exchange the column strikes once, in the normal sub-step (R61); the rule is silent on that, which is acceptable since Pure switches the attributes off."
+    "problem": "Minor: in a Pure exchange the column strikes once, in the normal sub-step (R61); the rule is silent on that, which is acceptable since Pure switches the attributes off.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.triggers",
-    "textHash": "414602eb6999b2f0",
+    "textHash": "f0ce00ea16a96381",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pumpCombatDamage/settle",
+        "loc": "client/engine/src/engine.ts:settle (R261 hold of the trigger queue through the damage sub-steps)",
         "agrees": true,
-        "note": "triggers fire at event time; queue held, built/aimed when drained"
+        "note": "triggers are announced at event time in the sub-step; build (targets) and stack push happen after combat"
       }
     ],
     "tests_run": [
       {
-        "file": "239-damage-triggers-after-combat.test.ts",
-        "pattern": "R261: a combat-damage trigger is announced INSIDE the damage step",
+        "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes for example 0 (test 1: Lithoghul blocked by Geode; 'triggered' inside the damage window, no stackPushed/resolved there, stackPushed after afterCombat); all 8 R261/R121 tests pass"
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U12-1.test.ts",
+        "test": "probe U12-1: Decay Distributor dealt combat damage — triggered in the damage step, target chosen after combat",
+        "passed": true,
+        "demonstrates": "yes: the trigger is announced inside the damage window with no 'targeted' event there; the target decision is raised after 'afterCombat' and the order is afterCombat, targeted, stackPushed"
+      }
+    ],
     "source_checks": [
       {
         "ref": "RAQ 1540678747953569832#0",
-        "supports": "partly",
-        "note": "same-stack ordering, not the fire-vs-push timing"
+        "supports": "yes",
+        "note": "_passer [Solved]: damage-caused triggers and after-combat triggers are put on the same stack at the same time"
       },
       {
-        "ref": "R261",
+        "ref": "R261 (its announce-then-hold mechanism)",
         "supports": "yes",
-        "note": ""
+        "note": "'The trigger still FIRES during the damage step' ... 'What now waits is the build (target selection) and the resolution'. Narrowed by R295 for split steps, which the text's cross-reference covers"
       },
       {
         "ref": "R300",
         "supports": "yes",
-        "note": ""
+        "note": "owner: triggers off dealing/receiving damage or dying are pushed into the next step"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/engine/src/engine.ts",
+        "text": "* R261: HOLD THE TRIGGER QUEUE THROUGH THE COMBAT DAMAGE SUB-STEPS."
+      },
+      {
         "file": "client/docs/digital-rules.md",
-        "text": "**The trigger still FIRES during the damage step**, and that is not a detail — it is what"
+        "text": "(target selection) and the **resolution**. So a combat trigger's shape in the log is"
       }
     ],
     "basis_ok": true,
@@ -2550,7 +2599,7 @@
   },
   {
     "key": "combat.damage.triggers.bin-cards",
-    "textHash": "f18f223939e0b40e",
+    "textHash": "839f5bed3d42c3dd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2595,11 +2644,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.triggers.my-column",
-    "textHash": "d7e677d2f938739c",
+    "textHash": "b027daa13b74834f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2658,11 +2708,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.triggers.split",
-    "textHash": "aa814986a105bffe",
+    "textHash": "17c3acea936b5552",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2716,11 +2767,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.triggers.tax",
-    "textHash": "dce483de0e91aa65",
+    "textHash": "e829284653c4fec8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2763,11 +2815,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.damage.triggers.unsplit",
-    "textHash": "7a966cbd379d01a5",
+    "textHash": "1cd5b4b5c27b1e42",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U12-r1",
@@ -2830,6 +2883,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   }
 ]

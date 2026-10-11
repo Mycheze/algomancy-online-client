@@ -713,6 +713,28 @@ test('§10 a decoy looks like a drafted rule: its base area, a leaf from its wor
   assert.equal(decoyKey('combat.one', 'Each column deals its damage as two sources.', new Set(['combat.column-deals'])), 'combat.deals-damage', 'a taken leaf moves to the next pair of words');
 });
 
+test('§10 a decoy may carry a false EXAMPLE under true text: it is shown, named from the example, and judged like any decoy', () => {
+  const records = unitRecords();
+  records[0]!.examples = [{ text: 'A column of two units deals its damage as one source.', test: null }];
+  const s2 = roundKeys(records, 2, { changed: ['combat.three'], unverified: [], preferred: ['combat.one'] });
+  const falseEx = [{ text: 'A column of two units deals its damage as two sources.', test: null }];
+  const tryPlant = (m: Mutant) => () => plant({ unit: U, round: 2, records, sel: s2, mutants: [m] });
+  assert.throws(tryPlant({ baseKey: 'combat.one', examples: structuredClone(records[0]!.examples) as never, why_false: 'x' }), /identical to the original/);
+  assert.throws(tryPlant({ baseKey: 'combat.one', examples: [], why_false: 'x' }), /non-empty list/);
+  const { input, truth } = plant({ unit: U, round: 2, records, sel: s2, mutants: [{ baseKey: 'combat.one', examples: falseEx, why_false: 'one source, not two' }] });
+  const d = truth.decoys[0]!;
+  assert.equal(d.key, 'combat.column-units', 'named from the false example');
+  const shown = input.find((r) => r.key === d.key)!;
+  assert.equal(shown.text, records[0]!.text, 'the rule text is the true one');
+  assert.deepEqual(shown.examples, falseEx, 'only the example is false');
+  assert.deepEqual([d.examples, d.originalExamples], [falseEx, records[0]!.examples], 'the truth keeps both');
+  const doc = (v: string, problem: string) => ({ verdicts: [verdict(d.key, v, problem), verdict('combat.three', 'confirmed')] });
+  const fooled = judge({ truth, input, doc: doc('confirmed', ''), readText });
+  assert.deepEqual([fooled.batchValid, fooled.missed], [false, [d.key]], 'a verifier that confirms the false example is caught by the decoy\'s name');
+  const good = judge({ truth, input, doc: doc('partial', 'example 0: the column deals one source, not two'), readText });
+  assert.deepEqual([good.batchValid, good.caught, good.missed], [true, 1, []]);
+});
+
 test('§10 judge: every mutant caught is a valid batch; one confirmed, or caught with no problem text, invalidates it', () => {
   const { input, truth } = planted();
   const good = judge({ truth, input, doc: honest(), readText });

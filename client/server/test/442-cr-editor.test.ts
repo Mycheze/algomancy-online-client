@@ -38,7 +38,7 @@ type CrRow = import('../crreview.ts').CrRow;
 // @ts-expect-error — a plain .mjs script, typed by use
 const C = await import('../../engine/scripts/cr/comments.mjs') as {
   threadsOf: (items: Map<string, unknown>, o?: { all?: boolean }) => { root: { id: string; resolved?: unknown }; replies: { id: string; body: string }[] }[];
-  openThreads: (items: Map<string, unknown>) => { root: { id: string }; replies: { id: string; body: string }[] }[];
+  threadsOf: (items: Map<string, unknown>) => { root: { id: string }; replies: { id: string; body: string }[] }[];
   contextFor: (root: unknown, inputs: unknown) => Record<string, any>;
   editorRequest: (op: string, id: string, body?: string) => { path: string; payload: Record<string, unknown> };
   sendToServer: (server: string, req: { path: string; payload: Record<string, unknown> }, token: string) => Promise<{ status: number; answer: Record<string, any> }>;
@@ -64,13 +64,13 @@ test('§1 open threads: resolved drops out, reopened comes back, deleted is gone
     row({ op: 'delete', id: 'c_c_000003', by: BOB }),
     row({ op: 'resolve', id: 'c_a_000001', by: BOB }),          // bob is not its author and not flagged asAdmin
   ];
-  const open = C.openThreads(fold(rows));
+  const open = C.threadsOf(fold(rows));
   assert.deepEqual(ids(open), ['c_a_000001']);
   assert.deepEqual(open[0]!.replies.map(r => r.body), ['agreed']);
   assert.deepEqual(ids(C.threadsOf(fold(rows), { all: true })), ['c_a_000001', 'c_b_000002']);
 
   rows.push(row({ op: 'reopen', id: 'c_b_000002', by: OWNER }));
-  assert.deepEqual(ids(C.openThreads(fold(rows))), ['c_a_000001', 'c_b_000002']);
+  assert.deepEqual(ids(C.threadsOf(fold(rows))), ['c_a_000001', 'c_b_000002']);
 
   // loadThreads reads a FILE with the server's reader, and leaves the env as it found it
   const other = join(dir, 'snapshot.jsonl');
@@ -167,11 +167,11 @@ test('§4 through the door: reply as the Rules editor, resolve, reopen; the refu
   assert.equal(written.target, 'rule:attr.general', 'a reply takes its thread\'s target');
 
   assert.equal((await call({ op: 'resolve', id: 'c_e_000020' }, true)).status, 200);
-  assert.deepEqual(ids(C.openThreads(fold(readJournal()))), [], 'the fold lets the editor\'s resolve stand');
+  assert.deepEqual(ids(C.threadsOf(fold(readJournal()))), [], 'the fold lets the editor\'s resolve stand');
   assert.equal(fold(readJournal()).get('c_e_000020')!.resolved!.by, 'Rules editor');
   assert.equal((await call({ op: 'resolve', id: 'c_e_000020' }, true)).status, 409);
   assert.equal((await call({ op: 'reopen', id: 'c_e_000020' }, true)).status, 200);
-  assert.deepEqual(ids(C.openThreads(fold(readJournal()))), ['c_e_000020']);
+  assert.deepEqual(ids(C.threadsOf(fold(readJournal()))), ['c_e_000020']);
 
   assert.equal((await call({ op: 'reply', id: 'c_f_000021', body: 'x' }, true)).status, 400, 'threads are one deep');
   assert.equal((await call({ op: 'reply', id: 'c_zz_000000', body: 'x' }, true)).status, 404);

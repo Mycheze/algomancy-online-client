@@ -47,7 +47,7 @@
     "text": "Virus and Modular are not further kinds of mod. A Virus is a card that can also be applied as an augment during battle (723). Modular lets mods be applied to a card as it is played (724).",
     "examples": [
       {
-        "text": "A Virus applied in battle is an ordinary augment action, and attaches as an augment.",
+        "text": null,
         "test": "428-cr-modifications.test.ts::cr:effects.mods.what.virus-modular — a Virus applied in battle is an augment action and attaches as an augment; no virus or modular kind of mod exists"
       }
     ],
@@ -87,7 +87,7 @@
     "text": "Applying a mod is a special action, which a player may perform during the deployment phase.",
     "examples": [
       {
-        "text": "A graft is offered in deployment and is not offered in the haste step or in battle.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1:"
       }
     ],
@@ -194,7 +194,7 @@
     "text": "A mod can be applied outside deployment only where a rule or a card says so: a Virus during battle (723.2); a card augmented in battle under a card that lets it be augmented as if it were a Virus, such as Rook (723.5); a mod applied in the haste step under a card that allows it, such as Slurpr (504.8a); and a mod applied to a Modular card as it is played (724). No other card widens the window.",
     "examples": [
       {
-        "text": "Without a Slurpr, a mod is refused in the haste step.",
+        "text": null,
         "test": "40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged"
       }
     ],
@@ -246,11 +246,11 @@
     "text": "An effect that lets a player play cards does not let them apply mods. Tides of the Cosmos cannot graft a card or apply a non-Virus augment; it may only put a Virus card onto a unit as a Virus.",
     "examples": [
       {
-        "text": "Tides plays a card and is never offered a graft or a plain augment.",
+        "text": null,
         "test": "396-raq-timing.test.ts::RAQ Tides 4:"
       },
       {
-        "text": "A Virus card picked by Tides augments a unit as a Virus and never enters play.",
+        "text": null,
         "test": "404-raq-fix-tides.test.ts::R337: a Virus card played by Tides as a Virus augments a unit and never enters play"
       }
     ],
@@ -308,7 +308,7 @@
         "test": "105-semantics-playwatch.test.ts::Stalwart Sentinel: R96/R123"
       },
       {
-        "text": "A Virus applied during battle is not a spell: Origon does not negate it, and its first-spell count is untouched.",
+        "text": "A Virus applied during battle is not a spell: Origon does not negate it, and it does not count as a spell played.",
         "test": "105-semantics-playwatch.test.ts::Origon: a virus applied during battle is not a spell"
       }
     ],
@@ -353,11 +353,11 @@
     "text": "To apply a mod, a player must meet the mod card's affinity requirement and pay its mana cost, wherever the mod comes from.",
     "examples": [
       {
-        "text": "An augment from hand needs its affinity and pays its cost.",
+        "text": null,
         "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost"
       },
       {
-        "text": "A Virus applied in battle needs its affinity and pays its cost.",
+        "text": null,
         "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost"
       }
     ],
@@ -448,15 +448,15 @@
     "text": "A mod applied from the cache is priced by the permission that lets it be used. Under a fulfilled prophecy it costs nothing and ignores affinity. Under a glimpse this turn it costs its mana but ignores affinity.",
     "examples": [
       {
-        "text": "A live glimpse grafts for the card's mana, ignoring affinity.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
       },
       {
-        "text": "A fulfilled prophecy grafts for free, affinity and all.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free, affinity and all"
       },
       {
-        "text": "A glimpse waives the pips but not the mana: with too little mana the mod is refused.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana"
       }
     ],
@@ -503,11 +503,11 @@
     "text": "A mod may be applied from the player's hand or from their bin.",
     "examples": [
       {
-        "text": "A graft is applied from the bin.",
+        "text": null,
         "test": "04-mods.test.ts::grafts can be applied from the bin"
       },
       {
-        "text": "A graft comes from the bin as well as the hand, when its cost and affinity are met.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3"
       }
     ],
@@ -558,11 +558,11 @@
     "text": "A mod may also be applied from the cache, but only while a permission to use that card is live: a fulfilled prophecy, or a glimpse this turn. A cached card with no live permission cannot be applied as a mod.",
     "examples": [
       {
-        "text": "An expired glimpse cannot be grafted or augmented.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything"
       },
       {
-        "text": "An unfulfilled prophecy cannot be grafted.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted"
       }
     ],
@@ -657,7 +657,7 @@
     "text": "A mod is controlled by its host's controller. A player who augments a card onto an opponent's unit gives that opponent control of the mod and all of its text.",
     "examples": [
       {
-        "text": "Corrupting Blight applied as a Virus to an enemy unit steals that unit for the Virus's new controller's choice of player after combat.",
+        "text": "In battle, a player applies Corrupting Blight as a Virus to an opponent's Bubb. The opponent now controls the Blight, so its \"you\" is the opponent: after combat, a player who doesn't control Bubb gains control of it, and Bubb ends up with the player who applied the Blight.",
         "test": "23-wood-a.test.ts::Corrupting Blight: defects after combat when played normally; steals the host as a Virus"
       }
     ],
@@ -707,7 +707,7 @@
     "text": "On a mod's text, \"you\" means the host's controller.",
     "examples": [
       {
-        "text": "Oorblak applied as a Virus to an enemy unit redirects the combat damage that would be dealt to that enemy, onto that enemy's own unit.",
+        "text": "Oorblak applied as a Virus to an opponent's unit: the combat damage that would be dealt to that opponent is dealt to their own unit instead.",
         "test": "17-earth-b.test.ts::Oorblak: as a Virus, \"me\" is the HOST"
       }
     ],
@@ -820,7 +820,7 @@
     "text": "When a unit changes controller, its mods change controller with it.",
     "examples": [
       {
-        "text": "Download steals a modded unit token, and its augment changes controller with it.",
+        "text": "Download steals a unit token that carries an augment; the augment changes controller with it.",
         "test": "26-metal-a.test.ts::Download steals a MODDED unit token"
       }
     ],
@@ -905,7 +905,7 @@
     "text": "As long as a card is modded, it has {Unstable}: when it dies or is erased, it and all of its mods are erased.",
     "examples": [
       {
-        "text": "A host carrying Ephemeral Skywalker is destroyed; neither card reaches the bin.",
+        "text": "A unit carrying Ephemeral Skywalker as an augment dies; both cards are erased and neither reaches the bin.",
         "test": "04-mods.test.ts::augments: type-line attribute grant, unstable erasure"
       }
     ],
@@ -946,7 +946,7 @@
     "text": "If a modded card leaves play without dying or being erased, for example when it is returned to a hand, its mods are put into the bin and the card goes on alone.",
     "examples": [
       {
-        "text": "A nontoken mod on a host that is recalled, cached or killed is binned and trashed exactly once on each route.",
+        "text": null,
         "test": "141-despawn-mods.test.ts::R167 (iv): a nontoken mod is binned and trashed exactly once on all three routes"
       }
     ],
@@ -990,7 +990,7 @@
     "text": "When a modded unit is cached, its mods do not follow it into the cache; they go to the bin.",
     "examples": [
       {
-        "text": "Caching a unit sheds its mods to the bin.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin"
       }
     ],
@@ -1027,7 +1027,7 @@
     "text": "A token mod has no card of its own. It never enters a bin: however its host leaves play, the token mod is erased.",
     "examples": [
       {
-        "text": "A token mod reaches the erased pile exactly once, and no bin, whether its host is recalled, cached or killed.",
+        "text": "A unit carrying a Wraith token as an augment is recalled, cached or killed. Whichever way it leaves, the Wraith goes to no bin and is not trashed: it is erased.",
         "test": "141-despawn-mods.test.ts::R167 (v): a token mod reaches the erased pile exactly once"
       }
     ],
@@ -1112,7 +1112,7 @@
         "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable"
       },
       {
-        "text": "A Borrower that copied a modded unit dies to the bin.",
+        "text": null,
         "test": "403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin"
       }
     ],
@@ -1162,11 +1162,11 @@
     "text": "When a host is recalled or cached and its nontoken mods are left in a bin, each of those mods is trashed, and the host's controller is the player who trashes it.",
     "examples": [
       {
-        "text": "A mod left behind by a recall is trashed by the host's controller, not by the mod's owner.",
+        "text": null,
         "test": "224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner"
       },
       {
-        "text": "A cached host's left-behind mods are attributed the same way.",
+        "text": null,
         "test": "224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does"
       }
     ],
@@ -1216,7 +1216,7 @@
     "text": "A nontoken mod erased together with its {Unstable} host is not trashed. The host's single trash counts for the whole unit.",
     "examples": [
       {
-        "text": "A Virus on a host that dies is erased with it and is not trashed.",
+        "text": null,
         "test": "224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all"
       }
     ],
@@ -1262,7 +1262,7 @@
         "test": "17-earth-b.test.ts::Return to Nature: negates everything on the stack and erases all mods in the region"
       },
       {
-        "text": "A mod on a stolen host, erased off it, is filed on the thief's erased pile, not its owner's.",
+        "text": "A mod on a stolen unit is erased off it; it goes to the erased pile of the player who stole the unit, not its owner's.",
         "test": "246-zones-follow-control.test.ts::R262 §5: the erased pile files a stolen mod under the THIEF"
       }
     ],
@@ -1401,7 +1401,7 @@
     "text": "A moved mod is controlled by its new host's controller.",
     "examples": [
       {
-        "text": "Rotbeast's augments moved onto an enemy now work for that enemy. (illustrative)",
+        "text": "Rotbeast moves augments onto an enemy unit; the enemy now controls them, along with their text.",
         "test": null
       }
     ],
@@ -1440,7 +1440,7 @@
         "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Once per Turn"
       },
       {
-        "text": "The spent mark is copied to the new host, so nothing is refreshed anywhere.",
+        "text": null,
         "test": "403-raq-fix-mods.test.ts::R331: a moved mod carries its spent augment budget"
       }
     ],
@@ -1738,11 +1738,11 @@
     "text": "On a host, only the augment's own augment text works. The rest of the augment card's text, including body text printed outside the augment paragraph and attributes printed before a text-box augment symbol, does nothing for the host.",
     "examples": [
       {
-        "text": "Infernal Wispweaver's body text radiates when it is played as a unit, and never from a mod.",
+        "text": "Infernal Wispweaver played as a unit gives your wisps +2/+1. Applied as an augment, it gives its host only \"At the end of turn, create a wisp\"; the +2/+1 for your wisps, printed outside the augment paragraph, does nothing.",
         "test": "248-augment-box-scope.test.ts::§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod"
       },
       {
-        "text": "Smouldering Inferno, whose {Piercing} is on its type line before no augment symbol, gives its host only its text-box line.",
+        "text": "Smouldering Inferno has {Piercing} on its type line and \"[Augment] After combat, sacrifice me\" in its text box. Applied as a Virus to an attacking Rune Channeler, it does not give the Channeler Piercing, and after combat the Channeler sacrifices itself.",
         "test": "04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer"
       }
     ],
@@ -1784,7 +1784,7 @@
     "text": "A card that is played normally reads its whole text, its augment text included.",
     "examples": [
       {
-        "text": "A card played normally still reads its own augment paragraph.",
+        "text": null,
         "test": "248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box"
       }
     ],
@@ -1832,7 +1832,7 @@
     "text": "Augment text keeps its kind on the host. A static ability given by an augment (\"I gain +2/+2\") is a continuous effect on the host for as long as the mod is attached; it is not a triggered ability and does not use the stack.",
     "examples": [
       {
-        "text": "Aetherflux Golem's \"[Augment] I gain +2/+2\" is a static, like the two other cards printing that sentence.",
+        "text": null,
         "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC"
       }
     ],
@@ -1874,11 +1874,11 @@
     "text": "Augment text that triggers on the host's own departure (\"When I despawn\") triggers whichever way the host leaves play: when it dies, is recalled or is cached.",
     "examples": [
       {
-        "text": "A donated \"When I despawn\" fires on a recall.",
+        "text": null,
         "test": "141-despawn-mods.test.ts::R167 (i): a donated \"[Augment] When I despawn\" fires on a RECALL"
       },
       {
-        "text": "It fires on a cache too.",
+        "text": null,
         "test": "141-despawn-mods.test.ts::R167 (ii): a donated \"[Augment] When I despawn\" fires on a CACHE"
       }
     ],
@@ -1957,7 +1957,7 @@
     "text": "To apply an augment, the player takes these steps in order: (1) meets the augment's affinity requirement; (2) pays its mana cost; (3) selects a target to apply it onto; (4) places the augment card beneath the target, with its text box visible beneath the target's.",
     "examples": [
       {
-        "text": "An augment from hand needs its affinity and pays its cost.",
+        "text": null,
         "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost"
       }
     ],
@@ -2049,7 +2049,7 @@
     "text": "During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. The token gains only the augment's attributes.",
     "examples": [
       {
-        "text": "A spell token is offered as an augment host during deployment.",
+        "text": null,
         "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
       },
       {
@@ -2104,7 +2104,7 @@
     "text": "An augment applied to a spell, on the stack (723.4) or as it is played through Modular (724), gives the spell only its type-line attributes. Augment text and static abilities give a spell nothing, but applying such an augment is still legal.",
     "examples": [
       {
-        "text": "A text-only augment on a spell token grants nothing.",
+        "text": null,
         "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing, and says so"
       },
       {
@@ -2152,7 +2152,7 @@
     "text": "Reconfigure augments a unit and all of its mods onto another unit. Its first target must have the augment symbol.",
     "examples": [
       {
-        "text": "Reconfigure moves an augment unit and its mods onto another unit.",
+        "text": null,
         "test": "29-hybrids-wm-a.test.ts::Reconfigure: moves target augment unit AND its mods onto another target unit"
       }
     ],
@@ -2235,7 +2235,7 @@
     "text": "A unit that has become a copy of a card with the augment symbol does not have that symbol, so it cannot be Reconfigure's first target.",
     "examples": [
       {
-        "text": "A Borrower of Forms that copied an augment unit is not offered as Reconfigure's first target. (illustrative)",
+        "text": "A Borrower of Forms that copied an augment unit cannot be chosen as Reconfigure's first target.",
         "test": null
       }
     ],
@@ -2277,11 +2277,11 @@
     "text": "An effect can augment a card onto a unit when it resolves. When the effect augments a token (\"Augment a Wraith onto an ally\"), the token is created directly as a mod of that unit.",
     "examples": [
       {
-        "text": "\"Augment a Wraith onto a unit\" makes the Wraith token directly as a mod.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R71: \"augment a Wraith onto a unit\" makes the same token, directly as a mod"
       },
       {
-        "text": "An augmented Wraith gives its host its first line: at the start of deployment the host puts a -1/-1 counter on an ally (itself, its only ally), so a 4/4 host becomes 3/3. The test does not exercise the second line.",
+        "text": "An augmented Wraith gives its host its first line: at the start of deployment the host puts a -1/-1 counter on an ally, here itself, its only ally, so a 4/4 host becomes 3/3.",
         "test": "37-attrs-wight.test.ts::R71: an augmented Wraith donates BOTH lines to its host"
       }
     ],
@@ -2324,7 +2324,7 @@
     "text": "Graft is a modification that combines several effects under a single cause. It is marked by the graft symbol, written [Switch] (unbounded) or [Switch1] (bounded) in the card text this document quotes.",
     "examples": [
       {
-        "text": "Flame Juggle grafted onto Oracle of the Flame: one sacrifice makes the Oracle Fireball 1 and Flame Juggle three Fireball 1s.",
+        "text": "Flame Juggle grafted onto Oracle of the Flame: one sacrifice of the Oracle creates its own Fireball 1 and Flame Juggle's three Fireball 1s.",
         "test": "428-cr-modifications.test.ts::cr:effects.graft.what — a graft puts a second effect under the host cause: one sacrifice of Oracle of the Flame makes both effects"
       }
     ],
@@ -2367,7 +2367,7 @@
     "text": "A graft card's ability has a cause, before the graft symbol, and an effect, after it. Oracle of the Flame's cause is \"Sacrifice me\" and its effect is \"Create a Fireball 1\".",
     "examples": [
       {
-        "text": "Activating Oracle of the Flame sacrifices it and creates one Fireball 1.",
+        "text": null,
         "test": "428-cr-modifications.test.ts::cr:effects.graft.what.cause-effect — Oracle of the Flame cause is Sacrifice me and its effect is Create a Fireball 1"
       }
     ],
@@ -2410,7 +2410,7 @@
     "text": "When a card is grafted, only what follows its graft symbol is added to the host. Everything printed before the symbol, its cost and cause included, is ignored.",
     "examples": [
       {
-        "text": "A grafted Omniwield Evoker adds its counter to the host's trigger and charges nothing of its [three].",
+        "text": "A grafted Omniwield Evoker adds \"Put a +1/+1 counter on me\" to the host's ability; its own cost of three, printed before the graft symbol, is not paid.",
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 6"
       }
     ],
@@ -2447,7 +2447,7 @@
     "text": "A graft card still works as written when it is played normally. A spell or spell unit with a graft symbol resolves normally when it is played, and can later be grafted from the bin.",
     "examples": [
       {
-        "text": "A dead Leaping Lillik is a graft from the bin.",
+        "text": "Once Leaping Lillik has died, it can be grafted from the bin.",
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 4"
       }
     ],
@@ -2490,11 +2490,11 @@
     "text": "Both cards must have the graft symbol. The host must be a unit in play with a graft cause of its own.",
     "examples": [
       {
-        "text": "A graft is refused onto a card without the graft symbol and a cause.",
+        "text": null,
         "test": "04-mods.test.ts::grafting requires the graft symbol on both cards and a cause on the host"
       },
       {
-        "text": "Only a unit with a graft cause of its own can be grafted onto.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 2"
       }
     ],
@@ -2539,7 +2539,7 @@
     "text": "Applying a graft follows the same cost and timing as an augment: from the hand or the bin, during deployment, paying the card's cost and meeting its affinity.",
     "examples": [
       {
-        "text": "A graft comes from the bin as well as the hand, only when its cost and affinity are met.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3"
       }
     ],
@@ -2590,11 +2590,11 @@
     "text": "A graft is applied only in deployment, never in the haste step or in battle, even when the graft card has Haste. The exceptions are a card that allows mods in the haste step, such as Slurpr (504.8a), and a Modular card, to which a graft card may be applied as the Modular card is played, in battle too (724).",
     "examples": [
       {
-        "text": "A graft is never offered in the haste step or in battle, even for a Haste card.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1:"
       },
       {
-        "text": "Under Slurpr a graft lands during the haste step.",
+        "text": "With Slurpr in play, a graft can be applied during the haste step.",
         "test": "40-light-c.test.ts::Slurpr: a GRAFT lands during [Haste] too"
       }
     ],
@@ -2740,7 +2740,7 @@
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 10"
       },
       {
-        "text": "The insert position decides the order the composite resolves in.",
+        "text": null,
         "test": "04-mods.test.ts::graft insert position: below the base, order controls resolution"
       }
     ],
@@ -2789,7 +2789,7 @@
     "text": "Each grafted effect is added to the cause of the host's own card. The host's ability then reads \"cause: effect 1 AND effect 2 AND effect 3 …\", in the order the grafts sit.",
     "examples": [
       {
-        "text": "Accelerated Germination grafted onto Oracle of the Flame reads \"Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units.\" (illustrative)",
+        "text": "Accelerated Germination grafted onto Oracle of the Flame reads \"Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units.\"",
         "test": null
       }
     ],
@@ -2828,7 +2828,7 @@
     "text": "The host's own graft cause decides when the whole composite triggers or can be activated.",
     "examples": [
       {
-        "text": "The host's attack trigger fires the host's effect and every graft under it.",
+        "text": null,
         "test": "04-mods.test.ts::graft composition: composite fires as ONE stack item, top-to-bottom"
       }
     ],
@@ -2864,11 +2864,11 @@
     "text": "The composite is a single ability. It goes on the stack as one item, resolves all at once, and a single negation stops all of it.",
     "examples": [
       {
-        "text": "The host trigger and every graft under it are one stack item, and one negate stops all of it.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 8"
       },
       {
-        "text": "In battle a single negation kills the whole composite.",
+        "text": null,
         "test": "04-mods.test.ts::composite is ONE stack item in battle"
       }
     ],
@@ -2919,7 +2919,7 @@
     "text": "The composite resolves from top to bottom: the host's own effect first, then each graft in the order it sits.",
     "examples": [
       {
-        "text": "Under Mohruung, Overbloom above Spewing Mushroom makes a Poison 8; below it, a Poison 1.",
+        "text": "On a Mohruung host, Overbloom grafted above Spewing Mushroom makes a Poison 8; grafted below it, a Poison 1.",
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 9"
       }
     ],
@@ -2965,7 +2965,7 @@
     "text": "Every target of the composite is declared when it is put on the stack. A part that requires a target must take one if any is legal, even one of the player's own units.",
     "examples": [
       {
-        "text": "With no enemy on the board, the grafted delete must take one of the player's own units.",
+        "text": "Plodding Pebble, with Leaping Lillik (\"Delete target unit\") grafted under it, attacks into an empty region and is hit by a Fireball 1. As its trigger goes on the stack, the delete must take a target: with no enemy unit there, Plodding Pebble itself is legal, and the player cannot choose no target.",
         "test": "393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example"
       }
     ],
@@ -3048,15 +3048,15 @@
     "text": "A composite fizzles only when it has lost all of its targets, and then none of it happens, its untargeted parts included. While at least one target remains, every part resolves as far as it can. A composite that declared no target anywhere never fizzles.",
     "examples": [
       {
-        "text": "A composite that loses its only target fizzles whole: no Poison from the untargeted grafts.",
+        "text": "Spewing Mushroom carries Biotoxicity and Technological Superiority as grafts. It attacks, and its composite trigger targets Spewing Mushroom, the only target it declares. The opponent deletes the Mushroom with Leaping Lillik in response: the composite fizzles, and Biotoxicity's untargeted Poisons are not created either.",
         "test": "78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole"
       },
       {
-        "text": "One surviving target carries the untargeted grafts through.",
+        "text": null,
         "test": "78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through"
       },
       {
-        "text": "An item that declares no target anywhere never fizzles.",
+        "text": null,
         "test": "78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles"
       }
     ],
@@ -3101,7 +3101,7 @@
     "text": "A graft composite is a triggered or activated ability like any other. A modifier to the cost of activating or triggering abilities (Crevice Lurker) applies to it.",
     "examples": [
       {
-        "text": "Crevice Lurker taxes a graft trigger like any other.",
+        "text": null,
         "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: a graft trigger is taxed like any other"
       }
     ],
@@ -3182,7 +3182,7 @@
     "text": "Under an unbounded cause, the composite can fire any number of times, but each bounded graft in it is included only the first time in a turn.",
     "examples": [
       {
-        "text": "An unbounded host activated twice carries its bounded graft only the first time.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice"
       }
     ],
@@ -3225,7 +3225,7 @@
     "text": "Under a bounded cause, the whole composite fires only once per turn, its unbounded grafts included.",
     "examples": [
       {
-        "text": "A bounded host triggers once per turn, so an unbounded graft under it happens once.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn"
       }
     ],
@@ -3337,11 +3337,11 @@
     "text": "A graft printed \"{graft} [cost]: effect\" adds a cost to the composite. That cost must be paid; it cannot be declined.",
     "examples": [
       {
-        "text": "A payable [cost] graft must be paid; there is no opting out.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 11: a payable [cost] graft must be paid"
       },
       {
-        "text": "A grafted Immolate's sacrifice is paid at composite cast time, with no decline offered.",
+        "text": "A grafted Immolate's sacrifice is paid as the composite goes on the stack, and the player cannot decline it.",
         "test": "32-cast-costs.test.ts::grafted Immolate: the carrier must pay the cost at composite cast time"
       }
     ],
@@ -3390,11 +3390,11 @@
     "text": "If a grafted cost cannot be paid, the whole composite stays off the stack: the host's own effect and every other graft with it.",
     "examples": [
       {
-        "text": "An unpayable [cost] graft keeps the host and the other grafts off the stack too.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack"
       },
       {
-        "text": "An activated graft cause whose grafted cost cannot be paid is not offered.",
+        "text": null,
         "test": "403-raq-fix-mods.test.ts::R334: an activated graft cause whose grafted [cost] cannot be paid is not offered at all"
       }
     ],
@@ -3443,7 +3443,7 @@
     "text": "The cost is paid as the composite goes on the stack. No player can respond to the payment, and units the composite itself would create cannot pay it.",
     "examples": [
       {
-        "text": "A \"[cost]: effect\" graft under Lost Guardian pays its cost twice and resolves twice.",
+        "text": null,
         "test": "17-earth-b.test.ts::graft under Lost Guardian pays its cost TWICE and resolves twice"
       }
     ],
@@ -3577,7 +3577,7 @@
         "test": "14-water-a.test.ts::R110: Amphivore triples a BOUNDED [Switch1] graft"
       },
       {
-        "text": "Lost Guardian repeats a bounded graft too.",
+        "text": null,
         "test": "17-earth-b.test.ts::R110: Lost Guardian repeats a BOUNDED [Switch1] graft too"
       }
     ],
@@ -3615,7 +3615,7 @@
     "text": "Each copy of a targeted graft chooses its targets separately.",
     "examples": [
       {
-        "text": "A targeted graft under Amphivore aims each of its three copies separately.",
+        "text": null,
         "test": "14-water-a.test.ts::R110: a TARGETED graft under Amphivore aims each of its three copies separately"
       }
     ],
@@ -3971,11 +3971,11 @@
         "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle"
       },
       {
-        "text": "A Virus whose prophecy is fulfilled is applied in battle for free.",
+        "text": null,
         "test": "370-cached-virus-in-battle.test.ts::R311: a Virus whose prophecy is fulfilled augments in battle for FREE"
       },
       {
-        "text": "An expired glimpse is nothing in battle.",
+        "text": null,
         "test": "370-cached-virus-in-battle.test.ts::R311: an EXPIRED glimpse is still nothing in battle"
       }
     ],
@@ -4178,11 +4178,11 @@
     "text": "A Virus that is negated, or whose target has become invalid, is put into the bin and cannot be used as a Virus again.",
     "examples": [
       {
-        "text": "A Virus whose host leaves the stack first fizzles to the bin.",
+        "text": "A Virus aimed at a spell on the stack: the spell leaves the stack first, so the Virus fizzles and goes to the bin.",
         "test": "67-resolving-and-stack-viruses.test.ts::R79: a virus whose host leaves the stack first fizzles to the bin"
       },
       {
-        "text": "Negating the Virus itself bins it.",
+        "text": null,
         "test": "67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it"
       }
     ],
@@ -4223,7 +4223,7 @@
     "text": "A Virus being applied is not a spell. An effect that negates spells, or counts the spells played, does not see it.",
     "examples": [
       {
-        "text": "A spell-only negation cannot reach a Virus, and a negated Virus does not mod.",
+        "text": null,
         "test": "04-mods.test.ts::a virus is not a \"spell effect\" (negation scoping); a negated virus does not mod"
       },
       {
@@ -4275,7 +4275,7 @@
         "test": "67-resolving-and-stack-viruses.test.ts::R79: the powerful guy on a giant fireball"
       },
       {
-        "text": "A Virus can go onto an enemy spell.",
+        "text": null,
         "test": "67-resolving-and-stack-viruses.test.ts::R79: you can hit an ENEMY spell"
       }
     ],
@@ -4316,7 +4316,7 @@
     "text": "Spells, spell units and spell tokens on the stack are legal hosts for a Virus.",
     "examples": [
       {
-        "text": "A spell token on the stack is a legal host.",
+        "text": null,
         "test": "67-resolving-and-stack-viruses.test.ts::R79: a spell TOKEN is a legal host too"
       }
     ],
@@ -4353,7 +4353,7 @@
     "text": "Triggered and activated abilities, Viruses, units being cast and Ambushes on the stack are not legal hosts for a Virus.",
     "examples": [
       {
-        "text": "A triggered ability on the stack is not offered as a Virus host, and is refused if asked for anyway.",
+        "text": null,
         "test": "67-resolving-and-stack-viruses.test.ts::R79: only SPELLS are legal hosts"
       }
     ],
@@ -4392,11 +4392,11 @@
     "text": "A spell carrying a Virus is modded, so it is {Unstable}: the spell and the Virus are erased instead of going to a bin, whether the spell resolves, fizzles or is negated.",
     "examples": [
       {
-        "text": "A spell that carried a Virus is erased, never binned.",
+        "text": null,
         "test": "67-resolving-and-stack-viruses.test.ts::R79 ⚠: a spell that carried a virus is Unstable"
       },
       {
-        "text": "Negating the carrier erases it too.",
+        "text": null,
         "test": "67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too"
       }
     ],
@@ -4439,7 +4439,7 @@
     "text": "A spell unit carrying a Virus is not erased when it resolves. It enters play with the Virus attached as an augment, and so has {Unstable}.",
     "examples": [
       {
-        "text": "A spell unit carries its Virus into play as an augment mod.",
+        "text": null,
         "test": "67-resolving-and-stack-viruses.test.ts::R79: a spell UNIT carries its virus into play as an augment mod"
       }
     ],
@@ -4480,7 +4480,7 @@
     "text": "A spell that has begun to resolve cannot have a Virus applied to it.",
     "examples": [
       {
-        "text": "A resolving item cannot be responded to, negated or targeted.",
+        "text": null,
         "test": "67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted"
       }
     ],
@@ -4517,11 +4517,11 @@
     "text": "A card can let other cards be augmented during battle as if they were Viruses. Rook: \"You may augment cards from hand and bin during battle as if they were [Virus].\"",
     "examples": [
       {
-        "text": "A non-Virus augment from hand during battle is refused without Rook and legal with it.",
+        "text": "Applying a non-Virus augment from hand during battle is not allowed without Rook, and is with it.",
         "test": "29-hybrids-wm-a.test.ts::Rook: a NON-virus augment from HAND during battle"
       },
       {
-        "text": "Rook's bin augment takes the card out of the bin.",
+        "text": null,
         "test": "29-hybrids-wm-a.test.ts::Rook: augmenting from the BIN during battle takes the card out of the BIN, not the hand"
       }
     ],
@@ -4556,11 +4556,11 @@
     "text": "Such a card gives the augmented card the Virus ability itself, so the augment may go onto an opponent's unit or onto a spell on the stack.",
     "examples": [
       {
-        "text": "A Rook-enabled augment lands on an enemy unit during battle.",
+        "text": null,
         "test": "136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment lands on an ENEMY unit during battle"
       },
       {
-        "text": "A Rook-enabled augment reaches a spell on the stack.",
+        "text": null,
         "test": "136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment reaches a SPELL ON THE STACK"
       }
     ],
@@ -4607,7 +4607,7 @@
     "text": "Such a card reaches only the zones it names. Rook names the hand and the bin, so a non-Virus card in the cache cannot be augmented in battle through Rook.",
     "examples": [
       {
-        "text": "Rook prints \"hand and bin\", so the cache stays shut.",
+        "text": null,
         "test": "29-hybrids-wm-a.test.ts::Rook: it prints \"hand and bin\", so the CACHE stays shut"
       }
     ],
@@ -4649,11 +4649,11 @@
     "text": "Such a permission belongs to the controller of the card that grants it (the host's controller, when it is a mod), and works only in that card's region.",
     "examples": [
       {
-        "text": "Rook's permission is region-scoped and does not reach the opponent.",
+        "text": null,
         "test": "29-hybrids-wm-a.test.ts::Rook: the permission is REGION-scoped, and does not reach the opponent"
       },
       {
-        "text": "Rook worn as an augment gives the permission to the host's controller.",
+        "text": null,
         "test": "29-hybrids-wm-a.test.ts::Rook: the [Augment] half works, and the permission belongs to the HOST"
       }
     ],
@@ -4695,7 +4695,7 @@
     "text": "Modular is an attribute. A player may apply mods from their hand and/or bin to a Modular card as it is played, paying their costs.",
     "examples": [
       {
-        "text": "Spellbind's mods are applied at cast time, paid for, and ride on the stack item.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::{Modular}: mods are applied at cast time, paid for, and ride on the stack item"
       }
     ],
@@ -4731,7 +4731,7 @@
     "text": "Spellbind is the only card that prints Modular.",
     "examples": [
       {
-        "text": "Spellbind is the only card in the pool that prints Modular.",
+        "text": null,
         "test": "428-cr-modifications.test.ts::cr:effects.modular.what.pool — Spellbind is the only card in the pool with Modular"
       }
     ],
@@ -4771,11 +4771,11 @@
     "text": "Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card: a graft, an augment, a Virus, or a card that can do nothing on a spell.",
     "examples": [
       {
-        "text": "The Modular menu offers every card the player can pay for.",
+        "text": null,
         "test": "91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for"
       },
       {
-        "text": "A card in the bin is offered beside the hand; an unaffordable one is not.",
+        "text": null,
         "test": "91-modular.test.ts::R105: a card in the BIN is offered beside the hand, and an unaffordable one is not"
       }
     ],
@@ -4851,7 +4851,7 @@
     "text": "Each mod's cost is paid as it is applied, while the Modular card is cast. Applying it is not playing it.",
     "examples": [
       {
-        "text": "The mod is charged at cast, and applying it is not playing it.",
+        "text": null,
         "test": "91-modular.test.ts::R105: \"you still pay their costs\""
       }
     ],
@@ -4886,7 +4886,7 @@
     "text": "The mods are chosen and paid for while the Modular card is being cast, before it reaches the stack, and they go on the stack with it. The caster may apply none.",
     "examples": [
       {
-        "text": "The caster may decline, and a non-Modular spell is never asked.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::{Modular}: the caster may decline, and a non-modular spell is never asked"
       }
     ],
@@ -4928,11 +4928,11 @@
     "text": "A graft applied to a Modular spell adds its effect to the spell's ability as an extra part.",
     "examples": [
       {
-        "text": "A graft mod contributes its effect as an extra part.",
+        "text": null,
         "test": "91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part"
       },
       {
-        "text": "A graft card in the bin is played again through Spellbind, happens, and is erased.",
+        "text": "A player casts Spellbind and applies Primordial Coalescence from their bin to it. When Spellbind resolves, Primordial Coalescence's graft effect happens too: three Wraiths, and its 2 Rot on top of Spellbind's one.",
         "test": "91-modular.test.ts::R105: the flashback line"
       }
     ],
@@ -5047,7 +5047,7 @@
     "text": "A grafted cost on a Modular spell's graft part must be paid if it can be. If it cannot, only that part is skipped, and the spell still resolves.",
     "examples": [
       {
-        "text": "Spellbind carrying a grafted Immolate with no unit to sacrifice: the Immolate part is skipped and Spellbind still gives its rot. (illustrative)",
+        "text": "Spellbind carrying a grafted Immolate with no unit to sacrifice: the Immolate part is skipped, and Spellbind still gives its rot.",
         "test": null
       },
       {
@@ -5097,11 +5097,11 @@
         "test": "91-modular.test.ts::R105: the flashback line"
       },
       {
-        "text": "A negated modded Spellbind is erased too.",
+        "text": null,
         "test": "91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too"
       },
       {
-        "text": "A mod applied through Modular and a Virus applied on the stack end the same way.",
+        "text": null,
         "test": "91-modular.test.ts::R105 = R79"
       }
     ],
@@ -5145,7 +5145,7 @@
     "text": "A Modular card with no mod applied does not have {Unstable}, and goes to the bin like any other spell.",
     "examples": [
       {
-        "text": "An unmodded Modular spell is binned like any other spell.",
+        "text": null,
         "test": "91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable"
       }
     ],

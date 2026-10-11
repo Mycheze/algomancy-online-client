@@ -1,7 +1,7 @@
 [
   {
     "key": "annexd.auto-pass.automatic-answers",
-    "textHash": "df10818a8bf97b8a",
+    "textHash": "be1a34ba76ea6542",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -54,11 +54,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed; the engine-differs flag is real for the automatic pass (actionCount latch), not for the haste ready. The example test covers only the haste ready."
+    "problem": "Ruling confirmed; the engine-differs flag is real for the automatic pass (actionCount latch), not for the haste ready. The example test covers only the haste ready.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.automatic-answers.refusal",
-    "textHash": "3bb5b1f4114e512f",
+    "textHash": "300ac57d0202e336",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -102,11 +103,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.full-control",
-    "textHash": "180f6ca337ba1395",
+    "textHash": "45a656585dcaff10",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -171,7 +173,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.full-control.chord",
@@ -267,7 +270,7 @@
   },
   {
     "key": "annexd.auto-pass.full-control.latency",
-    "textHash": "56589e672ab15135",
+    "textHash": "42753e5f3016bffb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -311,11 +314,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.full-control.not-persisted",
-    "textHash": "23627000ba4960cb",
+    "textHash": "ccb3bb57cec217c2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -357,7 +361,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.full-control.release",
@@ -400,7 +405,7 @@
   },
   {
     "key": "annexd.auto-pass.haste-ready",
-    "textHash": "e3d24eb696dcef99",
+    "textHash": "3136df8747d12588",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -444,7 +449,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.haste-ready.any-play",
@@ -487,7 +493,7 @@
   },
   {
     "key": "annexd.auto-pass.haste-ready.bluff",
-    "textHash": "8e7018ca12e1b1be",
+    "textHash": "2adb5dd40851a318",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -531,11 +537,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.haste-ready.readiness-hidden",
-    "textHash": "17035607c7d6d2d9",
+    "textHash": "ebfa623344a3d164",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -595,11 +602,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.haste-ready.residual",
-    "textHash": "65cb844c4bb83dfd",
+    "textHash": "40a962ebb84bdf1d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -643,11 +651,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.haste-ready.server-never",
-    "textHash": "60d73eefc2eb62fc",
+    "textHash": "019b8a0f06ff8fce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -691,11 +700,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "200 §5 is a server test (read, not run)."
+    "problem": "200 §5 is a server test (read, not run).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.misclick-confirm",
-    "textHash": "13e4f3d9b8972ec8",
+    "textHash": "d29720f0a6fe41b3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -753,11 +763,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.misclick-confirm.family",
-    "textHash": "befe73f2ca62fc20",
+    "textHash": "79b281cbc3a2489c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -808,7 +819,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.no-retain",
@@ -855,7 +867,7 @@
   },
   {
     "key": "annexd.auto-pass.open-decision",
-    "textHash": "893b1910b1a25087",
+    "textHash": "574e247abada7dce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -890,11 +902,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.open-decision.battle",
-    "textHash": "52b65d987c45e424",
+    "textHash": "999f97efcfecc43c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -929,7 +942,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.open-decision.both-seats",
@@ -1001,7 +1015,7 @@
   },
   {
     "key": "annexd.auto-pass.open-decision.concede",
-    "textHash": "77dd3c4f7897af4e",
+    "textHash": "ccea98d93774be3e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1036,11 +1050,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.open-decision.no-disturb",
-    "textHash": "588b5f66e455e6b1",
+    "textHash": "f61ce8dac78e94e6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1091,11 +1106,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Online the refused action is deferred and re-applied, not simply refused (covered by the rewind sub-rule's wording)."
+    "problem": "Online the refused action is deferred and re-applied, not simply refused (covered by the rewind sub-rule's wording).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.open-decision.rewind",
-    "textHash": "6f287410198f7718",
+    "textHash": "ef513925e83f75c3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1144,11 +1160,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.open-decision.segment",
-    "textHash": "dc8478fd4faef3a4",
+    "textHash": "14aebafaa4224071",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1192,7 +1209,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.pass-buttons",
@@ -1292,7 +1310,7 @@
   },
   {
     "key": "annexd.auto-pass.pass-buttons.baseline",
-    "textHash": "98ca348be95b9c83",
+    "textHash": "6328541ccbc15ff1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1327,11 +1345,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.pass-buttons.pass",
-    "textHash": "c6ec5cb5485a088e",
+    "textHash": "2829482b56097366",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1358,11 +1377,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.pass-buttons.revocable",
-    "textHash": "2c2272b0a81b145c",
+    "textHash": "1b33f7247eb1b40b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1406,11 +1426,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.pass-buttons.through-stack",
-    "textHash": "52432bcce5885be8",
+    "textHash": "81a2a67d5ba9be55",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1470,11 +1491,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.pass-buttons.through-stack.offered",
-    "textHash": "a7be52ea7111f922",
+    "textHash": "9e84679d8759dfe2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1509,11 +1531,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.pass-buttons.token-stop",
-    "textHash": "06b7f6a9eb8b6458",
+    "textHash": "85c93d7b7e9a9250",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1557,11 +1580,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.preference",
-    "textHash": "a91832af6ed671b9",
+    "textHash": "e23dc899c00df701",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1603,11 +1627,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.regroup-confirm",
-    "textHash": "97ce1daa0b4bc2be",
+    "textHash": "0814bf56139331ce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1642,11 +1667,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.regroup-confirm.announced",
-    "textHash": "a06079b044613127",
+    "textHash": "b9aadb87a0e20015",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1697,33 +1723,46 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.auto-pass.regroup-confirm.card-ended",
-    "textHash": "d34dce1d157487a6",
+    "textHash": "9e3069807d34e550",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:endBattleRound -> startRegroup",
+        "loc": "client/ui/passrelease.ts:passEndsBattlePhase",
         "agrees": true,
-        "note": "every exit funnels through startRegroup"
+        "note": "answers from pass-time state; returns false for the pass that resolves Temporal Rift"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "the 'loses N unused spell token(s) to regroup' announcement lives on the way into regroup; Temporal Rift (batch-hybrids-wm-b.ts) ends via endBattleRound"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.auto-pass.regroup-confirm.card-ended",
+        "passed": true,
+        "asserts_claim": "yes: D holds a Fireball 2 spell token, casts Temporal Rift; passEndsBattlePhase is false for the passer; after the passes the battle is null and the 'loses 1 unused spell token(s) to regroup' event fires"
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
         "ref": "R213",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "the warning genuinely cannot fire on the Temporal Rift path; every exit from endBattleRound funnels through startRegroup where the announcement lives"
       },
       {
-        "ref": "R213",
+        "ref": "card: Temporal Rift",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "prints 'End this battle. Erase this spell.' ({Battle} spell)"
       }
     ],
     "quote_spans": [
@@ -1732,8 +1771,8 @@
         "text": "cannot fire on the Temporal Rift path, and that is not a bug."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "had: **every exit from `endBattleRound` funnels through `startRegroup`**, which"
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "text": "assert.equal(passEndsBattlePhase(h.state, passer), false, 'no warning: the pass that resolves the Rift is not known to end the battle');"
       }
     ],
     "basis_ok": true,
@@ -1741,7 +1780,7 @@
   },
   {
     "key": "annexd.clocks.banks",
-    "textHash": "768211ab54c475af",
+    "textHash": "e235c342aef2aa30",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1770,11 +1809,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.banks.critical",
-    "textHash": "39984e5043ea93e7",
+    "textHash": "009f596fb15b881f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U23-r2",
@@ -1806,11 +1846,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. (Display-only, client side; the test brackets nine seconds as 8s warn / 10s quiet, and the code is <=.)"
+    "problem": "None. (Display-only, client side; the test brackets nine seconds as 8s warn / 10s quiet, and the code is <=.)",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.clocks.banks.default",
-    "textHash": "d0c41a93405d75a0",
+    "textHash": "158274daaea1d79c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U23-r2",
@@ -1847,11 +1888,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None material. Nuance: in a matchmade game the player cannot choose otherwise (MATCH_CLOCK_MS), and a server request with no clock field gets CLOCK_START_MS = 60 min."
+    "problem": "None material. Nuance: in a matchmade game the player cannot choose otherwise (MATCH_CLOCK_MS), and a server request with no clock field gets CLOCK_START_MS = 60 min.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.banks.not-custom",
-    "textHash": "4bf235ab1d1cfd54",
+    "textHash": "64a5bbc8a9f0b678",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1886,11 +1928,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.banks.off",
-    "textHash": "ece62ff2cc17b11a",
+    "textHash": "d3f02880812fd08a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -1919,11 +1962,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.idle-rooms",
-    "textHash": "449407c037b9696a",
+    "textHash": "485d399714e5ee6b",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U23-r3",
@@ -1991,11 +2035,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None substantive. Nuance: the sweep never closes a game that already has a winner (decidedWinner) and a sandbox room is deleted rather than kept; the grace is counted from the first sweep tick that sees the room empty."
+    "problem": "None substantive. Nuance: the sweep never closes a game that already has a winner (decidedWinner) and a sandbox room is deleted rather than kept; the grace is counted from the first sweep tick that sees the room empty.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.idle-rooms.kept-open",
-    "textHash": "0d4fb1bbb6db5662",
+    "textHash": "cfc34971e3597871",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2028,11 +2073,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Server convention, not engine; test 367 §3 read (server test, not run)."
+    "problem": "Server convention, not engine; test 367 §3 read (server test, not run).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.idle-rooms.no-result",
-    "textHash": "dc12c687280d6f44",
+    "textHash": "a6dc636c39754b9b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2061,11 +2107,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Test 367 §6 read, not run (server test)."
+    "problem": "Test 367 §6 read, not run (server test).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.out-of-time",
-    "textHash": "c3b77c7c6be4e28e",
+    "textHash": "be0398a5f9e213f1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2094,11 +2141,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Only cited test is the e2e runner, not run. Confirmed on server code."
+    "problem": "Only cited test is the e2e runner, not run. Confirmed on server code.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.running",
-    "textHash": "a02e1d9facbbd40c",
+    "textHash": "54540fe46b5a44cc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2131,11 +2179,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.running.playback",
-    "textHash": "4bf5f29ac14bcb42",
+    "textHash": "59c81a1e4c9f90c0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2171,11 +2220,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "360 §8/§8b are server tests (read, not run); 372 passed."
+    "problem": "360 §8/§8b are server tests (read, not run); 372 passed.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.running.simultaneous",
-    "textHash": "2c22fa57ed426db9",
+    "textHash": "1025eff9d8c884de",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2211,11 +2261,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.clocks.running.standing-pass",
-    "textHash": "da9769ccb5a19e8a",
+    "textHash": "0f9c44d0f0a2a5fc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2248,11 +2299,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.hidden-segment",
-    "textHash": "83122181e01ce22e",
+    "textHash": "06a558e2bb2ba414",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2297,11 +2349,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.hidden-segment.barrier",
-    "textHash": "740401a8aed2da87",
+    "textHash": "e3b8b78d58f7a124",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2328,11 +2381,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.hidden-segment.battle-open",
-    "textHash": "ff0ced58387cbb47",
+    "textHash": "8eed4276589ff28f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2359,11 +2413,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Hidden information (hands) is still hidden in battle; \"nothing that happens\" means events."
+    "problem": "Hidden information (hands) is still hidden in battle; \"nothing that happens\" means events.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.hidden-segment.redaction",
-    "textHash": "966ec035740ee5bc",
+    "textHash": "f12c6e2aa67315d7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2399,11 +2454,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.not-rules",
-    "textHash": "4adc0796a041672f",
+    "textHash": "cb77fc7d3d373328",
     "verdict": "partial",
     "round": 3,
     "verifier": "U23-r3",
@@ -2443,11 +2499,12 @@
       }
     ],
     "basis_ok": false,
-    "problem": "The 'none of them changes what is legal' clause is too broad: the concurrency convention (R150 CT-32 as re-done by R154) changed which actions the engine accepts from a seat while the other seat holds a decision. True for the pacing conventions (throttle, skip, recap). Source is our R150 text, not an owner statement."
+    "problem": "The 'none of them changes what is legal' clause is too broad: the concurrency convention (R150 CT-32 as re-done by R154) changed which actions the engine accepts from a seat while the other seat holds a decision. True for the pacing conventions (throttle, skip, recap). Source is our R150 text, not an owner statement.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.not-rules.warn-not-refuse",
-    "textHash": "40549b80d55f92e3",
+    "textHash": "a2e98ed76f6f3351",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2482,7 +2539,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.one-opinion",
@@ -2526,7 +2584,7 @@
   },
   {
     "key": "annexd.general.one-opinion.affordances",
-    "textHash": "fd12980d7a4db1d3",
+    "textHash": "3d9f7b1bea1c7cfb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2570,11 +2628,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.general.player-decides",
-    "textHash": "2426fe74c6d4481f",
+    "textHash": "8d4a0a0d3b223917",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2601,11 +2660,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.player-decides.burst-order",
-    "textHash": "7e6b4880b90b0428",
+    "textHash": "323bf6a7cdb5ae82",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2640,11 +2700,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.player-decides.default-first",
-    "textHash": "8438b4c217d218ba",
+    "textHash": "3bbc0a9622453cdd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2680,11 +2741,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.player-decides.forced",
-    "textHash": "6238f6539e7e9b26",
+    "textHash": "f6095d3ba8ff5ab5",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U23-r3",
@@ -2759,11 +2821,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Text matches the engine. But the cited R36 still says a lone sent counterattacker auto-forms (a forced action) and was never amended; the engine removed that branch. The rule should not lean on R36, and the register needs R36 amended (see bugs)."
+    "problem": "Text matches the engine. But the cited R36 still says a lone sent counterattacker auto-forms (a forced action) and was never amended; the engine removed that branch. The rule should not lean on R36, and the register needs R36 amended (see bugs).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.general.player-decides.forced-target",
-    "textHash": "2f49839f1a66956d",
+    "textHash": "48354aa8f0fb3633",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2806,11 +2869,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.general.player-decides.forced.lone-counterattacker",
-    "textHash": "c98f587cb929ad21",
+    "textHash": "074da5f8d80cb58f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U23-r2",
@@ -2848,46 +2912,59 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None in the rule. The ruling stands in the register while the engine removed it; the open divergence is the engine bug listed below."
+    "problem": "None in the rule. The ruling stands in the register while the engine removed it; the open divergence is the engine bug listed below.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.general.player-decides.identical-triggers",
-    "textHash": "348a448a0aec9da8",
+    "textHash": "151087dc52323f3c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:processTriggerQueue/sameTrigger",
+        "loc": "client/engine/src/engine.ts:processTriggerQueue",
         "agrees": true,
-        "note": "same card, ability, label, parts"
+        "note": "skips orderTriggers when every queued trigger of the seat is sameTrigger"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:sameTrigger",
+        "agrees": true,
+        "note": "same sourceCard, abilityIndex, label and JSON-equal parts"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/33-trigger-fixes.test.ts",
-        "pattern": "R34",
+        "pattern": "R34: Flourishing Flora firing twice at once",
         "passed": true,
-        "asserts_claim": true,
-        "note": "ran 2/2: two identical Flora triggers ask nothing; mixed ask"
+        "asserts_claim": "yes: two identical Flora triggers, no orderTriggers decision, both resolve"
+      },
+      {
+        "file": "client/engine/test/33-trigger-fixes.test.ts",
+        "pattern": "R34: MIXED simultaneous triggers",
+        "passed": true,
+        "asserts_claim": "yes: Flora + Pathogenic Enclave triggers still ask for an order"
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "probe U23-1: three allies spawning at once beside Flourishing Flora queue three identical triggers and no order is asked",
+        "passed": true,
+        "demonstrates": "yes: Spectrogenesis creates three Wisps at once in deployment; no orderTriggers decision is opened and Flora gains +3/+3 (all three triggers resolved)"
+      }
+    ],
     "source_checks": [
       {
         "ref": "R34",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "names Flourishing Flora queuing three copies; different cards/abilities or differing composite parts still ask"
       },
       {
-        "ref": "R34",
+        "ref": "card: Flourishing Flora",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R34",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "'[Augment] Whenever another ally spawns, put a +1/+1 counter on me.'"
       }
     ],
     "quote_spans": [
@@ -2896,12 +2973,8 @@
         "text": "When ALL of a seat's simultaneously queued triggers are identical — same"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "text) — the ordering decision (R2) is skipped and they enqueue in the order"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "from different cards/abilities, or composites whose parts differ (a spent"
+        "file": "client/engine/src/engine.ts",
+        "text": "&& !mine.every(t => this.sameTrigger(t, mine[0]!))) {"
       }
     ],
     "basis_ok": true,
@@ -2949,7 +3022,7 @@
   },
   {
     "key": "annexd.general.player-decides.unoffered",
-    "textHash": "8e91474ba0414d84",
+    "textHash": "9cb61287999dd8c6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -2976,35 +3049,63 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.glimpse",
-    "textHash": "fa759637d0d01577",
+    "textHash": "03189419730ba811",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/server/view.ts / rooms.ts (held reveal)",
+        "loc": "client/server/view.ts:playbackFrames",
         "agrees": true,
-        "note": ""
+        "note": "the held glimpse is flushed once, in the frame of the action that made it"
+      },
+      {
+        "loc": "client/ui/main.ts:applyUpdate (playback branch)",
+        "agrees": true,
+        "note": "runs the glimpse absorb so the card notice pops when that frame plays"
       }
     ],
     "tests_run": [
       {
         "file": "client/ui/test/371-glimpse-in-the-recap.test.ts",
-        "pattern": "R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before",
+        "pattern": "R310 §1: the opponent's glimpse notice pops",
         "passed": true,
-        "asserts_claim": true,
-        "note": "ran the file; all tests pass"
+        "asserts_claim": "bare demonstration (example 0); it asserts the notice pops only on the frame carrying the glimpse, naming glimpser, count and cards"
       },
       {
         "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
         "pattern": "R310 §3: the reveal plays in the recap",
         "passed": true,
-        "asserts_claim": true,
-        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+        "asserts_claim": "yes: Oracle of Foretelling in deployment; exactly one opponent recap frame carries the reveal, it is the Oracle play's frame, once, not in rest"
+      },
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "R310 §1: inside deployment the opponent is sent nothing",
+        "passed": true,
+        "asserts_claim": "yes: for sentence 2 - the glimpser is sent their own reveal on the tick it happens; the opponent nothing"
+      },
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "R310 §2: the barrier delivers the reveal exactly once",
+        "passed": true,
+        "asserts_claim": "yes: exactly once"
+      },
+      {
+        "file": "client/server/test/159-glimpse-reveal-visibility.test.ts",
+        "pattern": "Premonition",
+        "passed": true,
+        "asserts_claim": "yes: for sentence 3 - a {Battle} Premonition reveal is in the opponent's wire batch of the resolving action"
+      },
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.general.hidden-segment.battle-open",
+        "passed": true,
+        "asserts_claim": "supporting: nothing is held in battle"
       }
     ],
     "probes": [],
@@ -3012,17 +3113,7 @@
       {
         "ref": "R310",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R310",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R310",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "barrier and recap flush once in the action's frame with the card notice; glimpser sees live; battle glimpses reach the opponent at once. Nuance: R310 says a resource-step close arrives whole without a playback, but the ruling's own headline says every hidden step plays it in the recap; not treated as a defect"
       }
     ],
     "quote_spans": [
@@ -3031,20 +3122,16 @@
         "text": "- **Barrier and recap.** The glimpse is flushed exactly once, inside the"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "sees their own reveal live, because it is their own action."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **Battle.** Nothing is held in battle, so a battle glimpse (Premonition,"
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "text": "assert.equal(withReveal.length, 1, 'exactly one frame of the opponent\\'s recap carries the reveal');"
       }
     ],
     "basis_ok": true,
-    "problem": "203 §3 is a server test (read, not run); 371 passed."
+    "problem": ""
   },
   {
     "key": "annexd.recap.skip",
-    "textHash": "96da49240dcb490b",
+    "textHash": "15ceedf7669d0349",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U23-r3",
@@ -3117,11 +3204,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. Note the 'no skip control' clause is sourced only by tests (owner 2026-09-28), and R150's chip description is stale."
+    "problem": "None. Note the 'no skip control' clause is sourced only by tests (owner 2026-09-28), and R150's chip description is stale.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.skip.disconnect",
-    "textHash": "ee53908dfb58d4d1",
+    "textHash": "621a725b368fb0af",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3156,11 +3244,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.skip.in-playback",
-    "textHash": "b1abb57aa0927387",
+    "textHash": "e5a2bd225a8b2426",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U23-r3",
@@ -3214,11 +3303,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None; the key list omits Enter and Escape, which also skip during a playback."
+    "problem": "None; the key list omits Enter and Escape, which also skip during a playback.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.skip.live",
-    "textHash": "a56fc252b7d3db3a",
+    "textHash": "6364cc4f1174306b",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U23-r2",
@@ -3262,11 +3352,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None material (names, watcher count and opponent column-building also bypass the hold, but they are not board changes from the held update)."
+    "problem": "None material (names, watcher count and opponent column-building also bypass the hold, but they are not board changes from the held update).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.stops",
-    "textHash": "e4fc79cec076ce5a",
+    "textHash": "d091b5cac4f2e0fd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3308,11 +3399,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.stops.end-pause",
-    "textHash": "e2edfb19faa08f08",
+    "textHash": "73185033239a48a5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3359,11 +3451,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.stops.watch-again",
-    "textHash": "a4146d5e5a33c99f",
+    "textHash": "247d2dd0f26944e1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3398,11 +3491,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.tempo",
-    "textHash": "c215b434784539cb",
+    "textHash": "c3a48dce528bbb0b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3450,11 +3544,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.tempo.cascade",
-    "textHash": "2ca4f8b7af14ddd2",
+    "textHash": "adad440faf41bf7a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3505,11 +3600,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.tempo.flush",
-    "textHash": "104d1240b4b688cd",
+    "textHash": "0a42877f22c8a6f1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3544,11 +3640,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.tempo.held",
-    "textHash": "03d5420500119fa7",
+    "textHash": "bbbcb3437f8ff156",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3599,11 +3696,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.tempo.input",
-    "textHash": "f6dfe860d9f0b95d",
+    "textHash": "a5203ab29a500f44",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3638,11 +3736,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.tempo.lag-bound",
-    "textHash": "33690ea91c6695fa",
+    "textHash": "3f242ab7508dc6a9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3677,11 +3776,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.what",
-    "textHash": "5c820713cf45862c",
+    "textHash": "b1db1bbd78628791",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3725,11 +3825,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "360 §7 is a server test (read, not run)."
+    "problem": "360 §7 is a server test (read, not run).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.what.end-of-turn",
-    "textHash": "6f939da1fd6dbcd0",
+    "textHash": "0fae8141bd1a330e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3764,11 +3865,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.what.no-effect",
-    "textHash": "dfc5330f5af45774",
+    "textHash": "846b6ba0868013c2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3803,11 +3905,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.what.nothing-to-show",
-    "textHash": "77bfb0f19519de5a",
+    "textHash": "7dc9ff04b7947908",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3842,11 +3945,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.what.opponent-frame",
-    "textHash": "f6bbdc31ce37ce26",
+    "textHash": "245f7636362a930f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3876,11 +3980,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.what.resource-step",
-    "textHash": "069eb88e7ab8df3b",
+    "textHash": "4164436a1006a1ea",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3920,11 +4025,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.recap.what.undo",
-    "textHash": "1ca979d644d5928f",
+    "textHash": "c841a4a07df0236b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -3959,11 +4065,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.undo.cast-cancel",
-    "textHash": "0f32d550d2e92d4f",
+    "textHash": "6eea89baeb69a0db",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4008,11 +4115,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.undo.hidden-step",
-    "textHash": "dde3d589f9d18b01",
+    "textHash": "3e230e0086062260",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4047,11 +4155,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "374 §2 is a server test (read, not run)."
+    "problem": "374 §2 is a server test (read, not run).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.undo.hidden-step.battle",
-    "textHash": "be47184cda0ddde2",
+    "textHash": "472325baa0c3b9d6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4103,7 +4212,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "A pre-commit cast in battle can still be cancelled (annexd.undo.cast-cancel)."
+    "problem": "A pre-commit cast in battle can still be cancelled (annexd.undo.cast-cancel).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.undo.hidden-step.floor",
@@ -4140,7 +4250,7 @@
   },
   {
     "key": "annexd.undo.hidden-step.opponent",
-    "textHash": "b05edb8586536e32",
+    "textHash": "7ba979e93113100a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4169,11 +4279,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "True subject to the parent's limits (spliceable / reference-key refusals)."
+    "problem": "True subject to the parent's limits (spliceable / reference-key refusals).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.undo.learn-to-play",
-    "textHash": "f0915668a1479954",
+    "textHash": "d733f47c701e6270",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4233,7 +4344,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "374 §7 is a server-folder test (read, not run)."
+    "problem": "374 §7 is a server-folder test (read, not run).",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.undo.seen-cards",
@@ -4285,15 +4397,15 @@
   },
   {
     "key": "annexd.undo.seen-cards.after",
-    "textHash": "e18762150dd1035b",
+    "textHash": "8ff2d7f582c5928e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/server/rooms.ts:undoForSeat",
         "agrees": true,
-        "note": "i <= lastSeen refuses"
+        "note": "floor = lastSeen; later own actions are undoable down to it"
       }
     ],
     "tests_run": [
@@ -4301,8 +4413,13 @@
         "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
         "pattern": "R312 §3: a plain spawn after the glimpse is undoable back to the glimpse",
         "passed": true,
-        "asserts_claim": true,
-        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 7/7 pass"
+        "asserts_claim": "yes: Ignis Sprite spawned after the Lilbot glimpse comes back (actions back to atGlimpse), next undo refused, earlier spawn stands"
+      },
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.undo.seen-cards.after",
+        "passed": true,
+        "asserts_claim": "yes: same, a move after the glimpse is undone back to just after it and no further"
       }
     ],
     "probes": [],
@@ -4310,12 +4427,7 @@
       {
         "ref": "R312",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R312",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "'an undo walks back no further than just after the latest action in the step that showed you a hidden card. A play after that action can still be undone.'"
       }
     ],
     "quote_spans": [
@@ -4324,16 +4436,16 @@
         "text": "Now an undo walks back no further than just after the latest action in the"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "step that showed **you** a hidden card. A play after that action can still be"
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "text": "assert.deepEqual(R.undoForSeat(room, P), { ok: true }, 'the spawn after the glimpse comes back');"
       }
     ],
     "basis_ok": true,
-    "problem": "374 §3 server test (read, not run)."
+    "problem": ""
   },
   {
     "key": "annexd.undo.seen-cards.measured",
-    "textHash": "ad5aa28cbde7e81c",
+    "textHash": "0a2f76c93ebec922",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4386,11 +4498,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "374 §6 server test (read, not run). Wording nit: \"Playing a card from hand does not\" should read \"a plain play from hand\" — the §6 example is itself a play from hand that locks because its spawn trigger glimpses."
+    "problem": "374 §6 server test (read, not run). Wording nit: \"Playing a card from hand does not\" should read \"a plain play from hand\" — the §6 example is itself a play from hand that locks because its spawn trigger glimpses.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.undo.seen-cards.message",
-    "textHash": "38727c07e80a75e5",
+    "textHash": "0af3a8248c58072e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4421,11 +4534,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.undo.seen-cards.only-seer",
-    "textHash": "f8b8038cbf9e53f2",
+    "textHash": "6670971c8311f13d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U23-r2",
@@ -4464,11 +4578,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. The bound test (server/test/374 §5) was not run: the brief forbids client/server tests; a probe reproducing §5 in-process passes."
+    "problem": "None. The bound test (server/test/374 §5) was not run: the brief forbids client/server tests; a probe reproducing §5 in-process passes.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.undo.seen-cards.opponent-shown",
-    "textHash": "ecf1c28e0a28346d",
+    "textHash": "6a645dc207abc0e7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4495,11 +4610,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.undo.seen-cards.restart",
-    "textHash": "ed8ec139d7247904",
+    "textHash": "5d175179d00a702b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U23-r1",
@@ -4534,6 +4650,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": "374 §4 server test (read, not run)."
+    "problem": "374 §4 server test (read, not run).",
+    "carried": "demoted-example 2026-10-11"
   }
 ]

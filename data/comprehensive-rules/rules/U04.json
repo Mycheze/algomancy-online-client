@@ -6,7 +6,7 @@
     "text": "A cost is something a player must pay to do something: to play a card, to apply a mod, or to activate an ability. A card's mana cost, the additional costs in its brackets, and everything before the colon of an activated ability are costs.",
     "examples": [
       {
-        "text": "Example: an augment applied from hand still pays its mana cost and needs its affinity, although applying it is not playing it.",
+        "text": null,
         "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost"
       }
     ],
@@ -58,7 +58,7 @@
     "text": "A mana cost is paid by expending resources: each resource can be expended once per turn for 1 mana, to pay the mana cost of a card or of an ability.",
     "examples": [
       {
-        "text": "Example: with two open resources, paying [one] for Auric Ascendant's ability and then playing Shard Sprite expends both; a second 1-cost card is not playable that turn, and both resources are open again next turn.",
+        "text": "with two open resources, paying [one] for Auric Ascendant's ability and then playing Shard Sprite expends both; a second 1-cost card is not playable that turn, and both resources are open again next turn.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.what-a-cost-is.mana — each resource is expended once for 1 mana, for a card or an ability, and is open again next turn"
       }
     ],
@@ -97,7 +97,7 @@
     "text": "Meeting a card's affinity requirement is not paying a cost. Nothing is spent to meet it, and resources that are already expended still count toward it.",
     "examples": [
       {
-        "text": "Example: a player with two Wood resources, both already expended, still meets a requirement of two Wood pips.",
+        "text": "a player with two Wood resources, both already expended, still meets a requirement of two Wood pips.",
         "test": "396-raq-timing.test.ts::RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards"
       }
     ],
@@ -139,7 +139,7 @@
     "text": "Besides mana, a cost may require a player to pay life, gain debt, discard cards, sacrifice units, erase cards from their bin, remove counters, recall an ally or erase a mod. A cost of any kind is paid in full before the thing it pays for is put on the stack.",
     "examples": [
       {
-        "text": "Example: Slag Spewer's \"[one], Erase one of my mods:\" erases the mod as the ability is activated, before anyone can respond.",
+        "text": "Slag Spewer's \"[one], Erase one of my mods:\" erases the mod as the ability is activated, before anyone can respond.",
         "test": "167-variable-ability-costs.test.ts::R196 Slag Spewer"
       }
     ],
@@ -203,7 +203,7 @@
     "text": "A cost that sacrifices units can be paid only with units the player controls in the region where the cost is paid. They cannot sacrifice a unit they do not control, or a unit of theirs that is in another region.",
     "examples": [
       {
-        "text": "Example: when Volatile Toxicity is played in battle, its sacrifice menu offers the unit in the battle region and not the unit the player left at home.",
+        "text": "when Volatile Toxicity is played in battle, its sacrifice menu offers the unit in the battle region and not the unit the player left at home.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.region — a sacrifice cost menu holds only units in the region where it is paid"
       }
     ],
@@ -249,7 +249,7 @@
     "text": "What was paid is fixed at the moment it is paid. An effect that reads a paid cost (such as \"the defense of the sacrificed unit\") reads it as it was when it was paid.",
     "examples": [
       {
-        "text": "Example: Volatile Toxicity sacrifices a 2/3 to pay its cost. Its X is 3, whatever happens to the board before it resolves.",
+        "text": "Volatile Toxicity is cast by sacrificing a Good Whale (7/5). Its X is fixed at 5 as the cost is paid, and it makes a Poison 5 and a Fireball 5.",
         "test": "32-cast-costs.test.ts::Volatile Toxicity: X reads the defense snapshotted when the cost was paid"
       }
     ],
@@ -284,7 +284,7 @@
     "text": "A copy of a spell does not pay the original's additional cost again. It uses what the original paid, including the original's X.",
     "examples": [
       {
-        "text": "Example: Maelstrom Charger copies a Volatile Toxicity; the copy makes its Poison and Fireball from the one sacrifice the original paid for.",
+        "text": "Maelstrom Charger copies a Volatile Toxicity; the copy makes its Poison and Fireball from the one sacrifice the original paid for.",
         "test": "138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — Volatile Toxicity is not re-paid"
       }
     ],
@@ -327,7 +327,7 @@
     "text": "A cost that cannot be paid in full cannot be paid at all. A card whose cost cannot be paid cannot be played, and an ability whose cost cannot be paid cannot be activated; nothing is paid, and the play or activation is not offered.",
     "examples": [
       {
-        "text": "Example: Auric Ascendant (\"[one], Recall another ally:\") is not offered while it has no other ally, so its [one] is never paid.",
+        "text": "Auric Ascendant (\"[one], Recall another ally:\") is not offered while it has no other ally, so its [one] is never paid.",
         "test": "167-variable-ability-costs.test.ts::R196 Auric Ascendant with no other ally is NOT OFFERED — an unpayable cost gates, it does not whiff (R49)"
       }
     ],
@@ -376,7 +376,7 @@
     "text": "A cost made of several parts is paid all or nothing. If any part cannot be paid, no part is paid, including the mana.",
     "examples": [
       {
-        "text": "Example: Instrument of Reassignment (\"[x], Sacrifice another nontoken unit:\") with no other nontoken unit pays neither the mana nor anything else.",
+        "text": "Instrument of Reassignment (\"[x], Sacrifice another nontoken unit:\") with no other nontoken unit pays neither the mana nor anything else.",
         "test": "167-variable-ability-costs.test.ts::R196 the COMPOUND half-pay hazard: an unpayable half of Instrument of Reassignment's cost pays NOTHING, neither the mana nor the unit"
       }
     ],
@@ -418,7 +418,7 @@
     "text": "A player may pay N life only while they have more than N life. A life cost that would bring them to 0 cannot be paid.",
     "examples": [
       {
-        "text": "Example: at exactly 9 life, Glararr's \"Pay 9 life:\" cannot be activated.",
+        "text": "at exactly 9 life, Glararr's \"Pay 9 life:\" cannot be activated.",
         "test": "38-light-a.test.ts::Glararr: R49 — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL"
       }
     ],
@@ -461,7 +461,7 @@
     "text": "An activated ability's whole cost is paid when the ability is activated, before it is put on the stack. A fixed cost is paid after the ability's targets are chosen. A variable cost (one whose amount is X) is paid first, and what is paid sets X, before any target is chosen. No player may respond between the payment and the ability going on the stack, and negating the ability does not refund it.",
     "examples": [
       {
-        "text": "Example: Infernal Cultivator's \"Sacrifice X units:\" kills the units as the ability is activated, so a negation cannot give them back.",
+        "text": "Infernal Cultivator's \"Sacrifice X units:\" kills the units as the ability is activated, so a negation cannot give them back.",
         "test": "167-variable-ability-costs.test.ts::R196 Infernal Cultivator"
       }
     ],
@@ -528,7 +528,7 @@
     "text": "When an activated ability's cost sacrifices its own source, the source is in the bin while the ability waits on the stack.",
     "examples": [
       {
-        "text": "Example: Throwing Boulder (\"Sacrifice me: I deal 3 damage to any target.\") is in the bin as soon as the ability is on the stack. (illustrative)",
+        "text": "Throwing Boulder (\"Sacrifice me: I deal 3 damage to any target.\") is in the bin as soon as the ability is on the stack.",
         "test": null
       }
     ],
@@ -561,7 +561,7 @@
     "text": "A printed condition on activating an ability (\"Activate this ability only if …\") is checked before any cost is paid. If it is not met, the ability cannot be activated. It is not checked again when the ability resolves.",
     "examples": [
       {
-        "text": "Example: Throwing Boulder with no adjacent ally is not offered its ability.",
+        "text": "Throwing Boulder with no adjacent ally is not offered its ability.",
         "test": "18-earth-c.test.ts::R77: with NO adjacent ally the ability is not offered, and apply() refuses it"
       }
     ],
@@ -608,15 +608,15 @@
     "text": "When a triggered ability's effect says \"sacrifice me. If you do, …\", the sacrifice is part of the effect, not a cost: the ability goes on the stack with its source still in play, players may respond, and the source is sacrificed as the ability resolves. The sacrifice is not optional. If the source is no longer in play when the ability resolves, it cannot be sacrificed, and the \"If you do\" part does nothing.",
     "examples": [
       {
-        "text": "Example: Eldritch Dreamtender's column deals combat damage to an opponent. Its ability goes on the stack with Dreamtender still in play; Dreamtender is sacrificed when the ability resolves, and only then is the opponent's hand looked at and a card discarded. (illustrative; the engine sacrifices it as the ability goes on the stack: F-U04-5)",
+        "text": "Eldritch Dreamtender's column deals combat damage to an opponent. Its ability goes on the stack with Dreamtender still in play; Dreamtender is sacrificed when the ability resolves, and only then is the opponent's hand looked at and a card discarded.",
         "test": null
       },
       {
-        "text": "Example: Dreamtender is destroyed in response to its ability. When the ability resolves, nothing is sacrificed, so no hand is looked at and nothing is discarded. (illustrative)",
+        "text": "Dreamtender is destroyed in response to its ability. When the ability resolves, nothing is sacrificed, so no hand is looked at and nothing is discarded.",
         "test": null
       },
       {
-        "text": "Example: no decline is offered for that sacrifice.",
+        "text": null,
         "test": "26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73)"
       }
     ],
@@ -694,7 +694,7 @@
     "text": "A payment that an effect's text asks for while it resolves (\"you may pay [one] to …\", \"unless its controller pays [x]\") is not a cost of putting it on the stack. The ability goes on the stack without it, and the player decides whether to pay when it resolves.",
     "examples": [
       {
-        "text": "Example: Xenopod Progenitor's trigger goes on the stack with no payment asked; its [1] is asked as it resolves.",
+        "text": "Xenopod Progenitor's trigger goes on the stack with no payment asked; its [1] is asked as it resolves.",
         "test": "390-raq-stack.test.ts::RAQ Xenopod: the trigger goes on the stack with no payment asked, and the [1] is asked as it resolves"
       }
     ],
@@ -738,11 +738,11 @@
     "text": "Some cards in play change what it costs to play cards or to activate or trigger abilities. Such a cost modifier works only while its source is in play, only in its source's region, and, unless it says otherwise, for every player in that region, its controller included.",
     "examples": [
       {
-        "text": "Example: an opponent's Crevice Lurker in the battle region taxes your abilities, not only its controller's.",
+        "text": "an opponent's Crevice Lurker in the battle region taxes your abilities, not only its controller's.",
         "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: it taxes the opponent too, not only its controller"
       },
       {
-        "text": "Example: Tranquility applied as an augment still taxes spells from its host.",
+        "text": "Tranquility applied as an augment still taxes spells from its host.",
         "test": "18-earth-c.test.ts::Tranquility: the [Augment] tax is DONATED — it radiates from the mod too"
       }
     ],
@@ -802,7 +802,7 @@
     "text": "Cost modifiers add up. Two modifiers that each add [one] add [two].",
     "examples": [
       {
-        "text": "Example: two Crevice Lurkers make an activated [1] cost [3] in battle.",
+        "text": "two Crevice Lurkers make an activated [1] cost [3] in battle.",
         "test": "16-earth-a.test.ts::Crevice Lurker: R121 — two Lurkers compound: CostMod deltas SUM, so the tax is +2"
       }
     ],
@@ -865,11 +865,11 @@
     "text": "A cost modifier applies to what its text names. One that names \"spells\" applies to every spell played, spell units and spell tokens included. One that names \"cards\" applies to every card played, units included, and not to spell tokens, which are not cards. Neither applies to applying a mod, which is not playing a card.",
     "examples": [
       {
-        "text": "Example: Tranquility (\"Spells cost [one] more\") taxes a Fireball token cast in battle.",
+        "text": "Tranquility (\"Spells cost [one] more\") taxes a Fireball token cast in battle.",
         "test": "337-spell-tokens-are-played.test.ts::R305: Tranquility taxes a spell token [1] in battle"
       },
       {
-        "text": "Example: Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") takes no life for a spell token.",
+        "text": "Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") takes no life for a spell token.",
         "test": "337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards, so a token cast pays no life"
       }
     ],
@@ -929,11 +929,11 @@
     "text": "A cost modifier may give cards an additional cost (\"Cards played during battle gain [Pay 2 life]\"). The player who plays the card pays it, with the card's other costs, before the card is put on the stack. If it requires a sacrifice, that player chooses the unit from their own units. A card whose imposed cost cannot be paid cannot be played.",
     "examples": [
       {
-        "text": "Example: under an opponent's Vengeance, the player choosing the sacrifice is offered only their own units.",
+        "text": "under an opponent's Vengeance, the player choosing the sacrifice is offered only their own units.",
         "test": "45-hybrids-ld-b.test.ts::Vengeance: opponents' battle cards gain '[Sacrifice a unit]' — the payer picks, off a menu of THEIR units only"
       },
       {
-        "text": "Example: under Arbiter of Armistice, a player who cannot pay the 2 life cannot play the card.",
+        "text": "under Arbiter of Armistice, a player who cannot pay the 2 life cannot play the card.",
         "test": "38-light-a.test.ts::Arbiter of Armistice: an unpayable life tax makes the card uncastable"
       }
     ],
@@ -1026,15 +1026,15 @@
     "text": "A modifier that makes abilities cost more \"to activate or trigger\" applies to activated abilities and to triggered abilities, graft triggers and the triggers of attributes such as Alluring and Resonant included. It does not apply to static abilities, to playing or applying cards, or to an option that is neither activated nor triggered.",
     "examples": [
       {
-        "text": "Example: Crevice Lurker taxes a graft trigger.",
+        "text": "Crevice Lurker taxes a graft trigger.",
         "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: a graft trigger is taxed like any other"
       },
       {
-        "text": "Example: Crevice Lurker taxes Resonant's extra damage, by the designer's stated intent.",
+        "text": "Crevice Lurker taxes Resonant's extra damage, by the designer's stated intent.",
         "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes Resonant, the designer intent"
       },
       {
-        "text": "Example: applying an augment during battle is not taxed.",
+        "text": "applying an augment during battle is not taxed.",
         "test": "16-earth-a.test.ts::Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)"
       }
     ],
@@ -1095,11 +1095,11 @@
     "text": "When a triggered ability would be put on the stack while such a tax applies, the player who would control it chooses whether to pay the tax. If they pay, the ability is put on the stack. If they decline, or cannot pay, it does not trigger.",
     "examples": [
       {
-        "text": "Example: paying [1] puts the taxed trigger on the stack.",
+        "text": null,
         "test": "16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [1] puts it on the stack"
       },
       {
-        "text": "Example: declining the tax on your own Origon lets your own first spell of the battle resolve.",
+        "text": "with a Crevice Lurker in the battle, you decline to pay the tax on your own Origon's trigger, so Origon does not negate your first spell of the battle.",
         "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: declining the tax on your own Origon lets your own first spell resolve"
       }
     ],
@@ -1146,7 +1146,7 @@
     "text": "A triggered ability that does not trigger because its tax was declined or could not be paid does not use up a \"[once]\" or other once-per-turn limit.",
     "examples": [
       {
-        "text": "Example: after declining, the same [once] trigger is asked again later that turn.",
+        "text": null,
         "test": "16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger and does NOT spend its [once] (R108/R113)"
       }
     ],
@@ -1181,7 +1181,7 @@
     "text": "A modifier that gives spells a minimum base cost (\"Spells with base cost [three] or less have a base cost of [three]\") raises the cost of a spell whose printed cost is a number. For a spell whose cost is X, it instead makes the smallest X that may be chosen equal to that minimum, and the spell costs exactly the X chosen.",
     "examples": [
       {
-        "text": "Example: under Stasis Sentry in battle, Wildfire's X menu starts at 3, and X = 3 deals 3.",
+        "text": "under Stasis Sentry in battle, Wildfire's X menu starts at 3, and X = 3 deals 3.",
         "test": "133-x-cost-semantics.test.ts::R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3"
       }
     ],
@@ -1245,7 +1245,7 @@
     "text": "A spell token's printed cost is 0, so such a modifier makes a spell token cost its minimum.",
     "examples": [
       {
-        "text": "Example: under Stasis Sentry, casting a Fireball token in battle costs [3].",
+        "text": "under Stasis Sentry, casting a Fireball token in battle costs [3].",
         "test": "337-spell-tokens-are-played.test.ts::R305: Stasis Sentry prints Spells, so a token (base cost 0) costs [3] in battle"
       }
     ],
@@ -1280,11 +1280,11 @@
     "text": "A cost reduction a player has already paid for belongs to that player. It stays when its source leaves play, it applies in whatever region the player plays their next card, and it ends when its text says it ends: \"the next card you play this phase\" lasts until that card is played or the phase ends.",
     "examples": [
       {
-        "text": "Example: sacrificing Deferral Drone in response does not take away the discount already paid for.",
+        "text": "sacrificing Deferral Drone in response does not take away the discount already paid for.",
         "test": "45-hybrids-ld-b.test.ts::Deferral Drone: R119 — the charge SURVIVES the Drone leaving play (\"you paid for it\")"
       },
       {
-        "text": "Example: the discount ends when the phase ends, even within the same turn.",
+        "text": "the discount ends when the phase ends, even within the same turn.",
         "test": "45-hybrids-ld-b.test.ts::Deferral Drone: ERRATA — the charge expires at a MID-TURN phase boundary, not just the turn"
       }
     ],
@@ -1333,11 +1333,11 @@
     "text": "When an effect refers to a card's cost, it means the card's printed cost. Cost modifiers do not change it. The cost of an X spell that is being or has just been cast is the X paid; an X card that is not being cast has a cost of 0.",
     "examples": [
       {
-        "text": "Example: Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator.",
+        "text": "Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator.",
         "test": "390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2"
       },
       {
-        "text": "Example: an X card in hand reads as cost 0.",
+        "text": null,
         "test": "133-x-cost-semantics.test.ts::R157 §1 — a card that was never cast has no cost: an X card in hand reads 0"
       }
     ],
@@ -1393,11 +1393,11 @@
     "text": "Some cards print another way to play or use them, with its own cost: a Prophecy or Ambush banner, or a \"Discard me\" line. Such a cost is paid like any other cost: its mana is spent and its affinity requirement must be met.",
     "examples": [
       {
-        "text": "Example: mana without the banner's affinity does not buy a prophecy.",
+        "text": null,
         "test": "313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy"
       },
       {
-        "text": "Example: a \"Discard me\" line is refused without its mana.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R40: \"Discard me\" is refused without the mana"
       }
     ],
@@ -1440,7 +1440,7 @@
     "text": "Discarding a card through its \"Discard me\" line is not playing it. A player may do it whenever they hold priority in battle, and during their own deployment, unless the line itself is marked with a timing.",
     "examples": [
       {
-        "text": "Example: Dropslime's discard-me line is offered in battle.",
+        "text": "Dropslime's discard-me line is offered in battle.",
         "test": "135-exchange-and-zones.test.ts::R157 §8: Dropslime’s discard-me mode is offered IN BATTLE and deals damage there"
       }
     ],
@@ -1487,11 +1487,11 @@
     "text": "A card played for free (released by a fulfilled prophecy, or played by an effect such as Tides of the Cosmos) pays no mana cost and ignores its affinity requirement. Its additional bracketed costs are still paid.",
     "examples": [
       {
-        "text": "Example: Tides of the Cosmos plays a fire unit for a player with only water resources.",
+        "text": "Tides of the Cosmos plays a fire unit for a player with only water resources.",
         "test": "396-raq-timing.test.ts::RAQ Tides 1: a free play ignores affinity — a fire unit with only water resources"
       },
       {
-        "text": "Example: Volatile Toxicity played by Tides still sacrifices a unit.",
+        "text": "Volatile Toxicity played by Tides still sacrifices a unit.",
         "test": "404-raq-fix-tides.test.ts::R338: a Tides play pays its additional cost — the sacrifice happens and Volatile Toxicity resolves"
       }
     ],
@@ -1537,7 +1537,7 @@
     "text": "An X spell played for free is played with X = 0. A card that says \"X can't be zero\" therefore cannot be played for free.",
     "examples": [
       {
-        "text": "Example: Tides of the Cosmos cannot play Frosted Denial.",
+        "text": "Tides of the Cosmos cannot play Frosted Denial.",
         "test": "396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play"
       }
     ],
@@ -1581,11 +1581,11 @@
     "text": "When an effect is repeated by a multiplier (\"trigger two copies of this graft ability\"), a cost the repeated effect carries is paid once for each copy. The whole multiplied cost is paid all or nothing: if it cannot all be paid, none of it is paid and that effect does not happen.",
     "examples": [
       {
-        "text": "Example: under Lost Guardian, a \"[Discard a card]:\" graft pays twice and resolves twice.",
+        "text": "under Lost Guardian, a \"[Discard a card]:\" graft pays twice and resolves twice.",
         "test": "17-earth-b.test.ts::R110: a \"[cost]: effect\" graft under Lost Guardian pays its cost TWICE and resolves twice"
       },
       {
-        "text": "Example: with one card in hand, the doubled [Discard a card] is not paid at all.",
+        "text": "with one card in hand, the doubled [Discard a card] is not paid at all.",
         "test": "17-earth-b.test.ts::R110: all or nothing — one card in hand cannot pay a doubled [Discard a card], so nothing is paid and nothing happens"
       }
     ],
@@ -1633,7 +1633,7 @@
     "text": "A cost a graft adds (\"{graft} [cost]: effect\") must be paid; it cannot be declined. If it cannot be paid, none of the composite ability goes on the stack: not the graft's effect, the host's own effect, or any other graft with it. The exception is a played spell that carries a {Modular} graft part: there an unpayable grafted cost skips only that part, and the spell is not withheld.",
     "examples": [
       {
-        "text": "Example: an unpayable grafted cost keeps the host's own ability and the other grafts off the stack too.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too"
       }
     ],
@@ -1696,7 +1696,7 @@
     "text": "Each player begins the game with 30 life. A player whose life is reduced to 0 is eliminated.",
     "examples": [
       {
-        "text": "Example: both players begin at 30, and a player whose life is reduced to exactly 0 has lost the game.",
+        "text": null,
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics — players start at 30, and a player reduced to exactly 0 life loses the game"
       }
     ],
@@ -1740,7 +1740,7 @@
     "text": "A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it.",
     "examples": [
       {
-        "text": "Example: Throwing Boulder's 3 damage to a player is a loss of 3 life, and the [Pay 2 life] that Arbiter of Armistice adds to a card played during battle is a loss of 2 life.",
+        "text": "Throwing Boulder's 3 damage to a player is a loss of 3 life, and the [Pay 2 life] that Arbiter of Armistice adds to a card played during battle is a loss of 2 life.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics.gain-and-loss — damage to a player and a paid life cost both reach the life total as life lost"
       }
     ],
@@ -1788,7 +1788,7 @@
     "text": "An effect that makes players gain or lose life reaches only the players in its region. \"Each opponent loses 1 life\" means each opponent in the current region.",
     "examples": [
       {
-        "text": "Example: Bloated Manablub dying in battle makes each opponent in that region lose 3 life.",
+        "text": "Bloated Manablub dying in battle makes each opponent in that region lose 3 life.",
         "test": "10-water-metal.test.ts::Bloated Manablub: dying in battle → each opponent loses 3 life (region-scoped)"
       }
     ],
@@ -1824,7 +1824,7 @@
     "text": "The life a player has lost in a battle is the sum of all their life losses in that battle. Life gained in the battle does not reduce it.",
     "examples": [
       {
-        "text": "Example: a player loses 10, gains 8 and loses 3 in one battle; Soul Siphon makes a 13/13.",
+        "text": "a player loses 10, gains 8 and loses 3 in one battle; Soul Siphon makes a 13/13.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Life lost: life lost in a battle adds up the losses and ignores the gains — Soul Siphon makes a 13/13"
       }
     ],
@@ -1859,11 +1859,11 @@
     "text": "Effects that multiply life gained or lost multiply together: with n effects that each double it, the amount is multiplied by 2 to the power n. The multiplied amount is gained or lost at once, before it is checked whether the player has reached 0 life.",
     "examples": [
       {
-        "text": "Example: three Arbiters of Vitality multiply a life loss by 8.",
+        "text": "three Arbiters of Vitality multiply a life loss by 8.",
         "test": "137-multiplier-and-mode.test.ts::R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n"
       },
       {
-        "text": "Example: a lethal loss is doubled before the game checks for 0 life.",
+        "text": null,
         "test": "137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check"
       }
     ],
@@ -1920,7 +1920,7 @@
     "text": "If a player's life total \"can't change\", that player neither gains nor loses life while the effect lasts.",
     "examples": [
       {
-        "text": "Example: Suspend stops the target's life total moving in either direction for the battle.",
+        "text": "Suspend stops the target's life total moving in either direction for the battle.",
         "test": "40-light-c.test.ts::Suspend: the target's life total can't change in either direction this battle"
       }
     ],
@@ -1953,7 +1953,7 @@
     "text": "Damage is dealt by a source to a unit or a player. Damage dealt to a unit is marked on it, and a unit whose total marked damage is greater than or equal to its defense dies. Damage dealt to a player makes them lose that much life.",
     "examples": [
       {
-        "text": "Example: an attacker with 2 power blocked by a 0/2 kills it, and an unblocked 1-power attacker makes the defending player lose 1 life.",
+        "text": "an attacker with 2 power blocked by a 0/2 kills it, and an unblocked 1-power attacker makes the defending player lose 1 life.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.damage.basics — damage equal to defense kills, and unblocked damage to a player is that much life lost"
       }
     ],
@@ -1993,7 +1993,7 @@
     "text": "Damage marked on units is removed during the regroup phase.",
     "examples": [
       {
-        "text": "Example: a blocker that took 2 damage in the battle has no damage marked on it after regroup.",
+        "text": "a blocker that took 2 damage in the battle has no damage marked on it after regroup.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.damage.basics.regroup — damage marked on a unit is removed at regroup"
       }
     ],
@@ -2032,7 +2032,7 @@
     "text": "All the damage dealt to a unit is dealt, including any beyond what destroys it, and counts as damage dealt.",
     "examples": [
       {
-        "text": "Example: Arc Lightning keeps all 6 damage on a Vulnerable 3/8 instead of jumping; all 12 land on it.",
+        "text": "Arc Lightning deals 6 to a Vulnerable 3/8 with nowhere for its Electric damage to jump: all 12 are dealt to that unit, not just the 8 that destroy it.",
         "test": "387-raq-combat.test.ts::RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12"
       }
     ],
@@ -2069,11 +2069,11 @@
     "text": "The source of damage is the thing that deals it. When a spell makes a unit deal damage (Squish, Fight, Battle), the unit is the source: its own attributes apply, and the spell's attributes do not.",
     "examples": [
       {
-        "text": "Example: a Powerful ally squishing deals double its defense.",
+        "text": "a Powerful ally squishing deals double its defense.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: the unit is the source — a Powerful ally deals double its defense"
       },
       {
-        "text": "Example: a Powerful Squish does not double.",
+        "text": "a Powerful Squish does not double.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: a Powerful Squish does not double — the spell is not the source"
       }
     ],
@@ -2122,7 +2122,7 @@
     "text": "Damage a unit deals because a spell told it to is that unit's damage, not damage from a spell effect.",
     "examples": [
       {
-        "text": "Example: Squish damage does not trigger Ember of Life (\"When one of your spell effects deals damage\").",
+        "text": "Squish damage does not trigger Ember of Life (\"When one of your spell effects deals damage\").",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: Squish damage is the unit dealing it, so Ember of Life does not trigger"
       }
     ],
@@ -2157,7 +2157,7 @@
     "text": "Combat damage is the damage columns deal to each other and to players in the combat damage step. All other damage is noncombat damage, including damage dealt by an ability that combat damage causes, such as Resonant's extra damage.",
     "examples": [
       {
-        "text": "Example: Resonant's extra damage is not combat damage, so Oorblak does not take it in place of the player.",
+        "text": "Resonant's extra damage is not combat damage, so Oorblak does not take it in place of the player.",
         "test": "387-raq-combat.test.ts::RAQ Resonant: the extra damage is not combat damage — Oorblak does not take it, the player does"
       }
     ],
@@ -2199,11 +2199,11 @@
     "text": "All the damage one resolution of one effect deals is dealt at once. A recipient that the effect damages more than once is dealt the total once, and units destroyed by that damage are destroyed together, after all of it is dealt.",
     "examples": [
       {
-        "text": "Example: Channel Through deals damage to a unit twice; Restitution triggers once, for the total.",
+        "text": "Channel Through deals damage to a unit twice; Restitution triggers once, for the total.",
         "test": "69-damage-batch.test.ts::R80: Channel Through gives a twice-hit unit ONE damage event (the Restitution report)"
       },
       {
-        "text": "Example: \"each unit\" damage kills simultaneously.",
+        "text": null,
         "test": "69-damage-batch.test.ts::R80: \"each unit\" damage kills simultaneously — every unit hears the same total"
       }
     ],
@@ -2242,7 +2242,7 @@
     "text": "Each copy of an effect is a separate source and deals its damage separately.",
     "examples": [
       {
-        "text": "Example: Meteor Shower's three Rockfalls are three separate dealings of damage. (illustrative)",
+        "text": "Meteor Shower's three Rockfalls are three separate dealings of damage.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.damage.one-effect.copies — the three Meteor Shower rockfalls are three separate dealings of damage"
       }
     ],
@@ -2277,7 +2277,7 @@
     "text": "When a source would deal noncombat damage, its amount is worked out in this order: first, modifiers that add to it (such as Conduit of Pain's \"plus 1\") apply; then Powerful doubles the result; then a Vulnerable recipient is dealt double what reaches it.",
     "examples": [
       {
-        "text": "Example: a Powerful Bellowing Boulder beside Conduit of Pain deals (1+1)x2 = 4 to each unit.",
+        "text": "a Powerful Bellowing Boulder beside Conduit of Pain deals (1+1)x2 = 4 to each unit.",
         "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit"
       }
     ],
@@ -2336,7 +2336,7 @@
     "text": "Damage dealt in the form of -1/-1 counters (by a Poisonous source) is still damage dealt: it triggers abilities that trigger on a unit being dealt damage.",
     "examples": [
       {
-        "text": "Example: Awoken Tomb hit by a Poisonous source makes its X/X.",
+        "text": "Awoken Tomb hit by a Poisonous source makes its X/X.",
         "test": "206-deadly-everywhere.test.ts::R237: an un-prevented {Poisonous} hit fires \"whenever I am dealt damage\" (the RAQ example)"
       }
     ],
@@ -2379,11 +2379,11 @@
     "text": "Damage that is prevented is not dealt. It triggers nothing that triggers on damage being dealt, places no -1/-1 counters, and does not destroy a unit, even from a Deadly source.",
     "examples": [
       {
-        "text": "Example: prevented damage fires no \"dealt damage\" trigger.",
+        "text": null,
         "test": "24-wood-b.test.ts::Phytochemical Protection: prevented damage is NOT dealt — no damage event fires"
       },
       {
-        "text": "Example: a Deadly source cannot kill through Phytochemical Protection.",
+        "text": "a Deadly source cannot kill through Phytochemical Protection.",
         "test": "24-wood-b.test.ts::Phytochemical Protection: {Deadly} cannot kill through it"
       }
     ],
@@ -2433,7 +2433,7 @@
     "text": "Damage that an effect replaces with something else (for example, damage dealt \"as\" rot) was still dealt. Abilities that care whether damage was dealt see it, even though the recipient took something else instead.",
     "examples": [
       {
-        "text": "Example: a column whose face damage Blightsea Polyp turns into rot still pays out Vroot's \"that much\".",
+        "text": "a column whose face damage Blightsea Polyp turns into rot still pays out Vroot's \"that much\".",
         "test": "207-replaced-hit-was-dealt.test.ts::R238: \"when my column deals combat damage\" pays out through the replacement"
       }
     ],
@@ -2481,7 +2481,7 @@
     "text": "Rot is a counter a player has. At the start of each deployment phase, each player is dealt damage equal to their rot, in initiative order.",
     "examples": [
       {
-        "text": "Example: a player with 3 rot is dealt 3 damage as deployment begins.",
+        "text": "a player with 3 rot is dealt 3 damage as deployment begins.",
         "test": "35-rot-debt-trash.test.ts::R38: rot deals damage equal to itself at the start of deployment, in initiative order"
       }
     ],
@@ -2528,7 +2528,7 @@
     "text": "Rot never decreases on its own. It deals its damage again every deployment until an effect removes it.",
     "examples": [
       {
-        "text": "Example: rot deals its full damage again the next turn.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R38: rot never decays — it fires again, at full size, every turn"
       }
     ],
@@ -2569,7 +2569,7 @@
     "text": "The source of rot damage is the damaged player's own rot, which is a source that player controls.",
     "examples": [
       {
-        "text": "Example: the damage is recorded as coming from the damaged player.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R38: the damage source is the damaged player themselves (\"your rot is a source you control\")"
       }
     ],
@@ -2604,11 +2604,11 @@
     "text": "Rot damage is dealt as the deployment phase begins, before abilities that trigger \"at the start of deployment\". No player can respond to it.",
     "examples": [
       {
-        "text": "Example: the start-of-deployment event fires after rot damage.",
+        "text": null,
         "test": "47-costs-events.test.ts::R50: 'startOfDeployment' fires AFTER R38's rot damage (the documented order)"
       },
       {
-        "text": "Example: rot damage cannot be responded to.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R38: rot damage cannot be responded to — deployment opens no priority window"
       }
     ],
@@ -2651,11 +2651,11 @@
     "text": "Rot damage can be replaced. A replacement that names no target replaces it on the spot. One that names a target (\"put that many -1/-1 counters on target unit instead\") puts a triggered ability on the stack to choose the target, and the damage is replaced whether or not that ability finds a target.",
     "examples": [
       {
-        "text": "Example: Skittering Blight takes your rot damage as +1/+1 counters.",
+        "text": "Skittering Blight takes your rot damage as +1/+1 counters.",
         "test": "42-dark-b.test.ts::…and then eats the rot damage as +1/+1 counters (R38 replacement)"
       },
       {
-        "text": "Example: Beyond, Codex Incarnate asks its controller for a target, and the rot damage never lands.",
+        "text": "Beyond, Codex Incarnate asks its controller for a target, and the rot damage never lands.",
         "test": "43-dark-c.test.ts::Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands"
       }
     ],
@@ -2703,7 +2703,7 @@
     "text": "An effect that says \"gain rot\" without naming a player gives the rot to the effect's controller.",
     "examples": [
       {
-        "text": "Example: Primordial Coalescence gives its caster 2 rot.",
+        "text": "Primordial Coalescence gives its caster 2 rot.",
         "test": "43-dark-c.test.ts::Primordial Coalescence: three Wraiths (= Wights, R47) and 2 rot (R38)"
       }
     ],
@@ -2738,7 +2738,7 @@
     "text": "Debt is a counter a player has. At the end of each of their resource steps, a player pays 1 mana for each debt they have, and each mana paid removes one debt.",
     "examples": [
       {
-        "text": "Example: debt is paid automatically as the resource step ends.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R39: debt is paid automatically when the resource step ends — 1 mana per debt"
       }
     ],
@@ -2785,7 +2785,7 @@
     "text": "Paying debt is not a choice and takes no action. It is the last thing in the resource step, so no resource can be expended after it in that step, and the mana spent on debt cannot be used for anything else that turn.",
     "examples": [
       {
-        "text": "Example: the mana paid for debt is gone, and the card it would have paid for cannot be played.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R39: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable"
       }
     ],
@@ -2824,11 +2824,11 @@
     "text": "If a player cannot pay all their debt, they pay what they can. The rest stays and is charged again at their next resource step. There is no other penalty.",
     "examples": [
       {
-        "text": "Example: partial payment is fine and the remainder carries to the next turn.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R39: partial payment is fine and the remainder carries to the next turn"
       },
       {
-        "text": "Example: debt that cannot be paid does not cost life.",
+        "text": null,
         "test": "38-light-a.test.ts::Greed Angel: unpayable debt carries over instead of costing life"
       }
     ],
@@ -2864,11 +2864,11 @@
     "text": "Gaining debt can be a cost. Debt gained to pay a cost is gained when the cost is paid, and is kept even if the spell or ability is negated.",
     "examples": [
       {
-        "text": "Example: a spell with a printed [Gain 2 debt] cost gives its caster the 2 debt as it is played.",
+        "text": null,
         "test": "47-costs-events.test.ts::R49: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt"
       },
       {
-        "text": "Example (illustrative): Hyper Beam negated by Dematerialize deals no damage, and the debt its caster gained to play it stays.",
+        "text": "Hyper Beam negated by Dematerialize deals no damage, and the debt its caster gained to play it stays.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no damage, and the debt gained to play it stays"
       }
     ],
@@ -2912,11 +2912,11 @@
     "text": "Rot and debt are counters on players. An effect that removes counters from players removes them. An effect that changes the number of counters \"put on\" a player does not change how many are removed.",
     "examples": [
       {
-        "text": "Example: Burn the Blight removes rot and debt from players.",
+        "text": "Burn the Blight removes rot and debt from players.",
         "test": "41-dark-a.test.ts::Burn the Blight: removes counters from units AND the rot/debt on players"
       },
       {
-        "text": "Example: Proliferating Slime does not deepen a removal.",
+        "text": "with Proliferating Slime in play, 2 rot put on its controller's opponent arrives as 3, but removing 2 rot from that player removes exactly 2.",
         "test": "152-hand-entry.test.ts::a counter-amount replacement does NOT scale a REMOVAL (Proliferating Slime says \"put on\")"
       }
     ],
@@ -2961,7 +2961,7 @@
     "text": "Effects that apply to the same layer apply in timestamp order. Where they conflict, the later effect takes precedence over the earlier one.",
     "examples": [
       {
-        "text": "Example: a virus applied after Monke still gives its attribute.",
+        "text": "Monke resolves in battle, so other units lose all attributes. Afterwards a player augments Chitin Shredder, a Virus, onto their unit: that unit has Powerful, because the virus is later than Monke.",
         "test": "390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke still gives its attribute"
       }
     ],
@@ -3004,7 +3004,7 @@
     "text": "An effect's timestamp is when it began to apply. A static ability's effect has the timestamp of the card that carries it, a mod's has the time it was applied, and an effect from a resolved spell or ability has the time it resolved. What a card prints is older than any effect.",
     "examples": [
       {
-        "text": "Example: an attribute granted to a unit while Suppression Field is still on the stack is lost when the spell resolves; one granted after it resolves is kept.",
+        "text": "an attribute granted to a unit while Suppression Field is still on the stack is lost when the spell resolves; one granted after it resolves is kept.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.timestamps.when — a static dates from its card, a mod from when it was applied, a resolved spell from its resolution, and printed text is older than all"
       }
     ],
@@ -3053,11 +3053,11 @@
     "text": "An effect that removes attributes or abilities removes those the object has when the effect applies. An attribute or ability the object gains afterwards is not removed.",
     "examples": [
       {
-        "text": "Example: a Powerful virus attached after Suppression Field resolved makes the suppressed unit Powerful.",
+        "text": "a Powerful virus attached after Suppression Field resolved makes the suppressed unit Powerful.",
         "test": "393-raq-mods.test.ts::RAQ Suppression Field: a Powerful virus attached after it resolved makes the suppressed Bubb Powerful"
       },
       {
-        "text": "Example: a Powerful virus attached after Transmogrifant is in play works.",
+        "text": "a Powerful virus attached after Transmogrifant is in play works.",
         "test": "393-raq-mods.test.ts::RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected — a Powerful virus attached later works"
       }
     ],
@@ -3101,7 +3101,7 @@
     "text": "A continuous effect that removes attributes or abilities removes the printed ones of a unit that enters play after it began, because what a card prints is older than the effect. When that effect ends, the units get them back.",
     "examples": [
       {
-        "text": "Example: a unit entering play under Transmogrifant has no attributes, and gets them back when Transmogrifant leaves.",
+        "text": "a unit entering play under Transmogrifant has no attributes, and gets them back when Transmogrifant leaves.",
         "test": "393-raq-mods.test.ts::RAQ Transmogrifant: a unit that enters play under it has no attributes, and gets them back when Transmogrifant leaves"
       }
     ],
@@ -3140,7 +3140,7 @@
     "text": "What a removal effect took stays taken until that effect ends (for a removal that lasts until regroup, at regroup). The unit does not get it back by leaving the column the effect applies to. This does not stop the unit gaining an attribute or ability from a later source (rule concepts.timestamps.removal).",
     "examples": [
       {
-        "text": "Example: a temporary attribute granted before a strip is taken, and one granted after it is kept.",
+        "text": null,
         "test": "402-raq-fix-stripping.test.ts::§3 a temporary attribute granted before a strip is taken, and one granted after is kept"
       }
     ],
@@ -3182,7 +3182,7 @@
     "text": "When two effects set a unit's base stats, the later one applies.",
     "examples": [
       {
-        "text": "Example: Body Swap with a unit Statweaver made base 3/3 trades the 3/3 base for the 1/1.",
+        "text": "an opponent's Aberrant Statweaver (\"Your units are base 3/3\") makes their Wisp base 3/3. You cast Body Swap on your 1/1 and that Wisp: until regroup your unit is base 3/3 and the Wisp base 1/1, though the Statweaver is still in play.",
         "test": "390-raq-stack.test.ts::RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1"
       }
     ],
@@ -3219,7 +3219,7 @@
     "text": "A cost that removes counters from the player's allies, or recalls an ally, likewise uses only the player's own units in the region where the cost is paid.",
     "examples": [
       {
-        "text": "Example: Auric Ascendant’s \"Recall another ally\" cost offers the ally fighting beside it, never the ally at home and never itself.",
+        "text": "Auric Ascendant’s \"Recall another ally\" cost offers the ally fighting beside it, never the ally at home and never itself.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.region.other-units — a [Recall another ally] menu holds only allies in the region where it is paid"
       }
     ],

@@ -6,7 +6,7 @@
     "text": "The battle phase is the only interactive phase of the game. In it players manage their units across the regions: they attack into other regions or keep units back to defend.",
     "examples": [
       {
-        "text": "Player A attacks with a unit; it moves into Player B's region, and Player A enters that region too.",
+        "text": "Player A attacks with a Good Whale: the Whale moves into Player B's region, and Player A enters that region too.",
         "test": "02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths"
       }
     ],
@@ -46,7 +46,7 @@
     "text": "A player can interact with opponents and their units only during the battle phase.",
     "examples": [
       {
-        "text": "In deployment an effect that targets a cached card reaches only its controller's own cache; in battle it reaches the opponent's cache too.",
+        "text": "In deployment, an effect that targets a cached card can reach only its controller's own cache; once an attack brings both players into a region in battle, it can reach the opponent's cache too.",
         "test": "293-cached-targets-are-regional.test.ts::R291 §1 in deployment a home region reaches only its own seat"
       }
     ],
@@ -135,7 +135,7 @@
     "text": "Battle is made of four steps: the attack step, the block step, the combat step and the after-combat step. They take place separately inside each region.",
     "examples": [
       {
-        "text": "Round 1 of a 1v1 battle runs attack, a priority window, blocks, a priority window, combat damage and the after-combat window in the defender's region.",
+        "text": null,
         "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
       }
     ],
@@ -220,7 +220,7 @@
     "text": "An attack step in which no attack is declared opens no priority window. If both battle rounds are declined, the battle phase has no priority window at all.",
     "examples": [
       {
-        "text": "The initiative player declines, then the non-initiative player declines: the game goes to regroup without either player getting priority, so spell tokens held for the battle are erased unused.",
+        "text": "The initiative player declines to attack, then the non-initiative player declines too: the game goes to regroup without either player getting priority, so a Fireball token held for the battle is erased unused.",
         "test": "165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all"
       }
     ],
@@ -303,7 +303,7 @@
     "text": "Round 1 runs in this order: (1) the initiative team declares its attacks, sending units into non-initiative regions; (2) a priority window; (3) the non-initiative team declares its blocking formations and may at the same time send units out to counterattack; (4) a priority window; (5) the combat step, in which all units in formation deal combat damage at the same time; (6) the after-combat step, the last priority window in that region.",
     "examples": [
       {
-        "text": "The NIT blocks nothing and sends a Rune Channeler to counterattack; the IT's unblocked 2/2 deals 2 to the NIT; after the after-combat window, round 2 begins.",
+        "text": "The initiative player attacks with a 2/2 Curio Drifter; the non-initiative player blocks nothing and sends a Rune Channeler to counterattack. The unblocked Drifter deals 2, and after the after-combat window round 2 begins.",
         "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
       }
     ],
@@ -361,7 +361,7 @@
     "text": "Units sent out to counterattack leave the region at once, and are treated as if they do not exist until round 1 is finished.",
     "examples": [
       {
-        "text": "A unit sent to counterattack is absent during round 1 and arrives in the initiative player's region for round 2.",
+        "text": "A Rune Channeler sent to counterattack is absent for the rest of round 1, and arrives in the initiative player's region for round 2.",
         "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
       }
     ],
@@ -400,7 +400,7 @@
     "text": "Round 2 runs in this order: (1) the non-initiative team puts its counterattacking units into formation; (2) a priority window; (3) the initiative team declares its blocking formation; (4) a priority window; (5) the combat step; (6) the after-combat step, the last priority window in that region before regroup.",
     "examples": [
       {
-        "text": "The counterattacker arrives in the initiative player's region, attacks, is not blocked and deals 4; after the after-combat window the game goes through regroup to deployment.",
+        "text": "The counterattacking Rune Channeler arrives in the initiative player's region, attacks, is not blocked and deals 4; after the after-combat window the game goes through regroup to deployment.",
         "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
       }
     ],
@@ -443,11 +443,7 @@
     "text": "Each team gets only one chance to attack in a battle phase. There is no counterattack in round 2.",
     "examples": [
       {
-        "text": "In round 2 the initiative player blocks, but cannot send units back out to attack. (illustrative)",
-        "test": null
-      },
-      {
-        "text": "The NIT sends a Rune Channeler and counterattacks with it in round 2; the initiative player may block it but cannot send a unit of its own out, and the battle phase ends after round 2.",
+        "text": "The non-initiative player sent a Rune Channeler at blocks and attacks with it in round 2; the initiative player may block it but cannot send a unit of their own out, and the battle phase ends after round 2.",
         "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.rounds.one-attack-each — in round 2 the initiative player cannot send units out to counterattack, and the battle phase ends after round 2"
       }
     ],
@@ -490,7 +486,7 @@
         "test": "396-raq-timing.test.ts::RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines"
       },
       {
-        "text": "Only the non-initiative player has a unit; the initiative player's empty declaration leads to round 2, where that unit attacks from home.",
+        "text": "Only the non-initiative player has a unit; the initiative player declares no attack, and in round 2 that unit attacks from home.",
         "test": "21-fixes.test.ts::REGRESSION: NIT can attack in round 2 when IT had no units in round 1"
       }
     ],
@@ -537,7 +533,7 @@
         "test": "21-fixes.test.ts::round 2 after a real round-1 battle still restricts to the sent counterattackers"
       },
       {
-        "text": "A unit that stayed home cannot be declared as a round-2 attacker.",
+        "text": "A Good Whale that stayed home while a Rune Channeler was sent out cannot be declared as a round-2 attacker.",
         "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
       }
     ],
@@ -615,7 +611,7 @@
     "text": "The regions resolve in clockwise order, starting with the region to the left of the initiative player, so the initiative player's region resolves last.",
     "examples": [
       {
-        "text": "In a four-player game the region to the initiative player's left resolves first and the initiative player's own region last. (illustrative)",
+        "text": "In a four-player game the region to the initiative player's left resolves first and the initiative player's own region last.",
         "test": null
       },
       {
@@ -658,7 +654,7 @@
     "text": "In 1v1, round 1 is fought in the non-initiative player's region, and round 2, if there is one, in the initiative player's region.",
     "examples": [
       {
-        "text": "The counterattacker ends up in the initiative player's region, where round 2 is fought.",
+        "text": null,
         "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
       }
     ],
@@ -706,7 +702,7 @@
     "text": "While a region's battle is being resolved, units in any other region, including units that stayed home and counterattackers that were sent away, are treated as if they do not exist.",
     "examples": [
       {
-        "text": "An attacked player's spell can target the attacker in the battle region but not the attacker's unit that stayed home.",
+        "text": "Player A attacks with a Rune Channeler and leaves a Good Whale at home. Player B casts Luminous Arc: it can target the attacking Channeler, but not the Whale that stayed home.",
         "test": "05-rulings.test.ts::R12: regions are exclusive"
       }
     ],
@@ -744,12 +740,7 @@
     "parent": "505",
     "order": 5,
     "text": "In free-for-all games there are no battle rounds: all players declare their attacks at the same time, using intent cards.",
-    "examples": [
-      {
-        "text": "Each player places face-down intent cards in front of their units; all are flipped at once and the attacks happen. (illustrative)",
-        "test": null
-      }
-    ],
+    "examples": [],
     "see": [
       "903",
       "905"
@@ -786,11 +777,11 @@
     "text": "Anything counted \"in this battle\" is counted separately for each region, and the count starts again at the start of each battle phase. Things that happen outside the battle phase are not counted.",
     "examples": [
       {
-        "text": "Trashes are counted per battle and the count is reset between battles.",
+        "text": "During a battle a player discards a card, then their attacking unit dies in combat: two cards have been trashed in this battle. At the next battle phase the count starts again from zero.",
         "test": "35-rot-debt-trash.test.ts::R40: battleCounters count trashes per battle and reset between battles"
       },
       {
-        "text": "A card trashed outside battle counts for nothing.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: a trash outside battle counts for nothing"
       }
     ],
@@ -875,7 +866,7 @@
     "text": "Regroup is a global step that takes place once battle has ended in every region. It resets the game between battles.",
     "examples": [
       {
-        "text": "Every way a battle round can end leads into the same regroup.",
+        "text": null,
         "test": "183-end-battle-round-paths.test.ts::R213 §2: every path funnels through startRegroup"
       }
     ],
@@ -914,11 +905,7 @@
     "text": "No player gets priority or takes any game action during regroup.",
     "examples": [
       {
-        "text": "After the last after-combat window passes, the game is next in the deployment phase; nobody was asked anything in between. (illustrative)",
-        "test": null
-      },
-      {
-        "text": "The last pass of the after-combat window regroups and lands the game in deployment within that one action; nobody holds priority afterwards.",
+        "text": "When the last player passes in the after-combat window, the game goes through regroup and straight into deployment; no one is given priority in between.",
         "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.regroup.what-it-is.no-actions — the last after-combat pass lands straight in deployment, with nobody holding priority"
       }
     ],
@@ -1098,7 +1085,7 @@
     "text": "Each player who entered another region during battle stops being present there, and is present only in their own region again.",
     "examples": [
       {
-        "text": "After regroup, each region holds only its own player.",
+        "text": null,
         "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
       }
     ],
@@ -1221,7 +1208,7 @@
     "text": "All units leave formation.",
     "examples": [
       {
-        "text": "After regroup there is no battle formation left on either side.",
+        "text": null,
         "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
       }
     ],
@@ -1260,7 +1247,7 @@
     "text": "All spell tokens in play are erased, including unused spell tokens in a player's own region.",
     "examples": [
       {
-        "text": "With no Harbinger of Immolation anywhere, every spell token is erased at regroup.",
+        "text": null,
         "test": "12-fire-a.test.ts::regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased"
       }
     ],
@@ -1308,11 +1295,11 @@
         "test": "12-fire-a.test.ts::Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup"
       },
       {
-        "text": "A surviving token keeps its X but loses its temporary changes.",
+        "text": "With Harbinger of Immolation in play, your Fireball 7 token survives regroup still a Fireball 7, but any temporary changes on it are gone.",
         "test": "12-fire-a.test.ts::Harbinger of Immolation: a surviving token keeps its X"
       },
       {
-        "text": "Only the Harbinger controller's tokens stay; the opponent's are erased.",
+        "text": null,
         "test": "12-fire-a.test.ts::Harbinger of Immolation: only YOUR tokens stay"
       }
     ],
@@ -1476,7 +1463,7 @@
     "text": "Any card can be played during deployment except a battle card, which can be played only in the battle phase.",
     "examples": [
       {
-        "text": "Jelly, a battle card, cannot be played in deployment, and a Fireball token cannot be cast there.",
+        "text": "In deployment a player plays Flame Juggle and gets a Fireball token. Fireball is a battle card, so the token cannot be cast until the battle phase.",
         "test": "01-planning.test.ts::battle-timed Fireball is NOT castable during deployment"
       }
     ],
@@ -1603,7 +1590,7 @@
     "text": "Modifications are applied during deployment. A mod may be applied from the hand or the bin, and a glimpsed mod also from the cache.",
     "examples": [
       {
-        "text": "A graft is offered from the bin as well as from the hand, when its cost and affinity are met.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3"
       }
     ],
@@ -1646,7 +1633,7 @@
     "text": "Grafting is done during deployment, whatever the card's speed, even for a card with Haste, and never in battle. A graft can be applied in the haste step only where an effect lets mods be applied then as if it were deployment, such as Slurpr's.",
     "examples": [
       {
-        "text": "A graft is offered in deployment and never in the haste step or in battle, even for a Haste card.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment"
       },
       {
@@ -1708,11 +1695,11 @@
     "text": "During deployment a player may augment a spell token they have in play. Only the augment's attributes pass to the token.",
     "examples": [
       {
-        "text": "A spell token is offered as an augment host during deployment.",
+        "text": null,
         "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
       },
       {
-        "text": "A Fireball token augmented with a {Powerful} mod deals double damage when cast.",
+        "text": "A Fireball 3 token augmented in deployment with Chitin Shredder gains {Powerful}, and when cast in battle it deals 6.",
         "test": "78-round17-core.test.ts::R89: only ATTRIBUTES transfer"
       }
     ],
@@ -1757,7 +1744,7 @@
     "text": "In 1v1 and team games the printed rules have the initiative team deploy first. Its players deploy in any order they wish, and then the non-initiative team does the same.",
     "examples": [
       {
-        "text": "In a 2v2 game both initiative players finish deploying before either non-initiative player begins. (illustrative)",
+        "text": "In a 2v2 game both initiative players finish deploying before either non-initiative player begins.",
         "test": null
       }
     ],
@@ -1807,11 +1794,11 @@
         "test": "21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT"
       },
       {
-        "text": "legalActions offers deployment plays to both players at the same time.",
+        "text": null,
         "test": "21-fixes.test.ts::legalActions OFFERS deploy plays to both seats at once"
       },
       {
-        "text": "A deployment play produces events for the player who made it, and not one of them reaches the opponent or moves the opponent's log.",
+        "text": "During deployment Player A plays Ignis Sprite; nothing of it appears in Player B's game log while deployment is under way.",
         "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §4: a hidden step with no reveal in it leaks nothing either (the negative control)"
       }
     ],
@@ -1854,11 +1841,11 @@
     "text": "The deployment phase begins in this order: (1) each player is dealt damage equal to their rot, in initiative order; (2) then abilities that trigger \"at the start of deployment\" trigger.",
     "examples": [
       {
-        "text": "Rot deals its damage at the start of deployment, initiative player first.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R38: rot deals damage equal to itself at the start of deployment, in initiative order"
       },
       {
-        "text": "The start-of-deployment event still fires after Beyond's rot replacement has stopped to ask for a target.",
+        "text": "A player controls Beyond, Codex Incarnate and has 2 rot. At the start of deployment the rot comes first: Beyond asks them to pick a unit (they pick their Good Whale), and only after that do 'at the start of deployment' abilities trigger.",
         "test": "43-dark-c.test.ts::R102 — the start-of-deployment event still fires after the rot replacement stopped to ask"
       }
     ],
@@ -1901,7 +1888,7 @@
     "text": "All abilities that trigger at the start of deployment are put on the stack before any of them resolves.",
     "examples": [
       {
-        "text": "Three start-of-deployment watchers see the stack at sizes 2, 1, 0 as they resolve: all three were on it first.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves"
       }
     ],
@@ -1944,7 +1931,7 @@
     "text": "Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack normally resolves without anyone having to act.",
     "examples": [
       {
-        "text": "A card played in deployment really goes on a stack before it resolves.",
+        "text": null,
         "test": "276-deployment-stack.test.ts::R286 §1: the play really went ON a stack"
       }
     ],
@@ -1990,11 +1977,11 @@
     "text": "A decision one player must answer during deployment does not make the other player wait: the other player may keep playing, and their own deployment stack keeps resolving.",
     "examples": [
       {
-        "text": "Seat 1 is answering a question; seat 0 plays a card in deployment and it resolves.",
+        "text": "Player B is answering a choice; meanwhile Player A plays a card in deployment and it resolves.",
         "test": "276-deployment-stack.test.ts::R286 §1: seat 1 is mid-question and seat 0"
       },
       {
-        "text": "A start-of-deployment Wraith pile suspends only its own seat.",
+        "text": "Player B has three Wraiths, and their start-of-deployment triggers are asking B to choose. Meanwhile Player A can still act, and can even finish deploying; B's triggers then resolve normally.",
         "test": "130-seat-aware-gate.test.ts::R154 §1: a Wraith pile suspends its own seat, not the other one"
       }
     ],
@@ -2041,7 +2028,7 @@
         "test": "12-fire-a.test.ts::Harbinger of Immolation: end of turn → Fireball X"
       },
       {
-        "text": "A choice raised by an end-of-turn trigger is asked and answered, and then the turn ends.",
+        "text": null,
         "test": "99-endofturn.test.ts::a choice raised inside a real endTurn() is asked, answered, and the turn still flips"
       }
     ],
@@ -2084,10 +2071,6 @@
     "order": 1,
     "text": "No player can play cards during the end-of-turn step, either after the end-of-turn triggers or in response to them.",
     "examples": [
-      {
-        "text": "With an end-of-turn trigger resolving, neither player can cast anything in response. (illustrative)",
-        "test": null
-      },
       {
         "text": "While a General Smof end-of-turn trigger is asking its question, neither player is offered a card, spell token, ability, graft or augment, and an Ignis Sprite play is refused.",
         "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.initiative.end-of-turn.no-responses — while an end-of-turn trigger is asking, no seat is offered a play and a play is refused"
@@ -2166,10 +2149,6 @@
     "text": "When the turn is over, the initiative token is passed to the next player clockwise. In 1v1 and team games this means the initiative alternates between the teams every turn.",
     "examples": [
       {
-        "text": "In 1v1, the player who did not have the initiative this turn has it next turn, and attacks first in its battle phase. (illustrative)",
-        "test": null
-      },
-      {
         "text": "The player without the initiative this turn has it once the turn ends, declares the first attack of the next battle, and the turn after that it passes back.",
         "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.initiative.pass — when the turn ends the initiative goes to the other player, who attacks first in the next battle, and it alternates back"
       }
@@ -2214,7 +2193,7 @@
     "text": "Draft packs are passed in the draft step: each player passes their pack clockwise to the next player when they finish drafting, and the draft step is complete once all players have passed their pack. The end-of-turn passing of \"any draft packs\" with the initiative names this same pass; a pack is not passed a second time when the turn ends.",
     "examples": [
       {
-        "text": "After both players commit their draft, each holds the pack the other drafted from.",
+        "text": "After both players finish drafting, each holds the pack the other drafted from.",
         "test": "20-draft.test.ts::no-op commit preserves hand and pack exactly; both commits pass the packs"
       }
     ],
@@ -2270,7 +2249,7 @@
     "text": "The initiative token is not a token. An effect that refers to tokens never affects it.",
     "examples": [
       {
-        "text": "Download, which takes a token, cannot take the initiative. (illustrative)",
+        "text": "Download says \"Gain control of target token\"; it cannot be used to take the initiative token.",
         "test": null
       }
     ],
@@ -2297,7 +2276,6 @@
     "sourceHashes": {
       "RAQ 1353864175910387742#7": "188674b77531951ffc18c386967d26357e32678d959b9d09708e3802f6e593ce"
     },
-    "untested": true,
     "untestableReason": "the initiative is a seat index in the game state, not an object any effect could reach, so no state could show it being treated as a token"
   }
 ]

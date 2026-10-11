@@ -135,7 +135,7 @@
   },
   {
     "key": "effects.casting.costs.mid-resolution",
-    "textHash": "1e7c46f20dda61f9",
+    "textHash": "ce357f6fae2e5bf6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -169,7 +169,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.costs.no-refund",
@@ -211,7 +212,7 @@
   },
   {
     "key": "effects.casting.costs.not-yet-in-play",
-    "textHash": "1bfa7b5952831da8",
+    "textHash": "b04dd8f424edd0e3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -250,11 +251,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.costs.sacrifice-gone",
-    "textHash": "4bf0a1df87e460cc",
+    "textHash": "c03d0fd622fa6687",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -294,11 +296,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.costs.unpayable",
-    "textHash": "7607d67f409167b0",
+    "textHash": "a95d41fba0a27d16",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -343,11 +346,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.other-zones",
-    "textHash": "bac66d8bb6bca906",
+    "textHash": "c7215e0603a5977c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -381,11 +385,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.other-zones.cache-widening",
-    "textHash": "8d67669ed6c1ebc2",
+    "textHash": "3ad349ebe8430bf7",
     "verdict": "partial",
     "round": 3,
     "verifier": "U14-r3-a2",
@@ -452,7 +457,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Rule text is right. The example's bound test does not assert the example: it is order-dependent (fails when run alone) and its Virus check is onto a spell on the stack, not a unit. Rebind to 370-cached-virus-in-battle.test.ts::'R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity'."
+    "problem": "Rule text is right. The example's bound test does not assert the example: it is order-dependent (fails when run alone) and its Virus check is onto a spell on the stack, not a unit. Rebind to 370-cached-virus-in-battle.test.ts::'R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity'.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.other-zones.hand-restriction",
@@ -499,7 +505,7 @@
   },
   {
     "key": "effects.casting.other-zones.haste-grant",
-    "textHash": "09fb9e06a8a92704",
+    "textHash": "401f81da44193419",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -538,11 +544,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.other-zones.timing",
-    "textHash": "3d088aada840391f",
+    "textHash": "43e42245d29d49c9",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U14-r3-a2",
@@ -625,11 +632,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.procedure",
-    "textHash": "747bcfe7a77f754a",
+    "textHash": "f6417c5ce6ce62c1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -666,11 +674,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.procedure.as-you-play",
-    "textHash": "4305513ad61d827a",
+    "textHash": "97494343f59908a2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -709,11 +718,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.procedure.fixed-costs",
-    "textHash": "edadf7292f37d098",
+    "textHash": "c0545756906ff9ba",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -745,11 +755,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.procedure.modes",
-    "textHash": "baeea4925f960c2f",
+    "textHash": "b121927311909ce7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -783,11 +794,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.procedure.modular",
-    "textHash": "fb30963f292ea35d",
+    "textHash": "7361b4aa09ae1c94",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -814,11 +826,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.casting.procedure.spot",
-    "textHash": "3894f572fd20aa92",
+    "textHash": "cc2bd09af916eb63",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -845,11 +858,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.procedure.stack",
-    "textHash": "2830108e03713292",
+    "textHash": "e667162fdad42006",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -881,7 +895,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.procedure.targets",
@@ -975,7 +990,7 @@
   },
   {
     "key": "effects.casting.requirements",
-    "textHash": "f61cd0a4c8aa6040",
+    "textHash": "76b843ba203d6693",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1021,11 +1036,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.requirements.affinity",
-    "textHash": "6306fabff5aea82a",
+    "textHash": "96fe8065f60beed7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1064,11 +1080,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.requirements.mana",
-    "textHash": "92a11b1e829f17c2",
+    "textHash": "69f95fb7c2797d92",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1100,11 +1117,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.requirements.timing",
-    "textHash": "c2f2d0e6be7014ea",
+    "textHash": "58577ca205728d0e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1131,39 +1149,46 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.casting.spell-tokens",
-    "textHash": "c5d8b27d0d428f7e",
+    "textHash": "691ea000149638f5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
         "loc": "client/engine/src/apply.ts:doCastSpellToken",
         "agrees": true,
-        "note": "need(tok.region === battle region): castable only in its region"
+        "note": "needs priority and tok.region === battle region; asks the target and pushes like a hand play"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.casting.spell-tokens",
+        "passed": true,
+        "asserts_claim": "yes: in the attack window D (defending) casts a Fireball 3 in the battle region, picks the attacking player, it goes on the stack with priority to A, two passes and A loses 3"
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Rulebook 2023 p.4",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
-      },
-      {
-        "ref": "Rulebook 2023 p.4",
-        "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "spell tokens are 'cast' from play, which functions the same way as if they were cast from your hand, but you may only cast spell tokens in the region the token is in"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "only cast spell tokens in the region the token is in."
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(tok.region === e.s.battle!.region, 'spell tokens are castable only in their region');"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(h.state.players[A]!.life, life - 3, 'it resolves');"
       }
     ],
     "basis_ok": true,
@@ -1171,7 +1196,7 @@
   },
   {
     "key": "effects.casting.spell-tokens.burst",
-    "textHash": "c48f23b598d6d133",
+    "textHash": "0196b538b7a62a57",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -1232,11 +1257,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.casting.spell-tokens.taxed",
-    "textHash": "ef97ec9e6526bea9",
+    "textHash": "2c0f9bab2d8355cb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1270,11 +1296,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.targets-required",
-    "textHash": "fa504d43d2f4f816",
+    "textHash": "7f404023f53a1762",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1335,11 +1362,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.targets-required.graft-trigger",
-    "textHash": "c83b476f432e4f09",
+    "textHash": "4d03344a6a068e74",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1373,11 +1401,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.targets-required.untargeted",
-    "textHash": "1243bb421d75702c",
+    "textHash": "f68d8aa3b46a3cc3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1411,7 +1440,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.x",
@@ -1453,7 +1483,7 @@
   },
   {
     "key": "effects.casting.x.free",
-    "textHash": "6fa99fe0daaeaadf",
+    "textHash": "78c5d03fc29ffaee",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -1491,7 +1521,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Sentence 2 has no test, and no card in the pool has both a mana X and a variable bracketed cost, so it is currently untestable on real cards."
+    "problem": "Sentence 2 has no test, and no card in the pool has both a mana X and a variable bracketed cost, so it is currently untestable on real cards.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.casting.x.minimum",
@@ -1533,7 +1564,7 @@
   },
   {
     "key": "effects.casting.x.variable-cost",
-    "textHash": "5a6a0847a03d4a0b",
+    "textHash": "018c6970977cff94",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1560,7 +1591,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.general.cast-is-play",
@@ -1617,7 +1649,7 @@
   },
   {
     "key": "effects.general.effect",
-    "textHash": "3c1217e64f363479",
+    "textHash": "73e715b327cc8989",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1665,11 +1697,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.general.effect.nonspell-effect",
-    "textHash": "43608484b148429b",
+    "textHash": "af9fd7891c26c0ae",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1703,11 +1736,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.general.effect.spell-effect",
-    "textHash": "6c20194240856831",
+    "textHash": "a4a65c845f4bce7a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1746,11 +1780,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.general.interaction",
-    "textHash": "35c7a59b1cfe31d8",
+    "textHash": "bc44403285acce91",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1777,11 +1812,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.playing.applying",
-    "textHash": "cbd7e898ee5fffd8",
+    "textHash": "d3ec9ad7dd0a28e2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1822,11 +1858,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.playing.applying.cost",
-    "textHash": "433d26741274834c",
+    "textHash": "6d39b16c56e08371",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1874,11 +1911,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.playing.applying.no-play-triggers",
-    "textHash": "e4790237abaea0cb",
+    "textHash": "95ef7c9741dbcb96",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1923,11 +1961,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "effects.playing.applying.tides",
-    "textHash": "a231dc1297d5cf96",
+    "textHash": "20884c9ecea87505",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -1993,11 +2032,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.playing.copy-not-played",
-    "textHash": "4c64d27bee098086",
+    "textHash": "9bab748d3fa0613d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2036,58 +2076,69 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.playing.mid-resolution",
-    "textHash": "898ef34b7790c694",
+    "textHash": "377e278eeb5201de",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
         "loc": "client/engine/src/cards/sets/batch-water-a.ts:inlinePlayGoesToStack",
         "agrees": true,
-        "note": "battle pushes"
+        "note": "in a live battle priority window a mid-resolution play is pushed and fires cardPlayed (R198)"
       },
       {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline (Insidious Invitation loop)",
         "agrees": false,
-        "note": "engineDiffers is real: Wake the Dead/Bonesculptor spawn played units inline, no stack"
+        "note": "the declared divergence: R198 records that Insidious Invitation collects every seat's play inside the one resolution before any window opens, so the second player cannot respond to the first play before declaring their own (169 test 2 asserts the first play is on the stack and 'nobody has had priority yet' while the opponent is asked); outside a battle window the in-place path resolves without a stack item (169 §6c)"
       }
     ],
     "tests_run": [
       {
-        "file": "396-raq-timing.test.ts",
-        "pattern": "RAQ Tides 7: a free play is a play",
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 7",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Tides of the Cosmos plays Curio Drifter; Bloomcaster makes its 1/1"
+      },
+      {
+        "file": "client/engine/test/169-mid-resolution-window.test.ts",
+        "pattern": "R198|§6",
+        "passed": true,
+        "asserts_claim": "supporting: Hooba-Pon, Insidious Invitation, Tides and Spell Excavation plays reach the stack with a window; §6a Bloomcaster hears an Invitation play"
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U14/u14-probes.test.ts",
-        "title": "effects.priority.mid-resolution: a unit Wake the Dead plays in battle waits on the stack and can be answered",
-        "passed": false,
-        "demonstrates": "yes: confirms the flagged divergence"
+        "file": "client/engine/test/zz-probe-U14-1.test.ts",
+        "test": "probe U14-1: Tides cast at a split damage-step boundary — the free play is put on the stack there too",
+        "passed": true,
+        "demonstrates": "yes (control): a Tides play during battle is pushed both from the attack window and from an R295 sub-step boundary window; the divergence is not there"
       }
     ],
     "source_checks": [
       {
         "ref": "RAQ 1396955380000755795#8",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "_passer [Solved]: 'Played units/spells will trigger things with wording when you play ... like Bloomcaster'"
       },
       {
         "ref": "R198",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "'Playing a card during a resolution is playing a card.' It goes on the stack and priority is handed out with it there; the Insidious Invitation ordering approximation is recorded in the same ruling"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/engine/src/cards/sets/batch-water-a.ts",
+        "text": "g.s.phase === 'battle' && g.s.priority !== null && !g.s.battle?.damageStep;"
+      },
+      {
         "file": "client/docs/digital-rules.md",
-        "text": "**Playing a card during a resolution is playing a card.** It goes on the stack;"
+        "text": "* **Insidious Invitation's per-seat loop still asks everybody before anybody responds.**"
       }
     ],
     "basis_ok": true,
@@ -2095,29 +2146,29 @@
   },
   {
     "key": "effects.playing.mid-resolution.zone",
-    "textHash": "275df4fa95c45517",
+    "textHash": "3d7130def88e4e35",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline / pushInlinePlay (opts.from)",
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:tidesOfTheCosmos",
         "agrees": true,
-        "note": "Hooba-Pon/Insidious Invitation stamp 'hand', Tides 'deck'"
+        "note": "the free play is stamped from: 'deck'; Hooba-Pon / Invitation stamp 'hand' (R263)"
       }
     ],
     "tests_run": [
       {
-        "file": "241-played-from-zone.test.ts",
-        "pattern": "R263 §5: Tides of the Cosmos plays off the top of the deck",
+        "file": "client/engine/test/241-played-from-zone.test.ts",
+        "pattern": "R263 §5: Tides of the Cosmos plays off the top",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: the play is announced from 'deck', Proph draws one, Stalwart Sentinel takes its two counters"
       },
       {
-        "file": "241-played-from-zone.test.ts",
+        "file": "client/engine/test/241-played-from-zone.test.ts",
         "pattern": "R263 §3: Hooba-Pon plays from the hand",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: the play is announced from 'hand'; Proph did not draw and the Sentinel has 0 counters"
       }
     ],
     "probes": [],
@@ -2125,18 +2176,17 @@
       {
         "ref": "R263",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
-      },
-      {
-        "ref": "R263",
-        "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "owner: 'If the card originates in the hand, it's played from the hand. If it originates from the cache or bin or somewhere else, it's not played from the hand.'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> come from. If the card originates in the hand, it's played from the hand. If"
+        "file": "client/engine/src/cards/sets/batch-water-b.ts",
+        "text": "{ from: 'deck', ...(mode !== 'play' ? { mode } : {}) });"
+      },
+      {
+        "file": "client/engine/test/241-played-from-zone.test.ts",
+        "text": "assert.equal(draws(h, D), drew + 1, 'Proph drew — this play was NOT from the hand');"
       }
     ],
     "basis_ok": true,
@@ -2144,7 +2194,7 @@
   },
   {
     "key": "effects.playing.put-into-play",
-    "textHash": "f05213989f42a12d",
+    "textHash": "606034353e9aa8fc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2176,11 +2226,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.playing.put-into-play.spell-unit",
-    "textHash": "d7b20a7710e5846d",
+    "textHash": "f783d9d8af98be7e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2212,11 +2263,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.playing.what-is-played",
-    "textHash": "a3cc591de513eed6",
+    "textHash": "3ef74f36a71c272d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2248,7 +2300,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.playing.what-is-played.includes-itself",
@@ -2313,7 +2366,7 @@
   },
   {
     "key": "effects.playing.what-is-played.spell-token",
-    "textHash": "5afa9d696c4a3fe7",
+    "textHash": "3d5c8657a03bddfd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2363,11 +2416,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.playing.what-is-played.spell-unit",
-    "textHash": "8f0f4d6020637636",
+    "textHash": "06c759cf5074897e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2401,7 +2455,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.playing.what-is-played.token-creation",
@@ -2443,7 +2498,7 @@
   },
   {
     "key": "effects.playing.what-is-played.token-not-card",
-    "textHash": "d24ba464647d8322",
+    "textHash": "bcded00fc9cc1f74",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2487,27 +2542,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.deployment",
-    "textHash": "0c31386254c766af",
+    "textHash": "4d12d1d705a3396d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:playAtTiming (deploy branch)",
+        "loc": "client/engine/src/engine.ts:deployIsolate",
         "agrees": true,
-        "note": "castChain(..., 'push') onto the seat-isolated deployment stack (E.deployIsolate / settleDeploySeat)"
+        "note": "R286 as built: a deployment play is committed with 'push' onto the acting seat's stack; settle's hold is seat-aware in deployment"
       }
     ],
     "tests_run": [
       {
-        "file": "138-spell-copy.test.ts",
+        "file": "client/engine/test/138-spell-copy.test.ts",
         "pattern": "R286/CT-176: a deploy-timing play names a REAL stack item",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: in deployment Overbloom (deploy-timing spell) aimed at the player's Earthbound Replicator is pushed (stackPushed names the play's item id)"
+      },
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "pattern": "R164/CT-176 Earthbound Replicator: a DEPLOY",
+        "passed": true,
+        "asserts_claim": "supporting: the same play is copied by the Replicator"
       }
     ],
     "probes": [],
@@ -2515,18 +2577,17 @@
       {
         "ref": "R286",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
-      },
-      {
-        "ref": "R286",
-        "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "owner: 'It does get the stack. But it's an isolated stack just for the person in that region.' Ruling point 2: the stack belongs to one seat and so does priority; the other seat cannot see it, respond to it, or be made to wait on it. Amends R144(a) and R250 §3, not superseded itself"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "2. **That stack belongs to one seat**, and so does the priority over it. The"
+        "file": "client/engine/src/engine.ts",
+        "text": "private deployIsolate(): Seat | null {"
+      },
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "text": "assert.ok(h.events.some(e => e.type === 'stackPushed' && e.data?.['id'] === d['item']),"
       }
     ],
     "basis_ok": true,
@@ -2534,7 +2595,7 @@
   },
   {
     "key": "effects.priority.haste-step",
-    "textHash": "5f11a6f500316aca",
+    "textHash": "aabebd36e0ce8203",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2570,11 +2631,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.mid-resolution",
-    "textHash": "2d6926e3e8973def",
+    "textHash": "815bfe34c28a4167",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -2643,39 +2705,46 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed. The flagged divergence is real: Wake the Dead (probe) and The Bonesculptor put the played unit into play inside the resolution with no stack item; playInline's in-place branch is a further latent case."
+    "problem": "Ruling confirmed. The flagged divergence is real: Wake the Dead (probe) and The Bonesculptor put the played unit into play inside the resolution with no stack item; playInline's in-place branch is a further latent case.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.priority",
-    "textHash": "136eda839483314d",
+    "textHash": "26c08b7b0a4dc5b5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:passPriority / apply",
+        "loc": "client/engine/src/apply.ts:playCard handler (e.need(e.s.priority === seat))",
         "agrees": true,
-        "note": "actions gated on priority"
+        "note": "a play, a pass and every battle action need priority"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.priority.priority — only",
+        "passed": true,
+        "asserts_claim": "yes: in the attack window the initiative player A holds priority and is offered Luminous Arc; D is offered nothing and D's play (and pass) is refused"
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.30",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
-      },
-      {
-        "ref": "Manual p.30",
-        "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "'The term priority denotes the ability of a player to perform game actions such as playing cards or activating abilities. A player with priority has the ability to do these things, while players without priority do not.'"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "things, while players without priority do not."
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(e.s.priority === seat, 'you do not have priority');"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.ok(!h.legal(D).some(a => a.type === 'playCard'), 'no priority: nothing offered');"
       }
     ],
     "basis_ok": true,
@@ -2734,7 +2803,7 @@
   },
   {
     "key": "effects.priority.priority.no-response-to-pass",
-    "textHash": "221eb34a554ec9f1",
+    "textHash": "2b5bb7dea18ca100",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2761,11 +2830,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.priority.pass",
-    "textHash": "d2ca59a77041403f",
+    "textHash": "79f77669548a72e6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2797,7 +2867,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.priority.teams",
@@ -2837,7 +2908,7 @@
   },
   {
     "key": "effects.priority.resolving",
-    "textHash": "c1a2be8dcda44fdf",
+    "textHash": "e3d1f2eb50af570f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2869,11 +2940,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.simultaneous",
-    "textHash": "0cff560c92d9a6e2",
+    "textHash": "a2e676b3709c803c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -2922,11 +2994,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.simultaneous.burst",
-    "textHash": "57a8ac9838a4c184",
+    "textHash": "56ebf2fa42a89b85",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -2964,7 +3037,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.simultaneous.same-effect",
@@ -3006,7 +3080,7 @@
   },
   {
     "key": "effects.priority.stack",
-    "textHash": "222796ed89dd1704",
+    "textHash": "c6ef5b3b9ab0159d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3045,11 +3119,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.stack.add-while-resolving",
-    "textHash": "554a90d3478e5add",
+    "textHash": "9e7535b39ccc9135",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3081,11 +3156,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.stack.not-immediate",
-    "textHash": "b4aa989c5e020d7d",
+    "textHash": "b9926005ee072f69",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3121,11 +3197,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.stack.triggers-respondable",
-    "textHash": "36d343a2eb2a0972",
+    "textHash": "3570993fb71e9ac4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3175,11 +3252,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.window",
-    "textHash": "11dcc7991540684f",
+    "textHash": "88420accf37c3e3e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3211,11 +3289,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.window.order",
-    "textHash": "e6a965daee66f1cb",
+    "textHash": "e0d635d99b4fbd11",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3252,11 +3331,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.window.resolve",
-    "textHash": "032ddc253190eb69",
+    "textHash": "d589881657afff2f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3293,7 +3373,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.priority.window.steps",
@@ -3346,7 +3427,7 @@
   },
   {
     "key": "effects.resolution.destination",
-    "textHash": "5e6732b11a45c190",
+    "textHash": "1ddfd589c3540843",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3383,11 +3464,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.destination.copy",
-    "textHash": "e9c41b1142c43605",
+    "textHash": "72f0f5e2ec749054",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3421,11 +3503,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.destination.not-trashed",
-    "textHash": "fea9b22ff23816d0",
+    "textHash": "30b424072629499c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3452,7 +3535,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.destination.token",
@@ -3504,7 +3588,7 @@
   },
   {
     "key": "effects.resolution.destination.unstable",
-    "textHash": "92fc06ac31b30153",
+    "textHash": "0742140ca7d17c34",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3547,11 +3631,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.fizzle",
-    "textHash": "5a899fe05fad3d1f",
+    "textHash": "8d66d20ad2b64dd2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3588,11 +3673,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.fizzle.ambush",
-    "textHash": "5ad43cca5eaa80e6",
+    "textHash": "4e600a19167d720e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3624,11 +3710,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.fizzle.never-had-target",
-    "textHash": "5d6745ed88f168dc",
+    "textHash": "2d8b2ea5ba845d3b",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -3662,11 +3749,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.resolution.fizzle.pair",
-    "textHash": "af6d0ceeb4414e39",
+    "textHash": "d5861809778ced76",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3705,106 +3793,81 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.fizzle.partial",
-    "textHash": "319e06a03d2d9297",
+    "textHash": "c7c2f40ee61d43db",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U14-r3-a2",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:resolveItem (partAlive)",
+        "loc": "client/engine/src/engine.ts:resolveItem (fizzle check: targeted && !item.parts.some(partAlive))",
         "agrees": true,
-        "note": "Item fizzles only when no targeted part keeps a live target; untargeted parts do not vote but still resolve."
-      },
-      {
-        "loc": "client/engine/src/engine.ts:resolveParts",
-        "agrees": true,
-        "note": "Lost targets are filtered per part; a part with no live target is skipped ('a part fizzles'), the rest run."
+        "note": "an item fizzles only when no declared target remains; otherwise every part, untargeted ones included, runs"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/390-raq-stack.test.ts",
-        "pattern": "Tidal Reversion still recalls the other unit",
+        "pattern": "RAQ target requirements: Tidal Reversion still recalls",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: one of the two targets destroyed; the caster's unit is still recalled to hand"
       },
       {
         "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "one surviving target carries the untargeted grafts through",
+        "pattern": "R86: one surviving target carries the untargeted grafts",
         "passed": true,
-        "asserts_claim": "partly — asserts the example as worded (one declared target, nothing lost, all four Poisons), but no target is lost in it, so it does not exercise 'lost some but not all'"
+        "asserts_claim": "bare demonstration (example 1): passes"
       },
       {
-        "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "loses its ONLY target",
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.resolution.fizzle.partial",
         "passed": true,
-        "asserts_claim": "context: the all-lost contrast case"
+        "asserts_claim": "yes: Twin Flame with one of two Good Whales destroyed deals 2 to the other; the Spewing Mushroom composite (Biotoxicity + two Technological Superiority, targets Mushroom and enemy Unit Token) with the token destroyed makes 4 Poisons"
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
-        "title": "effects.resolution.fizzle.partial: Twin Flame with one of two targets gone still damages the other",
-        "passed": true,
-        "demonstrates": "yes — the remaining target takes 2 (the Manual's own example)"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
-        "title": "effects.resolution.fizzle.partial: a composite with two targets losing one still runs its untargeted part",
-        "passed": true,
-        "demonstrates": "yes — two targeted grafts, one target destroyed, Biotoxicity's three Poisons and the printed Poison X still made (the illustrative example's shape)"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.43",
         "supports": "yes",
-        "note": "'spell will attempt to resolve as best as it can' with the Twin Flame example."
+        "note": "'If some but not all of the targets are removed, the spell will attempt to resolve as best as it can' (Twin Flame example)"
       },
       {
         "ref": "RAQ 1410252965276684418#4",
         "supports": "yes",
-        "note": "calebgannon on Tidal Reversion."
+        "note": "calebgannon: Tidal Reversion 'will still resolve if one of the selected targets is removed'"
       },
       {
         "ref": "RAQ 1354013430805434389#0",
         "supports": "yes",
-        "note": "'at least 1 target must remain for whole effect to be carried out' — covers the untargeted-parts clause."
+        "note": "_passer [Solved]: at least 1 target must remain for the whole effect to be carried out"
       },
       {
         "ref": "R86",
         "supports": "yes",
-        "note": "Our ruling built from the same thread."
+        "note": "quotes the same thread; current"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "spell will attempt to resolve as best as it can. For"
-      },
-      {
-        "file": "client/ledgers/raq.ts",
-        "text": "but it will still resolve if one of the selected targets is removed"
-      },
-      {
-        "file": "client/ledgers/raq.ts",
-        "text": "currently atleast 1 target must remain for whole effect to be carried out"
-      },
-      {
         "file": "client/engine/src/engine.ts",
-        "text": "if (!def.targets) return false;   // R86: untargeted parts do not vote"
+        "text": "if (targeted && !item.parts.some(partAlive)) {"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.equal(ent(h, w2)!.damage, 2, 'the remaining target received its 2 damage');"
       }
     ],
     "basis_ok": true,
-    "problem": "None in the rule. Note: the third example's bound test has no lost target; the a2 composite probe is a better binding for the 'untargeted parts included' clause."
+    "problem": ""
   },
   {
     "key": "effects.resolution.fizzle.untargeted",
-    "textHash": "bef46bedd1706e28",
+    "textHash": "41a97e87bd21b954",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U14-r2",
@@ -3853,11 +3916,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.resolution.fizzle.virus",
-    "textHash": "223b7f5da71ac420",
+    "textHash": "80e75fe9b58cd79f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3889,27 +3953,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.fizzle.whole",
-    "textHash": "7dc8533555894e1b",
+    "textHash": "fcf5d8db5014cdfc",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:resolveItem",
+        "loc": "client/engine/src/engine.ts:resolveItem fizzle branch",
         "agrees": true,
-        "note": "untargeted parts do not vote (R86); a targeted item with no live target fizzles whole"
+        "note": "an item that loses every declared target fizzles whole: no part runs, the log says it fizzled"
       }
     ],
     "tests_run": [
       {
-        "file": "78-round17-core.test.ts",
-        "pattern": "R86: a graft composite that loses its ONLY target fizzles whole",
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "R86: a graft composite that loses its ONLY target",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Spewing Mushroom with Biotoxicity + Technological Superiority grafted aims the TS part at itself; D's Leaping Lillik deletes it; 0 Poisons and a 'fizzles — all targets are gone' line"
       }
     ],
     "probes": [],
@@ -3917,18 +3982,22 @@
       {
         "ref": "RAQ 1354013430805434389#0",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "_passer [Solved]: fizzles only when it loses ALL its targets; the untargeted grafts go with it"
       },
       {
         "ref": "R86",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "quote verbatim; current"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "Read that parenthesis twice. The two \"draw a card\" grafts were **never"
+        "file": "client/engine/src/engine.ts",
+        "text": ": `${item.label} fizzles — all targets are gone.`)"
+      },
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "text": "'the untargeted Biotoxicity graft made NO Poison: the whole composite fizzled');"
       }
     ],
     "basis_ok": true,
@@ -3936,7 +4005,7 @@
   },
   {
     "key": "effects.resolution.negation",
-    "textHash": "09c8c6187f5ef531",
+    "textHash": "e285a78adc0ef460",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -3970,11 +4039,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.negation.destination",
-    "textHash": "72c884fb695b2867",
+    "textHash": "acf0c2372ba6514d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4027,11 +4097,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.resolution.negation.no-arrival",
-    "textHash": "5e793bfb66168cfa",
+    "textHash": "b47f34dd37fe7e24",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4076,11 +4147,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.resolution.order",
-    "textHash": "b42c90ec3dcf6f1f",
+    "textHash": "b832cdfba8009704",
     "verdict": "partial",
     "round": 3,
     "verifier": "U14-r3-a2",
@@ -4136,11 +4208,12 @@
       }
     ],
     "basis_ok": false,
-    "problem": "The first sentence ('a later instruction sees the results of an earlier one') and the Finality example are engine behaviour only: the cited R68 note explicitly flags the Finality ordering as needing an owner ruling and the bound test says it pins the implementation, not necessarily the rule. No designer/printed source. Basis should be 'engine' and the text should flag the Finality case as unruled. The R324 exception is confirmed."
+    "problem": "The first sentence ('a later instruction sees the results of an earlier one') and the Finality example are engine behaviour only: the cited R68 note explicitly flags the Finality ordering as needing an owner ruling and the bound test says it pins the implementation, not necessarily the rule. No designer/printed source. Basis should be 'engine' and the text should flag the Finality case as unruled. The R324 exception is confirmed.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.order.choices",
-    "textHash": "46d15f298cd7d4df",
+    "textHash": "81a64376878f3bdb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4183,11 +4256,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.order.no-window",
-    "textHash": "ba1422353f92d5ae",
+    "textHash": "84b8fad0ce2b75c3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4214,11 +4288,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.recheck",
-    "textHash": "e06137baa345bfb3",
+    "textHash": "58cfadc1fb5e8527",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4272,7 +4347,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.recheck.once",
@@ -4345,7 +4421,7 @@
   },
   {
     "key": "effects.resolution.recheck.same-object",
-    "textHash": "e7cee79d18a3e562",
+    "textHash": "23fd601342213389",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4384,7 +4460,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.recheck.shared-target",
@@ -4431,7 +4508,7 @@
   },
   {
     "key": "effects.resolution.source-gone",
-    "textHash": "ceeb460d1a91da74",
+    "textHash": "21208e78de33a2aa",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4470,11 +4547,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "effects.resolution.source-gone.last-known",
-    "textHash": "2919c71193c5c289",
+    "textHash": "875c833fdfaced37",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4513,33 +4591,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "effects.resolution.source-gone.needs-body",
-    "textHash": "0af03ff659f127bb",
+    "textHash": "743b85aec2ae574c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:resolveItem",
+        "loc": "client/engine/src/cards/sets/batch-wood-a.ts:Hooba-Nan",
         "agrees": true,
-        "note": "self-acting effects with no body do nothing; Hooba-Nan/Rousing Spirit tests pass"
+        "note": "resolution re-checks columnOf(me) and selfOf; a gone source makes no units"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
-        "pattern": "RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing",
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Hooba-Nan",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Hooba-Nan attacks (trigger on the stack), is destroyed, the stack drains, no 1/1 appears"
       },
       {
-        "file": "390-raq-stack.test.ts",
-        "pattern": "Rousing Spirit gone",
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Rousing",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "supporting: Rousing Spirit likewise"
       }
     ],
     "probes": [],
@@ -4547,18 +4626,22 @@
       {
         "ref": "RAQ 1353895783266516992#1",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "_passer [Solved]: 'There are only couple of effects which will do nothing since unit is gone (Rousing Spirit, Hooba-Nan).'"
       },
       {
         "ref": "R325",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "'An effect that acts on the source itself still needs the body ... With nothing to act on, such an effect does nothing. Rousing Spirit and Hooba-Nan print if I am still in formation'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "An effect that **acts on the source itself** still needs the body: putting"
+        "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+        "text": "if (!g.columnOf(me.id)) { g.ev('info', `${me.card}: no longer in formation — no units.`); return; }"
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "assert.equal(unitsOf(h, A).length, before - 1, 'Hooba-Nan died and no 1/1 appeared');"
       }
     ],
     "basis_ok": true,
@@ -4566,7 +4649,7 @@
   },
   {
     "key": "effects.resolution.spell-unit",
-    "textHash": "6d9b01393741a962",
+    "textHash": "c08b68a80810955a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U14-r1",
@@ -4610,6 +4693,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   }
 ]

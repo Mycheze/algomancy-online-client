@@ -11,57 +11,41 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD1.1"></a>**D1.1.** The pacing and concurrency conventions in this annex are not rules changes: none of them changes what is legal. See rules D3, D3.3, D3.4b.
 
-> *Example: The pacing conventions change no legality: a standing pass, a playback hold and full control leave the offered actions equal to the engine, and an action offered during the opponent decision is legal by the engine once it closes.*
-
-<sub>Basis: Owner call · Verified: partial in round 3; verifier ran no tests; 1 gate test file · Rulings: R150 (its CT-28 pacing half) · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.not-rules — the pacing conventions change no legality: a standing pass, a playback hold and full control leave the offered actions equal to the engine, and an action offered during the opponent decision is legal by the engine once it closes · Key: annexd.general.not-rules</sub>
+<sub>Basis: Owner call · Verified: partial in round 3; verifier ran no tests; 1 gate test file · Rulings: R150 (its CT-28 pacing half) · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.not-rules — the pacing conventions change no legality: a standing pass, a playback hold and full control leave the offered actions equal to the engine, and an action offered during the opponent decision is legal by the engine once it closes · Key: annexd.general.not-rules</sub>
 
 <sub>Discrepancies: D-U23-20 (discrepancies.md)</sub>
 
 <a id="rD1.1a"></a>**D1.1a** A warning or a confirmation never removes a legal option. Where a choice looks like a misclick, the client may ask the player; it does not refuse the choice. See rule D2.8.
 
-> *Example: Fight aimed at two of the caster's own units asks "did you mean to target allies?"; answering yes resolves the spell exactly as chosen (illustrative).*
-
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Rulings: R288 · Key: annexd.general.not-rules.warn-not-refuse</sub>
 
 <a id="rD1.2"></a>**D1.2.** The client never makes a choice that belongs to a player. A real choice is always put to the player who makes it.
 
-> *Example: Every action answered for a player is the only move either seat has, so no real choice is ever taken.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R120 (its default-split option) · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides — every action answered for a player is the only move either seat has, so no real choice is ever taken · Key: annexd.general.player-decides</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R120 (its default-split option) · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides — every action answered for a player is the only move either seat has, so no real choice is ever taken · Key: annexd.general.player-decides</sub>
 
 <a id="rD1.2a"></a>**D1.2a** An option the rules would refuse is not offered. The client shows only legal options; it does not show an option and then refuse it. See rule D1.3.
 
-> *Example: Every option the engine offers is accepted when taken; none is shown and then refused.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R120 (its default-split option) · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.unoffered — every option the engine offers is accepted when taken; none is shown and then refused · Key: annexd.general.player-decides.unoffered</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R120 (its default-split option) · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.unoffered — every option the engine offers is accepted when taken; none is shown and then refused · Key: annexd.general.player-decides.unoffered</sub>
 
 <a id="rD1.2b"></a>**D1.2b** The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them, and a defender with no unit in the battle region has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them. See rules 610, D1.2c, D1.2f, D1.2e, D2.7.
 
-> *Example: A battle on an empty board steps itself through to deployment by forced actions.*
-
-> *Example: An attacker with a unit is not forced: declaring is a real choice.*
-
-> *Example: With full control on, the drain stops and the player is left the window.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 3 gate test files · Rulings: R36, R287 · Engine: apply.ts:forcedAction · Tests: 21-fixes.test.ts, 273-full-control-both-seats.test.ts, 434-cr-digital-1.test.ts · Example tests: 21-fixes.test.ts::a whole empty-board battle drains through forced actions to deployment, 21-fixes.test.ts::forcedAction is null whenever a real choice exists, 273-full-control-both-seats.test.ts::BL-18 §2 with full control ON the drain stops and the player is left the window · Key: annexd.general.player-decides.forced</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 3 gate test files · Rulings: R36, R287 · Engine: apply.ts:forcedAction · Tests: 21-fixes.test.ts, 273-full-control-both-seats.test.ts, 434-cr-digital-1.test.ts · Demonstrated by tests: 21-fixes.test.ts::a whole empty-board battle drains through forced actions to deployment, 21-fixes.test.ts::forcedAction is null whenever a real choice exists, 273-full-control-both-seats.test.ts::BL-18 §2 with full control ON the drain stops and the player is left the window · Key: annexd.general.player-decides.forced</sub>
 
 <sub>Discrepancies: D-U23-21 (discrepancies.md)</sub>
 
 <a id="rD1.2c"></a>**D1.2c** In round 2, a counterattack pool that holds exactly one unit, and no spell token that could ride along, declares the one-unit formation by itself. Engine differs, see F-U23-4. See rule 610. *(Engine differs, see F-U23-4.)*
 
-> *Example: A player who sent one unit to counterattack and no spell token is not asked to form it (illustrative).*
+> *Example: A player who sent one unit to counterattack, and no spell token, is not asked to form it: the one-unit formation is declared for them.*
 
-> *Example: Today the engine still asks: a player who sent one unit and no spell token gets no forced declare in round 2, and is offered both declining and attacking with it (F-U23-4).*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R36, R36 · Engine: apply.ts:forcedAction · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — the engine still asks a lone sent counterattacker with no token to declare (engine differs) · Key: annexd.general.player-decides.forced.lone-counterattacker</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R36, R36 · Engine: apply.ts:forcedAction · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — the engine still asks a lone sent counterattacker with no token to declare (engine differs) · Key: annexd.general.player-decides.forced.lone-counterattacker</sub>
 
 <sub>Discrepancies: D-U13-3 (discrepancies.md)</sub>
 
 <a id="rD1.2d"></a>**D1.2d** When all of one player's simultaneously queued triggers are identical (the same card, the same ability and the same composed parts), the player is not asked to order them. They go on in the order they fired. Triggers from different cards or abilities, or composites whose parts differ, are still ordered by the player. See rule 706.
 
-> *Example: Flourishing Flora queuing three copies of its trigger asks nothing (illustrative).*
+> *Example: Three allies spawn at once beside Flourishing Flora: its three identical triggers go on the stack without the player being asked to order them.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Rulings: R34, R34, R34 · Key: annexd.general.player-decides.identical-triggers</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; no gate test · Rulings: R34, R34, R34 · Key: annexd.general.player-decides.identical-triggers</sub>
 
 <a id="rD1.2e"></a>**D1.2e** A non-target choice that an ability makes as it goes on the stack (such as the ally a Wraith's start-of-deployment trigger aims at) is recorded without asking when there is only one candidate. With two or more candidates the player is asked. See rules 507, 706.
 
@@ -71,21 +55,17 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD1.2f"></a>**D1.2f** A target is asked for even when exactly one candidate is legal. A forced target is still a click. See rule 110.
 
-> *Example: Divine Foresight ("target opponent") cast in battle opens a target question with exactly one option, and no forced action answers it.*
+> *Example: Divine Foresight ("target opponent") cast in battle still asks its caster to choose the target, though the opponent is the only choice.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R67, R67 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced-target — a target with exactly one legal candidate is still a decision put to the caster · Key: annexd.general.player-decides.forced-target</sub>
 
 <a id="rD1.2g"></a>**D1.2g** Where a choice has a usual answer, the client may offer it as the first option, but it never picks it. The elective combat-damage split leads with "default — share front-to-back", and no automatic action answers that question. See rule 608.
 
-> *Example: The elective damage split leads with the default share, and nothing picks it for the player.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R120 (its default-split option), R120 (its default-split option) · Replaces: R120 (its Piercing exclusion reversed by R319; the default-first option stands) · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.default-first — the elective damage split leads with the default share, and nothing picks it for the player · Key: annexd.general.player-decides.default-first</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R120 (its default-split option), R120 (its default-split option) · Replaces: R120 (its Piercing exclusion reversed by R319; the default-first option stands) · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.default-first — the elective damage split leads with the default share, and nothing picks it for the player · Key: annexd.general.player-decides.default-first</sub>
 
 <a id="rD1.2h"></a>**D1.2h** The caster always chooses the order of a Burst group, one token at a time; the client offers no automatic order. A lone token is not asked to be ordered. See rule 803.
 
-> *Example: A single Fireball token cast alone goes on the stack with no ordering question.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R309 · Tests: 358-burst-order.test.ts · Example test: 358-burst-order.test.ts::R309: a lone token is not asked to be ordered · Key: annexd.general.player-decides.burst-order</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R309 · Tests: 358-burst-order.test.ts · Demonstrated by test: 358-burst-order.test.ts::R309: a lone token is not asked to be ordered · Key: annexd.general.player-decides.burst-order</sub>
 
 <a id="rD1.3"></a>**D1.3.** The client holds no opinion of its own about legality. Wherever the client decides something the engine also decides, the client's answer is derived from the engine's, in one place. *(Untested: no executed test demonstrates it.)*
 
@@ -93,72 +73,54 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD1.3a"></a>**D1.3a** A highlighted card, a clickable unit, a drop target or a one-click shortcut claims that the engine will take the action. The client draws one only where the engine would accept it.
 
-> *Example: A unit the engine would refuse for a counterattack is not ringed, and clicking it does nothing.*
+> *Example: A unit that cannot be sent to counterattack is not highlighted, and clicking it does nothing.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R245, R245 · Tests: 223-client-legality.test.ts · Example test: 223-client-legality.test.ts::[127] a unit the engine would refuse is not ringed and does not pick up on a click · Key: annexd.general.one-opinion.affordances</sub>
 
 <a id="rD1.4"></a>**D1.4.** A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments. See rules 501, 504, 507, D6.
 
-> *Example: The resource step, the haste step and deployment are hidden simultaneous segments; battle is not.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R18 (its hidden-segment half), R18 (its hidden-segment half), R310 · Replaces: R18 (its skip and auto-done reversed by R224 and R228; the hidden segment stands) · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not · Key: annexd.general.hidden-segment</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R18 (its hidden-segment half), R18 (its hidden-segment half), R310 · Replaces: R18 (its skip and auto-done reversed by R224 and R228; the hidden segment stands) · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not · Key: annexd.general.hidden-segment</sub>
 
 <a id="rD1.4a"></a>**D1.4a** The hiding is done by the server's view of the game, the same way hands are hidden. The rules engine itself hides nothing.
 
-> *Example: The engine state holds the hidden play; only the server per-seat view leaves it out.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R18 (its hidden-segment half), R18 (its hidden-segment half) · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.redaction — the engine state holds the hidden play; only the server per-seat view leaves it out · Key: annexd.general.hidden-segment.redaction</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R18 (its hidden-segment half), R18 (its hidden-segment half) · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.redaction — the engine state holds the hidden play; only the server per-seat view leaves it out · Key: annexd.general.hidden-segment.redaction</sub>
 
 <a id="rD1.4b"></a>**D1.4b** A segment ends at a barrier, when every player is done. At the barrier each player is shown what the other did, in the recap. See rules D5, D6.
 
-> *Example: The step ends only when every player is done, and then each is played back what the other did.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R310 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.barrier — the step ends only when every player is done, and then each is played back what the other did · Key: annexd.general.hidden-segment.barrier</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R310 · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.barrier — the step ends only when every player is done, and then each is played back what the other did · Key: annexd.general.hidden-segment.barrier</sub>
 
 <a id="rD1.4c"></a>**D1.4c** Battle is not a hidden segment. Nothing that happens in battle is held back from either player.
 
-> *Example: In battle nothing is held: a cast is on the opponent view and in their events at once.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R310 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.battle-open — in battle nothing is held: a cast is on the opponent view and in their events at once · Key: annexd.general.hidden-segment.battle-open</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R310 · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.battle-open — in battle nothing is held: a cast is on the opponent view and in their events at once · Key: annexd.general.hidden-segment.battle-open</sub>
 
 <a id="rD2"></a>
 ### D2. Priority and Auto-Pass
 
 <a id="rD2.1"></a>**D2.1.** While a decision is open for a player (a question the game is waiting on them to answer), that player must answer it, or concede, before taking any other action. See rule 104.4a.
 
-> *Example: A seat with its own question open cannot play a card until it answers.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate) · Replaces: R154 (its deployment settle() hold amended by R286; the decision gate stands) · Tests: 130-seat-aware-gate.test.ts · Example test: 130-seat-aware-gate.test.ts::R154 §4: your own question still gates your own input · Key: annexd.auto-pass.open-decision</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate) · Replaces: R154 (its deployment settle() hold amended by R286; the decision gate stands) · Tests: 130-seat-aware-gate.test.ts · Demonstrated by test: 130-seat-aware-gate.test.ts::R154 §4: your own question still gates your own input · Key: annexd.auto-pass.open-decision</sub>
 
 <a id="rD2.1a"></a>**D2.1a** In battle, a decision open for one player stops the other player too: nobody may act until it is answered. See rule 703.
 
-> *Example: A real battle decision for one seat leaves the other seat with nothing it may do.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate) · Tests: 130-seat-aware-gate.test.ts · Example test: 130-seat-aware-gate.test.ts::R154 §4: a REAL battle decision blocks the other seat · Key: annexd.auto-pass.open-decision.battle</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate) · Tests: 130-seat-aware-gate.test.ts · Demonstrated by test: 130-seat-aware-gate.test.ts::R154 §4: a REAL battle decision blocks the other seat · Key: annexd.auto-pass.open-decision.battle</sub>
 
 <a id="rD2.1b"></a>**D2.1b** Inside a hidden simultaneous segment, a decision open for one player does not stop the other player, who keeps every action they had, except as described in the next sub-rule. See rule D1.4.
 
-> *Example: While one seat answers its pile of Wraith triggers at the start of deployment, the other seat goes on deploying.*
+> *Example: While one player answers their Wraith triggers at the start of deployment, the other player goes on deploying.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate), R154 (its decision gate) · Tests: 130-seat-aware-gate.test.ts · Example test: 130-seat-aware-gate.test.ts::R154 §1: every kind of action seat 0 had is still theirs · Key: annexd.auto-pass.open-decision.segment</sub>
 
 <a id="rD2.1c"></a>**D2.1c** Exception: when answering the open decision would rewind the game to before the other player acted (a resolution that stopped halfway), the other player is stopped as in battle. Online, an action they send meanwhile waits and is applied when the decision closes; they are told it is waiting, not that it is illegal.
 
-> *Example: A mid-resolution question for one seat still blocks the other seat's deployment play.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate), R154 (its decision gate) · Replaces: R150 (its server shadow state and blanket deferral narrowed by R154 to this rewind case) · Tests: 130-seat-aware-gate.test.ts · Example test: 130-seat-aware-gate.test.ts::R154 §3: a mid-resolution suspension still blocks the other seat · Key: annexd.auto-pass.open-decision.rewind</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate), R154 (its decision gate) · Replaces: R150 (its server shadow state and blanket deferral narrowed by R154 to this rewind case) · Tests: 130-seat-aware-gate.test.ts · Demonstrated by test: 130-seat-aware-gate.test.ts::R154 §3: a mid-resolution suspension still blocks the other seat · Key: annexd.auto-pass.open-decision.rewind</sub>
 
 <a id="rD2.1d"></a>**D2.1d** Only one decision can be open at a time. An action that would change what the other player's open decision reads when it is answered is refused, and the game stays as it was before the action.
 
-> *Example: Seat 0 cannot raise a question of its own while seat 1's question is open.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R154 (its decision gate), R170 · Tests: 130-seat-aware-gate.test.ts, 144-both-seats-decision-gate.test.ts · Example test: 130-seat-aware-gate.test.ts::R154 §2: seat 0 may not overwrite seat 1's open decision · Key: annexd.auto-pass.open-decision.no-disturb</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R154 (its decision gate), R170 · Tests: 130-seat-aware-gate.test.ts, 144-both-seats-decision-gate.test.ts · Demonstrated by test: 130-seat-aware-gate.test.ts::R154 §2: seat 0 may not overwrite seat 1's open decision · Key: annexd.auto-pass.open-decision.no-disturb</sub>
 
 <a id="rD2.1e"></a>**D2.1e** Conceding is never blocked by an open decision, whichever player it belongs to. See rule 104.4a.
 
-> *Example: Either seat may concede while a question is open.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate) · Tests: 130-seat-aware-gate.test.ts · Example test: 130-seat-aware-gate.test.ts::R154 §4: concede is always reachable, from either seat · Key: annexd.auto-pass.open-decision.concede</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R154 (its decision gate) · Tests: 130-seat-aware-gate.test.ts · Demonstrated by test: 130-seat-aware-gate.test.ts::R154 §4: concede is always reachable, from either seat · Key: annexd.auto-pass.open-decision.concede</sub>
 
 <a id="rD2.1f"></a>**D2.1f** Each player's screen shows only that player's own open question: the other player's question and its options are never sent to it. The player being asked has only the question.
 
@@ -172,23 +134,17 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD2.2a"></a>**D2.2a** Pass passes priority once. It sets up nothing for later windows.
 
-> *Example: Pass sends one pass and arms nothing: the next window the seat holds is left to them.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R251 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.auto-pass.pass-buttons.pass — Pass sends one pass and arms nothing: the next window the seat holds is left to them · Key: annexd.auto-pass.pass-buttons.pass</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R251 · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.auto-pass.pass-buttons.pass — Pass sends one pass and arms nothing: the next window the seat holds is left to them · Key: annexd.auto-pass.pass-buttons.pass</sub>
 
 <a id="rD2.2b"></a>**D2.2b** Pass through stack passes for the player until the stack items that were there when it was clicked have resolved, and then ends. It hands priority back sooner if a stack item outside that set appears, or if the player is offered an option they did not have when they clicked.
 
-> *Example: A spell the opponent casts in answer is outside the armed set, so priority comes back to the player.*
+> *Example: A player clicks Pass through stack; the opponent answers with a new spell, so priority comes back to the player.*
 
-> *Example: Once the stack it was clicked on has resolved, the promise is over.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R251, R251, R251 · Tests: 230-pass-modes.test.ts · Example tests: 230-pass-modes.test.ts::[123] a stack item outside the armed scope hands priority back, 230-pass-modes.test.ts::[123] pass through stack finishes when the stack it was armed on has resolved · Key: annexd.auto-pass.pass-buttons.through-stack</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R251, R251, R251 · Tests: 230-pass-modes.test.ts · Example test: 230-pass-modes.test.ts::[123] a stack item outside the armed scope hands priority back · Demonstrated by test: 230-pass-modes.test.ts::[123] pass through stack finishes when the stack it was armed on has resolved · Key: annexd.auto-pass.pass-buttons.through-stack</sub>
 
 <a id="rD2.2c"></a>**D2.2c** Pass through stack is offered only while there is a stack to pass through.
 
-> *Example: With an empty stack the battle bar shows Pass and Pass all only.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R251 · Tests: 230-pass-modes.test.ts · Example test: 230-pass-modes.test.ts::[123] the battle bar offers pass through stack only while there is a stack · Key: annexd.auto-pass.pass-buttons.through-stack.offered</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R251 · Tests: 230-pass-modes.test.ts · Demonstrated by test: 230-pass-modes.test.ts::[123] the battle bar offers pass through stack only while there is a stack · Key: annexd.auto-pass.pass-buttons.through-stack.offered</sub>
 
 <a id="rD2.2d"></a>**D2.2d** Pass all passes for the player until the phase it was clicked in ends. A new stack item or a new option does not hand priority back.
 
@@ -198,51 +154,41 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD2.2e"></a>**D2.2e** Both standing passes still stop before the one pass that would end the battle phase while the player holds spell tokens they could cast, so that that pass is the player's own click. See rules D2.6, 506.
 
-> *Example: Pass all armed with a castable Fireball token runs through the battle and hands the last pass back.*
+> *Example: A player clicks Pass all while holding a castable Fireball token: it passes through the battle but hands back the last pass, the one that would end the battle phase.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R251, R251 · Tests: 230-pass-modes.test.ts, 77-playtest-round17.test.ts · Example test: 230-pass-modes.test.ts::[123] pass all still stops on the one pass that would erase castable spell tokens · Key: annexd.auto-pass.pass-buttons.token-stop</sub>
 
 <a id="rD2.2f"></a>**D2.2f** What counts as new for a standing pass is measured against the moment it was clicked. An option the player already had then is not new when it comes back later.
 
-> *Example: An activated ability on offer at the click, gone for a window and back again, does not stop the pass.*
+> *Example: An activated ability the player could use when they clicked Pass all becomes unusable for a window and then usable again: the pass does not stop for it.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R251 · Tests: 230-pass-modes.test.ts · Example test: 230-pass-modes.test.ts::[123] an option that was on offer at the arm is not news several windows later · Key: annexd.auto-pass.pass-buttons.baseline</sub>
 
 <a id="rD2.2g"></a>**D2.2g** A standing pass is set up only by a click and can be cancelled at any time: one stop control drops whichever is running. The client shows which promise is running and how it ends.
 
-> *Example: Each pass button arms a chip naming its own promise, and one stop drops it.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R251, R251 · Tests: 230-pass-modes.test.ts · Example test: 230-pass-modes.test.ts::[123] each pass button arms a chip that names its own promise, and one stop drops it · Key: annexd.auto-pass.pass-buttons.revocable</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R251, R251 · Tests: 230-pass-modes.test.ts · Demonstrated by test: 230-pass-modes.test.ts::[123] each pass button arms a chip that names its own promise, and one stop drops it · Key: annexd.auto-pass.pass-buttons.revocable</sub>
 
 <a id="rD2.3"></a>**D2.3.** A player may turn on auto-pass. With it on, the client passes priority for the player only in a window where passing is the only thing they could do. Auto-pass never passes through an open decision.
 
 > *Example: With a castable card in hand the window is put to the player even with auto-pass on.*
 
-> *Example: A pending decision is never answered by auto-pass.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 70-playtest-round15.test.ts · Example tests: 70-playtest-round15.test.ts::[59] the C4 toggle passes only when passing is the ONLY thing I could do, 70-playtest-round15.test.ts::[59] a pending decision is never passed through, by any of the three · Key: annexd.auto-pass.preference</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 70-playtest-round15.test.ts · Example test: 70-playtest-round15.test.ts::[59] the C4 toggle passes only when passing is the ONLY thing I could do · Demonstrated by test: 70-playtest-round15.test.ts::[59] a pending decision is never passed through, by any of the three · Key: annexd.auto-pass.preference</sub>
 
 <sub>Discrepancies: D-U23-9 (discrepancies.md)</sub>
 
 <a id="rD2.4"></a>**D2.4.** An answer the client sends without a click (an automatic pass, or the automatic haste-step ready) is sent once for each time it is owed. It is latched by being unanswered, not by counting game updates, so updates that arrive while it is outstanding do not send it again. Engine differs, see F-U23-2. *(Engine differs, see F-U23-2.)*
 
-> *Example: However many states arrive inside the haste step, one automatic ready goes out per unanswered send.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R245, R245 · Tests: 223-client-legality.test.ts, 70-playtest-round15.test.ts · Example test: 223-client-legality.test.ts::[122] one automatic doneHaste per unanswered send, however many states arrive · Key: annexd.auto-pass.automatic-answers</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R245, R245 · Tests: 223-client-legality.test.ts, 70-playtest-round15.test.ts · Demonstrated by test: 223-client-legality.test.ts::[122] one automatic doneHaste per unanswered send, however many states arrive · Key: annexd.auto-pass.automatic-answers</sub>
 
 <sub>Discrepancies: D-U23-13, D-U23-6 (discrepancies.md)</sub>
 
 <a id="rD2.4a"></a>**D2.4a** If the server refuses an action the client sent on its own, the refusal is not shown as the player's error. It goes to the log and to a plain notice that says the client sent it.
 
-> *Example: A refused automatic ready does not light the red error bar.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R245, R245 · Tests: 223-client-legality.test.ts · Example test: 223-client-legality.test.ts::[122] a refusal of an action the CLIENT chose to send is not the player refusal · Key: annexd.auto-pass.automatic-answers.refusal</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R245, R245 · Tests: 223-client-legality.test.ts · Demonstrated by test: 223-client-legality.test.ts::[122] a refusal of an action the CLIENT chose to send is not the player refusal · Key: annexd.auto-pass.automatic-answers.refusal</sub>
 
 <a id="rD2.5"></a>**D2.5.** When the haste step opens and the only legal action a player has in it is to finish the step, the client finishes it for them at once, unless they have turned on bluff haste. See rules 504.5, 504.5a.
 
-> *Example: With bluff haste off and nothing hasteable, the client sends the ready by itself.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R236, R236 · Tests: 205-haste-auto-ready.test.ts · Example test: 205-haste-auto-ready.test.ts::R236 §2a: with the preference OFF and nothing hasteable, the client sends doneHaste by itself · Key: annexd.auto-pass.haste-ready</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R236, R236 · Tests: 205-haste-auto-ready.test.ts · Demonstrated by test: 205-haste-auto-ready.test.ts::R236 §2a: with the preference OFF and nothing hasteable, the client sends doneHaste by itself · Key: annexd.auto-pass.haste-ready</sub>
 
 <sub>Discrepancies: D-U23-12, D-U23-15 (discrepancies.md)</sub>
 
@@ -254,59 +200,41 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD2.5b"></a>**D2.5b** Bluff haste is a preference, off by default and remembered by the browser. With it on, the client never finishes the haste step for the player; they stay in the step until they finish it themselves, whether or not they hold anything to play. See rule 504.5a.
 
-> *Example: With bluff haste on, the client sits in the step and offers the button.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R236, R236 · Tests: 205-haste-auto-ready.test.ts, 200-haste-step-is-unconditional.test.ts · Example test: 205-haste-auto-ready.test.ts::R236 §2c: with the preference ON the client sits in the step and offers the button · Key: annexd.auto-pass.haste-ready.bluff</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R236, R236 · Tests: 205-haste-auto-ready.test.ts, 200-haste-step-is-unconditional.test.ts · Demonstrated by test: 205-haste-auto-ready.test.ts::R236 §2c: with the preference ON the client sits in the step and offers the button · Key: annexd.auto-pass.haste-ready.bluff</sub>
 
 <a id="rD2.5c"></a>**D2.5c** The server never finishes the haste step for a player. The automatic ready, when there is one, comes from the player's own client. See rule 504.5a.
 
-> *Example: Both seats have to close the step; neither is marked done for them.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R228, R228 · Replaces: R18 (its auto-done marking reversed by R224 and R228) · Tests: 200-haste-step-is-unconditional.test.ts, 434-cr-digital-1.test.ts · Example test: 200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step · Key: annexd.auto-pass.haste-ready.server-never</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R228, R228 · Replaces: R18 (its auto-done marking reversed by R224 and R228) · Tests: 200-haste-step-is-unconditional.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step · Key: annexd.auto-pass.haste-ready.server-never</sub>
 
 <a id="rD2.5d"></a>**D2.5d** While the haste step is open, neither player is shown whether the other has finished it. Each player sees their own readiness, and the end of the step is shown to both.
 
-> *Example: The opponent's view of my readiness reads not-done until the step ends.*
-
-> *Example: The step's end still reaches both seats.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R236, R236, R236 · Tests: 205-haste-auto-ready.test.ts · Example tests: 205-haste-auto-ready.test.ts::R236 §3a: the opponent is not served my haste readiness while the step is open, 205-haste-auto-ready.test.ts::R236 §3b: the step's END is still public · Key: annexd.auto-pass.haste-ready.readiness-hidden</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R236, R236, R236 · Tests: 205-haste-auto-ready.test.ts · Demonstrated by tests: 205-haste-auto-ready.test.ts::R236 §3a: the opponent is not served my haste readiness while the step is open, 205-haste-auto-ready.test.ts::R236 §3b: the step's END is still public · Key: annexd.auto-pass.haste-ready.readiness-hidden</sub>
 
 <a id="rD2.5e"></a>**D2.5e** The game's action counter is still sent to both players and rises on every action, in every hidden segment, so a modified client can tell that its opponent acted and when. The shipped client shows nothing from it. See rule D1.4.
 
-> *Example: Across the haste step the only field that moves for the other seat is the action counter.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R236, R236 · Tests: 205-haste-auto-ready.test.ts · Example test: 205-haste-auto-ready.test.ts::R236 §3d: the residual, named and measured · Key: annexd.auto-pass.haste-ready.residual</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R236, R236 · Tests: 205-haste-auto-ready.test.ts · Demonstrated by test: 205-haste-auto-ready.test.ts::R236 §3d: the residual, named and measured · Key: annexd.auto-pass.haste-ready.residual</sub>
 
 <sub>Discrepancies: D-U23-5 (discrepancies.md)</sub>
 
 <a id="rD2.6"></a>**D2.6.** When passing would end the battle phase while the player still holds spell tokens they could cast, the client asks before sending the pass, because moving to regroup erases them. It asks on that pass only, not in the battle's other windows. See rule 506.
 
-> *Example: The Pass button asks before the pass that reaches Regroup, and only that one.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R194 · Tests: 77-playtest-round17.test.ts, 165-token-loss-warning.test.ts · Example test: 77-playtest-round17.test.ts::[66] the Pass button asks before the pass that reaches Regroup, and only that one · Key: annexd.auto-pass.regroup-confirm</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R194 · Tests: 77-playtest-round17.test.ts, 165-token-loss-warning.test.ts · Demonstrated by test: 77-playtest-round17.test.ts::[66] the Pass button asks before the pass that reaches Regroup, and only that one · Key: annexd.auto-pass.regroup-confirm</sub>
 
 <a id="rD2.6a"></a>**D2.6a** When the battle phase ends with no pass to ask on (an attack declined with no window left, or a whole battle declined), the loss is announced instead: as regroup starts, each player who loses unused spell tokens is told which. Nothing is announced when nothing is lost.
 
 > *Example: A battle both players decline opens no priority window, and the token loss is still announced.*
 
-> *Example: The announcement is per seat, in a fixed order, and silent when nothing is lost.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R194, R194 · Tests: 165-token-loss-warning.test.ts · Example tests: 165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all, and the loss is still announced, 165-token-loss-warning.test.ts::[CT-55] the announcement is per seat, in a fixed order, and silent when there is nothing to lose · Key: annexd.auto-pass.regroup-confirm.announced</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R194, R194 · Tests: 165-token-loss-warning.test.ts · Example test: 165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all, and the loss is still announced · Demonstrated by test: 165-token-loss-warning.test.ts::[CT-55] the announcement is per seat, in a fixed order, and silent when there is nothing to lose · Key: annexd.auto-pass.regroup-confirm.announced</sub>
 
 <a id="rD2.6b"></a>**D2.6b** A battle ended by a card while it resolves (Temporal Rift) cannot be warned about before the pass, since that cannot be known when the pass is made. The announcement covers it, as it covers every way a battle ends.
 
-> *Example: The pass under Temporal Rift does not read as ending the battle, yet the regroup announcement still fires when the Rift ends it.*
+> *Example: Under Temporal Rift, a pass does not look like it will end the battle, so the client does not ask; when the Rift ends the battle, the lost spell tokens are still announced as regroup starts.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R213, R213 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.auto-pass.regroup-confirm.card-ended — the pass under Temporal Rift does not read as ending the battle, yet the regroup announcement still fires when the Rift ends it · Key: annexd.auto-pass.regroup-confirm.card-ended</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R213, R213 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.auto-pass.regroup-confirm.card-ended — the pass under Temporal Rift does not read as ending the battle, yet the regroup announcement still fires when the Rift ends it · Key: annexd.auto-pass.regroup-confirm.card-ended</sub>
 
 <a id="rD2.7"></a>**D2.7.** Full control is held, not set. While a player holds the Control key, the client gives them every stop: auto-pass, standing passes, auto-yields and the automatic haste-step ready all stand down. When they let go, everything returns to how it was.
 
-> *Example: With full control held, the auto-pass preference sends nothing.*
-
-> *Example: Letting go restores the previous behaviour in one keyup.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R287, R287, R287 · Tests: 272-full-control.test.ts · Example tests: 272-full-control.test.ts::BL-18 §2 with full control ON, the auto-pass preference sends nothing, 272-full-control.test.ts::CT-183 §6 letting go goes right back to the way it was · Key: annexd.auto-pass.full-control</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R287, R287, R287 · Tests: 272-full-control.test.ts · Demonstrated by tests: 272-full-control.test.ts::BL-18 §2 with full control ON, the auto-pass preference sends nothing, 272-full-control.test.ts::CT-183 §6 letting go goes right back to the way it was · Key: annexd.auto-pass.full-control</sub>
 
 <a id="rD2.7a"></a>**D2.7a** This includes deployment: while a player holds full control, nothing on their deployment stack resolves automatically. Engine differs, see F-U23-1. See rule 507. *(Engine differs, see F-U23-1.) (Untested: no executed test demonstrates it.)*
 
@@ -316,9 +244,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD2.7b"></a>**D2.7b** The client's own automatic actions stop at once when Control is pressed. The server's automatic actions stop only once the message reaches it, and an automatic action already sent is not recalled, so full control should be held before acting, not after.
 
-> *Example: The switch reaches the server on the join and on every change.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R287, R287 · Tests: 272-full-control.test.ts · Example test: 272-full-control.test.ts::BL-18 §3 the switch reaches the SERVER, on the join and on every change · Key: annexd.auto-pass.full-control.latency</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R287, R287 · Tests: 272-full-control.test.ts · Demonstrated by test: 272-full-control.test.ts::BL-18 §3 the switch reaches the SERVER, on the join and on every change · Key: annexd.auto-pass.full-control.latency</sub>
 
 <a id="rD2.7c"></a>**D2.7c** Leaving the window (switching away, hiding the page) releases full control, as if the key had been let go.
 
@@ -334,21 +260,17 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD2.7e"></a>**D2.7e** Full control is not remembered between sessions. The client shows whether it is being held.
 
-> *Example: The hold is not written to the browser.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R287 · Tests: 272-full-control.test.ts · Example test: 272-full-control.test.ts::CT-183 §6 the hold is not written to the browser · Key: annexd.auto-pass.full-control.not-persisted</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R287 · Tests: 272-full-control.test.ts · Demonstrated by test: 272-full-control.test.ts::CT-183 §6 the hold is not written to the browser · Key: annexd.auto-pass.full-control.not-persisted</sub>
 
 <a id="rD2.8"></a>**D2.8.** When a spell has one target slot that must be an ally and another that may be any unit, and the player picks an ally for the second slot, the client asks whether they meant to target their own unit. It never refuses: yes resolves exactly as chosen, and no returns to the same target pick with nothing sent. See rules D7, D1.1a.
 
-> *Example: Fight with both picks on the caster's own units asks once before the cast goes out (illustrative).*
+> *Example: A player casts Fight and picks two of their own units: the client asks once before the cast goes out.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Rulings: R288, R288, R288 · Key: annexd.auto-pass.misclick-confirm</sub>
 
 <a id="rD2.8a"></a>**D2.8a** The cards that ask are found from their target slots, not listed by name. Today they are Fight and Squish. Organic Exchange, which targets two units with no ally slot, does not ask.
 
-> *Example: Reading every card's target slots over the whole pool finds exactly Fight and Squish; Organic Exchange is not among them.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R288, R288 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.auto-pass.misclick-confirm.family — the family derived from target slots over the whole pool is exactly Fight and Squish · Key: annexd.auto-pass.misclick-confirm.family</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R288, R288 · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.auto-pass.misclick-confirm.family — the family derived from target slots over the whole pool is exactly Fight and Squish · Key: annexd.auto-pass.misclick-confirm.family</sub>
 
 <sub>Discrepancies: D-U23-10 (discrepancies.md)</sub>
 
@@ -365,35 +287,27 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD3.1"></a>**D3.1.** A game may be played with a chess clock, in which each player has a bank of time. The home screen offers three settings: no clock, 45 minutes and 60 minutes.
 
-> *Example: The picker offers Off, 45m and 60m.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 271-clock-picker-and-warning.test.ts · Example test: 271-clock-picker-and-warning.test.ts::BL-26 §4 the home screen offers the owner's three banks, including no clock at all · Key: annexd.clocks.banks</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 271-clock-picker-and-warning.test.ts · Demonstrated by test: 271-clock-picker-and-warning.test.ts::BL-26 §4 the home screen offers the owner's three banks, including no clock at all · Key: annexd.clocks.banks</sub>
 
 <sub>Discrepancies: D-U23-1 (discrepancies.md)</sub>
 
 <a id="rD3.1a"></a>**D3.1a** Unless the player chooses otherwise, the bank is 45 minutes for a constructed game and 60 minutes for a live draft.
 
-> *Example: The default is looked up by mode when the game is created.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Tests: 271-clock-picker-and-warning.test.ts · Example test: 271-clock-picker-and-warning.test.ts::BL-26 §4 the default follows the MODE · Key: annexd.clocks.banks.default</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Tests: 271-clock-picker-and-warning.test.ts · Demonstrated by test: 271-clock-picker-and-warning.test.ts::BL-26 §4 the default follows the MODE · Key: annexd.clocks.banks.default</sub>
 
 <a id="rD3.1b"></a>**D3.1b** A game with no clock shows no clocks.
 
-> *Example: A client never sent a clock draws none.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 271-clock-picker-and-warning.test.ts · Example test: 271-clock-picker-and-warning.test.ts::BL-26 §1 a client that was never sent a clock draws no clocks at all · Key: annexd.clocks.banks.off</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 271-clock-picker-and-warning.test.ts · Demonstrated by test: 271-clock-picker-and-warning.test.ts::BL-26 §1 a client that was never sent a clock draws no clocks at all · Key: annexd.clocks.banks.off</sub>
 
 <a id="rD3.1c"></a>**D3.1c** Choosing a clock setting does not make a game a custom game.
 
-> *Example: Changing the clock leaves the game standard.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 366-clock-in-options.test.ts · Example test: 366-clock-in-options.test.ts::366 changing the clock does not make the game custom · Key: annexd.clocks.banks.not-custom</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 366-clock-in-options.test.ts · Demonstrated by test: 366-clock-in-options.test.ts::366 changing the clock does not make the game custom · Key: annexd.clocks.banks.not-custom</sub>
 
 <a id="rD3.1d"></a>**D3.1d** A player's clock is shown as critical when it is down to a tenth of the game's bank or to one minute, whichever is less.
 
 > *Example: On a ninety-second bank the warning comes at nine seconds; on a ten-hour bank five minutes left is not yet critical, because the threshold stops at one minute.*
 
-> *Example: On the 45- and 60-minute banks the warning comes at one minute (illustrative).*
+> *Example: On the 45- and 60-minute banks the clock turns critical at one minute.*
 
 <sub>Basis: Engine only · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Tests: 271-clock-picker-and-warning.test.ts · Example test: 271-clock-picker-and-warning.test.ts::BL-27 §2 the threshold is a tenth of the ROOM'S bank, not a constant · Key: annexd.clocks.banks.critical</sub>
 
@@ -401,78 +315,52 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD3.2"></a>**D3.2.** A player's clock runs only while the game is waiting on that player, and only while both players are connected.
 
-> *Example: A clock runs only for a seat the game is waiting on, and only while both players are connected.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running — a clock runs only for a seat the game is waiting on, and only while both players are connected · Key: annexd.clocks.running</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running — a clock runs only for a seat the game is waiting on, and only while both players are connected · Key: annexd.clocks.running</sub>
 
 <sub>Discrepancies: D-U23-2 (discrepancies.md)</sub>
 
 <a id="rD3.2a"></a>**D3.2a** In a step both players take at once, both clocks run; a player's clock stops when that player finishes the step. See rule D1.4.
 
-> *Example: After one player finishes the resource step, the haste step or deployment, that player has nothing left to do while the other still has legal actions.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.simultaneous — in planning and the haste step both seats are waited on, and a seat that has finished has no legal action left · Key: annexd.clocks.running.simultaneous</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.simultaneous — in planning and the haste step both seats are waited on, and a seat that has finished has no legal action left · Key: annexd.clocks.running.simultaneous</sub>
 
 <a id="rD3.2b"></a>**D3.2b** A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other. See rule D2.2.
 
-> *Example: The armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.standing-pass — the armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log · Key: annexd.clocks.running.standing-pass</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.standing-pass — the armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log · Key: annexd.clocks.running.standing-pass</sub>
 
 <sub>Discrepancies: D-U23-3 (discrepancies.md)</sub>
 
 <a id="rD3.2c"></a>**D3.2c** A player watching a recap is off the clock until the playback ends or the server's hold on it lapses. Acting ends the hold. See rule D5.
 
-> *Example: A seat watching a playback is not billed.*
-
-> *Example: The hold starts when the playback is sent and ends when the client says so or the seat acts.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Tests: 360-playback-frames.test.ts, 372-recap-end-pause.test.ts, 434-cr-digital-1.test.ts · Example tests: 360-playback-frames.test.ts::§8 a seat watching a playback is off the clock until it is done, or the hold lapses, 360-playback-frames.test.ts::§8b the server holds the clock when it sends a playback · Key: annexd.clocks.running.playback</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Tests: 360-playback-frames.test.ts, 372-recap-end-pause.test.ts, 434-cr-digital-1.test.ts · Demonstrated by tests: 360-playback-frames.test.ts::§8 a seat watching a playback is off the clock until it is done, or the hold lapses, 360-playback-frames.test.ts::§8b the server holds the clock when it sends a playback · Key: annexd.clocks.running.playback</sub>
 
 <a id="rD3.3"></a>**D3.3.** A player whose clock runs out loses the game, and the log says they ran out of time. This happens even if neither player acts. See rule 104.
 
-> *Example: A seat whose clock runs out loses with no move made, and the log says they ran out of time.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.clocks.out-of-time — a seat whose clock runs out loses with no move made, and the log says they ran out of time · Key: annexd.clocks.out-of-time</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.out-of-time — a seat whose clock runs out loses with no move made, and the log says they ran out of time · Key: annexd.clocks.out-of-time</sub>
 
 <a id="rD3.4"></a>**D3.4.** A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open.
 
-> *Example: A short game left alone closes after an hour.*
-
-> *Example: A longer game left alone closes after twelve hours.*
-
-> *Example: A connected seat or a watcher keeps an idle room open; an empty one gets a grace to reconnect.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 367-idle-rooms-close.test.ts, 434-cr-digital-1.test.ts · Example tests: 367-idle-rooms-close.test.ts::367 §1 a room with fewer than five actions closes after an hour without a move, not before, 367-idle-rooms-close.test.ts::367 §2 a room with five or more actions closes after twelve hours without a move, not before, 367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect · Key: annexd.clocks.idle-rooms</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 367-idle-rooms-close.test.ts, 434-cr-digital-1.test.ts · Demonstrated by tests: 367-idle-rooms-close.test.ts::367 §1 a room with fewer than five actions closes after an hour without a move, not before, 367-idle-rooms-close.test.ts::367 §2 a room with five or more actions closes after twelve hours without a move, not before, 367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect · Key: annexd.clocks.idle-rooms</sub>
 
 <a id="rD3.4a"></a>**D3.4a** A connected player or a watcher keeps an idle game open, and an empty game is given a grace period for a player to reconnect.
 
-> *Example: A connected seat or a watcher keeps the room open.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 367-idle-rooms-close.test.ts, 434-cr-digital-1.test.ts · Example test: 367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open · Key: annexd.clocks.idle-rooms.kept-open</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 367-idle-rooms-close.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open · Key: annexd.clocks.idle-rooms.kept-open</sub>
 
 <a id="rD3.4b"></a>**D3.4b** A game closed for being idle has no winner, is not rated, and is recorded as unfinished.
 
-> *Example: A closed game reads as unfinished.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 367-idle-rooms-close.test.ts, 434-cr-digital-1.test.ts · Example test: 367-idle-rooms-close.test.ts::367 §6 a closed game has no winner, is not rated and reads as unfinished · Key: annexd.clocks.idle-rooms.no-result</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 367-idle-rooms-close.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 367-idle-rooms-close.test.ts::367 §6 a closed game has no winner, is not rated and reads as unfinished · Key: annexd.clocks.idle-rooms.no-result</sub>
 
 <a id="rD4"></a>
 ### D4. Undo
 
 <a id="rD4.1"></a>**D4.1.** Inside a hidden simultaneous segment, a player may undo their own actions, one at a time, back toward the start of the step, within the limits of the rules below. See rule D1.4.
 
-> *Example: An earlier deployment play can be undone when nothing hidden has been seen since.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Rulings: R312 · Tests: 374-undo-locks-on-reveal.test.ts, suite.test.ts, 434-cr-digital-1.test.ts · Example test: 374-undo-locks-on-reveal.test.ts::R312 §2: an undo of an earlier play BEFORE any glimpse still works · Key: annexd.undo.hidden-step</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Rulings: R312 · Tests: 374-undo-locks-on-reveal.test.ts, suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 374-undo-locks-on-reveal.test.ts::R312 §2: an undo of an earlier play BEFORE any glimpse still works · Key: annexd.undo.hidden-step</sub>
 
 <sub>Discrepancies: D-U23-7 (discrepancies.md)</sub>
 
 <a id="rD4.1a"></a>**D4.1a** The opponent acting in the same step does not stop a player's undo.
 
-> *Example: The opponent acting in the same step does not stop my undo.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.opponent — the opponent acting in the same step does not stop my undo · Key: annexd.undo.hidden-step.opponent</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.opponent — the opponent acting in the same step does not stop my undo · Key: annexd.undo.hidden-step.opponent</sub>
 
 <a id="rD4.1b"></a>**D4.1b** An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step.
 
@@ -482,19 +370,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD4.1c"></a>**D4.1c** Actions taken in battle are not undone. For that reason an irreversible activated ability asks for confirmation in battle, while in deployment it activates on the click and undo is the safety net. See rule D7.
 
-> *Example: In deployment an irreversible ability activates on the click.*
-
-> *Example: In battle the same ability asks "Yes, activate" first.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 373-no-confirm-where-undo-works.test.ts · Example tests: 373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click, 373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks · Key: annexd.undo.hidden-step.battle</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 373-no-confirm-where-undo-works.test.ts · Demonstrated by tests: 373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click, 373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks · Key: annexd.undo.hidden-step.battle</sub>
 
 <sub>Discrepancies: D-U23-11 (discrepancies.md)</sub>
 
 <a id="rD4.2"></a>**D4.2.** A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled. A Burst group is cancelled whole. See rules 702, 803.
 
-> *Example: A cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R312, R309, R309 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.undo.cast-cancel — a cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack · Key: annexd.undo.cast-cancel</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R312, R309, R309 · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.undo.cast-cancel — a cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack · Key: annexd.undo.cast-cancel</sub>
 
 <a id="rD4.3"></a>**D4.3.** An action that showed a player hidden cards cannot be undone, and neither can anything that player did before it.
 
@@ -504,194 +386,130 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD4.3a"></a>**D4.3a** Actions the player took after that one can still be undone, back to just after it.
 
-> *Example: A spawn after the glimpse is undoable back to the glimpse, and not past it.*
+> *Example: A unit played after the glimpse can be undone, back to just after the glimpse, and not past it.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R312, R312 · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Example test: 374-undo-locks-on-reveal.test.ts::R312 §3: a plain spawn after the glimpse is undoable back to the glimpse · Key: annexd.undo.seen-cards.after</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R312, R312 · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Example test: 374-undo-locks-on-reveal.test.ts::R312 §3: a plain spawn after the glimpse is undoable back to the glimpse · Key: annexd.undo.seen-cards.after</sub>
 
 <a id="rD4.3b"></a>**D4.3b** The refusal reads "you've seen those cards — that can't be taken back".
 
-> *Example: The refusal reads: you have seen those cards and that cannot be taken back.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Rulings: R312 · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.undo.seen-cards.message — the refusal reads: you have seen those cards and that cannot be taken back · Key: annexd.undo.seen-cards.message</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 2 gate test files · Rulings: R312 · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.undo.seen-cards.message — the refusal reads: you have seen those cards and that cannot be taken back · Key: annexd.undo.seen-cards.message</sub>
 
 <a id="rD4.3c"></a>**D4.3c** Only the player who saw the cards is locked. The opponent looking at a shared deck does not lock a player's undo, since inside a hidden step it shows that player nothing.
 
-> *Example: The opponent's glimpse of the shared deck leaves my undo free.*
+> *Example: The opponent glimpsing from the shared deck does not lock the player's undo.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 2 gate test files · Rulings: R312 · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Example test: 374-undo-locks-on-reveal.test.ts::R312 §5: the opponent's glimpse of the SHARED deck does not lock your undo · Key: annexd.undo.seen-cards.only-seer</sub>
 
 <a id="rD4.3d"></a>**D4.3d** An undo is refused if it would change cards the opponent has already been shown.
 
-> *Example: Taking back a shuffle after the opponent glimpsed the deck it shuffled is refused (illustrative).*
-
-> *Example: My undo is refused when it would change the cards the opponent has since been shown.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R312 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.undo.seen-cards.opponent-shown — my undo is refused when it would change the cards the opponent has since been shown · Key: annexd.undo.seen-cards.opponent-shown</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R312 · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.undo.seen-cards.opponent-shown — my undo is refused when it would change the cards the opponent has since been shown · Key: annexd.undo.seen-cards.opponent-shown</sub>
 
 <a id="rD4.3e"></a>**D4.3e** Whether an action showed a player hidden cards is measured, not listed: an action counts if what it shows the player depends on the order of hidden cards. A glimpse, a draw, a reveal or a look at a hand counts. Playing a card from hand, recycling, or putting a card on the bottom of a deck does not. In a Single Card Duel nothing locks, since every card in the deck is the same. See rule D8.
 
-> *Example: A spawn trigger's Glimpse 1 in the haste step locks too.*
+> *Example: A unit's spawn trigger that glimpses 1 in the haste step locks undo too.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R312, R312, R312 · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Example test: 374-undo-locks-on-reveal.test.ts::R312 §6: measured, not listed · Key: annexd.undo.seen-cards.measured</sub>
 
 <a id="rD4.3f"></a>**D4.3f** The lock survives a server restart and an undo.
 
-> *Example: A restored room measures the lock again.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R312 · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Example test: 374-undo-locks-on-reveal.test.ts::R312 §4: the lock survives a restart · Key: annexd.undo.seen-cards.restart</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R312 · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 374-undo-locks-on-reveal.test.ts::R312 §4: the lock survives a restart · Key: annexd.undo.seen-cards.restart</sub>
 
 <a id="rD4.4"></a>**D4.4.** In Learn to Play, undo works in every phase, under the same lock: a turn's draw, a glimpse or a look at the Bot's hand ends the undo of whatever came before it. Starting a turn again after a loss is a fresh attempt, not an undo. See rule D8.
 
-> *Example: A turn's draw ends the undo of the turn before.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Rulings: R312, R312, R312 · Tests: 374-undo-locks-on-reveal.test.ts, 306-solo-backend.test.ts, 434-cr-digital-1.test.ts · Example test: 374-undo-locks-on-reveal.test.ts::R312 §7: Learn to Play applies the same floor · Key: annexd.undo.learn-to-play</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Rulings: R312, R312, R312 · Tests: 374-undo-locks-on-reveal.test.ts, 306-solo-backend.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 374-undo-locks-on-reveal.test.ts::R312 §7: Learn to Play applies the same floor · Key: annexd.undo.learn-to-play</sub>
 
 <a id="rD5"></a>
 ### D5. Recap and Playback
 
 <a id="rD5.1"></a>**D5.1.** When the haste step or deployment ends, each player is shown what the other did there as a playback (the recap): one frame per move, in the order the moves were made. See rule D1.4b.
 
-> *Example: A haste step closes into frames the same way as deployment.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R310, R310 · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Example test: 360-playback-frames.test.ts::§7 a haste step closes into frames the same way · Key: annexd.recap.what</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R310, R310 · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 360-playback-frames.test.ts::§7 a haste step closes into frames the same way · Key: annexd.recap.what</sub>
 
 <a id="rD5.1a"></a>**D5.1a** The recap changes nothing in the game. A game played with recap frames is the same game, action for action, as one without them.
 
-> *Example: Frames do not alter the action log.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Example test: 360-playback-frames.test.ts::§1 a game with frames is the same game without them · Key: annexd.recap.what.no-effect</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 360-playback-frames.test.ts::§1 a game with frames is the same game without them · Key: annexd.recap.what.no-effect</sub>
 
 <a id="rD5.1b"></a>**D5.1b** A frame of the opponent's move shows that move on their side, their hand still face down, and the player's own side as the player left it.
 
-> *Example: Their move on their half, their hand face down, your half as you left it.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Example test: 360-playback-frames.test.ts::§3 an opponent frame · Key: annexd.recap.what.opponent-frame</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 360-playback-frames.test.ts::§3 an opponent frame · Key: annexd.recap.what.opponent-frame</sub>
 
 <a id="rD5.1c"></a>**D5.1c** A move with nothing to show is not given a frame, but its log line is kept.
 
-> *Example: An empty move is not a step, and its line is not lost.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Example test: 360-playback-frames.test.ts::§4 a move with nothing to show is not a step · Key: annexd.recap.what.nothing-to-show</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 360-playback-frames.test.ts::§4 a move with nothing to show is not a step · Key: annexd.recap.what.nothing-to-show</sub>
 
 <a id="rD5.1d"></a>**D5.1d** The end of turn is played as one frame per trigger, in order.
 
-> *Example: Each end-of-turn trigger gets its own frame.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Example test: 360-playback-frames.test.ts::§2 the end of turn is a frame per trigger · Key: annexd.recap.what.end-of-turn</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 360-playback-frames.test.ts::§2 the end of turn is a frame per trigger · Key: annexd.recap.what.end-of-turn</sub>
 
 <a id="rD5.1e"></a>**D5.1e** The resource step is not played back: its close arrives whole, in one update. See rule 502.
 
-> *Example: The resource step close is sent whole in one update, with no playback.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R310, R310 · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.recap.what.resource-step — the resource step close is sent whole in one update, with no playback · Key: annexd.recap.what.resource-step</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R310, R310 · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.recap.what.resource-step — the resource step close is sent whole in one update, with no playback · Key: annexd.recap.what.resource-step</sub>
 
 <a id="rD5.1f"></a>**D5.1f** Undoing a move inside the step removes that move's frame and keeps the others. See rule D4.
 
-> *Example: An undone move leaves no frame behind.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Example test: 360-playback-frames.test.ts::§6 undoing a move inside the step takes its frame with it · Key: annexd.recap.what.undo</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 360-playback-frames.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 360-playback-frames.test.ts::§6 undoing a move inside the step takes its frame with it · Key: annexd.recap.what.undo</sub>
 
 <a id="rD5.2"></a>**D5.2.** A Glimpse made in a hidden step is shown to the opponent in the recap, exactly once, in the frame of the action that made it, with its card notice. The player who glimpsed sees their own reveal at once. A Glimpse in battle reaches the opponent at once. See rules D6, 801.
 
-> *Example: The opponent's glimpse notice pops when its recap frame plays, not before.*
+> *Example: A player plays Oracle of Foretelling in deployment: the opponent sees its glimpse in the recap frame of that play, and nowhere else.*
 
-> *Example: The reveal plays in the frame of the Oracle play and nowhere else.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R310, R310, R310 · Replaces: R235 (reversed by R310: a reveal in a hidden step was public immediately) · Tests: 371-glimpse-in-the-recap.test.ts, 203-reveal-waits-for-the-barrier.test.ts · Example tests: 371-glimpse-in-the-recap.test.ts::R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before, 203-reveal-waits-for-the-barrier.test.ts::R310 §3: the reveal plays in the recap · Key: annexd.recap.glimpse</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 2 gate test files · Rulings: R310, R310, R310 · Replaces: R235 (reversed by R310: a reveal in a hidden step was public immediately) · Tests: 371-glimpse-in-the-recap.test.ts, 203-reveal-waits-for-the-barrier.test.ts · Example test: 203-reveal-waits-for-the-barrier.test.ts::R310 §3: the reveal plays in the recap · Demonstrated by test: 371-glimpse-in-the-recap.test.ts::R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before · Key: annexd.recap.glimpse</sub>
 
 <a id="rD5.3"></a>**D5.3.** The deployment recap pauses after the opponent's moves and again after the end of turn; the haste step's recap pauses the same way. Skip jumps to the next pause, never past it. A quiet end of turn does not pause twice.
 
-> *Example: The deployment recap stops after their moves and after the end of turn.*
-
-> *Example: Skip jumps to the next stop, never past it.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 383-recap-stops.test.ts · Example tests: 383-recap-stops.test.ts::report #198: the deployment recap stops after their moves, 383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it · Key: annexd.recap.stops</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 383-recap-stops.test.ts · Demonstrated by tests: 383-recap-stops.test.ts::report #198: the deployment recap stops after their moves, 383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it · Key: annexd.recap.stops</sub>
 
 <sub>Discrepancies: D-U23-8 (discrepancies.md)</sub>
 
 <a id="rD5.3a"></a>**D5.3a** A recap can be watched again. Watching again pauses at the same places, shows the glimpse notices again, and hands back the board.
 
-> *Example: Watch again stops at the same places and hands back the board.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R310 · Tests: 383-recap-stops.test.ts · Example test: 383-recap-stops.test.ts::report #198: "watch again" stops at the same places · Key: annexd.recap.stops.watch-again</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R310 · Tests: 383-recap-stops.test.ts · Demonstrated by test: 383-recap-stops.test.ts::report #198: "watch again" stops at the same places · Key: annexd.recap.stops.watch-again</sub>
 
 <a id="rD5.3b"></a>**D5.3b** The hand-over to the next turn at the end of a recap pauses longer than a frame. Every recap, live, watched again or in Learn to Play, is paced by the same rule.
 
-> *Example: The hand-over waits longer than a frame.*
-
-> *Example: Live, watch-again and Learn to Play use one gap rule.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 372-recap-end-pause.test.ts · Example tests: 372-recap-end-pause.test.ts::the hand-over to the next turn waits PLAYBACK_END_MS, longer than a frame, 372-recap-end-pause.test.ts::every playback goes through the one gap rule · Key: annexd.recap.stops.end-pause</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 372-recap-end-pause.test.ts · Demonstrated by tests: 372-recap-end-pause.test.ts::the hand-over to the next turn waits PLAYBACK_END_MS, longer than a frame, 372-recap-end-pause.test.ts::every playback goes through the one gap rule · Key: annexd.recap.stops.end-pause</sub>
 
 <a id="rD5.4"></a>**D5.4.** The client shows play no faster than one step per second. This one tempo paces both the updates the client receives and the steps within a single update.
 
-> *Example: The beat tempo is the client-wide ceiling.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R150 (its CT-28 pacing half), R242 · Tests: 218-one-tempo.test.ts, 128-ui-pace.test.ts · Example test: 218-one-tempo.test.ts::§1a the beat tempo IS the client-wide ceiling · Key: annexd.recap.tempo</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R150 (its CT-28 pacing half), R242 · Tests: 218-one-tempo.test.ts, 128-ui-pace.test.ts · Demonstrated by test: 218-one-tempo.test.ts::§1a the beat tempo IS the client-wide ceiling · Key: annexd.recap.tempo</sub>
 
 <a id="rD5.4a"></a>**D5.4a** Items that happen at the same time under the rules arrive on screen together, then leave one at a time, in resolution order, one tempo step apart. The next group waits until this one has finished.
 
-> *Example: A simultaneous batch shares one arrival.*
-
-> *Example: They leave in resolution order.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R242, R242 · Tests: 218-one-tempo.test.ts · Example tests: 218-one-tempo.test.ts::§2a "all at once": a simultaneous batch shares ONE arrival, 218-one-tempo.test.ts::§2c they leave in RESOLUTION order · Key: annexd.recap.tempo.cascade</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R242, R242 · Tests: 218-one-tempo.test.ts · Demonstrated by tests: 218-one-tempo.test.ts::§2a "all at once": a simultaneous batch shares ONE arrival, 218-one-tempo.test.ts::§2c they leave in RESOLUTION order · Key: annexd.recap.tempo.cascade</sub>
 
 <a id="rD5.4b"></a>**D5.4b** Only an update the player cannot act on is held back to keep the tempo. A decision for the player, the echo of the player's own action and the end of the game are never held, and an update with legal actions is never held unless auto-pass will answer it. See rule D2.3.
 
-> *Example: A decision of mine is never held.*
-
-> *Example: The game ending is never held.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R150 (its CT-28 pacing half), R150 (its CT-28 pacing half) · Tests: 128-ui-pace.test.ts · Example tests: 128-ui-pace.test.ts::R150 #94: a decision of MINE is never held, 128-ui-pace.test.ts::R150 #94: the game ending is never held · Key: annexd.recap.tempo.held</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R150 (its CT-28 pacing half), R150 (its CT-28 pacing half) · Tests: 128-ui-pace.test.ts · Demonstrated by tests: 128-ui-pace.test.ts::R150 #94: a decision of MINE is never held, 128-ui-pace.test.ts::R150 #94: the game ending is never held · Key: annexd.recap.tempo.held</sub>
 
 <a id="rD5.4c"></a>**D5.4c** When an update the player can act on arrives, everything held before it is released with it, in order, so the player is never asked a question over an old board.
 
-> *Example: An urgent arrival flushes the backlog rather than jumping it.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R150 (its CT-28 pacing half) · Tests: 128-ui-pace.test.ts · Example test: 128-ui-pace.test.ts::R150 #94: an urgent arrival FLUSHES the backlog rather than jumping it · Key: annexd.recap.tempo.flush</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R150 (its CT-28 pacing half) · Tests: 128-ui-pace.test.ts · Demonstrated by test: 128-ui-pace.test.ts::R150 #94: an urgent arrival FLUSHES the backlog rather than jumping it · Key: annexd.recap.tempo.flush</sub>
 
 <a id="rD5.4d"></a>**D5.4d** The player's own input is never delayed by the tempo.
 
-> *Example: My own action's echo is never held.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R150 (its CT-28 pacing half) · Tests: 128-ui-pace.test.ts · Example test: 128-ui-pace.test.ts::R150 #94: my OWN action's echo is never held · Key: annexd.recap.tempo.input</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R150 (its CT-28 pacing half) · Tests: 128-ui-pace.test.ts · Demonstrated by test: 128-ui-pace.test.ts::R150 #94: my OWN action's echo is never held · Key: annexd.recap.tempo.input</sub>
 
 <a id="rD5.4e"></a>**D5.4e** The screen never falls more than a fixed number of tempo steps behind the live game.
 
-> *Example: The queue never falls further than its bound behind.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R242 · Tests: 128-ui-pace.test.ts, 218-one-tempo.test.ts · Example test: 128-ui-pace.test.ts::R150 #94: the queue never falls further than PACE_MAX_HELD intervals behind · Key: annexd.recap.tempo.lag-bound</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R242 · Tests: 128-ui-pace.test.ts, 218-one-tempo.test.ts · Demonstrated by test: 128-ui-pace.test.ts::R150 #94: the queue never falls further than PACE_MAX_HELD intervals behind · Key: annexd.recap.tempo.lag-bound</sub>
 
 <a id="rD5.5"></a>**D5.5.** Outside a recap playback, while play is being held back, the S key jumps to the live state. Skipping drops pending animations but still delivers the held log lines. No skip control is drawn for this. See rules D5.5c, D5.3.
 
-> *Example: Several held arrivals draw nothing on screen, and S releases them all.*
-
-> *Example: Skipping releases the beats rather than dropping them.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R150 (its CT-28 pacing half), R242, R242 · Tests: 237-live-while-held.test.ts, 218-one-tempo.test.ts · Example tests: 237-live-while-held.test.ts::R258 several held arrivals still draw nothing, and S releases them all, 218-one-tempo.test.ts::§4b skipping RELEASES the beats rather than dropping them · Key: annexd.recap.skip</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 3; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R150 (its CT-28 pacing half), R242, R242 · Tests: 237-live-while-held.test.ts, 218-one-tempo.test.ts · Demonstrated by tests: 237-live-while-held.test.ts::R258 several held arrivals still draw nothing, and S releases them all, 218-one-tempo.test.ts::§4b skipping RELEASES the beats rather than dropping them · Key: annexd.recap.skip</sub>
 
 <sub>Discrepancies: D-U23-18 (discrepancies.md)</sub>
 
 <a id="rD5.5a"></a>**D5.5a** While play is held, whether the opponent is connected, and the clocks, stay current; nothing else on the board changes until the held updates are released.
 
-> *Example: A disconnect that arrives while play is held is on screen at once.*
-
-> *Example: A plain held update moves nothing on screen.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R258 · Tests: 237-live-while-held.test.ts · Example tests: 237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once, 237-live-while-held.test.ts::R258 a held update moves the live slots and NOTHING else on the board · Key: annexd.recap.skip.live</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R258 · Tests: 237-live-while-held.test.ts · Demonstrated by tests: 237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once, 237-live-while-held.test.ts::R258 a held update moves the live slots and NOTHING else on the board · Key: annexd.recap.skip.live</sub>
 
 <a id="rD5.5b"></a>**D5.5b** A disconnect is shown at once, not queued behind held updates, and showing it does not release them.
 
-> *Example: A disconnect that arrives while the throttle is holding is on screen at once.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R258 · Tests: 237-live-while-held.test.ts · Example test: 237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once · Key: annexd.recap.skip.disconnect</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R258 · Tests: 237-live-while-held.test.ts · Demonstrated by test: 237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once · Key: annexd.recap.skip.disconnect</sub>
 
 <a id="rD5.5c"></a>**D5.5c** During a recap playback, skipping does not jump to the live state. Skip (the S key, Space, or the Skip button drawn on the play bar) jumps to the next stop, and on a stop it continues the playback. See rules D5.3, D5.5.
 
-> *Example: Skip jumps to the next stop, never past it.*
-
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 383-recap-stops.test.ts, 434-cr-digital-1.test.ts · Example test: 383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it · Key: annexd.recap.skip.in-playback</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 383-recap-stops.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it · Key: annexd.recap.skip.in-playback</sub>
 
 <sub>Discrepancies: D-U23-22 (discrepancies.md)</sub>
 
@@ -736,17 +554,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD6.2a"></a>**D6.2a** The player who glimpses sees their own revealed cards when they glimpse.
 
-> *Example: Oracle of Foretelling glimpses during deployment. Its controller is sent the revealed cards on the action that glimpses; the opponent is sent nothing until the step ends.*
+> *Example: A player plays Oracle of Foretelling during deployment and sees the revealed cards at once; the opponent sees nothing of them until the step ends.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R310 · Tests: 203-reveal-waits-for-the-barrier.test.ts, 435-cr-digital-2.test.ts · Example test: 203-reveal-waits-for-the-barrier.test.ts::R310 §1: inside deployment the opponent is sent nothing of a Glimpse — live or on a resync · Key: annexd.reveal.glimpse.own</sub>
 
 <a id="rD6.2b"></a>**D6.2b** At the reveal the other player is shown the glimpse exactly once, with its card notice, and the finished game log holds it once.
 
-> *Example: The opponent's glimpse notice pops when the recap frame of the glimpse plays, and not before.*
-
-> *Example: When deployment ends, the opponent is sent the glimpse once, and the finished game log records it once.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Rulings: R310, R310 · Tests: 203-reveal-waits-for-the-barrier.test.ts, 371-glimpse-in-the-recap.test.ts, 435-cr-digital-2.test.ts · Example tests: 371-glimpse-in-the-recap.test.ts::R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before, 203-reveal-waits-for-the-barrier.test.ts::R310 §2: the barrier delivers the reveal exactly once, and the finished log holds it once · Key: annexd.reveal.glimpse.once</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Rulings: R310, R310 · Tests: 203-reveal-waits-for-the-barrier.test.ts, 371-glimpse-in-the-recap.test.ts, 435-cr-digital-2.test.ts · Demonstrated by tests: 371-glimpse-in-the-recap.test.ts::R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before, 203-reveal-waits-for-the-barrier.test.ts::R310 §2: the barrier delivers the reveal exactly once, and the finished log holds it once · Key: annexd.reveal.glimpse.once</sub>
 
 <a id="rD6.2c"></a>**D6.2c** Holding a glimpse until the reveal only delays it. The revealed cards are public, and every player sees them. See rule D6.1c.
 
@@ -756,21 +570,17 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD6.2d"></a>**D6.2d** The same holds in Learn to Play: a glimpse by the Tutorial Bot inside a hidden step is shown to the learner in the recap. See rule D8.1.
 
-> *Example: The Tutorial Bot glimpses during deployment. The learner's glimpse notice pops when the recap plays.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R310 · Tests: 371-glimpse-in-the-recap.test.ts · Example test: 371-glimpse-in-the-recap.test.ts::R310 §2: Learn to Play holds the bot's glimpse for the recap, and the recap pops it · Key: annexd.reveal.glimpse.learn-to-play</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R310 · Tests: 371-glimpse-in-the-recap.test.ts · Demonstrated by test: 371-glimpse-in-the-recap.test.ts::R310 §2: Learn to Play holds the bot's glimpse for the recap, and the recap pops it · Key: annexd.reveal.glimpse.learn-to-play</sub>
 
 <a id="rD6.3"></a>**D6.3.** During the battle phase, when an item has begun to resolve and is waiting on a choice from its controller, every player is shown that the item is resolving and whose it is. The item has left the stack, and no player can respond to it (see 703.6). See rule 703.6.
 
-> *Example: An effect stops mid-resolution to ask its controller a question. Both players see it marked as resolving; neither can target or negate it.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R78, R78 · Tests: 67-resolving-and-stack-viruses.test.ts · Example test: 67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted · Key: annexd.reveal.resolving</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R78, R78 · Tests: 67-resolving-and-stack-viruses.test.ts · Demonstrated by test: 67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted · Key: annexd.reveal.resolving</sub>
 
 <sub>Discrepancies: D-U24-3 (discrepancies.md)</sub>
 
 <a id="rD6.3a"></a>**D6.3a** Outside the battle phase the other player is shown nothing of an item resolving. Its controller still sees the question.
 
-> *Example: Oracle of Foretelling is played in deployment and asks its controller which card to cache. The other player is served no resolving item and no pending question; the same kind of question from Premonition in battle is shown to them.*
+> *Example: Oracle of Foretelling, played in deployment, asks its controller which card to cache; the other player is shown nothing of it. The same kind of question from Premonition in battle is shown to them.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Rulings: R78, R78 · Tests: 435-cr-digital-2.test.ts · Example test: 435-cr-digital-2.test.ts::cr:annexd.reveal.resolving.battle-only — outside battle the other player is served nothing of an item resolving while its controller is asked; in battle they are · Key: annexd.reveal.resolving.battle-only</sub>
 
@@ -782,9 +592,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD6.3c"></a>**D6.3c** On a board partway through a resolution, the only actions any player may take are answering the open question and conceding. See rule 104.4a.
 
-> *Example: Mid-resolution, neither player can cast or pass; the asked player can answer, and either player can concede.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R85 · Tests: 72-resolution-window.test.ts · Example test: 72-resolution-window.test.ts::R85 the mid-resolution board is a PREVIEW: only decide and concede are legal on it · Key: annexd.reveal.resolving.only-answer</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R85 · Tests: 72-resolution-window.test.ts · Demonstrated by test: 72-resolution-window.test.ts::R85 the mid-resolution board is a PREVIEW: only decide and concede are legal on it · Key: annexd.reveal.resolving.only-answer</sub>
 
 <a id="rD6.4"></a>**D6.4.** Outside a hidden simultaneous step, that a player owes an answer to a question is public, and so is the card it comes from when that card is already in view. What the question is is not: its prompt, its options, its candidate targets and its kind are shown only to the player who must answer. Inside a hidden simultaneous step, not even the fact that the other player owes an answer is shown.
 
@@ -794,9 +602,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD6.4a"></a>**D6.4a** The waiting player may be told which card the question comes from, but only when that card is already visible to them. Inside a hidden step, it is not named.
 
-> *Example: An opponent's {Alluring} trigger asks them to choose a target. The other player's bar names the opponent and the card the trigger came from, and nothing about the targets.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R247, R247 · Tests: 50-ui-inspect.test.ts · Example test: 50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub · Key: annexd.reveal.pending-choice.source</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R247, R247 · Tests: 50-ui-inspect.test.ts · Demonstrated by test: 50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub · Key: annexd.reveal.pending-choice.source</sub>
 
 <a id="rD6.5"></a>**D6.5.** No message the client receives names a card in a zone hidden from that player. When cards enter another player's hand, the player is told how many entered, not which. See rule 402.2.
 
@@ -818,9 +624,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD6.6"></a>**D6.6.** Both players' caches are shown to both players in full: every cached card, and any prophecy attached to it (see 403.2). See rule 403.2.
 
-> *Example: Both players are sent the same cache contents for both caches.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R41 · Tests: 36-cache-prophecy.test.ts · Example test: 36-cache-prophecy.test.ts::R41: the cache is PUBLIC — both seats read the same zone, unredacted · Key: annexd.reveal.public-zones</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R41 · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::R41: the cache is PUBLIC — both seats read the same zone, unredacted · Key: annexd.reveal.public-zones</sub>
 
 <a id="rD6.6a"></a>**D6.6a** A cached card whose prophecy condition counts toward a number shows its progress on the board, on its owner's cache, to every player. The count shown is the one for the cache's owner.
 
@@ -894,11 +698,9 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD6.9a"></a>**D6.9a** A token's text box shows its actual X in place of X. Stat notation such as X/X, +X/+X and -X/-X is never changed, and neither is reminder text.
 
-> *Example: A Poison created with X = 5 reads "Put 5 -1/-1 counters on target unit".*
-
 > *Example: A Robot reads its X off its counters, so its text changes when they change.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R151, R151 · Tests: 127-token-x-and-dormant.test.ts · Example tests: 127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine, 127-token-x-and-dormant.test.ts::R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change · Key: annexd.display.live-values.token-x</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R151, R151 · Tests: 127-token-x-and-dormant.test.ts · Example test: 127-token-x-and-dormant.test.ts::R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change · Demonstrated by test: 127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine · Key: annexd.display.live-values.token-x</sub>
 
 <sub>Discrepancies: D-U24-4 (discrepancies.md)</sub>
 
@@ -912,11 +714,9 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: Retribution Thing is on the stack. It shows the X it would deal now.*
 
-> *Example: A spell whose X was paid shows only the paid X.*
-
 > *Example: Retribution Thing was cast in the life-lost mode. The stack shows only that mode's forecast.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 1 gate test file · Rulings: R246, R246, R246, R246 · Tests: 225-stack-readout.test.ts · Example tests: 225-stack-readout.test.ts::§1a Retribution Thing wears its X on the stack, and it is the number it will deal, 225-stack-readout.test.ts::§1c a paid X still wins — the forecast never doubles it, 225-stack-readout.test.ts::§1b the declared mode narrows the forecast to the half that was chosen · Key: annexd.display.live-values.x-forecast</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 1 gate test file · Rulings: R246, R246, R246, R246 · Tests: 225-stack-readout.test.ts · Example tests: 225-stack-readout.test.ts::§1a Retribution Thing wears its X on the stack, and it is the number it will deal, 225-stack-readout.test.ts::§1b the declared mode narrows the forecast to the half that was chosen · Demonstrated by test: 225-stack-readout.test.ts::§1c a paid X still wins — the forecast never doubles it · Key: annexd.display.live-values.x-forecast</sub>
 
 <a id="rD6.9d"></a>**D6.9d** Spell tokens in play are counted by name, with the X of each, because casting one burst token casts every token of that name (see 803). Each spell token shows its X as a large die face. See rule 803.
 
@@ -927,8 +727,6 @@ These are the conventions of this digital client: how it times, shows and confir
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R254 (its §1, §3 and §4), R309 · Replaces: R254 (its §2 fixed entity-id cast order amended by R309 (the caster orders a burst)) · Tests: 233-burst-count-and-size.test.ts, 358-burst-order-ui.test.ts · Example tests: 233-burst-count-and-size.test.ts::§1b a group of one name at different sizes prints every size — the report verbatim, 358-burst-order-ui.test.ts::§3 a token wears its X as a die face, not "X=n" in the stat corner · Key: annexd.display.live-values.burst</sub>
 
 <a id="rD6.9e"></a>**D6.9e** A card whose X is read from the board at resolution, but which declares no forecast for it, shows no forecast on the stack. See rule D6.9c.
-
-> *Example: Burden of Life on the stack shows no forecast; its X is its controller's life total, which is already on the screen. (illustrative)*
 
 <sub>Basis: Owner call · Verified: partial in round 3; verifier ran 1 test, passed; 1 gate test file · Rulings: R246 · Tests: 225-stack-readout.test.ts · Key: annexd.display.live-values.x-not-forecast</sub>
 
@@ -946,17 +744,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: Void Memory's "[unit or spell]" is drawn as a unit box and a spell box with "or" between them.*
 
-> *Example: A cost bracket is still one box.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R284, R284 · Tests: 122-cardtext-markup.test.ts · Example tests: 122-cardtext-markup.test.ts::R284: a MODAL bracket draws two boxes with the "or" outside them, 122-cardtext-markup.test.ts::R284: a COST bracket still draws exactly one box · Key: annexd.display.text-box.modal</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R284, R284 · Tests: 122-cardtext-markup.test.ts · Example test: 122-cardtext-markup.test.ts::R284: a MODAL bracket draws two boxes with the "or" outside them · Demonstrated by test: 122-cardtext-markup.test.ts::R284: a COST bracket still draws exactly one box · Key: annexd.display.text-box.modal</sub>
 
 <a id="rD6.10b"></a>**D6.10b** When a once-per-turn ability has been used, its note wears the marker printed on that ability: [Switch1] or [once]. A card that spells the limit out in words, with no marker, gets [Once].
 
 > *Example: A spent bounded graft ability shows [Switch1], as its card prints.*
 
-> *Example: A spent [once] ability shows [Once].*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R249, R249 · Tests: 228-spent-marker.test.ts · Example tests: 228-spent-marker.test.ts::R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints, 228-spent-marker.test.ts::R249: a spent [once] ability wears [Once] — the same code, the other card · Key: annexd.display.text-box.spent</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R249, R249 · Tests: 228-spent-marker.test.ts · Example test: 228-spent-marker.test.ts::R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints · Demonstrated by test: 228-spent-marker.test.ts::R249: a spent [once] ability wears [Once] — the same code, the other card · Key: annexd.display.text-box.spent</sub>
 
 <a id="rD6.10c"></a>**D6.10c** A card that is {Unstable}, whether printed or acquired, shows {Unstable} on its attribute line, with how it became Unstable.
 
@@ -986,9 +780,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD6.11a"></a>**D6.11a** No reminder, label or rules text shown to a player cites this client's ruling numbers.
 
-> *Example: Rendering every card in the pool shows no ruling number anywhere.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R248 · Tests: 227-reminder-text.test.ts · Example test: 227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number · Key: annexd.display.reminders.no-numbers</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R248 · Tests: 227-reminder-text.test.ts · Demonstrated by test: 227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number · Key: annexd.display.reminders.no-numbers</sub>
 
 <a id="rD6.11b"></a>**D6.11b** Where the game's reminder is shorter than the rule this client enforces, the client's fuller statement is kept and shown under the game's reminder in the card browser. Shortening what a player reads never deletes a rule.
 
@@ -1073,9 +865,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: Fight's first target is the player's ally; the player then picks another of their own units. The client asks whether they meant to target an ally.*
 
-> *Example: Answering no leaves the second pick open.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R288, R288 · Tests: 278-ally-misclick.test.ts · Example tests: 278-ally-misclick.test.ts::R288 §1 Fight aimed at a second unit of your own asks whether you meant it, 278-ally-misclick.test.ts::R288 §5 "no" sends nothing and leaves the same pick open · Key: annexd.confirm.never-refuse.ally</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R288, R288 · Tests: 278-ally-misclick.test.ts · Example test: 278-ally-misclick.test.ts::R288 §1 Fight aimed at a second unit of your own asks whether you meant it · Demonstrated by test: 278-ally-misclick.test.ts::R288 §5 "no" sends nothing and leaves the same pick open · Key: annexd.confirm.never-refuse.ally</sub>
 
 <sub>Discrepancies: D-U24-6 (discrepancies.md)</sub>
 
@@ -1093,9 +883,9 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD7.2a"></a>**D7.2a** A question whose answer is a number, such as predicting a life total, offers a typed box as well as a dial, so any number in range can be entered. The value itself is sent, not a choice from a list.
 
-> *Example: Prediction Prophet's prediction can be dialled or typed past the old cap of life + 5.*
+> *Example: Prediction Prophet's prediction can be dialled or typed in as any number in range, and that number itself is sent.*
 
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R197 (its §1) · Replaces: R90 (its menu cap of life + 5 replaced by R197's uncapped number question) · Tests: 168-three-card-divergences.test.ts · Example test: 168-three-card-divergences.test.ts::R197 §1c Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar dials past the old cap and puts the VALUE on the wire, not an index · Key: annexd.confirm.dials.number</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Rulings: R197 (its §1) · Replaces: R90 (its menu cap of life + 5 replaced by R197's uncapped number question) · Tests: 168-three-card-divergences.test.ts · Example test: 168-three-card-divergences.test.ts::R197 §1c Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar dials past the old cap and puts the VALUE on the wire, not an index · Key: annexd.confirm.dials.number</sub>
 
 <a id="rD7.2b"></a>**D7.2b** A variable cost paid one point at a time, such as paying X life, offers the same typed box and dial. Nothing is paid until the player confirms. The dial cannot go below what has already been paid.
 
@@ -1159,7 +949,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD7.4"></a>**D7.4.** An announcement the player is expected to act on, or has lost something by, must be shown somewhere other than the game log. The log is the record, not the notice. See rule D6.15a.
 
-> *Example: Spell tokens erased after a declined attack used to be announced only in the log; the player who lost them is now shown a notice where the prompts appear.*
+> *Example: Spell tokens erased after a declined attack are not announced only in the log: the player who lost them is shown a notice where the prompts appear.*
 
 <sub>Basis: Owner call · Verified: partial in round 3; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R266, R266 · Tests: 244-log-is-not-the-only-surface.test.ts · Example test: 244-log-is-not-the-only-surface.test.ts::[R266] the loss is put in front of the player who lost it, in the promptbar area · Key: annexd.confirm.not-only-log</sub>
 
@@ -1169,17 +959,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: The round-2 attacker declines; the defender's unused spell tokens are erased, and the defender sees a notice saying so.*
 
-> *Example: The other player's lost tokens are not shown to this player, and the notice lapses at the next battle.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R266, R266 · Tests: 244-log-is-not-the-only-surface.test.ts, 165-token-loss-warning.test.ts · Example tests: 244-log-is-not-the-only-surface.test.ts::[R266] the loss is put in front of the player who lost it, in the promptbar area, 244-log-is-not-the-only-surface.test.ts::[R266] a net client is not shown the opponent loss, and the notice goes stale at the next battle · Key: annexd.confirm.not-only-log.token-loss</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R266, R266 · Tests: 244-log-is-not-the-only-surface.test.ts, 165-token-loss-warning.test.ts · Example test: 244-log-is-not-the-only-surface.test.ts::[R266] the loss is put in front of the player who lost it, in the promptbar area · Demonstrated by test: 244-log-is-not-the-only-surface.test.ts::[R266] a net client is not shown the opponent loss, and the notice goes stale at the next battle · Key: annexd.confirm.not-only-log.token-loss</sub>
 
 <a id="rD7.4b"></a>**D7.4b** Any other announcement that a card or a cost the player spent did nothing is shown briefly near the board, under the label "⚠ this did nothing", with the game's own sentence beside it. Both players see it, and it is also in the log.
 
 > *Example: A spell resolves with nothing to aim at. A toast says so on the screen.*
 
-> *Example: An ordinary resolution produces no toast.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R276, R276, R276 · Tests: 256-cost-toasts.test.ts · Example tests: 256-cost-toasts.test.ts::[R276] a spell that resolves with nothing to aim at produces a toast, end to end, 256-cost-toasts.test.ts::[R276] an ordinary resolution produces no toast at all · Key: annexd.confirm.not-only-log.toast</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R276, R276, R276 · Tests: 256-cost-toasts.test.ts · Example test: 256-cost-toasts.test.ts::[R276] a spell that resolves with nothing to aim at produces a toast, end to end · Demonstrated by test: 256-cost-toasts.test.ts::[R276] an ordinary resolution produces no toast at all · Key: annexd.confirm.not-only-log.toast</sub>
 
 <a id="rD7.4c"></a>**D7.4c** Identical announcements from one resolution are shown once with a count. At most four are drawn at a time; the rest are counted and pointed to the log. None is dropped silently.
 
@@ -1192,41 +978,27 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD8.1"></a>**D8.1.** Learn to Play is one learner against the Tutorial Bot in one continuous game, with lessons shown at the moment each rule first matters.
 
-> *Example: In every element, the core lessons open in order early in the game, and the game ends with the end lesson.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R297 · Tests: 305-lesson-flow.test.ts · Example test: 305-lesson-flow.test.ts::§2 §3 in every element the core lessons open in order early, and the game ends with the end lesson · Key: annexd.modes.learn-to-play</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R297 · Tests: 305-lesson-flow.test.ts · Demonstrated by test: 305-lesson-flow.test.ts::§2 §3 in every element the core lessons open in order early, and the game ends with the end lesson · Key: annexd.modes.learn-to-play</sub>
 
 <a id="rD8.1a"></a>**D8.1a** Learn to Play is a constructed game with its own deal. Each player's opening hand and draw per turn are set separately, turn 1 included, and there is no bottom step. Decks may be stacked so that a lesson's card arrives on its turn. The learner starts with no cards in hand: the draw of 2 on turn 1 is the whole starting hand. See rule 901.
 
-> *Example: In a lesson game each seat draws its own number on turn 1, and neither puts cards on the bottom.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R297, R297, R297 · Tests: 303-lesson-deal.test.ts, 435-cr-digital-2.test.ts · Example test: 303-lesson-deal.test.ts::§1 hands and draws are per seat, turn 1 included, with no bottom step · Key: annexd.modes.learn-to-play.deal</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R297, R297, R297 · Tests: 303-lesson-deal.test.ts, 435-cr-digital-2.test.ts · Demonstrated by test: 303-lesson-deal.test.ts::§1 hands and draws are per seat, turn 1 included, with no bottom step · Key: annexd.modes.learn-to-play.deal</sub>
 
 <a id="rD8.1b"></a>**D8.1b** The Tutorial Bot's only card is Training Construct: "Create an X/X unit." It is an X-cost deploy spell with X at least 1, no element and no affinity cost. Training Construct exists only in Learn to Play; it is never in any other deck, pack or deal.
 
-> *Example: Training Construct is not in any constructed, draft or shared deal.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R297, R297 · Tests: 303-lesson-deal.test.ts · Example test: 303-lesson-deal.test.ts::§5 Training Construct lives only in lesson deals · Key: annexd.modes.learn-to-play.bot-card</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R297, R297 · Tests: 303-lesson-deal.test.ts · Demonstrated by test: 303-lesson-deal.test.ts::§5 Training Construct lives only in lesson deals · Key: annexd.modes.learn-to-play.bot-card</sub>
 
 <a id="rD8.1c"></a>**D8.1c** The Tutorial Bot gains one Shard each turn, starting on turn 1. It casts Training Construct at the largest X it can pay, attacks with every unit it has, and never blocks. Its hand is hidden from the learner.
 
-> *Example: The bot casts Construct at the largest X its Shards allow.*
-
-> *Example: The bot attacks with every unit and never blocks.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R297, R297, R297 · Tests: 304-tutorial-bot.test.ts, 306-solo-backend.test.ts · Example tests: 304-tutorial-bot.test.ts::§2 every Construct is cast at the largest X its mana allows (one Shard a turn), 304-tutorial-bot.test.ts::§3 it attacks with every unit it has and never blocks · Key: annexd.modes.learn-to-play.bot-play</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Rulings: R297, R297, R297 · Tests: 304-tutorial-bot.test.ts, 306-solo-backend.test.ts · Demonstrated by tests: 304-tutorial-bot.test.ts::§2 every Construct is cast at the largest X its mana allows (one Shard a turn), 304-tutorial-bot.test.ts::§3 it attacks with every unit it has and never blocks · Key: annexd.modes.learn-to-play.bot-play</sub>
 
 <a id="rD8.2"></a>**D8.2.** In a Single Card Duel, each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (rule D8.2a). See rule 901.
 
-> *Example: A deck of 30 copies of one unit is a single-card deck; 29 copies is not. Two such decks make the game a duel.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298 · Tests: 435-cr-digital-2.test.ts · Example test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel · Key: annexd.modes.single-card-duel</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298 · Tests: 435-cr-digital-2.test.ts · Demonstrated by test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel · Key: annexd.modes.single-card-duel</sub>
 
 <a id="rD8.2a"></a>**D8.2a** A duel has no draw phase. Each turn's card step is a flat draw of 2, and the draw-4, bottom-2 step never happens. The opening hand is still 4, so turn 1 starts with six cards. See rule 503.
 
-> *Example: In a duel each player starts turn 1 with six cards, is never asked to put cards on the bottom, and draws exactly 2 on turn 2.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298, R298 · Tests: 435-cr-digital-2.test.ts · Example test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.draw — a duel has no bottom step, turn 1 starts on six cards, and turn 2 draws a flat 2 · Key: annexd.modes.single-card-duel.draw</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298, R298 · Tests: 435-cr-digital-2.test.ts · Demonstrated by test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.draw — a duel has no bottom step, turn 1 starts on six cards, and turn 2 draws a flat 2 · Key: annexd.modes.single-card-duel.draw</sub>
 
 <a id="rD8.2b"></a>**D8.2b** Cards are picked blind. Before the game, each player is told only whether the other has picked, not what.
 
@@ -1242,15 +1014,11 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD8.2d"></a>**D8.2d** A card can make a unit if it is a unit or spell unit, or if it is declared to create a unit token. What its printed text says is not read for this.
 
-> *Example: A unit card makes units, and so does a spell declared to create a Unit Token. A spell that creates nothing does not.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298 · Tests: 435-cr-digital-2.test.ts · Example test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.makes-units — unit cards and declared unit-token creators make units; a plain spell does not · Key: annexd.modes.single-card-duel.makes-units</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298 · Tests: 435-cr-digital-2.test.ts · Demonstrated by test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.makes-units — unit cards and declared unit-token creators make units; a plain spell does not · Key: annexd.modes.single-card-duel.makes-units</sub>
 
 <a id="rD8.2e"></a>**D8.2e** A duel counts toward no player's record, rating or achievements. It counts toward the card duel ladder instead, which rates cards rather than players.
 
-> *Example: A finished duel leaves every player rating where it was.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298 · Tests: 435-cr-digital-2.test.ts · Example test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.records — a duel moves no player rating · Key: annexd.modes.single-card-duel.records</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Rulings: R298, R298 · Tests: 435-cr-digital-2.test.ts · Demonstrated by test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.records — a duel moves no player rating · Key: annexd.modes.single-card-duel.records</sub>
 
 <a id="rD8.2f"></a>**D8.2f** The card duel ladder counts any finished duel, except a mirror (the same card on both sides) and a walkover. An early concession counts at reduced weight. A card is ranked once it has five duels that are not mirrors. See rule D8.5.
 
@@ -1260,61 +1028,41 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD8.3"></a>**D8.3.** A live draft may be created with custom rules. Custom rules change the deal, never how a card works. See rule 902.
 
-> *Example: Custom rules given to a constructed game are ignored.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts · Example test: 296-custom-draft-deal.test.ts::BL-43 §1c a custom deal is ignored outside a live draft · Key: annexd.modes.custom-rules</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292 · Tests: 296-custom-draft-deal.test.ts · Demonstrated by test: 296-custom-draft-deal.test.ts::BL-43 §1c a custom deal is ignored outside a live draft · Key: annexd.modes.custom-rules</sub>
 
 <a id="rD8.3a"></a>**D8.3a** The custom rules are: pack size (3 to 15; standard 10); the number of elements (2 to 7; standard 3, and two elements default to Fire and Wood); opening hand (1 to 15; standard 6); draws per turn after turn 1 (0 to 5; standard 2); starting life (1 to 99; standard 30); simple cards only; banned cards; and a card filter.
 
-> *Example: With packs of 5, every pack is dealt at 5 and the turn-4 refresh deals 5.*
-
-> *Example: Two elements default to the rulebook pair, Fire and Wood.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R292, R292, R292, R292, R292 · Tests: 296-custom-draft-deal.test.ts · Example tests: 296-custom-draft-deal.test.ts::BL-43 §2a pack size: packs of 5 at the deal, the commit leaves 5, and the turn-4 refresh deals 5, 296-custom-draft-deal.test.ts::BL-43 §2c two elements: the rulebook pair by default, a chosen pair when given, 113 cards · Key: annexd.modes.custom-rules.knobs</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Rulings: R292, R292, R292, R292, R292 · Tests: 296-custom-draft-deal.test.ts · Demonstrated by tests: 296-custom-draft-deal.test.ts::BL-43 §2a pack size: packs of 5 at the deal, the commit leaves 5, and the turn-4 refresh deals 5, 296-custom-draft-deal.test.ts::BL-43 §2c two elements: the rulebook pair by default, a chosen pair when given, 113 cards · Key: annexd.modes.custom-rules.knobs</sub>
 
 <a id="rD8.3b"></a>**D8.3b** Simple cards only keeps only cards with the silver complexity symbol in the pool. See rule 209.
 
-> *Example: Simple cards only leaves out exactly the cards that are not simple.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292 · Tests: 297-custom-rules-resolve.test.ts · Example test: 297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple · Key: annexd.modes.custom-rules.simple</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292 · Tests: 297-custom-rules-resolve.test.ts · Demonstrated by test: 297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple · Key: annexd.modes.custom-rules.simple</sub>
 
 <a id="rD8.3c"></a>**D8.3c** The pool must hold at least 2 × opening hand + 4 × pack size + 6 × draws per turn cards: 64 for the standard game. Custom rules whose pool is smaller are refused before the game is created.
 
 > *Example: The standard game needs a pool of 64 cards; the Beginner preset needs 44.*
 
-> *Example: Rules leaving too small a pool are refused with a message saying how to fix them.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R292, R292, R292 · Tests: 296-custom-draft-deal.test.ts, 297-custom-rules-resolve.test.ts · Example tests: 296-custom-draft-deal.test.ts::BL-43 §5 minPool: the standard game needs 64, the beginner deal 44, 297-custom-rules-resolve.test.ts::BL-43 resolve §8 too small a pool is refused with a message that names the fix · Key: annexd.modes.custom-rules.floor</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R292, R292, R292 · Tests: 296-custom-draft-deal.test.ts, 297-custom-rules-resolve.test.ts · Example test: 296-custom-draft-deal.test.ts::BL-43 §5 minPool: the standard game needs 64, the beginner deal 44 · Demonstrated by test: 297-custom-rules-resolve.test.ts::BL-43 resolve §8 too small a pool is refused with a message that names the fix · Key: annexd.modes.custom-rules.floor</sub>
 
 <a id="rD8.3d"></a>**D8.3d** Custom rules left at the standard values are not a custom game: they deal the same game as no custom rules at all.
 
-> *Example: For the same seed, no custom rules and custom rules at the defaults deal identical games.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292 · Tests: 296-custom-draft-deal.test.ts · Example test: 296-custom-draft-deal.test.ts::BL-43 §1b no deal and a deal left at the defaults deal the identical game in every mode · Key: annexd.modes.custom-rules.standard</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292 · Tests: 296-custom-draft-deal.test.ts · Demonstrated by test: 296-custom-draft-deal.test.ts::BL-43 §1b no deal and a deal left at the defaults deal the identical game in every mode · Key: annexd.modes.custom-rules.standard</sub>
 
 <a id="rD8.3e"></a>**D8.3e** A custom game is kept in the match history, marked as custom, and counts toward no profile total, achievement, deck record, rating or average game length. Matchmaking never makes a custom game.
 
-> *Example: A custom game's row in the match history says it was not counted.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292, R292 · Tests: 298-custom-rules-ui.test.ts · Example test: 298-custom-rules-ui.test.ts::BL-43 ui §7 a custom row in the match history says it was not counted · Key: annexd.modes.custom-rules.not-counted</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292, R292 · Tests: 298-custom-rules-ui.test.ts · Demonstrated by test: 298-custom-rules-ui.test.ts::BL-43 ui §7 a custom row in the match history says it was not counted · Key: annexd.modes.custom-rules.not-counted</sub>
 
 <a id="rD8.3f"></a>**D8.3f** The Beginner preset is two elements, simple cards only and packs of 5. It is this client's softening of the rulebook's Quick Start, not the Quick Start itself: 5-card packs are not in the printed rules.
 
-> *Example: Choosing the Beginner preset sends two elements, simple cards only and packs of 5.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292 · Tests: 298-custom-rules-ui.test.ts · Example test: 298-custom-rules-ui.test.ts::BL-43 ui §2 the Beginner preset sends two elements, simple cards and packs of 5 · Key: annexd.modes.custom-rules.beginner</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R292, R292 · Tests: 298-custom-rules-ui.test.ts · Demonstrated by test: 298-custom-rules-ui.test.ts::BL-43 ui §2 the Beginner preset sends two elements, simple cards and packs of 5 · Key: annexd.modes.custom-rules.beginner</sub>
 
 <a id="rD8.4"></a>**D8.4.** A scenario room, used to test a single card, is an ordinary game dealt from a declared starting board. It is a test fixture, not a game: it counts toward no player's record.
 
-> *Example: A finished scenario room is not folded into either player's record.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R216 (its scenario-room half), R216 (its scenario-room half) · Tests: 186-scenario-library.test.ts, 435-cr-digital-2.test.ts · Example test: 186-scenario-library.test.ts::§3 history.ts refuses to fold a scenario room into anybody's record · Key: annexd.modes.scenarios</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R216 (its scenario-room half), R216 (its scenario-room half) · Tests: 186-scenario-library.test.ts, 435-cr-digital-2.test.ts · Demonstrated by test: 186-scenario-library.test.ts::§3 history.ts refuses to fold a scenario room into anybody's record · Key: annexd.modes.scenarios</sub>
 
 <a id="rD8.4a"></a>**D8.4a** Scenario rooms can be created only on a server configured for the tester. Elsewhere they do not exist.
 
-> *Example: An ordinary room is not affected by the tester existing.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R216 (its scenario-room half) · Tests: 185-scenario-determinism.test.ts, 435-cr-digital-2.test.ts · Example test: 185-scenario-determinism.test.ts::§2 an ordinary room is untouched by the tester existing · Key: annexd.modes.scenarios.gated</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Rulings: R216 (its scenario-room half) · Tests: 185-scenario-determinism.test.ts, 435-cr-digital-2.test.ts · Demonstrated by test: 185-scenario-determinism.test.ts::§2 an ordinary room is untouched by the tester existing · Key: annexd.modes.scenarios.gated</sub>
 
 <a id="rD8.5"></a>**D8.5.** A conceded game is still a loss for the player who conceded (see 104.4). How much it counts toward records and ratings depends on the turn it was conceded on. See rule 104.4.
 
@@ -1324,9 +1072,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD8.5a"></a>**D8.5a** A game conceded on turn 1 or earlier is a walkover. It counts toward nothing for either player: no game, win, loss, streak, statistic or achievement. In a rated game, the player who conceded loses 5 rating points and the winner gains nothing, and the game does not count toward the number of rated games played. It stays in each player's match history, marked "not counted".
 
-> *Example: A player concedes on turn 1. The post-game screen says it was a walkover and was not counted.*
-
-<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R290, R290, R290 · Tests: 291-concession-weight.test.ts, 435-cr-digital-2.test.ts · Example test: 291-concession-weight.test.ts::R290 §1 a walkover says so, names the conceder and the turn, and says it was not counted · Key: annexd.modes.concession.walkover</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R290, R290, R290 · Tests: 291-concession-weight.test.ts, 435-cr-digital-2.test.ts · Demonstrated by test: 291-concession-weight.test.ts::R290 §1 a walkover says so, names the conceder and the turn, and says it was not counted · Key: annexd.modes.concession.walkover</sub>
 
 <a id="rD8.5b"></a>**D8.5b** A game conceded on turn 2 is an early concession. It counts as a game for the record, and in a rated game it moves ratings by half as much as a full game. It does not count toward the fast-game achievements or the match-length statistics.
 
@@ -1336,7 +1082,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD8.5c"></a>**D8.5c** A game conceded on turn 3 or later counts exactly as if the conceding player had been defeated.
 
-> *Example: A turn-5 concession carries no note and no tag.*
+> *Example: A player concedes on turn 5: the result is an ordinary loss, with no note attached.*
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R290, R290 · Tests: 291-concession-weight.test.ts, 435-cr-digital-2.test.ts · Example test: 291-concession-weight.test.ts::R290 §1 ⭐ a normal concession (turn 3+) and a game with no concession say NOTHING · Key: annexd.modes.concession.normal</sub>
 

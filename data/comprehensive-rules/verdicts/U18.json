@@ -171,7 +171,7 @@
   },
   {
     "key": "keywords.actions.delete.named-bin",
-    "textHash": "bce278df63b42e52",
+    "textHash": "2baa794052dd9f66",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -205,11 +205,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.discard",
-    "textHash": "639c3e32f58f063f",
+    "textHash": "0924eb4cbb25c00f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -273,7 +274,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Every printed discard in the oracle is from a hand."
+    "problem": "Every printed discard in the oracle is from a hand.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.erase",
@@ -320,7 +322,7 @@
   },
   {
     "key": "keywords.actions.erase.not-death",
-    "textHash": "04f2ff0634a00561",
+    "textHash": "eaa34b07000a252d",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -363,11 +365,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.actions.exchange",
-    "textHash": "1110111cb8b5fc25",
+    "textHash": "7c3fe656847f4dcb",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -448,7 +451,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Oracle search for \"exchang\" finds exactly five cards (Body Swap, Hexbane Shiitake, Organic Exchange, Hooba-Mon, Necromorph): the four senses are complete. Hooba-Mon is named but not cited."
+    "problem": "Oracle search for \"exchang\" finds exactly five cards (Body Swap, Hexbane Shiitake, Organic Exchange, Hooba-Mon, Necromorph): the four senses are complete. Hooba-Mon is named but not cited.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.exchange.unit-for-bin",
@@ -496,7 +500,7 @@
   },
   {
     "key": "keywords.actions.fight",
-    "textHash": "888ff646d376b7dd",
+    "textHash": "b0f704565eb75182",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -535,11 +539,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.actions.fight.lost-one",
-    "textHash": "1e7cf91e30033d3b",
+    "textHash": "a6a7e5fbebf826bf",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -589,11 +594,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.fight.not-spell-damage",
-    "textHash": "595519544e6e6a86",
+    "textHash": "6403a554f05f7169",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -640,7 +646,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example exercises Squish, not Fight; the U18 probe (with a positive control) shows the Fight case directly."
+    "problem": "Bound example exercises Squish, not Fight; the U18 probe (with a positive control) shows the Fight case directly.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.actions.fight.source",
@@ -693,7 +700,7 @@
   },
   {
     "key": "keywords.actions.general",
-    "textHash": "18badbebdc78d9e5",
+    "textHash": "d75ce788f3730b12",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -719,11 +726,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Definitional; nothing for the engine to do."
+    "problem": "Definitional; nothing for the engine to do.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.glimpse",
-    "textHash": "475b75d47f94d1e5",
+    "textHash": "7245aa662e9b737e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -768,27 +776,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.glimpse.choice",
-    "textHash": "73fdc3087a728029",
+    "textHash": "a0e307f12f157756",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:glimpse",
         "agrees": true,
-        "note": "partChoose seat = glimpser"
+        "note": "reveals N, raises a choose-one decision for the glimpser, caches the pick, recycles the rest"
       }
     ],
     "tests_run": [
       {
-        "file": "36-cache-prophecy.test.ts",
-        "pattern": "R45: choosing the LAST revealed card recycles the two above it, in order",
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "R45: choosing the LAST",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Test Glimpse 3, decide choice 2 (third card), asserts the third card cached and the first two recycled in order"
       }
     ],
     "probes": [],
@@ -796,13 +805,17 @@
       {
         "ref": "R45",
         "supports": "yes",
-        "note": ""
+        "note": "caches exactly one of the glimpser's choice; not superseded"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "          prompt: `Glimpse ${revealed.length}: cache one — the rest go to the bottom of your deck`,"
+        "file": "client/docs/digital-rules.md",
+        "text": "glimpser's choice, and recycles the other N-1 to the bottom of the deck."
+      },
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "text": "assert.deepEqual(cacheOf(h, P).map(c => c.card), ['Test Deck Top'], 'the third one is cached');"
       }
     ],
     "basis_ok": true,
@@ -810,7 +823,7 @@
   },
   {
     "key": "keywords.actions.glimpse.one",
-    "textHash": "06bdcc22b51e43af",
+    "textHash": "0f7719217a46be81",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -849,7 +862,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.glimpse.permission",
@@ -901,7 +915,7 @@
   },
   {
     "key": "keywords.actions.glimpse.permission.cost-timing",
-    "textHash": "f27572608bd5fe60",
+    "textHash": "76ef669fb4daed6e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -951,11 +965,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.glimpse.permission.ends",
-    "textHash": "23f5167ddffdc73d",
+    "textHash": "1b22eff1babbacfb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1021,11 +1036,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.glimpse.permission.mods",
-    "textHash": "5fc6c0848ef4ae64",
+    "textHash": "cd468b3927f5e353",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -1081,11 +1097,12 @@
       }
     ],
     "basis_ok": false,
-    "problem": "Behaviour right. Basis \"designer\" overstates: the designer quotes give only the permission; the price clause is R303's owner call. Basis should be mixed."
+    "problem": "Behaviour right. Basis \"designer\" overstates: the designer quotes give only the permission; the price clause is R303's owner call. Basis should be mixed.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.glimpse.permission.prophesy",
-    "textHash": "8498e6434219e6ff",
+    "textHash": "ae9737cc3c705d62",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1124,7 +1141,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.glimpse.repeated",
@@ -1171,7 +1189,7 @@
   },
   {
     "key": "keywords.actions.glimpse.whose-deck",
-    "textHash": "7eb54b860166a934",
+    "textHash": "afa5a94b01c58e45",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -1240,11 +1258,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.actions.prophesy",
-    "textHash": "642483fc5c8ef744",
+    "textHash": "129e809bf07ddc69",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1283,11 +1302,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.recall",
-    "textHash": "ae7d2168760d8bc9",
+    "textHash": "566b20a3d820e594",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -1359,11 +1379,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Oracle sweep of \"recall\": every source zone is play, bin, stack or cache."
+    "problem": "Oracle sweep of \"recall\": every source zone is play, bin, stack or cache.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.actions.recall.destination",
-    "textHash": "17ac6740ac28b72e",
+    "textHash": "6bfbd3ad12750f8f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -1407,11 +1428,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "R262 says it overrules a Manual sentence (owner's hand); no such sentence exists in data/rules or printed-pages, so no printed conflict is visible. The ownership sentence is supported by R262 §2, which is not among the quoted lines."
+    "problem": "R262 says it overrules a Manual sentence (owner's hand); no such sentence exists in data/rules or printed-pages, so no printed conflict is visible. The ownership sentence is supported by R262 §2, which is not among the quoted lines.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.actions.recall.from-bin",
-    "textHash": "4020e74815660163",
+    "textHash": "ccf808683865d8bd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1457,38 +1479,39 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.actions.recall.from-stack",
-    "textHash": "22a9e21b8d5299e3",
+    "textHash": "0248e7969ffe4d97",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:recallSpellTokenItem",
         "agrees": true,
-        "note": "toHand then eraseFromZone for a token"
+        "note": "toHand then the hand sweep erases the token"
       },
       {
-        "loc": "Cosmic Reversal / Dream Lapse card code",
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Cosmic Reversal",
         "agrees": true,
-        "note": "item leaves stack unresolved, card to controller hand"
+        "note": "recalls other spell items to their controllers' hands"
       }
     ],
     "tests_run": [
       {
-        "file": "14-water-a.test.ts",
-        "pattern": "Cosmic Reversal: recalls all other spell effects on the stack to hands",
+        "file": "client/engine/test/14-water-a.test.ts",
+        "pattern": "Cosmic Reversal: recalls all other",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: opponent's Overwhelm leaves the stack unresolved and is in its controller's hand, not the bin"
       },
       {
-        "file": "403-raq-fix-mods.test.ts",
-        "pattern": "R335: Dream Lapse recalls a cast Fireball token",
+        "file": "client/engine/test/403-raq-fix-mods.test.ts",
+        "pattern": "R335: Dream Lapse recalls",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Dream Lapse recalls a cast Fireball token; Rider of the Tides grows (heard a hand entry), the token is not left in hand, log says recalled and erased"
       }
     ],
     "probes": [],
@@ -1496,22 +1519,26 @@
       {
         "ref": "card: Cosmic Reversal",
         "supports": "yes",
-        "note": ""
+        "note": "reminder: negate them and put them into their controller's hands"
       },
       {
         "ref": "R335",
         "supports": "yes",
-        "note": ""
+        "note": "a recalled spell token enters the hand and is instantly erased; R335 amends R250, not itself superseded"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "## R335 — A recalled spell token passes through the hand"
+        "text": "*\"Token Spell technically enter your hand if you Recall them and are instantly erased (this matter for the purpose of triggers like Xenopod Progenitator or Rider of the Tides).\"*"
+      },
+      {
+        "file": "client/engine/test/14-water-a.test.ts",
+        "text": "assert.ok(h.state.players[D]!.hand.includes('Overwhelm'), 'recalled to its controller\\'s hand');"
       }
     ],
-    "basis_ok": true,
-    "problem": ""
+    "basis_ok": false,
+    "problem": "Content holds. Basis is 'printed' but the second sentence rests on R335 (a ruling), so basis should be 'mixed'."
   },
   {
     "key": "keywords.actions.recall.nothing-to-recall",
@@ -1569,7 +1596,7 @@
   },
   {
     "key": "keywords.actions.recall.unstable",
-    "textHash": "17c49d32881c6915",
+    "textHash": "fd1bea6f1e11875c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1603,11 +1630,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.recycle",
-    "textHash": "a76cd11bf771879e",
+    "textHash": "7e411ec0a12d40b3",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U18-r2",
@@ -1666,7 +1694,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.rockfall",
@@ -1756,7 +1785,7 @@
   },
   {
     "key": "keywords.actions.rockfall.living-unit",
-    "textHash": "4ee26a8faee4d55b",
+    "textHash": "fcd940cd213f58ca",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -1790,7 +1819,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.rockfall.repeated",
@@ -2156,7 +2186,7 @@
   },
   {
     "key": "keywords.actions.trash.mods-erased-with-host",
-    "textHash": "03e2cbb13b3e3fb5",
+    "textHash": "a7bcaed64300e2d1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2190,11 +2220,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.trash.mods-left-behind",
-    "textHash": "4c4c5ae30d380fdd",
+    "textHash": "553c2e90a6b69b31",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2244,7 +2275,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.trash.not-erase",
@@ -2286,7 +2318,7 @@
   },
   {
     "key": "keywords.actions.trash.not-from-stack",
-    "textHash": "f01a202281d20536",
+    "textHash": "fe73910750a7d8b6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2347,11 +2379,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "\"failed to resolve\" (fizzle) has no bound example; it shares dischargeItem with resolution and negation, which are tested."
+    "problem": "\"failed to resolve\" (fizzle) has no bound example; it shares dischargeItem with resolution and negation, which are tested.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.trash.tokens",
-    "textHash": "04299b17429398f3",
+    "textHash": "5dc54f4355915007",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2406,11 +2439,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "keywords.actions.trash.trasher",
-    "textHash": "7eacd55b093061f9",
+    "textHash": "1f3912358d7faf96",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2465,7 +2499,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "keywords.actions.trash.unstable-death",
@@ -2542,7 +2577,7 @@
   },
   {
     "key": "keywords.actions.trash.ways",
-    "textHash": "032b48652ea98abf",
+    "textHash": "90d99dc6ffb1f642",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U18-r1",
@@ -2582,6 +2617,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   }
 ]

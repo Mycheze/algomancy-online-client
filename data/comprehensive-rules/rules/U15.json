@@ -6,7 +6,7 @@
     "text": "An activated ability is written with a colon (\":\"). Everything before the colon is the cost of activating the ability; everything after it is the effect the ability has.",
     "examples": [
       {
-        "text": "Example: Glook's \"[once] Discard X cards: Glimpse 1, X times\" — discarding X cards is the cost, and glimpsing X times is the effect.",
+        "text": "Glook's \"[once] Discard X cards: Glimpse 1, X times\" — discarding X cards is the cost, and glimpsing X times is the effect.",
         "test": "167-variable-ability-costs.test.ts::R196 Glook"
       }
     ],
@@ -49,11 +49,11 @@
     "text": "An activated ability may print a timing icon of its own. An ability marked {Battle} can be activated only during battle, and one marked {Deployment} only during deployment. The icon is checked when the ability is activated.",
     "examples": [
       {
-        "text": "Example: Grox's ability is marked {Battle}, so it cannot be activated during deployment.",
+        "text": "Grox's ability is marked {Battle}, so it cannot be activated during deployment.",
         "test": "43-dark-c.test.ts::Grox: R49 — the printed [Battle] marker is enforced at ACTIVATION"
       },
       {
-        "text": "Example: Cadaverous Cultivator's {Battle} ability is refused when activated outside battle, rather than doing nothing when it resolves.",
+        "text": "Cadaverous Cultivator's {Battle} ability is refused when activated outside battle, rather than doing nothing when it resolves.",
         "test": "45-hybrids-ld-b.test.ts::Cadaverous Cultivator: R49 — [Battle] is enforced at ACTIVATION, not at resolution"
       }
     ],
@@ -96,7 +96,7 @@
     "text": "To activate an ability, the player takes the steps below, in order. Everything is chosen and paid before the ability is put on the stack, so no player can respond between the payment of its cost and the ability going on the stack.",
     "examples": [
       {
-        "text": "Example: while the steps are being taken, the opponent has no legal action.",
+        "text": null,
         "test": "167-variable-ability-costs.test.ts::R196 nothing may act INSIDE the cast window"
       }
     ],
@@ -139,7 +139,7 @@
     "text": "Step 1: the game checks that the ability can be activated: its timing allows it, any printed condition on it (\"Activate this ability only if …\") is met, every part of its cost can be paid, and every target it requires has a legal choice. If any check fails, the ability cannot be activated and nothing is paid.",
     "examples": [
       {
-        "text": "Example: Instrument of Reassignment costs [x] and \"sacrifice another nontoken unit\". With only a token beside it, it is not offered and cannot be activated, and the 3 open mana are not spent either.",
+        "text": "Instrument of Reassignment costs [x] and \"sacrifice another nontoken unit\". With only a token beside it, it cannot be activated, and the 3 open mana are not spent either.",
         "test": "167-variable-ability-costs.test.ts::R196 the COMPOUND half-pay hazard"
       }
     ],
@@ -195,7 +195,7 @@
     "text": "Step 2: if the cost has a variable part (a printed [x], \"Discard X cards\", \"Sacrifice X units\"), the player pays it, one at a time, until they stop. The amount paid is X.",
     "examples": [
       {
-        "text": "Example: Celestial Shifter's \"[x]\" is paid while activating, so the opponent sees X before deciding whether to respond.",
+        "text": "Celestial Shifter's \"[x]\" is paid while activating, so the opponent sees X before deciding whether to respond.",
         "test": "167-variable-ability-costs.test.ts::R196 Celestial Shifter"
       }
     ],
@@ -238,7 +238,7 @@
     "text": "Step 3: the player declares the ability's targets.",
     "examples": [
       {
-        "text": "Example: Slag Spewer's target is declared before its mod is erased to pay the cost.",
+        "text": "Slag Spewer's target is declared before its mod is erased to pay the cost.",
         "test": "167-variable-ability-costs.test.ts::R196 Slag Spewer"
       }
     ],
@@ -279,7 +279,7 @@
     "text": "Step 4: the player pays the rest of the cost: its mana, including any tax on activating abilities (rule 111.10f), and any life, debt, sacrifice or other fixed part.",
     "examples": [
       {
-        "text": "Example: Auric Ascendant's \"Recall another ally\" is paid before the ability is on the stack, so the opponent already knows which ally left.",
+        "text": "Auric Ascendant's \"Recall another ally\" is paid before the ability is on the stack, so the opponent already knows which ally left.",
         "test": "167-variable-ability-costs.test.ts::the RECALL is a cost, named before the opponent answers"
       }
     ],
@@ -322,7 +322,7 @@
     "text": "Step 5: the ability is put on the stack as an effect, and players receive priority as rule 703 describes.",
     "examples": [
       {
-        "text": "Example: Infernal Cultivator's sacrificed units are gone while the ability waits on the stack, so negating it refunds nothing.",
+        "text": "Infernal Cultivator's sacrificed units are gone while the ability waits on the stack, so negating it refunds nothing.",
         "test": "167-variable-ability-costs.test.ts::R196 Infernal Cultivator"
       }
     ],
@@ -359,7 +359,7 @@
     "text": "If a part of an ability's cost names something that is not there to pay with (no other ally to recall, no mod to erase), the ability cannot be activated. Nothing is paid, and a [once] on the ability is not used.",
     "examples": [
       {
-        "text": "Example: Auric Ascendant with no other ally is not offered, so its [one] is not paid and its [once] is kept.",
+        "text": "Auric Ascendant with no other ally cannot be activated, so its [one] is not paid and its [once] is kept.",
         "test": "167-variable-ability-costs.test.ts::R196 Auric Ascendant with no other ally is NOT OFFERED"
       }
     ],
@@ -401,11 +401,11 @@
     "text": "An activated ability that a mod gives its host is an ability of the host. The host's controller activates it, and \"I\" and \"me\" in it mean the host.",
     "examples": [
       {
-        "text": "Example: Living Forge augmented onto another unit lets that unit's controller activate \"[three]: create a Robot 2\" through the mod.",
+        "text": "Living Forge augmented onto another unit lets that unit's controller activate \"[three]: create a Robot 2\" through the mod.",
         "test": "27-metal-b.test.ts::Living Forge: donated on a host, the [three] ability activates via the mod"
       },
       {
-        "text": "Example: Aurozoa's \"[Augment] Pay 1 life: Recall me\" recalls the host when Aurozoa is a mod.",
+        "text": "Aurozoa's \"[Augment] Pay 1 life: Recall me\" recalls the host when Aurozoa is a mod.",
         "test": "46-hybrids-ld-c.test.ts::Aurozoa: \"[Augment] Pay 1 life: Recall me\" — on itself and donated to a host"
       }
     ],
@@ -448,7 +448,7 @@
     "text": "Some actions are not activated abilities, and rules and effects that apply to activating abilities do not apply to them: applying a mod (an augment or a graft), playing a card as an Ambush, casting a spell token, using a resource, and taking an option a card offers as a spell is played (rule 109.6).",
     "examples": [
       {
-        "text": "Example: during battle Crevice Lurker taxes activated abilities, but applying an augment costs nothing extra.",
+        "text": "during battle Crevice Lurker taxes activated abilities, but applying an augment costs nothing extra.",
         "test": "16-earth-a.test.ts::Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)"
       }
     ],
@@ -497,7 +497,7 @@
     "text": "A triggered ability is an ability that happens when something else takes place. \"When\" and \"Whenever\" mark a triggered ability. A triggered ability can also happen at a stated time, such as \"After combat\" or \"At the end of turn\".",
     "examples": [
       {
-        "text": "Example: Embermaw Fledgling's \"after combat\" ability creates an X/X unit after combat.",
+        "text": "Embermaw Fledgling's \"after combat\" ability creates an X/X unit after combat.",
         "test": "11-fire-wood.test.ts::Embermaw Fledgling: after combat → X/X, X = attacking units in my formation"
       }
     ],
@@ -544,11 +544,11 @@
     "text": "A triggered ability triggers at the moment its event happens, and whether it triggers is decided then (rule 109.3a). It is put on the stack afterwards, at one of the times this section gives, and its targets are chosen and its costs paid only as it is put on the stack.",
     "examples": [
       {
-        "text": "Example: a \"whenever I am dealt damage\" ability triggers inside the combat damage step, but is put on the stack, and has its target chosen, after the step.",
+        "text": "a \"whenever I am dealt damage\" ability triggers inside the combat damage step, but is put on the stack, and has its target chosen, after the step.",
         "test": "239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it"
       },
       {
-        "text": "Example: the {Alluring} trigger chooses its target as it goes on the stack, and can then be negated.",
+        "text": "the {Alluring} trigger chooses its target as it goes on the stack, and can then be negated.",
         "test": "53-playtest-round7.test.ts::R84: the trigger goes on the stack, targets at cast (R67), and can be NEGATED"
       }
     ],
@@ -596,7 +596,7 @@
     "text": "Triggered abilities that have triggered are put on the stack at the times below, depending on when they triggered.",
     "examples": [
       {
-        "text": "Example: Eminence of the Barrens damaged by a spell in battle has its trigger on the stack as soon as the spell has resolved, while Lithoghul damaged in combat triggers inside the damage step and is put on the stack only in the after combat step.",
+        "text": "Eminence of the Barrens damaged by a spell in battle has its trigger on the stack as soon as the spell has resolved, while Lithoghul damaged in combat triggers inside the damage step and is put on the stack only in the after combat step.",
         "test": "426-cr-abilities-and-replacement.test.ts::cr:effects.triggered.when-stacked — a triggered ability is put on the stack, and when depends on when it triggered: at once outside the damage step, after combat inside it"
       }
     ],
@@ -633,7 +633,7 @@
     "text": "During battle, outside the combat damage step: as soon as the action or resolution that made them trigger is complete, on top of anything already on the stack. Players then receive priority and may respond to them.",
     "examples": [
       {
-        "text": "Example: Eminence of the Barrens dealt damage by a spell in battle puts its trigger on the stack, and the opponent may respond to it.",
+        "text": "Eminence of the Barrens dealt damage by a spell in battle puts its trigger on the stack, and the opponent may respond to it.",
         "test": "229-cosmic-and-control.test.ts::R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable"
       }
     ],
@@ -679,7 +679,7 @@
     "text": "During the combat damage step: they wait. They are put on the stack in the after combat step, or at a window between damage sub-steps, as rules 608.9b and 608.9c describe.",
     "examples": [
       {
-        "text": "Example: a \"when I die\" ability of a unit killed by combat damage waits with the others and goes on the stack after combat.",
+        "text": "a \"when I die\" ability of a unit killed by combat damage waits with the others and goes on the stack after combat.",
         "test": "239-damage-triggers-after-combat.test.ts::R261: a combat DEATH trigger waits with the rest"
       }
     ],
@@ -723,7 +723,7 @@
     "text": "During deployment: on the deployment stack of the player who controls them (rule 703.7). All the abilities that trigger at the same moment are put on that stack before any of them resolves.",
     "examples": [
       {
-        "text": "Example: three start-of-deployment abilities are all on the stack before the first of them resolves.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves"
       }
     ],
@@ -770,7 +770,7 @@
     "text": "In the end-of-turn step: they resolve as special actions. No player can play cards in response to them (rule 508.1a).",
     "examples": [
       {
-        "text": "Example: while an end-of-turn trigger is asking its controller a question, neither player may play a card.",
+        "text": "while an end-of-turn trigger is asking its controller a question, neither player may play a card.",
         "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.initiative.end-of-turn.no-responses"
       }
     ],
@@ -813,11 +813,11 @@
     "text": "An ability that triggers on a card being played, or on something being targeted, is put on the stack above the effect that made it trigger, so it resolves first. It still resolves if that effect is negated afterwards.",
     "examples": [
       {
-        "text": "Example: Mycelial Mentor is played while Bloomcaster is in play. Bloomcaster's 1/1 is created before the Mentor arrives, so the Mentor does not see that token being created.",
+        "text": "Mycelial Mentor is played while Bloomcaster is in play. Bloomcaster's 1/1 is created before the Mentor arrives, so the Mentor does not see that token being created.",
         "test": "396-raq-timing.test.ts::RAQ Bloomcaster: its 1/1 resolves before the Mycelial Mentor it was played with arrives"
       },
       {
-        "text": "Example: a spell unit that is negated after Bloomcaster triggered still leaves Bloomcaster's 1/1 behind.",
+        "text": "a spell unit that is negated after Bloomcaster triggered still leaves Bloomcaster's 1/1 behind.",
         "test": "396-raq-timing.test.ts::RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind"
       }
     ],
@@ -863,7 +863,7 @@
     "text": "Triggered abilities that are put on the stack at the same time are put there in the order of rule 703.4: each player orders their own, the initiative player puts all of theirs on first, and the non-initiative player's resolve first. A player may order their own abilities in any way, whatever made each of them trigger.",
     "examples": [
       {
-        "text": "Example: a player with a \"when I die\" ability triggered by combat damage and an \"after combat\" ability orders the two in one choice.",
+        "text": "a player with a \"when I die\" ability triggered by combat damage and an \"after combat\" ability orders the two in one choice.",
         "test": "239-damage-triggers-after-combat.test.ts::R261 THE RAQ BATCH"
       }
     ],
@@ -915,7 +915,7 @@
     "text": "A triggered ability triggers once each time its event happens. If one action makes the event happen several times, the ability triggers that many times.",
     "examples": [
       {
-        "text": "Example: an enemy spell that targets two allies triggers Earnest Defender twice, and two 1/1s are created.",
+        "text": "an enemy spell that targets two allies triggers Earnest Defender twice, and two 1/1s are created.",
         "test": "136-triggers-and-modes.test.ts::R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that makes two"
       }
     ],
@@ -952,7 +952,7 @@
     "text": "Several cards that enter a hand together in one move are one event. An ability that triggers when a card, or one or more cards, enters a hand triggers once for that move.",
     "examples": [
       {
-        "text": "Example: recalling two units out of a bin in one move is one entry into the hand, as a two-card draw is.",
+        "text": "Rider of the Tides is attacking. Its controller plays Tilling the Graves, returning Curio Drifter and Bumblecrab from the bin to hand in one move. That is one entry into the hand, so the Rider triggers once and gets +2/+2, not +4/+4.",
         "test": "152-hand-entry.test.ts::a multi-card move fires exactly ONE handEntered, like a multi-card draw"
       }
     ],
@@ -991,7 +991,7 @@
     "text": "Each mod that Reconfigure moves onto a new host is applied to that host separately. An ability that triggers whenever a mod is applied triggers once for each of them.",
     "examples": [
       {
-        "text": "Example: Reconfiguring a unit carrying three mods onto Perpetual Construct triggers it three times.",
+        "text": "Reconfiguring a unit carrying three mods onto Perpetual Construct triggers it three times.",
         "test": "393-raq-mods.test.ts::RAQ Reconfigure onto Perpetual Construct"
       }
     ],
@@ -1034,7 +1034,7 @@
     "text": "A triggered ability triggers only on events in the region its card is in. An event in another region does not trigger it, even when the event involves its controller.",
     "examples": [
       {
-        "text": "Example: Refuse Reclaimer does not grow when a unit dies in a region it is not in.",
+        "text": "Refuse Reclaimer does not grow when a unit dies in a region it is not in.",
         "test": "28-metal-c.test.ts::Refuse Reclaimer: a death in a region it is not in leaves it cold (R12)"
       }
     ],
@@ -1073,11 +1073,11 @@
     "text": "An \"after combat\" ability triggers only in a region where a battle took place.",
     "examples": [
       {
-        "text": "Example: a unit with an \"after combat\" ability in a region where no battle happened makes nothing.",
+        "text": "A unit with an \"after combat\" ability in a region where no battle happened does not trigger.",
         "test": "390-raq-stack.test.ts::RAQ after combat: the control, an after-combat unit in ANOTHER region makes nothing"
       },
       {
-        "text": "Example: a unit with an \"after combat\" ability that stands in the battle region but in no formation still triggers.",
+        "text": "a unit with an \"after combat\" ability that stands in the battle region but in no formation still triggers.",
         "test": "390-raq-stack.test.ts::RAQ after combat: an after-combat trigger fires for a unit in the battle region that is not in formation"
       }
     ],
@@ -1116,7 +1116,7 @@
     "text": "An ability of a unit that triggers on its own death (\"When I die\") triggers when the unit dies, although the unit has then left play. The ability is put on the stack in the region where the unit died.",
     "examples": [
       {
-        "text": "Example: a \"when I die\" ability of a unit that died in the battle region offers targets in the battle region, not in its controller's home region.",
+        "text": "A \"when I die\" ability of a unit that died in the battle region can target things in the battle region, not in its controller's home region.",
         "test": "62-death-facts.test.ts::R70: a \"when I die\" trigger resolves in the region the unit DIED in"
       }
     ],
@@ -1158,11 +1158,11 @@
     "text": "An ability that triggers when its unit despawns (\"When I despawn\"), including one a mod gives its host, triggers whichever way the unit leaves play: when it dies, when it is recalled, and when it is cached.",
     "examples": [
       {
-        "text": "Example: a host carrying Growing Plague that is recalled to its hand triggers Growing Plague's despawn ability.",
+        "text": "a host carrying Growing Plague that is recalled to its hand triggers Growing Plague's despawn ability.",
         "test": "141-despawn-mods.test.ts::R167 (i)"
       },
       {
-        "text": "Example: the same host cached triggers it too.",
+        "text": "the same host cached triggers it too.",
         "test": "141-despawn-mods.test.ts::R167 (ii)"
       }
     ],
@@ -1197,7 +1197,7 @@
     "text": "Moving a unit and its mods onto another unit (Reconfigure) is not a despawn: the unit does not change zones, so its \"When I despawn\" abilities do not trigger.",
     "examples": [
       {
-        "text": "Example: Bubb wearing Growing Plague is Reconfigured onto a Robot; Growing Plague does not trigger.",
+        "text": "Bubb wearing Growing Plague is Reconfigured onto a Robot; Growing Plague does not trigger.",
         "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Despawn"
       }
     ],
@@ -1234,7 +1234,7 @@
     "text": "Units that die together hear each other. A unit destroyed in the same batch of deaths as other units still triggers on their deaths, and on their cards being trashed, as it would have had it survived.",
     "examples": [
       {
-        "text": "Example: Muck Rummager killed by combat damage alongside two allies still draws for its controller trashing those allies.",
+        "text": "Muck Rummager killed by combat damage alongside two allies still draws for its controller trashing those allies.",
         "test": "258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in"
       }
     ],
@@ -1275,11 +1275,11 @@
     "text": "An ability that triggers when a spell is played targeting something reads the targets the spell declared as it was played. A target changed onto that thing later does not make the ability trigger, and a target changed away from it later does not undo the trigger.",
     "examples": [
       {
-        "text": "Example: a spell played at another unit and then retargeted onto Earthbound Replicator makes no copy.",
+        "text": "a spell played at another unit and then retargeted onto Earthbound Replicator makes no copy.",
         "test": "151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy"
       },
       {
-        "text": "Example: a spell played at Earthbound Replicator and then retargeted away still makes its copy.",
+        "text": "a spell played at Earthbound Replicator and then retargeted away still makes its copy.",
         "test": "151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy"
       }
     ],
@@ -1322,11 +1322,7 @@
     "text": "An \"If you do\" clause in a triggered ability is part of that ability, not a separate triggered ability. It resolves as part of the ability, and it is not put on the stack or taxed separately.",
     "examples": [
       {
-        "text": "Example (illustrative): Eminence of the Barrens' \"you may pay [one]. If you do, I fight another target unit\" is one triggered ability.",
-        "test": null
-      },
-      {
-        "text": "Example: Eminence of the Barrens attacks under an enemy Crevice Lurker and is damaged by a spell. Its controller is asked the Crevice Lurker tax once for the trigger, and the [one] to fight is asked while that same trigger resolves, and is never taxed itself: each trigger costs 2 in all, the tax plus the fight.",
+        "text": "Eminence of the Barrens attacks under an enemy Crevice Lurker and is damaged by a spell. Its controller is asked the Crevice Lurker tax once for the trigger, and the [one] to fight is asked while that same trigger resolves, and is never taxed itself: each trigger costs 2 in all, the tax plus the fight.",
         "test": "426-cr-abilities-and-replacement.test.ts::cr:effects.triggered.if-you-do — Eminence of the Barrens under an enemy Crevice Lurker is taxed once per trigger, and its pay-to-fight is asked inside that one trigger"
       }
     ],
@@ -1365,15 +1361,15 @@
     "text": "{Alluring} and {Resonant} work as triggered abilities of the unit or source that has them. What they do is put on the stack, so it can be responded to and negated, and an effect that taxes triggered abilities applies to it.",
     "examples": [
       {
-        "text": "Example: Crevice Lurker taxes the {Alluring} trigger, and declining the tax stops the lure.",
+        "text": "Crevice Lurker taxes the {Alluring} trigger, and declining the tax stops the lure.",
         "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes the Alluring trigger"
       },
       {
-        "text": "Example: Containment Protocol negates an {Alluring} trigger waiting on the stack.",
+        "text": "Containment Protocol negates an {Alluring} trigger waiting on the stack.",
         "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger"
       },
       {
-        "text": "Example: a {Resonant} source's extra damage waits on the stack after combat as that source's ability, and can be negated.",
+        "text": "a {Resonant} source's extra damage waits on the stack after combat as that source's ability, and can be negated.",
         "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat, as its source, and can be negated"
       }
     ],
@@ -1427,11 +1423,11 @@
     "text": "Some triggered abilities choose a unit without targeting it, such as a Wraith's start-of-deployment ability choosing \"an ally\". The unit is chosen as the ability is put on the stack. Several such abilities may choose the same unit, even if together they would do more than destroying it takes; if the chosen unit has left play when one resolves, that one fizzles.",
     "examples": [
       {
-        "text": "Example: three Wraith abilities all choose one 1/1 ally. The first kills it, and the other two fizzle.",
+        "text": "three Wraith abilities all choose one 1/1 ally. The first kills it, and the other two fizzle.",
         "test": "37-attrs-wight.test.ts::R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles"
       },
       {
-        "text": "Example: a Wraith with no other ally is its own only ally. Its ability chooses it without asking, resolves on it (it shrinks to 2/2), and nothing fizzles.",
+        "text": "a Wraith with no other ally is its own only ally. Its ability chooses it without asking, resolves on it (it shrinks to 2/2), and nothing fizzles.",
         "test": "37-attrs-wight.test.ts::R144(b): \"no ally at all\" still does nothing"
       }
     ],
@@ -1472,7 +1468,7 @@
     "text": "Choosing a unit this way is not targeting it. It does not trigger \"when I become targeted\" abilities, and it cannot be redirected.",
     "examples": [
       {
-        "text": "Example: a Wraith ability choosing Mohruung does not give its controller a Crystal.",
+        "text": "a Wraith ability choosing Mohruung does not give its controller a Crystal.",
         "test": "37-attrs-wight.test.ts::R144(b): a subject is not a target"
       }
     ],
@@ -1511,7 +1507,7 @@
     "text": "A static ability states a change that its card continuously makes to the game for as long as the card is in play.",
     "examples": [
       {
-        "text": "Example: Prickly Protector's \"+1/+1 for each other ally\" is counted again whenever its stats are read.",
+        "text": "Prickly Protector's \"+1/+1 for each other ally\" is counted again whenever its stats are read.",
         "test": "24-wood-b.test.ts::Prickly Protector: +1/+1 per other ally"
       }
     ],
@@ -1546,11 +1542,11 @@
     "text": "A static ability does not use the stack. It cannot be responded to or negated, and an effect that changes what abilities cost to activate or trigger does not apply to it.",
     "examples": [
       {
-        "text": "Example: Crevice Lurker does not tax Tranquility's \"spells cost [one] more\"; Tranquility still adds exactly one.",
+        "text": "Crevice Lurker does not tax Tranquility's \"spells cost [one] more\"; Tranquility still adds exactly one.",
         "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: a static ability is not taxed"
       },
       {
-        "text": "Example: Aetherflux Golem's \"I gain +2/+2\" never goes on the stack, so Containment Protocol cannot negate it.",
+        "text": "Aetherflux Golem's \"I gain +2/+2\" never goes on the stack, so Containment Protocol cannot negate it.",
         "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC"
       }
     ],
@@ -1592,11 +1588,11 @@
     "text": "Only triggered abilities and activated abilities put anything on the stack. A triggered ability says \"When\" or \"Whenever\" or names a time such as \"After combat\"; {Alluring} and {Resonant} also work as triggered abilities; an activated ability is written with a colon. A sentence that states a standing fact (\"I gain +2/+2\", \"Spells cost [one] more to play during battle\") is a static ability, and a sentence that says \"instead\", \"as\" or \"if\" and names no target is a replacement effect. Neither goes on the stack, except that a replacement whose substitute names a target puts that substitute on the stack.",
     "examples": [
       {
-        "text": "Example: a card whose whole printed text states standing facts has nothing that can reach the stack.",
+        "text": null,
         "test": "142-static-conformance.test.ts::a card whose whole printed text is continuous declares NOTHING that reaches the stack"
       },
       {
-        "text": "Example: a card whose whole printed text is a replacement that names no target has no ability that goes on the stack.",
+        "text": null,
         "test": "88-replacement-conformance.test.ts::a card whose whole text is an untargeted replacement declares NO ability at all"
       }
     ],
@@ -1667,7 +1663,7 @@
     "text": "A static ability applies continuously to everything it describes, including units that enter play after it began to apply. When its source leaves play, the change ends.",
     "examples": [
       {
-        "text": "Example: a unit that enters play while Transmogrifant is in play has no attributes, and gets them back when Transmogrifant leaves.",
+        "text": "a unit that enters play while Transmogrifant is in play has no attributes, and gets them back when Transmogrifant leaves.",
         "test": "393-raq-mods.test.ts::RAQ Transmogrifant: a unit that enters play under it has no attributes"
       }
     ],
@@ -1708,15 +1704,15 @@
     "text": "A unit that enters play while a static ability applies to it enters with the change already made. An ability that triggers on the unit entering play sees the unit as changed.",
     "examples": [
       {
-        "text": "Example: under Sandstone Defender a 1/1 enters as a 1/3, so Nectar Ridge Oracle (\"an ally spawns with greater defense than power\") draws.",
+        "text": "under Sandstone Defender a 1/1 enters as a 1/3, so Nectar Ridge Oracle (\"an ally spawns with greater defense than power\") draws.",
         "test": "393-raq-mods.test.ts::RAQ Nectar Ridge: under Sandstone Defender"
       },
       {
-        "text": "Example: under Infernal Wispweaver a 0/1 Wisp enters as a 2/2, so Nectar Ridge Oracle does not draw.",
+        "text": "under Infernal Wispweaver a 0/1 Wisp enters as a 2/2, so Nectar Ridge Oracle does not draw.",
         "test": "393-raq-mods.test.ts::RAQ Nectar Ridge: under Infernal Wispweaver"
       },
       {
-        "text": "Example: Animated Spark's +X/+0 applies to a unit that spawns mid-battle from the moment it spawns.",
+        "text": "Animated Spark's +X/+0 applies to a unit that spawns mid-battle from the moment it spawns.",
         "test": "393-raq-mods.test.ts::RAQ Nectar Ridge: Animated Spark statics a unit that spawns mid-battle"
       }
     ],
@@ -1761,7 +1757,7 @@
     "text": "A static ability that changes stats (\"I gain +2/+2\") puts no counters on the unit. Effects that count, move, double or remove counters do not see the change, and it ends as soon as its source stops applying it.",
     "examples": [
       {
-        "text": "Example: Aetherflux Golem's \"+2/+2\" is a static change in both of its forms, like the other cards that print \"I gain ±N/±N\".",
+        "text": null,
         "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC, like the two cards printing its sentence"
       }
     ],
@@ -1800,11 +1796,11 @@
     "text": "A card's statement that it enters play with counters (\"I spawn with two +1/+1 counters\") is not a triggered ability. The unit enters play already holding those counters; nothing goes on the stack, and an ability that triggers on the unit entering play sees it with them.",
     "examples": [
       {
-        "text": "Example: Aethercap Siphoner (printed 4/4, \"I spawn with three -1/-1 counters on me\") is seen as a 1/1 by an ability that triggers when it spawns.",
+        "text": "Aethercap Siphoner (printed 4/4, \"I spawn with three -1/-1 counters on me\") is seen as a 1/1 by an ability that triggers when it spawns.",
         "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, not the printed 4/4"
       },
       {
-        "text": "Example: neither Powerforge Synergist's nor Aethercap Siphoner's counters can be responded to.",
+        "text": "neither Powerforge Synergist's nor Aethercap Siphoner's counters can be responded to.",
         "test": "139-spawn-and-play.test.ts::Powerforge Synergist / Aethercap Siphoner: \"I spawn with N counters\" never reaches the stack"
       }
     ],
@@ -1843,11 +1839,11 @@
     "text": "Replacement effects that change how many counters are put on a unit apply to those counters. But no player puts them on the unit, so abilities that trigger when a player puts counters on a unit do not trigger.",
     "examples": [
       {
-        "text": "Example: under an allied Flux Resonator a Robot 2 enters as a 3/3.",
+        "text": "under an allied Flux Resonator a Robot 2 enters as a 3/3.",
         "test": "27-metal-b.test.ts::Flux Resonator: an allied Robot spawns with one more counter (report #88)"
       },
       {
-        "text": "Example: Aethercap Siphoner's own -1/-1 counters do not count as its controller putting counters on an ally.",
+        "text": "Aethercap Siphoner's own -1/-1 counters do not count as its controller putting counters on an ally.",
         "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters is not"
       }
     ],
@@ -1888,7 +1884,7 @@
     "text": "A static ability applies only in the region its source is in.",
     "examples": [
       {
-        "text": "Example: Rotspore Herald (\"Everything is {deadly}\") in its home region does not make a spell resolving in the battle region deadly.",
+        "text": "Rotspore Herald (\"Everything is {deadly}\") in its home region does not make a spell resolving in the battle region deadly.",
         "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — the scope is the REGION"
       }
     ],
@@ -1938,11 +1934,11 @@
     "text": "A static ability applies to everything its text names, with no limit its text does not state. \"Everything\" means every unit, spell and spell token in its region, on both sides.",
     "examples": [
       {
-        "text": "Example: with Rotspore Herald in the region, a spell that deals 1 damage destroys a 7/5.",
+        "text": "with Rotspore Herald in the region, a spell that deals 1 damage destroys a 7/5.",
         "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — a SPELL resolving in the region is deadly"
       },
       {
-        "text": "Example: a Fireball 1 spell token in Rotspore Herald's region is {Deadly} too.",
+        "text": "a Fireball 1 spell token in Rotspore Herald's region is {Deadly} too.",
         "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — a SPELL TOKEN standing in the region is deadly too"
       }
     ],
@@ -1986,7 +1982,7 @@
     "text": "A static ability that names \"spells\" applies to spell tokens too, because spell tokens are spells.",
     "examples": [
       {
-        "text": "Example: Emberflame Enlightener (\"Your units and spells gain {Powerful}\") doubles the damage of its controller's Burst Fireball.",
+        "text": "Emberflame Enlightener says \"Your units and spells gain {Powerful}\". Its controller's Fireball token is a spell, so it has {Powerful} too.",
         "test": "111-literal-fire.test.ts::Emberflame and Envoy of Lightning ask the SAME question about a spell token"
       }
     ],
@@ -2028,7 +2024,7 @@
     "text": "A static ability that applies to effects with a number of targets (\"spell effects with a single target\") counts the targets the effect declared as it was played, including targets that have since become illegal.",
     "examples": [
       {
-        "text": "Example: Twin Flame played at two units is not \"a single target\" for Envoy of Lightning, even after one of them is removed.",
+        "text": "Twin Flame played at two units is not \"a single target\" for Envoy of Lightning, even after one of them is removed.",
         "test": "12-fire-a.test.ts::Envoy of Lightning: two DECLARED targets is not"
       }
     ],
@@ -2067,15 +2063,15 @@
     "text": "A static ability or replacement effect that a mod gives its host works from the host. \"I\" and \"me\" mean the host, \"you\" and \"your\" mean the host's controller, and it applies in the host's region.",
     "examples": [
       {
-        "text": "Example: Transmogrifant as a mod gives \"your other units +2/+2\" from its host.",
+        "text": "Transmogrifant as a mod gives \"your other units +2/+2\" from its host.",
         "test": "28-metal-c.test.ts::Transmogrifant: the augment-donated static anchors on the host"
       },
       {
-        "text": "Example: Crevice Lurker as a mod taxes abilities in its host's region.",
+        "text": "Crevice Lurker as a mod taxes abilities in its host's region.",
         "test": "16-earth-a.test.ts::Crevice Lurker: R121 — donated as an augment, the HOST's region carries the tax"
       },
       {
-        "text": "Example: a replacement effect on a mod reads from its host.",
+        "text": null,
         "test": "87-replacement-layer.test.ts::a donated [Augment] replacement reads from its HOST"
       }
     ],
@@ -2123,7 +2119,7 @@
     "text": "A permission a card grants (\"You may play one unit with no abilities from your bin each deployment\") is a standing fact, not an ability that goes on the stack. Using it cannot be responded to, and an effect that negates activated or triggered abilities cannot stop it. (engine differs, see F-U15-1)",
     "examples": [
       {
-        "text": "Example (illustrative): Containment Protocol cannot negate The Bonesculptor's permission, because there is nothing on the stack to negate.",
+        "text": "Containment Protocol cannot stop a player using The Bonesculptor's permission, because there is nothing on the stack to negate.",
         "test": null
       }
     ],
@@ -2164,7 +2160,7 @@
     "text": "A replacement effect is an ability that changes an event as it happens, written \"If … instead\". It replaces the event, rather than triggering in response to it.",
     "examples": [
       {
-        "text": "Example: Flux Resonator (\"if one or more counters would be put on a unit by an allied source, put that many counters plus one instead\") makes a counter put on an ally one more.",
+        "text": "Flux Resonator (\"if one or more counters would be put on a unit by an allied source, put that many counters plus one instead\") makes a counter put on an ally one more.",
         "test": "27-metal-b.test.ts::Flux Resonator: a counter you put on an allied unit becomes one more"
       }
     ],
@@ -2203,11 +2199,11 @@
     "text": "A replacement effect does not use the stack. It cannot be responded to, and an effect that negates triggered and activated effects (Containment Protocol) cannot stop it or undo what it did.",
     "examples": [
       {
-        "text": "Example: Containment Protocol on the stack cannot negate Nullbringer's life-gain replacement.",
+        "text": "Containment Protocol on the stack cannot negate Nullbringer's life-gain replacement.",
         "test": "87-replacement-layer.test.ts::Containment Protocol on the stack cannot negate a life-gain replacement"
       },
       {
-        "text": "Example: Conduit of Pain's extra damage never reaches the stack, so nothing can negate it.",
+        "text": "Conduit of Pain's extra damage never reaches the stack, so nothing can negate it.",
         "test": "12-fire-a.test.ts::Conduit of Pain: the extra damage never reaches the stack"
       }
     ],
@@ -2248,7 +2244,7 @@
     "text": "A replacement effect whose substitute names a target is the one exception (rule 109.5a): the event is replaced at once, and the substitute goes on the stack as a triggered ability. If the substitute later has no legal target or fizzles, the replaced event still does not happen.",
     "examples": [
       {
-        "text": "Example: Beyond, Codex Incarnate replaces its controller's rot damage with -1/-1 counters on a target unit; the damage never lands, whatever becomes of the counters.",
+        "text": "Beyond, Codex Incarnate replaces its controller's rot damage with -1/-1 counters on a target unit; the damage never lands, whatever becomes of the counters.",
         "test": "43-dark-c.test.ts::Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands"
       }
     ],
@@ -2289,15 +2285,15 @@
     "text": "The event a replacement effect replaces does not happen, and the substitute happens instead. Abilities that trigger on the replaced event do not trigger. When the substitute is still damage (damage dealt \"as\" rot), the damage was still dealt (rule 112.12).",
     "examples": [
       {
-        "text": "Example: under Nullbringer a player who would gain life loses that much instead; nothing that triggers on gaining life triggers.",
+        "text": "under Nullbringer a player who would gain life loses that much instead; nothing that triggers on gaining life triggers.",
         "test": "87-replacement-layer.test.ts::a replaced life gain fires no lifeGained"
       },
       {
-        "text": "Example: a Robot that Cosmic Conspirator replaces with a Fireball is never created, so nothing that triggers on a unit spawning triggers for it.",
+        "text": "a Robot that Cosmic Conspirator replaces with a Fireball is never created, so nothing that triggers on a unit spawning triggers for it.",
         "test": "87-replacement-layer.test.ts::a replaced token creation fires no spawned"
       },
       {
-        "text": "Example: with Blightsea Polyp in play, Zephyrzoa's column still deals combat damage to the opponent, although the opponent gains rot instead of losing life.",
+        "text": "with Blightsea Polyp in play, Zephyrzoa's column still deals combat damage to the opponent, although the opponent gains rot instead of losing life.",
         "test": "210-zephyrzoa-hears-a-replaced-hit.test.ts::R238: Zephyrzoa fires on a hit that was REPLACED and cost no life"
       }
     ],
@@ -2340,11 +2336,11 @@
     "text": "A replacement effect applies to an event only once. What it produces is not replaced again by the same effect, unless a new event occurs.",
     "examples": [
       {
-        "text": "Example: 10 {Piercing} combat damage redirected into a 2/4 Oorblak: 4 destroy it, and the other 6 reach the player and are not redirected again.",
+        "text": "10 {Piercing} combat damage redirected into a 2/4 Oorblak: 4 destroy it, and the other 6 reach the player and are not redirected again.",
         "test": "387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak"
       },
       {
-        "text": "Example: two Nullbringers turn one life gain into one loss, not into a gain again.",
+        "text": "two Nullbringers turn one life gain into one loss, not into a gain again.",
         "test": "40-light-c.test.ts::Nullbringer: two copies do not stack"
       }
     ],
@@ -2389,7 +2385,7 @@
     "text": "If two or more effects could each replace or redirect the same event (two Nullbringers, two Counter Thieves, two Oorblaks), only one of them does. An event a redirect produces is not redirected again by another such effect. (engine differs, see F-U15-3)",
     "examples": [
       {
-        "text": "Example: two Counter Thieves do not pass the same counters back and forth.",
+        "text": "two Counter Thieves do not pass the same counters back and forth.",
         "test": "46-hybrids-ld-c.test.ts::Counter Thief: two thieves do not ping-pong"
       }
     ],
@@ -2439,11 +2435,11 @@
     "text": "Replacement effects that only change an amount (\"that many plus one instead\") all apply: each applies once, and their changes add up. A modifier does not apply to its own change, but two copies of the same card are two modifiers and both apply.",
     "examples": [
       {
-        "text": "Example: two Conduits of Pain make 1 damage from an allied source into 3.",
+        "text": "two Conduits of Pain make 1 damage from an allied source into 3.",
         "test": "12-fire-a.test.ts::Conduit of Pain: two Conduits both apply, and neither applies to itself"
       },
       {
-        "text": "Example: two allied Flux Resonators make a Robot X spawn with X plus 2 counters.",
+        "text": "two allied Flux Resonators make a Robot X spawn with X plus 2 counters.",
         "test": "27-metal-b.test.ts::Flux Resonator: two allied Resonators give a spawn X plus TWO (summed)"
       }
     ],
@@ -2484,7 +2480,7 @@
     "text": "Effects that double an amount (\"Double all life gain and life loss\") multiply together. With n of them applying to the same amount, it is multiplied by 2 to the power n.",
     "examples": [
       {
-        "text": "Example: three Arbiters of Vitality multiply a life loss by 8.",
+        "text": "three Arbiters of Vitality multiply a life loss by 8.",
         "test": "137-multiplier-and-mode.test.ts::R264: THREE Arbiters multiply"
       }
     ],
@@ -2532,11 +2528,11 @@
     "text": "When modifiers that add to an amount and an effect that doubles it apply to the same amount, the additions are made first and the result is doubled.",
     "examples": [
       {
-        "text": "Example: a {Powerful} Bellowing Boulder with Conduit of Pain deals (1+1)x2 = 4 damage to each unit.",
+        "text": "a {Powerful} Bellowing Boulder with Conduit of Pain deals (1+1)x2 = 4 damage to each unit.",
         "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles"
       },
       {
-        "text": "Example: Conduit of Pain and Arbiter of Vitality: the 1 is added before the life loss is doubled.",
+        "text": "Conduit of Pain and Arbiter of Vitality: the 1 is added before the life loss is doubled.",
         "test": "137-multiplier-and-mode.test.ts::the multiplier composes with a REAL additive mod end to end"
       }
     ],
@@ -2584,11 +2580,11 @@
     "text": "A multiplied life loss is lost all at once, as one loss of the whole amount, and only then does the game check whether the player has lost.",
     "examples": [
       {
-        "text": "Example: Arbiter of Vitality doubles a lethal loss before the game checks whether the player has lost.",
+        "text": "Arbiter of Vitality doubles a lethal loss before the game checks whether the player has lost.",
         "test": "137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check"
       },
       {
-        "text": "Example: one \"loses life\" event carries the whole doubled number.",
+        "text": null,
         "test": "137-multiplier-and-mode.test.ts::the multiplier is a REPLACEMENT, not a second helping"
       }
     ],
@@ -2625,7 +2621,7 @@
     "text": "When a replacement that changes the number of counters and a replacement that redirects them both apply to the same placement, the number is changed first, and the redirect then moves the whole changed number.",
     "examples": [
       {
-        "text": "Example: a Counter Thief beside a Flux Resonator steals the extra counter too.",
+        "text": "a Counter Thief beside a Flux Resonator steals the extra counter too.",
         "test": "87-replacement-layer.test.ts::an AmountMod runs BEFORE the redirect"
       }
     ],
@@ -2664,7 +2660,7 @@
     "text": "A replacement effect applies only to what its own text names. One that applies when counters \"would be put on\" a unit does not apply when counters are removed.",
     "examples": [
       {
-        "text": "Example: Proliferating Slime does not change how many counters Burn the Blight removes.",
+        "text": "Proliferating Slime does not change how many counters Burn the Blight removes.",
         "test": "152-hand-entry.test.ts::a counter-amount replacement does NOT scale a REMOVAL"
       }
     ],
@@ -2703,7 +2699,7 @@
     "text": "Counters of either sign are counters. A replacement effect that adds to counters being put on a unit adds -1/-1 counters to -1/-1 counters, as it adds +1/+1 counters to +1/+1 counters.",
     "examples": [
       {
-        "text": "Example: Flux Resonator makes two -1/-1 counters its controller puts on a unit into three.",
+        "text": "Flux Resonator makes two -1/-1 counters its controller puts on a unit into three.",
         "test": "120-counter-attribution.test.ts::Resonator: -1/-1 counters get one more of the SAME"
       }
     ],
@@ -2738,11 +2734,11 @@
     "text": "Whether counters are put \"by an allied source\", or put by \"you\", depends on whose effect put them, not on whose unit they land on. Counters that a redirect moves are still put by the player whose effect put them.",
     "examples": [
       {
-        "text": "Example: counters an opponent's effect puts on your unit do not get your Flux Resonator's extra counter.",
+        "text": "counters an opponent's effect puts on your unit do not get your Flux Resonator's extra counter.",
         "test": "120-counter-attribution.test.ts::Resonator: an ENEMY's placement onto your own unit is not an allied source"
       },
       {
-        "text": "Example: counters your effect puts on an enemy unit do.",
+        "text": "counters your effect puts on an enemy unit do.",
         "test": "120-counter-attribution.test.ts::Resonator: counters YOU put on an ENEMY unit are plus one too"
       }
     ],
@@ -2781,11 +2777,11 @@
     "text": "All the tokens one resolution of one effect creates are created together. A replacement effect that acts on \"each unique token you created\" sees all of them at once, and a token is unique by its name and its X together.",
     "examples": [
       {
-        "text": "Example: Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.",
+        "text": "Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.",
         "test": "136-triggers-and-modes.test.ts::R157 §24: end to end"
       },
       {
-        "text": "Example: three identical Robot 2s created together are one unique token and yield one extra.",
+        "text": "three identical Robot 2s created together are one unique token and yield one extra.",
         "test": "136-triggers-and-modes.test.ts::R157 §24: three IDENTICAL Robot 2s"
       }
     ],
@@ -2831,7 +2827,7 @@
     "text": "When an effect says a player's life total can't change, a gain or loss of life for that player does not happen at all, and no replacement effect applies to it.",
     "examples": [
       {
-        "text": "Example: with the life total locked by Suspend, Nullbringer has no gain of life to turn into a loss.",
+        "text": "with the life total locked by Suspend, Nullbringer has no gain of life to turn into a loss.",
         "test": "87-replacement-layer.test.ts::a locked life total stops the replacement layer too"
       }
     ],
@@ -2870,11 +2866,11 @@
     "text": "A prevention effect (\"if damage would be dealt …, prevent it\") is not a replacement effect. Prevented damage is not dealt at all (rule 112.11), while damage a replacement effect changes is still dealt (rule 112.12).",
     "examples": [
       {
-        "text": "Example: a unit shielded by Phytochemical Protection and hit by a {Poisonous} unit takes no -1/-1 counters and does not trigger on being dealt damage.",
+        "text": "a unit shielded by Phytochemical Protection and hit by a {Poisonous} unit takes no -1/-1 counters and does not trigger on being dealt damage.",
         "test": "387-raq-combat.test.ts::RAQ Poisonous: a shielded Jollyglop"
       },
       {
-        "text": "Example: prevented damage fires nothing that triggers on damage being dealt.",
+        "text": null,
         "test": "24-wood-b.test.ts::Phytochemical Protection: prevented damage is NOT dealt"
       }
     ],
@@ -2919,7 +2915,7 @@
     "text": "A prevention effect on a unit prevents all the damage dealt to it, including any beyond what would destroy it.",
     "examples": [
       {
-        "text": "Example: a lone shielded blocker is assigned the whole of a column's damage, and all of it is prevented.",
+        "text": "a lone shielded blocker is assigned the whole of a column's damage, and all of it is prevented.",
         "test": "24-wood-b.test.ts::Phytochemical Protection: the whole hit is prevented, not just the lethal part"
       }
     ],
@@ -2959,7 +2955,7 @@
     "text": "Prevention applies to the damage as it would be dealt, after the recipient's own doubling ({Vulnerable}). It does not change how damage is assigned or how much is lethal (rule 608.6g).",
     "examples": [
       {
-        "text": "Example: a shield changes what is dealt to a unit, never how much of a {Piercing} hit goes past it.",
+        "text": "a shield changes what is dealt to a unit, never how much of a {Piercing} hit goes past it.",
         "test": "82-attr-interactions.test.ts::Piercing vs a damage-shielded unit"
       }
     ],

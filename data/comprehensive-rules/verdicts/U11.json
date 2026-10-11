@@ -1,7 +1,7 @@
 [
   {
     "key": "combat.attack-window.general",
-    "textHash": "3f78f0cb7a9dac9f",
+    "textHash": "f540fcdf9df33a8e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -45,19 +45,20 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack-window.general.end",
-    "textHash": "b5e2acefc295138e",
+    "textHash": "793814075a6c0a9d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:advanceBattleStep",
+        "loc": "client/engine/src/apply.ts:passPriority -> advanceBattleStep",
         "agrees": true,
-        "note": "attackWindow -> step 'blocks'"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -65,10 +66,17 @@
         "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
         "pattern": "cr:effects.priority.window.resolve — two passes resolve the top item",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Luminous Arc cast in the attack window resolves on two passes, still attackWindow with priority to A; two more passes leave attackWindow"
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U11-2.test.ts",
+        "test": "probe U11-2: two passes on an empty stack end the attack window and the block step begins",
+        "passed": true,
+        "demonstrates": "yes: step is 'blocks' after two passes on the empty stack"
+      }
+    ],
     "source_checks": [
       {
         "ref": "Rulebook 2023 p.13",
@@ -78,8 +86,8 @@
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (b.step === 'attackWindow') {"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "If player A passes priority and player B passes priority, the phase ends and we move directly to the block/counterattack step."
       }
     ],
     "basis_ok": true,
@@ -87,7 +95,7 @@
   },
   {
     "key": "combat.attack-window.general.gravity",
-    "textHash": "9ccd016270108694",
+    "textHash": "9cae8f466d806992",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -142,11 +150,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack-window.general.initiative-first",
-    "textHash": "2da206780f3fb4b8",
+    "textHash": "73f5e4c4fdf3a398",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -196,11 +205,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.attack-window.general.still-present",
-    "textHash": "4f0e863c384dbf0d",
+    "textHash": "98096a547a7edc56",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -243,11 +253,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.declaring",
-    "textHash": "90a2b8e4fc612a38",
+    "textHash": "3accd4c25da04211",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -305,11 +316,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.declaring.lured",
-    "textHash": "e330e054ef592930",
+    "textHash": "0adc89ba78e9f48d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -368,31 +380,44 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.attack.declaring.no-summoning-sickness",
-    "textHash": "a37c2fc349fffacb",
+    "textHash": "d9c0de4582b90b39",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:validFormation",
+        "loc": "client/engine/src/apply.ts:validFormation (no entered-this-turn check)",
         "agrees": true,
-        "note": "no entry-time restriction"
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.attack.declaring.no-summoning-sickness",
+        "passed": true,
+        "asserts_claim": "yes: a 2/2 spawned at the declare step attacks and D loses 2"
+      }
+    ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
-        "title": "combat.attack.declaring.no-summoning-sickness: a unit that entered play during the battle phase, before the declaration, may attack",
+        "file": "client/engine/test/zz-probe-U11-3.test.ts",
+        "test": "probe U11-3: a unit that entered play during the attack window may block",
         "passed": true,
-        "demonstrates": true
+        "demonstrates": "yes: the block half — a unit spawned in the attack window is accepted as a blocker"
       }
     ],
     "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
       {
         "ref": "Manual p.43",
         "supports": "yes",
@@ -401,8 +426,8 @@
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "Algomancy has no summoning sickness. As"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: Yes! Algomancy has no summoning sickness. As"
       }
     ],
     "basis_ok": true,
@@ -410,7 +435,7 @@
   },
   {
     "key": "combat.attack.declaring.optional",
-    "textHash": "982eb006c51c8d98",
+    "textHash": "c7f4f7e480a925ea",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -444,11 +469,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.declaring.round-two",
-    "textHash": "8d39db84d97cde4b",
+    "textHash": "1cdb19e9b24fcfe0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -498,29 +524,20 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.declaring.spell-tokens",
-    "textHash": "324f4c04814a626d",
+    "textHash": "55ca0d1effbdb754",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U11-r2",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "apply.ts:doDeclareAttack",
+        "loc": "client/engine/src/apply.ts:needRidingToken / doDeclareAttack / doDeclareBlocks",
         "agrees": true,
-        "note": "an empty `columns` is a decline before spellTokens is read, so a token-only attack is no attack; each rider passes needRidingToken from `fromRegion`"
-      },
-      {
-        "loc": "apply.ts:needRidingToken",
-        "agrees": true,
-        "note": "spellToken, controller === seat, not absent, region === the region the formation leaves from"
-      },
-      {
-        "loc": "apply.ts:checkBlocks",
-        "agrees": true,
-        "note": "a counterattack `send` of tokens with no unit is refused 'spell tokens travel only with units'"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -528,56 +545,58 @@
         "file": "client/engine/test/78-round17-core.test.ts",
         "pattern": "R87: spell tokens still travel only with units",
         "passed": true,
-        "asserts_claim": "yes: declareBlocks with spellTokens and no unit throws /spell tokens travel only with units/ (example 1)"
+        "asserts_claim": "yes: declareBlocks naming a Poison and no unit throws 'spell tokens travel only with units'"
+      },
+      {
+        "file": "client/engine/test/422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.attack.declaring.spell-tokens",
+        "passed": true,
+        "asserts_claim": "yes: declareAttack with columns [] and a Poison is a decline: no throw, round 2, the Poison stays home"
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
-        "title": "combat.attack.declaring.spell-tokens: an attack naming a spell token and no unit is NOT refused — it is taken as declining to attack, and the token stays home",
+        "file": "client/engine/test/zz-probe-U11-1.test.ts",
+        "test": "probe U11-1: an attack may not take along an opponent's spell token, nor one standing in another region",
         "passed": true,
-        "demonstrates": "yes: example 2 — no throw, round ends as a decline, the Poison stays home"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
-        "title": "combat.attack.declaring.spell-tokens: with a unit beside it, the spell token goes along into the attacked region",
-        "passed": true,
-        "demonstrates": "yes: example 2's second half"
+        "demonstrates": "yes: the control/region half — opponent's token and own token in another region refused, own token from the region left rides"
       }
     ],
     "source_checks": [
       {
         "ref": "Manual p.15",
         "supports": "yes",
-        "note": "'must follow at least one other unit into battle'"
+        "note": ""
+      },
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
       },
       {
         "ref": "Rulebook 2023 p.4",
         "supports": "yes",
-        "note": "'if they have units to guide them'; same paragraph says tokens are cast only in their own region"
+        "note": ""
       },
       {
         "ref": "R87",
         "supports": "yes",
-        "note": "the rule and the shared rider helper ('a spell token you control, standing in the region this formation is leaving from')"
+        "note": ""
+      },
+      {
+        "ref": "R87",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');"
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "  e.need(t && t.kind === 'spellToken' && t.controller === seat && !t.absent"
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "so on their own, however and must follow at least one"
-      },
-      {
         "file": "client/docs/digital-rules.md",
-        "text": "Spell tokens travel with a formation, in either direction, and they need a"
+        "text": "  `apply.ts` — \"a spell token you control, standing in the region this formation"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "    && t.region === fromRegion, 'not your spell token');"
       }
     ],
     "basis_ok": true,
@@ -585,18 +604,25 @@
   },
   {
     "key": "combat.attack.declaring.tokens-irreversible",
-    "textHash": "cb53191b5c9a6fb1",
+    "textHash": "7b9d579857f514a4",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:needRidingToken",
+        "loc": "client/engine/src/apply.ts:doDeclareAttack / doCastSpellToken (castable only in its region)",
         "agrees": true,
-        "note": "tokens move only outward with a formation; no action moves a token back"
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.attack.declaring.tokens-irreversible",
+        "passed": true,
+        "asserts_claim": "yes: Poison brought into D's region stays there through round 1 and the counterattack in A's home; not castable there"
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
@@ -607,16 +633,16 @@
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "attack step if they have units to guide them. This move is irreversible though, so plan carefully where you want to direct your"
       }
     ],
     "basis_ok": true,
-    "problem": "No test or probe can demonstrate an absence beyond reading the action set; accepted on printed basis."
+    "problem": ""
   },
   {
     "key": "combat.attack.decline",
-    "textHash": "c7653604a6d6a6db",
+    "textHash": "cda07bab2533d529",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -673,11 +699,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.decline.next-round",
-    "textHash": "6a5e89b3ba9091d2",
+    "textHash": "c911552f91191986",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -738,11 +765,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.effects",
-    "textHash": "039c2c53e6e711b6",
+    "textHash": "eae0bfbc9c742728",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -795,11 +823,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.effects.alone",
-    "textHash": "f840f7b4a8ddc001",
+    "textHash": "7a0d7f5788f3eb59",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -843,11 +872,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.effects.attacking-units",
-    "textHash": "7f289bc4e08e382c",
+    "textHash": "0d6f84a6f6070240",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -886,11 +916,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.effects.presence",
-    "textHash": "12125ce8163a613e",
+    "textHash": "39edf7dcb5e76a1f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -928,11 +959,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.effects.triggers",
-    "textHash": "b74ca0ba46b66ba3",
+    "textHash": "c0ac0504be5b6194",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -977,11 +1009,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.attack.general",
-    "textHash": "7010d208299e4265",
+    "textHash": "584a00e1fbafb5d6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1022,11 +1055,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.attack.general.players",
-    "textHash": "8951fdd5557b6b45",
+    "textHash": "59cce05ea1324367",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1060,11 +1094,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.attack.general.rounds",
-    "textHash": "b3a1d9a1d529d49d",
+    "textHash": "b2a59f2ead796e2f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -1124,11 +1159,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.after-blocking-triggers",
-    "textHash": "0c9d154d2d4729be",
+    "textHash": "1e2f4f057030fe7a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1162,11 +1198,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.general",
-    "textHash": "da991b2d32c73939",
+    "textHash": "998b08125633b9b6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1210,11 +1247,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.block-window.general.end",
-    "textHash": "c817fd49033a9f71",
+    "textHash": "f18581ba5dc1852f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1253,11 +1291,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.general.locked",
-    "textHash": "25295c9615cc8d95",
+    "textHash": "71b166eb99e60d04",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1296,11 +1335,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.general.promotion",
-    "textHash": "170c3dc594d916d5",
+    "textHash": "654641b368153fe0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1334,11 +1374,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.late-blocker",
-    "textHash": "1f3d1acf2bcb04c7",
+    "textHash": "d9f4cb3ecc7937a3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1393,11 +1434,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.late-blocker.defender-only",
-    "textHash": "ea4f10e60de9caa0",
+    "textHash": "96a0f72d5ca08444",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1435,11 +1477,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.late-blocker.no-prior-blocks",
-    "textHash": "a263d4cfb0ff27b9",
+    "textHash": "c8289fe8bc396f7e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1473,53 +1516,50 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.late-blocker.not-declared",
-    "textHash": "6b24ec319adf5bc8",
+    "textHash": "4803be5848c8a179",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:putInSlot",
+        "loc": "client/engine/src/engine.ts:formationSlots / putInSlot (no blocked event)",
         "agrees": true,
-        "note": "writes b.blocks[slot.block] and fires nothing; blocked events are fired only in doDeclareBlocks"
+        "note": ""
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
-        "title": "combat.block-window.late-blocker.not-declared: no blocked event fires for a unit placed in front of an attacker after blocks",
+        "file": "client/engine/test/422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.block-window.late-blocker.not-declared",
         "passed": true,
-        "demonstrates": true
+        "asserts_claim": "yes: after declaring no blocks, D plays Tiderunner Initiate 'blocking it'; it blocks column 0 and no blocked/blocksDeclared event fires"
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "R322",
         "supports": "yes",
-        "note": "\"No `blocked` event fires for the late blocker\""
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
         "text": "- No `blocked` event fires for the late blocker: the declaration fires those,"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (slot.block !== undefined) { b.blocks[slot.block] = [u.id]; return; }"
       }
     ],
     "basis_ok": true,
-    "problem": "Basis owner is honest (no designer source). The example text names a ruling number ('under R322'); harmless but out of house style for rule text."
+    "problem": ""
   },
   {
     "key": "combat.block-window.late-blocker.stays",
-    "textHash": "fca269078deb9de8",
+    "textHash": "2261e6ab72e594d9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1557,11 +1597,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Test 388's leading comment is stale (says Tiderunner is offered no spot opposite an unblocked attacker) but its assertions do pin the claim."
+    "problem": "Test 388's leading comment is stale (says Tiderunner is offered no spot opposite an unblocked attacker) but its assertions do pin the claim.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.block-window.late-blocker.when",
-    "textHash": "ff5642e8ab99b6d1",
+    "textHash": "443ce7ea9bcdec61",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1605,11 +1646,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.blocked",
-    "textHash": "a0106b08df5e6aa8",
+    "textHash": "796dd3a47024974c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1653,11 +1695,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.blocked.no-damage-through",
-    "textHash": "f517c35cd4e1b8e2",
+    "textHash": "55c6b24d3093e242",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1695,11 +1738,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.blocked.stays",
-    "textHash": "5ec98fa1bc656f6f",
+    "textHash": "0659a9d370178d67",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -1763,11 +1807,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.counterattack",
-    "textHash": "5bcf182ec996905c",
+    "textHash": "8f74723e2c72c231",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1806,11 +1851,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.counterattack.second-round",
-    "textHash": "0de1dfe113ec7511",
+    "textHash": "2a53b964bd871d3b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1853,19 +1899,20 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.counterattack.tokens",
-    "textHash": "097597ee1e717ea5",
+    "textHash": "e9676bfdbd555bfc",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks / needRidingToken",
         "agrees": true,
-        "note": "tokens in send use needRidingToken and need sentUnits > 0"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -1873,7 +1920,7 @@
         "file": "client/engine/test/78-round17-core.test.ts",
         "pattern": "R87: declareBlocks takes spellTokens",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: D sends a unit and a Poison token; token absent in round 1, back and in IT's region for round 2, in the attacker pool"
       }
     ],
     "probes": [],
@@ -1886,16 +1933,16 @@
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');"
+        "file": "client/docs/digital-rules.md",
+        "text": "Spell tokens travel with a formation, in either direction, and they need a"
       }
     ],
     "basis_ok": true,
-    "problem": "Example names 'two Poison tokens'; the bound test sends one. The claim (tokens leave with the unit) is asserted."
+    "problem": ""
   },
   {
     "key": "combat.blocks.empty-attack",
-    "textHash": "a5178cb9dd1e763a",
+    "textHash": "63ae0f08782f1073",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -1928,11 +1975,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Basis 'engine' is honest: no printed or designer source is cited."
+    "problem": "Basis 'engine' is honest: no printed or designer source is cited.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.general",
-    "textHash": "7c9d6cd48f047556",
+    "textHash": "84410035cb2d7565",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -1975,11 +2023,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.general.empty-columns",
-    "textHash": "461d5e13414f2126",
+    "textHash": "22ebe7c5b98f1d93",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -2034,22 +2083,30 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.general.formation",
-    "textHash": "ef385ac587a8cb40",
+    "textHash": "488e8370a4c1ff07",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "loc": "client/engine/src/engine.ts:adjacentInFormation; combat damage front to back",
         "agrees": true,
-        "note": "'blocking columns hold 1-2 units'"
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.blocks.general.formation",
+        "passed": true,
+        "asserts_claim": "yes: two blockers front/back in one column; three refused; the 1-power attacker damages only the front one"
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
@@ -2065,8 +2122,8 @@
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.need(col.length >= 1 && col.length <= 2, 'blocking columns hold 1-2 units');"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "The resulting group of defending units is also called a"
       }
     ],
     "basis_ok": true,
@@ -2074,7 +2131,7 @@
   },
   {
     "key": "combat.blocks.general.gap-adjacency",
-    "textHash": "fb2c6cfef7ab2d62",
+    "textHash": "32bbc256c0afaa70",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -2144,36 +2201,37 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling stands as the natural reading of the printed adjacency definition (no source states the gap case in words); the flagged engine divergence is real and measured."
+    "problem": "Ruling stands as the natural reading of the printed adjacency definition (no source states the gap case in words); the flagged engine divergence is real and measured.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.general.locked",
-    "textHash": "3faf3881df7ee51a",
+    "textHash": "1d6d9391d9c9ade7",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks ('not your block step' once declared)",
         "agrees": true,
-        "note": "declareBlocks requires step 'blocks'; after it the step is blockWindow"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:putInSlot",
-        "agrees": true,
-        "note": "later joins only through a placement effect"
+        "note": ""
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
-        "title": "combat.blocks.general.locked: blocks cannot be declared a second time in the block window",
+        "file": "client/engine/test/422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.blocks.general.locked",
         "passed": true,
-        "demonstrates": true
+        "asserts_claim": "yes: after declaring a block at column 0, a second declareBlocks moving it to column 1 throws"
       }
     ],
+    "probes": [],
     "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
       {
         "ref": "Manual p.22",
         "supports": "yes",
@@ -2182,12 +2240,8 @@
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "is set, the units are locked in position and are considered"
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.need(e.s.phase === 'battle' && b && b.step === 'blocks' && seat === b.defender, 'not your block step');"
       }
     ],
     "basis_ok": true,
@@ -2195,7 +2249,7 @@
   },
   {
     "key": "combat.blocks.general.none",
-    "textHash": "84f7c44b3ec8a75e",
+    "textHash": "7e8373e8c5d35967",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2229,11 +2283,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.general.one-column",
-    "textHash": "3449e6f0220ee37c",
+    "textHash": "20fa7d224f607d9c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -2271,11 +2326,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.side",
-    "textHash": "3d0952a3accf73ee",
+    "textHash": "34e421abaf91c371",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2319,11 +2375,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.side.adjacency",
-    "textHash": "9b19b9bed4353406",
+    "textHash": "b3738217b78d986c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2367,11 +2424,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The rule as worded holds. The engine over-applies it: blockers separated by an empty blocking column are also treated as neighbours (bug list)."
+    "problem": "The rule as worded holds. The engine over-applies it: blockers separated by an empty blocking column are also treated as neighbours (bug list).",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.side.any-number",
-    "textHash": "184a59f6ebfd1c07",
+    "textHash": "1ed7f93af2a97d60",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -2419,11 +2477,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.side.blocks-nothing",
-    "textHash": "ff246fdff2d1410e",
+    "textHash": "a58d51aa18035a79",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2471,11 +2530,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.side.counts-as-blocked",
-    "textHash": "62913bcc92244fe6",
+    "textHash": "e0b5afedd47d5b4f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U11-r2",
@@ -2514,11 +2574,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.side.either-side",
-    "textHash": "769e8eb73dc4366e",
+    "textHash": "e37b5249223c0b80",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2552,11 +2613,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.side.no-damage",
-    "textHash": "79b26a54dddfbab7",
+    "textHash": "10023ba4444fd6bf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2604,11 +2666,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.side.reach",
-    "textHash": "7c293533556d20f5",
+    "textHash": "e5d16d3f80134879",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2646,11 +2709,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.triggers",
-    "textHash": "bdcd698ad40e1fdb",
+    "textHash": "e37b463a4f35851f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2695,11 +2759,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.who",
-    "textHash": "f1c409a1bd943912",
+    "textHash": "08981be79da0772e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2738,11 +2803,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.who.able",
-    "textHash": "9744b72ddcd5cb8e",
+    "textHash": "7a6ed0b99065aaf5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2780,39 +2846,40 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.who.attributes",
-    "textHash": "1164fb2d6f3b5384",
+    "textHash": "2530b1a79a76c38e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "loc": "client/engine/src/apply.ts:validFormation / doDeclareBlocks (Flying, Feeble, Evasive, Sneaky, Alluring, Pure)",
         "agrees": true,
-        "note": "Feeble, lone Sneaky, Flying, Evasive, Pure checks; Alluring via allureViolation"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/40-light-c.test.ts",
-        "pattern": "Just a Unit: {Pure} blocks a Flying column, and only it can",
+        "pattern": "Just a Unit: {Pure} blocks a Flying column",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Pure Just a Unit offered and accepted against a Flying column, ground Rune Channeler refused"
       },
       {
         "file": "client/engine/test/08-cards2.test.ts",
         "pattern": "Spectrogenesis: three Wisps; Feeble means they cannot block",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: no block options and an explicit Wisp block rejected"
       },
       {
         "file": "client/engine/test/07-cards.test.ts",
         "pattern": "Curio Drifter: Evasive requires two blockers",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: no single-blocker option; two blockers kill it"
       }
     ],
     "probes": [],
@@ -2840,8 +2907,12 @@
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "if (atkAttrs.has('Evasive')) e.need(col.length >= 2, 'Evasive requires two blockers');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"{i}(Only flying units can block flying units.){/n}[Augment] Your other units gain +2/+2 and Flying.\","
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "still in play, {Feeble}, {Flying}, lone-{Sneaky}, {Evasive}, {Pure}. It never"
       }
     ],
     "basis_ok": true,
@@ -2849,7 +2920,7 @@
   },
   {
     "key": "combat.blocks.who.lured",
-    "textHash": "060f64c4280bdceb",
+    "textHash": "a6bb96a2c1ec3c25",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2904,11 +2975,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.who.not-sent",
-    "textHash": "8dc7260b81d9023e",
+    "textHash": "57c8c435dfdd7734",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2951,11 +3023,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.blocks.who.recent",
-    "textHash": "c4a5b5be190e10fd",
+    "textHash": "e5dcece0802dbd16",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U11-r1",
@@ -2989,6 +3062,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   }
 ]

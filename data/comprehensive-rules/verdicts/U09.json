@@ -1,7 +1,7 @@
 [
   {
     "key": "turn.battle.ffa",
-    "textHash": "3bdf26edc365c625",
+    "textHash": "99591038e398299f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -33,7 +33,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Printed-only; the digital client has no FFA mode, so there is no engine behaviour to check."
+    "problem": "Printed-only; the digital client has no FFA mode, so there is no engine behaviour to check.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.battle.region-order",
@@ -75,7 +76,7 @@
   },
   {
     "key": "turn.battle.region-order.clockwise",
-    "textHash": "d760cdc7c8f3da32",
+    "textHash": "42d51c1a43eb216b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -113,11 +114,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Only the 1v1 consequence (IT region last) is checkable in the engine."
+    "problem": "Only the 1v1 consequence (IT region last) is checkable in the engine.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "turn.battle.region-order.one-v-one",
-    "textHash": "4dfacbb2df059f86",
+    "textHash": "4fe52095f73a97c0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -167,31 +169,37 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.battle.region-order.others-absent",
-    "textHash": "0116013d6cda1f21",
+    "textHash": "16ce45ddaae29d5e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:targetCandidates",
+        "loc": "client/engine/src/engine.ts:targetCandidates (region-scoped, R12)",
         "agrees": true,
-        "note": "candidates are region-scoped; sent counterattackers are absent=true until round 1 ends"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "05-rulings.test.ts",
+        "file": "client/engine/test/05-rulings.test.ts",
         "pattern": "R12: regions are exclusive",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: A attacks with Rune Channeler, Good Whale stays home; D's Luminous Arc offers the attacker and not the home Whale"
       }
     ],
     "probes": [],
     "source_checks": [
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": "1v1 paragraph: units that stayed back and counterattackers sent away are treated as if they don't exist"
+      },
       {
         "ref": "Manual p.21",
         "supports": "yes",
@@ -200,12 +208,8 @@
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "will be treated as if they don"
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "for (const id of send) e.entity(id)!.absent = true;"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "stayed back in their own region"
       }
     ],
     "basis_ok": true,
@@ -256,28 +260,23 @@
   },
   {
     "key": "turn.battle.rounds.counterattackers-absent",
-    "textHash": "5ac0e4f1a615fe7f",
+    "textHash": "76e36425ae265c2c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks (sent units marked absent)",
         "agrees": true,
-        "note": "sent units absent=true"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:endBattleRound",
-        "agrees": true,
-        "note": "absent cleared and moved to IT home region when round 1 ends"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "02-combat.test.ts",
-        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: sent Rune Channeler is absent in round 1, not absent and in IT's region at round 2"
       }
     ],
     "probes": [],
@@ -286,16 +285,17 @@
         "ref": "Manual p.20",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "the region and are treated as if they don"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (u) { u.absent = false; u.region = this.homeRegion(this.initiative); }"
+        "file": "client/engine/test/02-combat.test.ts",
+        "text": "  assert.ok(ent(h, counter)!.absent, 'sent counterattacker \"does not exist\" during round 1');"
       }
     ],
     "basis_ok": true,
@@ -303,7 +303,7 @@
   },
   {
     "key": "turn.battle.rounds.nit-attacks-alone",
-    "textHash": "2d99ed2614707af8",
+    "textHash": "b486f2c9c2bbadda",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -361,46 +361,42 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "turn.battle.rounds.no-round-2",
-    "textHash": "53385ce0d200eef4",
+    "textHash": "6b484e3d5899d559",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:endBattleRound",
+        "loc": "client/engine/src/apply.ts:doDeclareAttack (attackerPool restriction); engine.ts:endBattleRound",
         "agrees": true,
-        "note": "b.happened with empty sentAttackers → 'sent no counterattackers — no battle here' → regroup"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:validFormation",
-        "agrees": true,
-        "note": "attackerPool restricts round-2 attackers"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "21-fixes.test.ts",
+        "file": "client/engine/test/21-fixes.test.ts",
         "pattern": "round 2 after a real round-1 battle still restricts to the sent counterattackers",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: IT attacks, NIT declares blocks {} and sends none; battle ends after round 1, home Geode untouched"
       },
       {
-        "file": "02-combat.test.ts",
-        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: declaring the home Good Whale in round 2 throws IllegalAction"
       }
     ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.21",
-        "supports": "partly",
-        "note": "\"if there was a counter-attack, the players will move to IT's region\" implies no round 2 otherwise"
+        "supports": "yes",
+        "note": ""
       },
       {
         "ref": "R15",
@@ -411,11 +407,7 @@
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "units sent at block time** (Manual p.20-21), even if that set is empty"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.ev('info', `${this.pname(this.nit)} sent no counterattackers — no battle here.`);"
+        "text": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
       }
     ],
     "basis_ok": true,
@@ -423,7 +415,7 @@
   },
   {
     "key": "turn.battle.rounds.one-attack-each",
-    "textHash": "5367631aa03baf80",
+    "textHash": "f00cb92484239102",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -461,115 +453,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "turn.battle.rounds.round-1",
-    "textHash": "3c60fd963a1b64c0",
+    "textHash": "108d8f44199e5638",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U09-r2",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "apply.ts:doDeclareAttack",
+        "loc": "client/engine/src/apply.ts:doDeclareAttack / doDeclareBlocks; engine.ts:endBattleRound",
         "agrees": true,
-        "note": "round 1 attack out of home region into battle.region (NIT home)"
-      },
-      {
-        "loc": "apply.ts:doDeclareBlocks",
-        "agrees": true,
-        "note": "blocks + send at the same step; sent units marked absent until round 1 ends"
-      },
-      {
-        "loc": "engine.ts:endBattleRound",
-        "agrees": true,
-        "note": "after the after-combat window, sent units arrive in IT region and round 2 starts"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/02-combat.test.ts",
-        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "pattern": "1v1 counterattack: NIT sends units at block time",
         "passed": true,
-        "asserts_claim": "yes: no blocks + send Rune Channeler; unblocked 2/2 takes NIT to 28; after-combat passes -> round 2"
-      }
-    ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U09/u09-verify-probes.test.ts",
-        "title": "turn.battle.rounds.round-1 / turn.battle.steps: round 1 walks declare → attackWindow → blocks → blockWindow → (damage) → afterWindow in the NIT region",
-        "passed": true,
-        "demonstrates": "yes: step order declare/attackWindow/blocks/blockWindow/afterWindow"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U09/u09-verify-probes.test.ts",
-        "title": "turn.battle.rounds.round-1 (combat clause): combat damage is SIMULTANEOUS — a 4/3 attacker and a 4/3 blocker both die",
-        "passed": true,
-        "demonstrates": "yes: simultaneous combat damage"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "Manual p.20",
-        "supports": "yes",
-        "note": "Phase 1 steps 1-6 verbatim"
-      },
-      {
-        "ref": "Rulebook 2023 p.5",
-        "supports": "yes",
-        "note": "not cited but agrees"
-      }
-    ],
-    "quote_spans": [
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "1. The IT declare their attacks, sending units into NIT"
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "5. Combat Step happens - All units in formation deal"
-      },
-      {
-        "file": "client/engine/test/02-combat.test.ts",
-        "text": "h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [counter] });"
-      },
-      {
-        "file": "client/engine/test/02-combat.test.ts",
-        "text": "assert.equal(h.state.players[D]!.life, 28, 'unblocked 2 damage');"
-      }
-    ],
-    "basis_ok": true,
-    "problem": ""
-  },
-  {
-    "key": "turn.battle.rounds.round-2",
-    "textHash": "f64d3660097d4f5b",
-    "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
-    "engine": [
-      {
-        "loc": "client/engine/src/engine.ts:endBattleRound",
-        "agrees": true,
-        "note": "round 1 end: sent units arrive in IT home region, startBattleRound(nit) with attackerPool = sentAttackers"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:startBattleRound",
-        "agrees": true,
-        "note": "round-2 region = homeRegion(defender = IT)"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:advanceBattleStep",
-        "agrees": true,
-        "note": "attackWindow → blocks → blockWindow → damage → afterWindow → endBattleRound → startRegroup"
-      }
-    ],
-    "tests_run": [
-      {
-        "file": "02-combat.test.ts",
-        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
-        "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: 2/2 Curio Drifter attacks, D declares no blocks and sends Rune Channeler, D takes 2, after the after-combat passes round = 2"
       }
     ],
     "probes": [],
@@ -577,17 +482,81 @@
       {
         "ref": "Manual p.20",
         "supports": "yes",
-        "note": "Phase 2 steps 1-6 verbatim"
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "3. The IT declare their blocking formation."
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "3. The NIT declare their blocking formations while also"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.battle.rounds.round-2",
+    "textHash": "281ee51e82b91eaf",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U09-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:endBattleRound / advanceBattleStep",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time",
+        "passed": true,
+        "asserts_claim": "yes: in round 2 the Channeler attacks from the IT region, A declares no blocks, A loses 4, then after-combat passes lead to deploy"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.startBattleRound(this.nit);"
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "1. The NIT puts their attacking units into formation."
       }
     ],
     "basis_ok": true,
@@ -595,7 +564,7 @@
   },
   {
     "key": "turn.battle.steps",
-    "textHash": "18abc98544d23e11",
+    "textHash": "c243049ee8af2785",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -636,27 +605,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.battle.steps.declined-no-window",
-    "textHash": "efab3d4c55be88e4",
+    "textHash": "e1fb4295658ecb69",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "loc": "client/engine/src/apply.ts:doDeclareAttack (no columns -> endBattleRound, no window)",
         "agrees": true,
-        "note": "empty declaration → endBattleRound without openPriority"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "../ui/test/165-token-loss-warning.test.ts",
+        "file": "client/ui/test/165-token-loss-warning.test.ts",
         "pattern": "[CT-55] a battle both players decline opens no priority window at all",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: A declines (priority null, round 2), D declines, phase leaves battle and A's Fireball is erased"
       }
     ],
     "probes": [],
@@ -670,11 +640,7 @@
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "the entire battle phase **zero** priority windows."
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.ev('info', `${e.pname(seat)} does not attack.`);"
+        "text": "  the entire battle phase **zero** priority windows."
       }
     ],
     "basis_ok": true,
@@ -729,57 +695,57 @@
   },
   {
     "key": "turn.battle.this-battle",
-    "textHash": "1170f1fc3b8dd825",
+    "textHash": "bfe0fd8d838b6331",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:finishHasteEnd",
+        "loc": "client/engine/src/engine.ts:bumpBattleCounter / battleCounter (per region, reset at battle-phase start)",
         "agrees": true,
-        "note": "battleCounters = one object per region, reset at battle-phase start"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:battleCounter",
-        "agrees": true,
-        "note": "only incremented in battle"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "35-rot-debt-trash.test.ts",
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
         "pattern": "R40: battleCounters count trashes per battle and reset between battles",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: discard during battle (1), attacker dies in combat (2), counter 0 at next battle phase"
       },
       {
-        "file": "35-rot-debt-trash.test.ts",
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
         "pattern": "R40: a trash outside battle counts for nothing",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes (bare demonstration): a deployment discard leaves the region's battle counter at 0"
       }
     ],
     "probes": [],
     "source_checks": [
       {
         "ref": "card: Burning Vengeance",
-        "supports": "partly",
-        "note": "on-topic: shows the phrase \"in this battle\" but states nothing about per-region or reset"
+        "supports": "yes",
+        "note": ""
       },
       {
         "ref": "R14",
         "supports": "yes",
-        "note": "owner/engine call"
+        "note": ""
+      },
+      {
+        "ref": "R14",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "region** and reset at battle-phase start"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "equal to the number of units that died in this battle."
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.s.battleCounters = this.s.regions.map(() => ({}));"
+        "file": "client/docs/digital-rules.md",
+        "text": "per phase, \"this battle\" = this region's battle. Deaths outside the battle phase"
       }
     ],
     "basis_ok": true,
@@ -825,23 +791,23 @@
   },
   {
     "key": "turn.battle.what-it-is",
-    "textHash": "25f79562d0ff9dd6",
+    "textHash": "9ebbf3a80cb2808e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "loc": "client/engine/src/apply.ts:doDeclareAttack (attackers and the player enter the region)",
         "agrees": true,
-        "note": "attackers and the attacking player enter the defending region"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "02-combat.test.ts",
+        "file": "client/engine/test/02-combat.test.ts",
         "pattern": "combat math: columns, flying, piercing overflow, deaths",
         "passed": true,
-        "asserts_claim": "yes: asserts attackers moved and the attacking player entered the region"
+        "asserts_claim": "yes: after declareAttack the Good Whale is in the battle region and A is in presentSeats"
       }
     ],
     "probes": [],
@@ -850,12 +816,17 @@
         "ref": "Manual p.7",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "Manual p.7",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "regions of battle. Units may be moved into other"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "2. Battle Phase: The sole interactive phase of the"
       }
     ],
     "basis_ok": true,
@@ -917,23 +888,23 @@
   },
   {
     "key": "turn.battle.what-it-is.only-interaction",
-    "textHash": "545085782cf33f03",
+    "textHash": "dc0853d84087d697",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "loc": "client/engine/src/engine.ts:targetCandidates (presentSeats region scoping, R12/R291)",
         "agrees": true,
-        "note": "a seat enters another region only by attacking (presentSeats push); regroup resets presence"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "293-cached-targets-are-regional.test.ts",
+        "file": "client/engine/test/293-cached-targets-are-regional.test.ts",
         "pattern": "R291 §1 in deployment a home region reaches only its own seat",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: in deployment each seat's cached-target menu is only its own cache; after seat 0 attacks, both caches are offered"
       }
     ],
     "probes": [],
@@ -942,16 +913,17 @@
         "ref": "Manual p.19",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "can only be done during the battle phase."
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "if (!present.includes(seat)) present.push(seat);"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "This means interacting with opponents and their units"
       }
     ],
     "basis_ok": true,
@@ -959,7 +931,7 @@
   },
   {
     "key": "turn.deploy.mods",
-    "textHash": "c62ccd7184752bd6",
+    "textHash": "0e1c41ad26825112",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1008,11 +980,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.deploy.mods.graft-only",
-    "textHash": "9074bf41e1d4c13f",
+    "textHash": "8560ec0044437dea",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U09-r3",
@@ -1104,24 +1077,25 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.deploy.mods.spell-token",
-    "textHash": "29693717c1fff6f4",
+    "textHash": "6d43b692a4a05d32",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U09-r2",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "apply.ts:doAugment",
+        "loc": "client/engine/src/apply.ts:doAugment",
         "agrees": true,
-        "note": "tokenHost = deploy (or Slurpr haste) && host.kind spellToken && host.controller === seat; logs that only attributes transfer"
+        "note": ""
       },
       {
-        "loc": "engine.ts:stackAugmentAttrs",
+        "loc": "client/engine/src/engine.ts:stackAugmentAttrs",
         "agrees": true,
-        "note": "only augmentAttrs of the augments pass to the cast spell"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -1129,19 +1103,13 @@
         "file": "client/engine/test/78-round17-core.test.ts",
         "pattern": "R89: a spell token is a legal augment host during deployment",
         "passed": true,
-        "asserts_claim": "yes: legalActions offers the Fireball token as host; augment attaches"
+        "asserts_claim": "yes (bare demonstration): Fireball token offered as an augment host and the augment attaches"
       },
       {
         "file": "client/engine/test/78-round17-core.test.ts",
         "pattern": "R89: only ATTRIBUTES transfer",
         "passed": true,
-        "asserts_claim": "yes: Fireball 3 + Chitin Shredder {Powerful} deals 6"
-      },
-      {
-        "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "R89: a text-only augment on a token grants nothing",
-        "passed": true,
-        "asserts_claim": "yes: the attributes-only half (not bound as an example)"
+        "asserts_claim": "yes: Fireball 3 augmented with Chitin Shredder in deployment, cast in battle, deals 6 and kills a 3/3"
       }
     ],
     "probes": [],
@@ -1149,7 +1117,12 @@
       {
         "ref": "R89",
         "supports": "yes",
-        "note": "quotes calebgannon 2025-03-06 (rules-questions, not RAQ): 'You can augment spells during deployment but currently that would only be possible with spell tokens. Also you can only do this with attributes.'"
+        "note": ""
+      },
+      {
+        "ref": "R89",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
@@ -1158,24 +1131,16 @@
         "text": "> deployment but currently that would only be possible with spell tokens. Also"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> you can only do this with attributes.**\""
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "&& host?.kind === 'spellToken' && host.controller === seat;"
-      },
-      {
-        "file": "client/engine/test/78-round17-core.test.ts",
-        "text": "assert.ok(!ent(h, victim), 'a Fireball 3 wearing {Powerful} deals 6 and kills a 3/3');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"type\": \"[Augment] {Powerful} Insect {Virus} Unit\","
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: the designer words are a Caleb rules-questions answer carried in R89, so designer[] is empty and basis \"mixed\" is honest. Slurpr also opens this in the haste step (apply.ts tokenHost includes hasteMod); not a contradiction of a deployment rule."
+    "problem": ""
   },
   {
     "key": "turn.deploy.order",
-    "textHash": "9b65595c46bd46c5",
+    "textHash": "897669491aeacc4d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1207,24 +1172,25 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Printed statement; engine divergence is real and carried by turn.deploy.order.simultaneous."
+    "problem": "Printed statement; engine divergence is real and carried by turn.deploy.order.simultaneous.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "turn.deploy.order.simultaneous",
-    "textHash": "916ad090484b9818",
+    "textHash": "8fc1e4fbc73d2cf7",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U09-r2",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "apply.ts:legalActions / doDoneDeploying",
+        "loc": "client/engine/src/apply.ts:doDoneDeploying / legalActions (both seats in deploy)",
         "agrees": true,
-        "note": "both seats offered deploy plays; turn ends only when both deployDone"
+        "note": ""
       },
       {
-        "loc": "server/rooms.ts:segmentKey/heldEvents",
+        "loc": "client/server (R310 hidden segment: opponent log not updated)",
         "agrees": true,
-        "note": "deploy is a hidden segment; opponent's events held until the barrier"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -1232,37 +1198,32 @@
         "file": "client/engine/test/21-fixes.test.ts",
         "pattern": "both seats deploy at once: NIT may act and finish before IT",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: NIT plays Ignis Sprite first and finishes while IT is not done; the turn ends only when IT finishes"
       },
       {
         "file": "client/engine/test/21-fixes.test.ts",
         "pattern": "legalActions OFFERS deploy plays to both seats at once",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes (bare demonstration): NIT offered playCard immediately"
       },
       {
         "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
         "pattern": "R310 §4: a hidden step with no reveal in it leaks nothing either",
         "passed": true,
-        "asserts_claim": "yes (run by the U09 promoter, passed; read by the verifier): toOpp is [] and the opponent log does not move"
+        "asserts_claim": "yes: A plays Ignis Sprite in deployment; nothing reaches D, D's visible log length unchanged"
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R144",
-        "supports": "partly",
-        "note": "\"Deployment is a hidden simultaneous segment\" stands; its no-priority clause is amended by R286, as the citation says"
+        "ref": "R144 (its \"hidden simultaneous segment\" words; its no-priority clause amended by R286)",
+        "supports": "yes",
+        "note": ""
       },
       {
         "ref": "R286",
         "supports": "yes",
-        "note": "\"playing different games during deployment\""
-      },
-      {
-        "ref": "Manual p.38 (not cited)",
-        "supports": "no",
-        "note": "printed: teams deploy IT first then NIT; the rule is scoped \"In this client\", so a digital divergence, honestly basis owner"
+        "note": ""
       }
     ],
     "quote_spans": [
@@ -1272,23 +1233,15 @@
       },
       {
         "file": "client/docs/digital-rules.md",
-        "text": "essentially, playing different games during deployment. Normally, you auto let"
-      },
-      {
-        "file": "client/engine/test/21-fixes.test.ts",
-        "text": "// NIT finishes before IT — fine; turn only ends when both are done"
-      },
-      {
-        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
-        "text": "assert.deepEqual(t.toOpp, [], 'and not one of them reaches the opponent');"
+        "text": "> region. No one else cares about it or interacts with it. The two players are,"
       }
     ],
     "basis_ok": true,
-    "problem": "Third example's test is a server test and was read, not run, per the brief."
+    "problem": ""
   },
   {
     "key": "turn.deploy.stack",
-    "textHash": "c1afce745fd97e78",
+    "textHash": "19789c8b2f015a1d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1331,38 +1284,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.deploy.stack.no-waiting",
-    "textHash": "345bf3eb449725cc",
+    "textHash": "8a6e1e1885d2bd46",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:decisionBlocks",
+        "loc": "client/engine/src/engine.ts:settle (seat-aware hold in deployment, R286 §3)",
         "agrees": true,
-        "note": "a decision of another seat does not block inside the deploy hidden segment"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:settle",
-        "agrees": true,
-        "note": "per-seat deployment drain (settleDeploySeat) per R286"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "276-deployment-stack.test.ts",
+        "file": "client/engine/test/276-deployment-stack.test.ts",
         "pattern": "R286 §1: seat 1 is mid-question and seat 0",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: seat 1 is being asked; seat 0 plays a card and it resolves, seat 1's question untouched"
       },
       {
-        "file": "130-seat-aware-gate.test.ts",
+        "file": "client/engine/test/130-seat-aware-gate.test.ts",
         "pattern": "R154 §1: a Wraith pile suspends its own seat, not the other one",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: seat 1's three Wraith start-of-deployment triggers ask; seat 0 is offered actions and finishes deploying; the pile then drains"
       }
     ],
     "probes": [],
@@ -1370,18 +1319,22 @@
       {
         "ref": "R286",
         "supports": "yes",
-        "note": "point 3"
+        "note": ""
       },
       {
-        "ref": "R154",
+        "ref": "R154 (its seat-aware decision gate)",
         "supports": "yes",
-        "note": "as amended by R286"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "3. **The R154 hold becomes seat-aware in deployment.**"
+        "text": "3. **The R154 hold becomes seat-aware in deployment.** An open decision belonging"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[Augment] At the start of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith onto an ally.\","
       }
     ],
     "basis_ok": true,
@@ -1389,29 +1342,29 @@
   },
   {
     "key": "turn.deploy.start",
-    "textHash": "0fa38d6853cd6d4b",
+    "textHash": "78c774106d136a25",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:startDeployment",
+        "loc": "client/engine/src/engine.ts:startDeployment / finishDeployStart",
         "agrees": true,
-        "note": "rotDamage() first (initiative then NIT), then finishDeployStart fires startOfDeployment"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "35-rot-debt-trash.test.ts",
-        "pattern": "R38: rot deals damage equal to itself at the start of deployment, in initiative order",
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "pattern": "R38: rot deals damage equal to itself at the start of deployment",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes (bare demonstration): rot 2 and 3 deal 2 and 3, in initiative order"
       },
       {
-        "file": "43-dark-c.test.ts",
+        "file": "client/engine/test/43-dark-c.test.ts",
         "pattern": "R102 — the start-of-deployment event still fires after the rot replacement stopped to ask",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Beyond in play, 2 rot; deployment start stops for the target with startOfDeployment not yet fired; after picking Good Whale it fires once"
       }
     ],
     "probes": [],
@@ -1430,11 +1383,11 @@
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "damage equal to their own rot total, in initiative order. Rot never"
+        "text": "**`startOfDeployment`** fires in `startDeployment()` **after** R38's rot damage"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.rotDamage();   // R38: start of deployment, before anyone may deploy"
+        "file": "client/engine/src/cards/registry.ts",
+        "text": "  text: 'If you would take damage from rot, put that many -1/-1 counters on target unit '"
       }
     ],
     "basis_ok": true,
@@ -1442,7 +1395,7 @@
   },
   {
     "key": "turn.deploy.start.triggers",
-    "textHash": "5f287d6a136374c6",
+    "textHash": "571297deb2211321",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1480,7 +1433,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.deploy.what-it-is",
@@ -1593,29 +1547,23 @@
   },
   {
     "key": "turn.deploy.what-it-is.no-battle-cards",
-    "textHash": "d771e933f184c192",
+    "textHash": "a06fa2596cea02e3",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:playAtTiming",
+        "loc": "client/engine/src/apply.ts:doCastSpellToken (timing check)",
         "agrees": true,
-        "note": "deploy branch: need(timing === 'deploy' || timing === 'haste', 'battle cards can only be played during battle')"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "01-planning.test.ts",
+        "file": "client/engine/test/01-planning.test.ts",
         "pattern": "battle-timed Fireball is NOT castable during deployment",
         "passed": true,
-        "asserts_claim": "yes for the Fireball half"
-      },
-      {
-        "file": "01-planning.test.ts",
-        "pattern": "deployment: casting, spawn triggers, spell tokens",
-        "passed": true,
-        "asserts_claim": "yes for the Jelly half (not the bound test)"
+        "asserts_claim": "yes: Flame Juggle played in deployment, the Fireball token cannot be cast (throws, not offered)"
       }
     ],
     "probes": [],
@@ -1624,16 +1572,21 @@
         "ref": "Manual p.26",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "exception of battle cards, which can only be played in"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Any card can be played during this phase, with the"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "'battle cards can only be played during battle');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"type\": \"{Battle} {Burst} Spell Token\","
       }
     ],
     "basis_ok": true,
@@ -1679,7 +1632,7 @@
   },
   {
     "key": "turn.initiative.end-of-turn",
-    "textHash": "efb934ddead2c7e5",
+    "textHash": "78f6d8e2207fd3aa",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1733,11 +1686,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.initiative.end-of-turn.no-responses",
-    "textHash": "2dc4aff4e7145b29",
+    "textHash": "e53250e04cf8e6b6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1775,46 +1729,54 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.initiative.not-a-token",
-    "textHash": "cfcbd7e3530319df",
+    "textHash": "b3e9f0edf117cecd",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:finishTurnEnd",
+        "loc": "client/engine/src/types.ts (initiative is a seat index on state, not an entity)",
         "agrees": true,
-        "note": "initiative is a seat index on GameState, not an entity; nothing that targets tokens can reach it"
+        "note": "nothing could offer it as a target"
       }
     ],
     "tests_run": [],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U09-1.test.ts",
+        "test": "probe U09-1: Download cannot take the initiative — with no token in the region it has no target at all",
+        "passed": true,
+        "demonstrates": "yes: in a battle with no tokens, Download is not offered and playCard throws; initiative unchanged"
+      }
+    ],
     "source_checks": [
       {
         "ref": "RAQ 1353864175910387742#7",
         "supports": "yes",
-        "note": "_passer list item 8 marked not-a-token; claim status untestable"
+        "note": "[Solved] thread 'Download. What is a token', _passer '8. Initiative ❌', status untestable (not outdated)"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/raq.ts",
-        "text": "source: \"_passer: \\\"8. Initiative ❌\\\"\","
+        "text": "      { claim: \"The initiative is not a token.\","
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.s.initiative = this.nit;"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"Gain control of target token. You may choose new targets for spells controlled this way.\","
       }
     ],
     "basis_ok": true,
-    "problem": "Untestable by construction; example is illustrative only."
+    "problem": ""
   },
   {
     "key": "turn.initiative.pass",
-    "textHash": "8c5d21554904e8ff",
+    "textHash": "5a2a37eec375cc75",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -1861,11 +1823,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.initiative.pass.packs",
-    "textHash": "ac9a8724cd47e6cd",
+    "textHash": "57504e79279e5ee6",
     "verdict": "partial",
     "round": 3,
     "verifier": "U09-r3",
@@ -1962,7 +1925,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "First sentence confirmed (printed + engine + test). The second sentence (\"the end-of-turn passing of any draft packs names this same pass; a pack is not passed a second time\") is not stated by any cited source: Manual p.26 and Rulebook p.5 literally describe an end-of-turn pass, and no ruling or RAQ reconciles the two. The engine does pass once (probe), and the best printed support is the uncited Manual p.16 cycle text (\"each player will draft a second time from the pack they were initially dealt\", 1v1 = 3 turns), which fits one pass per turn. Either cite that and mark the clause an inference (basis engine/owner), or drop it."
+    "problem": "First sentence confirmed (printed + engine + test). The second sentence (\"the end-of-turn passing of any draft packs names this same pass; a pack is not passed a second time\") is not stated by any cited source: Manual p.26 and Rulebook p.5 literally describe an end-of-turn pass, and no ruling or RAQ reconciles the two. The engine does pass once (probe), and the best printed support is the uncited Manual p.16 cycle text (\"each player will draft a second time from the pack they were initially dealt\", 1v1 = 3 turns), which fits one pass per turn. Either cite that and mark the clause an inference (basis engine/owner), or drop it.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "turn.initiative.turn-over",
@@ -2113,7 +2077,7 @@
   },
   {
     "key": "turn.regroup.sequence.formation",
-    "textHash": "e5790763e0e32b31",
+    "textHash": "012c64d0de84542c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2156,11 +2120,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.regroup.sequence.players",
-    "textHash": "0803483af1d25741",
+    "textHash": "4b48550bf7196c57",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2198,7 +2163,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.regroup.sequence.return",
@@ -2270,7 +2236,7 @@
   },
   {
     "key": "turn.regroup.sequence.spell-tokens",
-    "textHash": "fb46198a2fef0707",
+    "textHash": "7a96ba3a5d1ddd8e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2313,39 +2279,40 @@
       }
     ],
     "basis_ok": true,
-    "problem": "'All spell tokens' is subject to the Harbinger exception (sibling rule .harbinger); acceptable as the default rule."
+    "problem": "'All spell tokens' is subject to the Harbinger exception (sibling rule .harbinger); acceptable as the default rule.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.regroup.sequence.spell-tokens.harbinger",
-    "textHash": "8e1a680fdc70c173",
+    "textHash": "1ca7e54577b7b729",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:startRegroup",
+        "loc": "client/engine/src/engine.ts:startRegroup / spellTokenSurvivesRegroup",
         "agrees": true,
-        "note": "spellTokenSurvivesRegroup spares the erase only; step (3) still sweeps temp changes; x untouched; survival is per controller"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "12-fire-a.test.ts",
-        "pattern": "Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup",
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "pattern": "Harbinger of Immolation: in play as a UNIT",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Harbinger spawned as a unit; every token of A's survives regroup"
       },
       {
-        "file": "12-fire-a.test.ts",
+        "file": "client/engine/test/12-fire-a.test.ts",
         "pattern": "Harbinger of Immolation: a surviving token keeps its X",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Fireball 7 survives with x=7, tempPower/tempToughness/tempAttrs cleared"
       },
       {
-        "file": "12-fire-a.test.ts",
+        "file": "client/engine/test/12-fire-a.test.ts",
         "pattern": "Harbinger of Immolation: only YOUR tokens stay",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes (bare demonstration): opponent's Fireball erased, controller's kept"
       }
     ],
     "probes": [],
@@ -2358,17 +2325,17 @@
       {
         "ref": "R89",
         "supports": "yes",
-        "note": "quotes R11 note \"spared the ERASE and nothing else\""
+        "note": "'A protected token is spared the ERASE and nothing else'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "is spared the ERASE and nothing else"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Your spell tokens stay through regroup."
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (this.spellTokenSurvivesRegroup(e)) { spared.push(e.id); continue; }"
+        "file": "client/docs/digital-rules.md",
+        "text": "is that a protected token *\"is spared the ERASE and nothing else\"*, and a mod"
       }
     ],
     "basis_ok": true,
@@ -2514,7 +2481,7 @@
   },
   {
     "key": "turn.regroup.what-it-is",
-    "textHash": "ce57d9681b166af8",
+    "textHash": "94b79f1be8804787",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2548,7 +2515,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "turn.regroup.what-it-is.before-deployment",
@@ -2597,7 +2565,7 @@
   },
   {
     "key": "turn.regroup.what-it-is.no-actions",
-    "textHash": "d10347324b5fe05f",
+    "textHash": "325693dade90bca1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U09-r1",
@@ -2631,6 +2599,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   }
 ]

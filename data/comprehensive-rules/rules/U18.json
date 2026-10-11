@@ -6,7 +6,7 @@
     "text": "Card text uses some verbs with a fixed game meaning: these are keyword actions, defined in this section. Where a card prints reminder text for a keyword action, the printed reminder states its meaning, and it wins over any paraphrase of it.",
     "examples": [
       {
-        "text": "Premonition prints the reminder for glimpse, so the glimpse reminder a player is shown is that printed sentence, and our longer paraphrase is kept only as the rule behind it.",
+        "text": null,
         "test": "429-cr-keyword-actions.test.ts::cr:keywords.actions.general — where a card prints the reminder for a keyword action, the reminder a player is shown is that printed sentence and not our paraphrase"
       }
     ],
@@ -104,11 +104,11 @@
     "text": "Discarding a card, sacrificing it, milling it and a card dying into a bin are all ways of trashing it.",
     "examples": [
       {
-        "text": "Milling a card from the deck trashes it, one trash per card.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: milling from the deck trashes one event per card"
       },
       {
-        "text": "A unit card that is sacrificed, or that dies, enters a bin from play and is trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: sacrificing and dying both trash — the card enters a bin from PLAY"
       }
     ],
@@ -147,11 +147,11 @@
     "text": "A card that goes to a bin from the stack is not trashed, whether it resolved, was negated or failed to resolve. A card played for free during another effect's resolution and then put into the bin counts as coming from the stack.",
     "examples": [
       {
-        "text": "A spell going to the bin after it resolves is not trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)"
       },
       {
-        "text": "A negated spell going to the bin is not trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either"
       },
       {
@@ -241,7 +241,7 @@
     "text": "A token is never trashed, because only a card can be trashed. A unit token that dies still enters the bin and still dies, but its trip through the bin is not a trash: no \"when I am trashed\" ability triggers for it, its own included.",
     "examples": [
       {
-        "text": "A token unit dying in battle does not raise the count of cards trashed in that battle.",
+        "text": null,
         "test": "338-tokens-are-not-trashed.test.ts::R306: a token unit dying in battle does not bump the trashed ledger that Dropslime reads"
       },
       {
@@ -312,7 +312,7 @@
         "test": "229-cosmic-and-control.test.ts::R250: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin"
       },
       {
-        "text": "Pull Under deletes an enemy unit and puts it into the caster's bin: the caster trashes it, once.",
+        "text": "Pull Under deletes an enemy unit and puts it into the caster's bin: the caster trashes it.",
         "test": "15-water-b.test.ts::Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once (R40, binTo)"
       }
     ],
@@ -365,11 +365,11 @@
     "text": "When a modded unit is recalled or cached, each nontoken mod it carried is left behind in a bin and is trashed there. The host's controller trashes it, not the mod's owner.",
     "examples": [
       {
-        "text": "A mod left in the bin when its host is recalled is trashed by the host's controller.",
+        "text": null,
         "test": "224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner"
       },
       {
-        "text": "Caching the host attributes the left-behind mods the same way.",
+        "text": null,
         "test": "224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does"
       }
     ],
@@ -420,7 +420,7 @@
     "text": "A nontoken mod that is erased together with its {Unstable} host is not trashed. The host's departure is the whole unit's; the mod has no trash of its own.",
     "examples": [
       {
-        "text": "A nontoken mod on an {Unstable} host that dies is erased with it and fires no trash ability.",
+        "text": null,
         "test": "224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all"
       }
     ],
@@ -568,11 +568,11 @@
     "text": "To discard a card is to put it from a hand into the bin. A discarded card is trashed. Discarding is not playing the card, and a cached card cannot be discarded.",
     "examples": [
       {
-        "text": "A card discarded from a hand is trashed by the player whose bin it enters.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: discarding from hand trashes, by the owner of the bin it enters"
       },
       {
-        "text": "A card held in a cache offers no discard, and an attempt to discard it from there is refused.",
+        "text": null,
         "test": "429-cr-keyword-actions.test.ts::cr:keywords.actions.discard — a discard from a hand puts nothing on the stack and is not played, and a cached card cannot be discarded"
       }
     ],
@@ -835,7 +835,7 @@
     "text": "An effect that deletes a unit and names where it goes overrides the usual bin. Pull Under puts the deleted unit and all of its mods into its caster's bin, where they stay.",
     "examples": [
       {
-        "text": "Pull Under deletes the target; it and its mods land in the caster's bin, not erased and not in the owner's bin.",
+        "text": null,
         "test": "15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin (not erased, not owner-binned)"
       }
     ],
@@ -913,7 +913,7 @@
     "text": "Erasing a unit is neither a death nor a trash. It is a despawn.",
     "examples": [
       {
-        "text": "Banishment erases a unit: no death and no trash, but its despawn is seen.",
+        "text": "Banishment erases a unit: it does not die and is not trashed, but it does despawn.",
         "test": "145-erase-routes.test.ts::R172 (vii): Banishment still fires no 'died' and no 'trashed'"
       }
     ],
@@ -960,7 +960,7 @@
     "text": "To recall a card is to put it into a hand. Printed recalls take a card from play, from a bin, from the stack or from a cache.",
     "examples": [
       {
-        "text": "Vaporweave Eidolon recalls itself from play for [zero].",
+        "text": "Vaporweave Eidolon recalls itself from play to its controller's hand, at no cost.",
         "test": "15-water-b.test.ts::Vaporweave Eidolon: [zero]: recall me — a free activated self-recall"
       },
       {
@@ -1023,7 +1023,7 @@
         "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand, not the owner"
       },
       {
-        "text": "Cosmic Reversal recalls a stolen spell unit to the seat that controls it.",
+        "text": "Cosmic Reversal recalls a stolen spell unit to the hand of the player who controls it.",
         "test": "229-cosmic-and-control.test.ts::R250: a STOLEN spell unit is recalled to the seat that CONTROLS it"
       }
     ],
@@ -1070,7 +1070,7 @@
     "text": "A recalled {Unstable} unit goes to the hand as a card. {Unstable} changes only a move into a bin, so a recall is not affected by it.",
     "examples": [
       {
-        "text": "Recalling an {Unstable} unit puts the card in its hand; it is not erased.",
+        "text": null,
         "test": "125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never fires"
       }
     ],
@@ -1110,7 +1110,7 @@
         "test": "12-fire-a.test.ts::Delver of Mysteries: recalls a chosen spell from the bin, then spawns 2/2"
       },
       {
-        "text": "Eldritch Reclaimer, cast with both players in the battle, offers a unit in its caster's own bin and never one in the opponent's bin.",
+        "text": "Eldritch Reclaimer, cast with both players in the battle, can pick a unit in its caster's own bin, never one in the opponent's bin.",
         "test": "429-cr-keyword-actions.test.ts::cr:keywords.actions.recall.from-bin — Eldritch Reclaimer offers a unit in its own bin and never one in the opponent bin, even with both players in the battle"
       }
     ],
@@ -1154,7 +1154,7 @@
         "test": "14-water-a.test.ts::Cosmic Reversal: recalls all other spell effects on the stack to hands"
       },
       {
-        "text": "Dream Lapse recalls a cast Fireball token: it enters the hand (Rider of the Tides hears it) and is erased.",
+        "text": "Dream Lapse recalls a cast Fireball token: it enters its controller's hand, so Rider of the Tides grows, and then it is erased.",
         "test": "403-raq-fix-mods.test.ts::R335: Dream Lapse recalls a cast Fireball token"
       }
     ],
@@ -1351,7 +1351,7 @@
         "test": "14-water-a.test.ts::Oracle of Foretelling: Glimpse 5 caches ONE of the five"
       },
       {
-        "text": "Glimpse N reveals N, caches exactly one of the glimpser's choice and recycles the rest.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R45: Glimpse N reveals N, caches exactly ONE of the glimpser's choice and recycles the rest"
       }
     ],
@@ -1395,7 +1395,7 @@
     "text": "The player who glimpses chooses which of the revealed cards to cache.",
     "examples": [
       {
-        "text": "Choosing the last revealed card caches it and recycles the two above it.",
+        "text": "In a Glimpse 3, choosing the last revealed card caches it and recycles the two above it.",
         "test": "36-cache-prophecy.test.ts::R45: choosing the LAST revealed card recycles the two above it, in order"
       }
     ],
@@ -1430,7 +1430,7 @@
     "text": "Glimpse 1 reveals the top card of the deck and caches it. There is no choice to make and nothing to recycle.",
     "examples": [
       {
-        "text": "Glimpse 1 raises no decision.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R45: Glimpse 1 raises no decision"
       }
     ],
@@ -1510,7 +1510,7 @@
     "text": "A glimpse reveals from the glimpser's own deck. When an effect makes another player glimpse (\"Its controller Glimpses 3\"), that player reveals from their own deck, not from the deck of the player who controls the effect. In live draft every player's deck is the one shared deck.",
     "examples": [
       {
-        "text": "Celestial Purge cast by one player erases an enemy unit; the unit's controller is the glimpser, chooses the card to cache and caches it in their own cache. (The test game uses one shared deck, so it does not show whose deck is read.)",
+        "text": "Celestial Purge cast by one player erases an enemy unit; that unit's controller glimpses, chooses the card to cache and caches it in their own cache.",
         "test": "14-water-a.test.ts::Celestial Purge: erases target unit (no bin); its controller Glimpses 3"
       },
       {
@@ -1605,7 +1605,7 @@
     "text": "A card played under a glimpse permission still costs its mana, and still obeys its printed timing. Only the affinity requirement is waived.",
     "examples": [
       {
-        "text": "A glimpsed card whose mana cannot be paid is refused.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana — broke means refused"
       },
       {
@@ -1652,7 +1652,7 @@
     "text": "The same permission lets the glimpser apply the cached card as a mod, on the same terms (its mana, ignoring affinity): an augment or graft during deployment, and a {Virus} during battle.",
     "examples": [
       {
-        "text": "A live glimpse grafts for the card's mana, ignoring affinity.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
       },
       {
@@ -1708,7 +1708,7 @@
     "text": "While the permission is live, a glimpsed card with a prophecy banner may be prophesied where it stands in the cache, in the same window and for the same cost as from the hand. Doing so uses up the glimpse permission.",
     "examples": [
       {
-        "text": "A glimpsed card with a banner may be prophesied where it stands in the cache.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache"
       }
     ],
@@ -1751,7 +1751,7 @@
     "text": "The permission ends at end of turn. The card stays in the cache, and it can no longer be played, prophesied or applied as a mod there.",
     "examples": [
       {
-        "text": "An expired glimpse is not a graft, not an augment, not anything.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything"
       },
       {
@@ -1817,7 +1817,7 @@
         "test": "15-water-b.test.ts::Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for free, recycle the rest"
       },
       {
-        "text": "A recycled card stays behind the mark while the deck still has cards.",
+        "text": null,
         "test": "300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark while the deck still has cards"
       }
     ],
@@ -1875,7 +1875,7 @@
     "text": "When two units fight, each deals damage equal to its power to the other.",
     "examples": [
       {
-        "text": "Battle: two target units fight, dealing damage to each other.",
+        "text": "The spell Battle makes two target units fight: each deals damage equal to its power to the other.",
         "test": "16-earth-a.test.ts::Battle: two target units fight (mutual power damage; both targets at cast)"
       }
     ],
@@ -1962,7 +1962,7 @@
     "text": "Damage dealt in a fight is dealt by the units, not by the spell or ability that made them fight. Abilities that look for damage dealt by a spell effect do not see it.",
     "examples": [
       {
-        "text": "Squish damage is the unit dealing it, so Ember of Life does not trigger; the designer's answer covers Fight and Battle the same way.",
+        "text": "Squish's damage is dealt by the unit, so Ember of Life does not trigger; Fight and Battle work the same way.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: Squish damage is the unit dealing it, so Ember of Life does not trigger"
       },
       {
@@ -2004,7 +2004,7 @@
     "text": "A fight needs both of its units. If one of them is gone when the fight would happen, nothing happens: the remaining unit deals and is dealt no damage. The effect does not fizzle.",
     "examples": [
       {
-        "text": "Fight that loses one of its two targets does nothing to the survivor.",
+        "text": null,
         "test": "390-raq-stack.test.ts::RAQ fizzles: Fight that loses one of its two targets does nothing to the survivor"
       }
     ],
@@ -2128,7 +2128,7 @@
     "text": "Each player must choose a living unit of theirs in the region. A player with no unit there chooses none, and takes no part in that rockfall.",
     "examples": [
       {
-        "text": "Meteor Shower with no unit anywhere to hit announces each empty rockfall.",
+        "text": null,
         "test": "93-engine-defects.test.ts::Meteor Shower with no unit anywhere to hit announces each empty rockfall"
       }
     ],
@@ -2226,7 +2226,7 @@
     "text": "\"Exchange\" is printed in four senses, each read from its card: exchanging a unit in play for a unit card in a bin (Hooba-Mon, Necromorph), exchanging control of two units (Organic Exchange), exchanging control of a unit for a spell another player played (Hexbane Shiitake), and exchanging the base stats of two units (Body Swap).",
     "examples": [
       {
-        "text": "Organic Exchange swaps control of two units.",
+        "text": null,
         "test": "24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit"
       },
       {
@@ -2234,7 +2234,7 @@
         "test": "23-wood-a.test.ts::Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets it ([once])"
       },
       {
-        "text": "Body Swap exchanges two units' base stats.",
+        "text": null,
         "test": "26-metal-a.test.ts::Body Swap: exchanges the base stats of two target units until regroup"
       }
     ],
@@ -2328,7 +2328,7 @@
     "text": "To prophesy a card is to pay the cost on its prophecy banner and put it into the cache with its prophecy attached. Prophecy itself is 803.",
     "examples": [
       {
-        "text": "A glimpsed Vengeance is offered its prophecy in deployment.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R308: the real card — a glimpsed Vengeance is offered its prophecy in deployment"
       }
     ],

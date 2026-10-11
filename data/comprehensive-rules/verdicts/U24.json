@@ -1,7 +1,7 @@
 [
   {
     "key": "annexd.confirm.dials",
-    "textHash": "1428fc19c9e5830b",
+    "textHash": "d4185114826847fb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -45,11 +45,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.dials.commit",
-    "textHash": "1d560855a3a63cb0",
+    "textHash": "7af45e82c832c56f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -83,11 +84,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.dials.counters",
-    "textHash": "f0e2f0689c1a8e16",
+    "textHash": "a4ea514ed246713d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -126,11 +128,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.dials.damage-split",
-    "textHash": "4c5f908c4f29b45c",
+    "textHash": "ac62ffa00a2f29f7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -169,41 +172,68 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.dials.number",
-    "textHash": "2af84e4f972770aa",
+    "textHash": "ebc6a50516d1aa74",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/ui/main.ts (numberEntry, numtake)",
+        "loc": "client/ui/main.ts:numtake",
         "agrees": true,
-        "note": "value on the wire"
+        "note": "the typed #num-entry box wins when it holds anything, else the dial count; sends decide with the value"
+      },
+      {
+        "loc": "client/ui/inspect.ts:numberEntrySubmit",
+        "agrees": true,
+        "note": "choice is the number itself, range-checked"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:decisionValue",
+        "agrees": true,
+        "note": "kind 'number' takes the value, not an option index"
       }
     ],
     "tests_run": [
       {
-        "file": "168-three-card-divergences.test.ts",
-        "pattern": "R197 §1c Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar dials past the old cap and puts the VALUE on the wire, not an index",
+        "file": "client/ui/test/168-three-card-divergences.test.ts",
+        "pattern": "R197 §1c Prediction Prophet",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: the dial (numup10 x2) answers life+20 past the old cap and the card stores the value, not an index; numberEntrySubmit returns the number as choice. It does not exercise the typed box itself (probe U24-1 does)"
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/ui/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1: Prediction Prophet question shows a typed box, and a typed number is what is sent",
+        "passed": true,
+        "demonstrates": "yes: the Prediction Prophet question renders id=\"num-entry\" and the dial; a value typed in the box (life+37) is what numtake sends"
+      }
+    ],
     "source_checks": [
       {
         "ref": "R197 (its §1)",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": "a typed box first and a -10/-1/+1/+10 dial; numtake sends the value; R90's life+5 cap superseded per supersession.json"
+      },
+      {
+        "ref": "card: Prediction Prophet",
+        "supports": "yes",
+        "note": "'During [Haste], predict your life total.'"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "  `ui/main.ts` a real bar: a typed box **first** and a −10/−1/+1/+10 dial"
+        "text": "`ui/main.ts` a real bar: a typed box **first** and a −10/−1/+1/+10 dial"
+      },
+      {
+        "file": "client/ui/test/168-three-card-divergences.test.ts",
+        "text": "'the client sent the NUMBER, not an index: the card stored prediction+1 for life+20');"
       }
     ],
     "basis_ok": true,
@@ -211,7 +241,7 @@
   },
   {
     "key": "annexd.confirm.dials.ramp",
-    "textHash": "dcc564c71e1e7528",
+    "textHash": "d8dfe031e4efb844",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -256,11 +286,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.never-refuse",
-    "textHash": "50871314510d95e4",
+    "textHash": "4c5f6e51236f9109",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -303,11 +334,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.never-refuse.ally",
-    "textHash": "4a60203da5f0f885",
+    "textHash": "089d95cdce48d97d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -352,11 +384,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.confirm.never-refuse.regroup",
-    "textHash": "b82bfda59aa9f0cc",
+    "textHash": "a614e49d4a187cb3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -395,11 +428,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.never-refuse.x-zero",
-    "textHash": "fbda90b54687e7f1",
+    "textHash": "b597c96607d2c20b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -438,11 +472,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.not-only-log",
-    "textHash": "fd818a026ef233ad",
+    "textHash": "f5cc3d2c24191ebe",
     "verdict": "partial",
     "round": 3,
     "verifier": "U24-r3",
@@ -504,11 +539,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The ruling and its example are confirmed. The engineDiffers flag (F-U24-4) is not borne out if it rests on R266's \"nineteen tier-1 announcements remain log-only\": R276 then gave every costly log-only announcement a toast (256-cost-toasts: 18 toasted + 3 already surfaced of 21 tier-1 sites, plus 5 card-pool sites). Only the 18 routine, non-costly announcements are still log-only. Drop or restate the divergence, and drop the stale second R266 quote."
+    "problem": "The ruling and its example are confirmed. The engineDiffers flag (F-U24-4) is not borne out if it rests on R266's \"nineteen tier-1 announcements remain log-only\": R276 then gave every costly log-only announcement a toast (256-cost-toasts: 18 toasted + 3 already surfaced of 21 tier-1 sites, plus 5 card-pool sites). Only the 18 routine, non-costly announcements are still log-only. Drop or restate the divergence, and drop the stale second R266 quote.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.confirm.not-only-log.coalesce",
-    "textHash": "1179842f1339812e",
+    "textHash": "aab674cb48c727dd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -547,11 +583,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.not-only-log.toast",
-    "textHash": "7deed4f5c49f2290",
+    "textHash": "719715a7588fe82c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -605,11 +642,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.confirm.not-only-log.token-loss",
-    "textHash": "80e3b9c7ba98e347",
+    "textHash": "f8aa3c5c1037dbc8",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -664,11 +702,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Minor omission only: a resync (flashReset) also drops the notice; not a wrong statement."
+    "problem": "Minor omission only: a resync (flashReset) also drops the notice; not a wrong statement.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.confirm.say-so",
-    "textHash": "a69c087c6c17fc5a",
+    "textHash": "bd210f878bae3c4d",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U24-r3",
@@ -726,11 +765,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: R187 and R209 are rulings derived from the card-todo work (CARD-TODO #70/#74/#81), not owner calls, so \"owner\" as the basis is generous."
+    "problem": "Minor: R187 and R209 are rulings derived from the card-todo work (CARD-TODO #70/#74/#81), not owner calls, so \"owner\" as the basis is generous.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.say-so.no-damage",
-    "textHash": "8362edb487423829",
+    "textHash": "753d9420388c87f0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -764,11 +804,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.say-so.no-opponent",
-    "textHash": "f454dccb24c4cc9c",
+    "textHash": "3a4711b57332ac0f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -802,11 +843,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.say-so.no-target",
-    "textHash": "a726c75aac99351b",
+    "textHash": "fbb39845b5c50846",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -849,11 +891,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.confirm.say-so.per-clause",
-    "textHash": "43803b9e79c3dd4d",
+    "textHash": "04c2730ab59bc56a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -887,11 +930,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.copies",
-    "textHash": "88e1f451956be59d",
+    "textHash": "741b74f1ed79e8fa",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -930,11 +974,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.copies.marked",
-    "textHash": "e77db5df6e97470d",
+    "textHash": "77b5878c04137857",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -977,11 +1022,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.copies.projection",
-    "textHash": "2a0617dda8529c9e",
+    "textHash": "6e895397e632ac9e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1015,11 +1061,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.declarations",
-    "textHash": "d5e0f8c515d28209",
+    "textHash": "2d0264628a117c47",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1053,11 +1100,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.hand",
-    "textHash": "e96461bb72bb8c36",
+    "textHash": "338c8ca77cb7cb76",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1091,11 +1139,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.hand.cached",
-    "textHash": "58ded0e7cbfd1643",
+    "textHash": "77f9e95942dede3a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1134,11 +1183,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.hand.resource-menu",
-    "textHash": "3bf9f64a063dc322",
+    "textHash": "403defc2990565ad",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1196,11 +1246,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.live-values",
-    "textHash": "054afe346716edab",
+    "textHash": "8b337c5cbf16ecc1",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -1265,11 +1316,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.live-values.burst",
-    "textHash": "2cb99f083739e986",
+    "textHash": "4ab2e8aedebd1cf3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1318,11 +1370,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.live-values.named-card",
-    "textHash": "fc011f13b9a64bca",
+    "textHash": "cc076e161800d856",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1361,11 +1414,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.live-values.token-x",
-    "textHash": "cb7c56e297a9e246",
+    "textHash": "310cff5c5b1c64b9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1410,11 +1464,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.display.live-values.x-forecast",
-    "textHash": "a204abfb168718a1",
+    "textHash": "590e91aa973aa630",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -1474,11 +1529,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Unstated extra: a declared player target narrows the forecast the same way (Soul Siphon). Not a wrong statement."
+    "problem": "Unstated extra: a declared player target narrows the forecast the same way (Soul Siphon). Not a wrong statement.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.display.live-values.x-not-forecast",
-    "textHash": "0568dba842da5c8f",
+    "textHash": "9c56f90c237a87a8",
     "verdict": "partial",
     "round": 3,
     "verifier": "U24-r3",
@@ -1529,11 +1585,12 @@
       }
     ],
     "basis_ok": false,
-    "problem": "The engine statement is true, but it records a known gap as if it were a rule, and gives the owner as the basis. The owner asked that every X card show its X on the stack. R246 rules that a board-read X is public and shown as a forecast, and lists the 18 hookless cards as \"not forecast yet\". Restate it as a digital limitation with an engineDiffers flag, or set the basis to engine. The ruling is: a board-read X should be forecast, and these 18 cards are not yet."
+    "problem": "The engine statement is true, but it records a known gap as if it were a rule, and gives the owner as the basis. The owner asked that every X card show its X on the stack. R246 rules that a board-read X is public and shown as a forecast, and lists the 18 hookless cards as \"not forecast yet\". Restate it as a digital limitation with an engineDiffers flag, or set the basis to engine. The ruling is: a board-read X should be forecast, and these 18 cards are not yet.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.display.menus",
-    "textHash": "9a6710c9770ffd27",
+    "textHash": "b22ee71c17019e1f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1588,11 +1645,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.menus.log",
-    "textHash": "eaade0fa77049f06",
+    "textHash": "0c0e135d51ba6b5e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1640,11 +1698,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.reminders",
-    "textHash": "306b2bf08948bc5e",
+    "textHash": "50de25af5b64025d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1703,11 +1762,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.reminders.browser",
-    "textHash": "be8fbde2621bc399",
+    "textHash": "a2a40f0ef2e426fd",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1741,11 +1801,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.reminders.fuller-rule",
-    "textHash": "bdb3d22194cf0927",
+    "textHash": "7b47829e5fa36ed2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1784,11 +1845,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.reminders.no-numbers",
-    "textHash": "b627cd8688095956",
+    "textHash": "0e9f138a01081d65",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1822,11 +1884,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.display.stack-states",
-    "textHash": "f8aefbce859648d4",
+    "textHash": "28e2782935beccc0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1865,11 +1928,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.stack-states.mods",
-    "textHash": "426ba2e965c32406",
+    "textHash": "853311ca9f4c7372",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1903,11 +1967,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.text-box",
-    "textHash": "e15b977eb0ed8a0a",
+    "textHash": "4fd31056e93c9ae2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -1952,11 +2017,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.text-box.modal",
-    "textHash": "bf52d8bce85226e5",
+    "textHash": "20ad26ce1e004f6e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2001,11 +2067,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.display.text-box.prophecy",
-    "textHash": "7acccaacfab900a5",
+    "textHash": "f1e1b485972474d7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2044,11 +2111,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.text-box.spent",
-    "textHash": "875a94f1f039bdea",
+    "textHash": "256ce31eb068e942",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2097,11 +2165,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.display.text-box.transform",
-    "textHash": "64554997ffbd9488",
+    "textHash": "d672294bf0b51d46",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2135,11 +2204,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.display.text-box.unstable",
-    "textHash": "a4ee289949b2fa85",
+    "textHash": "7f335d44f55f4c6b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2178,11 +2248,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.modes.concession",
-    "textHash": "e56d6ee8c68170f2",
+    "textHash": "81ae9e082b66fc3a",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -2230,11 +2301,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.modes.concession.early",
-    "textHash": "4a9531a4683c1f71",
+    "textHash": "7c603974104508ce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2294,11 +2366,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.modes.concession.normal",
-    "textHash": "95cbae487393cf00",
+    "textHash": "a68aca74f32f3619",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2344,11 +2417,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.modes.concession.rated-only",
-    "textHash": "fd90d800494a3652",
+    "textHash": "4f58a9d55726f68d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2391,11 +2465,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.modes.concession.walkover",
-    "textHash": "fb0c4ccf2efcb75d",
+    "textHash": "c0f116613dd5cc37",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -2460,11 +2535,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.custom-rules",
-    "textHash": "a7e550474559273f",
+    "textHash": "46c37cc881524185",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2503,11 +2579,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.custom-rules.beginner",
-    "textHash": "ae8ab4f65c6f8e72",
+    "textHash": "7d1260f2cb260be7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2546,11 +2623,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.custom-rules.floor",
-    "textHash": "983a030b70ed6637",
+    "textHash": "532a3bc37a57fc73",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -2604,11 +2682,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Unstated: when the lobby will choose the elements, every element set of that size must clear the floor."
+    "problem": "Unstated: when the lobby will choose the elements, every element set of that size must clear the floor.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.custom-rules.knobs",
-    "textHash": "aa9d2dc8a30423b5",
+    "textHash": "ca8c4fb9d9e58f12",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2668,11 +2747,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.custom-rules.not-counted",
-    "textHash": "3cec0198d26d9be2",
+    "textHash": "8b03c69962e231a7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2716,11 +2796,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.custom-rules.simple",
-    "textHash": "f8ade1ef577ab443",
+    "textHash": "13af219e8052f123",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2754,11 +2835,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.custom-rules.standard",
-    "textHash": "0ee9f5d3f6f39676",
+    "textHash": "6ca32ef2c5507d21",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2792,11 +2874,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.learn-to-play",
-    "textHash": "aef9c69201ff0574",
+    "textHash": "e2a25ce144f3914a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2830,11 +2913,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.learn-to-play.bot-card",
-    "textHash": "b0a5953609abb7ea",
+    "textHash": "e4f78013ac8f7eda",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2873,11 +2957,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.learn-to-play.bot-play",
-    "textHash": "762c5e669d3f159b",
+    "textHash": "d0dafb9a795a9a14",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -2937,11 +3022,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.learn-to-play.deal",
-    "textHash": "505c76344f2a9a35",
+    "textHash": "8a5e8056afd8b3ad",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -2997,11 +3083,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.scenarios",
-    "textHash": "8aaa0515061fef6d",
+    "textHash": "fe31944fd4824a32",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3041,11 +3128,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.scenarios.gated",
-    "textHash": "5e9dd133036126de",
+    "textHash": "c9cea159f26dd055",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3080,11 +3168,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.single-card-duel",
-    "textHash": "131c2859602b3084",
+    "textHash": "8b60448273d70dbc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3123,11 +3212,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.single-card-duel.blind",
-    "textHash": "8de5bd95908f80f5",
+    "textHash": "1812a66e47991330",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3159,11 +3249,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.modes.single-card-duel.draw",
-    "textHash": "3596deefb896463a",
+    "textHash": "80e751691ecc7b32",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3216,11 +3307,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No test bound; the e2e guard server/e2e/test-single-card.ts was not run. Probe measures it."
+    "problem": "No test bound; the e2e guard server/e2e/test-single-card.ts was not run. Probe measures it.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.single-card-duel.ladder",
-    "textHash": "ba197536b181fa0b",
+    "textHash": "b17753520ec78766",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3268,11 +3360,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.modes.single-card-duel.makes-units",
-    "textHash": "a72bb94ec3adec21",
+    "textHash": "e9d62501101de874",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3311,11 +3404,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.modes.single-card-duel.no-units",
-    "textHash": "96901bc5c3695e57",
+    "textHash": "9a57ecd2a822443d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3352,11 +3446,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.modes.single-card-duel.records",
-    "textHash": "a973fa9ad54babdf",
+    "textHash": "b956c62782cb6999",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3409,11 +3504,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.reveal.beats",
-    "textHash": "61123674661c2af8",
+    "textHash": "f0f10ab7d14d4988",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3447,11 +3543,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.beats.never-gates",
-    "textHash": "4b92d17432842a3d",
+    "textHash": "7cdbec480d9b19b7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3490,11 +3587,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.glimpse",
-    "textHash": "73ac811111c632e8",
+    "textHash": "50378f2910f78f01",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3544,11 +3642,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.glimpse.learn-to-play",
-    "textHash": "1efe8e6b8709b678",
+    "textHash": "1ac01ee785da9ff1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3582,11 +3681,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.reveal.glimpse.once",
-    "textHash": "6daa156f495582be",
+    "textHash": "675aff9427da5a76",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -3643,11 +3743,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Scope note: applies to hidden steps; a resource-step close arrives without a playback but still pops once."
+    "problem": "Scope note: applies to hidden steps; a resource-step close arrives without a playback but still pops once.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.reveal.glimpse.own",
-    "textHash": "81d0bf368bf87c88",
+    "textHash": "10bd79778c0b1cb9",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U24-r2",
@@ -3698,11 +3799,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.reveal.glimpse.public",
-    "textHash": "21bc60b99b9376cc",
+    "textHash": "bf08b31b10a88f96",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3742,11 +3844,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.hidden-names",
-    "textHash": "a8a9507931cab8c0",
+    "textHash": "2679854effaebc1b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3786,11 +3889,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.hidden-names.look-at",
-    "textHash": "364d23d4ce95ea00",
+    "textHash": "4eb4b20696149f77",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3830,11 +3934,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.hidden-names.moved-card",
-    "textHash": "6fda52eb38b2fce3",
+    "textHash": "fa7170ecb693eff2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3874,11 +3979,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.hidden-steps",
-    "textHash": "621448ac7b6a9ac5",
+    "textHash": "7195fb6a9d59308b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3942,11 +4048,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.hidden-steps.battle",
-    "textHash": "a6bfe9c7fc17f41a",
+    "textHash": "f4ab1b20a2eb255a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -3981,11 +4088,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.hidden-steps.counts",
-    "textHash": "29546f6dd54c23a5",
+    "textHash": "a9c713289e3bcf35",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4029,11 +4137,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.hidden-steps.frozen",
-    "textHash": "729e7a858349ead4",
+    "textHash": "10646709be8ed9b3",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U24-r3",
@@ -4119,11 +4228,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Not a defect: in the haste step and deployment the shared deck and recycle counts are frozen for BOTH players, including your own plays (R310). The rule only describes the other player's side, so it is incomplete there but not wrong."
+    "problem": "Not a defect: in the haste step and deployment the shared deck and recycle counts are frozen for BOTH players, including your own plays (R310). The rule only describes the other player's side, so it is incomplete there but not wrong.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.hidden-steps.haste-ready",
-    "textHash": "716c6a1520e77105",
+    "textHash": "c104a0bca740c609",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4162,11 +4272,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.pending-choice",
-    "textHash": "dbeffb9af46b5a46",
+    "textHash": "2854cacae36ed6c9",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U24-r3",
@@ -4245,11 +4356,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.pending-choice.source",
-    "textHash": "75306f4eed621527",
+    "textHash": "a934e0dec47caf4b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4292,11 +4404,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.reveal.public-zones",
-    "textHash": "204ffe0e6eaf24c4",
+    "textHash": "62975df442340d00",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4330,11 +4443,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.reveal.public-zones.bin",
-    "textHash": "7e52ff893921bcf9",
+    "textHash": "8f7928a85f9d3bcb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4373,11 +4487,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.public-zones.deck-elements",
-    "textHash": "07df9e562fb322d4",
+    "textHash": "c97ba07c3aac892c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4409,11 +4524,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.public-zones.erased",
-    "textHash": "6ea560c33c464d5e",
+    "textHash": "b4810c1c4a5bf1b5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4452,11 +4568,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.public-zones.prophecy-meter",
-    "textHash": "82b485cf0681852e",
+    "textHash": "3880af6ba9ff3882",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4495,11 +4612,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.public-zones.prophecy-state",
-    "textHash": "81dd4ef17bc91298",
+    "textHash": "e557bb0d714253ac",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4538,11 +4656,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "annexd.reveal.resolving",
-    "textHash": "42e16676af57f280",
+    "textHash": "8190f3f0bb9e8971",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4581,11 +4700,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.reveal.resolving.battle-only",
-    "textHash": "5fd1e8378016079c",
+    "textHash": "22e9b7fb3019104e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4617,11 +4737,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "annexd.reveal.resolving.only-answer",
-    "textHash": "df17f184170417ea",
+    "textHash": "c221bc86b886827b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4655,11 +4776,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "annexd.reveal.resolving.partial",
-    "textHash": "19eac5ab22c78b27",
+    "textHash": "3c314f4173eddc76",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U24-r1",
@@ -4698,6 +4820,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   }
 ]

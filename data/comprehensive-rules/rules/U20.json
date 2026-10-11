@@ -6,7 +6,7 @@
     "text": "Evasive is an attribute. Its reminder text, printed under the type line, reads \"Evasive units require two blockers.\"",
     "examples": [
       {
-        "text": "Example: Curio Drifter is Evasive.",
+        "text": null,
         "test": "07-cards.test.ts::Curio Drifter: Evasive requires two blockers"
       }
     ],
@@ -55,7 +55,7 @@
     "text": "A column with Evasive cannot be blocked by a single unit. To block it, the defending player must place two units in front of it.",
     "examples": [
       {
-        "text": "Example: An Evasive Curio Drifter attacks. The defender may block it with two units placed in front of it, one behind the other, but not with one.",
+        "text": "An Evasive Curio Drifter attacks. The defender may block it with two units placed in front of it, one behind the other, but not with one.",
         "test": "07-cards.test.ts::Curio Drifter: Evasive requires two blockers"
       }
     ],
@@ -105,7 +105,7 @@
     "text": "Evasive does not apply if either the Evasive column or the units blocking it include a Pure card. A single Pure unit can block an Evasive column on its own (see rule 802.25).",
     "examples": [
       {
-        "text": "Example: Just a Unit (Pure) blocks an Evasive column by itself.",
+        "text": "Just a Unit (Pure) blocks an Evasive column by itself.",
         "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks an Evasive column alone"
       }
     ],
@@ -147,7 +147,7 @@
     "text": "Sneaky is an attribute. Its reminder text, printed under the type line, reads \"Sneaky units can't be blocked if attacking alone.\"",
     "examples": [
       {
-        "text": "Example: Whispering Mantid is Sneaky.",
+        "text": null,
         "test": "08-cards2.test.ts::Whispering Mantid: Sneaky"
       }
     ],
@@ -190,7 +190,7 @@
     "text": "An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation.",
     "examples": [
       {
-        "text": "Example: Whispering Mantid attacks alone and cannot be blocked. Attacking with another unit, it can be.",
+        "text": "Whispering Mantid attacks alone and cannot be blocked. Attacking with another unit, it can be.",
         "test": "08-cards2.test.ts::Whispering Mantid: Sneaky"
       }
     ],
@@ -227,7 +227,7 @@
     "text": "Spell tokens that go with an attack do not count as attacking units for Sneaky. A Sneaky unit attacking with only spell tokens beside it is attacking alone.",
     "examples": [
       {
-        "text": "Example (illustrative): A Sneaky unit attacks together with two Fireball spell tokens. It is still attacking alone and cannot be blocked.",
+        "text": "A Sneaky unit attacks together with two Fireball spell tokens. It is still attacking alone and cannot be blocked.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.sneaky.spell-tokens — a Sneaky unit attacking with two riding Fireball spell tokens is still alone and cannot be blocked"
       }
     ],
@@ -264,7 +264,7 @@
     "text": "Two Sneaky units attacking together are not alone. Both can be blocked.",
     "examples": [
       {
-        "text": "Example (illustrative): Two Whispering Mantids attack in different columns. The defender may block either or both.",
+        "text": "Two Whispering Mantids attack in different columns. The defender may block either or both.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.sneaky.two-sneaky — two Whispering Mantids attacking in two columns are not alone, and both can be blocked"
       }
     ],
@@ -299,7 +299,7 @@
     "text": "A side-block does not block a lone Sneaky attacker. The defending player may side-block beside it, and it stays unblocked (see rule 606.4e).",
     "examples": [
       {
-        "text": "Example: A side-block beside a lone Sneaky attacker is allowed, and the Sneaky unit is still unblocked.",
+        "text": null,
         "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.blocks-nothing — a side-block beside a lone Sneaky attacker"
       }
     ],
@@ -336,7 +336,7 @@
     "text": "A Pure unit ignores Sneaky, so it can block a lone Sneaky attacker (see rule 802.25).",
     "examples": [
       {
-        "text": "Example (illustrative): A lone Sneaky unit attacks. The defender can block it with Just a Unit (Pure), and with no other unit.",
+        "text": "A lone Sneaky unit attacks. The defender can block it with Just a Unit (Pure), and with no other unit.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.sneaky.pure — Just a Unit (Pure) can block a lone Sneaky attacker, and a plain unit cannot"
       }
     ],
@@ -378,7 +378,7 @@
     "text": "Alluring is an attribute. Its reminder text, printed under the type line, reads \"When an alluring column attacks, target enemy can't attack and must block it this combat if able.\"",
     "examples": [
       {
-        "text": "Example: Tempest Wrangler is Alluring, and donates Alluring when applied as an augment.",
+        "text": null,
         "test": "15-water-b.test.ts::Tempest Wrangler: {Alluring} 1/3"
       }
     ],
@@ -422,7 +422,7 @@
     "text": "When an attacking column with Alluring is declared, Alluring triggers. The trigger goes on the stack and targets one enemy unit, chosen by the attacking player from the enemy units in the battle region as the trigger is put on the stack.",
     "examples": [
       {
-        "text": "Example: Two attacking columns, one Alluring, against one possible blocker: the Alluring trigger targets that blocker, which then must block the Alluring column.",
+        "text": "Two attacking columns, one Alluring, against one possible blocker: the Alluring trigger targets that blocker, which then must block the Alluring column.",
         "test": "53-playtest-round7.test.ts::R84: the minimal form"
       }
     ],
@@ -469,7 +469,7 @@
     "text": "Alluring does not stack. An attacking column with Alluring has one Alluring trigger, however many of its units have Alluring.",
     "examples": [
       {
-        "text": "Example: Two Alluring units attack in one column. Alluring triggers once.",
+        "text": "Two Alluring units attack in one column. Alluring triggers once.",
         "test": "53-playtest-round7.test.ts::R84: {Alluring} does not stack"
       }
     ],
@@ -508,11 +508,11 @@
     "text": "Each attacking column with Alluring has its own trigger. Two Alluring columns make two triggers, which may target the same unit or different units.",
     "examples": [
       {
-        "text": "Example: Two Alluring columns attack. Each triggers, and both triggers may target the same defending unit.",
+        "text": "Two Alluring columns attack. Each triggers, and both triggers may target the same defending unit.",
         "test": "53-playtest-round7.test.ts::R84: two Alluring COLUMNS are two triggers, and may name the same unit"
       },
       {
-        "text": "Example: Two Alluring columns target two different units. Each of those units must block its column.",
+        "text": "Two Alluring columns target two different units. Each of those units must block its column.",
         "test": "53-playtest-round7.test.ts::R84: two Alluring columns naming DIFFERENT units compel both"
       }
     ],
@@ -547,7 +547,7 @@
     "text": "Alluring is shared by the units of its column, but the column's Alluring trigger comes from the unit that has Alluring itself, not from the units it is shared with.",
     "examples": [
       {
-        "text": "Example: Tempest Wrangler attacks in a column with a vanilla unit. The trigger is Tempest Wrangler's.",
+        "text": "Tempest Wrangler attacks in a column with a vanilla unit. The trigger is Tempest Wrangler's.",
         "test": "298-column-attrs-outside-combat.test.ts::R294 §4b {Alluring} still originates from the unit that prints it"
       }
     ],
@@ -589,7 +589,7 @@
     "text": "When the Alluring trigger resolves, its target cannot attack: it cannot be declared as an attacker or sent to counterattack for the rest of the battle phase (see rule 604.2e).",
     "examples": [
       {
-        "text": "Example: A lured unit cannot be sent out to counterattack when blocks are declared.",
+        "text": "A lured unit cannot be sent out to counterattack when blocks are declared.",
         "test": "53-playtest-round7.test.ts::R84: a lured unit cannot be sent out to counterattack"
       }
     ],
@@ -631,7 +631,7 @@
     "text": "When the Alluring trigger resolves, its target must block the Alluring column in that battle round if it is able to. If the column is blocked at all, the target must be one of its blockers (see rule 606.2e).",
     "examples": [
       {
-        "text": "Example: The defender has two units able to block and leaves the Alluring column unblocked by putting both on other columns. The declaration is refused: the lured unit must block the Alluring column.",
+        "text": "The defender has two units able to block and tries to leave the Alluring column unblocked by putting both on other columns. That is not allowed: the lured unit must block the Alluring column.",
         "test": "53-playtest-round7.test.ts::R84 UFAB"
       }
     ],
@@ -678,7 +678,7 @@
     "text": "Whether the target is able to block the Alluring column depends only on that unit and that column. If the target could not block the column by itself (because the column is Evasive and needs two blockers, the target is Feeble, the column has Flying and the target does not, or the column is a lone Sneaky attacker), the defending player may leave the column unblocked, and the target may block another column.",
     "examples": [
       {
-        "text": "Example: A lone lured unit cannot block an Alluring and Evasive column by itself, so it need not block it, and it may block another column.",
+        "text": "A lone lured unit cannot block an Alluring and Evasive column by itself, so it need not block it, and it may block another column.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Alluring: a lone lured unit cannot block an Evasive column"
       }
     ],
@@ -727,11 +727,11 @@
     "text": "An Alluring and Evasive column can be blocked only by two units, one of which is the target. The defending player chooses between blocking it with the target and one other unit, and not blocking it at all; blocking it with two other units is not allowed.",
     "examples": [
       {
-        "text": "Example: The target is A and the defender also has B and C. A+B and A+C may block the column; B+C may not.",
+        "text": "The target is A and the defender also has B and C. A+B and A+C may block the column; B+C may not.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Alluring: with three units, A+B or A+C may block the Evasive column, but never B+C"
       },
       {
-        "text": "Example: The defender has only A and B. They block the column with A+B, or leave it unblocked.",
+        "text": "The defender has only A and B. They block the column with A+B, or leave it unblocked.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Alluring: with two units, the lured one blocks the Evasive column with the other, or nobody blocks it"
       }
     ],
@@ -779,7 +779,7 @@
     "text": "If, when the Alluring trigger would resolve, the unit with Alluring is no longer in an attacking column, or its column no longer has Alluring, the trigger does nothing.",
     "examples": [
       {
-        "text": "Example: The attacker's Alluring unit is killed while its trigger is on the stack. The trigger does nothing, and the targeted unit may attack and block freely.",
+        "text": "The attacker's Alluring unit is killed while its trigger is on the stack. The trigger does nothing, and the targeted unit may attack and block freely.",
         "test": "53-playtest-round7.test.ts::R84: killing the allurer while the trigger is ON the stack fizzles it"
       }
     ],
@@ -818,7 +818,7 @@
     "text": "Once the Alluring trigger has resolved, removing the unit with Alluring does not undo it: its target still cannot attack. If the Alluring column ceases to exist, the duty to block it ends with it.",
     "examples": [
       {
-        "text": "Example: After the trigger resolves, the Alluring attacker is killed in the attack window. The lured unit may block another column, but it still cannot be sent to counterattack.",
+        "text": "After the trigger resolves, the Alluring attacker is killed in the attack window. The lured unit may block another column, but it still cannot be sent to counterattack.",
         "test": "53-playtest-round7.test.ts::R84: killing the allurer AFTER it resolves frees the block but not the attack"
       }
     ],
@@ -857,7 +857,7 @@
     "text": "If two Alluring triggers have targeted the same unit, it cannot block both columns. Blocking either of those columns with it satisfies both triggers, and the other column may then be blocked by other units or left unblocked.",
     "examples": [
       {
-        "text": "Example (illustrative): Two Alluring columns both target unit A. A blocks the first column. The second column may be blocked by B alone, or left unblocked.",
+        "text": "Two Alluring columns both target unit A. A blocks the first column. The second column may be blocked by B alone, or left unblocked.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.alluring.two-duties — one unit lured by two columns blocks one of them, and the other column may be blocked by another unit or left unblocked"
       }
     ],
@@ -893,7 +893,7 @@
     "text": "An Alluring trigger from a lone Sneaky attacker compels no unit, because no unit is able to block that attacker (see rule 802.14), unless its target is Pure.",
     "examples": [
       {
-        "text": "Example: A lone Sneaky and Alluring unit attacks. The defender declares no blocks, and that is legal.",
+        "text": "A lone Sneaky and Alluring unit attacks. The defender declares no blocks, and that is legal.",
         "test": "53-playtest-round7.test.ts::R84: a lone {Sneaky} + {Alluring} attacker is not a stuck state"
       }
     ],
@@ -939,7 +939,7 @@
     "text": "An Alluring column that contains a Pure card does not trigger at all (see rule 802.25).",
     "examples": [
       {
-        "text": "Example: An Alluring column with Just a Unit in it attacks. No Alluring trigger is put on the stack.",
+        "text": "An Alluring column with Just a Unit in it attacks. No Alluring trigger is put on the stack.",
         "test": "53-playtest-round7.test.ts::R84 + R61: an Alluring column that is itself {Pure} never even triggers"
       }
     ],
@@ -981,11 +981,11 @@
     "text": "A Pure unit ignores the attributes that would stop it blocking, so a Pure target is able to block any Alluring column: it must block even a Flying Alluring column, and it satisfies an Evasive Alluring column by itself.",
     "examples": [
       {
-        "text": "Example: A lured Pure unit must block a Flying Alluring column.",
+        "text": "A lured Pure unit must block a Flying Alluring column.",
         "test": "53-playtest-round7.test.ts::R84 + R61: a {Pure} lured unit is able against a Flying Alluring column"
       },
       {
-        "text": "Example: A lured Pure unit blocks an Evasive Alluring column alone.",
+        "text": "A lured Pure unit blocks an Evasive Alluring column alone.",
         "test": "53-playtest-round7.test.ts::R84 + R61: a {Pure} lured unit discharges an EVASIVE Alluring column alone"
       }
     ],
@@ -1026,11 +1026,11 @@
     "text": "The Alluring trigger is a triggered ability. It can be negated while it is on the stack, and an effect that makes triggered abilities cost more to trigger (Crevice Lurker) applies to it: if that cost is not paid, the trigger does not happen.",
     "examples": [
       {
-        "text": "Example: Crevice Lurker is in play. The attacker declines to pay for the Alluring trigger, and nothing is lured.",
+        "text": "Crevice Lurker is in play. The attacker declines to pay for the Alluring trigger, and nothing is lured.",
         "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes the Alluring trigger"
       },
       {
-        "text": "Example: Containment Protocol negates a waiting Alluring trigger.",
+        "text": "Containment Protocol negates a waiting Alluring trigger.",
         "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger"
       }
     ],
@@ -1074,7 +1074,7 @@
     "text": "Piercing is an attribute. Its reminder text reads \"Excess damage from piercing sources is dealt to the recipient's controller.\"",
     "examples": [
       {
-        "text": "Example: Protective Adaptations gives a unit +1/+1 and Piercing until regroup.",
+        "text": null,
         "test": "14-water-a.test.ts::Protective Adaptations: the target also gains piercing until regroup"
       }
     ],
@@ -1132,15 +1132,15 @@
     "text": "Excess damage, for Piercing, is the damage a source deals to a unit beyond that unit's lethal damage. A unit's lethal damage is worked out after Powerful has doubled the source's damage; it is reduced for a Vulnerable unit, which is dealt double what reaches it; it is 1 if the source has Deadly; and damage already dealt to the unit counts towards it, including damage dealt to it earlier by the same effect (see rule 608.6e).",
     "examples": [
       {
-        "text": "Example: A Powerful Piercing source deals 3 to a 1/1. The 3 is doubled to 6; 1 is lethal; 5 is excess.",
+        "text": "A Powerful Piercing source deals 3 to a 1/1. The 3 is doubled to 6; 1 is lethal; 5 is excess.",
         "test": "82-attr-interactions.test.ts::Piercing + Powerful: the excess is what is left after the doubling"
       },
       {
-        "text": "Example: A 10-power Piercing column is blocked by a Vulnerable 3/8. Lethal damage is 4, which is dealt as 8; the other 6 is excess.",
+        "text": "A 10-power Piercing column is blocked by a Vulnerable 3/8. Lethal damage is 4, which is dealt as 8; the other 6 is excess.",
         "test": "387-raq-combat.test.ts::RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4 and 6 goes to the player"
       },
       {
-        "text": "Example: One effect names the same unit twice with Piercing. The unit is given its lethal damage once, and the rest of both hits is excess.",
+        "text": "One effect names the same unit twice with Piercing. The unit is given its lethal damage once, and the rest of both hits is excess.",
         "test": "82-attr-interactions.test.ts::Piercing: a unit named twice in one batch is overkilled ONCE"
       }
     ],
@@ -1205,7 +1205,7 @@
     "text": "A half-column with Piercing that deals combat damage to the units of the opposing half-column must assign lethal damage to each of those units, front to back. Any of its damage that is not assigned to a unit is dealt to the player who controls those units.",
     "examples": [
       {
-        "text": "Example: A Piercing column with 10 power is blocked by a 1/2 in front of a 1/3. It must assign 2 to the front unit and 3 to the back unit; the other 5 may be dealt to the defending player.",
+        "text": "A Piercing column with 10 power is blocked by a 1/2 in front of a 1/3. It must assign 2 to the front unit and 3 to the back unit; the other 5 may be dealt to the defending player.",
         "test": "387-raq-combat.test.ts::RAQ Excessive: Piercing pays lethal to the front AND the back, and only the rest reaches the player"
       }
     ],
@@ -1269,11 +1269,11 @@
     "text": "Excess is elective. After each unit has been assigned its lethal damage, the dealing player may assign any part of the remaining damage to those units, including all of it, and only the damage no unit is assigned is dealt to the player.",
     "examples": [
       {
-        "text": "Example: A 10-power Piercing attacker is blocked by a lone Vulnerable 3/8. The attacker may put all 10 into it (dealt as 20), and none reaches the player.",
+        "text": "A 10-power Piercing attacker is blocked by a lone Vulnerable 3/8. The attacker may put all 10 into it (dealt as 20), and none reaches the player.",
         "test": "399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
       },
       {
-        "text": "Example: A Piercing split may keep part of the excess on the back unit and send the rest to the player.",
+        "text": null,
         "test": "399-raq-fix-combat.test.ts::R319: a Piercing split may keep part of the excess on the back unit and send the rest"
       }
     ],
@@ -1330,7 +1330,7 @@
     "text": "An unblocked attacking half-column with Piercing deals its combat damage to the defending player, as any unblocked half-column does.",
     "examples": [
       {
-        "text": "Example: An unblocked Piercing column hits the defending player.",
+        "text": null,
         "test": "387-raq-combat.test.ts::RAQ Piercing: an unblocked Piercing column hits the player"
       }
     ],
@@ -1367,11 +1367,11 @@
     "text": "If an attacking half-column with Piercing is blocked but no blocking unit is left in front of it when it strikes, all of its damage is excess and is dealt to the defending player. A blocked half-column without Piercing deals no damage in that case (see rule 608.4c).",
     "examples": [
       {
-        "text": "Example: A Piercing column's only blocker dies before damage. The column is still blocked, and its full power is dealt to the defending player.",
+        "text": "A Piercing column's only blocker dies before damage. The column is still blocked, and its full power is dealt to the defending player.",
         "test": "387-raq-combat.test.ts::RAQ Piercing: a Piercing column whose blocker died before damage puts its full power into the player"
       },
       {
-        "text": "Example: The same position without Piercing deals nothing to the player.",
+        "text": "The same position without Piercing deals nothing to the player.",
         "test": "387-raq-combat.test.ts::RAQ Piercing: a blocked NON-Piercing column whose blocker died deals nothing to the player"
       }
     ],
@@ -1426,11 +1426,11 @@
     "text": "A blocking half-column with Piercing deals excess combat damage to the attacking player only if there is an attacking unit in front of it when it strikes. If no attacking unit is in front of it (its attackers are all gone, or it is a side-block), it deals no combat damage at all (see rules 608.4e and 608.4f).",
     "examples": [
       {
-        "text": "Example: A Piercing blocking column with an attacker in front of it deals its excess to the attacking player.",
+        "text": null,
         "test": "387-raq-combat.test.ts::RAQ Piercing: a defending Piercing column with an attacker in front of it carries its excess to the attacker"
       },
       {
-        "text": "Example: A Piercing side-blocker deals no combat damage to the attacking player.",
+        "text": "A Piercing side-blocker deals no combat damage to the attacking player.",
         "test": "400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player"
       }
     ],
@@ -1486,11 +1486,11 @@
     "text": "If the Piercing source also has Deadly, lethal damage is 1 for each unit, so all damage beyond 1 for each unit may be excess.",
     "examples": [
       {
-        "text": "Example: A Deadly and Piercing column is blocked by two units. It assigns 1 to each, and the rest may go to the player.",
+        "text": "A Deadly and Piercing column is blocked by two units. It assigns 1 to each, and the rest may go to the player.",
         "test": "387-raq-combat.test.ts::RAQ Excessive: Deadly + Piercing over two blockers"
       },
       {
-        "text": "Example: A 10-power Deadly and Piercing column is blocked by one unit: 1 kills it and the other 9 may pierce.",
+        "text": "A 10-power Deadly and Piercing column is blocked by one unit: 1 kills it and the other 9 may pierce.",
         "test": "134-column-and-substep.test.ts::R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 pierce"
       }
     ],
@@ -1535,11 +1535,11 @@
     "text": "Damage prevention on a unit does not change how much must be assigned to it before there is excess. Excess is worked out as though the unit were unprotected.",
     "examples": [
       {
-        "text": "Example: A Piercing column is blocked by a shielded 0/5 in front of a 5/6. It must assign 5 to the shielded unit and 6 to the unit behind; the rest may go to the player.",
+        "text": "A Piercing column is blocked by a shielded 0/5 in front of a 5/6. It must assign 5 to the shielded unit and 6 to the unit behind; the rest may go to the player.",
         "test": "387-raq-combat.test.ts::RAQ Excessive: with Piercing, 5 to the shielded Tomb"
       },
       {
-        "text": "Example: A Piercing effect hits a shielded unit. The shield changes what is dealt to the unit, never what pierces.",
+        "text": null,
         "test": "82-attr-interactions.test.ts::Piercing vs a damage-shielded unit"
       }
     ],
@@ -1584,7 +1584,7 @@
     "text": "Piercing excess is dealt as part of the same damage as the rest, at the same time. It is not a triggered ability, and no player can act between the damage dealt to the units and the excess dealt to the player.",
     "examples": [
       {
-        "text": "Example: A Piercing effect deals 5 to a 1/1. The unit's 1 and the 4 to its controller are dealt together, with nothing on the stack in between.",
+        "text": "A Piercing effect deals 5 to a 1/1. The unit's 1 and the 4 to its controller are dealt together, with nothing on the stack in between.",
         "test": "82-attr-interactions.test.ts::Piercing: 5 effect damage to a 1/1 kills it and the other 4 hit its controller"
       }
     ],
@@ -1629,11 +1629,11 @@
     "text": "Piercing applies to noncombat damage too. A Piercing source that deals noncombat damage to a unit must deal that unit its lethal damage first. The dealing player may then keep any of the excess on that unit; the rest of the excess is dealt to that unit's controller.",
     "examples": [
       {
-        "text": "Example: Squish makes Bubb, in a column with Good Whale (Piercing), deal 6 to a 1/1. The dealing player may keep all 6 on the 1/1, or send up to 5 to its controller.",
+        "text": "Squish makes Bubb, in a column with Good Whale (Piercing), deal 6 to a 1/1. The dealing player may keep all 6 on the 1/1, or send up to 5 to its controller.",
         "test": "405-raq-noncombat-piercing.test.ts::R340 Squish: Bubb with Good Whale's Piercing"
       },
       {
-        "text": "Example: A non-Piercing source's overkill stays on the unit, and no question is asked.",
+        "text": null,
         "test": "405-raq-noncombat-piercing.test.ts::R340 control: no Piercing, no question"
       }
     ],
@@ -1694,7 +1694,7 @@
     "text": "For noncombat damage, the dealing player is the controller of the source unit, even if another player controls the spell that made it deal damage (for Squish, Fight and Battle the unit is the source; see rule 112.6). If the source is not a unit in play (a spell, or a unit that has left play), the controller of the effect decides.",
     "examples": [
       {
-        "text": "Example: A Battle makes an opponent's Piercing unit fight. The opponent, who controls that unit, places its excess.",
+        "text": "A Battle makes an opponent's Piercing unit fight. The opponent, who controls that unit, places its excess.",
         "test": "405-raq-noncombat-piercing.test.ts::R340 Battle: the question belongs to the Piercing unit's controller, not the caster"
       }
     ],
@@ -1736,7 +1736,7 @@
     "text": "Each unit's excess is dealt to that unit's controller. If one effect deals Piercing damage to units controlled by different players, each player is dealt the excess from their own units.",
     "examples": [
       {
-        "text": "Example: A Piercing effect damages units on both sides. Each unit's excess goes to that unit's controller.",
+        "text": null,
         "test": "82-attr-interactions.test.ts::Piercing in a BATCH: each unit's excess goes to THAT unit's controller"
       }
     ],
@@ -1769,7 +1769,7 @@
     "text": "A unit in a column with a Piercing unit has Piercing while that column exists, for the noncombat damage it deals as well as for combat damage (see rule 802.1).",
     "examples": [
       {
-        "text": "Example: Bubb, in a column with Good Whale, squishes with Piercing: the excess reaches the player.",
+        "text": "Bubb, in a column with Good Whale, squishes with Piercing: the excess reaches the player.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: Bubb in a column with Good Whale squishes with Piercing"
       }
     ],
@@ -1813,11 +1813,11 @@
     "text": "If Piercing combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), that unit is dealt its lethal damage and the rest is still Piercing excess. That excess is dealt to the player, and it is not redirected again (see rule 608.8c).",
     "examples": [
       {
-        "text": "Example: 10 Piercing combat damage is redirected into a 2/4 Oorblak. 4 kill it and the other 6 reach the player.",
+        "text": "10 Piercing combat damage is redirected into a 2/4 Oorblak. 4 kill it and the other 6 reach the player.",
         "test": "387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak"
       },
       {
-        "text": "Example: 5 Piercing combat damage is redirected into Oorblak on a 1/1 host. 1 kills the host and the remaining 4 reach the player.",
+        "text": "5 Piercing combat damage is redirected into Oorblak on a 1/1 host. 1 kills the host and the remaining 4 reach the player.",
         "test": "17-earth-b.test.ts::Oorblak: Caleb's case — 5 Piercing redirected, 1 kills the body, the remaining 4 hit the player"
       }
     ],
@@ -1873,7 +1873,7 @@
     "text": "If a source has both Electric and Piercing, excess that reaches a unit with no further unit to jump to is Piercing excess: the dealing player may keep any of it on that unit, and the rest is dealt to that unit's controller (see rule 802.17).",
     "examples": [
       {
-        "text": "Example: A 6-damage Electric and Piercing hit lands on a lone 1/2 with no neighbour. The dealing player chooses how much of the 4 excess stays on it; the rest goes to its controller.",
+        "text": "A 6-damage Electric and Piercing hit lands on a lone 1/2 with no neighbour. The dealing player chooses how much of the 4 excess stays on it; the rest goes to its controller.",
         "test": "405-raq-noncombat-piercing.test.ts::R340 Electric + Piercing: where the chain dead-ends, the Piercing half is elective too"
       }
     ],
@@ -1924,7 +1924,7 @@
     "text": "Piercing does not apply in an interaction involving a Pure card (see rule 802.25).",
     "examples": [
       {
-        "text": "Example (illustrative): A 6-power Piercing column is blocked by Just a Unit (Pure). All 6 are dealt to Just a Unit; none reaches the defending player.",
+        "text": "A 6-power Piercing column is blocked by Just a Unit (Pure). All 6 are dealt to Just a Unit; none reaches the defending player.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.piercing.pure — a 6-power Piercing column blocked by Just a Unit sends nothing to the defending player"
       }
     ],
@@ -1971,7 +1971,7 @@
     "text": "Electric is an attribute. Its reminder text reads \"Excess damage from electric sources can be directed to an adjacent unit, recursively.\"",
     "examples": [
       {
-        "text": "Example: Arc Lightning is an Electric spell: \"I deal 6 damage to any target.\"",
+        "text": null,
         "test": "387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8"
       }
     ],
@@ -2015,7 +2015,7 @@
     "text": "When an Electric source deals a unit more than its lethal damage, the excess may be dealt to a unit adjacent to that unit instead. The unit the excess jumps to is dealt the lethal damage it needs, and any excess beyond that may jump again, to a unit adjacent to it.",
     "examples": [
       {
-        "text": "Example: Arc Lightning (6, Electric) hits a Vulnerable 3/8. 4 kill it (dealt as 8), and the other 2 may jump to an adjacent unit.",
+        "text": "Arc Lightning (6, Electric) hits a Vulnerable 3/8. 4 kill it (dealt as 8), and the other 2 may jump to an adjacent unit.",
         "test": "387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8"
       }
     ],
@@ -2064,7 +2064,7 @@
     "text": "The excess never jumps to a unit it has already been dealt to in that chain.",
     "examples": [
       {
-        "text": "Example: Electric excess follows a non-overlapping path chosen by the controller.",
+        "text": null,
         "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
       }
     ],
@@ -2104,7 +2104,7 @@
     "text": "The Electric source's controller chooses where the excess goes at each jump.",
     "examples": [
       {
-        "text": "Example: Arc Lightning's caster, who controls the source, is asked where the excess goes.",
+        "text": null,
         "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
       }
     ],
@@ -2147,7 +2147,7 @@
     "text": "Each jump is optional. At any jump, the source's controller may instead keep all the remaining excess on the unit it has reached; it is then all dealt to that unit and goes no further. This is so even when there is only one unit to jump to.",
     "examples": [
       {
-        "text": "Example: Arc Lightning hits a Vulnerable 3/8 with a unit beside it. Its controller keeps all 6 on the 3/8 (dealt as 12), and nothing jumps.",
+        "text": "Arc Lightning hits a Vulnerable 3/8 with a unit beside it. Its controller keeps all 6 on the 3/8 (dealt as 12), and nothing jumps.",
         "test": "387-raq-combat.test.ts::RAQ Vulnerable: Electric \"can be\""
       }
     ],
@@ -2193,7 +2193,7 @@
     "text": "Excess that has no unit to jump to is dealt to the last unit it reached; it is not lost. If the source also has Piercing, that excess is Piercing excess instead (see rule 802.16).",
     "examples": [
       {
-        "text": "Example: Arc Lightning hits a lone Vulnerable 3/8 with nothing beside it. All 6 land on it, dealt as 12.",
+        "text": "Arc Lightning hits a lone Vulnerable 3/8 with nothing beside it. All 6 land on it, dealt as 12.",
         "test": "387-raq-combat.test.ts::RAQ Vulnerable: Electric damage with nowhere to jump is still dealt"
       }
     ],
@@ -2245,7 +2245,7 @@
     "text": "Adjacency for Electric is adjacency in a formation (see rule 603.2). A unit that is not in a formation has no adjacent unit, so Electric excess dealt to it has nowhere to jump.",
     "examples": [
       {
-        "text": "Example (illustrative): During the deployment phase no unit is in a formation, so an Electric spell's excess stays on the unit it hit.",
+        "text": "During the deployment phase no unit is in a formation, so an Electric spell's excess stays on the unit it hit.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.electric.adjacency — outside a battle no unit is adjacent, so Electric excess stays on the unit it hit and nothing is asked"
       }
     ],
@@ -2282,7 +2282,7 @@
     "text": "The whole Electric chain is part of one damage event. No formation changes happen while the excess is distributed.",
     "examples": [
       {
-        "text": "Example: An Electric chain of three units is dealt in one damage event; the units it kills die together afterwards.",
+        "text": "An Electric chain of three units is dealt in one damage event; the units it kills die together afterwards.",
         "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
       }
     ],
@@ -2323,7 +2323,7 @@
     "text": "Lethal damage along the chain is worked out as it is for Piercing (see rule 802.16): a Vulnerable unit needs only half, and damage already dealt to it by the same effect counts.",
     "examples": [
       {
-        "text": "Example: Arc Lightning on a Vulnerable 3/8: 4 is its lethal damage, so 2 is left to jump.",
+        "text": null,
         "test": "387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8"
       }
     ],
@@ -2371,7 +2371,7 @@
     "text": "Envoy of Lightning makes \"your spell effects with a single target\" Electric. A spell effect has a single target if it was cast with exactly one target.",
     "examples": [
       {
-        "text": "Example: Twin Flame cast with one target under Envoy of Lightning is Electric.",
+        "text": "Twin Flame cast with one target under Envoy of Lightning is Electric.",
         "test": "12-fire-a.test.ts::Envoy of Lightning: your single-target spell effects are Electric"
       }
     ],
@@ -2411,7 +2411,7 @@
     "text": "A spell effect cast with two targets does not have a single target, even if one of its targets has become illegal by the time it resolves.",
     "examples": [
       {
-        "text": "Example: Twin Flame is cast with two targets and one is removed. It is not Electric under Envoy of Lightning.",
+        "text": "Twin Flame is cast with two targets and one is removed. It is not Electric under Envoy of Lightning.",
         "test": "12-fire-a.test.ts::Envoy of Lightning: two DECLARED targets is not \"a single target\", even after one is removed"
       }
     ],
@@ -2454,7 +2454,7 @@
     "text": "Poisonous is an attribute. Its reminder text reads \"Poisonous sources damage units in the form of -1/-1 counters.\"",
     "examples": [
       {
-        "text": "Example: Noxious Sporefiend is Poisonous.",
+        "text": null,
         "test": "09-attrs.test.ts::Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters"
       }
     ],
@@ -2494,11 +2494,11 @@
     "text": "Damage a Poisonous source deals to a unit is put on that unit as that many -1/-1 counters instead of being marked on it.",
     "examples": [
       {
-        "text": "Example: Noxious Sporefiend deals 2 combat damage to a unit; the unit gets two -1/-1 counters and no marked damage.",
+        "text": "Noxious Sporefiend deals 2 combat damage to a unit; the unit gets two -1/-1 counters and no marked damage.",
         "test": "09-attrs.test.ts::Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters"
       },
       {
-        "text": "Example: Poisonous effect damage becomes -1/-1 counters, and can kill.",
+        "text": null,
         "test": "09-attrs.test.ts::Poisonous: effect damage becomes -1/-1 counters and can kill"
       }
     ],
@@ -2541,7 +2541,7 @@
     "text": "Poisonous damage is damage dealt. Abilities that trigger when a unit is dealt damage trigger on it (see rule 112.10).",
     "examples": [
       {
-        "text": "Example: Noxious Sporefiend deals 2 to Awoken Tomb, which gets two -1/-1 counters and makes its 2/2.",
+        "text": null,
         "test": "206-deadly-everywhere.test.ts::R237: an un-prevented {Poisonous} hit fires \"whenever I am dealt damage\""
       }
     ],
@@ -2585,7 +2585,7 @@
     "text": "For damage assignment and for Piercing, a unit's lethal damage is the same whether the source is Poisonous or not.",
     "examples": [
       {
-        "text": "Example: A Poisonous and Piercing effect deals 5 to a 1/1. One counter is lethal, and the other 4 may pierce.",
+        "text": "A Poisonous and Piercing effect deals 5 to a 1/1. One counter is lethal, and the other 4 may pierce.",
         "test": "82-attr-interactions.test.ts::Piercing + Poisonous: the counters are lethal at the same number, so the rest still pierces"
       }
     ],
@@ -2623,7 +2623,7 @@
     "text": "A source with both Deadly and Poisonous destroys the unit it damages and also puts the -1/-1 counters on it.",
     "examples": [
       {
-        "text": "Example: Deadly and Poisonous damage kills the unit, and the -1/-1 counter lands on it before it dies.",
+        "text": "Deadly and Poisonous damage kills the unit, and the -1/-1 counter lands on it before it dies.",
         "test": "82-attr-interactions.test.ts::Deadly DOES kill through Poisonous — and the counter lands too (R237)"
       }
     ],
@@ -2661,7 +2661,7 @@
     "text": "Powerful doubles a Poisonous source's damage, and so doubles the -1/-1 counters it puts on a unit.",
     "examples": [
       {
-        "text": "Example: A Powerful Poisonous effect hit of 2 becomes 4 counters and kills a 4/3.",
+        "text": "A Powerful Poisonous effect hit of 2 becomes 4 counters and kills a 4/3.",
         "test": "206-deadly-everywhere.test.ts::R237: {Powerful} doubles a {Poisonous} effect hit too"
       }
     ],
@@ -2698,7 +2698,7 @@
     "text": "If a Poisonous source's damage to a unit is prevented, no damage is dealt and no -1/-1 counters are put on it.",
     "examples": [
       {
-        "text": "Example: Phytochemical Protection on Jollyglop prevents a Poisonous hit: no counters, no damage trigger, and the shield pays its +1/+1 counters.",
+        "text": "Sporebloom Siren (2/2, Poisonous) attacks; the defender casts Phytochemical Protection on Jollyglop and blocks with it. The 2 damage is prevented: Jollyglop gets no -1/-1 counters and makes no 1/1s, and Phytochemical Protection puts two +1/+1 counters on it.",
         "test": "387-raq-combat.test.ts::RAQ Poisonous: a shielded Jollyglop hit by a Poisonous unit"
       }
     ],
@@ -2744,7 +2744,7 @@
     "text": "Poisonous changes only damage dealt to units. Damage a Poisonous source deals to a player is ordinary damage.",
     "examples": [
       {
-        "text": "Example (illustrative): An unblocked Poisonous column with 3 power makes the defending player lose 3 life.",
+        "text": "An unblocked Poisonous column with 3 power makes the defending player lose 3 life.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.poisonous.players — an unblocked Poisonous column with 3 power makes the defending player lose 3 life"
       }
     ],
@@ -2778,7 +2778,7 @@
     "text": "Poisonous damage triggers Resonant like any other damage (see rule 802.19).",
     "examples": [
       {
-        "text": "Example (illustrative): A Poisonous and Resonant source deals 2 to a unit. The unit gets two -1/-1 counters, and the Resonant trigger deals 2 to its controller.",
+        "text": "A Poisonous and Resonant source deals 2 to a unit. The unit gets two -1/-1 counters, and the Resonant trigger deals 2 to its controller.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.poisonous.resonant — a Poisonous Resonant hit of 2 puts two -1/-1 counters on the unit, and the Resonant trigger deals 2 to its controller"
       }
     ],
@@ -2815,7 +2815,7 @@
     "text": "Poisonous does not apply in an interaction involving a Pure card (see rule 802.25).",
     "examples": [
       {
-        "text": "Example (illustrative): A Poisonous column is blocked by Just a Unit. Just a Unit is dealt ordinary marked damage, not -1/-1 counters.",
+        "text": "A Poisonous column is blocked by Just a Unit. Just a Unit is dealt ordinary marked damage, not -1/-1 counters.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.poisonous.pure — a Poisonous column blocked by Just a Unit marks ordinary damage, not -1/-1 counters"
       }
     ],
@@ -2857,7 +2857,7 @@
     "text": "Resonant is an attribute. Its reminder text, printed under the type line, reads \"Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller.\"",
     "examples": [
       {
-        "text": "Example: Resonant Form's combat damage to a unit also hits that unit's controller.",
+        "text": "Resonant Form's combat damage to a unit also hits that unit's controller.",
         "test": "09-attrs.test.ts::Resonant: Resonant Form combat damage to a unit also hits its controller"
       }
     ],
@@ -2905,11 +2905,11 @@
     "text": "Resonant is a triggered ability of the Resonant source. When the source deals damage to a unit, the trigger goes on the stack, and when it resolves the source deals that much damage to that unit's controller.",
     "examples": [
       {
-        "text": "Example: The Resonant trigger from combat damage waits on the stack after combat, as its source's trigger, and can be negated.",
+        "text": "The Resonant trigger from combat damage waits on the stack after combat, as its source's trigger, and can be negated.",
         "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
       },
       {
-        "text": "Example: A Resonant effect deals 1 to a unit; the trigger then deals 1 to its controller as damage from the source.",
+        "text": "A Resonant effect deals 1 to a unit; the trigger then deals 1 to its controller as damage from the source.",
         "test": "399-raq-fix-combat.test.ts::R315: effect damage riders too"
       }
     ],
@@ -2952,7 +2952,7 @@
     "text": "The damage Resonant deals to the controller is not combat damage, even when the damage that triggered it was (see rule 608.8b).",
     "examples": [
       {
-        "text": "Example: Oorblak, which takes combat damage that would be dealt to its controller, does not take Resonant's extra damage; the player does.",
+        "text": "Oorblak, which takes combat damage that would be dealt to its controller, does not take Resonant's extra damage; the player does.",
         "test": "387-raq-combat.test.ts::RAQ Resonant: the extra damage is not combat damage"
       }
     ],
@@ -2990,7 +2990,7 @@
     "text": "\"That much damage\" is the damage the unit was dealt: after Vulnerable doubled it and after any prevention. If all of the damage to the unit is prevented, Resonant does not trigger.",
     "examples": [
       {
-        "text": "Example (illustrative): A Resonant source deals 2 to a Vulnerable unit, which is dealt 4. The Resonant trigger deals 4 to that unit's controller.",
+        "text": "A Resonant source deals 2 to a Vulnerable unit, which is dealt 4. The Resonant trigger deals 4 to that unit's controller.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.resonant.amount — a Resonant source dealing 2 to a Vulnerable unit, which is dealt 4, makes a Resonant trigger that deals 4 to its controller"
       }
     ],
@@ -3032,11 +3032,11 @@
     "text": "Resonant's damage is damage from the Resonant source, so everything that changes that source's damage applies to it: an allied Conduit of Pain adds 1 to it, and Powerful doubles it, even though the damage that triggered it was already doubled.",
     "examples": [
       {
-        "text": "Example: A Powerful Resonant 2/4 deals 4 combat damage to a unit, and then 8 to that unit's controller.",
+        "text": "A Powerful Resonant 2/4 deals 4 combat damage to a unit, and then 8 to that unit's controller.",
         "test": "387-raq-combat.test.ts::RAQ Resonant: a Powerful Resonant 2/4 deals 4 combat damage"
       },
       {
-        "text": "Example: With Conduit of Pain, a Resonant 2/4 deals 2 combat damage to a unit and then 3 to its controller.",
+        "text": "With Conduit of Pain, a Resonant 2/4 deals 2 combat damage to a unit and then 3 to its controller.",
         "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit of Pain adds 1 to the Resonant damage"
       }
     ],
@@ -3085,7 +3085,7 @@
     "text": "When both apply to Resonant's damage, an added amount (Conduit of Pain's 1) is added before Powerful doubles (see rule 112.9).",
     "examples": [
       {
-        "text": "Example: A Powerful Resonant 2/4 with Conduit of Pain deals 4 combat damage, then (4+1)x2 = 10 to the controller.",
+        "text": "A Powerful Resonant 2/4 with Conduit of Pain deals 4 combat damage, then (4+1)x2 = 10 to the controller.",
         "test": "387-raq-combat.test.ts::RAQ Resonant: Resonant + Powerful + Conduit — 4 combat, then (4+1)x2 = 10 to the face"
       }
     ],
@@ -3133,7 +3133,7 @@
     "text": "Resonant triggers for each unit the source deals damage to. An effect that damages several units makes one Resonant trigger for each damaged unit.",
     "examples": [
       {
-        "text": "Example: A Resonant, Powerful Bellowing Boulder with Conduit of Pain deals 4 to each unit, then 10 to a controller for each damaged unit.",
+        "text": "A Resonant, Powerful Bellowing Boulder with Conduit of Pain deals 4 to each unit, then 10 to a controller for each damaged unit.",
         "test": "387-raq-combat.test.ts::RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit"
       }
     ],
@@ -3174,7 +3174,7 @@
     "text": "Resonant triggers only on damage dealt to a unit. Damage a Resonant source deals to a player does not trigger it.",
     "examples": [
       {
-        "text": "Example (illustrative): An unblocked Resonant column deals 3 combat damage to the defending player. Resonant does not trigger.",
+        "text": "An unblocked Resonant column deals 3 combat damage to the defending player. Resonant does not trigger.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.resonant.units-only — an unblocked Resonant column dealing 3 combat damage to the defending player does not trigger Resonant"
       }
     ],
@@ -3209,11 +3209,11 @@
     "text": "Because Resonant is a triggered ability, an effect that makes triggered abilities cost more to trigger (Crevice Lurker) applies to it, and if that cost is not paid the trigger does not happen. It can be negated while it is on the stack.",
     "examples": [
       {
-        "text": "Example: Crevice Lurker taxes the Resonant trigger.",
+        "text": null,
         "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes Resonant"
       },
       {
-        "text": "Example: The Resonant trigger can be negated while it waits on the stack after combat.",
+        "text": null,
         "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
       }
     ],
@@ -3257,7 +3257,7 @@
     "text": "A Resonant trigger caused by combat damage is put on the stack and resolved as other triggers caused by combat damage are (see rules 608 and 609).",
     "examples": [
       {
-        "text": "Example: A Resonant column's trigger from an unsplit combat damage step waits until after combat.",
+        "text": null,
         "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
       }
     ],
@@ -3299,11 +3299,7 @@
     "text": "If the Resonant source has left play by the time its trigger resolves, the trigger still deals its damage, reading the source as it last was in play.",
     "examples": [
       {
-        "text": "Example (illustrative): A Powerful Resonant unit dies in combat with its trigger waiting. The trigger still deals double damage, because the unit was Powerful when it left play.",
-        "test": null
-      },
-      {
-        "text": "Example: A Powerful Resonant unit deals 1 to a unit, which is dealt 2, and then leaves play with its Resonant trigger waiting. The trigger still deals double damage, 4, because the unit was Powerful when it left play.",
+        "text": "A Powerful Resonant unit deals 1 to a unit, which is dealt 2, and then leaves play with its Resonant trigger waiting. The trigger still deals double damage, 4, because the unit was Powerful when it left play.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.resonant.source-gone — a Powerful Resonant source that leaves play with its trigger waiting still deals doubled damage"
       }
     ],
@@ -3345,7 +3341,7 @@
     "text": "Resonant does not apply in an interaction involving a Pure card (see rule 802.25).",
     "examples": [
       {
-        "text": "Example (illustrative): A Resonant column is blocked by Just a Unit. No Resonant trigger happens for the damage dealt to Just a Unit.",
+        "text": "A Resonant column is blocked by Just a Unit. No Resonant trigger happens for the damage dealt to Just a Unit.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.resonant.pure — a Resonant column blocked by Just a Unit triggers no Resonant"
       }
     ],
@@ -3387,7 +3383,7 @@
     "text": "Thieving is an attribute. Its reminder text, printed under the type line, reads \"Whenever a thieving source deals combat damage to an opponent, draw a card.\"",
     "examples": [
       {
-        "text": "Example: Slink is Thieving.",
+        "text": null,
         "test": "09-attrs.test.ts::Thieving: Slink draws when its column deals combat damage to a player"
       }
     ],
@@ -3429,7 +3425,7 @@
     "text": "When a column with Thieving deals combat damage to an opponent, the column's controller draws a card.",
     "examples": [
       {
-        "text": "Example: Slink attacks unblocked and deals combat damage to the defending player. Its controller draws a card.",
+        "text": "Slink attacks unblocked and deals combat damage to the defending player. Its controller draws a card.",
         "test": "09-attrs.test.ts::Thieving: Slink draws when its column deals combat damage to a player"
       }
     ],
@@ -3464,7 +3460,7 @@
     "text": "The column is the source of the combat damage, so a Thieving column draws one card each time it deals combat damage to an opponent, however many Thieving units it holds and however much damage it deals.",
     "examples": [
       {
-        "text": "Example: Two Thieving units in one column deal combat damage to a player. Their controller draws one card.",
+        "text": "Two Thieving units in one column deal combat damage to a player. Their controller draws one card.",
         "test": "388-raq-blocks-and-windows.test.ts::RAQ Thieving: two Thieving units in one column draw ONE card"
       }
     ],
@@ -3505,7 +3501,7 @@
     "text": "Piercing excess counts: a blocked Thieving column whose Piercing excess is dealt to the opponent draws a card.",
     "examples": [
       {
-        "text": "Example (illustrative): A Thieving and Piercing column is blocked by a 1/1 and deals 3 of excess to the defending player. Its controller draws a card.",
+        "text": "A Thieving and Piercing column is blocked by a 1/1 and deals 3 of excess to the defending player. Its controller draws a card.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.thieving.piercing — a Thieving and Piercing column blocked by a 1/1 deals 3 of excess to the defending player, and its controller draws a card"
       }
     ],
@@ -3542,7 +3538,7 @@
     "text": "If combat damage a Thieving column deals to an opponent is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, and the column's controller still draws a card (see rule 608.8a).",
     "examples": [
       {
-        "text": "Example (illustrative): Blightsea Polyp turns a Thieving column's combat damage to the defending player into 1 rot. The attacker still draws a card.",
+        "text": "Blightsea Polyp turns a Thieving column's combat damage to the defending player into 1 rot. The attacker still draws a card.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.thieving.replaced — a Thieving column whose hit to the defending player Blightsea Polyp turns into 1 rot costs no life, and its controller still draws a card"
       }
     ],
@@ -3584,11 +3580,7 @@
     "text": "Thieving applies only to combat damage. Noncombat damage a Thieving source deals to an opponent does not draw a card.",
     "examples": [
       {
-        "text": "Example (illustrative): A unit in a Thieving column uses an ability that deals 2 damage to an opponent. No card is drawn.",
-        "test": null
-      },
-      {
-        "text": "Example: A Thieving unit deals 2 noncombat damage to an opponent. No card is drawn.",
+        "text": "A Thieving unit deals 2 noncombat damage to an opponent. No card is drawn.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.thieving.combat-only — 2 noncombat damage from a Thieving source to an opponent draws nothing"
       }
     ],
@@ -3623,7 +3615,7 @@
     "text": "Reaping is an attribute. Its reminder text, printed under the type line, reads \"When a reaping source kills one or more units, draw a card. It loses reaping until regroup.\"",
     "examples": [
       {
-        "text": "Example: Flame of History is a Reaping spell: \"I deal 1 damage to any target.\"",
+        "text": null,
         "test": "07-cards.test.ts::Flame of History: Reaping"
       }
     ],
@@ -3670,11 +3662,11 @@
     "text": "When a Reaping source kills one or more units, its controller draws one card, however many units it killed.",
     "examples": [
       {
-        "text": "Example: Flame of History kills a unit and its controller draws a card.",
+        "text": "Flame of History kills a unit and its controller draws a card.",
         "test": "07-cards.test.ts::Flame of History: Reaping"
       },
       {
-        "text": "Example: Seismomancy kills a unit by damage and draws exactly once.",
+        "text": "Seismomancy kills a unit by damage and draws exactly once.",
         "test": "156-reaping-and-formation.test.ts::Seismomancy: a kill by DAMAGE still pays {Reaping} exactly once"
       }
     ],
@@ -3716,15 +3708,15 @@
     "text": "A unit counts as killed by a Reaping source however the source killed it: by damage, by -1/-1 counters, by changing its stats, or by destroying it outright.",
     "examples": [
       {
-        "text": "Example: Invasive Reassignment swaps a 0/4 into a 4/0, which dies. Reaping draws a card.",
+        "text": "Invasive Reassignment swaps a 0/4 into a 4/0, which dies. Reaping draws a card.",
         "test": "156-reaping-and-formation.test.ts::Invasive Reassignment: a kill by a STAT SWAP pays {Reaping}"
       },
       {
-        "text": "Example: Noxious Demise kills a 1/1 with a -1/-1 counter. Reaping draws a card.",
+        "text": "Noxious Demise kills a 1/1 with a -1/-1 counter. Reaping draws a card.",
         "test": "156-reaping-and-formation.test.ts::Noxious Demise: a kill by a -1/-1 COUNTER pays {Reaping}"
       },
       {
-        "text": "Example: Invasive Reassignment kills nobody, and nothing is drawn.",
+        "text": null,
         "test": "156-reaping-and-formation.test.ts::Invasive Reassignment: a swap that kills NOBODY draws nothing"
       }
     ],
@@ -3764,7 +3756,7 @@
     "text": "After a Reaping source's kill has drawn a card, the source loses Reaping until regroup.",
     "examples": [
       {
-        "text": "Example (illustrative): If a unit had Reaping and killed a blocker in the first battle round, it would draw a card and then have no Reaping in the second round.",
+        "text": "If a unit had Reaping and killed a blocker in the first battle round, it would draw a card and then have no Reaping in the second round.",
         "test": null
       }
     ],
@@ -3800,7 +3792,7 @@
     "text": "Blessed is an attribute. Its reminder text reads \"Damage dealt by a blessed source causes its controller to gain that much life.\"",
     "examples": [
       {
-        "text": "Example: Godray deals 3 damage to any target, and Blessed gains its controller 3.",
+        "text": "Godray deals 3 damage to any target, and Blessed gains its controller 3.",
         "test": "40-light-c.test.ts::Godray: 3 damage to any target"
       }
     ],
@@ -3844,15 +3836,15 @@
     "text": "When a Blessed source deals damage, its controller gains that much life. This applies to combat and noncombat damage, and to damage dealt to units and to players.",
     "examples": [
       {
-        "text": "Example: A Blessed column's combat damage to a player gains its controller that much life.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a player gains too"
       },
       {
-        "text": "Example: A Blessed column's combat damage to a unit gains its controller that much life as well.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a UNIT gains as well"
       },
       {
-        "text": "Example: A Blessed effect's damage gains its controller exactly that much life.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R48 {Blessed}: effect damage gains its controller exactly that much life"
       }
     ],
@@ -3886,7 +3878,7 @@
     "text": "The life is gained at the same time as the damage is dealt. It is not a triggered ability and does not use the stack, and it is gained before it is checked whether any player has reached 0 life.",
     "examples": [
       {
-        "text": "Example: A player at low life is dealt lethal damage by an opponent at the same moment their own Blessed source deals damage. They gain the life first, and survive if it is enough.",
+        "text": "A player at low life is dealt lethal damage by an opponent at the same moment their own Blessed source deals damage. They gain the life first, and survive if it is enough.",
         "test": "37-attrs-wight.test.ts::R48 {Blessed}: the gain lands BEFORE the lethal check"
       }
     ],
@@ -3925,7 +3917,7 @@
     "text": "A Blessed source cannot kill its own controller with its own damage: damage it deals to its own controller is matched by the life that player gains at the same time.",
     "examples": [
       {
-        "text": "Example: Godray aimed at a player damages them and heals its controller on the same check.",
+        "text": "Godray aimed at a player damages them and heals its controller on the same check.",
         "test": "40-light-c.test.ts::Godray: aimed at a player it damages AND heals on the same check"
       }
     ],
@@ -3961,7 +3953,7 @@
     "text": "Blessed applies only to damage dealt. A kill without damage, and damage that is prevented, gain no life.",
     "examples": [
       {
-        "text": "Example: Noxious Demise carrying a Blessed Thing virus kills a unit with a -1/-1 counter. No life is gained.",
+        "text": "Noxious Demise carrying a Blessed Thing virus kills a unit with a -1/-1 counter. No life is gained.",
         "test": "156-reaping-and-formation.test.ts::{Blessed} does not fire on a non-damage kill"
       }
     ],
@@ -3998,7 +3990,7 @@
     "text": "A unit in a column with a Blessed unit has Blessed while that column exists, so damage its abilities deal gains its controller life too (see rule 802.1).",
     "examples": [
       {
-        "text": "Example: A unit attacking in a column with Flzzz (Blessed) uses an ability to deal 1 damage. Its controller gains 1 life.",
+        "text": "Lithoghul attacks in a column with Flzzz (Blessed) and uses an ability to deal 3 damage. Lithoghul has Blessed from its column, so its controller gains 3 life.",
         "test": "298-column-attrs-outside-combat.test.ts::R294 §1 the report"
       }
     ],
@@ -4035,7 +4027,7 @@
     "text": "Blessed does not apply in an interaction involving a Pure card (see rule 802.25).",
     "examples": [
       {
-        "text": "Example: A Pure Blessed source deals damage, and its controller gains nothing.",
+        "text": null,
         "test": "290-pure-outside-combat.test.ts::§4 a Pure {Blessed} source gains nothing"
       }
     ],
@@ -4077,7 +4069,7 @@
     "text": "Afflicting is an attribute. Its reminder text reads \"When an afflicting source kills one or more units, those units' controllers gain a rot.\"",
     "examples": [
       {
-        "text": "Example: Umbral Decay is an Afflicting spell that puts two -1/-1 counters on target unit.",
+        "text": null,
         "test": "42-dark-b.test.ts::Umbral Decay: two -1/-1 counters"
       }
     ],
@@ -4118,11 +4110,11 @@
     "text": "When an Afflicting source kills one or more units, each player who controlled one of those units gains one rot.",
     "examples": [
       {
-        "text": "Example: Umbral Decay kills a unit with its counters. That unit's controller gains a rot.",
+        "text": "Umbral Decay kills a unit with its counters. That unit's controller gains a rot.",
         "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot"
       },
       {
-        "text": "Example: Umbral Decay's target survives, shrunk. Nobody gains a rot.",
+        "text": "Umbral Decay's target survives, shrunk. Nobody gains a rot.",
         "test": "42-dark-b.test.ts::Umbral Decay: a survivor just shrinks, and nobody gains a rot"
       }
     ],
@@ -4156,7 +4148,7 @@
     "text": "A player gains one rot for each kill, however many of their units the source killed at once.",
     "examples": [
       {
-        "text": "Example: An Afflicting source kills two units of one player at once. That player gains one rot.",
+        "text": "An Afflicting source kills two units of one player at once. That player gains one rot.",
         "test": "37-attrs-wight.test.ts::R48 {Afflicting}: ONE rot per controller per kill event"
       }
     ],
@@ -4191,11 +4183,11 @@
     "text": "A unit counts as killed by an Afflicting source however the source killed it: by damage, by -1/-1 counters, by changing its stats, or by destroying it outright.",
     "examples": [
       {
-        "text": "Example: A -1/-1 counter kill by an Afflicting source gives a rot.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot"
       },
       {
-        "text": "Example: Umbral Decay's counter kill gives a rot and draws nothing.",
+        "text": "Umbral Decay's counter kill gives a rot and draws nothing.",
         "test": "156-reaping-and-formation.test.ts::Umbral Decay: an {Afflicting} counter-kill rots and draws NOTHING"
       }
     ],
@@ -4236,7 +4228,7 @@
     "text": "Afflicting applies to kills by combat damage as well. An Afflicting column that kills units in combat gives their controllers rot.",
     "examples": [
       {
-        "text": "Example: An Afflicting column kills a blocker in combat. The blocker's controller gains a rot.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a plain COMBAT kill counts too"
       }
     ],
@@ -4277,7 +4269,7 @@
     "text": "Afflicting does not apply in an interaction involving a Pure card (see rule 802.25).",
     "examples": [
       {
-        "text": "Example (illustrative): An Afflicting column kills Just a Unit (Pure) in combat. Its controller gains no rot.",
+        "text": "An Afflicting column kills Just a Unit (Pure) in combat. Its controller gains no rot.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.afflicting.pure — an Afflicting column that kills Just a Unit gives its controller no rot"
       }
     ],
@@ -4319,7 +4311,7 @@
     "text": "Lethal is an attribute. Its reminder text reads \"Any combat damage from a lethal unit will kill a player.\"",
     "examples": [
       {
-        "text": "Example: Gublin is Lethal.",
+        "text": null,
         "test": "44-hybrids-ld-a.test.ts::Gublin: {Lethal}"
       }
     ],
@@ -4359,11 +4351,11 @@
     "text": "If a column with Lethal deals any combat damage to a player, however little, that player is killed (see rule 104).",
     "examples": [
       {
-        "text": "Example: Gublin (1/4) attacks unblocked and deals 1 combat damage to the defending player, who is killed.",
+        "text": "Gublin (1/4) attacks unblocked and deals 1 combat damage to the defending player, who is killed.",
         "test": "44-hybrids-ld-a.test.ts::Gublin: {Lethal}"
       },
       {
-        "text": "Example: Any combat damage from a Lethal unit kills the player.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R48 {Lethal}: any combat damage from a lethal unit kills the player"
       }
     ],
@@ -4399,7 +4391,7 @@
     "text": "Lethal applies only to combat damage dealt to a player. It does not change noncombat damage, or damage dealt to units.",
     "examples": [
       {
-        "text": "Example (illustrative): A Lethal unit blocked by a 2/2 kills it as any unit would; Lethal does nothing to the blocker.",
+        "text": "A Lethal unit blocked by a 2/2 kills it as any unit would; Lethal does nothing to the blocker.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.lethal.combat-only — a Lethal unit blocked by a 2/2 kills it as any unit would, and the defending player is untouched"
       }
     ],
@@ -4439,7 +4431,7 @@
     "text": "If a Lethal column's combat damage to a player is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, so the player is still killed.",
     "examples": [
       {
-        "text": "Example: Blightsea Polyp turns a Lethal column's combat damage into 1 rot. The player is still killed.",
+        "text": "Blightsea Polyp turns a Lethal column's combat damage into 1 rot. The player is still killed.",
         "test": "37-attrs-wight.test.ts::R48 {Lethal} still kills THROUGH the Blightsea replacement"
       }
     ],
@@ -4511,7 +4503,7 @@
     "text": "Pure is an attribute. Its reminder text reads \"Pure cards and cards they are interacting with ignore all other attributes.\"",
     "examples": [
       {
-        "text": "Example: Just a Unit is Pure.",
+        "text": null,
         "test": "40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions"
       }
     ],
@@ -4551,11 +4543,11 @@
     "text": "A Pure card ignores its own other attributes too.",
     "examples": [
       {
-        "text": "Example: An Alluring column that is itself Pure ignores its own Alluring and never triggers.",
+        "text": "An Alluring column that is itself Pure ignores its own Alluring and never triggers.",
         "test": "53-playtest-round7.test.ts::R84 + R61: an Alluring column that is itself {Pure} never even triggers"
       },
       {
-        "text": "Example (illustrative): A Pure unit that is also Feeble can block.",
+        "text": "A Pure unit that is also Feeble can block.",
         "test": null
       }
     ],
@@ -4597,7 +4589,7 @@
     "text": "In combat, an interaction is one attacking half-column and the blocking half-column paired with it. If either contains a Pure card, the attributes of both are ignored for that exchange.",
     "examples": [
       {
-        "text": "Example: A Pure unit blocks a column; the exchange is attribute-blind in both directions.",
+        "text": null,
         "test": "40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions"
       }
     ],
@@ -4643,11 +4635,11 @@
     "text": "In a combat exchange involving a Pure card, neither side has Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting or Thieving, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d).",
     "examples": [
       {
-        "text": "Example: Just a Unit switches off a Deadly attacker's Deadly.",
+        "text": "Just a Unit switches off a Deadly attacker's Deadly.",
         "test": "40-light-c.test.ts::Just a Unit: {Pure} switches off Deadly"
       },
       {
-        "text": "Example: A printed Swift column blocked by a Pure unit strikes in the normal sub-step.",
+        "text": "A printed Swift column blocked by a Pure unit strikes in the normal sub-step.",
         "test": "53-playtest-round7.test.ts::R117 threads {Pure}"
       }
     ],
@@ -4694,11 +4686,11 @@
     "text": "When blocks are declared, a Pure card in either the attacking column or the units blocking it switches off Flying, Evasive and the lone Sneaky attacker's protection for that column, and a Pure unit's own Feeble does not stop it blocking.",
     "examples": [
       {
-        "text": "Example: Just a Unit can block a Flying column, and only it can among the defender's units.",
+        "text": "Just a Unit can block a Flying column, and only it can among the defender's units.",
         "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can"
       },
       {
-        "text": "Example: Just a Unit blocks an Evasive column alone.",
+        "text": "Just a Unit blocks an Evasive column alone.",
         "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks an Evasive column alone"
       }
     ],
@@ -4746,7 +4738,7 @@
     "text": "Pure does not change a unit's printed stats: a Pure 2/3 is destroyed by 3 damage. But Tough, Balanced and Inverted are attributes, so in an interaction involving a Pure card they do not apply (rule attr.general.pure).",
     "examples": [
       {
-        "text": "Example: A Tough 0/4 blocks a column containing Just a Unit (Pure). Tough does not apply in that exchange, so the blocker has 4 defense, not 8. (illustrative; the engine keeps Tough on: F-U19-1)",
+        "text": "A Tough 0/4 blocks a column containing Just a Unit (Pure). Tough does not apply in that exchange, so the blocker has 4 defense, not 8.",
         "test": null
       }
     ],
@@ -4795,7 +4787,7 @@
     "text": "Unaware is an attribute, so in combat it does not apply in an exchange involving a Pure card: the units in that exchange are read at their current stats, not their printed ones (rule attr.general.pure).",
     "examples": [
       {
-        "text": "Example: Bubb (Unaware) blocks a column containing Just a Unit (Pure) that has a +1/+1 counter. Unaware does not apply in that exchange, so the counter counts. (illustrative; the engine keeps the Unaware collapse on: F-U19-2)",
+        "text": "Bubb (Unaware) blocks a column containing Just a Unit (Pure) that has a +1/+1 counter. Unaware does not apply in that exchange, so the counter counts.",
         "test": null
       }
     ],
@@ -4835,7 +4827,7 @@
     "text": "Outside combat, an interaction is one effect and one recipient of its damage. Pure applies to each such pairing separately.",
     "examples": [
       {
-        "text": "Example: One batch damages two recipients; only the pairing with the Pure unit is attribute-blind.",
+        "text": null,
         "test": "290-pure-outside-combat.test.ts::§3 one batch, two recipients"
       }
     ],
@@ -4875,7 +4867,7 @@
     "text": "A Pure source deals plain damage to every recipient: its own Powerful, Deadly, Piercing, Electric, Poisonous, Resonant, Blessed and Unaware do not apply, against units or players.",
     "examples": [
       {
-        "text": "Example: A Pure source's own Powerful does not double and its granted Deadly does not kill.",
+        "text": null,
         "test": "290-pure-outside-combat.test.ts::§1 a Pure source"
       }
     ],
@@ -4914,11 +4906,11 @@
     "text": "A Pure recipient is dealt plain damage by any source: the source's attributes do not apply to it, and neither do its own Vulnerable and Unaware.",
     "examples": [
       {
-        "text": "Example: The source's Powerful and Deadly do nothing to a Pure recipient.",
+        "text": null,
         "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it"
       },
       {
-        "text": "Example: A Pure recipient's own Vulnerable is off.",
+        "text": null,
         "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too"
       }
     ],
@@ -4953,7 +4945,7 @@
     "text": "A recipient that is not Pure, damaged by the same effect as a Pure recipient, is dealt damage with all attributes applying.",
     "examples": [
       {
-        "text": "Example: A Powerful source deals 1 to Just a Unit and 1 to Bubb in one resolution: 1 to the first and 2 to the second.",
+        "text": "A Powerful source deals 1 to Just a Unit and 1 to Bubb in one resolution: 1 to the first and 2 to the second.",
         "test": "290-pure-outside-combat.test.ts::§3 one batch, two recipients"
       }
     ],
@@ -4992,7 +4984,7 @@
     "text": "During a battle, a unit in a column with a Pure unit has Pure for noncombat damage too, as a source and as a recipient (see rule 802.1).",
     "examples": [
       {
-        "text": "Example (illustrative): A unit stands in a column with Just a Unit. A Powerful spell deals 1 damage to it: it is dealt 1, not 2.",
+        "text": "A unit stands in a column with Just a Unit. A Powerful spell deals 1 damage to it: it is dealt 1, not 2.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.pure.column — a unit attacking in a column with Just a Unit is dealt 1, not 2, by a Powerful effect dealing 1"
       }
     ],
@@ -5034,7 +5026,7 @@
     "text": "Pure does not change what can be targeted.",
     "examples": [
       {
-        "text": "Example (illustrative): A spell that says \"target unit\" can target Just a Unit like any other unit.",
+        "text": "Arc Lightning, which says \"any target\", can target Just a Unit like any other unit.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.pure.not-targeting — a target-unit damage spell (Arc Lightning) can target Just a Unit"
       }
     ],
@@ -5071,7 +5063,7 @@
     "text": "Modular is an attribute. Its reminder text reads \"You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs.\"",
     "examples": [
       {
-        "text": "Example: Spellbind is a Modular spell.",
+        "text": null,
         "test": "43-dark-c.test.ts::Spellbind: {Modular} carrier"
       }
     ],
@@ -5111,11 +5103,11 @@
     "text": "As a Modular card is played, its controller may apply mods to it from their hand and from their bin, paying each mod's cost. The mods go onto the stack with the card (see rule 702.3b).",
     "examples": [
       {
-        "text": "Example: Mods are applied to a Modular spell as it is cast, paid for, and ride on the stack with it.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::{Modular}: mods are applied at cast time"
       },
       {
-        "text": "Example: The caster may decline to apply any mod.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::{Modular}: the caster may decline"
       }
     ],
@@ -5152,11 +5144,11 @@
     "text": "Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card, including a card that will do nothing as a mod there. No other condition restricts what may be applied.",
     "examples": [
       {
-        "text": "Example: The menu offers every card the player can pay for: a graft, a Virus, a non-Virus augment, and a card that can do nothing.",
+        "text": null,
         "test": "91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for"
       },
       {
-        "text": "Example: A card in the bin is offered beside the hand, and one the player cannot pay for is not.",
+        "text": null,
         "test": "91-modular.test.ts::R105: a card in the BIN is offered beside the hand"
       }
     ],
@@ -5199,7 +5191,7 @@
     "text": "Applying a mod to a Modular card is not playing that mod (see rule 701.2).",
     "examples": [
       {
-        "text": "Example: The mod is charged as the Modular spell is cast, and applying it is not playing it.",
+        "text": null,
         "test": "91-modular.test.ts::R105: \"you still pay their costs\""
       }
     ],
@@ -5242,7 +5234,7 @@
     "text": "A graft mod applied to a Modular spell adds its graft effect to the spell as an extra part, and the spell and its grafted effects resolve as one.",
     "examples": [
       {
-        "text": "Example: A graft mod contributes its [Switch] effect as an extra part of Spellbind.",
+        "text": null,
         "test": "91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part"
       }
     ],
@@ -5284,7 +5276,7 @@
     "text": "A mod whose type line grants attributes as an augment gives those attributes to the Modular spell's effect.",
     "examples": [
       {
-        "text": "Example: A Powerful mod applied to Spellbind carrying Twin Flame turns its 2 damage into 4.",
+        "text": "A Powerful mod applied to Spellbind carrying Twin Flame turns its 2 damage into 4.",
         "test": "91-modular.test.ts::R105: a type-line [Augment] mod really donates"
       }
     ],
@@ -5321,7 +5313,7 @@
     "text": "An augment mod's text-box ability does nothing on a Modular spell: a spell cannot gain static or triggered abilities that way.",
     "examples": [
       {
-        "text": "Example: An [Augment]-text mod applied to Spellbind is accepted and does nothing.",
+        "text": null,
         "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
       }
     ],
@@ -5356,15 +5348,15 @@
     "text": "A Modular card with a mod applied is modded, so it is Unstable: when it leaves the stack, whether it resolved, failed to resolve or was negated, it and its mods are erased instead of going to a bin. An unmodded Modular card goes to the bin as usual.",
     "examples": [
       {
-        "text": "Example: A graft card in the bin is applied to Spellbind, resolves with it, and is erased, so it cannot be applied this way again.",
+        "text": "A graft card in the bin is applied to Spellbind, resolves with it, and is erased, so it cannot be applied this way again.",
         "test": "91-modular.test.ts::R105: the flashback line"
       },
       {
-        "text": "Example: A negated modded Spellbind is erased too.",
+        "text": null,
         "test": "91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too"
       },
       {
-        "text": "Example: An unmodded Modular spell is binned like any other spell.",
+        "text": null,
         "test": "91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable"
       }
     ],
@@ -5409,12 +5401,7 @@
     "parent": "attr.modular",
     "order": 8,
     "text": "Modular is not shared with the other units of a column.",
-    "examples": [
-      {
-        "text": "Example (illustrative): If a unit printed Modular, the other units in its column would not gain Modular.",
-        "test": null
-      }
-    ],
+    "examples": [],
     "see": [
       "802.1"
     ],

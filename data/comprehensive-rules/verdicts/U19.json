@@ -43,7 +43,7 @@
   },
   {
     "key": "attr.balanced.after-changes",
-    "textHash": "4b3bdcdf50ff4e5e",
+    "textHash": "1838026f8df91a46",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -89,7 +89,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.deadly",
@@ -129,7 +130,7 @@
   },
   {
     "key": "attr.deadly.any-amount",
-    "textHash": "e3c7e11f689e7a63",
+    "textHash": "f7ba65d394ad4726",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -179,7 +180,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.deadly.combat-share",
@@ -279,7 +281,7 @@
   },
   {
     "key": "attr.deadly.noncombat",
-    "textHash": "dd3da85dfa83bd36",
+    "textHash": "26adbbb1d35e23fb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -318,7 +320,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.deadly.players",
@@ -360,7 +363,7 @@
   },
   {
     "key": "attr.deadly.poisonous",
-    "textHash": "9a1ee09f037e43c1",
+    "textHash": "ae9974cfc10ae3bf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -394,11 +397,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.deadly.prevention",
-    "textHash": "7cbf5a0ec6355fda",
+    "textHash": "730d61bdb94abe5f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -438,11 +442,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.deadly.pure",
-    "textHash": "d92125385900d30e",
+    "textHash": "7b0737503f863443",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -497,11 +502,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.deadly.spells",
-    "textHash": "00b0fe6e90a57fff",
+    "textHash": "cbb30dea0c407fe1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -546,11 +552,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.deadly.timing",
-    "textHash": "f457801522cbe4f4",
+    "textHash": "1aec9648258b25c4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -589,11 +596,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.feeble",
-    "textHash": "d1fdc9cae2b6f6a8",
+    "textHash": "db81e7bb868eac8c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -650,11 +658,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.feeble.lured",
-    "textHash": "ec56da3b45f0856d",
+    "textHash": "b022f723cbf5e12d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -688,11 +697,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.feeble.own",
-    "textHash": "c4bbafac7b8ca0a7",
+    "textHash": "0f5f6355a6a692ca",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -726,7 +736,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.feeble.pure",
@@ -835,7 +846,7 @@
   },
   {
     "key": "attr.flying.blocking",
-    "textHash": "0a2957f24934d3b9",
+    "textHash": "51033ca0716c2818",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -880,11 +891,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.flying.column",
-    "textHash": "cbaa4a509c4d4f26",
+    "textHash": "c42ca82847680ead",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -928,7 +940,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.flying.lured",
@@ -1013,7 +1026,7 @@
   },
   {
     "key": "attr.flying.removed",
-    "textHash": "4d4ef87782c28cbe",
+    "textHash": "61cba4e0b0a6554a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1057,7 +1070,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.general",
@@ -1146,7 +1160,7 @@
   },
   {
     "key": "attr.general.application-order",
-    "textHash": "76f1ea7523f2b48c",
+    "textHash": "f824b0d13c2112bc",
     "verdict": "partial",
     "round": 3,
     "verifier": "U19-r3",
@@ -1228,7 +1242,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The clause 'Attributes granted by a unit's augments apply in the order the mods were gained, the first attached first' rests only on R19, which labels it the engine's reading. The printed rule is positional ('from top to bottom'), and Manual p.43 lets a player 'place new mods in-between old ones', so on the table a later mod can sit above an earlier one, and order gained is not the same as order on the card. Augments are placed beneath the card (Manual p.32). Better wording: 'in the order the mods sit on the card, top to bottom', and the clause should be marked as a digital reading. The Manual sentences, the column front-to-back clause, the duplicate clause and the flagged divergence (F-U19-5: the engine applies printed Balanced before augmented Tough, 2/4 not 2/2) all check out."
+    "problem": "The clause 'Attributes granted by a unit's augments apply in the order the mods were gained, the first attached first' rests only on R19, which labels it the engine's reading. The printed rule is positional ('from top to bottom'), and Manual p.43 lets a player 'place new mods in-between old ones', so on the table a later mod can sit above an earlier one, and order gained is not the same as order on the card. Augments are placed beneath the card (Manual p.32). Better wording: 'in the order the mods sit on the card, top to bottom', and the clause should be marked as a digital reading. The Manual sentences, the column front-to-back clause, the duplicate clause and the flagged divergence (F-U19-5: the engine applies printed Balanced before augmented Tough, 2/4 not 2/2) all check out.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "attr.general.kinds",
@@ -1353,7 +1368,7 @@
   },
   {
     "key": "attr.general.pure",
-    "textHash": "7ee0eb0d4f559ec1",
+    "textHash": "2c223a04d650b0fe",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U19-r3",
@@ -1447,7 +1462,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None in the ruling, which is the literal printed reminder (printed outranks R61/R289/R106). Divergence confirmed real: engine keeps Tough/Balanced (and Inverted per R289) on against Pure everywhere, and keeps Unaware on in a Pure COMBAT exchange (R106) while switching it off for effect damage (R289). The Manual p.42 citation is only on-topic."
+    "problem": "None in the ruling, which is the literal printed reminder (printed outranks R61/R289/R106). Divergence confirmed real: engine keeps Tough/Balanced (and Inverted per R289) on against Pure everywhere, and keeps Unaware on in a Pure COMBAT exchange (R106) while switching it off for effect damage (R289). The Manual p.42 citation is only on-topic.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "attr.general.reminder",
@@ -1524,34 +1540,34 @@
   },
   {
     "key": "attr.general.shared.all-purposes",
-    "textHash": "21b60beb4f25effc",
+    "textHash": "6d75bb1b79ef2da2",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs",
+        "agrees": true,
+        "note": "in battle a unit's attributes are its column's (colAttrs); dealEffectDamageAll reads the source with effAttrs"
+      },
       {
         "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
         "agrees": true,
-        "note": ""
-      },
-      {
-        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
-        "agrees": true,
-        "note": ""
+        "note": "source attributes read column-aware since R294"
       }
     ],
     "tests_run": [
       {
-        "file": "298-column-attrs-outside-combat.test.ts",
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
         "pattern": "R294 §1 the report",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Lithoghul attacks in a column with Flzzz; asserts Lithoghul is not Blessed itself but effAttrs has Blessed, and 3 effect damage it deals gains its controller 3"
       },
       {
-        "file": "390-raq-stack.test.ts",
-        "pattern": "RAQ dead unit: Bellowing Boulder in a column with a Deadly unit pings with Deadly",
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Bellowing Boulder in a column",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Boulder attacks in a column with Deadly Carapace Devourer; its 1-damage ping kills a 7/5 Good Whale"
       }
     ],
     "probes": [],
@@ -1559,18 +1575,26 @@
       {
         "ref": "RAQ 1353895783266516992#5",
         "supports": "yes",
-        "note": ""
+        "note": "_passer, status covered: BB's ping is Deadly while the Deadly partner is in the column"
       },
       {
-        "ref": "R294",
+        "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
         "supports": "yes",
-        "note": ""
+        "note": "owner: the whole card gets the attributes while in the column, for abilities too; R345 corrected only the premise"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "The whole card gets the attributes while it's in the column. And so when it"
+        "text": "> The whole card gets the attributes while it's in the column. And so when it"
+      },
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "text": "'THE REPORT: 3 damage dealt by a source in a Blessed column gains its controller 3');"
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "assert.equal(ent(h, whale), undefined, '1 Deadly damage kills the 7/5');"
       }
     ],
     "basis_ok": true,
@@ -1616,7 +1640,7 @@
   },
   {
     "key": "attr.general.shared.leaving",
-    "textHash": "bd20ed662b5e2700",
+    "textHash": "2ce342f136fe520f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1670,7 +1694,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.general.shared.not-sideways",
@@ -1721,7 +1746,7 @@
   },
   {
     "key": "attr.general.stat-attributes",
-    "textHash": "d5e6dc486fc54e16",
+    "textHash": "b6b90d7ac1c949f8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1775,7 +1800,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "attr.general.stats-then-death",
@@ -1823,7 +1849,7 @@
   },
   {
     "key": "attr.inverted",
-    "textHash": "8cac738ff9d5d6b5",
+    "textHash": "906c4b01ac2b21f0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1866,7 +1892,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.inverted.attributes",
@@ -1946,7 +1973,7 @@
   },
   {
     "key": "attr.inverted.net",
-    "textHash": "daa5c0b1cc96a77e",
+    "textHash": "c989664b25daf008",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -1995,7 +2022,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.inverted.tough",
@@ -2049,7 +2077,7 @@
   },
   {
     "key": "attr.powerful",
-    "textHash": "5fa54c37eb1a4b1f",
+    "textHash": "09c68d0f6209a3b1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2085,7 +2113,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "attr.powerful.additive",
@@ -2189,7 +2218,7 @@
   },
   {
     "key": "attr.powerful.noncombat",
-    "textHash": "9565465489424cb9",
+    "textHash": "f541d397c1df3fcb",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U19-r2",
@@ -2257,11 +2286,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.powerful.pure",
-    "textHash": "1acf487c38aecf64",
+    "textHash": "cb337cffc7bfb77b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2305,7 +2335,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.powerful.spells",
@@ -2443,7 +2474,7 @@
   },
   {
     "key": "attr.sluggish.after-normal",
-    "textHash": "72db744eb32e961c",
+    "textHash": "6fbb619c6419b5bd",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U19-r2",
@@ -2501,7 +2532,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.sluggish.after-triggers",
@@ -2595,7 +2627,7 @@
   },
   {
     "key": "attr.sluggish.schedule",
-    "textHash": "51ca88b17e90fd27",
+    "textHash": "7ef4d54963be5087",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2629,7 +2661,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.swift",
@@ -2754,7 +2787,7 @@
   },
   {
     "key": "attr.swift.schedule",
-    "textHash": "e51bdd3ffe12a881",
+    "textHash": "d8c5a2b1fe680b2e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2793,33 +2826,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.swift.split",
-    "textHash": "37a22c4d7fd5fd72",
+    "textHash": "bb9009ea7053485f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:combat sub-step pump (struckNow && moreLater)",
+        "loc": "client/engine/src/engine.ts:battle.damageSubs / damageWindow",
         "agrees": true,
-        "note": ""
+        "note": "damageSubs fixed when the step opens; a damageWindow priority window opens after a striking sub-step only when a later one will strike"
       }
     ],
     "tests_run": [
       {
-        "file": "297-damage-substeps-are-steps.test.ts",
-        "pattern": "R295 §3b an EMPTY sub-step opens no window",
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §3b an EMPTY",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: unblocked Dune Drifter (Swift) and Lithoghul in separate columns; damageSubs = ['Swift','normal'] and exactly one damageWindow"
       },
       {
-        "file": "21-fixes.test.ts",
-        "pattern": "Flowstone Arcanite (R295): the Swift-step counters land at the boundary",
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "Flowstone Arcanite (R295)",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: the Swift-step trigger is on the stack at the damageWindow boundary before the normal sub-step, and its counters save the ally"
       }
     ],
     "probes": [],
@@ -2827,31 +2861,44 @@
       {
         "ref": "RAQ 1540678747953569832#2",
         "supports": "yes",
-        "note": ""
+        "note": "_passer: Swift/Sluggish open new stacks resolved before the next damage step"
       },
       {
         "ref": "RAQ 1363298910528864318#0",
         "supports": "yes",
-        "note": ""
+        "note": "windows between sub-steps, only when Swift/Sluggish present"
       },
       {
         "ref": "R295",
         "supports": "yes",
-        "note": ""
+        "note": "cited as a bare ref with no quote; R295's ruling says exactly this (window only when a sub-step struck and a later one will strike)"
+      },
+      {
+        "ref": "glossary: Swift",
+        "supports": "partial",
+        "note": "ours, not authority"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step"
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Split** (two or more sub-steps have a column striking in them): each is a real"
+      },
+      {
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "text": "assert.deepEqual(h.state.battle!.damageSubs, ['Swift', 'normal'],"
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "text": "assert.equal(h.state.battle!.pendingSub, 'normal', 'the normal sub-step is still to come');"
       }
     ],
-    "basis_ok": true,
-    "problem": ""
+    "basis_ok": false,
+    "problem": "Content holds. Basis is 'designer' but the record also cites R295 (an owner ruling, given as a bare ref without a quote); 'mixed' would match its sources."
   },
   {
     "key": "attr.swift.struck",
-    "textHash": "f323dd0b81feabe5",
+    "textHash": "de55f87caf6a4ad9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2890,11 +2937,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.swift.with-sluggish",
-    "textHash": "52be41f4e7b27d23",
+    "textHash": "31ae61282ae99bd2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -2943,7 +2991,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.tough",
@@ -3057,7 +3106,7 @@
   },
   {
     "key": "attr.tough.doubling",
-    "textHash": "1166de9c39cd5278",
+    "textHash": "eb1d7a8518675643",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -3097,11 +3146,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.tough.power",
-    "textHash": "4383dad7d8cd611f",
+    "textHash": "d85dc08917bad599",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -3144,7 +3194,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.unaware",
@@ -3249,7 +3300,7 @@
   },
   {
     "key": "attr.unaware.combat",
-    "textHash": "afbef1f6003f6d96",
+    "textHash": "c97203ac6be44364",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -3295,7 +3346,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.unaware.death",
@@ -3412,7 +3464,7 @@
   },
   {
     "key": "attr.unaware.outside",
-    "textHash": "58779bafa4400b93",
+    "textHash": "aeaf30dcc6694eff",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -3446,45 +3498,46 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.unaware.self",
-    "textHash": "e70a75f81a33fc5b",
+    "textHash": "25bde6110ed07510",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:effStats",
         "agrees": true,
-        "note": ""
+        "note": "layer 6: an Unaware card returns layer 1 (printed/token stats) alone; checkDeaths reads it"
       }
     ],
     "tests_run": [
       {
-        "file": "92-unaware.test.ts",
-        "pattern": "a +1/+1 counter on Bubb leaves it a 5/6",
+        "file": "client/engine/test/92-unaware.test.ts",
+        "pattern": "a +1/+1 counter on Bubb",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: counter on Bubb → still [5,6]"
       },
       {
-        "file": "92-unaware.test.ts",
-        "pattern": "Bubb would also survive 100 -1/-1 counters just fine",
+        "file": "client/engine/test/92-unaware.test.ts",
+        "pattern": "Bubb would also survive",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: -100 counters, Bubb alive, reads 5/6"
       },
       {
-        "file": "92-unaware.test.ts",
-        "pattern": "{Tough} donated onto Bubb does nothing",
+        "file": "client/engine/test/92-unaware.test.ts",
+        "pattern": "{Tough} donated onto Bubb",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Rampart Guardian augmented onto Bubb gives Tough, Bubb stays 5/6"
       },
       {
-        "file": "393-raq-mods.test.ts",
-        "pattern": "RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robot",
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure vs Despawn: moving Bubb",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Robot with three +1/+1 counters receives Bubb via Reconfigure and dies a 0/0; Growing Plague despawns once"
       }
     ],
     "probes": [],
@@ -3492,22 +3545,22 @@
       {
         "ref": "RAQ 1353847640214999170#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer worked example, covered"
       },
       {
         "ref": "R106",
         "supports": "yes",
-        "note": ""
+        "note": "Half 1: layer 6 returns layer 1 alone; ignores base rewrites, counters, temp, statics, Tough/Balanced, Inverted; death check included"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (statAttrs.includes('Unaware')) return this.printedStats(e);"
+        "file": "client/docs/digital-rules.md",
+        "text": "Layer 6 returns **layer 1 alone**. An Unaware card's own numbers never move off the"
       },
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "Since now Robot is Unaware it will die and then trigger Growing Plague Despawn."
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.ok(!ent(h, robot), 'the Robot, now Unaware, ignored its counters and died a 0/0');"
       }
     ],
     "basis_ok": true,
@@ -3553,7 +3606,7 @@
   },
   {
     "key": "attr.unaware.targets",
-    "textHash": "91e424da65927022",
+    "textHash": "0e2b8ad02b023f25",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U19-r3",
@@ -3627,7 +3680,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "attr.vulnerable",
@@ -3806,7 +3860,7 @@
   },
   {
     "key": "attr.vulnerable.powerful",
-    "textHash": "7f0ff1d08a77ec4e",
+    "textHash": "419afbc15751d5af",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U19-r1",
@@ -3845,62 +3899,82 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "attr.vulnerable.pure",
-    "textHash": "305eaaef768fd32a",
-    "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "textHash": "81cfcc4bc61c6ab3",
+    "verdict": "partial",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
         "agrees": true,
-        "note": "pureWith(recipient) guards its own Vulnerable"
+        "note": "mult = (!pureWith(u) && effAttrs(u).has('Vulnerable')) ? 2 : 1 — Vulnerable is off in a Pure pairing"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": "combat commit: mult = (!hit.pure && Vulnerable) ? 2 : 1"
       }
     ],
     "tests_run": [
       {
-        "file": "290-pure-outside-combat.test.ts",
-        "pattern": "§2 a Pure recipient's own Vulnerable is off too",
+        "file": "client/engine/test/290-pure-outside-combat.test.ts",
+        "pattern": "§2 a Pure recipient's own Vulnerable",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Chitin Shredder dealing 2 with Pure to Crumbling Ancient: dealt 2, Ancient alive"
+      },
+      {
+        "file": "client/engine/test/430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.vulnerable.pure",
+        "passed": true,
+        "asserts_claim": "yes: Crumbling Ancient granted Pure is dealt 2 by 2 effect damage"
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
-        "title": "attr.vulnerable.pure — a Vulnerable unit that is itself Pure is not dealt double damage",
+        "file": "client/engine/test/zz-probe-U19-1.test.ts",
+        "test": "probe U19-1 combat: the Vulnerable blocker itself Pure / the attacker Pure — a Vulnerable 3/8 blocker takes 4 from a 4-power attacker, not 8 (+ no-Pure control: 8, dies)",
         "passed": true,
-        "demonstrates": "yes: a Pure Crumbling Ancient is dealt 2, not 4"
+        "demonstrates": "yes: in combat too the engine does NOT double damage to a Vulnerable unit in a Pure exchange — the engine agrees with the rule"
       }
     ],
     "source_checks": [
       {
         "ref": "card: Just a Unit",
         "supports": "yes",
-        "note": ""
+        "note": "Pure cards and cards they interact with ignore all other attributes"
       },
       {
         "ref": "R61",
         "supports": "yes",
-        "note": ""
+        "note": "combat: the victim's Vulnerable is off too"
       },
       {
-        "ref": "R289",
+        "ref": "R289 (its per-pairing switch)",
         "supports": "yes",
-        "note": ""
+        "note": "outside combat: a Pure recipient's own Vulnerable is off"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "are off against it, and so are its own {Vulnerable} and {Unaware}."
+        "text": "  are off against it, and so are its own {Vulnerable} and {Unaware}."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const mult = (!pureWith(u) && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;"
+      },
+      {
+        "file": "client/engine/test/290-pure-outside-combat.test.ts",
+        "text": "assert.equal(dealtTo(evs).get(tgt), 2, '2 → 2: neither the source doubling nor the receiver doubling');"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Rule text and both examples hold, but the record carries engineDiffers [F-U19-3] and the engine does NOT differ: both bound tests pass with the ruling's numbers, the engine gates Vulnerable on Pure at every damage site, and probe zz-probe-U19-1 shows the same in combat. The engineDiffers mark is false and should be dropped."
   },
   {
     "key": "attr.vulnerable.receipt",

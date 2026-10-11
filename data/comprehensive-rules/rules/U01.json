@@ -6,7 +6,7 @@
     "text": "In Algomancy, each player's goal is to eliminate all of their opponents. A player is eliminated by bringing their life total to 0.",
     "examples": [
       {
-        "text": "A player brought to 0 life is eliminated, and the other player wins the game.",
+        "text": null,
         "test": "412-cr-general.test.ts::cr:concepts.general.goal — bringing a player to 0 life eliminates them and the other player wins the game"
       }
     ],
@@ -126,11 +126,11 @@
     "text": "The digital client this document describes plays two-player games only: 1v1 live draft and 1v1 constructed.",
     "examples": [
       {
-        "text": "A new live-draft game deals hands and packs to exactly two seats.",
+        "text": null,
         "test": "20-draft.test.ts::createGame draft: 6-card hands"
       },
       {
-        "text": "A new constructed game takes one deck per seat, for two seats.",
+        "text": null,
         "test": "34-constructed.test.ts::createGame constructed: per-seat decks"
       }
     ],
@@ -167,7 +167,7 @@
     "text": "Printed text beats the general rules and the engine's defaults. Where a card's printed text says something different from a general rule or a default, the card is followed, unless the designer has stated a different intent for that card (concepts.golden.designer-intent).",
     "examples": [
       {
-        "text": "Grob prints \"Up to one target unit's controller caches it\". A unit its controller has stolen goes to the stealing player's cache, as printed.",
+        "text": null,
         "test": "135-exchange-and-zones.test.ts::R157 §27: Grob caches a STOLEN unit"
       }
     ],
@@ -314,7 +314,7 @@
         "test": "179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not"
       },
       {
-        "text": "Ralph grafted onto Amphivore under a multiplier: control of the host can be given away only once, and the rest of the graft still happens on every pass.",
+        "text": "Amphivore carries two grafts, Flame Juggle and Ralph, and its ability runs three times. The first pass gives Amphivore to the opponent and makes three 1/1s; later passes cannot give it again, so their \"If you do\" makes nothing, but Flame Juggle still happens all three times.",
         "test": "393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted"
       }
     ],
@@ -443,7 +443,7 @@
         "test": "229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region"
       },
       {
-        "text": "No ally or enemy target offered by any card can be a unit in another region.",
+        "text": null,
         "test": "243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot"
       }
     ],
@@ -504,7 +504,7 @@
     "text": "Regions limit what effects can reach and count. In the digital client they do not limit what players may see: a player may read what happens in a region they are not in.",
     "examples": [
       {
-        "text": "A log line for an event in a region the player is not in is still delivered to that player.",
+        "text": null,
         "test": "219-region-scoped-all.test.ts::§2b an event from a region you are not in is still yours to read"
       }
     ],
@@ -545,7 +545,7 @@
     "text": "Each player has their own region and their own life total.",
     "examples": [
       {
-        "text": "Each player has a different home region, and when one player loses 4 life the other player's life total does not change.",
+        "text": null,
         "test": "412-cr-general.test.ts::cr:concepts.players.region-and-life — each seat owns a different home region, and a life loss of one seat leaves the life of the other alone"
       }
     ],
@@ -707,7 +707,7 @@
     "text": "A card's owner is the player whose card it is. A card's owner never changes, whoever controls it and whatever zone it goes to.",
     "examples": [
       {
-        "text": "A unit whose control has been taken is recalled: the recall still reports the player it was stolen from as the card's owner.",
+        "text": "A unit whose control has been taken is recalled: the player it was stolen from is still the card's owner.",
         "test": "246-zones-follow-control.test.ts::R262 §3: ownership does NOT move"
       },
       {
@@ -915,7 +915,7 @@
     "text": "On a mod, \"you\" means the controller of the unit the mod is on. A mod applied to another player's unit is controlled by that unit's controller, with its ability.",
     "examples": [
       {
-        "text": "Pathogenic Enclave augmented onto an enemy unit: when that unit despawns, its controller's tokens are deleted, not yours (illustrative).",
+        "text": "Pathogenic Enclave augmented onto an enemy unit: when that unit despawns, its controller's tokens are deleted, not yours.",
         "test": null
       }
     ],
@@ -1000,7 +1000,7 @@
         "test": "16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller"
       },
       {
-        "text": "If the controller declines to pay, the trigger does not happen.",
+        "text": null,
         "test": "16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger"
       }
     ],
@@ -1035,7 +1035,7 @@
     "text": "An ally is a unit under your control in the region where the effect is happening.",
     "examples": [
       {
-        "text": "An ally is counted from the controller of the effect, whichever player is making the choice.",
+        "text": null,
         "test": "243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller"
       }
     ],
@@ -1231,7 +1231,7 @@
     "text": "Choose the elements the deck is built from. A game of 2 or 3 players uses 3 elements.",
     "examples": [
       {
-        "text": "A standard 1v1 live draft deck is built from 3 elements; a game set up with wood, fire and water uses exactly those three.",
+        "text": null,
         "test": "412-cr-general.test.ts::cr:concepts.starting.live-draft.elements — a standard 1v1 live draft is built from exactly 3 elements, and a chosen trio is used as given"
       }
     ],
@@ -1271,7 +1271,7 @@
     "text": "Shuffle all the cards of the chosen elements together, with the hybrid cards for each pair of chosen elements, to form the shared deck.",
     "examples": [
       {
-        "text": "A fire + water + earth deck is 54 cards of each element plus 5 hybrid cards for each pair: 177 cards, one copy of each.",
+        "text": null,
         "test": "20-draft.test.ts::draft deck: the fire+water+earth trio is Manual-exact"
       }
     ],
@@ -1313,7 +1313,7 @@
     "text": "Randomly choose one player to have the initiative.",
     "examples": [
       {
-        "text": "Across new games, either player can start with the initiative.",
+        "text": null,
         "test": "412-cr-general.test.ts::cr:concepts.starting.live-draft.initiative — the first initiative is a seeded coin flip: either seat can get it, and the same seed gives the same seat"
       }
     ],
@@ -1353,7 +1353,7 @@
     "text": "Each player's life total starts at 30.",
     "examples": [
       {
-        "text": "Both players start a new live draft game at 30 life.",
+        "text": null,
         "test": "412-cr-general.test.ts::cr:concepts.starting.live-draft.life — each seat starts a live draft (and a shared-deck game) at 30 life"
       }
     ],
@@ -1399,7 +1399,7 @@
     "text": "Give each player two prismites. They start dormant.",
     "examples": [
       {
-        "text": "At the start of the game each player has exactly two resources, both dormant prismites.",
+        "text": null,
         "test": "01-planning.test.ts::setup & planning"
       }
     ],
@@ -1443,7 +1443,7 @@
     "text": "Deal each player 16 cards from the shared deck: 4 for their starting hand, 10 for their pack, and 2 for the draw of their first turn. The 4 and the 2 together are the player's opening hand of 6 cards.",
     "examples": [
       {
-        "text": "A new live-draft game: each player holds 6 cards and a pack of 10, and the shared deck is 32 cards smaller.",
+        "text": null,
         "test": "20-draft.test.ts::createGame draft: 6-card hands"
       }
     ],
@@ -1490,7 +1490,7 @@
     "text": "In live draft, the first turn's draw is dealt with the opening hand, so players do not draw in the draw step of the first turn.",
     "examples": [
       {
-        "text": "A new live-draft game is on turn 1's draft step with 6 cards in each hand: the 4-card starting hand and the 2 draws, and no further draw.",
+        "text": null,
         "test": "20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws)"
       }
     ],
@@ -1538,7 +1538,7 @@
     "text": "In constructed there is no shared deck and there are no packs. Each player plays from their own deck.",
     "examples": [
       {
-        "text": "A new constructed game has no shared deck, and each player's hand is drawn from their own deck only.",
+        "text": null,
         "test": "34-constructed.test.ts::createGame constructed: per-seat decks"
       }
     ],
@@ -1613,7 +1613,7 @@
     "text": "A life total reaching 0 ends the game at once, even in the middle of resolving an effect or paying a cost. Nothing waits for the effect to finish. A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
     "examples": [
       {
-        "text": "A player's own unblessed spell deals them lethal damage: the game ends as the damage is dealt, with the opponent the winner.",
+        "text": null,
         "test": "37-attrs-wight.test.ts::R48 {Blessed}: without the attribute the same shot is lethal"
       }
     ],
@@ -1660,7 +1660,7 @@
     "text": "A player wins when all of their opponents have been eliminated. In a two-player game, when one player is eliminated the other player wins.",
     "examples": [
       {
-        "text": "The attacker reduces the defender to 0 and is the winner.",
+        "text": null,
         "test": "02-combat.test.ts::win condition"
       }
     ],
@@ -1836,11 +1836,11 @@
     "text": "A player may concede at any time, with no priority and in any phase, even while a decision is waiting on them.",
     "examples": [
       {
-        "text": "A player who must choose a target for their own spell may concede instead, and every other action is still refused.",
+        "text": "A player who must choose a target for their own spell may concede instead; nothing else can be done until they choose.",
         "test": "58-playtest-round9.test.ts::R65: you may concede even while a decision is pending against you"
       },
       {
-        "text": "Either player can concede at every point of a game.",
+        "text": null,
         "test": "130-seat-aware-gate.test.ts::R154 §4: concede is always reachable"
       }
     ],
@@ -1915,7 +1915,7 @@
     "text": "In constructed, the first turn has a draw phase like every later turn: each player draws 4 cards, then puts 2 cards from their hand on the bottom of their deck. Print gives the draw phase; no source says the first turn takes it, which is the client's convention.",
     "examples": [
       {
-        "text": "A new constructed game starts with 8 cards in each hand (an opening 4 plus the turn-1 draw of 4), and the draw phase stays open until each player puts 2 back.",
+        "text": null,
         "test": "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4"
       }
     ],
@@ -1955,7 +1955,7 @@
     "text": "In constructed, each player's opening hand is 4 cards. No source gives the constructed opening hand; it is the client's convention.",
     "examples": [
       {
-        "text": "Each seat of a new constructed game holds its opening 4 before the turn-1 draw phase adds 4 more.",
+        "text": null,
         "test": "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4"
       }
     ],

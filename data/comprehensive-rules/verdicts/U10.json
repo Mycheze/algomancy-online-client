@@ -1,7 +1,7 @@
 [
   {
     "key": "combat.columns.adjacency",
-    "textHash": "312a34721d2384c1",
+    "textHash": "deaeb29ffeaeb161",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -61,11 +61,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.adjacency.at-resolution",
-    "textHash": "cd11ae8ea233f400",
+    "textHash": "a304346378183a16",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -115,11 +116,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.adjacency.left-play",
-    "textHash": "d1564a3ac2b20fd6",
+    "textHash": "0c8370c965a65ef0",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -153,11 +155,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.adjacency.only-in-formation",
-    "textHash": "2b87059dd3888907",
+    "textHash": "cef2a1b247419c04",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -196,11 +199,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.adjacency.positions",
-    "textHash": "1536d174ca7f3003",
+    "textHash": "fc1bed8430bc3d4f",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -264,11 +268,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.definition",
-    "textHash": "b489838ffb436d1c",
+    "textHash": "8630a08e10af1f10",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -295,11 +300,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.definition.shared-attributes",
-    "textHash": "3e6b5d7b275432bf",
+    "textHash": "d75059722d6969ca",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -326,11 +332,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No test bound."
+    "problem": "No test bound.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.definition.side-block-shared-column",
-    "textHash": "a58a8950500ca259",
+    "textHash": "fa7d311518994122",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -373,38 +380,34 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None; engine-basis rule with no ruling either way."
+    "problem": "None; engine-basis rule with no ruling either way.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.columns.definition.side-blocks",
-    "textHash": "cfe7cdcd383a3bd2",
+    "textHash": "f1c78d76089f4cfd",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U10-r2",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks (side-block keys open empty attacking columns)",
         "agrees": true,
-        "note": "keys past either end accepted, bounded by declaration size"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
-        "agrees": true,
-        "note": "openSideColumns opens an empty attacking column left or right per side-block"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/400-raq-fix-blocks.test.ts",
-        "pattern": "R321 side-blocks: two units block where no attacker is, each its own column",
+        "pattern": "R321 side-blocks: two units block where no attacker is",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: two blockers at columns 1 and 2 beside a single attack, each its own column, attack column unblocked"
       },
       {
         "file": "client/engine/test/400-raq-fix-blocks.test.ts",
         "pattern": "R321 a side-block on the left opens a column before column 1",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": "yes: 2/5 attacks, 1/1 side-blocks at -1; columns [[],[atk]], block at 0, D loses 2"
       }
     ],
     "probes": [],
@@ -412,35 +415,40 @@
       {
         "ref": "Manual p.23",
         "supports": "yes",
-        "note": "blocking in slots where attackers aren't"
+        "note": ""
+      },
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
       },
       {
         "ref": "RAQ 1366447016653361192#3",
         "supports": "yes",
-        "note": "any number, each its own column"
+        "note": "calebgannon, about 8 side-block columns: 'Yep you should be able to' (covered)"
       },
       {
         "ref": "R321",
         "supports": "yes",
-        "note": "either side"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "where attackers aren’t, which can be beneficial for"
+        "file": "client/ledgers/raq.ts",
+        "text": "        source: \"calebgannon, asked about declaring 8 units as 8 side-block columns: \\\"Yep you should be able to\\\"\","
       },
       {
         "file": "client/docs/digital-rules.md",
-        "text": "Side-blocks may stand to either side of the attack."
+        "text": "Side-blocks may stand to either side of the attack. A side-block blocks"
       }
     ],
-    "basis_ok": true,
-    "problem": ""
+    "basis_ok": false,
+    "problem": "basis is 'designer' but the text rests on printed (Manual p.23, side-blocks allowed), designer (any number) and an owner ruling (R321, either side): should be 'mixed'. The content holds."
   },
   {
     "key": "combat.columns.edges",
-    "textHash": "a670cb23272e7d59",
+    "textHash": "946eb198ac2a9456",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -485,11 +493,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.edges.attacking-only",
-    "textHash": "3fbb484de2aee098",
+    "textHash": "dc5acbe6b5d73dfb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -523,11 +532,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.columns.edges.front-only",
-    "textHash": "c1a19274b13ca3f0",
+    "textHash": "a3c3028e71d867e6",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -561,11 +571,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.positional-text",
-    "textHash": "d863e789b996ea7e",
+    "textHash": "92e3dae433618656",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -609,11 +620,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.columns.width",
-    "textHash": "f7eac5594a7362e1",
+    "textHash": "c9af41e428bffe93",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -652,19 +664,20 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.columns.width.columns-keep-identity",
-    "textHash": "f49292b4602528a9",
+    "textHash": "cc39ecd4d7756743",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U10-r1",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:rekeyColumns",
         "agrees": true,
-        "note": "blocks, col:<ci> counters, Alluring duties, sideCols and R320 struck marks move in one commit, used by both the collapse and putInSlot left-insert"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -672,23 +685,28 @@
         "file": "client/engine/test/66-formation-placement.test.ts",
         "pattern": "R75: opening a column on the LEFT re-keys every block and every column counter",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: a new column at index 0; the block on old column 1 is now on column 2 (same attacker), counter moved"
       },
       {
         "file": "client/engine/test/64-formation-collapse.test.ts",
         "pattern": "R72: a column-scoped battle counter rides the collapse to the new index",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes (bare demonstration): column counter follows the collapse"
       },
       {
         "file": "client/engine/test/400-raq-fix-blocks.test.ts",
         "pattern": "R320 a struck mark moves with its column when a new column opens on the left",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Dune Drifter's Swift column strikes for 5; Tiderunner Initiate opens a column on the left; the marked column (now index 1) does not strike again in the normal sub-step"
       }
     ],
     "probes": [],
     "source_checks": [
+      {
+        "ref": "R72 (its gravity rule)",
+        "supports": "yes",
+        "note": ""
+      },
       {
         "ref": "R72 (its gravity rule)",
         "supports": "yes",
@@ -701,8 +719,8 @@
         "text": "| `blocks[ci]` | the blocking column moves with its attacker |"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "    // R320: a column's struck-marks are the column's, so they move with it"
+        "file": "client/docs/digital-rules.md",
+        "text": "| `battleCounters['col:<ci>:…']` | the column's ledger moves with it |"
       }
     ],
     "basis_ok": true,
@@ -710,7 +728,7 @@
   },
   {
     "key": "combat.formations.collapse",
-    "textHash": "871350baedcfec2a",
+    "textHash": "c4becd64ef693bca",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -749,11 +767,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.collapse.after-blocks",
-    "textHash": "331c9af7f0a2a3a1",
+    "textHash": "534263beba2b2d02",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -804,11 +823,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.collapse.any-removal",
-    "textHash": "406fb75f4f75d4c7",
+    "textHash": "24f096d7531bdaca",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -842,11 +862,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.collapse.defending",
-    "textHash": "600cdf7f03e06e44",
+    "textHash": "3404151168b2ce83",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -890,11 +911,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.collapse.immediate",
-    "textHash": "a297615933452b25",
+    "textHash": "9b45b55d25553bd1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -928,11 +950,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Implicitly \"before blocks\" (602.5a); reads as unconditional on its own."
+    "problem": "Implicitly \"before blocks\" (602.5a); reads as unconditional on its own.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.definition",
-    "textHash": "2e6e9e0f9cc2a8d6",
+    "textHash": "33a8406fffa4b064",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -964,11 +987,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.definition.empty",
-    "textHash": "853c13faf22c158d",
+    "textHash": "84546ffbf6f01f06",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1014,11 +1038,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.definition.locked",
-    "textHash": "7c052cc8a1cd91f5",
+    "textHash": "5fbfa8265417e7dc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1062,11 +1087,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.definition.shape",
-    "textHash": "a28e16232912b7a2",
+    "textHash": "7a2e265414ed914e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1098,11 +1124,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.definition.when-set",
-    "textHash": "4e77d587da19e016",
+    "textHash": "784831fd9c5caa7e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1134,11 +1161,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.definition.whole-side",
-    "textHash": "ec5d87d8b8b3de89",
+    "textHash": "0746dcf0bd1c9d43",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1177,11 +1205,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.front-first",
-    "textHash": "c50bf7215f1b2bc9",
+    "textHash": "47938ef22da860ba",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1225,11 +1254,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.outside",
-    "textHash": "d73b760c31cb5965",
+    "textHash": "4005325884aba318",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1256,11 +1286,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.outside.spawned",
-    "textHash": "b90201ed56be4b7c",
+    "textHash": "2d21bae4d1982f6f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1304,11 +1335,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.outside.stolen",
-    "textHash": "2b9faecc9d6d4134",
+    "textHash": "e06bf9bf2b6dda49",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -1383,11 +1415,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None."
+    "problem": "None.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement",
-    "textHash": "964751b83a3d2fb9",
+    "textHash": "aa01d508823a92f2",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1426,11 +1459,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.counting",
-    "textHash": "906446ab999d3c71",
+    "textHash": "609f795ba70be66a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1474,11 +1508,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.defending",
-    "textHash": "7fb3ef0ecd7b8183",
+    "textHash": "7ff5b0ed89082266",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -1565,11 +1600,12 @@
       }
     ],
     "basis_ok": false,
-    "problem": "Text and engine agree. basis \"designer\" overstates: only the after-blocks block spot is designer (RAQ); the no-new-end-column and back-slot clauses are the owner rulings R75/R72, so basis should be \"mixed\". Example 1 (\"no position\") holds only because the test has a single attacking column; with another unblocked attacking column in the block window the defender would be offered a block spot."
+    "problem": "Text and engine agree. basis \"designer\" overstates: only the after-blocks block spot is designer (RAQ); the no-new-end-column and back-slot clauses are the owner rulings R75/R72, so basis should be \"mixed\". Example 1 (\"no position\") holds only because the test has a single attacking column; with another unblocked attacking column in the block window the defender would be offered a block spot.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.defending-emptied-block",
-    "textHash": "9852e3b7e77c176f",
+    "textHash": "f1e7743d92b654e5",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -1627,11 +1663,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None material. The only cited ruling is on-topic rather than stating the rule; the rule rests on the engine, as its basis says."
+    "problem": "None material. The only cited ruling is on-topic rather than stating the rule; the rule rests on the engine, as its basis says.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.empty-formation",
-    "textHash": "cf1412fb138dedec",
+    "textHash": "38ef7db58d8903f4",
     "verdict": "partial",
     "round": 3,
     "verifier": "U10-r3",
@@ -1702,11 +1739,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "The last clause names 602.6f (a source that left play still places into the formation it was in) as an exception, but the engine applies no such exception: when that formation holds no unit, formationSlots returns nothing and the unit stays outside (probe: lone Hooba-Lin). The divergence is flagged on the source-gone rule but not here, so this rule states as engine-true a behaviour the engine lacks. Either flag the engine divergence here too, or drop 602.6f from the exceptions. The rest (no position, not even a hole; 602.6c exception) is confirmed."
+    "problem": "The last clause names 602.6f (a source that left play still places into the formation it was in) as an exception, but the engine applies no such exception: when that formation holds no unit, formationSlots returns nothing and the unit stays outside (probe: lone Hooba-Lin). The divergence is flagged on the source-gone rule but not here, so this rule states as engine-true a behaviour the engine lacks. Either flag the engine divergence here too, or drop 602.6f from the exceptions. The rest (no position, not even a hole; 602.6c exception) is confirmed.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.ends-only",
-    "textHash": "b4804424185884ca",
+    "textHash": "ed1fc432b4e76c48",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1740,11 +1778,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.legal-positions",
-    "textHash": "2eb0b9a2e747cc7b",
+    "textHash": "0a3b4692c2dbe3dd",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -1784,11 +1823,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Exhaustive list reads as universal; for a defending formation the ends are excluded and the R322 block spot is added (rule placement.defending). Acceptable given the cross-reference."
+    "problem": "Exhaustive list reads as universal; for a defending formation the ends are excluded and the R322 block spot is added (rule placement.defending). Acceptable given the cross-reference.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.formations.placement.one-or-none",
-    "textHash": "a744e8f16d1e40bf",
+    "textHash": "94a293ff1a2ac4af",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1822,11 +1862,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.formations.placement.source-formation",
-    "textHash": "327267b5356943bf",
+    "textHash": "5a4dba937c92281e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1865,11 +1906,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.source-gone",
-    "textHash": "ee3c1584271ef5d0",
+    "textHash": "7262cbc467aa2d0c",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -1934,11 +1976,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed against the RAQ and R325; the engine follows it when the formation still holds a unit (bound test) and diverges when it holds none (probe), which is the flagged divergence."
+    "problem": "Ruling confirmed against the RAQ and R325; the engine follows it when the formation still holds a unit (bound test) and diverges when it holds none (probe), which is the flagged divergence.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.spell-unit",
-    "textHash": "a248d108fe356a49",
+    "textHash": "6ca3f0d9f8b6c7db",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -1981,11 +2024,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.placement.still-in-formation",
-    "textHash": "a8ce5dbbabae5609",
+    "textHash": "d522bf86e71aff35",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2033,11 +2077,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.play-into",
-    "textHash": "62bdc390cb3f911a",
+    "textHash": "ea5fd3ccb9aaa358",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2087,11 +2132,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.play-into.needs-formation",
-    "textHash": "fe58183f52243b5a",
+    "textHash": "c6cd541121e23dda",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -2165,11 +2211,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. Example 3 is marked illustrative with no bound test; probe u10-r3 demonstrates it and could be bound."
+    "problem": "None. Example 3 is marked illustrative with no bound test; probe u10-r3 demonstrates it and could be bound.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.play-into.optional",
-    "textHash": "ea707a83ac06bf33",
+    "textHash": "50a631fd1003d933",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2208,11 +2255,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "combat.formations.play-into.spot-gone",
-    "textHash": "88494a72e341b21a",
+    "textHash": "21d45762c9887455",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2246,11 +2294,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.formations.promotion",
-    "textHash": "3d22fa13199a7df6",
+    "textHash": "cc61b09324ddc5f4",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2294,11 +2343,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.general.units",
-    "textHash": "54b4da5d60663da7",
+    "textHash": "fba8a5ec047981ff",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2330,11 +2380,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.after-combat-presence",
-    "textHash": "e929c5df2ecbe561",
+    "textHash": "664a3d595356dc32",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2373,11 +2424,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.arrangement",
-    "textHash": "e50d8bb15cbe60ac",
+    "textHash": "cbec73f3590a0b5e",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2404,7 +2456,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "combat.regions.arrangement.elimination",
@@ -2475,7 +2528,7 @@
   },
   {
     "key": "combat.regions.created",
-    "textHash": "aec6b2a51c20bc6c",
+    "textHash": "3f063030b5b96eae",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2545,11 +2598,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.definition",
-    "textHash": "bbfcbb9f8ef3f62d",
+    "textHash": "166a631c9b99e9c8",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2581,11 +2635,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.regions.definition.all",
-    "textHash": "464e5b84ef28dc99",
+    "textHash": "c7663520d4c90bcf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2624,11 +2679,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.definition.every-effect-local",
-    "textHash": "294f0b2b95431116",
+    "textHash": "2c0ba80b9ccaa313",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2672,11 +2728,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.definition.isolated",
-    "textHash": "78f34228437fa244",
+    "textHash": "0866ed1eb06b2561",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2730,35 +2787,31 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.definition.sacrifice",
-    "textHash": "7f760bf174b0afc2",
+    "textHash": "ea77ba671f9af341",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U10-r1",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:cullSacrifices",
+        "loc": "client/engine/src/engine.ts (sacrifice choices region-scoped)",
         "agrees": true,
-        "note": "each present seat chooses from unitsOf(seat, ctx.region) only"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:cast-cost pools",
-        "agrees": true,
-        "note": "sacrificeUnit cost pool is unitsOf(seat, item.region) (R265)"
+        "note": ""
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
-        "title": "combat.regions.definition.sacrifice: \"Each player sacrifices a unit\" (Cull) takes nothing from a player whose only units are in another region",
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.regions.definition.sacrifice",
         "passed": true,
-        "demonstrates": "yes"
+        "asserts_claim": "yes: A's attacker recalled, A's only unit is at home; Cull resolves; A's home unit survives, D's unit in the region is sacrificed"
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.41",
@@ -2773,16 +2826,20 @@
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "You cannot sacrifice units that are in a different region, even if they"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[Switch1] Each player sacrifices a unit.\","
       }
     ],
     "basis_ok": true,
-    "problem": "Example is unbound (illustrative); the probe demonstrates it."
+    "problem": ""
   },
   {
     "key": "combat.regions.definition.statics-and-triggers",
-    "textHash": "13f9393d4111b801",
+    "textHash": "fa11b6a190ba5d44",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -2827,11 +2884,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.exclusive",
-    "textHash": "3aaf06fc3bacb02e",
+    "textHash": "4fb916789b51557c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -2870,11 +2928,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.exclusive.no-region-zones",
-    "textHash": "8a34292a3a31f13c",
+    "textHash": "19b23d8d1ecd94ad",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U10-r4",
@@ -2964,11 +3023,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "combat.regions.information",
-    "textHash": "ca8a61256e1450e7",
+    "textHash": "69eedaeb51406a67",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U10-r3",
@@ -3029,11 +3089,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None material. The printed sentence is reinterpreted by owner ruling, which the text states openly; the \"no effect carries information\" half is supported by rulings but not demonstrated by an engine test that was run."
+    "problem": "None material. The printed sentence is reinterpreted by owner ruling, which the text states openly; the \"no effect carries information\" half is supported by rulings but not demonstrated by an engine test that was run.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.regions.one-at-a-time",
-    "textHash": "8093572a82452ee1",
+    "textHash": "d9587bb494bd9aef",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3060,11 +3121,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.one-at-a-time.order",
-    "textHash": "910730d84bbaa1b1",
+    "textHash": "679af8f256fe1329",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3091,11 +3153,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Multiplayer half printed-only."
+    "problem": "Multiplayer half printed-only.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.one-at-a-time.others-dont-exist",
-    "textHash": "73c7ad0293d785c8",
+    "textHash": "11aeca183d414023",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3129,11 +3192,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.presence",
-    "textHash": "9642c070a00f15d4",
+    "textHash": "e4d627b09b110c4b",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3183,11 +3247,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.presence.ally-enemy",
-    "textHash": "9b80191ca213c2e2",
+    "textHash": "132721ec5a561800",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3221,11 +3286,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.regions.presence.each-opponent",
-    "textHash": "eac1623d2e6fc571",
+    "textHash": "9d6b5618a9b67021",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3280,11 +3346,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.presence.only-by-attacking",
-    "textHash": "f62ffd5b17558297",
+    "textHash": "58d1e52173fff771",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3323,11 +3390,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No test bound; probe demonstrates."
+    "problem": "No test bound; probe demonstrates.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.regions.presence.outside-battle",
-    "textHash": "745bde0e5a20c8e6",
+    "textHash": "6eed1b1a9cb76f59",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3380,11 +3448,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.presence.player-things",
-    "textHash": "6d36850d4ec37a45",
+    "textHash": "921ae6484783a4b1",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U10-r2",
@@ -3442,11 +3511,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.regions.presence.regroup",
-    "textHash": "0f60681e9bf52680",
+    "textHash": "b2ab77b3684121b1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U10-r1",
@@ -3485,6 +3555,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   }
 ]

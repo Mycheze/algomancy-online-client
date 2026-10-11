@@ -130,7 +130,8 @@ export function bucketOf(classes) {
   if (!classes.size) return null;
   if ([...classes].some((c) => NEW_CLAIM.has(c))) return 'needsVerify';
   if (classes.has('polish')) return 'needsEquivalence';
-  return 'repinned';
+  if ([...classes].every((c) => MECHANICAL.has(c))) return 'repinned';
+  throw new Error(`unknown example classes: ${[...classes].join(', ')}`);
 }
 
 const sameExamples = (a, b) => a.length === b.length

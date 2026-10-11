@@ -114,7 +114,7 @@
   },
   {
     "key": "concepts.abilities.as-you-play",
-    "textHash": "d10af9d0ebb50ce3",
+    "textHash": "7a66cb5b48b5f8ff",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -159,7 +159,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Generalises from one card (Maelstrom Charger is the only as-you-play option in the pool); fine as written."
+    "problem": "Generalises from one card (Maelstrom Charger is the only as-you-play option in the pool); fine as written.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.abilities.granted",
@@ -206,7 +207,7 @@
   },
   {
     "key": "concepts.abilities.granted.is-ability",
-    "textHash": "08f8710ce68ef5cb",
+    "textHash": "000d2c65c3840dd9",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U03-r2",
@@ -265,27 +266,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.abilities.mod-text",
-    "textHash": "6f1df66838405746",
+    "textHash": "cfbd394dea6e464f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.fireEvent collectTriggersFrom(face, augment)",
+        "loc": "client/engine/src/engine.ts:createWraith",
         "agrees": true,
-        "note": "a card's own [Augment] text is live when played normally"
+        "note": "a Wraith body in play runs its own [Augment] start-of-deployment line"
       }
     ],
     "tests_run": [
       {
-        "file": "37-attrs-wight.test.ts",
+        "file": "client/engine/test/37-attrs-wight.test.ts",
         "pattern": "R71: at the start of deployment a Wraith body shrinks a chosen ally",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: a Wraith body created for P; at the next deployment P is asked which ally and the chosen 4/4 becomes 3/3"
       }
     ],
     "probes": [],
@@ -293,13 +295,13 @@
       {
         "ref": "Manual p.43",
         "supports": "yes",
-        "note": ""
+        "note": "Q: 'Is the text written after the Augment and Graft symbols active even if the card was not played as a mod?' A: 'Yes, the text is active on cards played normally.'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "        // a card's own [Augment] text is active when played normally (Manual Q&A)"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] At the start of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith onto an ally."
       }
     ],
     "basis_ok": true,
@@ -307,23 +309,23 @@
   },
   {
     "key": "concepts.abilities.once",
-    "textHash": "28e6b82bd8ac26d5",
+    "textHash": "7c5302f131c80daf",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.composeParts",
+        "loc": "client/engine/src/cards/sets/batch-fire-b.ts:Unstable Apparition",
         "agrees": true,
-        "note": "bounded ability reserves budgets[key]=1 on first compose and returns null after; startTurn wipes budgets"
+        "note": "bounded trigger, budget per turn"
       }
     ],
     "tests_run": [
       {
-        "file": "33-trigger-fixes.test.ts",
-        "pattern": "Unstable Apparition: [once] resets each turn",
+        "file": "client/engine/test/33-trigger-fixes.test.ts",
+        "pattern": "Unstable Apparition: ",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: first Lonely Forager makes a Fireball, second the same turn makes nothing, next turn it fires again (X 3)"
       }
     ],
     "probes": [],
@@ -331,27 +333,27 @@
       {
         "ref": "Manual p.33",
         "supports": "yes",
-        "note": "bounded graft \"limited to only trigger once per turn\""
+        "note": "bounded graft 'is limited to only trigger once per turn'"
       },
       {
         "ref": "Rulebook 2023 p.16",
         "supports": "yes",
-        "note": ""
+        "note": "limited graft 'only triggers once per turn'"
       },
       {
         "ref": "R113",
         "supports": "yes",
-        "note": "covers [once] activation and trigger"
+        "note": "'can only be activated or triggered once per turn'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if ((budgetHolder.budgets[budgetKey] ?? 0) > 0) return null;   // bounded cause bounds the whole composite"
+        "file": "client/docs/digital-rules.md",
+        "text": "> A bounded ability **\"can only be activated or triggered once per turn. Regardless of if"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "Once-per-turn ([once], bounded grafts) is **tracked per card**; changing controller does"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment][once] When you play a nontoken spell, cre- {/n}ate a Fireball X, where X is the spell's cost."
       }
     ],
     "basis_ok": true,
@@ -408,7 +410,7 @@
   },
   {
     "key": "concepts.abilities.once.bounded-cause",
-    "textHash": "14455d66c655d8ab",
+    "textHash": "b2f33489060c8dac",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -452,7 +454,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.abilities.once.decline",
@@ -623,7 +626,7 @@
   },
   {
     "key": "concepts.abilities.once.per-card",
-    "textHash": "a77ec0d8609cb93e",
+    "textHash": "a492b018a2ba2083",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -657,11 +660,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.abilities.once.per-mod",
-    "textHash": "324da920e63a9647",
+    "textHash": "3aed59d024e5b786",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -695,11 +699,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.abilities.once.spent-on-use",
-    "textHash": "a071ada4ae8c6b6b",
+    "textHash": "e68423aa8379423c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U03-r2",
@@ -748,7 +753,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.abilities.once.transform",
@@ -787,7 +793,7 @@
   },
   {
     "key": "concepts.abilities.once.trashed",
-    "textHash": "a98f8b3f441b0084",
+    "textHash": "674dd8049739beca",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U03-r2",
@@ -831,7 +837,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No printed/designer source; the rule is engine behaviour (basis honestly 'engine')."
+    "problem": "No printed/designer source; the rule is engine behaviour (basis honestly 'engine').",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "concepts.abilities.once.unbounded-cause",
@@ -1065,23 +1072,23 @@
   },
   {
     "key": "concepts.abilities.triggered.amount",
-    "textHash": "204da595e25d8ca1",
+    "textHash": "dae1f349d5a2092a",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts resolution-time ctx (R1)",
+        "loc": "client/engine/src/cards/registry.ts:Astral Tidewraith",
         "agrees": true,
-        "note": ""
+        "note": "tidewraithEffect reads hand sizes when the effect runs"
       }
     ],
     "tests_run": [
       {
-        "file": "05-rulings.test.ts",
-        "pattern": "R1: trigger conditions check at event time; amounts compute at resolution",
+        "file": "client/engine/test/05-rulings.test.ts",
+        "pattern": "R1: trigger conditions check at event time",
         "passed": true,
-        "asserts_claim": "yes — it is the Astral Tidewraith example"
+        "asserts_claim": "yes: Tidewraith attacks with D holding 2 cards; D responds with a Luminous Arc (hand 1); the trigger deals D 1, the count at resolution"
       }
     ],
     "probes": [],
@@ -1089,13 +1096,17 @@
       {
         "ref": "R1",
         "supports": "yes",
-        "note": ""
+        "note": "Astral Tidewraith's hand count is measured when the trigger resolves"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
         "text": "  hand count is measured **when the trigger resolves**, so responses can change it."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I attack or block, [Switch1] I deal damage to each player equal to the number of cards in their hand."
       }
     ],
     "basis_ok": true,
@@ -1103,7 +1114,7 @@
   },
   {
     "key": "concepts.abilities.triggered.condition",
-    "textHash": "22c93a4a607fee7d",
+    "textHash": "d6162502852c00c9",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -1153,7 +1164,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.abilities.triggered.per-target",
@@ -1195,29 +1207,23 @@
   },
   {
     "key": "concepts.abilities.triggered.recheck",
-    "textHash": "625a1c31a3f323a1",
+    "textHash": "dbf252d99a67aedd",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "cards Hooba-Nan intervening clause",
+        "loc": "client/engine/src/cards/sets/batch-wood-a.ts:Hooba-Nan",
         "agrees": true,
-        "note": ""
+        "note": "per-card resolution-time formation check"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
+        "file": "client/engine/test/390-raq-stack.test.ts",
         "pattern": "RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing",
         "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "05-rulings.test.ts",
-        "pattern": "R1: trigger conditions check at event time",
-        "passed": true,
-        "asserts_claim": "partly: the no-recheck half"
+        "asserts_claim": "yes: Hooba-Nan attacks, is destroyed with its trigger on the stack, and no 1/1 appears"
       }
     ],
     "probes": [],
@@ -1225,17 +1231,21 @@
       {
         "ref": "R1",
         "supports": "yes",
-        "note": ""
+        "note": "cards that re-check say so on the card, e.g. 'if I am still in formation' (Hooba-Nan, Rousing Spirit)"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "- *Explicit exception template*: cards that DO re-check at resolution say so on the card —"
+        "text": "  \"**if I am still in formation**\" (Hooba-Nan, Rousing Spirit). That clause is a"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] When I attack, if I am still in formation, create a 1/1 unit in all my empty adjacent slots."
       }
     ],
     "basis_ok": true,
-    "problem": "Targets are still re-judged at resolution (R324); this rule is about conditions only."
+    "problem": ""
   },
   {
     "key": "concepts.abilities.what",
@@ -1284,7 +1294,7 @@
   },
   {
     "key": "concepts.cards.card.characteristics",
-    "textHash": "5fb1b942e8d89344",
+    "textHash": "2350276cd4be16f3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -1300,7 +1310,8 @@
     ],
     "quote_spans": [],
     "basis_ok": true,
-    "problem": "Definitional, printed; no engine claim."
+    "problem": "Definitional, printed; no engine claim.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.cards.card.units",
@@ -1342,23 +1353,23 @@
   },
   {
     "key": "concepts.cards.copies",
-    "textHash": "b77b61beded6a928",
+    "textHash": "cd1b8bce9ec217a7",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.pushSpellCopy",
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:Earthbound Replicator",
         "agrees": true,
-        "note": "copy fires no spellPlayed"
+        "note": "listens on 'spellPlayed'; a copy fires no play event"
       }
     ],
     "tests_run": [
       {
-        "file": "138-spell-copy.test.ts",
+        "file": "client/engine/test/138-spell-copy.test.ts",
         "pattern": "R164 Earthbound Replicator: a copy is not PLAYED",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Burgeon targeting the Replicator is copied once; the copy targets it again but no second copy is made; one 'plays Burgeon' log line"
       }
     ],
     "probes": [],
@@ -1366,18 +1377,22 @@
       {
         "ref": "RAQ 1355613076506017894#4",
         "supports": "yes",
-        "note": ""
+        "note": "_passer, status covered"
       },
       {
         "ref": "RAQ 1355613076506017894#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer: no 2nd copy since the 1st copy wasn't played"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/138-spell-copy.test.ts",
-        "text": "assert.equal(copies(h).length, 1, 'one copy, and the copy did not copy itself');"
+        "file": "client/ledgers/raq.ts",
+        "text": "since 1st copy wasn't 'played'."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Whenever a player plays a nonunit spell targeting me, they copy it and may choose new targets for the copy."
       }
     ],
     "basis_ok": true,
@@ -1714,23 +1729,29 @@
   },
   {
     "key": "concepts.cards.token",
-    "textHash": "5b78447a665552d1",
+    "textHash": "611fa56a064bfba7",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.createSpellToken / spawnUnit token",
+        "loc": "client/engine/src/cards/sets/batch-wood-b.ts:Mycelial Mentor",
         "agrees": true,
-        "note": "both fire a creation event (tokenCreated / spawned)"
+        "note": "listens for token creation of both kinds"
       }
     ],
     "tests_run": [
       {
-        "file": "119-play-and-token-events.test.ts",
-        "pattern": "Mycelial Mentor: creating a POISON fires \"when you create a token\"",
+        "file": "client/engine/test/119-play-and-token-events.test.ts",
+        "pattern": "Mycelial Mentor: creating a POISON fires ",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: creating a Poison pumps the target ally +3/+3"
+      },
+      {
+        "file": "client/engine/test/119-play-and-token-events.test.ts",
+        "pattern": "Mycelial Mentor: a UNIT token still fires it",
+        "passed": true,
+        "asserts_claim": "yes: the 'just as it would for a 1/1 unit' half — creating a Unit Token pumps the ally +3/+3"
       }
     ],
     "probes": [],
@@ -1738,13 +1759,13 @@
       {
         "ref": "Manual p.15",
         "supports": "yes",
-        "note": "note the Manual calls tokens \"temporary cards\"; the rule avoids the word"
+        "note": "unit tokens 'function identically to regular units', spawn 'directly into play'; 'A spell token is a temporary spell'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"Spell tokens are still tokens.\"* … *\"Don't assume that cards are limited,"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When you create a token, [Switch1] Target ally gains +3/+3 until regroup."
       }
     ],
     "basis_ok": true,
@@ -1752,15 +1773,15 @@
   },
   {
     "key": "concepts.cards.token.not-card",
-    "textHash": "b3a377fdc0a6f901",
+    "textHash": "d9dbfdd820b5b658",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src (cardPlayed vs spellPlayed events)",
+        "loc": "client/engine/src/engine.ts:commitItem",
         "agrees": true,
-        "note": "a cast spell token fires spellPlayed but never cardPlayed"
+        "note": "a spell token cast fires 'spellPlayed' (token: true) but not 'cardPlayed'"
       }
     ],
     "tests_run": [
@@ -1768,7 +1789,7 @@
         "file": "client/engine/test/119-play-and-token-events.test.ts",
         "pattern": "a spell TOKEN is a played spell but not a card",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: casting a Fireball token in battle raises spellPlayed by 1 and cardPlayed by 0"
       }
     ],
     "probes": [],
@@ -1776,49 +1797,33 @@
       {
         "ref": "Manual p.15",
         "supports": "yes",
-        "note": "cited for the \"temporary cards\" wording the rule explains away; verbatim."
+        "note": "the 'temporary cards' phrase; the record explains why it does not make a token a card"
       },
       {
         "ref": "R129",
         "supports": "yes",
-        "note": "owner: \"Tokens are NOT cards, however.\" — confirmed by R346."
+        "note": ""
       },
       {
         "ref": "R306",
         "supports": "yes",
-        "note": "owner: tokens are not cards \"in terms of specific semantics of the game\"."
+        "note": ""
       },
       {
         "ref": "R305",
         "supports": "yes",
-        "note": "noun table: \"card(s)\": a token does not count."
+        "note": "R342 extends R305, rejected as a narrowing"
       },
       {
         "ref": "R346",
         "supports": "yes",
-        "note": "owner, 2026-10-11: \"temporary card\" is print describing a token to players; a token is never a card, still a unit/spell."
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "Tokens are temporary cards that are created directly"
-      },
-      {
         "file": "client/docs/digital-rules.md",
-        "text": "> *\"Everything is a card, including units. Tokens are NOT cards, however.\"*"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "For the rules, a token is never a card."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "A token is still a unit, a spell, or whatever other thing its type line names."
-      },
-      {
-        "file": "client/engine/test/119-play-and-token-events.test.ts",
-        "text": "assert.equal(seen(h, 'cardPlayed') - mark.card, 0, 'a token is not a card');"
+        "text": "Everything is a card, including units. Tokens are NOT cards, however."
       }
     ],
     "basis_ok": true,
@@ -1969,15 +1974,15 @@
   },
   {
     "key": "concepts.cards.token.x-units",
-    "textHash": "a2053a9f78ccdd48",
+    "textHash": "407fdd25a99af8ea",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U03-r2",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets:Spawntender / Download",
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Download",
         "agrees": true,
-        "note": "the 8/8 is created as a token and offered to Download"
+        "note": "the 'token' target family includes created unit tokens"
       }
     ],
     "tests_run": [
@@ -1985,7 +1990,7 @@
         "file": "client/engine/test/393-raq-mods.test.ts",
         "pattern": "RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: downloadBoard plays Spawntender, finds the 8/8 with u.token, and Download's target menu includes it"
       }
     ],
     "probes": [],
@@ -1993,13 +1998,17 @@
       {
         "ref": "RAQ 1353864175910387742#2",
         "supports": "yes",
-        "note": ""
+        "note": "_passer: 8/8 from Spawntender (or any X/X unit created by Awoken Tomb) ✅, status covered"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/raq.ts",
-        "text": "8/8 unit from Spawntender (or any X/X unit created by Awoken Tomb or similiar)"
+        "text": "3. 8/8 unit from Spawntender (or any X/X unit created by Awoken Tomb or similiar) ✅"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch1] Create an 8/8 unit."
       }
     ],
     "basis_ok": true,
@@ -2007,7 +2016,7 @@
   },
   {
     "key": "concepts.targets.ally",
-    "textHash": "fb9b193956c7ce71",
+    "textHash": "3ab119883fd64956",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -2041,11 +2050,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.targets.ally.another",
-    "textHash": "babd7a9125d3b088",
+    "textHash": "efc7f940fcf6e0fa",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -2079,27 +2089,28 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.targets.ally.control",
-    "textHash": "1c5c488ce096f0aa",
+    "textHash": "43ef99bc480de47e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.markIllegalTargets (R324)",
+        "loc": "client/engine/src/engine.ts:markIllegalTargets",
         "agrees": true,
-        "note": "ally slot judged by current control at resolution"
+        "note": "R324: each slot re-checked against its control family at resolution"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
+        "file": "client/engine/test/390-raq-stack.test.ts",
         "pattern": "RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: D ambushes Orblish Horroth targeting its blocker; control given to A before resolution; the unit is not recalled and stays with A"
       }
     ],
     "probes": [],
@@ -2107,18 +2118,22 @@
       {
         "ref": "RAQ 1355466429788328066#2",
         "supports": "yes",
-        "note": ""
+        "note": "_passer, status covered"
       },
       {
-        "ref": "R265",
+        "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
         "supports": "yes",
-        "note": ""
+        "note": "R344 amends only R265's global-zones paragraph"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> Yes, an ally includes itself. Otherwise it'd say \"Another target ally\". Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
+        "file": "client/ledgers/raq.ts",
+        "text": "Ambush won't resolve as it's effect 'Recall target ALLY' and that unit is no longer ally of your opponent"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Battle] Ambush [3bb] {i}(Play me with the effect \\\"Recall target ally, put me into their position in play.\\\")"
       }
     ],
     "basis_ok": true,
@@ -2126,7 +2141,7 @@
   },
   {
     "key": "concepts.targets.ally.effect-controller",
-    "textHash": "6431a41baaa9e7ba",
+    "textHash": "85bec132005125cb",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U03-r3",
@@ -2180,7 +2195,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.targets.ally.self",
@@ -2325,7 +2341,7 @@
   },
   {
     "key": "concepts.targets.becomes-targeted",
-    "textHash": "cc4ceeb4acbe81aa",
+    "textHash": "11444dcf4ce773ac",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U03-r3",
@@ -2416,7 +2432,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Engine matches the text as written (\"triggers first, before the graft is applied\": the trigger is queued before attachMod). The flagged divergence is real only under the reading \"the trigger RESOLVES before the graft is applied\": measured, the graft attaches first and the Crystal comes after. The text should say which it means. Mohruung's own trigger is [Switch1] (once per turn), which \"triggers whenever\" glosses over for that card."
+    "problem": "Engine matches the text as written (\"triggers first, before the graft is applied\": the trigger is queued before attachMod). The flagged divergence is real only under the reading \"the trigger RESOLVES before the graft is applied\": measured, the graft attaches first and the Crystal comes after. The text should say which it means. Mohruung's own trigger is [Switch1] (once per turn), which \"triggers whenever\" glosses over for that card.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.targets.change",
@@ -2521,7 +2538,7 @@
   },
   {
     "key": "concepts.targets.change.rescue",
-    "textHash": "1446aed7cade6818",
+    "textHash": "47843144be1ac61b",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U03-r3",
@@ -2570,7 +2587,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": "None. The example is unbound (illustrative); the round-3 probe pair (control + Warder) demonstrates it and could be bound. Gravitational Correction itself was not probed."
+    "problem": "None. The example is unbound (illustrative); the round-3 probe pair (control + Warder) demonstrates it and could be bound. Gravitational Correction itself was not probed.",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "concepts.targets.distinct",
@@ -2617,23 +2635,23 @@
   },
   {
     "key": "concepts.targets.distinct.separate-effects",
-    "textHash": "455923d5c4a15bf5",
+    "textHash": "33dee452316416cc",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts no cross-item distinctness",
+        "loc": "client/engine/src/engine.ts:markIllegalTargets",
         "agrees": true,
-        "note": ""
+        "note": "a target that stays in place stays legal for another effect"
       }
     ],
     "tests_run": [
       {
-        "file": "396-raq-timing.test.ts",
+        "file": "client/engine/test/396-raq-timing.test.ts",
         "pattern": "RAQ Another set: Organic Exchange may target two of your own units",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: D's Luminous Arc aims at A's Good Whale a1; A answers with Organic Exchange on both own Whales; the Arc still kills a1"
       }
     ],
     "probes": [],
@@ -2641,13 +2659,17 @@
       {
         "ref": "RAQ 1454169054402314362#2",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon, status covered"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/396-raq-timing.test.ts",
-        "text": "assert.equal(ent(h, a1), undefined, 'the Arc still resolved on the unit it aimed at — 6 damage kills the 7/5');"
+        "file": "client/ledgers/raq.ts",
+        "text": "another effect targeting them would still resolve (they're still the same units)"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Exchange control of two target units and swap their positions."
       }
     ],
     "basis_ok": true,
@@ -2702,7 +2724,7 @@
   },
   {
     "key": "concepts.targets.legal.clause",
-    "textHash": "7a98dc54703bf49a",
+    "textHash": "af9efb2a6826a2b1",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -2747,7 +2769,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.targets.legal.effect",
@@ -2875,7 +2898,7 @@
   },
   {
     "key": "concepts.targets.legal.player",
-    "textHash": "d97d7f3a209656e8",
+    "textHash": "8dbbec0b45aab7d3",
     "verdict": "confirmed",
     "round": 3,
     "verifier": "U03-r3",
@@ -2935,7 +2958,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.targets.must-be-targeted",
@@ -3035,37 +3059,41 @@
   },
   {
     "key": "concepts.targets.must-be-targeted.choice-only",
-    "textHash": "ecb633e1c5f40f39",
+    "textHash": "ebd14c1c724396ab",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.markIllegalTargets",
+        "loc": "client/engine/src/engine.ts:markIllegalTargets",
         "agrees": true,
-        "note": "Gatekeeper compulsion not applied at resolution"
+        "note": "Gatekeeper's compulsion not applied at resolution"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
-        "title": "concepts.targets.must-be-targeted.choice-only: a Gatekeeper of Souls arriving after targets were chosen does not make them illegal",
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "pattern": "cr:concepts.targets.must-be-targeted.choice-only",
         "passed": true,
-        "demonstrates": "yes"
+        "asserts_claim": "yes: Twin Flame aimed at a 1/1, then a Gatekeeper of Souls spawns in the battle region; the 1/1 still dies and the Gatekeeper takes no damage"
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "R324",
         "supports": "yes",
-        "note": ""
+        "note": "'Gatekeeper of Souls' compulsion is not applied. It narrows the choice; it never makes a choice illegal.'"
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
         "text": "- Gatekeeper of Souls' compulsion is not applied. It narrows the *choice*; it"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] When a player selects targets for an effect during battle, I must be targeted if able."
       }
     ],
     "basis_ok": true,
@@ -3325,7 +3353,7 @@
   },
   {
     "key": "concepts.targets.region",
-    "textHash": "90f93008f6cfb9c0",
+    "textHash": "0b04cfec59a957c5",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U03-r1",
@@ -3359,7 +3387,8 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "concepts.targets.region.cache",
@@ -3647,29 +3676,23 @@
   },
   {
     "key": "concepts.targets.what.on-stack",
-    "textHash": "02ae502f89aae9d2",
+    "textHash": "2e6d84f33cd3157e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts collectTargets/commitItem",
+        "loc": "client/engine/src/engine.ts:collectTargets",
         "agrees": true,
-        "note": "targets collected before the item is committed to the stack, for casts, activations and triggers"
+        "note": "targets of every part collected as the item is committed to the stack"
       }
     ],
     "tests_run": [
       {
-        "file": "393-raq-mods.test.ts",
+        "file": "client/engine/test/393-raq-mods.test.ts",
         "pattern": "RAQ Graft 101 Plodding Pebble example",
         "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "68-target-conformance.test.ts",
-        "pattern": "R67: a card printing N targets declares N cast-time target slots",
-        "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Pebble with grafted Leaping Lillik attacks an empty region, a Fireball 1 hits it, the trigger asks for the delete target; own Pebble is legal and no 'aim at nothing' option exists"
       }
     ],
     "probes": [],
@@ -3677,18 +3700,22 @@
       {
         "ref": "RAQ 1355115946032889914#15",
         "supports": "yes",
-        "note": ""
+        "note": "_passer, status covered"
       },
       {
         "ref": "R67",
         "supports": "yes",
-        "note": ""
+        "note": "'effect that says target has to be chosen initially when put onto the stack'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/393-raq-mods.test.ts",
-        "text": "assert.ok(dec, 'the target is asked for as the trigger goes on the stack');"
+        "file": "client/ledgers/raq.ts",
+        "text": "player must at that time delcare targets for all things"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I am dealt damage, [Switch1] Put a +1/+1 counter on me."
       }
     ],
     "basis_ok": true,

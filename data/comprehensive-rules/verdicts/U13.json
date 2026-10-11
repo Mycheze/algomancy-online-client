@@ -1,7 +1,7 @@
 [
   {
     "key": "combat.after.triggers",
-    "textHash": "ef1269e806550eb4",
+    "textHash": "5e3eb794a240a0b7",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -44,11 +44,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Designer citation is on-topic rather than direct; R261 carries the claim."
+    "problem": "Designer citation is on-topic rather than direct; R261 carries the claim.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.after.triggers.batch",
-    "textHash": "4afe60b4e9dff5bc",
+    "textHash": "d65bc507ff1c740e",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U13-r2",
@@ -135,11 +136,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "combat.after.triggers.no-battle",
-    "textHash": "f9699437c82e15e1",
+    "textHash": "04552332458149cb",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -182,11 +184,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "combat.after.triggers.presence",
-    "textHash": "d105a1bcd756fdce",
+    "textHash": "34dc6acdf67637b8",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U13-r2",
@@ -235,11 +238,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.after.triggers.split-last",
-    "textHash": "88bdee36eebffaac",
+    "textHash": "7c119ccfae586909",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -299,11 +303,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.after.what-it-is",
-    "textHash": "dc538b72acd1802c",
+    "textHash": "4a18213be7d135cf",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -346,11 +351,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.after.what-it-is.battled-regions-only",
-    "textHash": "c3e46f3b5e65af70",
+    "textHash": "8b35f237fbe22a72",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -398,11 +404,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.after.what-it-is.each-round",
-    "textHash": "55a256920454aa6c",
+    "textHash": "ad957dc11ed6852c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -445,11 +452,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.after.window",
-    "textHash": "bae224486107bebf",
+    "textHash": "a5a6648e35f82346",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -501,11 +509,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Illustrative example had no test; the probe demonstrates it."
+    "problem": "Illustrative example had no test; the probe demonstrates it.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.after.window.then-regroup",
-    "textHash": "64af06594748fd14",
+    "textHash": "52cba1dbb3bd9575",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -549,11 +558,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "combat.after.window.then-round-two",
-    "textHash": "f8ef99cb09e5910f",
+    "textHash": "94424ada9a16cc96",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -587,11 +597,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.no-later-rounds",
-    "textHash": "71d5ad1a7035e69d",
+    "textHash": "80a835e60b54e68c",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -639,11 +650,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.round-two",
-    "textHash": "6c9fe0e664a60ef6",
+    "textHash": "fa85023b70676376",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -686,64 +698,62 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.counterattack.round-two.attackers",
-    "textHash": "8fb9dbec367bfe22",
+    "textHash": "a75e2801d98a4544",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U13-r1",
+    "round": 4,
+    "verifier": "U13-r4",
     "engine": [
       {
-        "loc": "engine.ts:endBattleRound",
+        "loc": "client/engine/src/engine.ts:endBattleRound",
         "agrees": true,
-        "note": "attackerPool = b.sentAttackers when round 1 happened"
-      },
-      {
-        "loc": "apply.ts:doDeclareAttack",
-        "agrees": true,
-        "note": "validFormation(..., b.attackerPool); NIT declares the formation in the round-2 declare step"
+        "note": "if round 1 happened, round-2 attackerPool = the sent counterattackers"
       }
     ],
     "tests_run": [
       {
-        "file": "32-cast-costs.test.ts",
-        "pattern": "forcedAction: a single sent counterattacker is NOT auto-formed",
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "pattern": "forcedAction: a single sent counterattacker",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: NIT sent Conduit of Pain; in round 2 attacker is D and attackerPool is exactly [the Conduit]; attacking with it is legal"
+      },
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time",
+        "passed": true,
+        "asserts_claim": "supporting: a non-sent unit staying home is refused as a round-2 attacker"
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "Manual p.27",
+        "ref": "Manual p.20",
         "supports": "yes",
-        "note": ""
+        "note": "Phase 2: '1. The NIT puts their attacking units into formation.'"
       },
       {
-        "ref": "Manual p.20 (1. The NIT puts their attacking units into formation.)",
+        "ref": "Manual p.27",
         "supports": "yes",
-        "note": ""
+        "note": "'1. NIT attack IT regions with units sent in Phase 1'"
       },
       {
         "ref": "R15",
         "supports": "yes",
-        "note": ""
+        "note": "'If a round-1 battle happened, round-2 attackers are exactly the units sent at block time'"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "1. NIT attack IT regions with units sent in Phase 1"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "of their units. If a round-1 battle happened, round-2 attackers are **exactly the"
-      },
-      {
         "file": "client/engine/src/engine.ts",
         "text": "this.s.battle!.attackerPool = b.sentAttackers;"
+      },
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "text": "assert.deepEqual(b.attackerPool, [d1], 'the pool holds exactly the sent unit');"
       }
     ],
     "basis_ok": true,
@@ -751,7 +761,7 @@
   },
   {
     "key": "combat.counterattack.round-two.initiative-priority",
-    "textHash": "6bed4ff2091f3158",
+    "textHash": "93149a1fd83c1a9d",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -789,11 +799,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.counterattack.round-two.may-decline",
-    "textHash": "4246844a0bae8af7",
+    "textHash": "0e0bac1511e9c658",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -844,11 +855,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
     "key": "combat.counterattack.round-two.no-counter",
-    "textHash": "22be569d17990340",
+    "textHash": "6e7f65bb4c071b72",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -891,11 +903,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.counterattack.round-two.no-round-one",
-    "textHash": "b42ef9f34ba78710",
+    "textHash": "6481abfe3443e3bc",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -938,11 +951,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Designer RAQ 1353986897902567424#2 also supports and is not cited."
+    "problem": "Designer RAQ 1353986897902567424#2 also supports and is not cited.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.round-two.none-sent",
-    "textHash": "e6d7e63fd1f9aa4e",
+    "textHash": "38a2215bd38ac291",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -985,11 +999,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.round-two.other-region-absent",
-    "textHash": "40a3343dd946c13f",
+    "textHash": "e8ffa1337ed9549f",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1045,11 +1060,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Second bound example (165) demonstrates the symmetric round-1 case rather than this rule's round-2 claim; the probe covers the attackers themselves."
+    "problem": "Second bound example (165) demonstrates the symmetric round-1 case rather than this rule's round-2 claim; the probe covers the attackers themselves.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.round-two.return",
-    "textHash": "c9833538d11819e8",
+    "textHash": "9fada299c7dad871",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1099,11 +1115,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Illustrative example had no test; the probe demonstrates it."
+    "problem": "Illustrative example had no test; the probe demonstrates it.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.sent",
-    "textHash": "bceca11b72a8be18",
+    "textHash": "ade6a6974ec6ce1a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1156,11 +1173,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Engine models \"in no region\" with an absent flag; the region field still holds the home region while absent, but every read honours absent."
+    "problem": "Engine models \"in no region\" with an absent flag; the region field still holds the home region while absent, but every read honours absent.",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.counterattack.sent.no-death-check",
-    "textHash": "b317eb7a3511ca28",
+    "textHash": "7d3b8ac56883f999",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1209,52 +1227,52 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.sent.no-statics",
-    "textHash": "720b1e3944741242",
+    "textHash": "efc322fb14e9f0fd",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U13-r1",
+    "round": 4,
+    "verifier": "U13-r4",
     "engine": [
       {
-        "loc": "engine.ts:anchored",
+        "loc": "client/engine/src/engine.ts:anchored",
         "agrees": true,
-        "note": "`if (!anchor || anchor.absent) continue;` — an absent anchor radiates nothing, its own text included."
+        "note": "an absent anchor radiates nothing, its own text included"
       }
     ],
     "tests_run": [
       {
-        "file": "22-playtest3.test.ts",
-        "pattern": "a SENT Towering Colossus host radiates nothing in the region it left",
+        "file": "client/engine/test/22-playtest3.test.ts",
+        "pattern": "a SENT Towering Colossus host",
         "passed": true,
-        "asserts_claim": true
-      }
-    ],
-    "probes": [
+        "asserts_claim": "yes: Colossus augmented onto Bubb; enemy 1/1 attacker is 3/3 in Bubb's region; Bubb sent -> attacker [1,1] at once"
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
-        "title": "combat.counterattack.sent.no-statics: a sent Prickly Protector does not give itself its own bonus while away",
+        "file": "client/engine/test/424-cr-after-combat.test.ts",
+        "pattern": "cr:combat.counterattack.sent.no-statics",
         "passed": true,
-        "demonstrates": "yes: 1/2 at home with an ally, 0/1 while absent (its own +1/+1 per ally is off)"
+        "asserts_claim": "yes: a sent Prickly Protector is 0/1 while away (was 1/2 at home with one ally)"
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.20",
         "supports": "yes",
-        "note": "\"treated as if they don't exist\""
+        "note": "sent counterattackers are treated as if they don't exist until phase 1 finishes"
       },
       {
         "ref": "R32",
         "supports": "yes",
-        "note": "radiates no statics"
+        "note": "'counterattacker is in NO region: it radiates no statics, is no legal target'"
       },
       {
         "ref": "R270",
         "supports": "yes",
-        "note": "its own text included"
+        "note": "'radiates nothing' is load-bearing: a counterattacking Statweaver must not go on rewriting the region it left; its own text included"
       }
     ],
     "quote_spans": [
@@ -1263,36 +1281,32 @@
         "text": "if (!anchor || anchor.absent) continue;"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "counterattacker is in NO region: it radiates no statics, is no legal target,"
-      },
-      {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "the region and are treated as if they don"
+        "file": "client/engine/test/22-playtest3.test.ts",
+        "text": "assert.deepEqual(effStats(h, atk), [1, 1], 'a sent Colossus radiates nothing in the region it left');"
       }
     ],
     "basis_ok": true,
-    "problem": "The second (illustrative) example had no test; the probe demonstrates it."
+    "problem": ""
   },
   {
     "key": "combat.counterattack.sent.not-counted",
-    "textHash": "47cbb8d5a7109e27",
+    "textHash": "0dcd69a1056b7147",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U13-r1",
+    "round": 4,
+    "verifier": "U13-r4",
     "engine": [
       {
-        "loc": "engine.ts:unitsOf",
+        "loc": "client/engine/src/engine.ts:unitsOf",
         "agrees": true,
-        "note": "excludes absent units, so allies at home do not count a sent unit"
+        "note": "unitsOf / unitsIn exclude absent units, so a sent counterattacker is neither a unit of its region nor an ally"
       }
     ],
     "tests_run": [
       {
-        "file": "250-ally-count-and-absence.test.ts",
-        "pattern": "scope: a unit left at home still loses the ally that counterattacked away",
+        "file": "client/engine/test/250-ally-count-and-absence.test.ts",
+        "pattern": "scope: a unit left at home",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes: Prickly Protector with a -1/-1 counter alive at 0/1 on one ally; the ally is sent; the Protector is gone"
       }
     ],
     "probes": [],
@@ -1300,30 +1314,30 @@
       {
         "ref": "Manual p.20",
         "supports": "yes",
-        "note": "\"treated as if they don't exist\""
+        "note": "'The counter-attacking units leave the region and are treated as if they don't exist until phase 1 finishes.'"
       },
       {
         "ref": "R270",
         "supports": "yes",
-        "note": "R270 itself flags this as the open owner question; current answer"
+        "note": "'A unit that STAYS HOME while its only ally counterattacks away is present, is swept, and loses that ally from its region count'; classification.json lists R270 as current"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "only ally counterattacks away is present, is swept, and loses that ally from"
+        "file": "client/engine/src/engine.ts",
+        "text": "e.kind === 'unit' && e.controller === seat && !e.absent &&"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "the region and are treated as if they don"
+        "file": "client/engine/test/250-ally-count-and-absence.test.ts",
+        "text": "h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [mate] });   // the ALLY leaves; the Protector stays"
       }
     ],
     "basis_ok": true,
-    "problem": "R270 marks this half as not obviously intended and awaiting an owner call; the printed \"treated as if they don't exist\" supports it as stated."
+    "problem": ""
   },
   {
     "key": "combat.counterattack.sent.not-targetable",
-    "textHash": "3eed279d4312d09e",
+    "textHash": "c25226d75eb8ad6a",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1382,11 +1396,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "No bound test; both halves demonstrated by probes."
+    "problem": "No bound test; both halves demonstrated by probes.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.sent.tokens",
-    "textHash": "1ee94f9d2607b878",
+    "textHash": "c8cf099028c6dbb3",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1434,11 +1449,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.counterattack.teams",
-    "textHash": "0938c4db21c164d7",
+    "textHash": "f1d7c544704aa429",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1490,11 +1506,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": "Printed rule; the engine has no team mode, so only the 1v1 analogue is checkable. The illustrative example (one region at a time) is supported by Manual p.21 TIMING, not by a test."
+    "problem": "Printed rule; the engine has no team mode, so only the 1v1 analogue is checkable. The illustrative example (one region at a time) is supported by Manual p.21 TIMING, not by a test.",
+    "carried": "example-label 2026-10-11"
   },
   {
     "key": "combat.counterattack.tokens",
-    "textHash": "cfd76240ee89662d",
+    "textHash": "aacb855b2b51357c",
     "verdict": "confirmed",
     "round": 2,
     "verifier": "U13-r2",
@@ -1567,11 +1584,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.counterattack.what-it-is",
-    "textHash": "c9174d9d08aefe73",
+    "textHash": "268a75eab2db1922",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1619,11 +1637,12 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   },
   {
     "key": "combat.counterattack.what-it-is.when-sent",
-    "textHash": "15f4dce8ed2b6bed",
+    "textHash": "8439e04630ba64ce",
     "verdict": "confirmed",
     "round": 1,
     "verifier": "U13-r1",
@@ -1666,6 +1685,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "",
+    "carried": "demoted-example 2026-10-11"
   }
 ]

@@ -6,7 +6,7 @@
     "text": "The zones of the game are the deck, the hand, the cache, play, the bin, the stack, the erased pile, the recycle pile and the pack.",
     "examples": [
       {
-        "text": "The engine keeps cards in exactly nine zones: deck, hand, cache, play, bin, stack, erased pile, recycle pile and pack.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.general.list — the engine keeps cards in exactly nine zones: deck, hand, cache, play, bin, stack, erased pile, recycle pile and pack"
       }
     ],
@@ -154,7 +154,7 @@
     "text": "Each player has their own hand, cache, bin and erased pile.",
     "examples": [
       {
-        "text": "A card put in one player hand, cache, bin or erased pile leaves the other player four zones untouched.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.general.per-player — a card put in one player hand, cache, bin or erased pile leaves the other player four zones untouched"
       }
     ],
@@ -338,7 +338,7 @@
         "test": "15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin"
       },
       {
-        "text": "Grob makes the target unit's controller cache it, so a stolen unit goes to the thief's cache.",
+        "text": null,
         "test": "135-exchange-and-zones.test.ts::Grob caches a STOLEN unit into the CONTROLLER"
       }
     ],
@@ -389,7 +389,7 @@
     "text": "In constructed, a card's owner is the player who brought it to the game.",
     "examples": [
       {
-        "text": "In constructed every card a seat holds comes from the deck that seat brought, and a unit it plays is owned by it even after control changes.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.general.follow-control.constructed-owner — in constructed every card a seat holds comes from the deck that seat brought, and a unit it plays is owned by it even after control changes"
       }
     ],
@@ -541,7 +541,7 @@
     "text": "The deck is the face-down pile that cards are drawn from and that packs are dealt from.",
     "examples": [
       {
-        "text": "The deck is face down to every seat, a draw takes its top card, and the live-draft packs are dealt out of it.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.deck.what — the deck is face down to every seat, a draw takes its top card, and the live-draft packs are dealt out of it"
       }
     ],
@@ -615,7 +615,7 @@
     "text": "In live draft, all players draw from one shared deck.",
     "examples": [
       {
-        "text": "In live draft both players draw from the one shared deck.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.deck.shared — in live draft both players draw from the one shared deck"
       }
     ],
@@ -654,7 +654,7 @@
     "text": "In constructed, there is no shared deck: each player has their own deck.",
     "examples": [
       {
-        "text": "In constructed there is no shared deck and each seat draws from its own.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.deck.shared.constructed — in constructed there is no shared deck and each seat draws from its own"
       }
     ],
@@ -770,7 +770,7 @@
     "text": "Each player has a hand. Drawn cards go to the hand, and cards in the hand are played from there.",
     "examples": [
       {
-        "text": "A drawn card goes to the hand, and a card is played out of the hand.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.hand.what — a drawn card goes to the hand, and a card is played out of the hand"
       }
     ],
@@ -810,7 +810,7 @@
     "text": "A hand is hidden from the other players.",
     "examples": [
       {
-        "text": "The server view shows a hand to its holder and only card backs to the other player.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.hand.hidden — the server view shows a hand to its holder and only card backs to the other player"
       }
     ],
@@ -889,7 +889,7 @@
         "test": "408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: Dreadspawn Horror does not count spell tokens"
       },
       {
-        "text": "Nor does Astral Tidewraith.",
+        "text": "Astral Tidewraith's damage, equal to the number of cards in each player's hand, does not count spell tokens either.",
         "test": "408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: Astral Tidewraith"
       }
     ],
@@ -941,7 +941,7 @@
         "test": "152-hand-entry.test.ts::Rider of the Tides: a BIN recursion (Collect Remains) is a card entering a hand"
       },
       {
-        "text": "A recall of two cards from a bin is one entry, not two.",
+        "text": "Two cards that move from a bin to a hand in one move enter it together: an ability watching for cards entering a hand triggers once, not twice.",
         "test": "152-hand-entry.test.ts::a multi-card move fires exactly ONE handEntered"
       }
     ],
@@ -978,7 +978,7 @@
     "text": "Discarding a card moves it from its hand to the bin. Discarding is not playing the card: nothing goes on the stack.",
     "examples": [
       {
-        "text": "A card discarded from a hand goes to the bin and is trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: discarding from hand trashes"
       }
     ],
@@ -1067,7 +1067,7 @@
     "text": "The cache is a zone of its own, beside the hand, the bin and the deck. Effects put cards into it (\"cache\"), out of the hand, the bin, the deck or play.",
     "examples": [
       {
-        "text": "Cards can be cached out of the hand, the bin and the top of the deck.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R41: the cache primitives move cards out of hand, bin and deck"
       }
     ],
@@ -1110,7 +1110,7 @@
     "text": "The cache is public. Every player can see every cached card, and any prophecy attached to it.",
     "examples": [
       {
-        "text": "Both players read the same cache, with nothing hidden.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R41: the cache is PUBLIC"
       }
     ],
@@ -1145,7 +1145,7 @@
     "text": "Being in the cache does not by itself let a player do anything with a card.",
     "examples": [
       {
-        "text": "A card cached with no permission can never be played.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R41: being in the cache is NOT permission"
       }
     ],
@@ -1227,7 +1227,7 @@
         "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle"
       },
       {
-        "text": "A live glimpse lets the cached card be grafted.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
       }
     ],
@@ -1275,15 +1275,15 @@
     "text": "A card used under a fulfilled prophecy costs nothing and ignores affinity. A card used under a glimpse costs its mana but ignores affinity. This holds for every way of using it, mods included.",
     "examples": [
       {
-        "text": "A released prophecy is played for free, ignoring affinity.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity"
       },
       {
-        "text": "A live glimpse does not waive the mana: a player who cannot pay is refused.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana"
       },
       {
-        "text": "A live glimpse grafts for the card's mana, ignoring affinity.",
+        "text": null,
         "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
       }
     ],
@@ -1323,7 +1323,7 @@
     "text": "A cached card keeps its printed timing. A permission says that the card may be used, not when.",
     "examples": [
       {
-        "text": "A released {Battle} card is refused in deployment.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies"
       }
     ],
@@ -1394,7 +1394,7 @@
     "text": "When a glimpse permission ends, the card stays in the cache, with no permission.",
     "examples": [
       {
-        "text": "The glimpse permission ends at end of turn; the card is still in the cache.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R45: the glimpse permission expires at end of turn"
       }
     ],
@@ -1490,7 +1490,7 @@
     "text": "When a unit in play is cached, only the card goes to the cache. Its mods go to the bin.",
     "examples": [
       {
-        "text": "A cached unit's mods go to the bin (and are trashed there).",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin"
       }
     ],
@@ -1528,7 +1528,7 @@
     "text": "A card in the cache under a live glimpse permission may be prophesied where it stands. It does not move and is not cached a second time, and the glimpse permission is used up.",
     "examples": [
       {
-        "text": "A glimpsed card with a prophecy banner is prophesied in deployment without leaving the cache.",
+        "text": null,
         "test": "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache"
       }
     ],
@@ -1569,7 +1569,7 @@
     "text": "Play is the zone of the units, resources and tokens on the table. A unit stays in play until something removes it.",
     "examples": [
       {
-        "text": "A unit in play stays there through whole turns until something removes it.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.play.what — a unit in play stays there through whole turns until something removes it"
       }
     ],
@@ -1698,7 +1698,7 @@
     "text": "The bin is a player's discard pile.",
     "examples": [
       {
-        "text": "A discarded card goes to the bin of the player who discarded it.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.bin.what — a discarded card goes to the bin of the player who discarded it"
       }
     ],
@@ -1737,7 +1737,7 @@
     "text": "A card goes to the bin when: a unit dies or is deleted; a unit is sacrificed; a spell resolves; a card is discarded; or a card that was being played is negated or fails to resolve, unless a rule sends it elsewhere.",
     "examples": [
       {
-        "text": "A unit that dies, is deleted or is sacrificed, and a discarded card, each go to the bin.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.bin.entering — a unit that dies, is deleted or is sacrificed, and a discarded card, each go to the bin"
       }
     ],
@@ -1851,7 +1851,7 @@
     "text": "A unit that dies goes to the bin of the player who controlled it when it died, unless the effect that kills it names another bin or the unit is {Unstable} (see zones.bin.unstable). If it is a card, the player whose bin it enters trashes it; a token is never trashed.",
     "examples": [
       {
-        "text": "Every unit-shaped card in the pool, dying under a controller who is not its owner, goes to the controller's bin.",
+        "text": null,
         "test": "229-cosmic-and-control.test.ts::R250 whole pool: every unit-shaped card dies into the bin of whoever controls it"
       },
       {
@@ -1916,15 +1916,15 @@
     "text": "A card that enters a bin from any zone except the stack is trashed. A card that comes from the stack is not, and a token is never trashed. A nontoken mod erased together with its {Unstable} host is not trashed either. See 801.",
     "examples": [
       {
-        "text": "A spell going to the bin after resolving is not trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed"
       },
       {
-        "text": "A dying token enters the bin but is not trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
       },
       {
-        "text": "A nontoken mod on an {Unstable} host that dies is erased with it and is not trashed.",
+        "text": null,
         "test": "224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all"
       }
     ],
@@ -2080,7 +2080,7 @@
     "text": "Copies of one card in a bin cannot be told apart. A card in a bin is identified only by its name and by which copy of that name it is.",
     "examples": [
       {
-        "text": "A bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.bin.identity — a bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy"
       }
     ],
@@ -2157,7 +2157,7 @@
     "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name.",
     "examples": [
       {
-        "text": "A token or {Unstable} copy is swept out of the bin before Biomass Devourer resolves; an older copy of the same card in that bin is not erased.",
+        "text": "An {Unstable} unit dies and is erased instead of staying in the bin. Biomass Devourer's \"erase it\" then finds nothing, and does not erase an older copy of the same card already in that bin.",
         "test": "26-metal-a.test.ts::R140: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept"
       }
     ],
@@ -2232,7 +2232,7 @@
     "text": "An augment or graft may be applied from the bin as well as from the hand, during deployment, if its cost is paid and its affinity met.",
     "examples": [
       {
-        "text": "A graft comes from the bin as well as the hand, and only when its cost and affinity are met.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3"
       }
     ],
@@ -2407,7 +2407,7 @@
     "text": "The stack is the zone where cards being played, and abilities, wait to resolve. The last thing put on the stack resolves first. See 703.",
     "examples": [
       {
-        "text": "Two spells wait on the stack and the one put there last resolves first.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.stack.what — two spells wait on the stack and the one put there last resolves first"
       }
     ],
@@ -2525,7 +2525,7 @@
         "test": "125-active-zone.test.ts::R145 negative control: a NON-Unstable virus negated off the stack still BINS"
       },
       {
-        "text": "A negated spell is not trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either"
       }
     ],
@@ -2628,11 +2628,11 @@
     "text": "A self-erasing spell that is negated or fails to resolve goes to the bin. Its \"Erase me\" never happened.",
     "examples": [
       {
-        "text": "A negated self-erase spell is binned.",
+        "text": null,
         "test": "89-self-erase.test.ts::a NEGATED self-erase spell is binned, not erased"
       },
       {
-        "text": "So is one whose target went away.",
+        "text": null,
         "test": "89-self-erase.test.ts::a FIZZLED self-erase spell is binned too"
       }
     ],
@@ -2702,7 +2702,7 @@
     "text": "The erased pile is public.",
     "examples": [
       {
-        "text": "The server view shows each erased pile in full to both seats.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.erased.public — the server view shows each erased pile in full to both seats"
       }
     ],
@@ -2737,7 +2737,7 @@
     "text": "Nothing takes a card back out of the erased pile.",
     "examples": [
       {
-        "text": "A card on the erased pile adds nothing to the legal actions, where the same card in the bin does.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.erased.final — a card on the erased pile adds nothing to the legal actions, where the same card in the bin does"
       }
     ],
@@ -2856,7 +2856,7 @@
     "text": "A mod taken off its host and put into play as a card of its own (Reclaim the Fallen) does not leave the game and does not go to the erased pile.",
     "examples": [
       {
-        "text": "Reclaim the Fallen: the card stands in play and no erase names it.",
+        "text": "A Pile of Runes is augmented onto a unit. Reclaim the Fallen targets that unit: A Pile of Runes comes off it and stands in play as a unit of its own. It never goes to the erased pile.",
         "test": "178-played-item-and-erased-mods.test.ts::R208 Reclaim the Fallen: leavesGame:false"
       }
     ],
@@ -2891,7 +2891,7 @@
     "text": "A token that ceases to exist after entering a zone is recorded on the erased pile.",
     "examples": [
       {
-        "text": "A dying token enters the bin, is erased from it, and is recorded on the erased pile.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
       }
     ],
@@ -2929,7 +2929,7 @@
     "text": "A token mod is recorded on the erased pile once when its host leaves play, however the host leaves.",
     "examples": [
       {
-        "text": "One token mod reaches the erased pile once on a death, a recall and a cache alike.",
+        "text": null,
         "test": "129-disposal-tail.test.ts::R65: a TOKEN mod reaches the erased pile however its host leaves play"
       }
     ],
@@ -3053,7 +3053,7 @@
     "text": "A deck has a mark where it originally ended. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.",
     "examples": [
       {
-        "text": "A recycled card stays behind the mark while the deck still has cards.",
+        "text": null,
         "test": "300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark"
       }
     ],
@@ -3092,7 +3092,7 @@
     "text": "Every card put on the bottom of the deck goes past the mark, whatever put it there: recycling for a resource, the constructed put-back, the cards a glimpse did not cache, and recycled packs alike.",
     "examples": [
       {
-        "text": "Every effect that reads the deck reshuffles at the mark, not only drawing.",
+        "text": null,
         "test": "300-recycle-mark.test.ts::R296 §6 every reader of the deck reshuffles at the mark"
       }
     ],
@@ -3131,11 +3131,11 @@
     "text": "When the deck runs out and more cards are needed, the recycle pile is shuffled and becomes the new deck, with a new mark and an empty recycle pile.",
     "examples": [
       {
-        "text": "The deck runs out, the pile is shuffled in, and drawing continues.",
+        "text": null,
         "test": "300-recycle-mark.test.ts::R296 §2 when the deck runs out the pile is shuffled in"
       },
       {
-        "text": "A glimpse wider than the deck reshuffles mid-reveal and still reveals N.",
+        "text": null,
         "test": "300-recycle-mark.test.ts::R296 §6b a glimpse WIDER than the deck"
       }
     ],
@@ -3176,7 +3176,7 @@
     "text": "Every player can see how many cards are in the recycle pile. No player may look at them.",
     "examples": [
       {
-        "text": "Nothing in the pile is named to any player.",
+        "text": null,
         "test": "300-recycle-mark.test.ts::R296 §7 nothing in the pile is a card anybody can name"
       }
     ],
@@ -3211,7 +3211,7 @@
     "text": "The order in which cards were recycled does not matter to the game.",
     "examples": [
       {
-        "text": "The recycle pile is hidden from both seats and is shuffled before it is drawn again.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.recycle.mark.order — the recycle pile is hidden from both seats and is shuffled before it is drawn again"
       }
     ],
@@ -3246,12 +3246,8 @@
     "text": "Each deck has its own recycle pile. In live draft, all players share one pile; in constructed, each player has their own.",
     "examples": [
       {
-        "text": "In a shared-deck game both players recycle into one pile.",
+        "text": null,
         "test": "300-recycle-mark.test.ts::R296 §5 constructed gives each seat its own pile"
-      },
-      {
-        "text": "In constructed, a card one player recycles goes into that player's own pile, not the opponent's. (illustrative)",
-        "test": null
       }
     ],
     "see": [
@@ -3367,7 +3363,7 @@
     "text": "In live draft, each player has a pack: a face-down pile of 10 cards dealt from the deck at the start of the game, which that player drafts from.",
     "examples": [
       {
-        "text": "A live draft deals each seat a 10-card pack from the deck at the start, and the pack is what that seat drafts from.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.pack.what — a live draft deals each seat a 10-card pack from the deck at the start, and the pack is what that seat drafts from"
       }
     ],
@@ -3407,7 +3403,7 @@
     "text": "Constructed has no packs.",
     "examples": [
       {
-        "text": "A constructed game has no packs and no draft step.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.pack.what.constructed — a constructed game has no packs and no draft step"
       }
     ],
@@ -3442,7 +3438,7 @@
     "text": "A pack may be looked at and used only during the draft step, and no player may look at another player's pack.",
     "examples": [
       {
-        "text": "A seat sees its own pack only while its draft step is open, and never the other pack.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.pack.private — a seat sees its own pack only while its draft step is open, and never the other pack"
       }
     ],
@@ -3479,7 +3475,7 @@
     "text": "In the draft step, a player combines the non-token, non-resource cards in their hand with their pack, keeps any of them, and passes the pack on with exactly 10 cards in it. See 503.",
     "examples": [
       {
-        "text": "The draft commit merges hand and pack, keeps any cards, and passes on a pack of exactly 10.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.pack.drafting — the draft commit merges hand and pack, keeps any cards, and passes on a pack of exactly 10"
       }
     ],
@@ -3655,11 +3651,11 @@
     "text": "An effect aimed at a card that has since changed zones does not affect it. An effect aimed at a card that is still in the same zone affects it only if the card is still a legal target for the slot it was chosen for; otherwise that target is lost as well. If every target is lost, the effect fails to resolve.",
     "examples": [
       {
-        "text": "Organic Exchange may target two of its caster's own units, and another spell aimed at one of them still resolves.",
+        "text": "An opponent's Luminous Arc is aimed at one of your units; you answer with Organic Exchange on two of your own units. They are still in play, so the Luminous Arc still resolves.",
         "test": "396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units"
       },
       {
-        "text": "An Ambush whose target ally was stolen in response recalls nothing: the unit is no longer its controller's ally.",
+        "text": "An opponent ambushes with Orblish Horroth to recall target ally; you take control of that unit in response. It is no longer their ally, so nothing is recalled.",
         "test": "390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing"
       },
       {
@@ -3765,11 +3761,11 @@
     "text": "A unit despawns whenever it leaves play, by any route: dying, being recalled, being cached, being exchanged or being erased. A \"when I despawn\" ability triggers whichever way the unit leaves.",
     "examples": [
       {
-        "text": "A donated \"[Augment] When I despawn\" triggers when its host is recalled.",
+        "text": "A Pile of Runes (\"[Augment] When I despawn, create a Crystal X\") is augmented onto Rune Channeler. Rune Channeler is recalled to its owner's hand: that despawn ability triggers, and a Crystal is created.",
         "test": "141-despawn-mods.test.ts::R167 (i): a donated"
       },
       {
-        "text": "An erased ally is seen despawning by Demon of the Depths.",
+        "text": "Demon of the Depths (\"Whenever one of your units despawns…\") triggers when one of your units is erased.",
         "test": "145-erase-routes.test.ts::R172 (i): an ERASE fires 'despawned'"
       }
     ],
@@ -3940,7 +3936,7 @@
     "text": "When a modded unit is recalled or cached, its mods go to the bin and the unit goes on alone. A token mod ceases to exist instead (see zones.changes.mods.token-mod).",
     "examples": [
       {
-        "text": "A recalled modded unit goes to the hand; its mods go to the bin and are trashed there.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R40: recalling a modded unit trashes its MODS"
       }
     ],
@@ -4076,7 +4072,7 @@
     "text": "A token mod has no card of its own. It never enters a bin; when its host leaves play it ceases to exist.",
     "examples": [
       {
-        "text": "A token mod on a dying {Unstable} unit is erased, never binned or trashed.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R137: a TOKEN mod on a dying Unstable carrier is erased, never binned or trashed"
       }
     ],
@@ -4221,7 +4217,7 @@
     "text": "A unit token that dies enters the bin and is then erased. It is not trashed.",
     "examples": [
       {
-        "text": "A dying token enters the bin, is not trashed, and is then erased.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
       }
     ],
@@ -4319,7 +4315,7 @@
     "text": "A token put into a cache enters the cache and is then erased.",
     "examples": [
       {
-        "text": "A cached token is in the cache while the cache event happens, then is swept out.",
+        "text": null,
         "test": "35-rot-debt-trash.test.ts::R69: a CACHED token visits the cache and is erased out of it"
       }
     ],
@@ -4354,7 +4350,7 @@
     "text": "Any spell tokens still in play are erased during regroup.",
     "examples": [
       {
-        "text": "A Fireball spell token left unused is erased at regroup.",
+        "text": null,
         "test": "418-cr-zones.test.ts::cr:zones.changes.tokens.spell-tokens-regroup — a Fireball spell token left unused is erased at regroup"
       }
     ],
@@ -4477,7 +4473,7 @@
     "text": "A token created by an effect was not played and came from no zone.",
     "examples": [
       {
-        "text": "An effect-created token fires neither Proph nor Stalwart Sentinel.",
+        "text": "A token created by an effect was not played, so neither Proph nor Stalwart Sentinel triggers.",
         "test": "241-played-from-zone.test.ts::R263 §7: an effect-created token carries no zone at all"
       }
     ],

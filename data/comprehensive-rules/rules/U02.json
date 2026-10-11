@@ -6,7 +6,7 @@
     "text": "The printed Manual names five elements: Fire, Water, Earth, Wood and Metal. The card pool this document describes has seven: those five, plus Light and Dark.",
     "examples": [
       {
-        "text": "A game can be built from any three of the seven elements: 35 trios.",
+        "text": null,
         "test": "31-trios.test.ts::seven elements, 35 trios: Light & Dark joined the canonical element list"
       }
     ],
@@ -53,7 +53,7 @@
     "text": "A hybrid card belongs to two elements. A live-draft deck is built from the cards of the selected elements together with the hybrid cards for each pair of them.",
     "examples": [
       {
-        "text": "A draft of three base elements is 54 cards of each element plus 5 hybrids for each of the three pairs: 177 cards.",
+        "text": null,
         "test": "31-trios.test.ts::ALL 10 base trios are Manual-exact: 54 per element + 5 per hybrid pair = 177"
       }
     ],
@@ -92,7 +92,7 @@
     "text": "Affinity is a card's elemental requirement. A card shows it as element pips, and a player must meet it to play the card.",
     "examples": [
       {
-        "text": "With three Shards and no water, Curio Drifter [b] is not offered; one water makes it playable.",
+        "text": "With three Shards and no water, a player cannot play Curio Drifter [b]; with one water resource they can.",
         "test": "413-cr-elements-resources.test.ts::cr:concepts.elements.affinity — a card is offered and playable only once its pips are met: one Shard cannot play Curio Drifter, one water can"
       }
     ],
@@ -348,7 +348,7 @@
         "test": "01-planning.test.ts::affinity gating: prismites are NOT wild"
       },
       {
-        "text": "Shards pay mana but never count toward affinity.",
+        "text": null,
         "test": "21-fixes.test.ts::below 3 affinity no shard; shards give mana but never affinity"
       }
     ],
@@ -393,15 +393,15 @@
     "text": "Card text can use a player's affinity as a number. \"Your [r]\" means the player's fire affinity: the number of fire resources they have, not counting dormant ones (see the dormant rule under 105's affinity count).",
     "examples": [
       {
-        "text": "All-Consuming Blaze deals damage equal to your [r].",
+        "text": "A player with two open fire resources and one expended fire resource casts All-Consuming Blaze: their [r] is 3, so it deals 3 damage. A dormant fire resource would not add to it.",
         "test": "07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)"
       },
       {
-        "text": "Premonition glimpses X, where X is your [b]: your water affinity.",
+        "text": null,
         "test": "14-water-a.test.ts::Premonition: Glimpse X where X is your water affinity; the permission dies with the turn, the card stays"
       },
       {
-        "text": "Self-Assembly creates a Robot X, where X is your [m], counted as it resolves.",
+        "text": null,
         "test": "28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution"
       }
     ],
@@ -511,11 +511,11 @@
     "text": "Applying a modification needs its affinity just as playing the card does. An augment from hand, a Virus applied in battle and a graft from hand or bin each require the card's affinity, and each pays its cost.",
     "examples": [
       {
-        "text": "An augment from hand is refused without its affinity, and pays its cost when applied.",
+        "text": null,
         "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost"
       },
       {
-        "text": "A graft from the bin needs its cost and affinity met.",
+        "text": null,
         "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3: a graft comes from the bin as well as the hand, and only when its cost and affinity are met"
       }
     ],
@@ -570,7 +570,7 @@
         "test": "21-fixes.test.ts::a fwe draft game refuses wood/metal resources and never offers them"
       },
       {
-        "text": "A game created for a chosen trio uses that trio for its deck, its elements and its recycle menu.",
+        "text": null,
         "test": "31-trios.test.ts::createGame honors the chosen trio: deck, elements, and the recycle menu"
       }
     ],
@@ -617,7 +617,7 @@
     "text": "In constructed, a player may create a resource of any of the seven elements, including an element their deck has no cards of.",
     "examples": [
       {
-        "text": "A constructed deck records its own elements, but all seven stay legal choices.",
+        "text": null,
         "test": "34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal"
       }
     ],
@@ -739,7 +739,7 @@
     "text": "An element resource counts one toward its controller's affinity for its element, except while it is dormant (see 105).",
     "examples": [
       {
-        "text": "Activating a third fire resource brings fire affinity to three.",
+        "text": null,
         "test": "12-fire-a.test.ts::Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time"
       }
     ],
@@ -824,7 +824,7 @@
     "text": "Each player starts the game with two dormant Prismites.",
     "examples": [
       {
-        "text": "At setup each player has exactly two Prismites, both dormant.",
+        "text": null,
         "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
       }
     ],
@@ -949,7 +949,7 @@
     "text": "Resources are created and activated in the resource step of the planning phase.",
     "examples": [
       {
-        "text": "Activating or recycling for a resource is offered in the resource step and refused after it, and in deployment.",
+        "text": null,
         "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.activation.when — creating and activating a resource is offered in the resource step and refused once it is over"
       }
     ],
@@ -984,7 +984,7 @@
     "text": "A resource can be expended (turned sideways) once per turn for 1 mana, to pay the mana cost of a card or an ability. Expended resources refresh at the beginning of each turn.",
     "examples": [
       {
-        "text": "Resources left expended at the end of a turn are all refreshed when the next planning phase begins.",
+        "text": null,
         "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.expend — expended resources refresh at the beginning of the next turn"
       }
     ],
@@ -1146,7 +1146,7 @@
     "text": "Recycling may create a Prismite or a Shard instead of an element resource.",
     "examples": [
       {
-        "text": "Every hand card offers a Prismite and a Shard after the elements.",
+        "text": null,
         "test": "308-recycle-for-prismite.test.ts::R299 every hand card offers a Prismite, then a Shard, after the elements"
       }
     ],
@@ -1186,7 +1186,7 @@
     "text": "A Prismite made by recycling is the same as a starting Prismite: it enters dormant, takes an activation, gives no affinity, and once active may be exchanged.",
     "examples": [
       {
-        "text": "A recycled Prismite behaves exactly as a starting one.",
+        "text": null,
         "test": "308-recycle-for-prismite.test.ts::R299 a recycled Prismite behaves like a starting one"
       }
     ],
@@ -1350,7 +1350,7 @@
     "text": "The bonus applies to every element, including those whose resource face is not among the printed cards.",
     "examples": [
       {
-        "text": "All seven elements pay the bonus at three.",
+        "text": null,
         "test": "12-fire-a.test.ts::CONFORMANCE: every element pays the p.18 affinity bonus at 3 — all seven, not just the three with printed faces"
       }
     ],
@@ -1394,7 +1394,7 @@
     "text": "Activating a Prismite or a Shard never creates a Shard, however many the player has.",
     "examples": [
       {
-        "text": "Prismites and Shards never pay the bonus.",
+        "text": null,
         "test": "12-fire-a.test.ts::CONFORMANCE: a Prismite and a Shard never pay the bonus, however many you have"
       }
     ],
@@ -1439,7 +1439,7 @@
     "text": "A Prismite is a resource with no element. It gives no affinity, and like any resource it can be expended for 1 mana.",
     "examples": [
       {
-        "text": "Prismites start dormant, give no affinity, and can be exchanged once active.",
+        "text": null,
         "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
       }
     ],
@@ -1485,7 +1485,7 @@
     "text": "A player may exchange an active Prismite for another resource only in the resource step of the planning phase, never in the haste step (which resources: the element-only rule below). The new resource takes the Prismite's place and keeps its current state, so an exchange never adds mana: an expended Prismite becomes an expended resource.",
     "examples": [
       {
-        "text": "An active Prismite is exchanged into a fire resource during planning.",
+        "text": null,
         "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
       },
       {
@@ -1554,7 +1554,7 @@
     "text": "A dormant Prismite cannot be exchanged.",
     "examples": [
       {
-        "text": "Exchanging a dormant Prismite is refused.",
+        "text": null,
         "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
       }
     ],
@@ -1645,7 +1645,7 @@
     "text": "A Prismite may be exchanged for any non-Prismite resource: an element resource of one of the game's elements, or a Shard. It cannot be exchanged for another Prismite.",
     "examples": [
       {
-        "text": "Exchanging a Prismite into a Prismite is refused. (The same test also refuses a Shard, which this rule allows: F-U02-3.)",
+        "text": null,
         "test": "308-recycle-for-prismite.test.ts::R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard"
       }
     ],
@@ -1698,11 +1698,11 @@
     "text": "A Shard is a resource of its own kind. It enters dormant, pays one generic mana once activated, gives no affinity, and cannot be exchanged.",
     "examples": [
       {
-        "text": "A Shard gives mana but no affinity, and offers no element exchange.",
+        "text": null,
         "test": "48-playtest-hotfix.test.ts::a Shard gives mana but no affinity and no element exchange"
       },
       {
-        "text": "A recycled Shard is mana only.",
+        "text": null,
         "test": "308-recycle-for-prismite.test.ts::R299 a recycled Shard is mana only: no affinity, no Shard of its own, no exchange"
       }
     ],
@@ -1751,7 +1751,7 @@
         "test": "48-playtest-hotfix.test.ts::Swirling Shardform creates two dormant SHARDS, not prismites"
       },
       {
-        "text": "Hooba-Lan creates a real dormant Shard.",
+        "text": "Hooba-Lan's attack creates a dormant Shard for its controller.",
         "test": "16-earth-a.test.ts::Hooba-Lan: attacking creates a real dormant Shard for its controller"
       }
     ],
@@ -1838,7 +1838,7 @@
     "text": "An X spell's mana cost is X alone: the player chooses X, and pays X. Its pips are not part of its cost.",
     "examples": [
       {
-        "text": "With no Stasis Sentry, an X spell costs exactly the X chosen.",
+        "text": null,
         "test": "133-x-cost-semantics.test.ts::R157 §20 — with no Stasis Sentry an X spell costs exactly X"
       }
     ],
@@ -1881,7 +1881,7 @@
     "text": "X is chosen and paid when the spell is cast, before it goes on the stack. Only values the player can pay are offered. Responses see the X already chosen.",
     "examples": [
       {
-        "text": "Wildfire's X is chosen at cast from the affordable values, paid, and stored on the spell.",
+        "text": "Wildfire: its caster chooses X from the values they can pay and pays it as the spell is cast, so the spell is on the stack with that X.",
         "test": "32-cast-costs.test.ts::Wildfire: X is chosen at cast from affordable values, paid, and stored on the item"
       }
     ],
@@ -1922,7 +1922,7 @@
     "text": "X may be 0 unless the card says otherwise. Choosing X = 0 is legal even when it makes the effect do nothing.",
     "examples": [
       {
-        "text": "A player with no open mana may still cast an X spell for X = 0.",
+        "text": null,
         "test": "32-cast-costs.test.ts::X spells resolve from the stored X — a 0-mana caster may still cast for X = 0"
       },
       {
@@ -2022,7 +2022,7 @@
         "test": "390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2"
       },
       {
-        "text": "Channeled Amalgam reads the X paid for an X spell.",
+        "text": null,
         "test": "133-x-cost-semantics.test.ts::R157 §1 — Channeled Amalgam reads the PAID X of an X spell (was dead against all eleven)"
       }
     ],
@@ -2066,11 +2066,11 @@
     "text": "An X card that is not being cast has a cost of 0. This holds for an X card in a hand, a bin, the deck or the cache, and for a unit in play.",
     "examples": [
       {
-        "text": "An X card in hand reads as cost 0.",
+        "text": null,
         "test": "133-x-cost-semantics.test.ts::R157 §1 — a card that was never cast has no cost: an X card in hand reads 0"
       },
       {
-        "text": "Living Vault offers an X card in hand at [0].",
+        "text": "Living Vault caches a card from hand by paying its cost: an X card in hand costs 0, so it can be cached for [0].",
         "test": "39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)"
       }
     ],
@@ -2172,7 +2172,7 @@
         "test": "404-raq-fix-tides.test.ts::R339: an X card that may not be zero is never a Tides pick; one that may be zero still is"
       },
       {
-        "text": "Frosted Denial is not a card Tides can play.",
+        "text": null,
         "test": "396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play"
       }
     ],
@@ -2290,7 +2290,7 @@
     "text": "A copy of a spell uses the original's X. The X is not chosen or paid again.",
     "examples": [
       {
-        "text": "Maelstrom Charger's copy of Volatile Toxicity keeps the original's receipt and is not paid again.",
+        "text": "Maelstrom Charger copies Volatile Toxicity: the copy uses the original's X, and no second unit is sacrificed for it.",
         "test": "138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — Volatile Toxicity is not re-paid"
       }
     ],
@@ -2334,7 +2334,7 @@
     "text": "A token's X is set by the card that created it. \"Create a Crystal 3\" creates a Crystal whose X is 3.",
     "examples": [
       {
-        "text": "A Poison created with X = 5 puts 5 -1/-1 counters.",
+        "text": "A Poison created with X = 5 reads \"Put 5 -1/-1 counters on target unit.\"",
         "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine"
       }
     ],
@@ -2378,7 +2378,7 @@
     "text": "A Robot's X is the number of +1/+1 counters on it. It spawns with X counters, and if the number of counters changes, so does its X.",
     "examples": [
       {
-        "text": "A Robot reads its X off its counters as they change.",
+        "text": null,
         "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change"
       }
     ],
@@ -2411,7 +2411,7 @@
     "text": "A number an effect counts, such as a \"where X is …\" clause or an amount \"equal to\" or \"for each\" something, is counted when the effect resolves, not when it was played or triggered.",
     "examples": [
       {
-        "text": "Self-Assembly counts metal affinity at resolution.",
+        "text": null,
         "test": "28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution"
       },
       {
@@ -2468,7 +2468,7 @@
     "text": "An X that a paid cost defines is read as the cost is paid. Volatile Toxicity's X is the sacrificed unit's defense as it was when the unit was sacrificed.",
     "examples": [
       {
-        "text": "Volatile Toxicity reads the defense snapshotted when the cost was paid.",
+        "text": null,
         "test": "32-cast-costs.test.ts::Volatile Toxicity: X reads the defense snapshotted when the cost was paid"
       }
     ],
@@ -2509,7 +2509,7 @@
     "text": "When a card asks a player to choose or predict a number, there is no limit the card does not print. A player may name any number in the card's range.",
     "examples": [
       {
-        "text": "Prediction Prophet's prediction has no ceiling; a prediction above the old cap is accepted and pays out.",
+        "text": "Prediction Prophet: a player predicts a life total nine higher than their current one. They gain 9 life during the battle, the prediction is matched at the start of deployment, and they get the 5/5.",
         "test": "168-three-card-divergences.test.ts::R197 §1b Prediction Prophet: a prediction ABOVE `life + 5` is accepted and pays out the 5/5 — the old cap would not have offered it"
       }
     ],
@@ -2550,15 +2550,15 @@
     "text": "This document writes the game's symbols in brackets, as the card data does. The element pips are [r] Fire, [b] Water, [e] Earth, [g] Wood, [m] Metal, [l] Light and [d] Dark.",
     "examples": [
       {
-        "text": "[r] is fire: All-Consuming Blaze counts fire resources.",
+        "text": null,
         "test": "07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)"
       },
       {
-        "text": "[g] is wood: Sylvan Sprouting counts wood resources.",
+        "text": null,
         "test": "25-wood-c.test.ts::Sylvan Sprouting: one 1/1 per wood affinity — expended wood still counts"
       },
       {
-        "text": "[m] is metal: Self-Assembly counts metal resources.",
+        "text": null,
         "test": "28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution"
       }
     ],
@@ -2622,7 +2622,7 @@
     "text": "[x] is X generic mana. A number in brackets, as a digit or a word ([1], [three]), is that much generic mana. A number followed by pips ([3b]) is that much mana together with that affinity.",
     "examples": [
       {
-        "text": "Lurking Slimebeast's ambush [3b] is 3 mana at one water pip.",
+        "text": null,
         "test": "14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)"
       }
     ],
