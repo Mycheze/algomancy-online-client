@@ -13,6 +13,9 @@
  *            hand/manifest.json names each file and the blob it was written against;
  *            each is 3-way merged (`git merge-file`) onto the current file, so a
  *            master edit elsewhere in the file survives and a clash stops the run
+ *   postfix  exact corrections to the migrated text (postfix.mjs, decisions/postfix-*.json): each
+ *            find must occur once; code may change only on an edit flagged "code" (logged);
+ *            an edit with "step": "delete" runs after the delete step's merges instead
  *   rebind   bindings into a file the hand step rewrote follow it (rebind.mjs, rebind.json)
  *   repin    verdict hashes follow the renamed test bindings, nothing else (repin.mjs)
  *   render   cr:render, so the generated document matches the absorbed records
@@ -43,7 +46,7 @@ import { REPO_ROOT, CR_BUILD_DIR } from '../../paths.mjs';
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 const HAND = join(HERE, 'hand');
 const MANIFEST = join(HAND, 'manifest.json');
-const STEPS = ['score', 'absorb', 'recite', 'hand', 'rebind', 'repin', 'render'];
+const STEPS = ['score', 'absorb', 'recite', 'hand', 'postfix', 'rebind', 'repin', 'render'];
 const MIGRATE_REL = relative(REPO_ROOT, HERE);
 const RECITE_COMMIT = 'migration dry run: recite output';
 /** what the delete step removes outright (beyond its manifest entries) */
@@ -168,6 +171,11 @@ async function runSteps(steps, { decisionsDir } = {}) {
     if (report.shapeBroken?.length) (log.failures ??= []).push(`recite left ${report.shapeBroken.length} file(s) unwritten: their code would change or stop parsing — run-log.json recite.shapeBroken`);
   }
   if (steps.includes('hand')) { log.hand = applyHand(REPO_ROOT, 'hand'); time('hand'); if (log.hand.conflicts.length || log.hand.missingBase.length) throw Object.assign(new Error(`hand step: ${JSON.stringify(log.hand)}`), { log }); }
+  if (steps.includes('postfix')) {
+    const { postfix } = await import('./postfix.mjs');
+    try { log.postfix = postfix({ step: 'postfix', dir: decisionsDir }); } catch (e) { log.postfix = { problems: e.problems }; throw Object.assign(e, { log }); }
+    time('postfix');
+  }
   if (steps.includes('rebind')) {
     const { rebind } = await import('./rebind.mjs');
     log.rebind = rebind({});
@@ -183,6 +191,8 @@ async function runSteps(steps, { decisionsDir } = {}) {
     for (const p of DELETE_PATHS) if (existsSync(join(REPO_ROOT, p))) unlinkSync(join(REPO_ROOT, p));
     log.delete = applyHand(REPO_ROOT, 'delete');
     if (log.delete.conflicts.length) throw Object.assign(new Error(`delete step: ${JSON.stringify(log.delete)}`), { log });
+    const { postfix } = await import('./postfix.mjs');
+    try { log.postfixDelete = postfix({ step: 'delete', dir: decisionsDir }); } catch (e) { log.postfixDelete = { problems: e.problems }; throw Object.assign(e, { log }); }
     time('delete');
   }
   if (steps.includes('render') || steps.includes('delete')) {

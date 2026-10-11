@@ -1,0 +1,48 @@
+{
+ "_doc": "postfix.mjs: exact corrections to the migrated text (audit 3: one code-safety and four quote-integrity violations).",
+ "edits": [
+  {
+   "file": "client/engine/test/276-deployment-stack.test.ts",
+   "code": true,
+   "find": "const QUIET = 'const QUIET = \\'Deploy Quiet\\';';",
+   "replace": "const QUIET = 'Deploy Quiet';",
+   "why": "audit3 code-safety: a cleanup suggestion's whole statement was spliced into the string literal (was 'R286 Quiet'; the synthetic card's name only)"
+  },
+  {
+   "file": "client/engine/test/276-deployment-stack.test.ts",
+   "find": " * cannot exercise the gate; The decision gate's own test file (130-seat-aware-gate) makes the same point */",
+   "replace": " * cannot exercise the gate; the decision gate's own test file, 130-seat-aware-gate, makes the same point.) */",
+   "why": "audit3 #4302: the rewrite ate the closing parenthesis and period, and capitalised after ';'"
+  },
+  {
+   "file": "client/engine/test/276-deployment-stack.test.ts",
+   "find": "14 engine tests went red, the decision gate's own two among them\n",
+   "replace": "14 engine tests went red, the decision gate's own two among them.\n",
+   "why": "audit3 #4302: the sentence lost its period"
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": " * its snapshot was RE-TAKEN at every window it declined (the earlier re-take, since replaced) the last window I passed\", a running diff with no",
+   "replace": " * its snapshot was RE-TAKEN at every window it declined (ui/main.ts) —\n * so \"new\" meant \"new since the last window I passed\", a running diff with no",
+   "why": "audit3 quote integrity: the rewrite swallowed the quotation's opening (\"new\" meant \"new since …\"); restored verbatim"
+  },
+  {
+   "file": "client/engine/test/64-formation-collapse.test.ts",
+   "find": "USED TO OPEN \"the sub-step ruling says there is no priority window between",
+   "replace": "USED TO OPEN \"R3 says there is no priority window between",
+   "why": "audit3 quote integrity: the quotation of the comment as it used to open is restored verbatim (184 allowlists it)"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// a per-card budget (CR 109.9m) for a card that is not in play?\")",
+   "replace": "// a per-card budget (R9) for a card that is not in play?\")",
+   "why": "audit3 quote integrity: the quoted design question is restored verbatim (184 allowlists it)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "    // CR 720.8a (owner, 2026-08-29, report #129), the half that overrules the earlier reading that the mods ride with it **a mod erased with its host is not trashed at",
+   "replace": "    // CR 720.8a (owner, 2026-08-29, report #129), the half that OVERRULES an earlier reading,\n    // \"The mods ride with it\": **a mod erased with its host is not trashed at",
+   "why": "audit3 quote integrity: the quotation \"The mods ride with it\" is restored verbatim"
+  }
+ ]
+}

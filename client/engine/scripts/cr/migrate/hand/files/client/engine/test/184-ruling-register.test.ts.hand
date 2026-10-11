@@ -129,6 +129,8 @@ const ALLOWED: { file: string; match: string; why: string }[] = [
   { file: 'ledgers/card-todo-closed.ts', match: 'R157 §17', why: 'freeze: CT-101\'s closing notes describe the retired 202 guard\'s control, as history' },
   { file: 'engine/test/229-cosmic-and-control.test.ts', match: ' *     ', why: 'freeze: a quotation of the test as it used to read (its R3 GUARD), kept verbatim' },
   { file: 'engine/test/43-dark-c.test.ts', match: "between damage sub-steps (R31)'", why: 'freeze: a quotation of the old assertion message, kept verbatim' },
+  { file: 'engine/test/64-formation-collapse.test.ts', match: 'USED TO OPEN "R3 says there is no priority window', why: 'freeze: a quotation (across two lines) of the comment as it used to open, kept verbatim' },
+  { file: 'engine/test/90-coverage-census.test.ts', match: 'a per-card budget (R9) for a card that is not in play?"', why: 'freeze: the second line of a quoted design question, kept verbatim' },
 ];
 const allowedLine = (rel: string, line: string): boolean => ALLOWED.some(a => a.file === rel && line.includes(a.match));
 
