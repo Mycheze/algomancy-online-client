@@ -463,7 +463,11 @@ test('[R266] the type-level question is answerable and gives the wrong answer', 
   // modal captions each frame with what HAPPENED in it (ui/main.ts
   // playbackCaption), so it reads past the 'endOfTurn' heading to the line
   // about what a trigger did. Same direction.
-  assert.equal(consumed.length, 32, `${consumed.length} announcing types have a ui consumer`);
+  // 32 -> 33 on 2026-10-11: ui/flash.ts `lifeResults` reads 'lifeGained' (and
+  // 'lifeLost', already consumed) inside a stack beat's window, so a life
+  // change waits for the trigger that made it (report #203, test/445). Same
+  // direction.
+  assert.equal(consumed.length, 33, `${consumed.length} announcing types have a ui consumer`);
 });
 
 /** every card file's `ev()` sites — only the TYPES are used, so this is cheap.
