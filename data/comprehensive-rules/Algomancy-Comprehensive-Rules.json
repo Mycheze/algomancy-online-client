@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:a394c64874b5168b",
+ "generated_from": "sha256:a9ca934174459e28",
  "rules": [
   {
    "num": "100.1",
@@ -11497,6 +11497,28 @@
    "verdict": "confirmed"
   },
   {
+   "num": "410.7",
+   "key": "zones.changes.leave-play-order",
+   "title": null,
+   "section": "410",
+   "sectionTitle": "Zone Changes",
+   "chapterTitle": "4. Zones",
+   "parent": "410",
+   "text": "When a unit leaves play for a bin, it dies (or, if it was exchanged out of play, despawns) before anything is trashed. The unit and its mods leave play; then its death or despawn happens, and the abilities that trigger on it trigger; only then is any card trashed (see rule 801.2).",
+   "see": [],
+   "examples": [
+    "A unit with no mods dies and goes to its controller's bin. Its death comes first, then it is trashed.",
+    "Hooba-Mon exchanges itself for a unit card in its controller's bin. It despawns, and only then is it trashed. It does not die."
+   ],
+   "basis": "owner",
+   "scope": null,
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "500.1",
    "key": "turn.general.phases",
    "title": null,
@@ -16471,6 +16493,29 @@
     "The Alluring column is also Evasive and the defending player has only the lured unit. It cannot block an Evasive column alone, so it need not block it, and may block another column."
    ],
    "basis": "designer",
+   "scope": null,
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "606.2f",
+   "key": "combat.blocks.who.always-legal",
+   "title": null,
+   "section": "606",
+   "sectionTitle": "Blocking",
+   "chapterTitle": "6. Regions, Formations and Battle",
+   "parent": "606.2",
+   "text": "Alluring duties never leave the defending player without a legal block declaration. However many Alluring triggers have resolved, the game offers the defending player at least one block declaration, and every declaration it offers is legal.",
+   "see": [
+    "802.15"
+   ],
+   "examples": [
+    "Two attacking columns both have Alluring, and their triggers targeted the same defending unit. The defending player is still offered a legal declaration."
+   ],
+   "basis": "owner",
    "scope": null,
    "engineDiffers": false,
    "discrepancies": [],
@@ -22182,6 +22227,31 @@
    "discrepancies": [
     "D-U15-8"
    ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "706.13",
+   "key": "effects.triggered.that-item",
+   "title": null,
+   "section": "706",
+   "sectionTitle": "Triggered Abilities",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "706",
+   "text": "An ability that triggers on a card being played, and then acts on what was played (\"negate that effect\"), acts on the item that play put on the stack. Another item with the same name and the same controller is not it, whether it is older or newer. A copy of the played spell is not it either, because a copy is not played (see rule 701.5).",
+   "see": [
+    "701.5"
+   ],
+   "examples": [
+    "Two Burgeons by the same player are on the stack, and only the second one's play makes Void Mandible trigger. The Mandible negates the second Burgeon, not the first.",
+    "A copy of Burgeon sits below a newly played Burgeon. Void Mandible negates the played Burgeon and leaves the copy alone.",
+    "Origon negates the spell whose play made it trigger, even with an identical spell above it on the stack."
+   ],
+   "basis": "mixed",
+   "scope": null,
+   "engineDiffers": false,
+   "discrepancies": [],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -39108,6 +39178,29 @@
    "verdict": "confirmed"
   },
   {
+   "num": "D6.7b",
+   "key": "annexd.reveal.beats.journeys",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6.7",
+   "text": "Cards that make the same move in one update, from the same place to the same place, move together. Moves between different places are shown one after another. A move whose start or end the client cannot name, such as a card being erased, is shown on its own.",
+   "see": [],
+   "examples": [
+    "Four units die in one update and their four triggers go to the stack together. They all fly to the stack at once.",
+    "A card going from hand to the stack, one going from the stack to the field and one going to the bin are three moves, one after another.",
+    "Two cards erased from the field, with nowhere named to go, are not grouped."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "D6.8",
    "key": "annexd.display.copies",
    "title": null,
@@ -39709,6 +39802,97 @@
    "verdict": "confirmed"
   },
   {
+   "num": "D6.16",
+   "key": "annexd.display.panels",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6",
+   "text": "The board shows each player's cache and bin as a small panel. Clicking a panel opens the full cache or bin. A card in the panel that the player can use right now is the exception: one click on it uses the card, as clicking it in the full cache or bin would. Clicking any other card in the panel opens the full cache or bin.",
+   "see": [],
+   "examples": [
+    "A cached card that can be played now is played by one click on it in the region's cache panel.",
+    "A cached {Battle} card during deployment cannot be played now, so clicking it opens the full cache.",
+    "A mod in the bin that can be applied now is one click from the bin panel: the click starts applying it.",
+    "A bin card that cannot be used now opens the full bin when clicked."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D6.16a",
+   "key": "annexd.display.panels.cache-dialog-only",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6.16",
+   "text": "While an open decision stops a player from acting (see rule D2.1), no card in that player's cache panel is used by one click: clicking one opens the full cache. A cached card that is one of the decision's choices is not picked from the panel. A player whom another player's decision does not stop, inside a hidden simultaneous segment (see rule D2.1b), still uses their cached cards from the panel on one click.",
+   "see": [],
+   "examples": [
+    "In deployment, a Wraith's start-of-deployment choice is open for one player. That player's castable cached card is not one click from the panel; the other player's castable cached card still is, and playing it leaves the decision open."
+   ],
+   "basis": "mixed",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D6.17",
+   "key": "annexd.display.hover-tip",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6",
+   "text": "A scroll hides a card's long-hover tooltip only if the scroll could have moved that card: a scroll of the whole page, or of a panel the card is inside. A scroll of anything else, such as the side rail, leaves the tooltip shown. When no card is hovered, any scroll hides the tooltip.",
+   "see": [],
+   "examples": [
+    "The side rail scrolls while the pointer rests on a unit on the board. The unit's tooltip stays.",
+    "The page scrolls while the pointer rests on a unit. The tooltip is hidden.",
+    "A panel holding a different card scrolls. The hovered card's tooltip stays."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D6.18",
+   "key": "annexd.display.arrows",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6",
+   "text": "An arrow from an effect to its target is aimed at the exact centre of the target. Where the target shows text near its centre (a player's life total, the name on a card drawn without its picture, the label of a stack item with no picture), the arrowhead stops just short of that text, so the text can still be read. On a card whose picture has loaded, the arrowhead is not moved. If the text cannot be cleared without the head stopping more than a head's length outside the target, the head stops where it otherwise would.",
+   "see": [],
+   "examples": [
+    "An effect targets a player. The arrow points at their life total, and its head stops short of the number.",
+    "An arrow to a unit whose picture has loaded ends in the usual place.",
+    "A target whose label is too big to clear keeps the usual stopping point."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "D7.1",
    "key": "annexd.confirm.never-refuse",
    "title": null,
@@ -40118,6 +40302,29 @@
    "see": [],
    "examples": [
     "Three identical \"this did nothing\" sentences in one batch show as one row marked ×3."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D7.5",
+   "key": "annexd.confirm.refusals",
+   "title": null,
+   "section": "D7",
+   "sectionTitle": "Confirmations and Misclicks",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D7",
+   "text": "When the server refuses something, the player is told, whatever screen they are on: the connecting screen, a waiting room before the game starts, or the board. Joining with a code for which no game exists says that no game has that code.",
+   "see": [],
+   "examples": [
+    "A player types a room code that no game has. The connecting screen shows the refusal instead of waiting forever.",
+    "An error arriving in the constructed waiting room, where there is no board yet, is shown there.",
+    "The refusal for an unknown code names the code."
    ],
    "basis": "owner",
    "scope": "digital",
