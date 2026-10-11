@@ -434,7 +434,7 @@ test('§8 an owner call absorbed from the retired register is checked against it
   const i = fixtureInputs(), x = fixtureExtract();
   const c = rec(i, 'attr.deadly');
   c.sources.owner![0]!.from = 'questions-round27 Q2; register@abc1234';
-  const registers = { abc1234: '## R4 Damage\n\nDamage is assigned by the dealer. There is no window.' };
+  const registers = { abc1234: `## ${R(4)} Damage\n\nDamage is assigned by the dealer. There is no window.` };
   assert.deepEqual(check(i, x, { registers }).problems, [], 'a verbatim register quote must pass');
   c.sources.owner![0]!.quote = 'Damage is assigned by the recipient.';
   assert.deepEqual(check(i, x, { registers }).problems.map((p) => p.code), ['owner-quote-not-in-register'], 'a quote the register never said must fail by name');

@@ -50,8 +50,8 @@ const CLIENT = join(HERE, '..', '..');
 const SKIP = new Set(['node_modules', '.git', 'games', 'accounts', 'AlgomancyCards']);
 const SKIP_PATHS = ['engine/scripts/cr/migrate/'];
 const SKIP_FILE = (rel: string): boolean => /^docs\/questions-round\d+\.md$/.test(rel);
-/** the closed ledgers: their `evidence:` strings are frozen history */
-const FROZEN_EVIDENCE = new Set(['ledgers/card-todo-closed.ts', 'ledgers/backlog-closed.ts', 'ledgers/playtest-ledger-closed.ts']);
+/** a ledger's `evidence:` strings quote what a file said when the entry was filed: frozen history */
+const FROZEN_EVIDENCE = (rel: string): boolean => /^ledgers\/[\w-]+\.ts$/.test(rel);
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -79,16 +79,30 @@ export function rTokens(text: string): { n: number; at: number }[] {
     .filter(t => t.n >= 1);
 }
 
-/** offsets a scan must not count: identifiers (`const R1 = …`), and frozen evidence strings */
+/** offsets a scan must not count: identifiers (`const R1 = …`), frozen evidence strings, and
+ *  QUOTATIONS — a "double-quoted" or “curly-quoted” span quotes words as they were said, and the
+ *  migration left every citation inside one verbatim (a JS string's own delimiters are not quotes) */
 function ignoredSpans(rel: string, text: string): [number, number][] {
-  if (!/\.(ts|mts|mjs)$/.test(rel)) return [];
-  let toks: { t: string; v: string; s: number; e: number }[];
-  try { toks = tokenize(text); } catch { return []; }
   const out: [number, number][] = [];
+  let toks: { t: string; v: string; s: number; e: number }[] = [];
+  if (/\.(ts|mts|mjs)$/.test(rel)) { try { toks = tokenize(text); } catch { toks = []; } }
+  const delim = new Set(toks.filter(t => t.t === 'str' || t.t === 'tmpl').flatMap(t => [t.s, t.e - 1]));
+  let off = 0;
+  for (const L of text.split('\n')) {
+    if (/\bR\d/.test(L)) {
+      const straight: number[] = [];
+      for (let c = 0; c < L.length; c++) {
+        if (L[c] === '"' && !delim.has(off + c)) straight.push(c);
+        else if (L[c] === '“') { const e = L.indexOf('”', c + 1); if (e > c) { out.push([off + c, off + e + 1]); c = e; } }
+      }
+      for (let q = 0; q + 1 < straight.length; q += 2) out.push([off + straight[q]!, off + straight[q + 1]! + 1]);
+    }
+    off += L.length + 1;
+  }
   for (let k = 0; k < toks.length; k++) {
     const tk = toks[k]!;
     if (tk.t === 'id' && /^R\d+$/.test(tk.v)) out.push([tk.s, tk.e]);
-    if (FROZEN_EVIDENCE.has(rel) && tk.t === 'id' && tk.v === 'evidence' && toks[k + 1]?.v === ':') {
+    if (FROZEN_EVIDENCE(rel) && tk.t === 'id' && tk.v === 'evidence' && toks[k + 1]?.v === ':') {
       let j = k + 2;
       while (toks[j] && (toks[j]!.t === 'str' || toks[j]!.t === 'tmpl')) { out.push([toks[j]!.s, toks[j]!.e]); j += toks[j + 1]?.v === '+' ? 2 : 1; }
     }
@@ -159,6 +173,10 @@ test('§1: the scans can go red — synthetic inputs, both directions', () => {
   const src = 'const R2 = load(); // see R12\nconst s = \'(R13)\';';
   const ign = ignoredSpans('x.ts', src);
   assert.deepEqual(rTokens(src).filter(t => !ign.some(([a, b]) => a <= t.at && t.at < b)).map(t => t.n), [12, 13]);
+  // a quotation keeps its words: a citation inside "…" or “…” is not counted, one outside is
+  const qs = 'as filed: "see R12 for this" — and R13 outside';
+  const qi = ignoredSpans('x.md', qs);
+  assert.deepEqual(rTokens(qs).filter(t => !qi.some(([a, b]) => a <= t.at && t.at < b)).map(t => t.n), [13]);
   // the ledger lookup says no as well as yes
   assert.ok(LIVE.has('608') && !LIVE.has('999.9z'), 'the ledger lookup cannot tell a live rule from a made-up one');
 });

@@ -255,7 +255,7 @@ export function ownerDates(rec) {
 }
 /** an owner entry absorbed from the retired ruling register (`from` names `register@<sha>`): its quote
  *  is the register's write-up of his decision, not necessarily his own words, and says so */
-export const fromRegister = (o) => /register@[0-9a-f]{7,40}/.test(String(o?.from ?? ''));
+export const fromRegister = (o) => /\bregister@[0-9a-f]{7,40}\b/.test(String(o?.from ?? ''));
 const REGISTER_LABEL = 'quoted from the retired ruling register';
 /** "Owner call · adopted 2026-09-02", or for absorbed calls "Owner ruling, adopted 2026-08-18 (quoted from the
  *  retired ruling register)"; several dates are listed */
