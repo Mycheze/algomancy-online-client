@@ -57,7 +57,9 @@ export function loadDecisions(dir = DECISIONS_DIR) {
   if (!existsSync(dir)) return D;
   // the unit files first (M001…), then the override layers in a fixed order: cleanup (the
   // unsure pass), audit (corrections), fixups (exact find/replace) — a later file wins by id
-  const layer = (f) => (/^cleanup/.test(f) ? 1 : /^audit/.test(f) ? 2 : /^fixup/.test(f) ? 3 : 0);
+  // precedence (orchestrator 2026-10-11): remediation-* > cleanup > M0xx units > the script's auto picks;
+  // audit corrections sit between cleanup and remediation, exact fix-ups on top
+  const layer = (f) => (/^cleanup/.test(f) ? 1 : /^audit/.test(f) ? 2 : /^remediation/.test(f) ? 3 : /^fixup/.test(f) ? 4 : 0);
   for (const f of readdirSync(dir).filter((x) => x.endsWith('.json')).sort((a, b) => layer(a) - layer(b) || a.localeCompare(b))) {
     const j = JSON.parse(readFileSync(join(dir, f), 'utf8'));
     for (const [id, d] of Object.entries(j.decisions ?? {})) D.set(id, { ...d, unit: j.unit ?? f });
@@ -79,6 +81,10 @@ export function actionOf(row, D) {
     if (d.action === 'machinery') return { kind: 'leave', why: `machinery: ${d.note ?? ''}`.trim(), machinery: true, src: d.unit };
     return { kind: 'leave', why: `unsure: ${d.note ?? ''}`.trim(), src: d.unit };
   }
+  // a script pick never rewrites a sentence about the ruling's history (reversed, superseded,
+  // "before R154", a dead ruling): a CR number there changes what the sentence says
+  const auto = row.method === 'unique' || ((row.method === 'scored' || row.method === 'binding') && row.auto && row.pick) || row.method === 'process';
+  if (auto && row.historical) return { kind: 'leave', why: 'historical: an auto pick in a sentence about the ruling\'s history (pending a decision)', pending: 'historical', src: 'auto' };
   if (row.method === 'unique' || ((row.method === 'scored' || row.method === 'binding') && row.auto && row.pick)) return { kind: 'cite', nums: [row.pick], src: row.method };
   if (row.method === 'process') return row.obsolete ? { kind: 'drop', src: 'process-obsolete' } : { kind: 'pointer', pointer: row.pointer, src: 'process' };
   return { kind: 'leave', why: `no decision (${row.method}${row.reason ? `: ${row.reason}` : ''})`, src: 'none' };
@@ -131,7 +137,7 @@ function esc(text, q) {
 
 /* ── citation groups on one line ── */
 const CONNECT = /^\s?(?:\/|[-–—]|\.\.|to|through|\+|&)\s?$/;
-const SECTION_TAIL = /^(?:\s?\((?:its\s)?§\s?\d+[^)]*\)|,?\s?(?:its\s)?§\s?\d+(?:[-–]\d+)?(?:\s?\((?:[^()]{0,40})\))?)/;
+const SECTION_TAIL = /^(?:\s?\((?:its\s)?§\s?\d+[^)]*\)|,?\s?(?:its\s)?§\s?\d+[a-z]?(?:[-–]\d+[a-z]?)?(?:\s?\((?:[^()]{0,40})\))?)/;
 export function groupsOf(line) {
   const toks = [...line.matchAll(TOK)].map((x) => ({ a: x.index, b: x.index + x[0].length, id: `R${Number(x[1])}${x[2]}` }));
   const groups = [];
@@ -160,7 +166,9 @@ function citeEdit(line, g, nums) {
   let m;
   if ((m = /(?:docs\/)?digital-rules(?:\.md)?\s*(?:§\s*)?$/.exec(before))) a -= m[0].length;
   else if ((m = /\b[Rr]ulings?\s+$/.exec(before))) a -= m[0].length;
-  if ((m = /^(\s+)(ruling)(s?)\b/.exec(after))) { b += m[0].length; text += `${m[1]}rule${m[3]}`; }
+  // "R118 ruling 1" numbered a part of the old write-up: the part number goes with it
+  if ((m = /^\s+ruling\s+\d+\b/.exec(after))) b += m[0].length;
+  else if ((m = /^(\s+)(ruling)(s?)\b/.exec(after)) && !/\brules?\s+$/.test(before)) { b += m[0].length; text += `${m[1]}rule${m[3]}`; }
   return { a, b, text };
 }
 
@@ -223,6 +231,9 @@ function pointerEdit(line, g, pointer, rel) {
   if (self) return dropEdit(line, g) ?? { a: g.a, b: g.b, text: 'this file\'s rule' };
   const before = line.slice(0, g.a), after = line.slice(g.b);
   if (/\(\s*$/.test(before) && /^\s*\)/.test(after)) return { a: g.a, b: g.b, text: `see ${pointer}` };
+  // adjectival ("the R200 forensic stack", "the R71 commit"): the pointer names the thing
+  if (/\b(?:the|The|a|A|an|An|this|that)\s+$/.test(before) && /^\s+[a-z`]/.test(after)) return { a: g.a, b: g.b, text: pointer };
+  if (/\b(?:the|The)\s+$/.test(before)) return { a: g.a, b: g.b, text: `rule in ${pointer}` };
   return { a: g.a, b: g.b, text: `the rule in ${pointer}` };
 }
 
@@ -275,7 +286,8 @@ export function anchorReword(logical, p, q, suggest) {
   if (a > p || b < q) return null;
   // the suggestion's own trailing punctuation is kept only where the original had it
   let text = suggest.trim();
-  if (end === null && /[.;:]$/.test(text) && !/^\s*[.;:]/.test(logical.slice(b))) { /* keep */ }
+  // the suggestion's closing punctuation, where the original goes on with its own
+  if (end === null && /[.;:,]$/.test(text) && /^\s*[.;:,]/.test(logical.slice(b))) text = text.replace(/[.;:,]+$/, '');
   if (end !== null && /[.]$/.test(text) && !/[.]$/.test(logical.slice(a, b))) text = text.replace(/[.]$/, '');
   // minimise: shrink the region and the text by their common leading / trailing words
   const R = wordsWithPos(logical.slice(a, b)), T = wordsWithPos(text);
@@ -285,7 +297,15 @@ export function anchorReword(logical, p, q, suggest) {
   while (j < R.length - 1 - i && j < T.length - 1 - i && R[R.length - 1 - j].raw === T[T.length - 1 - j].raw && a + R[R.length - 1 - j].a >= q) j++;
   const ra = a + (i ? R[i].a : 0), rb = a + (j ? R[R.length - 1 - j].b : (b - a));
   const ta = i ? T[i].a : 0, tb = j ? T[T.length - 1 - j].b : text.length;
-  return { a: ra, b: rb, text: text.slice(ta, tb) };
+  let out = text.slice(ta, tb);
+  // never splice a word next to its own copy: "as" + "as the …" → "as the …"
+  const prevWord = /(\S+)\s*$/.exec(logical.slice(0, ra))?.[1] ?? '';
+  const nextWord = /^\s*(\S+)/.exec(logical.slice(rb))?.[1] ?? '';
+  const first = /^(\S+)(\s+|$)/.exec(out), last = /(^|\s+)(\S+)$/.exec(out);
+  const core = (w) => (w.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'-]*/u) ?? [''])[0];
+  if (first && core(first[1]) && core(first[1]) === core(prevWord)) out = out.slice(first[0].length);
+  if (last && out && core(last[2]) && core(last[2]) === core(nextWord)) out = out.slice(0, out.length - last[0].length);
+  return { a: ra, b: rb, text: out };
 }
 
 /** the comment block / md paragraph around a line, as one logical string with an offset map */
@@ -349,10 +369,12 @@ export function mapRange(edits, a, b) {
 }
 
 /* ── the main pass ── */
-export function recite({ cites, decisions = loadDecisions(), dryRun = false, root = REPO_ROOT } = {}) {
-  const rows = cites.rows;
+export function recite({ cites, decisions = loadDecisions(), dryRun = false, root = REPO_ROOT, skipFiles = [] } = {}) {
+  // a file the hand step owns whole is written there, citations included: never rewritten here
+  const skip = new Set(skipFiles);
+  const rows = cites.rows.filter((r) => !skip.has(r.file));
   const visible = existsSync(VISIBLE_JSON) ? JSON.parse(readFileSync(VISIBLE_JSON, 'utf8')).entries : [];
-  const report = { rows: rows.length, byKind: {}, bySrc: {}, leave: [], dropUnapplied: [], rewordUnapplied: [], coveredByReword: 0,
+  const report = { rows: rows.length, handOwned: cites.rows.length - rows.length, byKind: {}, bySrc: {}, leave: [], dropUnapplied: [], rewordUnapplied: [], coveredByReword: 0,
     visible: { applied: 0, missing: [] }, titles: 0, bindings: { rewritten: 0, unresolved: [] }, requoted: { evidence: 0, sides: 0, needles: 0, failed: [] },
     glossary: { rows: 0, left: [] }, jsonRows: { applied: 0, notFound: [] }, files: 0, notFound: [] };
   const inc = (o, k) => { o[k] = (o[k] ?? 0) + 1; };
@@ -600,6 +622,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
   const BIND = /(['"`])(\d{1,3}-[\w.-]+\.test\.ts)::((?:\\.|(?!\1).)*)\1/g;
   const clientFiles = listFiles(root, 'client').filter((f) => /\.(ts|mts|mjs|js|md)$/.test(f) && !f.includes('/node_modules/') && !f.startsWith('client/engine/scripts/cr/migrate/') && f !== 'client/docs/digital-rules.md');
   for (const rel of clientFiles) {
+    if (skip.has(rel)) continue;
     const t0 = after.get(rel) ?? readFileSync(join(root, rel), 'utf8');
     if (!/\.test\.ts::/.test(t0)) continue;
     let changed = false;
@@ -743,7 +766,23 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     }
   }
 
-  /* 9. write */
+  /* 9. self-check (orchestrator 2026-10-11): no rewrite may leave a doubled word, a CR number
+   *    stated as reversed/superseded, or "CR x = CR x" on a line it changed */
+  report.selfCheck = [];
+  const BADLINE = [/\bCR [\dD][\d.a-z]* (?:is|was) (?:REVERSED|reversed|narrowed|superseded|NARROWED|SUPERSEDED)\b/, /\b(CR [\dD][\d.a-z]*) = \1(?![\d.a-z])/];
+  const doubles = (l) => [...l.matchAll(/\b([A-Za-z]{2,})\s+\1\b/gi)].map((x) => x[1].toLowerCase()).filter((w) => !['that', 'had', 'is', 'very', 'no'].includes(w) || true);
+  for (const [rel, t] of after) {
+    const old = new Set((before.get(rel) ?? '').split('\n'));
+    const oldText = before.get(rel) ?? '';
+    for (const [k, l] of t.split('\n').entries()) {
+      if (old.has(l)) continue;
+      const why = BADLINE.find((re) => re.test(l)) ? 'states a CR number as reversed / equal to itself'
+        : doubles(l).filter((w) => !new RegExp(`\\b${w}\\s+${w}\\b`, 'i').test(oldText)).length ? `doubled word: ${doubles(l).join(', ')}` : null;
+      if (why) report.selfCheck.push({ file: rel, line: k + 1, why, text: l.trim().slice(0, 200) });
+    }
+  }
+
+  /* 10. write */
   report.files = after.size + jsonOut.size;
   report.changed = [...after.keys(), ...[...jsonOut.keys()].map((a) => relative(root, a))].sort();
   if (!dryRun) {

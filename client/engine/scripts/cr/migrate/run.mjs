@@ -8,6 +8,7 @@
  *   score    rmap + census + score → build/cites.json, from the REGISTER-ERA tree
  *   absorb   owner provenance into the records; scope; provenance wording (absorb.mjs)
  *   recite   R-citations → CR numbers / pointers / words; bindings follow titles (recite.mjs)
+ *   repin    verdict hashes follow the renamed test bindings, nothing else (repin.mjs)
  *   hand     the hand-written edits (check/extract/render, the reworked tests, …):
  *            hand/manifest.json names each file and the blob it was written against;
  *            each is 3-way merged (`git merge-file`) onto the current file, so a
@@ -25,6 +26,8 @@
  *   node run.mjs capture <path>… --from <dir>   record hand edits: copy <dir>/<path> into
  *                                               hand/files/, base = HEAD:<path> here
  *   node run.mjs capture --delete <path>…        record a deletion (hand step)
+ *   --owned: the hand step owns the file whole (recite skips it; its citations
+ *   are the ones written in the captured copy)
  *   add --step-of delete to either to file the entry under the delete step. */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync, symlinkSync, realpathSync, copyFileSync, unlinkSync, lstatSync } from 'node:fs';
@@ -35,7 +38,7 @@ import { REPO_ROOT, CR_BUILD_DIR } from '../../paths.mjs';
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 const HAND = join(HERE, 'hand');
 const MANIFEST = join(HAND, 'manifest.json');
-const STEPS = ['score', 'absorb', 'recite', 'hand', 'render'];
+const STEPS = ['score', 'absorb', 'recite', 'repin', 'hand', 'render'];
 const MIGRATE_REL = relative(REPO_ROOT, HERE);
 /** what the delete step removes outright (beyond its manifest entries) */
 export const DELETE_PATHS = ['client/docs/digital-rules.md', 'data/comprehensive-rules/classification.json', 'data/comprehensive-rules/supersession.json'];
@@ -77,7 +80,7 @@ function capture() {
   const from = arg('--from');
   const step = arg('--step-of') ?? 'hand';
   const del = process.argv.includes('--delete');
-  const paths = process.argv.slice(3).filter((p, i, a) => !p.startsWith('--') && !['--from', '--step-of'].includes(a[i - 1]));
+  const paths = process.argv.slice(3).filter((p, i, a) => !p.startsWith('--') && !['--from', '--step-of'].includes(a[i + 2]));
   for (const p of paths) {
     let base = null;
     try { base = git(['rev-parse', `HEAD:${p}`]).trim(); } catch { base = null; }
@@ -86,7 +89,7 @@ function capture() {
     const dst = join(HAND, 'files', p);
     mkdirSync(dirname(dst), { recursive: true });
     copyFileSync(src, dst);
-    man.files[p] = { op: base ? 'merge' : 'add', step, base };
+    man.files[p] = { op: base ? 'merge' : 'add', step, base, ...(process.argv.includes('--owned') ? { owned: true } : {}) };
   }
   man._doc = 'Hand-written edits the migration applies (run.mjs step hand / delete). base = the blob each edit was written against; the edit is 3-way merged onto the current file.';
   mkdirSync(HAND, { recursive: true });
@@ -120,9 +123,16 @@ async function runSteps(steps, { decisionsDir } = {}) {
     const { recite, loadDecisions } = await import('./recite.mjs');
     const { CITES_JSON } = await import('./score.mjs');
     cites ??= JSON.parse(readFileSync(CITES_JSON, 'utf8'));
-    const { report } = recite({ cites, decisions: loadDecisions(decisionsDir) });
+    const owned = Object.entries(readManifest().files).filter(([, e]) => e.owned && (e.step ?? 'hand') === 'hand').map(([p]) => p);
+    const { report } = recite({ cites, decisions: loadDecisions(decisionsDir), skipFiles: owned });
     log.recite = report;
     time('recite');
+    if (report.selfCheck?.length) throw Object.assign(new Error(`recite self-check: ${report.selfCheck.length} line(s) (run-log.json recite.selfCheck)`), { log });
+  }
+  if (steps.includes('repin')) {
+    const { repin } = await import('./repin.mjs');
+    log.repin = repin({});
+    time('repin');
   }
   if (steps.includes('hand')) { log.hand = applyHand(REPO_ROOT, 'hand'); time('hand'); if (log.hand.conflicts.length || log.hand.missingBase.length) throw Object.assign(new Error(`hand step: ${JSON.stringify(log.hand)}`), { log }); }
   if (steps.includes('delete')) {
