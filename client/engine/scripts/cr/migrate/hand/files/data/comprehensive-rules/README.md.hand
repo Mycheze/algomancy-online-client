@@ -1,0 +1,430 @@
+# `data/comprehensive-rules/` — the comprehensive-rules export
+
+> **UNOFFICIAL.** This is a numbered rules document for **this project's
+> digital client**: what the client enforces, and why. It is not Caleb Gannon's
+> rulebook and does not speak for the game. Where it and the published
+> Manual disagree, the Manual is the game; this document is our client. The
+> card text and rules text it quotes are Caleb Gannon's, used with permission
+> on the terms in [`../NOTICE.md`](../NOTICE.md).
+
+Built by the scripts in `client/engine/scripts/cr/` from four kinds of input:
+the printed text (`data/rules/`, the card pool), the designer's own answers
+(the RAQ threads in the Discord export), the owner's calls (recorded in the
+rule records themselves, `sources.owner`), and the engine's tests. Every path below is
+named in `client/engine/scripts/paths.mjs` (`CR_*`); `bot/paths.py` names the
+directory and the document. Do not spell them again.
+
+## Layout
+
+```
+data/comprehensive-rules/
+  README.md                            this file
+  Algomancy-Comprehensive-Rules.md     THE document              generated   CR_DOC
+  Algomancy-Comprehensive-Rules.html   the same, one HTML page   generated   CR_DOC_HTML
+  Algomancy-Comprehensive-Rules.txt    the same, plain text      generated   CR_DOC_TXT
+  Annex-D-Digital-Conventions.md       digital-only conventions  generated   CR_ANNEX_D
+  rules/*.json                         the rule records, one file per section   CR_RULES_DIR
+  rules/glossary.json                  the glossary: pointer rows (term → rule)  CR_RULES_DIR
+  ledger.json                          rule key -> number        reviewed    CR_LEDGER
+  verdicts/<unit>.json                 the verifier's verdicts   reviewed    CR_VERDICTS_DIR
+  verdicts/README.md                   why R-numbers survive in them (frozen history)
+  discrepancies/<unit>.json            what did not reconcile    records     CR_DISCREPANCIES_DIR
+  discrepancies.md                     the report, four tiers    generated   CR_DISCREPANCIES_MD
+  owner-questions.md                   its tier 1: the owner's questions  generated  CR_OWNER_QUESTIONS
+  findings/<unit>.json                 engine bugs -> CT tickets records     CR_FINDINGS_DIR
+  changelog.md                         what changed per edition  generated   CR_CHANGELOG
+  outline.json                         chapters, sections, slots reviewed    CR_OUTLINE
+  front-matter.md                      the introduction          hand-written CR_FRONT_MATTER
+  build/                               extract output, packs     gitignored  CR_BUILD_DIR
+  build/verify-input/, build/verdicts/ the verifier's in and out gitignored  CR_VERIFY_INPUT_DIR, CR_VERIFY_OUTPUT_DIR
+  build/harness/<unit>/                mutants, judgements, feedback gitignored CR_HARNESS_DIR
+  build/review.json                    the review page's document, for debugging only  gitignored  CR_REVIEW_DEBUG_JSON
+```
+
+The rules review page in the client (`/api/cr/*`, `client/ui/crreview.ts`)
+reads no file here of its own: the game server calls `render.mjs`
+`buildReview()` on the records, the same code that writes the editions, and
+caches the result until one of the files it read changes. So nothing
+review-shaped is committed, and the page cannot disagree with the document.
+`npm --prefix client run cr:render -- --review-json` writes what it builds to
+`build/review.json` (and writes nothing else).
+
+The scripts are `client/engine/scripts/cr/*.mjs`. The gate is
+`client/engine/test/409-comprehensive-rules.test.ts`.
+
+## Generated vs reviewed — never hand-edit either
+
+| kind | files | how it changes |
+|---|---|---|
+| **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.md`, `owner-questions.md`, `changelog.md` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
+| **records** | `rules/*.json`, `discrepancies/*.json`, `findings/*.json` (one file per drafting unit) | written by the draft/verify rounds (findings also by `harness.mjs finalize`); the document's source. |
+| **committed reviewed state** | `ledger.json`, `verdicts/*.json` | append/edit only through the cr scripts. A decision someone made; nothing can rebuild it. |
+| **gitignored** | `build/` | scratch, rebuilt on every run |
+
+### The discrepancy tiers
+
+Each `discrepancies/<unit>.json` row carries a `tier`:
+
+1. **Questions for the owner**: only where the authoritative source's own words
+   support two readings and no higher source decides. Such a row carries a
+   `question` (`topic`, `ask`, `readings[{label, text, table}]`, `follows`,
+   `recommend`), and `owner-questions.md` is rendered from those rows alone.
+2. **Register and test fixes**: settled by the authority order, with a fix on
+   our side (a record's owner call, a test title, a glossary row, an engine CT ticket,
+   or a rule to redraft).
+3. **Engine-only and owner-only rules**: no printed or designer source; the
+   rule awaits sign-off.
+4. **Everything else.**
+
+A question filed by more than one unit is kept once; the others are listed in
+its `seeAlso` (`{id, rule}`), their quotes unioned into its `sides`, and the
+document points at the kept row from every one of those rules.
+
+`ledger.json` is **append-only**: a published number is a citation someone may
+hold.
+
+## Authority order
+
+From strongest to weakest:
+
+1. A RAQ `[Solved]` write-up by `_passer`, or `calebgannon`'s own words.
+2. Printed text, read literally. Where Caleb states an intent that differs from
+   print, follow Caleb.
+3. The owner's calls, recorded in the record they settle (`sources.owner`:
+   his words, the date he adopted them, where he said them). Where no printed
+   or designer source speaks, an owner call is the engine's law, basis = owner.
+   (Until 2026-10 these lived in a separate register of numbered rulings,
+   `R1`–`R350`; it was retired, its calls absorbed into the records, and its
+   final state archived at `refs/archive/r-register-final`.)
+
+Other players are not authority. A thread that is still open is not a ruling.
+`client/ui/glossary.ts` is OUR text (typed `ours`) and never counts as
+authority. When two readings are equally available, take the permissive one.
+
+When an owner call and the engine disagree, the rule states the CALL (current
+law under this order) and carries an inline marker "engine differs, see
+<finding id>"; the divergence is filed as a CT ticket in
+`client/ledgers/card-todo.ts`, not fixed here.
+
+## THE ANTI-HALLUCINATION CONTRACT (the owner's main worry; every agent follows it)
+1. **No claim without checkable evidence.** Every rule record carries at least one evidence item that a script can
+   check:
+   - (a) a verbatim quote (≤200 chars, from one line) from a printed or designer source, or an owner call in
+     his own words (`sources.owner`: the quote IS the call, so it is its own evidence — `cr:check` checks
+     its shape and that an owner-basis rule carries one, and there is no register left for it to drift from); or
+   - (b) an engine code quote PLUS a test that was executed and asserts the claim. For an Annex D rule
+     (key `annexd.*`, the digital conventions) the code quote may also come from `client/ui/` or
+     `client/server/` source, never their tests; a game rule's still has to be engine source.
+2. **Behaviour must be demonstrated.** Every rule that says how play proceeds needs an executed test asserting
+   it: an existing guard, or a new CR example test written by the verifier. CR example tests are promoted into
+   `client/engine/test/NNN-cr-<unit>.test.ts`, numbers reserved below. A rule with no executed demonstration
+   ships marked `untested`.
+3. **Separation.** The DRAFTER reads owner calls, RAQ claims, printed text and tests, and never `client/engine/src`.
+   The VERIFIER gets the rule records with the drafter's notes and confidence stripped out, reads the engine,
+   RUNS the tests, and may write probe tests. The verifier is the only path from code into the document.
+4. **Mutants.** Every verify batch has 2–3 falsified rules planted in it by the orchestrator's harness. A batch
+   whose verifier confirms any mutant has ALL its verdicts discarded, and is re-run by a fresh verifier.
+5. **Quotes are checked mechanically** (whitespace-normalised substring match). Test titles are resolved by a
+   real JS string-literal parser or by running the test, never by a naive regex: titles contain `\'`.
+6. **At most 3 draft/verify rounds.** Residue ships marked `partial`, with the verifier's note shown, and goes
+   into the discrepancy report.
+7. **Second opinion.** A different model (Sonnet) re-verifies a random 10% of confirmed rules. Its disagreement
+   rate is reported as the measured false-confirm rate.
+8. **Engine-only (derived) rules** are visibly marked, listed in Annex P, and await owner sign-off.
+
+## Rule record
+
+One JSON object per rule, in `rules/<section>.json`:
+
+| field | |
+|---|---|
+| `num` | the published number, e.g. `608.2b` — from the ledger, never chosen by hand |
+| `key` | the permanent dotted key, e.g. `combat.damage.substeps.column-attributes` |
+| `text` | the rule. It may name another rule by key (`see rule effects.stripping.mutual`); the renderer prints the key's live number, and `cr:check` fails (`ref-unresolved`) on a key or a `rule N` that names no live rule |
+| `examples[]` | `{ text, test }` — `test` is `<file>::<test title>` of an executed test |
+| `see[]` | cross-references, by number |
+| `sources.printed[]` | `{ ref, quote }`; `ref` is `Manual p.N`, `Rulebook 2023 p.N` or `card: <Name>` |
+| `sources.designer[]` | `{ ref: "RAQ <threadId>#<i>", quote }` |
+| `sources.ours[]` | `{ ref, quote }` from our own text (the glossary) — never authority |
+| `sources.owner[]` | `{ quote, adopted, from }` — the owner's call in his words, the date he adopted it (YYYY-MM-DD), and where he said it: `comment <id>` (a review comment), `questions-round27 Q2` (a question sheet), or `''` for a call absorbed from the retired register |
+| `sources.engine[]` | engine symbols (the verifier's citations) |
+| `sources.tests[]` | test files that demonstrate the rule |
+| `basis` | `printed` \| `designer` \| `owner` \| `engine` \| `mixed` |
+| `scope` | `game` (holds at a table) \| `digital` (true of this client only). Every `annexd.*` rule is digital; a digital rule in the main document carries a small "Digital client" tag, and Annex P lists them |
+| `digitalClause?` | on a game rule, the clause of its text (verbatim) that only the client does; the editions tag it where it stands |
+| `confidence` | `high` \| `medium` \| `low` |
+| `notes` | the drafter's reasoning; stripped before verification |
+| `engineDiffers?` | `[findingId]` (`F-U12-3`) — the rule is stated; the engine does otherwise |
+| `untested?` | `true` when no executed test or probe demonstrates it — set by `harness.mjs finalize`, cleared when a probe is promoted |
+| `sourceHashes` | `{"RAQ <id>#<i>": textHash}` of the designer claims quoted — filled by `harness.mjs stamp` (an owner call needs none: its words are in the record) |
+
+A verdict pins the record by `recordHash` (schema.mjs): its text, plus its
+examples and their test bindings. An example bound to a promoted
+`NNN-cr-<unit>.test.ts` does not count, since the gate runs that test itself.
+
+## The glossary (`rules/glossary.json`)
+
+A pointer layer, as in the MTG CR. Each row is one sentence paraphrasing the
+first sentence of the rule it points at, plus `see[]` (keys; the first is the
+defining rule). It never states a rule the numbered rules do not state. A row
+has `term` instead of `parent`/`order`, takes no number, and carries no basis or
+verdict: the rule it points at carries those.
+
+- The term list is **derived**, and `cr:check` holds it there
+  (`check.mjs glossaryTags`): every zone, phase, battle step and damage
+  sub-step of the engine's enum exports, every attribute, every row of
+  `client/ui/glossary.ts` and every top-level rule of 801 and 803 must be
+  covered by a row's `derived` tags (`glossary-term-missing`), and a tag that
+  names nothing fails (`glossary-tag-unknown`). Terms a rule defines ("X is …")
+  are added by hand from the rules.
+- A `see` target that is no live rule fails `cr:check`
+  (`glossary-see-unresolved`) and makes `cr:render` refuse to render.
+- A term that changed name stays as an `obsolete` row pointing at the new one,
+  only where a source really uses the old name: `usedBy[{ref, quote}]`, the
+  quote checked verbatim (`file: <repo path>` reaches the old rules glossary).
+- A term no rule defines says so ("Not defined by these rules: …") and is filed
+  as a tier-4 discrepancy in `discrepancies/glossary.json`.
+
+## Numbering and the ledger
+
+- Three levels, MTG style: section `608`, rule `608.2`, subrule `608.2b`.
+  Subrule letters skip `l` and `o`.
+- Every rule has a permanent dotted `key`. The ledger maps key → number.
+- The ledger allocates each number **once**. A number is never moved and never
+  reused. A removed rule becomes a tombstone that keeps its number.
+- `802.N` follows the engine's `Attr` order (`client/engine/src/types.ts`).
+- The engine's turn structure is read from runtime arrays, not copied:
+  `PHASES`, `BATTLE_STEPS`, `DAMAGE_SUBSTEPS`, `DECISION_KINDS`, `ZONES` in
+  `types.ts`, proven equal to their unions at compile time
+  (`410-enum-exports.test.ts`).
+
+## How to regenerate
+
+Run from the repo root. Every step is deterministic except the agent roles in
+step 3. The gate (step 4) runs inside `npm --prefix client run check`.
+
+### 1. Extract the sources
+
+```bash
+npm --prefix client run cr:extract      # -> build/extract.json: RAQ claims, glossary, cards,
+                                        #    printed pages, enums, test titles, engine symbols
+node client/engine/scripts/cr/extract-printed-pages.mjs
+                                        # ONLY for a new Manual/Rulebook PDF: rewrites
+                                        # sources/printed-pages.json (needs poppler-utils)
+```
+
+Every RAQ claim, RAQ thread and printed page gets a row in
+`source-classification.json`. The gate is red until it is complete.
+
+### 2. Pack a drafting unit
+
+```bash
+node client/engine/scripts/cr/pack.mjs U12            # -> build/packs/U12/
+node client/engine/scripts/cr/pack.mjs all            # every unit in units.json
+node client/engine/scripts/cr/pack.mjs U12 --seed <dir>   # also copy a pilot's records into seed/
+```
+
+A pack holds everything the drafter of one unit may read: its current
+owner calls already on its records, its RAQ claims, its printed
+pages, its keyword cards, our glossary rows (marked as not authority) and its
+test titles. It never includes engine source.
+
+### 3. Draft, verify and revise: the wave workflow
+
+The units (`units.json`, U01–U24) are drafted in waves. Each unit runs this
+loop, using the harness commands below:
+
+1. **draft**: write `rules/<unit>.json` from the pack; `stamp`; `check --unit`.
+2. **mutate**: choose the round's mutants (round 1) or decoys (rounds 2–3).
+   Then `plant`.
+3. **verify**: a fresh agent, which never sees the drafter's notes, writes
+   `build/verdicts/<unit>-rK.json`. Then `judge`. If the batch is invalid, a new
+   verifier runs the next attempt.
+4. **revise**: work from `feedback`, list the changed keys, then `stamp` and
+   `check --unit`. Back to mutate, up to three rounds in all.
+5. **finalize**, then **test** (a tester turns each `untested` rule into a probe)
+   and **promote** (probes become `engine/test/4NN-cr-<unit>.test.ts`, 412–435).
+6. **wave end**: one agent runs `cr:render`, `cr:check` and 409, and commits
+   the wave. Units never commit.
+
+**The role briefs.** Each role above has a brief: `C-draft`, `C-mutate`,
+`C-verify`, `C-revise`, `C-test`, `C-promote` and `C-waveend`, plus the Stage
+A, B and D briefs. The first edition's briefs lived only in that session's
+`/tmp` scratchpad and are gone; the contract they implemented is the one
+written out in this file.
+Two briefs are now kept in `client/engine/scripts/cr/briefs/`, both written for
+the 2026-10-11 polish round: `C-verify.md` (a fresh verifier in a scratch
+mirror, for a round-4 `--keys` batch) and `C-equiv.md` (the example-rewording
+equivalence checker, with planted non-equivalent pairs). Paths in them are
+placeholders (`<MIRROR>`, `<scratchpad>`). Write any new role's brief there
+too, not in a scratchpad.
+
+### 4. Render and check
+
+```bash
+npm --prefix client run cr:render   # number unseen keys (ledger.json), write the document,
+                                    # Annex D, discrepancies.md, owner-questions.md, changelog.md
+npm --prefix client run cr:check    # the mechanical checks; exits 1 on any problem
+node client/engine/scripts/cr/check.mjs --unit U12   # one unit's problems only (unnumbered is a note)
+(cd client/engine && node --test test/409-comprehensive-rules.test.ts)   # the gate
+npm --prefix client run check       # everything, the CR tests included (about 5 minutes, background it)
+```
+
+The changelog is rendered from the ledger's `since` stamps. In the first
+edition every key is new.
+
+### 5. Retire or rename a rule
+
+```bash
+node client/engine/scripts/cr/ledger.mjs remove <key> "<reason>" [replacedByKey]   # tombstone a rule
+node client/engine/scripts/cr/ledger.mjs alias <oldKey> <newKey>                  # rename a key
+```
+
+### The harness commands, for step 3 (`client/engine/scripts/cr/harness.mjs`)
+
+Each subcommand prints one JSON object. U = unit, K = round, A = attempt.
+
+```bash
+H="node client/engine/scripts/cr/harness.mjs"
+$H keys     --unit U12 --round 1                     # `mutable`: the keys round 1 may replace
+$H keys     --unit U12 --round K --decoy-pool        # K>=2: `decoyPool`, the bases a decoy may copy
+$H plant    --unit U12 --round K --mutants m.json    # -> build/verify-input/U12-rK.json (+ hidden truth)
+#   m.json: round 1 [{key, mutant, why_false}] x2-3; round K>=2 [{baseKey, mutant?, examples?, why_false}] x1-2
+#   (a decoy's `examples` [{text, test}] replace its base's: a false example, when examples are what changed)
+#   the verifier writes build/verdicts/U12-rK.json (attempt A>1: U12-rK-aA.json)
+$H judge    --unit U12 --round K [--attempt A]       # batchValid = every mutant caught
+$H feedback --unit U12 --round K                     # the reviser's input, mutants removed
+#   the reviser writes build/harness/U12/changed-rK.json
+$H finalize --unit U12                               # verdicts/U12.json, findings/U12.json, `untested`
+$H stamp    --unit U12                               # fill sourceHashes from the extract
+$H status   [--unit U12]                             # one line per unit
+```
+
+Round 1 verifies every rule, with 2–3 of them REPLACED by false text; those
+are verified for real in round 2. Round K>1 verifies the keys the reviser
+changed plus the keys round K-1 left unverified, and plants 1–2 DECOYS: a rule
+outside the batch (one confirmed earlier, preferably), copied with false text
+under a fresh key in its area. A decoy lives only in the verifier input and the
+hidden truth, never in rules/, verdicts/, findings/ or the feedback, so no
+real rule goes unverified in its round. A batch that misses any mutant or
+decoy is discarded whole; a fresh verifier re-runs it as the next attempt.
+
+
+## The CR is the engine's spec
+
+This document is the rulebook the client implements: where it and the engine
+disagree, the engine has a bug (a finding, a CT ticket), unless a higher source
+says the document is wrong. The rest of the repository cites it as `CR 608.2b`
+(lists `CR 702.3, 704.6b`); `client/engine/test/184-ruling-register.test.ts`
+fails on a CR number that names no live rule, and on any number of the retired
+register coming back. A player never sees a rule number
+(`323-recent-updates` bans them from the updates list; `227` and `286` from the
+reminders and the rules reference).
+
+What keeps it honest is the contract above — every rule rests on a checkable
+quote or a verified, executed demonstration; a verifier who never saw the
+drafter's notes, with planted mutants; mechanical quote checks — and the
+gate, `409-comprehensive-rules`, which proves the committed document is what
+the scripts produce. The owner decides only where no printed or designer
+source does, and his decision goes into the rule it settles, in his words,
+dated.
+
+## How to answer the owner questions
+
+`owner-questions.md` lists the tier-1 discrepancies. In each of them, the
+strongest source's own words support two readings, and no higher source
+decides. Each question gives its readings (A, B, …) with what each means at the
+table, the reading the document follows today, and a recommendation.
+
+1. **Answer outside the generated file.** Reply with one line per question
+   (for example "2: A"). `owner-questions.md` is regenerated, so anything
+   written in it is lost.
+2. **Record the answer in the records it settles.** In each rule the
+   question names (the row's `rule` and its `seeAlso`), add the answer to
+   `sources.owner` as `{quote: <his words, one line>, adopted: <the date he
+   answered>, from: "comment <id>"}` (basis owner, unless a RAQ thread or Caleb
+   decides it), set the rule's `scope`, and redraft its text to state the
+   answer. If the engine does otherwise, add `engineDiffers`, a finding and a
+   CT ticket. If the answer makes a filed CT ticket moot, close that ticket.
+3. **Close the discrepancy.** In `discrepancies/<unit>.json`, drop the row's
+   `question`, move it to tier 2 (or 4), and write a `resolution` that says
+   what the owner decided and which rules now state it.
+4. **Stamp** (`harness.mjs stamp --unit <unit>`, for any designer quote you added).
+5. **Re-verify.** A record whose text changed renders as "not verified (the
+   text changed after verification)" until a verify round confirms it again.
+6. **Then** `cr:render`, `cr:check` and 409.
+
+## How to apply a review comment
+
+Readers comment on the review page (`/?crreview=1`); the game server keeps the
+threads in `var/cr-comments.jsonl`. An answer to an owner question is a
+comment too (`kind: answer`): apply it with the section above, and use steps
+5–9 below for the sweep and the close.
+
+```bash
+npm --prefix client run cr:comments -- --box        # copy the box's journal (ssh), list every OPEN thread
+npm --prefix client run cr:comments -- --file <f>   # the same, from a copy you already have
+```
+
+For each open thread it prints the target's live number and key, its file,
+its current text, the quoted words and whether they are still in the text, the
+readings of an answered question, and the findings, discrepancies, rules and
+glossary rows that share its rule key.
+
+1. **Triage.** Is it about wording (the rule is right and reads wrong), about
+   substance (the rule is wrong), or a misreading our phrasing caused (the rule
+   is right and says it badly)? A misreading is still a wording fix.
+2. **Check authority.** A comment is a lead, not a source, even from a judge or
+   the owner. Find the source that settles it, in the authority order above.
+   - A higher source agrees: cite it. No owner call is needed.
+   - No higher source speaks to it: the owner's comment is an owner call.
+     Record it as one (step 4).
+   - A higher source contradicts it: change nothing. Reply quoting the source,
+     and ask.
+3. **Sweep the claim, not the rule.** The anchored record is one instance of a
+   claim. Find every record that carries the same claim, in any words:
+   - `grep -rniE` the claim's distinctive words and their synonyms over
+     `rules/`, `rules/glossary.json`, `findings/`, `discrepancies/`,
+     `client/ui/glossary.ts` and `client/ui/does-lines.json`;
+   - also the quote the bad text came from (`sources.*.quote`), since a premise
+     spreads through its citations;
+   - also the cr:comments "shares its key" list, and every rule that carries
+     the owner call you are about to amend.
+   Fix every instance in its record: rule text, glossary rows, finding titles
+   and summaries (a finding states what the ENGINE does, never as the game's
+   rule), discrepancy resolutions, and closed or dropped `question`s.
+4. **Record the call in the records.** Add `{quote: <his words, one line>,
+   adopted: <the comment's date>, from: "comment <id>"}` to `sources.owner` of
+   every record the sweep changed, set `scope`, and drop any owner entry the
+   call replaces (the old entry's words are history; `changelog.md` and git
+   keep it). There is no register step.
+5. **Redraft and stamp.** Cite the owner call or the source in each record you
+   changed, then run `harness.mjs stamp` for each unit, `cr:render` (numbers a
+   new key), and `cr:check`.
+6. **Re-verify.** Run the polish round over the changed keys: `plant --round 4
+   --keys …` with 1–2 decoys per unit, in the same area as the change. The
+   verifier must be a FRESH agent that never saw your notes, the comment, or
+   the decoys. Then `judge` (every decoy caught, or a new attempt) and
+   `finalize --round 4 --keys …`.
+7. **Engine divergence is a ticket.** Where the rule now differs from the
+   engine, add `engineDiffers` and a finding, and file CT text. Do not fix the
+   engine. Where the answer makes a finding wrong, remove the finding and
+   close its ticket.
+8. **Render and check** (step 4 of "How to regenerate"), then 409.
+9. **Reply and resolve** as the Rules editor, never as a person: plain words,
+   what was wrong, what changed, and the rule numbers.
+
+```bash
+npm --prefix client run cr:comments -- reply   <id> --body-file reply.txt --box [--dry-run]
+npm --prefix client run cr:comments -- resolve <id> --box
+```
+
+`--box` runs curl on the deploy box against its own game server, using the
+box's `ALGO_BOT_TOKEN`, so the token never leaves the box. `--server <url>`
+uses `ALGO_BOT_TOKEN` from your shell. The route (`POST /api/cr/editor`) does
+not exist without the token: unset means absent, not broken.
+
+---
+
+Algomancy is designed by [Caleb Gannon](https://calebgannon.com/). Card and rules
+text are his, used with permission — see [`../NOTICE.md`](../NOTICE.md).

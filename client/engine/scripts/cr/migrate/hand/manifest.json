@@ -161,6 +161,30 @@
    "step": "hand",
    "base": "f5943686024f0835b4b63feef8277d53e7bcdc6b",
    "baseFile": true
+  },
+  "data/comprehensive-rules/README.md": {
+   "op": "merge",
+   "step": "hand",
+   "base": "90eafca0dd6af78bdc2bcbef0d5e5ea90ea22737",
+   "owned": true
+  },
+  "client/engine/scripts/cr/briefs/C-verify.md": {
+   "op": "merge",
+   "step": "hand",
+   "base": "9c0a601f27ec225cd8062743822593ab3c7babec",
+   "owned": true
+  },
+  "data/comprehensive-rules/verdicts/README.md": {
+   "op": "add",
+   "step": "hand",
+   "base": null,
+   "owned": true
+  },
+  "client/docs/14-scenario-tester.md": {
+   "op": "merge",
+   "step": "hand",
+   "base": "dca224e241caf62c95587c4398bf157443a42045",
+   "baseFile": true
   }
  }
 }
