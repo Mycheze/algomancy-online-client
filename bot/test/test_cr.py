@@ -167,8 +167,10 @@ check("the L&D glossary says tokens are NOT trashed", "TOKENS CAN BE TRASHED" no
 check("the Wraith may choose itself, chosen as the trigger goes on the stack",
       "MAY choose itself" in cid["ld-glossary:wraith"]["text"] and "UNCONFIRMED" not in cid["ld-glossary:wraith"]["text"]
       and "chosen on resolution" not in cid["ld-glossary:wraith"]["text"])
-check("the primer agrees: tokens are not trashed, the Wraith may choose itself",
-      "TOKENS CAN BE" not in core.PRIMER and "TOKENS ARE NOT" in core.PRIMER and "a Wraith may choose itself" in core.PRIMER)
+# The Wraith self-pick left the primer in the 2026-10-11 audit (CR 110.4a states it
+# and retrieval brings it); test_primer.py holds the primer's denylist.
+check("the primer agrees: tokens are not trashed",
+      "TOKENS CAN BE" not in core.PRIMER and "any TOKEN" in core.PRIMER and "it is not trashed" in core.PRIMER)
 for t in ("conjure", "historic", "skirmish"):
     check(f"old glossary {t}: flagged obsolete and outdated",
           cid[f"glossary:{t}"]["outdated_risk"] and cid[f"glossary:{t}"]["text"].startswith("[OBSOLETE:"))

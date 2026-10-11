@@ -103,211 +103,154 @@ LLM_DEADLINE = float(os.getenv("LLM_DEADLINE") or "55")
 # An attempt is not started with less than this left: it could not finish.
 MIN_ATTEMPT_S = 3.0
 
-# Verified core-rules digest, always supplied to the model so it has reliable
-# footing even when retrieval misses. Grounded in the Manual + Rules Glossary;
-# keep edits factual. Facts here are background — the model states them without a
-# [tag] (only retrieved passages get cited).
-PRIMER = """Core Algomancy primer (verified basic rules — always reliable background):
-- Algomancy is a live-draft card game by Caleb Gannon. Five elemental factions — \
-Fire, Water, Earth, Wood, Metal — plus colorless (faction-neutral) cards. Resources \
-of an element pay a card's mana cost AND satisfy that element's threshold requirement.
-- Goal: eliminate every opponent by reducing their life to zero (in team games, the \
-whole opposing team). Players typically start at 30 life.
-- A turn has four phases IN THIS ORDER: (1) Planning — refresh/untap resources, draw, \
-and draft cards; (2) Battle — declare attacks and blocks into formations and deal \
-combat damage; (3) Regroup; (4) Deployment — play cards and apply mods, then end the \
-turn. Regroup happens BEFORE Deployment, not at the very end of the turn.
-- Regroup is a clean-up step with no player actions: units return to their region, ALL \
-combat damage on units is removed, ALL temporary stat changes end (anything "until \
-regroup"), ALL Spell Tokens are erased, and all units leave their formation. So a 1/1 \
-buffed to 3/3 "until regroup" that took 1 damage goes back to a healthy 1/1 — the \
-damage is cleared at the same moment the buff ends; it does NOT become 1/0.
-- Tokens: Spell Tokens are temporary and erased at Regroup. Ordinary unit tokens are \
-NOT erased by Regroup — they persist like normal units until killed or removed. \
-"Leaving formation" is only a positional reset at Regroup; it is NOT leaving play / \
-being removed.
-- Combat: each spot where one player's attackers meet a defender is a Skirmish (at most \
-one per player). Creatures fight in Formations made of columns; a column holds at most \
-2 creatures (front and back). Creatures are Adjacent only orthogonally (left/right/ \
-front/back), never diagonally. Attributes (Flying, Poisonous, Electric, Deadly, etc.) \
-are shared between creatures in the same column ("vertically adjacent") — e.g. a Flying \
-creature in front of a Poisonous one makes the whole column Flying AND Poisonous; if \
-one leaves combat its column-mate loses the shared attribute. Flying units can only be \
-blocked by Flying units.
-- Modifications: both Augment (+) and Graft (switch-arrows) are special actions taken \
-during the DEPLOYMENT phase. You play the mod card from EITHER your hand OR your \
-bin/discard — both are legal, and the card does NOT have to be in the bin — paying its \
-cost and meeting affinity, and put it under a creature, which then gains the added text \
-(or attributes; see the next bullet). If the glossary's Augment/Graft entries say "the \
-card must be in your discard", that wording is outdated: the rulebook says you "can apply \
-augments both from your hand and from your discard". Graft can only target creatures that \
-themselves have the graft symbol; Augment can go on a creature whether or not it carries \
-any symbol. Either way you may only modify YOUR OWN units, because deployment has no \
-interaction across regions. The one exception is a Virus, which may additionally be \
-augmented from your HAND during battle — that is the only time a mod can land on an \
-OPPONENT's unit, and they then control the added text as if it were their own.
-- The augment symbol can sit EITHER at the start of a line in the text box OR at the \
-start of the TYPE LINE, in front of the attributes. A type-line (+) grants those \
-ATTRIBUTES rather than any text — Chitin Shredder ("[Augment] {Powerful} Insect Unit") \
-has no rules text at all, and augmenting it makes its host Powerful. So a card with an \
-empty text box can still be a perfectly good augment, and you must never say a card \
-cannot be augmented without checking its type line for the (+). The subtypes (Insect, \
-Rock Beast) and the {Virus} icon do NOT transfer — only the attributes.
-- Graft placement and source. Like all modifications, a graft is played from your HAND or \
-your bin during the deployment phase (pay the card's cost, meet affinity). It goes onto a \
-card that has BOTH a graft symbol and a trigger, and it always goes UNDER that card — the \
-original card stays on top as the "main" card, keeping its name and stats, and ITS trigger \
-fires the combined effect. You canNOT graft a card on top to make it the new main creature. \
-The only choice you get is WHERE among the already-grafted cards the new one sits: if you \
-graft C onto a unit that reads A/B, you may make it A/B/C or A/C/B — but A stays on top, \
-and once placed the order is fixed for good. Grafts also only go on YOUR OWN units (unlike \
-a Virus): an opponent's units aren't available to target during your deployment. If the \
-glossary's Graft entry says you can put the card "on top or beneath", that wording is \
-outdated — under only.
-- "Playing" vs "applying a mod" (provisional clarification, pending official Light & Dark \
-errata): only UNITS and SPELLS are "played". Applying a modification — attaching a Virus, \
-graft, or augment, whether it comes from your hand, your bin, or a glimpse — is NOT \
-"playing a card". So abilities that trigger "when you play a unit/spell/card" do NOT \
-trigger when a mod is applied, even one applied from the bin. This matters especially for \
-Light-element cards that care about playing cards.
-- Bounded vs unbounded graft (the switch-arrow shown as [Switch]/[Switch1] in a card's \
-ability text): this symbol caps how often that triggered effect can fire IN A TURN. The \
-UNBOUNDED form ([Switch]) can trigger an unlimited number of times per turn; the BOUNDED \
-form ([Switch1]) triggers at most ONCE PER TURN. So a unit whose trigger is bounded \
-(e.g. "When I become targeted, [Switch1] Create ...") cannot loop infinitely — it \
-produces its effect only once per turn no matter how many times it is re-triggered.
-- Conjure makes a spell token cast at a set time. In combat it casts immediately; \
-outside combat it casts in the next combat — offensive conjured spells just after \
-attackers are declared, then defensive ones (which resolve before the offensive ones). \
-An unspecified X on a conjured spell is 1.
-- Targeting: you can only target things in a Skirmish with you, so you cannot target an \
-opponent's cards during your own main phase (outside combat).
-- Initiative (1v1/team games): the Initiative team acts first each turn, creating an \
-attack-counterattack flow; free-for-all games declare attacks simultaneously.
-- Square brackets on a card mean ONE of two different things, and they are easy to \
-confuse because the card text you are shown writes both the same way. (a) An ICON: on \
-the printed card this is a picture, and the text renders it as a bracketed word — \
-[Switch], [Switch1], [Augment], [Battle], [Virus], [Haste]. These are symbols, NOT \
-costs, and nothing is paid for them. (b) An ADDITIONAL COST: any OTHER bracketed text \
-(e.g. "[Sacrifice a unit]") is a cost that must be resolved in order to play the card. \
-So [Switch] on a card is the graft symbol, not something you pay.
+# Core-rules digest, always supplied to the model so it has footing even when
+# retrieval misses. The model states these facts WITHOUT a [tag], so every line
+# here must be quotable from a source (Manual, card text, a RAQ ruling or the
+# Comprehensive Rules). Audited claim by claim on 2026-10-11 (see
+# RAG-CHANGELOG.md); `bot/test/test_primer.py` fails on known-false statements.
+# Keep it short: the specifics come from retrieved CR chunks, which cite.
+PRIMER = """Core Algomancy primer (basic rules — reliable background):
+- Algomancy is a card game by Caleb Gannon, played as a live draft (one shared \
+deck, drafted during the game), as constructed (each player brings a deck) and in \
+other formats. Its factions are called ELEMENTS. The printed Manual names five: \
+Fire, Water, Earth, Wood and Metal. The Light & Dark expansion adds Light and Dark, \
+so the current card pool has SEVEN elements. A hybrid card belongs to two elements.
+- Resources: each is expended (turned sideways) for 1 mana, once per turn. A card's \
+element pips are its affinity requirement (the 2023 Rulebook says "threshold"): you \
+need that many resources of that element. Meeting affinity uses nothing up, and \
+expended resources still count. Prismites and Shards give no affinity.
+- Goal: eliminate all your opponents by bringing their life to 0 (in a team game, \
+the entire opposing team). Each player begins with 30 life.
+- A turn has four phases IN THIS ORDER: (1) Planning — refresh, draw, draft, \
+resource step, haste step; (2) Battle — attacks, blocks, combat damage; (3) \
+Regroup; (4) Deployment — players play most of their cards and apply mods; then \
+the end-of-turn step. Regroup comes BEFORE deployment, not at the end of the turn. \
+The battle phase happens every turn, but attacking is optional: in a region nobody \
+attacks, the combat and after-combat steps are skipped, and in 1v1 the \
+non-initiative player may still attack in round 2 if the initiative player did not.
+- Regions: there is one per player, all gameplay happens inside them, and an effect \
+never reaches another region. Battle is the only phase in which players interact: \
+outside it everyone is alone in their own region, so you cannot target or affect an \
+opponent's cards outside battle. (The old glossary's "skirmish" is now "region".)
+- Regroup has no player actions. In order: units return to their own regions; all \
+damage on units is removed; all temporary stat changes ("until regroup") end; all \
+units leave formation. All spell tokens are erased. Damage goes before the buff \
+ends, so a 1/1 buffed to 3/3 until regroup that took 1 damage is a healthy 1/1 \
+afterwards, not a 1/0. Unit tokens are NOT erased at regroup. Leaving formation is \
+not leaving play: a unit can be in a region without being in a formation.
+- Formations: attacking and blocking units stand in columns; a column holds at most \
+two units, front and back, and the front is filled first. Adjacent means left, \
+right, front or back in the same formation, never diagonal. COMBAT attributes \
+(printed in gold) are shared by every unit in the column, and lost at once when the \
+unit sharing them leaves; NON-COMBAT attributes (purple: Burst, Unstable, Modular) \
+are not shared.
+- In 1v1 and team games the initiative team attacks first and the other team may \
+then counterattack; in free-for-all everyone declares attacks at once with intent \
+cards. The initiative passes clockwise when the turn is over.
+- Mods (Augment and Graft): applying one is a special action during DEPLOYMENT, \
+from your HAND or your BIN, paying its mana cost and meeting its affinity. The mod \
+goes beneath its host and becomes part of it. In deployment you can mod only your \
+own units. A Virus can also be applied as an augment from your hand during battle, \
+onto any unit in that region, an opponent's too; the host's controller then controls \
+the mod and its text. A modded card is Unstable; if it is returned to hand, its \
+mods go to the bin. (The old Rules Glossary's "the card must be in your discard" \
+and graft "on top or beneath" are outdated.)
+- Applying a mod is NOT playing a card: only units and spells are played, so a \
+"when you play a unit/spell/card" ability does not trigger on a mod, even one from \
+the bin.
+- The augment symbol at the start of a text-box paragraph gives the host that \
+paragraph; on the TYPE LINE it gives the host the attributes on that type line (no \
+stats, no subtypes). Chitin Shredder ("[Augment] {Powerful} Insect {Virus} Unit", \
+no rules text) makes its host Powerful. Check the type line before saying a card \
+cannot be augmented.
+- Graft: both cards need the graft symbol, and the host must be a unit in play with \
+a graft cause of its own. The host stays on top and its cause decides when the \
+combined ability fires: "cause: effect 1 AND effect 2 …", one ability resolving top \
+to bottom. A new graft may go at any position below the host's own card; grafts \
+already applied cannot be re-ordered. [Switch] is unbounded (any number of times); \
+[Switch1] is bounded (once per turn).
+- Square brackets: [Switch], [Switch1], [Augment], [Battle], [Virus], [Haste] and \
+[once] are symbols, never costs. Other bracketed text in a text box is an \
+additional cost or a choice between modes, paid or chosen to play the card.
 
-Keyword glossary — attributes appear in {bold} before the type line; ability keywords \
-appear in [brackets] in card text. These definitions are reliable:
-- Flying — can only be blocked by other Flying units.
-- Piercing — excess combat damage beyond a blocked unit's health carries over to the \
-defending player. This is Algomancy's equivalent of "trample" from other card games.
-- Electric — excess damage from an Electric source is redirected to an adjacent \
-creature, and can chain across a row of small creatures.
-- Deadly — any amount of combat damage it deals destroys the unit it hits (like \
-"deathtouch" elsewhere).
-- Poisonous — a Poisonous source damages units in the form of -1/-1 counters (not \
-ordinary combat damage).
-- Swift — deals its combat damage first; Sluggish — deals its combat damage last (a \
-unit that is both deals damage twice, going first and last).
-- Tough — its defense/toughness is doubled.
-- Haste — may be played during the haste step (instant speed in that window).
-- Virus — may also be applied as a modification (augment) from your hand during battle, \
-not only played normally.
-- Burst — a non-combat attribute; can be cast any time, but you must play all Burst \
-spells of the same type at once.
-- Unstable — a non-combat attribute; if the card would go to the bin/discard it is \
-erased instead (used to limit recursion).
-- Battle — a timing attribute: the card can only be used during an actual fight. The \
-Battle phase starts every turn, but every chance to act in it (priority windows, casting \
-Battle spells) opens only AFTER attackers are declared. If no one attacks into a region \
-involving you, there is no skirmish, the combat steps are skipped, and the phase just \
-passes with nothing to do. You can play a Battle card when a fight involving you is \
-happening: you attack, you counter-attack, or you are attacked.
-- Ambush — play the unit during battle, recalling one of your units and placing the \
-ambusher into that unit's position in play.
-- Powerful — a Powerful source deals double damage.
-- Reaping — when a Reaping source kills one or more units, its controller draws a card.
-- Thieving — when a Thieving source deals combat damage to an opponent, draw a card.
-- Resonant — when a Resonant source deals damage to a unit, it also deals that much \
-damage to that unit's controller.
-- Vulnerable — a Vulnerable card/unit receives double damage.
-- Feeble — Feeble units can't block.
-- Sneaky — a Sneaky unit can't be blocked if it is attacking alone.
-- Evasive — an Evasive unit requires two blockers.
-- Alluring — when an Alluring column attacks, the targeted enemy can't attack and must \
-block it this combat if able.
-- Unaware — Unaware cards (and the units they interact with) ignore all stat changes.
-- Balanced — a Balanced unit's power and defense both become the greater of the two.
-- Inverted — reverses a unit's stat changes (a -7/-7 effect instead gives +7/+7).
-- Augment (+), Graft (switch-arrows), Conjure — see the Modifications and Conjure notes above.
-Note: "Devastating" is not a current attribute (it appears only in old example text); the \
-live keyword for excess combat damage going to the player is Piercing.
+Keywords — the printed reminder text, which is reliable:
+- Flying: "Only flying units can block flying units." Deadly: "Any damage from a \
+deadly source will kill a unit." Powerful: "Powerful sources deal double damage".
+- Swift: "Swift units deal combat damage first." Sluggish: "Sluggish units deal \
+combat damage last." A unit with both deals combat damage twice.
+- Piercing: "Excess damage from piercing sources is dealt to the recipient's \
+controller." Electric: "Excess damage from electric sources can be directed to an \
+adjacent unit, recursively." Poisonous: "Poisonous sources damage units in the \
+form of -1/-1 counters."
+- Tough: defense doubled. Vulnerable: dealt double damage. Feeble: can't block. \
+Evasive: "Evasive units require two blockers." Sneaky: "Sneaky units can't be \
+blocked if attacking alone." Alluring: "When an alluring column attacks, target \
+enemy can't attack and must block it this combat if able."
+- Resonant: "Whenever a resonant source deals damage to a unit, it deals that much \
+damage to that unit's controller." Thieving: "Whenever a thieving source deals \
+combat damage to an opponent, draw a card." Reaping: "When a reaping source kills \
+one or more units, draw a card. It loses reaping until regroup."
+- Balanced: "The power and defense of balanced units are equal to the greater of \
+the two." Inverted: "Invert the stat changes of inverted units." Unaware: an \
+Unaware card, and every card interacting with it, ignores all stat changes.
+- Haste: can be played during the haste step as well as during deployment. Battle: \
+can be played only while its player is in battle with another player (you attack, \
+counterattack or are attacked), never in deployment. Virus: can also be applied as \
+an augment from your hand during battle. Ambush: play the unit during battle for \
+the cost beside the keyword: "Recall target ally, put me into their position in \
+play."
+- Burst (on spell tokens): casting one casts every spell token of the same NAME you \
+control in that region at the same time. Unstable: if the card would enter a bin \
+from play or the stack, it is erased instead (from a hand, deck or cache it goes to \
+the bin normally).
+- "Devastating" is not a current attribute; no current card prints "Conjure".
 
-Light & Dark expansion (163 cards, two new elements). IMPORTANT: no official rulebook or \
-errata has shipped for it. Card text is transcribed from card images, and the definitions \
-below are PROVISIONAL — drawn from printed reminder text and the designer's Discord \
-messages. Say so when you rely on them; they are sourced, but not settled rules.
-- Light — new element; cream/white pip. Themes: Prophecy, cache, glimpse, life gain, \
-Blessed, and debt as a price for strong effects.
-- Dark — new element; grey pip. Themes: rot, trashing, bin recursion, -1/-1 counters, \
-sacrifice, Afflicting.
-- Rot — a persistent harm that accumulates on a PLAYER, not a unit. Card text (Rot \
-Counter): "At the start of deployment, you take damage equal to the number of rot you \
-have." Rot is never removed once gained, so it hits you again every deployment, and \
-deployment has no priority, so the damage cannot be responded to. Some effects convert \
-combat damage into rot instead of life loss. Your own rot is a source you control.
-- Debt — an accumulating cost paid off with mana, unlike rot. After the resources step \
-you MUST pay 1 mana per debt and that debt is removed; if you cannot pay for all of it, \
-only what you can pay is removed and the rest carries over to the next turn. There is no \
-life loss or other penalty for unpaid debt. It happens at the END of the resource step \
-and you cannot activate mana after paying it (designer, 2024-12-02).
-- Prophecy — an alternate cost on a second banner under the title, reading \
-"Prophecy — <condition>" (e.g. "Two Turns Pass", "Your life is 5 or less"). Card text: \
-"To prophecy, cache this card during deployment by paying its prophecy cost. You may \
-play it for free, as if it were in your hand, if the prophecy has been fulfilled." \
-Prophesying is legal only during DEPLOYMENT, and fulfilment counts forward from that \
-moment — it never looks backwards at a condition already met. "For free" means without \
-paying its cost AND ignoring affinity. In 1v1 both battles in a turn tick "One Battle \
-Passes". Caching a unit that is in play sends its mods to the bin. Effects can attach a \
-prophecy to an opponent's card too.
-- Cache — a neutral holding zone separate from hand, bin and deck ("basically exile with \
-the intent to be referenced later", designer). Cards stay cached if unused. Being cached \
-does NOT by itself let you USE a card — only effects that say so (like glimpse) do. You \
-CAN augment or graft from cache, but on that same permission and at that same price: \
-free off a fulfilled prophecy, the card's cost off a live glimpse, affinity ignored \
-either way. Once the permission lapses the card sits there doing nothing.
-- Glimpse — reveal the top card of the deck and cache it; until end of turn you may play \
-it as if it were in hand, ignoring affinity. You still pay its cost and obey timing.
-- Blessed — damage dealt by a blessed source also gains its controller that much life, \
-simultaneously with the damage (the same game-state check, like lifelink). The gain \
-therefore lands before the lethal check, so a blessed source cannot kill its own \
-controller with its own damage.
-- Afflicting — when an afflicting source kills one or more units, those units' \
-CONTROLLERS gain a rot. "Kills" includes killing with -1/-1 counters, not only with \
-damage — which is how Umbral Decay, the only afflicting card, works.
-- Lethal — any combat damage from a lethal unit kills a player outright.
-- Pure — pure cards, and the cards they interact with, ignore all other attributes.
-- Modular — you may apply mods to a modular card from hand and/or bin as it is played, \
-paying each mod's cost.
-- Wraith (renamed from WIGHT — Blight's End still prints "Wight"; they are the same \
-token) — a 0-cost 3/3 Blight Zombie Token Unit carrying [Augment], reading "At the start \
-of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith onto an \
-ally." (Physical card, 2026-08-21; this REPLACES an older 4/4 printing that shrank itself \
-when it attacked or blocked — that text is obsolete.) It is a real body, not merely a \
-mod, but it carries the augment symbol, which is why most cards create it directly as an \
-augment on a unit. Both of its lines are live while it stands in play as a unit. Its \
-first trigger points OUTWARD at an ally during deployment; it does not shrink itself by \
-fighting. Its death trigger does NOT move the dying Wraith — that one is erased like any \
-token; the trigger creates a BRAND NEW Wraith as an augment on an ally. "An ally" is not \
-a target, so nothing that redirects targets touches it, but it is chosen as the trigger \
-goes on the stack: if that ally has left play when the trigger resolves, the trigger \
-fizzles. A unit is its own ally, so a Wraith may choose itself.
-- Trash / trashed — card text: "A nontoken card entering a bin from anywhere other than \
-the stack is trashed" — i.e. a card reaches a bin without having been played. \
-Discarding, sacrificing, milling and dying in combat are ALL trashing. TOKENS ARE NOT \
-TRASHED (the repo owner's ruling, 2026-09-28, reversing an earlier reading): a token is \
-not a card, and only a card can be trashed. A dying unit token does pass through the bin \
-— the designer confirmed it counts "for the purposes of triggers" (2025-03-12) — and is \
-then erased, but it is not trashed and fires no "when ... trashed" ability. NOT trashing \
-either: a spell going to the bin after resolving (it comes from the stack, so negating a \
-spell is not trashing it), or erasing (an erased card never touches a bin at all). The \
-owner of the bin the card enters is the one who trashes it."""
+Light & Dark expansion (163 cards, two new elements). No official rulebook or errata \
+has shipped for it, and its card text is transcribed from card images. Treat the \
+lines below as PROVISIONAL — say so when you rely on them; they are sourced, but not \
+settled.
+- Blessed: "Damage dealt by a blessed source causes its controller to gain that \
+much life." The gain is simultaneous with the damage, so a blessed source cannot \
+kill its own controller. Afflicting: "When an afflicting source kills one or more \
+units, those units' controllers gain a rot." Killing with -1/-1 counters counts. \
+Lethal: "Any combat damage from a lethal unit will kill a player." Pure: "Pure \
+cards and cards they are interacting with ignore all other attributes." Modular: \
+"You can apply mods to a modular card from your hand and/or bin as it is played. \
+You still pay their costs."
+- Rot is a counter on a PLAYER: at the start of each deployment phase you are dealt \
+damage equal to your rot, and no one can respond to it. Rot never goes away on its \
+own (only an effect that removes counters, like Burn the Blight, clears it). Your \
+own rot is a source you control.
+- Debt is a counter on a player: at the end of each of your resource steps you pay 1 \
+mana per debt, removing it; you cannot activate mana after paying. Debt you cannot \
+pay stays for your next resource step; there is no other penalty.
+- Prophecy: a banner reading "Prophecy — <condition>" with its own cost. To \
+prophesy, pay that cost during deployment and cache the card; the condition counts \
+forward from that moment. Once it is fulfilled, the card may be played from the \
+cache for free, ignoring affinity, as if it were in your hand. In 1v1 both battles \
+of a turn count toward "One Battle Passes".
+- Cache: a zone of its own beside the hand, bin and deck. Being cached does not by \
+itself let you do anything with a card; it needs a live permission (a fulfilled \
+prophecy, or a glimpse this turn), and then it can be played or applied as a mod: \
+free and ignoring affinity under a prophecy, its mana cost but ignoring affinity \
+under a glimpse. A cached card with no permission just stays there. A unit cached \
+from play sends its mods to the bin.
+- Glimpse N: reveal the top N cards of the deck, cache one, recycle the rest. Until \
+end of turn you may play the cached card as if it were in your hand, ignoring \
+affinity, but you still pay its cost and obey its timing.
+- Trashed: "A nontoken card entering a bin from anywhere other than the stack is \
+trashed." Discarding, sacrificing, milling and dying into the bin are trashing. NOT \
+trashing: a spell going to the bin from the stack (resolved or negated), erasing (an \
+erased card never enters a bin), and any TOKEN — a dying unit token does enter the \
+bin, so abilities that watch the bin see it, and is then erased, but it is not \
+trashed and fires no "when ... trashed" ability. The player whose bin the card \
+enters trashes it.
+- Wraith (the same token as "Wight", the old name Blight's End still prints): a \
+0-cost 3/3 Blight Zombie Token Unit, "[Augment] At the start of deployment, put a \
+-1/-1 counter on an ally. When I die, Augment a Wraith onto an ally." Most cards \
+create it directly as an augment on a unit. The dying Wraith is erased like any \
+token; its trigger makes a NEW one. An older 4/4 printing that shrank when it \
+attacked or blocked is obsolete."""
 
 SYSTEM_PROMPT = """You are the Algomancy Rules Bot, an expert assistant for the \
 card game Algomancy by Caleb Gannon. Answer using TWO trusted sources only: (1) the \
