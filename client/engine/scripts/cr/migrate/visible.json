@@ -1,0 +1,204 @@
+{
+ "_doc": "Hand-written replacements for strings a player, the owner or a tester reads: no rule number reaches them (CR numbers included). Applied by recite.mjs before the generic rewrite; each `find` is exact (once, or every time with all: true) and its citations are not rewritten again.",
+ "entries": [
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "why: 'bounded to once per turn (R9)'",
+   "replace": "why: 'bounded to once per turn'",
+   "why": "card-text note a player reads",
+   "all": true
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "'R84 {Alluring}: it cannot attack for the rest of this battle phase, and it must '",
+   "replace": "'{Alluring}: it cannot attack for the rest of this battle phase, and it must '",
+   "why": "badge tooltip a player reads"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "'R84 {Alluring}: it cannot attack for the rest of this battle phase. The must-block '",
+   "replace": "'{Alluring}: it cannot attack for the rest of this battle phase. The must-block '",
+   "why": "badge tooltip a player reads"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "'Mindspore Fiend: no opponent is present (R25) — no effect.'",
+   "replace": "'Mindspore Fiend: no opponent is present — no effect.'",
+   "why": "game-log line"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "'Rebalance: no opponent is in this region (R25/R239) — there is nobody to give a '",
+   "replace": "'Rebalance: no opponent is in this region — there is nobody to give a '",
+   "why": "game-log line"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "'Big Glimpse Card: no opponent is in this region (R25/R239) — '",
+   "replace": "'Big Glimpse Card: no opponent is in this region — '",
+   "why": "game-log line"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "`Uglk: no opponent is in this region (R25/R239) — `",
+   "replace": "`Uglk: no opponent is in this region — `",
+   "why": "game-log line"
+  },
+  {
+   "file": "client/server/replay-probe.ts",
+   "find": "'${raw.scenario}' (R216), and a scenario board `",
+   "replace": "'${raw.scenario}', and a scenario board `",
+   "why": "replay tool error message"
+  },
+  {
+   "file": "client/server/replay-room.ts",
+   "find": "Every game recorded before R200 is\\n'",
+   "replace": "Every game recorded before versions were stamped is\\n'",
+   "why": "replay tool error message"
+  },
+  {
+   "file": "client/ui/legal.ts",
+   "find": "his answer is written down as a numbered ruling — nearly",
+   "replace": "his answer is written into this client's own numbered rules — nearly",
+   "why": "About page (player-visible)"
+  },
+  {
+   "file": "client/server/scenarios-b.ts",
+   "find": "That is R79, not this card — it\\n'",
+   "replace": "That is the modded-card rule, not this card — it\\n'",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-b.ts",
+   "find": "step arrives. R157 §15 ruled the condition",
+   "replace": "step arrives. The owner ruled the condition",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-b.ts",
+   "find": "mode shared, which R162 '",
+   "replace": "mode shared, which an owner ruling '",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "'that is R79, not this card.)'",
+   "replace": "'that is the modded-card rule, not this card.)'",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "erased pile (R65) nor any listener",
+   "replace": "erased pile nor any listener",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "(CT-86, fixed R219).",
+   "replace": "(CT-86, since fixed).",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "why: 'R207 fixed this card THIS ROUND",
+   "replace": "why: 'This card was fixed THIS ROUND",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "wrong item and R207 did not hold.",
+   "replace": "wrong item and that fix did not hold.",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "why: 'R11 regroup MEETS",
+   "replace": "why: 'The regroup step MEETS",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "region first (R87) so the region-scoped query (R12) has to be",
+   "replace": "region first so the region-scoped query has to be",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "The ruling in it: R43 counts a granted",
+   "replace": "The ruling in it: the prophecy rule counts a granted",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "has no region in it; R12 '\n      + 'scopes every static",
+   "replace": "has no region in it; the rules '\n      + 'scope every static",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "fulfilled by R43\\'s battle tick",
+   "replace": "fulfilled by the prophecy battle tick",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "them is a PLAY. R49 gives a cache release",
+   "replace": "them is a PLAY. The rules give a cache release",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "(Proph draws); R37 '\n      + 'says applying a mod",
+   "replace": "(Proph draws); the play-vs-mod errata '\n      + 'says applying a mod",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "why: 'R79 says a modded card is Unstable",
+   "replace": "why: 'A modded card is Unstable",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "deliver? R167 records this exact family",
+   "replace": "deliver? An earlier report records this exact family",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "why: 'R18 says only haste cards in the haste step; R97 lets a grantor widen that '",
+   "replace": "why: 'Only haste cards are played in the haste step; a grantor widens that '",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-h.ts",
+   "find": "'(R185) keeps it blocked",
+   "replace": "'keeps it blocked",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-c.ts",
+   "find": "replacement effect (R38), and",
+   "replace": "replacement effect, and",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-c.ts",
+   "find": "R199 closed the other five",
+   "replace": "drill work closed the other five",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios.ts",
+   "find": "ENEMY host — R131 \"me\"/\"you\", named by '",
+   "replace": "ENEMY host — the \"me\"/\"you\" reading, named by '",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios.ts",
+   "find": "§1③ and R212 as the single",
+   "replace": "§1③ as the single",
+   "why": "scenario tester tooltip (owner- and tester-visible)"
+  }
+ ]
+}

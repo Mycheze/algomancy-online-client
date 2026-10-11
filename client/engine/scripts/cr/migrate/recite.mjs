@@ -420,11 +420,14 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
   /* 0. the visible-strings table: exact substrings, hand-written words */
   for (const v of visible) {
     const m = model(v.file);
-    const i = m.text.indexOf(v.find);
-    if (i < 0 || m.text.indexOf(v.find, i + 1) >= 0) { report.visible.missing.push(`${v.file}: ${i < 0 ? 'not found' : 'found twice'}: ${v.find.slice(0, 60)}`); continue; }
-    addEdit(v.file, { a: i, b: i + v.find.length, text: v.replace, why: 'visible' });
-    report.visible.applied++;
-    for (const r of rows) if (r.file === v.file && r.line && m.offs[r.line - 1] + r.col >= i && m.offs[r.line - 1] + r.col < i + v.find.length) consumed.add(r.id);
+    const at = [];
+    for (let k = m.text.indexOf(v.find); k >= 0; k = m.text.indexOf(v.find, k + 1)) at.push(k);
+    if (!at.length || (at.length > 1 && !v.all)) { report.visible.missing.push(`${v.file}: ${at.length ? 'found twice' : 'not found'}: ${v.find.slice(0, 60)}`); continue; }
+    for (const i of at) {
+      addEdit(v.file, { a: i, b: i + v.find.length, text: v.replace, why: 'visible' });
+      report.visible.applied++;
+      for (const r of rows) if (r.file === v.file && r.line && m.offs[r.line - 1] + r.col >= i && m.offs[r.line - 1] + r.col < i + v.find.length) consumed.add(r.id);
+    }
   }
 
   /* 0b. card-todo proof needles are re-cut from their target file, never cited on their own */
