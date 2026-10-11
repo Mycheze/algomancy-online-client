@@ -165,6 +165,7 @@ async function runSteps(steps, { decisionsDir } = {}) {
     time('recite');
     // the run goes on (so the diff shows them) but ends non-zero
     if (report.selfCheck?.length) (log.failures ??= []).push(`recite self-check: ${report.selfCheck.length} line(s) — run-log.json recite.selfCheck`);
+    if (report.shapeBroken?.length) (log.failures ??= []).push(`recite left ${report.shapeBroken.length} file(s) unwritten: their code would change or stop parsing — run-log.json recite.shapeBroken`);
   }
   if (steps.includes('hand')) { log.hand = applyHand(REPO_ROOT, 'hand'); time('hand'); if (log.hand.conflicts.length || log.hand.missingBase.length) throw Object.assign(new Error(`hand step: ${JSON.stringify(log.hand)}`), { log }); }
   if (steps.includes('rebind')) {

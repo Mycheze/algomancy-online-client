@@ -39,11 +39,15 @@ import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join, resolve, basename, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import { REPO_ROOT, CR_RULES_DIR, CR_FINDINGS_DIR, CR_DISCREPANCIES_DIR } from '../../paths.mjs';
 import { tokenize } from '../extract-test-titles.mjs';
 import { indentOf } from './util.mjs';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
+/** esbuild's TS parser (the engine's dev dependency), when installed: a parse check on every rewritten file */
+let esbuildTransform = null;
+try { esbuildTransform = createRequire(join(REPO_ROOT, 'client/engine/package.json'))('esbuild').transformSync; } catch { esbuildTransform = null; }
 export const DECISIONS_DIR = join(HERE, 'decisions');
 export const VISIBLE_JSON = join(HERE, 'visible.json');
 export const GLOSSARY_TS = 'client/ui/glossary.ts';
@@ -632,7 +636,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
         // inside one string literal, the replacement may not end the literal early: escape its delimiter
         const litA = strAt(m, h[0]), litB = strAt(m, h[0] + it.exact.act.find.length - 1);
         let repl = it.exact.act.replace;
-        if (litA && litA === litB && litA.q !== '`') repl = repl.replace(new RegExp(`(?<!\\\\)${litA.q}`, 'g'), `\\${litA.q}`);
+        if (litA && litA === litB && litA.q !== '`' && h[0] > litA.s && h[0] + it.exact.act.find.length < litA.e - 1) repl = repl.replace(new RegExp(`(?<!\\\\)${litA.q}`, 'g'), `\\${litA.q}`);
         addEdit(rel, { a: h[0], b: h[0] + it.exact.act.find.length, text: repl, why: `exact ${it.exact.row.id}` });
         for (const r2 of rows) if (r2.file === rel && r2.line) { const o = m.offs[r2.line - 1] + r2.col; if (o >= h[0] && o < h[0] + it.exact.act.find.length) consumed.add(r2.id); }
         void lit;
@@ -942,6 +946,10 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
   for (const [rel, t] of [...after]) {
     if (!/\.(ts|mts|mjs|js)$/.test(rel) || rel === GLOSSARY_TS) continue;
     const x = codeShape(before.get(rel) ?? model(rel).text), y = codeShape(t);
+    // and it must still PARSE: a string whose closing quote a rewrite escaped can fool the tokenizer
+    let parseError = null;
+    if (esbuildTransform && /\.(ts|mts)$/.test(rel)) { try { esbuildTransform(t, { loader: 'ts', logLevel: 'silent' }); } catch (e) { parseError = String(e.message ?? e).split('\n').slice(0, 2).join(' '); } }
+    if (parseError) { report.shapeBroken.push({ file: rel, at: `does not parse: ${parseError}` }); after.delete(rel); continue; }
     if (x !== y) {
       let i = 0; while (i < x.length && x[i] === y[i]) i++;
       report.shapeBroken.push({ file: rel, at: `…${x.slice(Math.max(0, i - 80), i + 40)}… ⇒ …${y.slice(Math.max(0, i - 80), i + 40)}…` });
