@@ -43,7 +43,7 @@
     "id": "D-U18-4",
     "kind": "d-raq-open",
     "rule": "keywords.actions.rockfall.repeated",
-    "tier": 1,
+    "tier": 4,
     "summary": "Do abilities triggered by one rockfall resolve before the next rockfall of the same effect? The designer's write-up said they do, when Meteor Shower made three copies of itself. The card now prints one spell (\"Rockfall 3 three times\"), the RAQ register marks the claim outdated, and the engine lets the triggers wait until the whole spell has resolved.",
     "sides": [
       {
@@ -63,25 +63,7 @@
         "quote": "three batches for the same reason."
       }
     ],
-    "resolution": "Question for the owner; the RAQ register's own note already asks it. The card now prints one spell (\"Rockfall 3 three times\"), the register marks the claim outdated, and \"They resolve one by one\" (claim #4) fits either reading.",
-    "question": {
-      "topic": "Triggers and the stack",
-      "ask": "Do abilities triggered by one rockfall resolve before the next rockfall of the same Meteor Shower?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Yes: \"any check for triggers will happen in-between resolving each Rockfall 3\" is a statement about rockfalls in general.",
-          "table": "A Mirage Scuttler chosen three times grows between hits; engine change."
-        },
-        {
-          "label": "B",
-          "text": "No: it described three separate copies, which the card no longer makes; as one spell, triggers wait until it finishes.",
-          "table": "As today."
-        }
-      ],
-      "follows": "Neither: keywords.actions.rockfall.repeated says nothing; the engine does B.",
-      "recommend": "A: the designer's words describe the mechanic, not the copies, and A is the permissive reading."
-    }
+    "resolution": "Answered by the owner on 2026-10-11, reading B (R349): Meteor Shower is one spell now, so abilities that trigger during its rockfalls wait until it has resolved. keywords.actions.rockfall.repeated states it. The engine already does B."
   },
   {
     "id": "D-U18-6",
@@ -149,7 +131,7 @@
     "id": "D-U18-9",
     "kind": "g-other",
     "rule": "keywords.actions.delete",
-    "tier": 1,
+    "tier": 4,
     "summary": "Is a deleted unit a unit that dies? The Manual names the two side by side. No source says a deletion is a death; the engine treats it as one (it fires the death event, so \"When I die\" and \"whenever a unit dies\" see it).",
     "sides": [
       {
@@ -165,25 +147,7 @@
         "quote": "When I die, [Switch1] Delete target unit."
       }
     ],
-    "resolution": "Question for the owner. The Manual says a sacrifice causes a unit \"to die\" and says no such thing of a deletion; nothing else speaks to it.",
-    "question": {
-      "topic": "Triggers and the stack",
-      "ask": "Is a deleted unit a unit that dies, so that \"When I die\" and \"whenever a unit dies\" trigger?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Yes: deletion is one way of dying, named separately because cards say \"delete\".",
-          "table": "As today (the engine fires the death event)."
-        },
-        {
-          "label": "B",
-          "text": "No: dying and being deleted are two events that end in the same bin.",
-          "table": "Death triggers ignore a deletion; Unstable Singularity's \"When I die\" would not fire when it is deleted."
-        }
-      ],
-      "follows": "Neither: keywords.actions.delete states only where the unit goes. The engine does A.",
-      "recommend": "A, the permissive reading, which the engine already plays."
-    }
+    "resolution": "Answered by the owner on 2026-10-11, reading A (R348): a deleted unit dies, so \"When I die\" and \"whenever a unit dies\" trigger. keywords.actions.delete states it, and effects.state.dying already did. The engine already fires the death event for a deletion."
   },
   {
     "id": "D-U18-11",

@@ -10,9 +10,12 @@ Edition: {{EDITION}}. Effective {{EFFECTIVE}}. Engine at commit {{ENGINE_COMMIT}
 
 ### How to read a rule
 
-Every rule carries its provenance: the sources that state it. In the HTML
-edition it is folded under the rule; in this edition it is the small line
-beneath it. Each rule also carries a **basis**, the strongest kind of source
+Under each rule are only its words, its examples and two warnings: "engine
+differs" and {chip:untested}. Everything else, its provenance, is folded
+under the rule as "Sources and verification" in the HTML edition and on the
+review page, and is the small line beneath it in the .md and .txt editions:
+the sources that state the rule, the tests bound to it, and the two marks
+below. Each rule carries a **basis**, the strongest kind of source
 that actually states it. A {chip:printed} rule is stated by the Manual, the
 2023 Rulebook or a card's printed text, read literally; a {chip:designer} rule
 by Caleb Gannon's own answer in the rules-questions threads; a {chip:mixed}
@@ -28,10 +31,11 @@ Where a ruling and the engine disagree, the rule states the ruling and says
 "engine differs", with a link to the finding. The engine is the one that is
 wrong, and the finding is filed as a bug.
 
-Each rule also shows what an independent verifier found when it checked the
-rule against the engine and its tests: {chip:confirmed}, or {chip:partial}
-when it could not confirm all of it, with the verifier's note beneath. Beside
-the verdict are the round it was verified in, how many tests the verifier ran,
+Each rule's provenance also says what an independent verifier found when it
+checked the rule against the engine and its tests: {chip:confirmed}, or
+{chip:partial} when it could not confirm all of it, with the verifier's note.
+A rule that is not confirmed shows its verdict on the fold itself. Beside the
+verdict are the round it was verified in, how many tests the verifier ran,
 and how many gate test files are bound to the rule through its examples or its
 sources. A gate test is part of the client's test suite and runs on every
 check, so it keeps demonstrating the rule after verification is over. A rule
@@ -39,9 +43,11 @@ that no executed test demonstrates is marked {chip:untested}.
 
 ### Examples are not rules
 
-An example illustrates the rule above it. It is never a rule in its own
-right, and where it seems to say more than the rule, the rule wins. Most
-examples are bound to a test that was run and asserts them.
+An example illustrates the rule above it: an illustration, never a rule in
+its own right, and where it seems to say more than the rule, the rule wins.
+Most examples are bound to a test that was run and asserts them; the test is
+named in the rule's provenance. Some rules are demonstrated by a test with no
+example in words; that test is named there too.
 
 ### How numbering works
 

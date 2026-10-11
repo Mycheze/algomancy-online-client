@@ -2874,89 +2874,97 @@
   },
   {
     "key": "combat.regions.exclusive.no-region-zones",
-    "textHash": "6f0cfc5739b2f9ee",
+    "textHash": "8a34292a3a31f13c",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pushCachedCardTargets",
-        "agrees": true,
-        "note": "cache targets iterate regions[region].presentSeats: own cache only in deployment, both in battle (R291)"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:pushStackTargets",
+        "loc": "client/engine/src/engine.ts:E.pushStackTargets",
         "agrees": false,
-        "note": "no region test on stack items: every item on the one game stack is offered. This is the flagged engineDiffers F-U01-2; divergence confirmed at code level by a probe that injects an other-region item (whether play can naturally reach that state was not shown)"
+        "note": "one game-wide state.stack, offered from every region (F-U01-2, declared)"
       },
       {
-        "loc": "client/engine/src/engine.ts:pushBinCardTargets",
+        "loc": "client/engine/src/engine.ts:E.pushBinCardTargets",
+        "agrees": false,
+        "note": "bins are offered from every region (F-U01-2, declared)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.pushCachedCardTargets",
         "agrees": true,
-        "note": "binCard = caster's own bin only; anyBinCard (Collect Remains) takes every player's bin with no presence test, but the card is {Battle} and in 1v1 battle both players are present, so no observable divergence"
+        "note": "a cache is offered only where its owner is present"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/421-cr-regions-formations.test.ts",
-        "pattern": "no-region-zones",
+        "pattern": "cr:combat.regions.exclusive.no-region-zones",
         "passed": true,
-        "asserts_claim": "yes - asserts only the caster's own cache is a candidate for each seat in deployment and both caches in battle (example 1)"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r4-verify-probes.test.ts",
-        "title": "combat.regions.exclusive.no-region-zones — in battle, a stack effect stamped with ANOTHER region is still offered as a \"target effect\" (no region filter on stack targets)",
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "pattern": "cr:concepts.targets.region.global",
         "passed": true,
-        "demonstrates": "yes - confirms the flagged divergence: targetCandidates(stackEffect) in battle region offers an item whose region is the other region"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "Manual p.19 (x4 quotes)",
+        "ref": "Manual p.19",
         "supports": "yes",
-        "note": "all four quotes verbatim; 'every single effect is specific to the region' covers the stack; 'if a player enters a region, their bin, hand, resources, and even the player' covers bin/hand by presence. Cache is not named (R291 would be the better citation for it)"
+        "note": "\"Every single effect is specific to the region it takes place in, meaning it will never impact anything in any other region\"; \"if a player enters a region, their bin, hand, resources, and even the player themself can be interacted with\" (covers hand too)."
       },
       {
         "ref": "RAQ 1454169054402314362#0",
-        "supports": "partly",
-        "note": "calebgannon 'everything in the game is region specific' - general, posed about Ghord's sacrifice; supports the principle, not the zone specifics"
+        "supports": "yes",
+        "note": "calebgannon: everything is region specific."
       },
       {
         "ref": "R12",
         "supports": "yes",
-        "note": "Temporal Rift 'affects only that region's battle and stack' - supports the stack clause"
+        "note": "a region-ending effect affects only that region's battle and stack."
       },
       {
-        "ref": "421-cr-regions-formations.test.ts",
+        "ref": "R344",
         "supports": "yes",
-        "note": "guards example 1"
+        "note": "current: no player owns a region's stack; only players present can use it; bin and cache are in a region only while their owner is present."
+      },
+      {
+        "ref": "R286",
+        "supports": "yes",
+        "note": "deployment: \"an isolated stack just for the person in that region\"."
       }
     ],
     "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "place in, meaning it will never impact anything in any"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "resources, and even the player themself can be interacted with."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "No player owns a region's stack: it is shared by every player present in that region."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Only a player present in a region can put an effect on its stack or respond to one there."
+      },
       {
         "file": "client/docs/digital-rules.md",
         "text": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**present in the region the effect resolves in** — the same `presentSeats`"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "for (const seat of this.s.regions[region]!.presentSeats) {"
-      },
-      {
         "file": "client/engine/test/421-cr-regions-formations.test.ts",
         "text": "assert.equal(refs.length, 2, 'both caches are in reach once both players are present');"
-      },
-      {
-        "file": "client/engine/test/396-raq-timing.test.ts",
-        "text": "// calebgannon: \"Yes everything in the game is region specific. Just add 'in"
       }
     ],
     "basis_ok": true,
-    "problem": "None material. Minor: the cache clause rests on R291 (owner ruling), which is not cited; the Manual names bin, hand, resources and player but not the cache. The engineDiffers flag is real: pushStackTargets has no region filter."
+    "problem": ""
   },
   {
     "key": "combat.regions.information",

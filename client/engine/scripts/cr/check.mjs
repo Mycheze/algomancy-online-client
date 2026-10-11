@@ -60,6 +60,8 @@ export function indexExtract(ex) {
   const pages = new Map((ex.printedPages ?? []).map((p) => [`${p.doc} p.${p.page}`, norm(p.text)]));
   const cards = new Map();
   for (const c of ex.cards ?? []) cards.set(c.name.toLowerCase(), norm([c.text, c.typeLine].filter(Boolean).join(' \n ')));
+  // a printed back (extract.mjs cardBacks) answers `card: <Name>` only where no front has the name
+  for (const c of ex.cardBacks ?? []) if (!cards.has(c.name.toLowerCase())) cards.set(c.name.toLowerCase(), norm([c.text, c.typeLine].filter(Boolean).join(' \n ')));
   const claims = new Map();
   const threads = new Set();
   for (const t of ex.raq ?? []) {

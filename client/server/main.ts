@@ -357,8 +357,9 @@ async function handleRequest(req: import('node:http').IncomingMessage,
 
   // the rules review page (ui/crreview.ts): the comprehensive rules, built
   // in-process from the committed records, and comments on them. Reading is
-  // public; writing needs a named account (api-crreview.ts).
-  if (await crReviewRoutes(req, res, path, url)) return;
+  // public; writing needs a named account (api-crreview.ts). The Rules
+  // editor's door (/api/cr/editor) is the bot token's, like /api/bot/*.
+  if (await crReviewRoutes(req, res, path, url, { editorAllowed: botAllowed(req) })) return;
 
   // the card query language (ui/cardsearch.ts) over HTTP, for readers that are
   // not the browser — the Discord bot above all, which is Python and so cannot

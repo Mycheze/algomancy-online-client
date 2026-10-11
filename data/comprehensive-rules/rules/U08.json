@@ -59,7 +59,7 @@
     "key": "turn.general.global",
     "parent": "500",
     "order": 2,
-    "text": "Turns are global: all players go through the same phases at the same time, and they sync up at the end of each step.",
+    "text": "Turns are global: all players share the same phases and sync up at the end of each step. In a 1v1 or team game, the printed rules take some steps in initiative order: the initiative player, or team, acts first, and the non-initiative player waits to see what they did before acting (see rule turn.planning.order and rule turn.deploy.order).",
     "examples": [],
     "see": [
       "100"
@@ -73,22 +73,95 @@
         {
           "ref": "Manual p.7",
           "quote": "The core of Algomancy revolves around its global turn"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "and see what they do before taking their actions."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "and see what they do before taking their actions."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "and see what they do before taking their actions."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "and see what they do before taking their actions."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "phases, the initiative team must make all of their plays first while the non-intiative gets to wait"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "and see what they do before taking their actions."
         }
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
+      "rulings": [
+        {
+          "ref": "R350",
+          "quote": "Print's global turn shares the phases and syncs at the end of each step, but at a table it orders some steps by initiative."
+        }
+      ],
       "history": [],
       "engine": [],
       "tests": []
     },
     "basis": "printed",
     "confidence": "high",
-    "notes": "U01 concepts.general.turns says the same at 100; this is the turn-structure statement. Engine differs on \"sync up at the end of each step\": a seat that has finished the draft step (or constructed's recycle) starts its resource step while the other seat is still drafting (F-U08-4, D-U08-10). The rule states print (authority order). 20-draft.test.ts was removed from the sources because it asserts the divergence. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
-    "sourceHashes": {},
+    "notes": "U01 concepts.general.turns says the same at 100; this is the turn-structure statement. Engine differs on \"sync up at the end of each step\": a seat that has finished the draft step (or constructed's recycle) starts its resource step while the other seat is still drafting (F-U08-4, D-U08-10). The rule states print (authority order). 20-draft.test.ts was removed from the sources because it asserts the divergence. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule). REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. R350; the client half is turn.general.global.digital.",
+    "sourceHashes": {
+      "R350": "3916c20882cd6724fde9e354d7097c1c97677c04ebf2d6d7620f73c98bd250e3"
+    },
     "engineDiffers": [
       "F-U08-4"
     ]
+  },
+  {
+    "key": "turn.general.global.digital",
+    "parent": "turn.general.global",
+    "order": 1,
+    "text": "This client makes the turn fully global. In the resource step, the haste step and deployment, both players act at the same time, and neither sees what the other does until both are done (see rule annexd.general.hidden-segment). This is a digital convention: a paper game cannot hide one player's actions while the other acts.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R350",
+          "quote": "This client runs those steps for both players at once, each unseen by the other until both are done."
+        },
+        {
+          "ref": "R350",
+          "quote": "That is a deliberate digital convention: a paper game cannot hide one player's actions while the other acts."
+        },
+        {
+          "ref": "R18 (its hidden-segment half)",
+          "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+        },
+        {
+          "ref": "R310",
+          "quote": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "REVIEW COMMENT 2026-10-11 (owner, on 500.2): new subrule, R350. Deployment's half is 507.3a (R144, R286); Annex D D1.4 states the segments.",
+    "sourceHashes": {
+      "R18": "173a218909c8fb0ad90ca065574c7c87e7bc161a123c016e913e2ebd2bc3efc8",
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801",
+      "R350": "3916c20882cd6724fde9e354d7097c1c97677c04ebf2d6d7620f73c98bd250e3"
+    }
   },
   {
     "key": "turn.general.initiative",
@@ -180,7 +253,7 @@
     "key": "turn.general.interactive",
     "parent": "500",
     "order": 4,
-    "text": "The battle phase is the only interactive phase of the turn.",
+    "text": "The battle phase is the only phase of the turn in which players can interact, because it is the only time a player can enter another player's region. Outside it, every player is alone in their own region: in deployment a player can do what they like to their own units, but no opponent is there to interact with (see rule combat.regions.presence.outside-battle).",
     "examples": [
       {
         "text": "Neither the planning phase nor the deployment phase gives anyone priority; in the battle phase the attacking player holds priority once the attack is declared.",
@@ -197,6 +270,66 @@
         {
           "ref": "Manual p.7",
           "quote": "2. Battle Phase: The sole interactive phase of the"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "This means interacting with opponents and their units can only be done during the battle phase."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "Each player is in their own region during the deployment phase"
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "there is absolutely no player interaction because there are no opponents to interact with"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "This means interacting with opponents and their units can only be done during the battle phase."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "Each player is in their own region during the deployment phase"
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "there is absolutely no player interaction because there are no opponents to interact with"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "This means interacting with opponents and their units can only be done during the battle phase."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "Each player is in their own region during the deployment phase"
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "there is absolutely no player interaction because there are no opponents to interact with"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "This means interacting with opponents and their units can only be done during the battle phase."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "Each player is in their own region during the deployment phase"
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "there is absolutely no player interaction because there are no opponents to interact with"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "This means interacting with opponents and their units can only be done during the battle phase."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "Each player is in their own region during the deployment phase"
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "there is absolutely no player interaction because there are no opponents to interact with"
         }
       ],
       "designer": [],
@@ -210,7 +343,7 @@
     },
     "basis": "printed",
     "confidence": "high",
-    "notes": "Planning has no interaction (turn.planning.no-interaction). Deployment is not interactive either: Manual p.26 \"it is not possible to interact with other players\" (507, U09).",
+    "notes": "Planning has no interaction (turn.planning.no-interaction). Deployment is not interactive either: Manual p.26 \"it is not possible to interact with other players\" (507, U09). REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed. REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed. REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed. REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed. REVIEW COMMENT 2026-10-11 (owner): \"I think we should say why\". Print says why (Manual p.19, p.26; Rulebook p.8); no ruling needed.",
     "sourceHashes": {}
   },
   {

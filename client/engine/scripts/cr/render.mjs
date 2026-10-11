@@ -274,8 +274,19 @@ function seeSentence(nums) {
   if (!nums.length) return '';
   return ` See rule${nums.length > 1 ? 's' : ''} ${nums.join(', ')}.`;
 }
+/** an example's words as the body prints them, after "Example:". '' for a
+ * DEMONSTRATION (text null or blank): the body shows nothing, and its test is
+ * listed with the rule's provenance as "Demonstrated by test" */
 function exampleText(t) {
-  return String(t).replace(/^\s*Example:\s*/i, '');
+  return t == null || !String(t).trim() ? '' : String(t).replace(/^\s*Example:\s*/i, '');
+}
+/** the tests a rule's examples are bound to: `shown` behind an example the
+ * body prints, `demo` behind a demonstration that prints nothing. They are
+ * provenance, never body text: the body is the rule and its examples' words */
+function exampleTests(rec) {
+  const shown = [], demo = [];
+  for (const x of rec.examples ?? []) if (x?.test) (exampleText(x.text) ? shown : demo).push(x.test);
+  return { shown, demo };
 }
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 /**
@@ -326,6 +337,9 @@ function provenanceBits(M, rec) {
   if (s.ours?.length) bits.push(`Our glossary (not a source): ${s.ours.map((x) => x.ref.replace(/^glossary: /, '')).join('; ')}`);
   if (s.engine?.length) bits.push(`Engine: ${s.engine.join(', ')}`);
   if (s.tests?.length) bits.push(`Tests: ${s.tests.join(', ')}`);
+  const ex = exampleTests(rec);
+  if (ex.shown.length) bits.push(`Example ${ex.shown.length === 1 ? 'test' : 'tests'}: ${ex.shown.join(', ')}`);
+  if (ex.demo.length) bits.push(`Demonstrated by ${ex.demo.length === 1 ? 'test' : 'tests'}: ${ex.demo.join(', ')}`);
   bits.push(`Key: ${rec.key}`);
   return bits;
 }
@@ -373,6 +387,62 @@ export function provenance(M) {
   const process = rows.filter(([, c]) => c.scope === 'process').map(([id, c]) => ({ id, reason: c.reason ?? '' }));
   return { total: numbered.length, basis, verdicts, engineOnly, uncitedGame, process, classified: !!cls };
 }
+/**
+ * Annex P's findings, each divergence ONCE. Several units' verifiers found the
+ * same divergence independently; the finding that lists the others in its
+ * `dupes` is the entry, and the others fold into it (their ids stay anchors on
+ * it, so a rule's "engine differs, see F-U01-4" still lands). Entries that
+ * share a CT ticket are grouped under it, in the order of their first entry.
+ *   → [{ct, entries: [{f, also: [dupe findings], nums: [every rule it touches]}]}]
+ * `ct` null: an entry with no ticket, a group of its own. `nums` is the rule
+ * of the entry and of each dupe, plus every rule whose engineDiffers names one
+ * of their ids.
+ */
+export function findingGroups(M) {
+  const byId = new Map(M.findings.map((f) => [f.id, f]));
+  const primaryOf = new Map();
+  for (const f of M.findings) for (const d of f.dupes ?? []) if (d !== f.id && byId.has(d) && !primaryOf.has(d)) primaryOf.set(d, f.id);
+  /** a dupe of a dupe folds into the first entry of the chain (a loop stops after a lap) */
+  const root = (id) => { let x = id; for (let hops = 0; hops < 32 && primaryOf.has(x); hops++) x = primaryOf.get(x); return x; };
+  const citedBy = new Map();
+  for (const [key, r] of M.recByKey) {
+    for (const id of r.engineDiffers ?? []) {
+      const n = M.I.numOf(key);
+      if (!n) continue;
+      if (!citedBy.has(id)) citedBy.set(id, []);
+      citedBy.get(id).push(n);
+    }
+  }
+  const entries = new Map();
+  for (const f of M.findings) {
+    const r = root(f.id);
+    if (!entries.has(r)) entries.set(r, { f: byId.get(r), also: [], nums: [] });
+    const e = entries.get(r);
+    if (f.id !== r) e.also.push(f);
+    const n = f.rule ? M.numOfRef(f.rule) ?? f.rule : null;
+    for (const x of [n, ...(citedBy.get(f.id) ?? [])]) if (x && !e.nums.includes(x)) e.nums.push(x);
+  }
+  for (const e of entries.values()) e.nums.sort(compareNums);
+  const groups = [];
+  const byCt = new Map();
+  for (const e of entries.values()) {
+    const ct = e.f.ct ?? null;
+    if (ct && byCt.has(ct)) { byCt.get(ct).entries.push(e); continue; }
+    const g = { ct, entries: [e] };
+    groups.push(g);
+    if (ct) byCt.set(ct, g);
+  }
+  return groups;
+}
+/** the lead under Annex P's findings heading: how many divergences, filed how often */
+function findingsLead(M, groups) {
+  const n = groups.reduce((a, g) => a + g.entries.length, 0);
+  return `${plural(n, 'divergence')}, filed as ${plural(M.findings.length, 'finding')}. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.`;
+}
+const rulesWord = (nums) => (nums.length === 1 ? 'Rule' : 'Rules');
+/** an entry's re-check notes, its own and its dupes': [[id, note]] */
+const rechecked = (e) => [e.f, ...e.also].filter((x) => x.closed).map((x) => [x.id, x.closed]);
+
 function cmpRuling(a, b) {
   const A = parseRulingCite(a), B = parseRulingCite(b);
   return (A?.n ?? 0) - (B?.n ?? 0) || cmpStr(A?.suffix ?? '', B?.suffix ?? '');
@@ -403,8 +473,10 @@ function mdRule(M, v) {
   if (!v.rec) return `${a}${head}${v.title ? '' : ' [No record]'}\n`;
   const r = v.rec;
   const lines = [`${a}${head} ${M.refText(r.text)}${seeSentence(seeNums(M, r))}${differsText(r) ? ` *${differsText(r).trim()}*` : ''}`];
+  // the body is the rule and its examples' words; each example's test is in the small line
   for (const x of r.examples ?? []) {
-    lines.push('', `> *Example (non-normative): ${mdEsc(M.refText(exampleText(x.text)))}*${x.test ? ` <sub>test: ${x.test}</sub>` : ''}`);
+    const t = exampleText(x.text);
+    if (t) lines.push('', `> *Example: ${mdEsc(M.refText(t))}*`);
   }
   lines.push('', `<sub>${provenanceBits(M, r).join(' · ')}</sub>`);
   const ds = M.discByNum.get(v.num);
@@ -432,7 +504,23 @@ function mdAnnexP(M, P) {
   for (const { num, rec } of P.engineOnly) out.push(`- [${num}](#r${num}) ${M.refText(rec.text)}`);
   out.push('', '### Findings: where the engine differs', '');
   if (!M.findings.length) out.push('None.');
-  for (const f of M.findings) out.push(`- <a id="${f.id}"></a>**${f.id}** ${M.refText(f.title)}${f.ct ? ` (${f.ct})` : ''}. ${f.rule ? `Rule ${M.numOfRef(f.rule) ?? f.rule}` : 'Ruling register'}. ${M.refText(f.summary)}${f.dupes?.length ? ` Also found as ${f.dupes.join(', ')}.` : ''}${f.closed ? ` Re-checked: ${f.closed}` : ''}`);
+  else {
+    const groups = findingGroups(M);
+    out.push(findingsLead(M, groups), '');
+    // one line per divergence, its summary indented under it; a shared ticket heads its group
+    const entry = (e, ct, pad) => {
+      const f = e.f;
+      const ids = [f, ...e.also].map((x) => `<a id="${x.id}"></a>`).join('');
+      const where = e.nums.length ? `${rulesWord(e.nums)} ${e.nums.join(', ')}` : 'Ruling register';
+      return [`${pad}- ${ids}**${f.id}** ${M.refText(f.title)}${ct ? ` (${ct})` : ''}. ${where}.${e.also.length ? ` Also found as ${e.also.map((x) => x.id).join(', ')}.` : ''}`,
+        `${pad}  ${M.refText(f.summary)}${rechecked(e).map(([id, c]) => ` Re-checked${id === f.id ? '' : ` (${id})`}: ${c}`).join('')}`];
+    };
+    for (const g of groups) {
+      if (g.entries.length === 1) { out.push(...entry(g.entries[0], g.ct, '')); continue; }
+      out.push(`- **${g.ct}**: ${plural(g.entries.length, 'divergence')}.`);
+      for (const e of g.entries) out.push(...entry(e, null, '  '));
+    }
+  }
   out.push('', '### Game rulings no rule cites', '');
   if (!P.classified) out.push('The rulings are not classified yet.');
   else out.push(P.uncitedGame.length ? P.uncitedGame.join(', ') : 'None.');
@@ -578,7 +666,7 @@ function txtRule(M, v) {
   if (!v.rec) return `${head}${v.title ? '' : ' [No record]'}\n`;
   const r = v.rec;
   const lines = [`${head} ${M.refText(r.text)}${seeSentence(seeNums(M, r))}${differsText(r)}`];
-  for (const x of r.examples ?? []) lines.push(`${pad}Example (non-normative): ${M.refText(exampleText(x.text))}${x.test ? ` [test: ${x.test}]` : ''}`);
+  for (const x of r.examples ?? []) { const t = exampleText(x.text); if (t) lines.push(`${pad}Example: ${M.refText(t)}`); }
   lines.push(`${pad}[${provenanceBits(M, r).join(' | ')}]`);
   return lines.join('\n') + '\n';
 }
@@ -663,6 +751,10 @@ function htmlSources(M, rec) {
   for (const h of s.history ?? []) rows.push(`<li><span class="sk">Replaces</span> ${E(h.ruling)}: ${E(h.relation)}</li>`);
   if (s.engine?.length) rows.push(`<li><span class="sk">Engine</span> ${s.engine.map((e) => `<code>${E(e)}</code>`).join(', ')}</li>`);
   if (s.tests?.length) rows.push(`<li><span class="sk">Tests</span> ${s.tests.map((t) => `<code>${E(t)}</code>`).join(', ')}</li>`);
+  const ex = exampleTests(rec);
+  if (ex.shown.length) rows.push(`<li><span class="sk">Example ${ex.shown.length === 1 ? 'test' : 'tests'}</span> ${ex.shown.map((t) => `<code>${E(t)}</code>`).join(', ')}</li>`);
+  if (ex.demo.length) rows.push(`<li><span class="sk">Demonstrated by ${ex.demo.length === 1 ? 'test' : 'tests'}</span> ${ex.demo.map((t) => `<code>${E(t)}</code>`).join(', ')}</li>`);
+  rows.push(`<li><span class="sk">Key</span> <code>${E(rec.key)}</code></li>`);
   return `<ul class="src">${rows.join('')}</ul>`;
 }
 
@@ -677,6 +769,14 @@ function htmlVerdict(M, rec) {
   const chip = `<span class="chip v-${E(v.verdict)}">${VERDICT_LABEL[v.verdict] ?? E(v.verdict)}</span>`;
   const note = v.verdict !== 'confirmed' && v.problem ? `<p class="vnote"><strong>Verifier:</strong> ${E(M.refText(v.problem))}</p>` : '';
   return [chip + meta, note];
+}
+/** the one piece of the verdict a closed fold still shows: a chip when the
+ * rule is NOT confirmed (partial, not verified, text changed), else nothing */
+function htmlVerdictFlag(M, rec) {
+  const v = verdictOf(M, rec);
+  if (!v) return ' <span class="chip v-none">Not verified</span>';
+  if (v.stale) return ' <span class="chip v-none">Text changed</span>';
+  return v.verdict === 'confirmed' ? '' : ` <span class="chip v-${E(v.verdict)}">${VERDICT_LABEL[v.verdict] ?? E(v.verdict)}</span>`;
 }
 
 /**
@@ -702,14 +802,18 @@ function htmlRule(M, v, review = false) {
   const seeHtml = see.length ? ` See rule${see.length > 1 ? 's' : ''} ${see.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ')}.` : '';
   const differs = r.engineDiffers?.length ? ` <span class="differs">engine differs, see ${r.engineDiffers.map((f) => `<a href="#${E(f)}">${E(f)}</a>`).join(', ')}</span>` : '';
   const untested = r.untested ? ' <span class="chip v-untested">Untested</span>' : '';
-  const ex = (r.examples ?? []).map((x) => `<p class="ex"><span class="exl">Example (non-normative).</span> ${inline(M, M.refText(exampleText(x.text)))}${x.test ? ` <span class="tb">test: ${E(x.test)}</span>` : ''}</p>`).join('');
+  // under the rule a reader sees its words, its examples' words and the warnings
+  // (engine differs, untested); the basis, the verdict and its evidence line, the
+  // discrepancies, the sources and every test binding are in the fold
+  const ex = (r.examples ?? []).map((x) => exampleText(x.text)).filter(Boolean)
+    .map((t) => `<p class="ex"><span class="exl">Example:</span> ${inline(M, M.refText(t))}</p>`).join('');
   const [chip, vnote] = htmlVerdict(M, r);
   const ds = M.discByNum.get(v.num) ?? [];
-  const dl = ds.length ? ` <span class="meta">${ds.map((d) => `<a href="#${E(d.id)}">${E(d.id)}</a>`).join(' ')}</span>` : '';
+  const dl = ds.length ? ` <span class="meta">discrepancies ${ds.map((d) => `<a href="#${E(d.id)}">${E(d.id)}</a>`).join(' ')}</span>` : '';
   return `<article class="rule ${lvl}" id="r${v.num}"${mark}>
 <p class="rt">${num} ${title}${inline(M, M.refText(r.text))}${seeHtml}${differs}${untested}</p>${ex}
-<div class="tags"><span class="chip b-${E(r.basis)}">${BASIS_LABEL[r.basis] ?? E(r.basis)}</span>${chip}${dl}</div>${vnote}
-<details><summary>Provenance <span class="meta">key ${E(r.key)}</span></summary>${htmlSources(M, r)}</details>
+<details class="prov"><summary>Sources and verification${htmlVerdictFlag(M, r)}</summary>
+<div class="tags"><span class="chip b-${E(r.basis)}">${BASIS_LABEL[r.basis] ?? E(r.basis)}</span>${chip}${dl}</div>${vnote}${htmlSources(M, r)}</details>
 </article>`;
 }
 
@@ -757,10 +861,25 @@ function htmlAnnexP(M, P, review = false) {
   out.push('<h3>Engine-only rules (awaiting the owner\'s sign-off)</h3>');
   out.push(P.engineOnly.length ? `<ul>${P.engineOnly.map(({ num, rec }) => `<li><a href="#r${num}">${num}</a> ${inline(M, M.refText(rec.text))}</li>`).join('')}</ul>` : '<p>None.</p>');
   out.push('<h3>Findings: where the engine differs</h3>');
-  out.push(M.findings.length ? M.findings.map((f) => {
-    const n = M.numOfRef(f.rule);
-    return `<article class="disc" id="${E(f.id)}"${crt(review, `finding:${f.id}`)}><p class="dh"><span class="num">${E(f.id)}</span> <strong>${inline(M, M.refText(f.title), { link: false })}</strong>${f.ct ? ` <span class="meta">${E(f.ct)}</span>` : ''} ${n ? `<a class="meta" href="#r${n}">rule ${n}</a>` : f.rule ? '' : '<span class="meta">ruling register</span>'}</p><p>${inline(M, M.refText(f.summary))}${f.dupes?.length ? ` Also found as ${E(f.dupes.join(', '))}.` : ''}${f.closed ? ` Re-checked: ${E(f.closed)}` : ''}</p><ul class="src">${(f.evidence ?? []).map((e) => `<li><span class="sk">${E(e.file)}</span> <q>${E(e.quote)}</q></li>`).join('')}</ul></article>`;
-  }).join('\n') : '<p>None.</p>');
+  if (!M.findings.length) out.push('<p>None.</p>');
+  else {
+    const groups = findingGroups(M);
+    out.push(`<p>${E(findingsLead(M, groups))}</p>`);
+    // one line per divergence (id, title, ticket, rules); what it is and the evidence are in the fold.
+    // A folded-in dupe's id is an empty anchor at the top of its entry
+    const entry = (e, ct) => {
+      const f = e.f;
+      const nums = e.nums.map((n) => (M.numOfRef(n) ? `<a href="#r${n}">${n}</a>` : E(n))).join(', ');
+      const seen = new Set();
+      const ev = [f, ...e.also].flatMap((x) => x.evidence ?? []).filter((x) => !seen.has(`${x.file}\n${x.quote}`) && seen.add(`${x.file}\n${x.quote}`));
+      return `<article class="fnd" id="${E(f.id)}"${crt(review, `finding:${f.id}`)}>${e.also.map((x) => `<span id="${E(x.id)}"></span>`).join('')}<p class="dh"><span class="num">${E(f.id)}</span> <strong>${inline(M, M.refText(f.title), { link: false })}</strong>${ct ? ` <span class="meta">${E(ct)}</span>` : ''} <span class="meta">${e.nums.length ? `${rulesWord(e.nums).toLowerCase()} ${nums}` : 'ruling register'}</span>${e.also.length ? ` <span class="meta">also ${E(e.also.map((x) => x.id).join(', '))}</span>` : ''}</p>`
+        + `<details><summary>Details and evidence</summary><p>${inline(M, M.refText(f.summary))}</p>${e.also.length ? `<p class="meta">Also found as ${E(e.also.map((x) => x.id).join(', '))}.</p>` : ''}${rechecked(e).map(([id, c]) => `<p><strong>Re-checked${id === f.id ? '' : ` (${E(id)})`}:</strong> ${E(c)}</p>`).join('')}<ul class="src">${ev.map((x) => `<li><span class="sk">${E(x.file)}</span> <q>${E(x.quote)}</q></li>`).join('')}</ul></details></article>`;
+    };
+    for (const g of groups) {
+      if (g.entries.length === 1) { out.push(entry(g.entries[0], g.ct)); continue; }
+      out.push(`<div class="fgroup"><p class="fgh"><span class="num">${E(g.ct)}</span> <span class="meta">${plural(g.entries.length, 'divergence')}</span></p>`, ...g.entries.map((e) => entry(e, null)), '</div>');
+    }
+  }
   out.push('<h3>Game rulings no rule cites</h3>', `<p>${!P.classified ? 'The rulings are not classified yet.' : P.uncitedGame.length ? E(P.uncitedGame.join(', ')) : 'None.'}</p>`);
   out.push('<h3>Process rulings, excluded</h3>', !P.classified ? '<p>The rulings are not classified yet.</p>' : P.process.length ? `<ul>${P.process.map((p) => `<li>${E(p.id)}${p.reason ? `: ${E(p.reason)}` : ''}</li>`).join('')}</ul>` : '<p>None.</p>');
   // the review page comments on the annex as a whole: everything under its heading
@@ -847,6 +966,12 @@ code { font-size: 0.88em; background: var(--accent-soft); padding: 1px 4px; bord
 .vnote { margin: 6px 0 0; font-size: 13.5px; background: var(--warn-bg); padding: 6px 10px; border-radius: 4px }
 details { margin-top: 6px } summary { cursor: pointer; font-size: 13px; color: var(--accent) }
 summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+details.prov > summary { font-size: 12px; color: var(--muted) } details.prov[open] > summary { color: var(--accent) }
+summary .chip { font-size: 10.5px; padding: 2px 5px; margin-left: 4px }
+.fgroup { margin: 14px 0 6px } .fgh { margin: 0; padding-bottom: 2px; border-bottom: 1px solid var(--line) }
+.fgroup .fnd { padding-left: 14px }
+.fnd { padding: 6px 0; border-bottom: 1px solid var(--line) } .fnd p { margin: 4px 0 }
+.fnd .dh { display: block; margin: 0 } .fnd .dh > * { margin-right: 6px } .fnd .dh > .meta { white-space: nowrap } .fnd details { margin-top: 2px } .fnd summary { font-size: 12px }
 ul.src { margin: 6px 0 0; padding-left: 18px; font-size: 13px; overflow-wrap: anywhere }
 .sk { font-size: 11.5px; color: var(--muted); margin-right: 4px }
 q { quotes: "\\201C" "\\201D" }

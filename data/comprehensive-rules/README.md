@@ -333,6 +333,77 @@ table, the reading the document follows today, and a recommendation.
    text changed after verification)" until a verify round confirms it again.
 6. **Then** `cr:render`, `cr:check` and 409.
 
+## How to apply a review comment
+
+Readers comment on the review page (`/?crreview=1`); the game server keeps the
+threads in `var/cr-comments.jsonl`. An answer to an owner question is a
+comment too (`kind: answer`): apply it with the section above, and use steps
+5–9 below for the sweep and the close.
+
+```bash
+npm --prefix client run cr:comments -- --box        # copy the box's journal (ssh), list every OPEN thread
+npm --prefix client run cr:comments -- --file <f>   # the same, from a copy you already have
+```
+
+For each open thread it prints the target's live number and key, its file,
+its current text, the quoted words and whether they are still in the text, the
+readings of an answered question, and the findings, discrepancies, rules and
+glossary rows that share its rule key.
+
+1. **Triage.** Is it about wording (the rule is right and reads wrong), about
+   substance (the rule is wrong), or a misreading our phrasing caused (the rule
+   is right and says it badly)? A misreading is still a wording fix.
+2. **Check authority.** A comment is a lead, not a source, even from a judge or
+   the owner. Find the source that settles it, in the authority order above.
+   - A higher source agrees: cite it. No ruling is needed.
+   - No higher source speaks to it: the owner's comment is an owner ruling.
+     Write it as one (step 4).
+   - A higher source contradicts it: change nothing. Reply quoting the source,
+     and ask.
+3. **Sweep the claim, not the rule.** The anchored record is one instance of a
+   claim. Find every record that carries the same claim, in any words:
+   - `grep -rniE` the claim's distinctive words and their synonyms over
+     `rules/`, `rules/glossary.json`, `findings/`, `discrepancies/`,
+     `client/ui/glossary.ts`, `client/ui/does-lines.json` and
+     `client/docs/digital-rules.md`;
+   - also the quote the bad text came from (`sources.*.quote`), since a premise
+     spreads through its citations;
+   - also the cr:comments "shares its key" list, and every rule that cites a
+     ruling you are about to amend.
+   Fix every instance in its record: rule text, glossary rows, finding titles
+   and summaries (a finding states what the ENGINE does, never as the game's
+   rule), discrepancy resolutions, and closed or dropped `question`s.
+4. **Record the ruling** as a new `## R<n>` (one heading; demote any inside).
+   Write each sentence a rule will cite on one line. Classify it, and decide
+   its supersession candidates. A scoped edge makes every citation of that
+   ruling need a scope label (`R265 (its units half)`); `cr:check` lists them
+   (`ruling-scope-required`), and they are part of the sweep.
+5. **Redraft and stamp.** Cite the ruling or the source in each record you
+   changed, then run `harness.mjs stamp` for each unit, `cr:render` (numbers a
+   new key), and `cr:check`.
+6. **Re-verify.** Run the polish round over the changed keys: `plant --round 4
+   --keys …` with 1–2 decoys per unit, in the same area as the change. The
+   verifier must be a FRESH agent that never saw your notes, the comment, or
+   the decoys. Then `judge` (every decoy caught, or a new attempt) and
+   `finalize --round 4 --keys …`.
+7. **Engine divergence is a ticket.** Where the rule now differs from the
+   engine, add `engineDiffers` and a finding, and file CT text. Do not fix the
+   engine. Where the answer makes a finding wrong, remove the finding and
+   close its ticket.
+8. **Render and check** (step 4 of "How to regenerate"), then 409.
+9. **Reply and resolve** as the Rules editor, never as a person: plain words,
+   what was wrong, what changed, and the rule numbers.
+
+```bash
+npm --prefix client run cr:comments -- reply   <id> --body-file reply.txt --box [--dry-run]
+npm --prefix client run cr:comments -- resolve <id> --box
+```
+
+`--box` runs curl on the deploy box against its own game server, using the
+box's `ALGO_BOT_TOKEN`, so the token never leaves the box. `--server <url>`
+uses `ALGO_BOT_TOKEN` from your shell. The route (`POST /api/cr/editor`) does
+not exist without the token: unset means absent, not broken.
+
 ---
 
 Algomancy is designed by [Caleb Gannon](https://calebgannon.com/). Card and rules

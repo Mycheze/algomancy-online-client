@@ -14,7 +14,7 @@ export const ANY_NUM_RE: RegExp;
 export function norm(s: string): string;
 export function textHash(s: string): string;
 /** what a verdict pins: the text, plus the examples and their bindings when there are any */
-export function recordHash(r: { text: string; examples?: { text: string; test?: string | null }[] }): string;
+export function recordHash(r: { text: string; examples?: { text: string | null; test?: string | null }[] }): string;
 export const FINDING_ID_RE: RegExp;
 export const REGISTER_FINDING_RE: RegExp;
 export function parseRulingCite(s: string): { id: string; n: number; suffix: string; scope: string } | null;
@@ -34,7 +34,8 @@ export interface RuleRecord {
   parent?: string;
   order?: number;
   text: string;
-  examples: { text: string; test?: string | null }[];
+  /** text null: a demonstration only, its test listed under the rule's sources */
+  examples: { text: string | null; test?: string | null }[];
   see: string[];
   sources: {
     printed?: RefQuote[];

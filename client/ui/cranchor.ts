@@ -14,8 +14,8 @@
  *     OUTDATED and is shown at the top of its item with the old words struck).
  *   · `targetResolver` follows a renamed rule key, recognises a removed one,
  *     and says when a target has left the document altogether (an ORPHAN).
- *   · `placer` turns a link (`#r608.2b`, `#D-U12-3`) or a comment target into
- *     the tab and chapter that show it. The section is read off the number's
+ *   · `placer` turns a link (`#r608.2b`, `#D-U12-3`, `gloss:<key>`) or a
+ *     comment target into the tab and chapter that show it. The section is read off the number's
  *     own leading digits, never off a list.
  *   · `layoutMargin` stacks the margin's thread cards without overlap.
  *
@@ -193,8 +193,10 @@ export function placer(doc: Pick<CrReviewDoc, 'toc' | 'parts' | 'disc' | 'keys' 
     }
     // a discrepancy, or one of the ids a merged discrepancy is "also filed as"
     if (discIds.has(ref) || /^D-/.test(ref)) return { tab: 'disc', view: null, anchor: ref };
-    // an Annex P finding
+    // an Annex P finding (a folded-in dupe's id is an anchor on its entry)
     if (/^F-/.test(ref)) return { tab: 'doc', view: 'annexP', anchor: ref };
+    // a glossary row has no element id: its anchor is its mark, `gloss:<key>`
+    if (/^gloss:./.test(ref)) return { tab: 'doc', view: 'glossary', anchor: ref };
     return null;
   };
 
@@ -215,7 +217,7 @@ export function placer(doc: Pick<CrReviewDoc, 'toc' | 'parts' | 'disc' | 'keys' 
       }
       case 'disc': return { tab: 'disc', view: null, anchor: rest };
       case 'finding': return { tab: 'doc', view: 'annexP', anchor: rest };
-      case 'gloss': return { tab: 'doc', view: 'glossary', anchor: null };
+      case 'gloss': return ofRef(target);
       default: return null;
     }
   };

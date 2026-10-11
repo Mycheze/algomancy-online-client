@@ -27332,3 +27332,271 @@ raw in the document's prose.
   candidates), `engine/test/410-enum-exports.test.ts`, and the CR example tests
   `engine/test/412-cr-general.test.ts` to `engine/test/435-cr-digital-2.test.ts`
   (`412` to `435`, one per drafting unit, named `4NN-cr-<unit>`).
+
+## R344 — The stack, the bins and the caches are regional: one stack per region, shared by the players in it, and a bin and a cache are where their owner is (amends R250 and R265)
+
+*(Owner, on the comprehensive-rules review page, 2026-10-11, commenting on
+finding F-U01-2, "The stack, bins and cache are regionless, so some effects
+reach across regions".)*
+
+> "Not true. Bins and cache are tied to the player that owns them. If I am not
+> in a region, my bin and cache also are not in that region. The stack is also
+> only accessible to players already in that region, but it's not "owned" by
+> any player and shared by all current region residents."
+
+### The ruling
+
+A player's bin and cache are tied to that player.
+They are in a region only while their owner is present in it.
+An effect can reach a player's bin or cache only in a region where that player is present.
+
+Each region has its own stack.
+No player owns a region's stack: it is shared by every player present in that region.
+Only a player present in a region can put an effect on its stack or respond to one there.
+
+### What it agrees with, and what it settles
+
+This is the reading print and Caleb already gave. Manual p.19: "Every single
+effect is specific to the region it takes place in, meaning it will never
+impact anything in any other region", and "if a player enters a region, their
+bin, hand, resources, and even the player themself can be interacted with".
+Caleb (RAQ 1454169054402314362): "Yes everything in the game is region
+specific." It is also R286's own words for deployment ("an isolated stack just
+for the person in that region"): in deployment every player is alone in their
+region, so a region's stack there is one player's stack. R291 (a cached card is
+a target only where its owner is present) already held for caches.
+
+D-U01-12 settled the rules text by the authority order on 2026-10-10 and asked
+for a register mark: "mark the "deliberately global" sentences of R250 and R265
+as outranked by Manual p.19". This ruling is that mark.
+
+### What it amends
+
+- **R250**, the Cosmic Reversal ruling: its sentence "The STACK is not regional
+  and is deliberately left global" no longer holds. The stack half of Cosmic
+  Reversal reaches only the stack of the region it resolves in. The rest of R250
+  (the board half, zones follow control) stands.
+- **R265**, its paragraph "The documented non-exceptions. Three zones have no
+  region and are deliberately global": no zone is global. The rest of R265
+  (ally, enemy, "another") stands.
+
+### The engine
+
+Not changed by this ruling (the owner's standing preference: engine changes are
+tickets). The CR states this ruling and marks the rules engine-differs
+(F-U01-2). The engine keeps one stack for battle (R250) and, per R286, one per
+seat in deployment; its CR example test
+`414-cr-cards-abilities-targets.test.ts` asserts that "a stack item and the
+cards in either bin are offered from every region". The ticket that held this
+as an owner decision (CT-234) is answered: it becomes engine work.
+
+## R345 — An attribute is a quality of a card or a token, and it applies whenever the card has it, not only in combat (corrects a premise of R294)
+
+*(Owner, on the comprehensive-rules review page, 2026-10-10, on rule 802.1,
+which read "Attributes are qualities a card can have that change how it engages
+in combat".)*
+
+> "Not just combat, always. And more than just units can have attributes"
+
+### The ruling
+
+An attribute is a quality that a card or a token can have.
+It applies whenever the card or token has it, in combat or not.
+Some attributes change how a unit engages in combat; others change the card in other ways.
+
+### Why 802.1 said otherwise, and what outranks that
+
+The rule paraphrased the opening line of the Manual's battle chapter (p.24,
+"Some units have attributes, which can modify how they engage in combat") and
+the Rulebook's (p.12), which introduce the combat attributes, as if they defined
+the word. Print defines it more widely elsewhere. Rulebook 2023 p.3: "Attributes
+(6) describe the qualities of the card, including some combat abilities".
+Rulebook 2023 p.4: "Spell tokens have an attribute, Burst". Manual p.25: the
+purple attributes "are referred to as non-combat attributes, since they
+generally have nothing to do with combat" and "simply exist to modify cards".
+
+### What it corrects
+
+**R294** derives which attributes a column shares from "The Rules Glossary's own
+first sentence": "Attributes describe any modifications to how the creature
+engages in combat." That glossary is Caleb's 2022 web post (it still says
+"creature"), and the Manual outranks it (`data/rules/README.md`: the Manual is
+"the primary, most up-to-date and complete rules reference"). R294's conclusion
+stands unchanged: combat (gold) attributes are shared in a column, non-combat
+(purple) ones are not. Only its premise, that an attribute is by definition a
+combat modifier, is corrected.
+
+### The engine
+
+Nothing to change. This is a definition; each attribute's behaviour is its own
+rule.
+
+## R346 — A token is not a card: "temporary card" is how print describes a token to players, not the rules word (confirms R129, R133, R305 and R306; answers D-U06-1, reading B)
+
+*(Owner, on the comprehensive-rules review page, 2026-10-11, answering the owner
+question D-U06-1: "Is a token a card, so that card text saying "card" reaches
+tokens?")*
+
+> ""temporary card" is a term for the human players to better understand what a
+> token is. For the game, however, they are not considered "cards" (but they are
+> units/spells/other printed things)."
+
+### The ruling
+
+For the rules, a token is never a card.
+A token is still a unit, a spell, or whatever other thing its type line names.
+The printed rules call tokens "temporary cards" to tell players what a token is; that phrase does not make a token a card.
+
+### What it settles
+
+Both rulebooks say "Tokens are temporary cards that are created directly into
+play" (Manual p.15, Rulebook 2023 p.4), and Void Mandible prints "nontoken
+card". The question was whether those words make a token a card. They do not:
+"nontoken" on Void Mandible is shorthand, as R133 already read it. R129, R133,
+R305's noun table and R306 stand, now with the owner's answer behind the
+printed ambiguity.
+
+D-U07-5's last condition ("If the owner answers that a token is a card …, R219's
+reason falls") does not arise: R219's reason stands.
+
+### The engine
+
+Nothing to change: the engine already treats a token as not a card.
+
+## R347 — "Whenever you play a unit" does not hear its own card being played: a card being played is on the stack, not in play (reverses R26's own-play half; answers D-U14-11, reading B)
+
+*(Owner, on the comprehensive-rules review page, 2026-10-11, answering the owner
+question D-U14-11: "Does Bloomcaster's "Whenever you play a unit" trigger on its
+own play?" Answer: "Reading B.")*
+
+Reading B, as the question put it: "No: a card's abilities work only once it is
+in play, and a card being played is on the stack (the Mycelial Mentor
+write-up), so only units played while Bloomcaster is in play count."
+
+### The ruling
+
+An ability that triggers when its controller plays a unit works only while its card is in play.
+A card that is being played is on the stack, not in play, so its own play does not trigger it.
+This holds whether or not the ability says "another".
+
+Bloomcaster makes no 1/1 when Bloomcaster itself is played. It makes one for
+each unit its controller plays while Bloomcaster is in play.
+
+### What it reverses
+
+**R26**, its half "(no "another") **fires on its own" arrival. R26's other half
+(creating a token is not playing it) stands.
+
+### The engine
+
+For Bloomcaster the engine already does this: it hears plays only while it is in
+play. So the findings that called that a bug (F-U14-5, F-U14-8) are closed, and
+the ticket that would have changed the engine (CT-254) closes as not a bug.
+
+One card does not follow it yet. The verifier of the CR round that applied this
+ruling measured Stalwart Sentinel ("When you play a unit or spell from anywhere
+other than your hand") hearing its own play when Wake the Dead plays it from a
+bin: it takes its own two +1/+1 counters (F-U14-10). That is an engine change, filed
+as a ticket.
+
+## R348 — A deleted unit dies: deletion is one way of dying (answers D-U18-9, reading A)
+
+*(Owner, on the comprehensive-rules review page, 2026-10-11, answering the owner
+question D-U18-9: "Is a deleted unit a unit that dies, so that "When I die" and
+"whenever a unit dies" trigger?" Answer: "Reading A.")*
+
+Reading A, as the question put it: "Yes: deletion is one way of dying, named
+separately because cards say "delete"."
+
+### The ruling
+
+A deleted unit dies.
+Abilities that trigger when a unit dies, its own "When I die" included, trigger when it is deleted.
+Deletion is named separately only because cards say "delete": it removes the unit from play into the bin, as any death does.
+
+### What it settles
+
+The Manual names the two side by side ("a unit dies or is deleted, it is placed
+in the bin") and no printed or designer source says whether a deletion is a
+death. This answers it.
+
+### The engine
+
+Nothing to change: the engine already fires the death event for a deletion.
+
+## R349 — Abilities that trigger during "Rockfall N, X times" wait until the whole effect has resolved (answers D-U18-4, reading B)
+
+*(Owner, on the comprehensive-rules review page, 2026-10-11, answering the owner
+question D-U18-4: "Do abilities triggered by one rockfall resolve before the
+next rockfall of the same Meteor Shower?" Answer: "Reading B.")*
+
+Reading B, as the question put it: "No: it described three separate copies,
+which the card no longer makes; as one spell, triggers wait until it finishes."
+
+### The ruling
+
+"Rockfall N, X times" is one effect, and its rockfalls happen within its one resolution.
+An ability that triggers during one of those rockfalls is not put on the stack before the next rockfall.
+It waits until the whole effect has resolved, like any ability that triggers while an effect resolves.
+
+Each rockfall is still its own source of damage (R80: "Meteor Shower's three
+rockfalls are three batches"), so a watcher that triggers once per source
+triggers once for each rockfall. Those triggers all wait for the end of the
+spell.
+
+### What it settles
+
+The RAQ write-up on Meteor Shower ("any check for triggers will happen
+in-between resolving each Rockfall 3") described the old printing, which made
+three copies of itself; the RAQ register marks that claim outdated. The current
+card prints one spell, "Rockfall 3 three times."
+
+### The engine
+
+Nothing to change: the engine already lets these triggers wait until the spell
+has resolved.
+
+## R350 — The fully global turn is a digital convention: at a table the initiative player acts first in the steps print orders, and this client lets both players act at once (extends R144)
+
+*(Owner, on the comprehensive-rules review page, 2026-10-11, on rule 500.2,
+which read "Turns are global: all players go through the same phases at the
+same time, and they sync up at the end of each step.")*
+
+> "This is actually a special choice we made for the digital game. In a physical
+> game, it's not possible to hide information and do things entirely on your
+> own, then see what your opponent did. So in a paper game, the INT player acts
+> first, and the NIT player acts second in all "synced" phases. But that
+> limitation doesn't exist in the digital realm and we decided to make it a
+> truly global turn."
+
+### The ruling
+
+Print's global turn shares the phases and syncs at the end of each step, but at a table it orders some steps by initiative.
+This client runs those steps for both players at once, each unseen by the other until both are done.
+That is a deliberate digital convention: a paper game cannot hide one player's actions while the other acts.
+
+### What print says
+
+Rulebook 2023 p.5: "Turns in Algomancy are global, meaning all players share
+the same phases, and sync up at the end of each step." The order inside a step
+is print's too. The same page: "the initiative team must make all of their
+plays first while the non-intiative gets to wait and see what they do before
+taking their actions." Manual p.38 has the initiative team deploy "in any order
+they wish before passing to the non-initiative team". The CR states that order
+in 501.4 (the resource and haste steps) and 507.3 (deployment). Print itself lets a
+free-for-all game take every phase but battle at once (Manual p.36).
+
+The owner's "all synced phases" is wider than print's list: print has the
+refresh, draw and draft steps taken by both players together (501.4). The CR
+states print's list.
+
+### What it extends
+
+**R144** named deployment a "hidden simultaneous segment", R18 named the haste
+step one, and R310 counts the resource step among the hidden steps; Annex D
+(D1.4) states the three segments.
+This ruling records why they exist.
+
+### The engine
+
+Nothing to change.

@@ -1714,6 +1714,10 @@
         {
           "ref": "R129",
           "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+        },
+        {
+          "ref": "R346",
+          "quote": "For the rules, a token is never a card."
         }
       ],
       "history": [
@@ -1733,7 +1737,8 @@
     "sourceHashes": {
       "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
       "R133": "6b4f0b8f575f96f005fba919ee325511f5278cb5409a6219c2ba7d9b21e21ce3",
-      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f",
+      "R346": "2907d7b7e36f93ffff92ef7b7b08f19c0c55ee8a47b138a884a50d8ed57f2353"
     }
   },
   {
@@ -2964,7 +2969,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R26",
+          "ref": "R26 (its token-creation half)",
           "quote": "\"Play\" excludes token creation"
         },
         {

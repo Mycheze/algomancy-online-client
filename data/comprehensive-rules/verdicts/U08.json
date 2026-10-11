@@ -750,46 +750,135 @@
   },
   {
     "key": "turn.general.global",
-    "textHash": "fbfad70f61057878",
+    "textHash": "2c9f37f5ad1bb5ff",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U08-r2",
+    "round": 4,
+    "verifier": "U08-r4",
     "engine": [
       {
-        "loc": "apply.ts:doExchangePrismite/doDonePlanning (need !draftPending(seat) per seat)",
+        "loc": "client/engine/src/apply.ts (planning/haste/draft gating)",
         "agrees": false,
-        "note": "engineDiffers is real: the gates are per seat, so a seat that has drafted may act in the resource step while the other is still drafting - no sync at the end of the draft step (probe)."
+        "note": "engine differs as declared (F-U08-4): a seat may finish the resource step while the other still drafts, and the non-initiative seat may act first"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
-        "title": "turn.planning.order.sync (measured): a seat that has drafted may act in the resource step while the other still drafts",
+        "file": "client/engine/test/419-cr-planning.test.ts",
+        "pattern": "cr:turn.general.global — engine differs",
         "passed": true,
-        "demonstrates": "yes - the divergence is real"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/419-cr-planning.test.ts",
+        "pattern": "cr:turn.planning.order — engine differs",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Rulebook 2023 p.5",
         "supports": "yes",
-        "note": "verbatim."
+        "note": "\"Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step.\" and \"the initiative team must make all of their plays first while the non-intiative gets to wait and see what they do before taking their actions.\" (1v1 counts as a team game, same page)."
       },
       {
         "ref": "Manual p.7",
-        "supports": "partly",
-        "note": "'global turn system' only."
+        "supports": "yes",
+        "note": "\"The core of Algomancy revolves around its global turn system\"."
+      },
+      {
+        "ref": "R350",
+        "supports": "yes",
+        "note": "owner, current: print's global turn syncs each step but at a table orders some steps by initiative."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step."
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step. This process"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "and see what they do before taking their actions."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Print's global turn shares the phases and syncs at the end of each step, but at a table it orders some steps by initiative."
+      },
+      {
+        "file": "client/engine/test/419-cr-planning.test.ts",
+        "text": "assert.equal(h.state.planningDone[0], true, 'seat 0 finished its resource step before the draft step ended');"
       }
     ],
     "basis_ok": true,
-    "problem": "None; divergence F-U08-4 is real."
+    "problem": ""
+  },
+  {
+    "key": "turn.general.global.digital",
+    "textHash": "a76c36354cbb7ad2",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U08-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src (hiddenSegment) + client/server rooms segKey/heldEvents",
+        "agrees": true,
+        "note": "the resource step, the haste step and deployment are hidden simultaneous segments; both seats have legal actions; the opponent is sent nothing until both are done"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.general.hidden-segment — ",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.reveal.hidden-steps — the resource step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R350",
+        "supports": "yes",
+        "note": "owner, current: \"This client runs those steps for both players at once, each unseen by the other until both are done.\" and the paper-game reason."
+      },
+      {
+        "ref": "R18 (its hidden-segment half)",
+        "supports": "yes",
+        "note": "the haste step is a hidden simultaneous segment; R224/R228 reversed only its skip and auto-done parts."
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "counts the resource step among the hidden steps."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "This client runs those steps for both players at once, each unseen by the other until both are done."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "That is a deliberate digital convention: a paper game cannot hide one player's actions while the other acts."
+      },
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "text": "assert.deepEqual(p.toOpp, [], 'resource step: the other player is sent nothing');"
+      },
+      {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "text": "assert.equal(cardsOf(theirView, 0, 'Cinder Scuttler'), 0, 'the opponent does not see the play');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "turn.general.initiative",
@@ -881,37 +970,81 @@
   },
   {
     "key": "turn.general.interactive",
-    "textHash": "c9a59e74257d7730",
+    "textHash": "16a45b687da47560",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U08-r1",
+    "round": 4,
+    "verifier": "U08-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:hiddenSegment",
+        "loc": "client/engine/src/apply.ts:declareAttack (presentSeats)",
         "agrees": true,
-        "note": "planning/haste/deploy have no priority windows; priority exists only in battle"
+        "note": "a region holds only its owner until an attack is declared into it; no priority outside battle"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/419-cr-planning.test.ts",
+        "pattern": "cr:turn.general.interactive",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.regions.presence.only-by-attacking",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
-        "title": "turn.haste.immediate / turn.planning.no-interaction: a haste play leaves no stack and gives no priority",
+        "file": "client/engine/test/zz-probe-U08-1.test.ts",
+        "test": "probe U08-1: in the resource step, the haste step and deployment every player is alone in their own region; only an attack puts a player in another region",
         "passed": true,
-        "demonstrates": "partly — planning half only"
+        "demonstrates": "yes: presentSeats holds only the owner in every region in the resource step, the haste step, deployment and battle before the attack; the declared attack puts both seats in the battle region"
       }
     ],
     "source_checks": [
       {
         "ref": "Manual p.7",
         "supports": "yes",
-        "note": ""
+        "note": "\"Battle Phase: The sole interactive phase of the game\"."
+      },
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": "\"Players can enter neighboring regions during the battle phase by sending attacks\"; \"This means interacting with opponents and their units can only be done during the battle phase.\""
+      },
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": "\"Each player is in their own region during the deployment phase, meaning it is not possible to interact with other players or their units\"; the same page has players build up their forces by playing cards, activating abilities and modifying cards."
+      },
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": "\"outside of the combat phase, there is absolutely no player interaction because there are no opponents to interact with\"; the attack step is \"the only exception\"."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "Battle Phase: The sole interactive phase of the"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "2. Battle Phase: The sole interactive phase of the"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "This means interacting with opponents and their units"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Each player is in their own region during the deployment phase, meaning it is not possible to interact with"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "This means that outside of the combat phase, there is absolutely no player interaction because there are no opponents to interact with."
+      },
+      {
+        "file": "client/engine/test/419-cr-planning.test.ts",
+        "text": "assert.equal(b.state.priority, it, 'battle: the attacking player now holds priority');"
       }
     ],
     "basis_ok": true,

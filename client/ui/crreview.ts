@@ -8,7 +8,10 @@
  * THE WAY IN: a "Rules review" button on the profile of an account with an
  * owner or judge badge (not the admin flag: the owner's choice, 2026-10-10),
  * and the link `/?crreview=1` (with `&at=r608.2b`, `&at=D-U12-3` or
- * `&c=<comment id>`) for anybody the owner sends it to. The button is not a
+ * `&c=<comment id>`) for anybody the owner sends it to. Every rule number and
+ * heading carries a small link button that copies exactly that `&at=` link
+ * (a rule NUMBER: the ledger never moves one, and the .html edition's ids are
+ * the same `r608.2b`); `#r608.2b` after `?crreview=1` is read the same way. The button is not a
  * gate: the page reads for anyone who has the link, signed out included. Who
  * may WRITE is the server's decision on every request, and the buttons on a
  * comment are drawn from the server's own `canEdit` / `canResolve` for that
@@ -19,8 +22,9 @@
  * over render's own HTML fragments with `data-crt` on every commentable item,
  * and this page never re-implements a line of the document. On top of that it
  * adds only DECORATIONS: highlights (crdom.ts splits text nodes, so comment
- * text never reaches the markup), a ＋ on every item, 💬 counts, and the
- * margin of threads. Comment bodies, quotes and names are always esc()'d text.
+ * text never reaches the markup), a ＋ on every item, 💬 counts, a copy-link
+ * button on every number and heading, and the margin of threads. The search
+ * box (crsearch.ts) is one element moved into the bar's slot after each paint. Comment bodies, quotes and names are always esc()'d text.
  *
  * WHAT A REPAINT TOUCHES: a poll that brings new comments repaints the margin,
  * the highlights and the counts, never the document column, and never while
@@ -36,6 +40,7 @@ import type { CrPlace, CrTab, CrTargetState } from './cranchor.ts';
 import { clearDecorations, detachedText, textMap, wrapHighlight } from './crdom.ts';
 import { isComposerOpen, isSheetOpen, openComposer, pickFor, resetCrLayer, setCrLayerHost, showSheet } from './crlayer.ts';
 import type { CrCompose } from './crlayer.ts';
+import { mountSearch, resetSearch, setCrSearchHost } from './crsearch.ts';
 import type { CrComment, CrCommentsReply, CrOp, CrOpReply, CrPart, CrReviewDoc, CrTarget, CrYou } from './crtypes.ts';
 
 /** a root comment, its replies, and where it lives today */
@@ -68,6 +73,8 @@ let view = 'front';
 let pendingAnchor: string | null = null;
 /** a thread to bring into view once the column is painted */
 let pendingFocus: string | null = null;
+/** unfold what is at pendingAnchor too (a finding the search landed on) */
+let pendingOpen = false;
 /** what `?at=` says, kept for the URL */
 let atForUrl: string | null = null;
 /** a deep link waiting for the document (`at`) or the comments (`c`) */
@@ -210,6 +217,7 @@ function close(): void {
   open = false;
   clearInterval(poll);
   resetCrLayer();
+  resetSearch();
   sheetTarget = null;
   root = null;
   dirty = true;
@@ -224,6 +232,8 @@ function syncUrl(): void {
     const url = new URL(location.href);
     for (const k of ['crreview', 'at', 'c']) url.searchParams.delete(k);
     if (open) {
+      // a `#r608.2b` deep link has been read into `at` by now
+      url.hash = '';
       url.searchParams.set('crreview', tab === 'doc' ? '1' : tab);
       const at = atForUrl ?? (tab === 'doc' ? view : null);
       if (at) url.searchParams.set('at', at);
@@ -296,6 +306,16 @@ export function initCrReview(opts: { app: HTMLElement; rerender: () => void }): 
     label: labelOf,
     submit,
   });
+  setCrSearchHost({
+    active: () => open && !!root?.isConnected,
+    doc: () => doc,
+    go: (at, unfold) => {
+      const p = place?.ofRef(at);
+      if (!p) return;
+      pendingOpen = unfold;
+      go(p);
+    },
+  });
   if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
     document.addEventListener('click', onDocClick);
     // a <details> opening moves everything under it: the margin follows
@@ -310,7 +330,8 @@ export function initCrReview(opts: { app: HTMLElement; rerender: () => void }): 
     if (v === null) return;
     const t = TABS.find(([k]) => k === v);
     if (t) tab = t[0];
-    wantAt = q.get('at');
+    // `&at=r608.2b`, or the .html edition's own `#r608.2b` on a ?crreview link
+    wantAt = q.get('at') ?? (location.hash.length > 1 ? decodeURIComponent(location.hash.slice(1)) : null);
     wantComment = q.get('c');
     openReview();
   } catch { /* a URL we cannot parse is a page we do not open */ }
@@ -525,7 +546,7 @@ function viewHtml(id: string): string {
   if (!e) return '<p class="crnote">There is nothing at this place in the document.</p>';
   if (!e.sections) {
     const html = partById.get(e.id)?.html ?? '';
-    return /^\s*<h2/.test(html) ? html : `<h2>${esc(e.title)}</h2>${html}`;
+    return /^\s*<h2/.test(html) ? html : `<h2 id="${esc(e.id)}">${esc(e.title)}</h2>${html}`;
   }
   const lead = e.lead ? partById.get(e.lead)?.html ?? '' : '';
   return `<h2 id="${esc(e.id)}">${esc(e.title)}</h2>${lead}${e.sections.map(s => partById.get(s.part)?.html ?? '').join('\n')}`;
@@ -647,6 +668,7 @@ function paint(): void {
       <button class="crtocbtn" data-btn="cr-toc">☰ Contents</button>
       <div class="crtitle">${title}</div>
       <div class="crtabs" id="crtabs">${tabsHtml()}</div>
+      <div class="crsearchslot" id="crsearchslot"></div>
       <span class="crgrow"></span>
       <span class="crwho" id="crwho">${whoHtml()}</span>
       <button data-btn="cr-showdone" title="resolved threads are folded to one line">${showResolved ? 'Fold resolved' : 'Show resolved'}</button>
@@ -659,6 +681,7 @@ function paint(): void {
   </div>`;
   root = app.firstElementChild as HTMLElement | null;
   dirty = false;
+  mountSearch(document.getElementById('crsearchslot'));
   decorate();
   scrollToPending();
 }
@@ -747,6 +770,7 @@ function decorate(): void {
       putDecor(item, b);
     }
   }
+  addShareButtons(col);
   // a collapsed provenance block says how many highlights it is hiding
   for (const d of Array.from(col.querySelectorAll('details'))) {
     const ids = new Set(Array.from(d.querySelectorAll('mark.crhl')).map(m => m.getAttribute('data-cid')));
@@ -772,6 +796,76 @@ function decorate(): void {
     at: col.querySelector(`mark.crhl[data-cid="${CSS.escape(x.th.root.id)}"]`) ?? x.item,
   }));
   layoutNow();
+}
+
+/* ── links to share ──────────────────────────────────────────────────────── */
+
+/** a chain-link glyph, drawn in the text colour */
+const LINK_SVG = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" d="M6.6 9.4a2.6 2.6 0 0 0 3.7 0l2.5-2.5a2.6 2.6 0 0 0-3.7-3.7l-.9.9M9.4 6.6a2.6 2.6 0 0 0-3.7 0L3.2 9.1a2.6 2.6 0 0 0 3.7 3.7l.9-.9"/></svg>';
+
+/**
+ * A copy-link button beside every rule number, section and chapter heading,
+ * finding and discrepancy: each element of the column with an id the placer
+ * reads back (`r608.2b`, `ch6`, `annex-p`, `F-U01-2`, `D-U12-3`). It goes right
+ * after the number where there is one, else at the end of the heading.
+ */
+function addShareButtons(col: Element): void {
+  const spots = col.querySelectorAll('article.rule[id], h3[id], h2[id], article.fnd[id], article.disc[id]');
+  for (const el of Array.from(spots)) {
+    const at = el.id;
+    if (!place?.ofRef(at)) continue;
+    const b = document.createElement('button');
+    b.className = 'crshare';
+    b.setAttribute('data-crui', '');
+    b.dataset['btn'] = 'cr-copylink';
+    b.dataset['at'] = at;
+    const name = /^r/.test(at) ? at.slice(1) : at;
+    b.title = `Copy a link to ${name}`;
+    b.setAttribute('aria-label', `Copy a link to ${name}`);
+    b.innerHTML = LINK_SVG;
+    const num = el.querySelector(':scope > .rt > a.num, :scope > a.num, :scope > .dh > .num');
+    if (num) num.after(b); else el.appendChild(b);
+  }
+}
+
+/** the absolute link a share button copies: the page at that place */
+const shareUrl = (at: string): string => `${location.origin}/?crreview=1&at=${encodeURIComponent(at)}`;
+
+async function copyLink(at: string): Promise<void> {
+  const url = shareUrl(at);
+  let ok = false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(url); ok = true; }
+  } catch { /* refused: the old way below */ }
+  if (!ok) {
+    // plain http on the LAN has no clipboard API: select a scratch box and copy
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { ok = document.execCommand('copy'); } catch { ok = false; }
+    ta.remove();
+  }
+  toast(ok ? 'Link copied' : `Copy this link: ${url}`, ok ? 1600 : 6000);
+}
+
+let toastTimer = 0;
+/** a one-line note at the bottom of the window, beside #app so no repaint eats it */
+function toast(text: string, ms: number): void {
+  let el = document.getElementById('crtoast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'crtoast';
+    el.className = 'crtoast';
+    el.setAttribute('role', 'status');
+    document.body.appendChild(el);
+  }
+  el.textContent = text;
+  el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => el?.classList.remove('on'), ms);
 }
 
 /** stack the margin's cards level with their passages */
@@ -841,13 +935,19 @@ function scrollToPending(): void {
     flash(card);
     return;
   }
+  const unfold = pendingOpen;
+  pendingOpen = false;
   if (!id) return;
-  const el = document.getElementById(id);
+  // an element id (`r608.2b`, `F-U01-4`), or a commentable item with no id (`gloss:…`)
+  const el = document.getElementById(id) ?? document.querySelector(`#crdoc [data-crt="${CSS.escape(id)}"]`);
   if (!el) return;
+  // whatever is folded around it opens, so the place shown is the place linked
+  for (let d = el.parentElement?.closest('details'); d; d = d.parentElement?.closest('details')) d.open = true;
+  if (unfold) for (const d of Array.from(el.closest('article')?.querySelectorAll('details') ?? [])) d.open = true;
   el.scrollIntoView({ block: 'start' });
   // the sticky bar covers the first lines (one row wide, two or three narrow)
   window.scrollBy(0, -((document.querySelector('.crbar')?.getBoundingClientRect().height ?? 60) + 12));
-  flash(el.closest('article, section, dt, h2, h3') ?? el);
+  flash(el.closest('article, section, dt, h2, h3, [data-crt]') ?? el);
 }
 
 function flash(el: Element | null): void {
@@ -933,6 +1033,7 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     }
     case 'cr-dljsonl': void saveJournal(); return true;
+    case 'cr-copylink': void copyLink(btn.dataset['at'] ?? ''); return true;
     case 'cr-signin': resetCrLayer(); acct.signInThenReturn(); return true;
     case 'cr-filter': {
       const f = FILTERS.find(([k]) => k === btn.dataset['filter']);

@@ -21,7 +21,7 @@
     "id": "D-U02-2",
     "kind": "b-engine-only",
     "rule": "concepts.elements.affinity-count.dormant",
-    "tier": 1,
+    "tier": 4,
     "summary": "Whether a dormant (face-down) resource counts toward affinity. The engine says no. The designer says affinity counts the resources \"somewhere in your manabase\", tapped or not, and says nothing of face-down ones.",
     "sides": [
       {
@@ -35,27 +35,13 @@
       {
         "source": "R151",
         "quote": "counts what is **awake** (\"dormant gives no affinity\"; \"expended still counts\")."
+      },
+      {
+        "source": "card: Dormant Resource",
+        "quote": "Dormant resources provide no affinity or mana."
       }
     ],
-    "resolution": "Question for the owner. The rule states the engine, basis engine, low confidence; R151 is a presentation ruling that quotes the engine, not a rules decision.",
-    "question": {
-      "topic": "Resources and affinity",
-      "ask": "Does a dormant (face-down) resource count toward affinity?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Yes: every resource you have counts, face-down ones included (\"somewhere in your manabase\").",
-          "table": "A resource created this turn counts toward affinity before it is activated, so a player may meet [r][r][r] with one active and two dormant fire resources."
-        },
-        {
-          "label": "B",
-          "text": "No: only resources whose type is showing (active) count.",
-          "table": "As today: a dormant resource gives nothing until it is activated."
-        }
-      ],
-      "follows": "B, the engine's behaviour (basis engine, low confidence). R151 only quotes the engine.",
-      "recommend": "A. Caleb puts no condition on the resource (\"You don't care if it's tapped or not\"), and A is the permissive reading. Take B only if a face-down resource's type is meant to be unknown at the table."
-    }
+    "resolution": "Settled by print, which the question had missed: the Dormant Resource card back, the face every resource shows until it is activated, says \"Dormant resources provide no affinity or mana.\" The owner confirmed it on 2026-10-11. The rule now cites the card (basis printed). Caleb's \"somewhere in your manabase\" answered whether tapped resources count, and they do."
   },
   {
     "id": "D-U02-3",

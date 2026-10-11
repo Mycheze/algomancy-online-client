@@ -552,13 +552,15 @@ test('§9 the fixture renders: numbers, slots in Attr order, tombstones, see lin
   assert.match(md, /\*\*802\.3\. Deadly\.\*\* Deadly is an attribute\./, 'a record fills its slot');
   assert.match(md, /See rules 802\.3, 608\.1a\./, 'see keys resolve to numbers');
   assert.match(md, /Engine differs, see F-1/);
-  assert.match(md, /> \*Example \(non-normative\): a Swift column strikes first\.\*/);
+  // an example is "Example:", its words only; the test it is bound to is provenance, in the small line
+  assert.match(md, /> \*Example: a Swift column strikes first\.\*\n\n<sub>[^\n]* · Example test: 02-combat\.test\.ts::swift column deals damage first · Key: /);
+  assert.doesNotMatch(md, /non-normative/);
   assert.match(md, /Edition Fixture edition, 2026-10-10, abc1234\./);
   assert.match(md, /\| Mixed \| 2 \|/);
   assert.ok(md.includes(`Process rulings, excluded\n\n- ${R(4)}: tooling`));
   // HTML: anchors, chips, folded provenance, links
   const html = out.files.html;
-  for (const re of [/id="r608\.1a"/, /class="chip b-designer"/, /class="chip v-confirmed"/, /<details><summary>Provenance/, /<a href="#r802\.3">802\.3<\/a>/, /class="differs">engine differs, see <a href="#F-1">F-1<\/a>/, /id="D608-1"/]) {
+  for (const re of [/id="r608\.1a"/, /class="chip b-designer"/, /class="chip v-confirmed"/, /<details class="prov"><summary>Sources and verification/, /<a href="#r802\.3">802\.3<\/a>/, /class="differs">engine differs, see <a href="#F-1">F-1<\/a>/, /id="D608-1"/]) {
     assert.match(html, re);
   }
   // plain text: ASCII tokens, no Markdown marks

@@ -400,7 +400,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R26",
+          "ref": "R26 (its token-creation half)",
           "quote": "\"Play\" excludes token creation"
         }
       ],
@@ -421,13 +421,8 @@
     "key": "effects.playing.what-is-played.includes-itself",
     "parent": "effects.playing.what-is-played",
     "order": 5,
-    "text": "An ability that triggers whenever its controller plays a unit, and that does not say \"another\", triggers when its own card is played.",
-    "examples": [
-      {
-        "text": "Example: Bloomcaster is played from hand; its \"Whenever you play a unit\" sees its own play and makes a 1/1 (illustrative; the engine makes none, see F-U14-5).",
-        "test": null
-      }
-    ],
+    "text": "An ability that triggers whenever its controller plays a unit works only while its card is in play. A card that is being played is on the stack, not in play, so its own play does not trigger it, whether or not the ability says \"another\".",
+    "examples": [],
     "see": [
       "706"
     ],
@@ -437,24 +432,28 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R26",
-          "quote": "(no \"another\") **fires on its own"
+          "ref": "R347",
+          "quote": "A card that is being played is on the stack, not in play, so its own play does not trigger it."
         }
       ],
-      "history": [],
+      "history": [
+        {
+          "ruling": "R26",
+          "relation": "its own-play half (\"no another fires on its own arrival\") reversed by R347"
+        }
+      ],
       "engine": [],
       "tests": []
     },
     "basis": "owner",
     "confidence": "low",
-    "notes": "R26 (owner, Bloomcaster). Belongs with 706 as well. R26 dates itself to the 2026-07-16 engine; the verifier measured that the current engine makes no 1/1 for Bloomcaster's own play (F-U14-5). Whether R26 still stands is D-U14-11. engine differs: F-U14-5 (re-measured by the U14 tester: 0 1/1s).",
+    "notes": "REVIEW COMMENT 2026-10-11 (owner answer to D-U14-11): reading B, R347. The rule stated R26 (reading A) and was marked engine-differs (F-U14-5); the engine already does B for Bloomcaster, so F-U14-5 and F-U14-8 are closed and CT-254 closes as not a bug. The round-4 verifier found Stalwart Sentinel hearing its own play from a bin (probe, F-U14-10). The old example was illustrative (no test).",
     "sourceHashes": {
-      "R26": "c585e34093f645364fef28ec578e449c666c73c8dfc1fd86fa020475c10c5cd9"
+      "R347": "4668c53028847a1fab781d395564fa45b98e86716e48f145fc74ff03f19eb5d8"
     },
     "engineDiffers": [
-      "F-U14-5"
-    ],
-    "untested": true
+      "F-U14-10"
+    ]
   },
   {
     "key": "effects.playing.applying",

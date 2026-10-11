@@ -1061,33 +1061,88 @@
   },
   {
     "key": "attr.general",
-    "textHash": "2a901ca8bcb34356",
+    "textHash": "d36a246fad20b16f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
-    "engine": [],
-    "tests_run": [],
+    "round": 4,
+    "verifier": "U19-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src (attribute handling in and out of battle)",
+        "agrees": true,
+        "note": "Poisonous applies to noncombat damage in deployment; Burst applies to spell tokens"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.poisonous.is-damage",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/03-stack.test.ts",
+        "pattern": "Fireball goes to the stack in battle, Burst casts them all at once",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "\"Attributes (6) describe the qualities of the card, including some combat abilities\"."
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "\"Spell tokens have an attribute, Burst\" — a token can have one."
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": "non-combat attributes \"are not shared in formation, and simply exist to modify cards\"."
+      },
+      {
         "ref": "Rulebook 2023 p.12",
         "supports": "yes",
-        "note": ""
+        "note": "some attributes change how units engage in combat."
       },
       {
         "ref": "Manual p.24",
         "supports": "yes",
-        "note": ""
+        "note": "same, for the combat attributes."
+      },
+      {
+        "ref": "R345",
+        "supports": "yes",
+        "note": "owner, current (corrects R294's premise): applies whenever the card or token has it, in combat or not."
       }
     ],
     "quote_spans": [
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "Some units have attributes, which can modify how they"
+        "text": "Attributes (6) describe the qualities of the card, including some combat abilities, denoted in bold."
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Spell tokens have an attribute, Burst (6), which requires you"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "These attributes are not shared in formation, and simply"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It applies whenever the card or token has it, in combat or not."
+      },
+      {
+        "file": "client/engine/test/431-cr-attributes-2.test.ts",
+        "text": "assert.equal(t.counters, -2, 'two -1/-1 counters');"
       }
     ],
     "basis_ok": true,
-    "problem": "Definition is combat-centred while 802-adjacent rules also name non-combat attributes; acceptable as printed."
+    "problem": ""
   },
   {
     "key": "attr.general.application-order",

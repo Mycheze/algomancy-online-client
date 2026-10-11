@@ -150,7 +150,7 @@
     "key": "concepts.cards.token.not-card",
     "parent": "concepts.cards.token",
     "order": 1,
-    "text": "For card text, a token is not a card: text that refers to a \"card\" does not include a token, even though a unit token is a unit and a spell token is a spell. The Manual's description of tokens as \"temporary cards\" is the open question D-U03-1.",
+    "text": "For card text, a token is not a card: text that refers to a \"card\" does not include a token, even though a unit token is a unit and a spell token is a spell. The printed rules call tokens \"temporary cards\" to describe them to players; that does not make a token a card.",
     "examples": [
       {
         "text": "A spell token being cast is a spell being played, but not a card being played.",
@@ -161,7 +161,12 @@
       "702"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Tokens are temporary cards that are created directly"
+        }
+      ],
       "designer": [],
       "ours": [],
       "rulings": [
@@ -176,6 +181,10 @@
         {
           "ref": "R305",
           "quote": "- **\"card(s)\"**: a token does not."
+        },
+        {
+          "ref": "R346",
+          "quote": "The printed rules call tokens \"temporary cards\" to tell players what a token is; that phrase does not make a token a card."
         }
       ],
       "history": [],
@@ -184,13 +193,14 @@
         "119-play-and-token-events.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "confidence": "medium",
     "notes": "Owner rulings only. The Manual (p.15) says \"Tokens are temporary cards that are created directly\", and Void Mandible prints \"nontoken card\": D-U03-1 (the same question as D-U14-7). R305 was not in the U03 pack; read from the register.",
     "sourceHashes": {
       "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
       "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6",
-      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f",
+      "R346": "2907d7b7e36f93ffff92ef7b7b08f19c0c55ee8a47b138a884a50d8ed57f2353"
     }
   },
   {
@@ -2643,11 +2653,11 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "Ally = all units under your control in the current region."
         },
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "Enemy = all units not under your control in the current region."
         }
       ],
@@ -2687,7 +2697,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "Yes, an ally includes itself. Otherwise it'd say \"Another target ally\"."
         },
         {
@@ -2733,7 +2743,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "\"Your control\", not your ownership: a unit you have taken control of is your ally and its owner's enemy"
         }
       ],
@@ -2817,7 +2827,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "**\"another\" excludes whatever the sentence's other noun is**"
         }
       ],
@@ -2855,7 +2865,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "Claim 3 — ally and enemy are region-scoped"
         }
       ],
@@ -2876,40 +2886,63 @@
     "key": "concepts.targets.region.global",
     "parent": "concepts.targets.region",
     "order": 1,
-    "text": "Effects on the stack and cards in bins are in no region. A target there can be chosen from any region.",
-    "examples": [
-      {
-        "text": "During a battle, an effect on the stack and the cards in both bins can be chosen as targets from the battle region and from the other region alike; a unit can only be chosen from its own region.",
-        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.region.global — a stack item and the cards in either bin are offered from every region, while a unit is offered only in its own"
-      }
-    ],
+    "text": "An effect on the stack can be targeted only by an effect in its own region, since each region has its own stack (rule combat.regions.exclusive.no-region-zones). A card in a player's bin can be targeted only by an effect that resolves in a region where that player is present.",
+    "examples": [],
     "see": [
       "405",
       "406"
     ],
     "sources": {
-      "printed": [],
-      "designer": [],
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "Every single effect is specific to the region it takes"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "Additionally, if a player enters a region, their bin, hand,"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "resources, and even the player themself can be interacted with."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#0",
+          "quote": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
+        }
+      ],
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
-          "quote": "Three zones have no region and are deliberately global"
+          "ref": "R344",
+          "quote": "Each region has its own stack."
+        },
+        {
+          "ref": "R344",
+          "quote": "An effect can reach a player's bin or cache only in a region where that player is present."
         }
       ],
-      "history": [],
+      "history": [
+        {
+          "ruling": "R265",
+          "relation": "its \"three zones have no region and are deliberately global\" paragraph amended by R344"
+        }
+      ],
       "engine": [],
-      "tests": [
-        "243-ally-and-enemy-scope.test.ts",
-        "414-cr-cards-abilities-targets.test.ts"
-      ]
+      "tests": []
     },
-    "basis": "owner",
-    "confidence": "medium",
-    "notes": "R265 names the cache as the third global zone, but R291 limits cache targets: concepts.targets.region.cache.",
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344. This rule stated R265's premise (\"Effects on the stack and cards in bins are in no region. A target there can be chosen from any region.\") after 601.2a and 101.6 had been fixed on 2026-10-10: the sweep for that fix searched for R265's quote in 601.2a only. Now states R344; the engine still offers a stack item and either bin's cards from every region (414 cr test), F-U01-2. Its old example (bound to that 414 test) asserted the engine's behaviour and was dropped. The key keeps its old name (keys are permanent). Cache targets: 110.5b (R291).",
     "sourceHashes": {
-      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
-    }
+      "R344": "12b48a8206fdd885ac52226912a40889a3057c07b08a6fcd070311794d4bbbef",
+      "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
+    },
+    "engineDiffers": [
+      "F-U01-2"
+    ]
   },
   {
     "key": "concepts.targets.region.cache",

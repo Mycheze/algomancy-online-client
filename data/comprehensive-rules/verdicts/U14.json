@@ -2252,45 +2252,64 @@
   },
   {
     "key": "effects.playing.what-is-played.includes-itself",
-    "textHash": "89c0227fc9eead2e",
+    "textHash": "a24bb28c66d23dab",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U14-r2",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-fire-wood.ts:Bloomcaster augmentText trigger",
+        "loc": "client/engine/src/cards (Bloomcaster on cardPlayed)",
+        "agrees": true,
+        "note": "Bloomcaster played from hand makes no 1/1 for itself"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts:Stalwart Sentinel",
         "agrees": false,
-        "note": "listens on cardPlayed, which fires at commit while Bloomcaster is still on the stack and not a listener; the comment claims \"playing Bloomcaster itself still makes a 1/1\" but it does not"
+        "note": "listens on spawned/spellPlayed with no self-exclusion: a Sentinel played from a bin hears its own play and takes 2 counters (reported under bugs)"
       }
     ],
     "tests_run": [],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U14/u14-r2-probes.test.ts",
-        "title": "effects.playing.what-is-played.includes-itself: Bloomcaster played from hand makes a 1/1 for its own play",
-        "passed": false,
-        "demonstrates": "yes (divergence): measured 0 1/1s"
+        "file": "client/engine/test/zz-probe-U14-1.test.ts",
+        "test": "probe U14-1a: Bloomcaster played from hand does not hear its own play; a later unit play does",
+        "passed": true,
+        "demonstrates": "yes: Bloomcaster played from hand makes no 1/1; a unit played while it is in play makes one"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U14-1.test.ts",
+        "test": "probe U14-1b: DIVERGENCE — Stalwart Sentinel played from a bin (Wake the Dead) hears its own play and takes two counters",
+        "passed": true,
+        "demonstrates": "no (divergence): the engine fires Stalwart Sentinel's \"when you play a unit ... from anywhere other than your hand\" on its own play from the bin"
       }
     ],
     "source_checks": [
       {
-        "ref": "R26",
+        "ref": "R347",
         "supports": "yes",
-        "note": "states the self-trigger; marked ⚠ (2026-07-16, before the cardPlayed/stack model). The designer's Bloomcaster RAQ (trigger made while the played unit is on the stack) makes R26 worth re-asking"
+        "note": "owner, current (2026-10-11), reverses R26's own-play half: works only while in play; a card being played is on the stack; \"This holds whether or not the ability says \\\"another\\\".\""
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "(no \"another\") **fires on its own"
+        "text": "An ability that triggers when its controller plays a unit works only while its card is in play."
       },
       {
-        "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
-        "text": "// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12)."
+        "file": "client/docs/digital-rules.md",
+        "text": "A card that is being played is on the stack, not in play, so its own play does not trigger it."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "This holds whether or not the ability says \"another\"."
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-light-a.ts",
+        "text": "type: 'triggered', events: ['spellPlayed', 'spawned'], bounded: true,   // [once]"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed against R26; the flagged divergence is real (probe: 0 tokens). R26 is a ⚠ engine-era call and the stack model the designer describes would not fire it; worth an owner check."
+    "problem": ""
   },
   {
     "key": "effects.playing.what-is-played.spell-token",

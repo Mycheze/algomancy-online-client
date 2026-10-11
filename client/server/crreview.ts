@@ -77,6 +77,21 @@ export function mayResolve(c: CrThreadItem, caller: CrCaller | null): boolean {
   return c.parent === null && mayChange(c, caller);
 }
 
+/**
+ * THE RULES EDITOR: the author the comment-review process (scripts/cr/
+ * comments.mjs, data/comprehensive-rules/README.md "How to apply a review
+ * comment") replies and resolves as. It is NOT an account: nobody signs in as
+ * it, and its id cannot collide with one (account ids are UUIDs). It writes
+ * only through `POST /api/cr/editor`, which the bot token gates
+ * (api-crreview.ts), and its resolve and reopen rows carry `asAdmin`, so the
+ * fold lets them stand exactly as it lets an admin's.
+ *
+ * ⚠ Its NAME is not reserved: an account may call itself "Rules editor"
+ * (accounts.ts allows spaces), and the page shows names only. Until CrAuthor
+ * carries a system mark the page can draw, the id is the only difference.
+ */
+export const RULES_EDITOR: ReportedBy = { id: 'system:rules-editor', name: 'Rules editor' };
+
 /* ── the file ─────────────────────────────────────────────────────────── */
 
 /** the journal's size in bytes: the comments' revision. 0 when absent */

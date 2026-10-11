@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1787 rules and 99 sections.
+- New: 1788 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -512,6 +512,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 410.6b `zones.changes.played-from.created`
   - 500.1 `turn.general.phases`
   - 500.2 `turn.general.global`
+  - 500.2a `turn.general.global.digital`
   - 500.3 `turn.general.initiative`
   - 500.3a `turn.general.initiative.not-token`
   - 500.4 `turn.general.interactive`

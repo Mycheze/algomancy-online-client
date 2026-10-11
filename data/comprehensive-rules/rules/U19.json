@@ -3,13 +3,85 @@
     "key": "attr.general",
     "parent": "802",
     "order": 1,
-    "text": "Attributes are qualities a card can have that change how it engages in combat (see rule 204).",
+    "text": "Attributes are qualities that a card or a token can have (see rule 204). An attribute applies whenever the card or token has it, in combat or not. Some attributes change how a unit engages in combat; others change the card in other ways (see rule attr.general.kinds).",
     "examples": [],
     "see": [
       "204"
     ],
     "sources": {
       "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Attributes (6) describe the qualities of the card, including some combat abilities"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "Spell tokens have an attribute, Burst"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Attributes (6) describe the qualities of the card, including some combat abilities"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "Spell tokens have an attribute, Burst"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Attributes (6) describe the qualities of the card, including some combat abilities"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "Spell tokens have an attribute, Burst"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Attributes (6) describe the qualities of the card, including some combat abilities"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "Spell tokens have an attribute, Burst"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Attributes (6) describe the qualities of the card, including some combat abilities"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "Spell tokens have an attribute, Burst"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Attributes (6) describe the qualities of the card, including some combat abilities"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "Spell tokens have an attribute, Burst"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        },
         {
           "ref": "Rulebook 2023 p.12",
           "quote": "In addition to stats, some units have Attributes (1), which can change how they engage"
@@ -21,16 +93,27 @@
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
-      "history": [],
+      "rulings": [
+        {
+          "ref": "R345",
+          "quote": "It applies whenever the card or token has it, in combat or not."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R294",
+          "relation": "its premise that an attribute is by definition a combat modifier (the 2022 Rules Glossary) corrected by R345; its conclusion stands"
+        }
+      ],
       "engine": [],
       "tests": []
     },
-    "basis": "printed",
+    "basis": "mixed",
     "confidence": "high",
-    "notes": "Non-combat attributes (Burst, Unstable) are the exception the Manual itself names (rule attr.general.kinds); \"generally\" is the Manual's word.",
-    "sourceHashes": {},
-    "untested": true,
+    "notes": "REVIEW COMMENT 2026-10-10 (owner, on \"engages in combat\"): \"Not just combat, always. And more than just units can have attributes\", R345. The old text paraphrased the battle chapter's opening line (Manual p.24, Rulebook p.12) as if it defined the word; Rulebook p.3/p.4 and Manual p.25 define it wider. Non-combat attributes: attr.general.kinds.",
+    "sourceHashes": {
+      "R345": "6e0f03e07753dd3029b86b22ba6623bb7f7c33b8aeb21c1c2a5fe8396f9ace11"
+    },
     "untestableReason": "a definition of the word attribute; the attributes themselves are executed under their own rules"
   },
   {
@@ -219,11 +302,11 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "The whole card gets the attributes while it's in the column. And so when it"
         },
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "activates abilities or whatever, it has that attribute. Combat damage also gets"
         }
       ],
@@ -263,7 +346,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "A column only exists"
         }
       ],
@@ -362,7 +445,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "*are* attributes, but they're a bit special in that they're not applied to"
         }
       ],
@@ -3116,7 +3199,7 @@
       "ours": [],
       "rulings": [
         "R318",
-        "R294"
+        "R294 (all but its premise from the 2022 Rules Glossary)"
       ],
       "history": [],
       "engine": [],
@@ -3497,7 +3580,7 @@
       ],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "> is. It won't let the Feeble unit block, even if it has another unit in the"
         }
       ],
@@ -3537,11 +3620,11 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "> is. It won't let the Feeble unit block, even if it has another unit in the"
         },
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "So block legality is the unit's own question, and the {Alluring} trigger is found"
         }
       ],

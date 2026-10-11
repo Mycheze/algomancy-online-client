@@ -176,7 +176,8 @@ export function validateRecord(r) {
   if (r.num !== undefined && (!isStr(r.num) || !ANY_NUM_RE.test(r.num))) P(`num ${JSON.stringify(r.num)} is not a rule number`);
   if (!Array.isArray(r.examples)) P('examples must be an array');
   else r.examples.forEach((x, i) => {
-    if (!isObj(x) || !nonEmpty(x.text)) P(`examples[${i}] needs text`);
+    // a demonstration: no text, only the test that shows the rule (the body prints nothing)
+    if (!isObj(x) || (x.text === null ? !(isStr(x.test) && x.test.includes('::')) : !nonEmpty(x.text))) P(`examples[${i}] needs text, or text null and a test`);
     else if (x.test !== undefined && x.test !== null && !(isStr(x.test) && x.test.includes('::'))) P(`examples[${i}].test must be "<file>::<test title>"`);
   });
   if (!Array.isArray(r.see) || !r.see.every(nonEmpty)) P('see must be an array of rule numbers or keys');

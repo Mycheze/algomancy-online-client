@@ -65,7 +65,18 @@ test('targets are the marks in the html, in document order, each once; every glo
   const has = new Set(R.targets);
   for (const id of ['front', 'annexP', 'changelog', 'annexD']) assert.ok(has.has(id as never), `${id} is not marked`);
   for (const g of INPUTS.glossary) assert.ok(has.has(`gloss:${g.key}`), `glossary row ${g.key} is not marked`);
-  for (const f of INPUTS.findings) assert.ok(has.has(`finding:${f.id}`), `finding ${f.id} is not marked`);
+  // a finding another lists in its `dupes` is folded into that entry (Annex P lists each divergence
+  // once): it has no mark of its own, and its id is an element id inside its primary's marked entry
+  const dupes = new Set(INPUTS.findings.flatMap(f => f.dupes ?? []));
+  for (const f of INPUTS.findings.filter(x => !dupes.has(x.id))) assert.ok(has.has(`finding:${f.id}`), `finding ${f.id} is not marked`);
+  const annexP = R.parts.find(p => p.id === 'annexP')!.html;
+  for (const f of INPUTS.findings) {
+    for (const d of f.dupes ?? []) {
+      assert.ok(!has.has(`finding:${d}`), `the folded-in dupe ${d} is still an entry of its own`);
+      const entry = new RegExp(`<article class="fnd" id="${f.id}" data-crt="finding:${f.id}">((?:<span id="[^"]+"></span>)*)`).exec(annexP);
+      assert.ok(entry?.[1]!.includes(`<span id="${d}"></span>`), `${d} does not land on ${f.id}'s entry`);
+    }
+  }
   assert.equal(R.disc.length, INPUTS.discrepancies.length);
   for (const d of R.disc) {
     assert.ok(d.html.startsWith(`<article class="disc" id="${d.id}" data-crt="disc:${d.id}">`), `${d.id}: the mark is not on the item root`);

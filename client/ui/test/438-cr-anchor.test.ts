@@ -162,6 +162,7 @@ test('§4 a link names the tab, the chapter and the element, reading the section
   assert.deepEqual(p.ofRef('#ch6'), { tab: 'doc', view: 'ch6', anchor: null });
   assert.deepEqual(p.ofRef('#intro'), { tab: 'doc', view: 'front', anchor: null });
   assert.deepEqual(p.ofRef('#annex-d'), { tab: 'annexD', view: 'chD', anchor: null });
+  assert.deepEqual(p.ofRef('gloss:swift'), { tab: 'doc', view: 'glossary', anchor: 'gloss:swift' }, 'a glossary row, by its mark');
   assert.equal(p.ofRef('#r701.1'), null, 'a section this document does not have');
   assert.equal(p.ofRef('#nonsense'), null);
 });
@@ -174,7 +175,8 @@ test('§4 a comment target names where it is shown', () => {
   assert.deepEqual(p.ofTarget('sec:608'), { tab: 'doc', view: 'ch6', anchor: 'r608' });
   assert.deepEqual(p.ofTarget('disc:D-U12-3'), { tab: 'disc', view: null, anchor: 'D-U12-3' });
   assert.deepEqual(p.ofTarget('finding:F-U12-3'), { tab: 'doc', view: 'annexP', anchor: 'F-U12-3' });
-  assert.deepEqual(p.ofTarget('gloss:swift'), { tab: 'doc', view: 'glossary', anchor: null });
+  assert.deepEqual(p.ofTarget('gloss:swift'), { tab: 'doc', view: 'glossary', anchor: 'gloss:swift' },
+    'a glossary row is scrolled to by its mark (it has no element id): search results and Go to land on the row');
   assert.deepEqual(p.ofTarget('front'), { tab: 'doc', view: 'front', anchor: null });
   assert.equal(p.ofTarget('rule:no.such.key'), null);
 });

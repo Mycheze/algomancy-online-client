@@ -2523,7 +2523,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "The whole card gets the attributes while it's in the column. And so when it"
         },
         {
@@ -2563,11 +2563,11 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "**This is narrower than it sounds, and the reason matters.** A column only exists"
         },
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "outside battle `effAttrs` *is* `ownAttrs` and nothing changes. R294 is not \"column"
         }
       ],
@@ -2691,11 +2691,11 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "other things in the column. So a unit with Unstable from a mod doesn't \"give\""
         },
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "Sluggish. They are special attributes."
         }
       ],
@@ -2736,11 +2736,11 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "It won't let the Feeble unit block, even if it has another unit in the"
         },
         {
-          "ref": "R294",
+          "ref": "R294 (all but its premise from the 2022 Rules Glossary)",
           "quote": "it's a single trigger for the"
         }
       ],
@@ -3278,6 +3278,10 @@
         {
           "ref": "R172 (sections 1 and 4: an erase is not a death, and the mid-battle steal; its erased-pile seat corrected by R262)",
           "quote": "An erase is still not a death and still not a trash."
+        },
+        {
+          "ref": "R348",
+          "quote": "A deleted unit dies."
         }
       ],
       "history": [],
@@ -3293,7 +3297,8 @@
     "sourceHashes": {
       "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
       "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d",
-      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
+      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6",
+      "R348": "03f8588ee647163ef0a44600f19ad5b068177c844a0fe274b076213f16cd688f"
     }
   },
   {

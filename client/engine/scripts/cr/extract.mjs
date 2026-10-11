@@ -35,7 +35,7 @@ import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'n
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CR_BUILD_DIR, CR_PRINTED_PAGES, DIGITAL_RULES, ENGINE_SRC_DIR, ENGINE_TEST_DIR, REPO_ROOT,
+  CR_BUILD_DIR, CR_PRINTED_PAGES, DIGITAL_RULES, ENGINE_SRC_DIR, ENGINE_TEST_DIR, ORACLE_JSON, REPO_ROOT,
   SERVER_E2E_DIR, SERVER_TEST_DIR, UI_TEST_DIR,
 } from '../paths.mjs';
 import { ATTRS, OUT as PRINTED_JSON } from '../extract-printed.mjs';
@@ -335,6 +335,24 @@ function printedCards() {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/**
+ * The printed BACKS of the oracle's two-sided cards that carry rules text —
+ * the Dormant Resource face every resource shows until it is activated
+ * ("Dormant resources provide no affinity or mana."), the Generic Unit token
+ * card, the stack tracker. The engine's pool (printed.json) has fronts only,
+ * so without these a rule could not quote the one place print states the
+ * dormant rule. Kept apart from `cards`: a back has no kind or timing, and a
+ * back that shares a front's name (Fireball) never shadows the front
+ * (check.mjs indexExtract).
+ */
+function cardBacks() {
+  // the oracle maps each name to an ARRAY of its printings
+  const rows = Object.values(JSON.parse(readFileSync(ORACLE_JSON, 'utf8'))).flat();
+  return rows.filter(c => c && c.Side === 'Back' && String(c.text ?? '').trim())
+    .map(c => ({ name: c.name, typeLine: c.type, text: c.text }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
 function printedPages() {
   const src = JSON.parse(readFileSync(CR_PRINTED_PAGES, 'utf8'));
   return src.pages.map(p => ({ doc: p.doc, page: p.page, text: p.text }));
@@ -461,6 +479,7 @@ export function extract() {
     raq: raqThreads(),
     glossary: glossaryRows(),
     cards,
+    cardBacks: cardBacks(),
     printedPages: printedPages(),
     enums: enums(cards),
     tests: testIndex(),

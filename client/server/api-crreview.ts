@@ -8,6 +8,8 @@
  *   POST /api/cr/comment                  add | edit | resolve | reopen | delete. A NAMED account
  *   GET  /api/cr/download?part=P&fmt=F    an attachment: the whole document, a chapter, a
  *                                         section, a separate file, or the comments
+ *   POST /api/cr/editor                   reply | resolve | reopen as the Rules editor.
+ *                                         The BOT TOKEN; absent without it (below)
  *
  * ── THE DOCUMENT IS BUILT, NOT READ OFF DISK ─────────────────────────────
  *
@@ -30,6 +32,18 @@
  * `canEdit` / `canResolve` on each comment and from `CrYou`, all computed
  * here; it never decides anything itself. The raw journal (it holds account
  * ids) is admin-only and 404s to everybody else, the admin routes' rule.
+ *
+ * ── THE RULES EDITOR'S DOOR ──────────────────────────────────────────────
+ *
+ * The comment-review process (scripts/cr/comments.mjs) answers a thread and
+ * closes it as `RULES_EDITOR` (crreview.ts), a system author, never as the
+ * owner's account. Its route is gated the way /api/bot/* is (main.ts
+ * botAllowed(): the `x-algo-bot` header against ALGO_BOT_TOKEN, header only):
+ * no token configured, or the wrong one, and the path does not exist — it
+ * falls through to the 404 every unserved path gets. It can reply to a live
+ * thread and resolve or reopen one. It cannot start a thread, edit, delete, or
+ * answer an owner question: a reply is the most it says, so a leaked token
+ * can put words under a thread and close it, and nothing else.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createHash } from 'node:crypto';
@@ -41,7 +55,7 @@ import type {
 import { accountForToken, type Account } from './accounts.ts';
 import { addrOf, json, rateLimited, readBody, tokenOf } from './api-util.ts';
 import {
-  appendRow, commentsMarkdown, fold, journalRev, mayChange, mayResolve, newCommentId, readJournal, viewFor,
+  appendRow, commentsMarkdown, fold, journalRev, mayChange, mayResolve, newCommentId, readJournal, RULES_EDITOR, viewFor,
   type CrCaller, type CrRow,
 } from './crreview.ts';
 import { reportedBy } from './report-fields.ts';
@@ -107,6 +121,9 @@ const defaultReview = cachedBuilder(async () => (await import('../engine/scripts
 export interface CrRouteDeps {
   /** the review document; the default builds it from data/comprehensive-rules */
   review: () => Promise<CrReview>;
+  /** may this request use the Rules editor's door? main.ts passes its
+   * botAllowed(req) answer; absent = no (the door does not exist) */
+  editorAllowed?: boolean;
 }
 
 /* ── small helpers ────────────────────────────────────────────────────── */
@@ -282,6 +299,31 @@ async function applyOp(b: Record<string, unknown>, account: Account, caller: CrC
   return fail(400, 'op: add, edit, resolve, reopen or delete');
 }
 
+/** One Rules editor op (the door in the header). The thread must be a live
+ * ROOT: a reply hangs off it on its own target, and a resolve or reopen is
+ * written `asAdmin`, because the editor is nobody's author. */
+function applyEditorOp(b: Record<string, unknown>): { id: string } | Fail {
+  const op = b['op'];
+  if (op !== 'reply' && op !== 'resolve' && op !== 'reopen') return fail(400, 'op: reply, resolve or reopen');
+  const id = b['id'];
+  const c = typeof id === 'string' ? fold(readJournal()).get(id) : undefined;
+  if (!c || c.deleted) return fail(404, 'no such comment');
+  if (c.parent !== null) return fail(400, 'id: a thread, not a reply');
+  const at = new Date().toISOString();
+  if (op === 'reply') {
+    const body = cleanBody(b['body']);
+    if (isFail(body)) return body;
+    const row: CrRow = { v: 1, op: 'add', id: newCommentId(), at, by: RULES_EDITOR, target: c.target, parent: c.id, anchor: null, body };
+    appendRow(row);
+    return { id: row.id };
+  }
+  if (b['body'] !== undefined) return fail(400, 'body: only on a reply');
+  if (op === 'resolve' && c.resolved) return fail(409, 'already resolved');
+  if (op === 'reopen' && !c.resolved) return fail(409, 'not resolved');
+  appendRow({ v: 1, op, id: c.id, at, by: RULES_EDITOR, asAdmin: true });
+  return { id: c.id };
+}
+
 /* ── downloads ────────────────────────────────────────────────────────── */
 
 const MIME: Record<CrDownloadFormat, string> = {
@@ -373,9 +415,10 @@ async function download(req: IncomingMessage, res: ServerResponse, url: URL, dep
 /** Handle a rules review route. True when the request was ours. */
 export async function crReviewRoutes(
   req: IncomingMessage, res: ServerResponse, path: string, url: URL,
-  deps: CrRouteDeps = { review: defaultReview },
+  given: Partial<CrRouteDeps> = {},
 ): Promise<boolean> {
   if (!path.startsWith('/api/cr/')) return false;
+  const deps: CrRouteDeps = { review: defaultReview, ...given };
 
   if (path === '/api/cr/review' && req.method === 'GET') {
     let r: CrReview;
@@ -426,6 +469,21 @@ export async function crReviewRoutes(
   }
 
   if (path === '/api/cr/download' && req.method === 'GET') return download(req, res, url, deps);
+
+  // the Rules editor's door: unless the bot token was given, it is not here
+  if (path === '/api/cr/editor' && req.method === 'POST' && deps.editorAllowed === true) {
+    if (journalRev() > CR_LIMITS.journalBytes) { json(res, { ok: false, error: 'the comments file is full' }, 503); return true; }
+    let b: Record<string, unknown>;
+    try { b = await readBody(req, CR_LIMITS.requestBytes, true); } catch (e) {
+      json(res, { ok: false, error: e instanceof Error ? e.message : 'unreadable body' }, 400);
+      return true;
+    }
+    const done = applyEditorOp(b);
+    if (isFail(done)) { json(res, { ok: false, error: done.error }, done.status); return true; }
+    const comment = viewFor(fold(readJournal()), null).find(c => c.id === done.id)!;
+    json(res, { ok: true, rev: journalRev(), comment });
+    return true;
+  }
 
   return false;
 }

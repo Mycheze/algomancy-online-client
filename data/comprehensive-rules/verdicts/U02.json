@@ -196,45 +196,54 @@
     "key": "concepts.elements.affinity-count.dormant",
     "textHash": "9c670516fa0ab160",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.affinity",
+        "loc": "client/engine/src/engine.ts:E.affinity",
         "agrees": true,
-        "note": "skips state dormant"
+        "note": "if (r.state === 'dormant') continue; — dormant gives none; activation flips state and it counts"
       }
     ],
     "tests_run": [
       {
-        "file": "07-cards.test.ts",
-        "pattern": "All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)",
+        "file": "client/engine/test/07-cards.test.ts",
+        "pattern": "All-Consuming Blaze: damage equals your fire affinity",
         "passed": true,
-        "asserts_claim": "yes: the dormant fire adds nothing (3, not 4)"
+        "asserts_claim": true
       },
       {
-        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
-        "pattern": "R151/CT-31: the spendable/dormant split is the ENGINE's answer, not the UI's",
+        "file": "client/engine/test/01-planning.test.ts",
+        "pattern": "setup & planning",
         "passed": true,
-        "asserts_claim": "yes: two dormant fires grant no affinity"
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
+        "ref": "card: Dormant Resource",
+        "supports": "yes",
+        "note": "printed card back: \"Dormant resources provide no affinity or mana. You may activate up to two resources each turn during the resource step, flipping them over permanently.\" — supports both \"no affinity\" and \"until it is activated\"."
+      },
+      {
         "ref": "R151",
         "supports": "yes",
-        "note": "\"dormant gives no affinity\" (presentation ruling restating the engine; basis engine is honest)"
+        "note": "R151 describes E.affinity as counting what is awake (\"dormant gives no affinity\"); corroborating, not superseded."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (r.state === 'dormant') continue;   // dormant gives no affinity"
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Dormant resources provide no affinity or mana. You may activate up to two resources each turn during the resource step, flipping them over permanently."
       },
       {
         "file": "client/docs/digital-rules.md",
         "text": "counts what is **awake** (\"dormant gives no affinity\"; \"expended still counts\")."
+      },
+      {
+        "file": "client/engine/test/01-planning.test.ts",
+        "text": "assert.equal(new E(h.state).affinity(0, 'fire'), 1, 'activated gives affinity');"
       }
     ],
     "basis_ok": true,

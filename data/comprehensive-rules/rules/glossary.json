@@ -193,7 +193,7 @@
   {
     "key": "glossary.attribute",
     "term": "Attribute",
-    "text": "A quality a card can have, printed on its type line, that changes how it engages in combat.",
+    "text": "A quality that a card or a token can have, which applies whenever it has it, in combat or not.",
     "see": [
       "attr.general",
       "card.type-line.attributes"
@@ -723,7 +723,7 @@
   {
     "key": "glossary.delete",
     "term": "Delete",
-    "text": "To remove a unit from play into the bin, as when a unit dies.",
+    "text": "A way for a unit to die: it is removed from play into the bin.",
     "see": [
       "keywords.actions.delete"
     ],

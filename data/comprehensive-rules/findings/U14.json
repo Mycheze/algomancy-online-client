@@ -97,7 +97,8 @@
     "ct": "CT-254",
     "dupes": [
       "F-U14-8"
-    ]
+    ],
+    "closed": "not a bug: the owner answered D-U14-11 with reading B on 2026-10-11 (R347), and the engine already does B for Bloomcaster; CT-254 closes. The one card that still hears its own play is F-U14-10."
   },
   {
     "id": "F-U14-6",
@@ -148,7 +149,8 @@
         "quote": "// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12)."
       }
     ],
-    "ct": "CT-254"
+    "ct": "CT-254",
+    "closed": "not a bug, as F-U14-5 (R347)."
   },
   {
     "id": "F-U14-9",
@@ -170,5 +172,21 @@
       }
     ],
     "ct": "CT-232"
+  },
+  {
+    "id": "F-U14-10",
+    "title": "Stalwart Sentinel hears its own play from a bin and takes its two counters",
+    "summary": "R347: an ability that triggers when its controller plays a unit does not hear its own card being played (on the stack, not in play). Stalwart Sentinel's '[once] When you play a unit or spell from anywhere other than your hand' listens on 'spawned' with no self-exclusion, so a Sentinel played from a bin by Wake the Dead fires on its own arrival and gets two +1/+1 counters (probe zz-probe-U14-1.test.ts 1b). Bloomcaster is unaffected (it listens on cardPlayed while in play). So the engine follows R347 for Bloomcaster but not for the Sentinel.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-light-a.ts",
+        "quote": "type: 'triggered', events: ['spellPlayed', 'spawned'], bounded: true,   // [once]"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "A card that is being played is on the stack, not in play, so its own play does not trigger it."
+      }
+    ],
+    "rule": "effects.playing.what-is-played.includes-itself"
   }
 ]

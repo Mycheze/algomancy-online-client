@@ -143,7 +143,7 @@
     "id": "D-U14-11",
     "kind": "g-other",
     "rule": "effects.playing.what-is-played.includes-itself",
-    "tier": 1,
+    "tier": 4,
     "summary": "R26 says Bloomcaster's trigger fires on its own play and dates itself to the 2026-07-16 engine. The current engine hears plays only from cards in play, and a played card is on the stack, not in play, when its play fires; the designer write-up describes that state for Mycelial Mentor. The engine now makes no 1/1 for Bloomcaster's own play (F-U14-5 (CT-254)).",
     "sides": [
       {
@@ -159,25 +159,7 @@
         "quote": "Whenever you play a unit"
       }
     ],
-    "resolution": "Question for the owner. The rule states R26 (the current ruling) and is marked engine-differs, F-U14-5 (CT-254). The RAQ write-up on Mycelial Mentor answers whether a card waiting on the stack sees a token made meanwhile; it does not say a card's play-trigger cannot hear its own play, so it does not decide this.",
-    "question": {
-      "topic": "Triggers and the stack",
-      "ask": "Does Bloomcaster's \"Whenever you play a unit\" trigger on its own play?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Yes: it prints no \"another\", so its own play counts (R26).",
-          "table": "Playing Bloomcaster makes a 1/1; engine change, CT-254."
-        },
-        {
-          "label": "B",
-          "text": "No: a card's abilities work only once it is in play, and a card being played is on the stack (the Mycelial Mentor write-up), so only units played while Bloomcaster is in play count.",
-          "table": "As today; CT-254 closes as not a bug."
-        }
-      ],
-      "follows": "A (R26), marked engine-differs.",
-      "recommend": "A: the literal text, the pool's use of \"another\" for not-me (R265) and the permissive steer all point there; the Mentor write-up answers a different question."
-    }
+    "resolution": "Answered by the owner on 2026-10-11, reading B (R347, reversing R26's own-play half): a card being played is on the stack, not in play, so its own \"whenever you play a unit\" does not hear it. The rule states B. The engine already does B for Bloomcaster, so the findings that called that a bug (F-U14-5, F-U14-8) are closed and CT-254 closes as not a bug. Stalwart Sentinel still hears its own play from a bin: F-U14-10."
   },
   {
     "id": "D-U14-12",

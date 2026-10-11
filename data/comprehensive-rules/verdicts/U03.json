@@ -1752,15 +1752,15 @@
   },
   {
     "key": "concepts.cards.token.not-card",
-    "textHash": "37836daaf698347a",
+    "textHash": "b3a377fdc0a6f901",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U03-r2",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:castSpellToken path",
+        "loc": "client/engine/src (cardPlayed vs spellPlayed events)",
         "agrees": true,
-        "note": "a spell token cast fires 'spellPlayed' but not 'cardPlayed'"
+        "note": "a cast spell token fires spellPlayed but never cardPlayed"
       }
     ],
     "tests_run": [
@@ -1774,37 +1774,55 @@
     "probes": [],
     "source_checks": [
       {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "cited for the \"temporary cards\" wording the rule explains away; verbatim."
+      },
+      {
         "ref": "R129",
         "supports": "yes",
-        "note": "owner: Tokens are NOT cards"
+        "note": "owner: \"Tokens are NOT cards, however.\" — confirmed by R346."
       },
       {
         "ref": "R306",
         "supports": "yes",
-        "note": ""
+        "note": "owner: tokens are not cards \"in terms of specific semantics of the game\"."
       },
       {
         "ref": "R305",
         "supports": "yes",
-        "note": ""
+        "note": "noun table: \"card(s)\": a token does not count."
+      },
+      {
+        "ref": "R346",
+        "supports": "yes",
+        "note": "owner, 2026-10-11: \"temporary card\" is print describing a token to players; a token is never a card, still a unit/spell."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> \"Everything is a card, including units. Tokens are NOT cards, however.\""
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **\"card(s)\"**: a token does not."
-      },
-      {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "Tokens are temporary cards that are created directly"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Everything is a card, including units. Tokens are NOT cards, however.\"*"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "For the rules, a token is never a card."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A token is still a unit, a spell, or whatever other thing its type line names."
+      },
+      {
+        "file": "client/engine/test/119-play-and-token-events.test.ts",
+        "text": "assert.equal(seen(h, 'cardPlayed') - mark.card, 0, 'a token is not a card');"
       }
     ],
     "basis_ok": true,
-    "problem": "Note (not an error): the Manual does call tokens 'temporary cards', so the open-question flag D-U03-1 is real."
+    "problem": ""
   },
   {
     "key": "concepts.cards.token.not-trashed",
@@ -3383,34 +3401,72 @@
   },
   {
     "key": "concepts.targets.region.global",
-    "textHash": "ff14ebb4287cb1c3",
+    "textHash": "d356dc13527b22e3",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.pushStackTargets",
-        "agrees": true,
-        "note": "no region filter on stack refs"
+        "loc": "client/engine/src/engine.ts:E.pushStackTargets",
+        "agrees": false,
+        "note": "one global state.stack; a stack item is offered from every region (F-U01-2, as the record declares)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.pushBinCardTargets",
+        "agrees": false,
+        "note": "takes no region: cards in either bin are offered from every region (F-U01-2)"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "pattern": "cr:concepts.targets.region.global",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R265",
-        "supports": "partly",
-        "note": "R265 lists stack, bins AND cache as global; R291 later made cache targets presence-scoped, which the rule correctly omits"
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": "\"Every single effect is specific to the region it takes place in, meaning it will never impact anything in any other region\"; \"if a player enters a region, their bin, hand, resources, and even the player themself can be interacted with.\""
+      },
+      {
+        "ref": "RAQ 1454169054402314362#0",
+        "supports": "yes",
+        "note": "calebgannon, status covered: \"everything in the game is region specific\"."
+      },
+      {
+        "ref": "R344",
+        "supports": "yes",
+        "note": "current ruling (amends R250/R265): each region has its own stack; a bin or cache is reachable only where its owner is present."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "        if (it.id === excludeStackId) continue;   // R68: a negated item is not here to skip"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Every single effect is specific to the region it takes"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Additionally, if a player enters a region, their bin, hand,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "An effect can reach a player's bin or cache only in a region where that player is present."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Each region has its own stack."
+      },
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "text": "assert.ok(ask('stackEffect', r).includes(JSON.stringify({ stack: item.id })), `the stack item, from region ${r}`);"
       }
     ],
     "basis_ok": true,
-    "problem": "No example or test bound; engine reading only."
+    "problem": ""
   },
   {
     "key": "concepts.targets.required",

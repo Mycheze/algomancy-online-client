@@ -98,53 +98,76 @@
   },
   {
     "key": "keywords.actions.delete",
-    "textHash": "525085a6c6f12a52",
-    "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "textHash": "76d390981e29f959",
+    "verdict": "partial",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:destroy(u,'is deleted')",
+        "loc": "client/engine/src (delete → died event, verb \"is deleted\")",
         "agrees": true,
-        "note": "fires 'died'; disposeToBin to controller's bin unless binTo"
+        "note": "a deletion fires one died event, fires When I die, and bins the card with its controller"
       }
     ],
     "tests_run": [
       {
-        "file": "182-correctness-sample.test.ts",
-        "pattern": "Throw off a Cliff: only defense>=4 is offered, and the target is DELETED (bin, a death)",
+        "file": "client/engine/test/182-correctness-sample.test.ts",
+        "pattern": "Throw off a Cliff: only defense>=4 is offered",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/429-cr-keyword-actions.test.ts",
+        "pattern": "cr:keywords.actions.delete",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U18/u18-probes.test.ts",
-        "title": "keywords.actions.delete: a deleted unit DIES (a died event, verb \"is deleted\") and goes to the bin",
+        "file": "client/engine/test/zz-probe-U18-2.test.ts",
+        "test": "probe U18-2: Unmake deletes A Pile of Rubbish — it dies, its own \"When I die\" draws, and it is in its controller bin",
         "passed": true,
-        "demonstrates": "yes"
+        "demonstrates": "yes: one died event, its own When I die triggered and drew, the card is in its controller bin"
       }
     ],
     "source_checks": [
       {
         "ref": "Manual p.13",
         "supports": "yes",
-        "note": ""
+        "note": "\"When a unit dies or is deleted, it is placed in the bin (discard zone).\" — the default destination."
       },
       {
         "ref": "card: Throw off a Cliff",
         "supports": "yes",
-        "note": ""
+        "note": "the example card."
+      },
+      {
+        "ref": "R348",
+        "supports": "yes",
+        "note": "owner, current: a deleted unit dies; dies-triggers including its own When I die trigger; into the bin as any death does."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "a unit dies or is deleted, it is placed in the bin (discard"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A deleted unit dies."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Abilities that trigger when a unit dies, its own \"When I die\" included, trigger when it is deleted."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Delete target unit. If you do, put it and {/n}all of its mods into your bin."
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example asserts only the bin, not the death; probe shows the died event."
+    "problem": "All holds except the clause \"Unless the effect names another bin\": no cited source says a delete effect can name a different bin. Manual p.13 and R348 give only the default (\"placed in the bin\", \"as any death does\"). The clause is true of the pool (Pull Under prints \"Delete target unit. If you do, put it and all of its mods into your bin.\"), but that card is not cited. Cite it, or drop the clause."
   },
   {
     "key": "keywords.actions.delete.named-bin",
@@ -1771,52 +1794,81 @@
   },
   {
     "key": "keywords.actions.rockfall.repeated",
-    "textHash": "13ed4fff4d4ce714",
+    "textHash": "536ca7c43ba52956",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets (Meteor Shower spellEffect)",
+        "loc": "client/engine/src (Meteor Shower / rockfall resolution)",
         "agrees": true,
-        "note": "three separate rockfall batches; each player picks per rockfall (17-earth-b, 93-engine-defects)"
+        "note": "three rockfalls in one resolution, a fresh choice each, a damage event each; triggers wait for the end of the spell"
       }
     ],
     "tests_run": [
       {
-        "file": "17-earth-b.test.ts",
-        "pattern": "Meteor Shower: rockfall 3 three times — each player picks, damage stacks up",
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "pattern": "Meteor Shower: rockfall 3 three times",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.damage.one-effect.copies",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U18-1.test.ts",
+        "test": "probe U18-1: Meteor Shower — a Mirage Scuttler host triggers once per rockfall, and every trigger resolves only after the third rockfall",
+        "passed": true,
+        "demonstrates": "yes: three damage events, three Scuttler triggers; none is pushed to the stack or resolved before the third rockfall; 9 counters land after the spell"
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: Meteor Shower",
         "supports": "yes",
-        "note": ""
+        "note": "\"Rockfall 3 three times.\" — one spell."
       },
       {
         "ref": "RAQ 1353899470156206152#4",
         "supports": "yes",
-        "note": "\"one by one\""
+        "note": "_passer, status covered (not outdated): \"They resolve one by one and you always must choose alive unit\"."
       },
       {
         "ref": "R80",
         "supports": "yes",
-        "note": "separate source per Rockfall copy"
+        "note": "each rockfall is a separate batch/source of damage."
       },
       {
-        "ref": "R80",
+        "ref": "R349",
         "supports": "yes",
-        "note": "separate source per Rockfall copy"
+        "note": "owner, current: triggers during one rockfall wait until the whole effect has resolved."
       }
     ],
     "quote_spans": [
       {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Rockfall 3 three times."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "They resolve one by one and you always must choose alive unit (or none if you don"
+      },
+      {
         "file": "client/docs/digital-rules.md",
-        "text": "three batches for the same reason."
+        "text": "An ability that triggers during one of those rockfalls is not put on the stack before the next rockfall."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It waits until the whole effect has resolved, like any ability that triggers while an effect resolves."
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "text": "pick(h, u1);                                        // u1: 6 ≥ 4 dies; d1: 6 ≥ 5 dies"
       }
     ],
     "basis_ok": true,

@@ -2,26 +2,7 @@
 
 Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision, and owner-questions.md lists it on its own; every other item already says which source decides and which side the document follows. An item filed by more than one drafting unit is kept once, and names the others under "Also filed as".
 
-## 1. Questions for the owner (15)
-
-### D-U02-2 · Engine only · rule 105.4c
-
-Whether a dormant (face-down) resource counts toward affinity. The engine says no. The designer says affinity counts the resources "somewhere in your manabase", tapped or not, and says nothing of face-down ones.
-
-- RAQ 1358299200953126963#0: "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
-- Manual p.12: "Resource types needed to be present among your resources"
-- R151: "counts what is **awake** ("dormant gives no affinity"; "expended still counts")."
-
-**Question:** Does a dormant (face-down) resource count toward affinity?
-
-- **Reading A.** Yes: every resource you have counts, face-down ones included ("somewhere in your manabase"). *At the table:* A resource created this turn counts toward affinity before it is activated, so a player may meet [r][r][r] with one active and two dormant fire resources.
-- **Reading B.** No: only resources whose type is showing (active) count. *At the table:* As today: a dormant resource gives nothing until it is activated.
-
-**The document today:** B, the engine's behaviour (basis engine, low confidence). R151 only quotes the engine.
-
-**Recommended:** A. Caleb puts no condition on the resource ("You don't care if it's tapped or not"), and A is the permissive reading. Take B only if a face-down resource's type is meant to be unknown at the table.
-
-**Resolution:** Question for the owner. The rule states the engine, basis engine, low confidence; R151 is a presentation ruling that quotes the engine, not a rules decision.
+## 1. Questions for the owner (10)
 
 ### D-U03-13 · Other · rule 110.11
 
@@ -44,33 +25,6 @@ The designer says a graft onto Mohruung makes "he will trigger first". A graft i
 **Recommended:** A. A graft has no stack item, so "trigger first" says something only if the trigger resolves first. Apply the same answer to an augment applied in deployment (D-U03-14).
 
 **Resolution:** Question for the owner. The rule states reading A; the engine attaches the graft before the trigger resolves: F-U03-5 (CT-242). Under B the rule's last sentence becomes "triggers when the graft is applied" and F-U03-5 (CT-242) closes. Merged here: the same order for an augment applied in deployment (D-U03-14), and whether the graft being applied joins Mohruung's triggered composite (D-U17-13: the engine fixes the composite before the graft attaches, which fits both readings).
-
-### D-U06-1 · Sources disagree · rule 304.2
-
-Both printed rulebooks call tokens "temporary cards", and Void Mandible prints "nontoken card", which only makes sense if a token can be a card. The owner ruled that a token is not a card (R129, R133) and confirmed it in R306.
-
-*Also filed as D-U03-1 (rule 108.2a), D-U14-7 (rule 701.1c).*
-
-- Manual p.15: "Tokens are temporary cards that are created directly"
-- Rulebook 2023 p.4: "Tokens are temporary cards that are created directly into play"
-- card: Void Mandible: "When a nontoken card is played during battle, sacrifice me."
-- R133: "Tokens are NOT cards, however."
-- R306: "Tokens are specifically not considered cards in terms of specific semantics"
-- R129: "Everything is a card, including units. Tokens are NOT cards, however."
-- R133: "> "I think Void Mandible is just trying to save space (card < unit or spell)."
-- Rulebook 2023 p.4: "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
-- R305: "**A token is still not a CARD.**"
-
-**Question:** Is a token a card, so that card text saying "card" reaches tokens?
-
-- **Reading A.** Yes: "temporary cards" uses the rules word, and Void Mandible's "nontoken card" is a real qualifier. *At the table:* Arbiter of Armistice ("Cards played during battle") and Vengeance tax a spell token cast; a token counts for "card" text; R133, R305 and R306's noun table are reversed.
-- **Reading B.** No: "temporary cards" describes the physical token pieces, and the rules word "card" means a card with an Algomancy back (R306). *At the table:* As today: "card" text ignores tokens, and Void Mandible's "nontoken" is shorthand.
-
-**The document today:** B (R129, R133, R305, R306).
-
-**Recommended:** A, on the literal steer: both rulebooks say "temporary cards" and Void Mandible prints "nontoken card". Keep B only if the owner wants R306's noun table to stand as a deliberate reading.
-
-**Resolution:** Question for the owner. The rules state the owner's ruling, basis owner. Printed text outranks an R-ruling, so they stand only if reading B is right. Under A, rule 300.5d and R305's noun table change, and the split over tokens on the erased pile (D-U07-5) resolves.
 
 ### D-U06-9 · Other · rule 305.6
 
@@ -176,25 +130,6 @@ The printed round-2 procedure reads as if the sent counterattackers are always p
 
 **Resolution:** Question for the owner. The rule follows reading A, which the engine plays (32-cast-costs.test.ts). A related point no source addresses: whether the non-initiative player may attack with only some of the sent units.
 
-### D-U14-11 · Other · rule 701.1e
-
-R26 says Bloomcaster's trigger fires on its own play and dates itself to the 2026-07-16 engine. The current engine hears plays only from cards in play, and a played card is on the stack, not in play, when its play fires; the designer write-up describes that state for Mycelial Mentor. The engine now makes no 1/1 for Bloomcaster's own play (F-U14-5 (CT-254)).
-
-- R26: "Bloomcaster's "[Augment] Whenever you play a unit" (no "another") **fires on its own"
-- RAQ 1353862592661164152#0: "He goes on the stack (but is not Spawned / In play yet)"
-- card: Bloomcaster: "Whenever you play a unit"
-
-**Question:** Does Bloomcaster's "Whenever you play a unit" trigger on its own play?
-
-- **Reading A.** Yes: it prints no "another", so its own play counts (R26). *At the table:* Playing Bloomcaster makes a 1/1; engine change, CT-254.
-- **Reading B.** No: a card's abilities work only once it is in play, and a card being played is on the stack (the Mycelial Mentor write-up), so only units played while Bloomcaster is in play count. *At the table:* As today; CT-254 closes as not a bug.
-
-**The document today:** A (R26), marked engine-differs.
-
-**Recommended:** A: the literal text, the pool's use of "another" for not-me (R265) and the permissive steer all point there; the Mentor write-up answers a different question.
-
-**Resolution:** Question for the owner. The rule states R26 (the current ruling) and is marked engine-differs, F-U14-5 (CT-254). The RAQ write-up on Mycelial Mentor answers whether a card waiting on the stack sees a token made meanwhile; it does not say a card's play-trigger cannot hear its own play, so it does not decide this.
-
 ### D-U16-1 · Sources disagree · rule 709.4b
 
 The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a Balanced unit. Its first sentence says Tough "augmented onto" a Balanced unit is doubled, then balanced; its last sentence says Tough "applied to" a Balanced unit is balanced, then doubled. R19 says the order between printed, mod-given and column-shared attributes is the engine's own call, and the engine balances first.
@@ -219,45 +154,6 @@ The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a 
 **Recommended:** A: the Manual names the case, and printed text is read literally.
 
 **Resolution:** Question for the owner. rule 802.1m states reading A, the Manual's first sentence, and files the engine's order as F-U19-5 (CT-257); rule 709.4b states both sentences and the engine's order, F-U16-4 (CT-257). Whichever reading the owner takes, the two rules are redrafted to state it alone.
-
-### D-U18-4 · RAQ open · rule 801.12c
-
-Do abilities triggered by one rockfall resolve before the next rockfall of the same effect? The designer's write-up said they do, when Meteor Shower made three copies of itself. The card now prints one spell ("Rockfall 3 three times"), the RAQ register marks the claim outdated, and the engine lets the triggers wait until the whole spell has resolved.
-
-- RAQ 1353899470156206152#2: "any check for triggers will happen in-between resolving each Rockfall 3"
-- card: Meteor Shower: "Rockfall 3 three times."
-- RAQ 1353899470156206152#4: "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
-- R80: "three batches for the same reason."
-
-**Question:** Do abilities triggered by one rockfall resolve before the next rockfall of the same Meteor Shower?
-
-- **Reading A.** Yes: "any check for triggers will happen in-between resolving each Rockfall 3" is a statement about rockfalls in general. *At the table:* A Mirage Scuttler chosen three times grows between hits; engine change.
-- **Reading B.** No: it described three separate copies, which the card no longer makes; as one spell, triggers wait until it finishes. *At the table:* As today.
-
-**The document today:** Neither: rule 801.12c says nothing; the engine does B.
-
-**Recommended:** A: the designer's words describe the mechanic, not the copies, and A is the permissive reading.
-
-**Resolution:** Question for the owner; the RAQ register's own note already asks it. The card now prints one spell ("Rockfall 3 three times"), the register marks the claim outdated, and "They resolve one by one" (claim #4) fits either reading.
-
-### D-U18-9 · Other · rule 801.5
-
-Is a deleted unit a unit that dies? The Manual names the two side by side. No source says a deletion is a death; the engine treats it as one (it fires the death event, so "When I die" and "whenever a unit dies" see it).
-
-- Manual p.13: "a unit dies or is deleted, it is placed in the bin (discard"
-- R70: "| `verb` | `dies` / `is deleted` / `is sacrificed` |"
-- card: Unstable Singularity: "When I die, [Switch1] Delete target unit."
-
-**Question:** Is a deleted unit a unit that dies, so that "When I die" and "whenever a unit dies" trigger?
-
-- **Reading A.** Yes: deletion is one way of dying, named separately because cards say "delete". *At the table:* As today (the engine fires the death event).
-- **Reading B.** No: dying and being deleted are two events that end in the same bin. *At the table:* Death triggers ignore a deletion; Unstable Singularity's "When I die" would not fire when it is deleted.
-
-**The document today:** Neither: rule 801.5 states only where the unit goes. The engine does A.
-
-**Recommended:** A, the permissive reading, which the engine already plays.
-
-**Resolution:** Question for the owner. The Manual says a sacrifice causes a unit "to die" and says no such thing of a deletion; nothing else speaks to it.
 
 ### D-U19-3 · Sources disagree · rule 802.8c
 
@@ -350,8 +246,9 @@ The Manual and Caleb say every effect is region-specific and never impacts anyth
 - Manual p.19: "Every single effect is specific to the region it takes"
 - Manual p.30: "followed by a priority window inside of each region:"
 - R250: "The STACK is not regional and is deliberately left global; narrowing"
+- R344: "A player's bin and cache are tied to that player."
 
-**Resolution:** Settled by the authority order: Manual p.19 and Caleb ("everything in the game is region specific") outrank R265 and R250, so rule 101.6 states them, and the client's regionless stack, bins and cache are an engine divergence, F-U01-2 (CT-234, filed as an owner decision on whether to change the engine). Document fix: done 2026-10-10. rule 601.2a stated R265's premise (the stack, the bins and the cache are in no region); it now states the regional rule for the stack, bins, hands and caches and is marked engine-differs (F-U01-2). In two-player play the difference is small: battle resolves one region at a time (Manual p.21) and each seat has its own deployment stack (R286), so the one stack only ever holds one region's items. Register fix: mark the "deliberately global" sentences of R250 and R265 as outranked by Manual p.19.
+**Resolution:** Settled by the authority order, and answered by the owner on 2026-10-11 (R344): Manual p.19 and Caleb ("everything in the game is region specific") outrank R265 and R250, and the owner's ruling R344 amends both. Each region has its own stack, owned by nobody and shared by the players present in it; a player's bin and cache are tied to that player and are in a region only while that player is. The rules state this (101.6, 601.2a, 110.5a), and the engine's one battle stack and its bins open to every region are an engine divergence, F-U01-2 (CT-234, engine work now, no longer an owner decision). Document fix: 101.6 and 601.2a on 2026-10-10; 110.5a, which still stated R265's premise, and 601.2a's stack sentence on 2026-10-11. Register fix: R344 is the mark this row asked for on R250 and R265.
 
 ### D-U02-8 · Sources disagree · rule 106.8d
 
@@ -1142,7 +1039,7 @@ Do tokens belong on the erased pile? R306 and R167 record a dying token, and a t
 - R156: "event `disposeToBin` emits, anchored on the host's owner. No zone changes, no"
 - R208: "disagree about it — `disposeToBin` **does** announce token mods on the erased"
 
-**Resolution:** Two owner rulings disagree by route, and no printed or designer source speaks to the erased pile, a digital surface (R65). R306, R156 and R167 record tokens and token mods on it; R219 does not file a token mod erased off a host that stays in play, and says it left that disagreement alone. The rules state each route as its ruling says: rule 407.3 records tokens, rule 720.9a does not record that one route, and the Return to Nature path is filed as F-U17-4 (CT-259). Sign-off: one rule for every route. If the owner answers that a token is a card (D-U06-1, reading A), R219's reason falls and every route files.
+**Resolution:** Two owner rulings disagree by route, and no printed or designer source speaks to the erased pile, a digital surface (R65). R306, R156 and R167 record tokens and token mods on it; R219 does not file a token mod erased off a host that stays in play, and says it left that disagreement alone. The rules state each route as its ruling says: rule 407.3 records tokens, rule 720.9a does not record that one route, and the Return to Nature path is filed as F-U17-4 (CT-259). Sign-off: one rule for every route. The owner answered D-U06-1 with reading B (R346: a token is not a card), so R219's reason stands.
 
 ### D-U08-6 · Owner call only · rule 504.5
 
@@ -1755,7 +1652,7 @@ R78 left one presentation call open: the log line "X resolves." is written when 
 
 **Resolution:** An owner-only presentation call. R78 leaves "X resolves." logged when resolution starts, and asks the owner to rule. No rule states it (rule D6.3 covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved.
 
-## 4. Everything else (123)
+## 4. Everything else (128)
 
 ### D-GL-1 · Other · rule 304.11
 
@@ -1866,6 +1763,17 @@ The Manual says Algomancy has five elements. The client plays seven: the Light &
 - R35: "than the smallest legal X ("X can't be zero" → 1) — the cast is ILLEGAL."
 
 **Resolution:** No conflict. The rules here are worded for an X spell; a judge's CR that says "a card that prints X can't be zero" would wrongly bar Instrument of Reassignment from a free play. The engine agrees with the narrow reading (verifier probe).
+
+### D-U02-2 · Engine only · rule 105.4c
+
+Whether a dormant (face-down) resource counts toward affinity. The engine says no. The designer says affinity counts the resources "somewhere in your manabase", tapped or not, and says nothing of face-down ones.
+
+- RAQ 1358299200953126963#0: "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+- Manual p.12: "Resource types needed to be present among your resources"
+- R151: "counts what is **awake** ("dormant gives no affinity"; "expended still counts")."
+- card: Dormant Resource: "Dormant resources provide no affinity or mana."
+
+**Resolution:** Settled by print, which the question had missed: the Dormant Resource card back, the face every resource shows until it is activated, says "Dormant resources provide no affinity or mana." The owner confirmed it on 2026-10-11. The rule now cites the card (basis printed). Caleb's "somewhere in your manabase" answered whether tapped resources count, and they do.
 
 ### D-U02-4 · Sources disagree · rule 106.3a
 
@@ -2014,7 +1922,7 @@ The 2023 Rulebook says units in a column share attributes, with no exception. Th
 - Manual p.25: "These attributes are not shared in formation, and simply"
 - Rulebook 2023 p.12: "In addition to stats, some units have Attributes (1), which can change how they engage"
 
-**Resolution:** The rule states the Manual. The Rulebook passage introduces attributes as those that "change how they engage in combat", so the two read together: combat attributes are shared, purple ones are not. No owner question.
+**Resolution:** The rule states the Manual: combat (gold) attributes are shared in a column, purple ones are not. The Rulebook's sentence introduces the combat attributes it goes on to describe; it does not make every attribute a combat one (Rulebook 2023 p.3, Manual p.25, and R345: an attribute applies in combat or not). No owner question.
 
 ### D-U05-3 · Sources disagree · rule 207.4a
 
@@ -2070,6 +1978,25 @@ The sources are silent on whether a "Discard me" line (Sacrifice Dude, Dropslime
 - R65 (its discard-me half): "me"* line as an alternative play MODE, and inherited the card's own timing with"
 
 **Resolution:** This document treats "Discard me" under 207.8 and 801, not 203, because discarding is not playing (R37, R65). Where it is printed is a question for the scans, not a ruling.
+
+### D-U06-1 · Sources disagree · rule 304.2
+
+Both printed rulebooks call tokens "temporary cards", and Void Mandible prints "nontoken card", which only makes sense if a token can be a card. The owner ruled that a token is not a card (R129, R133) and confirmed it in R306.
+
+*Also filed as D-U03-1 (rule 108.2a), D-U14-7 (rule 701.1c).*
+
+- Manual p.15: "Tokens are temporary cards that are created directly"
+- Rulebook 2023 p.4: "Tokens are temporary cards that are created directly into play"
+- card: Void Mandible: "When a nontoken card is played during battle, sacrifice me."
+- R133: "Tokens are NOT cards, however."
+- R306: "Tokens are specifically not considered cards in terms of specific semantics"
+- R129: "Everything is a card, including units. Tokens are NOT cards, however."
+- R133: "> "I think Void Mandible is just trying to save space (card < unit or spell)."
+- Rulebook 2023 p.4: "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
+- R305: "**A token is still not a CARD.**"
+- R346: "For the rules, a token is never a card."
+
+**Resolution:** Answered by the owner on 2026-10-11, reading B (R346): "temporary card" is how print describes a token to players, and for the rules a token is not a card, though it is a unit, a spell or another printed thing. R129, R133, R305 and R306 stand, Void Mandible's "nontoken" is shorthand, and the rules that state them stand (108.2a no longer calls it an open question).
 
 ### D-U06-11 · Sources disagree · rule 305.1
 
@@ -2390,6 +2317,16 @@ The Rulebook 2023 gives the combat damage step a priority window. The Manual lis
 
 **Resolution:** Follow the designer (authority order). The rule states the Manual's three steps plus the sub-step windows of a split damage step; the Rulebook 2023 wording is recorded here.
 
+### D-U14-11 · Other · rule 701.1e
+
+R26 says Bloomcaster's trigger fires on its own play and dates itself to the 2026-07-16 engine. The current engine hears plays only from cards in play, and a played card is on the stack, not in play, when its play fires; the designer write-up describes that state for Mycelial Mentor. The engine now makes no 1/1 for Bloomcaster's own play (F-U14-5 (CT-254)).
+
+- R26: "Bloomcaster's "[Augment] Whenever you play a unit" (no "another") **fires on its own"
+- RAQ 1353862592661164152#0: "He goes on the stack (but is not Spawned / In play yet)"
+- card: Bloomcaster: "Whenever you play a unit"
+
+**Resolution:** Answered by the owner on 2026-10-11, reading B (R347, reversing R26's own-play half): a card being played is on the stack, not in play, so its own "whenever you play a unit" does not hear it. The rule states B. The engine already does B for Bloomcaster, so the findings that called that a bug (F-U14-5, F-U14-8) are closed and CT-254 closes as not a bug. Stalwart Sentinel still hears its own play from a bin: F-U14-10.
+
 ### D-U14-12 · Other · rule 702.2d
 
 R311 says the hand's timing-widening rules (R97/R123 haste grants, the battle {Virus} window, Ambush) apply to cached cards. The sources are silent on whether they also apply to a card played from a bin under a permission.
@@ -2612,6 +2549,17 @@ R40 lists "milling" as a way of trashing, but no card prints "mill" and no print
 
 **Resolution:** The rule keeps the word because a card moved from the deck to a bin does enter a bin from outside the stack, which is the definition. Define "mill" in the glossary as "put from the deck into the bin" if a judge's CR uses the word.
 
+### D-U18-4 · RAQ open · rule 801.12c
+
+Do abilities triggered by one rockfall resolve before the next rockfall of the same effect? The designer's write-up said they do, when Meteor Shower made three copies of itself. The card now prints one spell ("Rockfall 3 three times"), the RAQ register marks the claim outdated, and the engine lets the triggers wait until the whole spell has resolved.
+
+- RAQ 1353899470156206152#2: "any check for triggers will happen in-between resolving each Rockfall 3"
+- card: Meteor Shower: "Rockfall 3 three times."
+- RAQ 1353899470156206152#4: "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
+- R80: "three batches for the same reason."
+
+**Resolution:** Answered by the owner on 2026-10-11, reading B (R349): Meteor Shower is one spell now, so abilities that trigger during its rockfalls wait until it has resolved. rule 801.12c states it. The engine already does B.
+
 ### D-U18-6 · Other · rule 801.11
 
 Sources silent on whether the two hits of a fight are simultaneous, so that a unit killed by its opponent's damage still deals its own. Print says only "They deal damage to each other". R80 makes a fight two damage batches, one per fighter, and checks deaths once per batch.
@@ -2630,6 +2578,16 @@ Sources silent on a glimpse of more cards than the deck can supply. The engine's
 - file: client/engine/test/36-cache-prophecy.test.ts: "// an empty deck glimpses nothing rather than throwing"
 
 **Resolution:** No rule written. The test empties the deck from inside the engine, with no recycle pile to fall back on, so it does not show what happens at a table. Question for the owner only if a judge's CR rules on it: does a glimpse that runs past the end of the deck shuffle the recycle pile in (408.2b) and keep revealing, or reveal fewer?
+
+### D-U18-9 · Other · rule 801.5
+
+Is a deleted unit a unit that dies? The Manual names the two side by side. No source says a deletion is a death; the engine treats it as one (it fires the death event, so "When I die" and "whenever a unit dies" see it).
+
+- Manual p.13: "a unit dies or is deleted, it is placed in the bin (discard"
+- R70: "| `verb` | `dies` / `is deleted` / `is sacrificed` |"
+- card: Unstable Singularity: "When I die, [Switch1] Delete target unit."
+
+**Resolution:** Answered by the owner on 2026-10-11, reading A (R348): a deleted unit dies, so "When I die" and "whenever a unit dies" trigger. rule 801.5 states it, and rule 713.8 already did. The engine already fires the death event for a deletion.
 
 ### D-U19-11 · Other · rule 802.12
 

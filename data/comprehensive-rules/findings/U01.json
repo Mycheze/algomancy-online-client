@@ -26,8 +26,8 @@
   {
     "id": "F-U01-2",
     "rule": "concepts.golden.regions",
-    "title": "The stack, bins and cache are regionless, so some effects reach across regions",
-    "summary": "The Manual says every effect is specific to its region and never impacts anything in another region, and Caleb says everything in the game is region-specific. The client, by an R-ruling, gives the stack, bins and cache no region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions. Unit targeting, statics and triggers are region-scoped and agree with print. Pending the owner's answer on D-U01-12; fix nothing until then. (Measured by a verifier probe; the probe files are not committed.)",
+    "title": "The engine lets effects reach the stack and the bins across regions",
+    "summary": "The rules make the stack, the bins and the caches regional (Manual p.19, Caleb, R344): each region has its own stack, shared by the players present in it, and a player's bin and cache can be reached only where that player is present. The engine keeps one stack for battle and offers a stack item and the cards in either bin as targets from every region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions. Cache targets already agree (R291). Unit targeting, statics and triggers are region-scoped and agree with print. (Measured by a verifier probe, not committed, and by the 414 CR test.)",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -36,6 +36,30 @@
       {
         "file": "data/rules/Algomancy-Manual.txt",
         "quote": "Every single effect is specific to the region it takes"
+      },
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "quote": "a stack item and the cards in either bin are offered from every region"
+      },
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "quote": "a stack item and the cards in either bin are offered from every region"
+      },
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "quote": "a stack item and the cards in either bin are offered from every region"
+      },
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "quote": "a stack item and the cards in either bin are offered from every region"
+      },
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "quote": "a stack item and the cards in either bin are offered from every region"
+      },
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "quote": "a stack item and the cards in either bin are offered from every region"
       }
     ],
     "ct": "CT-234",
@@ -60,8 +84,8 @@
   {
     "id": "F-U01-4",
     "rule": "concepts.golden.regions",
-    "title": "Stack, bin and cache effects reach across regions",
-    "summary": "Card code that iterates g.s.stack (for example Molten Riftbreaker's 'negate all allied spells') has no region filter. An effect resolving in one region negated a spell on the stack in another region. The designer says everything in the game is region specific; R250 and R265 keep the stack global on purpose, so this is a documented owner-ruling divergence from designer and printed text, not an accident. (Measured by a verifier probe; the probe files are not committed.)",
+    "title": "The engine's stack and bin effects reach across regions",
+    "summary": "Card code that iterates g.s.stack (for example Molten Riftbreaker's 'negate all allied spells') has no region filter. An effect resolving in one region negated a spell on the stack in another region. The designer says everything in the game is region specific. R250 and R265 kept the stack global on purpose; R344 (the owner, 2026-10-11) amends both, so this is an engine divergence to fix (CT-234). (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
         "file": "client/ledgers/raq.ts",
@@ -77,8 +101,8 @@
   {
     "id": "F-U01-5",
     "rule": "concepts.golden.regions",
-    "title": "The stack, bins and cache are global: an effect in one region reaches a stack item in another",
-    "summary": "Cosmic Reversal's stack half (and Molten Riftbreaker, Frosted Denial) iterate the whole stack regardless of region, by owner ruling R250/R265. The designer says everything in the game is region specific and nothing crosses regions except attacking. Probe: Cosmic Reversal resolving in A's home region recalled A's Luminous Arc from the battle region's stack.",
+    "title": "The engine has one stack for every region: an effect in one region reaches a stack item in another",
+    "summary": "Cosmic Reversal's stack half (and Molten Riftbreaker, Frosted Denial) iterate the whole stack regardless of region, as R250 and R265 had it before R344 made the stack regional. The designer says everything in the game is region specific and nothing crosses regions except attacking. Probe: Cosmic Reversal resolving in A's home region recalled A's Luminous Arc from the battle region's stack.",
     "evidence": [
       {
         "file": "client/ledgers/raq.ts",

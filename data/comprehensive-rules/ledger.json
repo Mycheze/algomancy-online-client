@@ -550,6 +550,7 @@
     {"num":"500","key":"turn.general","kind":"section","since":"First generation (draft)"},
     {"num":"500.1","key":"turn.general.phases","since":"First generation (draft)"},
     {"num":"500.2","key":"turn.general.global","since":"First generation (draft)"},
+    {"num":"500.2a","key":"turn.general.global.digital","since":"First generation (draft)"},
     {"num":"500.3","key":"turn.general.initiative","since":"First generation (draft)"},
     {"num":"500.3a","key":"turn.general.initiative.not-token","since":"First generation (draft)"},
     {"num":"500.4","key":"turn.general.interactive","since":"First generation (draft)"},

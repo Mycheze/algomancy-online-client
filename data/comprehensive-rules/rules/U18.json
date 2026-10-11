@@ -775,7 +775,7 @@
     "key": "keywords.actions.delete",
     "parent": "801",
     "order": 5,
-    "text": "To delete a unit is to remove it from play into the bin, as when a unit dies. Unless the effect names another bin, it goes to the bin a dying unit would go to.",
+    "text": "To delete a unit is one way for it to die: the unit dies, and it is removed from play into the bin. Abilities that trigger when a unit dies, its own \"When I die\" included, trigger. Unless the effect names another bin, it goes to the bin a dying unit would go to.",
     "examples": [
       {
         "text": "Throw off a Cliff deletes a unit with 4 or more defense: it goes to the bin, as a death.",
@@ -796,11 +796,24 @@
         {
           "ref": "card: Throw off a Cliff",
           "quote": "Delete target unit with 4 or more defense."
+        },
+        {
+          "ref": "card: Pull Under",
+          "quote": "all of its mods into your bin."
         }
       ],
       "designer": [],
       "ours": [],
-      "rulings": [],
+      "rulings": [
+        {
+          "ref": "R348",
+          "quote": "A deleted unit dies."
+        },
+        {
+          "ref": "R348",
+          "quote": "Abilities that trigger when a unit dies, its own \"When I die\" included, trigger when it is deleted."
+        }
+      ],
       "history": [],
       "engine": [],
       "tests": [
@@ -808,10 +821,12 @@
         "429-cr-keyword-actions.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "confidence": "medium",
-    "notes": "The Manual lists \"dies or is deleted\" side by side and does not say whether a deletion is a death. The engine treats it as one (test 182, \"a death\"; R70's died-event verb table lists `is deleted`). D-U18-9 records that no source states it, so the rule says only where the unit goes.",
-    "sourceHashes": {}
+    "notes": "The Manual lists \"dies or is deleted\" side by side and does not say whether a deletion is a death. The engine treats it as one (test 182, \"a death\"; R70's died-event verb table lists `is deleted`). D-U18-9 records that no source states it, so the rule says only where the unit goes. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-9): reading A, R348. 713.8 (effects.state.dying) already listed deletion among the ways to die while D-U18-9 said the document followed neither reading.",
+    "sourceHashes": {
+      "R348": "03f8588ee647163ef0a44600f19ad5b068177c844a0fe274b076213f16cd688f"
+    }
   },
   {
     "key": "keywords.actions.delete.named-bin",
@@ -2147,7 +2162,7 @@
     "key": "keywords.actions.rockfall.repeated",
     "parent": "keywords.actions.rockfall",
     "order": 3,
-    "text": "\"Rockfall N, X times\" is X rockfalls carried out one after another. Each player chooses again for each of them, and each rockfall is a separate source of damage.",
+    "text": "\"Rockfall N, X times\" is X rockfalls carried out one after another. Each player chooses again for each of them, and each rockfall is a separate source of damage. Abilities that trigger during one of the rockfalls wait until the whole effect has resolved: none is put on the stack between rockfalls.",
     "examples": [
       {
         "text": "Meteor Shower rockfalls 3 three times: each player picks each time, and the damage stacks up.",
@@ -2179,6 +2194,14 @@
         {
           "ref": "R80",
           "quote": "three batches for the same reason."
+        },
+        {
+          "ref": "R349",
+          "quote": "An ability that triggers during one of those rockfalls is not put on the stack before the next rockfall."
+        },
+        {
+          "ref": "R349",
+          "quote": "It waits until the whole effect has resolved, like any ability that triggers while an effect resolves."
         }
       ],
       "history": [],
@@ -2187,10 +2210,11 @@
         "17-earth-b.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "confidence": "high",
-    "notes": "R80 (not in the U18 pack) quotes Caleb 2025-03-20: each rockfall is a separate source. Whether abilities triggered by one rockfall resolve before the next is open: D-U18-4. This rule does not say.",
+    "notes": "R80 (not in the U18 pack) quotes Caleb 2025-03-20: each rockfall is a separate source. Whether abilities triggered by one rockfall resolve before the next is open: D-U18-4. This rule does not say. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, R349. The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies).",
     "sourceHashes": {
+      "R349": "a1419d016163476c680418d5050dbdae8a5282343161435caaa2b342436cf67e",
       "R80": "c5434669a23a89ae01595c26a66f57923d91ebfd7c0a53b47033f70e1d79d860",
       "RAQ 1353899470156206152#4": "d5427bf9e0aaf457b7dcf397581cb20f332ef855d05381becc46e40f79ba1097"
     }

@@ -348,7 +348,7 @@
     "key": "combat.regions.exclusive.no-region-zones",
     "parent": "combat.regions.exclusive",
     "order": 1,
-    "text": "The stack, the bins, the hands and the caches are bound by the regional rule like everything else (rule concepts.golden.regions). An effect can affect a card or effect on the stack only if it was played in the effect's own region, and can affect a player's bin, hand or cache only while that player is present in that region (rule combat.regions.presence.player-things).",
+    "text": "The stack, the bins, the hands and the caches are bound by the regional rule like everything else (rule concepts.golden.regions). Each region has its own stack. No player owns it: it is shared by the players present in that region, and only they can put effects on it or respond to them. A player's bin, hand and cache are tied to that player: an effect can affect them only in a region where that player is present (rule combat.regions.presence.player-things).",
     "examples": [
       {
         "text": "Example: During deployment, an effect that targets a cached card can reach only its controller's own cache. In battle, where both players are present, it can reach either cache.",
@@ -392,6 +392,22 @@
         {
           "ref": "R12",
           "quote": "affects only that region's battle and stack"
+        },
+        {
+          "ref": "R344",
+          "quote": "No player owns a region's stack: it is shared by every player present in that region."
+        },
+        {
+          "ref": "R344",
+          "quote": "Only a player present in a region can put an effect on its stack or respond to one there."
+        },
+        {
+          "ref": "R344",
+          "quote": "They are in a region only while their owner is present in it."
+        },
+        {
+          "ref": "R286",
+          "quote": "It does get the stack. But it's an isolated stack just for the person in that"
         }
       ],
       "history": [],
@@ -402,9 +418,11 @@
     },
     "basis": "mixed",
     "confidence": "medium",
-    "notes": "POLISH (2026-10-10): it stated R265's premise (\"Three zones have no region and are deliberately global\") and so contradicted concepts.golden.regions (101.6), which states Manual p.19 and Caleb's RAQ answer. Print and the designer outrank R265 and R250 (D-U01-12, settled; D-U10-5 merged into it). The client keeps the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions: F-U01-2 (CT-234). The cache half of the old text (reachable only where its owner is present, R291) is kept, and the bound 421 example still demonstrates it; that test title also asserts \"no region holds a stack\", which is the engine's divergent behaviour (F-U01-2).",
+    "notes": "POLISH (2026-10-10): it stated R265's premise (\"Three zones have no region and are deliberately global\") and so contradicted concepts.golden.regions (101.6), which states Manual p.19 and Caleb's RAQ answer. Print and the designer outrank R265 and R250 (D-U01-12, settled; D-U10-5 merged into it). The client keeps the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions: F-U01-2 (CT-234). The cache half of the old text (reachable only where its owner is present, R291) is kept, and the bound 421 example still demonstrates it; that test title also asserts \"no region holds a stack\", which is the engine's divergent behaviour (F-U01-2). REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), R344: the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so.",
     "sourceHashes": {
       "R12": "f6c728716f0fd27850a4344a0498bb1d9607b2f0f9e6a5838dfeeb0ea91292b3",
+      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03",
+      "R344": "12b48a8206fdd885ac52226912a40889a3057c07b08a6fcd070311794d4bbbef",
       "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
     },
     "engineDiffers": [
@@ -799,7 +817,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
         }
       ],

@@ -92,6 +92,8 @@ export interface Extract {
   /** GlossEntry rows verbatim (a RegExp field as its `/source/flags` text). Authority: ours */
   glossary: Record<string, unknown>[];
   cards: CardRow[];
+  /** printed card BACKS with rules text (Dormant Resource, …): `card: <Name>` reaches one only where no front has the name */
+  cardBacks?: { name: string; typeLine?: string; text: string }[];
   printedPages: PrintedPage[];
   enums: Enums;
   tests: TestFile[];

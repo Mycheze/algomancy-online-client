@@ -309,7 +309,12 @@
       "106"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Dormant Resource",
+          "quote": "Dormant resources provide no affinity or mana."
+        }
+      ],
       "designer": [],
       "ours": [],
       "rulings": [
@@ -325,9 +330,9 @@
         "01-planning.test.ts"
       ]
     },
-    "basis": "engine",
-    "confidence": "low",
-    "notes": "ENGINE-ONLY. R151 is a digital-scope ruling and here only quotes the engine's own comment; no printed or designer source says whether a face-down resource counts. Caleb's \"somewhere in your manabase\" is open to both readings: D-U02-2 (question for the owner). R151 is not in the U02 pack; read from digital-rules.md.",
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "REVIEW COMMENT 2026-10-11 (owner, on D-U02-2): \"This is correct and it's in the rules as well as just written on all dormant resource cards.\" The Dormant Resource card back says it; the extract did not carry card backs until this round (extract.mjs cardBacks). R151 is a presentation ruling that quotes the engine.",
     "sourceHashes": {
       "R151": "94372dbd3d49bf1f08db7965552dc760ca020d3295582c003d2a9467faac063a"
     }

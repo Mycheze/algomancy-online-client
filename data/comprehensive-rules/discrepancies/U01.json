@@ -251,9 +251,13 @@
       {
         "source": "R250",
         "quote": "The STACK is not regional and is deliberately left global; narrowing"
+      },
+      {
+        "source": "R344",
+        "quote": "A player's bin and cache are tied to that player."
       }
     ],
-    "resolution": "Settled by the authority order: Manual p.19 and Caleb (\"everything in the game is region specific\") outrank R265 and R250, so concepts.golden.regions states them, and the client's regionless stack, bins and cache are an engine divergence, F-U01-2 (CT-234, filed as an owner decision on whether to change the engine). Document fix: done 2026-10-10. combat.regions.exclusive.no-region-zones stated R265's premise (the stack, the bins and the cache are in no region); it now states the regional rule for the stack, bins, hands and caches and is marked engine-differs (F-U01-2). In two-player play the difference is small: battle resolves one region at a time (Manual p.21) and each seat has its own deployment stack (R286), so the one stack only ever holds one region's items. Register fix: mark the \"deliberately global\" sentences of R250 and R265 as outranked by Manual p.19."
+    "resolution": "Settled by the authority order, and answered by the owner on 2026-10-11 (R344): Manual p.19 and Caleb (\"everything in the game is region specific\") outrank R265 and R250, and the owner's ruling R344 amends both. Each region has its own stack, owned by nobody and shared by the players present in it; a player's bin and cache are tied to that player and are in a region only while that player is. The rules state this (101.6, 601.2a, 110.5a), and the engine's one battle stack and its bins open to every region are an engine divergence, F-U01-2 (CT-234, engine work now, no longer an owner decision). Document fix: 101.6 and 601.2a on 2026-10-10; 110.5a, which still stated R265's premise, and 601.2a's stack sentence on 2026-10-11. Register fix: R344 is the mark this row asked for on R250 and R265."
   },
   {
     "id": "D-U01-13",

@@ -1,29 +1,10 @@
 # Algomancy Comprehensive Rules: Questions for the Owner
 
-15 questions. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.
-
-## Resources and affinity
-
-### 1. Does a dormant (face-down) resource count toward affinity?
-
-*D-U02-2, rule 105.4c.*
-
-- RAQ 1358299200953126963#0: "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
-- Manual p.12: "Resource types needed to be present among your resources"
-- R151: "counts what is **awake** ("dormant gives no affinity"; "expended still counts")."
-
-- **A.** Yes: every resource you have counts, face-down ones included ("somewhere in your manabase"). *At the table:* A resource created this turn counts toward affinity before it is activated, so a player may meet [r][r][r] with one active and two dormant fire resources.
-- **B.** No: only resources whose type is showing (active) count. *At the table:* As today: a dormant resource gives nothing until it is activated.
-
-**Today:** B, the engine's behaviour (basis engine, low confidence). R151 only quotes the engine.
-
-**Recommended:** A. Caleb puts no condition on the resource ("You don't care if it's tapped or not"), and A is the permissive reading. Take B only if a face-down resource's type is meant to be unknown at the table.
-
-**Answer:**
+10 questions. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.
 
 ## Triggers and the stack
 
-### 2. When a graft (or a deployment augment) is applied to Mohruung, is the Crystal made before the mod attaches?
+### 1. When a graft (or a deployment augment) is applied to Mohruung, is the Crystal made before the mod attaches?
 
 *D-U03-13, rule 110.11; also filed as D-U03-14 (rule 110.11), D-U17-13 (rule 722.3c).*
 
@@ -41,86 +22,9 @@
 
 **Answer:**
 
-### 3. Does Bloomcaster's "Whenever you play a unit" trigger on its own play?
-
-*D-U14-11, rule 701.1e.*
-
-- R26: "Bloomcaster's "[Augment] Whenever you play a unit" (no "another") **fires on its own"
-- RAQ 1353862592661164152#0: "He goes on the stack (but is not Spawned / In play yet)"
-- card: Bloomcaster: "Whenever you play a unit"
-
-- **A.** Yes: it prints no "another", so its own play counts (R26). *At the table:* Playing Bloomcaster makes a 1/1; engine change, CT-254.
-- **B.** No: a card's abilities work only once it is in play, and a card being played is on the stack (the Mycelial Mentor write-up), so only units played while Bloomcaster is in play count. *At the table:* As today; CT-254 closes as not a bug.
-
-**Today:** A (R26), marked engine-differs.
-
-**Recommended:** A: the literal text, the pool's use of "another" for not-me (R265) and the permissive steer all point there; the Mentor write-up answers a different question.
-
-**Answer:**
-
-### 4. Is a deleted unit a unit that dies, so that "When I die" and "whenever a unit dies" trigger?
-
-*D-U18-9, rule 801.5.*
-
-- Manual p.13: "a unit dies or is deleted, it is placed in the bin (discard"
-- R70: "| `verb` | `dies` / `is deleted` / `is sacrificed` |"
-- card: Unstable Singularity: "When I die, [Switch1] Delete target unit."
-
-- **A.** Yes: deletion is one way of dying, named separately because cards say "delete". *At the table:* As today (the engine fires the death event).
-- **B.** No: dying and being deleted are two events that end in the same bin. *At the table:* Death triggers ignore a deletion; Unstable Singularity's "When I die" would not fire when it is deleted.
-
-**Today:** Neither: rule 801.5 states only where the unit goes. The engine does A.
-
-**Recommended:** A, the permissive reading, which the engine already plays.
-
-**Answer:**
-
-### 5. Do abilities triggered by one rockfall resolve before the next rockfall of the same Meteor Shower?
-
-*D-U18-4, rule 801.12c.*
-
-- RAQ 1353899470156206152#2: "any check for triggers will happen in-between resolving each Rockfall 3"
-- card: Meteor Shower: "Rockfall 3 three times."
-- RAQ 1353899470156206152#4: "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
-- R80: "three batches for the same reason."
-
-- **A.** Yes: "any check for triggers will happen in-between resolving each Rockfall 3" is a statement about rockfalls in general. *At the table:* A Mirage Scuttler chosen three times grows between hits; engine change.
-- **B.** No: it described three separate copies, which the card no longer makes; as one spell, triggers wait until it finishes. *At the table:* As today.
-
-**Today:** Neither: rule 801.12c says nothing; the engine does B.
-
-**Recommended:** A: the designer's words describe the mechanic, not the copies, and A is the permissive reading.
-
-**Answer:**
-
-## Cards and tokens
-
-### 6. Is a token a card, so that card text saying "card" reaches tokens?
-
-*D-U06-1, rule 304.2; also filed as D-U03-1 (rule 108.2a), D-U14-7 (rule 701.1c).*
-
-- Manual p.15: "Tokens are temporary cards that are created directly"
-- Rulebook 2023 p.4: "Tokens are temporary cards that are created directly into play"
-- card: Void Mandible: "When a nontoken card is played during battle, sacrifice me."
-- R133: "Tokens are NOT cards, however."
-- R306: "Tokens are specifically not considered cards in terms of specific semantics"
-- R129: "Everything is a card, including units. Tokens are NOT cards, however."
-- R133: "> "I think Void Mandible is just trying to save space (card < unit or spell)."
-- Rulebook 2023 p.4: "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
-- R305: "**A token is still not a CARD.**"
-
-- **A.** Yes: "temporary cards" uses the rules word, and Void Mandible's "nontoken card" is a real qualifier. *At the table:* Arbiter of Armistice ("Cards played during battle") and Vengeance tax a spell token cast; a token counts for "card" text; R133, R305 and R306's noun table are reversed.
-- **B.** No: "temporary cards" describes the physical token pieces, and the rules word "card" means a card with an Algomancy back (R306). *At the table:* As today: "card" text ignores tokens, and Void Mandible's "nontoken" is shorthand.
-
-**Today:** B (R129, R133, R305, R306).
-
-**Recommended:** A, on the literal steer: both rulebooks say "temporary cards" and Void Mandible prints "nontoken card". Keep B only if the owner wants R306's noun table to stand as a deliberate reading.
-
-**Answer:**
-
 ## Mods
 
-### 7. In battle, may a Virus be augmented onto a spell token standing in play (not one being cast)?
+### 2. In battle, may a Virus be augmented onto a spell token standing in play (not one being cast)?
 
 *D-U06-9, rule 305.6; also filed as D-U17-4 (rule 721.4a).*
 
@@ -142,7 +46,7 @@
 
 ## Battle
 
-### 8. Does Temporal Rift's "End this battle" also cancel the second battle round (the counterattack)?
+### 3. Does Temporal Rift's "End this battle" also cancel the second battle round (the counterattack)?
 
 *D-U09-4, rule 505.3f; also filed as D-U13-1 (rule 610.4).*
 
@@ -161,7 +65,7 @@
 
 **Answer:**
 
-### 9. Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?
+### 4. Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?
 
 *D-U12-12, rule 608.2d.*
 
@@ -177,7 +81,7 @@
 
 **Answer:**
 
-### 10. If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?
+### 5. If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?
 
 *D-U12-11, rule 608.3d.*
 
@@ -194,7 +98,7 @@
 
 **Answer:**
 
-### 11. After sending counterattackers, may the non-initiative player decline to attack with them in round 2?
+### 6. After sending counterattackers, may the non-initiative player decline to attack with them in round 2?
 
 *D-U13-4, rule 610.4e.*
 
@@ -214,7 +118,7 @@
 
 ## Stats and attributes
 
-### 12. A Balanced unit gets Tough from an augment: is it doubled, then balanced, or balanced, then doubled?
+### 7. A Balanced unit gets Tough from an augment: is it doubled, then balanced, or balanced, then doubled?
 
 *D-U16-1, rule 709.4b; also filed as D-U19-1 (rule 802.1m).*
 
@@ -235,7 +139,7 @@
 
 **Answer:**
 
-### 13. May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
+### 8. May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
 
 *D-U19-5, rule 802.2a.*
 
@@ -254,7 +158,7 @@
 
 **Answer:**
 
-### 14. Does Inverted invert from the printed stats, or from a rewritten base?
+### 9. Does Inverted invert from the printed stats, or from a rewritten base?
 
 *D-U19-3, rule 802.8c.*
 
@@ -278,7 +182,7 @@
 
 **Answer:**
 
-### 15. Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
+### 10. Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
 
 *D-U20-2, rule 802.14a.*
 

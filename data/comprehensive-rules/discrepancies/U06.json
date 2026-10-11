@@ -3,7 +3,7 @@
     "id": "D-U06-1",
     "kind": "a-sources-disagree",
     "rule": "types.tokens.not-cards",
-    "tier": 1,
+    "tier": 4,
     "summary": "Both printed rulebooks call tokens \"temporary cards\", and Void Mandible prints \"nontoken card\", which only makes sense if a token can be a card. The owner ruled that a token is not a card (R129, R133) and confirmed it in R306.",
     "seeAlso": [
       {
@@ -51,27 +51,13 @@
       {
         "source": "R305",
         "quote": "**A token is still not a CARD.**"
+      },
+      {
+        "source": "R346",
+        "quote": "For the rules, a token is never a card."
       }
     ],
-    "resolution": "Question for the owner. The rules state the owner's ruling, basis owner. Printed text outranks an R-ruling, so they stand only if reading B is right. Under A, types.general.nouns.card and R305's noun table change, and the split over tokens on the erased pile (D-U07-5) resolves.",
-    "question": {
-      "topic": "Cards and tokens",
-      "ask": "Is a token a card, so that card text saying \"card\" reaches tokens?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Yes: \"temporary cards\" uses the rules word, and Void Mandible's \"nontoken card\" is a real qualifier.",
-          "table": "Arbiter of Armistice (\"Cards played during battle\") and Vengeance tax a spell token cast; a token counts for \"card\" text; R133, R305 and R306's noun table are reversed."
-        },
-        {
-          "label": "B",
-          "text": "No: \"temporary cards\" describes the physical token pieces, and the rules word \"card\" means a card with an Algomancy back (R306).",
-          "table": "As today: \"card\" text ignores tokens, and Void Mandible's \"nontoken\" is shorthand."
-        }
-      ],
-      "follows": "B (R129, R133, R305, R306).",
-      "recommend": "A, on the literal steer: both rulebooks say \"temporary cards\" and Void Mandible prints \"nontoken card\". Keep B only if the owner wants R306's noun table to stand as a deliberate reading."
-    }
+    "resolution": "Answered by the owner on 2026-10-11, reading B (R346): \"temporary card\" is how print describes a token to players, and for the rules a token is not a card, though it is a unit, a spell or another printed thing. R129, R133, R305 and R306 stand, Void Mandible's \"nontoken\" is shorthand, and the rules that state them stand (108.2a no longer calls it an open question)."
   },
   {
     "id": "D-U06-2",

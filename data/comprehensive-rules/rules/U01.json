@@ -1049,7 +1049,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "* **Ally** = every unit under your control **in the region the effect is happening in** — the source included."
         }
       ],
@@ -1093,7 +1093,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "Yes, an ally includes itself. Otherwise it'd say \"Another target ally\"."
         }
       ],
@@ -1128,7 +1128,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "* \"Your control\", not your ownership: a unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you hold it."
         }
       ],
@@ -1165,7 +1165,7 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
+          "ref": "R265 (its units half: ally, enemy, another and the region boundary)",
           "quote": "* **Enemy** = every unit **not** under your control in that same region."
         }
       ],

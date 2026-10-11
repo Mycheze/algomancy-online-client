@@ -296,6 +296,10 @@ export const PROD_MIRROR_DIR = join(VAR_DIR, 'prod-mirror');
 export const DEPLOY_HOST = 'algomancy-vps';
 /** this repo's checkout on the deploy box; same path, different machine */
 export const DEPLOY_ROOT = '/home/bena/Documents/Algomancy';
+/** the game server as seen FROM the deploy box: loopback, behind Caddy
+ * (`Environment=PORT=` in deploy/algomancy-game.service). Only a command run
+ * on the box over ssh can reach it, which is the point. */
+export const DEPLOY_GAME_URL = 'http://127.0.0.1:5000';
 
 /**
  * The same file, spelled for scp: `<host>:<path>`.
