@@ -271,6 +271,16 @@
    "step": "delete",
    "base": "c58b5a5324864da55fbc4a36379c5a7c75f7f2c5",
    "baseFile": true
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts": {
+   "op": "edits",
+   "step": "hand",
+   "edits": [
+    {
+     "find": "\\(\u26a0 INTERIM, unruled\\)",
+     "replace": "(CR 708.6a)"
+    }
+   ]
   }
  }
 }

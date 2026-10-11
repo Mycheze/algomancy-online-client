@@ -44,7 +44,9 @@ export async function checkDecisions(file, { rescore = false } = {}) {
       res.result = neu.slice(ls, le < 0 ? undefined : le);
     }
     const sc = report.selfCheck.filter((x) => x.file === r.file && res.result !== undefined && neu && Math.abs(x.line - (neu.slice(0, neu.indexOf(res.result)).split('\n').length)) <= 1);
-    if (why.has(id)) { res.status = 'unapplied'; res.why = why.get(id); }
+    const broken = (report.shapeBroken ?? []).find((x) => x.file === r.file);
+    if (broken) { res.status = 'code-shape broken'; res.why = `the file's code would change, not just its comments and strings (a join or quote added/removed?): ${broken.at}`; res.result = undefined; }
+    else if (why.has(id)) { res.status = 'unapplied'; res.why = why.get(id); }
     else if (sc.length) { res.status = 'self-check failure'; res.why = sc.map((x) => x.why).join('; '); }
     else if (consumed.has(id)) res.status = 'applied';
     else { res.status = 'unapplied'; res.why = 'no edit made (a skip/binding row, or the line was not reached)'; }

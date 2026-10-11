@@ -1,0 +1,1888 @@
+{
+ "unit": "leftover-reword",
+ "decisions": {
+  "client/docs/03-mechanics-inventory.md##R137#b48c93f24c#0": {
+   "action": "reword",
+   "find": "— R137: it still passes through the bin and IS trashed on the way);",
+   "replace": "— CR 801.2h: it is not trashed, though the engine still passes it through the bin and trashes it on the way, CT-246);",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/docs/03-mechanics-inventory.md##R137#74c34f6fda#0": {
+   "action": "reword",
+   "find": "(R137: via the\n  bin, so card and nontoken mods are all **trashed** on the way out).",
+   "replace": "(CR 410.4b; neither is\n  trashed, CR 801.2h and 801.2g, though the engine still bins and trashes the card on the way out, CT-246).",
+   "nums": [
+    "410.4b",
+    "801.2h",
+    "801.2g"
+   ],
+   "note": "engine differs from the CR here (CT-246); also corrects the stale \"nontoken mods all trashed\""
+  },
+  "client/docs/06-roadmap.md##R32#065933ac6e#0": {
+   "action": "cite",
+   "find": "— R32;",
+   "replace": "— CR 610.2, 610.2a;",
+   "nums": [
+    "610.2",
+    "610.2a"
+   ],
+   "note": "absent counterattackers exist nowhere; no statics"
+  },
+  "client/docs/06-roadmap.md##R28#2f22ac26a7#0": {
+   "action": "reword",
+   "find": "(R28 ⚠ — created units default to the controller's region; global\ndefault still to confirm — **R28 was WITHDRAWN on 2026-08-23 by R115: a created",
+   "replace": "(then the default for created units — **withdrawn on 2026-08-23 (CR 601.5): a created",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn home-region default; current rule 601.5"
+  },
+  "client/docs/06-roadmap.md##R28#be54a864d4#0": {
+   "action": "reword",
+   "find": "(R28 ⚠ — created units default to the controller's region; global\ndefault still to confirm — **R28 was WITHDRAWN on 2026-08-23 by R115: a created",
+   "replace": "(then the default for created units — **withdrawn on 2026-08-23 (CR 601.5): a created",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn home-region default; current rule 601.5"
+  },
+  "client/docs/06-roadmap.md##R115#be54a864d4#0": {
+   "action": "reword",
+   "find": "(R28 ⚠ — created units default to the controller's region; global\ndefault still to confirm — **R28 was WITHDRAWN on 2026-08-23 by R115: a created",
+   "replace": "(then the default for created units — **withdrawn on 2026-08-23 (CR 601.5): a created",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn home-region default; current rule 601.5"
+  },
+  "client/docs/08-light-and-dark.md##R38#e2c49bc60a#0": {
+   "action": "reword",
+   "find": "Rulings are numbered\nin [digital-rules.md](digital-rules.md) (R38–R48);",
+   "replace": "The numbered rules are\nin the Comprehensive Rules;",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/docs/08-light-and-dark.md##R60#3a59646b04#0": {
+   "action": "reword",
+   "find": "mana in R59\n  (Tranquility) and life in R60 (Arbiter of Armistice).",
+   "replace": "mana\n  (Tranquility) and life (Arbiter of Armistice), both now CR 111.10 and 111.10d.",
+   "nums": [
+    "111.10",
+    "111.10d"
+   ],
+   "note": "history; covers the R59 half"
+  },
+  "client/docs/08-light-and-dark.md##R52#ab4ea3c791#0": {
+   "action": "reword",
+   "find": "4. **R52** settles where created units arrive (the controller's home region),\n   closing R33's open question in favour of R28. Six Light & Dark cards moved.\n   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit\n   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general",
+   "replace": "4. **A ruling** settled where created units arrive (the controller's home region),\n   closing an open question about a carrier trigger's created units. Six Light & Dark cards moved.\n   **⚠ REVERSED and WITHDRAWN 2026-08-23** (a created unit\n   arrives where its SOURCE is, `ctx.region`, CR 601.5), which makes the carrier reading the general",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn rulings history rewritten as one passage"
+  },
+  "client/docs/08-light-and-dark.md##R33#dd6006c5ac#0": {
+   "action": "reword",
+   "find": "4. **R52** settles where created units arrive (the controller's home region),\n   closing R33's open question in favour of R28. Six Light & Dark cards moved.\n   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit\n   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general",
+   "replace": "4. **A ruling** settled where created units arrive (the controller's home region),\n   closing an open question about a carrier trigger's created units. Six Light & Dark cards moved.\n   **⚠ REVERSED and WITHDRAWN 2026-08-23** (a created unit\n   arrives where its SOURCE is, `ctx.region`, CR 601.5), which makes the carrier reading the general",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn rulings history rewritten as one passage"
+  },
+  "client/docs/08-light-and-dark.md##R28#dd6006c5ac#0": {
+   "action": "reword",
+   "find": "4. **R52** settles where created units arrive (the controller's home region),\n   closing R33's open question in favour of R28. Six Light & Dark cards moved.\n   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit\n   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general",
+   "replace": "4. **A ruling** settled where created units arrive (the controller's home region),\n   closing an open question about a carrier trigger's created units. Six Light & Dark cards moved.\n   **⚠ REVERSED and WITHDRAWN 2026-08-23** (a created unit\n   arrives where its SOURCE is, `ctx.region`, CR 601.5), which makes the carrier reading the general",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn rulings history rewritten as one passage"
+  },
+  "client/docs/08-light-and-dark.md##R115#0f3d0ec664#0": {
+   "action": "reword",
+   "find": "4. **R52** settles where created units arrive (the controller's home region),\n   closing R33's open question in favour of R28. Six Light & Dark cards moved.\n   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit\n   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general",
+   "replace": "4. **A ruling** settled where created units arrive (the controller's home region),\n   closing an open question about a carrier trigger's created units. Six Light & Dark cards moved.\n   **⚠ REVERSED and WITHDRAWN 2026-08-23** (a created unit\n   arrives where its SOURCE is, `ctx.region`, CR 601.5), which makes the carrier reading the general",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn rulings history rewritten as one passage"
+  },
+  "client/docs/08-light-and-dark.md##R52#0f3d0ec664#0": {
+   "action": "reword",
+   "find": "4. **R52** settles where created units arrive (the controller's home region),\n   closing R33's open question in favour of R28. Six Light & Dark cards moved.\n   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit\n   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general",
+   "replace": "4. **A ruling** settled where created units arrive (the controller's home region),\n   closing an open question about a carrier trigger's created units. Six Light & Dark cards moved.\n   **⚠ REVERSED and WITHDRAWN 2026-08-23** (a created unit\n   arrives where its SOURCE is, `ctx.region`, CR 601.5), which makes the carrier reading the general",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn rulings history rewritten as one passage"
+  },
+  "client/docs/08-light-and-dark.md##R28#0f3d0ec664#0": {
+   "action": "reword",
+   "find": "4. **R52** settles where created units arrive (the controller's home region),\n   closing R33's open question in favour of R28. Six Light & Dark cards moved.\n   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit\n   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general",
+   "replace": "4. **A ruling** settled where created units arrive (the controller's home region),\n   closing an open question about a carrier trigger's created units. Six Light & Dark cards moved.\n   **⚠ REVERSED and WITHDRAWN 2026-08-23** (a created unit\n   arrives where its SOURCE is, `ctx.region`, CR 601.5), which makes the carrier reading the general",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn rulings history rewritten as one passage"
+  },
+  "client/docs/08-light-and-dark.md##R33#994d9fc61d#0": {
+   "action": "reword",
+   "find": "4. **R52** settles where created units arrive (the controller's home region),\n   closing R33's open question in favour of R28. Six Light & Dark cards moved.\n   **⚠ REVERSED 2026-08-23: R52 and R28 are WITHDRAWN by R115** (a created unit\n   arrives where its SOURCE is, `ctx.region`), which absorbs R33 as the general",
+   "replace": "4. **A ruling** settled where created units arrive (the controller's home region),\n   closing an open question about a carrier trigger's created units. Six Light & Dark cards moved.\n   **⚠ REVERSED and WITHDRAWN 2026-08-23** (a created unit\n   arrives where its SOURCE is, `ctx.region`, CR 601.5), which makes the carrier reading the general",
+   "nums": [
+    "601.5"
+   ],
+   "note": "withdrawn rulings history rewritten as one passage"
+  },
+  "client/docs/16-divergence-inventory.md##R154#455a46cd11#0": {
+   "action": "reword",
+   "find": "pre-R154 engine.",
+   "replace": "engine before that gate became seat-aware.",
+   "note": "pre-ruling history"
+  },
+  "client/docs/16-divergence-inventory.md##R195#2d3a39eabd#0": {
+   "action": "reword",
+   "find": "**R195** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited \"R159's shared predicate\"; **there is no R159** — it is R157 §4 with R117's sub-step gate inside it.",
+   "replace": "**the per-column attribution fix (CR 608.9a)** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited a \"shared predicate\" under a ruling number **that does not exist** — it is the per-column rule with its sub-step gate (CR 608.9a).",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "R159 is unregistered (the sentence is about that); per-column + sub-step = 608.9a"
+  },
+  "client/docs/16-divergence-inventory.md##R159#2d3a39eabd#0": {
+   "action": "reword",
+   "find": "**R195** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited \"R159's shared predicate\"; **there is no R159** — it is R157 §4 with R117's sub-step gate inside it.",
+   "replace": "**the per-column attribution fix (CR 608.9a)** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited a \"shared predicate\" under a ruling number **that does not exist** — it is the per-column rule with its sub-step gate (CR 608.9a).",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "R159 is unregistered (the sentence is about that); per-column + sub-step = 608.9a"
+  },
+  "client/docs/16-divergence-inventory.md##R159#2d3a39eabd#1": {
+   "action": "reword",
+   "find": "**R195** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited \"R159's shared predicate\"; **there is no R159** — it is R157 §4 with R117's sub-step gate inside it.",
+   "replace": "**the per-column attribution fix (CR 608.9a)** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited a \"shared predicate\" under a ruling number **that does not exist** — it is the per-column rule with its sub-step gate (CR 608.9a).",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "R159 is unregistered (the sentence is about that); per-column + sub-step = 608.9a"
+  },
+  "client/docs/16-divergence-inventory.md##R157#2d3a39eabd#0": {
+   "action": "reword",
+   "find": "**R195** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited \"R159's shared predicate\"; **there is no R159** — it is R157 §4 with R117's sub-step gate inside it.",
+   "replace": "**the per-column attribution fix (CR 608.9a)** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited a \"shared predicate\" under a ruling number **that does not exist** — it is the per-column rule with its sub-step gate (CR 608.9a).",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "R159 is unregistered (the sentence is about that); per-column + sub-step = 608.9a"
+  },
+  "client/docs/16-divergence-inventory.md##R117#2d3a39eabd#0": {
+   "action": "reword",
+   "find": "**R195** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited \"R159's shared predicate\"; **there is no R159** — it is R157 §4 with R117's sub-step gate inside it.",
+   "replace": "**the per-column attribution fix (CR 608.9a)** | the row said 6 cards; it is **9**. Eldritch Dreamtender, Bloodwind Revenant and Flowstone Arcanite were missing — and **Flowstone Arcanite's own comment named all three** while the row did not. It also cited a \"shared predicate\" under a ruling number **that does not exist** — it is the per-column rule with its sub-step gate (CR 608.9a).",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "R159 is unregistered (the sentence is about that); per-column + sub-step = 608.9a"
+  },
+  "client/docs/questions-round31.md##R3#8f0b5e82cd#0": {
+   "action": "reword",
+   "find": "## Q8. R3 is contradicted",
+   "replace": "## Q8. The no-window ruling is contradicted",
+   "note": "question sheet about the old 2026-07-16 ruling itself (now amended, CR 608.3b)"
+  },
+  "client/docs/questions-round31.md##R3#554b7e59fc#0": {
+   "action": "reword",
+   "find": "R3 says: *\"there is",
+   "replace": "The 2026-07-16 no-window ruling said: *\"there is",
+   "note": "quotes the old ruling"
+  },
+  "client/docs/questions-round31.md##R106#0aca9aa2a2#0": {
+   "action": "reword",
+   "find": "recorded like R106 and R137,",
+   "replace": "recorded like the earlier owner divergences,",
+   "note": "same find/replace as the R137 id on this line (another list), which covers R106"
+  },
+  "client/docs/questions-round32.md##R3#62711f0767#0": {
+   "action": "reword",
+   "find": "- **R3's worked example",
+   "replace": "- **The no-window ruling's worked example",
+   "note": "question sheet about the old ruling"
+  },
+  "client/docs/questions-round32.md##R3#303a2f3190#0": {
+   "action": "reword",
+   "find": "**(c) R3 stands",
+   "replace": "**(c) The no-window ruling stands",
+   "note": "question-sheet history"
+  },
+  "client/docs/questions-round32.md##R106#303a2f3190#0": {
+   "action": "reword",
+   "find": "recorded like R106 and R137,",
+   "replace": "recorded like the earlier owner divergences,",
+   "note": "same find/replace as the R137 id on this line (another list); covers R137"
+  },
+  "client/engine/src/apply.ts##R150#073cc5a526#0": {
+   "action": "reword",
+   "find": "R150 fixed that entirely in server/rooms.ts",
+   "replace": "The server fix for CT-32 settled that entirely in server/rooms.ts",
+   "note": "history"
+  },
+  "client/engine/src/apply.ts##R286#579a9843fe#0": {
+   "action": "reword",
+   "find": "UNTIL R286, AND",
+   "replace": "UNTIL DEPLOYMENT GOT ITS STACK (CR 507.5), AND",
+   "nums": [
+    "507.5"
+   ],
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R38#5751ea1180#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R38#ef309cd585#0": {
+   "action": "reword",
+   "find": "rulings R38-R48 in docs/digital-rules.md.",
+   "replace": "and the Comprehensive Rules.",
+   "note": "range pointer to the retired register (covers R48)"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R60#e7b1708b0a#0": {
+   "action": "reword",
+   "find": "R128 (owner, 2026-08-24) reversed R60:",
+   "replace": "The owner (2026-08-24) reversed that reading (now CR 700.1):",
+   "nums": [
+    "700.1"
+   ],
+   "note": "history; covers R128"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R97#b075aed9af#0": {
+   "action": "reword",
+   "find": "LIVE as of R123 (it was PARKED here through R97): the",
+   "replace": "LIVE (it used to be PARKED here): the",
+   "note": "implementation history; covers R123"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R137#1a72f8ea52#0": {
+   "action": "reword",
+   "find": "R137/R140 Unstable sweep,",
+   "replace": "Unstable sweep (an engine route: CR 405.5 erases instead of binning, CT-246),",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R140"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#2f430211fe#0": {
+   "action": "reword",
+   "find": "R137/R140 Unstable sweep,",
+   "replace": "Unstable sweep (engine route; CR 410.4d erases instead, CT-246),",
+   "nums": [
+    "410.4d"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R140"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R49#13ce0917c4#0": {
+   "action": "reword",
+   "find": "the R49/R50/R51 engine wave",
+   "replace": "the costs, events and zone-trigger engine wave",
+   "note": "engine history; covers R50, R51"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#d423f03d39#0": {
+   "action": "reword",
+   "find": "✔ R137 made the case FULLY REACHABLE.",
+   "replace": "✔ The engine's Unstable-trash route (CT-246; CR 801.2h does not trash) made the case FULLY REACHABLE.",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#32335ae3b7#0": {
+   "action": "reword",
+   "find": "(R174, for the owner): before R137, \"the ghost",
+   "replace": "(for the owner): before the engine's Unstable-trash route (CT-246), \"the ghost",
+   "note": "engine differs from the CR here (CT-246); covers the R174 process label (dropped)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#08ff6469f0#0": {
+   "action": "reword",
+   "find": "R137/R140\n// Unstable sweep,",
+   "replace": "the engine's\n// Unstable sweep (CR 410.4d erases instead, CT-246),",
+   "nums": [
+    "410.4d"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R140"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R64#df767b2022#0": {
+   "action": "reword",
+   "find": "R64 is explicit that a\n// restriction is not re-asked at resolution (R5/R56), so between activation",
+   "replace": "A restriction is checked\n// again as the effect begins to resolve (CR 704.5), because between activation",
+   "nums": [
+    "704.5"
+   ],
+   "note": "the no-recheck statement was amended; covers R5/R56"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R219#877fc3ab0d#0": {
+   "action": "reword",
+   "find": "R219 — `alreadyFiled`:",
+   "replace": "CR 720.9 (the engine files by owner, CT-258) — `alreadyFiled`:",
+   "nums": [
+    "720.9"
+   ],
+   "note": "engine differs F-U17-1 / CT-258"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R305#00f3c2f71c#0": {
+   "action": "reword",
+   "find": "TOKEN. R305\n//    (owner, 2026-09-28): casting a spell token IS playing a spell, *\"Yes,\n//    taxed + counted\"* — it overturned R59's \"cast from play, not played\",\n//    which this line used to cite.",
+   "replace": "TOKEN. The\n//    owner (2026-09-28, now CR 702.7a): casting a spell token IS playing a spell, *\"Yes,\n//    taxed + counted\"* — it overturned the earlier \"cast from play, not played\" reading,\n//    which this line used to cite.",
+   "nums": [
+    "702.7a"
+   ],
+   "note": "history; covers the R59 on line 186"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#ef8cb5e90a#0": {
+   "action": "reword",
+   "find": "R221 agrees with R157 §17;",
+   "replace": "The later X = 0 answer (CR 107.2b) agrees with the 2026-08-25 one;",
+   "nums": [
+    "107.2b"
+   ],
+   "note": "history; covers R221"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R33#ce4b1fde4b#0": {
+   "action": "reword",
+   "find": "this WITHDREW R28/R52 and absorbed R33),",
+   "replace": "the home-region default it replaced is withdrawn),",
+   "note": "history; covers R28/R52"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R92#adc7dfb9ad#0": {
+   "action": "reword",
+   "find": "R92's four-grant",
+   "replace": "The old four-grant",
+   "note": "superseded implementation"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R49#645e95bec2#0": {
+   "action": "reword",
+   "find": "the R49/R50 engine wave",
+   "replace": "the costs-and-events engine wave",
+   "note": "engine history; covers R50"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R162#08cca4856e#0": {
+   "action": "reword",
+   "find": "R162 UN-PARKS THE REPLACEMENT APPROXIMATION. This used to be a pair of\n// triggers that dealt out a SECOND helping after the first had landed, and\n// R104's own \"what is still NOT replaceable\"",
+   "replace": "THE MULTIPLIER RULE (CR 708.6) UN-PARKS THE REPLACEMENT APPROXIMATION. This used to be a pair of\n// triggers that dealt out a SECOND helping after the first had landed, and\n// the replacement layer's own \"what is still NOT replaceable\"",
+   "nums": [
+    "708.6"
+   ],
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R104#f519604ca5#0": {
+   "action": "reword",
+   "find": "R162 UN-PARKS THE REPLACEMENT APPROXIMATION. This used to be a pair of\n// triggers that dealt out a SECOND helping after the first had landed, and\n// R104's own \"what is still NOT replaceable\"",
+   "replace": "THE MULTIPLIER RULE (CR 708.6) UN-PARKS THE REPLACEMENT APPROXIMATION. This used to be a pair of\n// triggers that dealt out a SECOND helping after the first had landed, and\n// the replacement layer's own \"what is still NOT replaceable\"",
+   "nums": [
+    "708.6"
+   ],
+   "note": "history"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R125#d47f748ec5#0": {
+   "action": "reword",
+   "find": "R125's second\n// mechanism (`effectAttrs`)",
+   "replace": "the engine's second\n// mechanism (`effectAttrs`, which carries CR 707.7 to spells)",
+   "nums": [
+    "707.7"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R31#4fb1fc614e#0": {
+   "action": "cite",
+   "find": "R31 (damage-sub-step triggers resolve\n * immediately).",
+   "replace": "CR 608.9 (combat-damage triggers trigger in the\n * sub-step and go on the stack after it).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R31#17ffc5e2c9#0": {
+   "action": "cite",
+   "find": "R31 (combat-damage-sub-step triggers resolve immediately).",
+   "replace": "CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R49#13ce0917c4#0": {
+   "action": "reword",
+   "find": "the R49/R50/R51 engine wave",
+   "replace": "the costs, events and zone-trigger engine wave",
+   "note": "engine history; covers R50, R51"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R31#6b6a9b2d3d#0": {
+   "action": "cite",
+   "find": "so the flip resolves immediately (R31).",
+   "replace": "so the flip goes on the stack after it (CR 608.9).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R31#2fdd70c7f8#0": {
+   "action": "cite",
+   "find": "R31 (triggers between combat damage sub-steps resolve immediately).",
+   "replace": "CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R31#2fdd70c7f8#0": {
+   "action": "cite",
+   "find": "R31 (triggers between combat damage sub-steps resolve immediately).",
+   "replace": "CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R31#2fdd70c7f8#0": {
+   "action": "cite",
+   "find": "R31 (triggers between combat damage sub-steps resolve immediately).",
+   "replace": "CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R31#ed5a7a47cf#0": {
+   "action": "cite",
+   "find": "Fires between combat\n// damage sub-steps and resolves immediately (R31).",
+   "replace": "Triggers in a combat\n// damage sub-step and goes on the stack after it (CR 608.9).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R31#2835c34f36#0": {
+   "action": "cite",
+   "find": "R31 (triggers\n * fired during combat damage sub-steps resolve immediately).",
+   "replace": "CR 608.9 (combat-damage\n * triggers trigger in the sub-step and go on the stack after it).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R64#b832d13759#0": {
+   "action": "reword",
+   "find": "UN-PARKED (R64).",
+   "replace": "UN-PARKED (its variable cost is paid on activation, CR 111.7).",
+   "nums": [
+    "111.7"
+   ],
+   "note": "un-park history marker"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R31#916147ae34#0": {
+   "action": "cite",
+   "find": "Deaths during combat\n// damage sub-steps land the counter immediately (R31).",
+   "replace": "A death during combat\n// damage triggers it then, and the counter lands when the trigger resolves (CR 608.9).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R161#a7bcd26d76#0": {
+   "action": "reword",
+   "find": "until R161 widened the event.",
+   "replace": "until the event was widened.",
+   "note": "engine history"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R31#39afd4560e#0": {
+   "action": "cite",
+   "find": "R31 (triggers in combat damage sub-steps resolve immediately).",
+   "replace": "CR 608.9 (combat-damage triggers trigger in the sub-step and go on the stack after it).",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/src/engine.ts##R264#838f8ef139#0": {
+   "action": "reword",
+   "find": "⚠ AND THE ADDITIVE COMPOSITION IS STILL UNRULED. R264 answers how\n   * multipliers compose with EACH OTHER and says nothing about how one composes\n   * with an additive `AmountMod`; `lifeAmount` below keeps its interim\n   * `(v + Σdelta) × factor` and keeps saying so.",
+   "replace": "⚠ THE ADDITIVE COMPOSITION IS ITS OWN RULE. The multiplier rule (CR 708.6)\n   * answers how multipliers compose with EACH OTHER; how one composes with an\n   * additive `AmountMod` is CR 708.6a — the additions first, then the doubling —\n   * which is the `(v + Σdelta) × factor` that `lifeAmount` below computes.",
+   "nums": [
+    "708.6",
+    "708.6a"
+   ],
+   "note": "stale: the additive order is now ruled (708.6a)"
+  },
+  "client/engine/src/engine.ts##R157#65d2a93359#0": {
+   "action": "reword",
+   "find": "⚠ THE ORDER IS AN INTERIM DECISION, NOT A RULING. R157 §23 answers how\n   * multipliers compose with EACH OTHER and explicitly does not answer how one\n   * composes with an additive `AmountMod`. Until it is ruled the multiplier is\n   * applied AFTER the additive layer — `(v + Σdelta) × factor` — which is the\n   * reading that leaves a printed \"plus 1\" worth one card rather than two, the\n   * same argument `dealEffectDamageAll` makes for sitting the Conduit of Pain\n   * after {Powerful}. A future ruling changes these two lines and nothing else.",
+   "replace": "⚠ THE ORDER IS A RULE NOW. The multiplier rule (CR 708.6) answers how\n   * multipliers compose with EACH OTHER, and CR 708.6a how one composes with an\n   * additive `AmountMod`: the multiplier is applied AFTER the additive layer —\n   * `(v + Σdelta) × factor` — which is also the reading that leaves a printed\n   * \"plus 1\" worth one card rather than two, the same argument\n   * `dealEffectDamageAll` makes for sitting the Conduit of Pain after {Powerful}.",
+   "nums": [
+    "708.6",
+    "708.6a"
+   ],
+   "note": "stale: the additive order is now ruled (708.6a)"
+  },
+  "client/engine/src/engine.ts##R137#d1e6759c09#0": {
+   "action": "reword",
+   "find": "(R137's bin → trash → sweep)",
+   "replace": "(the engine's bin → trash → sweep; CR 405.5 erases instead, CT-246)",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R93#b2d7d6a8d9#0": {
+   "action": "reword",
+   "find": "⚠ OPEN (R93): Caleb",
+   "replace": "⚠ ONCE OPEN, SETTLED BY CR 709.4d: Caleb",
+   "nums": [
+    "709.4d"
+   ],
+   "note": "709.4d puts Inverted after all of layer 4"
+  },
+  "client/engine/src/engine.ts##R137#e15cbf566b#0": {
+   "action": "reword",
+   "find": "R137: and so is an {Unstable} card.",
+   "replace": "In the engine, so is an {Unstable} card (CR 801.2h: it is not trashed; CT-246).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R250#e22b36b247#0": {
+   "action": "reword",
+   "find": "under R244's \"the\n    // DESTINATION does not move\". R250 §4 SUPERSEDES that half of R244 (its",
+   "replace": "under an earlier mod ruling's \"the\n    // DESTINATION does not move\". A later ruling (now CR 400.4) supersedes that half (its",
+   "nums": [
+    "400.4"
+   ],
+   "note": "history; covers the R244 references on 3359-3360"
+  },
+  "client/engine/src/engine.ts##R42#c795e52fa1#0": {
+   "action": "reword",
+   "find": "(R42, Divine Intervention)\" — a comment\n   * citing, as its authority, the ruling that says the opposite.",
+   "replace": "(the prophecy ruling, Divine Intervention)\" — a comment\n   * citing, as its authority, the ruling that says the opposite (now CR 803.7i).",
+   "nums": [
+    "803.7i"
+   ],
+   "note": "quotes an old comment"
+  },
+  "client/engine/src/engine.ts##R137#86968093b0#0": {
+   "action": "reword",
+   "find": "(R137/R140/R145)",
+   "replace": "(the engine's route; CR 405.5 erases instead, CT-246)",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R140, R145"
+  },
+  "client/engine/src/engine.ts##R112#4413c72e00#0": {
+   "action": "cite",
+   "find": "the gap R112's `giveControl` opens.",
+   "replace": "the gap `giveControl` opens (CR 711.1).",
+   "nums": [
+    "711.1"
+   ],
+   "note": "controller differs from owner"
+  },
+  "client/engine/src/engine.ts##R244#5b94d1162a#0": {
+   "action": "reword",
+   "find": "[R244]'s \"⚠ The DESTINATION does not move\" — but\n     * only for THE BODY, and R244 wrote that paragraph",
+   "replace": "the mods ruling's \"⚠ The DESTINATION does not move\" — but\n     * only for THE BODY, and the paragraph was written",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R244#a4257f254e#0": {
+   "action": "reword",
+   "find": "[R244]'s \"⚠ The DESTINATION does not move\" — but\n     * only for THE BODY, and R244 wrote that paragraph",
+   "replace": "the mods ruling's \"⚠ The DESTINATION does not move\" — but\n     * only for THE BODY, and the paragraph was written",
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R118#feb9f1a2b7#0": {
+   "action": "reword",
+   "find": "and R118\n    // ruling 2 adds the COPY of a modded unit (\"the copy is still considered\n    // modded\").",
+   "replace": "and an earlier\n    // reading added the COPY of a modded unit, since reversed: a fresh copy is\n    // not Unstable (CR 803.8g).",
+   "nums": [
+    "803.8g"
+   ],
+   "note": "stale: the copy half was reversed"
+  },
+  "client/engine/src/engine.ts##R137#5e9284e74a#0": {
+   "action": "reword",
+   "find": "R40/R137: EVERYTHING leaving play for a bin enters one — token, Unstable\n    // carrier and plain card alike — and R40 trashes every CARD among them.",
+   "replace": "In the engine EVERYTHING leaving play for a bin enters one — token, Unstable\n    // carrier and plain card alike — and every CARD among them is trashed (CR 801.2);\n    // CR 405.5 and 801.2h instead erase an Unstable carrier unbinned (CT-246).",
+   "nums": [
+    "801.2",
+    "405.5",
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers both R40 references"
+  },
+  "client/engine/src/engine.ts##R137#d57bd28427#0": {
+   "action": "reword",
+   "find": "⚠ R137 IS NOT WEAKENED FOR THE BODY.",
+   "replace": "⚠ THE ENGINE'S UNSTABLE-BODY TRASH IS NOT WEAKENED (CR 801.2h differs, CT-246).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R137#ff6b4b21a7#0": {
+   "action": "reword",
+   "find": "R69/R137 state-based sweep:",
+   "replace": "The engine's state-based sweep (CR 410.5; CR 405.5 would erase an {Unstable} card without binning it, CT-246):",
+   "nums": [
+    "410.5",
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R69"
+  },
+  "client/engine/src/engine.ts##R137#d0e33e0b4d#0": {
+   "action": "reword",
+   "find": "touched: R137\n   * merged the two destinations into one path.",
+   "replace": "touched: the\n   * engine merged the two destinations into one path (CR 405.5 keeps them apart, CT-246).",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R137#9740aa56c4#0": {
+   "action": "reword",
+   "find": "**R137 (owner, 2026-08-24) — an Unstable unit that dies IS TRASHED.**",
+   "replace": "**Engine (the owner's call, 2026-08-24; CR 801.2h differs, CT-246) — an Unstable unit that dies IS TRASHED.**",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R137#293c582a31#0": {
+   "action": "reword",
+   "find": "(see R137 in docs/digital-rules.md)",
+   "replace": "(see CR 801.2h, which follows the print, and CT-246)",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R137#d20916baec#0": {
+   "action": "reword",
+   "find": "R137's CONCLUSION stands\n   * without it: the Dropslime in #93 was a card, and a card entering a bin\n   * from play is trashed whatever happens to it next.",
+   "replace": "the owner's 2026-08-24 CONCLUSION stands\n   * without it: the Dropslime in #93 was a card, and a card entering a bin\n   * from play is trashed whatever happens to it next — in the engine; CR 801.2h disagrees for an Unstable card (CT-246).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R244#f6ce5d3387#0": {
+   "action": "reword",
+   "find": "What R244 did NOT touch is the BODY, three paragraphs\n   * up: an {Unstable} carrier that dies is still binned and still trashed.",
+   "replace": "What the mods ruling did NOT touch is the BODY, three paragraphs\n   * up: in the engine an {Unstable} carrier that dies is still binned and still trashed (CR 801.2h: erased instead, not trashed; CT-246).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R137#c479e7e677#0": {
+   "action": "reword",
+   "find": "R137: `to` is 'bin' for EVERY death now, Unstable included",
+   "replace": "Engine: `to` is 'bin' for EVERY death now, Unstable included (CR 801.2h erases an Unstable card instead; CT-246)",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/src/engine.ts##R137#cee4f31002#0": {
+   "action": "reword",
+   "find": "(R137/R140)",
+   "replace": "(the engine's route; CR 405.5 erases instead, CT-246)",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R140"
+  },
+  "client/engine/src/engine.ts##R59#18facb1fc4#0": {
+   "action": "reword",
+   "find": "which R59 used to keep off a token and R305\n      // put back)",
+   "replace": "which an earlier reading used to keep off a token and CR 702.7a\n      // puts back)",
+   "nums": [
+    "702.7a"
+   ],
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R305#18facb1fc4#0": {
+   "action": "reword",
+   "find": "which R59 used to keep off a token and R305\n      // put back)",
+   "replace": "which an earlier reading used to keep off a token and CR 702.7a\n      // puts back)",
+   "nums": [
+    "702.7a"
+   ],
+   "note": "history"
+  },
+  "client/engine/src/engine.ts##R65#bf4eb11f22#0": {
+   "action": "reword",
+   "find": "R65: each card reaches ITS OWN owner's erased pile — a virus on an\n      // enemy spell is the enemy's card, and the two piles are public.",
+   "replace": "CR 723.4b: the spell and its viruses are erased. Each card goes to the\n      // pile of the seat that played it (the spell's controller, each virus's\n      // applier), and the two piles are public.",
+   "nums": [
+    "723.4b"
+   ],
+   "note": "the CR names no pile for this case (coverage gap); the comment states the engine convention"
+  },
+  "client/engine/src/types.ts##R42#ebbf299417#0": {
+   "action": "reword",
+   "find": "R42: cache a card with a printed prophecy banner, paying the banner's\n   * plain mana (no affinity pips). DEPLOYMENT ONLY.",
+   "replace": "Prophesy: cache a card with a printed prophecy banner, paying the banner's\n   * cost — mana spent, affinity required (CR 803.7d) — during deployment, or the\n   * haste step for a [Haste] banner (CR 803.7b).",
+   "nums": [
+    "803.7d",
+    "803.7b"
+   ],
+   "note": "STALE comment: stated the reversed no-affinity, deployment-only reading"
+  },
+  "client/engine/test/09-attrs.test.ts##R23#0de4ace263#0": {
+   "action": "reword",
+   "find": "Proposed rulings R23 (Vulnerable × Piercing)\n * and R24 (Thieving = one draw per connecting column) live in the report. */",
+   "replace": "The rulings on Vulnerable × Piercing\n * (CR 802.11c) and Thieving = one draw per connecting column (CR 802.20b) are in the CR. */",
+   "nums": [
+    "802.11c",
+    "802.20b"
+   ],
+   "note": "proposed rulings since settled; covers R24"
+  },
+  "client/engine/test/111-literal-fire.test.ts##R94#de1f90c1fd#0": {
+   "action": "reword",
+   "find": "the R94 ⚠ OPEN note asks\n *     whether \"your spells\" reaches spell TOKENS and says the engine's default\n *     is yes. It IS yes,",
+   "replace": "an old ⚠ OPEN note asked\n *     whether \"your spells\" reaches spell TOKENS and said the engine's default\n *     is yes. It IS yes (CR 707.7a),",
+   "nums": [
+    "707.7a"
+   ],
+   "note": "once-open question, settled"
+  },
+  "client/engine/test/125-active-zone.test.ts##R65#39dea0b8ef#0": {
+   "action": "reword",
+   "find": "'R65: it lands in its OWN owner\\'s pile",
+   "replace": "'it lands in its OWN seat\\'s pile",
+   "note": "helper covers active and inactive zones; no single CR rule"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#0357c4c85c#0": {
+   "action": "reword",
+   "find": "(R137/R140/R145)",
+   "replace": "(the engine's route; CR 405.5 erases instead, CT-246)",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R140, R145"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#eb9895e75b#0": {
+   "action": "reword",
+   "find": "so R137's sweep",
+   "replace": "so the engine's sweep (CR 405.5 erases instead of binning, CT-246)",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R150#c02a50f18a#0": {
+   "action": "reword",
+   "find": "R150 (CT-32) fixed that entirely",
+   "replace": "The server fix for CT-32 settled that entirely",
+   "note": "history"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R264#56f6979386#0": {
+   "action": "cite",
+   "find": "test('R264: TWO Arbiters",
+   "replace": "test('CR 708.6: TWO Arbiters",
+   "nums": [
+    "708.6"
+   ],
+   "note": "title"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R264#32ae76886e#0": {
+   "action": "reword",
+   "find": "R264 has been applied\n  // somewhere it does not reach: the owner answered R157 §23 about two",
+   "replace": "the exponential rule (CR 708.6) has been applied\n  // somewhere it does not reach: the owner's 2026-08-25 answer was about two",
+   "nums": [
+    "708.6"
+   ],
+   "note": "about which ruling reaches what"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#3ed6d71b28#0": {
+   "action": "reword",
+   "find": "R264 has been applied\n  // somewhere it does not reach: the owner answered R157 §23 about two",
+   "replace": "the exponential rule (CR 708.6) has been applied\n  // somewhere it does not reach: the owner's 2026-08-25 answer was about two",
+   "nums": [
+    "708.6"
+   ],
+   "note": "about which ruling reaches what"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#9f1cecc6dd#0": {
+   "action": "reword",
+   "find": "R157 §23 answers how multipliers compose with EACH OTHER and explicitly\n  // does not answer how one composes with R104's additive family. The interim",
+   "replace": "The multiplier rule (CR 708.6) answers how multipliers compose with EACH OTHER,\n  // and CR 708.6a how one composes with the additive family. The",
+   "nums": [
+    "708.6",
+    "708.6a"
+   ],
+   "note": "stale: the additive order is now ruled"
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R104#bd839c7d24#0": {
+   "action": "reword",
+   "find": "R157 §23 answers how multipliers compose with EACH OTHER and explicitly\n  // does not answer how one composes with R104's additive family. The interim",
+   "replace": "The multiplier rule (CR 708.6) answers how multipliers compose with EACH OTHER,\n  // and CR 708.6a how one composes with the additive family. The",
+   "nums": [
+    "708.6",
+    "708.6a"
+   ],
+   "note": "stale: the additive order is now ruled"
+  },
+  "client/engine/test/138-spell-copy.test.ts##R164#61c414163f#0": {
+   "action": "reword",
+   "find": "since R164 — add",
+   "replace": "since spell copies went on the stack — add",
+   "note": "history"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#b58765bd95#0": {
+   "action": "reword",
+   "find": "(R137/R140).",
+   "replace": "(an engine route; CR 410.4b erases both instead, CT-246).",
+   "nums": [
+    "410.4b"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R140"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#4d9512a321#0": {
+   "action": "reword",
+   "find": "R69/R137: the body is {Unstable} because it is modded, so the sweep",
+   "replace": "the body is {Unstable} because it is modded (CR 410.4b), so the engine's sweep (CT-246)",
+   "nums": [
+    "410.4b"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R69"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R124#e136a9f435#0": {
+   "action": "reword",
+   "find": "R124 gave Rotling a graftEffect,",
+   "replace": "A later round gave Rotling a graftEffect,",
+   "note": "engine history"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R124#7269f3a46a#0": {
+   "action": "reword",
+   "find": "+ 'R124 giving it one.",
+   "replace": "+ 'a later round giving it one.",
+   "note": "engine history"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R157#6fdc144ca7#0": {
+   "action": "reword",
+   "find": "CLOSED-by-R157-§25 note",
+   "replace": "TRANSCRIPTION note",
+   "note": "points at the batch-light-a.ts note by its stable label"
+  },
+  "client/engine/test/15-water-b.test.ts##R65#62256b51eb#0": {
+   "action": "reword",
+   "find": "files the R65\n// public erased pile",
+   "replace": "files the\n// public erased pile (CR 407.1)",
+   "nums": [
+    "407.1"
+   ],
+   "note": ""
+  },
+  "client/engine/test/151-copy-and-moved-mods.test.ts##R178#4ce9a6f809#0": {
+   "action": "reword",
+   "find": "/* R178 — THREE THINGS THE DESIGNER SAYS, AND THE ENGINE SAID OTHERWISE.",
+   "replace": "/* THREE THINGS THE DESIGNER SAYS, AND THE ENGINE SAID OTHERWISE (CR 706.9, 109.6, 720.10).",
+   "nums": [
+    "706.9",
+    "109.6",
+    "720.10"
+   ],
+   "note": "file covers three rules"
+  },
+  "client/engine/test/17-earth-b.test.ts##R137#441da7a778#0": {
+   "action": "reword",
+   "find": "'and it WAS trashed on the way through (R137)'",
+   "replace": "'and the engine trashed it on the way through (CT-246; CR 801.2h: not trashed)'",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/19-hybrids.test.ts##R157#04c393adf7#0": {
+   "action": "cite",
+   "find": "'R157 #20: \"sort of exempt, but only if X >= 3\"'",
+   "replace": "'CR 111.10i; the owner: \"sort of exempt, but only if X >= 3\"'",
+   "nums": [
+    "111.10i"
+   ],
+   "note": "owner quote kept verbatim"
+  },
+  "client/engine/test/210-zephyrzoa-hears-a-replaced-hit.test.ts##R238#02b062c49a#0": {
+   "action": "reword",
+   "find": "R238 ruled (the owner, 2026-08-28) that",
+   "replace": "The owner ruled on 2026-08-28 (now CR 608.8a) that",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "history phrasing"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#fb2d13d7e5#0": {
+   "action": "reword",
+   "find": "R137 (owner, 2026-08-24, report #93) overruled\n  // BOTH the printed reminder text (\"If they would enter a bin, erase them\n  // instead\") AND a direct Caleb ruling, on purpose: an {Unstable} unit that\n  // dies passes THROUGH the bin, is trashed there, and is only then erased.",
+   "replace": "The owner's call of 2026-08-24 (report #93) overruled\n  // BOTH the printed reminder text (\"If they would enter a bin, erase them\n  // instead\") AND a direct Caleb ruling, on purpose: an {Unstable} unit that\n  // dies passes THROUGH the bin, is trashed there, and is only then erased. CR 801.2h and 405.5 follow the print instead (CT-246).",
+   "nums": [
+    "801.2h",
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#6e25962064#0": {
+   "action": "reword",
+   "find": "REPLACES R244's HAZARD WITH R250's. R244 split the trasher",
+   "replace": "REPLACES THE MODS RULING'S HAZARD WITH THE ZONES-FOLLOW-CONTROL ONE (CR 400.4). The mods ruling split the trasher",
+   "nums": [
+    "400.4"
+   ],
+   "note": "history; covers both R244 references"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R137#9ff8f557e7#0": {
+   "action": "reword",
+   "find": "thing R137 exists to prevent.",
+   "replace": "thing the engine's Unstable-trash route exists to prevent (CT-246; CR 801.2h differs).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/237-live-while-held.test.ts##R150#24cea50bbb#0": {
+   "action": "reword",
+   "find": "R150 documents the real arrival pattern as",
+   "replace": "The real arrival pattern was measured as",
+   "note": "pointer to a retired write-up"
+  },
+  "client/engine/test/276-deployment-stack.test.ts##R154#f93135fbf2#0": {
+   "action": "reword",
+   "find": "R154's \"a pending question stops the\n * world\" is correct in battle,",
+   "replace": "The old gate's \"a pending question stops the\n * world\" is correct in battle (CR D2.1a),",
+   "nums": [
+    "D2.1a"
+   ],
+   "note": "history"
+  },
+  "client/engine/test/28-metal-c.test.ts##R31#7de530d1f7#0": {
+   "action": "cite",
+   "find": "immediate mid-combat death trigger (Unstable Singularity, R31),",
+   "replace": "mid-combat death trigger (Unstable Singularity, CR 608.9),",
+   "nums": [
+    "608.9"
+   ],
+   "note": "stale: \"resolve immediately\" was superseded; whole clause replaced"
+  },
+  "client/engine/test/297-damage-substeps-are-steps.test.ts##R261#c5992e58ee#0": {
+   "action": "reword",
+   "find": "THE PRE-R261 ENGINE.",
+   "replace": "THE OLD IN-SUB-STEP ENGINE.",
+   "note": "history"
+  },
+  "client/engine/test/314-prophecy-units-die.test.ts##R302#846837c8bc#0": {
+   "action": "reword",
+   "find": "between R301 and R302",
+   "replace": "until its condition could be counted",
+   "note": "history; covers R301"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#f418b1945c#0": {
+   "action": "reword",
+   "find": "R69 (Bena 2026-08-21, reversing R40's old flat \"tokens are never trashed\"):",
+   "replace": "Bena, 2026-08-21, reversing the old flat \"tokens are never trashed\" (the zone half is now CR 410.5a):",
+   "nums": [
+    "410.5a"
+   ],
+   "note": "history; covers R40"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#94e4c50408#0": {
+   "action": "reword",
+   "find": "R137 (Bena 2026-08-24, playtest #93/room ANBB) INVERTS this test in place.",
+   "replace": "The owner's call of 2026-08-24 (playtest #93/room ANBB) INVERTS this test in place; CR 801.2h would invert it back (CT-246).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#13af694cd6#0": {
+   "action": "reword",
+   "find": "R42 Prophecy: a deployment-only action that caches a banner card for the\n *    banner's plain mana (no affinity).",
+   "replace": "Prophecy: a deployment action (CR 803.7b) that caches a banner card for the\n *    banner's cost, mana and affinity (CR 803.7d).",
+   "nums": [
+    "803.7b",
+    "803.7d"
+   ],
+   "note": "STALE comment: stated the reversed no-affinity reading"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R137#6354fe116e#0": {
+   "action": "reword",
+   "find": "R137 still trashes an Unstable\n// CARD (224-mod-trash);",
+   "replace": "The engine still trashes an Unstable\n// CARD (224-mod-trash; CR 801.2h says it should not, CT-246);",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R157#d525d18165#0": {
+   "action": "reword",
+   "find": "(R225, R157 §20).",
+   "replace": "(CR 101.3): the dead-source formation reading and the Stasis Sentry X-cost reading.",
+   "nums": [
+    "101.3"
+   ],
+   "note": "names reversed rulings; covers R225"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#0f0a1477a2#0": {
+   "action": "reword",
+   "find": "── R137 / PLAYTEST REPORT #93, room ANBB, 2026-08-24 ",
+   "replace": "── PLAYTEST REPORT #93, room ANBB, 2026-08-24 (engine Unstable-trash route; CR 801.2h differs, CT-246) ",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#c39a50b45f#0": {
+   "action": "reword",
+   "find": "and R137/R145 say an {Unstable}\n// card making that trip is binned, TRASHED there, and only then swept into the\n// erased pile — the exact route E.destroy takes.",
+   "replace": "and in the engine an {Unstable}\n// card making that trip is binned, TRASHED there, and only then swept into the\n// erased pile — the exact route E.destroy takes (CR 410.4d erases it instead; CT-246).",
+   "nums": [
+    "410.4d"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R145"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#f203736e15#0": {
+   "action": "reword",
+   "find": "R146 shipped this test asserting that a TOKEN host exchanged out of play was\n// never binned and never trashed, and R146's own write-up",
+   "replace": "The first version of this test shipped asserting that a TOKEN host exchanged out of play was\n// never binned and never trashed, and its own write-up",
+   "note": "history"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#9ffa28957d#0": {
+   "action": "reword",
+   "find": "R146 shipped this test asserting that a TOKEN host exchanged out of play was\n// never binned and never trashed, and R146's own write-up",
+   "replace": "The first version of this test shipped asserting that a TOKEN host exchanged out of play was\n// never binned and never trashed, and its own write-up",
+   "note": "history"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#e4d296f532#0": {
+   "action": "reword",
+   "find": "R137 HAZARD 1.",
+   "replace": "ENGINE HAZARD 1 (the Unstable-trash route, CT-246; CR 801.2h differs).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R69#7e9c5689e1#0": {
+   "action": "reword",
+   "find": "since R69,",
+   "replace": "since tokens were ruled to really enter zones (CR 410.5),",
+   "nums": [
+    "410.5"
+   ],
+   "note": "history"
+  },
+  "client/engine/test/47-costs-events.test.ts##R18#451b933efa#0": {
+   "action": "reword",
+   "find": "— even when the step was skipped outright (R18)",
+   "replace": "— even in a turn when nobody played anything in the step",
+   "note": "the step is no longer skipped; CR 504.6 wording"
+  },
+  "client/engine/test/58-playtest-round9.test.ts##R65#6dee0941b4#0": {
+   "action": "reword",
+   "find": "— R64 and R65.",
+   "replace": "— bracketed costs and targeting restrictions; discarding, conceding and the erased pile.",
+   "note": "file header naming the topics; covers R64"
+  },
+  "client/engine/test/62-death-facts.test.ts##R69#450486cf3d#0": {
+   "action": "reword",
+   "find": "R69, extended to the hand 2026-08-22: a recalled token REACHES the hand",
+   "replace": "CR 410.5b (extended to the hand 2026-08-22): a recalled token REACHES the hand",
+   "nums": [
+    "410.5b"
+   ],
+   "note": "history"
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R65#c92490b8ad#0": {
+   "action": "reword",
+   "find": "R65: each card reaches ITS OWN owner's erased pile",
+   "replace": "CR 723.4b: both are erased — the spell to its controller's pile, the virus to its applier's",
+   "nums": [
+    "723.4b"
+   ],
+   "note": "the CR names no pile for a stack spell (engine convention)"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R178#7a3f31206b#0": {
+   "action": "reword",
+   "find": "R178 removed Maelstrom Charger",
+   "replace": "Maelstrom Charger was removed (CR 109.6)",
+   "nums": [
+    "109.6"
+   ],
+   "note": "history"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R137#08c45f563c#0": {
+   "action": "reword",
+   "find": "resolves (R137).",
+   "replace": "resolves (in the engine, CT-246; CR 801.2h never bins or trashes it).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R137#4772c32819#0": {
+   "action": "reword",
+   "find": "runs R137's bin → trash →\n//     Unstable-erase in that order.",
+   "replace": "runs the engine's bin → trash →\n//     Unstable-erase in that order (CR 405.5 erases instead; CT-246).",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/engine/test/91-modular.test.ts##R105#6d3093aff7#0": {
+   "action": "cite",
+   "find": "test('R105 = R79:",
+   "replace": "test('CR 803.8f:",
+   "nums": [
+    "803.8f"
+   ],
+   "note": "803.8f states both windows"
+  },
+  "client/engine/test/91-modular.test.ts##R79#6d3093aff7#0": {
+   "action": "cite",
+   "find": "test('R105 = R79:",
+   "replace": "test('CR 803.8f:",
+   "nums": [
+    "803.8f"
+   ],
+   "note": "803.8f states both windows"
+  },
+  "client/engine/test/92-unaware.test.ts##R106#ea06f08d04#0": {
+   "action": "reword",
+   "find": "R106's one open edge.",
+   "replace": "the Unaware rule's one open edge.",
+   "note": "targeting edge; no CR rule"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R65#53594219c3#0": {
+   "action": "reword",
+   "find": "R65: \"each card reaches ITS OWN owner's erased pile — a virus on an enemy\n// spell is the enemy's card.\" ",
+   "replace": "Putting a card into play out of another player's zone makes you its\n// controller, not its owner (CR 102.5a). ",
+   "nums": [
+    "102.5a"
+   ],
+   "note": "replaces the quoted owner-pile sentence"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R52#ecf0810635#0": {
+   "action": "reword",
+   "find": "It WITHDRAWS R28 and R52 and\n * ABSORBS R33:",
+   "replace": "It WITHDRAWS two earlier\n * home-region rulings and ABSORBS the carrier reading:",
+   "note": "history; covers R28"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R33#90b6cd9bae#0": {
+   "action": "reword",
+   "find": "It WITHDRAWS R28 and R52 and\n * ABSORBS R33:",
+   "replace": "It WITHDRAWS two earlier\n * home-region rulings and ABSORBS the carrier reading:",
+   "note": "history; covers R28"
+  },
+  "client/engine/test/util.ts##R261#e0d8f7f728#0": {
+   "action": "cite",
+   "find": "R261: drain the AFTER-COMBAT stack",
+   "replace": "CR 608.9b: drain the AFTER-COMBAT stack",
+   "nums": [
+    "608.9b"
+   ],
+   "note": ""
+  },
+  "client/engine/test/util.ts##R261#1316cae138#0": {
+   "action": "reword",
+   "find": "Before R261 a combat-damage trigger resolved inside the damage sub-step, so\n * a test could `pass(h); pass(h)` into combat damage and read the trigger's\n * effect off the board on the very next line. R261 puts those triggers",
+   "replace": "A combat-damage trigger used to resolve inside the damage sub-step, so\n * a test could `pass(h); pass(h)` into combat damage and read the trigger's\n * effect off the board on the very next line. CR 608.9b puts those triggers",
+   "nums": [
+    "608.9b"
+   ],
+   "note": "history"
+  },
+  "client/engine/test/util.ts##R261#62a1cf659d#0": {
+   "action": "reword",
+   "find": "Before R261 a combat-damage trigger resolved inside the damage sub-step, so\n * a test could `pass(h); pass(h)` into combat damage and read the trigger's\n * effect off the board on the very next line. R261 puts those triggers",
+   "replace": "A combat-damage trigger used to resolve inside the damage sub-step, so\n * a test could `pass(h); pass(h)` into combat damage and read the trigger's\n * effect off the board on the very next line. CR 608.9b puts those triggers",
+   "nums": [
+    "608.9b"
+   ],
+   "note": "history"
+  },
+  "client/ledgers/backlog-closed.ts##R295#9cc05515be#0": {
+   "action": "reword",
+   "find": "Room KAWJ (R295) replayed",
+   "replace": "Room KAWJ (2026-09-16) replayed",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-ledger.ts##R121#8e4db881fc#0": {
+   "action": "reword",
+   "find": "when R121 built both",
+   "replace": "when the engine built both",
+   "note": "card-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R65#deb35174a3#0": {
+   "action": "reword",
+   "find": "everywhere else and says so '\n      + 'out loud at R65 (\"each card reaches ITS OWN owner’s erased pile — a virus on '\n      + 'an enemy spell is the enemy’s card\"), so this",
+   "replace": "everywhere else '\n      + '(CR 102.5: owner and controller can differ), '\n      + 'so this",
+   "nums": [
+    "102.5"
+   ],
+   "note": "closed-ledger detail prose (not evidence); drops the quoted owner-pile sentence"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#a05e887458#0": {
+   "action": "reword",
+   "find": "R137/R145: an Unstable card leaving an active '\n      + 'zone into a bin is binned, trashed there, and then SWEPT into the erased pile.",
+   "replace": "In the engine an Unstable card leaving an active '\n      + 'zone into a bin is binned, trashed there, and then SWEPT into the erased pile (CR 405.5 erases it instead; CT-246).",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R145"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#8d7cc4a16c#0": {
+   "action": "reword",
+   "find": "(R137/R145)",
+   "replace": "(an engine route; CR 405.5 erases instead, CT-246)",
+   "nums": [
+    "405.5"
+   ],
+   "note": "engine differs from the CR here (CT-246); covers R145"
+  },
+  "client/ledgers/card-todo-closed.ts##R150#b91ed779a9#0": {
+   "action": "reword",
+   "find": "R150 fixed report #98",
+   "replace": "A server fix (CT-32) closed report #98",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R164#36350d2c13#0": {
+   "action": "reword",
+   "find": "R164 made the",
+   "replace": "Spell copies on the stack (CR 710.8) made the",
+   "nums": [
+    "710.8"
+   ],
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R172#e1eb8ec874#0": {
+   "action": "reword",
+   "find": "R172's doing",
+   "replace": "the erase-and-steal ruling's doing",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R45#c5e4ff9796#0": {
+   "action": "reword",
+   "find": "described R45 AS IT",
+   "replace": "described THE GLIMPSE RULE AS IT",
+   "note": "history of the 2026-08-19 correction"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#779ca2f622#0": {
+   "action": "reword",
+   "find": "'R206 (2026-08-26). CT-80",
+   "replace": "'Closed by the 2026-08-26 glossary audit. CT-80",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#779ca2f622#0": {
+   "action": "cite",
+   "find": "R145 scopes it to the ACTIVE ZONES",
+   "replace": "CR 803.8a scopes it to the ACTIVE ZONES",
+   "nums": [
+    "803.8a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R110#779ca2f622#0": {
+   "action": "reword",
+   "find": "contradicted by R110\\'s multiplier",
+   "replace": "contradicted by the graft-repeat multiplier (CR 109.9j)",
+   "nums": [
+    "109.9j"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R132#779ca2f622#0": {
+   "action": "reword",
+   "find": "Shard (two callers since R132)",
+   "replace": "Shard (two callers since the Prismite activation ruling)",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R10#779ca2f622#0": {
+   "action": "reword",
+   "find": "— R10 and R76 are marked only in the blockquote, and R10 is exactly",
+   "replace": "— the old Unaware and Alluring rulings are marked only in the blockquote, and the Unaware one is exactly",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R76#779ca2f622#0": {
+   "action": "reword",
+   "find": "— R10 and R76 are marked only in the blockquote, and R10 is exactly",
+   "replace": "— the old Unaware and Alluring rulings are marked only in the blockquote, and the Unaware one is exactly",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R10#779ca2f622#1": {
+   "action": "reword",
+   "find": "— R10 and R76 are marked only in the blockquote, and R10 is exactly",
+   "replace": "— the old Unaware and Alluring rulings are marked only in the blockquote, and the Unaware one is exactly",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R9#779ca2f622#0": {
+   "action": "reword",
+   "find": "marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks R18 retired",
+   "replace": "marks two short rulings retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks a third retired",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R17#779ca2f622#0": {
+   "action": "reword",
+   "find": "marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks R18 retired",
+   "replace": "marks two short rulings retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks a third retired",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R18#779ca2f622#0": {
+   "action": "reword",
+   "find": "marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks R18 retired",
+   "replace": "marks two short rulings retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks a third retired",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R103#779ca2f622#0": {
+   "action": "reword",
+   "find": "NEITHER TICKET NAMED R103, which is IN THE REGISTER",
+   "replace": "NEITHER TICKET NAMED the noncombat-Piercing ruling (now CR 802.16j), which was IN THE REGISTER",
+   "nums": [
+    "802.16j"
+   ],
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R188#779ca2f622#0": {
+   "action": "reword",
+   "find": "qualified by R188, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording",
+   "replace": "qualified by a then-open glimpse ruling, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-audit wording",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#779ca2f622#1": {
+   "action": "reword",
+   "find": "qualified by R188, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording",
+   "replace": "qualified by a then-open glimpse ruling, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-audit wording",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "'R206 (2026-08-26). CT-80",
+   "replace": "'Closed by the 2026-08-26 glossary audit. CT-80",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R145#779ca2f622#0~1": {
+   "action": "cite",
+   "find": "R145 scopes it to the ACTIVE ZONES",
+   "replace": "CR 803.8a scopes it to the ACTIVE ZONES",
+   "nums": [
+    "803.8a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R110#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "contradicted by R110\\'s multiplier",
+   "replace": "contradicted by the graft-repeat multiplier (CR 109.9j)",
+   "nums": [
+    "109.9j"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R132#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "Shard (two callers since R132)",
+   "replace": "Shard (two callers since the Prismite activation ruling)",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R10#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "— R10 and R76 are marked only in the blockquote, and R10 is exactly",
+   "replace": "— the old Unaware and Alluring rulings are marked only in the blockquote, and the Unaware one is exactly",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R76#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "— R10 and R76 are marked only in the blockquote, and R10 is exactly",
+   "replace": "— the old Unaware and Alluring rulings are marked only in the blockquote, and the Unaware one is exactly",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R10#779ca2f622#1~1": {
+   "action": "reword",
+   "find": "— R10 and R76 are marked only in the blockquote, and R10 is exactly",
+   "replace": "— the old Unaware and Alluring rulings are marked only in the blockquote, and the Unaware one is exactly",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R9#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks R18 retired",
+   "replace": "marks two short rulings retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks a third retired",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R17#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks R18 retired",
+   "replace": "marks two short rulings retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks a third retired",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R18#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "marks R9 and R17 retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks R18 retired",
+   "replace": "marks two short rulings retired (their bodies are two lines, so it runs into the next ruling\\'s marker), and a body-wide match marks a third retired",
+   "note": "register-tooling history"
+  },
+  "client/ledgers/card-todo-closed.ts##R103#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "NEITHER TICKET NAMED R103, which is IN THE REGISTER",
+   "replace": "NEITHER TICKET NAMED the noncombat-Piercing ruling (now CR 802.16j), which was IN THE REGISTER",
+   "nums": [
+    "802.16j"
+   ],
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R188#779ca2f622#0~1": {
+   "action": "reword",
+   "find": "qualified by R188, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording",
+   "replace": "qualified by a then-open glimpse ruling, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-audit wording",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R206#779ca2f622#1~1": {
+   "action": "reword",
+   "find": "qualified by R188, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording",
+   "replace": "qualified by a then-open glimpse ruling, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-audit wording",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R27#acf2132ac6#0": {
+   "action": "reword",
+   "find": "evidence that R27\\'s",
+   "replace": "evidence that the referent",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#081fa12355#0": {
+   "action": "reword",
+   "find": "R157 §17 '\n      + '(2026-08-25) ruled",
+   "replace": "The owner\\'s answer of '\n      + '2026-08-25 ruled",
+   "note": "history"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#a9d33af8f4#0": {
+   "action": "reword",
+   "find": "OVERRULING R3, which reopens R3, R117 and R157 §5.",
+   "replace": "OVERRULING THE NO-WINDOW RULING, which reopens the rulings built on it.",
+   "note": "history; covers R3, R117"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#f4cbe9fdc7#0": {
+   "action": "reword",
+   "find": "⚠ R137 IS THE BOUNDARY AND IT",
+   "replace": "⚠ THE ENGINE\\'S UNSTABLE-BODY TRASH (CT-246; CR 801.2h differs) IS THE BOUNDARY AND IT",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246)"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#5f98f48645#0": {
+   "action": "reword",
+   "find": "R137 is amended rather than left alone: R244 overrules its \"The mods ride with it\" section, '\n      + 'which R137 had flagged",
+   "replace": "The Unstable-trash ruling is amended rather than left alone: the mods ruling overrules its \"The mods ride with it\" section, '\n      + 'which it had flagged",
+   "note": "history; covers R244 and the R137 on the next line"
+  },
+  "client/ledgers/card-todo-closed.ts##R240#3e5b50004e#0": {
+   "action": "reword",
+   "find": "and R239 and R240",
+   "replace": "and two of those rulings",
+   "note": "history; covers R239"
+  },
+  "client/ledgers/card-todo-closed.ts##R197#e101e31e24#0": {
+   "action": "reword",
+   "find": "are all R197 unchanged;",
+   "replace": "are all that same entry, unchanged;",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R164#bcc5f352a8#0": {
+   "action": "reword",
+   "find": "since R164.",
+   "replace": "since spell copies went on the stack.",
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R286#492bac0276#0": {
+   "action": "reword",
+   "find": "R286 landed '\n      + 'the stack it needs;",
+   "replace": "Deployment got '\n      + 'the stack it needs (CR 507.5);",
+   "nums": [
+    "507.5"
+   ],
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/card-todo-closed.ts##R144#65dd70166e#0": {
+   "action": "reword",
+   "find": "R144(a) is true of '\n      + 'TRIGGERS and false of PLAYS.",
+   "replace": "The deployment-stack rule was then true of '\n      + 'TRIGGERS (CR 706.3c) and false of PLAYS.",
+   "nums": [
+    "706.3c"
+   ],
+   "note": "closed-ledger history; plays are on the stack now too (507.5)"
+  },
+  "client/ledgers/card-todo-closed.ts##R322#c3be23d8ae#0": {
+   "action": "reword",
+   "find": "as R321 and R322, following",
+   "replace": "as the side-block rule (CR 606.4) and the late-blocker rule (CR 607.2), following",
+   "nums": [
+    "606.4",
+    "607.2"
+   ],
+   "note": "covers R321"
+  },
+  "client/ledgers/card-todo-closed.ts##R225#0e6c94eb94#0": {
+   "action": "reword",
+   "find": "reverse R225.",
+   "replace": "reverse the earlier formation ruling (room FTUW).",
+   "note": "closed-ledger fix prose"
+  },
+  "client/ledgers/card-todo.ts##R286#0ee39a6b4b#0": {
+   "action": "reword",
+   "find": "R286 built the stack that makes",
+   "replace": "The deployment stack (CR 507.5) is what makes",
+   "nums": [
+    "507.5"
+   ],
+   "note": "history"
+  },
+  "client/ledgers/card-todo.ts##R38#d20acfd531#0": {
+   "action": "reword",
+   "find": "R286 amended R38.",
+   "replace": "the deployment-stack ruling amended the rot ruling (now CR 507.5 and 112.13c).",
+   "nums": [
+    "507.5",
+    "112.13c"
+   ],
+   "note": "covers R286"
+  },
+  "client/ledgers/card-todo.ts##R72#2ad950d565#0": {
+   "action": "reword",
+   "find": "(2) R72 says the client",
+   "replace": "(2) The formation-gravity ruling says the client",
+   "note": "register text (CR 602.5 states the rule)"
+  },
+  "client/ledgers/card-todo.ts##R59#5efc2d4016#1": {
+   "action": "reword",
+   "find": "digital-rules.md: \\\"### (b) 'cardPlayed': a {Battle} unit and an Ambush are cards being played\\\" and \\\"printed cost line and today sits outside the R59/R60/R122 play-tax layer\\\". apply.ts: \\\"printed cost line and sits outside the R59/R60/R122 play-tax layer alike. */\\\"",
+   "replace": "the retired register: \\\"### (b) 'cardPlayed': a {Battle} unit and an Ambush are cards being played\\\" and \\\"printed cost line and today sits outside the [...] play-tax layer\\\". apply.ts: \\\"printed cost line and the engine keeps it outside the play-tax layer alike\\\"",
+   "note": "re-quotes apply.ts:824 as reworded; covers the register quote too (R59, R60, R122 x2)"
+  },
+  "client/ledgers/card-todo.ts##R219#483fcacea4#0": {
+   "action": "reword",
+   "find": "R219: \\\"A token mod is not filed. R133: a token is not a card, and R65's pile is a list of cards.\\\"",
+   "replace": "CR 720.9a: a token mod erased off a host that stays in play is not recorded on the erased pile, because a token is not a card.",
+   "nums": [
+    "720.9a"
+   ],
+   "note": "replaces the retired-register quote; covers R133, R65"
+  },
+  "client/ledgers/card-todo.ts##R61#c53624723e#0": {
+   "action": "reword",
+   "find": "digital-rules.md: \\\"{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61).\\\" and \\\"The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and\\\".",
+   "replace": "the retired register said Tough, Balanced and Inverted still read in a Pure interaction (as stat layers) and that the combat Unaware collapse survives Pure; CR 802.25e now says they do not apply.",
+   "nums": [
+    "802.25e"
+   ],
+   "note": "paraphrases the retired register"
+  },
+  "client/ledgers/card-todo.ts##R61#c53624723e#1": {
+   "action": "reword",
+   "find": "digital-rules.md: \\\"{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61).\\\" and \\\"The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and\\\".",
+   "replace": "the retired register said Tough, Balanced and Inverted still read in a Pure interaction (as stat layers) and that the combat Unaware collapse survives Pure; CR 802.25e now says they do not apply.",
+   "nums": [
+    "802.25e"
+   ],
+   "note": "paraphrases the retired register"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R42#0de6787ac6#0": {
+   "action": "reword",
+   "find": "The COST half was always correct: R42 says the banner costs plain mana with no '\n      + 'affinity, so no Wood was needed.",
+   "replace": "The COST half followed the rule of the day: the prophecy ruling then said the banner costs plain mana with no '\n      + 'affinity, so no Wood was needed (since corrected, CR 803.7d).",
+   "nums": [
+    "803.7d"
+   ],
+   "note": "closed ledger; reversed reading"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R64#14b690f3de#0": {
+   "action": "reword",
+   "find": "had one since R64/R67.",
+   "replace": "had one for a long time (CR 110.3c).",
+   "nums": [
+    "110.3c"
+   ],
+   "note": "covers R67"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R79#62ebdadcfd#0": {
+   "action": "reword",
+   "find": "how R79 lost a whole round.",
+   "replace": "how augmenting a virus onto a spell (CR 723.4) lost a whole round.",
+   "nums": [
+    "723.4"
+   ],
+   "note": "the hostStack action was unreachable for a round"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R128#833adbee48#0": {
+   "action": "reword",
+   "find": "and R128 (\"a unit has",
+   "replace": "and the unit-on-the-stack reading (\"a unit has",
+   "note": "ledger history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R144#c626234f71#0": {
+   "action": "reword",
+   "find": "since R144 put '\n      + 'start-of-deployment triggers on the stack.",
+   "replace": "since the engine put '\n      + 'start-of-deployment triggers on the stack (CR 507.4a).",
+   "nums": [
+    "507.4a"
+   ],
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R45#2907d893e2#0": {
+   "action": "reword",
+   "find": "described R45 AS IT READ",
+   "replace": "described THE GLIMPSE RULE AS IT READ",
+   "note": "history of the 2026-08-19 correction"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R27#9d8ad62dc4#0": {
+   "action": "reword",
+   "find": "evidence R27 was always '\n      + 'the right reading.",
+   "replace": "evidence the referent reading (CR 602.6h) was always '\n      + 'the right one.",
+   "nums": [
+    "602.6h"
+   ],
+   "note": "closed-ledger history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R236#5363d2f144#0": {
+   "action": "reword",
+   "find": "\"The step ALWAYS happens (R224)\" '\n      + 'and \"unless you have turned on bluff haste (R236)\".",
+   "replace": "one ruling number in \"The step ALWAYS happens\" '\n      + 'and another in \"unless you have turned on bluff haste\".",
+   "note": "quoted UI strings carried ruling numbers; covers R224"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#84f5872f32#0": {
+   "action": "reword",
+   "find": "THAT IS R3, the",
+   "replace": "THAT IS THE NO-WINDOW RULING, the",
+   "note": "ledger about the old ruling itself (amended, CR 608.3b)"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#c5038c24f9#0": {
+   "action": "reword",
+   "find": "⚠ AND R137 IS NOT LEFT WHOLLY UNTOUCHED AFTER ALL: R244 overrules its \"The mods ride with '\n      + 'it\" section, which R137 had itself flagged",
+   "replace": "⚠ AND THE UNSTABLE-TRASH RULING IS NOT LEFT WHOLLY UNTOUCHED AFTER ALL: the mods ruling overrules its \"The mods ride with '\n      + 'it\" section, which it had itself flagged",
+   "note": "history; covers R244"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#7f43ebe4bd#0": {
+   "action": "reword",
+   "find": "⚠ AND R137 IS NOT LEFT WHOLLY UNTOUCHED AFTER ALL: R244 overrules its \"The mods ride with '\n      + 'it\" section, which R137 had itself flagged",
+   "replace": "⚠ AND THE UNSTABLE-TRASH RULING IS NOT LEFT WHOLLY UNTOUCHED AFTER ALL: the mods ruling overrules its \"The mods ride with '\n      + 'it\" section, which it had itself flagged",
+   "note": "history; covers R244"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R88#35784c4824#0": {
+   "action": "reword",
+   "find": "the pre-R64 and pre-R88 code.",
+   "replace": "the code from before targeting restrictions were enforced (CR 110.3a).",
+   "nums": [
+    "110.3a"
+   ],
+   "note": "covers R64"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R164#358d68c8f0#0": {
+   "action": "reword",
+   "find": "since R164,",
+   "replace": "since spell copies went on the stack,",
+   "note": "history"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R261#1832c7ccdc#0": {
+   "action": "reword",
+   "find": "R295. R261 quoted",
+   "replace": "Fixed by the split-step rule (CR 608.3b). The earlier after-combat ruling quoted",
+   "nums": [
+    "608.3b"
+   ],
+   "note": "history; covers R295"
+  },
+  "client/server/e2e/test-scenario.ts##R167#08bf43ea3d#0": {
+   "action": "reword",
+   "find": "(R167: this family was silently dead on",
+   "replace": "(this family was once silently dead on",
+   "note": "history"
+  },
+  "client/server/replay-probe.ts##R296#8e297ddc98#0": {
+   "action": "reword",
+   "find": "every pre-R296 game",
+   "replace": "every game recorded before the mark",
+   "note": "history"
+  },
+  "client/server/replay-probe.ts##R296#0f080aecff#0": {
+   "action": "reword",
+   "find": "R296 moved the mark, not the cards.",
+   "replace": "the recycling change moved the mark, not the cards.",
+   "note": "history"
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R310#9af8a8e315#0": {
+   "action": "reword",
+   "find": "⚠ **R310 (owner, 2026-10-04, report #192) REVERSED IT:**",
+   "replace": "⚠ **The owner (2026-10-04, report #192) REVERSED IT (now CR D6.2):**",
+   "nums": [
+    "D6.2"
+   ],
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R235#d2d5bcb8cd#0": {
+   "action": "reword",
+   "find": "and R235 gave that hold",
+   "replace": "and an earlier ruling gave that hold",
+   "note": "history"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R235#2591fb2a68#0": {
+   "action": "cite",
+   "find": "(R310 reversed R235)",
+   "replace": "(CR D6.2)",
+   "nums": [
+    "D6.2"
+   ],
+   "note": "covers R310"
+  },
+  "client/server/test/317-replay-fingerprints.test.ts##R295#a3b2c37f8e#0": {
+   "action": "reword",
+   "find": "(2026-09-16, R295) replayed 253 of 253 actions, refused nothing, reported\n * ✓ FAITHFUL, and arrived at a different final life total: R295 had added a",
+   "replace": "(2026-09-16) replayed 253 of 253 actions, refused nothing, reported\n * ✓ FAITHFUL, and arrived at a different final life total: the split-step rule (CR 608.3b) had added a",
+   "nums": [
+    "608.3b"
+   ],
+   "note": "history"
+  },
+  "client/server/test/317-replay-fingerprints.test.ts##R295#bb450e1d30#0": {
+   "action": "reword",
+   "find": "(2026-09-16, R295) replayed 253 of 253 actions, refused nothing, reported\n * ✓ FAITHFUL, and arrived at a different final life total: R295 had added a",
+   "replace": "(2026-09-16) replayed 253 of 253 actions, refused nothing, reported\n * ✓ FAITHFUL, and arrived at a different final life total: the split-step rule (CR 608.3b) had added a",
+   "nums": [
+    "608.3b"
+   ],
+   "note": "history"
+  },
+  "client/ui/battle.ts##R87#1f8e99660f#0": {
+   "action": "reword",
+   "find": "until R87, so",
+   "replace": "until counterattack riders were supported (CR 610.3), so",
+   "nums": [
+    "610.3"
+   ],
+   "note": "field history"
+  },
+  "client/ui/cardtext.ts##R118#dc28dc5ee1#0": {
+   "action": "reword",
+   "find": "// R118 ruling 2 — a copy of a modded card",
+   "replace": "// fallback (a fresh copy of a modded card is no longer Unstable, CR 803.8g)",
+   "nums": [
+    "803.8g"
+   ],
+   "note": "stale fallback branch"
+  },
+  "client/ui/glossary.ts##R137#ffde6036d3#0": {
+   "action": "reword",
+   "find": "R137 (2026-08-24): a dying UNIT is trashed on the way — it passes through\n  // the bin (firing \"when I am trashed\" and every trash watcher) and is erased\n  // out of it, exactly as a dying token is.",
+   "replace": "In the engine (2026-08-24) a dying {Unstable} UNIT is trashed on the way — it passes through\n  // the bin (firing \"when I am trashed\" and every trash watcher) and is erased\n  // out of it; CR 801.2h says it is erased instead and not trashed (CT-246).",
+   "nums": [
+    "801.2h"
+   ],
+   "note": "engine differs from the CR here (CT-246); also drops the stale token comparison"
+  },
+  "client/ui/inspect.ts##R69#7e57f689c8#0": {
+   "action": "reword",
+   "find": "and R69 then made every dying token pass through a bin and be\n * erased by the state-based sweep.",
+   "replace": "and then every dying token was ruled to pass through a bin and be\n * erased by the state-based sweep (CR 410.5a).",
+   "nums": [
+    "410.5a"
+   ],
+   "note": "history"
+  },
+  "client/ui/main.ts##R150#3a516b828f#0": {
+   "action": "reword",
+   "find": "R150 documents\n *     the real gap as",
+   "replace": "the measured\n *     real gap is",
+   "note": "pointer to a retired write-up"
+  },
+  "client/ui/main.ts##R154#7ef878faab#0": {
+   "action": "reword",
+   "find": "and since R154 that turns on\n    // whose question it is",
+   "replace": "and that turns on\n    // whose question it is (CR D2.1a, D2.1b)",
+   "nums": [
+    "D2.1a",
+    "D2.1b"
+   ],
+   "note": "'since R154' is history"
+  },
+  "client/ui/main.ts##R154#09fc954baa#0": {
+   "action": "reword",
+   "find": "which since R154 is a question",
+   "replace": "which is a question",
+   "note": "'since R154' is history"
+  },
+  "client/ui/reveal.ts##R310#fe0bcba720#0": {
+   "action": "reword",
+   "find": "R310 reversed\n * that on report #192 — inside a hidden step a glimpse now waits for the recap",
+   "replace": "the owner reversed\n * that on report #192 — inside a hidden step a glimpse now waits for the recap (CR D6.2)",
+   "nums": [
+    "D6.2"
+   ],
+   "note": "history"
+  },
+  "client/ui/test/231-manual-text.test.ts##R184#f3760e933a#0": {
+   "action": "reword",
+   "find": "R184 was decided by reading one of them",
+   "replace": "the Reaping ruling was decided by reading one of them",
+   "note": "history"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R87#9f00890b12#0": {
+   "action": "reword",
+   "find": "had no such field until R87,",
+   "replace": "had no such field until counterattack riders were supported (CR 610.3),",
+   "nums": [
+    "610.3"
+   ],
+   "note": "field history"
+  }
+ }
+}

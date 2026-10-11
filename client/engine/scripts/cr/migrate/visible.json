@@ -199,6 +199,12 @@
    "find": "§1③ and R212 as the single",
    "replace": "§1③ as the single",
    "why": "scenario tester tooltip (owner- and tester-visible)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "nothing because nothing asked, and the same `canHaste` is why the step is open '\n      + 'at all with no haste card in hand.'",
+   "replace": "nothing because nothing asked. The step itself opens every turn, haste card '\n      + 'in hand or not.'",
+   "why": "scenario tester tooltip: described a canHaste gate that no longer exists"
   }
  ]
 }

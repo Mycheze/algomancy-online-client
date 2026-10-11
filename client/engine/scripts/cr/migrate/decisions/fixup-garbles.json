@@ -1,0 +1,23 @@
+{
+ "unit": "fixup-garbles",
+ "decisions": {
+  "client/ledgers/card-todo-closed.ts##R3#2fed78207e#0": {
+   "action": "reword",
+   "find": "THAT IS R3, the owner own ruling of 2026-07-16:",
+   "replace": "THAT IS the owner\\'s 2026-07-16 no-window ruling (since amended):",
+   "note": "repeated date garble (auditor)"
+  },
+  "client/engine/src/engine.ts##R277#4d31b58f48#0": {
+   "action": "reword",
+   "find": "* R277: this used to read a trailing [Haste] on the banner as an override",
+   "replace": "* Before the fix that CR 803.7i records, this read a trailing [Haste] on the banner as an override",
+   "note": "bare 803.7i label (auditor)"
+  },
+  "client/server/scenarios-e.ts##R18#1c54e4e4b2#0": {
+   "action": "reword",
+   "find": "* ⚠ THIS SCENARIO ALSO PROVES R18'S OPENING CONDITION IS NOT WHAT IT LOOKS\n   * LIKE. The owner's hand holds no [Haste] card whatsoever, and the haste step\n   * is open anyway — `E.startHasteStep`'s `canHaste` consults the grant. If the\n   * board opens straight into the battle phase instead, the step never asked.",
+   "replace": "* ⚠ THE HASTE STEP OPENS EVERY TURN (CR 504.5). The owner's hand holds no\n   * [Haste] card whatsoever and the step is open anyway; what the grant changes\n   * is what may be PLAYED in it (CR 504.7a).",
+   "note": "described a canHaste gate that no longer exists (auditor)"
+  }
+ }
+}

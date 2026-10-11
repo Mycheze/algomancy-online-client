@@ -1,6 +1,7 @@
 /* THE CR-ONLY MIGRATION, re-runnable from a clean checkout.
  *
- *   node client/engine/scripts/cr/migrate/run.mjs [--dry-run [--keep]] [--step <s>[,<s>…]] [--decisions <dir>]
+ *   node client/engine/scripts/cr/migrate/run.mjs (--dry-run [--keep] | --apply) [--step <s>[,<s>…]] [--decisions <dir>]
+ *   (a bare invocation, or any flag this script does not know, prints the usage and changes nothing)
  *
  * Master moves while this branch waits, so nothing here is a hand-made diff to
  * rebase: on fresh master, run this and commit what it writes. Steps, in order:
@@ -245,7 +246,31 @@ async function dryRun() {
   process.exit(r.status ?? 1);
 }
 
+const USAGE = `usage:
+  node run.mjs --dry-run [--keep] [--step <s,…>] [--decisions <dir>] [--dir <path>]   (writes nothing in this tree)
+  node run.mjs --apply [--step <s,…>] [--decisions <dir>] [--base <rev>]              (rewrites this tree in place)
+  node run.mjs --check-decisions <file.json> [--rescore] [--json]                     (simulates; writes nothing)
+  node run.mjs capture <path>… (--from <dir> [--owned] | --delete) [--step-of hand|delete]
+steps: ${[...STEPS, 'delete'].join(', ')} (delete only when named)`;
+/** every flag this script reads, and whether it takes a value: anything else is refused
+ *  (an agent once ran \`--help\`, and the script — not knowing it — migrated the tree) */
+const FLAGS = { '--dry-run': false, '--keep': false, '--step': true, '--decisions': true, '--dir': true, '--apply': false,
+  '--in-place': false, '--base': true, '--check-decisions': true, '--rescore': false, '--json': false };
+const CAPTURE_FLAGS = { '--from': true, '--step-of': true, '--delete': false, '--owned': false };
+function checkFlags() {
+  const av = process.argv.slice(2);
+  const cap = av[0] === 'capture';
+  const known = cap ? CAPTURE_FLAGS : FLAGS;
+  for (let i = cap ? 1 : 0; i < av.length; i++) {
+    const a = av[i];
+    if (!a.startsWith('-')) { if (cap) continue; console.error(`unexpected argument ${a}\n${USAGE}`); process.exit(2); }
+    if (!(a in known)) { console.error(`unknown flag ${a}\n${USAGE}`); process.exit(2); }
+    if (known[a]) { if (av[i + 1] === undefined || av[i + 1].startsWith('--')) { console.error(`${a} needs a value\n${USAGE}`); process.exit(2); } i++; }
+  }
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  checkFlags();
   if (process.argv[2] === 'capture') capture();
   else if (arg('--check-decisions')) {
     const { checkDecisions, printResults } = await import('./checkdecisions.mjs');
@@ -254,6 +279,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     process.exit(res.every((r) => r.status === 'applied') ? 0 : 1);
   }
   else if (process.argv.includes('--dry-run')) await dryRun();
+  else if (!process.argv.includes('--apply') && !process.argv.includes('--in-place')) { console.error(`nothing to do: say --dry-run, --apply or --check-decisions\n${USAGE}`); process.exit(2); }
   else {
     const steps = stepsOf();
     const dDir = arg('--decisions') ? resolve(arg('--decisions')) : undefined;

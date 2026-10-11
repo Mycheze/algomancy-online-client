@@ -1,0 +1,1364 @@
+{
+ "unit": "leftover-nodecision",
+ "decisions": {
+  "client/README.md##R1#23c9b41ae3#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "README row describing the register (R1–R350, checked by 184); rewritten in the docs step when digital-rules.md is deleted"
+  },
+  "client/README.md##R350#23c9b41ae3#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "README row describing the register (R1–R350, checked by 184); rewritten in the docs step when digital-rules.md is deleted"
+  },
+  "client/docs/questions-round31.md##R79#7a56f185c0#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R95#7a56f185c0#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R79#54e43248e4#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R89#54e43248e4#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R95#54e43248e4#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R79#54e43248e4#0~1": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R89#54e43248e4#0~1": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R95#54e43248e4#0~1": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/engine/test/443-cr-demonstrations.test.ts##R65#3f47f5c910#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "T.replace('R65','R66') is a hash-sensitivity fixture, not a cite; rework swaps it for any other string pair present in T once T carries no R-id"
+  },
+  "client/engine/test/443-cr-demonstrations.test.ts##R66#3f47f5c910#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "T.replace('R65','R66') is a hash-sensitivity fixture, not a cite; rework swaps it for any other string pair present in T once T carries no R-id"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R13#71c80b88f8#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R97#15c231cf24#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R97#5f3eef9fda#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R228#5f3eef9fda#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R97#f3e10dd600#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#036d14814b#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "names test 202's control title (CT-91/R157 §17 pair); follows 202's rework/rename"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#9b84e658fe#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "describes test 202's register-bound control; follows 202's rework"
+  },
+  "client/ledgers/card-todo.ts##R157#d20acfd531#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "CT-235 item (1) is about the stale 'R157 §20 —' titles in 133; the migration's retitle of 133 fixes it — then drop item (1) from detail/evidence and the 133 leg of the proof (other legs keep it honest)"
+  },
+  "client/ledgers/card-todo.ts##R157#ab0cb5cf25#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "CT-235 evidence quotes a 133 title; drop with item (1) when 133 is retitled"
+  },
+  "client/docs/06-roadmap.md##R22#e47e040cda#0": {
+   "action": "reword",
+   "find": "provisional rulings R13-R16, R18-R22.",
+   "replace": "the provisional rulings of the time.",
+   "note": "old roadmap item"
+  },
+  "client/docs/12-card-text.md##R135#cbd60806de#0": {
+   "action": "drop",
+   "find": " (R135)",
+   "replace": ""
+  },
+  "client/docs/12-card-text.md##R135#cc6e65bfb6#0": {
+   "action": "reword",
+   "find": "one clause of R135.** R135 tagged",
+   "replace": "one clause of the 2026-08-24 text-box ruling.** That ruling tagged"
+  },
+  "client/docs/12-card-text.md##R135#cc6e65bfb6#1": {
+   "action": "reword",
+   "find": "one clause of R135.** R135 tagged",
+   "replace": "one clause of the 2026-08-24 text-box ruling.** That ruling tagged"
+  },
+  "client/docs/12-card-text.md##R135#b28b5a13f4#0": {
+   "action": "reword",
+   "find": "Before R135 it was",
+   "replace": "Before that ruling it was"
+  },
+  "client/docs/12-card-text.md##R135#e82f6f7739#0": {
+   "action": "reword",
+   "find": "R135's own rule does not reach",
+   "replace": "The no-repeat rule above does not reach"
+  },
+  "client/docs/12-card-text.md##R135#cf2199e2aa#0": {
+   "action": "reword",
+   "find": "which is R135's answer kept",
+   "replace": "which is the earlier ruling's answer kept"
+  },
+  "client/docs/12-card-text.md##R135#d1fadd5dde#0": {
+   "action": "drop",
+   "find": " (R135)",
+   "replace": ""
+  },
+  "client/docs/12-card-text.md##R141#c37a7dfeb0#0": {
+   "action": "drop",
+   "find": " (R141)",
+   "replace": ""
+  },
+  "client/docs/12-card-text.md##R141#1a5e9ed349#0": {
+   "action": "reword",
+   "find": "until R141 only",
+   "replace": "until this fix only"
+  },
+  "client/docs/12-card-text.md##R134#08e90cf7b7#0": {
+   "action": "reword",
+   "find": "same shape as R134's `{g}`:",
+   "replace": "same shape as the old `{g}` bug:"
+  },
+  "client/docs/12-card-text.md##R142#b8a87c91af#0": {
+   "action": "drop",
+   "find": " (R142)",
+   "replace": ""
+  },
+  "client/docs/12-card-text.md##R142#09a09b2e40#0": {
+   "action": "reword",
+   "find": "So R142 stops",
+   "replace": "So this rule stops"
+  },
+  "client/docs/12-card-text.md##R142#b03c691a66#0": {
+   "action": "reword",
+   "find": "Before R142 the slash",
+   "replace": "Before this rule the slash"
+  },
+  "client/docs/12-card-text.md##R134#30758cfcdb#0": {
+   "action": "reword",
+   "find": "the failure mode R134 and R141",
+   "replace": "the failure mode the `{g}` and bare-digit fixes"
+  },
+  "client/docs/12-card-text.md##R141#30758cfcdb#0": {
+   "action": "reword",
+   "find": "the failure mode R134 and R141",
+   "replace": "the failure mode the `{g}` and bare-digit fixes"
+  },
+  "client/docs/12-card-text.md##R134#3350dcc936#0": {
+   "action": "reword",
+   "find": "R134's global-formatting claim",
+   "replace": "The global-formatting claim"
+  },
+  "client/docs/12-card-text.md##R134#2154309a5b#0": {
+   "action": "reword",
+   "find": "R134 said formatting",
+   "replace": "The `{g}` fix said formatting"
+  },
+  "client/docs/12-card-text.md##R142#5a4b967926#0": {
+   "action": "drop",
+   "find": " (R142)",
+   "replace": ""
+  },
+  "client/docs/13-assessment.md##R142#9749acaf97#0": {
+   "action": "reword",
+   "find": "R142 forty times, R134 thirty-two.",
+   "replace": "The markup ruling forty times, the `{g}` fix thirty-two."
+  },
+  "client/docs/13-assessment.md##R134#9749acaf97#0": {
+   "action": "reword",
+   "find": "R142 forty times, R134 thirty-two.",
+   "replace": "The markup ruling forty times, the `{g}` fix thirty-two."
+  },
+  "client/docs/14-scenario-tester.md##R212#72927d6bfc#0": {
+   "action": "reword",
+   "find": "R212 named this",
+   "replace": "the round-28 correctness sample named this",
+   "note": "R212 here = the correctness sample (182), not the register heading"
+  },
+  "client/docs/14-scenario-tester.md##R212#6e6c2cb318#0": {
+   "action": "reword",
+   "find": "R212's independent finding",
+   "replace": "the correctness sample's independent finding"
+  },
+  "client/docs/16-divergence-inventory.md##R159#31ef60296d#0": {
+   "action": "reword",
+   "find": "**\"R159's shared predicate\" does not exist.** There is no R159.",
+   "replace": "**The row cited a \"shared predicate\" ruling that does not exist.**",
+   "note": "R159 never existed"
+  },
+  "client/docs/16-divergence-inventory.md##R159#31ef60296d#1": {
+   "action": "reword",
+   "find": "**\"R159's shared predicate\" does not exist.** There is no R159.",
+   "replace": "**The row cited a \"shared predicate\" ruling that does not exist.**",
+   "note": "R159 never existed"
+  },
+  "client/docs/16-divergence-inventory.md##R159#2d3a39eabd#0": {
+   "action": "reword",
+   "find": "It also cited \"R159's shared predicate\"; **there is no R159** —",
+   "replace": "It also cited a \"shared predicate\" ruling **that does not exist** —"
+  },
+  "client/docs/16-divergence-inventory.md##R159#2d3a39eabd#1": {
+   "action": "reword",
+   "find": "It also cited \"R159's shared predicate\"; **there is no R159** —",
+   "replace": "It also cited a \"shared predicate\" ruling **that does not exist** —"
+  },
+  "client/docs/16-divergence-inventory.md##R159#4e109aa981#0": {
+   "action": "reword",
+   "find": "R159's shared predicate narrowed this",
+   "replace": "The shared column-damage predicate narrowed this"
+  },
+  "client/docs/17-oracle-text-audit.md##R142#e755e4dda6#0": {
+   "action": "reword",
+   "find": "the R142 hyphenation artifact",
+   "replace": "the hyphenation layout artifact"
+  },
+  "client/docs/17-oracle-text-audit.md##R141#e4c1edcb85#0": {
+   "action": "reword",
+   "find": "(R141 already concluded",
+   "replace": "(The bare-digit cost fix already concluded"
+  },
+  "client/docs/17-oracle-text-audit.md##R142#e85611b0d1#0": {
+   "action": "reword",
+   "find": "`or{i1}`. R142 already",
+   "replace": "`or{i1}`. The no-markup fix already"
+  },
+  "client/docs/17-oracle-text-audit.md##R142#fa639d3896#0": {
+   "action": "reword",
+   "find": "a known R142 hyphenation fragment",
+   "replace": "a known hyphenation-artifact fragment"
+  },
+  "client/docs/questions-round31.md##R137#0aca9aa2a2#0": {
+   "action": "reword",
+   "find": "recorded like R106 and R137,",
+   "replace": "recorded like the earlier owner divergences,",
+   "note": "covers R106 too"
+  },
+  "client/docs/questions-round32.md##R137#303a2f3190#0": {
+   "action": "reword",
+   "find": "recorded like R106 and R137,",
+   "replace": "recorded like the earlier owner divergences,",
+   "note": "covers R106 too"
+  },
+  "client/docs/questions-round32.md##R250#75cbbd747e#0": {
+   "action": "reword",
+   "find": "written down in R250 rather",
+   "replace": "written down in the Cosmic Reversal ruling rather"
+  },
+  "client/engine/scripts/extract-printed.mjs##R142#6a8cdc1451#0": {
+   "action": "drop",
+   "find": "R142 — LAYOUT",
+   "replace": "LAYOUT"
+  },
+  "client/engine/scripts/extract-printed.mjs##R142#57416e916b#0": {
+   "action": "drop",
+   "find": "R142: layout",
+   "replace": "layout"
+  },
+  "client/engine/src/apply.ts##R118#64e554c90a#0": {
+   "action": "reword",
+   "find": "a pre-R118 action log",
+   "replace": "a pre-copy-layer action log"
+  },
+  "client/engine/src/cards/dsl.ts##R121#467571c8dc#0": {
+   "action": "reword",
+   "find": "Every pre-R121",
+   "replace": "Every older"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R96#adc1c1f1ad#0": {
+   "action": "drop",
+   "find": " (R96).",
+   "replace": "."
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R212#3bb8a0826b#0": {
+   "action": "reword",
+   "find": "the R212 correctness",
+   "replace": "the round-28 correctness"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R118#76d78682e1#0": {
+   "action": "reword",
+   "find": "R118's second half",
+   "replace": "the copy layer's second half"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R118#bb68203a22#0": {
+   "action": "reword",
+   "find": "predates R118 and",
+   "replace": "predates the copy layer and"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R250#6ac4a9c857#0": {
+   "action": "reword",
+   "find": "until R250 —",
+   "replace": "until the owner's 2026-08-29 ruling —"
+  },
+  "client/engine/src/cards/sets/helpers.ts##R177#ef2cbce250#0": {
+   "action": "reword",
+   "find": " (R177), and",
+   "replace": " (see 150-registration-order), and"
+  },
+  "client/engine/src/engine.ts##R137#da69b18ab7#0": {
+   "action": "reword",
+   "find": "Before R137",
+   "replace": "Before the trash-through-the-bin change"
+  },
+  "client/engine/src/engine.ts##R85#a521c42b6a#0": {
+   "action": "reword",
+   "find": "The pre-R85 engine",
+   "replace": "The older engine"
+  },
+  "client/engine/src/engine.ts##R120#6701f0b935#0": {
+   "action": "reword",
+   "find": "pre-R120 code path",
+   "replace": "pre-election code path"
+  },
+  "client/engine/src/types.ts##R120#d8ff8bd1e6#0": {
+   "action": "reword",
+   "find": "saved before R120 —",
+   "replace": "saved before the elective split existed —"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R120#f0117b0e2e#0": {
+   "action": "reword",
+   "find": "pre-R120 path",
+   "replace": "pre-election path"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R120#ba63e6b92e#0": {
+   "action": "reword",
+   "find": "pre-R120 engine",
+   "replace": "pre-election engine"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R120#87001df109#1": {
+   "action": "reword",
+   "find": "the pre-R120 numbers",
+   "replace": "the pre-election numbers"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R120#12b49e8ac8#0": {
+   "action": "reword",
+   "find": "pre-R120 at",
+   "replace": "pre-election at"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R120#e5d0f15435#0": {
+   "action": "reword",
+   "find": "(pre-R120 path)",
+   "replace": "(pre-election path)"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R120#afa7ba1a5b#0": {
+   "action": "reword",
+   "find": "pinned pre-R120:",
+   "replace": "pinned pre-election:"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R120#cdf1852ace#0": {
+   "action": "reword",
+   "find": "Pinned pre-R120 at",
+   "replace": "Pinned pre-election at"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R120#38e7074f9f#0": {
+   "action": "reword",
+   "find": "every pre-R120 saved state",
+   "replace": "every pre-election saved state"
+  },
+  "client/engine/test/117-copy-everything.test.ts##R118#bf5405e0ed#0": {
+   "action": "reword",
+   "find": "R118 shipped the copy layer with",
+   "replace": "The copy layer shipped with"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#be70df28a6#0": {
+   "action": "reword",
+   "find": "(this was 1 under R137)",
+   "replace": "(this was 1 under the earlier reading)"
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R154#0230ecab42#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1d"
+   ],
+   "note": "only one decision open; an action disturbing it is refused"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#3980da5a86#0": {
+   "action": "reword",
+   "find": "this was 1 under R137",
+   "replace": "this was 1 under the earlier reading"
+  },
+  "client/engine/test/148-pending-trigger-visibility.test.ts##R175#412809dff8#0": {
+   "action": "drop",
+   "find": "R175 — playtest",
+   "replace": "Playtest"
+  },
+  "client/engine/test/149-strip-code.test.ts##R176#c818949411#0": {
+   "action": "drop",
+   "find": "R176 — `stripCode`",
+   "replace": "`stripCode`"
+  },
+  "client/engine/test/150-registration-order.test.ts##R177#42d9be3d9c#0": {
+   "action": "drop",
+   "find": "R177 — card",
+   "replace": "Card"
+  },
+  "client/engine/test/150-registration-order.test.ts##R177#0dc2fc806f#0": {
+   "action": "reword",
+   "find": "the R177 bug",
+   "replace": "the 2026-08-25 bug"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R189#3931d808e1#0": {
+   "action": "reword",
+   "find": "the pre-R189 answer",
+   "replace": "the old sequential answer"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R207#ee1660d09d#0": {
+   "action": "reword",
+   "find": "the pre-R207 card",
+   "replace": "the card as it was before this fix"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R207#b07c1ba300#0": {
+   "action": "reword",
+   "find": "pre-R207 line",
+   "replace": "old stack-scan line"
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R212#ce30cba7c1#0": {
+   "action": "drop",
+   "find": "— R212, `docs",
+   "replace": "— `docs"
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R142#c50ca357c2#0": {
+   "action": "drop",
+   "find": "R142/docs 12",
+   "replace": "docs 12"
+  },
+  "client/engine/test/182-correctness-sample.test.ts##R212#81f000fd69#0": {
+   "action": "drop",
+   "find": "══ R212 · CORRECTNESS",
+   "replace": "══ CORRECTNESS"
+  },
+  "client/engine/test/209-interdiction-rift-type-line.test.ts##R142#38ac3e3655#0": {
+   "action": "drop",
+   "find": ", R142) */",
+   "replace": ") */"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#8a95ffa907#0": {
+   "action": "reword",
+   "find": "R250 ruled it",
+   "replace": "the owner ruled it"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#9504369291#0": {
+   "action": "reword",
+   "find": "**R250** (owner, 2026-08-29)",
+   "replace": "the owner, 2026-08-29"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R250#be45e4a031#0": {
+   "action": "reword",
+   "find": "the rest of R250, in",
+   "replace": "the rest of that ruling, in"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#d3ca058986#0": {
+   "action": "reword",
+   "find": "Before R250 the card",
+   "replace": "Before the owner's 2026-08-29 ruling the card"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#74959b5fbb#0": {
+   "action": "reword",
+   "find": "knows only R250 would",
+   "replace": "knows only the Cosmic Reversal ruling would"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#789ed11580#0": {
+   "action": "reword",
+   "find": "R250 §3 must be re-read",
+   "replace": "the Cosmic Reversal ruling's trigger section must be re-read",
+   "note": "inside a quoted retired test"
+  },
+  "client/engine/test/230-pass-modes.test.ts##R251#6f1e92da5f#0": {
+   "action": "reword",
+   "find": "the pre-R251 chip",
+   "replace": "the old single pass chip"
+  },
+  "client/engine/test/246-zones-follow-control.test.ts##R262#72611b4911#0": {
+   "action": "reword",
+   "find": "before R262.",
+   "replace": "before zones followed control."
+  },
+  "client/engine/test/26-metal-a.test.ts##R118#97f04192a9#0": {
+   "action": "reword",
+   "find": "a pre-R118 log",
+   "replace": "a pre-copy-layer log"
+  },
+  "client/engine/test/263-reaping-counts-the-kill.test.ts##R283#4eaf40313f#0": {
+   "action": "reword",
+   "find": "the pre-R283 reading",
+   "replace": "the old reading"
+  },
+  "client/engine/test/43-dark-c.test.ts##R124#f5c9b3efb3#0": {
+   "action": "reword",
+   "find": "(pre-R124 states still load)",
+   "replace": "(older saved states still load)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R124#4ce80a4325#0": {
+   "action": "reword",
+   "find": "a pre-R124 save",
+   "replace": "an older save"
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R119#9cd4c215bf#1": {
+   "action": "reword",
+   "find": "and pre-R119 states",
+   "replace": "and older states"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R118#d62eba8d60#0": {
+   "action": "reword",
+   "find": "R118 gave Borrower",
+   "replace": "the copy layer gave Borrower"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R120#7cd019cf52#0": {
+   "action": "reword",
+   "find": "(R120-R124,",
+   "replace": "(that round's rulings,"
+  },
+  "client/engine/test/83-card-todo.test.ts##R250#df5fab1ed9#0": {
+   "action": "reword",
+   "find": "under R250, but",
+   "replace": "under the owner's Cosmic Reversal ruling, but"
+  },
+  "client/engine/test/drill.ts##R211#15ebc0e19c#1": {
+   "action": "reword",
+   "find": "Reinstates the pre-R211",
+   "replace": "Reinstates the old"
+  },
+  "client/ledgers/card-ledger.ts##R118#a1a6deb78c#0": {
+   "action": "reword",
+   "find": "R118 had already",
+   "replace": "The copy layer had already"
+  },
+  "client/ledgers/card-ledger.ts##R118#d02104d522#0": {
+   "action": "reword",
+   "find": "R118's copy layer",
+   "replace": "The copy layer"
+  },
+  "client/ledgers/card-todo-closed.ts##R134#038fdb9e25#0": {
+   "action": "drop",
+   "find": " (R134/R141/R142)",
+   "replace": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R141#038fdb9e25#0": {
+   "action": "drop",
+   "find": " (R134/R141/R142)",
+   "replace": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R142#038fdb9e25#0": {
+   "action": "drop",
+   "find": " (R134/R141/R142)",
+   "replace": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R141#8e3e2ad7fe#0": {
+   "action": "reword",
+   "find": "Census first, per R141:",
+   "replace": "Census first, as the bare-digit cost bug taught:"
+  },
+  "client/ledgers/card-todo-closed.ts##R159#7b373d7302#0": {
+   "action": "reword",
+   "find": "cited an R159 that DOES NOT EXIST",
+   "replace": "cited a ruling number that DOES NOT EXIST"
+  },
+  "client/ledgers/card-todo-closed.ts##R186#cace1299ab#0": {
+   "action": "drop",
+   "find": " (R186).",
+   "replace": "."
+  },
+  "client/ledgers/card-todo-closed.ts##R176#bdbc16ba2b#0": {
+   "action": "reword",
+   "find": "exactly R176\\'s two ways",
+   "replace": "exactly stripCode\\'s two ways"
+  },
+  "client/ledgers/card-todo-closed.ts##R186#0ec67ef6d9#0": {
+   "action": "reword",
+   "find": "the R186 trap",
+   "replace": "the empty-fixture trap"
+  },
+  "client/ledgers/card-todo-closed.ts##R212#728af9f5b7#0": {
+   "action": "reword",
+   "find": "the R212 correctness sample",
+   "replace": "the round-28 correctness sample"
+  },
+  "client/ledgers/card-todo-closed.ts##R250#d6bc2d0803#0": {
+   "action": "reword",
+   "find": "under R250. Only",
+   "replace": "under the 2026-08-29 owner ruling. Only"
+  },
+  "client/ledgers/card-todo-closed.ts##R135#c2b4b84820#0": {
+   "action": "reword",
+   "find": "ONE CLAUSE OF R135",
+   "replace": "ONE CLAUSE OF THE EARLIER TEXT-BOX RULING"
+  },
+  "client/ledgers/card-todo-closed.ts##R135#57cf68fdfa#0": {
+   "action": "reword",
+   "find": "(1) R135 rule that",
+   "replace": "(1) Its rule that"
+  },
+  "client/ledgers/card-todo-closed.ts##R135#e613205b29#0": {
+   "action": "reword",
+   "find": "R135 other two clauses stand.",
+   "replace": "Its other two clauses stand."
+  },
+  "client/ledgers/card-todo-closed.ts##R250#339fd1718d#0": {
+   "action": "reword",
+   "find": "2026-08-29 as R250. The owner",
+   "replace": "2026-08-29. The owner"
+  },
+  "client/ledgers/card-todo-closed.ts##R250#6980c9a361#0": {
+   "action": "reword",
+   "find": "round 31 R244/R250,",
+   "replace": "the round-31 bin rulings,"
+  },
+  "client/ledgers/card-todo-closed.ts##R250#ef3d796c03#0": {
+   "action": "reword",
+   "find": "the R250 zones question",
+   "replace": "the zones-follow-control question"
+  },
+  "client/ledgers/card-todo-closed.ts##R250#5d343f57ef#0": {
+   "action": "reword",
+   "find": "under R250 but",
+   "replace": "under the Cosmic Reversal ruling but"
+  },
+  "client/ledgers/card-todo-closed.ts##R262#85333ec0ec#0": {
+   "action": "reword",
+   "find": "2026-08-30 as R262.",
+   "replace": "2026-08-30."
+  },
+  "client/ledgers/card-todo-closed.ts##R251#953f6a1314#1": {
+   "action": "reword",
+   "find": "true at R251, so every citation of R251 through R267 — the whole of rounds 31, 32 and 33 —",
+   "replace": "true at the round-31 rulings, so every citation from rounds 31, 32 and 33 —"
+  },
+  "client/ledgers/card-todo.ts##R165#c6dd1492b0#1": {
+   "action": "reword",
+   "find": "R165 and R207 record it as left open.",
+   "replace": "The retired rulings recorded it as left open."
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R97#5eb1175ae0#0": {
+   "action": "reword",
+   "find": "'R97, and the card ledger",
+   "replace": "'Fixed by the timing-permission ruling, and the card ledger",
+   "note": "the note line, not the guard binding on 1081"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#aed3d56c5b#0": {
+   "action": "reword",
+   "find": "R137 REVERSES",
+   "replace": "the trash-through-the-bin ruling REVERSES"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#e8f0fad8dc#0": {
+   "action": "reword",
+   "find": "under R137 it double-trashed",
+   "replace": "under the new rule it double-trashed"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#4fcceacfbd#0": {
+   "action": "reword",
+   "find": "ANBB after R137.",
+   "replace": "ANBB after the trash-through-the-bin change."
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R134#5bcd21ea6b#0": {
+   "action": "drop",
+   "find": " (R134/R141/R142)",
+   "replace": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R141#5bcd21ea6b#0": {
+   "action": "drop",
+   "find": " (R134/R141/R142)",
+   "replace": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R142#5bcd21ea6b#0": {
+   "action": "drop",
+   "find": " (R134/R141/R142)",
+   "replace": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R141#949986e8ea#0": {
+   "action": "reword",
+   "find": "'per R141: the pool",
+   "replace": "'as the bare-digit costs taught: the pool"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R250#c89a150679#0": {
+   "action": "reword",
+   "find": "fixed under R250.",
+   "replace": "fixed under the 2026-08-29 owner ruling."
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R135#f06cd0ac78#0": {
+   "action": "reword",
+   "find": "ONE CLAUSE OF R135.",
+   "replace": "ONE CLAUSE OF THE EARLIER TEXT-BOX RULING."
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R135#7a78f4b463#0": {
+   "action": "reword",
+   "find": "AND R135 WAS WRONG HERE",
+   "replace": "AND THAT RULING WAS WRONG HERE"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R135#c9da21e513#0": {
+   "action": "reword",
+   "find": "(1) R135 rule",
+   "replace": "(1) Its rule"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R135#68ef9b1cc0#0": {
+   "action": "reword",
+   "find": "R135 two other clauses",
+   "replace": "Its two other clauses"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R135#a117ed3978#0": {
+   "action": "reword",
+   "find": "which is R135 answer",
+   "replace": "which is the earlier answer"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R250#71e666c371#0": {
+   "action": "reword",
+   "find": "2026-08-29 as R250. Answerable",
+   "replace": "2026-08-29. Answerable"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#f9d17511d4#0": {
+   "action": "reword",
+   "find": "COLLIDES WITH R137",
+   "replace": "COLLIDES WITH THE TRASH-THROUGH-THE-BIN RULING"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#ac29a1c791#0": {
+   "action": "reword",
+   "find": "R137 STANDS",
+   "replace": "THAT RULING STANDS"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R137#f1bf96a48f#0": {
+   "action": "reword",
+   "find": "R137 is amended in place with a pointer;",
+   "replace": "The earlier ruling is amended in place with a pointer;"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R250#58126af867#0": {
+   "action": "reword",
+   "find": "round 31 R244/R250 work",
+   "replace": "the round-31 bin work"
+  },
+  "client/ledgers/scenario-queue.ts##R212#d541e92dda#0": {
+   "action": "reword",
+   "find": "R212 named the",
+   "replace": "The correctness sample named the"
+  },
+  "client/ledgers/scenario-queue.ts##R212#098ad21ddb#0": {
+   "action": "reword",
+   "find": "R212's independent",
+   "replace": "the correctness sample's independent"
+  },
+  "client/ledgers/unreached.ts##R215#178833fe1b#0": {
+   "action": "reword",
+   "find": "R215 §2 fails a minted-but-unwritten R-number,",
+   "replace": "The old register check failed a minted-but-unwritten ruling number,",
+   "note": "register-scan narrative; the register is retired"
+  },
+  "client/server/e2e/test-forensics.ts##R186#668715184a#0": {
+   "action": "drop",
+   "find": "R186: the replay",
+   "replace": "the replay"
+  },
+  "client/server/e2e/test-undo-segment.ts##R118#f42f078242#0": {
+   "action": "reword",
+   "find": "and R118's \"an activateAbility",
+   "replace": "and the copy layer's \"an activateAbility"
+  },
+  "client/server/scenarios-b.ts##R212#e82533f4c8#0": {
+   "action": "drop",
+   "find": "R212 / docs/13",
+   "replace": "docs/13"
+  },
+  "client/server/scenarios.ts##R212#02f6a973bb#0": {
+   "action": "reword",
+   "find": "R212 found the same",
+   "replace": "The correctness sample found the same"
+  },
+  "client/server/test/173-look-at-a-hand.test.ts##R176#b68ede63d6#0": {
+   "action": "drop",
+   "find": "(R176 / 149-strip-code:",
+   "replace": "(149-strip-code:"
+  },
+  "client/ui/cardtext.ts##R135#acde4f2bcd#0": {
+   "action": "drop",
+   "find": "R135: a line",
+   "replace": "a line"
+  },
+  "client/ui/cardtext.ts##R142#f79c009ee4#0": {
+   "action": "drop",
+   "find": "R142: four of them",
+   "replace": "Four of them"
+  },
+  "client/ui/cardtext.ts##R135#cd4ba6e09b#0": {
+   "action": "drop",
+   "find": "R135: drop",
+   "replace": "Drop"
+  },
+  "client/ui/cardtext.ts##R134#c9e87f3cdc#0": {
+   "action": "reword",
+   "find": "R134/R141/R142 were each",
+   "replace": "Those bugs were each"
+  },
+  "client/ui/cardtext.ts##R141#c9e87f3cdc#0": {
+   "action": "reword",
+   "find": "R134/R141/R142 were each",
+   "replace": "Those bugs were each"
+  },
+  "client/ui/cardtext.ts##R142#c9e87f3cdc#0": {
+   "action": "reword",
+   "find": "R134/R141/R142 were each",
+   "replace": "Those bugs were each"
+  },
+  "client/ui/cardtext.ts##R141#4203fe7049#0": {
+   "action": "reword",
+   "find": "R141's lesson",
+   "replace": "The bare-digit cost bug's lesson"
+  },
+  "client/ui/cardtext.ts##R142#3d2ead6b90#0": {
+   "action": "reword",
+   "find": "R142 used for `/[`",
+   "replace": "the `/[` box uses"
+  },
+  "client/ui/cardtext.ts##R135#853f1bacd0#0": {
+   "action": "reword",
+   "find": "ONE CLAUSE OF R135, and only that one. R135 said",
+   "replace": "ONE CLAUSE OF THE EARLIER TEXT-BOX RULING, and only that one. That ruling said"
+  },
+  "client/ui/cardtext.ts##R135#853f1bacd0#1": {
+   "action": "reword",
+   "find": "ONE CLAUSE OF R135, and only that one. R135 said",
+   "replace": "ONE CLAUSE OF THE EARLIER TEXT-BOX RULING, and only that one. That ruling said"
+  },
+  "client/ui/cardtext.ts##R135#33479a28b3#0": {
+   "action": "reword",
+   "find": "Before R135 it was",
+   "replace": "Before that ruling it was"
+  },
+  "client/ui/cardtext.ts##R135#5bbc66a093#0": {
+   "action": "reword",
+   "find": "R135's argument",
+   "replace": "that ruling's argument"
+  },
+  "client/ui/cardtext.ts##R135#de76cc7e7b#0": {
+   "action": "reword",
+   "find": "R135's own rule",
+   "replace": "Its own rule"
+  },
+  "client/ui/cardtext.ts##R135#dc79af0bf8#0": {
+   "action": "reword",
+   "find": "duplicate. R135",
+   "replace": "duplicate. It"
+  },
+  "client/ui/cardtext.ts##R135#f0a4bbae13#0": {
+   "action": "reword",
+   "find": "R135's answer",
+   "replace": "the earlier ruling's answer"
+  },
+  "client/ui/cardtext.ts##R135#555f1d3498#0": {
+   "action": "drop",
+   "find": " (R135)",
+   "replace": ""
+  },
+  "client/ui/cardtext.ts##R135#dd057514eb#0": {
+   "action": "reword",
+   "find": "so R135 put it",
+   "replace": "so the text-box fix put it"
+  },
+  "client/ui/cardtext.ts##R135#d7ead26924#0": {
+   "action": "drop",
+   "find": "R135: the ⇄",
+   "replace": "the ⇄"
+  },
+  "client/ui/cardtext.ts##R135#4caaff889d#0": {
+   "action": "drop",
+   "find": "R135: the augment",
+   "replace": "the augment"
+  },
+  "client/ui/cardtext.ts##R135#9681f0bd28#0": {
+   "action": "drop",
+   "find": "R135: the note",
+   "replace": "The note"
+  },
+  "client/ui/cardtext.ts##R135#5c0be8cd60#0": {
+   "action": "drop",
+   "find": "R135: off the table",
+   "replace": "Off the table"
+  },
+  "client/ui/cardtext.ts##R141#5a4b993350#0": {
+   "action": "drop",
+   "find": "R141 — a cost",
+   "replace": "A cost"
+  },
+  "client/ui/cardtext.ts##R134#dec453b2bb#0": {
+   "action": "reword",
+   "find": "the R134 shape",
+   "replace": "the `{g}` bug's shape"
+  },
+  "client/ui/cardtext.ts##R134#b71c8d39b5#0": {
+   "action": "drop",
+   "find": "R134: FORMATTING",
+   "replace": "FORMATTING"
+  },
+  "client/ui/cardtext.ts##R142#cbeaf9192e#0": {
+   "action": "drop",
+   "find": "R142: the whitespace",
+   "replace": "The whitespace"
+  },
+  "client/ui/cardtext.ts##R142#a3f02de4ca#0": {
+   "action": "reword",
+   "find": "R142 kept the space",
+   "replace": "The earlier fix kept the space"
+  },
+  "client/ui/cardtext.ts##R142#d669452a34#0": {
+   "action": "reword",
+   "find": "in R142's own sentence",
+   "replace": "in the earlier fix's own sentence"
+  },
+  "client/ui/cardtext.ts##R142#be80b21808#0": {
+   "action": "drop",
+   "find": "R142 — the `/[…]` box",
+   "replace": "The `/[…]` box"
+  },
+  "client/ui/cardtext.ts##R134#52192f4786#0": {
+   "action": "drop",
+   "find": " — R134)",
+   "replace": ")"
+  },
+  "client/ui/cardtext.ts##R142#6b090f783a#0": {
+   "action": "drop",
+   "find": "R142: `/[`",
+   "replace": "`/[`"
+  },
+  "client/ui/cardtext.ts##R134#900f2182f3#0": {
+   "action": "reword",
+   "find": "R134/R141's lesson",
+   "replace": "the `{g}` and bare-digit bugs' lesson"
+  },
+  "client/ui/cardtext.ts##R141#900f2182f3#0": {
+   "action": "reword",
+   "find": "R134/R141's lesson",
+   "replace": "the `{g}` and bare-digit bugs' lesson"
+  },
+  "client/ui/inspect.ts##R136#f6e238164b#0": {
+   "action": "drop",
+   "find": "R136: the badge",
+   "replace": "the badge"
+  },
+  "client/ui/inspect.ts##R134#4319206fd7#0": {
+   "action": "reword",
+   "find": "the reason R134 and R136 both landed on",
+   "replace": "the reason the `{g}` fix and the one-line badge strip both landed on"
+  },
+  "client/ui/inspect.ts##R136#4319206fd7#0": {
+   "action": "reword",
+   "find": "the reason R134 and R136 both landed on",
+   "replace": "the reason the `{g}` fix and the one-line badge strip both landed on"
+  },
+  "client/ui/inspect.ts##R139#842e98463d#0": {
+   "action": "reword",
+   "find": "pre-R139 tests",
+   "replace": "older tests"
+  },
+  "client/ui/main.ts##R134#77b4df57e6#0": {
+   "action": "reword",
+   "find": " — see R134.",
+   "replace": " — see 122-cardtext-markup."
+  },
+  "client/ui/main.ts##R136#7763dfeb3e#0": {
+   "action": "drop",
+   "find": "BL-23/R136:",
+   "replace": "BL-23:"
+  },
+  "client/ui/main.ts##R136#3ea1291dd2#0": {
+   "action": "drop",
+   "find": "BL-23/R136 made",
+   "replace": "BL-23 made"
+  },
+  "client/ui/main.ts##R136#e24a03cc70#0": {
+   "action": "drop",
+   "find": " (R136);",
+   "replace": ";"
+  },
+  "client/ui/passrelease.ts##R251#c4c26a7624#0": {
+   "action": "reword",
+   "find": "the single pre-R251 chip",
+   "replace": "the old single chip"
+  },
+  "client/ui/style.css##R136#8395054af7#0": {
+   "action": "drop",
+   "find": "BL-23/R136:",
+   "replace": "BL-23:"
+  },
+  "client/ui/style.css##R136#e56d9e5180#0": {
+   "action": "reword",
+   "find": "(R136) — the",
+   "replace": "(BL-23) — the"
+  },
+  "client/ui/style.css##R134#679d5b60fb#0": {
+   "action": "drop",
+   "find": "R134: `{g}`",
+   "replace": "`{g}`"
+  },
+  "client/ui/style.css##R134#b139d12259#0": {
+   "action": "reword",
+   "find": "Before R134 the marker",
+   "replace": "Before the fix the marker"
+  },
+  "client/ui/style.css##R142#ec299b0daf#0": {
+   "action": "reword",
+   "find": "R142/R284:",
+   "replace": "CR D6.10a:",
+   "nums": [
+    "D6.10a"
+   ],
+   "note": "covers R284 too, with its own decision (cite D6.10a)"
+  },
+  "client/ui/style.css##R142#6e40f5af60#0": {
+   "action": "reword",
+   "find": "before R142 the markup",
+   "replace": "before the no-markup fix the markup"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#187ca45e43#0": {
+   "action": "drop",
+   "find": "R134 — the card-text",
+   "replace": "The card-text"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#fcaf44b4c6#0": {
+   "action": "drop",
+   "find": "'R134: {g}",
+   "replace": "'{g}"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#5ff09bdfd1#0": {
+   "action": "drop",
+   "find": "'R134: no card",
+   "replace": "'no card"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#8afd2c814e#0": {
+   "action": "drop",
+   "find": "'R134: an unclosed",
+   "replace": "'an unclosed"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#832a2dccda#0": {
+   "action": "reword",
+   "find": "Before R134 the whole",
+   "replace": "Before the fix the whole"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#7a4aed7181#0": {
+   "action": "drop",
+   "find": "'R134: every card",
+   "replace": "'every card"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#395e9777b3#0": {
+   "action": "reword",
+   "find": "before R134');",
+   "replace": "before the fix');"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#f90ca5179b#0": {
+   "action": "drop",
+   "find": "'R134: a card that",
+   "replace": "'a card that"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#3395117388#0": {
+   "action": "drop",
+   "find": "'R134: the formatter",
+   "replace": "'the formatter"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#5898c4e37e#0": {
+   "action": "drop",
+   "find": "R135: the three",
+   "replace": "the three"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#a2aaf425e1#0": {
+   "action": "reword",
+   "find": "R134 lifted the",
+   "replace": "The `{g}` fix lifted the"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#0fca525ed6#0": {
+   "action": "drop",
+   "find": "'R135: an augment",
+   "replace": "'an augment"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#32a4c516b6#0": {
+   "action": "drop",
+   "find": "'R135: no augment",
+   "replace": "'no augment"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#2ff8214131#0": {
+   "action": "reword",
+   "find": "R135 put {Unstable}",
+   "replace": "The text-box fix put {Unstable}"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#b34e3ad0c0#0": {
+   "action": "reword",
+   "find": "R135's actual rule",
+   "replace": "The text-box fix's actual rule"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#217dd04962#0": {
+   "action": "reword",
+   "find": "R135 asserted",
+   "replace": "The text-box fix asserted"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#c70bcd5614#0": {
+   "action": "drop",
+   "find": "'R135: a spent",
+   "replace": "'a spent"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#0f93e405ef#0": {
+   "action": "reword",
+   "find": "untouched by R135 and by",
+   "replace": "untouched by the text-box fix and by"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R141#00452e8ddd#0": {
+   "action": "drop",
+   "find": "R141: a cost",
+   "replace": "a cost"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R141#966802003b#0": {
+   "action": "drop",
+   "find": "'R141: a cost",
+   "replace": "'a cost"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R141#e38a08cf10#0": {
+   "action": "drop",
+   "find": "'R141: the two",
+   "replace": "'the two"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R141#c391a0c715#0": {
+   "action": "drop",
+   "find": "'R141: no card",
+   "replace": "'no card"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#73ba1d8b97#0": {
+   "action": "reword",
+   "find": "as R134's sweep",
+   "replace": "as the `{g}` sweep"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#26a803c762#0": {
+   "action": "drop",
+   "find": "R142: none",
+   "replace": "none"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#34c111e452#0": {
+   "action": "reword",
+   "find": "R134 and R141 each closed",
+   "replace": "The `{g}` and bare-digit fixes each closed"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R141#34c111e452#0": {
+   "action": "reword",
+   "find": "R134 and R141 each closed",
+   "replace": "The `{g}` and bare-digit fixes each closed"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#5cec4fc91a#0": {
+   "action": "drop",
+   "find": "'R142: the /",
+   "replace": "'the /"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#cd1381dc4c#0": {
+   "action": "drop",
+   "find": "'R142: a stat",
+   "replace": "'a stat"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#667493d71d#0": {
+   "action": "drop",
+   "find": "'R142: {i1}",
+   "replace": "'{i1}"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#3a5b23273e#0": {
+   "action": "reword",
+   "find": "trap R134's sweep",
+   "replace": "trap the `{g}` sweep"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#974e2c48ed#0": {
+   "action": "drop",
+   "find": "'R142: {/n}",
+   "replace": "'{/n}"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#45a696b35f#0": {
+   "action": "reword",
+   "find": "R134 CLAIMED",
+   "replace": "The `{g}` fix CLAIMED"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#ae79993b43#0": {
+   "action": "drop",
+   "find": "'R142: no card",
+   "replace": "'no card"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#7c1128eea2#0": {
+   "action": "reword",
+   "find": "(R134's sweep",
+   "replace": "(the `{g}` sweep"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#6f110830c3#0": {
+   "action": "drop",
+   "find": "'R142: the sweep",
+   "replace": "'the sweep"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#a6f52b9438#0": {
+   "action": "drop",
+   "find": "'R142: the keyword",
+   "replace": "'the keyword"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#2fe9b20bf7#0": {
+   "action": "reword",
+   "find": "R142 half two:",
+   "replace": "the no-markup rule, half two:"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#c0e0a0394e#0": {
+   "action": "drop",
+   "find": "'R142: no printed",
+   "replace": "'no printed"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#72e99441fb#0": {
+   "action": "drop",
+   "find": "'R142: printed",
+   "replace": "'printed"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#4516922a85#0": {
+   "action": "drop",
+   "find": "'R142: the extractor",
+   "replace": "'the extractor"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R134#9b29f5599e#0": {
+   "action": "reword",
+   "find": "R134 and R141 both cost us",
+   "replace": "the `{g}` and bare-digit bugs both cost us"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R141#9b29f5599e#0": {
+   "action": "reword",
+   "find": "R134 and R141 both cost us",
+   "replace": "the `{g}` and bare-digit bugs both cost us"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R142#ec3a03b22c#0": {
+   "action": "reword",
+   "find": "R142 kept the space",
+   "replace": "The earlier fix kept the space"
+  },
+  "client/ui/test/123-badge-line.test.ts##R136#d69e2243ce#0": {
+   "action": "drop",
+   "find": "BL-23 / R136 —",
+   "replace": "BL-23 —"
+  },
+  "client/ui/test/123-badge-line.test.ts##R134#413b7c54b9#0": {
+   "action": "reword",
+   "find": "the lesson R134 learned",
+   "replace": "the lesson the `{g}` fix learned"
+  },
+  "client/ui/test/124-counter-stepper.test.ts##R134#11449792af#0": {
+   "action": "drop",
+   "find": " (R134, R136), so",
+   "replace": ", so"
+  },
+  "client/ui/test/124-counter-stepper.test.ts##R136#11449792af#0": {
+   "action": "drop",
+   "find": " (R134, R136), so",
+   "replace": ", so"
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R134#c31f0ddb2e#0": {
+   "action": "drop",
+   "find": "the R134/R141/R142 markup class",
+   "replace": "the markup class"
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R141#c31f0ddb2e#0": {
+   "action": "drop",
+   "find": "the R134/R141/R142 markup class",
+   "replace": "the markup class"
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R142#c31f0ddb2e#0": {
+   "action": "drop",
+   "find": "the R134/R141/R142 markup class",
+   "replace": "the markup class"
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R141#c06dd2e53b#0": {
+   "action": "reword",
+   "find": "the R141 guard",
+   "replace": "the census-first guard"
+  },
+  "client/ui/test/127-token-x-and-dormant.test.ts##R141#a4b254e2b7#0": {
+   "action": "reword",
+   "find": "(the R141 guard)",
+   "replace": "(the census-first guard)"
+  },
+  "client/ui/test/156-reaping-and-formation.test.ts##R163#85e355d144#0": {
+   "action": "reword",
+   "find": "(R163's `seat` + `kind`)",
+   "replace": "(its `seat` + `kind`)"
+  },
+  "client/ui/test/156-reaping-and-formation.test.ts##R163#a2c6990eae#0": {
+   "action": "reword",
+   "find": "carrying R163's seat and kind",
+   "replace": "carrying its seat and kind"
+  },
+  "client/ui/test/156-reaping-and-formation.test.ts##R163#5ec0e0b5c2#0": {
+   "action": "drop",
+   "find": "\"R163: and whose",
+   "replace": "\"and whose"
+  },
+  "client/ui/test/228-spent-marker.test.ts##R135#d82335729a#0": {
+   "action": "reword",
+   "find": "the one R135 answered",
+   "replace": "the one the 2026-08-24 text-box fix answered"
+  },
+  "client/ui/test/228-spent-marker.test.ts##R135#aba0521a0c#0": {
+   "action": "reword",
+   "find": "Before R135 the note said `[Switch1]` for every spent budget; R135 made it",
+   "replace": "Before the text-box fix the note said `[Switch1]` for every spent budget; that fix made it"
+  },
+  "client/ui/test/228-spent-marker.test.ts##R135#aba0521a0c#1": {
+   "action": "reword",
+   "find": "Before R135 the note said `[Switch1]` for every spent budget; R135 made it",
+   "replace": "Before the text-box fix the note said `[Switch1]` for every spent budget; that fix made it"
+  },
+  "client/ui/test/228-spent-marker.test.ts##R135#40c43aed2c#0": {
+   "action": "reword",
+   "find": "R135 said three things",
+   "replace": "The text-box fix said three things"
+  },
+  "client/ui/test/228-spent-marker.test.ts##R135#c4c5d4cbaa#0": {
+   "action": "reword",
+   "find": "which R135 '",
+   "replace": "which the text-box fix '"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R142#19de1899fb#0": {
+   "action": "reword",
+   "find": "R142 collapsed",
+   "replace": "The extractor's layout scrub collapsed"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R135#b708d25686#0": {
+   "action": "reword",
+   "find": "'R135 + R271:",
+   "replace": "'CR D6.10c:",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "covers R271 too (its own decision cites D6.10c)"
+  }
+ }
+}
