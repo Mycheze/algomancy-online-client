@@ -311,6 +311,21 @@ function logicalBlock(m, lineIdx, kind) {
   return { logical, map, from: a, to: b };
 }
 
+/** a string literal's content (between its quotes), as a logical block */
+function literalBlock(m, lit) {
+  const map = [];
+  let logical = '';
+  for (let o = lit.s + 1; o < lit.e - 1; o++) { map.push(o); logical += m.text[o] === '\n' ? ' ' : m.text[o]; }
+  map.push(lit.e - 1);
+  return { logical, map, from: 0, to: 0 };
+}
+
+/** the code of a JS/TS file with every string and template blanked: an edit to comments
+ *  and string CONTENTS leaves it unchanged, anything else is a broken rewrite */
+export function codeShape(text) {
+  try { return tokenize(text).map((t) => (t.t === 'str' || t.t === 'tmpl' || t.t === 're' ? `<${t.t}>` : t.v)).join(' '); } catch (e) { return `<untokenizable: ${e.message}>`; }
+}
+
 /* ── edit lists and position mapping ── */
 export function applyEdits(text, edits) {
   const es = edits.slice().sort((x, y) => x.a - y.a || x.b - y.b);
@@ -453,12 +468,12 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
       let e = null;
       if (rw) {
         const kind = lit ? 'line' : /\.md$/.test(rel) ? 'md' : /^\s*(\/\/|\/\*|\*|#)/.test(line) || line.slice(0, g.a).includes('//') ? 'comment' : 'line';
-        const blk = logicalBlock(m, idx, kind);
+        const blk = lit ? literalBlock(m, lit) : logicalBlock(m, idx, kind);
         const p = blk.map.indexOf(abs + g.a), q = blk.map.indexOf(abs + g.b - 1) + 1;
         const r = p >= 0 && q > 0 ? anchorReword(blk.logical, p, q, rw.act.suggest) : null;
         if (r) {
           const A = blk.map[r.a], B = r.b >= blk.map.length ? blk.map.at(-1) : (r.b === 0 ? blk.map[0] : blk.map[r.b - 1] + 1);
-          const outside = lit && (A < lit.s || B > lit.e);
+          const outside = lit && (A <= lit.s || B >= lit.e);
           if (!outside && !overlaps(rel, A, B)) {
             e = { a: A, b: B, text: lit ? esc(r.text, lit.q) : r.text, why: `reword ${rw.row.id}` };
             for (const r2 of rows) if (r2.file === rel && r2.line && r2.id !== rw.row.id && !acts.some((x) => x.row.id === r2.id)) {
@@ -715,7 +730,20 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     }
   }
 
-  /* 8. write */
+  /* 8. the code-shape invariant: only comments and string contents may change (glossary.ts
+   *    renames `ruling:` to `rule:`; visible.json edits are string contents too) */
+  report.shapeBroken = [];
+  for (const [rel, t] of [...after]) {
+    if (!/\.(ts|mts|mjs|js)$/.test(rel) || rel === GLOSSARY_TS) continue;
+    const x = codeShape(before.get(rel) ?? model(rel).text), y = codeShape(t);
+    if (x !== y) {
+      let i = 0; while (i < x.length && x[i] === y[i]) i++;
+      report.shapeBroken.push({ file: rel, at: `…${x.slice(Math.max(0, i - 80), i + 40)}… ⇒ …${y.slice(Math.max(0, i - 80), i + 40)}…` });
+      after.delete(rel);
+    }
+  }
+
+  /* 9. write */
   report.files = after.size + jsonOut.size;
   report.changed = [...after.keys(), ...[...jsonOut.keys()].map((a) => relative(root, a))].sort();
   if (!dryRun) {
