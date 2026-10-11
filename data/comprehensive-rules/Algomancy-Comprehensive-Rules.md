@@ -10178,13 +10178,13 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 
 | verdict | rules |
 |---|---|
-| confirmed | 1784 |
+| confirmed | 1785 |
 | partial | 11 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
 | not verified | 1 |
-| text changed | 1 |
+| text changed | 0 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 

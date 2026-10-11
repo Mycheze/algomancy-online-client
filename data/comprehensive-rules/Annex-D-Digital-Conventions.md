@@ -872,7 +872,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: In deployment, a Wraith's start-of-deployment choice is open for one player. That player's castable cached card is not one click from the panel; the other player's castable cached card still is, and playing it leaves the decision open.*
 
-<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 2 gate test files · Rulings: R192 (its decision-target exception), R154 (its decision gate) · Engine: apply.ts:decisionBlocks, apply.ts:legalActions · Tests: 440-cr-uncovered-rulings.test.ts, 163-cache-affordance-and-badges.test.ts · Example test: 440-cr-uncovered-rulings.test.ts::cr:annexd.display.panels.cache-dialog-only — in deployment, the deciding seat gets no one-click cache card; the other seat still does · Key: annexd.display.panels.cache-dialog-only</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Rulings: R192 (its decision-target exception), R154 (its decision gate) · Engine: apply.ts:decisionBlocks, apply.ts:legalActions · Tests: 440-cr-uncovered-rulings.test.ts, 163-cache-affordance-and-badges.test.ts · Example test: 440-cr-uncovered-rulings.test.ts::cr:annexd.display.panels.cache-dialog-only — in deployment, the deciding seat gets no one-click cache card; the other seat still does · Key: annexd.display.panels.cache-dialog-only</sub>
 
 <a id="rD6.17"></a>**D6.17.** A scroll hides a card's long-hover tooltip only if the scroll could have moved that card: a scroll of the whole page, or of a panel the card is inside. A scroll of anything else, such as the side rail, leaves the tooltip shown. When no card is hovered, any scroll hides the tooltip.
 

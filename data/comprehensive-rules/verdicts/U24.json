@@ -1880,51 +1880,86 @@
   },
   {
     "key": "annexd.display.panels.cache-dialog-only",
-    "textHash": "c50d75940780399b",
-    "verdict": "partial",
+    "textHash": "0361fff96744ed72",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U24-r4",
     "engine": [
       {
+        "loc": "client/engine/src/apply.ts:decisionBlocks",
+        "agrees": true,
+        "note": "blocks the asking seat always; another seat only outside a hidden segment or on a rewinding 'resolve' suspension"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:legalActions",
+        "agrees": true,
+        "note": "a blocked seat gets only legalDecisionActions (decide), never playCached"
+      },
+      {
         "loc": "client/ui/inspect.ts:playableCachedIndexes",
-        "agrees": false,
-        "note": "R311: any cache-sourced offer (augment/graft/prophesy) makes the entry live, so the thumb gets data-btn=cacheplay"
+        "agrees": true,
+        "note": "promotes only entries with a playCached/augment/graft/prophesy-from-cache offer; cacheSourceIndex returns null for decide"
+      },
+      {
+        "loc": "client/ui/main.ts:regionCacheHtml",
+        "agrees": true,
+        "note": "data-btn=cacheplay only on playNow thumbs; the panel itself is data-btn=cacheopen"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/440-cr-uncovered-rulings.test.ts",
+        "pattern": "cr:annexd.display.panels.cache-dialog-only",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/163-cache-affordance-and-badges.test.ts",
+        "pattern": "R192",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [
       {
         "file": "client/engine/test/zz-probe-U24-1.test.ts",
-        "test": "probe U24-1: a graft-only / augment-only cache offer makes the entry live (cacheplay thumb)",
+        "test": "probe U24-1: a cached card that is a choice of the open decision is not promoted to one click",
         "passed": true,
-        "demonstrates": "no: a graft-only or augment-only cached entry IS promoted to the one-click thumb"
-      },
-      {
-        "file": "client/engine/test/zz-probe-U24-1.test.ts",
-        "test": "probe U24-1b: with only a decision open (decide actions), no cache thumb is promoted",
-        "passed": true,
-        "demonstrates": "yes: the decision-target half holds"
+        "demonstrates": "yes: a playable cached card offered as a Prismatic Observer target is not promoted while the decision is open (control: promoted before)"
       }
     ],
     "source_checks": [
       {
-        "ref": "R192 (its CT-64 decision)",
-        "supports": "partial",
-        "note": "verbatim, but its augment/graft carve-out was overtaken by R311 (cache plays like the hand for every mode), which the client implements in playableCachedIndexes; supersession.json has no R311->R192 edge"
+        "ref": "R192 (its decision-target exception)",
+        "supports": "yes",
+        "note": "a cached card that is a legal decision target keeps the dialog route; only a real playCached promotes a thumb"
+      },
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "another seat's decision stops you only outside a hidden segment or where answering rewinds; R286 amends only the settle() hold"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ui/inspect.ts",
-        "text": "R311: and so is one that can only be augmented, grafted or ambushed: the"
+        "file": "client/docs/digital-rules.md",
+        "text": "a cached card that is a legal decision TARGET"
       },
       {
         "file": "client/docs/digital-rules.md",
-        "text": "an entry whose only offer is an augment or a graft from cache keeps the dialog route"
+        "text": "A decision belonging to another seat stops you only where the engine cannot"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "const playNow = mine ? new Set(playableCachedIndexes(legal)) : new Set<number>();"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (hiddenSegment(s) === null) return true;"
       }
     ],
     "basis_ok": true,
-    "problem": "The augment/graft half is no longer true: since R311 the client's playableCachedIndexes counts augment/graft-from-cache offers, so such a thumb plays on one click (probe U24-1). The decision-target half holds. No test was bound; examples empty."
+    "problem": ""
   },
   {
     "key": "annexd.display.reminders",
