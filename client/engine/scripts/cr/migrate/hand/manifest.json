@@ -83,6 +83,18 @@
    "op": "merge",
    "step": "hand",
    "base": "4aeafc1869428a1acde9eec28d914e3d4a267c1e"
+  },
+  "client/engine/test/238-question-sheets.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "f6e684bcf40fd00c1d7429478060fcbe534173df",
+   "owned": true
+  },
+  "client/engine/test/184-ruling-register.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "d58fccecbae0db245e47cbd966fbb3728897abb0",
+   "owned": true
   }
  }
 }

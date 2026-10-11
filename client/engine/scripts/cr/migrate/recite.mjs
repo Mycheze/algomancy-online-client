@@ -559,6 +559,41 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     (jsonFiles.get(r.file) ?? jsonFiles.set(r.file, []).get(r.file)).push({ r, act });
   }
 
+  /* 4. glossary rows: `ruling: ['R13', 'printed']` → `rule: ['<cr key>', 'printed']`, as a positional
+   *    edit on the array (a comment elsewhere on the line is recited on its own) */
+  const ledger = JSON.parse(readFileSync(join(root, 'data/comprehensive-rules/ledger.json'), 'utf8'));
+  const keyOfNum = new Map(ledger.entries.filter((e) => !e.removed).map((e) => [e.num, e.key]));
+  if (existsSync(join(root, GLOSSARY_TS))) {
+    const m = model(GLOSSARY_TS);
+    const rowsByLine = new Map();
+    for (const r of rows) if (glossRows.has(r.id)) (rowsByLine.get(r.line) ?? rowsByLine.set(r.line, []).get(r.line)).push(r);
+    for (let i = 0; i < m.lines.length; i++) {
+      const L = m.lines[i];
+      const mm = /\bruling:\s*\[([^\]]*)\]/.exec(L);
+      if (!mm || !/^\s*\{\s*term:/.test(L)) continue;
+      const rs = rowsByLine.get(i + 1) ?? [];
+      const items = [...mm[1].matchAll(/'([^']*)'|"([^"]*)"/g)].map((x) => x[1] ?? x[2]);
+      const keys = [];
+      let left = false;
+      for (const it of items) {
+        const c = /^R(\d{1,3})(b?)$/.exec(it);
+        if (!c) { keys.push(it); continue; }
+        const r = rs.find((x) => x.ruling === `R${Number(c[1])}${c[2]}`);
+        let act = r ? actionOf(r, decisions) : { kind: 'leave', why: 'no census row' };
+        // an array item is a source list, never a sentence about history: the script's pick stands
+        if (act.pending === 'historical' && r.pick) act = { kind: 'cite', nums: [r.pick], src: r.method };
+        // an array item has no prose to reword: a reword's numbers are the rule it rests on
+        if (act.kind === 'cite' || (act.kind === 'reword' && act.nums?.length)) for (const n of act.nums) { const k = keyOfNum.get(n); if (k) keys.push(k); else { report.glossary.left.push(`line ${i + 1} ${it}: ${n} is no live rule`); left = true; } }
+        else if (act.kind === 'drop' || act.kind === 'pointer') { /* the source goes */ }
+        else { report.glossary.left.push(`line ${i + 1} ${it}: ${act.why ?? act.kind}`); left = true; }
+      }
+      if (left) continue;
+      const a = m.offs[i] + mm.index;
+      addEdit(GLOSSARY_TS, { a, b: a + mm[0].length, text: `rule: [${[...new Set(keys)].map((k) => `'${k}'`).join(', ')}]`, why: 'glossary rule keys' });
+      report.glossary.rows++;
+    }
+  }
+
   /* apply the text edits (in memory) */
   const before = new Map(), after = new Map();
   for (const [rel, es] of editsOf) {
@@ -568,47 +603,6 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
   }
   // tidy what a removal leaves behind, on the touched lines only
   for (const [rel, t] of after) after.set(rel, t);
-
-  /* 4. glossary rows → rule keys */
-  const ledger = JSON.parse(readFileSync(join(root, 'data/comprehensive-rules/ledger.json'), 'utf8'));
-  const keyOfNum = new Map(ledger.entries.filter((e) => !e.removed).map((e) => [e.num, e.key]));
-  if (glossRows.size) {
-    const rel = GLOSSARY_TS;
-    const src = after.get(rel) ?? model(rel).text;
-    const m0 = model(rel);
-    const out = [];
-    let changed = 0;
-    const lines = src.split('\n');
-    // the glossary lines are untouched by step 2 (their rows were consumed), so line numbers hold
-    const rowsByLine = new Map();
-    for (const r of rows) if (glossRows.has(r.id)) (rowsByLine.get(r.line) ?? rowsByLine.set(r.line, []).get(r.line)).push(r);
-    for (let i = 0; i < lines.length; i++) {
-      const rs = rowsByLine.get(i + 1);
-      if (!rs || lines[i] !== m0.lines[i]) { out.push(lines[i]); continue; }
-      const L = lines[i];
-      const mm = /\bruling:\s*\[([^\]]*)\]/.exec(L);
-      if (!mm) { out.push(L); continue; }
-      const items = [...mm[1].matchAll(/'([^']*)'|"([^"]*)"/g)].map((x) => x[1] ?? x[2]);
-      const keys = [];
-      let leftHere = false;
-      for (const it of items) {
-        const c = /^R(\d{1,3})(b?)$/.exec(it);
-        if (!c) { keys.push(it); continue; }
-        const r = rs.find((x) => x.ruling === `R${Number(c[1])}${c[2]}`);
-        const act = r ? actionOf(r, decisions) : { kind: 'leave', why: 'no row' };
-        if (act.kind === 'cite') for (const n of act.nums) { const k = keyOfNum.get(n); if (k) keys.push(k); else { report.glossary.left.push(`${it}: ${n} is no live rule`); leftHere = true; } }
-        else if (act.kind === 'drop' || act.kind === 'pointer') { /* gone */ }
-        else { report.glossary.left.push(`line ${i + 1} ${it}: ${act.why ?? act.kind}`); leftHere = true; keys.push(it); }
-      }
-      if (leftHere) { out.push(L); continue; }
-      const uniq = [...new Set(keys)];
-      out.push(L.slice(0, mm.index) + `rule: [${uniq.map((k) => `'${k}'`).join(', ')}]` + L.slice(mm.index + mm[0].length));
-      changed++;
-      for (const r of rs) consumed.add(r.id);
-    }
-    report.glossary.rows = changed;
-    if (changed) { after.set(rel, out.join('\n')); before.set(rel, m0.text); }
-  }
 
   /* 5. test titles: old → new, by re-tokenizing each changed test file */
   const titleMap = new Map(); // `${basename}` → [{old, neu}]

@@ -1,0 +1,194 @@
+/* THE CITATION REGISTER — every rule number cited in client/ is a live rule
+ * of the comprehensive rules, and no number of the retired ruling register
+ * is cited any more.
+ *
+ * The comprehensive rules (data/comprehensive-rules/, numbered by ledger.json)
+ * are the engine's spec. The rest of the repository cites them constantly — in
+ * comments, in test names, in the ledgers, in the docs — as `CR 608.2b`, or a
+ * list `CR 702.3, 704.6b`. A citation is how a reader gets from "why is this
+ * line like this" to the rule, so a number that names no rule is a dead link
+ * that reads as a live one.
+ *
+ * ── WHAT CAME BEFORE ──────────────────────────────────────────────────
+ *
+ * Until 2026-10 the spec was a register of numbered owner rulings, one `## R<n>`
+ * heading each, and this file proved every `R<n>` cited in the tree had a
+ * heading: twelve once did not (one was cited forty times across ten files and
+ * had never been written down). The register was retired when the
+ * comprehensive rules took over (its final state is archived at
+ * refs/archive/r-register-final); every citation was converted to a CR number,
+ * a pointer, plain words or nothing, by client/engine/scripts/cr/migrate/.
+ * This file now guards both halves of that: CR numbers resolve, and the old
+ * numbers do not creep back.
+ *
+ * ── WHY THE ALLOWLIST IS A LEDGER ─────────────────────────────────────
+ *
+ * `ALLOWED` is asserted in BOTH directions: a new `R<n>` token outside it is a
+ * failure, and an entry that no longer matches anything is a failure too (the
+ * stale-waiver check CT-83 asks of every exemption list). Each entry says why
+ * the token is not a citation, or why it is frozen history. You may DELETE an
+ * entry; you may ADD one only for a token that is not a citation of the retired
+ * register (a fixture, a quotation of what a player once saw).
+ *
+ * Not scanned at all: the migration's own inputs (cr/migrate/, keyed by the old
+ * ids by design) and the question sheets (client/docs/questions-round*.md, test
+ * fixtures holding the owner's verbatim words). The closed ledgers' `evidence:`
+ * strings are frozen history (owner decision, 2026-10-11) and skipped too.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { CR_LEDGER } from '../scripts/paths.mjs';
+import { tokenize } from '../scripts/cr/extract-test-titles.mjs';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const CLIENT = join(HERE, '..', '..');
+
+/** Directories that hold no source of ours, hold runtime data, or are the migration's own inputs. */
+const SKIP = new Set(['node_modules', '.git', 'games', 'accounts', 'AlgomancyCards']);
+const SKIP_PATHS = ['engine/scripts/cr/migrate/'];
+const SKIP_FILE = (rel: string): boolean => /^docs\/questions-round\d+\.md$/.test(rel);
+/** the closed ledgers: their `evidence:` strings are frozen history */
+const FROZEN_EVIDENCE = new Set(['ledgers/card-todo-closed.ts', 'ledgers/backlog-closed.ts', 'ledgers/playtest-ledger-closed.ts']);
+
+function walk(dir: string, out: string[] = []): string[] {
+  for (const name of readdirSync(dir)) {
+    if (SKIP.has(name)) continue;
+    const p = join(dir, name);
+    const rel = relative(CLIENT, p).split('\\').join('/');
+    if (SKIP_PATHS.some(s => rel.startsWith(s))) continue;
+    if (statSync(p).isDirectory()) walk(p, out);
+    else if (/\.(ts|mts|md|mjs)$/.test(name) && !SKIP_FILE(rel)) out.push(p);
+  }
+  return out;
+}
+
+/** every rule number cited as `CR <num>`, lists expanded: "CR 702.3, 704.6b" → 702.3, 704.6b */
+export function crCites(text: string): string[] {
+  return [...text.matchAll(/\bCR ((?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*)/g)]
+    .flatMap(m => m[1]!.split(/,\s/));
+}
+
+/** every `R<n>` token of the retired register's shape, with its offset */
+export function rTokens(text: string): { n: number; at: number }[] {
+  return [...text.matchAll(/\bR(\d{1,3})b?\b/g)].map(m => ({ n: Number(m[1]), at: m.index! }))
+    .filter(t => t.n >= 1);
+}
+
+/** offsets a scan must not count: identifiers (`const R1 = …`), and frozen evidence strings */
+function ignoredSpans(rel: string, text: string): [number, number][] {
+  if (!/\.(ts|mts|mjs)$/.test(rel)) return [];
+  let toks: { t: string; v: string; s: number; e: number }[];
+  try { toks = tokenize(text); } catch { return []; }
+  const out: [number, number][] = [];
+  for (let k = 0; k < toks.length; k++) {
+    const tk = toks[k]!;
+    if (tk.t === 'id' && /^R\d+$/.test(tk.v)) out.push([tk.s, tk.e]);
+    if (FROZEN_EVIDENCE.has(rel) && tk.t === 'id' && tk.v === 'evidence' && toks[k + 1]?.v === ':') {
+      let j = k + 2;
+      while (toks[j] && (toks[j]!.t === 'str' || toks[j]!.t === 'tmpl')) { out.push([toks[j]!.s, toks[j]!.e]); j += toks[j + 1]?.v === '+' ? 2 : 1; }
+    }
+  }
+  return out;
+}
+
+/**
+ * Tokens that look like retired citations and are not, or are frozen quotations.
+ * Matched by file and by a substring of the token's line, never by line number,
+ * so the list survives edits around it.
+ */
+const ALLOWED: { file: string; match: string; why: string }[] = [
+  { file: 'docs/07-visual-redesign.md', match: 'R', why: 'the visual redesign\'s rounds R0–R5, not rulings' },
+  { file: 'ledgers/backlog.ts', match: 'R0', why: 'the visual redesign\'s rounds R0–R5, not rulings' },
+  { file: 'ui/test/286-rules-reference.test.ts', match: 'R', why: 'fixture and doc of the player-copy guard: it must still be shown an R-number to catch' },
+  { file: 'ui/test/227-reminder-text.test.ts', match: 'R', why: 'the leak detector\'s fixtures, and the verbatim string a player once saw (report #118)' },
+];
+const allowedLine = (rel: string, line: string): boolean => ALLOWED.some(a => a.file === rel && line.includes(a.match));
+
+interface Scan { cr: Map<string, Set<string>>; r: { rel: string; line: number; text: string }[]; files: number; crCount: number }
+function scan(): Scan {
+  const cr = new Map<string, Set<string>>();
+  const r: Scan['r'] = [];
+  let files = 0, crCount = 0;
+  for (const p of walk(CLIENT)) {
+    const rel = relative(CLIENT, p).split('\\').join('/');
+    const text = readFileSync(p, 'utf8');
+    const nums = crCites(text);
+    if (nums.length) files++;
+    crCount += nums.length;
+    for (const n of nums) (cr.get(n) ?? cr.set(n, new Set()).get(n)!).add(rel);
+    if (!/\bR\d/.test(text)) continue;
+    const ign = ignoredSpans(rel, text);
+    for (const t of rTokens(text)) {
+      if (ign.some(([a, b]) => a <= t.at && t.at < b)) continue;
+      const ls = text.lastIndexOf('\n', t.at) + 1, le = text.indexOf('\n', t.at);
+      const line = text.slice(ls, le < 0 ? undefined : le);
+      if (allowedLine(rel, line)) continue;
+      r.push({ rel, line: text.slice(0, t.at).split('\n').length, text: line.trim().slice(0, 140) });
+    }
+  }
+  return { cr, r, files, crCount };
+}
+
+const LEDGER = JSON.parse(readFileSync(CR_LEDGER, 'utf8')) as { entries: { num: string; key: string; removed?: string }[] };
+const LIVE = new Set(LEDGER.entries.filter(e => !e.removed).map(e => e.num));
+const TOMB = new Set(LEDGER.entries.filter(e => e.removed).map(e => e.num));
+const SCAN = scan();
+
+/* ══ §1 · THE SCANS CAN SEE ═══════════════════════════════════════════ */
+
+test('§1: the scans can go red — synthetic inputs, both directions', () => {
+  assert.deepEqual(crCites('per CR 608.2b, and CR 702.3, 704.6b; also CR D6.16a and CR 608'), ['608.2b', '702.3', '704.6b', 'D6.16a', '608']);
+  assert.deepEqual(crCites('no rule numbers here, and 608.2b alone is not a citation'), [],
+    'the citation scan must be capable of finding nothing');
+  assert.deepEqual(rTokens('this follows R42 and also R7.').map(t => t.n), [42, 7]);
+  assert.deepEqual(rTokens('no old numbers, R0 and R1234 are not ones').map(t => t.n), []);
+  // an identifier is not a citation; a comment or a string is
+  const src = 'const R2 = load(); // see R12\nconst s = \'(R13)\';';
+  const ign = ignoredSpans('x.ts', src);
+  assert.deepEqual(rTokens(src).filter(t => !ign.some(([a, b]) => a <= t.at && t.at < b)).map(t => t.n), [12, 13]);
+  // the ledger lookup says no as well as yes
+  assert.ok(LIVE.has('608') && !LIVE.has('999.9z'), 'the ledger lookup cannot tell a live rule from a made-up one');
+});
+
+test('§1: the scan finds the citations that are really there', () => {
+  // docs/13-assessment.md §7.4: every observation channel needs a positive
+  // control. A scan that matches nothing reports "no dead links" — the most
+  // flattering possible answer.
+  assert.ok(SCAN.crCount > 5000, `only ${SCAN.crCount} CR citations found — the scan has gone blind`);
+  assert.ok(SCAN.files > 300, `CR citations found in only ${SCAN.files} files — the walk has gone blind`);
+  assert.ok(LIVE.size > 1500, `only ${LIVE.size} live rule numbers in the ledger — wrong file?`);
+});
+
+/* ══ §2 · EVERY CR NUMBER IS A LIVE RULE ══════════════════════════════ */
+
+test('§2: every CR number cited in client/ is a live rule of the comprehensive rules', () => {
+  const dead = [...SCAN.cr.entries()].filter(([n]) => !LIVE.has(n))
+    .map(([n, files]) => `CR ${n}${TOMB.has(n) ? ' (a removed rule — cite its replacement)' : ''} in ${[...files].slice(0, 3).join(', ')}`).sort();
+  assert.deepEqual(dead, [],
+    'these citations name no live rule. A rule number is allocated once and never reused '
+    + '(ledger.json), so a dead one is a typo, an invented number, or a rule that was removed:\n  '
+    + dead.join('\n  '));
+});
+
+/* ══ §3 · NO RETIRED NUMBER IS CITED ══════════════════════════════════ */
+
+test('§3: no number of the retired ruling register is cited, outside the allowlist', () => {
+  const lines = SCAN.r.map(x => `${x.rel}:${x.line}: ${x.text}`);
+  assert.deepEqual(lines, [],
+    `${lines.length} R-number(s) remain. The ruling register is retired: cite the comprehensive `
+    + 'rule (`CR 608.2b`), point at the test that holds a process rule, or say it in words. '
+    + 'Do not add an allowlist entry for a citation:\n  ' + lines.join('\n  '));
+});
+
+test('§3: every allowlist entry still matches a token — a waiver whose subject left is stale', () => {
+  for (const a of ALLOWED) {
+    let text = '';
+    try { text = readFileSync(join(CLIENT, a.file), 'utf8'); } catch { assert.fail(`ALLOWED names ${a.file}, which does not exist`); }
+    const hit = text.split('\n').some(l => l.includes(a.match) && /\bR\d{1,3}b?\b/.test(l));
+    assert.ok(hit, `ALLOWED entry for ${a.file} ("${a.match}") matches no line with an R-number any more — delete it`);
+    assert.ok(a.why.length > 20, `ALLOWED entry for ${a.file} must say why the token is not a citation`);
+  }
+});
