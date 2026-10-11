@@ -1,0 +1,1977 @@
+{
+ "decisions": {
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#453b9125c8#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 202 parses register headings (R157 §17 = Torrential Reclamation is its positive control); rework re-points SETTLED at the CR/RAQ or retires the guard, and renames the control test title"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#266875f0bd#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 202 parses register headings (R157 §17 = Torrential Reclamation is its positive control); rework re-points SETTLED at the CR/RAQ or retires the guard, and renames the control test title"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R157#3421fdcfa2#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 202 parses register headings (R157 §17 = Torrential Reclamation is its positive control); rework re-points SETTLED at the CR/RAQ or retires the guard, and renames the control test title"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R237#9394e0b412#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R1#f1fdfb9a2b#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R1#420635cd42#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R1#abb6b9eeb0#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R1#4b60c8ab4e#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R27#9394e0b412#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R240#9394e0b412#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R2#02a1e96ce9#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R197#69b6079a7b#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R196#ea3acd4ba2#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R267#f1fdfb9a2b#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R197b#69b6079a7b#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 184 is the register checker; it is deleted with the register (along with its R1–R<n> range check over client/README.md and CLAUDE.md)"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#e7ee68470c#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 238 scans the register for questions-round back-pointers and builds a synthetic \"## R237\" fixture; rework points the back-pointer scan at the CR records/changelog or drops it, and rewrites the fixture without R-ids"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#e831f89450#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 238 scans the register for questions-round back-pointers and builds a synthetic \"## R237\" fixture; rework points the back-pointer scan at the CR records/changelog or drops it, and rewrites the fixture without R-ids"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#af33badaff#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 238 scans the register for questions-round back-pointers and builds a synthetic \"## R237\" fixture; rework points the back-pointer scan at the CR records/changelog or drops it, and rewrites the fixture without R-ids"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#6710189eac#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 238 scans the register for questions-round back-pointers and builds a synthetic \"## R237\" fixture; rework points the back-pointer scan at the CR records/changelog or drops it, and rewrites the fixture without R-ids"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R237#c63b072196#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 238 scans the register for questions-round back-pointers and builds a synthetic \"## R237\" fixture; rework points the back-pointer scan at the CR records/changelog or drops it, and rewrites the fixture without R-ids"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R197b#606bb3e1ec#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 238 scans the register for questions-round back-pointers and builds a synthetic \"## R237\" fixture; rework points the back-pointer scan at the CR records/changelog or drops it, and rewrites the fixture without R-ids"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R301#f00df7001d#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R301#5c576f041c#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R301#5c576f041c#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R261#f00df7001d#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R261#858c365471#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R261#858c365471#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R42#f00df7001d#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R42#5c576f041c#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R42#5c576f041c#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R295#f00df7001d#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R295#a94f49dff1#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R295#a94f49dff1#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R197b#80fa488ee8#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R197b#80fa488ee8#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R197b#f984f36f75#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 411 asserts the cr extractor parses register ids/supersession (R197b, R301->R42, R295/R261->R3); retires with extract.mjs's register parser"
+  },
+  "client/engine/scripts/cr/extract.mjs##R305#ea7bd5d027#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R305#ea7bd5d027#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R305#12286f7a81#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R305#12286f7a81#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R106#1e8094b19d#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R106#1e8094b19d#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R42#118c294c56#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R42#118c294c56#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R42#118c294c56#2": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R42#8eb09510a5#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R310#0da22a3699#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R110#2f03924c56#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R110#0da22a3699#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R319#1d8dc57e51#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R319#a34f3d7856#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R306#30eefca462#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R235#0da22a3699#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R60#2f03924c56#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R60#f9a07035d9#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R115#2f03924c56#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R115#a34f3d7856#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R31#8eb09510a5#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.mjs##R31#8eb09510a5#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "grammar examples in the register-supersession parser doc comment; retire with the parser (no CR number belongs here)"
+  },
+  "client/engine/scripts/cr/extract.d.mts##R114#e158c7faf5#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "ruling-id type/doc example (\"R114\"/\"R197b\") in the cr pipeline; changes when the pipeline stops citing register rulings"
+  },
+  "client/engine/scripts/cr/extract.d.mts##R197b#073d32b258#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "ruling-id type/doc example (\"R114\"/\"R197b\") in the cr pipeline; changes when the pipeline stops citing register rulings"
+  },
+  "client/engine/scripts/cr/extract.d.mts##R197b#e158c7faf5#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "ruling-id type/doc example (\"R114\"/\"R197b\") in the cr pipeline; changes when the pipeline stops citing register rulings"
+  },
+  "client/engine/scripts/cr/harness.mjs##R114#0b2fd29dda#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "sourceHashes doc example (R114 -> bodyHash); changes when sourceHashes stops keying register rulings"
+  },
+  "client/engine/scripts/cr/schema.mjs##R114#b85abbf392#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "ruling-citation schema example and validation message; changes when the schema drops register refs"
+  },
+  "client/engine/scripts/cr/schema.mjs##R114#7b93888aad#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "ruling-citation schema example and validation message; changes when the schema drops register refs"
+  },
+  "client/engine/scripts/cr/schema.mjs##R197b#b85abbf392#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "ruling-citation schema example and validation message; changes when the schema drops register refs"
+  },
+  "client/engine/scripts/cr/briefs/C-verify.md##R265#bee09620ce#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "scoped-ref syntax example in a cr pipeline brief; retire/rewrite with the pipeline's register refs"
+  },
+  "client/engine/scripts/cr/briefs/C-verify.md##R265#bee09620ce#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "scoped-ref syntax example in a cr pipeline brief; retire/rewrite with the pipeline's register refs"
+  },
+  "data/comprehensive-rules/README.md##R114#e2d9d7f6c8#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "pipeline contract examples (sourceHashes key, scoped ruling refs); rewrite with the pipeline when register refs go"
+  },
+  "data/comprehensive-rules/README.md##R265#0ddfdb0ede#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "pipeline contract examples (sourceHashes key, scoped ruling refs); rewrite with the pipeline when register refs go"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#61820514ad#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#c2839c3552#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#c2839c3552#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#1df0333cf3#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R9#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R17#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#e48a22f614#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#860126e265#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R184#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R103#8a36bb79fa#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#f9834f5787#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#9c54d652b5#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#31b9a4d779#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#31b9a4d779#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R18#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R52#60b8c3cccd#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R115#16bfe3664e#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R115#60b8c3cccd#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R115#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R115#44e175be37#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R45#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R206#83e79ac656#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R113#ffd3dd7ab7#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R113#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R113#2abe06fb45#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R190#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R84#b52aa2714d#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R84#a377c7baf1#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R84#f7428d1c27#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R84#dd68b8e635#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R28#16bfe3664e#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R28#9bc1c80bee#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register headers/bodies (retired detector, token lists, synthetic rows); rework re-points glossary `ruling` checks at CR numbers (ledger live/tombstone) and drops the register-body cases"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R42#660932e0ce#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 261 reads the register's R42 section as a positive control; rework replaces it with the CR rule (803.7b/803.7i) or drops the control"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R42#a5b519666a#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 261 reads the register's R42 section as a positive control; rework replaces it with the CR rule (803.7b/803.7i) or drops the control"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R277#a5b519666a#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 261 reads the register's R42 section as a positive control; rework replaces it with the CR rule (803.7b/803.7i) or drops the control"
+  },
+  "client/engine/test/443-cr-demonstrations.test.ts##R65#3f47f5c910#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "T.replace('R65','R66') is a hash-sensitivity fixture, not a cite; rework swaps it for any other string pair present in T once T carries no R-id"
+  },
+  "client/engine/test/443-cr-demonstrations.test.ts##R66#3f47f5c910#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "T.replace('R65','R66') is a hash-sensitivity fixture, not a cite; rework swaps it for any other string pair present in T once T carries no R-id"
+  },
+  "client/README.md##R1#23c9b41ae3#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "README row describing the register (R1–R350, checked by 184); rewritten in the docs step when digital-rules.md is deleted"
+  },
+  "client/README.md##R350#23c9b41ae3#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "README row describing the register (R1–R350, checked by 184); rewritten in the docs step when digital-rules.md is deleted"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R228#5f3eef9fda#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R97#15c231cf24#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R97#5f3eef9fda#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R97#f3e10dd600#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/ui/test/286-rules-reference.test.ts##R13#71c80b88f8#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "fixture/doc for the R_NUMBER player-copy guard; KEEP the literals (the guard must still catch an R-number) and allowlist 286 in the migration's no-R guard"
+  },
+  "client/engine/test/187-scenario-queue.test.ts##R1#960865d35e#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "rulingWeight fixture text; scenario-queue.ts rankCards weighs cards by register mentions — rework re-points it at the CR text (or drops the weight) and the fixture loses its R-prefixes"
+  },
+  "client/engine/test/187-scenario-queue.test.ts##R2#960865d35e#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "rulingWeight fixture text; scenario-queue.ts rankCards weighs cards by register mentions — rework re-points it at the CR text (or drops the weight) and the fixture loses its R-prefixes"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R13#31f6c27433#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "asserts the glossary {Piercing} row's ruling field is exactly 'R13'; rework asserts the CR number that replaces it (via the glossary migration)"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#036d14814b#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "names test 202's control title (CT-91/R157 §17 pair); follows 202's rework/rename"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#dd2be82972#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "guard binding to test 202's title; rebind when 202's title is renamed"
+  },
+  "client/ledgers/card-todo-closed.ts##R157#9b84e658fe#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "describes test 202's register-bound control; follows 202's rework"
+  },
+  "client/ledgers/card-todo.ts##R157#d20acfd531#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "CT-235 item (1) is about the stale 'R157 §20 —' titles in 133; the migration's retitle of 133 fixes it — then drop item (1) from detail/evidence and the 133 leg of the proof (other legs keep it honest)"
+  },
+  "client/ledgers/card-todo.ts##R157#ab0cb5cf25#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "CT-235 evidence quotes a 133 title; drop with item (1) when 133 is retitled"
+  },
+  "client/ledgers/card-todo.ts##R157#f2d8f27e37#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "CT-235 proof leg still('133…', 'R157 §20 —'); remove that leg in the same commit that retitles 133"
+  },
+  "client/ledgers/card-todo.ts##R61#8b55c5ed0f#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "CT-260 proof greps docs/digital-rules.md (deleted); re-point at engine.ts's survives-Pure comment as reworded here (keep strings in step) or a behavioural probe"
+  },
+  "client/ledgers/card-todo-closed.ts##R196#e425efac3f#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "guard binding '167…::R196' is a prefix over every R196-titled test in 167; replace with one shared token when 167's titles are renamed"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R97#5eb1175ae0#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "guard binding to 80-round17 title 'R97: every hand play…'; rebind in step with that title's rename"
+  },
+  "client/docs/questions-round31.md##R79#7a56f185c0#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R79#54e43248e4#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R79#54e43248e4#0~1": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R95#7a56f185c0#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R95#54e43248e4#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R95#54e43248e4#0~1": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R89#54e43248e4#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/docs/questions-round31.md##R89#54e43248e4#0~1": {
+   "action": "freeze",
+   "nums": [],
+   "note": "owner's verbatim paste of leaked UI text (the R-list IS the complaint); no test reads these lines (202:154 only skips bodies matching /R\\d+/, unchanged by freezing); allowlist questions-round*.md in the no-R guard"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R103#1f5bc82365#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "verbatim quote of the ruling string cardpanel once printed to players (report #118); history, allowlist in the no-R guard"
+  },
+  "client/ui/test/227-reminder-text.test.ts##R103#b0fe3ba5c8#0": {
+   "action": "freeze",
+   "nums": [],
+   "note": "assertion message quoting the leaked string of report #118 verbatim; message only, allowlist in the no-R guard"
+  },
+  "client/engine/test/276-deployment-stack.test.ts##R286#44ecfe978d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "const QUIET = 'Deploy Quiet';",
+   "note": "synthetic card name; only occurrence is 276:63. Distinct from 130's Gate Quiet"
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R154#7512bf4c4e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "const HALTS = 'Gate Halt';",
+   "note": "synthetic card name; only occurrence 130:76"
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R154#0d5a7482d3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "const QUIET = 'Gate Quiet';",
+   "note": "synthetic card name; only occurrence 130:98"
+  },
+  "client/engine/test/130-seat-aware-gate.test.ts##R154#ad1bfa71f9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "const BATTLE_ASKS = 'Gate Battle Ask';",
+   "note": "synthetic card name; only occurrence 130:113"
+  },
+  "client/server/e2e/test-concurrency.ts##R154#b6a8a3c57f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "HALTS seat 1 plays 'Deploy Halt' — a resolution that stops HALFWAY",
+   "note": "rename group with test-concurrency.ts:114 (same literal); nothing else quotes 'R154 Halt'"
+  },
+  "client/server/e2e/test-concurrency.ts##R154#3975f2cedf#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "const HALTS = 'Deploy Halt';",
+   "note": "rename group with test-concurrency.ts:38; run the e2e after"
+  },
+  "client/engine/src/engine.ts##R64#49f2ea01f7#0": {
+   "action": "cite",
+   "nums": [
+    "704.6g"
+   ],
+   "note": "required target with no legal candidate; the comment's condition"
+  },
+  "client/engine/src/apply.ts##R9#5329cd373d#0": {
+   "action": "reword",
+   "nums": [
+    "109.9k"
+   ],
+   "suggest": "Once per name — two copied Graxxlids share one budget on this host, as two real ones do in the engine (CR 109.9k gives each mod its own use; the engine keys the budget by card name — no ticket yet)",
+   "note": "engine differs from 109.9k (augment:<card>#<n> key); NEW finding, no CT filed"
+  },
+  "client/engine/src/engine.ts##R9#e210489ea7#0": {
+   "action": "reword",
+   "nums": [
+    "109.9e",
+    "109.9k"
+   ],
+   "suggest": "Copied, not moved (CR 109.9e): the engine keys the budget per card name on a host, so a second same-name mod left behind stays spent too — CR 109.9k gives each mod its own use (engine differs, no ticket yet)",
+   "note": "Reconfigure half = 109.9e; per-name keying contradicts 109.9k; NEW finding"
+  },
+  "client/ledgers/card-todo.ts##R299#8210a1f1d2#0": {
+   "action": "reword",
+   "nums": [
+    "106.8d"
+   ],
+   "suggest": "308-recycle-for-prismite.test.ts: \"<308's title as renamed>\" — keep this evidence quote in step with 308's retitle (CR 106.8d allows the Shard; engine differs, CT-237)",
+   "note": "evidence quote of a test title; follows 308 rename"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R65#34439bc30c#0": {
+   "action": "reword",
+   "nums": [
+    "102.5a",
+    "400.4"
+   ],
+   "suggest": "The caster CONTROLS it and the opponent still OWNS it (CR 102.5a); zones follow control, so it dies to the caster's bin (CR 400.4).",
+   "note": "stale: engine bins to controller (R262 sweep); drop \"can be recurred by them\""
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R65#cbd4e0cbb1#0": {
+   "action": "reword",
+   "nums": [
+    "102.5a",
+    "400.4"
+   ],
+   "suggest": "the caster is its CONTROLLER while `c.seat` stays its OWNER (CR 102.5a); it dies to its controller's bin (CR 400.4).",
+   "note": "stale; also fix the rest of the sentence ('counts toward their cards in your bin, and they can recur it')"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R65#d260096661#0": {
+   "action": "reword",
+   "nums": [
+    "102.4",
+    "400.4"
+   ],
+   "suggest": "but it is still your card (CR 102.4), though it goes to its controller's bin when it dies (CR 400.4).",
+   "note": "stale: engine follows control on death"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R65#23c9ee890c#0": {
+   "action": "reword",
+   "nums": [
+    "102.5a",
+    "400.4"
+   ],
+   "suggest": "It came out of `seat`'s bin, so it is still `seat`'s card (CR 102.5a), but it dies to its controller's bin (CR 400.4)",
+   "note": "stale: engine follows control on death"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R65#c8df5b053e#0": {
+   "action": "reword",
+   "nums": [
+    "102.4",
+    "400.4"
+   ],
+   "suggest": "Its owner is unchanged (CR 102.4), but recall/death send the card to its controller's hand/bin (CR 400.4).",
+   "note": "stale: recall/death follow control in the engine (R262)"
+  },
+  "client/engine/src/engine.ts##R65#1fdf0ba5ba#0": {
+   "action": "reword",
+   "nums": [
+    "102.4",
+    "102.5"
+   ],
+   "suggest": "The engine tracks owner and controller separately everywhere else (CR 102.4, 102.5)",
+   "note": "drop the quoted owner-pile sentence; note the dead unit now goes to the caster's (controller's) bin anyway — only ownership was the defect"
+  },
+  "client/engine/src/engine.ts##R65#bf4eb11f22#0": {
+   "action": "reword",
+   "nums": [
+    "723.4b"
+   ],
+   "suggest": "// CR 723.4b: the spell and its viruses are erased; the engine files each card on the pile of the seat that played it (the CR names no pile for this case)",
+   "note": "spell -> item.controller, virus -> v.by; CR silent on whose pile (coverage gap)"
+  },
+  "client/engine/test/125-active-zone.test.ts##R65#39dea0b8ef#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "'it lands in its own seat\\'s pile, not the opponent\\'s'",
+   "note": "helper covers active and inactive zones; no single CR rule (400.4 is play-only); owner==controller here"
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R65#c92490b8ad#0": {
+   "action": "reword",
+   "nums": [
+    "723.4b"
+   ],
+   "suggest": "// CR 723.4b: both are erased — the spell to its controller's pile, the virus to its applier's (engine convention; the CR names no pile)",
+   "note": "CR silent on whose erased pile for a stack spell"
+  },
+  "client/engine/test/89-self-erase.test.ts##R65#b0c4b313ae#0": {
+   "action": "reword",
+   "nums": [
+    "723.4b"
+   ],
+   "suggest": "// the virus is erased with the spell (CR 723.4b), onto its applier's pile, never a bin",
+   "note": "pile choice is engine convention"
+  },
+  "client/engine/test/93-engine-defects.test.ts##R65#53594219c3#0": {
+   "action": "reword",
+   "nums": [
+    "102.5a"
+   ],
+   "suggest": "Putting a card into play out of another player's zone makes you its controller, not its owner (CR 102.5a).",
+   "note": "replaces the quoted owner-pile sentence; the following 'went to the caster's bin' is now correct (CR 400.4) — reword the defect as ownership only"
+  },
+  "client/ledgers/card-todo-closed.ts##R65#deb35174a3#0": {
+   "action": "reword",
+   "nums": [
+    "102.5"
+   ],
+   "suggest": "The engine tracks owner and controller separately everywhere else (CR 102.5), so this is a missing parameter",
+   "note": "closed-ledger detail prose (not evidence); drop the quoted owner-pile sentence"
+  },
+  "client/engine/test/39-light-b.test.ts##R46#0349a2b84c#0": {
+   "action": "reword",
+   "nums": [
+    "400.4"
+   ],
+   "suggest": "\"into its controller's cache (CR 400.4)\"",
+   "note": "owner == controller on this board; CR 400.4 says controller"
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R219#877fc3ab0d#0": {
+   "action": "reword",
+   "nums": [
+    "720.9"
+   ],
+   "suggest": "`alreadyFiled`: the grouped `erased` line above IS the pile entry, one per owner — CR 720.9 files it under the mod's controller; the engine still groups by owner (CT-258)",
+   "note": "engine differs F-U17-1 / CT-258"
+  },
+  "client/engine/src/apply.ts##R59#4c945506f6#0": {
+   "action": "reword",
+   "nums": [
+    "111.10e"
+   ],
+   "suggest": "an Ambush pays its own printed cost line and the engine keeps it outside the play-tax layer alike — CR 111.10e taxes it as a card played (engine differs, CT-243)",
+   "note": "replaces the whole R59/R60/R122 clause; engine differs F-U04-2"
+  },
+  "client/ledgers/card-todo.ts##R59#5efc2d4016#0": {
+   "action": "reword",
+   "nums": [
+    "111.10e"
+   ],
+   "suggest": "the retired register said an Ambush \"pays its printed cost line and today sits outside the play-tax layer\"",
+   "note": "CT-243 evidence quoting register text (deleted); paraphrase"
+  },
+  "client/ledgers/card-todo.ts##R59#5efc2d4016#1": {
+   "action": "reword",
+   "nums": [
+    "111.10e"
+   ],
+   "suggest": "apply.ts: \"<apply.ts:824 as reworded>\" — re-quote the reworded comment (contains 'outside the play-tax layer')",
+   "note": "CT-243 evidence quoting apply.ts:824; keep in step"
+  },
+  "client/engine/src/apply.ts##R60#4c945506f6#0": {
+   "action": "reword",
+   "nums": [
+    "111.10e"
+   ],
+   "suggest": "an Ambush pays its own printed cost line and the engine keeps it outside the play-tax layer alike — CR 111.10e taxes it as a card played (engine differs, CT-243)",
+   "note": "replaces the whole R59/R60/R122 clause; engine differs F-U04-2"
+  },
+  "client/ledgers/card-todo.ts##R60#5efc2d4016#0": {
+   "action": "reword",
+   "nums": [
+    "111.10e"
+   ],
+   "suggest": "the retired register said an Ambush \"pays its printed cost line and today sits outside the play-tax layer\"",
+   "note": "CT-243 evidence quoting register text (deleted); paraphrase"
+  },
+  "client/ledgers/card-todo.ts##R60#5efc2d4016#1": {
+   "action": "reword",
+   "nums": [
+    "111.10e"
+   ],
+   "suggest": "apply.ts: \"<apply.ts:824 as reworded>\" — re-quote the reworded comment (contains 'outside the play-tax layer')",
+   "note": "CT-243 evidence quoting apply.ts:824; keep in step"
+  },
+  "client/engine/src/engine.ts##R61#103a73db34#0": {
+   "action": "reword",
+   "nums": [
+    "802.25f"
+   ],
+   "suggest": "Note it survives {Pure} in the engine: the engine switches only the ATTRIBUTE layer off for the exchange and treats this as a stat layer — CR 802.25f says Unaware does not apply in an exchange involving a Pure card (engine differs, CT-260)",
+   "note": "engine differs F-U19-2 / CT-260; CT-260 proof may re-point here"
+  },
+  "client/ledgers/card-todo-closed.ts##R61#5e79af3e5b#0": {
+   "action": "reword",
+   "nums": [
+    "802.25f"
+   ],
+   "suggest": "The collapse was kept on under {Pure} on purpose, as a STAT layer — CR 802.25f now says it does not apply (engine differs, CT-260).",
+   "note": "closed-ledger comment, not evidence"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R49#dd3739bf67#0": {
+   "action": "reword",
+   "nums": [
+    "111.15"
+   ],
+   "suggest": "As a RIDER the 9 life rides along as a bracketed cast cost: a grafted cost must be paid and cannot be declined, and if it cannot be paid the whole composite stays off the stack (CR 111.15), so the erase can never happen unpaid.",
+   "note": "stale: R334 reversed declinable riders; engine withholds"
+  },
+  "client/engine/test/38-light-a.test.ts##R49#a4b5c8a36a#0": {
+   "action": "reword",
+   "nums": [
+    "111.15"
+   ],
+   "suggest": "'CR 111.15: at exactly 9 life the grafted cost cannot be paid'",
+   "note": "drop 'and is skipped' (whole composite is withheld)"
+  },
+  "client/engine/src/engine.ts##R35#8a6db1ad4f#0": {
+   "action": "reword",
+   "nums": [
+    "724.4c",
+    "111.15"
+   ],
+   "suggest": "A cast [cost] that is UNPAYABLE on a Modular spell's graft part marks its part `spent` before the run exists (CR 724.4c; elsewhere an unpayable grafted cost withholds the whole composite and none can be declined, CR 111.15)",
+   "note": "also drop the following 'the [cost] is declined is the most reachable decline' clause (stale)"
+  },
+  "client/engine/src/types.ts##R35#505e30e7e6#0": {
+   "action": "reword",
+   "nums": [
+    "724.4c"
+   ],
+   "suggest": "a cast-time [cost] on a Modular graft part that was unpayable — CR 724.4c",
+   "note": "declined half reversed (111.15); engine 8160 skip = Modular case"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R35#1735307b05#0": {
+   "action": "reword",
+   "nums": [
+    "702.4"
+   ],
+   "suggest": "the printed \"[Gain 4 debt]\" cast cost, paid as the card is played (Hyper Beam, CR 702.4, 112.14c)",
+   "note": "stale \"wired at resolution\"; batch file says charged by playAtTiming"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R39#1735307b05#0": {
+   "action": "reword",
+   "nums": [
+    "112.14c"
+   ],
+   "suggest": "the printed \"[Gain 4 debt]\" cast cost, paid as the card is played (Hyper Beam, CR 702.4, 112.14c)",
+   "note": "same clause as the R35 id"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R39#03b31ce27c#0": {
+   "action": "cite",
+   "nums": [
+    "112.14"
+   ],
+   "note": "this id is Covenant of the Damned (debt as effect), not Hyper Beam"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R1#f340059319#0": {
+   "action": "reword",
+   "nums": [
+    "706.2"
+   ],
+   "suggest": "The bin card is a declared target, chosen as the trigger goes on the stack (CR 706.2).",
+   "note": "stale: code below declares the target at stacking (R67)"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R69#6d7572ce58#0": {
+   "action": "reword",
+   "nums": [
+    "410.5a"
+   ],
+   "suggest": "token victim: a token DOES enter a bin (CR 410.5a), so destroy({ binTo: caster }) already bins it in the caster's name — without trashing it — and lets the state-based sweep erase it.",
+   "note": "stale: tokens are not trashed (R306)"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R69#81e9a0e2ed#0": {
+   "action": "reword",
+   "nums": [
+    "410.5a"
+   ],
+   "suggest": "// CR 410.5a: destroy() already binned and erased it (a token is not trashed)",
+   "note": "stale"
+  },
+  "client/engine/test/17-earth-b.test.ts##R69#6ed7f7e075#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "because Oorblak is {Unstable}: once it dies it is erased (CR 801.2h), and with it the very entity whose damage we are reading.",
+   "note": "R69 cited for Unstable-tested-first; 801.2h states the erase"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#fda94aeb10#0": {
+   "action": "reword",
+   "nums": [
+    "608.9c"
+   ],
+   "suggest": "Under the split-step rule (CR 608.9c) the sacrifice is paid as the trigger goes on the stack — at the window after its own sub-step, or after combat if that was the last — so the Dreamtender is ALWAYS alive for its own column's damage and the life total is the same number either way.",
+   "note": "stale 'whichever sub-step announced'; R295 narrowed R261"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R261#c22bcd9bb9#0": {
+   "action": "reword",
+   "nums": [
+    "608.9c"
+   ],
+   "suggest": "'sacrificed for its own column\\'s damage — at the window after the Swift sub-step, not inside it (CR 608.9c)'",
+   "note": "Swift is a non-last sub-step: resolves at the boundary"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R42#8b70443e33#0": {
+   "action": "reword",
+   "nums": [
+    "803.7i"
+   ],
+   "suggest": "— hand today. A banner's [Haste] does not give a cached card a haste release: it is played at its own printed timing (CR 803.7i).",
+   "note": "stale reversed release-marker reading"
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R42#7d234bfc90#0": {
+   "action": "reword",
+   "nums": [
+    "803.7b",
+    "803.7i"
+   ],
+   "suggest": "Divine Intervention's shape: a {Battle} card whose banner ends in [Haste] — the marker is not part of the condition: it lets the card be prophesied in the haste step (CR 803.7b) and does not move the release (CR 803.7i).",
+   "note": "consistent with the test at :588 (condition excludes the marker)"
+  },
+  "client/ledgers/card-todo-closed.ts##R42#802d1295d9#0": {
+   "action": "reword",
+   "nums": [
+    "803.7i"
+   ],
+   "suggest": "It is not a bypass — the banner's [Haste] was then read as a deliberate per-card release override (a reading since reversed: CR 803.7i), unlike the generic grants —",
+   "note": "closed-ledger narrative; R97/R123 are separate ids"
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R80#4a33bc5364#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "no CR/Annex D rule names the event-carried X shown on the stack (D6.9 covers a copy's value); coverage gap"
+  },
+  "client/ui/inspect.ts##R80#ced88b0280#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "label of the event X source; no CR/Annex D rule states it; coverage gap"
+  },
+  "client/ui/inspect.ts##R80#af77d57b55#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "A later fix added a THIRD,",
+   "note": "history; event-X display is a coverage gap"
+  },
+  "client/ui/test/75-ui-reachability.test.ts##R101#93b3c1c2ac#0": {
+   "action": "cite",
+   "nums": [
+    "D6.14b"
+   ],
+   "note": "R101 was a mis-cite; D6.14b is the resource-menu ordering/expander rule"
+  },
+  "client/engine/test/97-mode-conformance.test.ts##R284#561bbd1ae7#0": {
+   "action": "cite",
+   "nums": [
+    "205.3a",
+    "704.1a"
+   ],
+   "note": "mode is the caster's at cast; which card is a resolution choice. GAP: no rule says the discarding player picks"
+  },
+  "client/ui/style.css##R284#ec299b0daf#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10a"
+   ],
+   "note": "covers the modal-box half; GAP: no Annex D rule draws an additional-cost bracket as a box"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R284#747693d8c6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "GAP: only modal brackets are in Annex D (D6.10a); cost-bracket boxes unstated"
+  },
+  "client/docs/03-mechanics-inventory.md##R137#b48c93f24c#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "— CR 801.2h: erased instead of entering the bin, so not trashed; the engine still passes it through the bin and trashes it (CT-246));",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/docs/03-mechanics-inventory.md##R137#74c34f6fda#0": {
+   "action": "reword",
+   "nums": [
+    "410.4b",
+    "801.2h"
+   ],
+   "suggest": "(CR 410.4b, 801.2h: erased, not binned or trashed; the engine still bins and trashes the card on the way out, CT-246 — its mods are not trashed, CR 801.2g).",
+   "note": "also corrects the stale \"nontoken mods all trashed\""
+  },
+  "client/engine/src/cards/dsl.ts##R137#b8bd80f627#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "an {Unstable} sweep — the engine's; CR 801.2h never bins that card, CT-246",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R137#b7be011b95#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "and an {Unstable} body is erased with its mods instead (CR 410.4d), though the engine still bins it, trashes it and sweeps it out (CT-246).",
+   "note": "engine differs CT-246; also 'straight into its owner's bin' -> its controller's bin (CR 400.4)"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R146#b7be011b95#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "and an {Unstable} body is erased with its mods instead (CR 410.4d), though the engine still bins it, trashes it and sweeps it out (CT-246).",
+   "note": "same clause as the R137 id"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R137#1a72f8ea52#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "its {Unstable} sweep (engine only: CR 410.4d erases an exchanged modded unit without binning it, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#2f430211fe#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "the {Unstable} sweep (engine only: CR 410.4d erases it unbinned, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#82298c7668#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "the REASON this entry used to give is what CR 801.2h states, but the engine does not follow it (CT-246), so in the engine the reason fails; it is recorded here so nobody re-derives it.",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#d423f03d39#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "✔ The engine's Unstable-death route makes the case FULLY REACHABLE (under CR 801.2h it would not be: the card is erased unbinned; CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#32335ae3b7#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "under CR 801.2h — and in the engine before its Unstable-trash route (CT-246) —",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#a2edd2ec26#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "(a token, or — in the engine — an {Unstable} death; CR 801.2h never bins that card, CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#b4e211a8c5#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "(token, or — in the engine — an {Unstable} death; CR 801.2h never bins it, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R137#08ff6469f0#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "the {Unstable} sweep (engine only: CR 410.4d erases it unbinned, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R137#4b66bd7714#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "a token, or — in the engine — an {Unstable} death (CR 801.2h never bins it, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#d1e6759c09#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "(the engine's bin → trash → sweep; CR 405.5 erases instead, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#e15cbf566b#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "And so, in the engine, is an {Unstable} card (CR 801.2h says it is not trashed; CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#68347fc672#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "The engine's Unstable-death trash (owner, 2026-08-24; CR 801.2h says otherwise, CT-246) is UNCHANGED for a CARD:",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#86968093b0#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "(engine route; CR 405.5 erases instead of binning, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#19525abfc6#0": {
+   "action": "reword",
+   "nums": [
+    "410.4a"
+   ],
+   "suggest": "// The nontoken mods enter the host controller's bin too (CR 410.4a) — `binTo` redirects them with the body.",
+   "note": "stale: modBin = m.controller (R250 §4)"
+  },
+  "client/engine/src/engine.ts##R137#5e9284e74a#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "In the engine EVERYTHING leaving play for a bin enters one — token, Unstable carrier and plain card alike — and every CARD among them is trashed (CR 801.2); CR 405.5/801.2h instead erase an Unstable carrier without binning it (CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#d57bd28427#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "⚠ THE ENGINE'S UNSTABLE-BODY TRASH IS NOT WEAKENED (CR 801.2h says the body is not trashed; CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#53de66d245#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "the exact defect the owner's 2026-08-24 call fixed (report #93 …; CR 801.2h disagrees, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#ff6b4b21a7#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "The engine's state-based sweep (for an {Unstable} card CR 405.5 erases instead of binning, CT-246):",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#d0e33e0b4d#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "the engine merged the two destinations into one path (owner, 2026-08-24; CR 405.5 keeps them apart, CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#9740aa56c4#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "**Engine (owner, 2026-08-24) — an Unstable unit that dies IS TRASHED.** CR 801.2h says it is erased instead and not trashed; the engine differs (CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#293c582a31#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "(see CR 801.2h, which follows the printed reminder, and CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#d20916baec#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "the engine's conclusion stands without it (CR 801.2h disagrees; CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#c479e7e677#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// Engine: `to` is 'bin' for EVERY death, Unstable included (CR 801.2h: an Unstable card is erased instead; CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/src/engine.ts##R137#cee4f31002#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "(engine route; CR 405.5 erases instead, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/125-active-zone.test.ts##R137#bfa82f3b2b#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'engine (CT-246; CR 801.2h says erased, not trashed): it binned and TRASHED from play like any non-Unstable death'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#0357c4c85c#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "(engine route; CR 405.5 erases instead, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#4a2d4f591a#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "42-dark-b pins the engine's Unstable-disposal behaviour (which differs from CR 405.5/410.4d, CT-246) from the card's side",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R146#4a2d4f591a#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "42-dark-b pins the engine's Unstable-disposal behaviour (which differs from CR 405.5/410.4d, CT-246) from the card's side",
+   "note": "same clause as the R137 id"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#eb9895e75b#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "so the engine's sweep (CR 405.5 erases instead, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R137#e6a58c5455#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'engine ordering for the body (CT-246; CR 801.2h erases it unbinned): bin → trashed → swept'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#a224c5e9fc#0": {
+   "action": "reword",
+   "nums": [
+    "410.4a"
+   ],
+   "suggest": "It is owned by the OTHER seat, which is what tells \"its own owner's bin\" from the host controller's, where CR 410.4a sends it.",
+   "note": "stale: test asserts host-controller bin (R250 §4)"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#b58765bd95#0": {
+   "action": "reword",
+   "nums": [
+    "410.4b"
+   ],
+   "suggest": "(engine route; CR 410.4b erases both instead of binning them, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#4d9512a321#0": {
+   "action": "reword",
+   "nums": [
+    "410.4b"
+   ],
+   "suggest": "// the body is {Unstable} because it is modded (CR 410.4b), and the engine's sweep pulls the pair back out of the bins it just entered (CR 410.4b erases them instead, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/17-earth-b.test.ts##R137#5c917e1749#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "⚠ The owner's 2026-08-24 Unstable-trash call (engine only; CR 801.2h differs, CT-246) repairs the PROSE of the two tests below without moving their outcome.",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/17-earth-b.test.ts##R137#6f78ae6501#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// engine (CT-246): the printed-{Unstable} way in behaves like the other three",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/17-earth-b.test.ts##R137#441da7a778#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'and the engine trashed it on the way through (CT-246; CR 801.2h: not trashed)'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#6d520ba9ad#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// ── The engine's Unstable-body trash first (CT-246; CR 801.2h differs): the boundary this must not cross ──",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#312969f831#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods'",
+   "note": "engine differs CT-246; title rename: card-todo.ts:715 evidence and any guard binding follow"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#fb2d13d7e5#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "The owner's call of 2026-08-24 (report #93) overruled BOTH the printed reminder text … AND a direct Caleb ruling, so the engine differs from CR 801.2h/405.5, which follow the print (CT-246):",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#b3d8eb60e9#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "'then erased — the engine sweeps it out of the bin (CR 405.5 erases it instead of binning; CT-246)'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#ef0ecdf034#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('CT-246 GUARD (engine; CR 801.2h says not trashed): the per-battle trashed ledger still counts an Unstable body'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R137#1a9e9209f1#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'CT-246 GUARD (engine, not CR 801.2h), whole pool: the body is trashed under every one of them'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R137#e606c8fa5a#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('CT-246 GUARD (engine, not CR 801.2h): a stolen Unstable body is still trashed before it is swept'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R137#9ff8f557e7#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "thing the engine's Unstable-trash route exists to prevent (CT-246; CR 801.2h differs).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R137#df0cafedd0#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "'and then swept back out — engine route (CR 405.5 erases instead, CT-246)'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/26-metal-a.test.ts##R137#05625ca1e1#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "({Unstable}: the engine bins then sweeps it; CR 801.2h never bins it, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/338-tokens-are-not-trashed.test.ts##R137#f4fa6aa4f6#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'one trash: the CARD host (engine, CT-246 — CR 801.2h does not trash an Unstable host; Unstable by its mod)'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#94e4c50408#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "The owner's 2026-08-24 call (playtest #93, room ANBB) INVERTED this test in place; CR 801.2h, which follows the print, would invert it back (CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#3d1692fbcb#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "left the BODY where the engine's Unstable-trash route put it (CT-246; CR 801.2h differs)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#56a96dd9fc#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('engine (CT-246; CR 801.2h differs): a modded unit dying is binned, TRASHED, and only then erased'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R137#8598a21d94#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "(engine, CT-246; CR 801.2h: not trashed)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R137#1536309858#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "The owner's 2026-08-24 Unstable-trash call (engine only, CT-246; CR 801.2h differs) inverted the trash half in place.",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R137#6354fe116e#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "The engine still trashes an Unstable CARD (224-mod-trash; CR 801.2h says it should not, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#0f0a1477a2#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "/* ── PLAYTEST REPORT #93, room ANBB, 2026-08-24 (engine Unstable-trash route; CR 801.2h differs, CT-246) ──",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#46d0473e35#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "which is what the engine's Unstable-trash route removes (CT-246; under CR 801.2h the two do differ).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#ccaa357c47#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('playtest #93 (engine, CT-246; CR 801.2h differs): Dropslime fires from HAND *and* dying while Unstable — the same card, both halves'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#50f1f811f8#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'before the engine\\'s Unstable-trash route (CT-246) it dealt nothing at all, because it never fired — as CR 801.2h prescribes'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#3020f6a9f4#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('ANBB (engine, CT-246; CR 801.2h differs): an Unstable death and an unmodded death on the SAME damage step both trash and both fire'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#011530be9c#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'the Unstable blocker trashed (engine, CT-246 — CR 801.2h says it does not)'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#a9dbb57c83#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('engine (CT-246; CR 801.2h differs): Muck Rummager sees an Unstable death — \"when you trash a card during battle, draw\"'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#e9908ebe88#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'Before the engine\\'s Unstable-trash route (CT-246) this watcher did not fire on a modded-unit death — CR 801.2h says it should not'",
+   "note": "engine differs CT-246; the message's next clause ('which nobody could report') needs the same neutral rewording"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#c39a50b45f#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "the engine bins an {Unstable} card making that trip, TRASHES it there, and only then sweeps it (CR 410.4d erases it instead; CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R146#2a3849eb5a#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "test('engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED (not left in a bin)'",
+   "note": "engine differs CT-246 (F-U18-1); title rename"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#056a5054da#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "// engine (CT-246; CR 410.4d differs): it passed THROUGH the bin and was trashed there…",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#234aaccc03#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'a bin entered from play is a trash (CR 801.2) — for an Unstable card that is the engine, not CR 801.2h (CT-246)'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#2976b30803#0": {
+   "action": "reword",
+   "nums": [
+    "410.4d"
+   ],
+   "suggest": "'engine ordering (CT-246; CR 410.4d erases unbinned): bin → trashed → swept'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#5011811f6e#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// and the BODY is untouched by all of this — the engine's Unstable-trash route still governs it (CT-246; CR 801.2h differs)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#5267dd4ada#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'engine boundary (CT-246; CR 801.2h differs): the {Unstable} body is still binned and still trashed'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/42-dark-b.test.ts##R137#e0a6784fd2#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'engine ordering for the body, unchanged (CT-246)'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#9c21ac9b28#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// The engine's Unstable-trash route (CT-246; CR 801.2h says such a death is not a trash), FAMILY A",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#207edaa3d2#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('engine (CT-246; CR 801.2h differs): Blightwalker dying while {Unstable} fires its own \"when I am trashed\" trigger'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#22c608df8d#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'engine (CT-246): dying Unstable is a trash — CR 801.2h says it is not, and before this change nothing fired'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#e4d296f532#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// ENGINE HAZARD 1 (the Unstable-trash route, CT-246; CR 801.2h differs).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#8308ee4fcf#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death trashes, the Rector pays, and finds nothing — the erased pile stays unreachable'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#c36f0ab892#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'engine (CT-246; CR 801.2h says not): the Unstable death IS a trash'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#6050c7fbb3#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "(a dying token, or the engine's {Unstable} death — CR 801.2h never bins it, CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#bfc9a782ca#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "engine route (CT-246; CR 801.2h differs): bin, trash, sweep",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#025fe3c4e1#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// ENGINE HAZARD 2 (CT-246),",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#3b9a077606#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death gives the Distiller nothing to cache, and does NOT spend its [once]'",
+   "note": "engine differs CT-246; title rename; R108 is a separate id"
+  },
+  "client/engine/test/43-dark-c.test.ts##R137#83996cc8d8#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'engine (CT-246): the trigger really did see a trash'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/62-death-facts.test.ts##R137#d88c067a75#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// The engine's Unstable-death route (2026-08-24; CR 801.2h differs, CT-246) inverted the destination half of this test in place.",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/62-death-facts.test.ts##R137#00001566e9#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "test('engine (CT-246; CR 801.2h: erased instead of binned): an Unstable death says BIN, like a token, and still DIES'",
+   "note": "engine differs CT-246; title rename; R70 separate id"
+  },
+  "client/engine/test/62-death-facts.test.ts##R137#6514572741#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "'engine (CT-246; CR 801.2h differs): the same answer a dying token gives — it really is in a bin while this fires'",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R137#08c45f563c#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "(engine, CT-246; CR 801.2h never bins or trashes it)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R137#af77f3fda9#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "an {Unstable} death in the engine — CR 801.2h never bins it, CT-246",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R137#4772c32819#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "runs the engine's bin → trash → Unstable-erase in that order (CR 405.5 erases instead; CT-246)",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R137#b8f97c8dfc#0": {
+   "action": "reword",
+   "nums": [
+    "410.4a"
+   ],
+   "suggest": "a nontoken mod of a unit leaving play enters its host controller's bin (CR 410.4a), before the caller decides where the body goes",
+   "note": "stale: leavePlay uses m.controller (engine.ts:3255)"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#a05e887458#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "In the engine an Unstable card leaving an active zone into a bin is binned, trashed there, and then SWEPT into the erased pile (CR 405.5 erases it instead; CT-246).",
+   "note": "closed-ledger prose, not evidence"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#8d7cc4a16c#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "(engine route; CR 405.5 erases instead, CT-246)",
+   "note": "closed-ledger prose"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#5d574035ad#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "ANBB [125] <- the engine's Unstable-death route (CT-246), an Unstable death bins first",
+   "note": "closed-ledger prose"
+  },
+  "client/ledgers/card-todo-closed.ts##R137#f4cbe9fdc7#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "⚠ THE ENGINE'S UNSTABLE-BODY TRASH IS THE BOUNDARY AND IT STANDS (CR 801.2h differs, CT-246):",
+   "note": "closed-ledger prose"
+  },
+  "client/ledgers/card-todo.ts##R137#680a568a9e#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "224-mod-trash.test.ts: \"<224's retitled CT-246 GUARD title>\" — keep this evidence quote in step with 224's retitle",
+   "note": "CT-246 evidence quotes a test title"
+  },
+  "client/ui/glossary.ts##R137#ffde6036d3#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "// In the engine a dying {Unstable} UNIT is trashed on the way — it passes through the bin (firing \"when I am trashed\" and every trash watcher) and is erased out of it. CR 801.2h says it is erased instead and not trashed (engine differs, CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/ui/glossary.ts##R137#076529152b#0": {
+   "action": "reword",
+   "nums": [
+    "405.5"
+   ],
+   "suggest": "ruling: ['405.5', …] in place of this ruling id; add above the row: \"// the 'passes through the bin … trashed' sentence describes the engine; CR 405.5/801.2h erase without binning (CT-246)\"",
+   "note": "ruling field; text follows the engine until CT-246"
+  },
+  "client/ui/glossary.ts##R137#479e91dbdf#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "ruling: [… '801.2h' …] in place of this ruling id; add above the row: \"// 'An {Unstable} unit that dies IS trashed' describes the engine; CR 801.2h says not (CT-246)\"",
+   "note": "ruling field; text follows the engine until CT-246"
+  },
+  "client/engine/src/engine.ts##R244#6a6247cd8d#0": {
+   "action": "reword",
+   "nums": [
+    "410.4a"
+   ],
+   "suggest": "**The MODS follow control too**: `modBin` below sends a mod to its host controller's bin (CR 410.4a).",
+   "note": "stale: modBin = m.controller"
+  },
+  "client/engine/src/engine.ts##R244#8e98866b1f#0": {
+   "action": "reword",
+   "nums": [
+    "801.2f",
+    "410.4a"
+   ],
+   "suggest": "trashed by the HOST's controller, into that controller's bin (CR 801.2f, 410.4a).",
+   "note": "stale: recall follows control (R262)"
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R244#9341d3b19b#0": {
+   "action": "reword",
+   "nums": [
+    "410.4a"
+   ],
+   "suggest": "· and the zone it reaches is the HOST CONTROLLER's (CR 410.4a). The mod here is GRAFTED BY THE OPPONENT, so owner and controller are different seats and the assertion can tell them apart.",
+   "note": "stale: replaces the 'ITS OWN OWNER'S … still stands' sentences; test title already says host controller"
+  },
+  "client/engine/src/engine.ts##R244#f6ce5d3387#0": {
+   "action": "reword",
+   "nums": [
+    "801.2h"
+   ],
+   "suggest": "The BODY is another matter, three paragraphs up: in the engine an {Unstable} carrier that dies is still binned and still trashed (CR 801.2h: erased instead, not trashed; CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#d1d75e6476#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g",
+    "801.2h"
+   ],
+   "suggest": "an implementation of the mod rule (CR 801.2g) that stops the body trashing has reopened it in the engine — though CR 801.2h says the body is not trashed either (CT-246).",
+   "note": "engine differs CT-246 (F-U18-1/F-U07-6)"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R244#d13b01bd17#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g",
+    "801.2h"
+   ],
+   "suggest": "test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and in the engine (CT-246; CR 801.2h differs) the body always is'",
+   "note": "engine differs CT-246; title rename"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#c05de47b71#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "// The worry the mod rule (CR 801.2g) opened with, one ruling later.",
+   "note": "history"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R244#2a99b98b2c#0": {
+   "action": "reword",
+   "nums": [
+    "801.2g"
+   ],
+   "suggest": "⚠ The mod rule (CR 801.2g; report #129, 2026-08-29) then took the MOD back out of that list",
+   "note": "history; the R137 half of the line is a separate id"
+  }
+ }
+}

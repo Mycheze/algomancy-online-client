@@ -250,6 +250,9 @@ function titlePrefixEdit(line, g, titleStart, nums) {
   }
   if (off !== 0) return null;
   if (nums?.length === 1) return { a: g.a, b: g.b, text: `CR ${nums[0]}` };
+  // "R259 §0: the scan…" keeps its own section mark: "§0: the scan…"
+  const sec = /§\s?\d+[a-z]?(?:[-–]\d+[a-z]?)?/.exec(line.slice(g.members.at(-1).b, g.b));
+  if (sec) return { a: g.a, b: g.b, text: sec[0].replace(/\s/g, '') };
   const sep = /^\s*(?:[:—–·|]|-(?=\s))?\s*/.exec(line.slice(g.b));
   return { a: g.a, b: g.b + sep[0].length, text: '' };
 }
@@ -344,6 +347,24 @@ function literalBlock(m, lit) {
  *  and string CONTENTS leaves it unchanged, anything else is a broken rewrite */
 export function codeShape(text) {
   try { return tokenize(text).map((t) => (t.t === 'str' || t.t === 'tmpl' || t.t === 're' ? `<${t.t}>` : t.v)).join(' '); } catch (e) { return `<untokenizable: ${e.message}>`; }
+}
+
+/** the edits that turn `a` into `b`, word by word (an LCS over word-and-space tokens) */
+export function diffEdits(a, b) {
+  const A = a.match(/\s+|[^\s]+/g) ?? [], B = b.match(/\s+|[^\s]+/g) ?? [];
+  const n = A.length, m = B.length;
+  const L = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const edits = [];
+  let i = 0, j = 0, pa = 0, cur = null;
+  const flush = () => { if (cur) { edits.push(cur); cur = null; } };
+  while (i < n || j < m) {
+    if (i < n && j < m && A[i] === B[j]) { flush(); pa += A[i].length; i++; j++; }
+    else if (j < m && (i === n || L[i][j + 1] >= L[i + 1][j])) { cur ??= { a: pa, b: pa, text: '' }; cur.text += B[j]; j++; }
+    else { cur ??= { a: pa, b: pa, text: '' }; pa += A[i].length; cur.b = pa; i++; }
+  }
+  flush();
+  return edits;
 }
 
 /* ── edit lists and position mapping ── */
@@ -451,6 +472,8 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
         for (const x of acts) if (!['skip', 'binding'].includes(x.act.kind)) report.leave.push({ id: x.row.id, file: rel, line: Number(ln), why: 'group mixes a non-citation token', text: normLine(line).slice(0, 160) });
         continue;
       }
+      // "pre-R154", "post-R200": a time named by the ruling — never a script pick
+      if (/\b(?:pre|post|non)-$/i.test(line.slice(Math.max(0, g.a - 5), g.a))) for (const x of acts) if (['unique', 'scored', 'binding', 'process', 'process-obsolete'].includes(x.act.src)) x.act = { kind: 'leave', why: 'historical: a pre-/post- compound (pending a decision)', pending: 'historical', src: 'auto' };
       // a reword with neither words nor a number says nothing the script can apply
       for (const x of acts) if (x.act.kind === 'reword' && !x.act.suggest && !x.act.nums?.length) x.act = { kind: 'leave', why: 'reword with no suggestion', src: x.act.src };
       G.push({ rel, m, idx, ln: Number(ln), line, g, acts, exact: acts.find((x) => x.act.kind === 'exact') ?? null, reword: acts.find((x) => x.act.kind === 'reword' && x.act.suggest) ?? null });
@@ -589,6 +612,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
 
   /* 5. test titles: old → new, by re-tokenizing each changed test file */
   const titleMap = new Map(); // `${basename}` → [{old, neu}]
+  const titleLists = new Map(); // `${basename}` → {olds, news}: every title, before and after
   for (const [rel, t] of after) {
     if (!/\.(ts|mts|mjs|js)$/.test(rel)) continue;
     const olds = model(rel).titles;
@@ -599,6 +623,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     const pairs = [];
     olds.forEach((o, i) => { if (o.title !== news[i].title) pairs.push({ old: o.title, neu: news[i].title }); });
     if (pairs.length) { titleMap.set(basename(rel), pairs); report.titles += pairs.length; }
+    titleLists.set(basename(rel), { olds: olds.map((o) => o.title), news: news.map((n) => n.title) });
   }
   /** a needle cut from an old title → the same cut of the new title (or null) */
   const recut = (file, needle) => {
@@ -607,15 +632,21 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     const p = pairs.find((x) => x.old.includes(needle));
     if (!p) return null;
     const i = p.old.indexOf(needle);
-    // derive the edit between old and new title as a single span (common prefix/suffix)
-    let pre = 0; while (pre < p.old.length && pre < p.neu.length && p.old[pre] === p.neu[pre]) pre++;
-    let suf = 0; while (suf < p.old.length - pre && suf < p.neu.length - pre && p.old[p.old.length - 1 - suf] === p.neu[p.neu.length - 1 - suf]) suf++;
-    const e = [{ a: pre, b: p.old.length - suf, text: p.neu.slice(pre, p.neu.length - suf) }];
+    const e = diffEdits(p.old, p.neu);
     const [a, b] = mapRange(e, i, i + needle.length);
     let out = p.neu.slice(a, b);
     // a needle that started at the title's start keeps starting there; trim a separator the strip left
     out = out.replace(/^\s+/, '');
-    return out || null;
+    if (!out) return null;
+    // the cut must find as many titles as the old needle did; when renaming made two titles
+    // share it ("R290 Cinder" and "R291 Cinder" both became "CR 900.6 Cinder"), bind the whole title
+    const L = titleLists.get(file);
+    if (L) {
+      const before = L.olds.filter((t) => t.includes(needle)).length;
+      const after = L.news.filter((t) => t.includes(out)).length;
+      if (after > before) out = p.neu;
+    }
+    return out;
   };
 
   /* 6. bindings: every `<file>.test.ts::<needle>` string in client/ code and in the CR records */

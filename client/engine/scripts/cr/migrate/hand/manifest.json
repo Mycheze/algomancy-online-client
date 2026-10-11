@@ -66,6 +66,23 @@
    "step": "hand",
    "base": "dd1296c1efb532401b7a6b67e5d719a62ee16cf0",
    "owned": true
+  },
+  "client/engine/test/411-cr-extract.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "6b9c35979340bb7f3bcb9af51adcce9b12cd8ab5",
+   "owned": true
+  },
+  "client/engine/test/187-scenario-queue.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "2a64ab318e46315d365664c64d1554fa6f2b234d",
+   "owned": true
+  },
+  "client/ledgers/scenario-queue.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "4aeafc1869428a1acde9eec28d914e3d4a267c1e"
   }
  }
 }

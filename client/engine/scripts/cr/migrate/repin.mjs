@@ -23,7 +23,7 @@ import { recordHash, norm } from '../schema.mjs';
 import { indentOf } from './absorb.mjs';
 
 /** citations out, as check.mjs compares spans (kept here so this step runs before check.mjs changes) */
-const CITE_RE = /\s*\(?\b(?:CR (?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*|R\d{1,3}b?(?:\s?[/+]\s?R\d{1,3}b?)*(?:\s?\(?(?:its\s)?§\s?\d+[a-z]?\)?)?)\)?/g;
+const CITE_RE = /\s*\(?\b(?:CR (?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*|R\d{1,3}b?(?:\s?[/+]\s?R\d{1,3}b?)*(?:\s?\(?(?:its\s)?§\s?\d+[a-z]?\)?)?)\)?(?:\s+ruling\s+\d+\b)?/g;
 const uncite = (s) => norm(String(s ?? '').replace(CITE_RE, ' ')).replace(/\s+([,.;:)])/g, '$1');
 
 const rows = (abs, text) => JSON.parse(text ?? readFileSync(abs, 'utf8'));
