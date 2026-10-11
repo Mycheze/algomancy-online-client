@@ -20,7 +20,7 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { REPO_ROOT, CR_RULES_DIR, CR_VERDICTS_DIR } from '../../paths.mjs';
 import { recordHash, norm } from '../schema.mjs';
-import { indentOf } from './absorb.mjs';
+import { indentOf } from './util.mjs';
 
 /** citations out, as check.mjs compares spans (kept here so this step runs before check.mjs changes) */
 const CITE_RE = /\s*\(?\b(?:CR (?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*|R\d{1,3}b?(?:\s?[/+]\s?R\d{1,3}b?)*(?:\s?\(?(?:its\s)?§\s?\d+[a-z]?\)?)?)\)?(?:\s+ruling\s+\d+\b)?/g;

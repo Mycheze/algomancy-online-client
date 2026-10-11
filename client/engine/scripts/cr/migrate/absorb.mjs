@@ -32,16 +32,14 @@ import { join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CR_RULES_DIR, CR_DISCREPANCIES_DIR, CR_FINDINGS_DIR, CR_SOURCE_CLASSIFICATION, REPO_ROOT } from '../../paths.mjs';
 import { readAdopted } from './adopted.mjs';
+import { indentOf } from './util.mjs';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 export const SCOPE_JSON = join(HERE, 'scope.json');
 const RULING_ID = /^R(\d+)(b?)(?![\w])/;
 
 /* ── JSON files: parse, mutate, write back in the file's own indent ── */
-export function indentOf(text) {
-  const m = /^\[?\{?\n(\s+)/.exec(text);
-  return m ? (m[1].includes('\t') ? '\t' : m[1].length) : 2;
-}
+export { indentOf };
 export function editJson(abs, fn, { dryRun = false } = {}) {
   const text = readFileSync(abs, 'utf8');
   const j = JSON.parse(text);

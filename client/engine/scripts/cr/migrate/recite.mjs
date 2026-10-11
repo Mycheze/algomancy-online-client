@@ -41,7 +41,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { REPO_ROOT, CR_RULES_DIR, CR_FINDINGS_DIR, CR_DISCREPANCIES_DIR } from '../../paths.mjs';
 import { tokenize } from '../extract-test-titles.mjs';
-import { indentOf } from './absorb.mjs';
+import { indentOf } from './util.mjs';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 export const DECISIONS_DIR = join(HERE, 'decisions');
@@ -107,7 +107,7 @@ function fileModel(text, rel) {
   return m;
 }
 /** test titles with their literal extents: [{title, s, e}] (s..e spans the operand literals) */
-function titlesOf(toks) {
+export function titlesOf(toks) {
   const out = [];
   for (let k = 0; k < toks.length; k++) {
     const tok = toks[k];

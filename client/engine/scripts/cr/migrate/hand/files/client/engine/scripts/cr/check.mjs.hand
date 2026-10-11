@@ -61,7 +61,7 @@ export function isEvidenceSpan(r, file) {
  * citation and nothing else, and the span still holds. A span whose WORDS
  * changed is still stale.
  */
-const CITE_RE = /\s*\(?\b(?:CR (?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*|R\d{1,3}b?(?:\s?[/+]\s?R\d{1,3}b?)*(?:\s?\(?(?:its\s)?§\s?\d+[a-z]?\)?)?)\)?/g;
+const CITE_RE = /\s*\(?\b(?:CR (?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*|R\d{1,3}b?(?:\s?[/+]\s?R\d{1,3}b?)*(?:\s?\(?(?:its\s)?§\s?\d+[a-z]?\)?)?)\)?(?:\s+ruling\s+\d+\b)?/g;
 export const uncite = (s) => norm(String(s ?? '').replace(CITE_RE, ' ')).replace(/\s+([,.;:)])/g, '$1');
 
 /** index the extract once: the lookups every check needs */
@@ -385,7 +385,14 @@ export function check(inputs, ex, opts = {}) {
       if (isAbsolute(String(q.file))) { P('verdict-span-path', v.key, `span file ${q.file} must be repo-relative`); continue; }
       const t = repoFile(String(q.file));
       if (t === null) P('source-missing', v.key, `span file ${q.file} does not exist`);
-      else if (!t.includes(norm(q.text ?? '')) && !unciteOf(q.file).includes(uncite(q.text))) S('verdict-span', v.key, `verified span no longer in ${q.file}: "${String(q.text).slice(0, 80)}"`);
+      else if (!t.includes(norm(q.text ?? '')) && !unciteOf(q.file).includes(uncite(q.text))) {
+        // a span that is ONLY a comment quotes no code: its words changing is a note, not a
+        // rule whose demonstration moved (409 pins the code spans, and lists these). A span
+        // citing a retired R-number quoted a comment or a message too: code never cited one.
+        const commentOnly = String(q.text ?? '').split('\n').every((l) => /^\s*(?:\/\/|\/?\*)/.test(l))
+          || /\bR\d{1,3}b?\b/.test(String(q.text ?? ''));
+        S(commentOnly ? 'verdict-comment' : 'verdict-span', v.key, `verified span no longer in ${q.file}: "${String(q.text).slice(0, 80)}"`);
+      }
     }
   }
 

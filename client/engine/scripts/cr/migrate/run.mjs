@@ -8,11 +8,12 @@
  *   score    rmap + census + score → build/cites.json, from the REGISTER-ERA tree
  *   absorb   owner provenance into the records; scope; provenance wording (absorb.mjs)
  *   recite   R-citations → CR numbers / pointers / words; bindings follow titles (recite.mjs)
- *   repin    verdict hashes follow the renamed test bindings, nothing else (repin.mjs)
  *   hand     the hand-written edits (check/extract/render, the reworked tests, …):
  *            hand/manifest.json names each file and the blob it was written against;
  *            each is 3-way merged (`git merge-file`) onto the current file, so a
  *            master edit elsewhere in the file survives and a clash stops the run
+ *   rebind   bindings into a file the hand step rewrote follow it (rebind.mjs, rebind.json)
+ *   repin    verdict hashes follow the renamed test bindings, nothing else (repin.mjs)
  *   render   cr:render, so the generated document matches the absorbed records
  *   delete   ONLY when named with --step: deletes the register, DIGITAL_RULES,
  *            classification.json, supersession.json, and merges the docs edits
@@ -38,7 +39,7 @@ import { REPO_ROOT, CR_BUILD_DIR } from '../../paths.mjs';
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 const HAND = join(HERE, 'hand');
 const MANIFEST = join(HAND, 'manifest.json');
-const STEPS = ['score', 'absorb', 'recite', 'repin', 'hand', 'render'];
+const STEPS = ['score', 'absorb', 'recite', 'hand', 'rebind', 'repin', 'render'];
 const MIGRATE_REL = relative(REPO_ROOT, HERE);
 const RECITE_COMMIT = 'migration dry run: recite output';
 /** what the delete step removes outright (beyond its manifest entries) */
@@ -147,12 +148,18 @@ async function runSteps(steps, { decisionsDir } = {}) {
     // the run goes on (so the diff shows them) but ends non-zero
     if (report.selfCheck?.length) (log.failures ??= []).push(`recite self-check: ${report.selfCheck.length} line(s) — run-log.json recite.selfCheck`);
   }
+  if (steps.includes('hand')) { log.hand = applyHand(REPO_ROOT, 'hand'); time('hand'); if (log.hand.conflicts.length || log.hand.missingBase.length) throw Object.assign(new Error(`hand step: ${JSON.stringify(log.hand)}`), { log }); }
+  if (steps.includes('rebind')) {
+    const { rebind } = await import('./rebind.mjs');
+    log.rebind = rebind({});
+    time('rebind');
+    if (log.rebind.unresolved.length) (log.failures ??= []).push(`rebind: ${log.rebind.unresolved.length} binding(s) name no test — run-log.json rebind.unresolved`);
+  }
   if (steps.includes('repin')) {
     const { repin } = await import('./repin.mjs');
     log.repin = repin({});
     time('repin');
   }
-  if (steps.includes('hand')) { log.hand = applyHand(REPO_ROOT, 'hand'); time('hand'); if (log.hand.conflicts.length || log.hand.missingBase.length) throw Object.assign(new Error(`hand step: ${JSON.stringify(log.hand)}`), { log }); }
   if (steps.includes('delete')) {
     for (const p of DELETE_PATHS) if (existsSync(join(REPO_ROOT, p))) unlinkSync(join(REPO_ROOT, p));
     log.delete = applyHand(REPO_ROOT, 'delete');
@@ -190,7 +197,7 @@ async function dryRun() {
     symlinkSync(realpathSync(src), dst);
   }
   const steps = stepsOf();
-  const first = steps.filter((x) => ['score', 'absorb', 'recite', 'repin'].includes(x));
+  const first = steps.filter((x) => ['score', 'absorb', 'recite'].includes(x));
   const second = steps.filter((x) => !first.includes(x));
   const child = (st) => {
     const a = [join(dir, MIGRATE_REL, 'run.mjs'), '--in-place', '--step', st.join(',')];

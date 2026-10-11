@@ -1,0 +1,11 @@
+{
+ "_doc": "Bindings into a test the hand step rewrote whose WORDS changed (not just a citation): '<file>::<old needle>' → new needle. rebind.mjs reads it; a needle whose only change is its citation needs no row here.",
+ "map": {
+  "177-glossary-conformance.test.ts::every glossary row cites a ruling, and every citation RESOLVES and is LIVE": "every glossary row cites a rule, and every citation RESOLVES and is LIVE",
+  "177-glossary-conformance.test.ts::the rows resting on NEITHER a ruling NOR printed text, by name": "the rows resting on NEITHER a rule NOR printed text, by name",
+  "177-glossary-conformance.test.ts::the staleness detector can tell a retired ruling from a live one": "the citation check can tell a live rule from a removed one and from none",
+  "238-question-sheets.test.ts::R259 §3: every R-number an ANSWER line cites is a ruling that exists": "§3: every CR number an ANSWER line cites is a live rule",
+  "238-question-sheets.test.ts::R259 §4: the guard convicts the HISTORICAL state — round-27 Q2 blank while R237 claims it": "§4: the guard convicts the HISTORICAL state — round-27 Q2 blank while an owner call claims it",
+  "184-ruling-register.test.ts::R215 §2: every R-number cited in the tree resolves to a register entry, or is on the ledger": "§2: every CR number cited in client/ is a live rule of the comprehensive rules"
+ }
+}
