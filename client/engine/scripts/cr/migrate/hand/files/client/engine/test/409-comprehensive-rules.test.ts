@@ -1,0 +1,1001 @@
+/**
+ * THE GATE for the comprehensive-rules export (data/comprehensive-rules/).
+ *
+ * The document is generated, so the gate does not read it for meaning: it
+ * proves that what is committed is what the scripts produce, and that every
+ * record passes the mechanical half of the anti-hallucination contract
+ * (scripts/cr/check.mjs). Four parts over the committed state:
+ *
+ *  (1) re-rendering gives the committed files, byte for byte, and the ledger
+ *      needs no new number;
+ *  (2) the ledger is append-only against the last commit (`git show HEAD:`);
+ *  (3) check.mjs finds no problems;
+ *  (5) the reviewed source state is mechanically sound: every RAQ claim,
+ *      thread and printed page assigned exactly once, every keyword reminder
+ *      verbatim;
+ *  (6) the stale count (sources changed since drafting) is pinned.
+ * (Part (4), the supersession candidates, went with the R-ruling register in
+ * the 2026-10 CR-only migration: an owner call now lives in the record it
+ * settles, as `sources.owner`, so there is no register to keep in step.)
+ *
+ * Each part passes on an empty rules/ dir, and that would prove nothing on its
+ * own: §8 and §9 run the same checks over a small fixture with one defect
+ * planted per check and require each to fail BY NAME, so a check that went
+ * blind is noticed. §7 unit-tests the ledger (the only place a number is born).
+ * §10 tests the harness (scripts/cr/harness.mjs): plant, judge, feedback,
+ * finalize (and the polish round 4: its explicit key list and its merging
+ * finalize) and stamp, each over a fixture with its defect planted. §11: a
+ * rule key named inside prose prints as its number, and one that names no live
+ * rule fails the check — the committed document carries no raw key.
+ *
+ * Fast on purpose: one extract() (no pdftotext — the printed pages are a
+ * committed JSON), one `git show`, no process per test title.
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, existsSync } from 'node:fs';
+import { relative } from 'node:path';
+import { REPO_ROOT, CR_LEDGER, CR_SOURCE_CLASSIFICATION, CR_UNITS } from '../scripts/paths.mjs';
+import { extract } from '../scripts/cr/extract.mjs';
+import type { Extract } from '../scripts/cr/extract.d.mts';
+import { render, loadInputs, refResolver, OUTPUT_PATHS, type CrInputs } from '../scripts/cr/render.mjs';
+import { check } from '../scripts/cr/check.mjs';
+import {
+  allocate, appendOnlyProblems, compareNums, emptyLedger, formatLedger, letterFor, letterIndex,
+  LedgerError, type Ledger,
+} from '../scripts/cr/ledger.mjs';
+import { norm, recordHash, validateFinding, type RuleRecord } from '../scripts/cr/schema.mjs';
+import {
+  badSpans, buildFeedback, decoyKey, finalize, finalizePolish, judge, plant, polishKeyList, POLISH_ROUND, roundKeys,
+  roundsIn, sameAsVerified, shuffleRank, stamp, type Mutant, type RoundFiles,
+} from '../scripts/cr/harness.mjs';
+
+/* ── the pin (6). It must EQUAL the measured count: a rise is new unreviewed
+ *    work (a changed source) and a fall means lower the pin, so the number
+ *    only ever ratchets down. ── */
+/** rules whose cited sources changed since they were drafted */
+const EXPECTED_STALE = 0;
+
+const EX: Extract = extract();
+// A broken ledger must fail (1) and (3) by name, not crash the file before (2)
+// can say which number moved — so the committed state is loaded defensively.
+let INPUTS: CrInputs | null = null, OUT: ReturnType<typeof render> | null = null, LOAD_ERROR = '';
+try { INPUTS = loadInputs(); OUT = render(INPUTS, EX); } catch (e) { LOAD_ERROR = String((e as Error).message ?? e); }
+const RESULT = INPUTS ? check(INPUTS, EX) : null;
+
+function pinned(name: string, actual: number, pin: number, list: string): void {
+  assert.ok(actual <= pin, `${name}: ${actual}, above the pin of ${pin}. New unreviewed work: ${list}`);
+  assert.equal(actual, pin, `${name}: ${actual}, below the pin of ${pin} — lower EXPECTED_ in this file to ${actual}`);
+}
+
+test('(1) re-rendering gives the committed document files, byte for byte, and no number is born', () => {
+  assert.ok(INPUTS && OUT, `the committed state does not render: ${LOAD_ERROR}`);
+  assert.deepEqual(OUT.born, [], `the committed ledger lacks ${OUT.born.length} number(s) (first: ${JSON.stringify(OUT.born[0])}) — run npm --prefix client run cr:render`);
+  assert.equal(readFileSync(CR_LEDGER, 'utf8'), formatLedger(OUT.ledger), 'ledger.json is not in canonical form — run cr:render');
+  for (const [k, p] of Object.entries(OUTPUT_PATHS)) {
+    assert.ok(existsSync(p), `${relative(REPO_ROOT, p)} is missing — run cr:render`);
+    assert.ok(readFileSync(p, 'utf8') === OUT.files[k as keyof typeof OUT.files],
+      `${relative(REPO_ROOT, p)} differs from a fresh render — it is generated: fix the record and run cr:render, never edit the output`);
+  }
+  // and the render is deterministic: a second run is byte-identical
+  assert.deepEqual(render(INPUTS, EX).files, OUT.files);
+});
+
+function result(): NonNullable<typeof RESULT> {
+  assert.ok(RESULT, `the committed state does not load: ${LOAD_ERROR}`);
+  return RESULT;
+}
+
+test('(2) the ledger is append-only against the last commit', (t) => {
+  let head: string;
+  try {
+    head = execFileSync('git', ['show', `HEAD:${relative(REPO_ROOT, CR_LEDGER)}`], { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  } catch (e) {
+    const msg = String((e as { stderr?: string }).stderr ?? e);
+    if (/does not exist|exists on disk, but not in/.test(msg)) { t.diagnostic('ledger.json is not in HEAD yet: nothing to be append-only against'); return; }
+    t.skip(`git is unavailable here, so the append-only check cannot run: ${msg.split('\n')[0]}`);
+    return;
+  }
+  const problems = appendOnlyProblems(JSON.parse(head) as Ledger, JSON.parse(readFileSync(CR_LEDGER, 'utf8')) as Ledger);
+  assert.deepEqual(problems, [], `a published number moved, was dropped or was reused:\n${problems.join('\n')}`);
+});
+
+test('(3) check.mjs finds no problems in the committed records', () => {
+  const lines = result().problems.map((p) => `${p.code}  ${p.where}: ${p.msg}`);
+  assert.deepEqual(lines, [], `${lines.length} problem(s):\n${lines.slice(0, 40).join('\n')}`);
+});
+
+test('(5) the reviewed source state is mechanically sound', () => {
+  const bad: string[] = [];
+  const units = new Set((JSON.parse(readFileSync(CR_UNITS, 'utf8')) as { units: { id: string }[] }).units.map((u) => u.id));
+  // every RAQ claim and thread and every printed page has exactly one row
+  const SRC = JSON.parse(readFileSync(CR_SOURCE_CLASSIFICATION, 'utf8')) as {
+    raqClaims: Record<string, { units: string[] }>; raqThreads: Record<string, { open: boolean }>;
+    printedPages: Record<string, { units: string[] }>; keywordReminders: { keyword: string; card: string; quote: string; source: string }[];
+  };
+  const same = (what: string, have: string[], want: string[]) => {
+    const h = new Set(have), w = new Set(want);
+    const miss = want.filter((x) => !h.has(x)), extra = have.filter((x) => !w.has(x));
+    if (miss.length || extra.length) bad.push(`${what}: missing ${miss.slice(0, 5).join(', ') || '-'}; not a source ${extra.slice(0, 5).join(', ') || '-'}`);
+  };
+  same('raqClaims', Object.keys(SRC.raqClaims), EX.raq.flatMap((t) => t.claims.map((c) => c.id)));
+  same('raqThreads', Object.keys(SRC.raqThreads), EX.raq.map((t) => String(t.threadId)));
+  same('printedPages', Object.keys(SRC.printedPages), EX.printedPages.map((p) => `${p.doc} p.${p.page}`));
+  for (const [k, a] of [...Object.entries(SRC.raqClaims), ...Object.entries(SRC.printedPages)]) for (const u of a.units) if (!units.has(u)) bad.push(`${k}: unit ${u} is not in units.json`);
+  const cards = new Map(EX.cards.map((c) => [c.name.toLowerCase(), norm(`${c.text} \n ${c.typeLine}`)]));
+  for (const k of SRC.keywordReminders) {
+    if (!k.source.startsWith('cards[]')) continue; // the type-line reminders were read off the scans
+    if (!cards.get(k.card.toLowerCase())?.includes(norm(k.quote))) bad.push(`keyword reminder ${k.keyword}: not verbatim on ${k.card}`);
+  }
+  assert.deepEqual(bad, [], `${bad.length} problem(s) in the reviewed state:\n${bad.slice(0, 30).join('\n')}`);
+});
+
+test('(6) the stale count is pinned', () => {
+  const r = result();
+  pinned('stale rules', r.stale.length, EXPECTED_STALE, r.stale.slice(0, 10).map((s) => `${s.where}: ${s.msg}`).join('; '));
+});
+
+/* ── §7 the ledger ─────────────────────────────────────────────────────── */
+
+test('§7a subrule letters skip l and o, then run aa, ab …', () => {
+  const first = Array.from({ length: 26 }, (_, i) => letterFor(i)).join(' ');
+  assert.equal(first, 'a b c d e f g h i j k m n p q r s t u v w x y z aa ab');
+  assert.ok(!/[lo]/.test(Array.from({ length: 600 }, (_, i) => letterFor(i)).join('')));
+  for (let i = 0; i < 600; i++) assert.equal(letterIndex(letterFor(i)), i);
+  assert.ok(compareNums('608.2z', '608.2aa') < 0 && compareNums('608.2', '608.2a') < 0 && compareNums('608.10', '608.9') > 0);
+  assert.ok(compareNums('999.1', 'D1') < 0, 'Annex D sorts after the main document');
+});
+
+const SEC = { key: 'combat.damage', num: '608', section: true };
+const it = (key: string, order: number, parent = '608') => ({ key, parent, order });
+
+test('§7b a new rule inserted between two old ones goes to the END of its parent', () => {
+  const one = allocate([SEC, it('a', 1), it('b', 2), it('b.x', 1, 'b')], emptyLedger(), { edition: 'E1' }).ledger;
+  const num = (l: Ledger, k: string) => l.entries.find((e) => e.key === k)?.num;
+  assert.equal(num(one, 'a'), '608.1');
+  assert.equal(num(one, 'b'), '608.2');
+  assert.equal(num(one, 'b.x'), '608.2a');
+  const two = allocate([SEC, it('a', 1), it('between', 1.5), it('b', 2), it('b.x', 1, 'b'), it('b.w', 0, 'b')], one, { edition: 'E2' });
+  assert.equal(num(two.ledger, 'between'), '608.3', 'the new key sorts between a and b by order, but is numbered at the end');
+  assert.equal(num(two.ledger, 'b.w'), '608.2b');
+  assert.equal(num(two.ledger, 'a'), '608.1');
+  assert.equal(num(two.ledger, 'b'), '608.2');
+  assert.deepEqual(two.born.map((b) => b.num).sort(), ['608.2b', '608.3']);
+  assert.equal(two.ledger.entries.find((e) => e.key === 'between')?.since, 'E2');
+  assert.deepEqual(appendOnlyProblems(one, two.ledger), []);
+  // pure: the input ledger is untouched
+  assert.equal(one.entries.length, 4);
+});
+
+test('§7c a removed rule becomes a tombstone that keeps its number, and its number is never handed out again', () => {
+  const one = allocate([SEC, it('a', 1), it('b', 2), it('c', 3)], emptyLedger()).ledger;
+  assert.throws(() => allocate([SEC, it('a', 1), it('b', 2), it('c', 3)], one, { remove: { b: { reason: 'merged into a' } } }), LedgerError,
+    'a key that still has a record cannot be removed');
+  const two = allocate([SEC, it('a', 1), it('c', 3)], one, { edition: 'E2', remove: { b: { reason: 'merged into a', replacedBy: 'a' } } });
+  const tomb = two.ledger.entries.find((e) => e.key === 'b');
+  assert.deepEqual(tomb, { num: '608.2', key: 'b', removed: 'merged into a', removedIn: 'E2', replacedBy: 'a' });
+  const three = allocate([SEC, it('a', 1), it('c', 3), it('d', 4)], two.ledger).ledger;
+  assert.equal(three.entries.find((e) => e.key === 'd')?.num, '608.4', 'the tombstone\'s 608.2 is not reused');
+  assert.throws(() => allocate([SEC, it('a', 1), it('b', 2)], two.ledger), /removed .*cannot come back/);
+  assert.deepEqual(appendOnlyProblems(one, two.ledger), []);
+  assert.match(appendOnlyProblems(two.ledger, one).join('\n'), /was a tombstone/);
+});
+
+test('§7d reusing or moving a number is rejected', () => {
+  const one = allocate([SEC, it('a', 1)], emptyLedger()).ledger;
+  // a section claiming a number another key holds
+  assert.throws(() => allocate([SEC, { key: 'other.section', num: '608', section: true }], one), /already held by combat\.damage.*never reused/);
+  // a section moving
+  assert.throws(() => allocate([{ key: 'combat.damage', num: '609', section: true }], one), /numbers never move/);
+  // duplicate keys
+  assert.throws(() => allocate([SEC, it('a', 1), it('a', 2)], one), /appears twice/);
+  // too deep
+  const deep = allocate([SEC, it('a', 1), it('a.x', 1, 'a')], emptyLedger()).ledger;
+  assert.throws(() => allocate([SEC, it('a', 1), it('a.x', 1, 'a'), it('a.x.y', 1, 'a.x')], deep), /three levels/);
+  // a hand-edited ledger that reuses or moves a number is caught by the append-only check
+  const reused: Ledger = { ...one, entries: one.entries.map((e) => (e.key === 'a' ? { ...e, key: 'z' } : e)) };
+  assert.match(appendOnlyProblems(one, reused).join('\n'), /608\.1 was a and is now z: a number is never reused/);
+  const moved: Ledger = { ...one, entries: one.entries.map((e) => (e.key === 'a' ? { ...e, num: '608.5' } : e)) };
+  assert.match(appendOnlyProblems(one, moved).join('\n'), /dropped|moved/);
+});
+
+test('§7e a key is renamed only through an alias, and keeps its number', () => {
+  const one = allocate([SEC, it('old.key', 1), it('x', 2)], emptyLedger()).ledger;
+  // without an alias, a renamed key is a new rule (new number) and the old one an orphan
+  const plain = allocate([SEC, it('new.key', 1), it('x', 2)], one).ledger;
+  assert.equal(plain.entries.find((e) => e.key === 'new.key')?.num, '608.3');
+  const aliased: Ledger = { ...one, aliases: [{ from: 'old.key', to: 'new.key' }] };
+  const r = allocate([SEC, it('new.key', 1), it('x', 2)], aliased);
+  assert.deepEqual(r.born, []);
+  assert.deepEqual(appendOnlyProblems(aliased, r.ledger), []);
+  assert.match(appendOnlyProblems(aliased, one).join('\n'), /alias old\.key → new\.key was dropped/);
+});
+
+test('§7f the ledger is written deterministically, sorted in document order', () => {
+  const l = allocate([SEC, { key: 'z.sec', num: '101', section: true }, it('b', 2), it('a', 1), it('a.x', 1, 'a')], emptyLedger()).ledger;
+  const shuffled: Ledger = { ...l, entries: [...l.entries].reverse() };
+  assert.equal(formatLedger(shuffled), formatLedger(l));
+  assert.deepEqual(JSON.parse(formatLedger(l)).entries.map((e: { num: string }) => e.num), ['101', '608', '608.1', '608.1a', '608.2']);
+});
+
+/* ── §8 / §9: a fixture, clean, then with one defect planted per check ─── */
+
+// A retired-register id is built, never written: test 184 fails on every
+// R-number spelled under client/ outside its allowlist.
+const R = (n: number) => `R${n}`;
+const REPO_FILE = 'client/engine/scripts/cr/schema.mjs';
+const REPO_LINE = 'export const BASES';
+
+function fixtureExtract(): Extract {
+  return {
+    raq: [{
+      threadId: '111', title: '[Solved] Front and back', status: 'reviewed', note: null,
+      claims: [{ id: '111#0', claim: 'You can deal all damage to the front unit.', source: 'calebgannon: "yes"', status: 'covered', guards: [], ticket: null, note: null, textHash: 'c0' }],
+    }],
+    glossary: [{ term: 'Swift', text: 'Swift units deal combat damage first.' }],
+    cards: [{ name: 'Rime Wraith', kind: 'unit', timing: 'deploy', attrs: [], typeLine: 'Spirit Unit', text: 'Sluggish units deal combat damage last.' }],
+    printedPages: [{ doc: 'Manual', page: 23, text: 'all of the following damage\nprocesses happen  simultaneously, unless modified by an ability:\nUnblocked units deal combat damage to the defend-\ning player.' }],
+    enums: { phases: [], battleSteps: [], damageSubSteps: [], decisionKinds: [], zones: [], attrs: ['Flying', 'Deadly'], elements: [], cardKinds: [], timings: [] },
+    tests: [{ file: 'client/engine/test/02-combat.test.ts', dir: 'engine', titles: ['swift column deals damage first', "the recipient's choice", 'dup', 'dup'] }],
+    engineSymbols: ['assignCombatDamage', 'advanceBattleStep'],
+  };
+}
+
+const OUTLINE = {
+  title: 'Fixture Rules', subtitle: 'A fixture.',
+  edition: { name: 'Fixture edition', effective: '2026-10-10', engineCommit: 'abc1234' },
+  chapters: [
+    { num: '6', title: 'Battle', sections: [{ num: '608', key: 'combat.damage', title: 'Combat Damage Step' }] },
+    { num: '8', title: 'Keywords', sections: [{
+      num: '802', key: 'keywords.attributes', title: 'Attributes',
+      slots: [{ key: 'attr.general', title: 'General', order: 1 }],
+      generate: { from: 'attrs', key: 'attr.{slug}', title: '{name}', orderStart: 2 },
+    }] },
+  ],
+  annexD: { title: 'Annex D', precedence: 'The main document governs the game.', sections: [{ num: 'D1', key: 'annexd.general', title: 'General' }] },
+  annexP: { title: 'Annex P' }, glossary: { title: 'Glossary' }, changelog: { title: 'Changelog' },
+};
+
+const TEXT_A = 'Each column deals its combat damage as one source, and all combat damage is dealt at once.';
+function fixtureInputs(): CrInputs {
+  const A: RuleRecord = {
+    key: 'combat.damage.overview', parent: '608', order: 1, text: TEXT_A,
+    examples: [{ text: 'Example: a Swift column strikes first.', test: '02-combat.test.ts::swift column deals damage first' }],
+    see: ['802.3', 'combat.damage.choice'],
+    sources: {
+      printed: [
+        { ref: 'Manual p.23', quote: 'processes happen simultaneously, unless modified by' },
+        // a word broken across lines on the page: quoted whole, or ending on the broken half
+        { ref: 'Manual p.23', quote: 'deal combat damage to the defending player' },
+        { ref: 'Manual p.23', quote: 'Unblocked units deal combat damage to the defend-' },
+      ],
+      designer: [], ours: [{ ref: 'glossary: Swift', quote: 'Swift units deal combat damage first.' }],
+      owner: [{ quote: 'Each column deals its combat damage as one source.', adopted: '2026-08-18', from: '' }],
+      engine: ['engine.ts:assignCombatDamage'], tests: ['02-combat.test.ts'],
+    },
+    basis: 'mixed', scope: 'game', confidence: 'high', sourceHashes: {},
+  };
+  const B: RuleRecord = {
+    key: 'combat.damage.choice', parent: 'combat.damage.overview', order: 1,
+    text: 'The dealing player may assign all of a column\'s damage to the front unit.',
+    examples: [{ text: 'Example: the recipient\'s choice is never asked.', test: "02-combat.test.ts::the recipient's choice" }],
+    see: [],
+    sources: { printed: [], designer: [{ ref: 'RAQ 111#0', quote: 'deal all damage to the front unit' }], ours: [], owner: [], engine: [], tests: [] },
+    basis: 'designer', scope: 'game', confidence: 'high', engineDiffers: ['F-1'], sourceHashes: { 'RAQ 111#0': 'c0' },
+  };
+  const C: RuleRecord = {
+    key: 'attr.deadly', parent: '802', order: 3, text: 'Deadly is an attribute.',
+    examples: [], see: [],
+    sources: { printed: [{ ref: 'card: Rime Wraith', quote: 'Sluggish units deal combat damage last.' }], owner: [{ quote: 'Damage is assigned by the dealer.', adopted: '2026-08-21', from: 'questions-round27 Q2' }] },
+    basis: 'mixed', scope: 'game', confidence: 'medium', sourceHashes: {},
+  };
+  const O: RuleRecord = {
+    key: 'combat.damage.client', parent: '608', order: 2,
+    text: 'Both players see the damage split at once. The client shows it as one animation.',
+    examples: [], see: [], sources: { owner: [{ quote: 'show the split as one animation', adopted: '2026-09-02', from: 'comment c-17' }] },
+    basis: 'owner', scope: 'game', digitalClause: 'The client shows it as one animation.', confidence: 'medium', sourceHashes: {},
+  };
+  const DD: RuleRecord = {
+    key: 'annexd.general.pace', parent: 'D1', order: 1, text: 'Each animation lasts at least one frame.',
+    examples: [], see: [], sources: { owner: [{ quote: 'no animation shorter than a frame', adopted: '2026-09-03', from: '' }] },
+    basis: 'owner', scope: 'digital', confidence: 'medium', sourceHashes: {},
+  };
+  const G: RuleRecord = {
+    key: 'glossary.column', term: 'Column', text: 'The units of a formation one behind another.', examples: [], see: ['608'],
+    sources: {}, sourceHashes: {},
+  };
+  // the glossary covers every derived term source: here the two attributes and our client-glossary row
+  const gloss = (term: string, see: string, derived: string[], extra: Partial<RuleRecord> = {}): RuleRecord => ({
+    key: `glossary.${term.toLowerCase()}`, term, text: `${term} is a fixture term.`, examples: [], see: [see], derived,
+    sources: {}, sourceHashes: {}, ...extra,
+  });
+  const GF = gloss('Flying', 'attr.flying', ['attr:Flying']);
+  const GD = gloss('Deadly', 'attr.deadly', ['attr:Deadly']);
+  const GS = gloss('Swift', '608', ['ours:Swift']);
+  const GO = gloss('Skirmish', '608', [], { obsolete: true, usedBy: [{ ref: 'Manual p.23', quote: 'Unblocked units deal combat damage' }] });
+  const inputs: CrInputs = {
+    outline: structuredClone(OUTLINE), frontMatter: '## Introduction\n\nEdition {{EDITION}}, {{EFFECTIVE}}, {{ENGINE_COMMIT}}.\n',
+    records: [A, B, C, O, DD], glossary: [G, GF, GD, GS, GO], fileOf: new Map(),
+    ledger: emptyLedger(),
+    verdicts: [{
+      key: 'combat.damage.overview', textHash: recordHash(A), verdict: 'confirmed', round: 1, verifier: 'fixture',
+      engine: [], tests_run: [{ file: 'client/engine/test/02-combat.test.ts', passed: true }], source_checks: [],
+      quote_spans: [{ file: REPO_FILE, text: REPO_LINE }], basis_ok: true, problem: '',
+    }],
+    discrepancies: [{
+      id: 'D608-1', kind: 'a-sources-disagree', rule: 'combat.damage.choice', tier: 1,
+      summary: 'Print reads as forced; the designer makes it elective.',
+      sides: [{ source: 'Manual p.23', quote: 'processes happen simultaneously' }, { source: 'RAQ 111#0', quote: 'deal all damage' }, { source: 'owner ruling, adopted 2026-08-18', quote: 'one source per column' }],
+      resolution: 'Follow the designer.',
+      question: {
+        topic: 'Combat damage', ask: 'Who splits a column\'s damage?',
+        readings: [
+          { label: 'A', text: 'The dealing player, as the designer says.', table: 'The attacker may overkill the front unit.' },
+          { label: 'B', text: 'Print\'s forced front-to-back flow.', table: 'Excess always reaches the back unit.' },
+        ],
+        follows: 'A.', recommend: 'A: the designer outranks print.',
+      },
+    }],
+    findings: [{ id: 'F-1', title: 'The engine asks the recipient', summary: 'It asks the wrong player.', evidence: [{ file: REPO_FILE, quote: REPO_LINE }], rule: 'combat.damage.choice' }],
+  };
+  inputs.ledger = render(inputs, fixtureExtract()).ledger; // "committed": every key already numbered
+  return inputs;
+}
+
+test('§8 the clean fixture passes every check — so each planted failure below is caused by its plant', () => {
+  const r = check(fixtureInputs(), fixtureExtract());
+  assert.deepEqual(r.problems.map((p) => `${p.code} ${p.where}: ${p.msg}`), []);
+  assert.deepEqual(r.stale, []);
+});
+
+type Plant = { name: string; code: string; plant: (i: CrInputs, x: Extract) => void };
+const rec = (i: CrInputs, key: string): RuleRecord => {
+  const r = [...i.records, ...i.glossary].find((x) => x.key === key);
+  if (!r) throw new Error(`no fixture record ${key}`);
+  return r;
+};
+const A = (i: CrInputs) => rec(i, 'combat.damage.overview');
+const B = (i: CrInputs) => rec(i, 'combat.damage.choice');
+const PLANTS: Plant[] = [
+  { name: 'a record breaks the schema', code: 'schema', plant: (i) => { B(i).basis = 'vibes'; } },
+  { name: 'a printed quote is not in its page', code: 'quote-not-verbatim', plant: (i) => { A(i).sources.printed![0]!.quote = 'processes happen at once'; } },
+  { name: 'a card quote is not on the card', code: 'quote-not-verbatim', plant: (i) => { rec(i, 'attr.deadly').sources.printed![0]!.quote = 'Sluggish units deal combat damage first.'; } },
+  { name: 'a designer quote is not in the RAQ claim', code: 'quote-not-verbatim', plant: (i) => { B(i).sources.designer![0]!.quote = 'deal all damage to the back unit'; } },
+  { name: 'an owner call quoted over two lines', code: 'schema', plant: (i) => { rec(i, 'attr.deadly').sources.owner![0]!.quote = 'Damage is assigned\nby the dealer.'; } },
+  { name: 'an owner call with no adoption date', code: 'schema', plant: (i) => { rec(i, 'attr.deadly').sources.owner![0]!.adopted = 'August'; } },
+  { name: 'an owner call with no from', code: 'schema', plant: (i) => { delete (rec(i, 'attr.deadly').sources.owner![0] as { from?: string }).from; } },
+  { name: 'an ours quote is not in the glossary', code: 'quote-not-verbatim', plant: (i) => { A(i).sources.ours![0]!.quote = 'Swift units deal combat damage last.'; } },
+  { name: 'a printed page that does not exist', code: 'source-missing', plant: (i) => { A(i).sources.printed![0]!.ref = 'Manual p.99'; } },
+  { name: 'the retired sources.rulings field', code: 'schema', plant: (i) => { (A(i).sources as Record<string, unknown>)['rulings'] = [R(1)]; } },
+  { name: 'a source hash for a retired ruling', code: 'schema', plant: (i) => { A(i).sourceHashes[R(1)] = 'h1'; } },
+  { name: 'an owner call rule with no owner words', code: 'basis-inconsistent', plant: (i) => { rec(i, 'combat.damage.client').sources.owner = []; } },
+  { name: 'a rule with no scope', code: 'schema', plant: (i) => { delete B(i).scope; } },
+  { name: 'a scope that is neither game nor digital', code: 'schema', plant: (i) => { B(i).scope = 'mixed'; } },
+  { name: 'an Annex D rule that is not digital', code: 'schema', plant: (i) => { rec(i, 'annexd.general.pace').scope = 'game'; } },
+  { name: 'a digital clause that is not in the text', code: 'schema', plant: (i) => { rec(i, 'combat.damage.client').digitalClause = 'The client shows it twice.'; } },
+  { name: 'a digital clause on a digital rule', code: 'schema', plant: (i) => { rec(i, 'annexd.general.pace').digitalClause = 'Each animation'; } },
+  { name: 'a RAQ claim that does not exist', code: 'raq-missing', plant: (i) => { B(i).sources.designer![0]!.ref = 'RAQ 111#9'; } },
+  { name: 'an engine symbol that does not exist', code: 'engine-symbol-missing', plant: (i) => { A(i).sources.engine = ['engine.ts:assignCombatDamageTwice']; } },
+  { name: 'an example bound to no test title', code: 'example-test-unresolved', plant: (i) => { A(i).examples[0]!.test = '02-combat.test.ts::no such title'; } },
+  { name: 'an example bound to two test titles', code: 'example-test-unresolved', plant: (i) => { A(i).examples[0]!.test = '02-combat.test.ts::dup'; } },
+  { name: 'a test file that does not exist', code: 'test-file-missing', plant: (i) => { A(i).sources.tests = ['999-nope.test.ts']; } },
+  { name: 'basis designer with no designer quote', code: 'basis-inconsistent', plant: (i) => { A(i).basis = 'designer'; } },
+  { name: 'basis printed resting only on our glossary', code: 'basis-inconsistent', plant: (i) => { A(i).basis = 'printed'; A(i).sources.printed = []; } },
+  { name: 'a rule with no checkable evidence', code: 'no-evidence', plant: (i) => { const r = B(i); r.basis = 'engine'; r.sources.designer = []; r.sourceHashes = {}; } },
+  { name: 'a see that resolves to no number', code: 'see-unresolved', plant: (i) => { A(i).see = ['608.99']; } },
+  { name: 'engineDiffers names a finding that does not exist', code: 'finding-missing', plant: (i) => { B(i).engineDiffers = ['F-9']; } },
+  { name: 'a discrepancy quote that is not verbatim', code: 'discrepancy-quote-not-verbatim', plant: (i) => { i.discrepancies[0]!.sides[1]!.quote = 'deal no damage'; } },
+  { name: 'a quoted RAQ claim with no source hash', code: 'source-hash-missing', plant: (i) => { delete B(i).sourceHashes['RAQ 111#0']; } },
+  { name: 'a record the ledger has not numbered', code: 'unnumbered', plant: (i) => { i.records.push({ ...structuredClone(B(i)), key: 'combat.damage.new', engineDiffers: [] }); } },
+  { name: 'a ledger key with no record, not tombstoned', code: 'ledger-orphan', plant: (i) => { i.records = i.records.filter((r) => r.key !== 'combat.damage.choice'); i.discrepancies = []; i.findings = []; A(i).see = ['802.3']; } },
+  { name: 'a record whose num disagrees with the ledger', code: 'num-mismatch', plant: (i) => { A(i).num = '608.7'; } },
+  { name: 'two records with one key', code: 'duplicate-key', plant: (i) => { i.glossary.push({ ...structuredClone(rec(i, 'glossary.column')) }); } },
+  { name: 'a verdict for no record', code: 'verdict-orphan', plant: (i) => { i.verdicts[0]!.key = 'no.such.rule'; } },
+  { name: 'a verdict span given as an absolute path', code: 'verdict-span-path', plant: (i) => { i.verdicts[0]!.quote_spans[0]!.file = `/tmp/${REPO_FILE}`; } },
+  { name: 'a discrepancy side citing a retired ruling id', code: 'schema', plant: (i) => { i.discrepancies[0]!.sides[2]!.source = R(1); } },
+  { name: 'the outline moves a numbered section', code: 'ledger', plant: (i) => { i.outline.chapters[0].sections[0].num = '609'; } },
+  { name: 'a record filling a slot under the wrong parent', code: 'slot-parent-mismatch', plant: (i) => { rec(i, 'attr.deadly').parent = '608'; } },
+  { name: 'two units chose one discrepancy id', code: 'duplicate-id', plant: (i) => { i.discrepancies.push(structuredClone(i.discrepancies[0]!)); } },
+  { name: 'an item merged into another is still an item of its own', code: 'duplicate-id', plant: (i) => { const d = structuredClone(i.discrepancies[0]!); d.id = 'D608-2'; d.tier = 4; delete d.question; i.discrepancies.push(d); i.discrepancies[0]!.seeAlso = [{ id: 'D608-2', rule: 'combat.damage.choice' }]; } },
+  { name: 'a merged-in item filed against no live rule', code: 'discrepancy-rule-unresolved', plant: (i) => { i.discrepancies[0]!.seeAlso = [{ id: 'D608-2', rule: 'combat.damage.gone' }]; } },
+  { name: 'a question for the owner with no question record', code: 'schema', plant: (i) => { delete i.discrepancies[0]!.question; } },
+  { name: 'a question on an item that is not tier 1', code: 'schema', plant: (i) => { i.discrepancies[0]!.tier = 2; } },
+  { name: 'a question with one reading', code: 'schema', plant: (i) => { i.discrepancies[0]!.question!.readings.pop(); } },
+  { name: 'a rule text names a key that is no live rule', code: 'ref-unresolved', plant: (i) => { A(i).text += ' Ties are rule combat.damage.no-such-key.'; } },
+  { name: 'an example names a dead rule number', code: 'ref-unresolved', plant: (i) => { A(i).examples[0]!.text += ' See rule 608.9.'; } },
+  { name: 'a glossary entry whose "See rule" target does not exist', code: 'glossary-see-unresolved', plant: (i) => { rec(i, 'glossary.column').see = ['608.99']; } },
+  { name: 'a derived term with no glossary entry', code: 'glossary-term-missing', plant: (i) => { rec(i, 'glossary.deadly').derived = []; } },
+  { name: 'a derived term the extract no longer has', code: 'glossary-tag-unknown', plant: (_i, x) => { x.enums.attrs = ['Flying']; } },
+  { name: 'a client-glossary row with no glossary entry', code: 'glossary-term-missing', plant: (_i, x) => { x.glossary.push({ term: 'Sluggish', text: 'Sluggish units deal combat damage last.' }); } },
+  { name: 'an obsolete term with no source using the old name', code: 'schema', plant: (i) => { delete rec(i, 'glossary.skirmish').usedBy; } },
+  { name: 'an obsolete term whose source quote is not verbatim', code: 'quote-not-verbatim', plant: (i) => { rec(i, 'glossary.skirmish').usedBy![0]!.quote = 'Skirmishes deal combat damage'; } },
+  { name: 'two glossary entries for one term', code: 'duplicate-term', plant: (i) => { i.glossary.push({ ...structuredClone(rec(i, 'glossary.column')), key: 'glossary.column-two' }); } },
+  { name: 'a glossary row names an unknown key', code: 'ref-unresolved', plant: (i) => { rec(i, 'glossary.column').text += ' (see attr.no-such-attr)'; } },
+  { name: 'a finding summary names an unknown key', code: 'ref-unresolved', plant: (i) => { i.findings[0]!.summary += ' Measured by the probe for rule combat.damage.gone.'; } },
+  { name: 'a discrepancy resolution names a key prefix, not a rule', code: 'ref-unresolved', plant: (i) => { i.discrepancies[0]!.resolution += ' The keys combat.damage.* move.'; } },
+  { name: 'a finding id that is not F-U<nn>-<n>', code: 'schema', plant: (i) => { i.findings[0]!.id = 'F-U12'; B(i).engineDiffers = ['F-U12']; } },
+];
+
+for (const p of PLANTS) {
+  test(`§8 planted: ${p.name} → ${p.code}`, () => {
+    const i = fixtureInputs(), x = fixtureExtract();
+    p.plant(i, x);
+    const codes = check(i, x).problems.map((q) => q.code);
+    assert.ok(codes.includes(p.code), `the check went blind: expected ${p.code}, got [${codes.join(', ')}]`);
+  });
+}
+
+test('§8 an owner call is its own evidence; the apostrophe title resolves', () => {
+  const i = fixtureInputs(), x = fixtureExtract();
+  // positive controls, so the plants above cannot pass by rejecting everything: an owner-basis
+  // rule with no verdict and no other source checks clean, its quote being what the owner said
+  const o = rec(i, 'combat.damage.client');
+  assert.equal(o.basis, 'owner');
+  assert.equal(i.verdicts.find((v) => v.key === o.key), undefined);
+  assert.equal(B(i).examples[0]!.test, "02-combat.test.ts::the recipient's choice");
+  assert.deepEqual(check(i, x).problems, []);
+});
+
+test('§8 the counted checks fire: a changed claim, evidence and a span that left their files', () => {
+  const i = fixtureInputs(), x = fixtureExtract();
+  x.raq[0]!.claims[0]!.textHash = 'changed';
+  i.findings[0]!.evidence[0]!.quote = 'this line was fixed away';
+  i.verdicts[0]!.quote_spans[0]!.text = 'nor is this one here';
+  const r = check(i, x);
+  assert.deepEqual(r.problems, []);
+  assert.deepEqual(r.stale.map((s) => `${s.kind} ${s.where}`).sort(), [
+    'finding-evidence F-1', 'source combat.damage.choice', 'verdict-span combat.damage.overview',
+  ]);
+});
+
+test('§8 a span whose only change is its rule citation still holds; one whose words changed does not', () => {
+  const i = fixtureInputs(), x = fixtureExtract();
+  // the real line in schema.mjs reads `export const BASES = [...]`; quote it as the
+  // migration found it, with a retired citation the rewrite turned into a CR number
+  i.verdicts[0]!.quote_spans[0]!.text = `${REPO_LINE} (${R(9)})`;
+  assert.deepEqual(check(i, x).stale, [], 'a citation-only difference made the span stale');
+  i.verdicts[0]!.quote_spans[0]!.text = `${REPO_LINE}S (${R(9)})`;
+  assert.deepEqual(check(i, x).stale.map((s) => s.kind), ['verdict-span'], 'a changed word must still be stale');
+});
+
+test('§8 a demonstrated rule: an Annex D rule may rest on client/ui or client/server source; a game rule may not', () => {
+  // the code a verifier quoted, plus a passing test, is evidence: where that
+  // code may live depends on what the rule is about. Real files, real lines,
+  // so no span reads as stale and the only variable is the root.
+  const UI = { file: 'client/ui/pace.ts', text: 'export const PLAYBACK_END_MS = 2 * PACE_MS;' };
+  const SERVER = { file: 'client/server/view.ts', text: 'export function playbackFrames(o: {' };
+  const ENGINE = { file: 'client/engine/src/apply.ts', text: 'export function apply(' };
+  const UI_TEST = { file: 'client/ui/test/372-recap-end-pause.test.ts', text: 'THE RECAP PAUSES BEFORE IT HANDS OVER' };
+  const D_KEY = 'annexd.general.fixture-pause';
+  const run = (gameSpans: { file: string; text: string }[], digitalSpans: { file: string; text: string }[]): string[] => {
+    const i = fixtureInputs(), x = fixtureExtract();
+    // the game rule: B with its designer quote taken away, so only the verdict can carry it
+    const b = B(i); b.basis = 'engine'; b.sources.designer = []; b.sourceHashes = {};
+    const d: RuleRecord = {
+      key: D_KEY, parent: 'D1', order: 1, text: 'The hand-over at the end of a recap pauses longer than a frame.',
+      examples: [], see: [], sources: { printed: [], designer: [], ours: [], owner: [], engine: [], tests: [] },
+      basis: 'engine', scope: 'digital', confidence: 'high', sourceHashes: {},
+    };
+    i.records.push(d);
+    i.ledger = render(i, x).ledger;
+    const verdict = (r: RuleRecord, spans: { file: string; text: string }[]) => ({
+      key: r.key, textHash: recordHash(r), verdict: 'confirmed', round: 1, verifier: 'fixture',
+      engine: [], tests_run: [{ file: 'client/engine/test/02-combat.test.ts', passed: true }], source_checks: [],
+      quote_spans: spans, basis_ok: true, problem: '',
+    });
+    i.verdicts.push(verdict(b, gameSpans), verdict(d, digitalSpans));
+    const r = check(i, x);
+    assert.deepEqual(r.stale, [], 'positive control: every span is really in its file');
+    return r.problems.map((p) => `${p.code} ${p.where}`);
+  };
+  // positive controls: engine source carries either kind
+  assert.deepEqual(run([ENGINE], [ENGINE]), []);
+  // the widening: an Annex D rule demonstrated in the client or the game server
+  assert.deepEqual(run([ENGINE], [UI]), [], 'an Annex D rule with a client/ui span was refused');
+  assert.deepEqual(run([ENGINE], [SERVER]), [], 'an Annex D rule with a client/server span was refused');
+  // …and its limits: a game rule still needs the engine; a test is never the quoted code
+  assert.deepEqual(run([UI], [ENGINE]), ['no-evidence combat.damage.choice'], 'a game rule rested on client/ui source');
+  assert.deepEqual(run([SERVER], [ENGINE]), ['no-evidence combat.damage.choice'], 'a game rule rested on client/server source');
+  assert.deepEqual(run([ENGINE], [UI_TEST]), [`no-evidence ${D_KEY}`], 'an Annex D rule rested on a test file');
+});
+
+test('§9 the fixture renders: numbers, slots in Attr order, tombstones, see links, markers, determinism', () => {
+  const x = fixtureExtract();
+  const i = fixtureInputs();
+  const out = render(i, x);
+  const md = out.files.doc;
+  assert.match(md, /\*\*608\.1\.\*\* Each column deals/);
+  assert.match(md, /\*\*608\.1a\*\* The dealing player/);
+  assert.match(md, /\*\*802\.2\. Flying\.\*\*/, 'the 802 slots come from enums.attrs, in order');
+  assert.match(md, /\*\*802\.3\. Deadly\.\*\* Deadly is an attribute\./, 'a record fills its slot');
+  assert.match(md, /See rules 802\.3, 608\.1a\./, 'see keys resolve to numbers');
+  assert.match(md, /Engine differs, see F-1/);
+  // an example is "Example:", its words only; the test it is bound to is provenance, in the small line
+  assert.match(md, /> \*Example: a Swift column strikes first\.\*\n\n<sub>[^\n]* · Example test: 02-combat\.test\.ts::swift column deals damage first · Key: /);
+  assert.doesNotMatch(md, /non-normative/);
+  assert.match(md, /Edition Fixture edition, 2026-10-10, abc1234\./);
+  assert.match(md, /\| Mixed \| 2 \|/);
+  // an owner call: its adoption date in the provenance line, never a ruling number
+  assert.match(md, /<sub>Basis: Owner call · adopted 2026-09-02 · /);
+  assert.match(md, /<sub>Basis: Mixed · [^\n]*· Owner call · adopted 2026-08-21 · /);
+  assert.doesNotMatch(md, /Rulings: |Replaces: /);
+  // scope: a game rule's client-only clause is tagged where it stands; Annex D is digital by its place
+  assert.match(md, /The client shows it as one animation\. \*\(Digital client\)\*/);
+  assert.doesNotMatch(out.files.annexD, /Digital client\)/);
+  assert.match(md, /### Digital-client rules in the main document\n\nNone\./);
+  // HTML: anchors, chips, folded provenance, links
+  const html = out.files.html;
+  for (const re of [/id="r608\.1a"/, /class="chip s-digital">Digital client</, /<span class="sk">Owner call<\/span> adopted 2026-09-02 \(comment c-17\)/, /class="chip b-designer"/, /class="chip v-confirmed"/, /<details class="prov"><summary>Sources and verification/, /<a href="#r802\.3">802\.3<\/a>/, /class="differs">engine differs, see <a href="#F-1">F-1<\/a>/, /id="D608-1"/]) {
+    assert.match(html, re);
+  }
+  // plain text: ASCII tokens, no Markdown marks
+  assert.doesNotMatch(out.files.txt, /\*\*|<sub>|[—→“”]/);
+  assert.match(out.files.txt, /^608\.1a The dealing player/m);
+  assert.match(out.files.discrepanciesMd, /## 1\. Questions for the owner \(1\)\n\n### D608-1/);
+  assert.match(out.files.discrepanciesMd, /\*\*Question:\*\* Who splits a column's damage\?\n\n- \*\*Reading A\.\*\* The dealing player/);
+  // the owner's questions on their own: numbered, grouped by topic, one answer line each
+  assert.match(out.files.ownerQuestions, /^# .*: Questions for the Owner\n\n1 question\./);
+  assert.match(out.files.ownerQuestions, /## Combat damage\n\n### 1\. Who splits a column's damage\?\n\n\*D608-1, rule 608\.1a\.\*/);
+  assert.match(out.files.ownerQuestions, /\*\*Recommended:\*\* A: the designer outranks print\.\n\n\*\*Answer:\*\*\n$/);
+  assert.match(out.files.annexD, /## Precedence\n\nThe main document governs the game\./);
+  // a tombstone
+  const removed = allocate([], i.ledger, { edition: 'Second', remove: { 'combat.damage.choice': { reason: 'merged into 608.1' } } }).ledger;
+  const j = fixtureInputs();
+  j.ledger = removed;
+  j.records = j.records.filter((r) => r.key !== 'combat.damage.choice');
+  j.discrepancies = []; j.findings = []; A(j).see = [];
+  const out2 = render(j, x);
+  assert.match(out2.files.doc, /\*\*608\.1a\*\* \[Removed: merged into 608\.1\]/);
+  assert.match(out2.files.changelog, /## Second\n\n- New: 0 rules\.\n- Removed: 608\.1a `combat\.damage\.choice`: merged into 608\.1/);
+  // byte-deterministic
+  assert.deepEqual(render(fixtureInputs(), fixtureExtract()).files, out.files);
+});
+
+test('§9 an empty rules dir renders every section as "No rules drafted yet" and checks clean', () => {
+  const x = fixtureExtract();
+  const i = fixtureInputs();
+  i.records = []; i.glossary = []; i.verdicts = []; i.discrepancies = []; i.findings = [];
+  i.ledger = emptyLedger();
+  const out = render(i, x);
+  i.ledger = out.ledger;
+  assert.match(out.files.doc, /### 608\. Combat Damage Step\n\n\*No rules drafted yet\.\*/);
+  assert.deepEqual(check(i, x).problems, []);
+});
+
+test('§9 a {chip:…} in the front matter is the rule\'s own chip in HTML and its plain label in .md and .txt', () => {
+  const x = fixtureExtract();
+  const i = fixtureInputs();
+  i.frontMatter += '\nA {chip:printed} rule; an {chip:owner} rule, {chip:partial}.\n';
+  const { files } = render(i, x);
+  assert.match(files.html, /A <span class="chip b-printed">Printed<\/span> rule; an <span class="chip b-owner">Owner call<\/span> rule, <span class="chip v-partial">Partial<\/span>\./);
+  assert.ok(!/class="legend"/.test(files.html), 'the chips are in the prose: no separate legend row');
+  for (const f of [files.doc, files.txt]) {
+    assert.match(f, /A Printed rule; an Owner call rule, Partial\./);
+    assert.ok(!f.includes('{chip:'), 'no token reaches a text edition');
+  }
+  i.frontMatter += '\n{chip:printd}\n';
+  assert.throws(() => render(i, x), /\{chip:printd\} is neither a basis nor a verdict/);
+});
+
+test('§9 the generator refuses a glossary entry whose "See rule" target is no live rule', () => {
+  const x = fixtureExtract();
+  const i = fixtureInputs();
+  assert.match(render(i, x).files.doc, /\*\*Skirmish\*\* \(Obsolete\): Skirmish is a fixture term\. See rule 608\./);
+  [...i.records, ...i.glossary].find((r) => r.key === 'glossary.column')!.see = ['608.99'];
+  assert.throws(() => render(i, x), /glossary entries point at no live rule: "Column" → 608\.99/);
+});
+
+/* ── §10 the harness: plant → judge → feedback → finalize ──────────────── */
+
+const SPAN_FILE = 'client/engine/src/engine.ts';
+const SPAN_TEXT = 'the column deals its damage as one source';
+const readText = (f: string) => (f === SPAN_FILE ? `// ${SPAN_TEXT}\nmore code` : null);
+const U = 'U99';
+function unitRecords(): RuleRecord[] {
+  const r = (key: string, text: string, extra: Partial<RuleRecord> = {}): RuleRecord => ({
+    key, parent: '608', order: 1, text, examples: [], see: [],
+    sources: { printed: [{ ref: 'Manual p.23', quote: 'processes happen simultaneously' }] },
+    basis: 'printed', confidence: 'high', notes: 'drafter only', sourceHashes: {}, ...extra,
+  });
+  return [
+    r('combat.one', 'Each column deals its damage as one source.', { engineDiffers: ['F-U99-1'], rebuttal: 'drafter only' } as Partial<RuleRecord>),
+    r('combat.two', 'The attacking player divides an attacking column\'s damage.'),
+    r('combat.three', 'Swift columns strike in the first sub-step.'),
+    r('combat.four', 'Sluggish columns strike in the last sub-step.'),
+    r('combat.gone', '[Removed: merged into combat.one]'),
+  ];
+}
+const MUTANTS: Mutant[] = [
+  { key: 'combat.two', mutant: 'The defending player divides an attacking column\'s damage.', why_false: 'wrong player' },
+  { key: 'combat.four', mutant: 'Sluggish columns strike in the first sub-step.', why_false: 'wrong sub-step' },
+];
+const verdict = (key: string, v: string, problem = '', extra: Record<string, unknown> = {}) => ({
+  key, verdict: v, problem, basis_ok: true, engine: [{ loc: 'engine.ts:assignColumnDamage', agrees: 'yes', note: 'n' }],
+  tests_run: [{ file: 'client/engine/test/02-combat.test.ts', pattern: 'p', passed: true, asserts_claim: true }],
+  probes: [], source_checks: [{ ref: 'Manual p.23', supports: 'yes', note: '' }],
+  quote_spans: [{ file: SPAN_FILE, text: SPAN_TEXT }], ...extra,
+});
+function planted(round = 1, mutants = MUTANTS) {
+  const records = unitRecords();
+  return plant({ unit: U, round, records, sel: roundKeys(records, round, null), mutants });
+}
+/** a verifier that catches both mutants and confirms the rest */
+const honest = () => ({ unit: U, round: 1, verdicts: [
+  verdict('combat.one', 'confirmed'), verdict('combat.three', 'partial', 'the Swift clause is unsupported'),
+  verdict('combat.two', 'contradicted', 'the attacking player divides it'), verdict('combat.four', 'contradicted', 'Sluggish strikes last'),
+], bugs: [] as Record<string, unknown>[] });
+
+test('§10 plant strips the drafter-only fields, keeps engineDiffers, substitutes the mutants and shuffles by seed', () => {
+  const { input, truth } = planted();
+  assert.deepEqual(input.map((r) => r.key).sort(), ['combat.four', 'combat.one', 'combat.three', 'combat.two'], 'a removed rule is never verified');
+  for (const r of input) for (const k of ['notes', 'confidence', 'rebuttal', 'parent', 'order', 'sourceHashes']) assert.ok(!(k in r), `${k} reaches the verifier`);
+  assert.deepEqual(input.find((r) => r.key === 'combat.one')!.engineDiffers, ['F-U99-1']);
+  assert.equal(input.find((r) => r.key === 'combat.two')!.text, MUTANTS[0]!.mutant);
+  assert.deepEqual(Object.keys(truth.verified).sort(), ['combat.one', 'combat.three'], 'the ground truth pins only what the verifier saw unmutated');
+  const ranks = input.map((r) => shuffleRank(U, 1, r.key));
+  assert.deepEqual(ranks, [...ranks].sort(), 'ordered by the seeded rank, not by key or position');
+  assert.deepEqual(planted().input, input, 'deterministic');
+});
+
+test('§10 plant rejects a mutant identical to its original, outside the round, doubled, unexplained or miscounted', () => {
+  const records = unitRecords();
+  const sel = roundKeys(records, 1, null);
+  const tryPlant = (mutants: Mutant[], s = sel) => () => plant({ unit: U, round: s === sel ? 1 : 2, records, sel: s, mutants });
+  assert.throws(tryPlant([{ ...MUTANTS[0]!, mutant: ' The attacking player divides  an attacking column\'s damage. ' }, MUTANTS[1]!]), /identical to the original/);
+  assert.throws(tryPlant([{ ...MUTANTS[0]!, key: 'combat.nine' }, MUTANTS[1]!]), /not a live rule/);
+  assert.throws(tryPlant([{ ...MUTANTS[0]!, key: 'combat.gone' }, MUTANTS[1]!]), /not a live rule/);
+  assert.throws(tryPlant([MUTANTS[0]!, MUTANTS[0]!]), /used twice/);
+  assert.throws(tryPlant([{ ...MUTANTS[0]!, why_false: '' }, MUTANTS[1]!]), /why_false is empty/);
+  assert.throws(tryPlant([MUTANTS[0]!]), /2–3 mutants/);
+  // round 2 plants DECOYS: changed = three; carried (mutated in round 1) = two, four; one is outside the batch
+  const s2 = roundKeys(records, 2, { changed: ['combat.three'], unverified: ['combat.two', 'combat.four'], preferred: ['combat.one'] });
+  assert.deepEqual(s2, { keys: ['combat.four', 'combat.three', 'combat.two'], carried: ['combat.four', 'combat.two'], mutable: [], decoyPool: ['combat.one'] });
+  const D = { baseKey: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' };
+  assert.throws(tryPlant([{ key: 'combat.one', mutant: D.mutant, why_false: 'x' }], s2), /baseKey, not key/);
+  assert.throws(tryPlant([{ ...D, baseKey: 'combat.three' }], s2), /not in round 2's decoy pool/, 'a rule in the batch is no decoy base while others exist');
+  assert.throws(tryPlant([{ ...D, mutant: 'Each column deals its damage as one source.' }], s2), /identical to the original/);
+  assert.throws(tryPlant([D, D, D], s2), /1–2 decoys/);
+  // positive control
+  const ok = plant({ unit: U, round: 2, records, sel: s2, mutants: [D] });
+  assert.deepEqual(ok.truth.keys, ['combat.four', 'combat.three', 'combat.two'], 'every key in the batch is verified for real');
+  assert.deepEqual(ok.truth.mutants, []);
+  assert.equal(ok.truth.decoys.length, 1);
+});
+
+test('§10 a decoy looks like a drafted rule: its base area, a leaf from its words, no number, and only in the input and the truth', () => {
+  const records = unitRecords();
+  const s2 = roundKeys(records, 2, { changed: ['combat.three'], unverified: ['combat.two', 'combat.four'], preferred: ['combat.one'] });
+  const { input, truth } = plant({ unit: U, round: 2, records, sel: s2, mutants: [{ baseKey: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' }] });
+  const d = truth.decoys[0]!;
+  assert.equal(d.key, 'combat.column-deals');
+  assert.match(d.key, /^combat\.[a-z]+(?:-[a-z]+)*$/, 'the base area, a word leaf — no hash, no marker');
+  assert.ok(!records.some((r) => r.key === d.key));
+  const shown = input.find((r) => r.key === d.key)!;
+  assert.equal(shown.text, 'Each column deals its damage as two sources.');
+  assert.deepEqual(shown.sources, records[0]!.sources, 'it carries its base rule\'s sources, so only checking finds it');
+  assert.ok(input.every((r) => !('num' in r)), 'no record in a decoy round shows a number a decoy could not have');
+  assert.deepEqual(Object.keys(truth.verified).sort(), truth.keys);
+  assert.equal(decoyKey('combat.one', 'Each column deals its damage as two sources.', new Set(['combat.column-deals'])), 'combat.deals-damage', 'a taken leaf moves to the next pair of words');
+});
+
+test('§10 a decoy may carry a false EXAMPLE under true text: it is shown, named from the example, and judged like any decoy', () => {
+  const records = unitRecords();
+  records[0]!.examples = [{ text: 'A column of two units deals its damage as one source.', test: null }];
+  const s2 = roundKeys(records, 2, { changed: ['combat.three'], unverified: [], preferred: ['combat.one'] });
+  const falseEx = [{ text: 'A column of two units deals its damage as two sources.', test: null }];
+  const tryPlant = (m: Mutant) => () => plant({ unit: U, round: 2, records, sel: s2, mutants: [m] });
+  assert.throws(tryPlant({ baseKey: 'combat.one', examples: structuredClone(records[0]!.examples) as never, why_false: 'x' }), /identical to the original/);
+  assert.throws(tryPlant({ baseKey: 'combat.one', examples: [], why_false: 'x' }), /non-empty list/);
+  const { input, truth } = plant({ unit: U, round: 2, records, sel: s2, mutants: [{ baseKey: 'combat.one', examples: falseEx, why_false: 'one source, not two' }] });
+  const d = truth.decoys[0]!;
+  assert.equal(d.key, 'combat.column-units', 'named from the false example');
+  const shown = input.find((r) => r.key === d.key)!;
+  assert.equal(shown.text, records[0]!.text, 'the rule text is the true one');
+  assert.deepEqual(shown.examples, falseEx, 'only the example is false');
+  assert.deepEqual([d.examples, d.originalExamples], [falseEx, records[0]!.examples], 'the truth keeps both');
+  const doc = (v: string, problem: string) => ({ verdicts: [verdict(d.key, v, problem), verdict('combat.three', 'confirmed')] });
+  const fooled = judge({ truth, input, doc: doc('confirmed', ''), readText });
+  assert.deepEqual([fooled.batchValid, fooled.missed], [false, [d.key]], 'a verifier that confirms the false example is caught by the decoy\'s name');
+  const good = judge({ truth, input, doc: doc('partial', 'example 0: the column deals one source, not two'), readText });
+  assert.deepEqual([good.batchValid, good.caught, good.missed], [true, 1, []]);
+});
+
+test('§10 judge: every mutant caught is a valid batch; one confirmed, or caught with no problem text, invalidates it', () => {
+  const { input, truth } = planted();
+  const good = judge({ truth, input, doc: honest(), readText });
+  assert.equal(good.batchValid, true);
+  assert.deepEqual([good.mutants, good.caught, good.missed], [2, 2, []]);
+  assert.deepEqual(good.nonConfirmed, ['combat.three'], 'mutants are excluded from nonConfirmed');
+  assert.deepEqual(good.counts, { confirmed: 1, partial: 1 }, 'and from the counts');
+  const fooled = honest();
+  fooled.verdicts[3] = verdict('combat.four', 'confirmed', 'wording could be tighter'); // a problem note does not make a confirmation a catch
+  const bad = judge({ truth, input, doc: fooled, readText });
+  assert.equal(bad.batchValid, false, 'a confirmed mutant must discard the batch');
+  assert.deepEqual(bad.missed, ['combat.four']);
+  const terse = honest();
+  terse.verdicts[2] = verdict('combat.two', 'contradicted', '  ');
+  assert.equal(judge({ truth, input, doc: terse, readText }).batchValid, false, 'caught needs the problem named');
+  const skipped = honest();
+  skipped.verdicts = skipped.verdicts.filter((v) => v.key !== 'combat.two');
+  assert.equal(judge({ truth, input, doc: skipped, readText }).batchValid, false, 'a mutant with no verdict is missed');
+});
+
+test('§10 judge runs the quote-span checker: a span not in its file, too long or multi-line is flagged', () => {
+  const { input, truth } = planted();
+  const doc = honest();
+  doc.verdicts[0]!.quote_spans = [{ file: SPAN_FILE, text: 'the column deals its damage twice' }, { file: SPAN_FILE, text: SPAN_TEXT }];
+  doc.verdicts[1]!.quote_spans = [{ file: 'no/such/file.ts', text: 'x' }, { file: SPAN_FILE, text: `a\n${SPAN_TEXT}` }, { file: SPAN_FILE, text: 'y'.repeat(201) }];
+  const j = judge({ truth, input, doc, readText });
+  assert.deepEqual(j.badSpans.map((b) => `${b.key} ${b.why}`), [
+    'combat.one not verbatim in the file', 'combat.three no such file', 'combat.three spans more than one line', 'combat.three longer than 200 chars',
+  ]);
+  assert.deepEqual(badSpans([{ file: SPAN_FILE, text: `  the column  deals its\tdamage as one source ` }], readText), [], 'whitespace-normalised, the positive control');
+});
+
+test('§10 feedback leaves the mutants out (verdicts and bugs), keeps what the reviser needs, and refuses an invalid batch', () => {
+  const { input, truth } = planted();
+  const doc = honest();
+  doc.verdicts[0] = verdict('combat.one', 'confirmed', '', { source_checks: [{ ref: 'Manual p.23', supports: 'partly', note: 'on-topic only' }] });
+  doc.bugs = [
+    { title: 'Swift ignored', summary: 's', evidence: [{ file: SPAN_FILE, quote: SPAN_TEXT }], rule: 'combat.three' },
+    { title: 'Mutant-driven', summary: 's', evidence: [], rule: 'combat.two' },
+  ];
+  const fb = buildFeedback({ truth, input, doc, judged: judge({ truth, input, doc, readText }) });
+  assert.deepEqual(fb.items.map((x) => x.key), ['combat.one', 'combat.three'], 'a confirmed rule with a partly source check is fed back; no mutant is');
+  assert.equal(fb.items[0].source_checks_not_yes.length, 1);
+  assert.ok(fb.items[1].engine.length && fb.items[1].quote_spans.length, 'engine notes and quote spans travel');
+  assert.deepEqual(fb.bugs.map((b) => b.title), ['Swift ignored']);
+  assert.ok(!JSON.stringify(fb).includes('combat.two') && !JSON.stringify(fb).includes('combat.four'), 'nothing names a mutated key');
+  const fooled = honest();
+  fooled.verdicts[2] = verdict('combat.two', 'confirmed');
+  assert.throws(() => buildFeedback({ truth, input, doc: fooled, judged: judge({ truth, input, doc: fooled, readText }) }), /not valid/);
+});
+
+/** a two-round history: round 1 replaces two and four; round 2 re-verifies three
+ *  (revised) and the carried two and four, with a decoy built from one */
+function twoRounds() {
+  const records = unitRecords();
+  const r1 = planted();
+  const s2 = roundKeys(records, 2, { changed: ['combat.three'], unverified: ['combat.two', 'combat.four'], preferred: ['combat.one'] });
+  const r2 = plant({ unit: U, round: 2, records, sel: s2, mutants: [{ baseKey: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' }] });
+  const decoy = r2.truth.decoys[0]!.key;
+  const r2fooled = { verdicts: [verdict(decoy, 'confirmed'), verdict('combat.three', 'confirmed'), verdict('combat.two', 'unsupported', 'no source'), verdict('combat.four', 'unsupported', 'no source')] };
+  const r2good = { verdicts: [
+    verdict(decoy, 'contradicted', 'one source'), verdict('combat.three', 'confirmed'),
+    verdict('combat.two', 'confirmed', '', { tests_run: [{ file: 'x.test.ts', passed: true, asserts_claim: 'partly - on-topic' }] }),
+    verdict('combat.four', 'confirmed', '', { tests_run: [], probes: [{ file: 'p.test.ts', title: 'cr:combat.four', passed: true, demonstrates: 'yes' }] }),
+  ], bugs: [
+    { title: 'swift IGNORED', summary: 'dup by title', evidence: [], rule: 'combat.three' },
+    { title: 'Decoy-driven', summary: 'about the decoy', evidence: [], rule: decoy },
+    { title: 'Sluggish late', summary: 's', evidence: [{ file: `/abs/elsewhere/${SPAN_FILE}`, quote: 'q' }], rule: 'combat.four' },
+  ] };
+  const r1doc = honest();
+  r1doc.bugs = [{ title: 'Swift ignored', summary: 's', evidence: [{ file: SPAN_FILE, quote: SPAN_TEXT }], rule: 'combat.three' }];
+  const rounds: RoundFiles[] = [
+    { round: 1, truth: r1.truth, input: r1.input, attempts: [{ attempt: 1, doc: r1doc }] },
+    { round: 2, truth: r2.truth, input: r2.input, attempts: [{ attempt: 1, doc: r2fooled }, { attempt: 2, doc: r2good }] },
+  ];
+  return { r2, decoy, r2fooled, r2good, rounds };
+}
+
+test('§10 judge treats a decoy as a mutant: a decoy confirmed discards the batch; feedback never names it', () => {
+  const { r2, decoy, r2fooled, r2good } = twoRounds();
+  const bad = judge({ truth: r2.truth, input: r2.input, doc: r2fooled, readText });
+  assert.equal(bad.batchValid, false, 'a confirmed decoy must discard the batch');
+  assert.deepEqual([bad.mutants, bad.missed], [1, [decoy]]);
+  const good = judge({ truth: r2.truth, input: r2.input, doc: r2good, readText });
+  assert.equal(good.batchValid, true);
+  assert.deepEqual(good.counts, { confirmed: 3 }, 'the decoy is not counted');
+  const fb = buildFeedback({ truth: r2.truth, input: r2.input, doc: r2good, judged: good });
+  assert.ok(!JSON.stringify(fb).includes(decoy), 'no item, unverified key or bug names the decoy');
+  assert.deepEqual(fb.bugs.map((b) => b.title), ['swift IGNORED', 'Sluggish late']);
+});
+
+test('§10 finalize takes each key from the latest VALID round, never a mutant or decoy, and marks the untested and the stale', () => {
+  const { decoy, rounds } = twoRounds();
+  const current = unitRecords();
+  current.find((r) => r.key === 'combat.three')!.text = 'Swift columns strike first.'; // revised after its last verification
+  const res = finalize({ unit: U, records: current, rounds, findings: [{ id: 'F-U99-1', title: 'Drafter finding', summary: 's', evidence: [{ file: SPAN_FILE, quote: SPAN_TEXT }], rule: 'combat.one' }], readText, exists: (p) => p === SPAN_FILE });
+  const by = new Map(res.verdicts.map((v) => [v.key, v]));
+  assert.deepEqual([...by.keys()], ['combat.four', 'combat.one', 'combat.three', 'combat.two'], 'the decoy never reaches verdicts');
+  assert.equal(by.get('combat.one')!.round, 1, 'a decoy base keeps its own round-1 verdict');
+  assert.equal(by.get('combat.three')!.round, 2, 'the latest round wins');
+  assert.deepEqual([by.get('combat.two')!.round, by.get('combat.two')!.verifier], [2, 'U99-r2-a2'], 'round 2, from the valid second attempt — never the fooled first');
+  assert.equal(by.get('combat.two')!.verdict, 'confirmed');
+  assert.equal(by.get('combat.one')!.textHash, recordHash(current[0]!), 'an unchanged record is pinned by its current hash');
+  assert.deepEqual(res.report.stale, ['combat.three'], 'a record revised after its verdict is stale, pinned to the text verified');
+  assert.notEqual(by.get('combat.three')!.textHash, recordHash(current.find((r) => r.key === 'combat.three')!));
+  assert.deepEqual(res.report.untested, ['combat.two'], 'a passing test that does not assert the claim demonstrates nothing; a demonstrating probe does');
+  assert.equal(res.records.find((r) => r.key === 'combat.gone')!.untested, undefined, 'a removed rule is left alone');
+  assert.ok(!res.records.some((r) => r.key === decoy), 'the decoy never reaches rules/');
+  assert.deepEqual(res.findings.map((f) => f.id), ['F-U99-1', 'F-U99-2', 'F-U99-3'], 'bugs dedup by title, numbered after the drafter; the decoy bug is dropped');
+  assert.deepEqual(res.findings.slice(1).map((f) => f.title), ['Swift ignored', 'Sluggish late']);
+  assert.ok(!JSON.stringify(res).includes(decoy));
+  assert.deepEqual(res.report.invalidRounds, []);
+  // round 2 with only the fooled attempt: nothing from round 2 is used
+  const only1 = finalize({ unit: U, records: current, rounds: [rounds[0]!, { ...rounds[1]!, attempts: [rounds[1]!.attempts[0]!] }], readText });
+  assert.deepEqual(only1.report.invalidRounds, [2]);
+  assert.ok(only1.verdicts.every((v) => v.round === 1));
+  assert.deepEqual(only1.report.unverified, ['combat.four', 'combat.two'], 'mutated in round 1 and never validly verified since');
+});
+
+test('§10 polish round 4 takes an explicit key list alone: nothing carried in, decoys from the rest, one list, no round 5', () => {
+  const records = unitRecords();
+  assert.equal(POLISH_ROUND, 4);
+  const s4 = roundKeys(records, 4, { changed: ['combat.three'], unverified: ['combat.two'], preferred: ['combat.one'] });
+  assert.deepEqual(s4, { keys: ['combat.three'], carried: [], mutable: [], decoyPool: ['combat.one', 'combat.four', 'combat.two'] },
+    'an unverified key of round 3 is not carried into the polish round');
+  assert.throws(() => roundKeys(records, 4, { changed: [], unverified: [] }), /empty/);
+  assert.throws(() => roundKeys(records, 4, { changed: ['combat.three', 'combat.gone'], unverified: [] }), /not a live rule: combat\.gone/);
+  assert.throws(() => roundKeys(records, 5, { changed: ['combat.three'], unverified: [] }), /at most 3 rounds/);
+  assert.deepEqual(polishKeyList(['b', 'a'], null), ['a', 'b'], 'changed-r3.json alone');
+  assert.deepEqual(polishKeyList(null, ['a']), ['a'], '--keys alone');
+  assert.deepEqual(polishKeyList(['a', 'b'], ['b', 'a', 'a']), ['a', 'b'], 'both, agreeing');
+  assert.throws(() => polishKeyList(['a', 'b'], ['a']), /differ/);
+  assert.throws(() => polishKeyList(null, null), /explicit key list/);
+  assert.deepEqual(roundsIn(['mutants-r1.json', 'mutants-r2.json', 'mutants-r4.json', 'mutator-r3.json', 'judge-r3.json']), [1, 2, 4],
+    'a unit verified in two rounds still loads its polish round');
+});
+
+test('§10 finalize --round 4 merges: only the round\'s keys get a verdict, an untested mark and findings; every other committed row stays', () => {
+  const { rounds } = twoRounds();
+  const records = unitRecords();
+  // the committed state: a full finalize, then a hand edit (as the wave-end repairs made)
+  const base = finalize({ unit: U, records, rounds, readText, exists: (p) => p === SPAN_FILE });
+  const committed = structuredClone(base.verdicts);
+  committed.find((v) => v.key === 'combat.one')!.quote_spans.push({ file: SPAN_FILE, text: SPAN_TEXT, note: 'added by hand' } as never);
+  const recs = structuredClone(base.records);
+  recs.find((r) => r.key === 'combat.two')!.untested = true; // as committed
+  recs.find((r) => r.key === 'combat.three')!.text = 'Swift columns strike first.'; // the polish edit
+  const s4 = roundKeys(recs, 4, { changed: ['combat.three'], unverified: [], preferred: ['combat.one'] });
+  const p4 = plant({ unit: U, round: 4, records: recs, sel: s4, mutants: [{ baseKey: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' }] });
+  const decoy = p4.truth.decoys[0]!.key;
+  const doc = { verdicts: [verdict(decoy, 'contradicted', 'one source'), verdict('combat.three', 'confirmed', '', { tests_run: [] })],
+    bugs: [{ title: 'Swift late', summary: 's', evidence: [], rule: 'combat.three' }, { title: 'Decoy-driven', summary: 's', evidence: [], rule: decoy }] };
+  const r4: RoundFiles = { round: 4, truth: p4.truth, input: p4.input, attempts: [{ attempt: 1, doc }] };
+  const res = finalizePolish({ unit: U, records: recs, round: r4, findings: base.findings, verdicts: committed, readText, exists: (p) => p === SPAN_FILE });
+  const by = new Map(res.verdicts.map((v) => [v.key, v]));
+  assert.deepEqual([...by.keys()], ['combat.four', 'combat.one', 'combat.three', 'combat.two'], 'sorted, and no decoy');
+  assert.deepEqual([by.get('combat.three')!.round, by.get('combat.three')!.verifier], [4, 'U99-r4']);
+  assert.equal(by.get('combat.three')!.textHash, recordHash(recs.find((r) => r.key === 'combat.three')!), 'pinned to the polished text');
+  for (const k of ['combat.one', 'combat.two', 'combat.four']) assert.deepEqual(by.get(k), committed.find((v) => v.key === k), `${k} is left exactly as committed, hand edits and all`);
+  assert.equal(res.records.find((r) => r.key === 'combat.three')!.untested, true, 'the round\'s key is re-marked');
+  assert.equal(res.records.find((r) => r.key === 'combat.two')!.untested, true, 'another key keeps its committed mark');
+  assert.deepEqual(res.records.filter((r) => r.key !== 'combat.three'), recs.filter((r) => r.key !== 'combat.three'));
+  assert.deepEqual(res.findings.map((f) => f.title), [...base.findings.map((f) => f.title), 'Swift late'], 'only the round\'s own bugs, never the decoy\'s');
+  assert.deepEqual([res.report.keys, res.report.unverified, res.report.untested], [['combat.three'], [], ['combat.three']]);
+  assert.ok(!JSON.stringify(res).includes(decoy));
+  // refused: an invalid round, a different --keys list, a round that is not 4
+  const fooled = { ...r4, attempts: [{ attempt: 1, doc: { verdicts: [verdict(decoy, 'confirmed'), verdict('combat.three', 'confirmed')] } }] };
+  assert.throws(() => finalizePolish({ unit: U, records: recs, round: fooled, verdicts: committed, readText }), /no valid attempt/);
+  assert.throws(() => finalizePolish({ unit: U, records: recs, round: r4, verdicts: committed, keys: ['combat.two'], readText }), /not round 4's key list/);
+  assert.throws(() => finalizePolish({ unit: U, records: recs, round: { ...rounds[1]! }, verdicts: committed, readText }), /polish round/);
+});
+
+test('§10 a promoted CR example keeps the verdict; any other example change unverifies it', () => {
+  const ver = { text: 'Swift columns strike first.', examples: [{ text: 'A Swift column strikes.', test: null }] };
+  const rec = (examples: RuleRecord['examples']): RuleRecord => ({ key: 'k', parent: '608', order: 1, text: ver.text, examples, see: [], sources: {}, basis: 'printed', confidence: 'high', sourceHashes: {} });
+  assert.ok(sameAsVerified(rec(ver.examples), ver));
+  assert.ok(sameAsVerified(rec([{ text: 'A Swift column strikes.', test: '423-cr-combat-damage.test.ts::cr:k shows it' }]), ver), 'rebound to the promoted test');
+  assert.ok(sameAsVerified(rec([...ver.examples, { text: 'New.', test: '423-cr-combat-damage.test.ts::cr:k new' }]), ver), 'a promoted example added');
+  assert.ok(!sameAsVerified(rec([{ text: 'A Swift column strikes.', test: '02-combat.test.ts::other' }]), ver), 'rebound elsewhere');
+  assert.ok(!sameAsVerified(rec([{ text: 'A Sluggish column strikes.', test: null }]), ver), 'example text changed');
+});
+
+test('§10 stamp fills the hashes of the quoted claims, keeps what is there, drops the uncited; an owner call needs none', () => {
+  const x = fixtureExtract();
+  const r: RuleRecord = { ...structuredClone(fixtureInputs().records[0]!), sourceHashes: { 'RAQ 111#0': 'as drafted', 'RAQ 222#1': 'no longer cited' } };
+  r.sources.designer = [{ ref: 'RAQ 111#0', quote: 'q' }];
+  const out = stamp([r], x);
+  assert.deepEqual(out.records[0]!.sourceHashes, { 'RAQ 111#0': 'as drafted' }, 'the owner quote got a hash, or the drafted one moved');
+  assert.deepEqual([out.filled, out.dropped], [0, 1]);
+  assert.deepEqual(stamp([r], x, { refresh: true }).records[0]!.sourceHashes['RAQ 111#0'], 'c0');
+  const fresh = stamp([{ ...structuredClone(r), sourceHashes: {} }], x);
+  assert.deepEqual([fresh.records[0]!.sourceHashes, fresh.filled], [{ 'RAQ 111#0': 'c0' }, 1]);
+});
+
+test('§10 an untested rule is marked in all three editions; unit-scoped finding ids validate', () => {
+  const i = fixtureInputs();
+  A(i).untested = true;
+  const out = render(i, fixtureExtract());
+  assert.match(out.files.doc, /\(Untested: no executed test demonstrates it\.\)/);
+  assert.match(out.files.txt, /\(Untested: no executed test demonstrates it\.\)/);
+  assert.match(out.files.html, /class="chip v-untested">Untested</);
+  assert.deepEqual(validateFinding({ id: 'F-U12-3', title: 't', summary: 's', evidence: [{ file: 'f', quote: 'q' }], rule: 'r' }), []);
+});
+
+test('§10 a register-level finding (F-REG-<n>) has rule null; a unit finding still needs its rule; dupes and closed are checked', () => {
+  const f = (o: Record<string, unknown>) => validateFinding({ title: 't', summary: 's', evidence: [{ file: 'f', quote: 'q' }], ...o });
+  assert.deepEqual(f({ id: 'F-REG-1', rule: null, ct: 'CT-229' }), [], 'a register finding with rule null validates');
+  assert.equal(f({ id: 'F-REG-1', rule: 'r' }).length, 1, 'a register finding names no rule');
+  assert.equal(f({ id: 'F-U07-7', rule: null }).length, 1, 'a unit finding still needs its rule');
+  assert.deepEqual(f({ id: 'F-U07-7', rule: 'r', dupes: ['F-U07-9', 'F-REG-1'], closed: 'held by another ticket.' }), []);
+  assert.equal(f({ id: 'F-U07-7', rule: 'r', dupes: ['F-U07-7'] }).length, 1, 'a finding is not its own duplicate');
+  assert.equal(f({ id: 'F-U07-7', rule: 'r', closed: 'two\nlines' }).length, 1, 'closed is one line');
+  // a duplicate that names no real finding is caught by the checker
+  const i = fixtureInputs();
+  i.findings[0]!.dupes = ['F-9'];
+  assert.ok(check(i, fixtureExtract()).problems.some((p) => p.code === 'finding-missing' && /dupes names F-9/.test(p.msg)));
+});
+
+/* ── §11 cross-references inside prose ─────────────────────────────────── */
+
+test('§11 a key named in prose prints as its live number, in all three editions; bindings and file names are left alone', () => {
+  const i = fixtureInputs();
+  A(i).text += ' Who chooses is rule combat.damage.choice; ties follow combat.damage.choice too. Proof: 02-combat.test.ts.';
+  i.findings[0]!.summary += ' Measured by the probe for rule combat.damage.choice.';
+  i.discrepancies[0]!.resolution += ' Stated in combat.damage.choice.';
+  const out = render(i, fixtureExtract());
+  for (const [ed, f] of [['md', out.files.doc], ['txt', out.files.txt]] as const) {
+    assert.ok(f.includes('Who chooses is rule 608.1a; ties follow rule 608.1a too. Proof: 02-combat.test.ts.'), `${ed}: the key prints as its number`);
+    assert.ok(f.includes('Measured by the probe for rule 608.1a.'), `${ed}: a finding summary resolves`);
+  }
+  assert.ok(out.files.html.includes('Who chooses is rule <a href="#r608.1a">608.1a</a>; ties follow rule <a href="#r608.1a">608.1a</a> too.'), 'html: resolved and linked');
+  assert.ok(out.files.discrepanciesMd.includes('Stated in rule 608.1a.'));
+  // what is NOT a reference stays as written
+  const { refText, refsIn } = refResolver(i.ledger);
+  assert.equal(refText('02-combat.test.ts::cr:combat.damage.choice'), '02-combat.test.ts::cr:combat.damage.choice', 'a test binding');
+  assert.equal(refText('see combat.test.ts'), 'see combat.test.ts', 'a file name');
+  assert.equal(refText('section combat.damage'), 'section 608', 'a section key after "section"');
+  assert.equal(refText('(combat.damage)'), '(section 608)');
+  assert.deepEqual(refsIn('rule combat.damage.gone and rule 608.9 and rule 608.1a').map((x) => [x.ref, x.num ?? null]),
+    [['combat.damage.gone', null], ['608.9', null], ['608.1a', '608.1a']]);
+  // the check stays clean on resolvable references
+  assert.deepEqual(check(i, fixtureExtract()).problems.map((p) => p.code), []);
+});
+
+test('§11 the committed document prints no rule key and no dead rule number in its prose', () => {
+  if (!INPUTS) return;
+  const { refsIn } = refResolver(INPUTS.ledger);
+  const bad: string[] = [];
+  for (const k of ['doc', 'annexD', 'discrepanciesMd', 'ownerQuestions'] as const) {
+    let t = readFileSync(OUTPUT_PATHS[k], 'utf8');
+    t = t.replace(/<sub>[\s\S]*?<\/sub>/g, ''); // provenance ("Key: …") and test bindings are identifiers, not prose
+    const cl = t.indexOf(`## ${INPUTS.outline.changelog.title}`);
+    if (cl >= 0) t = t.slice(0, cl); // the changelog is keyed by rule key on purpose
+    for (const x of refsIn(t)) if (x.kind === 'key' || !x.num) bad.push(`${k}: ${x.ref}`);
+  }
+  assert.deepEqual(bad, []);
+});
+
+/* ── §12 the rules review page's document ──────────────────────────────── */
+
+// The game server builds the review page's document in-process (render.mjs
+// buildReview(), cached by its inputs' mtimes); nothing review-shaped is
+// committed. 437 proves the build is the editions' own text; this proves the
+// build of the COMMITTED records is the committed document.
+test('§12 buildReview runs on the committed data and agrees with the rendered document: same rule numbers, same keys', async () => {
+  const { buildReview } = await import('../scripts/cr/render.mjs');
+  const { readLedger } = await import('../scripts/cr/ledger.mjs');
+  const r = await buildReview({ ex: EX });
+  assert.equal(r.born, 0, `the review numbers ${r.born} rule(s) the committed ledger lacks — run npm --prefix client run cr:render`);
+  // its files are the committed files, under their committed names
+  const pairs = { doc: 'doc', html: 'html', txt: 'txt', annexD: 'annexD', disc: 'discrepanciesMd', oq: 'ownerQuestions', changelog: 'changelog' } as const;
+  for (const [w, k] of Object.entries(pairs)) {
+    const f = r.files[w as keyof typeof pairs];
+    assert.equal(f.name, relative(REPO_ROOT, OUTPUT_PATHS[k]).split('/').pop(), `files.${w} is not named as the committed file`);
+    assert.ok(f.text === readFileSync(OUTPUT_PATHS[k], 'utf8'), `files.${w} differs from the committed ${f.name} — run cr:render`);
+  }
+  // the same rule numbers, in the same order: every anchor of the committed .md and Annex D, and nothing else, is an id on the page
+  const md = readFileSync(OUTPUT_PATHS.doc, 'utf8') + readFileSync(OUTPUT_PATHS.annexD, 'utf8');
+  const mdNums = [...md.matchAll(/<a id="r([^"]+)"><\/a>/g)].map((m) => m[1]);
+  const pageNums = r.parts.flatMap((p) => [...p.html.matchAll(/<(?:h3|article)[^>]* id="r([^"]+)"/g)].map((m) => m[1]));
+  assert.ok(mdNums.length > 1500, `only ${mdNums.length} numbers in the committed document`);
+  assert.deepEqual(pageNums, mdNums);
+  // the same keys: the committed ledger's, and each rule on the page carries the key the committed .md prints for its number
+  const ledger = readLedger(CR_LEDGER);
+  assert.deepEqual(r.keys, Object.fromEntries(ledger.entries.map((e) => [e.key, e.num])));
+  const pageKeyOf = new Map<string, string>();
+  for (const p of r.parts) for (const m of p.html.matchAll(/<article class="rule [^"]*" id="r([^"]+)" data-crt="rule:([^"]+)"/g)) pageKeyOf.set(m[1]!, m[2]!);
+  assert.equal(pageKeyOf.size, ledger.entries.filter((e) => e.kind !== 'section').length, 'a rule on the page carries no key');
+  let printed = 0;
+  for (const chunk of md.split('<a id="r').slice(1)) {
+    const num = chunk.slice(0, chunk.indexOf('"'));
+    const key = /Key: ([^\s<]+)<\/sub>/.exec(chunk.split('\n\n<a id=')[0]!)?.[1];
+    if (!key) continue;
+    printed++;
+    assert.equal(pageKeyOf.get(num), key, `rule ${num}: the .md prints key ${key}, the page marks ${pageKeyOf.get(num)}`);
+  }
+  assert.ok(printed > 1500, `only ${printed} printed keys compared`);
+});

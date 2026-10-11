@@ -80,7 +80,9 @@ function capture() {
   const from = arg('--from');
   const step = arg('--step-of') ?? 'hand';
   const del = process.argv.includes('--delete');
-  const paths = process.argv.slice(3).filter((p, i, a) => !p.startsWith('--') && !['--from', '--step-of'].includes(a[i + 2]));
+  const paths = [];
+  const av = process.argv.slice(3);
+  for (let i = 0; i < av.length; i++) { if (['--from', '--step-of'].includes(av[i])) i++; else if (!av[i].startsWith('--')) paths.push(av[i]); }
   for (const p of paths) {
     let base = null;
     try { base = git(['rev-parse', `HEAD:${p}`]).trim(); } catch { base = null; }

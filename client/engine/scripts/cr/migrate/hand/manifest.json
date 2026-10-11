@@ -1,0 +1,71 @@
+{
+ "_doc": "Hand-written edits the migration applies (run.mjs step hand / delete). base = the blob each edit was written against; the edit is 3-way merged onto the current file.",
+ "files": {
+  "client/engine/scripts/cr/check.mjs": {
+   "op": "merge",
+   "step": "hand",
+   "base": "b78b3309b86e394ac9d174c6086857c8c91108d5",
+   "owned": true
+  },
+  "client/engine/scripts/cr/check.d.mts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "ba0ab3b38bcd590f835a27a6bf1f806989a2eb6a",
+   "owned": true
+  },
+  "client/engine/scripts/cr/extract.mjs": {
+   "op": "merge",
+   "step": "hand",
+   "base": "0981bf15db0d30682551f7050edad9efa3f4327e",
+   "owned": true
+  },
+  "client/engine/scripts/cr/extract.d.mts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "20753a552eada561691d1d82c0021a98821c31cc",
+   "owned": true
+  },
+  "client/engine/scripts/cr/schema.mjs": {
+   "op": "merge",
+   "step": "hand",
+   "base": "249290297c854a6ba0585944b2b569435f4bcdc7",
+   "owned": true
+  },
+  "client/engine/scripts/cr/schema.d.mts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "1a358e5a6acae08ee136a21d0c0caa705f049c42",
+   "owned": true
+  },
+  "client/engine/scripts/cr/render.mjs": {
+   "op": "merge",
+   "step": "hand",
+   "base": "7464136178e1b4429fb0ae50f61510157f517681",
+   "owned": true
+  },
+  "client/engine/scripts/cr/render.d.mts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "6d6de85581453c6ac1ed6dc971290b1ae1a50228",
+   "owned": true
+  },
+  "client/engine/scripts/cr/harness.mjs": {
+   "op": "merge",
+   "step": "hand",
+   "base": "744e7f1c88a32c7cabf2b3fe3786a85dcf82e4e0",
+   "owned": true
+  },
+  "client/engine/scripts/cr/pack.mjs": {
+   "op": "merge",
+   "step": "hand",
+   "base": "8ee6de7ba6937e2b959485747f92730591f71b45",
+   "owned": true
+  },
+  "client/engine/test/409-comprehensive-rules.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "dd1296c1efb532401b7a6b67e5d719a62ee16cf0",
+   "owned": true
+  }
+ }
+}
