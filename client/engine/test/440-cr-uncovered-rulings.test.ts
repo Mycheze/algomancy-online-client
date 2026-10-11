@@ -81,3 +81,16 @@ test('cr:zones.changes.leave-play-order — a unit exchanged out of play despawn
   assert.equal(firstAt(h, 'died', 'Hooba-Mon'), -1, 'an exchange is not a death');
   assert.ok(despawned < trashed, `its despawn (event ${despawned}) comes before its trash (event ${trashed})`);
 });
+
+// ── Annex D: the cache panel while a decision is open (promoted from the U24 round-4 verifier's probe) ──
+
+test('cr:annexd.display.panels.cache-dialog-only — while a decision is open, no cache-panel card is promoted to a one-click use', async () => {
+  const { playableCachedIndexes } = await import('../../ui/inspect.ts');
+  // while a decision is open the only legal actions are its answers (D6.3c)
+  const decideOnly = [{ type: 'decide', seat: 0, choice: 0 }, { type: 'decide', seat: 0, choice: 1 }] as never[];
+  assert.deepEqual(playableCachedIndexes(decideOnly), [],
+    'no cached entry gets the one-click thumb, so a click on any of them opens the full cache');
+  // control: the same function does promote a cache entry with a live offer of any mode (R311)
+  const graftOnly = [{ type: 'graft', seat: 0, from: 'cache', index: 0, hostId: 5, position: 0 }] as never[];
+  assert.deepEqual(playableCachedIndexes(graftOnly), [0], 'a graft-only cache offer IS promoted');
+});

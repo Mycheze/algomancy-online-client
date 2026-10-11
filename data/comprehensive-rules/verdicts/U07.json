@@ -1550,6 +1550,59 @@
     "problem": ""
   },
   {
+    "key": "zones.changes.leave-play-order",
+    "textHash": "1328d5bee446f030",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U07-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "push mods+body, announce (fire), then trash"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/440-cr-uncovered-rulings.test.ts",
+        "pattern": "cr:zones.changes.leave-play-order",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/129-disposal-tail.test.ts",
+        "pattern": "R153",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R153 (its step 3, the announce)",
+        "supports": "yes",
+        "note": "announce logged and fired after every push, before every trash"
+      },
+      {
+        "ref": "history R153 steps 1/4 superseded",
+        "supports": "yes",
+        "note": "record does not rely on the superseded parts"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "When something leaves **play** for a bin, exactly one sequence runs:"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "before every trash, so a death listener and a despawn listener see the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "zones.changes.mods",
     "textHash": "000de19b9c03a408",
     "verdict": "confirmed",

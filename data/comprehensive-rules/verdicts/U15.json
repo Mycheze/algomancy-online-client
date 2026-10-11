@@ -3147,6 +3147,64 @@
     "carried": "example-label 2026-10-11"
   },
   {
+    "key": "effects.triggered.that-item",
+    "textHash": "7ed4b782a8b9e057",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U15-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-c.ts:Void Mandible (cardPlayed item id)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "pattern": "Void Mandible",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/162-item-identity-and-truthful-events.test.ts",
+        "pattern": "Origon negates",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Void Mandible",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R191 (§1)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R207",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When a nontoken card is played during battle, sacrifice me. If you do, negate that effect."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A play event names the item it made, and a listener matches on that id."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "effects.triggered.two-moments",
     "textHash": "f4eff4cd07531d6d",
     "verdict": "confirmed",

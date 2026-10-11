@@ -4235,8 +4235,13 @@
     "key": "annexd.display.panels.cache-dialog-only",
     "parent": "annexd.display.panels",
     "order": 1,
-    "text": "A cached card whose only use right now is to be grafted or applied as an augment, or that is a choice in an open decision, is not used from the panel: clicking it opens the full cache.",
-    "examples": [],
+    "text": "While a decision is open, clicking a card in the cache panel opens the full cache. A cached card that is one of the decision's choices is not picked from the panel.",
+    "examples": [
+      {
+        "text": "With a decision open, no card in the cache panel is used by one click, so clicking any of them opens the full cache.",
+        "test": "440-cr-uncovered-rulings.test.ts::cr:annexd.display.panels.cache-dialog-only — while a decision is open, no cache-panel card is promoted to a one-click use"
+      }
+    ],
     "see": [],
     "sources": {
       "printed": [],
@@ -4244,23 +4249,20 @@
       "ours": [],
       "rulings": [
         {
-          "ref": "R192 (its CT-64 decision)",
-          "quote": "an entry whose only offer is an augment or a graft from cache keeps the dialog route"
-        },
-        {
-          "ref": "R192 (its CT-64 decision)",
+          "ref": "R192 (its decision-target exception)",
           "quote": "and a cached card that is a legal decision TARGET (Prismatic Observer, R41) likewise"
         }
       ],
       "history": [],
       "engine": [],
       "tests": [
+        "440-cr-uncovered-rulings.test.ts",
         "163-cache-affordance-and-badges.test.ts"
       ]
     },
     "basis": "owner",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): R192 (its exceptions); no existing test drives either exception had no CR rule before the register is retired.",
+    "notes": "Drafted 2026-10-11 (coverage round) for R192's exceptions. Revised after the round-4 verifier's partial: R192's other exception (an augment- or graft-only cache entry keeps the dialog route) was overtaken by R311 (the cache plays like the hand), and the client promotes such an entry to the one-click thumb, which D6.16 already states. Only the decision half is kept. F-U24-6 (no R311->R192 supersession edge) is a register question, filed in the round's tickets, not an engine divergence, so it is removed.",
     "sourceHashes": {
       "R192": "adedcbd988e9d0a572f71648f0e048fad01a6dab9d08bc68f2dd70d49a14ad3d"
     }

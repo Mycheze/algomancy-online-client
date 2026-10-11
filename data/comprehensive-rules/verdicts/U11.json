@@ -2850,6 +2850,53 @@
     "carried": "example-label 2026-10-11"
   },
   {
+    "key": "combat.blocks.who.always-legal",
+    "textHash": "27a88143199c7355",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U11-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:legalActions (compulsoryBlocks core)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "R84/R76: legalActions always offers a legal declaration",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R76 (its legalActions contract)",
+        "supports": "yes",
+        "note": "contract survives per supersession.json scope"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "to offer at least one legal block declaration, because Alluring is conjunctive"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "least one must be offered.*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "combat.blocks.who.attributes",
     "textHash": "2530b1a79a76c38e",
     "verdict": "confirmed",

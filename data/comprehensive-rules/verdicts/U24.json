@@ -706,6 +706,49 @@
     "carried": "demoted-example 2026-10-11"
   },
   {
+    "key": "annexd.confirm.refusals",
+    "textHash": "fe158e31dce15a85",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:joinRefusal",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/ui/main.ts:renderConnecting / error handler",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/254-join-nonexistent-room.test.ts",
+        "pattern": "R274",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R274",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "There is no screen on which the server may say \"no\" and the client may say nothing."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.confirm.say-so",
     "textHash": "bd210f878bae3c4d",
     "verdict": "confirmed",
@@ -932,6 +975,53 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "annexd.display.arrows",
+    "textHash": "15d5239892338060",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/anim.ts:headStop",
+        "agrees": true,
+        "note": "d <= borderDistance + HEAD_SLACK (=HEAD_SIZE) else HEAD_INSET"
+      },
+      {
+        "loc": "client/ui/anim.ts:arrowGeometry",
+        "agrees": true,
+        "note": "aims at exact centre"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/234-arrowhead-clears-text.test.ts",
+        "pattern": "[R255]",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R255",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the AIM does not move; the STOP does."
+      },
+      {
+        "file": "client/ui/anim.ts",
+        "text": "export const HEAD_SLACK = HEAD_SIZE;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.display.copies",
@@ -1248,6 +1338,44 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "annexd.display.hover-tip",
+    "textHash": "67aca6a0fb3a4af4",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:scrollHidesHoverTip",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/199-hover-scroll.test.ts",
+        "pattern": "R230 §",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R230",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The document scrolled → everything moved, hide."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.display.live-values",
@@ -1700,6 +1828,103 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "annexd.display.panels",
+    "textHash": "902931d5739ea33d",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:regionCacheHtml (cacheplay) / regionPanelHtml (binplay thumb)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/163-cache-affordance-and-badges.test.ts",
+        "pattern": "R192 §",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/176-nested-affordance-and-serialiser.test.ts",
+        "pattern": "R205 §4",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R192 (its CT-64 decision)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R205 (its CT-82(b) bin panel)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "every other thumb, and every other pixel of the panel, still opens the dialog."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.panels.cache-dialog-only",
+    "textHash": "c50d75940780399b",
+    "verdict": "partial",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:playableCachedIndexes",
+        "agrees": false,
+        "note": "R311: any cache-sourced offer (augment/graft/prophesy) makes the entry live, so the thumb gets data-btn=cacheplay"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1: a graft-only / augment-only cache offer makes the entry live (cacheplay thumb)",
+        "passed": true,
+        "demonstrates": "no: a graft-only or augment-only cached entry IS promoted to the one-click thumb"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1b: with only a decision open (decide actions), no cache thumb is promoted",
+        "passed": true,
+        "demonstrates": "yes: the decision-target half holds"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R192 (its CT-64 decision)",
+        "supports": "partial",
+        "note": "verbatim, but its augment/graft carve-out was overtaken by R311 (cache plays like the hand for every mode), which the client implements in playableCachedIndexes; supersession.json has no R311->R192 edge"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "R311: and so is one that can only be augmented, grafted or ambushed: the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "an entry whose only offer is an augment or a graft from cache keeps the dialog route"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The augment/graft half is no longer true: since R311 the client's playableCachedIndexes counts augment/graft-from-cache offers, so such a thumb plays on one click (probe U24-1). The decision-target half holds. No test was bound; examples empty."
   },
   {
     "key": "annexd.display.reminders",
@@ -3545,6 +3770,44 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "annexd.reveal.beats.journeys",
+    "textHash": "76254debad0a06a3",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/anim.ts:flightDelays",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/176-nested-affordance-and-serialiser.test.ts",
+        "pattern": "R205 §6",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R205 (its CT-82(d) journey rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The unit of spacing is a JOURNEY, not an item."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.reveal.beats.never-gates",

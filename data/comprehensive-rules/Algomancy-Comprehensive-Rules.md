@@ -3324,7 +3324,7 @@ order.
 
 > *Example: Hooba-Mon exchanges itself for a unit card in its controller's bin. It despawns, and only then is it trashed. It does not die.*
 
-<sub>Basis: Owner call · Verified: not verified; 2 gate test files · Rulings: R153 (its step 3, the announce), R153 (its step 3, the announce) · Replaces: R153 (its steps 1 and 4 (mods to their owner's bin; every nontoken mod trashed; a token body trashed) superseded by R250, R244 and R306; its other steps are stated by 400.4, 410.4, 410.5 and 801.2) · Tests: 440-cr-uncovered-rulings.test.ts, 129-disposal-tail.test.ts · Example tests: 440-cr-uncovered-rulings.test.ts::cr:zones.changes.leave-play-order — a unit that dies dies first, and is trashed after, 440-cr-uncovered-rulings.test.ts::cr:zones.changes.leave-play-order — a unit exchanged out of play despawns first, and is trashed after · Key: zones.changes.leave-play-order</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R153 (its step 3, the announce), R153 (its step 3, the announce) · Replaces: R153 (its steps 1 and 4 (mods to their owner's bin; every nontoken mod trashed; a token body trashed) superseded by R250, R244 and R306; its other steps are stated by 400.4, 410.4, 410.5 and 801.2) · Tests: 440-cr-uncovered-rulings.test.ts, 129-disposal-tail.test.ts · Example tests: 440-cr-uncovered-rulings.test.ts::cr:zones.changes.leave-play-order — a unit that dies dies first, and is trashed after, 440-cr-uncovered-rulings.test.ts::cr:zones.changes.leave-play-order — a unit exchanged out of play despawns first, and is trashed after · Key: zones.changes.leave-play-order</sub>
 
 ## 5. Turn Structure
 
@@ -4712,7 +4712,7 @@ order.
 
 > *Example: Two attacking columns both have Alluring, and their triggers targeted the same defending unit. The defending player is still offered a legal declaration.*
 
-<sub>Basis: Owner call · Verified: not verified; 2 gate test files · Rulings: R84, R76 (its legalActions contract) · Tests: 53-playtest-round7.test.ts, 06-fuzz.test.ts · Example test: 53-playtest-round7.test.ts::R84/R76: legalActions always offers a legal declaration (the fuzz-1993 hang) · Key: combat.blocks.who.always-legal</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Rulings: R84, R76 (its legalActions contract) · Tests: 53-playtest-round7.test.ts, 06-fuzz.test.ts · Example test: 53-playtest-round7.test.ts::R84/R76: legalActions always offers a legal declaration (the fuzz-1993 hang) · Key: combat.blocks.who.always-legal</sub>
 
 <a id="r606.3"></a>**606.3.** An attacking column is blocked once a defending unit has been placed in front of it. The whole column is blocked, however many attacking units it holds. See rule 608.
 
@@ -6329,7 +6329,7 @@ order.
 
 > *Example: Origon negates the spell whose play made it trigger, even with an identical spell above it on the stack.*
 
-<sub>Basis: Mixed · Verified: not verified; 2 gate test files · Printed: card: Void Mandible · Rulings: R191 (§1), R191 (§1), R207, R207 · Tests: 178-played-item-and-erased-mods.test.ts, 162-item-identity-and-truthful-events.test.ts · Example tests: 178-played-item-and-erased-mods.test.ts::Void Mandible: with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES, 178-played-item-and-erased-mods.test.ts::Void Mandible: a COPY on the stack is never negated — R164, a copy was not played, 162-item-identity-and-truthful-events.test.ts::Origon negates the item the play event NAMES, with a second identical spell above it on the stack · Key: effects.triggered.that-item</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Void Mandible · Rulings: R191 (§1), R191 (§1), R207, R207 · Tests: 178-played-item-and-erased-mods.test.ts, 162-item-identity-and-truthful-events.test.ts · Example tests: 178-played-item-and-erased-mods.test.ts::Void Mandible: with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES, 178-played-item-and-erased-mods.test.ts::Void Mandible: a COPY on the stack is never negated — R164, a copy was not played, 162-item-identity-and-truthful-events.test.ts::Origon negates the item the play event NAMES, with a second identical spell above it on the stack · Key: effects.triggered.that-item</sub>
 
 <a id="r707"></a>
 ### 707. Static Abilities
@@ -10178,13 +10178,13 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 
 | verdict | rules |
 |---|---|
-| confirmed | 1776 |
+| confirmed | 1784 |
 | partial | 11 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
-| not verified | 10 |
-| text changed | 0 |
+| not verified | 1 |
+| text changed | 1 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 

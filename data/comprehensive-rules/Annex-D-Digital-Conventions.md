@@ -678,7 +678,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: Two cards erased from the field, with nowhere named to go, are not grouped.*
 
-<sub>Basis: Owner call · Verified: not verified; 1 gate test file · Rulings: R205 (its CT-82(d) journey rule), R205 (its CT-82(d) journey rule), R205 (its CT-82(d) journey rule) · Tests: 176-nested-affordance-and-serialiser.test.ts · Example tests: 176-nested-affordance-and-serialiser.test.ts::R205 §6: flights that made the same journey in one render share a beat, 176-nested-affordance-and-serialiser.test.ts::R205 §6: a sequence still looks sequential — different journeys are spaced, 176-nested-affordance-and-serialiser.test.ts::R205 §6: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step · Key: annexd.reveal.beats.journeys</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R205 (its CT-82(d) journey rule), R205 (its CT-82(d) journey rule), R205 (its CT-82(d) journey rule) · Tests: 176-nested-affordance-and-serialiser.test.ts · Example tests: 176-nested-affordance-and-serialiser.test.ts::R205 §6: flights that made the same journey in one render share a beat, 176-nested-affordance-and-serialiser.test.ts::R205 §6: a sequence still looks sequential — different journeys are spaced, 176-nested-affordance-and-serialiser.test.ts::R205 §6: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step · Key: annexd.reveal.beats.journeys</sub>
 
 <a id="rD6.8"></a>**D6.8.** A unit that has become a copy of another card is drawn with the art of the card it copied, and stays marked as a copy. See rule 710.
 
@@ -866,11 +866,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: A bin card that cannot be used now opens the full bin when clicked.*
 
-<sub>Basis: Owner call · Verified: not verified; 2 gate test files · Rulings: R192 (its CT-64 decision), R205 (its CT-82(b) bin panel) · Tests: 163-cache-affordance-and-badges.test.ts, 176-nested-affordance-and-serialiser.test.ts · Example tests: 163-cache-affordance-and-badges.test.ts::R192 §1: a playable cached card plays on the FIRST click of its region-cache thumb, 163-cache-affordance-and-badges.test.ts::R192 §2: an unplayable cache thumb carries no affordance, so the click still opens the zone, 176-nested-affordance-and-serialiser.test.ts::R205 §4: a bin card usable RIGHT NOW is one click from the region panel, 176-nested-affordance-and-serialiser.test.ts::R205 §4: an unusable bin thumb keeps the old route — the click opens the zone · Key: annexd.display.panels</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Rulings: R192 (its CT-64 decision), R205 (its CT-82(b) bin panel) · Tests: 163-cache-affordance-and-badges.test.ts, 176-nested-affordance-and-serialiser.test.ts · Example tests: 163-cache-affordance-and-badges.test.ts::R192 §1: a playable cached card plays on the FIRST click of its region-cache thumb, 163-cache-affordance-and-badges.test.ts::R192 §2: an unplayable cache thumb carries no affordance, so the click still opens the zone, 176-nested-affordance-and-serialiser.test.ts::R205 §4: a bin card usable RIGHT NOW is one click from the region panel, 176-nested-affordance-and-serialiser.test.ts::R205 §4: an unusable bin thumb keeps the old route — the click opens the zone · Key: annexd.display.panels</sub>
 
-<a id="rD6.16a"></a>**D6.16a** A cached card whose only use right now is to be grafted or applied as an augment, or that is a choice in an open decision, is not used from the panel: clicking it opens the full cache.
+<a id="rD6.16a"></a>**D6.16a** While a decision is open, clicking a card in the cache panel opens the full cache. A cached card that is one of the decision's choices is not picked from the panel.
 
-<sub>Basis: Owner call · Verified: not verified; 1 gate test file · Rulings: R192 (its CT-64 decision), R192 (its CT-64 decision) · Tests: 163-cache-affordance-and-badges.test.ts · Key: annexd.display.panels.cache-dialog-only</sub>
+> *Example: With a decision open, no card in the cache panel is used by one click, so clicking any of them opens the full cache.*
+
+<sub>Basis: Owner call · Verified: not verified (the text changed after verification); 2 gate test files · Rulings: R192 (its decision-target exception) · Tests: 440-cr-uncovered-rulings.test.ts, 163-cache-affordance-and-badges.test.ts · Example test: 440-cr-uncovered-rulings.test.ts::cr:annexd.display.panels.cache-dialog-only — while a decision is open, no cache-panel card is promoted to a one-click use · Key: annexd.display.panels.cache-dialog-only</sub>
 
 <a id="rD6.17"></a>**D6.17.** A scroll hides a card's long-hover tooltip only if the scroll could have moved that card: a scroll of the whole page, or of a panel the card is inside. A scroll of anything else, such as the side rail, leaves the tooltip shown. When no card is hovered, any scroll hides the tooltip.
 
@@ -880,7 +882,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: A panel holding a different card scrolls. The hovered card's tooltip stays.*
 
-<sub>Basis: Owner call · Verified: not verified; 1 gate test file · Rulings: R230, R230, R230 · Tests: 199-hover-scroll.test.ts · Example tests: 199-hover-scroll.test.ts::R230 §1: the focus rail scrolling does NOT hide the tip — this is #110, 199-hover-scroll.test.ts::R230 §2: a scroll that could have MOVED the card still hides the tip, 199-hover-scroll.test.ts::R230 §4: a scroller holding some OTHER card does not hide this one · Key: annexd.display.hover-tip</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R230, R230, R230 · Tests: 199-hover-scroll.test.ts · Example tests: 199-hover-scroll.test.ts::R230 §1: the focus rail scrolling does NOT hide the tip — this is #110, 199-hover-scroll.test.ts::R230 §2: a scroll that could have MOVED the card still hides the tip, 199-hover-scroll.test.ts::R230 §4: a scroller holding some OTHER card does not hide this one · Key: annexd.display.hover-tip</sub>
 
 <a id="rD6.18"></a>**D6.18.** An arrow from an effect to its target is aimed at the exact centre of the target. Where the target shows text near its centre (a player's life total, the name on a card drawn without its picture, the label of a stack item with no picture), the arrowhead stops just short of that text, so the text can still be read. On a card whose picture has loaded, the arrowhead is not moved. If the text cannot be cleared without the head stopping more than a head's length outside the target, the head stops where it otherwise would.
 
@@ -890,7 +892,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: A target whose label is too big to clear keeps the usual stopping point.*
 
-<sub>Basis: Owner call · Verified: not verified; 1 gate test file · Rulings: R255, R255, R255, R255, R255 · Tests: 234-arrowhead-clears-text.test.ts · Example tests: 234-arrowhead-clears-text.test.ts::[R255] every measured endpoint has an arrowhead that clears its text, 234-arrowhead-clears-text.test.ts::[R255] an endpoint with nothing legible in the middle is not moved at all, 234-arrowhead-clears-text.test.ts::[R255] a label too big to clear keeps the old inset rather than parking outside · Key: annexd.display.arrows</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R255, R255, R255, R255, R255 · Tests: 234-arrowhead-clears-text.test.ts · Example tests: 234-arrowhead-clears-text.test.ts::[R255] every measured endpoint has an arrowhead that clears its text, 234-arrowhead-clears-text.test.ts::[R255] an endpoint with nothing legible in the middle is not moved at all, 234-arrowhead-clears-text.test.ts::[R255] a label too big to clear keeps the old inset rather than parking outside · Key: annexd.display.arrows</sub>
 
 <a id="rD7"></a>
 ### D7. Confirmations and Misclicks
@@ -1027,7 +1029,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 > *Example: The refusal for an unknown code names the code.*
 
-<sub>Basis: Owner call · Verified: not verified; 1 gate test file · Rulings: R274, R274 · Tests: 254-join-nonexistent-room.test.ts · Example tests: 254-join-nonexistent-room.test.ts::R274 §2 a refused join reaches the connecting screen instead of Connecting forever, 254-join-nonexistent-room.test.ts::R274 §3 an error in the constructed waiting room lands too, where there is still no board, 254-join-nonexistent-room.test.ts::R274 §1 a code the server never minted is refused, and the refusal names it · Key: annexd.confirm.refusals</sub>
+<sub>Basis: Owner call · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Rulings: R274, R274 · Tests: 254-join-nonexistent-room.test.ts · Example tests: 254-join-nonexistent-room.test.ts::R274 §2 a refused join reaches the connecting screen instead of Connecting forever, 254-join-nonexistent-room.test.ts::R274 §3 an error in the constructed waiting room lands too, where there is still no board, 254-join-nonexistent-room.test.ts::R274 §1 a code the server never minted is refused, and the refusal names it · Key: annexd.confirm.refusals</sub>
 
 <a id="rD8"></a>
 ### D8. Tutorial and Single-Card Modes
