@@ -13,10 +13,10 @@ Three things live here, each named once:
 
 2. must_cite -> chunk matching (`parse_cite`, `cite_matches`). The ONE place
    that knows how a gold citation ("CR 608.2b", "RAQ <thread>", "card: Name",
-   "Discord <channel>#<message index>") corresponds to a corpus chunk. Today's
-   corpus has no CR chunks at all, so every CR cite is "not measurable" on it:
-   recall is computed only over cites some chunk in the corpus COULD satisfy,
-   and the run records how many that was.
+   "Discord <channel>#<message index>") corresponds to a corpus chunk. Recall
+   is computed only over cites some chunk in the corpus COULD satisfy (the
+   pre-2026-10-11 corpus had no CR chunks, so every CR cite was unmeasurable
+   on it), and the run records how many that was.
 
 3. The judge: the rubric, the prompt, strict-JSON parsing and the cache.
 """
@@ -91,9 +91,9 @@ def parse_cite(cite: str):
 
 
 def _cr_covers(chunk_num: str, want: str) -> bool:
-    """Does the chunk for rule `chunk_num` contain rule `want`? A chunk is one
-    numbered rule WITH its subrules (WS2), so cr:608.2 covers 608.2b, and
-    cr:608 covers 608.2 — but cr:608.2 does not cover 608.21."""
+    """Fallback for a CR chunk WITHOUT metadata.nums: assume it is one numbered
+    rule with all its subrules, so cr:608.2 covers 608.2b and cr:608 covers
+    608.2 — but cr:608.2 does not cover 608.21."""
     if want == chunk_num:
         return True
     return want.startswith(chunk_num) and bool(_CR_TAIL.match(want[len(chunk_num):]))
@@ -158,12 +158,20 @@ def cite_matches(cite: str, row: dict, discord: DiscordIndex | None = None) -> b
     cid = row.get("id", "")
     meta = row.get("metadata") or {}
     if kind == "cr":
+        if not cid.startswith("cr"):
+            return False
+        if meta.get("kind") == "glossary":
+            return False        # a glossary row's nums POINT at a rule; it does not contain it
+        nums = meta.get("nums")
+        if nums:
+            # build_cr.py: one chunk = a rule and the subrules that fit beside
+            # it; a long rule is split, and the continuation piece is named
+            # after ITS first subrule (cr:802.16g holds 802.16g–j, cr:802.16
+            # only 802.16–f). So `nums` is the truth, not the id prefix.
+            return key in [str(n) for n in nums]
         if cid.startswith("cr:"):
             return _cr_covers(_base_id(cid)[3:], key)
-        nums = meta.get("num") or meta.get("rule") or meta.get("rules") or meta.get("nums")
-        if isinstance(nums, str):
-            nums = [nums]
-        return bool(nums) and cid.startswith("cr") and any(_cr_covers(str(n), key) for n in nums)
+        return False
     if kind == "raq":
         tail, _ = _url_tail(row)
         return (_base_id(cid) == f"ruling:raq-{key}" or tail == key

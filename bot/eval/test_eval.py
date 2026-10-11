@@ -51,6 +51,12 @@ check("CR subrule inside its rule's chunk", ev.cite_matches("CR 608.2b", cr("608
 check("CR split chunk id", ev.cite_matches("CR 608.2b", cr("608.2#1")))
 check("CR 608.21 is not inside 608.2", not ev.cite_matches("CR 608.21", cr("608.2")))
 check("CR annex D", ev.cite_matches("CR D4.1c", cr("D4.1")))
+crn = lambda cid, nums, kind="rule": {"id": cid, "metadata": {"kind": kind, "nums": nums}}
+check("CR by build_cr nums", ev.cite_matches("CR 103.1d", crn("cr:103.1", ["103.1", "103.1a", "103.1d"])))
+check("CR continuation piece: nums beat the id prefix",
+      not ev.cite_matches("CR 802.16g", crn("cr:802.16", ["802.16", "802.16a"]))
+      and ev.cite_matches("CR 802.16g", crn("cr:802.16g", ["802.16g", "802.16h"])))
+check("CR glossary row does not count as its rule", not ev.cite_matches("CR 107.1", crn("cr:glossary.x", ["107.1"], "glossary")))
 check("CR never matches a manual chunk", not ev.cite_matches("CR 104.2", {"id": "manual:0002", "metadata": {}}))
 check("card", ev.cite_matches("card: Temporal Rift", {"id": "card:Temporal Rift", "metadata": {}}))
 check("card is exact", not ev.cite_matches("card: Rift", {"id": "card:Temporal Rift", "metadata": {}}))
@@ -118,6 +124,27 @@ GOLD = [
 gold_path.write_text("".join(json.dumps(g) + "\n" for g in GOLD))
 
 
+def _row(cid, text, stype, meta=None, auth=1):
+    return {"id": cid, "text": text, "source": "fixture", "source_type": stype, "authority": auth,
+            "authority_label": "fixture", "outdated_risk": False, "title": cid, "metadata": meta or {}}
+
+
+# The test's own corpus: it must not depend on what the live corpus holds today.
+FIXTURE = [
+    _row("cr:103.1", "103.1 Starting the game. 103.1d Each player's life total starts at 30.", "cr",
+         {"kind": "rule", "num": "103.1", "nums": ["103.1", "103.1a", "103.1d"], "scope": "game"}),
+    _row("cr:glossary.life", "Life: how much damage a player can take. See rule 103.1d.", "cr",
+         {"kind": "glossary", "nums": ["103.1d"], "scope": "game"}),
+    _row("card:Monke", "Monke\nUnit\nA monkey with 30 life worth of mischief.", "card", {"name": "Monke"}),
+    _row("manual:0002", "Each player begins with 30 life. Team games share nothing.", "rulebook"),
+    _row("glossary:team", "Team games: players on a team start with life as normal.", "glossary", {}, 2),
+]
+corpus_path = scratch / "corpus.jsonl"
+corpus_path.write_text("".join(json.dumps(r) + "\n" for r in FIXTURE))
+GOLD[0]["must_cite"] = ["card: Monke", "CR 103.1d", "CR 999.9"]
+gold_path.write_text("".join(json.dumps(g) + "\n" for g in GOLD))
+
+
 def resp(content, usage=None):
     return NS(choices=[NS(message=NS(content=content), finish_reason="stop")],
               usage=usage or NS(prompt_tokens=1000, completion_tokens=100, prompt_cache_hit_tokens=0,
@@ -134,6 +161,8 @@ class FakeModel:
         q = p["messages"][-1]["content"]
         if "BOOM" in q:
             raise RuntimeError("model exploded")       # not retryable: recorded, not raised
+        if "Retrieved passages:\n[" not in q:
+            return resp("30 life [nope:1]")
         tag = q.split("Retrieved passages:\n[", 1)[1].split("]", 1)[0]   # the first passage shown
         return resp(f"30 life [{tag}] [nope:1]")
 
@@ -161,19 +190,27 @@ os.environ["EVAL_FAKE_JUDGE_KEY"] = "x"
 runner.make_judge = lambda args: runner.Judge(fj, "fake-judge", "https://judge.test", True,
                                               ev.JudgeCache(runner.eval_dir() / "judge-cache.jsonl"))
 out = scratch / "run.jsonl"
-argv = ["--gold", str(gold_path), "--out", str(out), "--api-key-env", "EVAL_FAKE_KEY",
+argv = ["--gold", str(gold_path), "--corpus", str(corpus_path), "--out", str(out), "--api-key-env", "EVAL_FAKE_KEY",
         "--judge-key-env", "EVAL_FAKE_JUDGE_KEY", "--label", "fake", "--concurrency", "2"]
 with contextlib.redirect_stdout(io.StringIO()):
     runner.main(argv)
 head, items = ev.read_run(out)
-check("header names the run and the corpus", head["label"] == "fake" and head["corpus_chunks"] > 1000)
+check("header names the run, the corpus and the surface", head["label"] == "fake"
+      and head["corpus_chunks"] == len(FIXTURE) and head["surface"] == "web" and head["cr_notes"] is False)
 check("every item has a row", set(items) == {"t1", "t2", "t3"})
 check("answer, cost and latency recorded", items["t1"]["answer"].startswith("30")
       and items["t1"]["usage"]["prompt"] == 1000 and items["t1"]["total_ms"] is not None)
 check("cited tag resolves; unknown tag reported", items["t1"]["cited_unresolved"] == ["nope:1"]
       and len(items["t1"]["cited"]) == 2)
-check("CR cite is unmeasurable on today's corpus, card is measurable",
-      items["t1"]["retrieval"]["measurable"] == ["card: Monke"])
+check("measurable = cites some fixture chunk can satisfy",
+      items["t1"]["retrieval"]["measurable"] == ["card: Monke", "CR 103.1d"])
+check("CR cite found through the rule chunk, not the glossary row",
+      items["t1"]["retrieval"]["found"]["CR 103.1d"] == "cr:103.1")
+check("surface web reaches core", items["t1"]["surface"] == "web")
+with contextlib.redirect_stdout(io.StringIO()):
+    runner.main(argv[:argv.index("--out") + 1] + [str(scratch / "discord.jsonl")] + argv[argv.index("--out") + 2:]
+                + ["--surface", "discord", "--ids", "t2", "--no-judge"])
+check("surface discord reaches core", ev.read_run(scratch / "discord.jsonl")[1]["t2"]["surface"] == "discord")
 hist_call = next(c for c in fake.calls if "team games" in c["messages"][-1]["content"])
 check("follow-up history reaches the model, citations stripped",
       any(m["role"] == "assistant" and m["content"] == "30" for m in hist_call["messages"]))
@@ -204,7 +241,8 @@ check("edited gold item is re-judged, the other is not", fj.calls == 3)
 # retrieval-only: no model call, no judge
 n_before = len(fake.calls)
 with contextlib.redirect_stdout(io.StringIO()):
-    runner.main(["--gold", str(gold_path), "--retrieval-only", "--out", str(scratch / "rec.jsonl")])
+    runner.main(["--gold", str(gold_path), "--corpus", str(corpus_path), "--retrieval-only",
+                 "--out", str(scratch / "rec.jsonl")])
 _h3, rec = ev.read_run(scratch / "rec.jsonl")
 check("retrieval-only makes no model call", len(fake.calls) == n_before and rec["t1"]["retrieved"])
 

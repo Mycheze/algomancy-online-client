@@ -90,6 +90,13 @@ def parse_args(argv=None):
                     help="NAME of the env var holding the answering key (default LLM_API_KEY/DEEPSEEK_API_KEY)")
     ap.add_argument("--reasoning", choices=("off", "on", "auto"), default="auto",
                     help="core's math-mode router: off, on (always), auto (production)")
+    ap.add_argument("--surface", choices=("web", "discord"), default="web",
+                    help="core's surface argument: how digital-client conventions are worded. "
+                         "web (default) = the in-game judge box and web page, which is what "
+                         "the digital-only items ask about")
+    ap.add_argument("--cr-notes", action="store_true",
+                    help="let core fetch the LIVE open review notes off the game server (needs "
+                         "ALGO_BOT_TOKEN and a server); off by default so a run is reproducible")
     ap.add_argument("--corpus", default=None, help="corpus JSONL (default: the repo corpus)")
     ap.add_argument("--gold", default=str(ev.GOLD))
     ap.add_argument("--limit", type=int, default=None)
@@ -176,7 +183,7 @@ def make_judge(args):
 
 # ── one item ────────────────────────────────────────────────────────────────
 
-async def run_item(item, measurable, judge, discord, retrieval_only=False):
+async def run_item(item, measurable, judge, discord, retrieval_only=False, surface="web"):
     import core
     row = {"type": "item", "id": item["id"], "category": item.get("category"),
            "question": item["question"], "follow_up": bool(item.get("history")),
@@ -190,7 +197,7 @@ async def run_item(item, measurable, judge, discord, retrieval_only=False):
         t0 = time.monotonic()
         try:
             answer, hits, reasoning = await core.answer_question(
-                item["question"], list(item.get("history") or []), meta=meta)
+                item["question"], list(item.get("history") or []), meta=meta, surface=surface)
             row.update({"answer": answer, "error": None, "reasoning_used": reasoning})
         except Exception as exc:
             hits = meta.get("hits") or []
@@ -202,6 +209,7 @@ async def run_item(item, measurable, judge, discord, retrieval_only=False):
             "total_ms": meta.get("total_ms") or round((time.monotonic() - t0) * 1000),
             "usage": meta.get("usage"), "cost_usd": meta.get("cost_usd"),
             "cost_basis": meta.get("cost_basis"), "attempts": meta.get("attempts"),
+            "surface": meta.get("surface", surface), "cr_notes_used": meta.get("cr_notes") or None,
         })
     hit_rows = [r for _s, r in hits]
     row["retrieved"] = [r["id"] for r in hit_rows]
@@ -236,6 +244,8 @@ async def main_async(args):
     if args.limit:
         gold = gold[: args.limit]
 
+    # the open-review-note overlay is live state: off unless asked for
+    os.environ["ALGO_CR_NOTES"] = "on" if args.cr_notes else "off"
     import core
     from retriever import Retriever
     corpus_path = Path(args.corpus) if args.corpus else Path(paths.CORPUS)
@@ -279,7 +289,7 @@ async def main_async(args):
         "mode": "retrieval-only" if args.retrieval_only else ("rejudge" if rejudge else "full"),
         "model": None if args.retrieval_only else core.LLM_MODEL,
         "base_url": None if args.retrieval_only else core.LLM_BASE_URL,
-        "reasoning": args.reasoning, "corpus": str(corpus_path),
+        "reasoning": args.reasoning, "surface": args.surface, "cr_notes": args.cr_notes, "corpus": str(corpus_path),
         "corpus_sha": ev.sha(corpus_path.read_bytes())[:12], "corpus_chunks": len(rows),
         "engine_version": core.ENGINE_VERSION, "top_k": core.TOP_K,
         "gold": str(args.gold), "gold_sha": ev.sha(Path(args.gold).read_bytes())[:12],
@@ -290,7 +300,7 @@ async def main_async(args):
         "total_cites": sum(len(g.get("must_cite") or []) for g in gold),
     }
     if rejudge is not None:
-        for k in ("model", "base_url", "reasoning", "corpus", "corpus_sha", "engine_version"):
+        for k in ("model", "base_url", "reasoning", "surface", "corpus", "corpus_sha", "engine_version"):
             header[k] = rj_head.get(k)
     with out.open("a", encoding="utf-8") as f:
         f.write(json.dumps(header, ensure_ascii=False) + "\n")
@@ -319,7 +329,7 @@ async def main_async(args):
                 row["cost_usd"] = 0       # the answer was paid for in the original run
             else:
                 row = await run_item(item, measurable[item["id"]], judge, discord,
-                                     retrieval_only=args.retrieval_only)
+                                     retrieval_only=args.retrieval_only, surface=args.surface)
             async with lock:
                 total["usd"] += spent(row)
                 total["n"] += 1

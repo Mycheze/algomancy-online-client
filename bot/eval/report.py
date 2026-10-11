@@ -75,6 +75,7 @@ def run_table(path) -> str:
     G, n = s["grades"], s["graded"]
     out = [f"## {header.get('label', Path(path).stem)}", "",
            f"`{Path(path).name}` — model **{header.get('model')}**, reasoning {header.get('reasoning')}, "
+           f"surface {header.get('surface') or 'web (pre-surface core)'}, "
            f"corpus `{Path(str(header.get('corpus'))).name}` ({header.get('corpus_chunks')} chunks, "
            f"sha {header.get('corpus_sha')}), engine {header.get('engine_version')}, "
            f"judge {header.get('judge_model')} (rubric {header.get('rubric')}), gold sha {header.get('gold_sha')}.", ""]
