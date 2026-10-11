@@ -618,7 +618,7 @@
         },
         {
           "ref": "RAQ 1396955380000755795#2",
-          "quote": "3. Tides allows you to play Viruses/Ambushes/Prophecy"
+          "quote": "3. Tides allows you to play Ambushes/Prophecy and apply Viruses"
         },
         {
           "ref": "RAQ 1396955380000755795#3",
@@ -649,7 +649,7 @@
     "sourceHashes": {
       "R337": "9da68a070fcb1c43960dfb88272b30cdb15057ba2e0c9cf826221d506335c6cf",
       "RAQ 1357483405276614856#1": "6596eb521f6e565e13e38310b494ea231a98a3f040a434a97e8646b90b63f1b4",
-      "RAQ 1396955380000755795#2": "77de5a844f35441967e41307ee3973785fb17ed41d274524ef807b1a94bb45de",
+      "RAQ 1396955380000755795#2": "c99d91592799c322dbb925f3e9722f4405940adf79dca2d70d1e8b52b8707d79",
       "RAQ 1396955380000755795#3": "03340644aaa8569500998dccb31c10ba56d4e70ad629c4c3acb533a0b4c485fb",
       "RAQ 1537748882501668934#2": "1fd1e7b02083233cc1970fdb0f2fe6be108e789c03e043b2d7717258f46a9293"
     }
@@ -1088,7 +1088,7 @@
       "designer": [
         {
           "ref": "RAQ 1396955380000755795#1",
-          "quote": "2. Tides allows you to ignore timing of played cards."
+          "quote": "2. Tides allows you to ignore timing of played cards (you play them NOW)."
         }
       ],
       "ours": [],
@@ -1115,7 +1115,7 @@
     "sourceHashes": {
       "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
       "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122",
-      "RAQ 1396955380000755795#1": "becd35d97e6be38ebf3c81a4e882413087cc02c661005dfa1e8ae83fecad0380"
+      "RAQ 1396955380000755795#1": "ded4b140eee68e4b426c13f15ea231d298981f6ff0cc3e87c2ed056459abc52c"
     }
   },
   {

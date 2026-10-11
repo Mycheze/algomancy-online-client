@@ -1238,7 +1238,7 @@
       "designer": [
         {
           "ref": "RAQ 1396955380000755795#2",
-          "quote": "3. Tides allows you to play Viruses/Ambushes/Prophecy (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
+          "quote": "3. Tides allows you to play Ambushes/Prophecy and apply Viruses (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
         }
       ],
       "ours": [],
@@ -1264,7 +1264,7 @@
     "notes": "RAQ write-up point 3 and R337. Restates 701.2c. No test asserts the unpaid Ambush cost or the main-cost limit; the round-1 verifier read the engine's budget filter as the main cost.",
     "sourceHashes": {
       "R337": "9da68a070fcb1c43960dfb88272b30cdb15057ba2e0c9cf826221d506335c6cf",
-      "RAQ 1396955380000755795#2": "77de5a844f35441967e41307ee3973785fb17ed41d274524ef807b1a94bb45de"
+      "RAQ 1396955380000755795#2": "c99d91592799c322dbb925f3e9722f4405940adf79dca2d70d1e8b52b8707d79"
     }
   },
   {
@@ -1896,7 +1896,7 @@
       "designer": [
         {
           "ref": "RAQ 1396955380000755795#2",
-          "quote": "3. Tides allows you to play Viruses/Ambushes/Prophecy (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
+          "quote": "3. Tides allows you to play Ambushes/Prophecy and apply Viruses (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
         }
       ],
       "ours": [],
@@ -1917,7 +1917,7 @@
     "notes": "RAQ write-up point 3 and R337. Restates 701.2c.",
     "sourceHashes": {
       "R337": "9da68a070fcb1c43960dfb88272b30cdb15057ba2e0c9cf826221d506335c6cf",
-      "RAQ 1396955380000755795#2": "77de5a844f35441967e41307ee3973785fb17ed41d274524ef807b1a94bb45de"
+      "RAQ 1396955380000755795#2": "c99d91592799c322dbb925f3e9722f4405940adf79dca2d70d1e8b52b8707d79"
     }
   },
   {

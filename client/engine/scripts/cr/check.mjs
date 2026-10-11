@@ -33,6 +33,20 @@ import {
 } from './schema.mjs';
 import { buildModel, citedRulings, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
 
+/**
+ * A verdict span quoted from a GENERATED file goes stale when that file is
+ * rebuilt, not when a rule changes. The RAG corpus is rebuilt from the Discord
+ * export, so a RAQ write-up edited upstream stales every span quoted from it
+ * (2026-10-11: Passer's Tides of the Cosmos edit). The stale line says where
+ * to go instead of leaving the reader to rediscover it. README: "When a quoted
+ * source changes upstream".
+ */
+const GENERATED_SPAN_HINT = {
+  'data/corpus/algomancy_corpus.jsonl': ' (the corpus is generated from the Discord export: the RAQ write-up was edited upstream. '
+    + 'Update the claim\'s source in client/ledgers/raq.ts and every record quoting it, run harness.mjs stamp --refresh, '
+    + 're-verify, and quote spans from ledgers/raq.ts, not the corpus)',
+};
+
 /** relations that do NOT make the older ruling stop being current */
 export const NON_SUPERSEDING = new Set(['extends', 'cites', 'confirms', 'applies']);
 export const CLASS_SCOPES = ['game', 'digital', 'process'];
@@ -411,7 +425,7 @@ export function check(inputs, ex, opts = {}) {
       if (isAbsolute(String(q.file))) { P('verdict-span-path', v.key, `span file ${q.file} must be repo-relative`); continue; }
       const t = repoFile(String(q.file));
       if (t === null) P('source-missing', v.key, `span file ${q.file} does not exist`);
-      else if (!t.includes(norm(q.text ?? ''))) S('verdict-span', v.key, `verified span no longer in ${q.file}: "${String(q.text).slice(0, 80)}"`);
+      else if (!t.includes(norm(q.text ?? ''))) S('verdict-span', v.key, `verified span no longer in ${q.file}: "${String(q.text).slice(0, 80)}"${GENERATED_SPAN_HINT[q.file] ?? ''}`);
     }
   }
 

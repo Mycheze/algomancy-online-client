@@ -787,7 +787,7 @@
     "confidence": "medium",
     "notes": "_passer [Solved] Tides write-up, point 3: said of Tides' \"total cost 8 or less\". Generalised here to every reader of a card's cost; the write-up states it for Tides only. No test isolates the cost read; 404-raq-fix-tides plays an Ambush through Tides but does not test the budget.",
     "sourceHashes": {
-      "RAQ 1396955380000755795#2": "77de5a844f35441967e41307ee3973785fb17ed41d274524ef807b1a94bb45de"
+      "RAQ 1396955380000755795#2": "c99d91592799c322dbb925f3e9722f4405940adf79dca2d70d1e8b52b8707d79"
     }
   },
   {
@@ -2483,7 +2483,7 @@
         },
         {
           "ref": "RAQ 1396955380000755795#1",
-          "quote": "2. Tides allows you to ignore timing of played cards."
+          "quote": "2. Tides allows you to ignore timing of played cards (you play them NOW)."
         }
       ],
       "ours": [],
@@ -2499,7 +2499,7 @@
     "notes": "calebgannon \"yep!\" (thread 1357483405276614856) and the _passer [Solved] write-up. Round 1: the RAQ #0 quote is now the source words, not the register claim.",
     "sourceHashes": {
       "RAQ 1357483405276614856#0": "a3439f8143d0c31b17cc232c65000dd8987e681efe5c39a4a1fec0389b139d0e",
-      "RAQ 1396955380000755795#1": "becd35d97e6be38ebf3c81a4e882413087cc02c661005dfa1e8ae83fecad0380"
+      "RAQ 1396955380000755795#1": "ded4b140eee68e4b426c13f15ea231d298981f6ff0cc3e87c2ed056459abc52c"
     }
   },
   {
