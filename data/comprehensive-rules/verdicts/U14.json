@@ -551,89 +551,73 @@
     "key": "effects.casting.other-zones.timing",
     "textHash": "43e42245d29d49c9",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U14-r3-a2",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doPlayFrom",
+        "loc": "client/engine/src/apply.ts:playAtTiming (doPlayFrom/doPlayFromBin)",
         "agrees": true,
-        "note": "Cache releases pass the printed c.timing to playAtTiming."
-      },
-      {
-        "loc": "client/engine/src/apply.ts:doPlayFromBin",
-        "agrees": true,
-        "note": "Bin plays (R96 grant, Spell Excavation, Trench Stalker) pass the printed c.timing to playAtTiming."
-      },
-      {
-        "loc": "client/engine/src/apply.ts:playAtTiming",
-        "agrees": true,
-        "note": "Haste-step widening only via mayPlayAtHaste grants or the bin-erase grant."
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/396-raq-timing.test.ts",
-        "pattern": "Tides 2",
+        "pattern": "RAQ Tides 2: a free play ignores timing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.casting.other-zones.timing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.casting.other-zones.cache-widening",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
-        "title": "effects.casting.other-zones.timing: a glimpsed deploy-timing unit in the cache is not playable in battle",
-        "passed": true,
-        "demonstrates": "yes — not offered, refused if forced, despite a live glimpse permission"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
-        "title": "effects.casting.other-zones.timing: under Abyssal Evocation a deploy-timing spell in the bin is not playable in battle",
-        "passed": true,
-        "demonstrates": "yes — battle spell offered from the bin, deploy spell not offered and refused"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1396955380000755795#1",
         "supports": "yes",
-        "note": "Tides ignores timing; Tides prints 'You may play them now'."
+        "note": ""
       },
       {
-        "ref": "R157 §12",
+        "ref": "R157 (its §12)",
         "supports": "yes",
-        "note": "'A bin-play grant does NOT waive printed timing' + the 'play them now' test."
+        "note": "§12: a bin-play grant does not waive printed timing; not superseded"
       },
       {
         "ref": "R311",
         "supports": "yes",
-        "note": "Cache: printed timing on both routes, only the hand's widening rules apply."
+        "note": "cache timing is printed timing; only the hand's widening rules (haste grants, battle Virus, Ambush) apply"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "2. Tides allows you to ignore timing of played cards."
-      },
-      {
         "file": "client/docs/digital-rules.md",
-        "text": "### 12. A bin-play grant does NOT waive printed timing"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"Cards that let you ignore timing say something like 'You may play them"
+        "text": "Cards that let you ignore timing say something like 'You may play them"
       },
       {
         "file": "client/docs/digital-rules.md",
         "text": "Timing is the card's printed timing on both routes (R42/R45). A cached unit"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "playAtTiming(e, seat, c, c.timing,   // = E.cachedTiming for a cache entry: printed, always"
+        "file": "client/docs/digital-rules.md",
+        "text": "own widening rules apply: R97/R123 haste grants, the battle {Virus} window,"
+      },
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "text": "assert.ok(!legal.some(a => a.type === 'playFromBin' && a.binIndex === bi), 'the deploy-timing spell is not');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.casting.procedure",

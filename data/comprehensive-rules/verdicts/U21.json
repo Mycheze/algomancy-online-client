@@ -506,65 +506,66 @@
     "key": "keywords.abilities.ambush.tides",
     "textHash": "759402a7314482fa",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U21-r2",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Tides of the Cosmos",
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Tides of the Cosmos budget/playInlineMode",
         "agrees": true,
-        "note": "the pick filter uses manaOf (main cost) before any mode is chosen"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInlineMode",
-        "agrees": true,
-        "note": "builds the ambush item without payment or timing gate"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "404-raq-fix-tides.test.ts",
-        "pattern": "R337: an Ambush card played by Tides as an Ambush takes an ally place",
+        "file": "client/engine/test/404-raq-fix-tides.test.ts",
+        "pattern": "R337: an Ambush card played by Tides as an Ambush",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/432-cr-keyword-abilities.test.ts",
+        "pattern": "cr:keywords.abilities.ambush.tides",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U21/u21-r2-probes.test.ts",
-        "title": "keywords.abilities.ambush.tides: the Tides budget reads the MAIN cost, and an Ambush via Tides pays nothing",
-        "passed": true,
-        "demonstrates": "yes: with 3 budget left Slimebeast (main 4, Ambush 3) is not offered and Mirage Walker (main 3, Ambush 4) is; its Ambush play spends no mana"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1396955380000755795#2",
         "supports": "yes",
-        "note": "_passer write-up"
+        "note": "_passer [Solved]: Ambush via Tides, main cost read"
       },
       {
         "ref": "R337",
         "supports": "yes",
-        "note": ""
+        "note": "mode cost never paid; 'total cost of 8 or less' reads main printed cost"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/corpus/algomancy_corpus.jsonl",
-        "text": "3. Tides allows you to play Viruses/Ambushes/Prophecy (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
+        "file": "client/ledgers/raq.ts",
+        "text": "3. Tides allows you to play Ambushes/Prophecy and apply Viruses (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "mode it prints: a Virus card as a Virus augment on a unit, an Ambush card as"
       },
       {
         "file": "client/docs/digital-rules.md",
         "text": "or less\" still reads the card's main printed cost whichever mode it is played"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-water-b.ts",
-        "text": ".filter(o => !picks.includes(o.value) && manaOf(top[o.value]!) <= budget"
+        "file": "client/engine/test/432-cr-keyword-abilities.test.ts",
+        "text": "'Slimebeast (main 4, Ambush 3) no longer fits a budget of 3');"
+      },
+      {
+        "file": "client/engine/test/432-cr-keyword-abilities.test.ts",
+        "text": "'no Ambush cost was paid');"
       }
     ],
     "basis_ok": true,
-    "problem": "None. The example's test does not assert the cost clauses; the probe does.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "keywords.abilities.ambush.timing",

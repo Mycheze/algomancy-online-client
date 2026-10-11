@@ -2229,13 +2229,13 @@
     "key": "card.timing.ignore",
     "textHash": "d251a0a05f5dc7ea",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U05-r2",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline/pushInlinePlay",
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Tides of the Cosmos playInline",
         "agrees": true,
-        "note": "Tides' picks are played inline with no playAtTiming gate"
+        "note": "free plays skip the timing gate"
       }
     ],
     "tests_run": [
@@ -2243,7 +2243,7 @@
         "file": "client/engine/test/396-raq-timing.test.ts",
         "pattern": "RAQ Tides 2: a free play ignores timing",
         "passed": true,
-        "asserts_claim": "yes: deploy unit and deploy spell unit played in battle"
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -2256,12 +2256,12 @@
       {
         "ref": "RAQ 1357483405276614856#0",
         "supports": "yes",
-        "note": "Caleb Gannon (designer): yep!"
+        "note": "Caleb 'yep!' to playing every card in battle with or without battle/virus symbol; status covered"
       },
       {
         "ref": "RAQ 1396955380000755795#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved] write-up"
       }
     ],
     "quote_spans": [
@@ -2270,12 +2270,16 @@
         "text": "You may play them now, for free."
       },
       {
-        "file": "data/corpus/algomancy_corpus.jsonl",
+        "file": "client/ledgers/raq.ts",
+        "text": "2. Tides allows you to ignore timing of played cards (you play them NOW)."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
         "text": "lets you play every card in the battle step, even if it has not the battle or virus simble"
       },
       {
-        "file": "data/corpus/algomancy_corpus.jsonl",
-        "text": "2. Tides allows you to ignore timing of played cards."
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "assert.ok(unitsOf(h, D).some(u => u.card === 'Curio Drifter'), 'the deploy unit was played in battle');"
       }
     ],
     "basis_ok": true,

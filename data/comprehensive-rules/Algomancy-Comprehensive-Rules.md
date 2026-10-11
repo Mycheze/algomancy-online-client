@@ -2159,7 +2159,7 @@ order.
 
 > *Example: Tides of the Cosmos plays a deployment unit and a deployment spell unit in battle.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: card: Tides of the Cosmos · Designer: RAQ 1357483405276614856#0; RAQ 1396955380000755795#1 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing — a deploy unit and a deploy spell unit, in battle · Key: card.timing.ignore</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Tides of the Cosmos · Designer: RAQ 1357483405276614856#0; RAQ 1396955380000755795#1 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing — a deploy unit and a deploy spell unit, in battle · Key: card.timing.ignore</sub>
 
 <a id="r207.7a"></a>**207.7a** An effect that only lets a card be played from somewhere else, such as the bin or the cache, does not waive its timing. Cards that waive timing say so. See rules 403, 405, 803.
 
@@ -5615,7 +5615,7 @@ order.
 
 > *Example: Tides of the Cosmos plays a deploy-timing unit in battle.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Designer: RAQ 1396955380000755795#1 · Rulings: R157 (its §12), R311 · Tests: 396-raq-timing.test.ts, 425-cr-casting-and-stack.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing · Key: effects.casting.other-zones.timing</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#1 · Rulings: R157 (its §12), R311 · Tests: 396-raq-timing.test.ts, 425-cr-casting-and-stack.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing · Key: effects.casting.other-zones.timing</sub>
 
 <a id="r702.2b"></a>**702.2b** A card that says it can't be played from your hand is restricted from that zone only. It may still be played from another zone that allows it.
 
@@ -9578,7 +9578,7 @@ order.
 
 > *Example: With 3 of the Tides budget left, Lurking Slimebeast (main cost 4, Ambush 3) cannot be chosen, but Mirage Walker (main cost 3, Ambush 4) can, and playing it as an Ambush spends no mana.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1396955380000755795#2 · Rulings: R337, R337 · Tests: 404-raq-fix-tides.test.ts, 432-cr-keyword-abilities.test.ts · Example tests: 404-raq-fix-tides.test.ts::R337: an Ambush card played by Tides as an Ambush takes an ally place, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.tides — the Tides budget reads the MAIN cost, and an Ambush via Tides pays nothing · Key: keywords.abilities.ambush.tides</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#2 · Rulings: R337, R337 · Tests: 404-raq-fix-tides.test.ts, 432-cr-keyword-abilities.test.ts · Example tests: 404-raq-fix-tides.test.ts::R337: an Ambush card played by Tides as an Ambush takes an ally place, 432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.tides — the Tides budget reads the MAIN cost, and an Ambush via Tides pays nothing · Key: keywords.abilities.ambush.tides</sub>
 
 <a id="r803.7"></a>**803.7.** Prophecy is a keyword printed on a card's banner as a cost and a condition. A card with a Prophecy banner may be prophesied: its controller pays the banner's cost, and the card moves to the cache with its prophecy attached. See rules 203.4, 801.14, 403.
 

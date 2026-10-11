@@ -321,7 +321,7 @@ things go stale then, and 409 §6 pins both:
 - A verdict span quoted from `data/corpus/algomancy_corpus.jsonl` goes stale the
   moment the corpus is rebuilt (`bot/pipeline/build_corpus.py`) from the newer
   export. The corpus is GENERATED; a verifier should quote a RAQ span from
-  `client/ledgers/raq.ts` instead (11 keys still quote the corpus).
+  `client/ledgers/raq.ts` instead (9 keys still quote the corpus).
 
 So a corpus rebuild that changes a quoted thread needs, in one commit:
 
