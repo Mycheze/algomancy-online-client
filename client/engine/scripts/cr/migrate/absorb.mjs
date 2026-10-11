@@ -80,6 +80,8 @@ const datesList = (ds) => (ds.length === 1 ? ds[0] : `${ds.slice(0, -1).join(', 
 
 export function ownerWording(s, A, unknown = new Set()) {
   if (typeof s !== 'string' || !/\bR\d{1,3}b?\b/.test(s)) return s;
+  // "the pre-R69 model" → "the model from before R69": a date phrase cannot take a "pre-" prefix
+  s = s.replace(/\bthe pre-(R\d{1,3}b?) ([A-Za-z]+)\b/g, 'the $2 from before $1');
   return s.replace(GROUP, (all, open, art, n, b, rest, sec, poss, close, off) => {
     const ids = [`R${Number(n)}${b}`, ...[...(rest ?? '').matchAll(/R(\d{1,3})(b?)/g)].map((m) => `R${Number(m[1])}${m[2]}`)];
     const known = ids.filter((id) => A[id] || A[id.replace(/b$/, '')]);

@@ -59,7 +59,7 @@
   {
    "file": "client/ui/legal.ts",
    "find": "questions went to Ben, and his answer is written down as a numbered ruling — nearly\n      three hundred of them so far — with the test that enforces it. That register is the\n      specification; the code follows it, not the other way round.</p>",
-   "replace": "questions went to Ben, and his answer goes into the client's own rulebook: a numbered\n      set of rules, each resting on the printed text, the designer's answers or Ben's call, and\n      each checked against a test that runs. That rulebook is the specification; the code\n      follows it, not the other way round.</p>",
+   "replace": "questions went to Ben, and his answer goes into the client's own rulebook: a numbered\n      set of rules, each resting on the printed text, the designer's answers or Ben's call, and\n      most of them checked against a test that runs. That rulebook is the specification; the code\n      follows it, not the other way round.</p>",
    "why": "About page (player-visible): the spec is the comprehensive rules now, not a register of rulings"
   },
   {

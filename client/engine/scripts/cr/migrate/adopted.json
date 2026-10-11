@@ -14,32 +14,32 @@
   "R3": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Formation changes during combat its reach…"
+   "title": "Formation changes during combat […]"
   },
   "R4": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Electric damage pathing its path amended…"
+   "title": "Electric damage pathing […]"
   },
   "R5": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Fizzle vs partial resolution per-card guideline"
+   "title": "Fizzle vs partial resolution (per-card guideline)"
   },
   "R6": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "\"Unless its controller pays x\" payments"
+   "title": "\"Unless its controller pays [x]\" payments"
   },
   "R7": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Combat damage splitting its Piercing half…"
+   "title": "Combat damage splitting […]"
   },
   "R8": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Control change narrowed by"
+   "title": "Control change […]"
   },
   "R9": {
    "adopted": "2026-08-18",
@@ -49,7 +49,7 @@
   "R10": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Unaware's \"interacting with\" replaced by"
+   "title": "Unaware's \"interacting with\" […]"
   },
   "R11": {
    "adopted": "2026-08-18",
@@ -64,7 +64,7 @@
   "R13": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Piercing through a fully-dead blocked column…"
+   "title": "Piercing through a fully-dead blocked column […]"
   },
   "R14": {
    "adopted": "2026-08-18",
@@ -79,7 +79,7 @@
   "R16": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Burst casting order its group amended…"
+   "title": "Burst casting order […]"
   },
   "R17": {
    "adopted": "2026-08-18",
@@ -89,7 +89,7 @@
   "R18": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Haste step engine model its skip…"
+   "title": "Haste step engine model […]"
   },
   "R19": {
    "adopted": "2026-08-18",
@@ -104,7 +104,7 @@
   "R21": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Deadly specifics its Piercing pass-through amended…"
+   "title": "Deadly specifics […]"
   },
   "R22": {
    "adopted": "2026-08-18",
@@ -114,17 +114,17 @@
   "R23": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Vulnerable's doubling vs assignment and Powerful's…"
+   "title": "Vulnerable's doubling vs assignment (and Powerful's) […]"
   },
   "R24": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "Thieving draws once per connecting column…"
+   "title": "Thieving draws once per connecting column […]"
   },
   "R25": {
    "adopted": "2026-08-18",
    "commit": "757eeaa",
-   "title": "\"Each opponent\" is region-scoped resolved by"
+   "title": "\"Each opponent\" is region-scoped […]"
   },
   "R26": {
    "adopted": "2026-08-18",
@@ -139,12 +139,12 @@
   "R28": {
    "adopted": "2026-08-18",
    "commit": "0501851",
-   "title": "WITHDRAWN 2026-08-23 — superseded by"
+   "title": "WITHDRAWN (2026-08-23) — superseded by […]"
   },
   "R29": {
    "adopted": "2026-08-18",
    "commit": "0501851",
-   "title": "\"An open spot in your formation\"…"
+   "title": "\"An open spot in your formation\" […]"
   },
   "R30": {
    "adopted": "2026-08-18",
@@ -154,17 +154,17 @@
   "R31": {
    "adopted": "2026-08-18",
    "commit": "0501851",
-   "title": "Triggers between combat damage sub-steps superseded…"
+   "title": "Triggers between combat damage sub-steps […]"
   },
   "R32": {
    "adopted": "2026-08-18",
    "commit": "0501851",
-   "title": "Sent counterattackers don't exist anywhere Manual…"
+   "title": "Sent counterattackers don't exist anywhere […]"
   },
   "R33": {
    "adopted": "2026-08-18",
    "commit": "5540d04",
-   "title": "ABSORBED INTO 2026-08-23 — it was…"
+   "title": "ABSORBED INTO […] (2026-08-23) — it was…"
   },
   "R34": {
    "adopted": "2026-08-18",
@@ -174,7 +174,7 @@
   "R35": {
    "adopted": "2026-08-18",
    "commit": "5540d04",
-   "title": "Bracketed costs and X on spells…"
+   "title": "Bracketed [costs] and X on spells…"
   },
   "R36": {
    "adopted": "2026-08-18",
@@ -234,7 +234,7 @@
   "R47": {
    "adopted": "2026-08-19",
    "commit": "3771e1f",
-   "title": "RETIRED 2026-08-21 the card was redesigned…"
+   "title": "RETIRED 2026-08-21 […]"
   },
   "R48": {
    "adopted": "2026-08-19",
@@ -259,7 +259,7 @@
   "R52": {
    "adopted": "2026-08-19",
    "commit": "3771e1f",
-   "title": "WITHDRAWN 2026-08-23 — superseded by"
+   "title": "WITHDRAWN (2026-08-23) — superseded by […]"
   },
   "R53": {
    "adopted": "2026-08-19",
@@ -274,7 +274,7 @@
   "R55": {
    "adopted": "2026-08-19",
    "commit": "c7555c6",
-   "title": "Printed Augment is a permission, not…"
+   "title": "Printed [Augment] is a permission, not…"
   },
   "R56": {
    "adopted": "2026-08-19",
@@ -294,7 +294,7 @@
   "R59": {
    "adopted": "2026-08-19",
    "commit": "dc47c63",
-   "title": "Cost modifiers its spell-token carve-out amended…"
+   "title": "Cost modifiers […]"
   },
   "R60": {
    "adopted": "2026-08-20",
@@ -404,7 +404,7 @@
   "R81": {
    "adopted": "2026-08-22",
    "commit": "2aa6f71",
-   "title": "Burst groups by NAME its entity-id…"
+   "title": "Burst groups by NAME […]"
   },
   "R82": {
    "adopted": "2026-08-22",
@@ -444,7 +444,7 @@
   "R89": {
    "adopted": "2026-08-23",
    "commit": "f15ed40",
-   "title": "missing half: a SPELL TOKEN may…"
+   "title": "[…] missing half: a SPELL TOKEN may…"
   },
   "R90": {
    "adopted": "2026-08-23",
@@ -469,7 +469,7 @@
   "R94": {
    "adopted": "2026-08-23",
    "commit": "f15ed40",
-   "title": "The static → effect-attribute channel EffectAttrMod…"
+   "title": "The static → effect-attribute channel (EffectAttrMod)…"
   },
   "R95": {
    "adopted": "2026-08-23",
@@ -489,7 +489,7 @@
   "R98": {
    "adopted": "2026-08-23",
    "commit": "f15ed40",
-   "title": "PREVENTED damage was never dealt and…"
+   "title": "PREVENTED damage was never dealt […]"
   },
   "R99": {
    "adopted": "2026-08-23",
@@ -539,7 +539,7 @@
   "R108": {
    "adopted": "2026-08-23",
    "commit": "f082ceb",
-   "title": "a bounded once is not spent…"
+   "title": "a bounded [once] is not spent…"
   },
   "R109": {
    "adopted": "2026-08-23",
@@ -714,7 +714,7 @@
   "R149": {
    "adopted": "2026-08-25",
    "commit": "48519bd",
-   "title": "the elective damage split gets a…"
+   "title": "the […] elective damage split gets a…"
   },
   "R150": {
    "adopted": "2026-08-25",
@@ -749,7 +749,7 @@
   "R156": {
    "adopted": "2026-08-25",
    "commit": "52023f1",
-   "title": "is about the ERASE, not about…"
+   "title": "[…] is about the ERASE, not about…"
   },
   "R157": {
    "adopted": "2026-08-25",
@@ -769,7 +769,7 @@
   "R161": {
    "adopted": "2026-08-25",
    "commit": "c01b361",
-   "title": "six of answers, and the one…"
+   "title": "six of […] answers, and the one…"
   },
   "R162": {
    "adopted": "2026-08-25",
@@ -844,7 +844,7 @@
   "R180": {
    "adopted": "2026-08-25",
    "commit": "fa662c4",
-   "title": "the Augment box and the trigger…"
+   "title": "the [Augment] box and the trigger…"
   },
   "R181": {
    "adopted": "2026-08-25",
@@ -994,7 +994,7 @@
   "R210": {
    "adopted": "2026-08-26",
    "commit": "489dc49",
-   "title": "CT-83 — an exemption list is…"
+   "title": "(CT-83) — an exemption list is…"
   },
   "R211": {
    "adopted": "2026-08-26",
@@ -1141,7 +1141,7 @@
   "R239": {
    "adopted": "2026-08-28",
    "commit": "7540e40",
-   "title": "Region scoping is absolute narrowed by"
+   "title": "Region scoping is absolute […]"
   },
   "R240": {
    "adopted": "2026-08-28",
@@ -1266,7 +1266,7 @@
   "R264": {
    "adopted": "2026-08-30",
    "commit": "d6f63b4",
-   "title": "multipliers are exponential round-32 Q4"
+   "title": "multipliers are exponential (round-32 Q4)"
   },
   "R265": {
    "adopted": "2026-08-30",
@@ -1286,7 +1286,7 @@
   "R268": {
    "adopted": "2026-08-30",
    "commit": "e8aed52",
-   "title": "an augment radiates its Augment box…"
+   "title": "an augment radiates its [Augment] box…"
   },
   "R269": {
    "adopted": "2026-08-30",
@@ -1331,7 +1331,7 @@
   "R277": {
    "adopted": "2026-08-30",
    "commit": "062d68f",
-   "title": "the Haste on a prophecy banner…"
+   "title": "the [Haste] on a prophecy banner…"
   },
   "R278": {
    "adopted": "2026-08-30",
@@ -1452,7 +1452,7 @@
   "R301": {
    "adopted": "2026-09-20",
    "commit": "006a909",
-   "title": "The prophecy banner costs affinity, and…"
+   "title": "The prophecy banner costs affinity, and […]"
   },
   "R302": {
    "adopted": "2026-09-20",
@@ -1542,7 +1542,7 @@
   "R319": {
    "adopted": "2026-10-09",
    "commit": "a44718a",
-   "title": "{Piercing} is elective in combat reverses…"
+   "title": "{Piercing} is elective in combat […]"
   },
   "R320": {
    "adopted": "2026-10-09",
@@ -1607,7 +1607,7 @@
   "R334": {
    "adopted": "2026-10-09",
    "commit": "a44718a",
-   "title": "A grafted cost is mandatory, and…"
+   "title": "A grafted [cost] is mandatory, and…"
   },
   "R335": {
    "adopted": "2026-10-09",
@@ -1637,7 +1637,7 @@
   "R340": {
    "adopted": "2026-10-10",
    "commit": "ea14583",
-   "title": "{Piercing} is elective outside combat too…"
+   "title": "{Piercing} is elective outside combat too […]"
   },
   "R341": {
    "adopted": "2026-10-10",

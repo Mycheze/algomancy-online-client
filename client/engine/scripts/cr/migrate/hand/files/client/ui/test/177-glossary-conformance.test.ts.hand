@@ -358,7 +358,7 @@ test('every attribute with a printed reminder ADMITS it, so a new reminder canno
 
 test('the rows resting on NEITHER a rule NOR printed text, by name', () => {
   // The honest size of the hole. Everything here is unchecked prose: no
-  // R-number to resolve, no printed sentence to compare against. Shrinking the
+  // rule key to resolve, no printed sentence to compare against. Shrinking the
   // list is real work; growing it needs a reason in the commit message.
   const unbacked = GLOSSARY
     .filter(e => !(e.cites ?? []).some(s => isKey(s) || s === 'printed'))

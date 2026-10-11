@@ -352,9 +352,9 @@ disagree, the engine has a bug (a finding, a CT ticket), unless a higher source
 says the document is wrong. The rest of the repository cites it as `CR 608.2b`
 (lists `CR 702.3, 704.6b`); `client/engine/test/184-ruling-register.test.ts`
 fails on a CR number that names no live rule, and on any number of the retired
-register coming back. A player never sees a rule number
-(`323-recent-updates` bans them from the updates list; `227` and `286` from the
-reminders and the rules reference).
+register coming back. A player never sees a rule number in the updates list or a
+reminder (`323-recent-updates` and `227` ban them there); in the rules reference,
+`286` bans only the retired register's R-numbers, not CR numbers.
 
 What keeps it honest is the contract above — every rule rests on a checkable
 quote or a verified, executed demonstration; a verifier who never saw the

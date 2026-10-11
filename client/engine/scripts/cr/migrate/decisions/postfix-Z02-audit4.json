@@ -1,0 +1,65 @@
+{
+ "_doc": "Audit 4 punch list (55804c2): self-citing rules, a misattributed quote, retired-register pointers, grammar. The quote-integrity half (ruling-title descriptors) is fixed at its source: adopted.mjs shortTitle marks every cut; absorb.mjs rewrites 'the pre-R<n> X'.",
+ "edits": [
+  {
+   "file": "data/comprehensive-rules/rules/U16.json",
+   "find": "(D-U16-1). The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (CR 709.4b calls this order its own;",
+   "replace": "(D-U16-1). The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (the owner ruling of 2026-08-18 calls this order the engine's own reading;",
+   "why": "[self-cite] CR 709.4b cited itself (recite mapped R19, the ruling this rule absorbed, onto the rule). R19 called the order 'the engine's reading'; wording only, the claim is unchanged — the record needs a re-verify"
+  },
+  {
+   "file": "data/comprehensive-rules/rules/U16.json",
+   "find": "\"digitalClause\": \"The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (R19 calls this order its own;",
+   "replace": "\"digitalClause\": \"The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (the owner ruling of 2026-08-18 calls this order the engine's own reading;",
+   "why": "the mixed rule's digitalClause follows its text (above), so it stays a substring of it"
+  },
+  {
+   "file": "data/comprehensive-rules/rules/U20.json",
+   "find": "CR 802.24d's prevention ruling is about damage to units.",
+   "replace": "the owner ruling of 2026-08-23 on prevented damage is about damage to units.",
+   "why": "[self-cite] the 802.24d tombstone cited itself (recite mapped R98 onto it); R98 is the owner ruling of 2026-08-23, 'PREVENTED damage was never dealt'. Wording only"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "//  · the token-creation rule (CR 304.15) is about token CREATION (\"the created 1/1 is a token and can't",
+   "replace": "//  · that ruling is about token CREATION (\"the created 1/1 is a token and can't",
+   "why": "[quote] the quoted words are the old token-creation ruling's (R26), not CR 304.15's; the line above already says the ruling is now CR 304.15"
+  },
+  {
+   "file": "client/docs/08-light-and-dark.md",
+   "find": "That ruling is being rewritten by the engine work in this same round; see\nthe ruling register (since retired) for the current wording. **This doc does not edit\nthat file** — treat the register as the ruling of record once it lands.",
+   "replace": "That ruling was rewritten by the engine work in the same round, in the ruling register\n(since retired). The current Wraith rules are in the Comprehensive Rules\n(`data/comprehensive-rules/`). **This doc did not edit the register.**",
+   "why": "[history] the register is retired: past tense, and point at the CR for the current wording"
+  },
+  {
+   "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+   "find": "test('CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere, CR 608.3a is untouched'",
+   "replace": "test('CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere, the unsplit step is untouched'",
+   "why": "[grammar] the same rule number twice in one title; §3's header names it 'an unsplit step'. Prefix bindings (U12, raq) are unchanged"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'297-damage-substeps-are-steps.test.ts::CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere, CR 608.3a is untouched'",
+   "replace": "'297-damage-substeps-are-steps.test.ts::CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere, the unsplit step is untouched'",
+   "why": "binding follows the 297 title"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "(`item.parts.push({ effectKey: 'graft:…' })`,\n   *) has no `fromMod`",
+   "replace": "(`item.parts.push({ effectKey: 'graft:…' })`)\n   * has no `fromMod`",
+   "why": "[grammar] dangling ', )' left where the R-number was dropped"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "{ face } = an CR 710.7 face",
+   "replace": "{ face } = a CR 710.7 face",
+   "why": "[grammar] 'an CR'"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "(a mod's, or an CR 710.7",
+   "replace": "(a mod's, or a CR 710.7",
+   "why": "[grammar] 'an CR'"
+  }
+ ]
+}

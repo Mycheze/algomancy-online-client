@@ -24,10 +24,50 @@ import { headingDates } from './audit.mjs';
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 export const ADOPTED_JSON = join(HERE, 'adopted.json');
 const SHEET_RE = /questions-round(\d+)(?:\.md)? Q(\d+)/g;
-/** the first words of a ruling's heading, markup and R-numbers out: what tells two same-day rulings apart in prose */
+/** the first words of a ruling's heading, as a quotation: what tells two same-day rulings apart in prose.
+ *  It is printed inside curly quotes, so every cut is marked: markup (`*`, backticks, `_`, the ⚠ glyphs) is
+ *  formatting and goes; a parenthetical that names no ruling is kept verbatim while it fits the six words;
+ *  a ruling number, or a parenthetical that names one (or will not fit), becomes "[…]"; words past the sixth
+ *  become a closing "…". Nothing is dropped without a mark. */
+export const CUT = '[…]';
 export function shortTitle(t) {
-  const w = String(t ?? '').replace(/\bR\d{1,3}b?(?:['’]s)?\b/g, '').replace(/^\W*['’]s\b/, '').replace(/[*`_⚠❌✅#>\[\]()]/g, '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
-  return w.slice(0, 6).join(' ').replace(/[,;:—–-]+$/, '') + (w.length > 6 ? '…' : '');
+  const s = String(t ?? '').replace(/[*`_#>⚠❌✅]/g, '').replace(/\s+/g, ' ').trim();
+  // units: a word, a whole top-level parenthetical, or a cut
+  const units = [];
+  let i = 0;
+  while (i < s.length) {
+    if (s[i] === ' ') { i++; continue; }
+    if (s[i] === '(') {
+      let d = 0, j = i;
+      for (; j < s.length; j++) { if (s[j] === '(') d++; else if (s[j] === ')' && --d === 0) break; }
+      const p = s.slice(i, j + 1);
+      // a closing mark glued to it ("(…),") rides along
+      let k = j + 1;
+      while (k < s.length && /[,;:.]/.test(s[k])) k++;
+      units.push(/\bR\d{1,3}b?\b|\bRAQ\b/.test(p) ? { cut: true } : { text: s.slice(i, k), words: p.split(' ').length });
+      i = k;
+      continue;
+    }
+    let j = i;
+    while (j < s.length && s[j] !== ' ' && s[j] !== '(') j++;
+    const w = s.slice(i, j);
+    units.push(/^\W*R\d{1,3}b?(?:['’]s)?\W*$/.test(w) ? { cut: true } : { text: w, words: 1 });
+    i = j;
+  }
+  const out = [];
+  let n = 0, more = false;
+  for (const [k, u] of units.entries()) {
+    if (u.cut) { if (out.at(-1) !== CUT) out.push(CUT); continue; }
+    if (n + u.words > 6) {
+      if (u.words > 1) { if (out.at(-1) !== CUT) out.push(CUT); } else more = true;
+      break;
+    }
+    out.push(u.text); n += u.words;
+    if (k === units.length - 1) break;
+  }
+  let r = out.join(' ');
+  if (more && out.at(-1) !== CUT) r = r.replace(/[,;:—–-]+$/, '').trimEnd() + '…';
+  return r;
 }
 
 export function buildAdopted() {

@@ -16,21 +16,21 @@
  * blockers; the real number was five, and it took a manual pass over the
  * register to find that out.
  *
- * ── WHY NO EXISTING GUARD CATCHES IT ──────────────────────────────────
+ * ── WHY NO OTHER GUARD CAUGHT IT ──────────────────────────────────────
  *
- * `202-settled-rulings-not-reopened` exists for the OPPOSITE direction — round
- * 28's Q1 re-asked a settled question and recommended reversing it — and its
- * header states the lesson as *"a question sheet is not proof a thing is
- * unruled"*. This file is the mirror: **a blank answer line is not proof of it
- * either.**
+ * `202-settled-rulings-not-reopened` (deleted with the ruling register) was the
+ * guard for the OPPOSITE direction — round 28's Q1 re-asked a settled question
+ * and recommended reversing it — and its header stated the lesson as *"a
+ * question sheet is not proof a thing is unruled"*. This file is the mirror:
+ * **a blank answer line is not proof of it either.**
  *
- * 202 structurally cannot see these four. It matches on CARD NAMES appearing in
- * a ruling section marked "Already correct", and all four of these rulings are
- * about MECHANICS — {Deadly} reaching effect damage, a replaced hit still being
- * dealt, region scoping, a type-line transcription error. There is no card to
- * match on. Widening 202 to match mechanics is not available: it would have to
- * decide "is this ruling about the same question as that sheet", which is the
- * judgement its own header says no test can make.
+ * 202 structurally could not see these four. It matched on CARD NAMES appearing
+ * in a ruling section marked "Already correct", and all four of these rulings
+ * are about MECHANICS — {Deadly} reaching effect damage, a replaced hit still
+ * being dealt, region scoping, a type-line transcription error. There was no
+ * card to match on. Widening 202 to match mechanics was not available: it would
+ * have had to decide "is this ruling about the same question as that sheet",
+ * which is the judgement its own header said no test can make.
  *
  * ── THE TWO SIGNALS, AND WHY BOTH ─────────────────────────────────────
  *
@@ -90,7 +90,7 @@ const SHEETS = (): string[] =>
 /**
  * Every `## Qn.` section of every sheet, with its answer.
  *
- * ⚠ The split pattern is the same one `202-settled-rulings-not-reopened` uses,
+ * ⚠ The split pattern is the same one the deleted `202-settled-rulings-not-reopened` used,
  * deliberately: two readers of these files that disagree about what a question
  * IS would produce two different open lists, which is the failure one directory
  * up. `parses something` below is the positive control on it.
