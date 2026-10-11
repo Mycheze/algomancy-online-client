@@ -296,6 +296,17 @@
      "replace": "if the old design mattered for a rule, it is in the comprehensive '\n$1+ 'rules and the code cites its CR number."
     }
    ]
+  },
+  "client/ui/test/245-printed-reminder-reach.test.ts": {
+   "op": "edits",
+   "step": "hand",
+   "edits": [
+    {
+     "find": "\\(e\\.ruling \\?\\? \\[\\]\\)\\.includes\\('printed'\\)",
+     "replace": "(e.cites ?? []).includes('printed')",
+     "note": "the glossary field is `cites` now"
+    }
+   ]
   }
  }
 }

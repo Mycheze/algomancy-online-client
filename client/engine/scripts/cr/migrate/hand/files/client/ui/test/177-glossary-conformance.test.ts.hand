@@ -548,7 +548,7 @@ const MUTANTS: readonly { why: string; row: GlossEntry; expect: RegExp }[] = [
   },
   {
     why: 'a source that is neither a rule key nor a named document',
-    row: { term: 'Piercing', text: 'anything', cites: ['the owner said so'] as GlossSource[] },
+    row: { term: 'Piercing', text: 'anything', cites: ['the owner said so'] as unknown as GlossSource[] },
     expect: /unknown source "the owner said so"/,
   },
   {
