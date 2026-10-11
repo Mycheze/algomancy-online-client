@@ -83,13 +83,20 @@ def answer_embed(question, answer, hits, reasoning=False, model=None):
     )
     # Only list sources the answer actually cited; fall back to top retrieved.
     if sources:
-        lines = [f"**{n}.** {friendly_source(r)} · *{r['authority_label']}*"
+        lines = [f"**{n}.** {_source_name(r)} · *{r['authority_label']}*"
                  for n, r in sources]
         e.add_field(name="Sources", value="\n".join(lines)[:1024], inline=False)
     model = model or core.LLM_MODEL
     mode = f"{model} · 🧠 thinking" if reasoning else model
     e.set_footer(text=f"Answered by {mode} · rate below to help train the model")
     return e
+
+
+def _source_name(r):
+    """The legend's name for a source: a CR rule is a masked link to the rules
+    review page at that rule (embed fields render markdown links)."""
+    url = core.cr_link(r)
+    return f"[{friendly_source(r)}]({url})" if url else friendly_source(r)
 
 
 # Discord allows at most 10 embeds and 10 attachments per message.

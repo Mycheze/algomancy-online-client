@@ -52,6 +52,7 @@ mimetypes.add_type("image/webp", ".webp")
 
 import combos
 import core
+import crnotes
 import draft
 import mods
 import store
@@ -80,6 +81,9 @@ async def lifespan(app: FastAPI):
         key = core.api_key()
         if key:
             core.init_client(key)   # model and base URL: LLM_*/DEEPSEEK_* via core
+    # The open CR review notes (crnotes.py): fetched now, so the first answer
+    # after a restart already has them. Without ALGO_BOT_TOKEN this is a no-op.
+    crnotes.NOTES.ensure_started()
     yield
 
 
@@ -111,6 +115,9 @@ class AskRequest(BaseModel):
     session_id: str | None = _SESSION
     # R297: the Learn to Play lesson the player is reading (client/ui/lessonlayer.ts)
     context: str | None = Field(default=None, max_length=4000)
+    # Where the answer is read (core.answer_question). This page and the game
+    # server's /api/judge proxy are both "web", so neither needs to send it.
+    surface: Literal["web", "discord"] = "web"
 
 
 class FeedbackRequest(BaseModel):
@@ -143,8 +150,11 @@ CARD_NAMES_WITH_ART = sorted(
 
 
 def _sources_payload(sources):
-    """[(n, row)] -> list of {n, name, authority} for the page's source legend."""
-    return [{"n": n, "name": core.friendly_source(r), "authority": r["authority_label"]}
+    """[(n, row)] -> list of {n, name, authority, url} for the page's source
+    legend. `url` is the rules review page at that rule, for a CR source only
+    (null otherwise); the game server's judge box shows the same legend."""
+    return [{"n": n, "name": core.friendly_source(r), "authority": r["authority_label"],
+             "url": core.cr_link(r)}
             for n, r in sources]
 
 
@@ -206,7 +216,8 @@ async def api_ask(req: AskRequest):
     meta = {}
     try:
         answer, hits, reasoning = await core.answer_question(question, history,
-                                                             context=req.context, meta=meta)
+                                                             context=req.context, meta=meta,
+                                                             surface=req.surface)
     except Exception as exc:  # surface API/auth errors instead of a silent 500
         store.log_failure("lesson" if req.context else "followup" if history else "ask",
                           question, exc, core.LLM_MODEL, llm=meta,

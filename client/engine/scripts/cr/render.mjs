@@ -1042,6 +1042,70 @@ function renderHtml(M, P) {
   return htmlPage(E(o.title), rail, body.join('\n'));
 }
 
+/* ── the machine-readable edition (the judge bot reads it) ──────────────── */
+
+// Its path is imported here, beside the only code that uses it, rather than in
+// the import block above: this edition is additive and self-contained.
+import { CR_JSON } from '../paths.mjs';
+import { createHash } from 'node:crypto';
+
+/**
+ * The document as data, for a reader that is not a person (bot/pipeline/
+ * build_corpus.py chunks it). Same model as the other editions, so every number
+ * is the ledger's and every cross-reference in `text` is already resolved: a
+ * reader never re-implements numbering or sees a raw key. One row per live
+ * numbered rule, in document order; tombstones and sections are not rows.
+ *
+ *   {num, key, title, section, sectionTitle, chapterTitle, parent, text, see,
+ *    examples, basis, scope, engineDiffers, discrepancies, openQuestion,
+ *    untested, verdict}
+ *
+ * `parent` is the number one level up (`608.2` for `608.2b`, `608` for
+ * `608.2`). `examples` holds only the examples the body prints (a bare
+ * demonstration has no words). `scope` is the record's own, else null (Annex
+ * D's rows: 'digital'). `openQuestion` is true when a tier-1 discrepancy, one
+ * awaiting the owner's answer, points at the rule. `verdict` is the verifier's
+ * latest, 'stale' when the text changed after it, null when never verified.
+ * `generated_from` hashes the .md document and Annex D, the editions this one
+ * mirrors. Pure and byte-deterministic like render().
+ */
+function renderJson(M, files) {
+  const o = M.outline;
+  const row = (v, s, chapterTitle, annex) => {
+    const r = v.rec ?? null;
+    const p = parseNum(v.num);
+    const ver = r ? verdictOf(M, r) : null;
+    const ds = M.discByNum.get(v.num) ?? [];
+    return {
+      num: v.num, key: v.key, title: v.title ?? null,
+      section: s.num, sectionTitle: s.title, chapterTitle,
+      parent: p.sub ? `${p.section}.${p.rule}` : p.section,
+      text: r ? M.refText(r.text) : '',
+      see: r ? seeNums(M, r) : [],
+      examples: r ? (r.examples ?? []).map((x) => exampleText(x.text)).filter(Boolean).map((t) => M.refText(t)) : [],
+      basis: r?.basis ?? null,
+      scope: r?.scope ?? (annex ? 'digital' : null),
+      engineDiffers: !!r?.engineDiffers?.length,
+      discrepancies: ds.map((d) => d.id),
+      openQuestion: ds.some((d) => d.tier === 1 && !!d.question),
+      untested: !!r?.untested,
+      verdict: ver ? (ver.stale ? 'stale' : ver.verdict) : null,
+    };
+  };
+  const rowsOf = (sections, chapterTitle, annex) => sections.flatMap((s) =>
+    entriesOf(M, s.num).map((e) => viewOf(M, e)).filter((v) => !v.tomb).map((v) => row(v, s, chapterTitle, annex)));
+  const glossary = [...M.glossary].sort((a, b) => cmpStr(a.term.toLowerCase(), b.term.toLowerCase()) || cmpStr(a.key, b.key))
+    .map((g) => ({ term: g.term, key: g.key, obsolete: !!g.obsolete, text: M.refText(g.text), see: seeNums(M, g) }));
+  const doc = {
+    edition: { name: o.edition.name, effective: o.edition.effective, engineCommit: o.edition.engineCommit },
+    generated_from: `sha256:${createHash('sha256').update(files.doc).update('\0').update(files.annexD).digest('hex').slice(0, 16)}`,
+    rules: o.chapters.flatMap((c) => rowsOf(c.sections, `${c.num}. ${c.title}`, false)),
+    annexD: rowsOf(o.annexD?.sections ?? [], o.annexD?.title ?? 'Annex D', true),
+    glossary,
+  };
+  return JSON.stringify(doc, null, 1) + '\n';
+}
+
 /* ── the entry point ────────────────────────────────────────────────────── */
 
 /** the model, refusing a glossary that points at no live rule */
@@ -1058,7 +1122,7 @@ function renderModel(inputs, ex) {
 /** every published file, by its OUTPUT_PATHS name */
 function editions(M, P) {
   const md = renderMd(M, P);
-  return {
+  const files = {
     doc: md,
     html: renderHtml(M, P),
     txt: renderTxt(M, md),
@@ -1067,6 +1131,8 @@ function editions(M, P) {
     ownerQuestions: renderOwnerQuestions(M),
     changelog: mdChangelog(M, true),
   };
+  files.json = renderJson(M, files);
+  return files;
 }
 
 /**
@@ -1082,6 +1148,7 @@ export function render(inputs, ex) {
 export const OUTPUT_PATHS = {
   doc: CR_DOC, html: CR_DOC_HTML, txt: CR_DOC_TXT, annexD: CR_ANNEX_D,
   discrepanciesMd: CR_DISCREPANCIES_MD, ownerQuestions: CR_OWNER_QUESTIONS, changelog: CR_CHANGELOG,
+  json: CR_JSON,
 };
 
 /* ── the review page's document ─────────────────────────────────────────── */

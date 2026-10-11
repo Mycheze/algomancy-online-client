@@ -60,6 +60,7 @@ load_dotenv()
 
 import combos
 import core
+import crnotes
 import draft
 import gameserver
 import paths
@@ -120,6 +121,9 @@ class AlgoBot(commands.Bot):
         await load_cogs(self)
         await self.sync_tree()
         await self.start_push_listener()
+        # the open CR review notes the judge shows the model (crnotes.py); a
+        # no-op without ALGO_BOT_TOKEN, like the push listener above
+        crnotes.NOTES.ensure_started()
 
     async def start_push_listener(self):
         """Take queue events from the game server, if this deploy wants them.
@@ -170,7 +174,7 @@ class AlgoBot(commands.Bot):
                 meta = {}
                 try:
                     answer, hits, reasoning = await answer_question(message.content, history,
-                                                                    meta=meta)
+                                                                    meta=meta, surface="discord")
                 except Exception as exc:
                     store.log_failure("followup", message.content, exc, core.LLM_MODEL,
                                       llm=meta, engine_version=core.ENGINE_VERSION,

@@ -19,12 +19,13 @@ import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import openai
 from openai import AsyncOpenAI
 
 from cards import CardIndex
+import crnotes
 import retriever as retr
 from retriever import CORPUS, Retriever
 
@@ -331,10 +332,30 @@ carefully and apply it literally before reaching for general rules.
 trustworthy source. The ladder: 0 = a Discord ruling (an answer given in the game's \
 official Discord, by the designer or an experienced judge), which is DEFINITIVE and \
 overrides every other source, including the rulebook; 1 = primary rulebook, card text, \
-and official judge write-ups; 2 = official glossary; 3 = the older 2023 rulebook; \
-4-5 = web write-ups and design blogs, which are frequently outdated. The primer is \
-reliable for basics. A Discord ruling that contradicts an older rulebook means the game \
-CHANGED, not that the ruling is wrong — follow the ruling and say so.
+official judge write-ups, and Comprehensive Rules that rest on print or the designer; \
+2 = official glossary, and Comprehensive Rules marked "owner call" or "digital-client \
+convention"; 3 = the older 2023 rulebook; 4-5 = web write-ups and design blogs, which \
+are frequently outdated. The primer is reliable for basics. A Discord ruling that \
+contradicts an older rulebook means the game CHANGED, not that the ruling is wrong — \
+follow the ruling and say so.
+
+The Comprehensive Rules (passages tagged [cr:…]):
+- They are an UNOFFICIAL numbered rulebook written for this project's online client, not \
+Caleb Gannon's rulebook. Use them for precise statements, and name the rule in your prose \
+as "CR 608.2b" (the number printed in the passage) as well as giving its [tag].
+- They LOSE to the Manual, to card text and to a Discord ruling: where a CR passage \
+conflicts with one of those, follow the higher source and say the CR differs.
+- "owner call": this project's own ruling where no printed or designer source decides. \
+Give it, but say it is an unofficial ruling.
+- "digital-client convention": how the online client handles something players at a table \
+would simply agree on. Each such passage carries an instruction on how to present it — \
+follow it.
+- A passage marked [Open question: …] is unsettled; say so rather than presenting it as \
+settled.
+- A passage may end with "⚠ Open review note (owner|judge, date): …". That is a reviewer \
+flagging that the rule above it may be WRONG and is waiting to be fixed. It is a lead, \
+not a source: never state the note as the rule. Mention the uncertainty, and prefer a \
+higher source if one was retrieved.
 - If neither the primer nor the retrieved passages cover the question, say you don't \
 have that in the rules rather than inventing an answer. A clear "the rules provided \
 don't cover this" is a good answer.
@@ -346,9 +367,10 @@ one, say plainly that it is provisional and may change when the official release
 Where such a source explicitly marks a point UNCONFIRMED, do not fill the gap with a \
 guess — say it is not documented yet. But where it DOES state a rule and names its \
 source (card text or a dated designer message), answer it directly: rot's timing, what \
-"trashed" means (including that tokens CAN be trashed), the Wraith/Wight token, prophecy \
-and debt are all sourced now, so flag them as provisional but do NOT hedge them as \
-unknown. Note that a sourced L&D point can still be SUPERSEDED when the card is \
+"trashed" means, the Wraith/Wight token, prophecy and debt are all sourced now, so flag \
+them as provisional but do NOT hedge them as unknown. Where a Comprehensive Rules passage \
+states a point the provisional glossary or the primer leaves open or words differently, \
+prefer the newer, more specific passage and say which you followed. Note that a sourced L&D point can still be SUPERSEDED when the card is \
 redesigned — the Wraith is a 3/3 as of 2026-08-21, and any passage describing a 4/4 \
 Wraith/Wight is an older printing; prefer the primer and the newest-dated source.
 
@@ -380,7 +402,7 @@ Style: be concise, use clean markdown, keep answers under ~250 words."""
 # `c…` change (data) at a glance. Bump ENGINE_DATE + add a line to
 # ENGINE_CHANGELOG.md whenever you make a real behavioural change. See that file
 # for the history; responses logged before this field existed have no stamp.
-ENGINE_DATE = "2026-08-21"
+ENGINE_DATE = "2026-10-11"
 
 
 # Prepended to the final user turn in a thread. The earlier turns are context for
@@ -677,12 +699,38 @@ def lesson_block(context):
     return f"{LESSON_NOTE}<lesson>\n{context}\n</lesson>\n\n"
 
 
-def build_context(hits):
+# Where the answer will be read. A "digital-client convention" passage (Annex D,
+# or a rule the CR scopes to the online client) is said differently on each:
+# inside the client, the convention simply IS how the game plays; on Discord the
+# reader may be playing at a table, where players agree such things themselves.
+# The game server's /api/judge and the bot's own web page are both "web".
+SURFACES = ("web", "discord")
+DIGITAL_NOTE = {
+    "web": ("digital-client convention: the reader is in the online client, so state "
+            "this plainly as how the game plays here"),
+    "discord": ('digital-client convention: when you rely on it, say it is how it works '
+                '"in the online client; tabletop may differ"'),
+}
+
+
+def build_context(hits, surface="web", notes_used=None):
+    """The passages block. A CR passage carries its label, its digital-client
+    instruction for `surface`, and any open review note (crnotes); the note ids
+    are appended to `notes_used` when a list is passed."""
+    note_of = DIGITAL_NOTE.get(surface, DIGITAL_NOTE["web"])
     blocks = []
     for _score, r in hits:
+        label = r["authority_label"]
+        if r.get("source_type") == "cr" and (r.get("metadata") or {}).get("scope") == "digital":
+            label = f"{label} — {note_of}"
+        text = r["text"]
+        for n in crnotes.NOTES.notes_for(r):
+            text += "\n" + crnotes.format_note(n)
+            if notes_used is not None and n["id"] not in notes_used:
+                notes_used.append(n["id"])
         blocks.append(
-            f"[{r['id']}] (authority {r['authority']} — {r['authority_label']}; "
-            f"source: {r['source']})\n{r['text']}")
+            f"[{r['id']}] (authority {r['authority']} — {label}; "
+            f"source: {r['source']})\n{text}")
     return "\n\n---\n\n".join(blocks)
 
 
@@ -734,8 +782,12 @@ def _use_reasoning(question):
     return needs_reasoning(question)
 
 
-async def answer_question(question, history, context=None, meta=None):
+async def answer_question(question, history, context=None, meta=None, surface="web"):
     """Retrieve, call the model, return (answer_text, hits, reasoning_used).
+
+    `surface` ("web" | "discord"): where the answer is read — the game server's
+    judge box and the bot's web page are "web", every Discord path "discord". It
+    decides how a digital-client convention is worded (DIGITAL_NOTE).
 
     `context` (R297): the Learn to Play lesson the player is reading, placed in
     the final user message under LESSON_NOTE. Retrieval stays on the question.
@@ -748,10 +800,17 @@ async def answer_question(question, history, context=None, meta=None):
         raise RuntimeError("model client not initialised — call core.init_client() first")
     start = time.monotonic()
     meta = {} if meta is None else meta
+    if surface not in SURFACES:
+        raise ValueError(f"surface must be one of {SURFACES}, not {surface!r}")
+    # The open-review-note overlay refreshes on its own task; this only makes
+    # sure that task exists. The answer reads whatever snapshot is in memory.
+    crnotes.NOTES.ensure_started()
     # BM25 over the whole corpus is synchronous and sits on the Discord bot's
     # event loop otherwise — every other command waits while it runs.
     hits = await asyncio.to_thread(retriever.search, question, k=TOP_K)
-    passages = build_context(hits) if hits else "(no relevant passages found)"
+    notes_used = []
+    passages = build_context(hits, surface, notes_used) if hits else "(no relevant passages found)"
+    meta["surface"], meta["cr_notes"] = surface, notes_used
     messages = [{"role": "system", "content": f"{SYSTEM_PROMPT}\n\n{PRIMER}"}]
     # Prior assistant turns are resent with their citation tags stripped (the
     # passages they referenced aren't in this call's context).
@@ -806,8 +865,31 @@ def _sup(n):
     return str(n).translate(_SUPERSCRIPT)
 
 
+# The rules review page in the client: `&at=r608.2b` opens the document at a
+# rule (Annex D's are `rD6.16`, the same id the .html edition uses), and
+# `&at=gloss:<key>` at a glossary row (client/ui/cranchor.ts placer().ofRef).
+CR_REVIEW_BASE = (os.getenv("ALGO_PUBLIC_URL") or "https://algomancy.online").rstrip("/")
+
+
+def cr_link(r):
+    """The review-page URL for a CR chunk, or None for any other source."""
+    if r.get("source_type") != "cr":
+        return None
+    m = r.get("metadata") or {}
+    if m.get("kind") == "glossary":
+        at = f"gloss:{m['gloss_key']}" if m.get("gloss_key") else None
+    else:
+        at = f"r{m['num']}" if m.get("num") else None
+    return f"{CR_REVIEW_BASE}/?crreview=1&at={quote(at, safe=':.')}" if at else None
+
+
 def friendly_source(r):
     """A clean, human-readable name for a retrieved chunk's source."""
+    if r["source_type"] == "cr":
+        m = r.get("metadata") or {}
+        if m.get("kind") == "glossary":
+            return f"CR glossary: {m.get('term') or r['title']}"
+        return f"CR {m.get('num') or r['title']}"
     if r["source_type"] == "card":
         return f"Card: {r['title']}"
     if r["source_type"] == "glossary":

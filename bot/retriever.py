@@ -57,6 +57,14 @@ FUZZY_WEIGHT = 0.85
 #
 # So the slate reserves a floor for the sources that state base rules. Rulings
 # still take every slot they earn above the floor; they just can't take them all.
+#
+# ⚠ THE COMPREHENSIVE RULES ("cr") ARE NOT FOUNDATION, ON MEASUREMENT (2026-10-11).
+# Counting them toward the floor was tried against the draft gold set's
+# must-cite lists (115 questions, top 10): CR recall rose 58% -> 64%, but card
+# recall fell 82% -> 62%, because ~1150 short numbered-rule chunks then fill
+# the floor that keeps a card's own text on the slate. Left out, they still take
+# ~3 slots a question on their own score, and the Manual/card/RAQ recall stays
+# where it was before the CR arrived (85/81% -> 82/81%).
 FOUNDATION_TYPES = {"rulebook", "glossary", "card"}
 FOUNDATION_FLOOR = 4
 

@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-12', kind: 'new', text: 'The judge now answers from the full rules document as well, says when an answer rests on an unofficial ruling or on how the online client plays, and lists its sources under each answer with a link to the rule it rests on.' },
   { date: '2026-10-11', kind: 'change', text: 'In a battle the units grow into the room there is and stand in the middle of the fight, which widens only when a big attack needs it. Units waiting to block match the size of their slots, and on a small screen every rank now fits.' },
   { date: '2026-10-11', kind: 'fix', text: 'Life gained or lost from a trigger, such as Iyngstra\'s, now shows and sounds when the trigger resolves on the stack, not the moment you play the card.' },
   { date: '2026-10-11', kind: 'change', text: 'The game toggles (auto-pass, bluff haste, motion, board, sound) now sit behind "⋯ more" on a computer too, as they already did on a tablet. Rules and the judge stay where they were.' },

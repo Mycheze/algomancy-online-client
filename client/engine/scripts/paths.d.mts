@@ -39,6 +39,7 @@ export const CR_ANNEX_D: string;
 export const CR_DISCREPANCIES_MD: string;
 export const CR_OWNER_QUESTIONS: string;
 export const CR_CHANGELOG: string;
+export const CR_JSON: string;
 /** committed reviewed state (outline) and hand-written front matter */
 export const CR_OUTLINE: string;
 export const CR_FRONT_MATTER: string;

@@ -4732,7 +4732,9 @@ function nextBattleStepName(): string {
 let helpOpen = false;
 let judgeOpen = false;
 let judgeBusy = false;
-const judgeLog: { q: string; a: string; cards: { title: string }[] }[] = [];
+/** one source in a judge answer's legend, as bot/app.py `_sources_payload` sends it */
+type JudgeSource = { n: number; name: string; authority: string; url?: string | null };
+const judgeLog: { q: string; a: string; cards: { title: string }[]; sources?: JudgeSource[] }[] = [];
 
 /** one glossary entry as a reference row under a card in the inspector */
 const glossRow = (e: GlossEntry): string =>
@@ -4880,10 +4882,25 @@ function inspectorHtml(): string {
   </div></div>`;
 }
 
+/** The superscripts in a judge answer, spelled out: one line per source. A
+ * rule of the Comprehensive Rules links to the rules review page at that
+ * rule, on THIS origin (the bot's absolute link names the public site, and a
+ * LAN box should open its own copy); only the `at` the bot gave is kept. */
+function judgeSourcesHtml(sources: JudgeSource[] | undefined): string {
+  if (!sources?.length) return '';
+  const name = (s: JudgeSource): string => {
+    const at = s.url ? /[?&]at=([^&#]+)/.exec(s.url)?.[1] : undefined;
+    return at
+      ? `<a href="/?crreview=1&amp;at=${esc(at)}" target="_blank" rel="noopener">${esc(s.name)}</a>`
+      : esc(s.name);
+  };
+  return `<div class="hint">sources: ${sources.map(s => `${s.n}. ${name(s)} · <i>${esc(s.authority)}</i>`).join('<br>')}</div>`;
+}
+
 function judgeOverlayHtml(): string {
   const rows = judgeLog.map(e => `
     <div class="judgeq">Q: ${esc(e.q)}</div>
-    <div class="judgea">${mdToHtml(e.a, { inline: iconizeText })}${e.cards.length
+    <div class="judgea">${mdToHtml(e.a, { inline: iconizeText })}${judgeSourcesHtml(e.sources)}${e.cards.length
       ? `<div class="hint">cards: ${e.cards.map(c => `<span data-prev="${esc(c.title)}">${esc(c.title)}</span>`).join(' · ')}</div>` : ''}</div>`).join('');
   return `<div class="overlay mainonly"><div class="overlaybox judgebox">
     <h3>⚖ Judge — ask the rules bot</h3>
@@ -4899,22 +4916,22 @@ function judgeOverlayHtml(): string {
 
 /** One judge question. `context` (R297) is the Learn to Play lesson the player
  * is reading, so the answer is about it. */
-function judgeRequest(question: string, context?: string): Promise<{ answer: string; cards: { title: string }[] }> {
+function judgeRequest(question: string, context?: string): Promise<{ answer: string; cards: { title: string }[]; sources: JudgeSource[] }> {
   // the judge needs a signed-in caller (the server refuses anonymous spend on
   // the model), so the request carries the session like every other authed
   // one — it did not, and a signed-in player was told to sign in (2026-09-05)
   return fetch('/api/judge', {
     method: 'POST', headers: acct.authHeaders(),
     body: JSON.stringify(context ? { question, context } : { question }),
-  }).then(r => r.json()).then((r: { answer?: string; cited_cards?: { title: string }[]; detail?: string }) =>
-    ({ answer: r.answer ?? r.detail ?? 'no answer', cards: r.cited_cards ?? [] }));
+  }).then(r => r.json()).then((r: { answer?: string; cited_cards?: { title: string }[]; sources?: JudgeSource[]; detail?: string }) =>
+    ({ answer: r.answer ?? r.detail ?? 'no answer', cards: r.cited_cards ?? [], sources: Array.isArray(r.sources) ? r.sources : [] }));
 }
 
 function askJudge(question: string): void {
   judgeBusy = true;
   render();
   judgeRequest(question).then(r => {
-    judgeLog.push({ q: question, a: r.answer, cards: r.cards });
+    judgeLog.push({ q: question, a: r.answer, cards: r.cards, sources: r.sources });
   }).catch(err => {
     judgeLog.push({ q: question, a: `could not reach the judge: ${err}`, cards: [] });
   }).finally(() => {

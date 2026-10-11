@@ -318,15 +318,29 @@ def _load_exports(needs_ocr: list) -> list[dict]:
     if not EXPORTS_DIR.exists():
         return []
     out = []
+    # A thread exported twice (re-exported after it was renamed — the file name
+    # carries the title) appears as two files with one thread id. Only the
+    # newest export of each is parsed, or the thread's chunks are emitted twice
+    # under the same ids. Seen 2026-10-11: 1355689559609839787, exported in July
+    # and again in October under a longer title.
+    newest: dict[str, tuple[str, Path]] = {}
     for path in sorted(EXPORTS_DIR.glob("*.json")):
         try:
-            ctype = json.loads(path.read_text(encoding="utf-8")).get("channel", {}).get("type", "")
-            if "Thread" not in ctype:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if "Thread" not in data.get("channel", {}).get("type", ""):
                 continue  # flat channel -> handled by curation, skip the noisy naive parse
-            out.extend(_parse_dce_export(path, needs_ocr))
+            tid = str(data["channel"].get("id") or path.name)
+            when = str(data.get("exportedAt", ""))
+            if tid not in newest or when > newest[tid][0]:
+                newest[tid] = (when, path)
         except (json.JSONDecodeError, KeyError) as e:
             # Skip a partial (mid-export) or malformed file rather than aborting
             # the whole corpus build.
+            print(f"  [skip] {path.name}: {type(e).__name__} {e}")
+    for _when, path in sorted(newest.values(), key=lambda x: x[1]):
+        try:
+            out.extend(_parse_dce_export(path, needs_ocr))
+        except (json.JSONDecodeError, KeyError) as e:
             print(f"  [skip] {path.name}: {type(e).__name__} {e}")
     return out
 

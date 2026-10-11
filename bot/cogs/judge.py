@@ -68,7 +68,8 @@ class Judge(commands.Cog):
         meta = {}
         try:
             answer, hits, reasoning = await asyncio.wait_for(
-                answer_question(question, history=[], meta=meta), timeout=ANSWER_TIMEOUT)
+                answer_question(question, history=[], meta=meta, surface="discord"),
+                timeout=ANSWER_TIMEOUT)
         except asyncio.TimeoutError as exc:
             store.log_failure("ask", question, exc, core.LLM_MODEL, llm=meta,
                               engine_version=core.ENGINE_VERSION,

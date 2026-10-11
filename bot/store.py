@@ -151,8 +151,11 @@ def log_response(response_id, kind, question, answer, hits, model,
     }
     # Measured per call (added 2026-10-11). Absent keys stay absent rather than
     # null when the caller passed no meta, so "not measured" and "unknown" differ.
+    # surface and cr_notes added 2026-10-11: where the answer was read (web |
+    # discord), and the ids of the open CR review notes shown to the model with
+    # it (crnotes.py) — live data, so the log is the only record of them.
     for key in ("requested_model", "provider", "latency_ms", "total_ms", "usage",
-                "cost_usd", "cost_basis", "fallback", "attempts"):
+                "cost_usd", "cost_basis", "fallback", "attempts", "surface", "cr_notes"):
         if key in llm:
             record[key] = llm[key]
     if error is not None:

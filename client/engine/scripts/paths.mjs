@@ -149,6 +149,10 @@ export const CR_OWNER_QUESTIONS = join(CR_DIR, 'owner-questions.md');
 /** what each edition added, removed or renamed, keyed by rule key; derived
  *  from the ledger. ⚠ Generated — never hand-edit */
 export const CR_CHANGELOG = join(CR_DIR, 'changelog.md');
+/** the document as data: one row per live rule (text with every cross-reference
+ *  resolved), Annex D's rows and the glossary — what the judge bot's corpus
+ *  (bot/pipeline/build_corpus.py) is chunked from. ⚠ Generated — never hand-edit */
+export const CR_JSON = join(CR_DIR, 'Algomancy-Comprehensive-Rules.json');
 /** the document's skeleton: chapters, sections and their titles, the annexes,
  *  and the edition stamp. Committed reviewed state — hand-edited with care:
  *  a section number, once rendered, is held by the ledger */

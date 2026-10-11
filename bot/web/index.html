@@ -379,7 +379,10 @@ function addBot() {
 
 function sourcesHtml(sources) {
   if (!sources || !sources.length) return '';
-  const items = sources.map(s => `<div><b>${s.n}.</b> ${esc(s.name)} · <i>${esc(s.authority)}</i></div>`).join('');
+  // a CR source links to the rules review page at that rule (only an https link is drawn)
+  const name = s => (s.url && /^https:\/\//.test(s.url))
+    ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>` : esc(s.name);
+  const items = sources.map(s => `<div><b>${s.n}.</b> ${name(s)} · <i>${esc(s.authority)}</i></div>`).join('');
   return `<div class="sources"><div style="margin-bottom:3px"><b>Sources</b></div>${items}</div>`;
 }
 

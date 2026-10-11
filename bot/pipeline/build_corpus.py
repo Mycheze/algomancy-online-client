@@ -8,7 +8,7 @@ Produces  data/corpus/algomancy_corpus.jsonl  with one JSON object per chunk:
       "id":            stable unique id, e.g. "card:Abduct" or "manual:0007",
       "text":          the text to embed,
       "source":        file/dataset the chunk came from,
-      "source_type":   "card" | "rulebook" | "glossary" | "article" | "devlog",
+      "source_type":   "card" | "rulebook" | "glossary" | "article" | "devlog" | "ruling" | "cr",
       "authority":     int, 1 = most authoritative (see AUTHORITY below),
       "authority_label": human label for the tier,
       "outdated_risk": bool, source predates final rules,
@@ -65,6 +65,16 @@ AUTHORITY = {
     "rules_web":     (4, "designer web write-up"),
     "strategy":      (4, "official strategy guide"),
     "devlog":        (5, "design blog (may be outdated)"),
+    # The Unofficial Comprehensive Rules (data/comprehensive-rules/, chunked by
+    # build_cr.py). OURS, not Caleb's: they describe what the digital client
+    # enforces. So they never outrank tier 0 (Discord/RAQ rulings, the
+    # designer's word) and only the rules sourced in print or by the designer
+    # sit level with the Manual — where the two conflict, SYSTEM_PROMPT tells
+    # the model the Manual wins. Owner calls and digital-client conventions are
+    # a tier below, each with a label the model and the reader both see.
+    "cr":            (1, "Comprehensive Rules (unofficial)"),
+    "cr_owner":      (2, "Comprehensive Rules (unofficial — owner call)"),
+    "cr_digital":    (2, "Comprehensive Rules (digital-client convention)"),
 }
 
 # Ideas the designer floated in a write-up and then SCRAPPED. They read like rules
@@ -78,14 +88,81 @@ SCRAPPED_RULES = [
     "(Right now I am testing allowing players to graft cards beneath or on top of "
     "other cards. If you graft on top, the creature essentially becomes whatever "
     "is on top.)",
+    # The old rules glossary's Augment and Graft entries (2026-10-11). Mods are
+    # played from hand OR bin (the PRIMER, and the Manual: "can apply augments
+    # both from your hand and from your discard"), grafts go UNDER only (above),
+    # and no current source sends a dead unit's mods to "the draft pool".
+    "To do so, the card must be in your discard. ",
+    "Once the creature dies, it and the Augment card are put on the bottom of the "
+    "draft pool rather than going into the discard pile.",
+    ", and can put the card on top or beneath the targeted card",
+    "Once the creature dies, it and any grafted cards are put on the bottom of the "
+    "draft pool rather than going into the discard pile. If a grafted card somehow "
+    "loses the ability to be grafted onto (for example, if their graftable ability "
+    "is removed somehow), all grafted cards are removed and returned to the draft "
+    "pool immediately.",
+    # Light & Dark provisional glossary, Wraith (2026-10-11): settled since — a
+    # unit is its own ally (CR 102.7a / 110.4a, "A unit is its own ally"), so
+    # the Wraith may choose itself.
+    'UNCONFIRMED: whether the Wraith may choose ITSELF as the "ally" for its '
+    'deployment trigger is not settled by any source here.',
 ]
+
+# The same, for a passage too long to quote whole: everything from `start`
+# through `end` (both included) is cut. Matched against the text as the chunk
+# holds it (the L&D glossary's paragraphs are whitespace-normalised).
+SCRAPPED_SPANS = [
+    # Light & Dark provisional glossary, Trash / Trashed (2026-10-11): REVERSED.
+    # Tokens are NOT trashed — CR 108.2e "A token is never trashed, because only
+    # a card can be trashed" and CR 304.10a "A token that enters a bin is not
+    # trashed." The definition before this span ("A nontoken card entering a bin
+    # ... is trashed") already says so and stays.
+    ("TOKENS CAN BE TRASHED (relayed ruling, 2026-08-21).",
+     "no official Light & Dark rulebook or errata exists to settle either."),
+]
+
+# How often each SCRAPPED_RULES / SCRAPPED_SPANS entry cut something in this
+# build. main() warns about any entry that cut nothing: a source was reworded
+# and the stale text may be back in the corpus under new words.
+_SCRAPPED_HITS = {}
 
 
 def drop_scrapped(text):
     """Cut any SCRAPPED_RULES passage out of a chunk's text (see above)."""
     for dead in SCRAPPED_RULES:
-        text = text.replace(dead, "")
+        if dead in text:
+            _SCRAPPED_HITS[dead] = _SCRAPPED_HITS.get(dead, 0) + 1
+            text = text.replace(dead, "")
+    for start, end in SCRAPPED_SPANS:
+        a = text.find(start)
+        b = text.find(end, a) if a != -1 else -1
+        if a != -1 and b != -1:
+            _SCRAPPED_HITS[start] = _SCRAPPED_HITS.get(start, 0) + 1
+            text = text[:a] + text[b + len(end):]
     return re.sub(r"[ \t]{2,}", " ", text).strip()
+
+
+# Terms in the OLD rules glossary (Algomancy-Rules-Glossary.md) that no current
+# source uses. Their chunks are kept — a player may still ask about one — but
+# flagged outdated (the retriever's OUTDATED_PENALTY) and told so in their text,
+# so they cannot be read as current rules.
+OBSOLETE_GLOSSARY_TERMS = {
+    # CR glossary, "Conjure (Obsolete)": "no current card prints" it.
+    "Conjure": "no current card prints this mechanic",
+    # in no card, neither rulebook, nor the CR
+    "Historic": "no current card, rulebook or rule mentions Historic cards",
+    # CR glossary, "Skirmish (Obsolete)": "the current term is region".
+    "Skirmish": "the current term is region",
+}
+
+# A card's oracle `rulings` line that the designer has since called outdated.
+# The oracle JSON is canonical and is corrected in place (CLAUDE.md); until it
+# is, the line is left out of the card's chunk so the bot cannot cite it.
+OUTDATED_CARD_RULINGS = {
+    # Caleb called this outdated (rules-questions 1064279804741955646 #22656,
+    # #22659); ticketed for the oracle fix 2026-10-11.
+    "Worldbender": {"All draft skipping cards are not legal in formats without a draft."},
+}
 
 approx_tokens = lambda s: len(s) // 4
 
@@ -197,13 +274,20 @@ def render_card(c):
     if c.get("details"):
         lines.append("")
         lines.append(c["details"].strip())
-    if c.get("rulings"):
+    rulings = _current_rulings(c)
+    if rulings:
         lines.append("")
-        rulings = c["rulings"]
-        if isinstance(rulings, list):
-            rulings = "\n".join(str(r) for r in rulings)
-        lines.append("Rulings:\n" + str(rulings).strip())
+        lines.append("Rulings:\n" + "\n".join(rulings))
     return "\n".join(lines)
+
+
+def _current_rulings(c):
+    """The card's oracle `rulings`, minus any OUTDATED_CARD_RULINGS line."""
+    rulings = c.get("rulings") or []
+    if not isinstance(rulings, list):
+        rulings = [r for r in str(rulings).split("\n")]
+    stale = OUTDATED_CARD_RULINGS.get(c.get("name", "").strip(), set())
+    return [str(r).strip() for r in rulings if str(r).strip() and str(r).strip() not in stale]
 
 
 def build_cards():
@@ -236,7 +320,7 @@ def build_cards():
                 "complexity": c.get("complexity", ""),
                 "deck": c.get("Deck", ""),
                 "side": c.get("Side", ""),
-                "has_rulings": bool(c.get("rulings")),
+                "has_rulings": bool(_current_rulings(c)),
             }
             records.append(make_record(
                 cid, render_card(c), "AlgomancyCards-OracleText.json",
@@ -263,9 +347,13 @@ def build_glossary():
         m = term_re.match(para)
         term = m.group(1).strip() if m else para.split(":", 1)[0][:40]
         cid = "glossary:" + re.sub(r"[^A-Za-z0-9]+", "-", term).strip("-").lower()
+        why = OBSOLETE_GLOSSARY_TERMS.get(term)
+        if why:
+            para = f"[OBSOLETE: {why}. Not a current rule.] {para}"
         records.append(make_record(
             cid, para, "Algomancy-Rules-Glossary.md", "glossary",
-            "glossary", term, {"term": term}))
+            "glossary", term, {"term": term, **({"obsolete": True} if why else {})},
+            outdated_risk=bool(why)))
     print(f"  glossary: {len(records)} terms")
     return records
 
@@ -515,6 +603,13 @@ def main():
 
     from build_rulings import build_rulings  # local import avoids circular load
     all_records += build_rulings()
+
+    from build_cr import build_cr            # same, and it needs make_record
+    all_records += build_cr()
+
+    for dead in [*SCRAPPED_RULES, *(a for a, _b in SCRAPPED_SPANS)]:
+        if not _SCRAPPED_HITS.get(dead):
+            print(f"  [warn] a SCRAPPED entry cut nothing — was its source reworded? {dead[:70]!r}")
 
     with OUT_FILE.open("w") as f:
         for r in all_records:
