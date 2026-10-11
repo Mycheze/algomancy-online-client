@@ -325,6 +325,16 @@
      "note": "the glossary field is `cites` now"
     }
    ]
+  },
+  "client/ui/test/441-cr-review-polish.test.ts": {
+   "op": "edits",
+   "edits": [
+    {
+     "find": "rules\\? <a href=\"#r\\|ruling register/",
+     "replace": "rules? <a href=\"#r|no rule of its own/",
+     "note": "render (hand step) labels a register-only finding \"no rule of its own\" now that the register is retired"
+    }
+   ]
   }
  }
 }
