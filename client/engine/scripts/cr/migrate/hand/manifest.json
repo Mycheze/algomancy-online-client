@@ -185,6 +185,48 @@
    "step": "hand",
    "base": "dca224e241caf62c95587c4398bf157443a42045",
    "baseFile": true
+  },
+  "client/engine/scripts/paths.mjs": {
+   "op": "merge",
+   "step": "delete",
+   "base": "b8c0e4410eb1fb76e4f8bc127f623ed3a2e46f26",
+   "baseFile": true
+  },
+  "client/engine/scripts/paths.d.mts": {
+   "op": "merge",
+   "step": "delete",
+   "base": "82dfe178c958329fe6fe046c7483624f6dd30e17",
+   "baseFile": true
+  },
+  "client/ledgers/backlog.ts": {
+   "op": "merge",
+   "step": "delete",
+   "base": "922bffc27efe7da0d5ae7178645f3453373bc9ed",
+   "baseFile": true
+  },
+  "README.md": {
+   "op": "merge",
+   "step": "delete",
+   "base": "4c9fef1e880da95f2d716d4ab794b0abf7a1f30a",
+   "baseFile": true
+  },
+  "client/README.md": {
+   "op": "merge",
+   "step": "delete",
+   "base": "191595a4f4a8d8b69053f80320b229ba3f44be02",
+   "baseFile": true
+  },
+  "client/engine/README.md": {
+   "op": "merge",
+   "step": "delete",
+   "base": "db3eb0eac678da68b0dc3d01503e1ba23e0ad7a4",
+   "baseFile": true
+  },
+  "CLAUDE.md": {
+   "op": "merge",
+   "step": "delete",
+   "base": "c58b5a5324864da55fbc4a36379c5a7c75f7f2c5",
+   "baseFile": true
   }
  }
 }
