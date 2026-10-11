@@ -216,9 +216,9 @@ async def run_item(item, measurable, judge, discord, retrieval_only=False, surfa
     row["retrieval"] = ev.retrieval_check(item, hit_rows, measurable, discord)
     if row.get("answer"):
         cited = ev.cited_tags(row["answer"])
-        got = set(row["retrieved"])
         row["cited"] = cited
-        row["cited_unresolved"] = [t for t in cited if t not in got]
+        # resolved exactly as core.render_citations resolves them for players
+        row["cited_unresolved"] = [t for t in cited if core.resolve_citation(t, hit_rows) is None]
     if judge and row.get("answer"):
         row["judge"] = await judge.grade(item, row["answer"], hit_rows)
     return row

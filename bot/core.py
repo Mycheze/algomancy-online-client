@@ -319,6 +319,9 @@ Grounding and citations:
 - The primer is general background: state it freely WITHOUT a [tag]. Attach a [tag] only \
 to a claim drawn DIRECTLY from a retrieved passage, e.g. "Grafts can only go onto other \
 graft cards [rulebook23:0026]."
+- Copy each [tag] EXACTLY as it heads its passage ([manual:0023], [card:Temporal Rift], \
+[ruling:raq-1353859961855148103]). Never make up a tag, shorten one, or cite a passage \
+you were not given.
 - If you are reasoning or inferring something neither the primer nor the passages state \
 explicitly, present it as an inference ("the rules don't state this directly, but…") and \
 do NOT attach a citation.
@@ -338,7 +341,10 @@ follow the ruling and say so.
 The Comprehensive Rules (passages tagged [cr:…]):
 - They are an UNOFFICIAL numbered rulebook written for this project's online client, not \
 Caleb Gannon's rulebook. Use them for precise statements, and name the rule in your prose \
-as "CR 608.2b" (the number printed in the passage) as well as giving its [tag].
+as "CR 608.2b" (the number printed in the passage) as well as giving a [tag]: the \
+passage's own tag, or — for a subrule printed INSIDE a retrieved passage — that subrule's \
+number, e.g. [cr:608.2b] from the passage tagged [cr:608.2]. Never tag a rule number that \
+no retrieved passage prints.
 - They LOSE to the Manual, to card text and to a Discord ruling: where a CR passage \
 conflicts with one of those, follow the higher source and say the CR differs.
 - "owner call": this project's own ruling where no printed or designer source decides. \
@@ -894,32 +900,100 @@ def friendly_source(r):
     return SOURCE_NAMES.get(stem, stem.rsplit(".", 1)[0].replace("-", " "))
 
 
+def cr_chunk_covers(row, num):
+    """Does retrieved CR chunk `row` print rule `num`? build_cr.py makes one
+    chunk per rule with the subrules that fit beside it, and names a split
+    rule's continuation piece after ITS first subrule (cr:802.16g holds
+    802.16g–j, cr:802.16 only 802.16–f) — so metadata.nums is the truth, not
+    the id. A CR glossary row's nums POINT at a rule; it does not contain it.
+    bot/eval/evallib.py matches gold citations through this same function."""
+    if not str(row.get("id", "")).startswith("cr:"):
+        return False
+    m = row.get("metadata") or {}
+    if m.get("kind") == "glossary":
+        return False
+    return str(num) in [str(n) for n in (m.get("nums") or [m.get("num")]) if n]
+
+
+_SUBRULE_TAIL_RE = re.compile(r"[a-z]+$")
+
+
+def resolve_citation(tag, hit_rows):
+    """The retrieved chunk a citation tag points at, as (row, cited_num), or
+    None. cited_num is set when the tag names a CR SUBRULE inside a retrieved
+    chunk rather than the chunk itself: [cr:603.2a] -> (the cr:603.2 chunk,
+    "603.2a"). Order: the exact id; a CR chunk whose nums print the number;
+    failing that, the chunk whose num is the subrule's parent rule."""
+    for r in hit_rows:
+        if r["id"] == tag:
+            return r, None
+    if not tag.startswith("cr:") or tag.startswith("cr:glossary."):
+        return None
+    num = tag[3:]
+    for r in hit_rows:
+        if cr_chunk_covers(r, num):
+            return r, num
+    parent = _SUBRULE_TAIL_RE.sub("", num)
+    if parent and parent != num:
+        for r in hit_rows:
+            if (str(r.get("id", "")).startswith("cr:")
+                    and (r.get("metadata") or {}).get("kind") != "glossary"
+                    and (r.get("metadata") or {}).get("num") == parent):
+                return r, num
+    return None
+
+
+def _cited_view(r, num):
+    """The row a footnote shows for a subrule citation: a COPY of the chunk
+    with its number replaced by the one the model cited, so friendly_source()
+    says "CR 603.2a" and cr_link() anchors at r603.2a (the review page and the
+    .html edition give every subrule its own id). The hit itself is untouched."""
+    if num is None:
+        return r
+    return {**r, "title": f"CR {num}", "metadata": {**(r.get("metadata") or {}), "num": num}}
+
+
+# A bracketed part that is one of OUR citation tags: lowercase prefix, colon, no
+# space after it ([manual:0023], [card:Temporal Rift], [cr:608.2b]). Card text
+# ([Augment], [Switch1]) and prose ("[Note: …]") never look like this.
+_TAG_LIKE_RE = re.compile(r"^[a-z][a-z0-9_\-]*:\S")
+
+
 def render_citations(answer, hits):
     """Turn the model's `[source:tag]` citations into clean footnote superscripts.
 
     Returns (display_text, ordered_sources) where ordered_sources is a list of
     (number, row) for the sources actually cited, in first-appearance order.
-    Brackets that don't contain a known tag are left untouched.
+    A CR subrule tag ([cr:603.2a]) resolves to the retrieved chunk that prints
+    it and is footnoted as that subrule (see resolve_citation/_cited_view).
+
+    ⚠ A tag that resolves to NOTHING retrieved is DROPPED, never shown: until
+    2026-10-11 it stayed in the text as raw "[cr:603.2a]" — 159 of 537 tags in
+    eval run 2, in 68 of 115 answers. Brackets that hold no citation-shaped
+    part (card text like [Augment]) are left untouched.
     """
-    by_id = {r["id"]: r for _s, r in hits}
+    rows = [r for _s, r in hits]
     # Number by source *document* (friendly name) so multiple chunks of e.g. the
-    # 2023 Rulebook share one footnote instead of cluttering the legend.
+    # 2023 Rulebook share one footnote instead of cluttering the legend. A CR
+    # rule is its own document: "CR 603.2a" and "CR 603.2" are two footnotes.
     order, number, rep = [], {}, {}
 
     def repl(m):
+        parts = [x.strip() for x in re.split(r"[;,]", m.group(1))]
+        if not any(_TAG_LIKE_RE.match(t) for t in parts):
+            return m.group(0)  # not a citation at all — card text, leave it alone
         nums = []
-        for t in [x.strip() for x in re.split(r"[;,]", m.group(1))]:
-            r = by_id.get(t)
-            if r is None:
-                continue
+        for t in parts:
+            hit = resolve_citation(t, rows)
+            if hit is None:
+                continue        # an unresolvable tag: dropped, prose kept
+            r = _cited_view(*hit)
             key = friendly_source(r)
             if key not in number:
                 order.append(key)
                 number[key] = len(order)
                 rep[key] = r
             nums.append(number[key])
-        if not nums:
-            return m.group(0)  # not one of our citations — leave it alone
         return "".join(_sup(n) for n in sorted(dict.fromkeys(nums)))
 
     text = _CITE_RE.sub(repl, answer)

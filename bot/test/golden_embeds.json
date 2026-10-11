@@ -2,7 +2,7 @@
  "_corpus_rows": 2456,
  "answer": {
   "color": 5793266,
-  "description": "Damage is removed at regroup [source:manual:0018], and temporary buffs end [source:glossary:regroup].",
+  "description": "Damage is removed at regroup, and temporary buffs end.",
   "fields": [
    {
     "inline": false,
@@ -19,7 +19,7 @@
  },
  "answer:reasoning": {
   "color": 5793266,
-  "description": "Damage is removed at regroup [source:manual:0018], and temporary buffs end [source:glossary:regroup].",
+  "description": "Damage is removed at regroup, and temporary buffs end.",
   "fields": [
    {
     "inline": false,

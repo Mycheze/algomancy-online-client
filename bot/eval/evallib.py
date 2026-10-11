@@ -162,13 +162,11 @@ def cite_matches(cite: str, row: dict, discord: DiscordIndex | None = None) -> b
             return False
         if meta.get("kind") == "glossary":
             return False        # a glossary row's nums POINT at a rule; it does not contain it
-        nums = meta.get("nums")
-        if nums:
-            # build_cr.py: one chunk = a rule and the subrules that fit beside
-            # it; a long rule is split, and the continuation piece is named
-            # after ITS first subrule (cr:802.16g holds 802.16g–j, cr:802.16
-            # only 802.16–f). So `nums` is the truth, not the id prefix.
-            return key in [str(n) for n in nums]
+        if meta.get("nums"):
+            # the SAME rule the bot's footnotes use (a split rule's continuation
+            # piece is named after its first subrule, so nums, not the id)
+            from core import cr_chunk_covers
+            return cr_chunk_covers(row, key)
         if cid.startswith("cr:"):
             return _cr_covers(_base_id(cid)[3:], key)
         return False
