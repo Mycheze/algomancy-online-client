@@ -1397,70 +1397,62 @@
   },
   {
     "key": "effects.graft.composite.fizzle",
-    "textHash": "acfda58db9b025e4",
-    "verdict": "partial",
+    "textHash": "5833b50b17d5df14",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U17-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:resolveItem",
-        "agrees": false,
-        "note": "partAlive: a min-1 targeted part with nothing declared is not alive, so an item that declared no target but has a required-target part fizzles whole — contrary to sentence 3"
+        "agrees": true,
+        "note": "untargeted parts do not vote; targeted && no part alive -> fizzle; a min-0 part with nothing declared counts as alive; a required target never had -> fizzle"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "R86: a graft composite that loses its ONLY",
+        "pattern": "R86",
         "passed": true,
-        "asserts_claim": "yes: Spewing Mushroom with Biotoxicity + Technological Superiority, targets itself, D deletes it with Leaping Lillik, no Poison and a fizzle line"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "R86: one surviving target carries",
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "R5: \"recall UP TO ONE target cached card\"",
         "passed": true,
-        "asserts_claim": "bare demonstration: passes, 4 Poisons"
-      },
-      {
-        "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "R86: an item that declares NO target anywhere",
-        "passed": true,
-        "asserts_claim": "bare demonstration: passes (Ignis Sprite, no targeting spec at all)"
-      },
-      {
-        "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "R86: a required target with no legal candidate",
-        "passed": true,
-        "asserts_claim": "contra sentence 3: an item that declared no target still fizzles"
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
         "file": "client/engine/test/zz-probe-U17-3.test.ts",
-        "test": "probe U17-3: a composite that declared NO target (its required-target part had no candidate) still fizzles whole",
+        "test": "probe U17-3: Spewing Mushroom with Prismatic Observer grafted, nothing cached, resolves in full",
         "passed": true,
-        "demonstrates": "no (refutes sentence 3): a Biotoxicity + Technological Superiority composite that declared no target fizzles and makes no Poison"
+        "demonstrates": "yes: a composite whose only target is optional and unchosen does not fizzle; the life and the host's Poison both happen"
       }
     ],
     "source_checks": [
       {
         "ref": "R86",
-        "supports": "partial",
-        "note": "supports sentences 1-2 and the examples; its table and text say a required target the item never had is still a fizzle — only an item never targeted in the first place (no targeting spec, or min 0) never fizzles"
+        "supports": "yes",
+        "note": "All seven quotes verbatim; R86 states the whole-fizzle, the at-least-one-target carry-through, and the two never-targeted rows (no targeting anywhere; min-0 with nothing declared), with required-never-had still a fizzle. No supersession edge touches R86."
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "still a fizzle; only *\"was never targeted in the first place\"* is not."
+        "text": "> **A:** \"**If effect loses ALL of its targets and wants to resolve.**\""
       },
       {
         "file": "client/docs/digital-rules.md",
-        "text": "| a **required** target the item never had a legal candidate for | fizzles | fizzles — it wanted a target and has none |"
+        "text": "resolves — declaring no target was a legal choice, and the unconditional half must happen"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "still a fizzle; only *\"was never targeted in the first place\"* is not."
       }
     ],
     "basis_ok": true,
-    "problem": "sentence 3 ('A composite that declared no target anywhere never fizzles') is the gate R86 explicitly rejected: R86 keys the gate on whether any part HAS a targets spec, not on whether one was declared, and a required target the item never had a legal candidate for is still a fizzle (R86 table row 3; 78-round17-core 'a required target with no legal candidate at cast still fizzles'; probe U17-3 shows a composite that declared no target fizzling whole). Only an item with no targeting spec anywhere, or an optional (min 0) one, never fizzles. Sentences 1-2 and all examples hold."
+    "problem": ""
   },
   {
     "key": "effects.graft.composite.no-target",

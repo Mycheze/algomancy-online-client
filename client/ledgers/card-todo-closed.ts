@@ -10,8 +10,47 @@ import * as path from 'node:path';
 import '../engine/src/cards/registry.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
 import { E } from '../engine/src/engine.ts';
+import { Harness } from '../engine/src/harness.ts';
+import { give, giveResources, spawn, toDeployment, toNextBattle, unitsOf } from '../engine/test/util.ts';
 import { SRC_DIR, ENGINE_SRC, setSrc, runSrc, board, eventsFrom } from './card-todo-helpers.ts';
 import type { TodoEntry } from './card-todo.ts';
+
+/** CT-254 / R347: Bloomcaster played from hand makes a 1/1 for its own play (wrong since R347) */
+function bloomcasterHearsItself(): boolean {
+  const h = new Harness(71401);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  giveResources(h, p, 'wood', 2);
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Bloomcaster') });
+  if (!unitsOf(h, p).some(u => u.card === 'Bloomcaster')) throw new Error('setup: Bloomcaster is not in play');
+  return unitsOf(h, p).filter(u => u.card === 'Unit Token').length > 0;
+}
+
+/** CT-277 / R347: a Stalwart Sentinel that Wake the Dead plays out of a bin
+ *  takes its own two +1/+1 counters (true while broken) */
+function sentinelHearsItself(): boolean {
+  const h = new Harness(71402);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const atk = spawn(h, p, 'Unit Token');
+  giveResources(h, p, 'dark', 8);
+  toNextBattle(h, p);
+  h.do({ type: 'declareAttack', seat: p, columns: [[atk]] });
+  h.state.players[p]!.bin.push('Stalwart Sentinel');
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Wake the Dead') });
+  for (let guard = 20; guard-- > 0;) {
+    const dec = h.state.decision;
+    if (dec) {
+      const i = dec.options.findIndex(o => o.label.startsWith('Stalwart Sentinel ['));
+      h.do({ type: 'decide', seat: dec.seat, choice: i >= 0 ? i : dec.options.findIndex(o => o.label === 'Done') });
+    } else if (h.state.stack.length && h.state.priority !== null) {
+      h.do({ type: 'passPriority', seat: h.state.priority });
+    } else break;
+  }
+  const sentinel = unitsOf(h, p).find(u => u.card === 'Stalwart Sentinel');
+  if (!sentinel) throw new Error('setup: Wake the Dead did not play the Sentinel');
+  return sentinel.counters > 0;
+}
 
 export const CLOSED: TodoEntry[] = [
   // ── found by the whole-pool card drill (81-card-drill.test.ts) ─────────
@@ -10866,5 +10905,37 @@ export const CLOSED: TodoEntry[] = [
     ],
     closed: "FIXED 2026-10-09 (RAQ fix round) as R336, following the RAQ thread (the owner: the RAQ is the authority over our rulings). The {todo} reproduction from the audit is now the guard.",
     status: "done",
+  },
+  {
+    id: 254, area: "card", severity: "major",
+    cards: ["Bloomcaster"],
+    title: "Bloomcaster does not hear its own play: correct (R347), a card being played is on the stack, not in play",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.playing.what-is-played.includes-itself. R26 (current): Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") fires on its own arrival when played normally. The trigger listens on cardPlayed from holders in play, and cardPlayed fires at commit while Bloomcaster is still on the stack, so it never hears itself. Measured: no 1/1 when Bloomcaster is played from hand. The card file comment still claims it makes one. Either the engine regressed when the card moved to cardPlayed, or R26 is stale (D-U14-11).",
+    evidence: "Findings F-U14-5 (dup F-U14-8). digital-rules.md: \"Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") **fires on its own\". batch-fire-wood.ts: \"type: 'triggered', events: ['cardPlayed'],\" and \"// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12).\" Re-measured 2026-10-10 by the proof below.",
+    fix: "Let the item being committed hear its own cardPlayed (or fire a self-play check on arrival), then add a guard that plays Bloomcaster from hand and counts the 1/1.",
+    proof: () => bloomcasterHearsItself(),
+    guards: [
+      "11-fire-wood.test.ts::R347: Bloomcaster played from hand makes no 1/1 for its own play"
+    ],
+    closed: "NOT A BUG. The owner answered D-U14-11 with reading B on 2026-10-11 (R347, reversing R26's own-play half): a 'whenever you play a unit' ability works only while its card is in play. The engine already does this, so nothing was changed. Closed as done rather than wontfix so the proof keeps running as R347's guard: it now reads true if Bloomcaster makes a 1/1 for its own play, which R347 rules out.",
+    status: 'done',
+  },
+  {
+    id: 277, area: "card", severity: "minor",
+    cards: ["Stalwart Sentinel", "Proph", "Bloomcaster", "Void Mandible"],
+    title: "Stalwart Sentinel played from a bin hears its own play and takes its own two +1/+1 counters (R347)",
+    detail: "(CR review-comment round, 2026-10-11; found by the round-4 verifier.) R347: an ability that triggers when its controller plays a unit works only while its card is in play; a card being played is on the stack, not in play, so its own play does not trigger it. Stalwart Sentinel's \"[Augment][once] When you play a unit or spell from anywhere other than your hand, put two +1/+1 counters on me.\" listens on 'spellPlayed' and 'spawned' with no self-exclusion, so a Sentinel that Wake the Dead plays from a bin fires on its own arrival and ends with two counters. Bloomcaster (cardPlayed, holders in play) already behaves.",
+    evidence: "Finding F-U14-10. batch-light-a.ts: \"type: 'triggered', events: ['spellPlayed', 'spawned'], bounded: true,   // [once]\". Measured by a verifier probe (uncommitted, scratch mirror client/engine/test/zz-probe-U14-1.test.ts 1b): cardPlayed fired once for the Sentinel, it is in play with 2 counters, and its own trigger fired. The whole-pool sweep written to close it (444) measured three more: Proph drew for its own play from a cache, a bin or the deck exactly as the Sentinel took counters, and Bloomcaster (a 1/1) and Void Mandible (sacrificed itself) heard their own play when Wake the Dead played them, because the asPlay spawn fires 'cardPlayed' after the body is in play.",
+    fix: "Exclude the Sentinel's own arrival from its trigger (the event's entity is the listener itself), then a guard: Wake the Dead plays a Sentinel from the bin, 0 counters; a second unit played from the bin afterwards, 2.",
+    proof: () => sentinelHearsItself(),
+    guards: [
+      "444-no-self-hearing-play.test.ts::R347: Stalwart Sentinel played from a bin by Wake the Dead takes no counters for its own play",
+      "444-no-self-hearing-play.test.ts::R347 calibration: the detector sees a Stalwart Sentinel hear a unit played after it",
+      "444-no-self-hearing-play.test.ts::R347: no play listener hears its own play from a bin",
+      "444-no-self-hearing-play.test.ts::R347: no play listener hears its own play from a cache",
+      "444-no-self-hearing-play.test.ts::R347: no play listener hears its own play from the deck",
+    ],
+    closed: "FIXED 2026-10-11. Two seams, one rule. (1) E.fireEvent gained `beingPlayed`: the asPlay spawn (Wake the Dead, The Bonesculptor) dispatches its 'cardPlayed' with the arriving body excluded from the listeners, which fixes Bloomcaster and Void Mandible and every future 'cardPlayed' listener. (2) A plain unit's play is announced on its own 'spawned' (R263), which a \"When I spawn\" ability must keep hearing, so the two cards that read 'spawned' as a play (Stalwart Sentinel, Proph) drop their own arrival with the shared helpers.ts isOwnArrival. 444 derives every play listener in the pool (21 cards) and plays each from hand, cache, bin and deck.",
+    status: 'done',
   },
 ];

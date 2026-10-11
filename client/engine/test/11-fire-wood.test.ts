@@ -203,6 +203,21 @@ test('Forager of the Fallen: an enemy dying in-region creates a 2/2', () => {
   assert.ok(ent(h, forager), 'Forager survived the 1/1 blocker');
 });
 
+test('R347: Bloomcaster played from hand makes no 1/1 for its own play', () => {
+  // R347 (the owner, answering D-U14-11 with reading B; it reverses R26's
+  // own-play half): a "whenever you play a unit" ability works only while its
+  // card is in play, and a card being played is on the stack, so Bloomcaster
+  // does not hear itself. The engine already did this; CT-254 had called it a bug.
+  const h = new Harness(71401);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  giveResources(h, p, 'wood', 2);
+  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Bloomcaster') });
+  assert.ok(unitsOf(h, p).some(u => u.card === 'Bloomcaster'), 'Bloomcaster resolved into play');
+  assert.equal(unitsOf(h, p).filter(u => u.card === 'Unit Token').length, 0,
+    'no 1/1 for its own play: it was on the stack, not in play, when it was played');
+});
+
 test('Bloomcaster: PLAYING a unit makes a 1/1 — and putting one into play does not', () => {
   // ⚠ THIS TEST USED TO ASSERT THE BUG. It called the `spawn` helper, which
   // puts a unit straight into play, and expected a 1/1 — because the card

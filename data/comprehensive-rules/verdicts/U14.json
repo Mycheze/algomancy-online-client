@@ -2311,43 +2311,34 @@
     "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards (Bloomcaster on cardPlayed)",
+        "loc": "client/engine/src/engine.ts:fireEvent",
         "agrees": true,
-        "note": "Bloomcaster played from hand makes no 1/1 for itself"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-light-a.ts:Stalwart Sentinel",
-        "agrees": false,
-        "note": "listens on spawned/spellPlayed with no self-exclusion: a Sentinel played from a bin hears its own play and takes 2 counters (reported under bugs)"
+        "note": "beingPlayed excludes the unit whose own play is announced (R347); Bloomcaster hears 'cardPlayed' only while in play."
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "client/engine/test/zz-probe-U14-1.test.ts",
-        "test": "probe U14-1a: Bloomcaster played from hand does not hear its own play; a later unit play does",
+        "file": "client/engine/test/444-no-self-hearing-play.test.ts",
+        "pattern": "R347",
         "passed": true,
-        "demonstrates": "yes: Bloomcaster played from hand makes no 1/1; a unit played while it is in play makes one"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/zz-probe-U14-1.test.ts",
-        "test": "probe U14-1b: DIVERGENCE — Stalwart Sentinel played from a bin (Wake the Dead) hears its own play and takes two counters",
+        "file": "client/engine/test/11-fire-wood.test.ts",
+        "pattern": "R347: Bloomcaster played from hand",
         "passed": true,
-        "demonstrates": "no (divergence): the engine fires Stalwart Sentinel's \"when you play a unit ... from anywhere other than your hand\" on its own play from the bin"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "R347",
         "supports": "yes",
-        "note": "owner, current (2026-10-11), reverses R26's own-play half: works only while in play; a card being played is on the stack; \"This holds whether or not the ability says \\\"another\\\".\""
+        "note": "R347 states all three sentences: works only while in play; a card being played is on the stack; holds whether or not 'another'. Owner ruling; reverses R26's own-play half (supersession edge accepted)."
       }
     ],
     "quote_spans": [
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "An ability that triggers when its controller plays a unit works only while its card is in play."
-      },
       {
         "file": "client/docs/digital-rules.md",
         "text": "A card that is being played is on the stack, not in play, so its own play does not trigger it."
@@ -2355,10 +2346,6 @@
       {
         "file": "client/docs/digital-rules.md",
         "text": "This holds whether or not the ability says \"another\"."
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-light-a.ts",
-        "text": "type: 'triggered', events: ['spellPlayed', 'spawned'], bounded: true,   // [once]"
       }
     ],
     "basis_ok": true,

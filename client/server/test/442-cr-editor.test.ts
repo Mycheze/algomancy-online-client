@@ -38,7 +38,6 @@ type CrRow = import('../crreview.ts').CrRow;
 // @ts-expect-error — a plain .mjs script, typed by use
 const C = await import('../../engine/scripts/cr/comments.mjs') as {
   threadsOf: (items: Map<string, unknown>, o?: { all?: boolean }) => { root: { id: string; resolved?: unknown }; replies: { id: string; body: string }[] }[];
-  threadsOf: (items: Map<string, unknown>) => { root: { id: string }; replies: { id: string; body: string }[] }[];
   contextFor: (root: unknown, inputs: unknown) => Record<string, any>;
   editorRequest: (op: string, id: string, body?: string) => { path: string; payload: Record<string, unknown> };
   sendToServer: (server: string, req: { path: string; payload: Record<string, unknown> }, token: string) => Promise<{ status: number; answer: Record<string, any> }>;

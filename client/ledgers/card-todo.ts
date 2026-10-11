@@ -143,7 +143,7 @@ import { Harness } from '../engine/src/harness.ts';
 import { E } from '../engine/src/engine.ts';
 import type { Attr, EntityId, Seat } from '../engine/src/types.ts';
 import {
-  ent, give, giveResources, pass, spawn, toDeployment, toNextBattle, unitsOf, withE,
+  ent, pass, spawn, toDeployment, toNextBattle, withE,
 } from '../engine/test/util.ts';
 import { SRC_DIR } from './card-todo-helpers.ts';
 
@@ -241,17 +241,6 @@ function erasedStolenUnitGoesToOwner(): boolean {
 function spellsCarryStats(): boolean {
   const printed = JSON.parse(text('engine/src/cards/printed.json')) as Record<string, { kind: string; power?: number; toughness?: number }>;
   return Object.values(printed).some(c => c.kind === 'spell' && (!!c.power || !!c.toughness));
-}
-
-/** CT-254: Bloomcaster played from hand makes no 1/1 for its own play */
-function bloomcasterDeafToItself(): boolean {
-  const h = new Harness(71401);
-  toDeployment(h);
-  const p = h.state.deployPlayer!;
-  giveResources(h, p, 'wood', 2);
-  h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Bloomcaster') });
-  if (!unitsOf(h, p).some(u => u.card === 'Bloomcaster')) throw new Error('setup: Bloomcaster is not in play');
-  return unitsOf(h, p).filter(u => u.card === 'Unit Token').length === 0;
 }
 
 /** Everything still open. The closed entries — the bulk of the file until
@@ -526,7 +515,7 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   // ── the comprehensive-rules export's findings, re-checked at HEAD and filed
-  //    2026-10-10 (CT-226..CT-275 are reserved for that project). Each names its
+  //    2026-10-10 (CT-226..CT-280 are reserved for that project). Each names its
   //    finding ids in data/comprehensive-rules/findings/, which carry the CT back.
   {
     id: 226, area: "attribute", severity: "major",
@@ -607,10 +596,10 @@ const OPEN: TodoEntry[] = [
   {
     id: 234, area: "engine", severity: "minor",
     cards: ["Molten Riftbreaker", "Frosted Denial", "Woodland Warding"],
-    title: "OWNER DECISION: the stack, bins and cache are regionless, so some effects reach across regions against print",
-    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule concepts.golden.regions states print and Caleb: every effect is specific to its region (Caleb: \"Yes everything in the game is region specific\"). R250 and R265 deliberately keep the stack, bins and cache global, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions. Measured: an effect resolving in one region negated a spell on the stack in another. This is a recorded owner ruling, filed because print and the designer outrank it under the authority order; it waits on the owner's answer to discrepancy D-U01-12.",
-    evidence: "Findings F-U01-2 (dups F-U01-4, F-U01-5). digital-rules.md: \"Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect.\" and \"The STACK is not regional and is deliberately left global; narrowing\". raq.ts: \"Yes everything in the game is region specific.\" Manual: \"Every single effect is specific to the region it takes\". Measured by a verifier probe (not committed).",
-    fix: "Ask the owner (D-U01-12). If print wins: give stack items, bin cards and cache cards the region they were played or put in, and filter the stack/bin/cache walks by it. If R265 stands: close this as wontfix with the owner's words.",
+    title: "The engine lets effects reach the stack and the bins of another region (R344: each region has its own stack; a bin and a cache are where their owner is)",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10; answered by the owner on the review page 2026-10-11, R344.) CR rules concepts.golden.regions (101.6), combat.regions.exclusive.no-region-zones (601.2a) and concepts.targets.region.global (110.5a) state print, Caleb and R344: each region has its own stack, owned by nobody and shared by the players present in it, and only they can put effects on it or respond to it; a player's bin and cache are tied to that player and can be reached only in a region where that player is present. The engine keeps one stack for battle (R250) and offers a stack item and the cards in either bin as targets from every region (414-cr-cards-abilities-targets: \"a stack item and the cards in either bin are offered from every region\"), so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions. Cache targets already agree (R291, 421 cr test). Measured: an effect resolving in one region negated a spell on the stack in another (verifier probe, F-U01-4).",
+    evidence: "Findings F-U01-2 (dups F-U01-4, F-U01-5). digital-rules.md: \"Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect.\" and \"The STACK is not regional and is deliberately left global; narrowing\". raq.ts: \"Yes everything in the game is region specific.\" Manual: \"Every single effect is specific to the region it takes\". Measured by a verifier probe (not committed). R344 amends it (2026-10-11).",
+    fix: "Not the card's region: the OWNER's presence. (1) Stack: give each stack item the region it was played in, and filter every stack walk (negate-all, Cosmic Reversal's stack half, 'target effect' candidates) to the resolving effect's region; priority in a region goes only to the players present there. R286's per-seat deployment stacks already are the per-region stacks of deployment. (2) Bins: a bin card is a candidate, and a bin is affected, only when the resolving effect's region holds the bin's owner (the same presence test R291 already applies to cache targets). (3) Then rewrite the 414 CR test cr:concepts.targets.region.global, which today asserts the old behaviour, and remove engineDiffers F-U01-2 from 101.6, 601.2a and 110.5a. A save-format change if stack items gain a field: needs a format stamp.",
     proof: null,
     verify: "With an attack in one region, resolve Molten Riftbreaker in the other region and see whether a spell on the battle region's stack is negated.",
     status: 'open',
@@ -797,16 +786,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 254, area: "card", severity: "major",
-    cards: ["Bloomcaster"],
-    title: "Bloomcaster does not hear its own play, though R26 rules that it fires on its own arrival",
-    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.playing.what-is-played.includes-itself. R26 (current): Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") fires on its own arrival when played normally. The trigger listens on cardPlayed from holders in play, and cardPlayed fires at commit while Bloomcaster is still on the stack, so it never hears itself. Measured: no 1/1 when Bloomcaster is played from hand. The card file comment still claims it makes one. Either the engine regressed when the card moved to cardPlayed, or R26 is stale (D-U14-11).",
-    evidence: "Findings F-U14-5 (dup F-U14-8). digital-rules.md: \"Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") **fires on its own\". batch-fire-wood.ts: \"type: 'triggered', events: ['cardPlayed'],\" and \"// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12).\" Re-measured 2026-10-10 by the proof below.",
-    fix: "Let the item being committed hear its own cardPlayed (or fire a self-play check on arrival), then add a guard that plays Bloomcaster from hand and counts the 1/1.",
-    proof: () => bloomcasterDeafToItself(),
-    status: 'open',
-  },
-  {
     id: 255, area: "card", severity: "minor",
     cards: ["The Bonesculptor"],
     title: "The Bonesculptor's bin-play permission is built as an activated ability, so it reaches the stack and can be negated",
@@ -904,6 +883,15 @@ const OPEN: TodoEntry[] = [
     evidence: "Finding F-U04-5. 26-metal-a.test.ts: \"assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');\". digital-rules.md: \"printed line is effect prose with an if-you-do rider rather than a printed\". Not re-measured against the engine in the polish pass (the drafter does not read engine source).",
     fix: "Move the three cards' sacrifice back into the effect, made as it resolves and skipped (with its rider) when the source has left play; keep it mandatory. Invert the 26-metal-a Dreamtender timing test, and mark the ruling as outranked by the printed text.",
     proof: () => still('engine/test/26-metal-a.test.ts', "assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');"),
+    status: 'open',
+  },  {
+    id: 276, area: "client", severity: "minor",
+    title: "Review page: a player can register the name \"Rules editor\" and post as if they were the system author",
+    detail: "The comment-review process replies and resolves as a system author, RULES_EDITOR in server/crreview.ts ({id: 'system:rules-editor', name: 'Rules editor'}), through POST /api/cr/editor (bot token only). The page shows a comment's author by NAME (CrAuthor in ui/crtypes.ts carries name, owner, judge), and accounts.ts allows spaces in usernames, so an account named \"Rules editor\" posts comments that look exactly like the system's.",
+    evidence: "Found in the CR review-comment round, 2026-10-11, reading the code: crreview.ts: \"export const RULES_EDITOR: ReportedBy = { id: 'system:rules-editor', name: 'Rules editor' };\" and crtypes.ts: \"export interface CrAuthor { name: string; owner?: true; judge?: 1 | 2 | 3 }\". Not tried on the live site.",
+    fix: "(1) CrAuthor gains `system?: true`; crreview.ts author() sets it when by.id === RULES_EDITOR.id; the page draws a distinct mark for it. (2) accounts.ts refuses the username \"Rules editor\" (case-insensitive, spaces/dots folded), like any reserved name.",
+    proof: null,
+    verify: "Register \"rules editor\": refused. A reply through /api/cr/editor shows the system mark on the page; a player's comment never does.",
     status: 'open',
   },
 ];

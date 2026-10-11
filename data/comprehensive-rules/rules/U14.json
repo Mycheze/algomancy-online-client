@@ -443,17 +443,16 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "444-no-self-hearing-play.test.ts"
+      ]
     },
     "basis": "owner",
     "confidence": "low",
-    "notes": "REVIEW COMMENT 2026-10-11 (owner answer to D-U14-11): reading B, R347. The rule stated R26 (reading A) and was marked engine-differs (F-U14-5); the engine already does B for Bloomcaster, so F-U14-5 and F-U14-8 are closed and CT-254 closes as not a bug. The round-4 verifier found Stalwart Sentinel hearing its own play from a bin (probe, F-U14-10). The old example was illustrative (no test).",
+    "notes": "REVIEW COMMENT 2026-10-11 (owner answer to D-U14-11): reading B, R347. The rule stated R26 (reading A) and was marked engine-differs (F-U14-5); the engine already does B for Bloomcaster, so F-U14-5 and F-U14-8 are closed and CT-254 closes as not a bug. The round-4 verifier found Stalwart Sentinel hearing its own play from a bin (probe, F-U14-10); the engine was fixed for the whole class on 2026-10-11 (CT-277, guard 444-no-self-hearing-play), so engineDiffers is dropped and F-U14-10 is closed. The old example was illustrative (no test).",
     "sourceHashes": {
-      "R347": "4668c53028847a1fab781d395564fa45b98e86716e48f145fc74ff03f19eb5d8"
-    },
-    "engineDiffers": [
-      "F-U14-10"
-    ]
+      "R347": "a7c5befe4d958210d8abbaa324dbb5ef82e7e0be1d0a23de1733764c43493fec"
+    }
   },
   {
     "key": "effects.playing.applying",

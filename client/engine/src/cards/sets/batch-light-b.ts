@@ -56,7 +56,7 @@
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, isOwnArrival } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -542,6 +542,7 @@ card('Proph', {
     label: 'draw a card',
     when: (g, self, ev) => {
       if (ev.data?.['seat'] !== self.controller) return false;
+      if (isOwnArrival(self, ev)) return false;              // R347: never its own play
       const from = ev.data?.['from'] as string | undefined;
       if (from === undefined || from === 'hand') return false;
       const name = ev.data?.['card'] as string | undefined;

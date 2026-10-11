@@ -246,17 +246,17 @@ loop, using the harness commands below:
 6. **wave end**: one agent runs `cr:render`, `cr:check` and 409, and commits
    the wave. Units never commit.
 
-**The role briefs are not in git.** Each role above has a brief: `C-draft`,
-`C-mutate`, `C-verify`, `C-revise`, `C-test`, `C-promote` and `C-waveend`,
-plus the Stage A, B and D briefs. They live in the orchestrating Claude Code
-session's scratchpad,
-`/tmp/claude-1000/-home-bena-Documents-Algomancy/<session>/scratchpad/cr/briefs/*.md`.
-The workflow scripts that ran the waves are in
-`~/.claude/projects/<project>/<session>/workflows/scripts/cr-stage-*.js`, and
-the control file with every stage's decisions is in the same scratchpad
-(`cr/CONTROL.md`). `/tmp` does not survive a reboot. Treat that copy as
-disposable: the contract the briefs implement is the one written out in this
-file and in ruling R343 of `client/docs/digital-rules.md`.
+**The role briefs.** Each role above has a brief: `C-draft`, `C-mutate`,
+`C-verify`, `C-revise`, `C-test`, `C-promote` and `C-waveend`, plus the Stage
+A, B and D briefs. The first edition's briefs lived only in that session's
+`/tmp` scratchpad and are gone; the contract they implemented is the one
+written out in this file and in ruling R343 of `client/docs/digital-rules.md`.
+Two briefs are now kept in `client/engine/scripts/cr/briefs/`, both written for
+the 2026-10-11 polish round: `C-verify.md` (a fresh verifier in a scratch
+mirror, for a round-4 `--keys` batch) and `C-equiv.md` (the example-rewording
+equivalence checker, with planted non-equivalent pairs). Paths in them are
+placeholders (`<MIRROR>`, `<scratchpad>`). Write any new role's brief there
+too, not in a scratchpad.
 
 ### 4. Render and check
 

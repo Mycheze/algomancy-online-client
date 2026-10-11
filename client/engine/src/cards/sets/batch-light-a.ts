@@ -79,7 +79,7 @@
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { allCardNames, card, CARD_PLAY_KINDS, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, isOwnArrival } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -585,6 +585,7 @@ card('Stalwart Sentinel', {
       const name = ev.data?.['card'] as string | undefined;
       if (!name) return false;
       if (ev.type === 'spawned') {
+        if (isOwnArrival(self, ev)) return false;            // R347: never its own play (CT-277)
         if (getCard(name).kind !== 'unit') return false;      // spellUnits are heard on 'spellPlayed'
         const u = g.entity(ev.data?.['unit'] as EntityId);
         if (!u || u.token) return false;                      // created tokens are not played cards

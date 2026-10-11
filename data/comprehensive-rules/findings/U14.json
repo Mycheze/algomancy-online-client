@@ -94,7 +94,7 @@
     "dupes": [
       "F-U14-8"
     ],
-    "closed": "not a bug: the owner answered D-U14-11 with reading B on 2026-10-11 (R347), and the engine already does B for Bloomcaster; CT-254 closes. The one card that still hears its own play is F-U14-10."
+    "closed": "not a bug: the owner answered D-U14-11 with reading B on 2026-10-11 (R347), and the engine already does B for Bloomcaster; CT-254 closes. The other routes that heard their own play (F-U14-10) were fixed on 2026-10-11 (CT-277)."
   },
   {
     "id": "F-U14-6",
@@ -179,6 +179,8 @@
         "quote": "A card that is being played is on the stack, not in play, so its own play does not trigger it."
       }
     ],
-    "rule": "effects.playing.what-is-played.includes-itself"
+    "rule": "effects.playing.what-is-played.includes-itself",
+    "ct": "CT-277",
+    "closed": "fixed on 2026-10-11 (CT-277, R347): a unit being played is left out of its own play's listeners, and 444-no-self-hearing-play shows no play listener in the pool, Stalwart Sentinel included, hearing its own play from hand, a cache, a bin or the deck."
   }
 ]

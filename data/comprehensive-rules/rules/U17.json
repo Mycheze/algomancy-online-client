@@ -3045,7 +3045,7 @@
     "key": "effects.graft.composite.fizzle",
     "parent": "effects.graft.composite",
     "order": 6,
-    "text": "A composite fizzles only when it has lost all of its targets, and then none of it happens, its untargeted parts included. While at least one target remains, every part resolves as far as it can. A composite that declared no target anywhere never fizzles.",
+    "text": "A composite fizzles when it has lost all of its targets, and then none of it happens, its untargeted parts included. While at least one target remains, every part resolves as far as it can. Only a composite that was never targeted cannot fizzle: one with no part that calls for a target, or one whose only target was optional (\"up to one\") and none was chosen (see rule effects.resolution.fizzle.never-had-target).",
     "examples": [
       {
         "text": "Spewing Mushroom carries Biotoxicity and Technological Superiority as grafts. It attacks, and its composite trigger targets Spewing Mushroom, the only target it declares. The opponent deletes the Mushroom with Leaping Lillik in response: the composite fizzles, and Biotoxicity's untargeted Poisons are not created either.",
@@ -3058,6 +3058,10 @@
       {
         "text": null,
         "test": "78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles"
+      },
+      {
+        "text": null,
+        "test": "78-round17-core.test.ts::R86: a required target with no legal candidate at cast still fizzles"
       }
     ],
     "see": [
@@ -3079,6 +3083,22 @@
         {
           "ref": "R86",
           "quote": "1 target must remain for whole effect to be carried out\"*, and *\"in order for"
+        },
+        {
+          "ref": "R86",
+          "quote": "| no targeting **anywhere** (Ignis Sprite's spawn trigger) | resolves | resolves — it has nothing to lose |"
+        },
+        {
+          "ref": "R86",
+          "quote": "a targeted part whose spec is **min 0** with nothing declared (\"Recall **up to one** target cached card. You gain 3 life.\")"
+        },
+        {
+          "ref": "R86",
+          "quote": "resolves — declaring no target was a legal choice, and the unconditional half must happen"
+        },
+        {
+          "ref": "R86",
+          "quote": "still a fizzle; only *\"was never targeted in the first place\"* is not."
         }
       ],
       "history": [],
@@ -3089,7 +3109,7 @@
     },
     "basis": "owner",
     "confidence": "high",
-    "notes": "R86 quotes the RAQ thread \"[Solved] When does effect fizzles?\" verbatim, but the pack has no claim for that half, so the basis is the ruling. The same thread says Caleb may change this: D-U17-6.",
+    "notes": "R86 quotes the RAQ thread \"[Solved] When does effect fizzles?\" verbatim, but the pack has no claim for that half, so the basis is the ruling. The same thread says Caleb may change this: D-U17-6. Redrafted 2026-10-11 (polish): the round-4 verifier found the old third sentence (\"declared no target anywhere never fizzles\") is the gate R86 rejected; R86's table and its \"only was never targeted in the first place\" line now give the cases; sentence 1 lost its \"only\", which row 3 contradicted. A required target never had is left to effects.resolution.fizzle.never-had-target (a triggered composite in that state is not put on the stack: effects.graft.composite.no-target).",
     "sourceHashes": {
       "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c"
     }

@@ -27489,15 +27489,25 @@ each unit its controller plays while Bloomcaster is in play.
 
 ### The engine
 
-For Bloomcaster the engine already does this: it hears plays only while it is in
-play. So the findings that called that a bug (F-U14-5, F-U14-8) are closed, and
-the ticket that would have changed the engine (CT-254) closes as not a bug.
+Played from hand, Bloomcaster already did this: it hears plays only while it is
+in play. So the findings that called that a bug (F-U14-5, F-U14-8) are closed,
+and CT-254, the ticket that would have made it hear itself, is closed with its
+proof inverted into R347's guard.
 
-One card does not follow it yet. The verifier of the CR round that applied this
-ruling measured Stalwart Sentinel ("When you play a unit or spell from anywhere
-other than your hand") hearing its own play when Wake the Dead plays it from a
-bin: it takes its own two +1/+1 counters (F-U14-10). That is an engine change, filed
-as a ticket.
+Other routes did not follow it. They were found when the CR round that applied this ruling
+measured Stalwart Sentinel ("When you play a unit or spell from anywhere other
+than your hand") taking its own two +1/+1 counters when Wake the Dead played it
+from a bin (F-U14-10). The owner then asked for the whole class fixed, not
+ticketed ("no units should be able to see themselves go onto the stack"), and a
+whole-pool sweep found four: Stalwart Sentinel and Proph heard their own play
+from a cache, a bin or the deck, and Bloomcaster and Void Mandible heard
+it when Wake the Dead or The Bonesculptor played them. Fixed on 2026-10-11
+(CT-277): a play announced for a unit already in play leaves that unit out of
+the listeners (`E.fireEvent`'s `beingPlayed`), and a card that hears plays on
+its own arrival event skips its own arrival (`isOwnArrival`). Guard:
+`444-no-self-hearing-play.test.ts` plays every play-listener in the pool from
+hand, cache, bin and deck. Old games that played these cards from outside the
+hand replay differently.
 
 ## R348 — A deleted unit dies: deletion is one way of dying (answers D-U18-9, reading A)
 

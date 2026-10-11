@@ -2325,7 +2325,7 @@ R26 says Bloomcaster's trigger fires on its own play and dates itself to the 202
 - RAQ 1353862592661164152#0: "He goes on the stack (but is not Spawned / In play yet)"
 - card: Bloomcaster: "Whenever you play a unit"
 
-**Resolution:** Answered by the owner on 2026-10-11, reading B (R347, reversing R26's own-play half): a card being played is on the stack, not in play, so its own "whenever you play a unit" does not hear it. The rule states B. The engine already does B for Bloomcaster, so the findings that called that a bug (F-U14-5, F-U14-8) are closed and CT-254 closes as not a bug. Stalwart Sentinel still hears its own play from a bin: F-U14-10.
+**Resolution:** Answered by the owner on 2026-10-11, reading B (R347, reversing R26's own-play half): a card being played is on the stack, not in play, so its own "whenever you play a unit" does not hear it. The rule states B. The engine already does B for Bloomcaster, so the findings that called that a bug (F-U14-5, F-U14-8) are closed and CT-254 closes as not a bug. Stalwart Sentinel, which heard its own play from a bin (F-U14-10), and the other cards that did were fixed on 2026-10-11 (CT-277).
 
 ### D-U14-12 · Other · rule 702.2d
 

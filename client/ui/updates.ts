@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-11', kind: 'fix', text: 'A card never triggers on its own play: Stalwart Sentinel and Proph played from your cache, bin or deck, and Bloomcaster or Void Mandible brought back by Wake the Dead, no longer count themselves.' },
   { date: '2026-10-10', kind: 'fix', text: 'Casting a spell token such as a Fireball now counts as playing a spell from outside your hand, so Stalwart Sentinel and Proph trigger on it.' },
   { date: '2026-10-10', kind: 'change', text: 'Piercing is a choice outside combat too: when a Piercing unit deals damage through Squish, Fight, Battle or an ability, its controller may keep the excess on the unit instead of sending it to the player.' },
   { date: '2026-10-10', kind: 'fix', text: 'Borrower of Forms now gets the augments of the unit it copies: a copied virus or other augment works on the copy, not just in its text.' },

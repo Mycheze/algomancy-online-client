@@ -3829,7 +3829,9 @@ export class E {
     // dead Drone cannot leave a paid-for charge unspendable.
     if (opts.from !== undefined) this.spendNextPlayDiscount(seat);
     // R165: the play, then the arrival — see the `playEv` block above.
-    if (playEv) this.fireEvent('cardPlayed', playEv);
+    // R347: the body is already standing here, but this is ITS OWN play, and a
+    // card being played never hears its own play — so it is not a listener.
+    if (playEv) this.fireEvent('cardPlayed', playEv, undefined, u.id);
     this.fireEvent('spawned', ev);
     // R104: record the creation in the open batch, so "each unique token you
     // created" has a creation to be unique across. After the spawn event, so a
@@ -11152,12 +11154,24 @@ export class E {
   /** Scan for triggered abilities matching an event. Conditions are evaluated
    * NOW, at event time (R1); effects run later, at resolution. Never processes
    * the queue — that happens at safe points via settle(). */
-  fireEvent(type: EventType, ev: EngineEvent, dyingUnit?: Entity): void {
+  /**
+   * `beingPlayed` — R347: the entity whose own PLAY this event announces, when
+   * that entity is already standing in play as the event fires. It is not a
+   * listener: "an ability that triggers when its controller plays a unit works
+   * only while its card is in play", and a card being played is on the stack,
+   * so it never hears its own play, under any wording and out of any zone.
+   * Every ordinary play fires its play events at commit, while the card is on
+   * the stack, so they never needed this; the `asPlay` spawn (Wake the Dead,
+   * The Bonesculptor) is the one play whose body exists before its
+   * 'cardPlayed' goes out, and without this Bloomcaster made a 1/1 for itself
+   * and Void Mandible sacrificed itself to its own arrival (444).
+   */
+  fireEvent(type: EventType, ev: EngineEvent, dyingUnit?: Entity, beingPlayed?: EntityId): void {
     const region = (ev.data?.region as number | undefined) ?? (ev.data?.unit !== undefined ? this.entity(ev.data.unit as EntityId)?.region : undefined);
     const sourceId = (ev.data?.unit as EntityId | undefined);
     // region-scoped listeners (R12 / Manual: other regions don't exist)
     const listeners = Object.values(this.s.entities).filter(e =>
-      e.kind === 'unit' && !e.absent && (region === undefined || e.region === region));
+      e.kind === 'unit' && !e.absent && e.id !== beingPlayed && (region === undefined || e.region === region));
     if (dyingUnit) listeners.unshift(dyingUnit);   // a unit sees its own death
     // R278: and every OTHER body of the same simultaneous death batch is still
     // a listener, even though `destroy` has already deleted it from
