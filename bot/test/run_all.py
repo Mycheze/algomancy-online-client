@@ -16,7 +16,7 @@ runs them in order, shows each one's last line, and exits non-zero if any
 did. `npm --prefix client run test:py` reaches it; `check` runs it after the
 TypeScript suites.
 
-    .venv/bin/python bot/test/run_all.py          # every test_*.py here (eleven on 2026-10-11)
+    .venv/bin/python bot/test/run_all.py          # every test_*.py here + bot/eval/ (twelve, 2026-10-11)
     .venv/bin/python bot/test/run_all.py slash    # just test_slash.py
 """
 
@@ -29,7 +29,7 @@ PYTHON = sys.executable
 
 
 def main(argv: list[str]) -> int:
-    scripts = sorted(HERE.glob("test_*.py"))
+    scripts = sorted(HERE.glob("test_*.py")) + sorted((HERE.parent / "eval").glob("test_*.py"))
     if argv:
         scripts = [s for s in scripts if any(a in s.stem for a in argv)]
     if not scripts:
