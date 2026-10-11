@@ -58,8 +58,8 @@ export function loadDecisions(dir = DECISIONS_DIR) {
   // the unit files first (M001…), then the override layers in a fixed order: cleanup (the
   // unsure pass), audit (corrections), fixups (exact find/replace) — a later file wins by id
   // precedence (orchestrator 2026-10-11): remediation-* > cleanup > M0xx units > the script's auto picks;
-  // audit corrections sit between cleanup and remediation, exact fix-ups on top
-  const layer = (f) => (/^cleanup/.test(f) ? 1 : /^audit/.test(f) ? 2 : /^remediation/.test(f) ? 3 : /^fixup/.test(f) ? 4 : 0);
+  // audit corrections sit between cleanup and remediation; exact fix-ups, then the leftover pass, on top
+  const layer = (f) => (/^cleanup/.test(f) ? 1 : /^audit/.test(f) ? 2 : /^remediation/.test(f) ? 3 : /^fixup/.test(f) ? 4 : /^leftover/.test(f) ? 5 : 0);
   for (const f of readdirSync(dir).filter((x) => x.endsWith('.json')).sort((a, b) => layer(a) - layer(b) || a.localeCompare(b))) {
     const j = JSON.parse(readFileSync(join(dir, f), 'utf8'));
     for (const [id, d] of Object.entries(j.decisions ?? {})) D.set(id, { ...d, unit: j.unit ?? f });
