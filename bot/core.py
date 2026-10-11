@@ -774,6 +774,10 @@ async def answer_question(question, history, context=None, meta=None):
                     f"Current question: {question}"),
     })
     reasoning = _use_reasoning(question)
+    # For store.log_failure: a failed answer still records what it retrieved.
+    # (log_response copies only its named keys out of meta, so these two never
+    # reach a successful row twice.)
+    meta["hits"], meta["reasoning"] = hits, reasoning
     # The thinking switch, token budget and temperature per provider live in
     # PROVIDERS / request_params(); the retry, fallback and deadline in _complete().
     # A blank answer is never returned silently: it is retried, then raised.

@@ -138,7 +138,7 @@ build`: a scripted mid-battle, drawn by the real client with the real engine.
 **The bot** needs a DeepSeek key, and a Discord token for the Discord half:
 
 ```bash
-cp .env.example .env                    # fill in DISCORD_TOKEN and DEEPSEEK_API_KEY
+cp .env.example .env                    # fill in DISCORD_TOKEN and LLM_API_KEY (DEEPSEEK_API_KEY also works)
 python3 -m venv .venv && .venv/bin/pip install -r bot/requirements.txt
 .venv/bin/python bot/app.py             # the web app, http://127.0.0.1:8000
 .venv/bin/python bot/bot.py             # the Discord bot

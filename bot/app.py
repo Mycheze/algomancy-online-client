@@ -208,6 +208,10 @@ async def api_ask(req: AskRequest):
         answer, hits, reasoning = await core.answer_question(question, history,
                                                              context=req.context, meta=meta)
     except Exception as exc:  # surface API/auth errors instead of a silent 500
+        store.log_failure("lesson" if req.context else "followup" if history else "ask",
+                          question, exc, core.LLM_MODEL, llm=meta,
+                          engine_version=core.ENGINE_VERSION, user_id=req.session_id or "web",
+                          channel_id="web", history=history)
         raise HTTPException(status_code=502, detail=f"Couldn't reach the model: {exc}")
 
     display, sources = core.render_citations(answer, hits)

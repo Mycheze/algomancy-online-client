@@ -33,6 +33,11 @@ import json  # noqa: E402
 import discordui as ui  # noqa: E402
 import combos  # noqa: E402
 import core  # noqa: E402
+
+# ⚠ THE ANSWER FOOTER NAMES THE MODEL, and the model comes from the environment
+# (LLM_MODEL / DEEPSEEK_MODEL, and bot.py loads .env). Pinned here so a dev
+# shell or the VPS's .env cannot turn the golden red with no embed changed.
+core.LLM_MODEL = core.DEEPSEEK_MODEL = "deepseek-flash"
 import draft  # noqa: E402
 import mods  # noqa: E402
 
@@ -86,7 +91,9 @@ def snapshot():
     answer = ("Damage is removed at regroup [source:manual:0018], and temporary "
               "buffs end [source:glossary:regroup].")
     out["answer"] = ui.answer_embed(q, answer, hits2).to_dict()
-    out["answer:reasoning"] = ui.answer_embed(q, answer, hits2, reasoning=True).to_dict()
+    # explicit model= is the path the front-ends take (the model that answered)
+    out["answer:reasoning"] = ui.answer_embed(q, answer, hits2, reasoning=True,
+                                              model="deepseek-flash").to_dict()
     out["_corpus_rows"] = len(core.retriever.rows)   # non-vacuity: the corpus loaded
 
     # ── colour combos ──

@@ -1,5 +1,5 @@
 # The rules bot's FastAPI app on :8000, loopback only: the game server proxies
-# /api/judge and /api/cardinfo to it. DEEPSEEK_API_KEY comes from .env.
+# /api/judge and /api/cardinfo to it. LLM_API_KEY (or DEEPSEEK_API_KEY) comes from .env.
 [Unit]
 # a crash loop (a bad env file, a port already bound) backs off instead of
 # restarting at RestartSec for ever

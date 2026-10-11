@@ -86,7 +86,8 @@ these with `setsid nohup` alongside the unit for the same reason.
 ## Secrets
 
 None in the units. `EnvironmentFile=` points at the gitignored `.env` at the
-repo root (`DISCORD_TOKEN`, `DEEPSEEK_API_KEY`, the `ALGO_*` integration
+repo root (`DISCORD_TOKEN`, `LLM_API_KEY` — or the older `DEEPSEEK_API_KEY`,
+which every `LLM_*` setting still falls back to — the `ALGO_*` integration
 settings — see `.env.example`) and, for the game server, at
 `client/server/tester.env` (see `tester.env.example`). Two values must agree
 across the two files: `ALGO_BOT_TOKEN` (a mismatch is not an error, every
@@ -128,6 +129,13 @@ itself when it sees a new server boot id. A restart onto a changed engine
 replays every live room onto it; a room whose log no longer replays is
 **frozen** (CT-160) rather than silently rebuilt, and both players are told.
 A bot change: `sudo systemctl restart algomancy-web algomancy-bot`.
+
+⚠ **Once, with the 2026-10-11 model-layer change:** if `.env` still has
+`DEEPSEEK_TIMEOUT=60` (the old `.env.example` shipped it), delete the line
+before that restart. It still counts as `LLM_TIMEOUT`, now meaning seconds
+*per attempt*, so one attempt eats the whole 55 s `LLM_DEADLINE` and nothing is
+ever retried. The default (25 s, two attempts) is the one that fits inside the
+game server's 60 s judge proxy. Check with `grep -n TIMEOUT .env`.
 
 ## Badges (who is who on the reports)
 

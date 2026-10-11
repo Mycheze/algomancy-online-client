@@ -274,6 +274,32 @@ core.MODEL_TIMEOUT, core.LLM_DEADLINE, core.MIN_ATTEMPT_S = saved
 check("the default budget fits the 60 s judge proxy: 2 × LLM_TIMEOUT ≤ LLM_DEADLINE < 60",
       2 * 25 <= 55 < 60 and core.LLM_DEADLINE < 60)
 
+# ── a failed answer is a row; the footer names who answered ───────────
+print("\n[failure rows and the footer]")
+meta = {}
+core.ai, core.ai_fallback = Fake(resp("", finish="length"), resp("", finish="length")), None
+try:
+    asyncio.run(core.answer_question("what is affinity?", [], meta=meta))
+except RuntimeError as exc:
+    err = exc
+rid = store.log_failure("ask", "what is affinity?", err, core.LLM_MODEL, llm=meta,
+                        engine_version=core.ENGINE_VERSION, user_id="t", channel_id="test")
+frow = json.loads(responses_log().read_text().splitlines()[-1])
+check("⭐ a failed answer is logged: error set, answer empty, attempts kept",
+      frow["response_id"] == rid and frow["answer"] == ""
+      and frow["error"].startswith("RuntimeError: model gave no answer")
+      and [a["kind"] for a in frow["attempts"]] == ["primary", "retry"])
+check("…with every key an old-shape row has, and its retrieval",
+      all(k in frow for k in row2) and len(frow["retrieved"]) > 0 and "cost_usd" not in frow)
+check("a successful row never carries `error`", "error" not in row and "error" not in row2)
+
+import discordui  # noqa: E402
+footer = discordui.answer_embed("q", "a", [], model="deepseek-v4-pro").footer.text
+check("the Discord footer names the model that answered, when told",
+      footer.startswith("Answered by deepseek-v4-pro"))
+check("…and the configured one otherwise",
+      discordui.answer_embed("q", "a", []).footer.text.startswith(f"Answered by {core.LLM_MODEL}"))
+
 # ── the client and the environment ────────────────────────────────────
 print("\n[init_client and the environment]")
 core.FALLBACK_MODEL, core.FALLBACK_BASE_URL, core.FALLBACK_API_KEY = "deepseek-v4-pro", None, None

@@ -37,7 +37,7 @@ bot/
 ## Run it
 
 ```bash
-cp ../.env.example ../.env          # DISCORD_TOKEN, DEEPSEEK_API_KEY; everything else has a default
+cp ../.env.example ../.env          # DISCORD_TOKEN, LLM_API_KEY; everything else has a default
 python3 -m venv ../.venv && ../.venv/bin/pip install -r requirements.txt
 ../.venv/bin/python app.py          # the web app, http://127.0.0.1:8000, loopback
 ../.venv/bin/python bot.py          # the Discord bot
@@ -207,14 +207,22 @@ the feature not existing.
 ## Configuration
 
 Everything is in [`../.env.example`](../.env.example), with a comment per
-variable. The ones that matter: `DEEPSEEK_API_KEY` and `DISCORD_TOKEN`;
-`DEEPSEEK_MODEL`, `DEEPSEEK_REASONING` (`auto` / `always` / `never`) and
-`DEEPSEEK_TIMEOUT`; `ALGO_BOT_TOKEN`, `ALGO_GAME_SERVER` and `ALGO_BOT_LISTEN`
+variable. The ones that matter: `LLM_API_KEY` and `DISCORD_TOKEN`;
+`LLM_MODEL` and `LLM_BASE_URL` (any OpenAI-compatible API; DeepSeek's
+`deepseek-flash` by default), `LLM_REASONING` (`auto` / `always` / `never`),
+`LLM_TIMEOUT` / `LLM_DEADLINE` (per attempt / whole answer, inside the game
+server's 60 s judge proxy) and the optional `LLM_FALLBACK_MODEL`. Every `LLM_*`
+name falls back to the `DEEPSEEK_*` name it replaced (`DEEPSEEK_API_KEY`,
+`DEEPSEEK_MODEL`, …), so an older `.env` still works; `ALGO_BOT_TOKEN`,
+`ALGO_GAME_SERVER` and `ALGO_BOT_LISTEN`
 for the integration; `ALGO_VAR_DIR` to move the runtime state, which the
 tests use and a deployment does not.
 
 Answer generation is the only paid part. At the default model a question
-costs a fraction of a cent.
+costs a fraction of a cent, and every row of `var/logs/responses.jsonl` says
+how much: `latency_ms`, `usage` (prompt/cached/completion/reasoning tokens),
+`cost_usd` (null for a model `core.PRICES` does not know). A question that got
+no answer is a row too, with `error` set and `answer` empty.
 
 ---
 

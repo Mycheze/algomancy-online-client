@@ -64,7 +64,10 @@ def cited_card_files(answer, hits, limit=10):
             for n, _title, p in cited_card_paths(answer, hits, limit=limit)]
 
 
-def answer_embed(question, answer, hits, reasoning=False):
+def answer_embed(question, answer, hits, reasoning=False, model=None):
+    """`model`: the model that ACTUALLY answered (answer_question's meta["model"]),
+    which is the fallback's when LLM_FALLBACK_MODEL ran. Omitted, the footer
+    names the configured model."""
     display, sources = render_citations(answer, hits)
     # Icon tokens the model quoted from card text ([Switch1], [Augment], …) become
     # the guild's custom emojis, so an answer reads like the cards do. `_emoji`
@@ -83,7 +86,8 @@ def answer_embed(question, answer, hits, reasoning=False):
         lines = [f"**{n}.** {friendly_source(r)} · *{r['authority_label']}*"
                  for n, r in sources]
         e.add_field(name="Sources", value="\n".join(lines)[:1024], inline=False)
-    mode = f"{core.DEEPSEEK_MODEL} · 🧠 thinking" if reasoning else core.DEEPSEEK_MODEL
+    model = model or core.LLM_MODEL
+    mode = f"{model} · 🧠 thinking" if reasoning else model
     e.set_footer(text=f"Answered by {mode} · rate below to help train the model")
     return e
 

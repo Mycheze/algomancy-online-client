@@ -109,7 +109,7 @@ def new_response_id():
 
 def log_response(response_id, kind, question, answer, hits, model,
                  *, user_id, channel_id, thread_id=None, history=None,
-                 reasoning=False, engine_version=None, llm=None):
+                 reasoning=False, engine_version=None, llm=None, error=None):
     """Persist one AI answer with its full retrieval context for later training.
 
     `llm` is the dict core.answer_question(meta=...) filled. Its fields are
@@ -118,7 +118,9 @@ def log_response(response_id, kind, question, answer, hits, model,
     its name and meaning — except that `model` becomes the model that actually
     answered, which differs from the configured one only when the fallback ran
     (then `requested_model` and `fallback` say so). Rows from before
-    2026-10-11 simply lack the new keys."""
+    2026-10-11 simply lack the new keys.
+
+    `error` is set only by log_failure(); a successful row never has the key."""
     llm = llm or {}
     record = {
         "response_id": response_id,
@@ -153,7 +155,25 @@ def log_response(response_id, kind, question, answer, hits, model,
                 "cost_usd", "cost_basis", "fallback", "attempts"):
         if key in llm:
             record[key] = llm[key]
+    if error is not None:
+        record["error"] = error
     _append(responses_log(), record)
+
+
+def log_failure(kind, question, error, model, *, llm=None, engine_version=None, **where):
+    """An answer that never came (every attempt failed, or anything else raised)
+    as a responses.jsonl row, so the failure rate is a count over the log and not
+    a grep of the journal. Same shape as a success: every key present, `answer`
+    the empty string, plus `error` (the exception text) and whatever `attempts`
+    the call got through. A reader that wants answers skips rows with `error`.
+    No feedback can join to it: no button was ever shown for its response_id.
+    Returns the response_id."""
+    llm = llm or {}
+    rid = new_response_id()
+    log_response(rid, kind, question, "", llm.get("hits") or [], model,
+                 reasoning=llm.get("reasoning", False), engine_version=engine_version,
+                 llm=llm, error=f"{type(error).__name__}: {error}", **where)
+    return rid
 
 def log_feedback(response_id, rating, user_id):
     """Record a 👍/👎 click. rating is 'good' or 'bad'. Latest click wins at join time."""

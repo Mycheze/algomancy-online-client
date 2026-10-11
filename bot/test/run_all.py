@@ -16,7 +16,7 @@ runs them in order, shows each one's last line, and exits non-zero if any
 did. `npm --prefix client run test:py` reaches it; `check` runs it after the
 TypeScript suites.
 
-    .venv/bin/python bot/test/run_all.py          # all eight
+    .venv/bin/python bot/test/run_all.py          # every test_*.py here (eleven on 2026-10-11)
     .venv/bin/python bot/test/run_all.py slash    # just test_slash.py
 """
 

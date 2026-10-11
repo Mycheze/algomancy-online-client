@@ -69,11 +69,17 @@ class Judge(commands.Cog):
         try:
             answer, hits, reasoning = await asyncio.wait_for(
                 answer_question(question, history=[], meta=meta), timeout=ANSWER_TIMEOUT)
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError as exc:
+            store.log_failure("ask", question, exc, core.LLM_MODEL, llm=meta,
+                              engine_version=core.ENGINE_VERSION,
+                              user_id=interaction.user.id, channel_id=interaction.channel_id)
             await fail(interaction, "⚠️ The model took too long. Try again, or "
                                     "ask a narrower question.")
             return
         except Exception as exc:
+            store.log_failure("ask", question, exc, core.LLM_MODEL, llm=meta,
+                              engine_version=core.ENGINE_VERSION,
+                              user_id=interaction.user.id, channel_id=interaction.channel_id)
             await fail(interaction, f"⚠️ Couldn't reach the model: `{exc}`")
             return
 
@@ -85,7 +91,7 @@ class Judge(commands.Cog):
         # wait=True so we get a Message back — a WebhookMessage, which
         # subclasses Message and so can still open a thread.
         msg = await interaction.followup.send(
-            embed=answer_embed(question, answer, hits, reasoning),
+            embed=answer_embed(question, answer, hits, reasoning, model=meta.get("model")),
             view=feedback_view(rid), wait=True)
         try:
             thread = await msg.create_thread(name=question[:90], auto_archive_duration=60)

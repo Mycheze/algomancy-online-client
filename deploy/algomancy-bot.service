@@ -1,4 +1,4 @@
-# The Discord bot. DISCORD_TOKEN and DEEPSEEK_API_KEY come from .env — never
+# The Discord bot. DISCORD_TOKEN and LLM_API_KEY (or DEEPSEEK_API_KEY) come from .env — never
 # from the command line (see bot.py's note on /proc/<pid>/cmdline).
 [Unit]
 # a crash loop (a bad env file, a port already bound) backs off instead of

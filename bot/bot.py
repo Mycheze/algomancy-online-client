@@ -172,6 +172,11 @@ class AlgoBot(commands.Bot):
                     answer, hits, reasoning = await answer_question(message.content, history,
                                                                     meta=meta)
                 except Exception as exc:
+                    store.log_failure("followup", message.content, exc, core.LLM_MODEL,
+                                      llm=meta, engine_version=core.ENGINE_VERSION,
+                                      user_id=message.author.id,
+                                      channel_id=message.channel.parent_id,
+                                      thread_id=message.channel.id, history=list(history))
                     await message.reply(f"⚠️ Couldn't reach the model: `{exc}`")
                     return
             rid = store.new_response_id()
@@ -182,7 +187,8 @@ class AlgoBot(commands.Bot):
                                llm=meta)
             history.append({"role": "user", "content": message.content})
             history.append({"role": "assistant", "content": answer})
-            await message.reply(embed=answer_embed(message.content, answer, hits, reasoning),
+            await message.reply(embed=answer_embed(message.content, answer, hits, reasoning,
+                                                   model=meta.get("model")),
                                 view=feedback_view(rid))
             await post_cited_cards(message.channel, answer, hits)
             return
