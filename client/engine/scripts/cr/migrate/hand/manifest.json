@@ -95,6 +95,50 @@
    "step": "hand",
    "base": "d58fccecbae0db245e47cbd966fbb3728897abb0",
    "owned": true
+  },
+  "client/ui/test/177-glossary-conformance.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "bc47f273e6b0cc4286e4bd09e6be43601385a51f",
+   "owned": true
+  },
+  "client/ui/test/261-glossary-basis.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "e3e5564de88cb578dcd870347742ca5f641dff99",
+   "owned": true
+  },
+  "client/ui/test/227-reminder-text.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "ebe46a8077cefc2d27b7f6f477c5d853b53f39dc",
+   "owned": true
+  },
+  "client/ui/test/323-recent-updates.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "25eb310393366634e0600d648c9db38161f7cc43",
+   "owned": true
+  },
+  "client/ui/test/231-manual-text.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "94a57a2985870957892b4d13923aeb168b7e6495"
+  },
+  "client/engine/test/70-playtest-ledger.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "48f11d62ea1c90f9b8f53b6699f1bbce353fe0d4"
+  },
+  "client/engine/test/443-cr-demonstrations.test.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "b93ad85b4882bbfbd7c6abff69337d18f065b754"
+  },
+  "client/ui/glossary.ts": {
+   "op": "merge",
+   "step": "hand",
+   "base": "a3b22a1a0be6f92a836da09d95fab4ea66978e28"
   }
  }
 }

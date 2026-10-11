@@ -258,6 +258,18 @@ function titlePrefixEdit(line, g, titleStart, nums) {
 }
 
 /* ── reword: anchor the suggestion on its first and last words ── */
+/** a suggestion is WORDS: an agent that pasted the source line around them (`test('…', () => {`,
+ *  the literal's own quotes, its escapes) has the wrapping taken off before it is spliced */
+export function cleanSuggest(suggest, q) {
+  let t = String(suggest ?? '').trim();
+  const m = /^(?:test|it)(?:\.\w+)?\(\s*(['"`])([\s\S]*?)\1\s*(?:[,)][\s\S]*)?$/.exec(t);
+  if (m) t = m[2];
+  if (q && t.length > 1 && t.startsWith(q) && t.endsWith(q)) t = t.slice(1, -1);
+  else if (q && t.endsWith(q) && !t.slice(0, -1).includes(q)) t = t.slice(0, -1);
+  else if (q && t.startsWith(q) && !t.slice(1).includes(q)) t = t.slice(1);
+  if (q) t = unescapeJs(t);
+  return t;
+}
 const W = (s) => s.toLowerCase().replace(/^[^\p{L}\p{N}§]+|[^\p{L}\p{N}]+$/gu, '');
 function wordsWithPos(s) { return [...s.matchAll(/\S+/g)].map((x) => ({ w: W(x[0]), a: x.index, b: x.index + x[0].length, raw: x[0] })); }
 
@@ -515,7 +527,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
         const kind = lit ? 'line' : /\.md$/.test(rel) ? 'md' : /^\s*(\/\/|\/\*|\*|#)/.test(line) || line.slice(0, g.a).includes('//') ? 'comment' : 'line';
         const blk = lit ? literalBlock(m, lit) : logicalBlock(m, idx, kind);
         const p = blk.map.indexOf(abs + g.a), q = blk.map.indexOf(abs + g.b - 1) + 1;
-        const r = p >= 0 && q > 0 ? anchorReword(blk.logical, p, q, rw.act.suggest) : null;
+        const r = p >= 0 && q > 0 ? anchorReword(blk.logical, p, q, cleanSuggest(rw.act.suggest, lit?.q)) : null;
         if (r) {
           const A = blk.map[r.a], B = r.b >= blk.map.length ? blk.map.at(-1) : (r.b === 0 ? blk.map[0] : blk.map[r.b - 1] + 1);
           const outside = lit && (A <= lit.s || B >= lit.e);
@@ -559,7 +571,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     (jsonFiles.get(r.file) ?? jsonFiles.set(r.file, []).get(r.file)).push({ r, act });
   }
 
-  /* 4. glossary rows: `ruling: ['R13', 'printed']` → `rule: ['<cr key>', 'printed']`, as a positional
+  /* 4. glossary rows: `ruling: ['R13', 'printed']` → `cites: ['<cr key>', 'printed']` (`rule` is taken: the authored sentence), as a positional
    *    edit on the array (a comment elsewhere on the line is recited on its own) */
   const ledger = JSON.parse(readFileSync(join(root, 'data/comprehensive-rules/ledger.json'), 'utf8'));
   const keyOfNum = new Map(ledger.entries.filter((e) => !e.removed).map((e) => [e.num, e.key]));
@@ -589,7 +601,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
       }
       if (left) continue;
       const a = m.offs[i] + mm.index;
-      addEdit(GLOSSARY_TS, { a, b: a + mm[0].length, text: `rule: [${[...new Set(keys)].map((k) => `'${k}'`).join(', ')}]`, why: 'glossary rule keys' });
+      addEdit(GLOSSARY_TS, { a, b: a + mm[0].length, text: `cites: [${[...new Set(keys)].map((k) => `'${k}'`).join(', ')}]`, why: 'glossary rule keys' });
       report.glossary.rows++;
     }
   }
@@ -794,14 +806,14 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
   /* 9. self-check (orchestrator 2026-10-11): no rewrite may leave a doubled word, a CR number
    *    stated as reversed/superseded, or "CR x = CR x" on a line it changed */
   report.selfCheck = [];
-  const BADLINE = [/\bCR [\dD][\d.a-z]* (?:is|was) (?:REVERSED|reversed|narrowed|superseded|NARROWED|SUPERSEDED)\b/, /\b(CR [\dD][\d.a-z]*) = \1(?![\d.a-z])/];
+  const BADLINE = [/\bCR [\dD][\d.a-z]* (?:is|was) (?:REVERSED|reversed|narrowed|superseded|NARROWED|SUPERSEDED)\b/, /\b(CR [\dD][\d.a-z]*) = \1(?![\d.a-z])/, /\b(?:test|it)\(\s*['"`](?:test|it)\(/];
   const doubles = (l) => [...l.matchAll(/\b([A-Za-z]{2,})\s+\1\b/gi)].map((x) => x[1].toLowerCase()).filter((w) => !['that', 'had', 'is', 'very', 'no'].includes(w) || true);
   for (const [rel, t] of after) {
     const old = new Set((before.get(rel) ?? '').split('\n'));
     const oldText = before.get(rel) ?? '';
     for (const [k, l] of t.split('\n').entries()) {
       if (old.has(l)) continue;
-      const why = BADLINE.find((re) => re.test(l)) ? 'states a CR number as reversed / equal to itself'
+      const why = BADLINE.find((re) => re.test(l)) ? 'states a CR number as reversed / equal to itself, or pastes code into a title'
         : doubles(l).filter((w) => !new RegExp(`\\b${w}\\s+${w}\\b`, 'i').test(oldText)).length ? `doubled word: ${doubles(l).join(', ')}` : null;
       if (why) report.selfCheck.push({ file: rel, line: k + 1, why, text: l.trim().slice(0, 200) });
     }
