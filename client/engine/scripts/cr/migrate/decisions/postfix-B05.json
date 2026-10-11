@@ -1,0 +1,952 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": " *    since CR 608.9a, only in a SUB-STEP",
+   "replace": " *    per CR 608.9a, only in a SUB-STEP",
+   "why": "history: a rule narrated as a change ('since CR x'); it was a ruling"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "(E.strikesInCurrentSubStep; CR 608.2c made that \"a\", not \"the\", because a",
+   "replace": "(E.strikesInCurrentSubStep; \"a\", not \"the\", per CR 608.2c, because a",
+   "why": "history: rule narrated as the change that made it"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": " *    CR 608.9a made this ONE shared predicate,",
+   "replace": " *    It is ONE shared predicate (CR 608.9a),",
+   "why": "history: rule narrated as the change that made it"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "approximate is CR 608.9a's own residue:",
+   "replace": "approximate is the residue of that reading:",
+   "why": "grammar: awkward possessive pointer on a rule number"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": " * UNPARKED by the engine wave that added these events new `data.from` zone instead of",
+   "replace": " * UNPARKED by the engine wave that stamped the play events' source zone:\n *  - Stalwart Sentinel reads the play events' new `data.from` zone instead of",
+   "why": "grammar: the rewrite ate the bullet and its subject ('Stalwart Sentinel reads the play events''), leaving a garbled line"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "The Everywhere was the last one, and naming a card\n",
+   "replace": "The Everywhere was the last one, and its 'name a card' decision\n",
+   "why": "readability: 'naming a card unparked it' misreads; it was the name-a-card decision"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": " * CR 608.9a (owner, 2026-08-23): the clause fires in the sub-step MY OWN COLUMN\n * strikes in — and, CR 608.9a, in EVERY",
+   "replace": " * CR 608.9a (owner, 2026-08-23): the clause fires in the sub-step MY OWN COLUMN\n * strikes in — and in EVERY",
+   "why": "grammar: the same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "(CR 111.10\n// brought the mana half in for Tranquility)",
+   "replace": "(the mana\n// half came in for Tranquility, CR 111.10)",
+   "why": "history: rule narrated as the change that brought something in"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "Before spell-token casts were priced so this",
+   "replace": "Until spell-token casts were priced, this",
+   "why": "grammar: garbled sentence after the R305 drop"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "// Region-scoped like every other cost mod (CR 601.2):",
+   "replace": "// Region-scoped like every other cost mod (CR 111.10):",
+   "why": "wrong-rule: 601.2 is 'every unit is in one region'; 111.10 is the cost modifier's region scope"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "// ✔ TRANSCRIPTION: CLOSED by CR 200.2: *\"That's",
+   "replace": "// ✔ TRANSCRIPTION: CLOSED by the owner (2026-08-25, verbatim; see CR 200.2): *\"That's",
+   "why": "history/quote: the verbatim quote is the owner's, not CR 200.2's; restore the attribution"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "not `Entity.card` — the ruling names",
+   "replace": "not `Entity.card` — the original ruling named",
+   "why": "readability: 'the ruling' now has no antecedent (it was the retired ruling, which the quote that follows is from)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "// from E.loseLife and, `lifeGained:<seat>`",
+   "replace": "// from E.loseLife and `lifeGained:<seat>`",
+   "why": "grammar: stray comma left by dropping 'since R49'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "// CR 712.1a, 712.6's suppression layer",
+   "replace": "// CR 712.1a's suppression layer",
+   "why": "grammar: possessive on a list of rule numbers"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "        // CR 601.2 is not enforced here",
+   "replace": "        // CR 601.1d is not enforced here",
+   "why": "wrong-rule: the sentence relies on region scoping of a static (601.1d); 601.2 is 'every unit is in exactly one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "// CR 608.9a breakdown.",
+   "replace": "// per-column breakdown.",
+   "why": "readability: a rule number used as the name of a data field"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-b.ts",
+   "find": " * Rulings referenced: CR 109.3a",
+   "replace": " * Rules referenced: CR 109.3a",
+   "why": "readability: the list is now CR rules, not rulings"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-b.ts",
+   "find": "(bounded budgets per card), CR 601.2, 601.4d (\"each player\"",
+   "replace": "(bounded budgets per card), CR 601.4d (\"each player\"",
+   "why": "wrong-rule: 601.2 (every unit is in one region) does not say 'each player' is the present seats; 601.4d does"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-b.ts",
+   "find": "in the effect's region (CR 601.2, 601.4d), in",
+   "replace": "in the effect's region (CR 601.4d), in",
+   "why": "wrong-rule: 601.2 is not the 'each player' rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-b.ts",
+   "find": "(g.spawnedThisTurn). CR 601.2, 601.4d: region-scoped,",
+   "replace": "(g.spawnedThisTurn). CR 601.1b: region-scoped,",
+   "why": "wrong-rule: a region-scoped board sweep is 601.1b; 601.2/601.4d are one-region-per-unit and 'each player'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-b.ts",
+   "find": "// seats present in the region (CR 601.2, 601.4d); each",
+   "replace": "// seats present in the region (CR 601.4d); each",
+   "why": "wrong-rule: 601.2 is not the 'each player' rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-b.ts",
+   "find": "// present in the region (CR 601.2, 601.4d), in presentSeats",
+   "replace": "// present in the region (CR 601.4d), in presentSeats",
+   "why": "wrong-rule: 601.2 is not the 'each player' rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": " * Rulings referenced: CR 109.3a",
+   "replace": " * Rules referenced: CR 109.3a",
+   "why": "readability: the list is now CR rules, not rulings"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "(bounded budgets per card), CR 601.2 (regions exclusive",
+   "replace": "(bounded budgets per card), CR 601.1a (regions exclusive",
+   "why": "wrong-rule: 'regions exclusive — listeners and targets are region-scoped' is 601.1a (regions isolated); 601.2 is only 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "CR 111.6b's ruling: a life",
+   "replace": "CR 111.6b: a life",
+   "why": "readability: a CR rule is not a ruling"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "The LIFE LOCK shipped with CR 708.10 — a region-keyed",
+   "replace": "The LIFE LOCK (CR 708.10) shipped with the replacement layer — a region-keyed",
+   "why": "history: a rule narrated as the change that shipped the lock (it was the replacement-effect ruling)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "{Pure} is LIVE as of CR 802.25b — enforced",
+   "replace": "{Pure} is LIVE (CR 802.25b) — enforced",
+   "why": "history: 'as of CR x' narrates a rule as an event"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": " *    an unbudgeted OR-fold in the shape — landed first;",
+   "replace": " *    an unbudgeted OR-fold in Rook's shape — landed first;",
+   "why": "grammar: 'in the shape' lost its owner when R95 (Rook's permission) was dropped"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "(Suspend is fully unparked: its lock by CR 708.10, its",
+   "replace": "(Suspend is fully unparked: its lock by the replacement layer (CR 708.10), its",
+   "why": "history: a rule narrated as the change that unparked the card"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "COMPLETE as of round 17 \"I can't",
+   "replace": "COMPLETE as of round 17: \"I can't",
+   "why": "grammar: lost colon when R100 was dropped"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "Horror Unit. CR 110.1a: the bin IS a",
+   "replace": "Horror Unit. CR 110.3: the bin IS a",
+   "why": "wrong-rule: 110.1a is when targets are chosen; 110.3 names 'a card in a bin' as a target kind"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "UN-PARKED once targeting restrictions existed: seam exists now,",
+   "replace": "UN-PARKED once targeting restrictions existed: the targeting seam exists now,",
+   "why": "grammar: lost 'the targeting' in the rewrite"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "// like everything else (CR 601.2), which is also",
+   "replace": "// like everything else (CR 601.1d), which is also",
+   "why": "wrong-rule: a radiating static is region-scoped by 601.1d; 601.2 is 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "// ⚠ CR 601.2: \"target player\" only reaches",
+   "replace": "// ⚠ CR 110.3c: \"target player\" only reaches",
+   "why": "wrong-rule: 'target player' = a player present in the region is 110.3c; 601.2 is 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "Cosmic Spell. R6: the \"unless\" payment",
+   "replace": "Cosmic Spell. CR 111.9: the \"unless\" payment",
+   "why": "leftover R-citation (R6 = mid-resolution payment), the only one in the batch; 111.9 states it"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "// unbudgeted OR-FOLD in the shape: one grantor",
+   "replace": "// unbudgeted OR-FOLD in Rook's shape: one grantor",
+   "why": "grammar: 'in the shape' lost its owner when R95 (Rook's permission) was dropped"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "The lock shipped with CR 708.10; \"Erase me\"",
+   "replace": "The lock (CR 708.10) shipped with the replacement layer; \"Erase me\"",
+   "why": "history: a rule narrated as the change that shipped the lock"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "— CR 406.4b — unlike CR 723.4b's",
+   "replace": "— CR 406.4b — unlike CR 704.2c's",
+   "why": "wrong-rule: R79 is {Unstable} on any spell (704.2c); 723.4b is only a spell carrying a Virus"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "and exactly CR 709.1's answer. What",
+   "replace": "and exactly the same answer. What",
+   "why": "history: the answer was the earlier Abyssal Evocation ruling, not a rule; 709.1 does not state it"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "// \"Negate THAT EFFECT\" is the pronoun CR 706.13, 701.5 settled for Origon and Hexbane\n// Shiitake, and CR 706.13 finished those two",
+   "replace": "// \"Negate THAT EFFECT\" is the pronoun already settled for Origon and Hexbane\n// Shiitake (CR 706.13), and those two were finished",
+   "why": "history: rules narrated as the events that settled and finished the cards"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "Earthbound Replicator (CR 706.13), Origon, Hexbane Shiitake\n// (both CR 706.13), and this.",
+   "replace": "Earthbound Replicator, Origon, Hexbane Shiitake,\n// and this.",
+   "why": "history/grammar: per-card pointers that were dated rulings, now the same CR number three times"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "//      as CR 706.13 kept it on the other two.",
+   "replace": "//      as the other two keep it.",
+   "why": "history: a rule narrated as the change that kept the guard"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "// that effect\" (CR 111.8a) makes the cost",
+   "replace": "// that effect\" (CR 111.8) makes the cost",
+   "why": "wrong-rule: 111.8a is the OPTIONAL 'you may sacrifice me'; 111.8 is the mandatory 'sacrifice me. If you do'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "// CR 111.8a (2026-08-22): \"sacrifice me. If you do, …\" is a CAST COST — the same",
+   "replace": "// Owner ruling (2026-08-22), which the engine follows although CR 111.8 makes the\n// sacrifice part of the effect (F-U04-5): \"sacrifice me. If you do, …\" is a CAST COST — the same",
+   "why": "wrong-rule/history: 111.8a is the optional sacrifice, and CR 111.8 contradicts the cast-cost reading; this was the owner's dated ruling, which the engine still follows (F-U04-5)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "the whole trigger is skipped (CR 704.6b),",
+   "replace": "the whole trigger is skipped,",
+   "why": "wrong-rule: 704.6b is partial target loss, nothing to do with an unpayable cost"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "        // CR 706.13 (c): the play never built",
+   "replace": "        // (c) above: the play never built",
+   "why": "grammar: leftover sub-item label glued to a CR number; (c) is this comment's own list item"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": "//  · CR 108.1a, 300.5d's membership, the same one",
+   "replace": "//  · the membership of CR 108.1a and 300.5d, the same one",
+   "why": "grammar: possessive on a list of rule numbers"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": " * Rulings referenced: CR 109.3a",
+   "replace": " * Rules referenced: CR 109.3a",
+   "why": "readability: the list is now CR rules, not rulings"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": " * CR 601.2 (regions exclusive — listeners and effects",
+   "replace": " * CR 601.1a (regions exclusive — listeners and effects",
+   "why": "wrong-rule: regions isolated / effects region-scoped is 601.1a; 601.2 is only 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "FIXED by CR 300.5c, 110.1a — TargetSpec has",
+   "replace": "FIXED (CR 300.5c, 110.1a) — TargetSpec has",
+   "why": "history: a rule narrated as the fix"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "their counters); CR 705.3b took Celestial Shifter the same way, with a",
+   "replace": "their counters); Celestial Shifter went the same way (CR 705.3b), with a",
+   "why": "history: a rule narrated as the change that moved the card"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "UNPARKED by CR 710.2 (the COPY LAYER): card text,",
+   "replace": "UNPARKED by the COPY LAYER (CR 710.2): card text,",
+   "why": "history: a rule narrated as the change that unparked the card"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "✔ THE ENTERS-AS-COPY RULE (CR 303.11) CHANGED",
+   "replace": "✔ THE ENTERS-AS-COPY RULING (CR 303.11) CHANGED",
+   "why": "history: it was a ruling that changed the engine; a rule does not change anything"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "per-copy budget on the Ancient One. UNPARKED by CR 710.7: activated",
+   "replace": "per-copy budget on the Ancient One. UNPARKED by the copy layer (CR 710.7): activated",
+   "why": "history: a rule narrated as the change that unparked the card"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "✔ THE EXACT-COPY RULE (CR 405.6b) CHANGED",
+   "replace": "✔ THE EXACT-COPY RULING (CR 405.6b) CHANGED",
+   "why": "history: it was a ruling that changed the engine"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "(engine limitation)\"; A fix moved",
+   "replace": "(engine limitation)\"; a fix moved",
+   "why": "grammar: capital after semicolon"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "as it does on a death — and CR 410.2 adds the\n *    third route, an ERASE.",
+   "replace": "as it does on a death — and on the\n *    third route, an ERASE (CR 410.2).",
+   "why": "history: a rule narrated as the change that added the route"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "145-erase-routes.test.ts. CR 711.1's \"joins the new",
+   "replace": "145-erase-routes.test.ts. The old \"joins the new",
+   "why": "quote attribution: CR 711.1 does not contain the quoted words (they were the retired ruling's)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "\"delete all units\" is region-scoped (CR 601.2) and",
+   "replace": "\"delete all units\" is region-scoped (CR 601.1c) and",
+   "why": "wrong-rule: '\"all\" means all in this region' is 601.1c; 601.2 is 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "(Cosmic Conspirator UNPARKED by CR 708.3, BOTH",
+   "replace": "(Cosmic Conspirator UNPARKED by the replacement layer (CR 708.3), BOTH",
+   "why": "history: a rule narrated as the change that unparked the card"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "(Ancient One UNPARKED by CR 710.7, 2026-08-23",
+   "replace": "(Ancient One UNPARKED by the copy layer (CR 710.7), 2026-08-23",
+   "why": "history: a rule narrated as the change that unparked the card"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": " * CR 608.9a is what changed here: this copy",
+   "replace": " * CR 608.9a's power gate is what changed here: this copy",
+   "why": "history: a rule narrated as the change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": " * the reentrancy guard, and the last of the module-level latches\n * playtest report #60 named (the replacement layer removed the other five)\n",
+   "replace": " * The reentrancy guard, and the last of the module-level latches\n * playtest report #60 named (the replacement layer removed the other five).\n",
+   "why": "grammar: lost capital and closing period when 'R172 —' was dropped"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "// CR 710.7 adds 'behavior' — the owner:",
+   "replace": "// 'behavior' is projected too (CR 710.7) — the owner:",
+   "why": "history: a rule narrated as the change that added the facet"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "the same unit CR 112.8 gave effect damage",
+   "replace": "the same unit effect damage uses (CR 112.8)",
+   "why": "history: a rule narrated as an event"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "the uniqueness question had a choice The old key",
+   "replace": "the uniqueness question had a choice. The old key",
+   "why": "grammar: two sentences run together"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "// 'died' listeners are region-scoped (CR 601.2).",
+   "replace": "// 'died' listeners are region-scoped (CR 601.1d).",
+   "why": "wrong-rule: triggers on events only in their own region is 601.1d; 601.2 is 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "// CR 405.6: \"erase IT\" is the copy",
+   "replace": "// CR 405.6b: \"erase IT\" is the copy",
+   "why": "wrong-rule: 'it' = the copy that just entered the bin is 405.6b; 405.6 is only bin identity"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "a token, or — in the engine — an {Unstable} death (CR 801.2h never bins it, CT-246)",
+   "replace": "a token, or an {Unstable} death (the engine bins it and then erases it; CR 801.2h never bins it, CT-246)",
+   "why": "grammar: nested dashes inside a dashed aside made the sentence unreadable"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "the worst of the three misses CR 405.6 closes,",
+   "replace": "the worst of the three misses this closes,",
+   "why": "history: a rule narrated as the fix that closed the misses"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "//     cause (CR 710.2a), a copied augment's [Augment] box is the copy's own text\n//     (CR 710.2a). Its Unstable half is REVERSED (CR 710.2a, 710.2c / CT-225, the RAQ): the",
+   "replace": "//     cause, a copied augment's [Augment] box is the copy's own text\n//     (CR 710.2a). Its Unstable half is REVERSED (CT-225, the RAQ; CR 710.2c): the",
+   "why": "grammar/history: the same CR number three times in two lines, and a rule narrated as the reversal"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "not the transform's in-place rewrite transform.",
+   "replace": "not an in-place transform.",
+   "why": "grammar: garbled phrase from dropping 'R101's'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "Borrower is binned (CR 704.6b),",
+   "replace": "Borrower is binned (CR 704.6),",
+   "why": "wrong-rule: losing its only target is a fizzle (704.6); 704.6b is partial target loss"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "spawns\" — is CR 109.3a's own\n//     worked example and it read",
+   "replace": "spawns\" — is the textbook\n//     event-time condition (CR 109.3a), and it read",
+   "why": "truth: Nectar Ridge Oracle is not 109.3a's worked example (that was the retired ruling's)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "// is region-scoped (CR 601.2, 601.4d). Despawn",
+   "replace": "// is region-scoped (CR 601.1b). Despawn",
+   "why": "wrong-rule: \"your units\" region-scoped is 601.1b; 601.2/601.4d are one-region-per-unit and 'each player'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "fires)\" — that was fixed\n// that, and CR 410.2 added the third route: the",
+   "replace": "fires)\" — that was fixed,\n// and an ERASE became the third route (CR 410.2): the",
+   "why": "grammar: 'that was fixed that' garble; history: a rule narrated as adding the route"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "replays it (CR D6.3) —",
+   "replace": "replays it —",
+   "why": "wrong-rule: D6.3 is the resolving-item display, nothing about suspend/replay"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "// through the same branch CR 111.8a's \"[Sacrifice me]\" uses)",
+   "replace": "// through the same branch Eldritch Dreamtender's \"[Sacrifice me]\" uses)",
+   "why": "wrong-rule: 111.8a is the optional 'you may sacrifice me'; the branch is the engine's sacrifice-me cast cost"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "// with the damage). \"Allies\" = your units in this region (CR 601.2).",
+   "replace": "// with the damage). \"Allies\" = your units in this region (CR 601.4e).",
+   "why": "wrong-rule: the ally definition is 601.4e"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "the per-seat sibling of CR 803.7's\n",
+   "replace": "the per-seat sibling of the prophecy row's\n",
+   "why": "readability: a rule number used as the owner of an engine field"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "//    — — hand today. A banner's [Haste] does not give a cached card a haste release: it is played at its own printed timing (CR 803.7i).).",
+   "replace": "//    — hand today. (A banner's [Haste] does not give a cached card a haste\n//    release: it is played at its own printed timing, CR 803.7i.)",
+   "why": "grammar: doubled dash and '.).' residue"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "— until\n// CR 504.7 gave it its own seam:",
+   "replace": "— until\n// it was given its own seam:",
+   "why": "history: a rule narrated as the change that added the seam"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "belongs to CR 504.8a's family,\n// not this one. Rook is already live on CR 723.5.",
+   "replace": "belongs to Rook's family\n// (CR 504.8a, 723.5), not this one. Rook is already live.",
+   "why": "readability: 'live on CR 723.5' and a rule-owned family were pointer garble"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "makes it a cast-time target It had outlived",
+   "replace": "makes it a cast-time target. It had outlived",
+   "why": "grammar: two sentences run together (audit3 #1403)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "routed through one primitive — CR 711.3 only writes the decision down and pins it,",
+   "replace": "routed through one primitive, by accident of having no formation-join\n// primitive — the owner's 2026-08-25 ruling (CR 711.3) only wrote the decision down and pinned it,",
+   "why": "history: the ruling, not the rule, wrote the decision down; restores the lost 'by accident of having no formation-join primitive'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "// CR 111.8a (Bena's ruling, 2026-08-22): \"sacrifice me\" is a CAST COST.",
+   "replace": "// Bena's ruling, 2026-08-22, which the engine follows although CR 111.8 makes the\n// sacrifice part of the effect (F-U04-5): \"sacrifice me\" is a CAST COST.",
+   "why": "wrong-rule/history: 111.8a is the optional sacrifice, and CR 111.8 contradicts this dated ruling, which the engine still follows (F-U04-5)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "and CR 111.8a added the one cost this card",
+   "replace": "and that ruling added the one cost this card",
+   "why": "wrong-rule/history: the ruling added the cost; 111.8a is the optional sacrifice"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "(an unpayable cost sets part.spent — CR 704.6b).",
+   "replace": "(an unpayable cost sets part.spent).",
+   "why": "wrong-rule: 704.6b is partial target loss, not an unpayable cost"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": "      // CR 111.8a: paid on the way to the stack, not here.",
+   "replace": "      // The 2026-08-22 ruling: paid on the way to the stack, not here.",
+   "why": "wrong-rule: 111.8a is the optional sacrifice; CR 111.8 says the opposite (F-U04-5)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": " * Rulings referenced: CR 109.3a",
+   "replace": " * Rules referenced: CR 109.3a",
+   "why": "readability: the list is now CR rules, not rulings"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "(bounded budgets per card), CR 601.2 (regions are",
+   "replace": "(bounded budgets per card), CR 601.1a (regions are",
+   "why": "wrong-rule: regions exclusive / region-scoped listeners and clauses is 601.1a; 601.2 is only 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "costs are REAL COSTS as of CR 111.7, paid",
+   "replace": "costs are REAL COSTS (CR 111.7), paid",
+   "why": "history: 'as of CR x' narrates a rule as an event"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "hand-rolled here. CR 802.21b moved the",
+   "replace": "hand-rolled here. The Reaping ruling (CR 802.21b) moved the",
+   "why": "history: a rule narrated as the change that moved the attribute"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "the same diff {Afflicting} has ridden since\n *    CR 802.23c. The card",
+   "replace": "the same diff {Afflicting} has long ridden\n *    (CR 802.23c). The card",
+   "why": "history: 'since CR x' narrates a rule as an event"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "at spawn-event time'. CR 707.5\n *    built the hook",
+   "replace": "at spawn-event time'. The hook\n *    exists now (CR 707.5)",
+   "why": "history: a rule narrated as the change that built the hook"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "and THROUGH CR 707.5a's amount layer,",
+   "replace": "and THROUGH the amount layer (CR 707.5a),",
+   "why": "readability: a rule number used as the owner of an engine layer"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "own: CR 714.9 stamps `counters` onto every leave-play event (E.leftPlayFacts),",
+   "replace": "own: every leave-play event carries `counters` (E.leftPlayFacts, CR 714.9),",
+   "why": "readability: a rule narrated as the engine code that stamps the field"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "region-scoped (CR 601.2, 601.4d); the caster's",
+   "replace": "region-scoped (CR 601.4d); the caster's",
+   "why": "wrong-rule: 601.2 is 'each unit is in one region'; 'each player/opponent' is 601.4d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "// CR 708.8a, 708.8b TOOK BOTH APPROXIMATIONS OFF.",
+   "replace": "// THE COUNTER RULING (CR 708.8a, 708.8b) TOOK BOTH APPROXIMATIONS OFF.",
+   "why": "history: a rule narrated as the change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "has read on the damage path since CR 708.8b. So",
+   "replace": "has long read on the damage path. So",
+   "why": "history: 'since CR x' narrates a rule as an event (it was the replacement-layer ruling)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "The reminder text IS CR 801.9b verbatim,",
+   "replace": "The reminder text says what CR 801.9b and 801.9e say,",
+   "why": "truth: the reminder text is not 801.9b verbatim"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "See CR 712.3 for the rule, report",
+   "replace": "See CR 712.3 for the rule, the report",
+   "why": "grammar: list read 'the rule, report (#167…) and … for the guard'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "(contrast CR 109.9c's `xZeroWarning`,",
+   "replace": "(contrast CR D7.1a's `xZeroWarning`,",
+   "why": "wrong-rule: 109.9c is a [once] ability at X = 0; the X = 0 warning is D7.1a"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "//    CR 111.2's `sacrificeNontoken` flag:",
+   "replace": "//    its `sacrificeNontoken` flag:",
+   "why": "readability: a rule number used as the owner of an engine flag"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "The slash cost is a CAST COST (CR 111.3): the",
+   "replace": "The slash cost is a CAST COST (CR 702.4): the",
+   "why": "wrong-rule: paid before the spell reaches the stack is 702.4; 111.3 is the region of a sacrifice (cited correctly in the next line)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "//   - region scope is the engine's (CR 601.2), as for every other static.",
+   "replace": "//   - region scope is the engine's (CR 601.1d), as for every other static.",
+   "why": "wrong-rule: a static's region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "Region-scoped (CR 601.2, 601.4d — header)",
+   "replace": "Region-scoped (CR 601.4d — header)",
+   "why": "wrong-rule: 601.2 is 'each unit is in one region'; 'each player' is 601.4d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "walks straight past CR 707.5a's AMOUNT layer,",
+   "replace": "walks straight past the AMOUNT layer (CR 707.5a),",
+   "why": "readability: a rule number used as the owner of an engine layer"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "read off the event (CR 714.9's leftPlayFacts),",
+   "replace": "read off the event (leftPlayFacts, CR 714.9),",
+   "why": "readability: a rule number used as the owner of an engine function"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": "region-scoped (CR 601.2, the Flowstone Arcanite precedent): the",
+   "replace": "region-scoped (CR 601.1b, the Flowstone Arcanite precedent): the",
+   "why": "wrong-rule: \"your units\" region-scoped is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": " * Rulings referenced: CR 109.3a",
+   "replace": " * Rules referenced: CR 109.3a",
+   "why": "readability: the list is now CR rules, not rulings"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "(bounded budgets per card), CR 601.2 (regions exclusive — listeners, statics",
+   "replace": "(bounded budgets per card), CR 601.1a (regions exclusive — listeners, statics",
+   "why": "wrong-rule: regions exclusive / region-scoped listeners and statics is 601.1a; 601.2 is only 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": " *    region-scoped (CR 601.2, the Flowstone Arcanite precedent).",
+   "replace": " *    region-scoped (CR 601.1b, the Flowstone Arcanite precedent).",
+   "why": "wrong-rule: \"your units\" region-scoped is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "is a MODE (CR 204.2), so",
+   "replace": "is a MODE (CR 205.3), so",
+   "why": "wrong-rule: 204.2 is the type line; a bracket that is a mode is 205.3"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": " *    CR 901.7b closes the last open mode:",
+   "replace": " *    The owner's ruling (CR 901.7b) closes the last open mode:",
+   "why": "history: the quoted words are the owner's ruling, not the rule; a rule does not close anything"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "// the listener is region-scoped by the engine (CR 601.2).",
+   "replace": "// the listener is region-scoped by the engine (CR 601.1d).",
+   "why": "wrong-rule: a trigger hears only its own region's events by 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "// left behind when the sacrifice became a real activation cost unpark the header records, and by the `cost:",
+   "replace": "// left behind by the unpark the header records, and by the `cost:",
+   "why": "grammar: garbled splice ('…activation cost unpark the header records')"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "    // CR 111.6, 111.7 UN-PARKED: a real activation cost.",
+   "replace": "    // UN-PARKED: a real activation cost (CR 111.6, 111.7).",
+   "why": "history: a rule narrated as the change that unparked the card"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "(allOrNothing — CR 704.6b fizzle).",
+   "replace": "(allOrNothing — CR 704.6c).",
+   "why": "wrong-rule: losing one of two targets needed together is 704.6c (does nothing, no fizzle); 704.6b is partial resolution"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "live now that CR 712.1a, 712.1c exists: both",
+   "replace": "live now that the suppression layer exists (CR 712.1a, 712.1c): both",
+   "why": "history/grammar: rules narrated as machinery that came to exist ('exists' with two subjects)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "public erased pile, which CR 407.2 requires public pile, which is round-27's Q3",
+   "replace": "public erased pile, which is round-27's Q3",
+   "why": "grammar: garbled splice ('…which CR 407.2 requires public pile, which is…')"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "// region-scoped (CR 601.2, Flowstone precedent): the units",
+   "replace": "// region-scoped (CR 601.1b, Flowstone precedent): the units",
+   "why": "wrong-rule: \"your units\" region-scoped is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "// region-scoped (CR 601.2, header). The \"lose all",
+   "replace": "// region-scoped (CR 601.1d, header). The \"lose all",
+   "why": "wrong-rule: a static's region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "now HAS an outcome: CR 802.9a shipped stat layer 6,",
+   "replace": "now HAS an outcome: the Unaware ruling (CR 802.9a) shipped stat layer 6,",
+   "why": "history: a rule narrated as the change that shipped the layer"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "after its sub-step (CR 608.9) outside battle",
+   "replace": "after its sub-step (CR 608.9); outside battle",
+   "why": "grammar: two clauses run together"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "// CR 901.7b closes the mode that report #87 left open.",
+   "replace": "// The owner's ruling (CR 901.7b) closes the mode that report #87 left open.",
+   "why": "history: a rule narrated as closing the mode; the verbatim words that follow are the owner's"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "    // CR 706.13: 'info', not 'draw'.",
+   "replace": "    // 'info', not 'draw'.",
+   "why": "wrong-rule: R191's record-keeping half (an event typed draw for no draw) is not 706.13"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": " * Rulings referenced: CR 109.3a",
+   "replace": " * Rules referenced: CR 109.3a",
+   "why": "readability: the list is now CR rules, not rulings"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": " * CR 704.6b (fizzle vs partial), CR 111.9",
+   "replace": " * CR 704.6, 704.6b (fizzle vs partial), CR 111.9",
+   "why": "wrong-rule: 'fizzle vs partial' is 704.6 and 704.6b; 704.6b alone is only the partial case"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "(bounded budgets per card), CR 601.2 (regions exclusive — listeners are",
+   "replace": "(bounded budgets per card), CR 601.1a (regions exclusive — listeners are",
+   "why": "wrong-rule: regions exclusive / region-scoped listeners is 601.1a; 601.2 is only 'each unit is in one region'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "NO LONGER parked (CR 722.7, 2026-08-23).",
+   "replace": "NO LONGER parked (the 2026-08-23 ruling, CR 722.7).",
+   "why": "history: the date belongs to the ruling (the next sentence's 'The ruling' needs it), not to the rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "THE CR D6.3 SNAPSHOT HAZARD.",
+   "replace": "THE RESOLVE-SNAPSHOT HAZARD.",
+   "why": "wrong-rule: D6.3 is the resolving-item display, not the suspend/rewind snapshot"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": " *    everything from here: its resolution, its CR 704.6b fizzle,",
+   "replace": " *    everything from here: its resolution, its CR 704.6 fizzle,",
+   "why": "wrong-rule: a fizzle is 704.6; 704.6b is partial target loss"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "   * CR 406.4a(b): the resolving effect raised",
+   "replace": "   * CR 406.4a: the resolving effect raised",
+   "why": "grammar: leftover sub-item label '(b)' glued to a CR number"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "(`StackItem.from`, CR 701.4a) on the push path",
+   "replace": "(`StackItem.from`) on the push path",
+   "why": "grammar: the same CR number twice in one sentence"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "on an CR 704.6b fizzle and on a",
+   "replace": "on a fizzle (CR 704.6) and on a",
+   "why": "grammar 'an CR'; wrong-rule: a fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "(a Virus may augment an enemy, CR 723.5a)",
+   "replace": "(a Virus may augment an enemy)",
+   "why": "wrong-rule: 723.5a is a Rook-granted Virus; the comment already cites 723.2 (any unit, either side) at its head, so the second pointer is dropped"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "and the whole CR 410.6 pipeline —",
+   "replace": "and the whole `from` pipeline (CR 410.6) —",
+   "why": "readability: a rule number used as the name of an engine pipeline"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "`resolveItem`'s CR 704.6b branch fizzles it",
+   "replace": "`resolveItem`'s CR 704.6 branch fizzles it",
+   "why": "wrong-rule: an item with no target fizzles under 704.6; 704.6b is partial target loss (audit3 #1498)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "`ctx.choose` throws, CR D6.3 rewinds",
+   "replace": "`ctx.choose` throws, the suspension rewinds",
+   "why": "wrong-rule: D6.3 is the resolving-item display, nothing about rewinding nextId"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "        // CR 406.4a(b): an inline run",
+   "replace": "        // CR 406.4a: an inline run",
+   "why": "grammar: leftover sub-item label '(b)'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "that is the attribution CR 608.9a added,",
+   "replace": "that is the attribution the shared predicate added,",
+   "why": "history: a rule narrated as the change that added the attribution"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "    // a hit an CR 608.8a replacement consumed",
+   "replace": "    // a hit a replacement consumed",
+   "why": "grammar: 'an CR' and the same CR number twice in one sentence"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "// (CR 801.6a) — and reaches that",
+   "replace": "// — and reaches that",
+   "why": "grammar: the same CR number twice in one sentence"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "// CR 402.4 CLOSED THE ESCALATION",
+   "replace": "// THE HAND-ENTRY RULING (CR 402.4) CLOSED THE ESCALATION",
+   "why": "history: a rule narrated as the change that closed the escalation"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "// CR 410.5b (2026-08-22): a recalled TOKEN visits the hand too so it counts here —",
+   "replace": "// CR 410.5b (ruled 2026-08-22): a recalled TOKEN visits the hand too, so it counts here —",
+   "why": "grammar: lost comma; history: the date is the ruling's"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "// to the battle region itself (CR 601.2).",
+   "replace": "// to the battle region itself (CR 601.1d).",
+   "why": "wrong-rule: a trigger hearing only its own region's events is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "          // CR 406.4b(b): no `eraseSelf` check",
+   "replace": "          // CR 406.4b: no `eraseSelf` check",
+   "why": "grammar: leftover sub-item label '(b)' (audit3 #1540)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "        // CR 406.4b(b): 'fizzled' means",
+   "replace": "        // CR 406.4b: 'fizzled' means",
+   "why": "grammar: leftover sub-item label '(b)'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-a.ts",
+   "find": "// CR 202.3 CONFIRMS THIS READING and makes it the pool-wide one:",
+   "replace": "// The owner's ruling (CR 202.3) CONFIRMS THIS READING and makes it the pool-wide one:",
+   "why": "history: a rule narrated as confirming; the verbatim quote that follows is the owner's"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-b.ts",
+   "find": " * CR 704.6b (fizzle vs partial), CR 704.1a",
+   "replace": " * CR 704.6, 704.6b (fizzle vs partial), CR 704.1a",
+   "why": "wrong-rule: 'fizzle vs partial' is 704.6 and 704.6b; 704.6b alone is only the partial case"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-c.ts",
+   "find": " * CR 704.6b (fizzle vs partial), CR 111.9",
+   "replace": " * CR 704.6, 704.6b (fizzle vs partial), CR 111.9",
+   "why": "wrong-rule: 'fizzle vs partial' is 704.6 and 704.6b; 704.6b alone is only the partial case"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+   "find": " * CR 704.6b (fizzle vs partial), CR 111.9",
+   "replace": " * CR 704.6, 704.6b (fizzle vs partial), CR 111.9",
+   "why": "wrong-rule: 'fizzle vs partial' is 704.6 and 704.6b; 704.6b alone is only the partial case"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+   "find": " * CR 704.6b (fizzle vs partial), CR 803.4",
+   "replace": " * CR 704.6, 704.6b (fizzle vs partial), CR 803.4",
+   "why": "wrong-rule: 'fizzle vs partial' is 704.6 and 704.6b; 704.6b alone is only the partial case"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": " * CR 704.6b (fizzle vs partial), CR 111.9",
+   "replace": " * CR 704.6, 704.6b (fizzle vs partial), CR 111.9",
+   "why": "wrong-rule: 'fizzle vs partial' is 704.6 and 704.6b; 704.6b alone is only the partial case"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+   "find": "and CR 704.6b, 704.5 govern that,",
+   "replace": "and CR 704.5, 704.6 govern that,",
+   "why": "wrong-rule: a target that fails its re-check is lost (704.5) and the spell fizzles (704.6); 704.6b is partial loss"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "lk!.face;   // CR 710.5 layer 0: what I AM (or was)",
+   "replace": "lk!.face;   // the face (layer 0, CR 710.5): what I AM (or was)",
+   "why": "readability: 'CR 710.5 layer 0' reads as if the rule had a layer 0 (it is the engine's copy layer)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-light-a.ts",
+   "find": "        // CR 201.5 layer 0 means a copy answers",
+   "replace": "        // Layer 0 (CR 201.5) means a copy answers",
+   "why": "readability: 'CR 201.5 layer 0' reads as if the rule had a layer 0"
+  }
+ ]
+}

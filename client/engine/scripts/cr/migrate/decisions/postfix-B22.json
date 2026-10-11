@@ -1,0 +1,382 @@
+{
+ "edits": [
+  {
+   "file": "client/ui/style.css",
+   "find": "/* CR D5.5/CT-123: a LIVE SLOT",
+   "replace": "/* CR D5.5a/CT-123: a LIVE SLOT",
+   "why": "wrong-rule: live slots (old R258) = D5.5a; D5.5 is the S-key skip"
+  },
+  {
+   "file": "client/ui/style.css",
+   "find": "   CR D5.5a's throttle is holding",
+   "replace": "   CR D5.4's throttle is holding",
+   "why": "wrong-rule: the throttle (old R150) is D5.4"
+  },
+  {
+   "file": "client/ui/style.css",
+   "find": "/* CR D6.15a / report [142] — `aspect-ratio`",
+   "replace": "/* Report [142] — `aspect-ratio`",
+   "why": "wrong-rule: D6.15a is the full game log; the reserved card box (old R272) has no CR rule"
+  },
+  {
+   "file": "client/ui/style.css",
+   "find": "/* CR D6.15a: the same reserved box as `.card img`",
+   "replace": "/* Report [142]: the same reserved box as `.card img`",
+   "why": "wrong-rule: D6.15a is the game log"
+  },
+  {
+   "file": "client/ui/style.css",
+   "find": "/* CR D6.15a: reserve the box, same as `.card img`",
+   "replace": "/* Report [142]: reserve the box, same as `.card img`",
+   "why": "wrong-rule: D6.15a is the game log"
+  },
+  {
+   "file": "client/ui/style.css",
+   "find": "(the physical table look). CR D6.12a draws these\n   for a modded STACK ITEM too",
+   "replace": "(the physical table look). Under CR D6.12a these are drawn\n   for a modded STACK ITEM too",
+   "why": "history: rule narrated as an actor ('CR D6.12a draws')"
+  },
+  {
+   "file": "client/ui/style.css",
+   "find": "before the fix, eight of them printed",
+   "replace": "before the bracket-box fix eight of them printed",
+   "why": "grammar: 'the fix' ambiguous next to 'the no-markup fix'"
+  },
+  {
+   "file": "client/ui/style.css",
+   "find": "/* ── CR D8.4a: the scenario tester's runner strip",
+   "replace": "/* ── CR D8.4: the scenario tester's runner strip",
+   "why": "wrong-rule: D8.4a is 'only on a tester server'; the scenario room is D8.4"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "// CR D6.15a: may the long-hover box survive",
+   "replace": "// Report [142]: may the long-hover box survive",
+   "why": "wrong-rule: D6.15a is the full game log; the hover-survives-paint rule (old R272) has no CR rule"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "// CR D5.5/CT-123: an ARRIVAL lands here too",
+   "replace": "// CR D5.5a/CT-123: an ARRIVAL lands here too",
+   "why": "wrong-rule: the live slot (old R258) is D5.5a (presence and clocks stay current while held); D5.5 is the S-key skip"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "// CR D5.5: WHO IS CONNECTED IS NOT GAME NEWS",
+   "replace": "// CR D5.5a: WHO IS CONNECTED IS NOT GAME NEWS",
+   "why": "wrong-rule: whether the opponent is connected stays current while held = D5.5a"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "and CR D5.5b's gate does",
+   "replace": "and CR D5.4b's gate does",
+   "why": "wrong-rule: the hold gate (old R150) is D5.4b; D5.5b is the disconnect notice"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "held behind CR D5.5a's pacing gate",
+   "replace": "held behind CR D5.4b's pacing gate",
+   "why": "wrong-rule: the pacing gate (old R150) is D5.4b"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "// CR D5.5: `m.peers` is deliberately NOT applied",
+   "replace": "// CR D5.5a: `m.peers` is deliberately NOT applied",
+   "why": "wrong-rule: presence while held = D5.5a"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": " * CR D5.5 — WHAT STAYS LIVE WHILE THE THROTTLE IS HOLDING.",
+   "replace": " * CR D5.5a — WHAT STAYS LIVE WHILE THE THROTTLE IS HOLDING.",
+   "why": "wrong-rule: what stays current while play is held is D5.5a (old R258)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "// CR D5.5: the presence dot is a LIVE SLOT",
+   "replace": "// CR D5.5a: the presence dot is a LIVE SLOT",
+   "why": "wrong-rule: presence while held = D5.5a (old R258)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "// CR D5.5: the paint just destroyed every live slot",
+   "replace": "// CR D5.5a: the paint just destroyed every live slot",
+   "why": "wrong-rule: live slots (old R258) = D5.5a"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "— CR 507.2 added the cache */",
+   "replace": "— the cache included (CR 507.2) */",
+   "why": "history: rule narrated as an actor ('CR 507.2 added')"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "/** ⚠ pre-older arm: stack height",
+   "replace": "/** ⚠ legacy arm: stack height",
+   "why": "grammar: 'pre-older' garble (from pre-R245)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "/** ⚠ pre-older arm: activateAbility keys",
+   "replace": "/** ⚠ legacy arm: activateAbility keys",
+   "why": "grammar: 'pre-older' garble (from pre-R245)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "the button promises, and CR D2.2 made\n   * that same list the SCOPE",
+   "replace": "the button promises, and under CR D2.2b\n   * that same list is the SCOPE",
+   "why": "history: rule narrated as an actor ('CR D2.2 made'); D2.2b is the Pass-through-stack scope"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "carries (CR D6.3), and server/view.ts",
+   "replace": "carries, and server/view.ts",
+   "why": "wrong-rule: old R85 (rollback on resume), not the resolving marker D6.3; nothing here is D6.3b's board-partway rule, so dropped"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "opens no window (610.4e), so the client cannot be handed the chance to stop it\n",
+   "replace": "opens no window (CR 610.4e), so the client cannot be handed the chance to stop it.\n",
+   "why": "grammar: bare rule number and lost period"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "the same residual the old live reveal left on the glimpse\n */",
+   "replace": "the same residual the old live reveal left on the glimpse.\n */",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": " * CR 201.5 deliberately never rewrites `Entity.card`:",
+   "replace": " * The engine deliberately never rewrites `Entity.card` (CR 201.5):",
+   "why": "history: rule narrated as an actor (a rule does not rewrite fields)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "plus R64's \"That's enough — X = n\"",
+   "replace": "plus CR 702.6b's \"That's enough — X = n\"",
+   "why": "surviving bare R-number next to a quote; old R64 = variable cost paid until stopped (702.6b, as cited elsewhere in this file)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "already knows how to draw and `startCostRamp` spends",
+   "replace": "already knows how to draw, and `startCostRamp` spends",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "numeric entry's (CR D7.2a), unchanged\n",
+   "replace": "numeric entry's (CR D7.2a), unchanged.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "(CR D7.2's ruling, which every other stepper",
+   "replace": "(CR D7.2, which every other stepper",
+   "why": "grammar: a CR rule is not a 'ruling'"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "handler are the numeric entry's (CR D7.2a)'s,",
+   "replace": "handler are the numeric entry's (CR D7.2a),",
+   "why": "grammar: doubled possessive"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": " * CR D2.1b taught `apply()` and `legalActions()` that a decision belongs to a\n * SEAT:",
+   "replace": " * `apply()` and `legalActions()` know that a decision belongs to a\n * SEAT (CR D2.1b):",
+   "why": "history: rule narrated as an actor ('CR D2.1b taught')"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "stayed on the pre-the old global-gate reading",
+   "replace": "stayed on the old global-gate reading",
+   "why": "grammar: 'pre-the' garble"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "the CR D6.14 agent only caught it",
+   "replace": "the agent reworking the hand marking only caught it",
+   "why": "grammar: 'the R183 agent' became 'the CR D6.14 agent' (a rule has no agent)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "which card is live — the argument CR D6.16 made for\n * the cache's `playableCachedIndexes`,",
+   "replace": "which card is live — the argument made for\n * the cache's `playableCachedIndexes` (CR D6.16),",
+   "why": "history: rule narrated as an actor ('CR D6.16 made')"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "That is also what\n * CR 110.1a bought when it made a bin card a real declared target instead of a\n * mid-resolution pick:",
+   "replace": "That is also what\n * making a bin card a real declared target (CR 110.1a) instead of a\n * mid-resolution pick bought:",
+   "why": "history: rule narrated as an actor ('CR 110.1a bought when it made')"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": " * CR 801.9i (2026-09-20): it really is dead now.",
+   "replace": " * Since 2026-09-20 (CR 801.9i) it really is dead now.",
+   "why": "history: rule dated as a change"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "AND IT IS CR D6.4's `pendingAsk`.",
+   "replace": "AND IT IS `pendingAsk` (CR D6.4).",
+   "why": "grammar: a rule does not own a code field"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "Split out of `promptHtml` by CR D2.1 for one reason",
+   "replace": "Split out of `promptHtml` (CR D2.1) for one reason",
+   "why": "history: rule narrated as an actor"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "\"screen full of refusals\" The own notes warn about.",
+   "replace": "\"screen full of refusals\" the pacing ruling's own notes warn about.",
+   "why": "grammar: 'The own notes' garble (was R150's own notes)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": " * CR D6.12 adds the third kind of row: the item",
+   "replace": " * A third kind of row (CR D6.3): the item",
+   "why": "history: rule as actor; the resolving row is the old R78 marker = D6.3"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "(A fifth, the CR D2.7 automatic",
+   "replace": "(A fifth, the CR D2.5 automatic",
+   "why": "wrong-rule: the automatic haste-step ready is D2.5 (D2.7 is full control)"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "deliberately NOT by a refusal, which is CR D2.4's original\n * anti-loop argument and",
+   "replace": "deliberately NOT by a refusal, which is the original\n * anti-loop argument (CR D2.4) and",
+   "why": "history: a rule does not own an argument"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "step is OFFERED UNCONDITIONALLY since CR 504.5, so",
+   "replace": "step is OFFERED UNCONDITIONALLY (CR 504.5), so",
+   "why": "history: 'since CR 504.5' dates a rule as a change"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": " * ⚠ THIS NARROWED, AND the narrowing reverses the earlier menu ruling as well, in as many words",
+   "replace": " * ⚠ THIS NARROWED, AND THE NARROWING REVERSES AN EARLIER RULING, which hung these on every\n * card menu as well, in as many words",
+   "why": "grammar: splice ate 'hung these on every card menu'; sentence restored"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "/** CR D6.15a: what the dwell was armed WITH",
+   "replace": "/** Report [142]: what the dwell was armed WITH",
+   "why": "wrong-rule: D6.15a is the game log; hover survival (old R272) has no CR rule"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "/** CR D6.15a: is the box on screen right now",
+   "replace": "/** Report [142]: is the box on screen right now",
+   "why": "wrong-rule: D6.15a is the game log"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": " * CR D6.15a — THE HOVER SURVIVES A PAINT",
+   "replace": " * Report [142] — THE HOVER SURVIVES A PAINT",
+   "why": "wrong-rule: D6.15a is the game log"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "// CR D6.15a: from here a repaint may keep it",
+   "replace": "// [142]: from here a repaint may keep it",
+   "why": "wrong-rule: D6.15a is the game log"
+  },
+  {
+   "file": "client/ui/main.ts",
+   "find": "no redaction. CR D2.1b\n    // taught the engine that the seat which is NOT being asked",
+   "replace": "no redaction. Under CR D2.1b\n    // the seat which is NOT being asked",
+   "why": "history: rule narrated as an actor ('CR D2.1b taught the engine')"
+  },
+  {
+   "file": "client/ui/manual-reminders.json",
+   "find": "\"CR D6.11 gave every glossary row two audiences:",
+   "replace": "\"The first report #118 fix gave every glossary row two audiences:",
+   "why": "history: rule narrated as an actor (old R248 was a ruling)"
+  },
+  {
+   "file": "client/ui/manual-reminders.json",
+   "find": "silent on the active-zone scope (803.8a) Both",
+   "replace": "silent on the active-zone scope (CR 803.8a). Both",
+   "why": "grammar: bare number and lost period"
+  },
+  {
+   "file": "client/ui/passrelease.ts",
+   "find": "   * ⚠ PRE-older ARM, kept only",
+   "replace": "   * ⚠ LEGACY ARM, kept only",
+   "why": "grammar: 'PRE-older' garble (from PRE-R245)"
+  },
+  {
+   "file": "client/ui/passrelease.ts",
+   "find": "  /** ⚠ PRE-older arm, subsumed by",
+   "replace": "  /** ⚠ Legacy arm field, subsumed by",
+   "why": "grammar: 'PRE-older' garble"
+  },
+  {
+   "file": "client/ui/passrelease.ts",
+   "find": "the one action type the pre-older\n",
+   "replace": "the one action type the legacy\n",
+   "why": "grammar: 'pre-older' garble"
+  },
+  {
+   "file": "client/ui/passrelease.ts",
+   "find": "(a pre-older arm, or one taken",
+   "replace": "(a legacy arm, or one taken",
+   "why": "grammar: 'pre-older' garble"
+  },
+  {
+   "file": "client/ui/replaybar.ts",
+   "find": "the gap is the whole (see replay-room.ts): on ANBB",
+   "replace": "the gap is the whole point (see server/replay-room.ts): on ANBB",
+   "why": "grammar: 'the whole of R200' lost its noun"
+  },
+  {
+   "file": "client/ui/replayserver.ts",
+   "find": "(the old live reveal is reversed) so nothing",
+   "replace": "(the old live reveal is reversed), so nothing",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/ui/reveal.ts",
+   "find": "/** CR 724.3: mods applied to it during the segment",
+   "replace": "/** mods applied to it during the segment",
+   "why": "wrong-rule: 724.3 is Modular's cast-time mods; this row lists any mod applied in the segment (old R35/R105); dropped"
+  },
+  {
+   "file": "client/ui/reveal.ts",
+   "find": "(rulings of 2026-08-28, since reversed,\n * then made them arrive IMMEDIATELY",
+   "replace": "(Two later rulings\n * then made them arrive IMMEDIATELY",
+   "why": "grammar: 'since reversed' doubles the reversal the next clause narrates; parenthesis garbled"
+  },
+  {
+   "file": "client/ui/scenario.ts",
+   "find": "// 147-comment-conformance §4 (see 147-comment-conformance): a",
+   "replace": "// 147-comment-conformance §4: a",
+   "why": "grammar: doubled pointer"
+  },
+  {
+   "file": "client/ui/singlecard.ts",
+   "find": "/* CR D8.2b — SINGLE CARD DUEL: the card picker.",
+   "replace": "/* CR D8.2 — SINGLE CARD DUEL: the card picker.",
+   "why": "wrong-rule: D8.2b is 'picked blind'; the picker (one card, 30 copies) is D8.2"
+  },
+  {
+   "file": "client/ui/test/122-cardtext-markup.test.ts",
+   "find": "/* ⚠ CR D6.10c MOVED WHERE THIS IS SAID",
+   "replace": "/* ⚠ REPORT #143 (NOW CR D6.10c) MOVED WHERE THIS IS SAID",
+   "why": "history: rule narrated as an actor ('CR D6.10c MOVED')"
+  },
+  {
+   "file": "client/ui/test/122-cardtext-markup.test.ts",
+   "find": "/* ⚠ THE SPENT-MARKER RULE (CR D6.10b) SUPERSEDED ONE HALF",
+   "replace": "/* ⚠ REPORT #120's SPENT-MARKER FIX (NOW CR D6.10b) SUPERSEDED ONE HALF",
+   "why": "history: rule narrated as an actor (old R249 was the report #120 ruling)"
+  }
+ ]
+}

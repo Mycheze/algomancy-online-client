@@ -41,7 +41,7 @@ export function loadPostfix(dir = join(HERE, 'decisions')) {
 
 const count = (t, s) => { let n = 0; for (let i = t.indexOf(s); i >= 0; i = t.indexOf(s, i + 1)) n++; return n; };
 const parses = (rel, t) => {
-  if (!esbuildTransform || !/\.(ts|mts)$/.test(rel)) return null;
+  if (!esbuildTransform || !/\.(ts|mts)$/.test(rel) || /\.d\.m?ts$/.test(rel)) return null; // a declaration file is not a module esbuild transforms
   try { esbuildTransform(t, { loader: 'ts', logLevel: 'silent' }); return null; } catch (e) { return String(e.message ?? e).split('\n').slice(0, 2).join(' '); }
 };
 

@@ -99,7 +99,7 @@ const PROCESS_HOME = {
   R174: '147-comment-conformance', R180: '170-battle-position-promises', R181: 'CLAUDE.md § The gates',
   R182: '65-effect-conformance', R193: '147-comment-conformance', R199: 'drill.ts', R200: 'replay-room.ts',
   R201: '164-sweep-sight', R203: '174-secrecy-is-seat-aware', R204: 'test-clock.ts', R210: '147-comment-conformance',
-  R211: '181-inconclusive-activation-window', R214: '150-registration-order', R215: null, R217: '187-scenario-queue',
+  R211: '181-inconclusive-activation-window', R214: '180-pool-sight', R215: null, R217: '187-scenario-queue',
   R218: '14-scenario-tester.md', R220: '14-scenario-tester.md', R231: '197-absorb-is-shared', R232: '81-card-drill',
   R233: '201-assessment-numbers', R234: null, R259: '238-question-sheets', R260: '83-card-todo', R275: null,
   R285: 'fetch-reports.mjs', R343: 'data/comprehensive-rules/README.md',

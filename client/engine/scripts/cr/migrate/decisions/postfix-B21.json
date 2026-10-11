@@ -1,0 +1,952 @@
+{
+ "edits": [
+  {
+   "file": "client/server/test/171-engine-version-stamp.test.ts",
+   "find": "until the recycle options (2026-09-19) drifted",
+   "replace": "until the Prismite recycle option (2026-09-19) drifted",
+   "why": "grammar: \"the recycle options\" is vague (old R299 added recycling for a Prismite, a new legal action)"
+  },
+  {
+   "file": "client/server/test/172-event-channel-secrecy.test.ts",
+   "find": " * The `E.toHand` then added",
+   "replace": " * The hand-entry point `E.toHand` then added",
+   "why": "grammar: \"The `E.toHand`\" lost its owner (old R179)"
+  },
+  {
+   "file": "client/server/test/172-event-channel-secrecy.test.ts",
+   "find": "did to the one that existed §2 asserts",
+   "replace": "did to the one that existed. §2 asserts",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/server/test/172-event-channel-secrecy.test.ts",
+   "find": "the hand-entry event is what a denylist rots against\n",
+   "replace": "the hand-entry event is what a denylist rots against.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/server/test/173-look-at-a-hand.test.ts",
+   "find": "names the class outright) Thought Extraction",
+   "replace": "names the class outright). Thought Extraction",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/server/test/173-look-at-a-hand.test.ts",
+   "find": "partition broke.: a per-card fix",
+   "replace": "partition broke. A per-card fix",
+   "why": "grammar: \".:\" splice"
+  },
+  {
+   "file": "client/server/test/185-scenario-determinism.test.ts",
+   "find": "/* CR D8.4a — THE SCENARIO MUTATION",
+   "replace": "/* CR D8.4 — THE SCENARIO MUTATION",
+   "why": "wrong-rule: D8.4a is \"only on a tester server\"; D8.4 is the scenario room dealt from a declared board"
+  },
+  {
+   "file": "client/server/test/185-scenario-determinism.test.ts",
+   "find": "pulls in `ws`\n * (see CLAUDE.md § The gates). It is proved",
+   "replace": "pulls in `ws`.\n * It is proved",
+   "why": "invented pointer: CLAUDE.md § The gates says nothing about ws (old R181 was the server tsconfig ruling); dropped"
+  },
+  {
+   "file": "client/server/test/185-scenario-determinism.test.ts",
+   "find": "'CR 720.6c: the augment is worn by THEIR unit",
+   "replace": "'CR 720.6b: the augment is worn by THEIR unit",
+   "why": "wrong-rule: \"you\" on a mod = host's controller is 720.6b (720.6c is I/me/my)"
+  },
+  {
+   "file": "client/server/test/186-scenario-library.test.ts",
+   "find": "spend a hand card, and some clauses cannot be (see 14-scenario-tester.md)",
+   "replace": "spend a hand card (see 14-scenario-tester.md), and some clauses cannot be",
+   "why": "grammar: pointer spliced mid-sentence"
+  },
+  {
+   "file": "client/server/test/200-haste-step-is-unconditional.test.ts",
+   "find": "(174-secrecy-is-seat-aware) (see 174-secrecy-is-seat-aware).",
+   "replace": "(174-secrecy-is-seat-aware).",
+   "why": "grammar: doubled pointer"
+  },
+  {
+   "file": "client/server/test/200-haste-step-is-unconditional.test.ts",
+   "find": "a card an CR 207.4a, 803.2b grant",
+   "replace": "a card a CR 803.2b grant",
+   "why": "grammar \"an CR\"; 207.4a is the battle-card limit, not the grant"
+  },
+  {
+   "file": "client/server/test/200-haste-step-is-unconditional.test.ts",
+   "find": "the unconditional haste step (504.5) deleted the predicate",
+   "replace": "making the haste step unconditional (CR 504.5) deleted the predicate",
+   "why": "history: rule as actor; bare number"
+  },
+  {
+   "file": "client/server/test/200-haste-step-is-unconditional.test.ts",
+   "find": "'CR 803.7: the window is nulled on the way out'",
+   "replace": "'the window is nulled on the way out'",
+   "why": "wrong-rule: 803.7 is the Prophecy keyword (old R43 was the prophecy count); dropped"
+  },
+  {
+   "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+   "find": "test('CR D6.2d: main.ts composes",
+   "replace": "test('CR D6.2: main.ts composes",
+   "why": "wrong-rule: D6.2d is Learn to Play only; the test reads main.ts and every runner (unbound title)"
+  },
+  {
+   "file": "client/server/test/219-region-scoped-all.test.ts",
+   "find": "possible leak: CR 601.4d scoped what an effect may reach,",
+   "replace": "possible leak: regions scope what an effect may reach (CR 601.1b),",
+   "why": "wrong-rule + rule as actor: region scoping of effects is 601.1b (601.4d is \"each player\")"
+  },
+  {
+   "file": "client/server/test/219-region-scoped-all.test.ts",
+   "find": "'CR 601.1c: \"every card",
+   "replace": "'The owner (CR 601.1c): \"every card",
+   "why": "owner quote credited to the CR"
+  },
+  {
+   "file": "client/server/test/219-region-scoped-all.test.ts",
+   "find": "'CR 601.8: \"Regions do NOT",
+   "replace": "'The owner (CR 601.8): \"Regions do NOT",
+   "why": "owner quote credited to the CR"
+  },
+  {
+   "file": "client/server/test/255-refresh-command.test.ts",
+   "find": " * (see fetch-reports.mjs). `scripts/paths.mjs` is plain JS",
+   "replace": " * `scripts/paths.mjs` is plain JS",
+   "why": "grammar: a bare pointer replaced the old \"R285.\" paragraph label; it adds nothing"
+  },
+  {
+   "file": "client/server/test/317-replay-fingerprints.test.ts",
+   "find": "final life total: the split-step rule (CR 608.3b) had added a\n * priority window,",
+   "replace": "final life total: a priority window had been added between split\n * damage sub-steps (CR 608.3b),",
+   "why": "history: rule narrated as the change that added the window"
+  },
+  {
+   "file": "client/server/test/333-zone-delta-parse.test.ts",
+   "find": "READING THE CR 706.13 REFS BACK.",
+   "replace": "READING THE REFERENCE KEYS BACK.",
+   "why": "wrong-rule: 706.13 is \"the played item\"; the per-action reference keys are a replay record, not a rule (systemic)"
+  },
+  {
+   "file": "client/server/test/333-zone-delta-parse.test.ts",
+   "find": "Every saved game since CR 706.13 carries one reference key",
+   "replace": "Every saved game recorded since reference keys were added carries one reference key",
+   "why": "wrong-rule: 706.13 used for replay keys (systemic)"
+  },
+  {
+   "file": "client/server/test/375-drift-keys-survive-restart.test.ts",
+   "find": "FALSE ALARM — CR 706.13's keys must survive",
+   "replace": "FALSE ALARM — the reference keys must survive",
+   "why": "wrong-rule: 706.13 used for replay keys (systemic)"
+  },
+  {
+   "file": "client/server/test/375-drift-keys-survive-restart.test.ts",
+   "find": " * CR 706.13 writes, per action, a REFERENCE KEY",
+   "replace": " * A saved game records, per action, a REFERENCE KEY",
+   "why": "wrong-rule: 706.13 used for replay keys (systemic); rule as actor"
+  },
+  {
+   "file": "client/server/test/96-x-preview.test.ts",
+   "find": "// CR 110.3c: target at cast",
+   "replace": "// CR 110.1a: target at cast",
+   "why": "wrong-rule: targets chosen as the effect goes on the stack is 110.1a (110.3c is who \"target player\" may be)"
+  },
+  {
+   "file": "client/server/test/96-x-preview.test.ts",
+   "find": "// CR 303.10 removed Hush Mush's entry: it no longer",
+   "replace": "// Hush Mush's entry is gone (CR 303.10): it no longer",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/server/test/96-x-preview.test.ts",
+   "find": "// CR 303.11 removed Borrower of Forms' entry for the same reason",
+   "replace": "// Borrower of Forms' entry went (CR 303.11) for the same reason",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/anim.ts",
+   "find": " * CT-82(d)/CR D6.7b, D6.7's rule, one layer down.",
+   "replace": " * CT-82(d)/CR D6.7b — CR D6.7's rule, one layer down.",
+   "why": "grammar: garbled header"
+  },
+  {
+   "file": "client/ui/anim.ts",
+   "find": " * CR D6.7 fixed `queueFlashes`:",
+   "replace": " * The first fix for CR D6.7 was in `queueFlashes`:",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/anim.ts",
+   "find": "**POSITIVE EVIDENCE ONLY**, CR D6.7's third consequence held to literally:",
+   "replace": "**POSITIVE EVIDENCE ONLY**, CR D6.7b's last sentence held to literally:",
+   "why": "wrong-rule: D6.7 has no \"consequences\"; an unnamed end shown on its own is D6.7b"
+  },
+  {
+   "file": "client/ui/anim.ts",
+   "find": " * CR D5.4: pulse things the motion diff cannot see.",
+   "replace": " * Pulse things the motion diff cannot see.",
+   "why": "wrong-rule: D5.4 is the tempo, nothing about pulses; dropped"
+  },
+  {
+   "file": "client/ui/anim.ts",
+   "find": "pulsed the\n * identity row since the narrative beats landed, but",
+   "replace": "long pulsed the\n * identity row, but",
+   "why": "history: invented date-marker for old R80"
+  },
+  {
+   "file": "client/server/types.ts",
+   "find": " *  or (CR 706.13) it was accepted and came",
+   "replace": " *  or it was accepted and came",
+   "why": "wrong-rule: 706.13 used for restore drift (systemic); dropped"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "it is the SAME gate CR 703.7 uses for the",
+   "replace": "it is the SAME gate the deployment-stack redaction (CR 703.7) uses for the",
+   "why": "rule as actor"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "(CR 408.2) MOVED THIS ARITHMETIC and moving",
+   "replace": "(CR 408.2) MOVED THIS ARITHMETIC, and moving",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "// CR 703.7(a): THE STACK IS PUBLIC",
+   "replace": "// CR 703.7: THE STACK IS PUBLIC",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "held log lines). Until deployment triggers went on the stack inside a segment, so this had nothing to redact",
+   "replace": "held log lines). Until start-of-deployment triggers were put on the stack, nothing\n    // ever sat on the stack inside a segment, so this had nothing to redact",
+   "why": "grammar: broken sentence (lost main clause)"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "// CR 703.7 made this line a RULE rather than a redaction, and it was already",
+   "replace": "// This line is a RULE (CR 703.7) rather than a redaction, and it was already",
+   "why": "history: rule narrated as the change that made it"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "The haste step is unconditional (504.5) precisely",
+   "replace": "The haste step is unconditional (CR 504.5) precisely",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "readout of a hidden hand. CR 504.5 recorded the debt that left",
+   "replace": "readout of a hidden hand. The ruling that made it so recorded the debt that left",
+   "why": "history: a ruling's words credited to CR 504.5"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "cheap\" — and CR D2.5 pays it:",
+   "replace": "cheap\" — and auto-readying (CR D2.5) pays it:",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "// CR D6.3: a 'resolve' suspension carries",
+   "replace": "// A 'resolve' suspension carries",
+   "why": "wrong-rule: D6.3 is the \"resolving\" marker; the rewind snapshot is engine-internal (old R85) — dropped"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "// The `E.toHand` emits",
+   "replace": "// `E.toHand` emits",
+   "why": "grammar"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "a glimpse is not private so this returns",
+   "replace": "a glimpse is not private, so this returns",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "/* ── Moved here from rooms.ts (CR D8.1) ──",
+   "replace": "/* ── Moved here from rooms.ts for Learn to Play (CR D8.1) ──",
+   "why": "grammar: a code move cited a rule bare"
+  },
+  {
+   "file": "client/server/view.ts",
+   "find": "glimpse-hold block (CR D6.2) has the history\n",
+   "replace": "glimpse-hold block (CR D6.2) has the history;\n",
+   "why": "grammar: lost semicolon"
+  },
+  {
+   "file": "client/server/zonedelta.ts",
+   "find": "the tail of every CR 706.13 reference key,",
+   "replace": "the tail of every reference key,",
+   "why": "wrong-rule: 706.13 used for replay keys (systemic)"
+  },
+  {
+   "file": "client/server/zonedelta.ts",
+   "find": "every saved game since\n * CR 706.13 carries these strings.",
+   "replace": "every saved game since\n * reference keys were added carries these strings.",
+   "why": "wrong-rule: 706.13 used for replay keys (systemic)"
+  },
+  {
+   "file": "client/ui/battle.ts",
+   "find": " * ⚠ CR D2.2 — IT IS TAKEN ONCE,",
+   "replace": " * ⚠ CR D2.2f — IT IS TAKEN ONCE,",
+   "why": "wrong-rule: \"measured against the moment it was clicked\" is D2.2f, not the D2.2 overview"
+  },
+  {
+   "file": "client/ui/battle.ts",
+   "find": "a compulsory duty, and CR 606.2f's own\n *     `compulsoryBlocks` is",
+   "replace": "a compulsory duty, and the engine's own\n *     `compulsoryBlocks` (CR 606.2f) is",
+   "why": "history: a rule owning engine code"
+  },
+  {
+   "file": "client/ui/battle.ts",
+   "find": "(CR 606.2e, 604.2e's\n * compulsory blocks,",
+   "replace": "(CR 606.2e's\n * compulsory blocks,",
+   "why": "grammar: garbled double possessive; 604.2e is the no-counterattack half"
+  },
+  {
+   "file": "client/ui/cardpanel.ts",
+   "find": " * rule (CR D6.11).",
+   "replace": " * rule (CR D6.11b).",
+   "why": "wrong-rule: \"shortening never deletes a rule\" is D6.11b"
+  },
+  {
+   "file": "client/ui/cardpanel.ts",
+   "find": "// type-line reminders CR D6.10 injects (`attrReminders`),",
+   "replace": "// type-line reminders injected under CR D6.10 (`attrReminders`),",
+   "why": "rule as actor"
+  },
+  {
+   "file": "client/ui/card-library-reminders.json",
+   "find": "\"CR D6.11 read the pool's own {i}(...) reminder spans. CR D6.11 added the Algomancy\",",
+   "replace": "\"The first channel reads the pool's own {i}(...) reminder spans; the second adds the Algomancy\",",
+   "why": "history: CR D6.11 narrated as two actors in one sentence"
+  },
+  {
+   "file": "client/server/test/96-x-preview.test.ts",
+   "find": "lost PLUS gained. §21 makes\n  // the bracket a cast-time mode,",
+   "replace": "lost PLUS gained. CR 205.3\n  // makes the bracket a cast-time mode,",
+   "why": "grammar: dangling \"§21\" (its R157 anchor was removed from the title)"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": " * ⚠ THIS IS NOT THE MARKUP CLASS. Those bugs were each",
+   "replace": " * ⚠ THIS IS NOT THE MARKUP CLASS. The markup bugs were each",
+   "why": "grammar: \"Those bugs\" had no antecedent"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": " * discipline the `/[` box uses, and",
+   "replace": " * discipline the markup fix used for `/[`, and",
+   "why": "grammar: \"the `/[` box uses\" garbles old R142 (the markup fix)"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "SOLVED THE SAME WAY. CR D6.9\n * (CT-33) is the rule for a token's X: *\"Tokens",
+   "replace": "SOLVED THE SAME WAY. CR D6.9a\n * is the rule for a token's X (CT-33: *\"Tokens",
+   "why": "wrong-rule (token X is D6.9a) + owner quote credited to the CR"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "rather than X\"* — a\n * display-time",
+   "replace": "rather than X\"*) — a\n * display-time",
+   "why": "grammar: close the parenthesis opened above"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "which is what keeps this out of CR D6.11's failure: no sentence is",
+   "replace": "which is what keeps this clear of the failure CR D6.11 prevents: no sentence is",
+   "why": "grammar: a rule has no \"failure\""
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "its host. CR 721.1 had already\n * made the host render the donated clause, which",
+   "replace": "its host. The host already\n * renders the donated clause (CR 721.1), which",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": " * is what CR D6.11 are both about.",
+   "replace": " * is what CR D6.11 is about.",
+   "why": "grammar: \"are both\" after two rulings merged into one"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "silent too. There is also\n * the third channel I found and rejected.",
+   "replace": "silent too. There is also\n * a third channel, which I found and rejected.",
+   "why": "grammar"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "the register declared they did not exist They do,",
+   "replace": "an earlier ruling declared they did not exist. They do,",
+   "why": "grammar: lost period; it was a ruling, not \"the register\""
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": " * of CR D6.10d three hours earlier.",
+   "replace": " * of the banner fix (CR D6.10d) three hours earlier.",
+   "why": "history: rule narrated as an event"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "too verbose\"*, CR D6.11) and",
+   "replace": "too verbose\"*) and",
+   "why": "owner quote (report #118) credited to the CR"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "— see CR D6.10b for why the fallback",
+   "replace": "— see the CR D6.10b note above for why the fallback",
+   "why": "truth: the rule states the fallback, the note above gives the why"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": " * plus — when CR 712.1 has switched the layer off",
+   "replace": " * plus — when suppression (CR 712.1) has switched the layer off",
+   "why": "rule as actor"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "  // CR 709.4a layer 0: \"printed\" means",
+   "replace": "  // CR 709.4a: \"printed\" means",
+   "why": "\"layer 0\" residue (709.4a is \"before those layers\")"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "  // CR 709.4a layer 0 IS layer 1's input,",
+   "replace": "  // CR 709.4a: the copied card's stats ARE layer 1's input,",
+   "why": "\"layer 0\" residue"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "a mod can be removed, an CR 803.8d stamp lapses",
+   "replace": "a mod can be removed, an until-regroup stamp (CR 803.8d) lapses",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": " * by CR D6.11's `leadReminders` (Spell",
+   "replace": " * by `leadReminders` (CR D6.11; Spell",
+   "why": "rule owning code"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": " *   tempAttrs · unstable (CR D6.10c/#143)      the attribute row",
+   "replace": " *   tempAttrs · unstable (CR D6.10c/#143)  the attribute row",
+   "why": "readability: column alignment"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "  //. Both fields, one line:",
+   "replace": "  // Both fields, one line:",
+   "why": "grammar: \"//.\" splice"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "(it bins as itself — ruling 1), how long",
+   "replace": "(it bins as itself — CR 201.5), how long",
+   "why": "grammar: \"ruling 1\" residue of old R118"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "mods themselves (ruling 2's text half — CR 710.2a took away its Unstable\n  //     half: a fresh copy of a modded card is not Unstable).",
+   "replace": "mods themselves (CR 710.2a — and, being unmodded, a fresh copy of a\n  //     modded card is not Unstable).",
+   "why": "grammar: \"ruling 2\" residue; rule as actor"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "marker, on the same argument CR D6.10c\n  // made for {Unstable} —",
+   "replace": "marker, on the same argument as\n  // {Unstable}'s (CR D6.10c) —",
+   "why": "rule as actor"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "   * the trade CR D6.11 is about.",
+   "replace": "   * the trade CR D6.11b is about.",
+   "why": "wrong-rule: \"shortening never deletes a rule\" is D6.11b"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "player. CR D6.9 rewrites every X in the box to",
+   "replace": "player. The substitution (CR D6.9) rewrites every X in the box to",
+   "why": "rule as actor"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": "  // The bracket-ownership fix finishes that sentence.",
+   "replace": "  // The modal-bracket fix finishes that sentence.",
+   "why": "invented name for old R284 (the modal bracket ruling)"
+  },
+  {
+   "file": "client/ui/cardtext.ts",
+   "find": " * That is the whole taxonomy — CR 205.3: *\"All text",
+   "replace": " * That is the whole taxonomy (CR 205.3) — the owner: *\"All text",
+   "why": "owner quote credited to the CR"
+  },
+  {
+   "file": "client/ui/effectface.ts",
+   "find": " * an item under CR 704.6b), so the strip",
+   "replace": " * an item under CR 704.6), so the strip",
+   "why": "wrong-rule: fizzling (all targets lost) is 704.6; 704.6b is partial resolution"
+  },
+  {
+   "file": "client/ui/fakesocket.ts",
+   "find": "without knowing. CR D8.1 did that first, for Learn to\n * Play: `ui/solo.ts`",
+   "replace": "without knowing. Learn to Play (CR D8.1) did that\n * first: `ui/solo.ts`",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/flash.ts",
+   "find": " * and CR D5.4 built `ui/pace.ts` for it —",
+   "replace": " * and `ui/pace.ts` was built for it (CR D5.4) —",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/flash.ts",
+   "find": "(CR 507.5(a): outside battle",
+   "replace": "(CR 507.5: outside battle",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/ui/flash.ts",
+   "find": " * Before the CR 704.4 negation fix, negating set",
+   "replace": " * Before negation took an item off at once (CR 704.4), negating set",
+   "why": "history: rule narrated as a fix"
+  },
+  {
+   "file": "client/ui/flash.ts",
+   "find": "optional so a pre-so an older saved state",
+   "replace": "optional so an older saved state",
+   "why": "grammar: \"pre-so\" garble"
+  },
+  {
+   "file": "client/ui/flash.ts",
+   "find": "which is exactly the objection\n  // the earlier objection to flashing a deployment trigger at all.",
+   "replace": "which is exactly the objection\n  // once raised against flashing a deployment trigger at all.",
+   "why": "grammar: doubled \"objection\" splice"
+  },
+  {
+   "file": "client/ui/flash.ts",
+   "find": " * a RESOLVING row is a phantom for the opposite reason.",
+   "replace": " * A RESOLVING row is a phantom for the opposite reason.",
+   "why": "grammar: capital after the dropped R78 label"
+  },
+  {
+   "file": "client/ui/flash.ts",
+   "find": "stays beside it: a\n * pre-an older queue entry",
+   "replace": "stays beside it: an\n * older queue entry",
+   "why": "grammar: \"pre-an\" garble"
+  },
+  {
+   "file": "client/ui/flash.ts",
+   "find": " * CR D7.4 exports it. It is",
+   "replace": " * It is exported for the log-only census (CR D7.4). It is",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/formation.ts",
+   "find": "across an CR 602.5 collapse or an CR 603.5a\n * left-insert.",
+   "replace": "across a CR 602.5 collapse or a\n * left-insert (CR 603.5a).",
+   "why": "grammar: \"an CR\" twice"
+  },
+  {
+   "file": "client/ui/formation.ts",
+   "find": "— and CR 602.5 made that a hazard",
+   "replace": "— and the close-up rule (CR 602.5) makes that a hazard",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/formation.ts",
+   "find": "hole shifts left by one. CR 603.5a's left-insert shifts them",
+   "replace": "hole shifts left by one. A left-insert (CR 603.5a) shifts them",
+   "why": "grammar: rule-owned possessive"
+  },
+  {
+   "file": "client/ui/fslot.ts",
+   "find": "`referenceKey` and the (see replay-room.ts)\n * forensic stack",
+   "replace": "`referenceKey` and the replay\n * forensic stack",
+   "why": "grammar: pointer spliced into a noun phrase"
+  },
+  {
+   "file": "client/ui/hover.ts",
+   "find": "/* CR D6.15a — WHAT A REPAINT IS ALLOWED",
+   "replace": "/* WHAT A REPAINT IS ALLOWED",
+   "why": "wrong-rule: D6.15a is the game log; no CR rule states the repaint/hover rule (systemic, also main.ts/zoom.ts)"
+  },
+  {
+   "file": "client/ui/hover.ts",
+   "find": " * CR D6.17 answered the same shape of question",
+   "replace": " * The scroll rule (CR D6.17) answers the same shape of question",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/hover.ts",
+   "find": " * answer. CR D6.17's fix was to move the DECISION",
+   "replace": " * answer. The scroll fix was to move the DECISION",
+   "why": "history: rule narrated as a fix"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "{Ambush} and {Unstable}. CR D6.11 later found",
+   "replace": "{Ambush} and {Unstable}. The manual channel (CR D6.11) later found",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "AND IT IS WHAT the Reaping ruling\n * READ.\"",
+   "replace": "AND IT IS WHAT […]\n * READ.\"",
+   "why": "quote: an R-number was replaced inside a quotation; mark the cut (as B13/B17 did for the same quote)"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "edited on purpose — CR 802.16, 802.16j, 802.16f generalised the attribute off the combat\n * column onto all damage,",
+   "replace": "edited on purpose — the attribute is generalised off the combat column\n * onto all damage (CR 802.16j),",
+   "why": "history: rules as actors; 802.16f (blocking half-column) is not the generalisation"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": " * CR D6.11 answered the report for the fifteen rows",
+   "replace": " * The printed-reminder swap answered the report for the fifteen rows",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "so CR D6.11's swap had left the repository's",
+   "replace": "so that swap had left the repository's",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "— printed (CR D6.11) or from the\n   * manual (CR D6.11) — is narrower",
+   "replace": "— printed or from the\n   * manual — is narrower",
+   "why": "grammar: the same CR number three times in one phrase"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "which is wrong twice over. CR 802.16j\n  // generalised the attribute off the column onto ALL damage",
+   "replace": "which is wrong twice over. The attribute\n  // was generalised (CR 802.16j) off the column onto ALL damage",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "// (\"CR 802.12b: a Pure card ignores",
+   "replace": "// (\"[…] a Pure card ignores",
+   "why": "quote: a quotation of apply.ts had its R-number swapped; mark the cut"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "// CR D6.11: was ['was [CR 803.6, 'Manual'] CR D6.11 took the manual's sentence without\n  // asking whether a card printed one; six do, and CR D6.11's own PRINTED BEATS",
+   "replace": "// CR D6.11: this row once cited the Ambush rule and the Manual. The manual\n  // channel took the manual's sentence without asking whether a card printed\n  // one; six do, and its own PRINTED BEATS",
+   "why": "grammar: garbled splice of an old cite array"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "// CR 802.21b's diff catches any death",
+   "replace": "// the engine's kill diff (CR 802.21b) catches any death",
+   "why": "rule owning engine code"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "implemented on 2026-08-20 this entry still said",
+   "replace": "implemented on 2026-08-20; this entry still said",
+   "why": "grammar: lost punctuation"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "// ⚠ CR 803.7i / CT-166 (report #152) PUTS THAT SENTENCE BACK",
+   "replace": "// ⚠ CT-166 (report #152, CR 803.7i) PUTS THAT SENTENCE BACK",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "// was wrong. CR 803.7i says in so many words that on release \"normal TIMING still",
+   "replace": "// was wrong. The prophecy ruling (now CR 803.7i) said in so many words that on release \"normal TIMING still",
+   "why": "history: a ruling's quoted words credited to CR 803.7i, whose text differs"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "glimpse rule (CR 801.9) as corrected and off what",
+   "replace": "glimpse rule (CR 801.9) and off what",
+   "why": "grammar: doubled \"corrected\""
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "\"Glimpse\". CT-80 named/CT-80\n",
+   "replace": "\"Glimpse\". CT-80\n",
+   "why": "grammar: doubled splice"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "— CR 304.2's \"tokens are trashed\"",
+   "replace": "— the earlier ruling's \"tokens are trashed\"",
+   "why": "history: the withdrawn reading was a ruling, not CR 304.2 (which says a token is not a card)"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "the whole host list: CR 721.4a\n  // made your own SPELL TOKEN",
+   "replace": "the whole host list: CR 721.4a\n  // makes your own SPELL TOKEN",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "// Cites CR 111.15 rather than the general graft rule, which it narrows (RAQ \"Graft 101\" point\n    // 11: a grafted [cost] is mandatory); CR 722.7's multiplier rule stands in it.",
+   "replace": "// Cites CR 111.15 rather than the multiplier rule (CR 109.9j), which it narrows (RAQ \"Graft 101\"\n    // point 11: a grafted [cost] is mandatory); the multiplier rule stands in it.",
+   "why": "wrong-rule: old R334 narrowed the multiplier ruling (109.9j); 722.7 is the copy count"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "an CR 504.7 grantor in a\n  // BIN (Writhing Host), an CR 504.8a mod window",
+   "replace": "a CR 504.7 grantor in a\n  // BIN (Writhing Host), a CR 504.8a mod window",
+   "why": "grammar: \"an CR\" twice"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "// ⚠ THE UNCONDITIONAL HASTE STEP (504.5) DELETED THAT GATE",
+   "replace": "// ⚠ MAKING THE HASTE STEP UNCONDITIONAL (CR 504.5) DELETED THAT GATE",
+   "why": "grammar: bare number, rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "Added CR 109.9a, 109.9b's half, which the row omitted: the use is",
+   "replace": "Added the half the row omitted (CR 109.9a, 109.9b): the use is",
+   "why": "grammar: garbled possessive"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "which is the exact error CR 105.5 rules out (a Prismite is not wild) exists to correct: \"The engine and",
+   "replace": "the exact error the Prismite ruling (now CR 105.5) was made to correct: \"The engine and",
+   "why": "grammar: double predicate splice; the quote is that ruling's"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "a month after the rule (CR 105.5) was corrected it, and the 2026-08-26 audit audited this very row",
+   "replace": "a MONTH after that ruling corrected it, and the 2026-08-26 audit read this very row",
+   "why": "grammar: \"was corrected it\", \"audit audited\"; restores the original emphasis"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": " *   {Glimpse}   CR D6.11 — \"the glossary row",
+   "replace": " *   {Glimpse}   the manual ruling — \"the glossary row",
+   "why": "history: a ruling's quoted words credited to CR D6.11"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": " *   {Unstable}  CR D6.11 read the MANUAL,",
+   "replace": " *   {Unstable}  the same ruling read the MANUAL,",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": " *   {Ambush}    CR D6.11 took the manual's sentence. Six cards print a shorter\n *               one, and CR D6.11's own PRINTED BEATS",
+   "replace": " *   {Ambush}    it took the manual's sentence. Six cards print a shorter\n *               one, and its own PRINTED BEATS",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "the same split CR D6.11 made for the manual,",
+   "replace": "the same split the manual channel made,",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "{Shard} keeps CR D6.11 '",
+   "replace": "{Shard} keeps the '",
+   "why": "grammar: \"keeps CR D6.11 manual sentence\""
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "{Battle} keeps CR D6.11 manual sentence.",
+   "replace": "{Battle} keeps the manual sentence.",
+   "why": "grammar"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": " * rule — it is CR D6.11 (\"shortening what",
+   "replace": " * rule — it is the reminder ruling's principle, now CR D6.11b (\"shortening what",
+   "why": "history: a ruling's quoted words credited to CR D6.11 (D6.11b words it differently)"
+  },
+  {
+   "file": "client/ui/glossary.ts",
+   "find": "in the convention CR D6.11 taught the scan.",
+   "replace": "in the second convention the scan now reads (CR D6.11).",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "— and CR 724.3 are explicit",
+   "replace": "— and CR 724.3 is explicit",
+   "why": "grammar: plural verb left from two rulings"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "an augment mod, or an CR 710.7 face projected onto the\n * unit right now.",
+   "replace": "an augment mod, or a CR 710.7 face projected onto the\n * unit right now.",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": " * an CR 710.7 face projected onto the unit) */",
+   "replace": " * a CR 710.7 face projected onto the unit) */",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "notice and (since CR 111.7) strictly before",
+   "replace": "notice and (CR 111.7) strictly before",
+   "why": "history: a rule used as a date marker"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "(widened by an CR 803.2b, 504.7 haste grant)",
+   "replace": "(widened by a CR 803.2b or 504.7 haste grant)",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "(or the haste step under an CR 504.8a grant).",
+   "replace": "(or the haste step under a CR 504.8a grant).",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": " * the step is UNCONDITIONAL (504.5) and deleted `canHaste`, because a step",
+   "replace": " * Making the step UNCONDITIONAL (CR 504.5) deleted `canHaste`, because a step",
+   "why": "grammar: broken sentence (lost subject)"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "view redacts. That ruling also",
+   "replace": "view redacts. The ruling that did so also",
+   "why": "grammar: \"That ruling\" lost its antecedent"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "duplicate the unconditional haste step deleted and it would be wrong",
+   "replace": "duplicate the unconditional haste step deleted, and it would be wrong",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "\"The cost was right — the then-current prophecy ruling's banner is plain mana",
+   "replace": "\"The cost was right — […] prophecy banner is plain mana",
+   "why": "quote: restore the quoted note verbatim, marking the cut R-number"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "been refused. The register said otherwise because",
+   "replace": "been refused. That ruling said otherwise because",
+   "why": "history: it was a ruling, not \"the register\""
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "itself wrong (corrected 2026-09-20) The click fix",
+   "replace": "itself wrong (corrected 2026-09-20). The click fix",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "every card menu as well the owner has since ruled",
+   "replace": "every card menu as well; the owner has since ruled",
+   "why": "grammar: lost semicolon"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "(which is what bins, ruling 1) and the card it",
+   "replace": "(which is what bins) and the card it",
+   "why": "grammar: \"ruling 1\" residue of old R118"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "bounded budgets and CR 705.3a's \"a mandatory target",
+   "replace": "bounded budgets and the rule (CR 705.3a) that \"a mandatory target",
+   "why": "quote credited to CR 705.3a, whose text differs (it was old R64's words)"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": " * CR D6.6c built the viewer to answer one question",
+   "replace": " * The viewer (CR D6.6c) was built to answer one question",
+   "why": "history: rule as actor"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "  *  'event' =: the amount",
+   "replace": "  *  'event' = the amount",
+   "why": "grammar: \"=:\" splice"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": " (an CR 602.6 formation-slot index,",
+   "replace": " (a CR 602.6 formation-slot index,",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "// ──: what the other seat is doing",
+   "replace": "// ── what the other seat is doing",
+   "why": "grammar: \"──:\" splice"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "{Modular} mods, an CR 702.4 bracketed cost,",
+   "replace": "{Modular} mods, a CR 702.4 bracketed cost,",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "and which CR D6.4 notes this client could derive unaided anyway.",
+   "replace": "and which this client could derive unaided anyway.",
+   "why": "truth: D6.4 notes nothing of the kind (it was the old ruling's remark)"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": " *   · a game saved before the field existed, which simply lacks it\n",
+   "replace": " *   · a game saved before the field existed, which simply lacks it;\n",
+   "why": "grammar: lost semicolon"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "of BL-25/CR D7.2's `counterStepper` (below)",
+   "replace": "of BL-25's `counterStepper` (CR D7.2, below)",
+   "why": "rule owning code"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "and CR 206.6b's \"all counters count as counters\" would have",
+   "replace": "and the rule that \"all counters count as counters\" (CR 206.6b) would have",
+   "why": "quote credited to CR 206.6b, whose text differs"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "The MECHANIC is not touched. CR 608.6a, D1.2 made the combat split elective on \"never",
+   "replace": "The MECHANIC is not touched. The combat split was made elective (CR 608.6a) on \"never",
+   "why": "history: rules as actors"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "under {Unaware} (CR 608.6e), doubled\n * receipt under {Vulnerable} (CR 802.11b), the {Deadly} floor of 1 (CR 608.6e), damage",
+   "replace": "under {Unaware}, doubled\n * receipt under {Vulnerable}, the {Deadly} floor of 1 (all CR 608.6e), damage",
+   "why": "grammar: the same CR number twice in one phrase; 608.6e states all three"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "since\n * the regroup confirm (D2.6) shipped",
+   "replace": "since\n * the regroup confirm (CR D2.6) shipped",
+   "why": "grammar: bare D-number"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": "not opened). The client announces the loss instead of preventing it (D2.6a) it, and the announcement",
+   "replace": "not opened). The engine announces the loss instead of preventing it (CR D2.6a), and the announcement",
+   "why": "grammar: \"(D2.6a) it,\" splice; bare number"
+  },
+  {
+   "file": "client/ui/inspect.ts",
+   "find": " * draws. CR D2.6a deliberately passes neither",
+   "replace": " * draws. The regroup erase (CR D2.6a) deliberately passes neither",
+   "why": "rule owning engine code"
+  }
+ ]
+}

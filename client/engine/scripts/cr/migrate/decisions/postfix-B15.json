@@ -1,0 +1,412 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "Writhing Host is LIVE as of CR 504.7: a bin-anchored haste grant, paid for by\n * erasing the grantor out of the bin.",
+   "replace": "Writhing Host is LIVE: a bin-anchored haste grant (CR 504.7), paid for by\n * erasing the grantor out of the bin.",
+   "why": "history: 'LIVE as of CR 504.7' narrates a rule as the change that made it live"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "(CT-246; under CR 801.2h the two do differ). removes.",
+   "replace": "(CT-246; under CR 801.2h the two do differ).",
+   "why": "grammar: doubled trailing 'removes.'"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "(engine, CT-246 — CR 801.2h says it does not) — it used to not)'",
+   "replace": "(engine, CT-246; CR 801.2h says it does not — it used to not)'",
+   "why": "grammar: unbalanced brackets"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "Before the engine\\'s Unstable-trash route (CT-246) this watcher did not fire on a modded-unit death — CR 801.2h says it should not this watcher silently under-triggered '",
+   "replace": "Before the engine\\'s Unstable-trash route (CT-246; CR 801.2h says it should not fire) this watcher silently under-triggered '",
+   "why": "grammar: garbled splice repeated 'this watcher'"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "  // // engine (CT-246; CR 410.4d differs): it passed THROUGH",
+   "replace": "  // engine (CT-246; CR 410.4d differs): it passed THROUGH",
+   "why": "grammar: doubled comment marker"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "bin → trashed → swept → swept'",
+   "replace": "bin → trashed → swept'",
+   "why": "grammar: doubled '→ swept'"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "2026-08-21 amendment, since reversed) so",
+   "replace": "2026-08-21 amendment, since reversed), so",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "so it was not trashed (1 under CR 304.2)'",
+   "replace": "so it was not trashed (1 under the withdrawn token ruling)'",
+   "why": "wrong-rule: '1 under R133' meant under the withdrawn tokens-are-trashed ruling; CR 304.2 says a token is not a card (the opposite)"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "  // for CR 601.2 to let it hear the event",
+   "replace": "  // for CR 601.1d to let it hear the event",
+   "why": "wrong-rule: R12 listener region scope is CR 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "// ⚠ The mod-erased-with-host rule inverted this test and the\n",
+   "replace": "// ⚠ The owner's 2026-08-29 ruling on report #129 (now CR 720.8a) INVERTED THIS TEST, and the\n",
+   "why": "history: rule narrated as the actor that inverted the test (it was a ruling); lost comma"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "  // // and the BODY is untouched by all of this",
+   "replace": "  // and the BODY is untouched by all of this",
+   "why": "grammar: doubled comment marker"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "// CR 713.5, RULED by Bena on 2026-08-25 — the question the first fix left open\n",
+   "replace": "// The token ruling (now CR 410.5, 713.5), RULED by Bena on 2026-08-25 — the question the first fix left open:\n",
+   "why": "history: a rule cannot be 'RULED by Bena'; lost colon before the quotation"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "// CR 801.2d (owner, 2026-09-28): the middle step is gone",
+   "replace": "// The owner's 2026-09-28 ruling (now CR 801.2d): the middle step is gone",
+   "why": "history: rule credited as an owner ruling"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "rides along (CR 410.4d(2)), on a token host",
+   "replace": "rides along (the second half above, CR 410.4d), on a token host",
+   "why": "grammar: leftover sub-item label '(2)' — it was the ruling's half (2), described above"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "// this round did not touch\n",
+   "replace": "// the exchange fix did not touch.\n",
+   "why": "grammar: lost period; 'this round' was R152"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "// The exchange therefore follows destroy on both halves which keeps",
+   "replace": "// The exchange fix therefore follows `destroy` on both halves, which keeps",
+   "why": "grammar: lost backticks and comma"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "'a real 3/3 body each (CR 304.4)'",
+   "replace": "'a real 3/3 body each'",
+   "why": "wrong-rule: CR 304.4 (created units are tokens) says nothing of a 3/3 body; R71 (Wraith stats) has no CR rule — dropped as in the sibling assertion"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "CR 405.6 make copies in a bin",
+   "replace": "CR 405.6 makes copies in a bin",
+   "why": "grammar: subject-verb agreement"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "// CR D7.1a (Bena, 2026-08-22, having checked the physical card). The printed line",
+   "replace": "// Bena ruled on 2026-08-22 (now CR D7.1a), having checked the physical card. The printed line",
+   "why": "history: a CR rule credited to Bena"
+  },
+  {
+   "file": "client/engine/test/42-dark-b.test.ts",
+   "find": "mid-decision (CR D6.3)', () => {",
+   "replace": "mid-decision', () => {",
+   "why": "wrong-rule: D6.3 is the 'resolving' marker, not save/restore of a pending decision; no binding references this title"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": " * the retired-name Wight (Primordial Coalescence)",
+   "replace": " * the Wight/Wraith token (Primordial Coalescence)",
+   "why": "grammar: invented 'retired-name Wight' for 'the R47 Wight'; the sibling header calls it the Wight/Wraith token"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "// // The engine's Unstable-trash route (CT-246; CR 801.2h says such a death is not a trash), FAMILY A",
+   "replace": "// The engine's Unstable-trash route (CT-246; CR 801.2h says such a death is not a trash), FAMILY A",
+   "why": "grammar: doubled comment marker"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "(it is a CAST COST — CR 111.8a — settled",
+   "replace": "(it is a CAST COST in the engine — F-U04-5; CR 111.8 makes it part of the effect — settled",
+   "why": "wrong-rule: the Rector's triggered 'sacrifice me. If you do' is CR 111.8 (part of the effect); 111.8a is the optional sacrifice. The engine's cast-cost reading is F-U04-5"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "no mechanism for and CR 111.8a exists to avoid",
+   "replace": "no mechanism for and its cast-cost reading (F-U04-5) exists to avoid",
+   "why": "wrong-rule: CR 111.8a does not exist to avoid refunds; the owner's cast-cost ruling the engine follows does (F-U04-5)"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "— CR 801.2h never bins it, CT-246)'s {Unstable} death);",
+   "replace": "— CR 801.2h never bins it, CT-246);",
+   "why": "grammar: garbled splice repeated \"'s {Unstable} death\""
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "// The bug CR 405.6 fixes is that",
+   "replace": "// The bug fixed here is that",
+   "why": "history: rule narrated as the fix"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "is exactly why binNth is stamped",
+   "replace": "is exactly why `binNth` is stamped",
+   "why": "grammar: lost code backticks"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "'the Rector triggered and paid its sacrifice (a cast cost, CR 111.8a)'",
+   "replace": "'the Rector triggered and paid its sacrifice (a cast cost in the engine; CR 111.8 differs, F-U04-5)'",
+   "why": "wrong-rule: triggered 'sacrifice me. If you do' is CR 111.8, not a cost; the engine differs (F-U04-5)"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "// Before the CR 704.4 negation fix it reached",
+   "replace": "// Before the negation fix (CR 704.4) it reached",
+   "why": "history: rule narrated as a fix"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "— where Grox is (CR 601.2)",
+   "replace": "— where Grox is (CR 601.1a)",
+   "why": "wrong-rule: R12 region scope (601.2 is one region per unit); 601.1a regions are isolated"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "  // CR 111.7 UN-PARKED: \"Erase two cards in your bin:\"",
+   "replace": "  // UN-PARKED (CR 111.7): \"Erase two cards in your bin:\"",
+   "why": "grammar: 'CR 111.7 UN-PARKED' reads as the rule un-parking it"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "it since stat layer 5 (802.8a) shipped (`src/engine.ts`,",
+   "replace": "it since stat layer 5 shipped (CR 802.8a; `src/engine.ts`,",
+   "why": "grammar: bare number, awkward pointer"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "  // is the reading CR 802.8a rejects in so many words — \"it is a mathematical",
+   "replace": "  // is the reading the inversion ruling (now CR 802.8a) rejects in so many words — \"it is a mathematical",
+   "why": "quote: the quoted words are the old ruling's, not CR 802.8a's text"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "// // ENGINE HAZARD 2 (CT-246), 2, the same shape",
+   "replace": "// ENGINE HAZARD 2 (CT-246), the same shape",
+   "why": "grammar: doubled comment marker and stray '2,'"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "// and CR 109.9b make the guard refund the reservation: \"a [once] is spent only",
+   "replace": "// and the [once] rulings (now CR 109.9b) make the guard refund the reservation: \"a [once] is spent only",
+   "why": "quote: the quoted sentence is the old rulings' (R108/R113), not CR 109.9b's text"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "// Blightwalker's own CR 801.2 trigger recalls Rotling",
+   "replace": "// Blightwalker's own trash trigger (CR 801.2) recalls Rotling",
+   "why": "grammar: rule used as a possessive ('own CR 801.2 trigger')"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "  // CR 108.3a: \"the back is NOT a token\". The entity",
+   "replace": "  // The owner's ruling (now CR 108.3a): \"the back is NOT a token\". The entity",
+   "why": "quote: the owner's words are not CR 108.3a's text"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "  // Stat layer 5 (802.8a) is what made",
+   "replace": "  // Stat layer 5 (CR 802.8a) is what made",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "  // region scoping (CR 601.2) comes free from E.staticsFor",
+   "replace": "  // region scoping (CR 601.1d) comes free from E.staticsFor",
+   "why": "wrong-rule: a static's region scope is CR 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "was once open (802.8c now settles it)\n",
+   "replace": "was once open (CR 802.8c now settles it).\n",
+   "why": "grammar: bare number, lost period"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "ownership test rather than CR 601.2\n",
+   "replace": "ownership test rather than CR 601.1d\n",
+   "why": "wrong-rule: R12 static region scope is CR 601.1d"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "candidate list (CR 601.2) would offer it",
+   "replace": "candidate list (CR 601.1b) would offer it",
+   "why": "wrong-rule: region-scoped targeting is CR 601.1b (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/43-dark-c.test.ts",
+   "find": "  // CR 724.5 (owner, 2026-08-23): a modded card",
+   "replace": "  // The owner's 2026-08-23 ruling (now CR 724.5): a modded card",
+   "why": "history: rule credited as an owner ruling"
+  },
+  {
+   "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+   "find": "Apex Prime is COMPLETE as of CR 710.1:",
+   "replace": "Apex Prime is COMPLETE (CR 710.1):",
+   "why": "history: 'COMPLETE as of CR 710.1' narrates a rule as the change"
+  },
+  {
+   "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+   "find": "// CR 702.3c: the target is declared at cast",
+   "replace": "// CR 110.1a: the target is declared at cast",
+   "why": "wrong-rule: Apex Prime's is a TRIGGERED ability; 702.3c is a step of playing a card — 110.1a covers a trigger's targets"
+  },
+  {
+   "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+   "find": "{ unit: targetId });                                // CR 702.3c: declared at cast",
+   "replace": "{ unit: targetId });                                // CR 110.1a: declared at cast",
+   "why": "wrong-rule: Apex Prime's trigger, not a card play (702.3c); 110.1a"
+  },
+  {
+   "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+   "find": "the PHYSICAL card is untouched (ruling 1)', () => {",
+   "replace": "the PHYSICAL card is untouched', () => {",
+   "why": "grammar: leftover sub-item label '(ruling 1)' of the retired R118; title unreferenced"
+  },
+  {
+   "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+   "find": "from the COPIED base (CR 709.4a over layer 0)', () => {",
+   "replace": "from the COPIED base (CR 802.8a over layer 0)', () => {",
+   "why": "wrong-rule: same CR number twice in the title; the parenthetical was R93 (Inverted) = CR 802.8a; title unreferenced"
+  },
+  {
+   "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+   "find": "// ⚠ THE REGION RULE CHANGED THIS AND THE CHANGE IS THE RULING, NOT A REGRESSION.",
+   "replace": "// ⚠ THE OWNER'S 2026-08-29 REGION RULING (NOW CR 101.6) CHANGED THIS, AND THE CHANGE IS THE RULING, NOT A REGRESSION.",
+   "why": "history: rule as actor where a ruling changed the test; lost comma"
+  },
+  {
+   "file": "client/engine/test/444-no-self-hearing-play.test.ts",
+   "find": "announced on its own 'spawned'\n *, so a card",
+   "replace": "announced on its own 'spawned',\n *     so a card",
+   "why": "grammar: the dropped '(R263)' left ' *, so' dangling at the start of a line"
+  },
+  {
+   "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+   "find": "// CR 112.3: no longer a trigger approximation",
+   "replace": "// Arbiter of Vitality (CR 112.3): no longer a trigger approximation",
+   "why": "grammar: 'CR 112.3: no longer a trigger approximation' reads as the rule being the approximation"
+  },
+  {
+   "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+   "find": "ruled the residue (CR 111.10k: the charge SURVIVES",
+   "replace": "ruled the residue (now CR 111.10k: the charge SURVIVES",
+   "why": "quote: \"you paid for it\" is the owner's, not CR 111.10k's text — mark the rule as the ruling's later home"
+  },
+  {
+   "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+   "find": "has to be IN the battle region (CR 601.2, 601.4d), i.e.",
+   "replace": "has to be IN the battle region (CR 601.1b), i.e.",
+   "why": "wrong-rule: R12 region scope of 'a unit' is CR 601.1b; 601.2 is one region per unit, 601.4d is 'each opponent/player'"
+  },
+  {
+   "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+   "find": "the resolution would (CR 601.2, 601.4d)'",
+   "replace": "the resolution would (CR 601.1b)'",
+   "why": "wrong-rule: as above"
+  },
+  {
+   "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+   "find": "— CR 601.2 region scope is not what exempts it here",
+   "replace": "— CR 111.10 region scope is not what exempts it here",
+   "why": "wrong-rule: a cost modifier's region scope is CR 111.10 (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+   "find": "so they can pay (CR 601.2)",
+   "replace": "so they can pay (CR 601.1b)",
+   "why": "wrong-rule: a sacrifice reaches only units in its region — CR 601.1b"
+  },
+  {
+   "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+   "find": "  // taxing\" — CR 601.2, and the whole reason",
+   "replace": "  // taxing\" — CR 111.10, and the whole reason",
+   "why": "wrong-rule: a cost modifier works only in its source's region — CR 111.10"
+  },
+  {
+   "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+   "find": "  // stand — CR 601.2, the same reason",
+   "replace": "  // stand — CR 111.10, the same reason",
+   "why": "wrong-rule: as above (both carriers impose costs)"
+  },
+  {
+   "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+   "find": "Trench Stalker is LIVE, whole, whole: the [Discard two",
+   "replace": "Trench Stalker is LIVE, whole: the [Discard two",
+   "why": "grammar: doubled 'whole'"
+  },
+  {
+   "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+   "find": "// CR 601.2: an [Augment] trigger only hears events in its own region.",
+   "replace": "// CR 601.1d: an [Augment] trigger only hears events in its own region.",
+   "why": "wrong-rule: R12 trigger region scope is CR 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+   "find": "  // CR 111.7 UN-PARKED: \"Discard X cards\"",
+   "replace": "  // UN-PARKED (CR 111.7): \"Discard X cards\"",
+   "why": "grammar: 'CR 111.7 UN-PARKED' reads as the rule un-parking it"
+  },
+  {
+   "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+   "find": "// REVERSED by the owner's answer (CR 109.9c), owner 2026-08-25: *\"You can",
+   "replace": "// REVERSED by the owner's answer of 2026-08-25 (now CR 109.9c): *\"You can",
+   "why": "grammar: doubled 'owner'; quote credited to the owner, rule marked as its later home"
+  },
+  {
+   "file": "client/engine/test/47-costs-events.test.ts",
+   "find": "(fired AFTER CR 507.4's rot damage).",
+   "replace": "(fired AFTER the rot damage, CR 112.13c).",
+   "why": "grammar: the same CR number twice in one bullet, and a rule used as a possessive; R38's rot damage is CR 112.13c"
+  },
+  {
+   "file": "client/engine/test/47-costs-events.test.ts",
+   "find": "// ══════════════════════: the lifeGained ledger",
+   "replace": "// ══════════════════════ the lifeGained ledger",
+   "why": "grammar: colon residue of the dropped 'R49:'"
+  },
+  {
+   "file": "client/engine/test/47-costs-events.test.ts",
+   "find": "bracketed CAST costs (CR 702.4) ═",
+   "replace": "bracketed CAST costs ═",
+   "why": "grammar: the same CR number twice in one heading"
+  },
+  {
+   "file": "client/engine/test/47-costs-events.test.ts",
+   "find": "test('CR 112.14c: a [Gain N debt] cast cost is taken at cast (CR 112.14c)', () => {",
+   "replace": "test('CR 112.14c: a [Gain N debt] cast cost is taken at cast', () => {",
+   "why": "grammar: the same CR number twice in one title; title unreferenced"
+  },
+  {
+   "file": "client/engine/test/47-costs-events.test.ts",
+   "find": "test('CR 400.5: the new costs and events replay deterministically', () => {",
+   "replace": "test('the new costs and events replay deterministically', () => {",
+   "why": "wrong-rule: the test replays the wave's costs AND events (was R49/R50/R51); CR 400.5 is only the bin/cache-listener part; title unreferenced"
+  },
+  {
+   "file": "client/engine/test/48-playtest-hotfix.test.ts",
+   "find": "// CR 106.8a, 106.9's exchange is the prismite's whole point and a Shard must not have it",
+   "replace": "// The exchange (CR 106.8a) is the prismite's whole point, and a Shard must not have it (CR 106.9)",
+   "why": "grammar: garbled possessive of a two-rule citation"
+  }
+ ]
+}

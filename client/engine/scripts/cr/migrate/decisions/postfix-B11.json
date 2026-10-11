@@ -1,0 +1,610 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/test/150-registration-order.test.ts",
+   "find": "The doubling fix factored doubleStats out of",
+   "replace": "The doubling fix factored `doubleStats` out of",
+   "why": "grammar: the migration dropped the code backticks around `doubleStats`"
+  },
+  {
+   "file": "client/engine/test/150-registration-order.test.ts",
+   "find": "// CR D8.1: Training Construct appended",
+   "replace": "// Training Construct (CR D8.1b) appended",
+   "why": "wrong-rule/pointer: the rule did not append anything; D8.1b is the Training Construct rule"
+  },
+  {
+   "file": "client/engine/test/151-copy-and-moved-mods.test.ts",
+   "find": "*    The two (Origon, Hexbane Shiitake).",
+   "replace": "*    the earlier two (Origon, Hexbane Shiitake).",
+   "why": "grammar: capitalised 'The' mid-sentence after 'after'"
+  },
+  {
+   "file": "client/engine/test/152-hand-entry.test.ts",
+   "find": "removal is NOT scaled by CR 112.15's amount layer (owner ruling).",
+   "replace": "removal is NOT scaled by the amount layer (owner ruling; CR 112.15).",
+   "why": "truth: CR 112.15 is the no-scaling rule, not 'an amount layer'"
+  },
+  {
+   "file": "client/engine/test/152-hand-entry.test.ts",
+   "find": "gain/lose primitives. CR 112.15 gave them a primitive,",
+   "replace": "gain/lose primitives. The hand-entry round gave them a primitive,",
+   "why": "history: a rule narrated as the change that added the primitive"
+  },
+  {
+   "file": "client/engine/test/153-typecheck-reach.test.ts",
+   "find": "which is the failure (see CLAUDE.md § The gates) — THE REACH",
+   "replace": "which is the failure CARD-TODO #59/#60 found — THE REACH",
+   "why": "grammar: awkward pointer in place of the possessive"
+  },
+  {
+   "file": "client/engine/test/153-typecheck-reach.test.ts",
+   "find": "+ 'the retired ruling register and change this list",
+   "replace": "+ 'the header of this file and change this list",
+   "why": "truth: you cannot make the case in a retired register; process reasoning now lives in the test header"
+  },
+  {
+   "file": "client/engine/test/157-blocked-stays-blocked.test.ts",
+   "find": "recently: CR 711.3 pinned Download's mid-battle steal,",
+   "replace": "recently: Download's mid-battle steal was pinned (CR 711.3),",
+   "why": "history: rule narrated as an actor"
+  },
+  {
+   "file": "client/engine/test/157-blocked-stays-blocked.test.ts",
+   "find": "(the donated-despawn bug was the same shape one verb over)\n",
+   "replace": "(the donated-despawn bug was the same shape one verb over).\n",
+   "why": "grammar: lost closing period"
+  },
+  {
+   "file": "client/engine/test/157-blocked-stays-blocked.test.ts",
+   "find": "actually asked about. CR 711.3 pinned the other half",
+   "replace": "actually asked about. The steal fix (CR 711.3) pinned the other half",
+   "why": "history: rule narrated as an actor"
+  },
+  {
+   "file": "client/engine/test/158-silent-region-branches.test.ts",
+   "find": " * CR 601.4d scopes an effect to its region.",
+   "replace": " * CR 101.6 scopes an effect to its region.",
+   "why": "wrong-rule: scoping every effect to its region is CR 101.6; 601.4d is the 'each opponent' reading"
+  },
+  {
+   "file": "client/engine/test/158-silent-region-branches.test.ts",
+   "find": "The deterministic drive (see 65-effect-conformance)",
+   "replace": "The later deterministic drive",
+   "why": "grammar: pointer duplicates the `65-effect-conformance` named on the next line"
+  },
+  {
+   "file": "client/engine/test/158-silent-region-branches.test.ts",
+   "find": "// ── 14. CR 601.4d's THREE,",
+   "replace": "// ── 14. THE REGION-SCOPING THREE,",
+   "why": "history: the three cards belong to a ruling, not to a rule"
+  },
+  {
+   "file": "client/engine/test/158-silent-region-branches.test.ts",
+   "find": "// CR 601.4d (owner, 2026-08-28): \"Only players",
+   "replace": "// The owner, 2026-08-28 (now CR 101.6, 601.4d): \"Only players",
+   "why": "quote attribution: an owner quotation presented as the CR rule's text"
+  },
+  {
+   "file": "client/engine/test/16-earth-a.test.ts",
+   "find": "like a negate can. CR 601.2 region",
+   "replace": "like a negate can. CR 111.10 region",
+   "why": "wrong-rule: R12->601.2; a cost modifier works only in its source's region is CR 111.10"
+  },
+  {
+   "file": "client/engine/test/16-earth-a.test.ts",
+   "find": "aimed at Graxxlid. CR 110.3a, 705.3a's\n * `restrict` is what",
+   "replace": "aimed at Graxxlid. The\n * `restrict` hook (CR 110.3a, 705.3a) is what",
+   "why": "grammar: a code hook given as a CR rule's possession"
+  },
+  {
+   "file": "client/engine/test/160-simultaneous-trigger-beats.test.ts",
+   "find": "── Holding combat-damage triggers to after combat took this file's fixture AND LEFT ITS RULE",
+   "replace": "── THE AFTER-COMBAT HOLD TOOK THIS FILE'S FIXTURE AND LEFT ITS RULE",
+   "why": "grammar: half-lowercased heading"
+  },
+  {
+   "file": "client/engine/test/160-simultaneous-trigger-beats.test.ts",
+   "find": " * CR 608.9b (owner, 2026-08-30) moved every",
+   "replace": " * The owner's 2026-08-30 ruling (now CR 608.9b) moved every",
+   "why": "history: rule narrated as the change, with the owner's date"
+  },
+  {
+   "file": "client/engine/test/160-simultaneous-trigger-beats.test.ts",
+   "find": "was already out before combat-damage triggers were held to after combat: CR 706.3c(a) routes",
+   "replace": "was already out before the after-combat hold: CR 706.3c routes",
+   "why": "grammar: leftover sub-item label '(a)' and overlong rewording"
+  },
+  {
+   "file": "client/engine/test/160-simultaneous-trigger-beats.test.ts",
+   "find": "(holding combat-damage triggers to after combat took the other two');",
+   "replace": "(the after-combat hold took the other two)');",
+   "why": "grammar: lost closing parenthesis"
+  },
+  {
+   "file": "client/engine/test/160-simultaneous-trigger-beats.test.ts",
+   "find": "queued in this batch (CR D6.7 is '",
+   "replace": "queued in this batch (the grouping uses '",
+   "why": "truth: a rule is not 'positive evidence only'; the grouping acts on positive evidence"
+  },
+  {
+   "file": "client/engine/test/160-simultaneous-trigger-beats.test.ts",
+   "find": "it is why CR D6.7 never has to",
+   "replace": "it is why the grouping (CR D6.7) never has to",
+   "why": "history: rule narrated as an actor"
+  },
+  {
+   "file": "client/engine/test/162-item-identity-and-truthful-events.test.ts",
+   "find": " * `spellPlayed` has carried `item`, the played item's id, since for some time, and Earthbound Replicator was converted first then; these are the other two.",
+   "replace": " * `spellPlayed` has carried `item`, the played item's id, since Earthbound\n * Replicator was converted (151-copy-and-moved-mods); these are the other two.",
+   "why": "grammar: garbled 'since for some time ... converted first then'"
+  },
+  {
+   "file": "client/engine/test/162-item-identity-and-truthful-events.test.ts",
+   "find": "marks an CR 710.8 copy",
+   "replace": "marks a CR 710.8 copy",
+   "why": "grammar: 'an CR'"
+  },
+  {
+   "file": "client/engine/test/162-item-identity-and-truthful-events.test.ts",
+   "find": "test('Origon: an CR 706.13 copy on top",
+   "replace": "test('Origon: a CR 710.8 copy on top",
+   "why": "grammar: 'an CR'; a copy as a stack item is CR 710.8 (title unreferenced)"
+  },
+  {
+   "file": "client/engine/test/162-item-identity-and-truthful-events.test.ts",
+   "find": "test('Hexbane Shiitake: an CR 706.13 copy on top",
+   "replace": "test('Hexbane Shiitake: a CR 710.8 copy on top",
+   "why": "grammar: 'an CR'; a copy as a stack item is CR 710.8 (title unreferenced)"
+  },
+  {
+   "file": "client/engine/test/162-item-identity-and-truthful-events.test.ts",
+   "find": "real('info', 'CR 706.13 test: an unrelated line, appended after the despawn')",
+   "replace": "real('info', 'decoy: an unrelated line, appended after the despawn')",
+   "why": "wrong-rule: a decoy log line labelled with an unrelated rule (paired with the includes() below)"
+  },
+  {
+   "file": "client/engine/test/162-item-identity-and-truthful-events.test.ts",
+   "find": "l.includes('CR 706.13 test: an unrelated line')",
+   "replace": "l.includes('decoy: an unrelated line')",
+   "why": "wrong-rule: paired with the decoy line above; both strings change together"
+  },
+  {
+   "file": "client/engine/test/164-sweep-sight.test.ts",
+   "find": "90-coverage-census's \"R148 stays solved\" `",
+   "replace": "90-coverage-census's \"stays solved\" `",
+   "why": "quote: names 90's test title, renamed to 'stays solved: …'; a bare R-number survived inside it"
+  },
+  {
+   "file": "client/engine/test/166-face-damage-attribution.test.ts",
+   "find": "a unit that, by CR 608.5a, \"does no damage\".",
+   "replace": "a unit that, by the owner's reading (CR 608.5a), \"does no damage\".",
+   "why": "quote attribution: the quoted words are the owner's, not CR 608.5a's ('deals no damage')"
+  },
+  {
+   "file": "client/engine/test/166-face-damage-attribution.test.ts",
+   "find": " * nothing is not one. CR 608.5a is the power reading:",
+   "replace": " * nothing is not one. The owner's power reading (2026-08-25; now CR 608.5a):",
+   "why": "quote attribution: the quotation that follows is the owner's, not the rule's text"
+  },
+  {
+   "file": "client/engine/test/166-face-damage-attribution.test.ts",
+   "find": "'but only the hitter DEALT damage: CR 608.5a, \"0 power units do no damage\"'",
+   "replace": "'but only the hitter DEALT damage: the owner, \"0 power units do no damage\" (CR 608.5a)'",
+   "why": "quote attribution: owner quotation presented as CR 608.5a's words"
+  },
+  {
+   "file": "client/engine/test/166-face-damage-attribution.test.ts",
+   "find": "which is CR 112.11's\n * shield:",
+   "replace": "which is a\n * prevention shield (CR 112.11):",
+   "why": "grammar: a shield is not a rule's possession"
+  },
+  {
+   "file": "client/engine/test/166-face-damage-attribution.test.ts",
+   "find": "IN the battle region (CR 601.2) and",
+   "replace": "IN the battle region (CR 601.1d) and",
+   "why": "wrong-rule: R12->601.2; a trigger hears only events in its own region is CR 601.1d"
+  },
+  {
+   "file": "client/engine/test/167-variable-ability-costs.test.ts",
+   "find": "with CR 111.14's own\n * rule one scope up",
+   "replace": "with the all-or-nothing rule of\n * CR 111.14 one scope up",
+   "why": "grammar: awkward 'CR 111.14's own rule'"
+  },
+  {
+   "file": "client/engine/test/167-variable-ability-costs.test.ts",
+   "find": "answer. Before activation costs were paid at activation (CR 111.7), they",
+   "replace": "answer. Before the activation-cost fix (CR 111.7), they",
+   "why": "grammar: tautology 'before activation costs were paid at activation'"
+  },
+  {
+   "file": "client/engine/test/167-variable-ability-costs.test.ts",
+   "find": "you activated it and whiffed A COST cannot whiff.",
+   "replace": "you activated it and whiffed. A COST cannot whiff.",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/167-variable-ability-costs.test.ts",
+   "find": "'playable until end of turn (CR 801.9c)'",
+   "replace": "'playable until end of turn (CR 801.9e)'",
+   "why": "wrong-rule: 801.9c is 'X separate glimpses'; the until-end-of-turn permission is 801.9e"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "and the one the spell-copy rule (710.8) already\n * used for a spell COPY:",
+   "replace": "and the one a spell COPY\n * already followed (CR 710.8):",
+   "why": "grammar/history: rule as actor, bare number without CR"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": " * carries an CR D6.3 whole-`GameState` snapshot",
+   "replace": " * carries a whole-`GameState` rollback snapshot",
+   "why": "wrong-rule: D6.3 is not the resolve-rollback snapshot (systemic); 'an CR'"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "so no CR D6.3 snapshot can rewind",
+   "replace": "so no rollback snapshot can rewind",
+   "why": "wrong-rule: D6.3 is not the rollback snapshot (systemic)"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "the stack. The whole point — nothing may be NOWHERE,",
+   "replace": "the stack. The erased pile's whole point (CR 407.1) — nothing may be NOWHERE,",
+   "why": "grammar: dangling 'The whole point' after the R-number was cut"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "the exact shape the CR D6.3 hazard took",
+   "replace": "the exact shape the resolve-snapshot hazard took",
+   "why": "wrong-rule: D6.3 is not the rollback snapshot (systemic)"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": " * CR 700.1 (owner, 2026-08-24): *\"ANYTHING",
+   "replace": " * The owner, 2026-08-24 (now CR 700.1): *\"ANYTHING",
+   "why": "quote attribution: owner quotation presented as the CR rule"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "still not a trash — CR 405.4a(a), unmoved",
+   "replace": "still not a trash — CR 405.4a, unmoved",
+   "why": "grammar: leftover sub-item label '(a)'"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "⚠⚠ the mid-resolution stack fix -> TWO FIXES THE SAME DAY, AND THE CLAIM SURVIVED THE MECHANISM",
+   "replace": "⚠⚠ TWO FIXES THE SAME DAY, AND THE CLAIM SURVIVED THE MECHANISM.",
+   "why": "grammar: garbled heading and lost period"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": " * the mid-resolution stack fix made this card's INLINE",
+   "replace": " * The mid-resolution stack fix made this card's INLINE",
+   "why": "grammar: sentence starts lowercase"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "§5 THE CR D6.3 SNAPSHOT HAZARD",
+   "replace": "§5 THE RESOLVE-SNAPSHOT HAZARD",
+   "why": "wrong-rule: D6.3 is not the rollback snapshot (systemic)"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "the window and an CR D6.3 rollback snapshot",
+   "replace": "the window and a rollback snapshot",
+   "why": "wrong-rule: D6.3 (systemic); 'an CR' (title unreferenced)"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "CR 703.5 the CR D6.3 hazard, DRIVEN",
+   "replace": "CR 703.5 the snapshot hazard, DRIVEN",
+   "why": "wrong-rule: D6.3 (systemic) (title unreferenced)"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "a live CR D6.3 snapshot could coexist",
+   "replace": "a live rollback snapshot could coexist",
+   "why": "wrong-rule: D6.3 (systemic)"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "had already fixed Every play",
+   "replace": "had already fixed. Every play",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "this was not built. CR 706.13 ruled",
+   "replace": "this was not built. The CT-79 fix ruled",
+   "why": "history/truth: CR 706.13 ruled nothing and does not contain the quoted reading"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "CT-143 (and CR 706.13's \"no item means nothing to negate\"",
+   "replace": "CT-143 (and the CT-79 reading \"no item means nothing to negate\"",
+   "why": "quote attribution: the quoted words are not CR 706.13's"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "THE REGION IS LOAD-BEARING (CR 601.2): the watcher",
+   "replace": "THE REGION IS LOAD-BEARING (CR 601.1d): the watcher",
+   "why": "wrong-rule: R12->601.2; a watcher hears only its own region is CR 601.1d"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "They do: CR 701.4 routes it through '",
+   "replace": "They do: the play (CR 701.4) goes through '",
+   "why": "history: rule narrated as routing code"
+  },
+  {
+   "file": "client/engine/test/169-mid-resolution-window.test.ts",
+   "find": "\"R263 test rig\" driving",
+   "replace": "\"zone test rig\" driving",
+   "why": "quote: 241's rig sourceName was renamed to 'zone test rig'; bare R-number survived in the quote"
+  },
+  {
+   "file": "client/engine/test/17-earth-b.test.ts",
+   "find": "because Oorblak is {Unstable}: once it dies it is erased (CR 801.2h), and with it the very entity whose damage we are reading.).",
+   "replace": "because Oorblak is {Unstable} and regroup would\n// erase the very entity whose damage we are reading.",
+   "why": "grammar: garbled '.).' rewording; restored the original sentence"
+  },
+  {
+   "file": "client/engine/test/17-earth-b.test.ts",
+   "find": "PIERCING-EXCESS half (the wider hook;",
+   "replace": "PIERCING-EXCESS half (the wider replacement hook;",
+   "why": "grammar: 'the wider hook' dangles after the R-number was cut"
+  },
+  {
+   "file": "client/engine/test/17-earth-b.test.ts",
+   "find": "// CR 803.8i tests already pin for the modded and stamped ways in.",
+   "replace": "// existing tests already pin for the modded and stamped ways in (CR 803.8i).",
+   "why": "truth: tests are not the rule's"
+  },
+  {
+   "file": "client/engine/test/17-earth-b.test.ts",
+   "find": "// ⚠ ⚠ The owner's",
+   "replace": "// ⚠ The owner's",
+   "why": "grammar: doubled warning sign"
+  },
+  {
+   "file": "client/engine/test/17-earth-b.test.ts",
+   "find": "// // engine (CT-246): the printed",
+   "replace": "// The engine (CT-246): the printed",
+   "why": "grammar: doubled comment marker"
+  },
+  {
+   "file": "client/engine/test/17-earth-b.test.ts",
+   "find": "the only thing that files the CR 407.2 pile",
+   "replace": "the only thing that files the erased pile (CR 407.2)",
+   "why": "grammar: 'the CR 407.2 pile'"
+  },
+  {
+   "file": "client/engine/test/170-battle-position-promises.test.ts",
+   "find": "named REGION (CR 601.2) as the",
+   "replace": "named REGION (CR 601.1d) as the",
+   "why": "wrong-rule: R12->601.2; clauses scoped to their event's region are CR 601.1d"
+  },
+  {
+   "file": "client/engine/test/170-battle-position-promises.test.ts",
+   "find": "// ── REGION (CR 601.2): the six",
+   "replace": "// ── REGION (CR 601.1d): the six",
+   "why": "wrong-rule: R12->601.2 (systemic)"
+  },
+  {
+   "file": "client/engine/test/170-battle-position-promises.test.ts",
+   "find": "'battle region (CR 601.2), so only a unit",
+   "replace": "'battle region (CR 601.1d), so only a unit",
+   "why": "wrong-rule: R12->601.2; only a unit in the region hears it is CR 601.1d"
+  },
+  {
+   "file": "client/engine/test/174-secrecy-is-seat-aware.test.ts",
+   "find": "passed before the look-at-a-hand fix (D6.5a) and after fixed it and passed after.",
+   "replace": "passed before the look-at-a-hand fix (CR D6.5a) and passed after.",
+   "why": "grammar: garbled 'and after fixed it and passed after'"
+  },
+  {
+   "file": "client/engine/test/174-secrecy-is-seat-aware.test.ts",
+   "find": "cards and CR D6.5's `handEntered`",
+   "replace": "cards and the `handEntered` event (CR D6.5)",
+   "why": "grammar: a code event given as a rule's possession"
+  },
+  {
+   "file": "client/engine/test/174-secrecy-is-seat-aware.test.ts",
+   "find": "The look-at-a-hand ruling called this's §1 calls",
+   "replace": "The look-at-a-hand ruling calls",
+   "why": "grammar: garbled splice"
+  },
+  {
+   "file": "client/engine/test/174-secrecy-is-seat-aware.test.ts",
+   "find": "(the look-at-a-hand and handEntered leaks), CR D6.5). The fix is",
+   "replace": "(the look-at-a-hand and handEntered leaks; CR D6.5). The fix is",
+   "why": "grammar: unbalanced parenthesis"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "The pronoun is CR 706.13, 701.5's, and three other",
+   "replace": "The pronoun is the one CR 706.13 and 701.5 settle, and three other",
+   "why": "grammar: \"CR 706.13, 701.5's\""
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": " * (Earthbound Replicator, CR 706.13; Origon and Hexbane Shiitake, CR 706.13). This one",
+   "replace": " * (Earthbound Replicator; Origon and Hexbane Shiitake). This one",
+   "why": "grammar: the same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "(CR 108.1a). CR 706.13 put the id on",
+   "replace": "(CR 108.1a). The CT-79 fix put the id on",
+   "why": "history: rule narrated as the change"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "the verbatim messages are in the\n * CR 706.13 rule.",
+   "replace": "the verbatim messages were in the\n * retired ruling register.",
+   "why": "truth: CR 706.13 holds no failure messages; they were in the retired register's entry"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "// CR 601.2: Rook grants the permission in ITS region",
+   "replace": "// CR 601.1d: Rook grants the permission in ITS region",
+   "why": "wrong-rule: R12->601.2; a static works only in its own region is CR 601.1d"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "'CR 706.13 (c): the raised unit",
+   "replace": "'CR 706.13: the raised unit",
+   "why": "grammar: leftover section label '(c)' reads as a sub-item"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "\"sacrifice me. If you do, …\" (CR 111.8a)');",
+   "replace": "\"sacrifice me. If you do, …\" (CR 111.8; the engine differs on timing, F-U04-5)');",
+   "why": "wrong-rule: 111.8a is an optional sacrifice; the Mandible's is mandatory (111.8, engine differs F-U04-5)"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "question. CR 720.10 built `E.moveMod`",
+   "replace": "question. The mod-move fix (CR 720.10) built `E.moveMod`",
+   "why": "history: rule narrated as building code"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "left it rather than guess and so does CR 720.9.",
+   "replace": "left it rather than guess, and so did this round.",
+   "why": "history: rule narrated as an agent"
+  },
+  {
+   "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+   "find": "'The both play events carry `item` (706.13), `cardPlayed` since CR 706.13 — so '",
+   "replace": "'Both play events carry `item` (`spellPlayed`, and `cardPlayed` since the CT-79 fix) — so '",
+   "why": "grammar: garbled, bare number, same CR twice"
+  },
+  {
+   "file": "client/engine/test/179-empty-collection-branches.test.ts",
+   "find": "UNREACHABLE. CR D7.3 adds a third board",
+   "replace": "UNREACHABLE. The CT-74 round adds a third board",
+   "why": "history: rule narrated as adding a test board"
+  },
+  {
+   "file": "client/engine/test/18-earth-c.test.ts",
+   "find": "// CR 111.7a, 111.8a: the sacrifice is the COST",
+   "replace": "// CR 111.7a: the sacrifice is the COST",
+   "why": "wrong-rule: 111.8a is an optional trigger sacrifice; Boulder's 'Sacrifice me:' is an activation cost (111.7a)"
+  },
+  {
+   "file": "client/engine/test/18-earth-c.test.ts",
+   "find": "// CR 603.2b: \"adjacent slots … only exist",
+   "replace": "// The owner (now CR 603.2b): \"adjacent slots … only exist",
+   "why": "quote attribution: owner quotation presented as the rule's text"
+  },
+  {
+   "file": "client/engine/test/18-earth-c.test.ts",
+   "find": "another region, unaffected (CR 601.2)'",
+   "replace": "another region, unaffected (CR 601.1a)'",
+   "why": "wrong-rule: R12->601.2; CR 601.1a's own example is Towering Colossus"
+  },
+  {
+   "file": "client/engine/test/180-pool-sight.test.ts",
+   "find": "ledger and the (see 71-card-ledger)",
+   "replace": "ledger and the",
+   "why": "grammar: pointer spliced into the noun phrase"
+  },
+  {
+   "file": "client/engine/test/180-pool-sight.test.ts",
+   "find": "`161-glimpse-reminders.test.ts` (CR D7.3) is the only",
+   "replace": "`161-glimpse-reminders.test.ts` is the only",
+   "why": "wrong-rule: D7.3 says nothing about this file or the pool"
+  },
+  {
+   "file": "client/engine/test/180-pool-sight.test.ts",
+   "find": "why: 'CR D7.3 pins POOL === 494 deliberately",
+   "replace": "why: 'It pins POOL === 494 deliberately",
+   "why": "truth: a rule does not pin a test constant; the file does"
+  },
+  {
+   "file": "client/engine/test/180-pool-sight.test.ts",
+   "find": "CAN be 495 (CR D8.1 put a fourth",
+   "replace": "CAN be 495 (Training Construct, CR D8.1b, put a fourth",
+   "why": "history: rule narrated as adding a synthetic"
+  },
+  {
+   "file": "client/engine/test/180-pool-sight.test.ts",
+   "find": "(\"R84 {Alluring} … prints this\")",
+   "replace": "(\"CR 802.15a {Alluring} … prints this\")",
+   "why": "quote: 68's comment now reads 'CR 802.15a {Alluring} … prints this'; bare R-number survived in the quote"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "the owner's answer (CR 107.2b, 2026-08-28) split them:",
+   "replace": "the owner's answer (2026-08-28) split them:",
+   "why": "truth: a CR number in place of the owner's answer; 107.2b covers only the X = 0 half"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "HAS NO CALLERS AS OF CR 107.2b AND",
+   "replace": "HAS NO CALLERS AS OF 2026-08-28 AND",
+   "why": "history: 'as of' a rule"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "EMPTY AS OF CR 107.2b (2026-08-28), AND",
+   "replace": "EMPTY AS OF 2026-08-28, AND",
+   "why": "history: 'as of' a rule"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "// CR D8.1: the sample was drawn from the pool of real cards; Learn to Play's\n  // lessonOnly card arrived",
+   "replace": "// The sample was drawn from the pool of real cards; Learn to Play's\n  // lessonOnly card (CR D8.1b) arrived",
+   "why": "pointer: the rule does not state the sentence it prefixes"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "ONCE PER RECALLED ALLY (CR 107.2b)'",
+   "replace": "ONCE PER RECALLED ALLY (owner ruling, 2026-08-28)'",
+   "why": "wrong-rule: 107.2b is 'X may be 0', not the per-ally scaling (title guard is a prefix, unaffected)"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "= 1. CR 107.2b: the sacrifice scales with X",
+   "replace": "= 1. The 2026-08-28 owner ruling: the sacrifice scales with X",
+   "why": "wrong-rule: 107.2b is 'X may be 0'; no rule states the scaling"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "= 1. CR 107.2b: the opponent scales too",
+   "replace": "= 1. The same ruling: the opponent scales too",
+   "why": "wrong-rule: 107.2b is 'X may be 0'"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "'amount: the sacrifice scales per ally recalled (CR 107.2b)'",
+   "replace": "'amount: the sacrifice scales per ally recalled (owner ruling, 2026-08-28)'",
+   "why": "wrong-rule: 107.2b is 'X may be 0'"
+  },
+  {
+   "file": "client/engine/test/182-correctness-sample.test.ts",
+   "find": "+ '(CR 408.3); assumed the same here.",
+   "replace": "+ '(CR 402.2a); assumed the same here.",
+   "why": "wrong-rule: 408.3 is about recycled cards; 402.2a (example: Thought Extraction aimed at its caster's own hand)"
+  },
+  {
+   "file": "client/engine/test/183-end-battle-round-paths.test.ts",
+   "find": "written down. CR D2.6a's token-loss\n  // announcement lives",
+   "replace": "written down. The token-loss\n  // announcement (CR D2.6a) lives",
+   "why": "grammar: code given as a rule's possession"
+  },
+  {
+   "file": "client/engine/test/183-end-battle-round-paths.test.ts",
+   "find": "or CR D2.6a announces nothing on this path",
+   "replace": "or the token-loss announcement (CR D2.6a) says nothing on this path",
+   "why": "history: rule narrated as an actor"
+  },
+  {
+   "file": "client/engine/test/184-ruling-register.test.ts",
+   "find": "The closed ledgers' `evidence:`\n * strings are frozen history (owner decision, 2026-10-11) and skipped too.",
+   "replace": "The ledgers' `evidence:`\n * strings are frozen history (the closed ones by owner decision, 2026-10-11) and skipped too.",
+   "why": "truth: FROZEN_EVIDENCE skips every ledger's evidence strings, not only the closed ones'"
+  }
+ ]
+}

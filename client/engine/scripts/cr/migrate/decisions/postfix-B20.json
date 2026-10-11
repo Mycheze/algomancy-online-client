@@ -1,0 +1,839 @@
+{
+ "edits": [
+  {
+   "file": "client/server/e2e/test-concede.ts",
+   "find": " * CR D8.5 (2026-09-05) added a second stamp",
+   "replace": " * A 2026-09-05 change (now CR D8.5) added a second stamp",
+   "why": "history: the rule narrated as the change that added the stamp"
+  },
+  {
+   "file": "client/server/e2e/test-concede.ts",
+   "find": "shape from test-clock.ts (see test-clock.ts): never",
+   "replace": "shape from test-clock.ts: never",
+   "why": "grammar: redundant pointer repeats the file just named"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "const HALTS = 'const HALTS = \\'Deploy Halt\\'; Halt';",
+   "replace": "const HALTS = 'Deploy Halt';",
+   "why": "code-safety: a whole statement was spliced into the string literal (was 'R154 Halt'; the synthetic card's name only, and the header now calls it 'Deploy Halt')",
+   "code": true
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "put BOTH halves in the server on the belief",
+   "replace": "put BOTH halves in the server, on the belief",
+   "why": "grammar: comma lost in the reword"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": " *  CR D2.1b moved the RULE into the engine",
+   "replace": " *  The second fix (CT-44; the rule is CR D2.1b) moved the RULE into the engine",
+   "why": "history: a rule narrated as the actor that moved code; this is the seat-aware gate fix"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "the one the first fix wrote it around\n",
+   "replace": "the one the first fix wrote it around.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "stops HALFWAY i.e. a\n *         'resolve' suspension carrying an CR D6.3 `snapshot`",
+   "replace": "stops HALFWAY, i.e. a\n *         'resolve' suspension carrying a rollback `snapshot`",
+   "why": "grammar ('an CR', lost comma) + wrong-rule: D6.3 is the 'resolving' marker, not the rollback snapshot"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "exactly the side channel CR 504.5 deleted",
+   "replace": "exactly the side channel the always-offer-the-step ruling deleted",
+   "why": "history: a rule narrated as the actor that deleted the side channel"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "already registers for CR D6.3: a deploy spell",
+   "replace": "already registers for the rollback snapshot: a deploy spell",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback snapshot"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "fixed those very lines so what is recorded",
+   "replace": "fixed those very lines, so what is recorded",
+   "why": "grammar: comma lost in the reword"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "seat 0 here — CR D6.3 would rewind anything they did",
+   "replace": "seat 0 here — answering would rewind anything they did (CR D2.1c)",
+   "why": "wrong-rule: rewinding on answer is D2.1c (the rollback), not D6.3"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "but CR D6.3's\n// rollback.",
+   "replace": "but the\n// rollback on resume.",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "// CR D6.3a's `E.beginResolving` sets `s.resolving` only in the battle phase, and",
+   "replace": "// `E.beginResolving` sets `s.resolving` only in the battle phase (CR D6.3, D6.3a), and",
+   "why": "awkward pointer: a rule owning an engine function"
+  },
+  {
+   "file": "client/server/e2e/test-concurrency.ts",
+   "find": "// …and CR D2.1b's own un-gating",
+   "replace": "// …and the first fix's own un-gating",
+   "why": "history: R150's un-gating was the first fix, not a rule"
+  },
+  {
+   "file": "client/server/e2e/test-drive.ts",
+   "find": "// CR D6.3: a 'resolve' suspension carries",
+   "replace": "// A 'resolve' suspension carries",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback snapshot"
+  },
+  {
+   "file": "client/server/e2e/test-drive.ts",
+   "find": "'suspension rollback snapshot (CR D6.3)'",
+   "replace": "'suspension rollback snapshot'",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback snapshot"
+  },
+  {
+   "file": "client/server/e2e/test-drive.ts",
+   "find": "// the parens are load-bearing (see CLAUDE.md § The gates). `>=`",
+   "replace": "// The parens are load-bearing (found when server/ was first typechecked). `>=`",
+   "why": "invented pointer: CLAUDE.md § The gates says nothing about this; R181 was the first server typecheck"
+  },
+  {
+   "file": "client/server/e2e/test-forensics.ts",
+   "find": "// the version stamp is resolved once per process and cached, so a test (see replay-room.ts)\n",
+   "replace": "// The version stamp (see replay-room.ts) is resolved once per process and cached, so a test\n",
+   "why": "grammar: pointer spliced mid-sentence"
+  },
+  {
+   "file": "client/server/e2e/test-forensics.ts",
+   "find": "which is the side channel CR 504.5\n * deleted",
+   "replace": "which is the side channel the\n * always-offer-the-step ruling deleted",
+   "why": "history: a rule narrated as the actor that deleted the side channel"
+  },
+  {
+   "file": "client/server/e2e/test-forensics.ts",
+   "find": "/* ── CR 706.13 (CARD-TODO #67c): THE FORK",
+   "replace": "/* ── CARD-TODO #67c: THE FORK",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/e2e/test-forensics.ts",
+   "find": "'and it is still playable — CR 706.13 drift is told, not stopped'",
+   "replace": "'and it is still playable — drift is told, not stopped'",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/e2e/test-formation-decision.ts",
+   "find": "`${name}: the CR D6.3 rollback snapshot never reaches even the asked seat`",
+   "replace": "`${name}: the rollback snapshot never reaches even the asked seat`",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback snapshot"
+  },
+  {
+   "file": "client/server/e2e/test-hidden.ts",
+   "find": "the exact side channel CR 504.5 deleted",
+   "replace": "the exact side channel the always-offer-the-step ruling deleted",
+   "why": "history: a rule narrated as the actor that deleted the side channel"
+  },
+  {
+   "file": "client/server/e2e/test-malformed.ts",
+   "find": "(CR D8.1: the Learn to Play lesson rides along as `context`)",
+   "replace": "(the Learn to Play lesson rides along as `context`)",
+   "why": "wrong-rule: D8.1 defines Learn to Play; it says nothing about forwarding a lesson to the judge"
+  },
+  {
+   "file": "client/server/e2e/test-malformed.ts",
+   "find": "`CR D8.1: a lesson context is forwarded",
+   "replace": "`Learn to Play: a lesson context is forwarded",
+   "why": "wrong-rule: D8.1 says nothing about forwarding a lesson context"
+  },
+  {
+   "file": "client/server/e2e/test-pending-ask.ts",
+   "find": " * test-view-snapshot.ts does for CR D6.3.",
+   "replace": " * test-view-snapshot.ts does for the rollback snapshot.",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback snapshot"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "fix CT-85 made in (see test-clock.ts)\n",
+   "replace": "fix CT-85 made in\n",
+   "why": "grammar: pointer spliced mid-sentence, naming the file the next line names"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": " * BATCH C, FROZEN (docs/14 §6 (see 14-scenario-tester.md): ",
+   "replace": " * BATCH C, FROZEN (docs/14 §6: ",
+   "why": "grammar: nested redundant pointer"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": " * BATCH D, FROZEN (docs/14 §6 (see 14-scenario-tester.md): ",
+   "replace": " * BATCH D, FROZEN (docs/14 §6: ",
+   "why": "grammar: nested redundant pointer"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": " * BATCH B, FROZEN (docs/14 §6 (see 14-scenario-tester.md): ",
+   "replace": " * BATCH B, FROZEN (docs/14 §6: ",
+   "why": "grammar: nested redundant pointer"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": " * BATCH E, FROZEN (docs/14 §6 (see 14-scenario-tester.md): ",
+   "replace": " * BATCH E, FROZEN (docs/14 §6: ",
+   "why": "grammar: nested redundant pointer"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "⚠ THE UNCONDITIONAL HASTE STEP (504.5) REPLACED",
+   "replace": "⚠ THE UNCONDITIONAL HASTE STEP (CR 504.5) REPLACED",
+   "why": "grammar: bare '504.5' without 'CR'"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "⚠ THE UNCONDITIONAL HASTE STEP (504.5) PUT A REAL STEP BACK BETWEEN THESE TWO LINES and it belongs",
+   "replace": "⚠ THE UNCONDITIONAL HASTE STEP (CR 504.5) PUT A REAL STEP BACK BETWEEN THESE TWO LINES, and it belongs",
+   "why": "grammar: bare '504.5' and a lost comma"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "promises \"`189-scenario-library.test.ts` asserts (see 14-scenario-tester.md)\n",
+   "replace": "promises \"`189-scenario-library.test.ts` asserts\n",
+   "why": "quote: a pointer was spliced inside the quotation"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "'Stalwart Sentinel: and STANDING IN THE BATTLE — CR 601.2 scopes the play event to its region, '\n      + 'and a Sentinel left at home hears nothing at all (measured) (see 14-scenario-tester.md)');",
+   "replace": "'Stalwart Sentinel: and STANDING IN THE BATTLE — CR 601.1d scopes the play event to its region, '\n      + 'and a Sentinel left at home hears nothing at all (measured)');",
+   "why": "wrong-rule: a trigger hearing only its own region is 601.1d (601.2 is one region per unit); doubled-parens pointer dropped"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "+ 'battle region it marched into (CR 601.2)');",
+   "replace": "+ 'battle region it marched into (CR 601.1b)');",
+   "why": "wrong-rule: region-scoped effect is 601.1b (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "+ 'CR 110.3a, \"you can target any enemy, it only checks on resolution\"');",
+   "replace": "+ 'the owner\\'s ruling, \"you can target any enemy, it only checks on resolution\" (CR 110.3a)');",
+   "why": "truth: the quotation is the owner's ruling, not the text of CR 110.3a"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "which\n  //    CR 901.7b folded into the CONSTRUCTED branch",
+   "replace": "which\n  //    CR 901.7b puts in the CONSTRUCTED branch",
+   "why": "history: a rule narrated as the change that folded shared in"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "themselves after combat\") carries no region qualifier, and CR 601.2 scopes every\n * static",
+   "replace": "themselves after combat\") carries no region qualifier, and CR 601.1d scopes every\n * static",
+   "why": "wrong-rule: statics are region-scoped by 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "+ 'what lets the region-scoped survival query (CR 601.2) still see its protector');",
+   "replace": "+ 'what lets the region-scoped survival query (CR 601.1d) still see its protector');",
+   "why": "wrong-rule: a static seeing only its region is 601.1d"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "outside it, and CR 803.7's tick lands between them",
+   "replace": "outside it, and CR 803.7e's tick lands between them",
+   "why": "wrong-rule: counting turns forward from prophesying is 803.7e"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "fulfilled at the TOP of turn 2. CR 803.7 '",
+   "replace": "fulfilled at the TOP of turn 2. CR 803.7e '",
+   "why": "wrong-rule: counting forward from the moment of prophesying is 803.7e"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "suppresses it, at CR 601.2's region boundary.",
+   "replace": "suppresses it, at CR 601.1d's region boundary.",
+   "why": "wrong-rule: a static reaching only its region is 601.1d"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "+ 'CR 601.2 scopes a static to its own region and the 2/1 weaver stayed home');",
+   "replace": "+ 'CR 601.1d scopes a static to its own region and the 2/1 weaver stayed home');",
+   "why": "wrong-rule: a static reaching only its region is 601.1d"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "fulfilled by CR 803.7's battle tick",
+   "replace": "fulfilled by CR 803.7f's battle tick",
+   "why": "wrong-rule: both battles of a turn ticking One Battle Passes is 803.7f"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "ONE battle round was enough — CR 803.7 ticks on the initiative battle",
+   "replace": "ONE battle round was enough — CR 803.7f ticks on the initiative battle",
+   "why": "wrong-rule: both battles ticking is 803.7f"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "'Vaporweave: and the host is Unstable — CR 720.7\\'s \"it and all of its mods are erased with it\" '",
+   "replace": "'Vaporweave: and the host is Unstable (CR 720.7) — \"it and all of its mods are erased with it\" '",
+   "why": "truth: the quoted words are not the text of CR 720.7 (it has no \"with it\"); keep the quote, stop crediting it to the rule"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "'Vaporweave: nothing reached the CR 720.7a erased pile at all",
+   "replace": "'Vaporweave: nothing reached the erased pile at all (CR 720.7a)",
+   "why": "wrong-rule: 720.7a sends the mods to the bin; it has no erased pile"
+  },
+  {
+   "file": "client/server/e2e/test-scenario.ts",
+   "find": "and the 200-haste-step-is-unconditional test and why no card can replace it.",
+   "replace": "and the 200-haste-step-is-unconditional test) and why no card can replace it.",
+   "why": "grammar: unclosed parenthesis"
+  },
+  {
+   "file": "client/server/e2e/test-undo-segment.ts",
+   "find": "is the side channel CR 504.5 deleted",
+   "replace": "is the side channel the always-offer-the-step ruling deleted",
+   "why": "history: a rule narrated as the actor that deleted the side channel"
+  },
+  {
+   "file": "client/server/e2e/test-undo-segment.ts",
+   "find": "// only a `{ mod }` via names an id (see CLAUDE.md § The gates). `{ face }`",
+   "replace": "// Only a `{ mod }` via names an id. `{ face }`",
+   "why": "invented pointer: CLAUDE.md § The gates says nothing about this"
+  },
+  {
+   "file": "client/server/e2e/test-undo-segment.ts",
+   "find": "// ══ 8. (see CLAUDE.md § The gates): a `via: { face }` activation",
+   "replace": "// ══ 8. a `via: { face }` activation",
+   "why": "invented pointer spliced into a section heading"
+  },
+  {
+   "file": "client/server/e2e/test-view-snapshot.ts",
+   "find": "/* CR D6.3 — the rollback snapshot must never leave the server",
+   "replace": "/* The rollback snapshot must never leave the server",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback snapshot"
+  },
+  {
+   "file": "client/server/e2e/test-view-snapshot.ts",
+   "find": "'\\n[CR D6.3 rollback snapshot redaction]'",
+   "replace": "'\\n[rollback snapshot redaction]'",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback snapshot"
+  },
+  {
+   "file": "client/server/engine-version.ts",
+   "find": "/* WHICH ENGINE WAS THIS GAME RECORDED AGAINST (see replay-room.ts)?",
+   "replace": "/* WHICH ENGINE WAS THIS GAME RECORDED AGAINST?",
+   "why": "grammar: pointer spliced into the heading question"
+  },
+  {
+   "file": "client/server/main.ts",
+   "find": "never called (see CLAUDE.md § The gates) — the seat-legality",
+   "replace": "never called — the seat-legality",
+   "why": "invented pointer: CLAUDE.md § The gates says nothing about this import"
+  },
+  {
+   "file": "client/server/main.ts",
+   "find": "// CR D8.4a's argument, applied again.",
+   "replace": "// The scenario tester's argument, applied again.",
+   "why": "truth: a rule has no argument; the argument is the tester gate's fail-closed reasoning above"
+  },
+  {
+   "file": "client/server/main.ts",
+   "find": "the ally-misclick confirm (D2.8)",
+   "replace": "the ally-misclick confirm (CR D2.8)",
+   "why": "grammar: bare 'D2.8' without 'CR'"
+  },
+  {
+   "file": "client/server/main.ts",
+   "find": "Since glimpses are held too (CR D6.2) nothing",
+   "replace": "Since glimpses are held too (CR D6.2), nothing",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/server/package.json",
+   "find": "(CT-85 measured it (see test-clock.ts) — the nineteen",
+   "replace": "(CT-85 measured it — the nineteen",
+   "why": "grammar: nested parentheses from a spliced pointer"
+  },
+  {
+   "file": "client/server/replay-probe.ts",
+   "find": "a decision id off `nextId` — CR D6.3 does exactly that)",
+   "replace": "a decision id off `nextId` — the suspension rollback does exactly that)",
+   "why": "wrong-rule: D6.3 is the resolving marker; the id allocation is the rollback machinery"
+  },
+  {
+   "file": "client/server/replay-probe.ts",
+   "find": "CARDS LEFT, NOT DECK LENGTH and the two",
+   "replace": "CARDS LEFT, NOT DECK LENGTH, and the two",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/server/replay-probe.ts",
+   "find": "  // see ProbeInput.scenario. Refused",
+   "replace": "  // See ProbeInput.scenario. Refused",
+   "why": "grammar: sentence starts lowercase after the cite was cut"
+  },
+  {
+   "file": "client/server/replay-room.ts",
+   "find": "// ──: is this even the right copy",
+   "replace": "// ── is this even the right copy",
+   "why": "grammar: '──:' residue of a cut cite"
+  },
+  {
+   "file": "client/server/replay-room.ts",
+   "find": "// ──: which engine recorded this",
+   "replace": "// ── which engine recorded this",
+   "why": "grammar: '──:' residue of a cut cite"
+  },
+  {
+   "file": "client/server/replay-room.ts",
+   "find": "// ──: the DELTA",
+   "replace": "// ── the DELTA",
+   "why": "grammar: '──:' residue of a cut cite"
+  },
+  {
+   "file": "client/server/replay-room.ts",
+   "find": "// CR 706.13: a fork's list is no longer all refusals.",
+   "replace": "// CARD-TODO #67c: a fork's list is no longer all refusals.",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "// the on-disk shapes moved to types.ts so replay-room.ts can name them (see CLAUDE.md § The gates)\n",
+   "replace": "// The on-disk shapes moved to types.ts so replay-room.ts can name them\n",
+   "why": "invented pointer: CLAUDE.md § The gates says nothing about this move"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "nobody played (CR D8.4's argument). */",
+   "replace": "nobody played (the scenario tester's argument). */",
+   "why": "truth: a rule has no argument; this is the scenario design reasoning"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": " * CR D2.1b moved the predicate itself into the engine",
+   "replace": " * The seat-aware gate fix (CT-44) moved the predicate itself into the engine",
+   "why": "history: a rule narrated as the actor that moved code"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "escapes the hold (CR D6.1a)\n",
+   "replace": "escapes the hold (CR D6.1a).\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "neither can see the other — CR 507.5a put deployment triggers on the stack,\n * so from that ruling onward a pile",
+   "replace": "neither can see the other — deployment triggers use the stack (CR 703.7),\n * so a pile",
+   "why": "wrong-rule + history: deployment using the stack is 703.7 (507.5a is about not waiting), and a rule narrated as the change"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "⚠ The seat-aware gate (D2.1b) shrank this and the sliver",
+   "replace": "⚠ The seat-aware gate (CR D2.1b) shrank this, and the sliver",
+   "why": "grammar: bare 'D2.1b' and a lost comma"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "(CARD-TODO #44). CR D2.1b moved the rule into the engine,",
+   "replace": "(CARD-TODO #44). The seat-aware gate moved the rule into the engine,",
+   "why": "history: a rule narrated as the actor that moved code"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "(and it means it — CR D6.3 would erase you)",
+   "replace": "(and it means it — the rollback would erase you)",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the rollback"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "the exact half-fix the notes\n",
+   "replace": "the exact half-fix the first version's notes\n",
+   "why": "grammar: 'the notes' lost its referent (the first version's)"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "(moved to view.ts — CR D8.1: the browser's solo game offers the same list)",
+   "replace": "(moved to view.ts — the browser's solo game, Learn to Play, offers the same list)",
+   "why": "wrong-rule: D8.1 defines Learn to Play; it says nothing about the legal-action list"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "pre-the pre-deferral path",
+   "replace": "the pre-deferral path",
+   "why": "garble: 'pre-the' from 'pre-R150'"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": " * CR D2.1d's second door onto the same queue: the engine",
+   "replace": " * The second door onto the same queue (CR D2.1d): the engine",
+   "why": "awkward pointer: a rule owning a door"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "survives the seat-aware narrowing\n",
+   "replace": "survives the seat-aware narrowing.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "where the two \"Object is possibly 'undefined'\" errors came from",
+   "replace": "where the first typecheck's two \"Object is possibly 'undefined'\" errors came from",
+   "why": "grammar: 'the two' lost its referent (R181's typecheck)"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "so every\n    // pre-every older playCached",
+   "replace": "so every\n    // older playCached",
+   "why": "garble: 'pre-every' from 'pre-R311'"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "NEVER the decision's id: CR D6.3 takes decision ids",
+   "replace": "NEVER the decision's id: the suspension rollback takes decision ids",
+   "why": "wrong-rule: D6.3 is the resolving marker; the id allocation is the rollback machinery"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "SAME WAY. CR 706.13 added the second half",
+   "replace": "SAME WAY. The CARD-TODO #67c fix added the second half",
+   "why": "wrong-rule + history: 706.13 is the played item, not replay drift, and a rule narrated as the change"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "newer engine can diverge (CR D1.2d re-ordered simultaneous triggers;",
+   "replace": "newer engine can diverge (the change to identical simultaneous triggers, now CR D1.2d, re-ordered them;",
+   "why": "history: a rule narrated as the change that re-ordered triggers"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "⚠ ONLY REFUSALS, not CR 706.13 drift.",
+   "replace": "⚠ ONLY REFUSALS, not drift.",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "   * CR 706.13 — actions the most recent RESTORE",
+   "replace": "   * CARD-TODO #67c — actions the most recent RESTORE",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": " * CR 706.13 — WHAT THIS REBUILD QUIETLY CHANGED",
+   "replace": " * WHAT THIS REBUILD QUIETLY CHANGED",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "// stamped a line below, by resetSegment(), which is where EVERY (see replay-room.ts)\n",
+   "replace": "// stamped a line below, by resetSegment(), which is where EVERY\n",
+   "why": "grammar: pointer spliced mid-sentence"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "the `via (see CLAUDE.md § The gates): { face }` corruption",
+   "replace": "the `via: { face }` corruption",
+   "why": "garble: an invented pointer spliced inside a code span"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "  // CR D4.3 needs no floor here:",
+   "replace": "  // The undo lock (CR D4.3) needs no floor here:",
+   "why": "awkward pointer: a rule that needs a floor"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": " * read a file's version ledger back, keeping only entries that could (see replay-room.ts)\n",
+   "replace": " * read a file's version ledger back, keeping only entries that could\n",
+   "why": "grammar: pointer spliced mid-sentence"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "describing the board. CR 706.13 drift is a",
+   "replace": "describing the board. Drift is a",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "  // CR 706.13: EITHER kind of divergence.",
+   "replace": "  // EITHER kind of divergence.",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "which engine the (see replay-room.ts)\n",
+   "replace": "which engine the\n",
+   "why": "grammar: pointer spliced mid-sentence"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "  // CR 706.13: drift is a claim about the FILE",
+   "replace": "  // Drift is a claim about the FILE",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "      // CR 706.13: WHAT EACH ACTION MEANT",
+   "replace": "      // WHAT EACH ACTION MEANT",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "/** CR 706.13: per-action reference keys",
+   "replace": "/** per-action reference keys",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "/** CR 706.13: the same keys, position-named",
+   "replace": "/** the same keys, position-named",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "        // CR 706.13: and what this rebuild changed",
+   "replace": "        // and what this rebuild changed",
+   "why": "wrong-rule: 706.13 is the played item, not replay drift"
+  },
+  {
+   "file": "client/server/rooms.ts",
+   "find": "whether or not (see replay-room.ts)\n",
+   "replace": "whether or not\n",
+   "why": "grammar: pointer spliced mid-sentence"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "// region-scoped (CR 601.2) and the battle is fought in the DEFENDER's region,",
+   "replace": "// region-scoped (CR 601.1d) and the battle is fought in the DEFENDER's region,",
+   "why": "wrong-rule: a listener hearing only its region is 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "// the host, and the attacker (CR 601.2 again: the ability's carrier",
+   "replace": "// the host, and the attacker (CR 601.1b again: the ability's carrier",
+   "why": "wrong-rule: an effect reaching only its region is 601.1b"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "   * fixed by CR 706.13).",
+   "replace": "   * fixed; CR 706.13).",
+   "why": "history: a rule narrated as the fix"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "   * CR 706.13 FIXED THIS CARD THIS ROUND, and",
+   "replace": "   * THIS CARD WAS FIXED THIS ROUND (CR 706.13), and",
+   "why": "history: a rule narrated as the fix"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "// permission and the listener are region-scoped (CR 601.2), and the battle is",
+   "replace": "// permission and the listener are region-scoped (CR 601.1d), and the battle is",
+   "why": "wrong-rule: a listener hearing only its region is 601.1d"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "in hand, so\n      // opens the haste step and",
+   "replace": "in hand, so\n      // the haste step opens and",
+   "why": "grammar: subject lost with the cut cite"
+  },
+  {
+   "file": "client/server/scenarios-a.ts",
+   "find": "sitting in hand, so\n      // opens the haste step.",
+   "replace": "sitting in hand, so\n      // the haste step opens.",
+   "why": "grammar: subject lost with the cut cite"
+  },
+  {
+   "file": "client/server/scenarios.ts",
+   "find": "under CR 720.6c, 720.6b.\" The correctness sample found the same\n   * thing independently.",
+   "replace": "under CR 720.6c, 720.6b.\"",
+   "why": "truth: docs/13 IS the correctness sample, so \"found the same thing independently\" is circular (it was a ruling pointer)"
+  },
+  {
+   "file": "client/server/scenarios.ts",
+   "find": "Before the haste step became unconditional (504.5) the step",
+   "replace": "Before the haste step became unconditional (CR 504.5) the step",
+   "why": "grammar: bare '504.5'"
+  },
+  {
+   "file": "client/server/scenarios.ts",
+   "find": "when the prologue (see 14-scenario-tester.md)\n",
+   "replace": "when the prologue\n",
+   "why": "grammar: pointer spliced mid-sentence"
+  },
+  {
+   "file": "client/server/scenarios-b.ts",
+   "find": "// region (CR 601.2), and a Harvester standing at home never hears it.",
+   "replace": "// region (CR 601.1d), and a Harvester standing at home never hears it.",
+   "why": "wrong-rule: a trigger hearing only its region is 601.1d"
+  },
+  {
+   "file": "client/server/scenarios-b.ts",
+   "find": "'[Sacrifice a unit]'.\" CR 111.10's third CostMod channel:",
+   "replace": "'[Sacrifice a unit]'.\" The third CostMod channel (CR 111.10):",
+   "why": "awkward pointer: an engine channel credited to the rule"
+  },
+  {
+   "file": "client/server/scenarios-b.ts",
+   "find": "for the same CR 601.2 reason the Harvester does: a\n      // cost modifier radiates",
+   "replace": "for the same region reason the Harvester does: a\n      // cost modifier (CR 111.10) radiates",
+   "why": "wrong-rule: a cost modifier working only in its region is 111.10"
+  },
+  {
+   "file": "client/server/scenarios-b.ts",
+   "find": "lose 3 life.\"* CR 901.7b then folded 'shared' — which\n   *     is the mode every scenario room is dealt in — into that same branch.",
+   "replace": "lose 3 life.\"* CR 901.7b puts 'shared' — which\n   *     is the mode every scenario room is dealt in — into that same branch.",
+   "why": "history: a rule narrated as the change that folded shared in"
+  },
+  {
+   "file": "client/server/scenarios-c.ts",
+   "find": " * imported, never scraped: the header records two independent regex scrapes (see 187-scenario-queue)\n",
+   "replace": " * imported, never scraped: 187-scenario-queue's header records two independent regex scrapes\n",
+   "why": "grammar: 'the header' lost its referent, and the pointer was spliced mid-sentence"
+  },
+  {
+   "file": "client/server/scenarios-c.ts",
+   "find": " * ── THREE THINGS THIS FILE LEARNED THE HARD WAY ─────────────────── (see 14-scenario-tester.md)",
+   "replace": " * ── THREE THINGS THIS FILE LEARNED THE HARD WAY ───────────────────",
+   "why": "grammar: pointer appended after a section rule"
+  },
+  {
+   "file": "client/server/scenarios-c.ts",
+   "find": "This one resisted, and (see drill.ts)\n   * measured exactly why",
+   "replace": "This one resisted, and CARD-TODO #49\n   * measured exactly why",
+   "why": "garble: the subject was replaced by a bare pointer"
+  },
+  {
+   "file": "client/server/scenarios-c.ts",
+   "find": "(unreached.ts). drill work closed the other five;",
+   "replace": "(unreached.ts). CARD-TODO #49 closed the other five;",
+   "why": "grammar: sentence started lowercase; named as in the comment above"
+  },
+  {
+   "file": "client/server/scenarios-d.ts",
+   "find": "its listeners to the REGION the event happened in (CR 601.2).",
+   "replace": "its listeners to the REGION the event happened in (CR 601.1d).",
+   "why": "wrong-rule: a trigger hearing only its region is 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/server/scenarios-d.ts",
+   "find": "so this is CR 601.2's blanket rule doing it",
+   "replace": "so this is CR 601.1d's blanket rule doing it",
+   "why": "wrong-rule: a trigger hearing only its region is 601.1d"
+  },
+  {
+   "file": "client/server/scenarios-d.ts",
+   "find": "see the file header on CR 601.2.",
+   "replace": "see the file header on CR 601.1d.",
+   "why": "wrong-rule: follows the header fix"
+  },
+  {
+   "file": "client/server/scenarios-d.ts",
+   "find": "a wood pip as well as light: CR 803.7d charges a banner's affinity, and\n      // before it this was",
+   "replace": "a wood pip as well as light: a banner's affinity is charged (CR 803.7d), and\n      // before that ruling this was",
+   "why": "history: 'before it' narrated a rule as a dated change"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "the step now opens unconditionally (504.5)\n *    unconditionally, and the scenario",
+   "replace": "the step now opens\n *    unconditionally (CR 504.5), and the scenario",
+   "why": "grammar: doubled 'unconditionally' and bare '504.5'"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "is a STATIC and every static\n   *     is region-scoped (CR 601.2), so",
+   "replace": "is a STATIC and every static\n   *     is region-scoped (CR 601.1d), so",
+   "why": "wrong-rule: a static seeing only its region is 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "where the owner has to stand.\n      // opened it because seat 0 holds a payable haste card, and seat 1 does",
+   "replace": "where the owner has to stand.\n      // Seat 0 holds a payable haste card, and seat 1 does",
+   "why": "grammar: subject lost with the cut cite"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "   * and CR 803.7's tick sits exactly between them",
+   "replace": "   * and CR 803.7e's tick sits exactly between them",
+   "why": "wrong-rule: counting turns forward from prophesying is 803.7e"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "   *   CR 803.7 counts forward from the moment of caching",
+   "replace": "   *   CR 803.7e counts forward from the moment of caching",
+   "why": "wrong-rule: counting forward is 803.7e"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "   * THE JOIN IS CR 601.2. `E.staticsFor`",
+   "replace": "   * THE JOIN IS CR 601.1d. `E.staticsFor`",
+   "why": "wrong-rule: a static reaching only its region is 601.1d"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "   *   · CR 803.7's battle counter:",
+   "replace": "   *   · CR 803.7f's battle counter:",
+   "why": "wrong-rule: both battles ticking is 803.7f"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "[Switch1] Draw a card.\" CR 410.6 stamps `data.from` on both events, so",
+   "replace": "[Switch1] Draw a card.\" The engine stamps `data.from` on both events (CR 410.6), so",
+   "why": "awkward pointer: a rule narrated as stamping an engine field"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "bounded, once per turn (CR 722.5).",
+   "replace": "bounded, once per turn (CR 109.9).",
+   "why": "wrong-rule: 722.5 is about grafts; Proph's [Switch1] ability is covered by 109.9"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "meet. CR 803.7d charges a banner's affinity — before it this",
+   "replace": "meet. A banner's affinity is charged (CR 803.7d) — before that ruling this",
+   "why": "history: 'before it' narrated a rule as a dated change"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "An earlier report records this exact family being",
+   "replace": "CARD-TODO #50 records this exact family being",
+   "why": "history: R167 was a ruling on CARD-TODO #50, not a report"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "Air Plant scenarios above, and CR 803.7's condition is",
+   "replace": "Air Plant scenarios above, and CR 803.7e's condition is",
+   "why": "wrong-rule: the turn-count condition is 803.7e"
+  },
+  {
+   "file": "client/server/scenarios-e.ts",
+   "find": "made unremarkable by the unconditional haste step (504.5), which deleted",
+   "replace": "made unremarkable by the change that made the haste step unconditional (CR 504.5), which deleted",
+   "why": "grammar: bare '504.5', and a step cannot delete code"
+  },
+  {
+   "file": "client/server/seen.ts",
+   "find": " * CR D6.3 resume snapshot is the world",
+   "replace": " * suspension's resume snapshot is the world",
+   "why": "wrong-rule: D6.3 is the resolving marker, not the resume snapshot"
+  },
+  {
+   "file": "client/server/stats.ts",
+   "find": "(the identical-trigger rule alone re-ordered",
+   "replace": "(the identical-trigger change alone re-ordered",
+   "why": "history: a rule narrated as the change that re-ordered"
+  },
+  {
+   "file": "client/server/stats.ts",
+   "find": "a hit the CR 608.8a rot hooks replace",
+   "replace": "a hit the rot hooks replace",
+   "why": "grammar: the same CR number twice in one phrase (this one was R38 rot)"
+  }
+ ]
+}

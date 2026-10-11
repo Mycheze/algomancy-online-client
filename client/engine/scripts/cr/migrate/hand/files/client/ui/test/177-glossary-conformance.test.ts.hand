@@ -7,14 +7,14 @@
  * {Tough}, {Vulnerable}, {Evasive}, {Sneaky}, {Burst}, {Unstable}, {Ambush})
  * it is the ONLY statement of the rule the repository has. `engine.ts:4331`
  * says so outright about {Reaping}: "ui/glossary.ts is the repo's own
- * statement of it, AND IT IS WHAT the Reaping ruling READ."
+ * statement of it, AND IT IS WHAT R184 READ."
  *
  * Nothing checked it. The cost is on the record twice:
  *   · report #106 — the glimpse rule was corrected on 2026-08-19 (glimpse caches exactly
  *     ONE and recycles the rest) and the glossary kept the pre-correction
  *     wording for SEVEN DAYS, contradicting, on screen, the printed box
  *     directly above it. The report was triaged to the printed data twice.
- *   · The 2026-08-26 audit (2026-08-26) audited all 43 rows and found NINE wrong — three of
+ *   · The 2026-08-26 audit checked all 43 rows and found NINE wrong — three of
  *     them on CT-80's own "checked and correct, do not re-audit" list.
  *
  * WHAT THIS FILE CAN SEE, stated plainly so nobody reads more into a green
@@ -40,7 +40,7 @@
  *      verbatim in `rule`. Without it, checks 1-3 could pass on rows that had
  *      been quietly reduced to their printed sentence, because they all read
  *      `stated()` — the complete statement, whichever field holds it.
- *      CR D6.11 / report #119 adds a SECOND displacing channel — the Algomancy
+ *      Report #119 (CR D6.11) adds a SECOND displacing channel — the Algomancy
  *      Manual, for seven rows no card reminds you about — and §7 states the
  *      invariant over both: `rule` exists exactly when something the GAME says
  *      displaced the authored sentence, and the row names which channel said
@@ -415,7 +415,7 @@ function bodyOf(src: string, needle: string, where: string): string {
 /* ════════════════════════════════════════════════════════════════════════
  * ENGINE-ROW COHERENCE — what these six are, and what they are NOT
  *
- * ⚠ RENAMED 2026-08-30 (CR 802.9h / CT-171). Each of these regexes the ENGINE
+ * ⚠ RENAMED 2026-08-30 (CT-171). Each of these regexes the ENGINE
  * SOURCE and the glossary ROW and requires them to agree. That is a DRIFT
  * DETECTOR and it is worth having: it catches a row and the code parting ways.
  *
@@ -424,11 +424,12 @@ function bodyOf(src: string, needle: string, where: string): string {
  * When the engine is wrong, a test of this shape holds the ROW wrong too and
  * reddens whoever fixes it. That is not hypothetical: the {Prophecy} row was
  * rewritten to match `cachedTiming`, and `cachedTiming` gated a fulfilled
- * prophecy to its [Haste] marker in flat contradiction of CR 803.7i while citing the prophecy ruling
- * as its authority ((the defect 803.7i now rules out)). Doc and code agreed; both were wrong; the agreement
+ * prophecy to its [Haste] marker in flat contradiction of the prophecy ruling (now
+ * CR 803.7i) while citing that same ruling as its authority. Doc and code agreed; both were wrong; the agreement
  * is what made it look settled.
  *
- * Note also what these messages say and do not check: "re-read names a ruling that nothing here reads The missing third leg — every citation on a
+ * Note also what these messages say and do not check: "re-read CR 802.9a" names a
+ * rule that nothing here reads. The missing third leg — every citation on a
  * row with no outside witness must NAME that row's term — is
  * `261-glossary-basis.test.ts` §2, and it removed two citations doing no work
  * ({Once}→control-change ruling, {Unaware}→the attribute-order ruling) the day it was written.
@@ -440,7 +441,7 @@ test('ENGINE-ROW COHERENCE CR 801.2d {Trash}: the row and noteTrashed agree abou
     'E.toBin now mentions tokens. If the ENGINE gained a token check, this test is the wrong '
     + 'thing to change — read CR 304.2 first, then the glossary row.');
   assert.doesNotMatch(text('Trash'), /non-?token/i,
-    'the row conditions trashing on being a nontoken and the engine does not. CR 304.2: the only '
+    'the row conditions trashing on being a nontoken and the engine does not (CR 304.2: a token is not a card). The only '
     + 'printed "nontoken" wording came from Void Scavenger, a card CUT from the set.');
   // CR 801.2d: the token check moved to the trash choke point, and the row must
   // say so positively — a token is never trashed.
@@ -485,7 +486,7 @@ test('ENGINE-ROW COHERENCE CR 723.2 {Virus}: the row and the battle gate agree a
     'the row omitted the REAL restriction: a virus in your bin is not a battle-time augment');
   // CR 723.2a (report #195): the cache plays like the hand, so the window reaches it too
   assert.match(text('Virus'), /cache/i,
-    'the row says hand only — CR 723.2a opened the battle window to a playable cache card');
+    'the row says hand only — CR 723.2a lets a playable cache card into the battle window');
   // …and the restriction it INVENTED. The battle branch checks priority and
   // region and nothing about the host's controller (CR 723.5a, owner verbatim:
   // "yes it can also go to an enemy. That's the whole point of the card").
@@ -523,7 +524,7 @@ test('ENGINE-ROW COHERENCE CR 801.9, 801.10 {Recycle}: the row and recycleToBott
   assert.match(t, /mark/i, 'and the row a player reads says so');
   assert.match(t, /shuffled/i, 'including the half that makes the mark worth having');
   assert.doesNotMatch(t, /gone for the rest of the game|out of the game(?!\W)/i,
-    'the pre-the old wording is back — leaving the game is the one thing recycling never does');
+    'the wording from before the glossary fix is back — leaving the game is the one thing recycling never does');
 });
 
 /* ════════════════════════════════════════════════════════════════════════

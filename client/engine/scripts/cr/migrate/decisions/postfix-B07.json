@@ -1,0 +1,525 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "leaving interactions outside combat uncovered the owner, 2026-09-05:",
+   "replace": "leaving interactions outside combat uncovered. The owner, 2026-09-05:",
+   "why": "grammar: run-on, lost sentence break before the owner's quote"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "The decision is CR 608.6a, 802.16c's own `assignDamage`,",
+   "replace": "The decision is the combat strike's own `assignDamage` (CR 608.6a, 802.16c),",
+   "why": "grammar: possessive on a CR list ('CR x, y's own assignDamage')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "had it the other way round (1x2+1 = 3) = 3) as an interim decision with no\n       * ruling behind it; The current rule replaces it with the thread's arithmetic\n",
+   "replace": "had it the other way round (1x2+1 = 3) as an interim decision with no\n       * ruling behind it; the thread's arithmetic replaced it (CR 112.9).\n",
+   "why": "grammar: doubled '= 3)', capital after ';', lost period; history: 'the current rule replaces it' narrated a rule as the change"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "which is CR 802.3e, 802.3g's whole subject: the owner,",
+   "replace": "which is the whole subject of CR 802.3e and 802.3g: the owner,",
+   "why": "grammar: possessive on a CR list"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "this branch at all\"; The Poisonous-is-damage ruling",
+   "replace": "this branch at all\"; the Poisonous-is-damage ruling",
+   "why": "grammar: capital after ';'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "death in the middle of damage CR 112.8 made simultaneous.",
+   "replace": "death in the middle of damage CR 112.8 makes simultaneous.",
+   "why": "history: a rule narrated in the past tense as the change ('CR 112.8 made')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "is what the Reaping ruling read.\" That was false,",
+   "replace": "is what R184 read.\" That was false,",
+   "why": "quote: the quotation of this comment's own former text must stay verbatim (pre-migration 'is what R184 read.') — NEEDS a 184 allowlist entry (multi-line quote)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "(owner, 2026-08-30). CR 802.9h, 802.21.\n",
+   "replace": "(owner, 2026-08-30); see CR 802.21.\n",
+   "why": "wrong-rule: 802.9h (Unaware and targeting) has nothing to do with Reaping; R281 was a process ruling"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "per body, which is what this site paid until CR 802.21.)",
+   "replace": "per body, which is what this site paid until the reminder was read.)",
+   "why": "history: 'until CR 802.21' narrates a rule as the change that fixed the site"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// CR 802.23c already had the right machinery for {Afflicting} and",
+   "replace": "// The {Afflicting} kill diff (CR 802.23c) already had the right machinery, and",
+   "why": "history: rule narrated as an actor that 'already had the machinery'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// CR 802.21b's whole change is that {Reaping} now rides the SAME diff.",
+   "replace": "// The Reaping change (CR 802.21b) is that {Reaping} now rides the SAME diff.",
+   "why": "history: rule narrated as a change ('CR 802.21b's whole change')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "`disposingSelf` keeps CR 713.6a's\n    // \"excludes the trigger source itself\":",
+   "replace": "`disposingSelf` keeps the\n    // \"excludes the trigger source itself\" reading (CR 713.6a):",
+   "why": "truth: the quoted words are the retired ruling's, not CR 713.6a's text"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * repairs in two rounds) to make one copy say what the original said.",
+   "replace": "   * repairs, in two rounds, to make one copy say what the original said.",
+   "why": "grammar: stray ')' left when '(R146, then R152)' was removed"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "it takes neither the leave-play `anchor` (714.9) (so a mod's",
+   "replace": "it takes neither the leave-play `anchor` of CR 714.9 (so a mod's",
+   "why": "grammar: '(714.9) (' double parenthesis and a bare number without 'CR'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "     * CR 405.3, 801.2e — **A STOLEN UNIT THAT\n",
+   "replace": "     * CR 405.3, 801.2e (owner, 2026-08-29, round-31 sheet Q5) — **A STOLEN UNIT THAT\n",
+   "why": "readability: the dropped provenance is what the later 'Q5 was asked about a unit' refers to"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "made them differ\"). The own split — `noteTrashed`'s",
+   "replace": "made them differ\"). That ruling's own split — `noteTrashed`'s",
+   "why": "grammar: 'The own split' (was R244's own split)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "sends a mod to its host controller's bin (CR 410.4a). ruled that separately and Q5 was\n     * asked about a unit.",
+   "replace": "sends a mod to its host controller's bin (CR 410.4a), a separate ruling: Q5 was\n     * asked about a unit.",
+   "why": "grammar: sentence fragment '. ruled that separately' left by the rewrite"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "    // // The nontoken mods enter the host controller's bin too",
+   "replace": "    // The nontoken mods enter the host controller's bin too",
+   "why": "grammar: doubled comment marker"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "card pool.\"* the attribution half stands untouched",
+   "replace": "card pool.\"* The earlier reading's ATTRIBUTION half stands untouched",
+   "why": "grammar: sentence starts lowercase and lost its subject"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the exact defect the owner's 2026-08-24 call fixed (report #93 …; CR 801.2h disagrees, CT-246) exists to fix (report #93:",
+   "replace": "the exact defect the owner's 2026-08-24 call exists to fix (report #93:",
+   "why": "grammar: doubled clause 'fixed (report #93 …) exists to fix (report #93'; the CT-246 note is already on the line above"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "`opts.binTo` (CR 801.2) redirects the bin",
+   "replace": "`opts.binTo` (CR 405.3, 801.2e) redirects the bin",
+   "why": "wrong-rule: 801.2 is 'trashed on entering a bin'; the redirect is 405.3 ('unless the effect names another bin') and its trasher 801.2e"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "Nothyr, Murkstalker). CR 803.8m made `binTo` matter for an Unstable unit too:",
+   "replace": "Nothyr, Murkstalker). The engine's Unstable route (CR 405.5 differs, CT-246) made `binTo` matter for an Unstable unit too:",
+   "why": "history/truth: R137's engine change narrated as CR 803.8m acting; 803.8m says nothing about Unstable units reaching a bin"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 410.5a again — a dying TOKEN",
+   "replace": "   * CR 410.5a — a dying TOKEN",
+   "why": "grammar: 'again' was 'R69 again'; 410.5a is not cited before"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "      // CR 410.2(1): logged AND fired.",
+   "replace": "      // CR 410.2: logged AND fired.",
+   "why": "grammar: leftover sub-item label '(1)'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * the two things that changed here, both driven by CT-38/CT-39:",
+   "replace": "   * The two things that changed here, both driven by CT-38/CT-39:",
+   "why": "grammar: paragraph starts lowercase after the dropped R148"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * per CR 601.2 the ordinary way",
+   "replace": "   * per CR 101.6 the ordinary way",
+   "why": "wrong-rule (systemic): region scope is 101.6, not 601.2"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "would break CR 602.5a's \"after blocks,\n   * columns will not move\" as surely",
+   "replace": "would break the printed \"after blocks,\n   * columns will not move\" (CR 602.5a) as surely",
+   "why": "truth: the quoted words are the Manual's, not CR 602.5a's text"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the first build of the collapse as an\n   * unconditional",
+   "replace": "the first build ran the collapse as an\n   * unconditional",
+   "why": "grammar: lost verb ('the first R72 build ran the collapse')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "RESOLUTION, the way the target of \"an ally\" is chosen.",
+   "replace": "RESOLUTION, the way an untargeted \"an ally\" is chosen.",
+   "why": "truth: R71's 'an ally' is NOT a target (CR 706.12)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "board moving under it — CR 602.7, 602.7a's play-time placement is chosen at cast and",
+   "replace": "board moving under it — the play-time placement of CR 602.7 is chosen at cast and",
+   "why": "grammar: possessive on a CR list"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "lost its occupant (CR 704.6b, 704.5). A raw index",
+   "replace": "lost its occupant (CR 602.7a). A raw index",
+   "why": "wrong-rule (systemic 704.6b): a spot is not a target; 602.7a is the gone-spot rule"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// CR 714.4 (reverses the earlier dead-source reading) half): a source",
+   "replace": "// CR 714.4 (the earlier dead-source reading is reversed): a source",
+   "why": "grammar: garbled 'reading) half)'; history: rule narrated as the reversal"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "no longer names one (CR 704.6b, 704.5 — re-derived,",
+   "replace": "no longer names one (CR 602.7a — re-derived,",
+   "why": "wrong-rule (systemic 704.6b): a spot is not a target; 602.7a is the gone-spot rule"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "Public for CR 603.3's Hooba-Nan, which fills",
+   "replace": "Public for Hooba-Nan (CR 603.3), which fills",
+   "why": "grammar: a card owned by a rule ('CR 603.3's Hooba-Nan')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "this and CR 602.6's `placeInFormation`: CR 602.6 is an EFFECT resolving",
+   "replace": "this and `placeInFormation` (CR 602.6): that is an EFFECT resolving",
+   "why": "truth/grammar: 'CR 602.6 is an EFFECT resolving' — a rule is not an effect"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "      // CR 704.6b, 704.5: chosen at cast, taken at resolution",
+   "replace": "      // CR 602.7a: chosen at cast, taken at resolution",
+   "why": "wrong-rule (systemic 704.6b): 602.7a is exactly 'the chosen position no longer exists'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "The earlier reading closed the edges from 2026-08-21 to 2026-09-25\n",
+   "replace": "The earlier reading closed the edges from 2026-08-21 to 2026-09-25.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 714.4 (2026-10-09) reverses FTUW's DEAD-source half: a source that left",
+   "replace": "   * Since 2026-10-09 (CR 714.4) FTUW's DEAD-source half is reversed: a source that left",
+   "why": "history: rule narrated as the dated change ('CR 714.4 (2026-10-09) reverses')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the leave-play `to` (714.9)'s `to`, so Capture",
+   "replace": "the leave-play `to` (CR 714.9), so Capture",
+   "why": "grammar: garbled '`to` (714.9)'s `to`', bare number"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "so a nontoken mod IS trashed by the HOST's controller, into that controller's bin (CR 801.2f, 410.4a) its own owner's bin; the two can differ and the\n   * engine now says which is which.",
+   "replace": "so a nontoken mod IS trashed — in\n   * afterDespawn(), after the despawn event, for log order — by the HOST's\n   * controller, into that controller's bin (CR 801.2f, 410.4a).",
+   "why": "grammar: garbled splice ('(CR 801.2f, 410.4a) its own owner's bin'); restores the dropped afterDespawn/log-order clause; 'the two can differ' no longer true (code bins to the controller)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "The owner extended\n    // CR 400.4's *\"there's no issue",
+   "replace": "The owner extended\n    // his earlier *\"there's no issue",
+   "why": "truth: the quoted words are the owner's, not CR 400.4's text"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "'despawned' line. (CR 706.13: which afterDespawn() is now HANDED, rather than",
+   "replace": "'despawned' line. (afterDespawn() is now HANDED that event, rather than",
+   "why": "wrong-rule (systemic 706.13): event hand-off is engine machinery, not 'the played item'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "is REVERSED 'stackSpell' is",
+   "replace": "is REVERSED. 'stackSpell' is",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * mods, each read from its HOST), the same CR 601.2 region scope, the same",
+   "replace": "   * mods, each read from its HOST), the same CR 101.6 region scope, the same",
+   "why": "wrong-rule (systemic): region scope is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * during the CR 504.8a haste step",
+   "replace": "   * during the haste step (CR 504)",
+   "why": "grammar: the same CR number twice in one phrase (R18 = the haste step)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * HOST), same CR 601.2 region scope,",
+   "replace": "   * HOST), same CR 101.6 region scope,",
+   "why": "wrong-rule (systemic): region scope is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "and it is the `mayAugmentInBattle` with one",
+   "replace": "and it is `mayAugmentInBattle` with one",
+   "why": "grammar: stray article left by the dropped R95"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "THE UNCONDITIONAL HASTE STEP (504.5) RETIRED",
+   "replace": "THE UNCONDITIONAL HASTE STEP (CR 504.5) RETIRED",
+   "why": "grammar: bare rule number without 'CR'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "an CR 504.7a allowance",
+   "replace": "a CR 504.7a allowance",
+   "why": "grammar: 'an CR'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "The two GENERAL refusals are\n   * CR 207.4a, 803.2b's, restated above every grantor",
+   "replace": "The two GENERAL refusals\n   * (CR 207.4a, 803.2b) are restated above every grantor",
+   "why": "grammar: possessive on a CR list"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// needs no grant (CR 803.2b refusal 2)",
+   "replace": "// needs no grant (refusal 2 above)",
+   "why": "grammar: leftover sub-item label 'CR 803.2b refusal 2'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "(CR 704.5 \"another target\", CR 110.6, 110.9 — CT-189,",
+   "replace": "(CR 110.6, 110.9, 704.5 — CT-189,",
+   "why": "truth: 'another target' read as CR 704.5's words (it was R56's title); 'CR' repeated in one list"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "The name a target is offered and logged under.: a UNIT",
+   "replace": "The name a target is offered and logged under. A UNIT",
+   "why": "grammar: '.:' left by the dropped R64"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the target is gone in CR 704.6b's ordinary sense.",
+   "replace": "the target is lost in the ordinary way (CR 704.6).",
+   "why": "wrong-rule (systemic 704.6b): 704.6b is partial resolution; a lost target is 704.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "then it is simply gone (CR 704.6b fizzle)",
+   "replace": "then it is simply gone (CR 704.6)",
+   "why": "wrong-rule (systemic 704.6b): fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "of your opponent.\" CR 704.5 said re-validate at resolution, but",
+   "replace": "of your opponent.\" An earlier ruling already said re-validate at resolution, but",
+   "why": "history: CR 704.5 narrated as having said it; it was the retired ruling (704.5 now includes the restriction recheck)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "A target that left play is CR 704.6b's ordinary loss and",
+   "replace": "A target that left play is an ordinary lost target (CR 704.6, 704.6b) and",
+   "why": "grammar: possessive pointer; 704.6b alone is partial resolution"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "which is what CR 602.6h already required of the",
+   "replace": "which is what CR 602.6h requires, as it did of the",
+   "why": "history: rule narrated as an actor ('already required')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "took their beat away the reasoning recorded",
+   "replace": "took their beat away; the reasoning recorded",
+   "why": "grammar: run-on"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "there is no window (CR 703.7(a): \"Nobody may RESPOND to a deployment\n     * stack\"), the item resolves at the next safe point, and putting deployment plays on the stack would have made it a double announcement anyway since",
+   "replace": "there is no window (the deployment ruling: \"Nobody may RESPOND to a deployment\n     * stack\"; now CR 703.7), the item resolves at the next safe point, and the flash would have made it a double announcement anyway, since",
+   "why": "truth: quote attributed to CR 703.7 (and sub-label '(a)'); 'putting deployment plays on the stack' misread R286, which is this comment's flash rule; lost comma"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "beat — which is CR D6.7's simultaneity bug, rebuilt.",
+   "replace": "beat — which is the simultaneity bug CR D6.7 forbids, rebuilt.",
+   "why": "grammar: a bug owned by a rule"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 801.2b again: this comes from the STACK",
+   "replace": "   * CR 801.2b: this comes from the STACK",
+   "why": "grammar: 'again' was 'R40 again'; 801.2b is not cited before"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "for the same reason CR 704.2c's\n    // is:",
+   "replace": "for the same reason a bin play's\n    // stamp is (CR 704.2c):",
+   "why": "grammar: possessive pointer ('the same reason CR 704.2c's is')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "    // CR 704.6b fizzle and negation alike.",
+   "replace": "    // fizzle (CR 704.6) and negation alike.",
+   "why": "wrong-rule (systemic 704.6b): fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the same channel CR 721.4b built for a virus;",
+   "replace": "the same channel a virus uses (CR 721.4b);",
+   "why": "history: rule narrated as the builder"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "when that rule was written and the\n",
+   "replace": "when that rule was written, and the\n",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "      // CR 111.8a: \"[Sacrifice me]\" asks about the SOURCE",
+   "replace": "      // CR 111.7a: \"[Sacrifice me]\" asks about the SOURCE",
+   "why": "wrong-rule: 111.8a is an optional 'you may sacrifice me'; the [Sacrifice me] cost is 111.7a (R73)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "that is what makes CR 704.6b skip the part,",
+   "replace": "that is what makes CR 101.5b skip the part,",
+   "why": "wrong-rule (systemic 704.6b): an unpaid cost's effect not happening is 101.5b"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the same reason CR 206.6b left Pestilent Mycelion's sign filter standing.",
+   "replace": "the same reason Pestilent Mycelion's sign filter stands (CR 206.6b).",
+   "why": "history: rule narrated as an actor ('CR 206.6b left ... standing')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "  /** CR 111.8a: the source unit of a \"[Sacrifice me]\" cost",
+   "replace": "  /** CR 111.7a: the source unit of a \"[Sacrifice me]\" cost",
+   "why": "wrong-rule: [Sacrifice me] cost is 111.7a, not 111.8a (optional sacrifice)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 111.8a: \"[Sacrifice me]\" is NOT one of them",
+   "replace": "   * CR 111.7a: \"[Sacrifice me]\" is NOT one of them",
+   "why": "wrong-rule: [Sacrifice me] cost is 111.7a"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "rides the outer suspension (CR 702.3) and nothing",
+   "replace": "rides the outer suspension and nothing",
+   "why": "wrong-rule: the suspension is engine machinery (R198), not the play steps of 702.3"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// CR 111.14's wording kept for a multiplied graft:",
+   "replace": "// the multiplied-graft wording kept (CR 111.14):",
+   "why": "truth: the message wording is not CR 111.14's text"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "— the mandatory grafted cost (722.6) removed the\n   * opt-in grafted-rider path that used to ask about them) */",
+   "replace": "— since grafted costs\n   * became mandatory (CR 111.15) there is no opt-in grafted-rider path to ask about them) */",
+   "why": "history: rule narrated as the change; bare number without 'CR'"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "    // CR 111.8a: \"[Sacrifice me]\" names no unit",
+   "replace": "    // CR 111.7a: \"[Sacrifice me]\" names no unit",
+   "why": "wrong-rule: [Sacrifice me] cost is 111.7a"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// CR 702.6b, 111.6b: a VARIABLE life cost is paid a point at a time, so that CR 111.6b's\n    // \"never your last life\" is re-asked",
+   "replace": "// CR 702.6b: a VARIABLE life cost is paid a point at a time, so that\n    // \"never your last life\" (CR 111.6b) is re-asked",
+   "why": "grammar: the same CR number twice in one phrase; the quoted words are not 111.6b's text"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "      // CR 111.8a: \"[Sacrifice me]\". No choice",
+   "replace": "      // CR 111.7a: \"[Sacrifice me]\". No choice",
+   "why": "wrong-rule: [Sacrifice me] cost is 111.7a"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "unless CR 111.2's `nontoken` flag is set",
+   "replace": "unless the atom's `nontoken` flag is set",
+   "why": "truth: a code flag owned by a rule ('CR 111.2's nontoken flag')"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// CR 111.10: for a 'playSacrifice' atom",
+   "replace": "// CR 111.10d: for a 'playSacrifice' atom",
+   "why": "precision: R122 (an imposed additional cast cost, Vengeance) is 111.10d"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "CR 702.3a, 702.3f's \"targets before\n    // costs\" is about",
+   "replace": "The \"targets before\n    // costs\" rule (CR 702.3f) is about",
+   "why": "grammar: possessive on a CR list before a quotation"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "BEFORE the costs, so R57's \"nothing irreversible is spent",
+   "replace": "BEFORE the costs, so the rule that \"nothing irreversible is spent",
+   "why": "systemic: bare R57 surviving beside a quotation"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "until the effect is fully declared\" holds for a modal card too.",
+   "replace": "until the effect is fully declared\" (CR 702.3) holds for a modal card too.",
+   "why": "systemic: the R57 rule beside the quotation now points at its CR rule"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "augment mods read from their HOST, CR 601.2-scoped to the region",
+   "replace": "augment mods read from their HOST, CR 101.6-scoped to the region",
+   "why": "wrong-rule (systemic): region scope is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "once was to be. The repo\n   * had already ruled the general case twice: **CR 801.6a** — *\"It's not a\n   * death, but it IS a despawn and a trashing\"* — and **and the earlier repair of the same omission on exchangeInPlace An erase",
+   "replace": "once was. The repo\n   * had already ruled the general case twice: **the exchange ruling (CR 410.2a)** — *\"It's not a\n   * death, but it IS a despawn and a trashing\"* — and **the earlier repair of the same omission on `exchangeInPlace`**. An erase",
+   "why": "truth: the quote (about an EXCHANGE) attributed to CR 801.6a, which says an erase is NOT a trash; grammar: 'was to be', doubled 'and', unclosed bold, lost period"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the same bug, one verb over The one thing",
+   "replace": "the same bug, one verb over. The one thing",
+   "why": "grammar: lost period"
+  }
+ ],
+ "_reconciled": [
+  {
+   "dropped": {
+    "file": "client/engine/src/engine.ts",
+    "find": "the earlier reading that the mods ride with it **a mod erased",
+    "replace": "the earlier reading that the mods ride with it: **a mod erased",
+    "why": "grammar: missing colon before the ruling"
+   },
+   "reason": "superseded by postfix-000-audit3, which restores the whole quotation with its colon"
+  }
+ ]
+}

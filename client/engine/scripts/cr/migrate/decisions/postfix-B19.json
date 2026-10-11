@@ -1,0 +1,736 @@
+{
+ "edits": [
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'CLOSED as of round 17 its other line",
+   "replace": "'CLOSED in round 17 (CR 402.6): its other line",
+   "why": "grammar: lost colon after the dropped R100; point to the hand-restriction rule"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'RULE: the corrected Alluring rule (targets one enemy unit, from the stack) replaces it per Caleb\\'s rulings",
+   "replace": "'RULE: the Alluring ruling (now CR 606.2e) replaces it per Caleb\\'s rulings",
+   "why": "grammar: the parenthesis duplicated the one that follows it"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "KEPT — CR 601.2 is real",
+   "replace": "KEPT — CR 101.6 is real",
+   "why": "wrong-rule: R12 region scoping is CR 101.6 (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'CR 601.2 — REGION SCOPING",
+   "replace": "'CR 101.6 — REGION SCOPING",
+   "why": "wrong-rule: region scoping is CR 101.6"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'GUARDS WIDENED 2026-08-25 after an audit found the first three are all pure (see 154-guard-shape) '",
+   "replace": "'GUARDS WIDENED 2026-08-25 (see 154-guard-shape) after an audit found the first three are all pure '",
+   "why": "grammar: the pointer split 'pure ... tests'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'works only because stat layer 5 (802.8a) shipped the same day and its rot replacement '",
+   "replace": "'works only because stat layer 5 (CR 802.8a) shipped the same day, and its rot replacement '",
+   "why": "grammar: bare number, lost comma"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'landed (112.13d) on the owner",
+   "replace": "'(CR 112.13d) landed on the owner",
+   "why": "grammar: bare number placed after the verb"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'CR D6.3. Not a delivery",
+   "replace": "'CR D6.3b. Not a delivery",
+   "why": "wrong-rule: old R85 (rollback on resume, the board shown mid-resolution) is D6.3b"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'Root cause: CR 602.6\\'s \"placement happens at resolution\" was written",
+   "replace": "'Root cause: the \"placement happens at resolution\" ruling (now CR 602.6) was written",
+   "why": "quote: the quoted words are the old ruling's, not CR 602.6's text"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "exists. CR 602.6 keeps placeInFormation",
+   "replace": "exists. That ruling keeps placeInFormation",
+   "why": "history: a rule does not keep engine code"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "Fixed with an CR 705.3a `restrict`",
+   "replace": "Fixed with a `restrict` (CR 705.3a)",
+   "why": "grammar: 'an CR'; rule possessive"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'restriction is asked at cast and never re-asked (CR 704.6b, 704.5) and a redirect can move targets '",
+   "replace": "'restriction was then asked at cast and never re-asked (since amended: CR 704.5 re-checks it) and a redirect can move targets '",
+   "why": "truth: CR 704.5 re-checks a target's restriction at resolution, contradicting 'never re-asked'; 704.6b (partial resolution) is not about this"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'— CR 608.6a auto-assignment gives each blocker",
+   "replace": "'— the old auto-assignment gives each blocker",
+   "why": "truth: CR 608.6a is the elective split, not the auto-assignment this sentence describes"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'shipped and the nuance was recorded (now settled by 709.4d).',",
+   "replace": "'shipped and the nuance was recorded (now CR 709.4d).',",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "IS this engine\\'s CR 803.2a haste step (Caleb:",
+   "replace": "IS this engine\\'s haste step, CR 803.2a (Caleb:",
+   "why": "grammar: awkward pointer phrasing"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "Design note: the mod permission OR-folds its permission '",
+   "replace": "Design note: Rook\\'s mod permission OR-folds '",
+   "why": "grammar: doubled 'permission'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'FIXED BY FIXED 2026-08-23 (CR 707.3), and the guard",
+   "replace": "'FIXED BY THE REPLACEMENT-EFFECT LAYER (CR 707.3), and the guard",
+   "why": "grammar: garbled 'FIXED BY FIXED'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "the part is what the suspension carries (CR D6.3). '",
+   "replace": "the part is what the suspension carries. '",
+   "why": "wrong-rule: old R85 (rollback on resume) is not D6.3; the pointer adds nothing here"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "as a resolution-time payment (CR 702.5a) '",
+   "replace": "as a resolution-time payment (CR 702.5a). '",
+   "why": "grammar: lost sentence-ending period"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "declaration. CR 205.3 moved '\n      + 'Retribution Thing; The owner\\'s bracket rule (2026-09-01; 205.3a) moved Void Memory which had been worse than late: '",
+   "replace": "declaration. The owner\\'s 2026-08-25 answers moved '\n      + 'Retribution Thing (CR 205.3); the owner\\'s bracket rule (2026-09-01, now CR 205.3a) moved Void Memory, which had been worse than late: '",
+   "why": "history: rule narrated as the actor that moved a card; capital after ';', bare number, lost comma"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "this deliberately. the home-region rule and two earlier rulings both ruled '",
+   "replace": "this deliberately. Two earlier rulings (the home-region rule and its confirmation) '",
+   "why": "grammar: 'both ruled' doubled with the next line; lowercase sentence start"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "it is intended. the home-region rule was withdrawn both withdrawn '",
+   "replace": "it is intended. The home-region rule WITHDRAWN, its confirmation '",
+   "why": "grammar: garbled 'was withdrawn both withdrawn' before the next line's WITHDRAWN"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'right), the carrier reading made the general rule Now CR 601.5. '",
+   "replace": "'right), the carrier reading ABSORBED as the general rule. Now CR 601.5. '",
+   "why": "grammar: lost verb and period"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "with the old auto-split as the one-click first option '",
+   "replace": "with the old auto-split as the one-click first option; '",
+   "why": "grammar: lost semicolon"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "go through the CR 707.5a amount layer at",
+   "replace": "go through the amount layer (CR 707.5a) at",
+   "why": "grammar: awkward pointer phrasing"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "consults the CR 708.5 amount layer, but",
+   "replace": "consults the amount layer (CR 708.5), but",
+   "why": "grammar: awkward pointer phrasing"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "(destroy, CR 407.1 public '",
+   "replace": "(destroy, CR 407.1a public '",
+   "why": "wrong-rule: the erased pile being public is 407.1a"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'CLOSED by the active-zone ruling (2026-08-25; 803.8a) in both directions.",
+   "replace": "'CLOSED by the active-zone ruling (2026-08-25; now CR 803.8a), in both directions.",
+   "why": "grammar: bare number, lost comma"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'docs/digital-rules.md § See CR 803.8a.',",
+   "replace": "'CR 803.8a.',",
+   "why": "invented path: docs/digital-rules.md no longer exists; garbled '§ See CR'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "(the hook is region-scoped, CR 601.2)",
+   "replace": "(the hook is region-scoped, CR 101.6)",
+   "why": "wrong-rule: region scope is CR 101.6, not 601.2"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "Same failure as the Rotspore ruling (707.7) (a '",
+   "replace": "Same failure as the Rotspore ruling (a '",
+   "why": "grammar: '((' and a bare number; the parenthesis that follows is the explanation"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'42-dark-b.test.ts::801.2h differs): Dropslime fires from HAND',",
+   "replace": "'42-dark-b.test.ts::Dropslime fires from HAND',",
+   "why": "grammar: garbled guard needle (a cut mid-title); the clean substring still matches the one title"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'42-dark-b.test.ts::differs): an Unstable death and an unmodded death on the SAME damage step',",
+   "replace": "'42-dark-b.test.ts::an Unstable death and an unmodded death on the SAME damage step',",
+   "why": "grammar: garbled guard needle (a cut mid-title); the clean substring still matches the one title"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'CR 400.5\\'s ARGUMENT died here too",
+   "replace": "'The bin-listener ruling\\'s ARGUMENT died here too",
+   "why": "history: a rule narrated as having an argument that died (old R51)"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "the prose is repaired \\u2014 CR 304.2\\'s lesson recurring",
+   "replace": "the prose is repaired \\u2014 the tokens-are-not-cards lesson (CR 304.2) recurring",
+   "why": "history: a rule narrated as having a lesson (old R133)"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "saw. CR 102.5 (owner != controller on spawnUnit) is the '",
+   "replace": "saw. The owner-vs-controller split on spawnUnit (CR 102.5) is the '",
+   "why": "history: a rule narrated as an engine primitive"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "bisected to CR 303.10. The '",
+   "replace": "bisected to the Hush Mush change (CR 303.10). The '",
+   "why": "history: a bisect lands on a change, not a rule"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "trash-through-the-bin change. putting deployment triggers",
+   "replace": "trash-through-the-bin change. Putting deployment triggers",
+   "why": "grammar: lowercase sentence start"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "' FIXED by FIXED (2026-08-25) ui/resources.ts::resourceRow",
+   "replace": "' FIXED 2026-08-25: ui/resources.ts::resourceRow",
+   "why": "grammar: garbled 'FIXED by FIXED'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'CR 106.8 moved exactly this surface a day earlier.',",
+   "replace": "'the Prismite shard reversal (CR 106.8c) moved exactly this surface a day earlier.',",
+   "why": "history: a rule narrated as the change that moved code"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "' FIXED by CR D6.9 (2026-08-25). The decision",
+   "replace": "' FIXED 2026-08-25 (now CR D6.9). The decision",
+   "why": "history: a rule narrated as the fix"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'as the bare-digit costs taught: the pool spells it X,",
+   "replace": "'per the markup round\\'s lesson that the pool spells one thing several ways: it spells it X,",
+   "why": "truth: 'the bare-digit costs taught' is invented; old R141's lesson was that the pool spells the same thing more than one way"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'the one CR D7.2/BL-25 just built for counter removal",
+   "replace": "'the one BL-25 just built for counter removal (CR D7.2)",
+   "why": "history: a rule narrated as having built a UI"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "' FIXED by the per-victim split prompt (CR D7.2e) (2026-08-25) — but",
+   "replace": "' FIXED 2026-08-25 by the per-victim split prompt (CR D7.2e) — but",
+   "why": "grammar: two parentheses in a row"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'FIXED SAME DAY by CR D6.14 (CT-63), and",
+   "replace": "'FIXED SAME DAY (CT-63; now CR D6.14), and",
+   "why": "history: a rule narrated as the fix"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "round-trips. CR D6.7 deliberately gives '",
+   "replace": "round-trips. The fix (CR D6.7) deliberately gives '",
+   "why": "history: a rule narrated as a design choice that 'says so'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "said the opposite. Fixed as Fixed (report #106), reworded off E. off E.glimpse '",
+   "replace": "said the opposite. Fixed then, reworded off E.glimpse '",
+   "why": "grammar: garbled 'Fixed as Fixed', doubled 'off E.'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'✔ FIXED 2026-08-28 (round 29) as CR D6.8. The board",
+   "replace": "'✔ FIXED 2026-08-28 (round 29; now CR D6.8). The board",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "while CR 201.5 deliberately never rewrites",
+   "replace": "while the copy layer (CR 201.5) deliberately never rewrites",
+   "why": "history: a rule narrated as engine code"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "the haste step always opens (504.5) — and",
+   "replace": "the haste step always opens (CR 504.5) — and",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'✔ FIXED 2026-08-28 (round 29) as CR D6.17, and",
+   "replace": "'✔ FIXED 2026-08-28 (round 29; now CR D6.17), and",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'⚠ ⚠ REVERSED 2026-10-09 (RAQ), for",
+   "replace": "'⚠ REVERSED 2026-10-09 (RAQ; now CR 714.4), for",
+   "why": "grammar: doubled warning sign"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "formation it was in. CR 602.6e\\'s other half stands:",
+   "replace": "formation it was in. The other half of the original fix stands (CR 602.6e):",
+   "why": "history: a rule narrated as having halves (old R225)"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'makes \"if I am still in formation\" look like the only recheck mechanism, but CR 602.6h already '",
+   "replace": "'makes \"if I am still in formation\" look like the only recheck mechanism, but the formation-count ruling (now CR 602.6h) already '",
+   "why": "quote: the quoted ruling text that follows is the old ruling's, not CR 602.6h's"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "MUST STAY: CR 405.6 make two",
+   "replace": "MUST STAY: CR 405.6 makes two",
+   "why": "grammar: agreement after the citation collapse"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "MOST BUGS — recorded as CR 802.8d. This",
+   "replace": "MOST BUGS — recorded as a ruling (now CR 802.8d). This",
+   "why": "history: 'recorded as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "RULED AND FIXED 2026-08-29 as CR D6.4. The indicator",
+   "replace": "RULED AND FIXED 2026-08-29 (now CR D6.4). The indicator",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "effect. Ruled as CR D6.4 — that",
+   "replace": "effect. Ruled (now CR D6.4) — that",
+   "why": "history: 'ruled as CR x'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'frozenOpp gate CR 703.7 uses for the stack.",
+   "replace": "'frozenOpp gate the deployment stack uses (CR 703.7).",
+   "why": "history: a rule narrated as using an engine gate"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "RULED AND FIXED 2026-08-29 as CR D6.11. ⚠",
+   "replace": "RULED AND FIXED 2026-08-29 (now CR D6.11). ⚠",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "Round 31 built CR D6.11 '",
+   "replace": "Round 31 built its two fixes (now CR D6.11) '",
+   "why": "history: a rule narrated as built by a round"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "CLOSED THE SAME DAY as CR D6.11c — one",
+   "replace": "CLOSED THE SAME DAY (now CR D6.11c) — one",
+   "why": "history: 'closed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "AND IT TOOK OVERRULING PART. '",
+   "replace": "AND IT TOOK OVERRULING PART OF THE NO-WINDOW RULING. '",
+   "why": "grammar: the dropped R3 left 'OVERRULING PART.' with no object"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "The sub-step ruling survived, narrowed (CR 608.3e): that an unsplit step has no priority window '",
+   "replace": "The no-window ruling survived, narrowed (now CR 608.3a, for an unsplit step): no priority window '",
+   "why": "wrong-rule: 608.3e is state updates between sub-steps; no priority inside an unsplit step is 608.3a; the name matches the rest of the entry"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "does not exist and collides with. Filed '",
+   "replace": "does not exist and collides with the no-window ruling. Filed '",
+   "why": "grammar: the dropped R3 left 'collides with.' with no object"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'ROUND 31. FIXED as CR D2.4, D2.4a (b)/(c). The strings",
+   "replace": "'ROUND 31. FIXED (now CR D2.4, D2.4a). The strings",
+   "why": "grammar: leftover sub-item labels '(b)/(c)' of the old ruling; 'fixed as CR x'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "2026-08-29 and RULED AS CR D2.2: three",
+   "replace": "2026-08-29 and RULED (now CR D2.2): three",
+   "why": "history: 'ruled as CR x'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'ROUND 31. FIXED as CR D1.3a (a). ⚠",
+   "replace": "'ROUND 31. FIXED (now CR D1.3a). ⚠",
+   "why": "grammar: leftover sub-item label '(a)'; 'fixed as CR x'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "RULED AND FIXED 2026-08-29 as CR D6.9. ⚠",
+   "replace": "RULED AND FIXED 2026-08-29 (now CR D6.9c). ⚠",
+   "why": "history: 'fixed as CR x'; the stack forecast of a board-read X is D6.9c"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "RULED AND FIXED 2026-08-29 as CR D6.15. ⚠",
+   "replace": "RULED AND FIXED 2026-08-29 (now CR D6.15). ⚠",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "was fixed separately as CR D5.5. '",
+   "replace": "was fixed separately (now CR D5.5). '",
+   "why": "history: 'fixed as CR x'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "RULED AND FIXED 2026-08-29 as CR D6.9d. THE",
+   "replace": "RULED AND FIXED 2026-08-29 (now CR D6.9d). THE",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "RULED AND FIXED 2026-08-29 as CR D6.18, entirely",
+   "replace": "RULED AND FIXED 2026-08-29 (now CR D6.18), entirely",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "RULED AND FIXED THE SAME DAY as CR 110.3, and",
+   "replace": "RULED AND FIXED THE SAME DAY (now CR 110.3), and",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'Minor Kraken gained its restrict Minor Kraken gained its restrict on 08-21",
+   "replace": "'Minor Kraken gained its restrict on 08-21",
+   "why": "grammar: doubled phrase"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'to agent A as CR 712.4.',",
+   "replace": "'to agent A (now CR 712.4).',",
+   "why": "history: a report was routed as a ruling, not as a CR rule"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'to agent A as CR 721.1.',",
+   "replace": "'to agent A (now CR 721.1c).',",
+   "why": "history: routed as a ruling; the augment-box rule is 721.1c"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "from the pool the way CR D6.11 did for '",
+   "replace": "from the pool the way the glimpse reminder was (CR D6.11) for '",
+   "why": "history: a rule narrated as having derived a sentence"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'Routed to agent A (fixed: 803.7i).',",
+   "replace": "'Routed to agent A (now CR 504.9).',",
+   "why": "wrong-rule: this report is the prophesy WINDOW half (504.9), not the release (803.7i); bare number"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "\"(R42, Divine Intervention)\". CR 803.7i '",
+   "replace": "\"(R42, Divine Intervention)\". The prophecy ruling (now CR 803.7i) '",
+   "why": "quote: the quoted words that follow are the old prophecy ruling's, not CR 803.7i's text"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "action index. Routed to agent A (fixed: 803.7i).',",
+   "replace": "action index. Routed to agent A (now CR 803.7i).',",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "where the Void Memory fix (205.3a) refuses a passPriority the report",
+   "replace": "where the Void Memory fix (CR 205.3a) refuses a passPriority; the report",
+   "why": "grammar: bare number, lost semicolon"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "origin \"temp\" since CR D6.10c/#143.",
+   "replace": "origin \"temp\" since #143 (CR D6.10c).",
+   "why": "history: a rule used as a point in time"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "narrowing CR 702.5 modes already had",
+   "replace": "narrowing the cast-time modes (CR 702.5) already had",
+   "why": "grammar: awkward pointer phrasing"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'one-line engine query: CR 803.7 already stamped the turn a card was prophesied on and '",
+   "replace": "'one-line engine query: the engine already stamped the turn a card was prophesied on (CR 803.7e) and '",
+   "why": "wrong-rule/history: counting from the prophesying turn is 803.7e; a rule does not stamp engine state"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'confirm carries CR 702.6b\\'s own stop label",
+   "replace": "'confirm carries the variable cost\\'s own stop label (CR 702.6b)",
+   "why": "grammar: rule possessive for an engine label"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'deployment region (CR 601.2) that is",
+   "replace": "'deployment region (CR 601.1a) that is",
+   "why": "wrong-rule: region isolation is 601.1a; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "'was the earlier adjacency reading doing what it said The earlier reading took read \"adjacent slots",
+   "replace": "'was the earlier adjacency reading doing what it said. That reading took \"adjacent slots",
+   "why": "grammar: lost period, garbled 'took read'"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "+ 'That was the old reading working as written",
+   "replace": "+ 'the old cost-modifier reading working as written",
+   "why": "grammar: 'That was That was' across the line break"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "three glimpse-prophecy tests went red\",",
+   "replace": "three glimpse-prophecy tests went red.\",",
+   "why": "grammar: lost final period"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "either. the rulings already said the paid X",
+   "replace": "either. The owner\\'s rulings already said the paid X",
+   "why": "grammar: lowercase sentence start"
+  },
+  {
+   "file": "client/ledgers/playtest-ledger-closed.ts",
+   "find": "ruling (since reversed, now CR D6.2) made (owner, 2026-08-28: \\\"Immediately - the card says REVEAL\\\") made the glimpse",
+   "replace": "ruling (\\\"Immediately - the card says REVEAL\\\") made the glimpse",
+   "why": "grammar: garbled doubled 'made (owner, 2026-08-28' — the reversal is named in the next sentence"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "fixed 2026-10-09 (720.10b).",
+   "replace": "fixed 2026-10-09 (CR 720.10b).",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "fixed 2026-10-09 as CR 721.5a.",
+   "replace": "fixed 2026-10-09 (CR 721.5a).",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "fixed 2026-10-09 (304.11d).",
+   "replace": "fixed 2026-10-09 (CR 304.11d).",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "through the same CR 108.4a stack-copy primitive (kind kept, never token)",
+   "replace": "through the same stack-copy primitive (CR 710.8; kind kept, never token, CR 108.4a)",
+   "why": "grammar: awkward pointer phrasing; the stack-copy rule is 710.8"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "Bubb has been {Unaware} since CR 802.9d,",
+   "replace": "Bubb has been {Unaware} since the Unaware layer shipped (CR 802.9d),",
+   "why": "history: a rule used as a point in time"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "note: \"the fizzle rule (CR 704.6a) was built from this very thread",
+   "replace": "note: \"The composite-fizzle ruling (now CR 722.4f) was built from this very thread",
+   "why": "grammar+wrong-rule: lowercase start; the Bellowing Boulder graft-composite fizzle is 722.4f (704.6a is the general fizzle)"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "the same canFillSlot / CR 110.9, 110.4c \\\"ally of the effect controller\\\" rule.",
+   "replace": "the same canFillSlot \\\"ally of the effect controller\\\" rule (CR 110.9, 110.4c).",
+   "why": "quote: the quoted phrase was the old ruling's, not CR text; pointer moved out of the quoted rule name"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "it takes the attributes of the target\"],\n        note: \"Was broken (CT-211); fixed 2026-10-09 as CR 712.3.\" },",
+   "replace": "it takes the attributes of the target\"],\n        note: \"Was broken (CT-211); fixed 2026-10-09 (CR 712.3).\" },",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "fixed 2026-10-09 as CR 801.7d.",
+   "replace": "fixed 2026-10-09 (CR 801.7d).",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "aimed at either unit of a column\"],\n        note: \"Was broken (CT-211); fixed 2026-10-09 as CR 712.3.\" },",
+   "replace": "aimed at either unit of a column\"],\n        note: \"Was broken (CT-211); fixed 2026-10-09 (CR 712.3).\" },",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "adds 1 to the Resonant damage\"],\n        note: \"Was broken (CT-200); fixed 2026-10-09 as CR 802.19d.\" },",
+   "replace": "adds 1 to the Resonant damage\"],\n        note: \"Was broken (CT-200); fixed 2026-10-09 (CR 802.19d).\" },",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "a Powerful Resonant 2/4 deals 4 combat damage\"],\n        note: \"Was broken (CT-200); fixed 2026-10-09 as CR 802.19d.\" },",
+   "replace": "a Powerful Resonant 2/4 deals 4 combat damage\"],\n        note: \"Was broken (CT-200); fixed 2026-10-09 (CR 802.19d).\" },",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "fixed 2026-10-09 as CR 802.19e.",
+   "replace": "fixed 2026-10-09 (CR 802.19e).",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "fixed 2026-10-09 as CR 802.19h.",
+   "replace": "fixed 2026-10-09 (CR 802.19h).",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "all 6 may stay on the Vulnerable unit\"],\n        note: \"Was broken (CT-204); fixed 2026-10-09 as CR 802.17.\" },",
+   "replace": "all 6 may stay on the Vulnerable unit\"],\n        note: \"Was broken (CT-204); fixed 2026-10-09 (CR 802.17d).\" },",
+   "why": "history+wrong-rule: 'fixed as CR x'; 802.17 is only Electric's reminder text — the optional jump is 802.17d"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "nowhere to jump is still dealt\"],\n        note: \"Was broken (CT-204); fixed 2026-10-09 as CR 802.17.\" },",
+   "replace": "nowhere to jump is still dealt\"],\n        note: \"Was broken (CT-204); fixed 2026-10-09 (CR 802.17e).\" },",
+   "why": "history+wrong-rule: 'fixed as CR x'; excess with nowhere to jump being dealt is 802.17e"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "(and the owner, CR 710.2: \\\"Inherit the mods text\\\")",
+   "replace": "(and the owner, in the copy-layer ruling: \\\"Inherit the mods text\\\")",
+   "why": "quote: the owner's words credited to CR 710.2"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "fixed 2026-10-09 as CR 702.4e.",
+   "replace": "fixed 2026-10-09 (CR 702.4e).",
+   "why": "history: 'fixed as CR x' for what was a ruling"
+  },
+  {
+   "file": "client/ledgers/raq.ts",
+   "find": "the spec quotes the reversal (digital-rules, CR 207.4a states the reversal section).\" },",
+   "replace": "CR 207.4a states the reversal.\" },",
+   "why": "grammar/invented path: garbled splice; the register (digital-rules) no longer exists"
+  },
+  {
+   "file": "client/ledgers/scenario-queue.ts",
+   "find": " *   ruled×N     a ruling in digital-rules.md names the card N times. Cards that",
+   "replace": " *   ruled×N     N comprehensive rules name the card. Cards that",
+   "why": "truth: the hand merge made rulingWeight count CR records (crRecordTexts); digital-rules.md is deleted"
+  },
+  {
+   "file": "client/ledgers/unreached.ts",
+   "find": " *   REGION — CR 601.2. The clause",
+   "replace": " *   REGION — CR 601.1d. The clause",
+   "why": "wrong-rule: a trigger scoped to its own region is 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/ledgers/unreached.ts",
+   "find": "  // ── REGION (CR 601.2): the clause",
+   "replace": "  // ── REGION (CR 601.1d): the clause",
+   "why": "wrong-rule: a trigger scoped to its own region is 601.1d"
+  },
+  {
+   "file": "client/ledgers/unreached.ts",
+   "find": "vocabulary said. CR 608.9b gives it a real resolution window",
+   "replace": "vocabulary said. Holding it to after combat (CR 608.9b) gives it a real resolution window",
+   "why": "history: a rule narrated as the change"
+  },
+  {
+   "file": "client/server/api-bot.ts",
+   "find": " * CR D8.4a already settled this for the scenario tester",
+   "replace": " * The scenario-tester ruling (now CR D8.4a) already settled this for the scenario tester",
+   "why": "history: a rule narrated as having settled an argument"
+  },
+  {
+   "file": "client/server/api-replay.ts",
+   "find": " * the whole (see replay-room.ts): the rules move",
+   "replace": " * the whole of the divergence problem (see replay-room.ts): the rules move",
+   "why": "grammar: 'the whole' lost its object with R200"
+  },
+  {
+   "file": "client/server/cardledger.ts",
+   "find": "every action's CR 706.13 zone delta (what it",
+   "replace": "every action's zone delta (what it",
+   "why": "wrong-rule: CR 706.13 is the played item a trigger acts on, not a replay zone delta (old R191's record)"
+  },
+  {
+   "file": "client/server/e2e/suite.test.ts",
+   "find": "covers: \"CR D6.3: the suspension's rollback snapshot",
+   "replace": "covers: \"the suspension's rollback snapshot",
+   "why": "wrong-rule: D6.3 is the resolving marker; old R85's rollback snapshot has no CR rule"
+  },
+  {
+   "file": "client/server/e2e/suite.test.ts",
+   "find": "(an CR D6.3 snapshot-carrying mid-resolution suspension",
+   "replace": "(a snapshot-carrying mid-resolution suspension",
+   "why": "grammar+wrong-rule: 'an CR'; D6.3 is not the rollback snapshot"
+  },
+  {
+   "file": "client/server/e2e/suite.test.ts",
+   "find": "        // CR D8.4a: and the scenario tester's verdict store, for the same reason —",
+   "replace": "        // And the scenario tester's verdict store, for the same reason —",
+   "why": "wrong-rule: D8.4a (scenario rooms only on a tester server) is not about where verdicts are stored"
+  },
+  {
+   "file": "client/server/e2e/test-accounts.ts",
+   "find": "SELF-DAMAGE MUST NOT COUNT. CR 112.13b rot emits",
+   "replace": "SELF-DAMAGE MUST NOT COUNT. Rot (CR 112.13b) emits",
+   "why": "grammar: awkward pointer phrasing"
+  }
+ ]
+}

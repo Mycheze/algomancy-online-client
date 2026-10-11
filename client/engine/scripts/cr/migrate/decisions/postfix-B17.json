@@ -1,0 +1,1462 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// the WHOLE pool (see 180-pool-sight). Until",
+   "replace": "// The WHOLE pool (see 180-pool-sight). Until",
+   "why": "wrong-rule: the 495-card pool ruling's guard is 180-pool-sight, not 150-registration-order [reconciled: find re-anchored on the 180-pool-sight pointer score.mjs now produces]"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// CR 410.7 / CT-43 — what the two BIN sweeps",
+   "replace": "// CT-43 — what the two BIN sweeps",
+   "why": "wrong-rule: CR 410.7 (death before trash) is not about what the sweeps read; CT-43 is the record"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// CR 405.7's sweep (bin EXIT) and the bin-ENTRY sweep's sweep (bin ENTRY) are source-reading",
+   "replace": "// The bin-EXIT sweep (CR 405.7) and the bin-ENTRY sweep (CR 400.2a) are source-reading",
+   "why": "grammar: doubled 'sweep's sweep'"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "/* ── (see 71-card-ledger): THE HARBINGER TRAP IS BOLTED SHUT ──",
+   "replace": "/* ── THE HARBINGER TRAP IS BOLTED SHUT ──",
+   "why": "wrong pointer: the Harbinger-trap guard is this file's own test, not 71-card-ledger; awkward label residue"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "and trigger guards) (see 71-card-ledger);",
+   "replace": "and trigger guards);",
+   "why": "grammar: 71-card-ledger already named in this sentence"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// CR 400.5 dispatches a zone trigger through `E.standIn`, a detached entity with a",
+   "replace": "// A zone trigger (CR 400.5) is dispatched through `E.standIn`, a detached entity with a",
+   "why": "truth: the rule does not dispatch anything; the engine does"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// CR 109.9m answered the design question the old census was holding open (\"what is\n// a per-card budget (R9) for a card that is not in play?\"): PER SEAT PER CARD",
+   "replace": "// The bin-budget ruling (now CR 109.9m) answered the design question the old census\n// was holding open, \"what is a per-card budget (R9) for a card that is not in play?\":\n// PER SEAT PER CARD",
+   "why": "quote + history: restore the old census's question verbatim (on one line so the quote pairs); a rule narrated as the answerer [reconciled: postfix-000 restored (R9) in the quotation first; find re-anchored on its output]"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// CR 405.7's claim — every removal",
+   "replace": "// The choke point's claim (CR 405.7) — every removal",
+   "why": "truth: the E.removeFromBin claim is the engine's, not the rule's text"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "'trashed' (CR 405.6,\n// stamped by `E.noteTrashed`) and 'died' (CR 405.6, stamped by",
+   "replace": "'trashed' (CR 405.6,\n// stamped by `E.noteTrashed`) and 'died' (stamped by",
+   "why": "grammar: the same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "(a token — CR 713.5; an {Unstable} death in the engine — CR 801.2h never bins it, CT-246), and on",
+   "replace": "(a token — CR 713.5; an {Unstable} death,\n// which the engine bins and then erases — CR 801.2h erases it instead, CT-246), and on",
+   "why": "grammar: garbled clause; states the engine behaviour and the rule it differs from"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "(the twin of CR 405.7's bin-EXIT sweep)",
+   "replace": "(the twin of the bin-EXIT sweep, CR 405.7)",
+   "why": "awkward pointer: a rule has no sweep"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// CR 400.2a defines the ACTIVE ZONES",
+   "replace": "// CR 400.2 defines the ACTIVE ZONES",
+   "why": "wrong-rule: 400.2 defines the active zones (400.2a is what they mean for Unstable)"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "enters its host controller's bin (CR 410.4a), before the caller decides where the body goes).",
+   "replace": "enters its host controller's bin (CR 410.4a), before the caller decides\n//     where the body goes.",
+   "why": "grammar: stray closing parenthesis"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "the slots CR 405.6's sweep needs",
+   "replace": "the slots the bin-copy sweep (CR 405.6) needs",
+   "why": "awkward pointer: a rule has no sweep"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "nor reports the SLOT CR 405.6's sweep needs.",
+   "replace": "nor reports the SLOT the bin-copy sweep needs.",
+   "why": "awkward pointer; 405.6 already cited above"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "the leave-play `anchor` (714.9)",
+   "replace": "the leave-play `anchor` (CR 714.9)",
+   "why": "grammar: bare rule number without 'CR'"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "parallel worktree The fix landed",
+   "replace": "parallel worktree. The fix landed",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// CR 410.7 (CT-43) emptied it AGAIN",
+   "replace": "// The disposal-tail rewrite (CT-43) emptied it AGAIN",
+   "why": "history: a rule narrated as the change that emptied the list"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "// CR 410.7: this sweep FOLLOWS ONE LEVEL",
+   "replace": "// CT-43: this sweep FOLLOWS ONE LEVEL",
+   "why": "history/wrong-rule: aliasing in the sweep is CT-43's change, not CR 410.7"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "CR 410.7 moved that half\n",
+   "replace": "The disposal-tail rewrite moved that half\n",
+   "why": "history: a rule narrated as the change"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "`alias` (CR 410.7) catches one",
+   "replace": "`alias` (CT-43) catches one",
+   "why": "wrong-rule: the alias arm is CT-43's sweep change"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "  // CR 410.7: `destroy` is no longer one of them",
+   "replace": "  // CT-43: `destroy` is no longer one of them",
+   "why": "history/wrong-rule: the code move is CT-43's"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "    // CR 410.7: comments stripped",
+   "replace": "    // CT-43: comments stripped",
+   "why": "wrong-rule: comment stripping in the sweep is CT-43's change"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "a local bound to a bin under ANY name (CR 410.7).",
+   "replace": "a local bound to a bin under ANY name (CT-43).",
+   "why": "wrong-rule: same"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "the three cards CR 405.6 FIXED",
+   "replace": "the three cards CARD-TODO #27 FIXED",
+   "why": "history: a rule narrated as the fix"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "(CR 400.5 fires once per zone)",
+   "replace": "(CR 400.5a: it fires once per zone)",
+   "why": "wrong-rule: once-per-zone is 400.5a"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "one zone over `E.giveControl` is",
+   "replace": "one zone over. `E.giveControl` is",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "  // The move-a-mod primitive (720.10) DROPPED TWO ENTRIES and dropping",
+   "replace": "  // The move-a-mod primitive (CR 720.10) DROPPED TWO ENTRIES, and dropping",
+   "why": "grammar: bare number, lost comma"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "   * CR 711.1's choke point is about",
+   "replace": "   * The giveControl choke point (CR 711.1) is about",
+   "why": "awkward pointer: a rule has no choke point"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "above; The move-a-mod primitive collapsed",
+   "replace": "above; the move-a-mod primitive collapsed",
+   "why": "grammar: capital after semicolon"
+  },
+  {
+   "file": "client/engine/test/90-coverage-census.test.ts",
+   "find": "uses for its one bin splice\n",
+   "replace": "uses for its one bin splice.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/91-modular.test.ts",
+   "find": "'and CR 803.8f\\'s virus window agrees exactly",
+   "replace": "'and the virus window (CR 723.4) agrees exactly",
+   "why": "awkward pointer: the virus window is 723.4; 803.8f is the agreement the test title cites"
+  },
+  {
+   "file": "client/engine/test/93-engine-defects.test.ts",
+   "find": "is NOT this. CR 711.1 moves the unit;",
+   "replace": "is NOT this. A control change moves the unit;",
+   "why": "grammar: the same CR number twice in one phrase, and a rule narrated as the mover"
+  },
+  {
+   "file": "client/engine/test/93-engine-defects.test.ts",
+   "find": "// ⚠ zones following control reversed the last assertion here The TITLE",
+   "replace": "// ⚠ THE ZONES-FOLLOW-CONTROL RULING (now CR 400.4) REVERSED THE LAST ASSERTION HERE. The TITLE",
+   "why": "grammar: lost period and sentence start"
+  },
+  {
+   "file": "client/engine/test/93-engine-defects.test.ts",
+   "find": "spell now — CR 706.13 puts it on every real 'spellPlayed'",
+   "replace": "spell now — the engine puts it on every real 'spellPlayed'",
+   "why": "history: a rule narrated as the code that stamps the event; 706.13 already cited above"
+  },
+  {
+   "file": "client/engine/test/93-engine-defects.test.ts",
+   "find": "flip on the way back out of settle() (CR D6.3).",
+   "replace": "flip on the way back out of settle().",
+   "why": "wrong-rule: D6.3 is the 'resolving' marker, not rollback/resume"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "repo has already shipped each of them alone. CR 109.9b read \"spent only when it\n * does something\" and refunded a fizzle; R113 reads \"regardless of if that",
+   "replace": "repo has already shipped each of them alone. The decline ruling read \"spent only\n * when it does something\" and refunded a fizzle; the designer's ruling (now CR 109.9a)\n * reads \"regardless of if that",
+   "why": "wrong-rule + bare R-number beside a quote: 109.9b never said 'spent only when it does something' (the retired decline ruling did); R113 survived next to a quoted span"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "This is the measurement CR 109.9a, 109.9b's card-level half needs,",
+   "replace": "This is the measurement the card-level half of CR 109.9a and 109.9b needs,",
+   "why": "grammar: awkward possessive on a number list"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "(that test was INVERTED when the spent-on-use ruling landed and its header says so). The other way an item on the stack fails to\n",
+   "replace": "(that test was INVERTED when the\n// spent-on-use ruling landed, and its header says so). The other way an item on the stack fails to\n",
+   "why": "grammar: lost comma; reflow"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "resolved (CR 109.9a: \"regardless of if that ability resolves or doesn\\'t\")'",
+   "replace": "resolved (the designer, now CR 109.9a: \"regardless of if that ability resolves or doesn\\'t\")'",
+   "why": "quote attribution: the designer's words, not CR 109.9a's text"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "  // CR 109.9k says \"per card\", and for a rider the card in play is the mod entity.",
+   "replace": "  // The budget ruling says \"per card\", and for a rider the card in play is the mod\n  // entity (CR 109.9k).",
+   "why": "quote attribution: 109.9k does not say 'per card' (the retired budget ruling did)"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "// CR 109.9a, 109.9b forces every bounded run's bail-out branch into one of two families,\n// and the six calls that were in the wrong one were deleted when it landed.",
+   "replace": "// CR 109.9a and 109.9b force every bounded run's bail-out branch into one of two families,\n// and the six calls that were in the wrong one were deleted when the spent-on-use ruling landed.",
+   "why": "grammar/history: agreement; a rule narrated as having 'landed'"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "  // ⚠ Making these real costs (CR 705.4) moved the ground under both subjects and the rule survives it.",
+   "replace": "  // ⚠ MAKING THESE REAL COSTS (CR 705.4) MOVED THE GROUND UNDER BOTH SUBJECTS, and the rule survives it.",
+   "why": "grammar: lost comma (and the original emphasis)"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "test('splits Structural Collapse\\'s one branch",
+   "replace": "test('CR 109.9a and 109.9b split Structural Collapse\\'s one branch",
+   "why": "grammar: title lost its subject (unbound title; only build/ snapshots name it)"
+  },
+  {
+   "file": "client/engine/test/94-bounded-uses.test.ts",
+   "find": "sacrificed 0-defense unit together. CR 109.9a, 109.9b puts them",
+   "replace": "sacrificed 0-defense unit together. CR 109.9a and 109.9b put them",
+   "why": "grammar: agreement"
+  },
+  {
+   "file": "client/engine/test/97-mode-conformance.test.ts",
+   "find": " * CR 205.3 then added Retribution Thing, and the owner's bracket rule (205.3a) added the eighth and last —",
+   "replace": " * The owner's bracket ruling (now CR 205.3) then added Retribution Thing, and his ruling\n * on whose bracket it is (now CR 205.3a) added the eighth and last —",
+   "why": "history + grammar: rules narrated as the changes that added cards; bare number without 'CR'"
+  },
+  {
+   "file": "client/engine/test/97-mode-conformance.test.ts",
+   "find": " *  · Retribution Thing, deleted by CR 205.3: *\"All text on",
+   "replace": " *  · Retribution Thing, deleted by the owner (2026-08-25; now CR 205.3): *\"All text on",
+   "why": "quote attribution: restore the owner attribution of the quotation that follows (it is not CR text)"
+  },
+  {
+   "file": "client/engine/test/97-mode-conformance.test.ts",
+   "find": " *  · Void Memory, removed under 205.3a (owner, 2026-09-01) *\"All modal/additional",
+   "replace": " *  · Void Memory, deleted by the owner (2026-09-01; now CR 205.3a): *\"All modal/additional",
+   "why": "grammar: lost colon, bare number; quote attribution"
+  },
+  {
+   "file": "client/engine/test/97-mode-conformance.test.ts",
+   "find": "  // 205.3a emptied it.",
+   "replace": "  // The owner's 2026-09-01 ruling (now CR 205.3a) emptied it.",
+   "why": "history + grammar: a rule narrated as emptying the list; bare number"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": " *  - the home-region rule was withdrawn said created units go HOME,",
+   "replace": " *  - The first home-region ruling said created units go HOME,",
+   "why": "grammar: garbled clause ('was withdrawn said')"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": " *  - the earlier ruling confirmed the home default and moved six Light & Dark cards to home They are all moved back. that ruling's \"unfinished migration\" list — the",
+   "replace": " *  - The second confirmed the home default and moved six Light & Dark cards\n *    to home. They are all moved back. Its \"unfinished migration\" list — the",
+   "why": "grammar: lost period, lowercase sentence starts"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": "rule's rationale inverted and pinned ══",
+   "replace": "rule's rationale, inverted and pinned ══",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": "  // CR 110.3d gave \"target formation\" a real TargetRef arm, so the menu offers",
+   "replace": "  // \"Target formation\" has a real TargetRef arm (CR 110.3d), so the menu offers",
+   "why": "history: a rule narrated as the change that built a TargetRef arm"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": " * the withdrawn home-region rule is spelled",
+   "replace": " * The withdrawn home-region rule is spelled",
+   "why": "grammar: sentence start"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": "  // ⚠ ⚠ TWO ENTRIES DELETED once",
+   "replace": "  // ⚠ TWO ENTRIES DELETED once",
+   "why": "grammar: doubled warning sign"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": "CR 410.2a ruled an exchange a despawn and a",
+   "replace": "The 2026-08-25 ruling (now CR 410.2a) made an exchange a despawn and a",
+   "why": "history: a rule narrated as the ruling"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": "REQUIRED parameter. the source-region fix deleted",
+   "replace": "REQUIRED parameter. The source-region fix deleted",
+   "why": "grammar: sentence start"
+  },
+  {
+   "file": "client/engine/test/98-spawn-region.test.ts",
+   "find": "IS the bug the source-region fix removed bug: four cards",
+   "replace": "IS the bug the source-region fix removed: four cards",
+   "why": "grammar: doubled word"
+  },
+  {
+   "file": "client/engine/test/99-endofturn.test.ts",
+   "find": " * out. CR D6.3's replay contract does the rest:",
+   "replace": " * out. The engine's suspend-and-replay contract does the rest:",
+   "why": "wrong-rule: D6.3 is the 'resolving' marker, not rollback/replay (engine contract, no CR rule)"
+  },
+  {
+   "file": "client/engine/test/99-endofturn.test.ts",
+   "find": "or CR D6.3 replay would answer round 2",
+   "replace": "or the suspend replay would answer round 2",
+   "why": "wrong-rule: D6.3 is not replay"
+  },
+  {
+   "file": "client/engine/test/99-endofturn.test.ts",
+   "find": "hand: CR D6.3 rolls the part back and REPLAYS it",
+   "replace": "hand: a suspension rolls the part back and REPLAYS it",
+   "why": "wrong-rule: D6.3 is not rollback/replay"
+  },
+  {
+   "file": "client/engine/test/99-endofturn.test.ts",
+   "find": "test('Dream Lapse suspends AFTER mutating and the CR D6.3 replay does not double the recall'",
+   "replace": "test('Dream Lapse suspends AFTER mutating and the suspend replay does not double the recall'",
+   "why": "wrong-rule in an unbound title: D6.3 is not replay"
+  },
+  {
+   "file": "client/engine/test/99-endofturn.test.ts",
+   "find": "not twice: CR D6.3 suppresses the lines",
+   "replace": "not twice: the replay suppresses the lines",
+   "why": "wrong-rule: D6.3 is not replay"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "Measured on Galerider Eel at the head of\n   *  all seven",
+   "replace": "Measured on Galerider Eel at the head of\n   *  CARD-TODO #49: all seven",
+   "why": "grammar: the cut of the R-number left 'at the head of all seven …' garbled"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "that is the entire point of the family. CR 601.2 scopes",
+   "replace": "that is the entire point of the family. CR 601.1d scopes",
+   "why": "wrong-rule: R12-derived 601.2 (one region per unit); trigger region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "    // CR 601.2: every static and every trigger is REGION-scoped",
+   "replace": "    // CR 601.1d: every static and every trigger is REGION-scoped",
+   "why": "wrong-rule: statics/triggers region scope is 601.1d, not 601.2"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "      // CR 601.2 again: \"when you put",
+   "replace": "      // CR 601.1d again: \"when you put",
+   "why": "wrong-rule: trigger region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "  // ──: the same world, acting IN THE BATTLE",
+   "replace": "  // ── the same world, acting IN THE BATTLE",
+   "why": "grammar: label residue '──:'"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "  // CR 601.2 makes a home-region spawn inaudible",
+   "replace": "  // CR 601.1d makes a home-region spawn inaudible",
+   "why": "wrong-rule: trigger region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "    // `battle.region` (CR 601.2), so only units",
+   "replace": "    // `battle.region` (CR 601.1d), so only units",
+   "why": "wrong-rule: trigger region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "'dies': CR 714.9 rides the verb on the event,",
+   "replace": "'dies': the event carries the verb (CR 714.9),",
+   "why": "truth: a rule does not ride anything on an event; 714.9 fixes how the unit left"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "a far bigger loss than the CR 601.2 family",
+   "replace": "a far bigger loss than the region-scoping (CR 601.1d) family",
+   "why": "wrong-rule: the R12 family is region scope (601.1d), not 601.2"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "out of hand (CR 507.2's\n    // pushMods)",
+   "replace": "out of hand (`pushMods`,\n    // CR 507.2)",
+   "why": "awkward pointer: a rule has no pushMods"
+  },
+  {
+   "file": "client/engine/test/drill.ts",
+   "find": "is region-scoped (CR 601.2) and there is",
+   "replace": "is region-scoped (CR 601.1d) and there is",
+   "why": "wrong-rule: static region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/test/fuzz.ts",
+   "find": " * CR D2.1d lets a seat act while the OTHER seat holds an open question,",
+   "replace": " * CR D2.1b lets a seat act while the OTHER seat holds an open question,",
+   "why": "wrong-rule: acting beside another seat's open question is D2.1b; D2.1d is the refusal (the exception named below)"
+  },
+  {
+   "file": "client/engine/test/stripcode.ts",
+   "find": "a live bypass of the bin choke point invisible to every",
+   "replace": "a live bypass of the bin choke point, invisible to every",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/stripcode.ts",
+   "find": "    // track brace depth so an interpolation's CLOSING `}` (see 164-sweep-sight) — and no other",
+   "replace": "    // CT-68: track brace depth so an interpolation's CLOSING `}` — and no other",
+   "why": "awkward pointer spliced mid-phrase; 164-sweep-sight is already named above"
+  },
+  {
+   "file": "client/engine/test/util.ts",
+   "find": " * again after the fix fixed it. Two genuine leaks (the three 'look at a hand' cards CR D6.5's `handEntered`) survived 153 test files for that reason",
+   "replace": " * again after it was fixed. Two genuine leaks (the three \"look at a hand\" cards,\n * and the event channel's `handEntered`) survived 153 test files for that reason",
+   "why": "grammar + quote: 'the fix fixed', lost comma, the quotation's double quotes changed to single; a rule narrated as owning the leaked event"
+  },
+  {
+   "file": "client/engine/test/util.ts",
+   "find": "      // Holding combat-damage triggers to after combat generalised this and the old version is why ~45 tests broke at",
+   "replace": "      // Holding combat-damage triggers until after combat generalised this, and the old version is why ~45 tests broke at",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/util.ts",
+   "find": " * now happens at that boundary. Before split steps had windows every combat-damage trigger in the",
+   "replace": " * now happens at that boundary. Before split steps had windows, every combat-damage trigger in the",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/util.ts",
+   "find": "(an CR 608.6a elective split)",
+   "replace": "(a CR 608.6a elective split)",
+   "why": "grammar: 'an CR'"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "inherited rather than answered a second time — the exclusion is at the SOURCE for the '\n      + 'same reason CR D8.4 put it there.",
+   "replace": "inherited rather than answered a second time — the exclusion is at the SOURCE for the '\n      + 'same reason a scenario room\\'s is (CR D8.4).",
+   "why": "history: a rule narrated as the change that put the exclusion there"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "'IDS by contract (CR 802.17) — but CR 602.6, 602.7 slot options carry slot INDEXES 0..n-1, so the '",
+   "replace": "'IDS by contract — but the slot options (CR 602.6, 602.7) carry slot INDEXES 0..n-1, so the '",
+   "why": "wrong-rule: CR 802.17 (Electric) states no option-value contract; awkward possessive on a number list"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "'DONE 2026-09-01. CR D2.8. THE ASK WAS ANSWERED",
+   "replace": "'DONE 2026-09-01 (the misclick ruling, now CR D2.8). THE ASK WAS ANSWERED",
+   "why": "history: the closure was a ruling, not 'CR D2.8'"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "'That is already written down - CR 110.3 gave every target slot its own kind - so '",
+   "replace": "'That is already written down - every target slot has its own kind (CR 110.3) - so '",
+   "why": "history: a rule narrated as the change"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "which is CR D7.1\\'s '\n      + '`warning`,",
+   "replace": "which is the X = 0 '\n      + '`warning` (CR D7.1),",
+   "why": "truth: CR D7.1 has no `warning` field; the warning is the X = 0 precedent's"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "`DecisionOption.confirm` is new beside CR D7.1\\'s `warning`: CR D7.1 says '\n      + '\"this will do nothing\" (a fact about the effect, fine as prose) and CR D2.8 says \"you may '",
+   "replace": "`DecisionOption.confirm` is new beside the X = 0 `warning` (CR D7.1): the warning says '\n      + '\"this will do nothing\" (a fact about the effect, fine as prose) and the confirm (CR D2.8) says \"you may '",
+   "why": "quote attribution: the quoted words are what each prompt says, not the rules' text"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "in front of every CR D7.1 option.",
+   "replace": "in front of every warned option.",
+   "why": "truth: a rule has no options; the warned-but-legal options are meant"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "same game. CR D8.3. Verified live:",
+   "replace": "same game. Ruled as the custom-rules ruling (now CR D8.3). Verified live:",
+   "why": "history: 'Ruling R292' became a bare CR number"
+  },
+  {
+   "file": "client/ledgers/backlog-closed.ts",
+   "find": "Room KAWJ (2026-09-16) replayed",
+   "replace": "Room KAWJ (report #165) replayed",
+   "why": "truth: the migration invented a date; report #165 in room KAWJ was filed 2026-09-15"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "2026-08-24 when CR 504.7 built both",
+   "replace": "2026-08-24 when the bin-anchored play ruling (now CR 504.7) built both",
+   "why": "history: a rule narrated as the builder"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "was built (CR 109.9m), per the house rule",
+   "replace": "was built (CR 405.7), per the house rule",
+   "why": "wrong-rule: the 'leftBin' choke point is 405.7 (109.9m is the bin budget)"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "and CR 400.5's zone dispatch delivers it",
+   "replace": "and the zone dispatch (CR 400.5) delivers it",
+   "why": "awkward pointer: a rule has no dispatch"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "  // Slurpr's entry was DELETED on 2026-08-23 when the MOD-timing twin of when Slurpr's haste-mod permission was built per the house rule at the head of this file. All three engine",
+   "replace": "  // Slurpr's entry was DELETED on 2026-08-23 when the MOD-timing twin of the\n  // `ModPermission` seam was built, per the house rule at the head of this file. All three engine",
+   "why": "grammar: garbled clause ('twin of when … was built'), lost comma"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "TAX rides CR 111.10's CostMod layer",
+   "replace": "TAX rides the CostMod layer (CR 111.10)",
+   "why": "awkward pointer: a rule has no CostMod layer"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "2026-08-24 when CR 111.10 landed exactly the",
+   "replace": "2026-08-24 when the imposed-cost ruling (now CR 111.10d) landed exactly the",
+   "why": "history + wrong-rule: a rule narrated as landing; an imposed additional cost is 111.10d"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "  // same playFromBin action the bin-play permission uses built) — and,",
+   "replace": "  // same `playFromBin` action the battle-scoped bin grant built) — and,",
+   "why": "grammar: garbled 'uses built'; restore the code span"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "in reverse. CR 802.9 shipped stat layer 6 (an",
+   "replace": "in reverse. Stat layer 6 shipped (CR 802.9: an",
+   "why": "history: a rule narrated as shipping a layer"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "came off when stat layer 5 (802.8a)\n  // shipped layer 5.",
+   "replace": "came off when\n  // layer 5 ({Inverted}, CR 802.8a) shipped.",
+   "why": "grammar: 'stat layer 5 shipped layer 5'; bare number"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "a pre-a pre-copy-layer action log",
+   "replace": "a pre-copy-layer action log",
+   "why": "grammar: doubled 'a pre-'"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "That is CR 722.7's `graftCopies: 3`,",
+   "replace": "That is `graftCopies: 3` (CR 722.7),",
+   "why": "awkward pointer: a rule has no graftCopies field"
+  },
+  {
+   "file": "client/ledgers/card-ledger.ts",
+   "find": "got one: CR 608.9a — the",
+   "replace": "got one (now CR 608.9a) — the",
+   "why": "history: the ruling it got is now 608.9a"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "its own play (wrong since CR 701.1e) */",
+   "replace": "its own play (wrong under CR 701.1e) */",
+   "why": "history: a rule narrated as the change ('wrong since')"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(Caleb 2025-03-06, quoted at CR 721.4b).",
+   "replace": "(Caleb 2025-03-06, quoted in the retired ruling register).",
+   "why": "wrong-rule: the Caleb quote is in no CR rule; 721.4b quotes nothing"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "// The collapse was kept on under {Pure} on purpose, as a STAT layer — CR 802.25f now says it does not apply (engine differs, CT-260). switches off the ATTRIBUTE\n    // layer for an exchange, and this is a STAT layer.",
+   "replace": "// The collapse survives {Pure} on purpose: the Pure ruling switches off the ATTRIBUTE\n    // layer for an exchange, and this is a STAT layer. CR 802.25f now says Unaware does\n    // not apply under Pure (engine differs, F-U19-2; CT-260).",
+   "why": "grammar: a spliced sentence left 'switches off' with no subject; restored the comment and kept the engine-differs note"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "Crevice Lurker), CR 111.10\n",
+   "replace": "Crevice Lurker), CR 111.10d\n",
+   "why": "wrong-rule: the imposed additional cast cost (Vengeance) is 111.10d, not the general 111.10"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 708 records the layer `88-replacement-conformance` fails",
+   "replace": "'recorded the layer (now CR 708); `88-replacement-conformance` fails",
+   "why": "grammar/history: '`docs/digital-rules.md` CR 708 records' garbled, lost semicolon"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "serialised and replayed (CR D6.3); a save/load",
+   "replace": "serialised and replayed; a save/load",
+   "why": "wrong-rule: D6.3 is the resolving marker, not serialise/replay (old R85); dropped"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "a suspension throws past it and CR D6.3's replay starts",
+   "replace": "a suspension throws past it and the resume's replay starts",
+   "why": "wrong-rule: D6.3 is not the replay-on-resume rule; dropped"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "everywhere else '\n      + '(CR 102.5: owner and controller can differ), '\n      + 'so this is a missing parameter rather '",
+   "replace": "everywhere else and says so '\n      + 'out loud in the erased-pile ruling (\"each card reaches ITS OWN owner’s erased pile — a virus on '\n      + 'an enemy spell is the enemy’s card\"; CR 102.5), so this is a missing parameter rather '",
+   "why": "quote: the migration deleted a quotation; restored verbatim, ruling named without its R-number"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "That is contradicted by CR 721.4b IN THE SAME FILE: a virus",
+   "replace": "That is contradicted IN THE SAME FILE by the virus channel (CR 721.4b): a virus",
+   "why": "grammar: a CR rule is not 'in the same file'; the virus channel in the engine file is"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "reads them (CR 802.16j added {Piercing} to that list)",
+   "replace": "reads them (the list includes {Piercing}: CR 802.16j)",
+   "why": "history: rule narrated as the change that added Piercing"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "Written up as Now CR 109.9a, which",
+   "replace": "Written up as a ruling (now CR 109.9a), which",
+   "why": "grammar: 'Written up as Now CR'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 400.5 dispatches a trigger to a card sitting in a ZONE (a bin, the hand) through '",
+   "replace": "'A trigger on a card sitting in a ZONE (a bin, the hand; CR 400.5) is dispatched through '",
+   "why": "grammar: a CR rule narrated as the engine dispatching"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the Rotling bin-exit fix (Rotling's",
+   "replace": "the bin-exit choke point (Rotling's",
+   "why": "grammar: doubled 'Rotling'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "bypasses the CR 708.7 amount layer",
+   "replace": "bypasses the CR 708.1 amount layer",
+   "why": "wrong-rule: 708.7 orders count-change vs redirect; 708.1 is the replacement layer (its example is Flux Resonator)"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "\"CR 405.7 claims E.removeFromBin",
+   "replace": "\"The bin-exit choke point (CR 405.7) claims E.removeFromBin",
+   "why": "grammar: a CR rule cannot claim an engine function is the one way"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'binNth is on the trashed event",
+   "replace": "'`binNth` is on the trashed event",
+   "why": "grammar: lost code backticks"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(CR 106.8 just\n",
+   "replace": "(the Prismite-exchange ruling, now CR 106.8c, just\n",
+   "why": "wrong-rule/history: R132 was the Prismite exchange activating its resource (106.8c), 106.8 is 'no affinity'; and a rule does not move a surface"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "went on the stack CT-28 and CT-32",
+   "replace": "went on the stack. CT-28 and CT-32",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "— CR 608.6a, D1.2 made the combat damage split ELECTIVE because",
+   "replace": "— the combat damage split is ELECTIVE (CR 608.6a, D1.2) because",
+   "why": "history: rules narrated as the change that made the split elective"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "REUSE, do not rewrite: CR D7.2/BL-25 just built this",
+   "replace": "REUSE, do not rewrite: BL-25 (CR D7.2) just built this",
+   "why": "history: a rule narrated as building a UI shape"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "CLOSED by CR D7.2e — but",
+   "replace": "CLOSED (now CR D7.2e) — but",
+   "why": "history: closed by a ruling, now the rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "found by CR 303.10's pool sweep",
+   "replace": "found by the Hush Mush round's pool sweep",
+   "why": "history: a rule does not run a sweep"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "\"CR 109.3a's own worked example —",
+   "replace": "\"the trigger-conditions ruling's own worked example (CR 109.3a) —",
+   "why": "wrong-rule: Nectar Ridge Oracle was the old ruling's example; 109.3a's example is Earthbound Replicator"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'The same shape CR 303.10 used:",
+   "replace": "'The same shape the Hush Mush fix (CR 303.10) used:",
+   "why": "history: rule narrated as a fix"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "trigger to claim. CR 303.10 added `ctx.spawnUnder(seat)`",
+   "replace": "trigger to claim. That fix added `ctx.spawnUnder(seat)`",
+   "why": "history: rule narrated as adding code"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "Deletes the trigger and the ledger, as CR 303.10 did.",
+   "replace": "Deletes the trigger and the ledger, as that fix did.",
+   "why": "history: rule narrated as deleting code"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "first. CR 303.11 deleted it;",
+   "replace": "first. The Borrower fix (now CR 303.11) deleted it;",
+   "why": "history: rule narrated as deleting code"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "pinned the bin choke point '",
+   "replace": "pinned the bin '",
+   "why": "grammar: doubled 'choke point' across the line break"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "region-scoped per CR 601.2)",
+   "replace": "region-scoped per CR 601.1d)",
+   "why": "wrong-rule: R12 listener scope is 601.1d (triggers only on events in own region); 601.2 is one region per unit"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 400.2 (owner, 2026-08-25): \"in play",
+   "replace": "'The owner\\'s active-zone ruling (2026-08-25; now CR 400.2): \"in play",
+   "why": "history: a CR rule attributed to the owner with a date"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "CT-26/CR 405.7\\'s bin-EXIT sweep",
+   "replace": "CT-26\\'s bin-EXIT sweep",
+   "why": "history: a rule does not own a sweep"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "landing on top of the active-zone rule (CR 400.2a)",
+   "replace": "landing on top of the active-zone ruling (now CR 400.2a)",
+   "why": "history: what landed was a ruling"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the leave-play `anchor` (714.9)",
+   "replace": "the leave-play `anchor` (CR 714.9)",
+   "why": "grammar: bare number without 'CR'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "// DONE 2026-08-25 as CR 410.7.",
+   "replace": "// DONE 2026-08-25 (now CR 410.7).",
+   "why": "history: done as a ruling, not as a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "// The CR 405.7 exit sweep had NO",
+   "replace": "// The bin-exit sweep had NO",
+   "why": "history: a rule does not own a sweep"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the only place CR 507.5a can now raise",
+   "replace": "the only place the stacked start-of-deployment triggers (CR 507.4a) can now raise",
+   "why": "wrong-rule: R144 put start-of-deployment triggers on the stack (507.4a); 507.5a is the not-wait rule that fixed it"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "carries an CR D6.3 WHOLE-GameState",
+   "replace": "carries a WHOLE-GameState",
+   "why": "wrong-rule + grammar: 'an CR'; D6.3 is the resolving marker, not the R85 snapshot"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "un-froze the engine for hotseat and the hotseat UI",
+   "replace": "un-froze the engine for hotseat, and the hotseat UI",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "So after once the gate became seat-aware the engine",
+   "replace": "So once the gate became seat-aware the engine",
+   "why": "grammar: 'after once'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR D2.1. FOUR independent gates in ui/main.ts all read a bare !!s.decision — the pre-the old global-gate reading '",
+   "replace": "'Closed. FOUR independent gates in ui/main.ts all read a bare !!s.decision — the pre-seat-aware '",
+   "why": "grammar: 'the pre-the old global-gate reading reading'; history: closed by a ruling (hotseat UI), not by D2.1"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "The owner\\'s ruling (CR 707.3) also covers \"and static effects\" '",
+   "replace": "The replacement-layer ruling\\'s own text also covers \"and static '",
+   "why": "quote/grammar: doubled 'effects\" effects\"'; it was the ruling's text, not 707.3's and not an owner quote"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 707.3. 142-static-conformance.test.ts",
+   "replace": "'Closed (now CR 707.3). 142-static-conformance.test.ts",
+   "why": "history: closed by a ruling, now the rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "REGION (CR 601.2, 6 cards)",
+   "replace": "REGION (6 cards, CR 601.1d)",
+   "why": "wrong-rule: a clause scoped to its event's region is 601.1d; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "moved a claim underneath it That is",
+   "replace": "moved a claim underneath it. That is",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'The owner\\'s 2026-08-25 ruling round fixed some",
+   "replace": "'owner\\'s 2026-08-25 ruling round fixed some",
+   "why": "grammar: doubled 'The' across the line break"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "PREDICTION CAP + UNTIL-REGROUP PLAY WINDOW), and",
+   "replace": "PREDICTION CAP + UNTIL-REGROUP PLAY WINDOW, and",
+   "why": "grammar: unbalanced parenthesis"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'⚠ the mid-resolution stack fix AND TWO SAME-DAY FIXES COLLIDED ON SPELL EXCAVATION and the later one wins: the mid-resolution stack fix taught the '",
+   "replace": "'⚠ THE MID-RESOLUTION WINDOW FIX AND THE UNTIL-REGROUP FIX COLLIDED ON SPELL EXCAVATION and the later one wins: the mid-resolution fix taught the '",
+   "why": "grammar/truth: two fixes collided, not three; restored the caps"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the later fix removed the call site because",
+   "replace": "the until-regroup fix removed the call site, because",
+   "why": "grammar: lost comma; names which fix"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "The mid-resolution-window test\\'s test was REWRITTEN",
+   "replace": "The mid-resolution fix\\'s test was REWRITTEN",
+   "why": "grammar: 'test's test'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(CR D6.5, (the handEntered and look-at-a-hand leaks), neither",
+   "replace": "(the handEntered and look-at-a-hand leaks; CR D6.5), neither",
+   "why": "grammar: broken parentheses"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "<- report #81/CR 702.5, modal modes",
+   "replace": "<- report #81 (CR 702.5), modal modes",
+   "why": "history: a CR rule listed as a rules change"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "<- CR 303.10, Hush Mush enters",
+   "replace": "<- Hush Mush now enters (CR 303.10)",
+   "why": "history: a CR rule listed as the rules change"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "an Unstable death bins first so Dropslime",
+   "replace": "an Unstable death bins first, so Dropslime",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR D6.14. The ring now answers",
+   "replace": "'Closed (now CR D6.14). The ring now answers",
+   "why": "history: closed by a ruling, now the rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR D2.6a (2026-08-26). ROUTE (2)",
+   "replace": "'Closed (2026-08-26; now CR D2.6a). ROUTE (2)",
+   "why": "history: closed by a ruling, now the rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'Fixed (706.9), both halves and the owner",
+   "replace": "'Fixed (now CR 706.9), both halves, and the owner",
+   "why": "grammar: bare number, lost comma"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "CostMod.sacrifice (CR 111.10), which I suggested: CR 111.10\\'s own doc '",
+   "replace": "CostMod.sacrifice (CR 111.10d), which I suggested: the imposed-cost rule (CR 111.10d) '",
+   "why": "wrong-rule: the imposed sacrifice cost and 'unpayable gates castability' are 111.10d"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "corrected Origon and Hexbane Shiitake which located",
+   "replace": "corrected Origon and Hexbane Shiitake, which located",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'Fixed (706.13), and better",
+   "replace": "'Fixed (now CR 706.13), and better",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "The agent for that round agent had to edit",
+   "replace": "The agent for that round had to edit",
+   "why": "grammar: doubled 'agent'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "and the  replacement path is",
+   "replace": "and the replacement-layer path is",
+   "why": "grammar: double space where R104 was cut"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 606.3a — the owner ruled it",
+   "replace": "'The blocked-column ruling (now CR 606.3a) — the owner ruled it",
+   "why": "history: closure labelled by a CR rule; it was a ruling"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR D6.14, additive exactly as the owner asked",
+   "replace": "'The hand-ring ruling (now CR D6.14 and D6.14a), additive exactly as the owner asked",
+   "why": "history: closed as a ruling; the cache's second surface is D6.14a"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "+ 'CR D6.14 just did in the hand strip and is probably right. '",
+   "replace": "+ 'the hand-ring round just did in the hand strip (CR D6.14a) and is probably right. '",
+   "why": "history: rule narrated as actor; D6.14a is the hand-side cache surface"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "Much of the pressure is already off: CR D6.14 put the playable subset",
+   "replace": "Much of the pressure is already off: the hand-ring round put the playable subset",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR D6.16 (2026-08-26). THE DECISION,",
+   "replace": "'The cache-thumb ruling (now CR D6.16), 2026-08-26. THE DECISION,",
+   "why": "history: closure labelled by a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "entry is live. CR D6.6 inspection is barely touched",
+   "replace": "entry is live. Public-cache inspection (CR D6.6) is barely touched",
+   "why": "grammar: awkward pointer phrasing"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "The CR D6.14 agent deliberately left it alone",
+   "replace": "The hand-ring round's agent deliberately left it alone",
+   "why": "history: an agent named by a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR D6.16 (2026-08-26). One line, as the entry said",
+   "replace": "'Closed 2026-08-26 in the cache-thumb round. One line, as the entry said",
+   "why": "wrong-rule: D6.16 (cache panel) says nothing about the badge class"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "already carry CR D6.14\\'s [^\"]* workaround",
+   "replace": "already carry the hand-ring round\\'s [^\"]* workaround",
+   "why": "history: a test workaround attributed to a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "The collision it flagged with CR 706.13 was already resolved",
+   "replace": "The collision it flagged with the concurrent item-id round was already resolved",
+   "why": "wrong-rule: the collision was with another round's work, not with a rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 706.13 (2026-08-26). All three. (a) Worldbender",
+   "replace": "'Closed 2026-08-26 in the item-id round. All three. (a) Worldbender",
+   "why": "wrong-rule: (a)-(c) are log/record fixes, not CR 706.13"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'both stale exemptions dropped, every DEAD_EXEMPT entry now asserted to name a (see 147-comment-conformance) '",
+   "replace": "'Both stale exemptions dropped (see 147-comment-conformance), every DEAD_EXEMPT entry now asserted to name a '",
+   "why": "grammar: pointer spliced mid-phrase; lowercase sentence start"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "+ 'the bin choke point invisible to every sweep",
+   "replace": "+ 'bin choke point, invisible to every sweep",
+   "why": "grammar: doubled 'the the' and lost comma"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'noUnusedLocals, and §4\\\\\\'s own doc comment still claimed otherwise (see CLAUDE.md § The gates); the header\\'s '",
+   "replace": "'noUnusedLocals, and §4\\'s own doc comment still claimed otherwise; the header\\'s '",
+   "why": "grammar: stray backslash rendered in the text; the CLAUDE.md pointer does not state this"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'The played item\\'s ID is on the spellPlayed payload (706.13) payload, so a card",
+   "replace": "'An earlier round put the played item\\'s ID on the `spellPlayed` payload, so a card",
+   "why": "grammar: doubled 'payload', bare number, lost backticks; history restored"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "reasoning: CR 701.5 established that a copy is not PLAYED, so",
+   "replace": "reasoning: a copy is not PLAYED (CR 701.5), so",
+   "why": "history: rule narrated as history actor"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 706.13 (2026-08-26) for BOTH NAMED CARDS.",
+   "replace": "'Closed 2026-08-26 (the item-id round; now CR 706.13) for BOTH NAMED CARDS.",
+   "why": "history: closure labelled by a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the same pronoun CR 706.13, 701.5 '\n      + 'settled — and",
+   "replace": "the same pronoun CR 706.13 now '\n      + 'covers — and",
+   "why": "history: rules narrated as having settled it; 701.5 is the copy rule, not the pronoun"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CT-70 repair (2026-08-26) Nine EffectDefs",
+   "replace": "'CT-70 repair (2026-08-26). Nine EffectDefs",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'⚠ MY SEAM WAS RIGHT AND THE PART I POINTED AT WAS NOT: CR D5.4b\\'s holdable and CR D5.4\\'s '",
+   "replace": "'⚠ MY SEAM WAS RIGHT AND THE PART I POINTED AT WAS NOT: the holdable gate and the '",
+   "why": "wrong-rule: R80 (one effect's damage at once) is not D5.4 tempo; code attributed to rules"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR D6.7 (2026-08-26), in ui/flash.ts ALONE",
+   "replace": "'The simultaneous-beats ruling (now CR D6.7), 2026-08-26, in ui/flash.ts ALONE",
+   "why": "history: closure labelled by a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "merges three round-trips. CR D6.7 '",
+   "replace": "merges three round-trips. The fix '",
+   "why": "history: rule narrated as the change"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "override table ALREADY EXISTED); '",
+   "replace": "override table ALREADY EXISTED; '",
+   "why": "grammar: stray bracket where R162 was cut"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "2 life\"',\n    ],\n    closed:\n      'CR D7.3 (2026-08-26).",
+   "replace": "2 life\"',\n    ],\n    closed:\n      'Closed 2026-08-26 under the say-so ruling (now CR D7.3).",
+   "why": "history: closure labelled by a CR rule (2nd copy)"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "whole-pool sweeps also watch',\n    ],\n    closed:\n      'CR D7.3 (2026-08-26).",
+   "replace": "whole-pool sweeps also watch',\n    ],\n    closed:\n      'Closed 2026-08-26 under the say-so ruling (now CR D7.3).",
+   "why": "history: closure labelled by a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'Three findings from the CR D6.16 agent",
+   "replace": "'Three findings from the cache-thumb round\\'s agent",
+   "why": "history: an agent named by a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "— CR D6.16 had already fixed the only",
+   "replace": "— the cache-thumb round had already fixed the only",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'THE EXEMPTION DID NOT REMOVE IT E.glimpse",
+   "replace": "'THE EXEMPTION DID NOT REMOVE IT: E.glimpse",
+   "why": "grammar: lost colon"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "EVENT channel only CR 403.2\\'s public cache",
+   "replace": "EVENT channel only; CR 403.2\\'s public cache",
+   "why": "grammar: lost semicolon"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "i.e. pre-i.e. before the exemption)",
+   "replace": "i.e. before the exemption)",
+   "why": "grammar: garbled 'pre-i.e.'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(fixed as CR D6.5), a",
+   "replace": "(fixed; now CR D6.5), a",
+   "why": "history: recorded as a CR rule; it was a ruling"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "pronoun CR 706.13, 701.5 settled for Origon and Hexbane Shiitake.",
+   "replace": "pronoun CR 706.13 now covers for Origon and Hexbane Shiitake.",
+   "why": "history: rules narrated as having settled it; 701.5 is the copy rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the stack — which CR 701.5 established is not",
+   "replace": "the stack — which CR 701.5 says is not",
+   "why": "history: rule narrated as history actor"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the way it is on spellPlayed put it on '",
+   "replace": "the way it is already on '",
+   "why": "grammar: garbled 'put it on'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 706.13 (2026-08-26). `cardPlayed` now carries",
+   "replace": "'Closed 2026-08-26 (now CR 706.13). `cardPlayed` now carries",
+   "why": "history: closure labelled by a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the way it is on spellPlayed and Void Mandible matches on it'",
+   "replace": "the way it is on `spellPlayed`, and Void Mandible matches on it'",
+   "why": "grammar: lost comma and backticks"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'a search — CR 706.13\\'s shape.",
+   "replace": "'a search — the item-id round\\'s shape.",
+   "why": "history: code shape attributed to a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(both fixed'\n      + 'CR 706.13), and Void Mandible.",
+   "replace": "(both fixed'\n      + 'in the item-id round), and Void Mandible.",
+   "why": "history: rule narrated as the fix"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'when CR 706.13 swept.",
+   "replace": "'when the item-id round swept.",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "AND IT IS WHAT the Reaping ruling READ.\"*",
+   "replace": "AND IT IS WHAT […] READ.\"*",
+   "why": "quote: the migration substituted the quoted comment's retired number; mark the cut with […]"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "a token is a card (CR 304.2: it is not)",
+   "replace": "a token is a card ([…]: it is not)",
+   "why": "quote: the migration substituted the quoted docstring's retired number; mark the cut with […]"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "the object.\"* R133 records that",
+   "replace": "the object.\"* The tokens ruling recorded that",
+   "why": "grammar: surviving bare R-number beside a quoted span"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "deliberately does not implement Reaches Bubb",
+   "replace": "deliberately does not implement. Reaches Bubb",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "controls the host and CR 723.5a says so;",
+   "replace": "controls the host and CR 723.2 says so;",
+   "why": "wrong-rule: own-or-enemy host is 723.2; 723.5a is Rook's granted Virus"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "precedent (report #106) Then build",
+   "replace": "precedent (report #106). Then build",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "and the token-loss announcement (D2.6a) is class-complete by luck by '",
+   "replace": "and the token-loss announcement (CR D2.6a) is class-complete by '",
+   "why": "grammar: doubled 'by luck', bare number"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "residue**: CR D6.16 fixed `cardHtml`",
+   "replace": "residue**: the cache-thumb round fixed `cardHtml`",
+   "why": "history: rule narrated as the fix"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "residue**: CR D6.7 fixed `queueFlashes`",
+   "replace": "residue**: the beats fix repaired `queueFlashes`",
+   "why": "history: rule narrated as the fix"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "\"positive evidence only\" gate CR D6.7 '",
+   "replace": "\"positive evidence only\" gate the beats fix '",
+   "why": "history: rule narrated as builder"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(a) by CR D2.6b. '",
+   "replace": "(a) by the four-paths round (now CR D2.6b). '",
+   "why": "history: closed as a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "which is WHY the token-loss announcement (D2.6a) is class-complete is '",
+   "replace": "which is WHY the token-loss announcement (CR D2.6a) is '",
+   "why": "grammar: doubled 'is class-complete is', bare number"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "The erase really happens — CR 111.2 moved it into `payCastCost` as a proper '",
+   "replace": "The erase really happens — the activation-cost round (CR 111.2) moved it into `payCastCost` as a proper '",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "— the one thing CR 407.2 '",
+   "replace": "— the one thing the erased pile '",
+   "why": "history: 'the complaint that opened it' needs the ruling, not a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "now in payCastCost). CR 720.10 built `E.moveMod`;",
+   "replace": "now in payCastCost). `E.moveMod` exists (CR 720.10);",
+   "why": "history: rule narrated as builder"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'CR 720.9 (2026-08-26), THE BUILDABLE HALF ONLY",
+   "replace": "'Closed 2026-08-26, THE BUILDABLE HALF ONLY",
+   "why": "wrong-rule: CR 720.9 files cost-erased mods on the pile — the opposite of this closure's held behaviour"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "now sits beside CR 720.10\\'s `E.moveMod`:",
+   "replace": "now sits beside `E.moveMod`:",
+   "why": "history: code attributed to a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "whether a mod erased as a cost reaches the public pile (since answered: it does) public pile. Q3/Q9",
+   "replace": "whether a mod erased as a COST reaches the public pile (since answered: it does). Q3/Q9",
+   "why": "grammar: doubled 'public pile'; restore COST"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(round 29) as (see 197-absorb-is-shared). EVERY",
+   "replace": "(round 29); see 197-absorb-is-shared. EVERY",
+   "why": "grammar: garbled 'as (see …)'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "no reserved R-number and took CR D6.8, which was A5\\'s.",
+   "replace": "no reserved R-number and took the one reserved for A5.",
+   "why": "history: false history: it took a ruling number, not a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "collision. Renumbered to (see 197-absorb-is-shared).',",
+   "replace": "collision. Renumbered.',",
+   "why": "grammar: garbled 'Renumbered to (see …)'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(round 29) as CR D7.3a, and THE CLASS",
+   "replace": "(round 29) as the fizzle-and-say-so ruling (now CR D7.3a), and THE CLASS",
+   "why": "history: closed as a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "always opens (504.5), and BOTH",
+   "replace": "always opens (CR 504.5), and BOTH",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "each became THE ONE PREDICATE ⚠ CLAIM 1",
+   "replace": "each became THE ONE PREDICATE. ⚠ CLAIM 1",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'Courier (the pool\\'s only the pool\\'s only haste play grantor with an EMPTY BIN.",
+   "replace": "'Courier (the pool\\'s only haste-play grantor), with an EMPTY BIN.",
+   "why": "grammar: doubled phrase, lost bracket"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(a reading since reversed: CR 803.7i), unlike the generic grants —\\'s printed per-card banner is a deliberate override, '",
+   "replace": "(a reading since reversed: CR 803.7i), '",
+   "why": "grammar: duplicated garbled clause"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "found by the round-28 correctness sample.",
+   "replace": "found by the 30-card correctness sample.",
+   "why": "history: the sample's round is not established; the evidence calls it the 30-card sample"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'⚠ WHERE ⚠ WHERE THE TWO",
+   "replace": "'⚠ WHERE THE TWO",
+   "why": "grammar: doubled phrase"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "deleted. But §17 was answering",
+   "replace": "deleted. But the 2026-08-25 answer was answering",
+   "why": "grammar: dangling §17 after R157 was cut"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'X=0; CR 107.2b was asked exactly that,",
+   "replace": "'X=0; the later ruling (now CR 107.2b) was asked exactly that,",
+   "why": "history: a CR rule narrated as being asked"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(round 29) as (see 81-card-drill). The drill",
+   "replace": "(round 29); see 81-card-drill. The drill",
+   "why": "grammar: garbled 'as (see …)'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "That needs an CR 602.7-side decision",
+   "replace": "That needs a CR 602.7-side decision",
+   "why": "grammar: 'an CR'"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(round 29) as CR D6.8. ONE SEAM",
+   "replace": "(round 29) as the copy-art ruling (now CR D6.8). ONE SEAM",
+   "why": "history: closed as a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "to `art()` while CR 201.5 deliberately never rewrites",
+   "replace": "to `art()` while the copy layer (CR 201.5) deliberately never rewrites",
+   "why": "history: engine design attributed to a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'us once before after which the haste-mod and haste-play permissions each became THE ONE PREDICATE ⚠ An",
+   "replace": "'us once before the haste-mod and haste-play permissions each became THE ONE PREDICATE. ⚠ An",
+   "why": "grammar: 'before after which', lost period"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "always opens (504.5), TOGETHER",
+   "replace": "always opens (CR 504.5), TOGETHER",
+   "why": "grammar: bare number"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "(round 29) as CR D6.17, and THE OWNER",
+   "replace": "(round 29) as the hover-tooltip ruling (now CR D6.17), and THE OWNER",
+   "why": "history: closed as a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "Grade 2 is built with CR 711.3\\'s own `giveControl` there-and-back",
+   "replace": "Grade 2 is built with a `giveControl` there-and-back (CR 711.3 control theft)",
+   "why": "history: helper attributed to a CR rule"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "'A ruling under A rule (now 802.8d) stating",
+   "replace": "'A ruling under the {Inverted} layer (now CR 802.8d) stating",
+   "why": "grammar: garbled 'under A rule', bare number"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "earlier ruling. Had he '\n      + 'Had he taken the recommendation, that ruling would have been silently reversed and the suite would have stayed green. '\n      + 'have stayed green.',",
+   "replace": "earlier ruling. Had he '\n      + 'taken the recommendation, that ruling would have been silently reversed and the suite would '\n      + 'have stayed green.',",
+   "why": "grammar: duplicated sentence"
+  },
+  {
+   "file": "client/ledgers/card-todo-closed.ts",
+   "find": "pair and prove it convicts or it is",
+   "replace": "pair and prove it convicts, or it is",
+   "why": "grammar: lost comma"
+  }
+ ]
+}

@@ -1,0 +1,648 @@
+{
+ "edits": [
+  {
+   "file": "client/ui/test/124-counter-stepper.test.ts",
+   "find": "re-decide CR 206.6b's \"all counters count as counters\" to do even that.",
+   "replace": "re-decide \"all counters count as counters\" (CR 206.6b) to do even that.",
+   "why": "quote attribution: the quoted words are the owner's ruling, not CR 206.6b's text; keep the quote, cite the rule beside it"
+  },
+  {
+   "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+   "find": " * NOT the markup class. Those were each a formatter failing to",
+   "replace": " * NOT the old markup bugs. Those were each a formatter failing to",
+   "why": "grammar: 'the markup class' lost its antecedent when the R-numbers were dropped; 'Those' needs a plural referent"
+  },
+  {
+   "file": "client/ui/test/128-ui-pace.test.ts",
+   "find": "test('CR D5.5 #94: the skip chip counts what is actually still held'",
+   "replace": "test('#94: the skip chip counts what is actually still held'",
+   "why": "wrong-rule: CR D5.5 says no skip control is drawn — it contradicts a 'skip chip'; drop the cite (title unbound)"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": " * CR D2.1b taught `apply()` and `legalActions()` that a decision belongs to a",
+   "replace": " * The engine's seat-aware gate (CR D2.1b) taught `apply()` and `legalActions()` that a decision belongs to a",
+   "why": "history: a rule narrated as the actor that taught the code; the engine gate did"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "THE NEGATIVE CONTROLS — CR D2.1a, D2.1c's cases 2 and 3 are UI-visible too",
+   "replace": "THE NEGATIVE CONTROLS — the engine gate's cases 2 and 3 (CR D2.1a, D2.1c) are UI-visible too",
+   "why": "grammar: 'CR D2.1a, D2.1c's cases' — a possessive on a list of rules"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "slot, and CR D2.1d's after-the-fact fingerprint refuses",
+   "replace": "slot, and the engine's after-the-fact fingerprint (CR D2.1d) refuses",
+   "why": "truth: the fingerprint is the engine's mechanism, not the rule's"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "was gated by the same pre-the old bare `!s.decision`.",
+   "replace": "was gated by the same old bare `!s.decision`.",
+   "why": "grammar: 'pre-the old' garble (from 'pre-R154')"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": " * of the pile still queued behind it. Same fixture shape as the engine gate's own tests (130-seat-aware-gate) deliberately: this file is about the layer above it. */",
+   "replace": " * of the pile still queued behind it. Same fixture shape as the engine gate's own\n * tests (130-seat-aware-gate), deliberately: this file is about the layer above it. */",
+   "why": "grammar: lost comma before 'deliberately' and two comment lines merged into one"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "'and on a cast-time suspension (no CR D6.3 snapshot)'",
+   "replace": "'and on a cast-time suspension (no rollback snapshot)'",
+   "why": "wrong-rule: old R85 (rollback snapshot) is not CR D6.3 (the 'resolving' marker); no visible-board rule applies here, so say it in words"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "the affordance CR D2.1b made legal'",
+   "replace": "the affordance CR D2.1b allows'",
+   "why": "history: a rule narrated as the change that made it legal"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "/* ═══ §3 NEGATIVE CONTROLS — CR D2.1a, D2.1c's other two cases, on screen ════════ */",
+   "replace": "/* ═══ §3 NEGATIVE CONTROLS — the engine gate's other two cases (CR D2.1a, D2.1c), on screen ═══ */",
+   "why": "grammar: possessive on a list of rules"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "  // CR D2.1c case 3: a 'resolve' suspension carries an CR D6.3 whole-GameState",
+   "replace": "  // Case 3 (CR D2.1c): a 'resolve' suspension carries a whole-GameState",
+   "why": "grammar 'an CR' + wrong-rule: the whole-GameState rollback snapshot (old R85) is not CR D6.3"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "'and the screen shows the question alone, as before as it always has'",
+   "replace": "'and the screen shows the question alone, as it always has'",
+   "why": "grammar: doubled 'as before as'"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "  // CR D2.1a case 2: in battle priority is sequential and an opponent",
+   "replace": "  // Case 2 (CR D2.1a): in battle priority is sequential and an opponent",
+   "why": "pointer phrasing: 'CR D2.1a case 2' — the case numbering belonged to the old ruling"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "exactly what CR D2.1a case 2 keeps shut'",
+   "replace": "exactly what CR D2.1a keeps shut'",
+   "why": "pointer phrasing: the rule has no 'case 2'"
+  },
+  {
+   "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+   "find": "which is precisely why CR D2.1d pairs its permissive gate\n  // with an after-the-fact fingerprint —",
+   "replace": "which is precisely why the engine pairs its permissive gate\n  // with an after-the-fact fingerprint (CR D2.1d) —",
+   "why": "history/truth: a rule does not pair gates — the engine does; the cite moves to the fingerprint it states"
+  },
+  {
+   "file": "client/ui/test/156-reaping-and-formation.test.ts",
+   "find": " * does without. CR 802.21b moved the attribute onto the engine's kill diff and",
+   "replace": " * does without. The Reaping ruling (now CR 802.21b) moved the attribute onto the engine's kill diff and",
+   "why": "history: a rule narrated as the actor that moved code"
+  },
+  {
+   "file": "client/ui/test/156-reaping-and-formation.test.ts",
+   "find": " * of it and is what the Reaping ruling read.\" Every one of them prints it, in italics above",
+   "replace": " * of it and is what R184 read.\" Every one of them prints it, in italics above",
+   "why": "quote: the quotation of engine.ts's former comment must stay verbatim (pre-migration 'is what R184 read.') — NEEDS a 184 allowlist entry (the closing quote is on this line, the opening on the line above)"
+  },
+  {
+   "file": "client/ui/test/156-reaping-and-formation.test.ts",
+   "find": "paraphrase of itself and the\n * draw was paid per BODY where the card says one card per kill — fixed as CR 802.21,",
+   "replace": "paraphrase of itself, and the\n * draw was paid per BODY where the card says one card per kill — fixed by a later ruling (now CR 802.21a),",
+   "why": "grammar (lost comma) + history: the fix was a ruling, now stated by CR 802.21a (one card per kill), not 'fixed as CR 802.21'"
+  },
+  {
+   "file": "client/ui/test/156-reaping-and-formation.test.ts",
+   "find": "COUNT was right and the formation target does not change it what it changes is that the",
+   "replace": "COUNT was right and the formation ruling does not change it; what it changes is that the",
+   "why": "grammar: lost semicolon (run-on)"
+  },
+  {
+   "file": "client/ui/test/156-reaping-and-formation.test.ts",
+   "find": "tidy-up and a silent behaviour change here. CR D6.11 then split every row in",
+   "replace": "tidy-up and a silent behaviour change here. The reminder ruling (CR D6.11) then split every row in",
+   "why": "history: a rule narrated as the actor"
+  },
+  {
+   "file": "client/ui/test/156-reaping-and-formation.test.ts",
+   "find": "not to move; CR D6.11 added a second displacing channel and it survived again",
+   "replace": "not to move; a later ruling added a second displacing channel and it survived again",
+   "why": "history + same CR twice in one sentence: the second channel was a later ruling"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "NOT TYPED — CT-81(a) / CR D7.3.",
+   "replace": "NOT TYPED — CT-81(a).",
+   "why": "wrong-rule: old R209's half used here is 'derive a guard's card list' (process), not CR D7.3 (an effect that does nothing says so)"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "That asymmetry is CR 801.9b's own reading — \"the N=1",
+   "replace": "That asymmetry is the glimpse ruling's own reading (now CR 801.9b) — \"the N=1",
+   "why": "quote attribution: the quoted words are the old ruling's, not CR 801.9b's text"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "/** the pool this file's derivation ran against. CR D7.3: `allCardNames()` returns",
+   "replace": "/** the pool this file's derivation ran against. `allCardNames()` returns",
+   "why": "wrong-rule: the pool-size assertion is process (old R209 §2), not CR D7.3"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "  // CR D8.1: registry.ts registers Training Construct too, so registry-only is 495",
+   "replace": "  // CR D8.1b: registry.ts registers Training Construct too, so registry-only is 495",
+   "why": "wrong-rule: Training Construct is CR D8.1b; D8.1 is Learn to Play in general"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "      // CR D7.3/CT-81(a): five of the eleven print the keyword bare.",
+   "replace": "      // CT-81(a): five of the eleven print the keyword bare.",
+   "why": "wrong-rule: not CR D7.3"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "— CR 801.9 as corrected 2026-08-19`",
+   "replace": "— the glimpse rule as corrected 2026-08-19 (CR 801.9)`",
+   "why": "history: CR 801.9 was not corrected on 2026-08-19 — the old glimpse ruling was"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "  // CR D7.3: the group is DERIVED (N>1 and a printed reminder), so a new card that",
+   "replace": "  // The group is DERIVED (N>1 and a printed reminder), so a new card that",
+   "why": "wrong-rule: not CR D7.3"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "{Glimpse} reminder the repo had. CR D6.11 found that four cards print one, so",
+   "replace": "{Glimpse} reminder the repo had. An audit under CR D6.11 found that four cards print one, so",
+   "why": "history: a rule narrated as the finder"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "THE RECYCLE MARK (CR 408.2) CHANGED WHERE AND THE CLAIM IS STILL",
+   "replace": "THE RECYCLE MARK (CR 408.2) CHANGED WHERE, AND THE CLAIM IS STILL",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "'CR 801.9 as corrected 2026-08-19 caches exactly one, not all N'",
+   "replace": "'the glimpse rule as corrected 2026-08-19 (CR 801.9) caches exactly one, not all N'",
+   "why": "history: CR 801.9 was not corrected on 2026-08-19"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "the three limits CR 801.9e, 801.9f puts on the cached card'",
+   "replace": "the three limits CR 801.9e and 801.9f put on the cached card'",
+   "why": "grammar: plural subject takes 'put' (title unbound)"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "  // ⚠ CONVERTED BY CR D6.11. All three were asserted",
+   "replace": "  // ⚠ CONVERTED UNDER CR D6.11. All three were asserted",
+   "why": "history: a rule narrated as the converter"
+  },
+  {
+   "file": "client/ui/test/161-glimpse-reminders.test.ts",
+   "find": "which is exactly the case CR D6.11 built `rule` for",
+   "replace": "which is exactly the case the reminder ruling (CR D6.11) built `rule` for",
+   "why": "history: a rule narrated as the builder"
+  },
+  {
+   "file": "client/ui/test/163-cache-affordance-and-badges.test.ts",
+   "find": "never FAILED: the CR D6.14 agent's `/badge offer/` was",
+   "replace": "never FAILED: the `/badge offer/` written for the hand marks (CR D6.14) was",
+   "why": "pointer phrasing: 'the CR D6.14 agent' — an agent belongs to a round, not a rule"
+  },
+  {
+   "file": "client/ui/test/163-cache-affordance-and-badges.test.ts",
+   "find": " * red; before the bin-panel fix (CR D6.16) it went green.",
+   "replace": " * red; before CARD-TODO #75 gave the driver ancestors it went green.",
+   "why": "history: old R205 here is the driver-ancestor fix (CARD-TODO #75, named above), not a bin-panel fix"
+  },
+  {
+   "file": "client/ui/test/163-cache-affordance-and-badges.test.ts",
+   "find": "test('CR D6.16: a badge chip class has single spaces and no trailing space'",
+   "replace": "test('CT-65: a badge chip class has single spaces and no trailing space'",
+   "why": "wrong-rule: badge class spacing is CT-65, nothing in CR D6.16 (title unbound)"
+  },
+  {
+   "file": "client/ui/test/165-token-loss-warning.test.ts",
+   "find": " * §2 THE GAP, closed. CR D2.6a announces the loss inside `startRegroup`, per seat,",
+   "replace": " * §2 THE GAP, closed. The announcement (CR D2.6a) is made inside `startRegroup`, per seat,",
+   "why": "truth: a rule does not run code inside startRegroup"
+  },
+  {
+   "file": "client/ui/test/165-token-loss-warning.test.ts",
+   "find": "rejected on measurement, not taste; see the retired ruling register ## see CR D2.6a.",
+   "replace": "rejected on measurement, not taste (the token-loss ruling, now CR D2.6a).",
+   "why": "grammar: '## see CR D2.6a' garble; the register is gone"
+  },
+  {
+   "file": "client/ui/test/165-token-loss-warning.test.ts",
+   "find": "/** every line CR D2.6a wrote into this batch of events */",
+   "replace": "/** every token-loss announcement line (CR D2.6a) in this batch of events */",
+   "why": "truth: a rule writes no lines"
+  },
+  {
+   "file": "client/ui/test/165-token-loss-warning.test.ts",
+   "find": "  // Flagged for the owner in CR D6.15 rather than papered over here: a second",
+   "replace": "  // Flagged for the owner in the game-log ruling (now CR D6.15a) rather than papered over here: a second",
+   "why": "history: the flag was raised in a ruling write-up, not in a CR rule; the log-behind-a-menu rule is D6.15a"
+  },
+  {
+   "file": "client/ui/test/165-token-loss-warning.test.ts",
+   "find": "block: *\"The augment reaches the public erased pile (CR 506.2h) exactly as it",
+   "replace": "block: *\"The augment reaches the public erased pile (R65) exactly as it",
+   "why": "quote: the quoted engine comment must stay verbatim (pre-migration '(R65)') — NEEDS a 184 allowlist entry (multi-line quote: opening quote on this line)"
+  },
+  {
+   "file": "client/ui/test/165-token-loss-warning.test.ts",
+   "find": "hours after the token-loss announcement (D2.6a) landed",
+   "replace": "hours after the token-loss announcement (CR D2.6a) landed",
+   "why": "grammar: bare 'D2.6a' without the CR prefix"
+  },
+  {
+   "file": "client/ui/test/168-three-card-divergences.test.ts",
+   "find": "/* THREE ROWS OF THE DIVERGENCE INVENTORY (§2b), ONE CARD EACH\n",
+   "replace": "/* THREE ROWS OF THE DIVERGENCE INVENTORY (§2b), ONE CARD EACH.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/ui/test/168-three-card-divergences.test.ts",
+   "find": "  + '(CR 702.2a) — a deploy-timing spell in the bin is not a legal target, and '",
+   "replace": "  + '— a deploy-timing spell in the bin is not a legal target, and '",
+   "why": "grammar: the same CR number twice in one title (title unbound)"
+  },
+  {
+   "file": "client/ui/test/168-three-card-divergences.test.ts",
+   "find": "test('CR 900.6 Cinder Scuttler: \"YOU deal combat damage to an OPPONENT\" — the '",
+   "replace": "test('§3b Cinder Scuttler: \"YOU deal combat damage to an OPPONENT\" — the '",
+   "why": "wrong-rule: CR 900.6 (1v1 only) is §3a's premise; §3b tests the card's own attribution (title unbound; bound prefix 'CR 900.6 Cinder Scuttler: the' is §3a)"
+  },
+  {
+   "file": "client/ui/test/168-three-card-divergences.test.ts",
+   "find": "test('CR 900.6 Cinder Scuttler: NONCOMBAT life loss never recalls it — the '",
+   "replace": "test('§3c Cinder Scuttler: NONCOMBAT life loss never recalls it — the '",
+   "why": "wrong-rule: noncombat life loss is not CR 900.6 (title unbound)"
+  },
+  {
+   "file": "client/ui/test/176-nested-affordance-and-serialiser.test.ts",
+   "find": " *     unnamed since CR D6.7 fixed the first one.",
+   "replace": " *     unnamed since the first one was fixed (CR D6.7).",
+   "why": "history: a rule narrated as the fixer"
+  },
+  {
+   "file": "client/ui/test/176-nested-affordance-and-serialiser.test.ts",
+   "find": "  // property CR D6.16 leaned on, and until CARD-TODO #75 nothing could check it.",
+   "replace": "  // property the cache-thumb fix (CR D6.16) leaned on, and until CARD-TODO #75 nothing could check it.",
+   "why": "history: a rule narrated as leaning on a property"
+  },
+  {
+   "file": "client/ui/test/176-nested-affordance-and-serialiser.test.ts",
+   "find": "could never fail (CT-65/CR D6.16). '",
+   "replace": "could never fail (CT-65). '",
+   "why": "wrong-rule: the badge-class bug is CT-65; CR D6.16 is the panel click"
+  },
+  {
+   "file": "client/ui/test/176-nested-affordance-and-serialiser.test.ts",
+   "find": "  // CR D6.7's third consequence, held to literally: \"a batch the client can read",
+   "replace": "  // The pacing ruling's third consequence (now CR D6.7b), held to literally: \"a batch the client can read",
+   "why": "quote attribution: the quoted words are the old ruling's, not CR D6.7's text; the unnamed-end case is D6.7b"
+  },
+  {
+   "file": "client/ui/test/198-copy-art.test.ts",
+   "find": " * CR 201.5 deliberately never rewrites `Entity.card`: the physical card is what\n * bins (ruling 1), and",
+   "replace": " * The copy layer deliberately never rewrites `Entity.card`: the physical card is\n * what bins (CR 201.5), and",
+   "why": "truth: a rule does not rewrite code fields; '(ruling 1)' is residue of the old ruling's numbering"
+  },
+  {
+   "file": "client/ui/test/199-hover-scroll.test.ts",
+   "find": "the RULE, as a pure function. CR D6.17 moved the decision out of the",
+   "replace": "the RULE, as a pure function. The report-#110 fix (CR D6.17) moved the decision out of the",
+   "why": "history: a rule narrated as moving code"
+  },
+  {
+   "file": "client/ui/test/199-hover-scroll.test.ts",
+   "find": "cancelled timers, which CR D6.17 repaired.",
+   "replace": "cancelled timers, which the same fix repaired.",
+   "why": "history: a rule narrated as repairing the test driver"
+  },
+  {
+   "file": "client/ui/test/210-cardsearch.test.ts",
+   "find": "// CR D8.1: + Training Construct, a marker",
+   "replace": "// CR D8.1b: + Training Construct, a marker",
+   "why": "wrong-rule: Training Construct (no element) is CR D8.1b"
+  },
+  {
+   "file": "client/ui/test/211-card-audit.test.ts",
+   "find": "// CR D8.1: +1, Training Construct",
+   "replace": "// CR D8.1b: +1, Training Construct",
+   "why": "wrong-rule: Training Construct (only in Learn to Play) is CR D8.1b"
+  },
+  {
+   "file": "client/ui/test/216-menu-scoping.test.ts",
+   "find": " * The earlier version put them on every card menu ON PURPOSE",
+   "replace": " * An earlier ruling put them on every card menu ON PURPOSE",
+   "why": "history: it was a ruling that put them there; 'the earlier version' has no referent"
+  },
+  {
+   "file": "client/ui/test/216-menu-scoping.test.ts",
+   "find": "'CR D6.15: \"Righclicking a card should only show things related to that card\"'",
+   "replace": "'the owner, now CR D6.15: \"Righclicking a card should only show things related to that card\"'",
+   "why": "quote attribution: the quote (typo and all) is the owner's words, not CR D6.15's text"
+  },
+  {
+   "file": "client/ui/test/218-one-tempo.test.ts",
+   "find": " * second.\"* CR D5.4 built `ui/pace.ts` for it and it works",
+   "replace": " * second.\"* The pacing fix (now CR D5.4) built `ui/pace.ts` for it and it works",
+   "why": "history: a rule narrated as building code"
+  },
+  {
+   "file": "client/ui/test/218-one-tempo.test.ts",
+   "find": "(CR 507.5(a) — outside battle there are no priority",
+   "replace": "(CR 507.5 — outside battle there are no priority",
+   "why": "grammar: sub-item label '(a)' of the old ruling glued to a CR number"
+  },
+  {
+   "file": "client/ui/test/218-one-tempo.test.ts",
+   "find": "is two requirements. CR D6.7 already",
+   "replace": "is two requirements. The beat-pacing fix (now CR D6.7) already",
+   "why": "history: a rule narrated as delivering and making things (next sentence 'It also made')"
+  },
+  {
+   "file": "client/ui/test/223-client-legality.test.ts",
+   "find": "/** the pre-the older arm: the two scalars, and no snapshot at all */",
+   "replace": "/** the older arm: the two scalars, and no snapshot at all */",
+   "why": "grammar: 'pre-the older' garble"
+  },
+  {
+   "file": "client/ui/test/226-log-and-naming.test.ts",
+   "find": "/** CR D5.4 holds the tail of the log until its narrative beats have played, and\n * CR D5.4 paces authoritative updates",
+   "replace": "/** The log holds its tail until its narrative beats have played, and the tempo\n * (CR D5.4) paces authoritative updates",
+   "why": "same CR twice + wrong-rule: holding the log tail (old R80 beats) is not CR D5.4"
+  },
+  {
+   "file": "client/ui/test/226-log-and-naming.test.ts",
+   "find": " * (CR D5.5 note: the skip chip no longer needs a repaint",
+   "replace": " * (Note: the skip chip no longer needs a repaint",
+   "why": "wrong-rule: CR D5.5 says no skip control is drawn, contradicting 'the skip chip'"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "find": "{Piercing} deliberately so (CR 802.16, 802.16j, 802.16f\n",
+   "replace": "{Piercing} deliberately so (CR 802.16f, 802.16j\n",
+   "why": "wrong-rule: CR 802.16 (the base attribute) does not generalise it; f and j do"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "find": "  // reminder that does not exist would leave a player with nothing, and the Reaping ruling was decided by reading one of these\n",
+   "replace": "  // reminder that does not exist would leave a player with nothing, and the Reaping\n  // ruling was decided by reading one of these.\n",
+   "why": "grammar: lost period, two comment lines merged (hand-owned file, comment only)"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "find": "and it was a list of fourteen until CR D6.11.",
+   "replace": "and it was a list of fourteen until report #119.",
+   "why": "history: a rule narrated as an event; the next line says report #119 changed it"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "find": "  // not vacuous, and the rows /CT-80 is actually about are in it by name:",
+   "replace": "  // not vacuous, and the rows CT-80 is actually about are in it by name:",
+   "why": "grammar: stray '/' left by the dropped R-number"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "find": "player reads; CR 802.16, 802.16j, 802.16f's generalisation off the combat column — a",
+   "replace": "player reads; the generalisation off the combat column (CR 802.16f, 802.16j) — a",
+   "why": "grammar: possessive on a list of rules; 802.16 is the base attribute"
+  },
+  {
+   "file": "client/ui/test/227-reminder-text.test.ts",
+   "find": "'CR 802.16j generalised piercing off the column'",
+   "replace": "'CR 802.16j: piercing reaches non-combat damage too'",
+   "why": "history: a rule narrated as the change that generalised it"
+  },
+  {
+   "file": "client/ui/test/228-spent-marker.test.ts",
+   "find": "RE-REPORT of the one the 2026-08-24 text-box fix answered:",
+   "replace": "RE-REPORT of the one the earlier text-box fix answered:",
+   "why": "invented date: the old R135 was never a ruling and nothing dates it 2026-08-24"
+  },
+  {
+   "file": "client/ui/test/231-manual-text.test.ts",
+   "find": " * CR D6.11 answered report #118 for the fifteen glossary rows",
+   "replace": " * The first reminder ruling (CR D6.11) answered report #118 for the fifteen glossary rows",
+   "why": "history: a rule narrated as answering a report"
+  },
+  {
+   "file": "client/ui/test/231-manual-text.test.ts",
+   "find": "on any card, so CR D6.11's\n",
+   "replace": "on any card, so that ruling's\n",
+   "why": "history: the swap was the ruling's, not the rule's"
+  },
+  {
+   "file": "client/ui/test/231-manual-text.test.ts",
+   "find": "'CR 723.2: and only out of your hand'",
+   "replace": "'CR 723.2: and out of your hand'",
+   "why": "truth: 'only out of your hand' contradicts CR 723.2a (a Virus may also come from the cache in battle)"
+  },
+  {
+   "file": "client/ui/test/231-manual-text.test.ts",
+   "find": "{Unstable} also left. CR D6.11 read the manual's PERMADEATH paragraph,",
+   "replace": "{Unstable} also left. The Manual-channel audit read the manual's PERMADEATH paragraph,",
+   "why": "history: a rule narrated as reading, ruling and stopping"
+  },
+  {
+   "file": "client/ui/test/233-burst-count-and-size.test.ts",
+   "find": "two DIFFERENT burst names: CR 803.5, 803.5a says these are two chains",
+   "replace": "two DIFFERENT burst names: CR 803.5a says these are two chains",
+   "why": "grammar: plural subject with 'says'; 803.5a is the separate-groups rule"
+  },
+  {
+   "file": "client/ui/test/234-arrowhead-clears-text.test.ts",
+   "find": "resting ON the number — CR D6.18's own report, reintroduced by a CSS",
+   "replace": "resting ON the number — report #133 itself, reintroduced by a CSS",
+   "why": "pointer phrasing: the report belongs to the ruling, not to CR D6.18"
+  },
+  {
+   "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+   "find": "79 → 80 with  Tides of the Cosmos'",
+   "replace": "79 → 80 because Tides of the Cosmos'",
+   "why": "grammar: double space and dangling 'with' left by the dropped R-number"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": " * The question he was answering: report #131 / CR D6.15 hid the game log behind a",
+   "replace": " * The question he was answering: report #131 / the game-log ruling (now CR D6.15a) hid the game log behind a",
+   "why": "history: a rule narrated as hiding the log; the log-behind-a-menu rule is D6.15a"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "a `.promptbar` confirm since the regroup confirm (D2.6) shipped,",
+   "replace": "a `.promptbar` confirm since the regroup confirm (CR D2.6) shipped,",
+   "why": "grammar: bare 'D2.6' without the CR prefix"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": " *     the path, so there is no pass to hang a confirm on. The client announces the loss instead of preventing it (D2.6a) it (see the retired ruling register ## see CR 610.4e: a declined round opens no window, which is why opening one was rejected and that announcement went to the log\n",
+   "replace": " *     the path, so there is no pass to hang a confirm on. The token-loss ruling\n *     (now CR D2.6a) announced the loss instead of preventing it (a declined round\n *     opens no window, CR 610.4e, and opening one was rejected), and that\n *     announcement went to the log\n",
+   "why": "grammar: garbled splice ('it (D2.6a) it (see the retired ruling register ## see …', unclosed bracket, one 300-char line); restored the sentence's sense"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": " * CR D5.4b's pacing throttle holds arrivals once a session has a backlog",
+   "replace": " * The pacing throttle (CR D5.4) holds arrivals once a session has a backlog",
+   "why": "pointer phrasing: the throttle is the D5.4 tempo; D5.4b is the never-held exceptions"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "'and it is the one CR D2.6a wrote'",
+   "replace": "'and it is the token-loss announcement (CR D2.6a)'",
+   "why": "truth: a rule writes no messages"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "(the token-loss announcement's own does and a\n",
+   "replace": "(the token-loss announcement's own does), and a\n",
+   "why": "grammar: lost closing bracket and comma"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "read the token-loss announcement (D2.6a) as having no data at all and left the ruling's own case out of its inventory.",
+   "replace": "read the token-loss announcement (CR D2.6a) as\n * having no `data` at all and left the ruling's own case out of its inventory.",
+   "why": "grammar: lost the backticks around `data`, bare 'D2.6a', and a merged over-long line"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "because CR D2.6a deliberately keeps it out of the CR 407.1 pile",
+   "replace": "because the token-loss announcement (CR D2.6a) deliberately keeps it out of the erased pile (CR 407.1)",
+   "why": "truth: a rule does not keep events out of a pile; the announcement's payload does"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "the round-39 pair: CR 608.3b's sub-step boundary line (\"Swift",
+   "replace": "the round-39 pair: the sub-step boundary line (CR 608.3b; \"Swift",
+   "why": "pointer phrasing: a rule has no log line"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "splits the damage step) and CR 408.2b's reshuffle line (\"X's deck",
+   "replace": "splits the damage step) and the reshuffle line (CR 408.2b; \"X's deck",
+   "why": "pointer phrasing: a rule has no log line"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "// 203 → 205 with CR D8.1's lesson deal:",
+   "replace": "// 203 → 205 with the Learn to Play lesson deal (CR D8.1):",
+   "why": "pointer phrasing"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "// 205 → 207 with the cache-mod pair's pair:",
+   "replace": "// 205 → 207 with the cache-mod pair:",
+   "why": "grammar: doubled 'pair's pair'"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "// 208 → 210 with the token-cast pricing pair's pair in doCastSpellToken:",
+   "replace": "// 208 → 210 with the token-cast pricing pair in doCastSpellToken:",
+   "why": "grammar: doubled 'pair's pair'"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "// 211 → 215 with 211 → 215 when the cache gained the hand's modes (report #195) the cache plays like the hand): two",
+   "replace": "// 211 → 215 when the cache gained the hand's modes (report #195, the cache plays like the hand): two",
+   "why": "grammar: doubled '211 → 215', unbalanced bracket"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "with the mandatory-graft-cost rule (722.6a) (CT-216, RAQ",
+   "replace": "with the mandatory-graft-cost rule (CR 722.6a; CT-216, RAQ",
+   "why": "grammar: '(722.6a) (' double bracket and bare number"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "with the target re-check (CR 704.5a; CT-208,",
+   "replace": "with the target re-check (CR 704.5; CT-208,",
+   "why": "wrong-rule: the every-target re-check is CR 704.5; 704.5a is 'checked once', and is an engine-differs rule"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "the whole reason the token-loss announcement (D2.6a) had nowhere to go'",
+   "replace": "the whole reason the token-loss announcement (CR D2.6a) had nowhere to go'",
+   "why": "grammar: bare 'D2.6a'"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "    // CR D6.12 fixed the LABEL half of this row:",
+   "replace": "    // The stack-strip fix (now CR D6.12) took care of the LABEL half of this row:",
+   "why": "history: a rule narrated as fixing a row"
+  },
+  {
+   "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+   "find": "'CR D7.4a built it'",
+   "replace": "'the CR D7.4a notice has a builder'",
+   "why": "history: a rule narrated as building code"
+  }
+ ],
+ "_reconciled": [
+  {
+   "dropped": {
+    "file": "client/ui/test/227-reminder-text.test.ts",
+    "find": "// the WHOLE pool (see 180-pool-sight) — registry.ts alone is 494 of 495",
+    "replace": "// the WHOLE pool (see 180-pool-sight) — registry.ts alone is 494 of 495",
+    "why": "wrong pointer: the 495-card pool ruling's guard is 180-pool-sight, not 150-registration-order"
+   },
+   "reason": "the R214 pointer is now 180-pool-sight at recite (score.mjs PROCESS_HOME), so this edit has nothing left to do"
+  },
+  {
+   "dropped": {
+    "file": "client/ui/test/236-browser-glossary-reach.test.ts",
+    "find": "// the WHOLE pool (see 180-pool-sight) — registry.ts alone is 494 of 495",
+    "replace": "// the WHOLE pool (see 180-pool-sight) — registry.ts alone is 494 of 495",
+    "why": "wrong pointer: the 495-card pool guard is 180-pool-sight"
+   },
+   "reason": "the R214 pointer is now 180-pool-sight at recite (score.mjs PROCESS_HOME), so this edit has nothing left to do"
+  },
+  {
+   "dropped": {
+    "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+    "find": "// the PUBLIC entry point (see 180-pool-sight).",
+    "replace": "// the PUBLIC entry point (see 180-pool-sight).",
+    "why": "wrong pointer: the 495-card pool guard is 180-pool-sight"
+   },
+   "reason": "the R214 pointer is now 180-pool-sight at recite (score.mjs PROCESS_HOME), so this edit has nothing left to do"
+  },
+  {
+   "movedToHandCopy": " * statement of it, AND IT IS WHAT the Reaping ruling READ.\""
+  },
+  {
+   "movedToHandCopy": " *   · The 2026-08-26 audit (2026-08-26) audited all 43 rows and found NINE wron"
+  },
+  {
+   "movedToHandCopy": " *      CR D6.11 / report #119 adds a SECOND displacing channel"
+  },
+  {
+   "movedToHandCopy": " * ⚠ RENAMED 2026-08-30 (CR 802.9h / CT-171)."
+  },
+  {
+   "movedToHandCopy": "prophecy to its [Haste] marker in flat contradiction of CR 803.7i while citing t"
+  },
+  {
+   "movedToHandCopy": " * Note also what these messages say and do not check: \"re-read names a ruling t"
+  },
+  {
+   "movedToHandCopy": "does not. CR 304.2: the only '"
+  },
+  {
+   "movedToHandCopy": "'the row says hand only — CR 723.2a opened the battle window to a playable cache"
+  },
+  {
+   "movedToHandCopy": "'the pre-the old wording is back —"
+  }
+ ]
+}

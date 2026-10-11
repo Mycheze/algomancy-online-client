@@ -39,7 +39,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
-import '../../engine/src/index.ts';   // the WHOLE pool (see 150-registration-order) — registry.ts alone is 494 of 495
+import '../../engine/src/index.ts';   // the WHOLE pool (see 180-pool-sight) — registry.ts alone is 494 of 495
 import {
   AUTHORED_GLOSSARY, GLOSSARY, LIBRARY_REMINDERS, MANUAL_REMINDERS, PRINTED_REMINDERS, glossaryHits,
   type GlossEntry,
@@ -93,7 +93,7 @@ test('CR D6.11: no string a renderer can reach off a glossary row carries an R-n
 });
 
 test('POSITIVE CONTROL: the R-number sweep names the row and the field it found', () => {
-  // the real bug, restored: the {Haste} row as it read before R248.
+  // the real bug, restored: the {Haste} row as it read before the report #118 fix.
   const haste = GLOSSARY.find(e => e.term === 'Haste');
   assert.ok(haste, 'the glossary has lost its Haste row');
   const broken: GlossEntry = {
@@ -101,7 +101,7 @@ test('POSITIVE CONTROL: the R-number sweep names the row and the field it found'
     text: 'The step ALWAYS happens (R224), whether or not anybody can act in it.',
   };
   const found = leaks([broken]);
-  assert.equal(found.length, 1, `nothing fired on the pre-R248 Haste row: ${JSON.stringify(found)}`);
+  assert.equal(found.length, 1, `nothing fired on the pre-#118 Haste row: ${JSON.stringify(found)}`);
   assert.match(found[0]!, /\{Haste\}\.text: R224/);
   // and a number hidden in a field nobody thought about — the sweep is over
   // the object, so a new prose field is covered the day it is added

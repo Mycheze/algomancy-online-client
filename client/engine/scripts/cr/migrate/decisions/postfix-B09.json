@@ -1,0 +1,696 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "forward-counting anchors: CR 803.7 says",
+   "replace": "forward-counting anchors: CR 803.7e says",
+   "why": "wrong-rule: forward counting is 803.7e"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "/** CR 803.7: the turn this was prophesied on",
+   "replace": "/** CR 803.7e: the turn this was prophesied on",
+   "why": "wrong-rule: 'Two Turns Pass' counting is 803.7e"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "PUBLIC information (CR D6.6)",
+   "replace": "PUBLIC information (CR 403.2)",
+   "why": "wrong-rule: 403.2 'The cache is public'; D6.6 is the display convention"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "existed read as unshielded\n",
+   "replace": "existed read as unshielded.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "Prevention is NOT the CR 708.11 REPLACEMENT hooks' semantics.",
+   "replace": "Prevention is NOT the REPLACEMENT hooks' semantics (CR 708.11).",
+   "why": "grammar: CR 708.11 is not the hooks; pointer moved"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "exactly what CR 112.8 made simultaneous.",
+   "replace": "exactly what CR 112.8 makes simultaneous.",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "The other half of CR 712.1a is CONTINUOUS",
+   "replace": "The other half of CR 712.1 is CONTINUOUS",
+   "why": "grammar: 'half' of the same rule cited above (712.1)"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "get away with mutating because a",
+   "replace": "get away with mutating, because a",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "* CR 710.7 added `behavior`, the CATCH-ALL",
+   "replace": "* `behavior` (CR 710.7) is the CATCH-ALL",
+   "why": "history: rule narrated as actor ('added')"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "⚠ The RAQ reverses the earlier reading that such a copy is Unstable … the copy is still",
+   "replace": "⚠ CT-225 REVERSES the earlier copy ruling's Unstable half. The owner had\n   * ruled \"Inherit the mods text, but it IS Unstable … the copy is still",
+   "why": "quote: restore the owner's quotation verbatim (open quote was lost)"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "for `StackItem`'s CR D6.3 reason:",
+   "replace": "for `StackItem`'s suspension reason:",
+   "why": "wrong-rule: D6.3 is not the suspension replay"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "an CR 608.4e hole's blockers",
+   "replace": "a CR 602.5a hole's blockers",
+   "why": "grammar 'an CR'; wrong-rule: holes are 602.5a"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "(and still does, making it a real target changes no count but lied",
+   "replace": "(and still does: making it a real target changes no count) but lied",
+   "why": "grammar: unclosed parenthesis"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "   * (CR D6.3), and the verdict",
+   "replace": "   * and the verdict",
+   "why": "wrong-rule: D6.3 is not the suspension replay"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "by the designer (CR 109.9b) the reason",
+   "replace": "by the designer (CR 109.9b): the reason",
+   "why": "grammar: lost colon"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "   * suspension (CR D6.3). `item`",
+   "replace": "   * suspension. `item`",
+   "why": "wrong-rule: D6.3 is not the suspension replay"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "and because CR D6.3\n",
+   "replace": "and because the suspension\n",
+   "why": "wrong-rule: D6.3 is not the rollback"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "/** CR 705.3b 'payMana':",
+   "replace": "/** 'payMana':",
+   "why": "grammar: same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "what the suspension carries (CR D6.3).",
+   "replace": "what the suspension carries.",
+   "why": "wrong-rule: D6.3 is not the suspension replay"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "the retired ruling register puts payment inside resolution.",
+   "replace": "CR 205.3b puts payment inside resolution.",
+   "why": "history/pointer: cite the rule, not the retired register"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "⚠ 205.3a leaves no room",
+   "replace": "⚠ CR 205.3a leaves no room",
+   "why": "grammar: bare number without CR"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "what an CR D6.3 suspension carries",
+   "replace": "what a suspension carries",
+   "why": "grammar 'an CR'; wrong-rule D6.3"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "(an CR 602.5a hole)",
+   "replace": "(a CR 602.5a hole)",
+   "why": "grammar: 'an CR'"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "// the cast is a play until the cast was given its zone (410.6a) and both",
+   "replace": "// A spell token's cast was already a play (CR 702.7a); until then it carried no zone, and both",
+   "why": "grammar: garbled sentence; 702.7a makes the token cast a play"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "resolution, CR 704.6b fizzle, negation",
+   "replace": "resolution, CR 704.6 fizzle, negation",
+   "why": "wrong-rule: fizzle is 704.6 (704.6b is partial loss)"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "suspend mid-part (CR D6.3): the flag",
+   "replace": "suspend mid-part: the flag",
+   "why": "wrong-rule: D6.3 is not the suspension replay"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "the same CR D6.3 reason:",
+   "replace": "the same suspension reason:",
+   "why": "wrong-rule: D6.3 is not the suspension replay"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "survives an CR D6.3 suspension round trip",
+   "replace": "survives a suspension round trip",
+   "why": "grammar 'an CR'; wrong-rule D6.3"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "CR 109.3a's own worked example, Nectar Ridge",
+   "replace": "the textbook CR 109.3a case, Nectar Ridge",
+   "why": "truth: 109.3a's own example is Earthbound Replicator, not Nectar Ridge"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "and the (see replay-room.ts)\n",
+   "replace": "and the replay-room.ts\n",
+   "why": "grammar: garbled pointer"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "       * CR D6.3 — the state the replay restarts FROM",
+   "replace": "       * The state the replay restarts FROM",
+   "why": "wrong-rule: D6.3 is not the suspension rollback"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "a hit the CR 608.8a hooks",
+   "replace": "a hit the rot hooks",
+   "why": "grammar: 608.8a is not the replacement hooks (was R38, rot)"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "cache zone (CR 403.1, 403.7).",
+   "replace": "cache zone (CR 403.1, 801.9, 803.7).",
+   "why": "wrong-rule: 403.7 (cached unit's mods) is not the cache/glimpse/prophecy family"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "so the CR 601.2 scoping in",
+   "replace": "so the CR 601.1d scoping in",
+   "why": "wrong-rule: listener region scoping is 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "older fixed entity-id order which",
+   "replace": "older fixed entity-id order, which",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "before the field existed simply lack it\n",
+   "replace": "before the field existed simply lack it.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "See CR D6.6e (still open); the one line to change is in\n   * server/view.ts that makes it owner-only",
+   "replace": "See CR D6.6e (still open); one line in\n   * server/view.ts makes it owner-only",
+   "why": "grammar: broken sentence"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "/* CR 303.11 DELETED `copyParks`,",
+   "replace": "/* DELETED (CR 303.11): `copyParks`,",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "is in progress — CR 507.4's rot damage",
+   "replace": "is in progress — the rot damage",
+   "why": "grammar: same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "because CR 112.13d gave the rot",
+   "replace": "because CR 112.13d gives the rot",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "read as 0 and no saved",
+   "replace": "read as 0, and no saved",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "region-scoped (CR 601.2); a per-seat",
+   "replace": "region-scoped (CR 111.10); a per-seat",
+   "why": "wrong-rule: cost-mod region scope is 111.10"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "and CR 601.2 exists to stop information",
+   "replace": "and CR 601.1a exists to stop information",
+   "why": "wrong-rule: region isolation is 601.1a"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "Rotling). CR 400.5 anchors a\n   * zone trigger on",
+   "replace": "Rotling). The engine anchors a\n   * zone trigger (CR 400.5) on",
+   "why": "truth: the stand-in is the engine's device, not the rule's"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "design question (\"what does 'per card' (CR 109.9m) mean for a\n   * card not in play?\") answered as PER SEAT PER CARD NAME: a bin holds bare\n",
+   "replace": "design question,\n   * \"what does 'per card' (R9) mean for a card not in play?\", answered as\n   * PER SEAT PER CARD NAME: a bin holds bare\n",
+   "why": "quote: restore CARD-TODO #21's question verbatim, reflowed onto one line so the quote pairs"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "by a sub-step \"resolve\n   * IMMEDIATELY (special actions, no priority — the old sub-step ruling) before the next\n   * sub-step\". That was",
+   "replace": "by a sub-step\n   * \"resolve IMMEDIATELY (special actions, no priority — R3) before the next sub-step\".\n   * That was",
+   "why": "quote: restore the quoted old comment verbatim, reflowed onto one line so the quote pairs"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "the same way CR 400.5 gives three copies one firing",
+   "replace": "the same way CR 400.5a gives three copies one firing",
+   "why": "wrong-rule: copies sharing one firing is 400.5a"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "/** CR 803.7: battle ROUNDS completed",
+   "replace": "/** CR 803.7e: battle ROUNDS completed",
+   "why": "wrong-rule: forward anchor is 803.7e"
+  },
+  {
+   "file": "client/engine/src/types.ts",
+   "find": "/** CR D6.3: the highest decision id",
+   "replace": "/** The highest decision id",
+   "why": "wrong-rule: D6.3 is not the replay rewind"
+  },
+  {
+   "file": "client/engine/test/04-mods.test.ts",
+   "find": "single negation kills all of it (CR 704.6b/Graft 101)",
+   "replace": "single negation kills all of it (CR 722.4b/Graft 101)",
+   "why": "wrong-rule: one composite, one negation is 722.4b (704.6b is partial target loss)"
+  },
+  {
+   "file": "client/engine/test/04-mods.test.ts",
+   "find": "controller of the unit controls its mods (CR 711.1)",
+   "replace": "controller of the unit controls its mods (CR 711.2)",
+   "why": "wrong-rule: mods changing controller with the unit is 711.2"
+  },
+  {
+   "file": "client/engine/test/05-rulings.test.ts",
+   "find": "and the split-step rule (CR 608.3b) took half of that",
+   "replace": "and the split-step ruling (now CR 608.3b) took half of that",
+   "why": "history: a rule narrated as the change; it was a ruling"
+  },
+  {
+   "file": "client/engine/test/05-rulings.test.ts",
+   "find": "'CR 608.3e: Swift and normal both strike, so the step is split",
+   "replace": "'CR 608.3b: Swift and normal both strike, so the step is split",
+   "why": "wrong-rule: the split step's priority window is 608.3b (608.3e is the recalc)"
+  },
+  {
+   "file": "client/engine/test/05-rulings.test.ts",
+   "find": "test('CR 704.6b: all targets gone → fizzle",
+   "replace": "test('CR 704.6: all targets gone → fizzle",
+   "why": "wrong-rule: fizzle on all targets gone is 704.6 (binding 'a fizzled spell unit never spawns' kept)"
+  },
+  {
+   "file": "client/engine/test/05-rulings.test.ts",
+   "find": "fenced so the dealt-in-full fix cannot swallow it\n",
+   "replace": "fenced so the dealt-in-full fix cannot swallow it.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/05-rulings.test.ts",
+   "find": "'home unit does not exist here (CR 601.2)'",
+   "replace": "'home unit does not exist here (CR 601.1a)'",
+   "why": "wrong-rule: region exclusivity is 601.1a (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/08-cards2.test.ts",
+   "find": "haste play (R18)\". CR 504.5\n  // reversed it:",
+   "replace": "haste play (R18)\". The rulings behind\n  // CR 504.5 reversed it:",
+   "why": "history: rule narrated as actor ('reversed it')"
+  },
+  {
+   "file": "client/engine/test/08-cards2.test.ts",
+   "find": "the ambusher is binned (CR 803.6)'",
+   "replace": "the ambusher is binned (CR 803.6f)'",
+   "why": "wrong-rule: Ambush fizzle → bin is 803.6f"
+  },
+  {
+   "file": "client/engine/test/09-attrs.test.ts",
+   "find": "// CR 802.19: the rider is Resonant Form's trigger",
+   "replace": "// CR 802.19a, 802.19j: the rider is Resonant Form's trigger",
+   "why": "wrong-rule: 802.19 is only the reminder; trigger is 802.19a, source-gone is 802.19j"
+  },
+  {
+   "file": "client/engine/test/107-semantics-statics.test.ts",
+   "find": "and CR 707.7's `effectAttrs` for a",
+   "replace": "and the effect-damage fix's `effectAttrs` for a",
+   "why": "wrong-rule: effectAttrs is the engine channel from the effect-damage fix, not something 707.7 defines"
+  },
+  {
+   "file": "client/engine/test/107-semantics-statics.test.ts",
+   "find": "which is why the card needs CR 707.7's",
+   "replace": "which is why the card needs the effect-damage fix's",
+   "why": "wrong-rule: effectAttrs is an engine channel, not 707.7's"
+  },
+  {
+   "file": "client/engine/test/107-semantics-statics.test.ts",
+   "find": "the battle happens in A's region (CR 601.2)",
+   "replace": "the battle happens in A's region (CR 601.4)",
+   "why": "wrong-rule: the attacker entering the defender's region is 601.4"
+  },
+  {
+   "file": "client/engine/test/108-formation-class.test.ts",
+   "find": "recheck mechanism\": R1 is about CONDITIONS",
+   "replace": "recheck mechanism\": CR 109.3c is about CONDITIONS",
+   "why": "grammar: surviving bare R1 beside a quoted span"
+  },
+  {
+   "file": "client/engine/test/108-formation-class.test.ts",
+   "find": "// ⚠ ⚠ The dead-source reading was reversed on 2026-10-09 (RAQ). REVERSES the earlier dead-source reading grade. The RAQ,",
+   "replace": "// ⚠ The last-known-state ruling (2026-10-09, now CR 714.4) REVERSES the earlier dead-source grade. The RAQ,",
+   "why": "grammar: garbled doubled sentence"
+  },
+  {
+   "file": "client/engine/test/109-attr-channel-conformance.test.ts",
+   "find": "BUG SHAPE (707.7), GENERALISED",
+   "replace": "BUG SHAPE (CR 707.7), GENERALISED",
+   "why": "grammar: bare number without CR"
+  },
+  {
+   "file": "client/engine/test/109-attr-channel-conformance.test.ts",
+   "find": "and it became CR 707.7.",
+   "replace": "and it became a ruling (now CR 707.7).",
+   "why": "history: it was a ruling, not a CR rule"
+  },
+  {
+   "file": "client/engine/test/11-fire-wood.test.ts",
+   "find": "(Guardian of the Grotto CR 601.2,",
+   "replace": "(Guardian of the Grotto CR 601.1b,",
+   "why": "wrong-rule: region-scoped effects are 601.1b (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/11-fire-wood.test.ts",
+   "find": "gain +0/+1 (CR 601.2)'",
+   "replace": "gain +0/+1 (CR 601.1b)'",
+   "why": "wrong-rule: region-scoped effects are 601.1b"
+  },
+  {
+   "file": "client/engine/test/11-fire-wood.test.ts",
+   "find": "// CR 701.1e (the owner, answering",
+   "replace": "// CR 701.1e (the owner's ruling, answering",
+   "why": "history: the rule narrated as the owner answering"
+  },
+  {
+   "file": "client/engine/test/110-literal-water.test.ts",
+   "find": "// CR 702.3e reordered the two questions",
+   "replace": "// A later fix reordered the two questions",
+   "why": "history: rule narrated as actor; same CR twice in one sentence"
+  },
+  {
+   "file": "client/engine/test/111-literal-fire.test.ts",
+   "find": "deals DOUBLE (CR 707.7a default)'",
+   "replace": "deals DOUBLE (CR 707.7a)'",
+   "why": "grammar: awkward pointer ('default' belonged to the old open note)"
+  },
+  {
+   "file": "client/engine/test/111-literal-fire.test.ts",
+   "find": "reaches a spell token — CR 707.7a effectAttrs, '",
+   "replace": "reaches a spell token (CR 707.7a) through effectAttrs, '",
+   "why": "grammar: effectAttrs is the engine channel, not the rule's"
+  },
+  {
+   "file": "client/engine/test/113-literal-metal.test.ts",
+   "find": "Rotspore ruling (707.7) —",
+   "replace": "Rotspore ruling (CR 707.7) —",
+   "why": "grammar: bare number without CR"
+  },
+  {
+   "file": "client/engine/test/113-literal-metal.test.ts",
+   "find": "The engine's own CR 712.1a note settles it",
+   "replace": "The engine's own suppression note (now CR 712.1a) settles it",
+   "why": "grammar: the quoted note is the engine's, the rule is a pointer"
+  },
+  {
+   "file": "client/engine/test/114-literal-dark.test.ts",
+   "find": "The standing principle is CR 707.7's — \"when",
+   "replace": "The standing principle is the Rotspore ruling's (CR 707.7) — \"when",
+   "why": "truth: the quoted words are the ruling's, not 707.7's text"
+  },
+  {
+   "file": "client/engine/test/114-literal-dark.test.ts",
+   "find": "CR 700.1b enumerates\n",
+   "replace": "the old ruling (now CR 700.1b) enumerates\n",
+   "why": "truth: the quoted list is the old ruling's wording, not 700.1b's text"
+  },
+  {
+   "file": "client/engine/test/114-literal-dark.test.ts",
+   "find": "complement of CR 700.1b\\'s spell half",
+   "replace": "complement of CR 700.1a\\'s spell half",
+   "why": "wrong-rule: the spell half is 700.1a (700.1b is the nonspell half)"
+  },
+  {
+   "file": "client/engine/test/114-literal-dark.test.ts",
+   "find": "bin — CR 400.5 anchors a zone firing '",
+   "replace": "bin — the engine anchors a zone firing (CR 400.5) '",
+   "why": "truth: the stand-in is the engine's device, not the rule's"
+  },
+  {
+   "file": "client/engine/test/114-literal-dark.test.ts",
+   "find": "could not foresee not have: `zoneTake`",
+   "replace": "could not foresee: `zoneTake`",
+   "why": "grammar: garbled 'could not foresee not have'"
+  },
+  {
+   "file": "client/engine/test/115-literal-light.test.ts",
+   "find": "in the invented-qualifier shape's shape:",
+   "replace": "in the Rotspore ruling's shape:",
+   "why": "grammar: garbled 'shape's shape'"
+  },
+  {
+   "file": "client/engine/test/115-literal-light.test.ts",
+   "find": "pretty literal.\" — — the owner, on Rotspore Herald (707.7).",
+   "replace": "pretty literal.\" — the owner, on Rotspore Herald (CR 707.7).",
+   "why": "grammar: doubled dash; bare number without CR"
+  },
+  {
+   "file": "client/engine/test/115-literal-light.test.ts",
+   "find": "damage. CR 608.9a ruled that\n",
+   "replace": "damage. A ruling (now CR 608.9a) settled that\n",
+   "why": "history: rule narrated as actor (ruled, shipped)"
+  },
+  {
+   "file": "client/engine/test/115-literal-light.test.ts",
+   "find": "after combat could not disturb\n",
+   "replace": "after combat could not disturb,\n",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/115-literal-light.test.ts",
+   "find": "because CR 608.9a gave the aggregated",
+   "replace": "because a later fix gave the aggregated",
+   "why": "history: rule narrated as actor giving code a breakdown"
+  },
+  {
+   "file": "client/engine/test/115-literal-light.test.ts",
+   "find": "and left the gate WHICH IS WHAT THIS TEST",
+   "replace": "and left the gate, WHICH IS WHAT THIS TEST",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/115-literal-light.test.ts",
+   "find": "Split steps got the ordering claim back (CR 608.9c) for split steps (a Swift",
+   "replace": "The split-step ruling (CR 608.9c) gave the ordering claim back for split steps (a Swift",
+   "why": "grammar: doubled 'for split steps'"
+  },
+  {
+   "file": "client/engine/test/115-literal-light.test.ts",
+   "find": "nothing is silenced yet (CR 601.2)",
+   "replace": "nothing is silenced yet (CR 601.1d)",
+   "why": "wrong-rule: a static seeing only its own region is 601.1d"
+  },
+  {
+   "file": "client/engine/test/116-literal-hybrids.test.ts",
+   "find": "the Rotspore ruling (707.7) took off Rotspore Herald ⚠ Nothing",
+   "replace": "the Rotspore ruling (CR 707.7) took off Rotspore Herald. ⚠ Nothing",
+   "why": "grammar: bare number without CR; lost period"
+  },
+  {
+   "file": "client/engine/test/116-literal-hybrids.test.ts",
+   "find": "\"all tokens\" is region-scoped (CR 601.2)",
+   "replace": "\"all tokens\" is region-scoped (CR 601.1c)",
+   "why": "wrong-rule: 'all' means all in this region is 601.1c"
+  },
+  {
+   "file": "client/engine/test/116-literal-hybrids.test.ts",
+   "find": "(statics are CR 601.2-scoped)",
+   "replace": "(statics are CR 601.1d-scoped)",
+   "why": "wrong-rule: statics' region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/test/117-copy-everything.test.ts",
+   "find": "They do now. CR 710.7 adds the `behavior` facet —",
+   "replace": "They do now. The `behavior` facet (CR 710.7) adds them —",
+   "why": "history: rule narrated as actor adding an engine facet"
+  },
+  {
+   "file": "client/engine/test/117-copy-everything.test.ts",
+   "find": "attributes (CR 802.17's column rule)",
+   "replace": "attributes (CR 712.8's column rule)",
+   "why": "wrong-rule: column attribute sharing is 712.8 (802.17 is Electric)"
+  },
+  {
+   "file": "client/engine/test/117-copy-everything.test.ts",
+   "find": "AmountMods SUM (R104: \"a replacement",
+   "replace": "AmountMods SUM (the owner, in the ruling now CR 708.5: \"a replacement",
+   "why": "grammar: surviving bare R104 beside a quoted span"
+  },
+  {
+   "file": "client/engine/test/117-copy-everything.test.ts",
+   "find": "// CR 708.8b (landed the same day, from another branch):",
+   "replace": "// The counter-attribution change (CR 708.8b; landed the same day, from another branch):",
+   "why": "history: rule narrated as a change that landed"
+  },
+  {
+   "file": "client/engine/test/117-copy-everything.test.ts",
+   "find": "shares attributes (CR 802.17), which would",
+   "replace": "shares attributes (CR 712.8), which would",
+   "why": "wrong-rule: column attribute sharing is 712.8 (802.17 is Electric)"
+  },
+  {
+   "file": "client/engine/test/118-stack-effect.test.ts",
+   "find": "refused to call an effect and return its stack id. */",
+   "replace": "refused to call an effect) and return its stack id. */",
+   "why": "grammar: unclosed parenthesis"
+  },
+  {
+   "file": "client/engine/test/118-stack-effect.test.ts",
+   "find": "'stackSpell', unchanged by CR 700.1a",
+   "replace": "'stackSpell', unchanged (CR 700.1a)",
+   "why": "grammar: 'unchanged by' belonged to the ruling that changed things, not to the rule"
+  },
+  {
+   "file": "client/engine/test/118-stack-effect.test.ts",
+   "find": "'a unit is an effect (CR 700.1b) and is not a spell (same sentence)",
+   "replace": "'a unit is an effect (CR 700.1a) and is not a spell (same sentence)",
+   "why": "wrong-rule: the one sentence saying both is 700.1a"
+  },
+  {
+   "file": "client/engine/test/119-play-and-token-events.test.ts",
+   "find": "'the Mandible sacrificed itself — the cast cost (CR 111.8a)'",
+   "replace": "'the Mandible sacrificed itself — the cast cost (the owner ruling the engine follows; CR 111.8 differs, F-U04-5)'",
+   "why": "wrong-rule: 111.8a is the optional sacrifice; 111.8 makes it part of the effect, which the engine does not follow (F-U04-5)"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "// CR 803.8c names this card for the mechanism; the granting cards' reminder reads '(If they would enter a bin, erase them instead.)' — only the destination changes `dischargeItem` is the single choke point for\n",
+   "replace": "// The Unstable ruling (now CR 803.8c) names this card for the mechanism: \"Reminder text on both cards that\n  // GRANT it (Abyssal Evocation, Spell Excavation): '(If they would enter a\n  // bin, erase them instead.)' — a bin replacement, in as many words. … Only\n  // the destination changes.\" `dischargeItem` is the single choke point for\n",
+   "why": "quote: restore the ruling's quotation verbatim (the paraphrase also lost a period)"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "printed 6: CR 708.5 made Conduit of Pain live",
+   "replace": "printed 6: the replacement-layer ruling (now CR 708.5) made Conduit of Pain live",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "CR 403.3d\n  // answered the analogous",
+   "replace": "CR 403.3d\n  // settles the analogous",
+   "why": "history: rule narrated as actor ('answered')"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "standing permission (CR 400.5)'",
+   "replace": "standing permission (CR 400.5a)'",
+   "why": "wrong-rule: copies sharing one firing is 400.5a"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "// CR 601.2: the Conduit radiates in ITS OWN region",
+   "replace": "// CR 601.1d: the Conduit radiates in ITS OWN region",
+   "why": "wrong-rule: a static's own-region scope is 601.1d (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "carry the aura (CR 601.2)",
+   "replace": "carry the aura (CR 601.1d)",
+   "why": "wrong-rule: a static's own-region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "since the virus-donation rule (721.4b) landed.",
+   "replace": "since virus donation onto spells (CR 721.4b) was built.",
+   "why": "history: rule narrated as landing; bare number without CR"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "// CR 302.3, the owner, 2026-08-25: **\"Yes. Tokens are spells.\"** — recorded\n  // there as",
+   "replace": "// The owner, 2026-08-25 (now CR 302.3): **\"Yes. Tokens are spells.\"** — recorded\n  // in that ruling as",
+   "why": "history: 'recorded there' pointed at the CR, which records no such thing"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "went this way: CR 111.10 carved",
+   "replace": "went this way: an earlier ruling carved",
+   "why": "truth: 111.10 does not carve spell tokens out (702.7a says the opposite); it was a ruling"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "The carve-out was then removed as well casting a spell token",
+   "replace": "The owner (2026-09-28, now CR 702.7a) then removed the carve-out as well: casting a spell token",
+   "why": "grammar: lost colon; history kept as the owner's act"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "and since it is now it is `isPlayedSpellKind`,",
+   "replace": "and since then it is `isPlayedSpellKind`,",
+   "why": "grammar: garbled 'since it is now it is'"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "// CR 712.1a UNPARKED:",
+   "replace": "// The suppression layer (CR 712.1a) UNPARKED:",
+   "why": "history: rule narrated as history actor"
+  },
+  {
+   "file": "client/engine/test/12-fire-a.test.ts",
+   "find": "⚠ REWRITTEN BY CR 712.4 (owner report, 2026-08-30).",
+   "replace": "⚠ REWRITTEN after an owner report (2026-08-30; now CR 712.4).",
+   "why": "history: rule narrated as actor"
+  }
+ ],
+ "_reconciled": [
+  {
+   "dropped": {
+    "file": "client/engine/test/109-attr-channel-conformance.test.ts",
+    "find": "`cards/registry.ts` (see 180-pool-sight). registry.ts",
+    "replace": "`cards/registry.ts` (see 180-pool-sight). registry.ts",
+    "why": "wrong pointer: the pool-sight guard is 180-pool-sight, not 150-registration-order"
+   },
+   "reason": "the R214 pointer is now 180-pool-sight at recite (score.mjs PROCESS_HOME), so this edit has nothing left to do"
+  },
+  {
+   "dropped": {
+    "file": "client/engine/test/109-attr-channel-conformance.test.ts",
+    "find": "──── (see 180-pool-sight)",
+    "replace": "──── (see 180-pool-sight)",
+    "why": "wrong pointer: the pool-sight guard is 180-pool-sight"
+   },
+   "reason": "the R214 pointer is now 180-pool-sight at recite (score.mjs PROCESS_HOME), so this edit has nothing left to do"
+  }
+ ]
+}

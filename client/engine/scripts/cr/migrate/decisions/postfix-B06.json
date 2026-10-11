@@ -1,0 +1,964 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "CR 601.2, 601.4d (\"each player/opponent\" reads the",
+   "replace": "CR 601.4d (\"each player/opponent\" reads the",
+   "why": "wrong-rule: 601.2 is \"one region at a time\"; the present-seats reading is 601.4d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "CLOSED BY CR 402.4.",
+   "replace": "CLOSED (CR 402.4).",
+   "why": "history: a rule did not close the issue; the ruling did — cite it as the rule that now states it"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "(CR 601.2, 601.4d: the region's present seats; each",
+   "replace": "(CR 601.4d: the region's present seats; each",
+   "why": "wrong-rule: 601.2 is \"one region at a time\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "return;   // // CR 410.5a:",
+   "replace": "return;   // CR 410.5a:",
+   "why": "grammar: doubled comment marker"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "present seats (CR 601.2, 601.4d); each",
+   "replace": "present seats (CR 601.4d); each",
+   "why": "wrong-rule: 601.2 is \"one region at a time\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "battle region itself (CR 601.2).",
+   "replace": "battle region itself (CR 101.6).",
+   "why": "wrong-rule: region-scoped effects are 101.6, not 601.2"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "goes on the stack (CR 706.2).).",
+   "replace": "goes on the stack (CR 706.2).",
+   "why": "grammar: \").).\" residue"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "// ⚠ the mid-resolution stack fix -> this card used to call `playInline` here, and an earlier fix taught",
+   "replace": "// ⚠ This card used to call `playInline` here, and the mid-resolution stack fix taught",
+   "why": "grammar: garbled \"fix -> ... an earlier fix\" (was R198 -> R197)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "their ordinary places. the mid-resolution stack fix plays (Hooba-Pon, Insidious Invitation, Tides).",
+   "replace": "their ordinary places. That inline stack work still serves the other three\n      // mid-resolution plays (Hooba-Pon, Insidious Invitation, Tides).",
+   "why": "grammar: sentence lost its verb and start (\"R198's inline work still serves the other three\")"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "// Region-scoped (CR 601.2).",
+   "replace": "// Region-scoped (CR 101.6).",
+   "why": "wrong-rule: region-scoped effects are 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "region-scoped in battle, CR 601.2). Bounded",
+   "replace": "region-scoped in battle, CR 101.6). Bounded",
+   "why": "wrong-rule: region-scoped effects are 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "and the source-region rule (CR 601.5) withdrew it:",
+   "replace": "and the source-region ruling (now CR 601.5) withdrew it:",
+   "why": "history: a ruling withdrew it, not a CR rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "// since playtest UFAB (2026-08-22) (playtest UFAB): the whole card",
+   "replace": "// Rewritten 2026-08-22 (playtest UFAB): the whole card",
+   "why": "grammar: doubled \"(playtest UFAB)\", lowercase start"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "(the CR 406.4a(b)\n",
+   "replace": "(the CR 406.4a\n",
+   "why": "grammar: leftover R146 sub-label \"(b)\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "i.e. CR 405.4a(a)'s pinned",
+   "replace": "i.e. CR 405.4a's pinned",
+   "why": "grammar: leftover R146 sub-label \"(a)\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "// CR 406.4a(b): the spell printed",
+   "replace": "// CR 406.4a: the spell printed",
+   "why": "grammar: leftover sub-label \"(b)\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "// CR 405.4a(a): through the choke point",
+   "replace": "// CR 405.4a: through the choke point",
+   "why": "grammar: leftover sub-label \"(a)\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "and CR 801.2b's stack clause is\n            // not really about the zone, it is CR 801.2b's own sentence *\"a spell or",
+   "replace": "and the stack clause (CR 801.2b) is\n            // not really about the zone, it is the old trashing ruling's own sentence *\"a spell or",
+   "why": "wrong-rule/quote attribution: the quoted sentence is the retired trashing ruling's, not 801.2b's text"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "class CR 304.2, 803.8m closed when they made when the trashing rule was made to key on the destination rather than the object",
+   "replace": "class that was closed when the trashing rule (CR 801.2) was made to key on the\n            // destination rather than on the object.",
+   "why": "grammar: garbled \"closed when they made when\"; 304.2/803.8m are not the trashing rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "and CR 706.6a's same rewire onto",
+   "replace": "and the same rewire (CR 402.4) onto",
+   "why": "wrong-rule: the handEntered rewire is 402.4 (as on Rider of the Tides); 706.6a is the one-event batching"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-b.ts",
+   "find": "CR 302.3's \"tokens are spells\" cannot apply",
+   "replace": "the \"tokens are spells\" ruling (CR 302.3) cannot apply",
+   "why": "quote attribution: 302.3 reads \"A spell token is a spell\", not the quoted words"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-metal.ts",
+   "find": " * CR 107.2 SETTLED THE X QUESTION",
+   "replace": " * THE X RULING (now CR 107.2) SETTLED THE X QUESTION",
+   "why": "history: an owner ruling settled it (the quote is the owner's), not a CR rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-metal.ts",
+   "find": "// (CR 601.2): the opponents present",
+   "replace": "// (CR 601.4d): the opponents present",
+   "why": "wrong-rule: \"each opponent\" read from present seats is 601.4d; 601.2 is one-region-at-a-time"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-metal.ts",
+   "find": "CARD-TODO #3 / CR D7.3d:",
+   "replace": "CARD-TODO #3 / CR D7.3:",
+   "why": "wrong-rule: D7.3d is the empty damage batch; this is a counters effect — the general say-why rule is D7.3"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-water-metal.ts",
+   "find": "budgets per card), CR 601.2 (regions are exclusive —",
+   "replace": "budgets per card), CR 601.2, 101.6 (regions are exclusive —",
+   "why": "wrong-rule (partial): 601.2 is exclusivity, but the parenthetical is about region scoping, which is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": " * CR 704.6b (partial resolution / fizzles)",
+   "replace": " * CR 704.6, 704.6b (partial resolution / fizzles)",
+   "why": "wrong-rule: fizzling is 704.6; 704.6b is only partial target loss"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "CR 601.2, 601.4d (region scoping)",
+   "replace": "CR 101.6, 601.4d (region scoping)",
+   "why": "wrong-rule: region scoping is 101.6; 601.2 is one-region-at-a-time"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "trigger listeners\"; That was fixed (CR 110.11):",
+   "replace": "trigger listeners\"; that was fixed (CR 110.11):",
+   "why": "grammar: capital after semicolon"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "CLOSED by CR 109.3d / CR 706.6, owner 2026-08-25, verbatim:",
+   "replace": "CLOSED by the owner 2026-08-25 (now CR 109.3d, 706.6), verbatim:",
+   "why": "history: the owner closed it, not a CR rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": " *    CR 714.9 stamps `token`",
+   "replace": " *    the engine stamps `token`",
+   "why": "history: a rule stamps nothing; the engine change did (CR 714.9 is cited below the same way elsewhere)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "CR 303.10 deleted both the trigger and the ledger:",
+   "replace": "The enter-under-the-other-seat ruling (CR 303.10) deleted both the trigger and the ledger:",
+   "why": "history: a rule did not delete code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": " *    CR 603.2a put \"adjacent\" in the engine (E.adjacentSlots): sides and\n *    above/below, nothing diagonal. CR 603.3 opened the edges",
+   "replace": " *    The adjacency ruling (CR 603.2a) put \"adjacent\" in the engine (E.adjacentSlots): sides and\n *    above/below, nothing diagonal. The edge ruling (CR 603.3) opened the edges",
+   "why": "history: rules narrated as the changes that made them"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "\"Your units\" is region-scoped (CR 601.2):",
+   "replace": "\"Your units\" is region-scoped (CR 101.6):",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "in the exchange CR 110.10a\n * quotes,",
+   "replace": "in the exchange the Virus ruling\n * (now CR 110.10a) quoted,",
+   "why": "history/truth: CR 110.10a quotes no exchange; the retired ruling did"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "today each carries BOTH halves. CR 110.3a is the ruling, and it states the general",
+   "replace": "today each carries BOTH halves. The Virus ruling (now CR 110.10a) states the general",
+   "why": "history: \"CR x is the ruling\"; R88 was the Virus ruling"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "condition checked once the spell resolves\" (R64), under",
+   "replace": "condition checked once the spell resolves\" (CR 110.3a), under",
+   "why": "stray retired citation R64 (the scan missed it inside a quote pair): the restriction-is-legality rule is 110.3a"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "never re-asked (CR 704.6b, 704.5), so the",
+   "replace": "never re-asked (CR 110.1a), so the",
+   "why": "wrong-rule: 704.5 says targets ARE re-checked at resolution, contradicting \"never re-asked\"; 704.6b is partial loss. Choice-at-cast is 110.1a"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "the same place CR 714.9 keeps `token` and",
+   "replace": "the same place a leave-play event keeps `token` (CR 714.9) and",
+   "why": "history: a rule keeps nothing"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "spellToken — CR 300.5a, *\"tokens",
+   "replace": "spellToken — the owner's *\"tokens",
+   "why": "quote attribution: CR 300.5a does not contain the words \"tokens are spells\" (the owner's)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "// are spells\"*.\ncard('Earnest Defender'",
+   "replace": "// are spells\"* (CR 300.5a).\ncard('Earnest Defender'",
+   "why": "(pair of the previous edit) keep the CR pointer"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "region-scoped by the statics layer (CR 601.2).",
+   "replace": "region-scoped by the statics layer (CR 101.6).",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "the note \"spell tokens are not 'played'\n// (the token-creation rule (CR 304.15)\", and both were wrong:",
+   "replace": "the note \"spell tokens are not 'played'\" (citing the token-creation\n// ruling, now CR 304.15), and both were wrong:",
+   "why": "quote: the quoted old note was altered inside its quotation marks, and \"((\" nesting; quote shortened to its unchanged words"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "re-trigger\"), and R59's \"a spell token",
+   "replace": "re-trigger\"), and the cost-modifier ruling's \"a spell token",
+   "why": "stray retired citation R59 (the scan read it as inside a quote pair)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "the owner has since overturned that line outright\n",
+   "replace": "the owner has since overturned that line outright:\n",
+   "why": "grammar: lost colon before the restatement"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "which is (the dead-clause shape).",
+   "replace": "which is the dead-clause shape.",
+   "why": "grammar: stray parentheses"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "carries `item` (CR 706.13). This used to be\n        // The `[",
+   "replace": "carries `item`. This used to be\n        // the `[",
+   "why": "grammar: same CR number twice in one sentence; capital \"The\" mid-sentence"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "on the way back out of settle() (CR D6.3), so",
+   "replace": "on the way back out of settle(), so",
+   "why": "wrong-rule: D6.3 is the resolving-item display; it says nothing of the turn flip / suspend-resume rollback"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "in the one commit CR 603.5a uses.",
+   "replace": "in the one commit a closing-up line uses (CR 603.5a).",
+   "why": "grammar: a rule \"uses\" a commit"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "(which is what this was until CR 303.10):",
+   "replace": "(which is what this was until the ruling CR 303.10 now states):",
+   "why": "history: a rule narrated as the change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "// (CR 704.6b). If we get here with nothing to negate",
+   "replace": "// (CR 704.6). If we get here with nothing to negate",
+   "why": "wrong-rule: a gone (only) target fizzles the whole spell: 704.6, not 704.6b (partial loss)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "draw included (CR 704.6b — the clauses are one",
+   "replace": "draw included (CR 704.6 — the clauses are one",
+   "why": "wrong-rule: whole fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+   "find": "1/1 unit.\" — R157 §16, the owner, verbatim:",
+   "replace": "1/1 unit.\" — the owner, verbatim (CR 109.3d):",
+   "why": "stray retired citation R157 hidden beside a quoted span (the 184 scan misses it)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "per card), CR 601.2, 601.4d (\"each player",
+   "replace": "per card), CR 101.6, 601.4d (\"each player",
+   "why": "wrong-rule: region scoping is 101.6; 601.2 is one-region-at-a-time"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "swept by the CR 506.2 regroup cleanup.)\n",
+   "replace": "swept by the CR 506.2 regroup cleanup.\n",
+   "why": "grammar: closing parenthesis left after its opening one was removed"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "found by the CR 303.10 sweep.",
+   "replace": "found by the Hush Mush sweep.",
+   "why": "history: the sweep was the Hush Mush round's, not a rule's"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "and CR 602.5a's horizontal collapse is already switched off after\n// blocks,",
+   "replace": "and the horizontal collapse is already switched off after\n// blocks (CR 602.5a),",
+   "why": "wrong attribution: 602.5a is the switch-off, not the collapse"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "which the engine dispatches as of CR 300.5c — spell",
+   "replace": "which the engine dispatches — CR 300.5c: spell",
+   "why": "history: \"as of CR x\" narrates a rule as the change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "Region-scoped listener (CR 601.2):",
+   "replace": "Region-scoped listener (CR 101.6):",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "every unit in the event's region (CR 601.2), both",
+   "replace": "every unit in the event's region (CR 101.6), both",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "so CR 802.21b moved",
+   "replace": "so the Reaping fix (CR 802.21b) moved",
+   "why": "history: a rule moved no code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "\"All token allies\" is region-scoped (CR 601.2):",
+   "replace": "\"All token allies\" is region-scoped (CR 101.6):",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "in the effect's region (CR 601.2),",
+   "replace": "in the effect's region (CR 101.6),",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "the park named `E.preventUnitDamage`",
+   "replace": "the park named: `E.preventUnitDamage`",
+   "why": "grammar: lost colon"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+   "find": "not the two first counted Oorblak",
+   "replace": "not the two first counted. Oorblak",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": " * stick), CR 601.2, 601.4d (\"each player",
+   "replace": " * stick), CR 101.6, 601.4d (\"each player",
+   "why": "wrong-rule: region scoping is 101.6; 601.2 is one-region-at-a-time"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": " *    (CR 601.4d) means an absent opponent",
+   "replace": " *    (CR 110.3c) means an absent opponent",
+   "why": "wrong-rule: who can be \"target opponent\" is 110.3c; 601.4d is \"each opponent\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "the death message\"; CR 714.9 puts `token` on the event itself and the card",
+   "replace": "the death message\"; the event itself now carries `token` (CR 714.9) and the card",
+   "why": "history: a rule puts nothing on an event; the engine change did"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "before firing the event\". That was\n *    fixed exactly that:",
+   "replace": "before firing the event\". That is\n *    exactly what was fixed:",
+   "why": "grammar: \"That was fixed exactly that\" (was \"R167 fixed exactly that\")"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "// so they are no target (CR 601.4d) and",
+   "replace": "// so they are no target (CR 110.3c) and",
+   "why": "wrong-rule: target-player candidacy is 110.3c"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "// (CR 601.2, 601.4d), initiative first;",
+   "replace": "// (CR 601.4d), initiative first;",
+   "why": "wrong-rule: 601.2 is one-region-at-a-time"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "in the end-of-turn window, CR D6.3), and",
+   "replace": "in the end-of-turn window), and",
+   "why": "wrong-rule: D6.3 is the resolving-item display, nothing about end-of-turn questions"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "Death listeners are region-scoped (CR 601.2).",
+   "replace": "Death listeners are region-scoped (CR 101.6).",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "every unit in the effect's region (CR 601.2), both sides. Its own",
+   "replace": "every unit in the effect's region (CR 101.6), both sides. Its own",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "(b) make it a targeting restriction; `restrict`;",
+   "replace": "(b) make it a targeting `restrict`;",
+   "why": "grammar: garbled \"restriction; `restrict`;\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "// CR 110.3c, 110.1b (target audit,",
+   "replace": "// CR 110.3c (target audit,",
+   "why": "wrong-rule: 110.1b (each \"target\" word is a separate target) is not what this single-target note relies on"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "// region-scoped (CR 601.2); the buff",
+   "replace": "// region-scoped (CR 101.6); the buff",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "still asks (CR D6.3). Plan-then-",
+   "replace": "still asks. Plan-then-",
+   "why": "wrong-rule: D6.3 is the resolving-item display"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "your in-region units (CR 601.2) when the",
+   "replace": "your in-region units (CR 101.6) when the",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "\"Your units\" region-scoped (CR 601.2); temp layer",
+   "replace": "\"Your units\" region-scoped (CR 101.6); temp layer",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+   "find": "// 723.4 (a Virus onto a spell on the stack):",
+   "replace": "// CR 723.4 (a Virus onto a spell on the stack):",
+   "why": "grammar: bare rule number without \"CR\""
+  },
+  {
+   "file": "client/engine/src/cards/sets/helpers.ts",
+   "find": " * CR 107.3a is why, and it is a decision",
+   "replace": " * The X ruling (now CR 107.3a) is why, and it is a decision",
+   "why": "quote attribution/history: the quote that follows is the owner's ruling, not CR 107.3a's text"
+  },
+  {
+   "file": "client/engine/src/cards/sets/helpers.ts",
+   "find": "CR 410.3, 407.4 says a transformed card",
+   "replace": "CR 410.3 says a transformed card",
+   "why": "grammar: two rules with \"says\"; 410.3 is the one that says it"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "Never `name`, never `stats`. CR 710.7 added `behavior`. */",
+   "replace": "Never `name`, never `stats`. `behavior` was added later. */",
+   "why": "history/grammar: a rule narrated as the change, and the same CR number twice in one comment"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "accepted for the question now (see 143-replay-divergence)\n   * pending\", as opposed to \"wrong right now\".",
+   "replace": "accepted for the question now\n   * pending\", as opposed to \"wrong right now\" (see 143-replay-divergence).",
+   "why": "quote: the pointer was spliced inside the quotation (\"question now ... pending\")"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": " * CR 803.7b's \"prophesying is legal only during the deployment phase\". It is not",
+   "replace": " * the old ruling's \"prophesying is legal only during the deployment phase\" (now\n * CR 803.7b). It is not",
+   "why": "quote attribution: CR 803.7b does not contain the quoted words"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": " * RELEASE: CR 803.7i plays a fulfilled card \"as if it were in your hand\", so the\n * printed timing governs that (CR 803.7i).",
+   "replace": " * RELEASE: a fulfilled card is played \"as if it were in your hand\", so the\n * printed timing governs that (CR 803.7i).",
+   "why": "quote attribution + same number twice: 803.7i does not contain the quoted words"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 608.8a replacement hooks had it.",
+   "replace": "   * replacement hooks had it.",
+   "why": "grammar: same CR number twice in one sentence"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "/** CR 608.5a: the members of `col` that actually DEAL its damage (CR 608.5a:\n     * \"0 power units do no damage\")",
+   "replace": "/** CR 608.9a: the members of `col` that actually DEAL its damage (CR 608.5a;\n     * the owner: \"0 power units do no damage\")",
+   "why": "grammar/quote attribution: same number twice, and the quote is the owner's (R157 §4), not 608.5a's words; the header pointer was R195 = 608.9a as on `col` above"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "/** CR 803.7: every condition counts FORWARD",
+   "replace": "/** CR 803.7e: every condition counts FORWARD",
+   "why": "wrong-rule (too broad): counting forward from prophesying is 803.7e"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "    // condition (CR 803.7), from THIS seat's witnessed total.",
+   "replace": "    // condition (CR 803.7e), from THIS seat's witnessed total.",
+   "why": "wrong-rule (too broad): counting forward is 803.7e"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "gets exactly the pre-the older behaviour which is to hold for any open decision at all.",
+   "replace": "gets exactly the older\n   * behaviour, which is to hold for any open decision at all.",
+   "why": "grammar: garbled \"the pre-the older behaviour\""
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "Excavation.) CR 405.9's sibling above is the BLANKET version",
+   "replace": "Excavation.) The sibling above is the BLANKET version",
+   "why": "grammar: both functions cite 405.9, so \"CR 405.9's sibling\" names nothing"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the same restrictive answer CR 403.3d gave for the cache and CR 702.2a gave for\n   * the blanket grant.",
+   "replace": "the same restrictive answer as for the cache (CR 403.3d) and for\n   * the blanket grant (CR 702.2a).",
+   "why": "history: rules narrated as the rulings that \"gave\" answers"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "onto it? The augment-box rule (CR 721.1c) added the box arm",
+   "replace": "onto it? The augment-box ruling (now CR 721.1c) added the box arm",
+   "why": "history: a rule added no code"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the card is being played into (CR 601.2) — the same rules as staticsFor.",
+   "replace": "the card is being played into (CR 111.10) — the same rules as staticsFor.",
+   "why": "wrong-rule: 601.2 is one-region-at-a-time; a cost modifier's region scope is 111.10"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the same region scope (CR 601.2: the mod reads from the ANCHOR's",
+   "replace": "the same region scope (CR 101.6: the mod reads from the ANCHOR's",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "reading from their HOST), the same CR 601.2 region",
+   "replace": "reading from their HOST), the same CR 101.6 region",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "radiators, the same CR 601.2 region scope, the same shallow CR 712.1a guard, its own",
+   "replace": "radiators, the same CR 101.6 region scope, the same shallow CR 712.1a guard, its own",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the first answer's wording — — *\"quadruple",
+   "replace": "the first answer's wording — *\"quadruple",
+   "why": "grammar: doubled dash"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 111.10k adds the one PLAYER-side discount",
+   "replace": "   * Deferral Drone's charge (CR 111.10k) adds the one PLAYER-side discount",
+   "why": "history: a rule narrated as the change"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the CostMod layer above is (CR 601.2) — see types.ts.",
+   "replace": "the CostMod layer above is (CR 111.10) — see types.ts.",
+   "why": "wrong-rule: the cost-modifier region scope is 111.10, not 601.2"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "CR D7.4's\n      // ABSENCE and CR D7.4's COSTLY both know it,",
+   "replace": "The\n      // ABSENCE and COSTLY classifiers (CR D7.4, D7.4b) both know it,",
+   "why": "grammar: the same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "anchored() walk, same CR 601.2\n",
+   "replace": "anchored() walk, same CR 101.6\n",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// CR 111.10d, 111.6b: an unpayable LIFE tax",
+   "replace": "// CR 111.10d: an unpayable LIFE tax",
+   "why": "grammar: 111.6b cited twice in two lines"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "and is stamped PRINTED for CR 712.7, 113.2: it is part",
+   "replace": "and is stamped PRINTED (CR 712.7, 113.2): it is part",
+   "why": "grammar: \"stamped PRINTED for CR x\" (was \"for R328\")"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "such a copy is Unstable) of a copy chains: the source's own copied mods come first.",
+   "replace": "such a copy is Unstable).\n    // A copy of a copy chains: the source's own copied mods come first.",
+   "why": "grammar: sentence break and \"A copy\" lost when lines were joined"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "/* CR 303.11 DELETED `parkCopySource`",
+   "replace": "/* The enters-as-a-copy ruling (CR 303.11) DELETED `parkCopySource`",
+   "why": "history: a rule deleted no code"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "(an earlier reading, since reversed). ruling 2).\n   * CR 710.2a / CT-225 removed it —",
+   "replace": "(an earlier reading, since reversed).\n   * CT-225 removed it (CR 710.2a) —",
+   "why": "grammar: \"ruling 2).\" residue; history: a rule removed no code"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the one that was missing (report CR 803.8k):",
+   "replace": "the one that was missing (CR 803.8k):",
+   "why": "grammar: \"report CR 803.8k\" — a rule is not a report"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "and CR 802.8a, 206.4 for layers 5 and 6)",
+   "replace": "and CR 802.8a, 802.9a for layers 5 and 6)",
+   "why": "wrong-rule: 206.4 is the layer list; layer 6 (Unaware) is 802.9a"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "⚠ ONCE OPEN, SETTLED BY CR 709.4d: Caleb",
+   "replace": "⚠ ONCE OPEN (now CR 709.4d): Caleb",
+   "why": "history: a rule narrated as what settled it"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "one layer up. CR 802.8c's\n",
+   "replace": "one layer up. The Inverted\n     * ruling's (CR 802.8c)\n",
+   "why": "history: a rule makes no argument; the ruling did"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "The OTHER half of CR 802.9c — every card",
+   "replace": "The OTHER half of the Unaware rule (CR 802.9c) — every card",
+   "why": "truth: 802.9c IS the other half, not the rule it is half of"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "Recorded as the Unaware rule's one open",
+   "replace": "Left as the Unaware ruling's one open",
+   "why": "history: \"recorded as\" the rule's edge — the CR records no such open edge"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "so as old as the printed attrs (CR 712.7)",
+   "replace": "so as old as the printed attrs (CR 113.2)",
+   "why": "grammar: 712.7 twice in one sentence; \"printed text is the oldest\" is 113.2"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 201.5 landed the copy layer this hook was reserved for, so it is now",
+   "replace": "   * The copy layer this hook was reserved for has landed (CR 710.1), so it is now",
+   "why": "history: a rule \"landed\" nothing; 201.5 is the physical-card-name rule"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "(a pre-an older state has neither so this",
+   "replace": "(an older saved state has neither), so this",
+   "why": "grammar: garbled \"a pre-an older state\""
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "fewer, which is the pre-which was the behaviour before the mark and is still the rule (CR 401.4: there is no deck-out loss)",
+   "replace": "fewer, which was the behaviour before the mark and is still the rule (CR 401.4: there is no\n   * deck-out loss).",
+   "why": "grammar: garbled \"the pre-which was\"; lost period"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "a token mod has no card to bin (CR 713.5).",
+   "replace": "a token mod has no card to bin (CR 410.4c).",
+   "why": "wrong-rule: 713.5 is the state-check sweep; a token mod having no card is 410.4c"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "trasher's action region — CR 601.2) and stands in",
+   "replace": "trasher's action region — CR 714.9) and stands in",
+   "why": "wrong-rule: 601.2 is one-region-at-a-time; the region it left from is a fact fixed by 714.9"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "The mod-trash rule once made them differ",
+   "replace": "The mod-trash ruling once made them differ",
+   "why": "history: it was a ruling, not a CR rule"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "⚠ **CR 410.4a, 801.2e CLOSED THAT GAP AGAIN, DELIBERATELY.**",
+   "replace": "⚠ **THE ZONES-FOLLOW-CONTROL RULING (now CR 410.4a, 801.2e) CLOSED THAT GAP AGAIN, DELIBERATELY.**",
+   "why": "history/quote attribution: the owner's ruling closed it, and the quote that follows is his"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "Deleting it would delete that argument is about CR 405.6 rather than about",
+   "replace": "Deleting it would delete the mod-trash ruling's\n   * argument along with it, and that argument is about bin identity (CR 405.6) rather than about",
+   "why": "grammar: garbled join (\"delete that argument is about\")"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "so BinRef (CR 405.6) fixes identity there",
+   "replace": "so BinRef fixes identity there",
+   "why": "grammar: 405.6 cited twice in two lines"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "A REMOVAL IS NOT SCALED BY CR 112.15's AMOUNT LAYER,",
+   "replace": "A REMOVAL IS NOT SCALED BY THE AMOUNT LAYER (CR 112.15),",
+   "why": "wrong attribution: 112.15 is the not-scaled rule, not the amount layer"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "(CR 704.6, and CR 112.12's\n        // \"a REPLACED hit still counts as dealt\").",
+   "replace": "(CR 704.6, and the prevention ruling's\n        // \"a REPLACED hit still counts as dealt\", CR 112.12).",
+   "why": "quote attribution: the quoted words are the retired ruling's, not 112.12's text"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "region-scoped dispatch (CR 601.2) finds it.",
+   "replace": "region-scoped dispatch (CR 101.6) finds it.",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "the cache, prophecy & glimpse (CR 403.1, 403.7)",
+   "replace": "the cache, prophecy & glimpse (CR 403, 801.9, 803.7)",
+   "why": "wrong-rule: 403.7 (a cached unit's mods) does not head this section; cache/glimpse/prophecy are 403, 801.9, 803.7"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "/** CR 803.7: stamp a prophecy with its forward-counting anchors.",
+   "replace": "/** CR 803.7e: stamp a prophecy with its forward-counting anchors.",
+   "why": "wrong-rule (too broad): forward counting is 803.7e"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 803.7b: \"prophesying is legal ONLY during the deployment phase\" (Caleb",
+   "replace": "   * The ruling: \"prophesying is legal ONLY during the deployment phase\" (Caleb",
+   "why": "quote attribution + same number twice: the quote is Caleb's (attributed in the parenthesis), not 803.7b's text"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "opts.playable grants CR 801.9e, 801.9i's glimpse-style\n   * permission: playable",
+   "replace": "opts.playable grants the glimpse-style\n   * permission (CR 801.9e, 801.9i): playable",
+   "why": "grammar: possessive on a list of rule numbers"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "and CR 400.5's zone dispatch",
+   "replace": "and the zone dispatch",
+   "why": "wrong-rule: 400.5 is about abilities working only IN a zone; the leave-bin trigger is 405.7, cited above"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "cache all N; The glimpse rule was corrected",
+   "replace": "cache all N; the glimpse ruling was corrected",
+   "why": "grammar: capital after semicolon; history: it was a ruling that was corrected"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "side up (CR 108.3's argument, unchanged —",
+   "replace": "side up (the transform ruling's argument, CR 108.3, unchanged —",
+   "why": "history: a rule makes no argument; the ruling did"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * the despawn event is a PARAMETER. It used to be",
+   "replace": "   * The despawn event is a PARAMETER. It used to be",
+   "why": "grammar: sentence starts lowercase after the dropped \"R191:\""
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "which is\n        // CR 407.3a's own complaint —",
+   "replace": "which is\n        // exactly what CR 407.3a rules out —",
+   "why": "history: a rule has no \"complaint\""
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "so wave A's CR 801.2f classification",
+   "replace": "so wave A's trashing classification (CR 801.2)",
+   "why": "grammar: 801.2f cited twice in one sentence; wave A's classification was the general trashing rule"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 803.7i is explicit — a fulfilled prophecy makes the card free, and it is then",
+   "replace": "   * The prophecy ruling (now CR 803.7h, 803.7i) is explicit — a fulfilled prophecy makes the card free, and it is then",
+   "why": "quote attribution: the quoted words are the ruling's, not 803.7i's text (\"as if it were in your hand\" is 803.7h)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "Before the fix that CR 803.7i records, this read a trailing [Haste] on the banner as an override",
+   "replace": "Until it was fixed (CR 803.7i states the rule), this read a trailing [Haste] on\n   * the banner as an override",
+   "why": "history: a rule narrated as a log of a fix (audit3 #1913)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "separately everywhere else (CR 102.4, 102.5) (\"each card reaches ITS OWN owner's erased pile — a virus on an",
+   "replace": "separately everywhere else (CR 102.4, 102.5), and the erased-pile\n   * ruling said so (\"each card reaches ITS OWN owner's erased pile — a virus on an",
+   "why": "quote attribution/grammar: \") (\" — the quote is the retired erased-pile ruling's and had lost its speaker"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "(CR 708.8a: \"all counters count as counters\")",
+   "replace": "(CR 708.8a; the owner: \"all counters count as counters\")",
+   "why": "quote attribution: the owner's words, not 708.8a's text"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "no play event of any kind, so CR 108.1a's\n     * `'cardPlayed'` never fired",
+   "replace": "no play event of any kind, so the\n     * `'cardPlayed'` event (CR 108.1a) never fired",
+   "why": "grammar: a rule does not own an engine event"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "and CR 410.6's `from` on the 'spawned'\n     * event below",
+   "replace": "and the `from` on the 'spawned'\n     * event below (CR 410.6)",
+   "why": "grammar: a rule does not own an engine field"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "THE DIVERGENCE THIS LEAVES STANDING (CR 706.13, reported not fixed): under\n     * CR 701.4's ruling a card",
+   "replace": "THE DIVERGENCE THIS LEAVES STANDING (F-U14-3, reported not fixed): under\n     * CR 701.4 a card",
+   "why": "wrong-rule: 706.13 reports no divergence; the recorded divergence is F-U14-3 on 701.4 (audit3 #1926)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "`opts.from` test CR 410.6 uses just above,",
+   "replace": "`opts.from` test as just above (CR 410.6),",
+   "why": "grammar: a rule does not \"use\" an engine test"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "(region-scoped in battle, CR 601.2)",
+   "replace": "(region-scoped in battle, CR 101.6)",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "this.s.resolving = null;   //\n",
+   "replace": "this.s.resolving = null;   // nothing is resolving any more\n",
+   "why": "grammar: an empty trailing comment left where \"R78\" was dropped (comment-only edit)"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// ── CR 707.3: THE REPLACEMENT-EFFECT LAYER",
+   "replace": "// ── CR 708: THE REPLACEMENT-EFFECT LAYER",
+   "why": "wrong-rule: replacement effects are section 708; 707.3 is what uses the stack"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "radiator, for CR 709.1's reason: Suspend",
+   "replace": "radiator, for the bin-spell grant's reason: Suspend",
+   "why": "wrong-rule: the reason was the bin-spell grant's (a spell leaves nothing to radiate from), not 709.1"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "// CR 601.2, by E.fireEvent's own rule:",
+   "replace": "// CR 101.6, by E.fireEvent's own rule:",
+   "why": "wrong-rule: region scoping is 101.6"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "which is the unit CR 112.8 already gave effect\n  // damage (\"One resolution",
+   "replace": "which is the unit effect damage already\n  // has (CR 112.8: \"One resolution",
+   "why": "history: a rule narrated as an actor that \"gave\" the unit"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "replays it (CR D6.3) — settling",
+   "replace": "replays it — settling",
+   "why": "wrong-rule: D6.3 is the resolving-item display, not the suspend-and-replay rollback"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "discarded on a suspension, because CR D6.3\n   * rolls the world back",
+   "replace": "discarded on a suspension, because a suspension\n   * rolls the world back",
+   "why": "wrong-rule: D6.3 is not the rollback"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "   * CR 112.12's replacements do not unmake the damage: \"Replacing the damage does",
+   "replace": "   * The replacement hooks (CR 112.12) do not unmake the damage — the old rot\n   * ruling's words: \"Replacing the damage does",
+   "why": "quote attribution: the quote (\"Caleb ruled…\") is the retired ruling's text, not 112.12's; and a rule owns no hooks"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "of a batch that CR 112.8 made simultaneous.",
+   "replace": "of a batch that is simultaneous (CR 112.8).",
+   "why": "history: a rule narrated as the change that \"made\" it"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "as far as the dealing player elects, CR 802.16's\n   * `pierceKeep`).",
+   "replace": "as far as the dealing player elects\n   * (`pierceKeep`, CR 802.16j).",
+   "why": "wrong-rule: the elective split is 802.16j; a rule owns no field"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "That is CR 704.6b's \"your target is\n     * gone\", the cards",
+   "replace": "That is the \"your target is\n     * gone\" case (CR 704.6); the cards",
+   "why": "wrong-rule + quote attribution: every target gone is a full fizzle (704.6), and the quoted words are not 704.6b's"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "     * its own arithmetic; flagged, untouched\n",
+   "replace": "     * its own arithmetic; flagged, untouched.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "not a widening of CR 802.1f to the whole game",
+   "replace": "not a widening of column sharing (CR 802.1c) to the whole game",
+   "why": "wrong-rule: what is not widened is column sharing (R19 = 802.1c); 802.1f is the columns-only-in-battle rule"
+  },
+  {
+   "file": "client/engine/src/engine.ts",
+   "find": "/** the region the damage is dealt in (CR 601.2) */",
+   "replace": "/** the region the damage is dealt in (CR 101.6) */",
+   "why": "wrong-rule: an effect is specific to its region (101.6); 601.2 is one-region-per-unit"
+  }
+ ]
+}

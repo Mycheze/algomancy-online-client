@@ -1,0 +1,663 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/test/120-counter-attribution.test.ts",
+   "find": " * CR 601.2) and what deployment",
+   "replace": " * CR 601.1d) and what deployment",
+   "why": "wrong-rule: listeners hearing only their own region is 601.1d; 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/test/121-another-identity.test.ts",
+   "find": "so nothing identified the mod carrying the text. CR 720.6d threads the",
+   "replace": "so nothing identified the mod carrying the text. For CR 720.6d the engine threads the",
+   "why": "history: a rule narrated as the actor that threaded the EntityId"
+  },
+  {
+   "file": "client/engine/test/121-another-identity.test.ts",
+   "find": "CR 405.6 already settled\n",
+   "replace": "CR 405.6 already fixes\n",
+   "why": "history: a rule narrated as having settled something; it states identity"
+  },
+  {
+   "file": "client/engine/test/125-active-zone.test.ts",
+   "find": "the Manual p.34 line (723.3a) would",
+   "replace": "the Manual p.34 line (CR 723.3a) would",
+   "why": "grammar: bare rule number"
+  },
+  {
+   "file": "client/engine/test/125-active-zone.test.ts",
+   "find": "'engine (CT-246; CR 801.2h says erased, not trashed): it binned and TRASHED from play like any non-Unstable death'",
+   "replace": "'CR 801.2: it binned and TRASHED from play like any non-Unstable death'",
+   "why": "wrong-rule: the mate here is NOT Unstable, so CR 801.2h's erase does not apply and the CT-246 note is false; a non-Unstable death is trashed per 801.2"
+  },
+  {
+   "file": "client/engine/test/125-active-zone.test.ts",
+   "find": "and the retired ruling register CR 803.8b needs updating",
+   "replace": "and CR 803.8b needs updating",
+   "why": "grammar: garbled splice"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "two repair rounds), one",
+   "replace": "two repair rounds, one",
+   "why": "grammar: unbalanced parenthesis after dropped cites"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "//  · CR 410.2(1) — the despawn",
+   "replace": "//  · CR 410.2 — the despawn",
+   "why": "grammar: leftover sub-item label '(1)'"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "//  · CR 720.8a (2026-08-29, report #129) — a nontoken",
+   "replace": "//  · the owner's ruling of 2026-08-29 (report #129, CR 720.8a) — a nontoken",
+   "why": "history: a dated owner ruling narrated as a CR rule"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "the owner overruled the earlier mods reading paragraph on the ground",
+   "replace": "the owner overruled the earlier ruling's mods paragraph on the ground",
+   "why": "grammar: garbled 'mods reading paragraph'"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "//  · · and the zone it reaches is the HOST CONTROLLER's (CR 410.4a). The mod here is GRAFTED BY THE OPPONENT, so owner and controller are different seats and the assertion can tell them apart. moved the attribution, never the\n//    destination, so this is the half of the old bullet that still stands.",
+   "replace": "//  · and the zone it reaches is the HOST CONTROLLER's (CR 400.4, 410.4a), not the\n//    mod owner's. The mod here is GRAFTED BY THE OPPONENT, so owner and controller\n//    are different seats and the assertion can tell them apart. The old bullet\n//    said the owner's; that destination half was later reversed.",
+   "why": "grammar/truth: doubled bullet, orphaned 'moved the attribution' fragment, and a closing clause ('the half that still stands') the test now contradicts"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "// CR 601.2 to let it hear the event",
+   "replace": "// CR 601.1d to let it hear the event",
+   "why": "wrong-rule: hearing an event only in its own region is 601.1d"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "this reverses the earlier owner\\'s-pile reading destination half, which said '",
+   "replace": "this reverses the destination half of the earlier ruling, which said '",
+   "why": "grammar: garbled phrase"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "// CR 410.2(1): FIRED, not merely logged",
+   "replace": "// CR 410.2: FIRED, not merely logged",
+   "why": "grammar: leftover sub-item label '(1)'"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "A log line is what the code already '",
+   "replace": "A log line is what the old code already '",
+   "why": "truth: the dropped cite named the OLD code; 'the code' now reads as current"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "bin → trashed → swept → swept');",
+   "replace": "bin → trashed → swept');",
+   "why": "grammar: doubled 'swept' in the assertion message"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "+ 'that overruled the half that overruled the earlier mods reading paragraph. The body",
+   "replace": "+ 'that overruled the earlier ruling’s mods paragraph. The body",
+   "why": "grammar: doubled phrase"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "whose FACE is Hooba-Mon (CR 710.1 layer 0) so its own",
+   "replace": "whose FACE is Hooba-Mon (a copy, CR 710.1) so its own",
+   "why": "grammar: 'layer 0' residue"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "// The defect one object over.",
+   "replace": "// the same defect one object over.",
+   "why": "grammar: capital mid-sentence after a dropped possessive"
+  },
+  {
+   "file": "client/engine/test/129-disposal-tail.test.ts",
+   "find": "// ⚠ CR 720.8, 720.8a NARROWED WHAT THIS TEST CAN CLAIM",
+   "replace": "// ⚠ THE OWNER'S MOD-TRASH RULING (CR 720.8, 720.8a) NARROWED WHAT THIS TEST CAN CLAIM",
+   "why": "history: rules narrated as the actor that narrowed the test"
+  },
+  {
+   "file": "client/engine/test/13-fire-b.test.ts",
+   "find": "// CR 111.7 UN-PARKED: \"Sacrifice another unit\"",
+   "replace": "// UN-PARKED (CR 111.7): \"Sacrifice another unit\"",
+   "why": "history: a rule narrated as having been un-parked"
+  },
+  {
+   "file": "client/engine/test/130-seat-aware-gate.test.ts",
+   "find": "half-fix the own notes warn about",
+   "replace": "half-fix the CT-32 fix's own notes warn about",
+   "why": "grammar: 'the own notes' after a dropped possessive"
+  },
+  {
+   "file": "client/engine/test/130-seat-aware-gate.test.ts",
+   "find": "an CR D6.3 whole-GameState snapshot",
+   "replace": "a whole-GameState snapshot",
+   "why": "wrong-rule: D6.3 is the 'item is resolving' display rule, not the rollback snapshot; and 'an CR'"
+  },
+  {
+   "file": "client/engine/test/130-seat-aware-gate.test.ts",
+   "find": " * registers for CR D6.3. */",
+   "replace": " * registers for its snapshot. */",
+   "why": "wrong-rule: D6.3 is not the rollback snapshot rule"
+  },
+  {
+   "file": "client/engine/test/130-seat-aware-gate.test.ts",
+   "find": "const HALTS = 'const HALTS = \\'Gate Halt\\';';",
+   "replace": "const HALTS = 'Gate Halt';",
+   "why": "code: a whole statement was spliced into the string literal (was 'R154 Gate Halt'); the synthetic card's name only",
+   "code": true
+  },
+  {
+   "file": "client/engine/test/130-seat-aware-gate.test.ts",
+   "find": "const QUIET = 'const QUIET = \\'Gate Quiet\\';';",
+   "replace": "const QUIET = 'Gate Quiet';",
+   "why": "code: a whole statement was spliced into the string literal (was 'R154 Quiet'), same defect postfix-000 repaired in 276",
+   "code": true
+  },
+  {
+   "file": "client/engine/test/130-seat-aware-gate.test.ts",
+   "find": "const BATTLE_ASKS = 'const BATTLE_ASKS = \\'Gate Battle Ask\\';';",
+   "replace": "const BATTLE_ASKS = 'Gate Battle Ask';",
+   "why": "code: a whole statement was spliced into the string literal (was 'R154 Battle Ask')",
+   "code": true
+  },
+  {
+   "file": "client/engine/test/130-seat-aware-gate.test.ts",
+   "find": "§3 THE REWIND — CR D6.3's snapshot, and why",
+   "replace": "§3 THE REWIND — the resolve snapshot, and why",
+   "why": "wrong-rule: D6.3 is not the rollback snapshot"
+  },
+  {
+   "file": "client/engine/test/130-seat-aware-gate.test.ts",
+   "find": "'carrying an CR D6.3 snapshot of the whole GameState'",
+   "replace": "'carrying a snapshot of the whole GameState'",
+   "why": "wrong-rule: D6.3 is not the rollback snapshot; and 'an CR'"
+  },
+  {
+   "file": "client/engine/test/133-x-cost-semantics.test.ts",
+   "find": "/* CR 111.11 and §20 — what an X-cost card COSTS",
+   "replace": "/* The owner's X-cost answers §1 and §20 (CR 111.11, 107.5) — what an X-cost card COSTS",
+   "why": "grammar: '§20' orphaned beside a CR number; the sections are the owner's answers the header quotes"
+  },
+  {
+   "file": "client/engine/test/133-x-cost-semantics.test.ts",
+   "find": "⚠ §20 IS REVERSED (2026-10-09; now CR 107.5). (2026-10-09). The RAQ",
+   "replace": "⚠ §20 IS REVERSED (2026-10-09; now CR 107.5). The RAQ",
+   "why": "grammar: doubled date"
+  },
+  {
+   "file": "client/engine/test/133-x-cost-semantics.test.ts",
+   "find": "(CR 601.2: a CostMod and a trigger are both scoped to",
+   "replace": "(CR 111.10, 601.1d: a CostMod and a trigger are both scoped to",
+   "why": "wrong-rule: cost modifiers' region is 111.10, triggers' 601.1d; 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/test/133-x-cost-semantics.test.ts",
+   "find": "test('CR 111.10i (reverses (reversing the earlier price reading) — the floor",
+   "replace": "test('CR 111.10i (reversing the earlier price reading) — the floor",
+   "why": "grammar: doubled '(reverses (reversing' in a test title (no guard names it)"
+  },
+  {
+   "file": "client/engine/test/134-column-and-substep.test.ts",
+   "find": "/* CR 608.9a, 608.2c, §5 and §11 — the column power gate",
+   "replace": "/* The owner's answers §4, §5 and §11 (CR 608.9a, 608.2c, 802.3b) — the column power gate",
+   "why": "grammar: '§5 and §11' orphaned beside CR numbers; the sections are the owner's answers the header quotes"
+  },
+  {
+   "file": "client/engine/test/134-column-and-substep.test.ts",
+   "find": "'CR 111.8a: the sacrifice is a cast cost, paid on the way to the stack'",
+   "replace": "'engine (F-U04-5; CR 111.8 makes it part of the effect): the sacrifice is a cast cost, paid on the way to the stack'",
+   "why": "wrong-rule: 111.8a is the optional sacrifice; CR 111.8 contradicts the cast-cost reading the engine follows (F-U04-5)"
+  },
+  {
+   "file": "client/engine/test/134-column-and-substep.test.ts",
+   "find": "// silent. CR 608.9a: \"the other thing in the column",
+   "replace": "// silent. The owner's §4 (CR 608.9a): \"the other thing in the column",
+   "why": "truth: the quotation is the owner's §4 answer, not the text of CR 608.9a"
+  },
+  {
+   "file": "client/engine/test/134-column-and-substep.test.ts",
+   "find": "'CR 608.2c: \"both apply\" — the column is scheduled in TWO sub-steps'",
+   "replace": "'§5, \"both apply\" (CR 608.2c): the column is scheduled in TWO sub-steps'",
+   "why": "truth: \"both apply\" is the owner's §5 answer, not the text of CR 608.2c"
+  },
+  {
+   "file": "client/engine/test/134-column-and-substep.test.ts",
+   "find": "is the gate CR 608.9a are written on, and",
+   "replace": "is the gate CR 608.9a and 608.2c are written on, and",
+   "why": "grammar: 'CR 608.9a are' after two cites collapsed to one"
+  },
+  {
+   "file": "client/engine/test/134-column-and-substep.test.ts",
+   "find": "CR 608.9a gave the aggregated",
+   "replace": "A later fix gave the aggregated",
+   "why": "history: a rule narrated as the actor that added the per-column breakdown"
+  },
+  {
+   "file": "client/engine/test/134-column-and-substep.test.ts",
+   "find": "and the latter's\n",
+   "replace": "and the owner's\n",
+   "why": "truth: \"both apply\" is the owner's answer, not CR 608.2c's words"
+  },
+  {
+   "file": "client/engine/test/134-column-and-substep.test.ts",
+   "find": "asks it a question CR 608.9a\n",
+   "replace": "asks it a question `faceDamageDealtBy`\n",
+   "why": "truth: the other mechanism is meant (it was the per-column fix); with the gate itself cited as 608.9a the sentence said the gate answers its own question"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "is not one: CR 111.12a already implemented it.",
+   "replace": "is not one: the engine already implemented it (CR 111.12a).",
+   "why": "history: a rule narrated as having implemented the behaviour"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "an earlier repair round was an entire round spent on an exchange",
+   "replace": "an earlier repair round was spent entirely on an exchange",
+   "why": "grammar: 'round was an entire round'"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "every listener in this engine is region-scoped (CR 601.2)",
+   "replace": "every listener in this engine is region-scoped (CR 601.1d)",
+   "why": "wrong-rule: listener region scope is 601.1d; 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "an earlier repair round spent a '",
+   "replace": "an earlier repair spent a '",
+   "why": "grammar: 'round spent a whole round'"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "which is exactly the shape CR 410.7/CT-43 removed '",
+   "replace": "which is exactly the shape CT-43 removed '",
+   "why": "history: a rule narrated as the actor that removed code"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "  // region-scoped (CR 601.2)\n",
+   "replace": "  // region-scoped (CR 601.1b)\n",
+   "why": "wrong-rule: a target's region scope is 601.1b ('Delete target unit in this region')"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "// ⚠ zones following control changed the default SO HALF",
+   "replace": "// ⚠ THE ZONES-FOLLOW-CONTROL RULING CHANGED THE DEFAULT, SO HALF",
+   "why": "grammar: lowercase splice and lost comma"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "//     'The old expectation, kept here rather than deleted: 'printed-text control: Waxen",
+   "replace": "//     '[…] control: Waxen",
+   "why": "quote: the kept old test title had the surrounding sentence spliced into it and its retired citation silently replaced; restored with the citation marked as elided"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "'other way again, CR 400.4 has been reverted, not simplified.'",
+   "replace": "'other way again, the zones-follow-control ruling (CR 400.4) has been reverted, not simplified.'",
+   "why": "history: a CR rule narrated as something that could be reverted"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "Measured, that is false. CR 207.8\n// had already ruled a missing {Battle} marker to be NO restriction",
+   "replace": "Measured, that is false. A ruling\n// had already made a missing {Battle} marker NO restriction (CR 207.8)",
+   "why": "history: a rule narrated as having ruled"
+  },
+  {
+   "file": "client/engine/test/135-exchange-and-zones.test.ts",
+   "find": "two comments in batch-dark-b. in batch-dark-b.ts",
+   "replace": "two comments in batch-dark-b.ts",
+   "why": "grammar: doubled phrase"
+  },
+  {
+   "file": "client/engine/test/136-triggers-and-modes.test.ts",
+   "find": "/* Six of the owner's 2026-08-25 card answers, made real\n",
+   "replace": "/* Six of the owner's 2026-08-25 card answers, made real.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/136-triggers-and-modes.test.ts",
+   "find": " * The owner's 2026-08-25 pass over 27 card questions. Six of them are",
+   "replace": " * The owner's 2026-08-25 pass covered 27 card questions. Six of them are",
+   "why": "grammar: sentence fragment after the dropped subject"
+  },
+  {
+   "file": "client/engine/test/136-triggers-and-modes.test.ts",
+   "find": "reaches a SPELL ON THE STACK (CR 723.5a)', () => {",
+   "replace": "reaches a SPELL ON THE STACK (CR 723.4)', () => {",
+   "why": "grammar/wrong-rule: the same CR number twice in one title; the stack host is 723.4 (no guard names this title)"
+  },
+  {
+   "file": "client/engine/test/136-triggers-and-modes.test.ts",
+   "find": "'CR 723.5a\\'s stack host is reachable",
+   "replace": "'CR 723.4\\'s stack host is reachable",
+   "why": "wrong-rule: augmenting a spell on the stack is 723.4"
+  },
+  {
+   "file": "client/engine/test/137-multiplier-and-mode.test.ts",
+   "find": "CR 708.6a records the interim\n",
+   "replace": "CR 708.6a now states the\n",
+   "why": "truth: 708.6a is a rule, not an interim decision"
+  },
+  {
+   "file": "client/engine/test/137-multiplier-and-mode.test.ts",
+   "find": "// ⚠ RULED 2026-08-28 (Ruled by the owner 2026-08-28), AND",
+   "replace": "// ⚠ RULED BY THE OWNER 2026-08-28, AND",
+   "why": "grammar: doubled 'ruled 2026-08-28'"
+  },
+  {
+   "file": "client/engine/test/138-spell-copy.test.ts",
+   "find": "the copy inherits the declared mode (CR 710.8a) and is never asked again'",
+   "replace": "the copy inherits the declared mode (CR 702.5) and is never asked again'",
+   "why": "grammar/wrong-rule: the same CR number twice in one title; the mode being declared at cast is 702.5 (no guard names this title)"
+  },
+  {
+   "file": "client/engine/test/138-spell-copy.test.ts",
+   "find": "// CR 111.5: the bracket is paid AT CAST",
+   "replace": "// CR 702.5: the bracket is paid AT CAST",
+   "why": "wrong-rule: 111.5 is a copy not re-paying; a bracketed cost paid at cast is 702.5"
+  },
+  {
+   "file": "client/engine/test/138-spell-copy.test.ts",
+   "find": "THE FIX — CR 507.5, owner\n// ruling 2026-09-01 — AND",
+   "replace": "THE FIX — owner\n// ruling 2026-09-01, now CR 507.5 — AND",
+   "why": "history: a dated owner ruling presented as a CR rule"
+  },
+  {
+   "file": "client/engine/test/138-spell-copy.test.ts",
+   "find": "(the old global decision hold) guard), and deployment",
+   "replace": "(the old global decision hold), and deployment",
+   "why": "grammar: unbalanced parenthesis / leftover 'guard)'"
+  },
+  {
+   "file": "client/engine/test/138-spell-copy.test.ts",
+   "find": "the deployment-stack ruling asked for CT-176 added",
+   "replace": "the deployment-stack ruling asked for. CT-176 added",
+   "why": "grammar: lost sentence break"
+  },
+  {
+   "file": "client/engine/test/138-spell-copy.test.ts",
+   "find": "'CR 108.1a fires alongside'",
+   "replace": "'the wide cardPlayed event (CR 108.1a) fires alongside'",
+   "why": "grammar/truth: a rule cannot 'fire'; the event is meant"
+  },
+  {
+   "file": "client/engine/test/139-spawn-and-play.test.ts",
+   "find": "// CR 601.2: the raised units arrive in the BATTLE region (ctx.region), so the two",
+   "replace": "// CR 601.1d: the raised units arrive in the BATTLE region (ctx.region), so the two",
+   "why": "wrong-rule: watchers hearing only their own region is 601.1d"
+  },
+  {
+   "file": "client/engine/test/14-water-a.test.ts",
+   "find": "was \"trigger resolves at once (R3 sub-step drain)\".",
+   "replace": "was \"trigger resolves at once ([…] sub-step drain)\".",
+   "why": "quote: a bare retired R-number survived inside the quotation; elided honestly"
+  },
+  {
+   "file": "client/engine/test/14-water-a.test.ts",
+   "find": "an CR 602.7 `FormationSpot`",
+   "replace": "a CR 602.7 `FormationSpot`",
+   "why": "grammar: 'an CR'"
+  },
+  {
+   "file": "client/engine/test/14-water-a.test.ts",
+   "find": "// ── CR 722.7: the ruling Amphivore is named in ─",
+   "replace": "// ── The ruling Amphivore is named in (CR 109.9j) ─",
+   "why": "grammar: a CR number labelled 'the ruling'; the moderator's ruling is meant and 109.9j states it"
+  },
+  {
+   "file": "client/engine/test/140-layers-and-riders.test.ts",
+   "find": "The spell-copy rule (710.8) added a third a spell COPY is a real stack item",
+   "replace": "Spell copies added a third (CR 710.8): a spell COPY is a real stack item",
+   "why": "history/grammar: a rule narrated as the actor, a bare number and a lost colon"
+  },
+  {
+   "file": "client/engine/test/140-layers-and-riders.test.ts",
+   "find": "is part of that event\n *  (706.13), and Origon",
+   "replace": "is part of that event,\n *  and Origon",
+   "why": "grammar: the same CR number twice in one sentence, bare"
+  },
+  {
+   "file": "client/engine/test/141-despawn-mods.test.ts",
+   "find": "// ⚠ CR 720.8, 720.8a (2026-08-29, report #129) makes that",
+   "replace": "// ⚠ The owner's mod-trash ruling (2026-08-29, report #129; CR 720.8, 720.8a) makes that",
+   "why": "history: rules narrated as a dated actor"
+  },
+  {
+   "file": "client/engine/test/141-despawn-mods.test.ts",
+   "find": "STAYS there, so CR 801.2f trashed it — once`",
+   "replace": "STAYS there, so it was trashed (CR 801.2f) — once`",
+   "why": "history: a rule narrated as the actor that trashed the card"
+  },
+  {
+   "file": "client/engine/test/142-static-conformance.test.ts",
+   "find": "That is exactly what CR 707.5 fixed: Aethercap '",
+   "replace": "That is exactly what was fixed (CR 707.5): Aethercap '",
+   "why": "history: a rule narrated as the fix"
+  },
+  {
+   "file": "client/engine/test/142-static-conformance.test.ts",
+   "find": "added when \"all\" became region-scoped made '",
+   "replace": "added when a ruling made '",
+   "why": "grammar: garbled splice ('became region-scoped made \"all\" region-scoped')"
+  },
+  {
+   "file": "client/engine/test/142-static-conformance.test.ts",
+   "find": "and as of CR 705.3b it is a real CAST COST",
+   "replace": "and under CR 705.3b it is a real CAST COST",
+   "why": "history: a rule narrated as a dated change"
+  },
+  {
+   "file": "client/engine/test/142-static-conformance.test.ts",
+   "find": "What CR 721.1e settled — that it is a static",
+   "replace": "What the fix settled (CR 721.1e) — that it is a static",
+   "why": "history: a rule narrated as having settled something"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "exactly the way a Hooba-Mon exchange once was to be. CR 801.6a had already ruled the general case — *\"It's not\n *     a death, but it IS a despawn and a trashing\"* — and an earlier repair fixed the same omission on exchangeInPlace An erase was the last non-death",
+   "replace": "exactly the way a Hooba-Mon exchange once was.\n *     The owner's exchange answer had already ruled the general case — *\"It's not\n *     a death, but it IS a despawn and a trashing\"* — and an earlier repair fixed\n *     the same omission on `exchangeInPlace`. An erase was the last non-death",
+   "why": "grammar/truth: 'once was to be' garble, lost period and backticks; and the quotation (about an EXCHANGE, 'and a trashing') is the owner's answer, not CR 801.6a, which says an erase is NOT a trash"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "dead on this route. the same bug, one verb over",
+   "replace": "dead on this route. It was the donated-despawn bug (CR 721.1f), one verb over",
+   "why": "grammar: lowercase sentence start after a dropped possessive"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": " *     CR 407.4 — *\"in all zones, other than play",
+   "replace": " *     the owner's front-face answer (CR 201.4) — *\"in all zones, other than play",
+   "why": "truth: the quotation is the owner's answer; 407.4 is only the erased-pile record, 201.4 states the front-face rule"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "NOT a trash. CR 801.2c is about a card entering a bin",
+   "replace": "NOT a trash. CR 801.2 is about a card entering a bin",
+   "why": "wrong-rule: the trash-on-entering-a-bin rule is 801.2; 801.2c is the erase exception"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "// (ii) the donated-despawn case's case, on the third route",
+   "replace": "// (ii) the donated-despawn case, on the third route",
+   "why": "grammar: doubled 'case's case'"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "log line. the earlier fix gave it recall and cache this is the route the earlier fix did not cover did not have.",
+   "replace": "log line. The earlier fix gave it recall\n// and cache; this is the route that fix did not cover.",
+   "why": "grammar: garbled doubled clause"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "this was 0 twice over no '",
+   "replace": "this was 0 twice over: no '",
+   "why": "grammar: lost colon"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "repeated on this route `fireEvent` finds",
+   "replace": "repeated on this route: `fireEvent` finds",
+   "why": "grammar: lost colon"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "// CR 601.2, 601.4d: the spell sweeps the region it resolves in",
+   "replace": "// CR 601.1c: the spell sweeps the region it resolves in",
+   "why": "wrong-rule: 'Erase all units' reaching only its region is 601.1c; 601.2 is one-region-per-unit and 601.4d is 'each player'"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "// the same mod invariants (iv)/(v) invariants, on this route.",
+   "replace": "// 141-despawn-mods' (iv)/(v) invariants, on this route.",
+   "why": "grammar: doubled 'invariants'"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "'so CR 801.2c has nothing to trash",
+   "replace": "'so CR 801.2 has nothing to trash",
+   "why": "wrong-rule: the rule that trashes on entering a bin is 801.2"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "'and no trash — CR 801.2c turns on entering a bin",
+   "replace": "'and no trash — CR 801.2 turns on entering a bin",
+   "why": "wrong-rule: the rule that turns on entering a bin is 801.2"
+  },
+  {
+   "file": "client/engine/test/145-erase-routes.test.ts",
+   "find": "(existing engine rule, unchanged by (CR 711.3a)')",
+   "replace": "(existing engine rule, CR 711.3a)')",
+   "why": "grammar: unbalanced parenthesis"
+  },
+  {
+   "file": "client/engine/test/146-report-guards.test.ts",
+   "find": "/* guards that can actually reach",
+   "replace": "/* Guards that can actually reach",
+   "why": "grammar: lowercase sentence start"
+  },
+  {
+   "file": "client/engine/test/146-report-guards.test.ts",
+   "find": "the client FEEDS it: CR D5.4's\n * fix is",
+   "replace": "the client FEEDS it: the pacing\n * fix (CR D5.4) is",
+   "why": "history: a rule narrated as owning a code fix"
+  },
+  {
+   "file": "client/engine/test/147-comment-conformance.test.ts",
+   "find": "months after CR 709.7 fixed\n",
+   "replace": "months after the layers-and-riders round (CR 709.7) fixed\n",
+   "why": "history: a rule narrated as the actor that fixed Burgeon"
+  },
+  {
+   "file": "client/engine/test/147-comment-conformance.test.ts",
+   "find": "for months after their costs became real made them real.",
+   "replace": "for months after their costs were made real.",
+   "why": "grammar: doubled 'made them real'"
+  },
+  {
+   "file": "client/engine/test/147-comment-conformance.test.ts",
+   "find": "Burgeon was fixed by CR 709.7 —",
+   "replace": "Burgeon was fixed in the layers-and-riders round (CR 709.7) —",
+   "why": "history: a rule narrated as the actor that fixed Burgeon"
+  },
+  {
+   "file": "client/engine/test/147-comment-conformance.test.ts",
+   "find": "— closed by CR 200.2 and\n",
+   "replace": "— closed as a transcription error (CR 200.2) and\n",
+   "why": "history: a rule narrated as the actor that closed a note"
+  },
+  {
+   "file": "client/engine/test/147-comment-conformance.test.ts",
+   "find": "moved to real `castCost` costs A dead function",
+   "replace": "moved to real `castCost` costs. A dead function",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/147-comment-conformance.test.ts",
+   "find": "grew `noUnusedLocals` Which is what makes (see CLAUDE.md § The gates)\n",
+   "replace": "grew `noUnusedLocals` in the tooling round (CT-59/60), which is what makes\n",
+   "why": "grammar/truth: garbled splice; the flag came with the tooling round (CT-59/60), as the header calls it"
+  },
+  {
+   "file": "client/engine/test/147-comment-conformance.test.ts",
+   "find": "for a quiet tree\" — and\n  // made that deletion",
+   "replace": "for a quiet tree\" — and CT-83\n  // made that deletion",
+   "why": "grammar: the sentence lost its subject"
+  },
+  {
+   "file": "client/engine/test/148-pending-trigger-visibility.test.ts",
+   "find": "`by-design`, CR 601.2 region scoping",
+   "replace": "`by-design`, CR 601.1d region scoping",
+   "why": "wrong-rule: a listener not seeing another region's death is 601.1d"
+  },
+  {
+   "file": "client/engine/test/148-pending-trigger-visibility.test.ts",
+   "find": "the way the guards do, because a field the (see 154-guard-shape)\n",
+   "replace": "the way the 154-guard-shape guards do, because a field the\n",
+   "why": "grammar: a pointer spliced mid-sentence"
+  },
+  {
+   "file": "client/engine/test/15-water-b.test.ts",
+   "find": "reaches the public ERASED pile (CR 407.1)', () => {",
+   "replace": "reaches the public ERASED pile', () => {",
+   "why": "grammar: the same CR number twice in one title (no guard names this title)"
+  },
+  {
+   "file": "client/engine/test/15-water-b.test.ts",
+   "find": "// 602.7 (retimed 2026-08-22, playtest UFAB) the spot",
+   "replace": "// CR 602.7 (retimed 2026-08-22, playtest UFAB): the spot",
+   "why": "grammar: bare number and lost colon"
+  },
+  {
+   "file": "client/engine/test/15-water-b.test.ts",
+   "find": "and CR 801.2b's own sentence is \"a spell going",
+   "replace": "and the trash ruling's own sentence (now CR 801.2b) is \"a spell going",
+   "why": "truth: the quotation is the retired ruling's wording, not CR 801.2b's"
+  },
+  {
+   "file": "client/engine/test/15-water-b.test.ts",
+   "find": "// ⚠ THE PINNED ANSWER (R146a).",
+   "replace": "// ⚠ THE PINNED ANSWER (CR 801.2b).",
+   "why": "leftover bare R-number; 801.2b states the free-play-counts-as-stack answer"
+  },
+  {
+   "file": "client/engine/test/15-water-b.test.ts",
+   "find": "CR 701.4 makes the shorthand literal",
+   "replace": "A free play going on the stack (CR 701.4) makes the shorthand literal",
+   "why": "history: a rule narrated as the actor"
+  },
+  {
+   "file": "client/engine/test/15-water-b.test.ts",
+   "find": "not a trash (CR 801.2b, R146a)'",
+   "replace": "not a trash (CR 801.2b)'",
+   "why": "leftover bare R-number"
+  }
+ ],
+ "_reconciled": [
+  {
+   "dropped": {
+    "file": "client/engine/test/142-static-conformance.test.ts",
+    "find": "not `cards/registry.ts` (see 180-pool-sight). registry.ts",
+    "replace": "not `cards/registry.ts` (see 180-pool-sight). registry.ts",
+    "why": "wrong pointer: the pool-sight finding's guard is 180-pool-sight, which the comment itself names below; 150 is the determinism test"
+   },
+   "reason": "the R214 pointer is now 180-pool-sight at recite (score.mjs PROCESS_HOME), so this edit has nothing left to do"
+  },
+  {
+   "dropped": {
+    "file": "client/engine/test/142-static-conformance.test.ts",
+    "find": "─── (see 180-pool-sight)\n",
+    "replace": "─── (see 180-pool-sight)\n",
+    "why": "wrong pointer: the pool-sight guard is 180-pool-sight, named in the section body"
+   },
+   "reason": "the R214 pointer is now 180-pool-sight at recite (score.mjs PROCESS_HOME), so this edit has nothing left to do"
+  }
+ ]
+}

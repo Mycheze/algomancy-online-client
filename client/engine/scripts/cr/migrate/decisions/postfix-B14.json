@@ -1,0 +1,424 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "(which, per wave\n *    A's CR 801.2f, trashes them).",
+   "replace": "(which trashes\n *    them, CR 801.2f).",
+   "why": "grammar: \"wave A's CR 801.2f\" — a rule is not wave A's (it was wave A's ruling)"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "(see 803.7d)'s ⚠ OPEN note).",
+   "replace": "(CR 203.2, 803.7d).",
+   "why": "grammar: broken \"(see 803.7d)'s ⚠ OPEN note)\" — the register's OPEN note is gone; bare number"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "which is what \"for free also ignores\n * affinity\" (CR 803.7h) means.",
+   "replace": "which is what \"for free also ignores\n * affinity\" means (the prophecy ruling; now CR 803.7h).",
+   "why": "quote: the quoted words are the old ruling's, not CR 803.7h's text — credit the ruling, point to the rule"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "(CR 803.7i).). */",
+   "replace": "(CR 803.7i). */",
+   "why": "grammar: doubled ').).'"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "so the free graft (803.7k) can be shown */",
+   "replace": "so the free graft (CR 803.7k) can be\n * shown) */",
+   "why": "grammar: unclosed bracket, bare number"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "CR 203.2 made a banner's own pips binding\n * (313-prophecy-affinity.test.ts); it did not make",
+   "replace": "A banner's own pips are binding (CR 203.2,\n * 313-prophecy-affinity.test.ts); that does not make",
+   "why": "history: rule narrated as the change that made it"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "/** The 'endOfHaste' event landed an 'endOfHaste' EVENT in exactly the place CR 803.7's mana-tally",
+   "replace": "/** The 'endOfHaste' EVENT (CR 504.6) landed in exactly the place the prophecy (CR 803.7) mana-tally",
+   "why": "grammar: doubled 'endOfHaste' event/EVENT; rule possessive"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "/* 803.7i replaces what stood here. This test asserted that a trailing [Haste] on\n * the banner \"moves the RELEASE into the haste step\", citing the prophecy ruling — and CR 803.7i says\n * the opposite",
+   "replace": "/* The release-timing ruling (now CR 504.9a, 803.7i) REPLACES what stood here. This test asserted that a trailing [Haste] on\n * the banner \"moves the RELEASE into the haste step\", citing the prophecy ruling — and that ruling says\n * the opposite",
+   "why": "history+quote: bare '803.7i' narrated as the replacing actor; the quoted 'as if it were in your hand' is the old ruling's wording, not CR 803.7i's"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "test('CR 403.7: a cached unit can carry a granted prophecy",
+   "replace": "test('CR 803.7a: a cached unit can carry a granted prophecy",
+   "why": "wrong-rule: 403.7 is mods going to the bin; a granted prophecy is 803.7a"
+  },
+  {
+   "file": "client/engine/test/36-cache-prophecy.test.ts",
+   "find": "is trashed (CR 801.2 classifies it automatically)'",
+   "replace": "is trashed (classified automatically)'",
+   "why": "grammar: the same CR number twice in one title (R40 there was the engine's trash classification)"
+  },
+  {
+   "file": "client/engine/test/369-cache-is-the-hand.test.ts",
+   "find": " *  - CR 402.6's \"I can't be played from your hand\" (`c.noPlayFromHand`) refuses",
+   "replace": " *  - \"I can't be played from your hand\" (`c.noPlayFromHand`, CR 402.6) refuses",
+   "why": "quote: card text credited to CR 402.6 as its possessive"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "sweep — and CR 410.5a: it is NOT trashed there",
+   "replace": "sweep — and CR 801.2d: it is NOT trashed there",
+   "why": "grammar: the same CR number twice in one sentence; not-trashed is 801.2d (old R306)"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "so this is an\n// CR 110.2 exception ON PURPOSE: the ally is chosen on resolution,",
+   "replace": "so it is\n// exempt ON PURPOSE from choosing at the stack (CR 110.2): the ally is chosen on resolution,",
+   "why": "grammar: 'an CR'; 'a CR 110.2 exception' misreads — it was an exception to targets-chosen-on-stack, which 110.2 itself grants a non-target"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "// CR 803.8e/B — the branch order in destroy().",
+   "replace": "// CR 803.8e — the branch order in destroy().",
+   "why": "grammar: leftover sub-item label '/B'"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "under the earlier reading (since reversed: tokens are not trashed) ruling, and NOT",
+   "replace": "under the earlier reading (since reversed: tokens are not trashed), and NOT",
+   "why": "grammar: 'reading … ruling' doubled noun"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "// CR 801.2d (owner, 2026-09-28) flips the BODY half back:",
+   "replace": "// The owner's 2026-09-28 ruling (now CR 801.2d) flips the BODY half back:",
+   "why": "history: rule narrated as the actor that flipped it"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "  // CR 724.5 (owner, 2026-08-23): a modded card is {Unstable}",
+   "replace": "  // The owner's 2026-08-23 ruling (now CR 724.5): a modded card is {Unstable}",
+   "why": "history: an owner ruling with its date credited to a CR rule ('until that ruling landed' follows)"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "// CR 601.2: the batch is shared but the AIM is not.",
+   "replace": "// CR 101.6: the batch is shared but the AIM is not.",
+   "why": "wrong-rule: R12 region scope is 101.6; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 706.3c(a): CR 601.2 — a shared deployment stack",
+   "replace": "test('(a) CR 706.3c, 101.6: a shared deployment stack",
+   "why": "wrong-rule (R12 → 101.6) + leftover sub-item label '706.3c(a)' (the file's half (a))"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 507.4a(a): every start-of-deployment",
+   "replace": "test('(a) CR 507.4a: every start-of-deployment",
+   "why": "grammar: leftover sub-item label (the file's half (a))"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 706.3c(a): deployment triggers announce",
+   "replace": "test('(a) CR 706.3c: deployment triggers announce",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "// CR 505.1b's tax is Crevice Lurker's \"during battle\" clause.",
+   "replace": "// Crevice Lurker's tax is its \"during battle\" clause (CR 505.1b).",
+   "why": "truth: the tax is Crevice Lurker's, not CR 505.1b's"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 507.5(a): the deployment stack is not taxed",
+   "replace": "test('(a) CR 507.5: the deployment stack is not taxed",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "/* ── CR 706.12(b): several triggers",
+   "replace": "/* ── (b) CR 706.12: several triggers",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "// Before triggers were aimed as they went on the stack(b) the second",
+   "replace": "// Before half (b), the second",
+   "why": "grammar: garbled '(b)' splice"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 706.12(b): three Wraith triggers",
+   "replace": "test('(b) CR 706.12: three Wraith triggers",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 706.12(b): the aim does not pre-validate",
+   "replace": "test('(b) CR 706.12: the aim does not pre-validate",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 706.12(b): \"no ally at all\"",
+   "replace": "test('(b) CR 706.12: \"no ally at all\"",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 706.12a(b): a subject is not a target",
+   "replace": "test('(b) CR 706.12a: a subject is not a target",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "// ⚠ ⚠ The designer's ruling (CR 109.9a) beats the first reading (\"a [once] is spent only",
+   "replace": "// ⚠ The designer's ruling (now CR 109.9a) beats the owner's first reading. That reading (\"a [once] is spent only",
+   "why": "grammar: doubled ⚠ and a run-on sentence (two subjects for 'would refund')"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 706.12(b) x CR 109.9a: a bounded",
+   "replace": "test('(b) CR 706.12 x CR 109.9a: a bounded",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "'and so did the one that FIZZLED — CR 109.9a: \"regardless",
+   "replace": "'and so did the one that FIZZLED — the designer (CR 109.9a): \"regardless",
+   "why": "quote: the designer's words are not CR 109.9a's text"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 706.12(b): the aim is deterministic",
+   "replace": "test('(b) CR 706.12: the aim is deterministic",
+   "why": "grammar: leftover sub-item label"
+  },
+  {
+   "file": "client/engine/test/37-attrs-wight.test.ts",
+   "find": "test('CR 704.6b: \"recall UP TO ONE target cached card\"",
+   "replace": "test('CR 110.1c: \"recall UP TO ONE target cached card\"",
+   "why": "wrong-rule: 704.6b is losing some targets; choosing none of 'up to one' is 110.1c"
+  },
+  {
+   "file": "client/engine/test/370-cached-virus-in-battle.test.ts",
+   "find": "Plus the two siblings CR 723.2a, 803.6i opened in\n * the same window:",
+   "replace": "Plus its two siblings in\n * the same window (CR 723.2a, 803.6i):",
+   "why": "history: rules narrated as actors ('the siblings CR x opened')"
+  },
+  {
+   "file": "client/engine/test/38-light-a.test.ts",
+   "find": " * CR 111.6b), pay-life activations",
+   "replace": " * CR 111.10d), pay-life activations",
+   "why": "wrong-rule: the life half of the cost-modifier layer (Arbiter's added [Pay 2 life]) is 111.10d; 111.6b is paying life at all"
+  },
+  {
+   "file": "client/engine/test/38-light-a.test.ts",
+   "find": "fully built: CR 712.6 landed the naming and the region-scoped suppression, and on",
+   "replace": "fully built: the naming and the region-scoped suppression (CR 712.6) landed first, and on",
+   "why": "history: rule narrated as the actor that landed the work"
+  },
+  {
+   "file": "client/engine/test/38-light-a.test.ts",
+   "find": "(CR 601.2 region scoping)",
+   "replace": "(CR 111.10 region scoping)",
+   "why": "wrong-rule: R12 region scope; a cost modifier works only in its source's region — 111.10 (601.2 is one region per unit)"
+  },
+  {
+   "file": "client/engine/test/38-light-a.test.ts",
+   "find": "'CR 111.15: at exactly 9 life the grafted cost cannot be paid pay and is skipped'",
+   "replace": "'CR 111.6b: at exactly 9 life the rider cannot pay and is skipped'",
+   "why": "grammar+quote: 'cannot be paid pay' garble; message reworded beyond the cite — restore with R49's rule (111.6b)"
+  },
+  {
+   "file": "client/engine/test/38-light-a.test.ts",
+   "find": "IN MY REGION (CR 601.2, 712.6)'",
+   "replace": "IN MY REGION (CR 101.6, 712.6)'",
+   "why": "wrong-rule: R12 region scope is 101.6; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/engine/test/38-light-a.test.ts",
+   "find": "  // CR 608.6d: \"ALL damage is dealt to units, even if it surpasses its defense.\"",
+   "replace": "  // The designer (CR 608.6d): \"ALL damage is dealt to units, even if it surpasses its defense.\"",
+   "why": "quote: designer's words (old R114) credited to CR 608.6d, whose text does not contain them"
+  },
+  {
+   "file": "client/engine/test/387-raq-combat.test.ts",
+   "find": "second wall: CR 601.2 scopes it to the region it stands in",
+   "replace": "second wall: CR 101.6 scopes it to the region it stands in",
+   "why": "wrong-rule: R12 region scope of an effect is 101.6; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/engine/test/387-raq-combat.test.ts",
+   "find": "// CR 802.16c (reverses the old split ruling): a Piercing strike",
+   "replace": "// CR 802.16c (the old split ruling is reversed): a Piercing strike",
+   "why": "history: rule narrated as the actor that reversed a ruling"
+  },
+  {
+   "file": "client/engine/test/39-light-b.test.ts",
+   "find": "// CR 601.2, 601.4d: the spell sweeps the region it resolves in",
+   "replace": "// CR 101.6, 601.4d: the spell sweeps the region it resolves in",
+   "why": "wrong-rule: R12 region scope is 101.6; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/engine/test/39-light-b.test.ts",
+   "find": "'the debt cost was paid (at resolution, CR 112.14c)'",
+   "replace": "'the debt cost was paid (at resolution, CR 112.14)'",
+   "why": "truth: 112.14c says a debt cost is gained when the cost is paid, contradicting 'at resolution'; cite the debt rule itself"
+  },
+  {
+   "file": "client/engine/test/39-light-b.test.ts",
+   "find": "// CR 702.3d — the report this fix is named for:",
+   "replace": "// The report this fix is named for (CR 702.3d):",
+   "why": "grammar: a CR rule is not a report (it was R57's report)"
+  },
+  {
+   "file": "client/engine/test/39-light-b.test.ts",
+   "find": "needed no resources at all which is exactly the",
+   "replace": "needed no resources at all, which is exactly the",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/39-light-b.test.ts",
+   "find": "the [0l] banner required so prove it directly:",
+   "replace": "the [0l] banner required, so prove it directly:",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/390-raq-stack.test.ts",
+   "find": "the Statweaver's static is region-scoped (CR 601.2)",
+   "replace": "the Statweaver's static is region-scoped (CR 601.1d)",
+   "why": "wrong-rule: R12 → a static sees only its own region is 601.1d; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/engine/test/393-raq-mods.test.ts",
+   "find": "// column (712.3) because it PRINTS",
+   "replace": "// column (CR 712.3) because it PRINTS",
+   "why": "grammar: bare rule number"
+  },
+  {
+   "file": "client/engine/test/393-raq-mods.test.ts",
+   "find": "// BROKEN today (the veto): \"loses ALL attributes\"",
+   "replace": "// BROKEN today (the suppression layer's veto): \"loses ALL attributes\"",
+   "why": "grammar: 'the veto' has no antecedent (it was R62's)"
+  },
+  {
+   "file": "client/engine/test/393-raq-mods.test.ts",
+   "find": "⚠ CR 113.3b's owner quote (\"If you",
+   "replace": "⚠ The owner's quote in the Formless ruling (\"If you",
+   "why": "quote: an owner quotation credited to CR 113.3b, whose text does not contain it"
+  },
+  {
+   "file": "client/engine/test/393-raq-mods.test.ts",
+   "find": "// included (and CR 710.2, the owner: \"Inherit the mods text\").",
+   "replace": "// included (and the owner, now CR 710.2: \"Inherit the mods text\").",
+   "why": "quote: the owner's words read as CR 710.2's"
+  },
+  {
+   "file": "client/engine/test/399-raq-fix-combat.test.ts",
+   "find": "is elective in combat (reverses the old split ruling)",
+   "replace": "is elective in combat (the old split ruling is reversed)",
+   "why": "history: rule narrated as the actor that reversed a ruling"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": "Glimpse 1 on spawn (Seer of Empty Spaces, CR 801.8a)",
+   "replace": "Glimpse 1 on spawn (Seer of Empty Spaces, CR 801.9b)",
+   "why": "wrong-rule: 801.8a is caching-is-not-permission; Glimpse 1 is 801.9b (old R45 = glimpse)"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": " * {Pure} (Just a Unit) is live as of CR 802.25b and tested",
+   "replace": " * {Pure} (Just a Unit, CR 802.25b) is live and tested",
+   "why": "history: 'live as of CR x' narrates a rule as a dated change"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": "— CR 504.8a's haste sibling — and has",
+   "replace": "— the haste sibling of Rook's battle permission (CR 723.5) — and has",
+   "why": "wrong-rule: R95 was Rook's mod permission (723.5); 504.8a is Slurpr itself, so 'CR 504.8a's sibling' is circular"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": " * CR 504.6a unparked Prediction Prophet,",
+   "replace": " * The haste-decision work (CR 504.6a) unparked Prediction Prophet,",
+   "why": "history: rule narrated as the actor that unparked a card"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": "// in the host's region (CR 601.2)",
+   "replace": "// in the host's region (CR 101.6)",
+   "why": "wrong-rule: R12 region scope is 101.6; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": "  // CR 504.8a's HASTE-timing sibling, end to end.",
+   "replace": "  // CR 504.8a: the HASTE-timing sibling of Rook's permission (CR 723.5), end to end.",
+   "why": "wrong-rule: R95 (Rook) → 723.5; '504.8a's sibling' was circular"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": "  // CR 601.2, and the reason the permission is gathered",
+   "replace": "  // CR 101.6, and the reason the permission is gathered",
+   "why": "wrong-rule: R12 region scope ('no global effects') is 101.6; 601.2 is one region per unit"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": "// The unconditional haste step (504.5) removed the skip entirely — the step is unconditional now — so the",
+   "replace": "// The haste-step ruling (now CR 504.5) removed the skip entirely — the step is unconditional now — so the",
+   "why": "grammar: bare number; 'unconditional' twice"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": "which is exactly CR 722.7's `graftCopies: 3`, the same",
+   "replace": "which is exactly `graftCopies: 3` (CR 722.7), the same",
+   "why": "grammar: a code field credited to a CR rule as its possessive"
+  },
+  {
+   "file": "client/engine/test/40-light-c.test.ts",
+   "find": "— the lock shipped with CR 708.10 and \"Erase me\"",
+   "replace": "— the lock (CR 708.10) shipped with the replacement layer and \"Erase me\"",
+   "why": "history: 'shipped with CR x' narrates a rule as a release"
+  },
+  {
+   "file": "client/engine/test/405-raq-noncombat-piercing.test.ts",
+   "find": "'the elective split — CR 802.16c\\'s decision, so the client draws its dial'",
+   "replace": "'the elective split — the combat decision (CR 802.16c), so the client draws its dial'",
+   "why": "grammar: a decision credited to a CR rule as its possessive (it was the decision R319 built)"
+  },
+  {
+   "file": "client/engine/test/405-raq-noncombat-piercing.test.ts",
+   "find": "// Found beside CR 802.16: the path question",
+   "replace": "// Found while building this file's rule (CR 802.16j): the path question",
+   "why": "grammar: 'found beside CR 802.16' — a bug is not found beside a rule"
+  },
+  {
+   "file": "client/engine/test/406-copied-augments.test.ts",
+   "find": " * [Augment] box (extends CR 710.2a, which made copied grafts run).",
+   "replace": " * [Augment] box (extending the fix that made copied grafts run, CR 722.8).",
+   "why": "grammar+history: the same CR number twice in the header, and a rule narrated as the change that made grafts run"
+  },
+  {
+   "file": "client/engine/test/406-copied-augments.test.ts",
+   "find": "text\". CR 710.2: \"Inherit the",
+   "replace": "text\". The owner (now CR 710.2): \"Inherit the",
+   "why": "quote: the owner's words (old ruling) credited to CR 710.2, whose text does not contain them"
+  },
+  {
+   "file": "client/engine/test/408-raq-new-threads.test.ts",
+   "find": "took this very write-up as its text what is new here",
+   "replace": "took this very write-up as its text); what is new here",
+   "why": "grammar: lost ');' — unclosed bracket and run-on"
+  },
+  {
+   "file": "client/engine/test/409-comprehensive-rules.test.ts",
+   "find": "(scripts/cr/check.mjs). Four parts over the committed state:",
+   "replace": "(scripts/cr/check.mjs). Five parts over the committed state:",
+   "why": "truth: the list that follows has five parts ((1)-(3), (5), (6))"
+  }
+ ]
+}

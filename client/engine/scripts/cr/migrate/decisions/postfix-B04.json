@@ -1,0 +1,940 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-b.ts",
+   "find": "Rulings referenced: CR 109.3 (conditions",
+   "replace": "Rulings referenced: CR 109.3a, 109.3b (conditions",
+   "why": "wrong-rule: 109.3 only defines triggered abilities; condition-at-event / amount-at-resolution are 109.3a and 109.3b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-b.ts",
+   "find": "REAL TARGETING as of CR 110.3, 405.6:",
+   "replace": "REAL TARGETING (CR 110.3, 405.6):",
+   "why": "history: 'as of CR x' narrates a rule as the change (was 'as of R64', a ruling)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-b.ts",
+   "find": "(CR 111.11: \"paying X replaces the letter\n// X on the printed card temporarily\"; CR 111.11 puts it on the event)",
+   "replace": "(CR 111.11; the owner's words: \"paying X replaces the letter\n// X on the printed card temporarily\"; the event carries it)",
+   "why": "wrong-rule/quote: the quotation is the owner's ruling, not CR 111.11's text; same CR twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-b.ts",
+   "find": "per card), CR 601.2, 601.4d (\"each opponent/player\"",
+   "replace": "per card), CR 601.1b, 601.4d (\"each opponent/player\"",
+   "why": "wrong-rule: 601.2 (one region at a time) does not scope effects; 601.1b does"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-b.ts",
+   "find": "region-scoped by fireEvent (CR 601.2)",
+   "replace": "region-scoped by fireEvent (CR 601.1d)",
+   "why": "wrong-rule: trigger region-scoping is 601.1d, not 601.2"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+   "find": "CR 601.2 (regions are exclusive — the engine",
+   "replace": "CR 601.1d (regions are exclusive — the engine",
+   "why": "wrong-rule: trigger listeners seeing only their region is 601.1d; 601.2 is 'one region at a time'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+   "find": "// CR 601.2: \"your units\" is region-scoped",
+   "replace": "// CR 601.1b: \"your units\" is region-scoped",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+   "find": "auto-scoped (CR 601.2: only",
+   "replace": "auto-scoped (CR 601.1d: only",
+   "why": "wrong-rule: trigger region-scoping is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+   "find": "// Region auto-scoped (CR 601.2). Bounded graft",
+   "replace": "// Region auto-scoped (CR 601.1d). Bounded graft",
+   "why": "wrong-rule: trigger region-scoping is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+   "find": "// auto-scoped (CR 601.2).\nconst bloomcasterMake",
+   "replace": "// auto-scoped (CR 601.1d).\nconst bloomcasterMake",
+   "why": "wrong-rule: trigger region-scoping is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+   "find": "// Region auto-scoped (CR 601.2).\nconst floraGrow",
+   "replace": "// Region auto-scoped (CR 601.1d).\nconst floraGrow",
+   "why": "wrong-rule: trigger region-scoping is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+   "find": "that expired with CR 108.1a, which fires",
+   "replace": "that expired when the engine began firing",
+   "why": "history: a rule narrated as the change that fired an event (was 'expired with R129', a ruling)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "[Switch1]/[once] budgets per card), CR 601.2, 601.4d (\"each player/opponent\" and",
+   "replace": "[Switch1]/[once] budgets per card), CR 601.1b, 601.4d (\"each player/opponent\" and",
+   "why": "wrong-rule: effect region-scoping is 601.1b; 601.2 is 'one region at a time'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "mid-resolution\"; CR 110.1a's\n *    `count: 'X'` (with min: 0)",
+   "replace": "mid-resolution\"; now\n *    `count: 'X'` (with min: 0; CR 110.1a)",
+   "why": "history/grammar: a CR rule does not own engine code ('CR 110.1a's count: X')"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "layer\". CR 111.10's\n *    CostMod is that layer",
+   "replace": "layer\". The\n *    CostMod (CR 111.10) is that layer",
+   "why": "history/grammar: a CR rule does not own engine code ('CR 111.10's CostMod')"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "exists\". CR 107.2a's collectX fixes X",
+   "replace": "exists\". Now collectX (CR 107.2a) fixes X",
+   "why": "history/grammar: a CR rule does not own engine code ('CR 107.2a's collectX')"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "\"spell\", and CR 300.5a is *\"Tokens are spells\"*",
+   "replace": "\"spell\", and the owner's answer is *\"Tokens are spells\"* (CR 300.5a)",
+   "why": "quote: the quoted words are the owner's answer, not CR 300.5a's text"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "the played item's id (CR 706.13), so",
+   "replace": "the played item's id, so",
+   "why": "grammar: same CR (706.13) twice in one sentence; the event field is engine, not a rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "converted first\n// (CR 706.13); Hexbane Shiitake",
+   "replace": "converted first;\n// Hexbane Shiitake",
+   "why": "history: 'converted first (R178)' named the change, not a rule; 706.13 is cited two lines above"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "converts in this same ruling.",
+   "replace": "converted in the same change.",
+   "why": "history: 'this same ruling' lost its referent (the retired ruling)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "NOT ITS PRICE — CR 107.5 (2026-10-09), reversing",
+   "replace": "NOT ITS PRICE — the 2026-10-09 ruling (now CR 107.5), reversing",
+   "why": "history: a CR rule narrated as the dated change that reversed an earlier reading"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "region-scoped (CR 601.2)\n//    like every continuous effect.",
+   "replace": "region-scoped (CR 601.1d)\n//    like every continuous effect.",
+   "why": "wrong-rule: a static ability's region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "// CR 107.5 (CT-224) reverses the earlier price",
+   "replace": "// The 2026-10-09 ruling (CT-224, now CR 107.5) reverses the earlier price",
+   "why": "history: a CR rule narrated as the change that reversed"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "Region-scoped (CR 601.2): fires only when combat happened in my region.",
+   "replace": "Region-scoped (CR 601.7): fires only when combat happened in my region.",
+   "why": "wrong-rule: 'After combat' only in a region where battle happened is 601.7"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "'lifeLost' is region-scoped in battle (CR 601.2);",
+   "replace": "'lifeLost' is region-scoped in battle (CR 601.1d);",
+   "why": "wrong-rule: trigger region-scoping is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "ACTUALLY PAID on an X spell (\"paying X",
+   "replace": "ACTUALLY PAID on an X spell (the owner: \"paying X",
+   "why": "quote: the quoted words are the owner's ruling, not CR 111.11's text"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "closes the owed turn flip\n// afterwards (CR D6.3).",
+   "replace": "closes the owed turn flip\n// afterwards.",
+   "why": "wrong-rule: D6.3 is the battle-phase 'item is resolving' display, nothing about the end-of-turn window"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "// ⚠ CR 107.2b (2026-08-28) — THE OWNER RULED ON THIS CARD",
+   "replace": "// ⚠ 2026-08-28 (now CR 107.2b) — THE OWNER RULED ON THIS CARD",
+   "why": "history: a CR rule labelled with a ruling date"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "2026-08-25 — — \"the card checks how",
+   "replace": "2026-08-25** — \"the card checks how",
+   "why": "grammar: doubled dash and unclosed bold"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "// ⚠ ⚠ THE ONE PLACE",
+   "replace": "// ⚠ THE ONE PLACE",
+   "why": "grammar: doubled warning marker"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "But §17 was\n// answering",
+   "replace": "But the earlier answer was\n// answering",
+   "why": "grammar: '§17' lost its referent once the ruling name was removed"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "// CR 107.2b was asked exactly that,",
+   "replace": "// the owner, on 2026-08-28 (now CR 107.2b), was asked exactly that,",
+   "why": "history: a rule narrated as being asked a question"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "settling what the target-at-cast rule had left open had to leave open:",
+   "replace": "settling what the target-at-cast rule had to leave open:",
+   "why": "grammar: doubled phrase"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "(CR 109.3a). CR 802.3a: it reads the",
+   "replace": "(CR 109.3a). It reads the",
+   "why": "wrong-rule/grammar: label for a retired event-fact ruling, and 802.3a repeated four lines later"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "CR 702.3f is unchanged and visible in the collector order",
+   "replace": "Targets before costs (CR 111.7) is unchanged and visible in the collector order",
+   "why": "wrong-rule: 702.3f is the card-play step; an activated ability's targets-then-fixed-cost order is 111.7"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "// CR 109.9a, 109.9b splits what used to be one branch.",
+   "replace": "// CR 109.9a and 109.9b split what used to be one branch.",
+   "why": "grammar: plural subject"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "is still a real question there (CR D6.3).",
+   "replace": "is still a real question there (CR D1.2).",
+   "why": "wrong-rule: D6.3 is the battle-phase resolving display; 'a real choice is always put to the player' is D1.2"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "card, reset at start of turn), CR 601.2, 601.4d (\"each player\"",
+   "replace": "card, reset at start of turn), CR 601.1b, 601.4d (\"each player\"",
+   "why": "wrong-rule: effect region-scoping ('your units') is 601.1b; 601.2 is 'one region at a time'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "the home-region default it replaced is withdrawn)",
+   "replace": "the old home-region default is withdrawn)",
+   "why": "history: a CR rule narrated as the change that replaced a default"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "CR 608.9a (owner,\n *    2026-08-25) moved that reconstruction",
+   "replace": "the owner's 2026-08-25 answer (now CR 608.9a)\n *    moved that reconstruction",
+   "why": "history: a CR rule narrated as the change that moved code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "is CR 801.7d's removeFromStack()",
+   "replace": "is removeFromStack() (CR 801.7d)",
+   "why": "history/grammar: a CR rule does not own engine code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "UNPARKED by CR 710.6 (the COPY LAYER):",
+   "replace": "UNPARKED by the COPY LAYER (CR 710.1):",
+   "why": "history/wrong-rule: a rule narrated as the change; 710.6 is only the until-regroup end, 710.1 is the copy rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "/** the seats physically in a region right now (CR 601.2, 601.4d) */",
+   "replace": "/** the seats physically in a region right now (CR 601.4) */",
+   "why": "wrong-rule: who is present in a region is 601.4"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "without CR 602.5b's `repairFormation`",
+   "replace": "without `repairFormation` (CR 602.5b)",
+   "why": "grammar: a CR rule does not own engine code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "sentence CR 801.6a (an erase is a despawn) overturned */",
+   "replace": "sentence the erase-is-a-despawn ruling (now CR 801.6a) overturned. */",
+   "why": "history + grammar: a rule narrated as the change; closing period lost"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": " * CR 608.9a: the power gate is the COLUMN's, never the",
+   "replace": " * CR 608.9a (owner, 2026-08-25): the power gate is the COLUMN's, never the",
+   "why": "quote: restore the owner attribution of the quotation that follows (it is not CR text)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "region-scoped by staticsFor (CR 601.2)",
+   "replace": "region-scoped by staticsFor (CR 601.1d)",
+   "why": "wrong-rule: a static's region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "donated). CR 601.2, 601.4d: \"your units\"",
+   "replace": "donated). CR 601.1b: \"your units\"",
+   "why": "wrong-rule: 'your units' region scope is 601.1b; 601.4d is 'each opponent/player'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "settles where the units land, and it is\n// THIS CARD's report",
+   "replace": "settles where the units land, and it came from\n// THIS CARD's report",
+   "why": "history: a CR rule is not a report"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "(CR 201.5 rule\n// 1 — a copy still bins as itself)",
+   "replace": "(CR 201.5 —\n// a copy still bins as itself)",
+   "why": "grammar: leftover sub-item label 'rule 1'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "Still region-scoped (\"your units\" — CR 601.2,",
+   "replace": "Still region-scoped (\"your units\" — CR 601.1b,",
+   "why": "wrong-rule: 'your units' region scope is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "// CR 601.2: \"your units\" is region-scoped, the Flowstone Arcanite reading",
+   "replace": "// CR 601.1b: \"your units\" is region-scoped, the Flowstone Arcanite reading",
+   "why": "wrong-rule: 'your units' region scope is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "targetable zone now (CR 110.3's 'binCard')",
+   "replace": "targetable zone now ('binCard', CR 110.3)",
+   "why": "grammar: a CR rule does not own engine code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "\"recall\" is not \"negate\" — CR 801.7d's removal",
+   "replace": "\"recall\" is not \"negate\" — negation's removal (CR 704.4)",
+   "why": "wrong-rule: circular — 801.7d IS the recall; the removal it reuses is negation's (704.4, was R68)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "but it is a despawn\" (CR 801.6a).",
+   "replace": "but it is a despawn\" (the owner, 2026-08-25).",
+   "why": "quote + grammar: the quotation is the owner's answer, not CR text; 801.6a already cited in the same sentence"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "must never reach the CR 407.2a\n      // public erased pile whatever",
+   "replace": "must never reach the\n      // public erased pile (CR 407.2a) whatever",
+   "why": "grammar: 'the CR 407.2a public erased pile'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "dies (CR 400.4).). Passing",
+   "replace": "dies (CR 400.4). Passing",
+   "why": "grammar: doubled punctuation"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "dies to its controller's bin (CR 400.4) and dies back to their bin;",
+   "replace": "dies to its controller's bin (CR 400.4);",
+   "why": "grammar/truth: contradictory doubled clause (old 'dies back to their bin' left behind)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "the end-of-turn window, CR D6.3);",
+   "replace": "the end-of-turn window, CR D1.2);",
+   "why": "wrong-rule: D6.3 is the battle-phase resolving display; 'a real choice is always put to the player' is D1.2"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "budgets per card), CR 601.2, 601.4d\n * (\"each opponent\"",
+   "replace": "budgets per card), CR 601.4d\n * (\"each opponent\"",
+   "why": "wrong-rule: 601.2 (one region at a time) does not say 'each opponent = present seats'; 601.4d does"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "did not exist. CR 112.3 supplies both the",
+   "replace": "did not exist. The owner's 2026-08-25 answer (now CR 112.3) supplies both the",
+   "why": "quote/history: the quoted *always n*2*v* is the owner's answer, not CR text"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "— and that expired when CR 111.10 added the THIRD CostMod channel:",
+   "replace": "— and that expired when the engine added the THIRD CostMod channel (CR 111.10d):",
+   "why": "history: a CR rule narrated as the change that added engine code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "UNPARKED by the CR 400.5 wave:",
+   "replace": "UNPARKED by the bin-listener wave:",
+   "why": "history: a CR rule narrated as an engine wave (CR 400.5 is cited on the next line)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "it\". CR 802.25b shipped {Pure} —",
+   "replace": "it\". {Pure} has shipped (CR 802.25b) —",
+   "why": "history: a CR rule narrated as shipping code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "any more: CR 802.9 shipped stat layer 6 on 2026-08-23,",
+   "replace": "any more: stat layer 6 (CR 802.9) shipped on 2026-08-23,",
+   "why": "history: a CR rule narrated as shipping code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "stat layer 5 (802.8a) shipped for playtest report #73 so a row",
+   "replace": "stat layer 5 (CR 802.8a) shipped for playtest report #73, so a row",
+   "why": "grammar: bare number without 'CR', lost comma"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "wants. Region-scoped by the engine (CR 601.2).",
+   "replace": "wants. Region-scoped by the engine (CR 601.1d).",
+   "why": "wrong-rule: a static's region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "was a ruling nobody had made. CR 708.6 is that ruling, verbatim:",
+   "replace": "was a ruling nobody had made. The owner's 2026-08-25 answer (now CR 708.6) is that ruling, verbatim:",
+   "why": "quote/truth: the verbatim words that follow are the owner's, not CR 708.6's text"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "IS STILL UNRULED. CR 708.6a\n// §23's interim decision",
+   "replace": "IS STILL UNRULED. The\n// 2026-08-25 interim decision (now CR 708.6a)",
+   "why": "grammar: 'CR 708.6a §23's' — a section label of the retired ruling glued to a CR number"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "LIVE (CR 111.10): the third CostMod channel —\n// an IMPOSED bracketed additional cost on card PLAYS (CR 111.10 brought mana,\n// CR 111.10d life; a sacrifice",
+   "replace": "LIVE (CR 111.10d): the third CostMod channel —\n// an IMPOSED bracketed additional cost on card PLAYS (the first two channels brought mana\n// and life; a sacrifice",
+   "why": "wrong-rule/history: rules narrated as the changes that 'brought' channels; 111.10d is the imposed additional cost (sacrifice included), not 'life'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "radiating mod (CR 601.2): it taxes",
+   "replace": "radiating mod (CR 601.1d): it taxes",
+   "why": "wrong-rule: a static's region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "invented qualifier CR 707.7 took off Rotspore Herald:",
+   "replace": "invented qualifier the Rotspore ruling (CR 707.7) took off Rotspore Herald:",
+   "why": "history: a CR rule narrated as the change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "CR 720.6b's \"'you' is the host's controller\" still falls out",
+   "replace": "\"'you' is the host's controller\" (CR 720.6b) still falls out",
+   "why": "quote: the quoted phrase is not CR 720.6b's wording"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "IS playing a spell since CR 701.1c, but",
+   "replace": "IS playing a spell (CR 701.1c), but",
+   "why": "history: 'since CR x' narrates a rule as a change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "a CostMod is region-scoped (CR 101.6) and a per-seat",
+   "replace": "a CostMod is region-scoped (CR 111.10) and a per-seat",
+   "why": "wrong-rule: a cost modifier working only in its source's region is 111.10"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "actionRegion, CR 601.2). \"Each opponent\"",
+   "replace": "actionRegion, CR 601.1d). \"Each opponent\"",
+   "why": "wrong-rule: trigger region-scoping is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "Second sentence UNPARKED by CR 400.5:",
+   "replace": "Second sentence UNPARKED by the bin-listener wave (CR 400.5):",
+   "why": "history: a CR rule narrated as the change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "so CR 111.9's cast window does not apply)",
+   "replace": "so the cast window (CR 702.4) does not apply)",
+   "why": "wrong-rule: the cast window is 702.4; 111.9 is resolution-time payments"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "counter to remove. Region-scoped (CR 601.2, 601.4d).",
+   "replace": "counter to remove. Region-scoped (CR 601.1b, 601.4d).",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": "a counter can come off before this resolves (CR 109.3a).",
+   "replace": "a counter can come off before this resolves (CR 109.3b).",
+   "why": "wrong-rule: 109.3a says a triggered ability resolves even if its condition stops being true; the resolution-time re-read is 109.3b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "budgets per card), CR 601.2, 601.4d (\"each opponent\"",
+   "replace": "budgets per card), CR 601.4d (\"each opponent\"",
+   "why": "wrong-rule: 601.2 (one region at a time) does not say 'each opponent = present seats'; 601.4d does"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "is exactly what CR 111.6b ruled,",
+   "replace": "is exactly what CR 111.6b says,",
+   "why": "history: a CR rule narrated as a ruling"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "one fix gated both cards in the same round\n",
+   "replace": "one fix gated both cards in the same round.\n",
+   "why": "grammar: lost closing period"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": " *    Region-scoped at resolution (CR 601.2, 601.4d).\n",
+   "replace": " *    Region-scoped at resolution (CR 601.1b, 601.4d).\n",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "pays for: CR 602.7's `playsIntoFormation` and\n *    CR 405.9's `playsFromBin` (the play-from-bin",
+   "replace": "pays for: `playsIntoFormation` (CR 602.7) and\n *    `playsFromBin` (CR 405.9; the play-from-bin",
+   "why": "grammar: CR rules do not own engine flags"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "the CR 405.9a stamp is the\n *    granting card's text,",
+   "replace": "the stamp is the\n *    granting card's text (CR 405.9a),",
+   "why": "grammar: 'the CR 405.9a stamp' (was 'the R96 stamp')"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "it stamped no leave-play `to` (714.9) `to` on its despawn event",
+   "replace": "it stamped no leave-play `to` (CR 714.9) on its despawn event",
+   "why": "grammar: doubled `to`, bare number without 'CR'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "(CR 410.5b; extended to the hand\n * 2026-08-22)",
+   "replace": "(CR 410.5b; the token rule was extended to the hand\n * 2026-08-22)",
+   "why": "history: the extension date belongs to the ruling, not to CR 410.5b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "the two-turn count from the moment of prophesying (CR 803.7),",
+   "replace": "the two-turn count from the moment of prophesying (CR 803.7e),",
+   "why": "wrong-rule: counting forward from prophesying is 803.7e"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "// CR 110.3c: only a player has a life total",
+   "replace": "// CR 110.3: only a player has a life total",
+   "why": "wrong-rule: 110.3c is who 'target player' may be; the legal-target-by-kind rule is 110.3"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "// CR 601.4c: \"all bins\" is all bins IN THIS REGION",
+   "replace": "// CR 601.1c: \"all bins\" is all bins IN THIS REGION",
+   "why": "wrong-rule: 'all means all in this region' is 601.1c"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "// CR 803.7a, 803.7: the granted condition",
+   "replace": "// CR 803.7a, 803.7e: the granted condition",
+   "why": "wrong-rule: 'counts FORWARD from this moment' is 803.7e"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "paid for it (\"paying X\n// replaces the letter X",
+   "replace": "paid for it (the owner: \"paying X\n// replaces the letter X",
+   "why": "quote: the quotation is the owner's answer, not CR 107.3a's text"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "is region-scoped at resolution\n// (CR 601.2); putting counters",
+   "replace": "is region-scoped at resolution\n// (CR 601.1b); putting counters",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "UN-PARKED, WHOLE, WHOLE —",
+   "replace": "UN-PARKED, WHOLE —",
+   "why": "grammar: doubled word"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "\"[Discard two cards]\" is an CR 702.4, 702.4e bracketed CAST COST, chosen and paid",
+   "replace": "\"[Discard two cards]\" is a bracketed CAST COST (CR 702.4, 702.4e), chosen and paid",
+   "why": "grammar: 'an CR'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "is CR 602.7's `playsIntoFormation`,",
+   "replace": "is `playsIntoFormation` (CR 602.7),",
+   "why": "grammar: a CR rule does not own an engine flag"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "is CR 405.9's `playsFromBin` — the card's own printed\n//    permission through the same playFromBin action the bin-play permission uses built.",
+   "replace": "is `playsFromBin` (CR 405.9) — the card's own printed\n//    permission through the same `playFromBin` action the bin-play permission uses.",
+   "why": "grammar: garbled splice ('uses built'), lost code backticks, CR rule owning a flag"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "stamp is the CR 405.9a GRANTORS' own text,",
+   "replace": "stamp is the GRANTORS' own text (CR 405.9a),",
+   "why": "grammar: 'the CR 405.9a GRANTORS'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "(CR 601.2, 601.4d): the units in the battle region",
+   "replace": "(CR 601.1b, 601.4d): the units in the battle region",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "// UNPARKED (CR 708.4a). A REDIRECT,",
+   "replace": "// UNPARKED (CR 708.1). A REDIRECT,",
+   "why": "wrong-rule: 708.4a is 'only one of several redirects applies'; the replacement layer itself is 708.1 (as the header cites)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "region (CR 601.2), which is also the region the thief",
+   "replace": "region (CR 601.1b), which is also the region the thief",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "(CR 705.2's own field, which this",
+   "replace": "(the engine's activation-timing field, CR 705.2, which this",
+   "why": "grammar: a CR rule does not own an engine field"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "is now paid as it is activated).). \"Discard X cards\"",
+   "replace": "is now paid as it is activated). \"Discard X cards\"",
+   "why": "grammar: doubled punctuation"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "(CR D7.1a's\n// `xZeroWarning` is",
+   "replace": "(CR D7.1a:\n// `xZeroWarning` is",
+   "why": "grammar: a CR rule does not own an engine field"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "budgets per card), CR 601.2, 601.4d (\"each player/",
+   "replace": "budgets per card), CR 601.1b, 601.4d (\"each player/",
+   "why": "wrong-rule: 'your units' region scope is 601.1b; 601.2 is 'one region at a time'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "the half the first fix could not see the\n *    id it put",
+   "replace": "the half the first fix could not see: the\n *    id it put",
+   "why": "grammar: lost colon (sentence now misparses)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "FACT ON THE DEATH EVENT (CR 714.9's `token`,",
+   "replace": "FACT ON THE DEATH EVENT (`token`, CR 714.9,",
+   "why": "grammar: a CR rule does not own an engine field"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "region-scoped at resolution (CR 601.2, 601.4d, 107.8).",
+   "replace": "region-scoped at resolution (CR 601.1b, 601.4d, 107.8).",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "so CR 110.3a, 710.8a restrictions\n",
+   "replace": "so CR 110.3a restrictions\n",
+   "why": "wrong-rule: 710.8a (a copy keeps the original's declarations) is not a target restriction"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "replays the part cleanly (CR D6.3) and",
+   "replace": "replays the part cleanly and",
+   "why": "wrong-rule: D6.3 is the battle-phase 'item is resolving' display; nothing in the CR covers suspension replay"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "plus CR 110.2b's fixed extraSlots;",
+   "replace": "plus the fixed extraSlots;",
+   "why": "wrong-rule: 110.2b is distribution-is-not-targeting; extraSlots is an engine spec field"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "// resolving region (CR 601.2). Robot X",
+   "replace": "// resolving region (CR 601.1b). Robot X",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "same CR 601.2 region scoping)",
+   "replace": "same CR 601.1d region scoping)",
+   "why": "wrong-rule: a static's region scope is 601.1d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "//    token. CR 702.7a, the owner (2026-09-28), asked whether",
+   "replace": "//    token (CR 702.7a). The owner (2026-09-28), asked whether",
+   "why": "grammar: the CR rule reads as the one who asked the owner"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "re-aim the copy fresh (CR 110.3a, 710.8a legality at",
+   "replace": "re-aim the copy fresh (CR 110.3a legality at",
+   "why": "wrong-rule: 710.8a is not a legality rule"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "// CR 507.5 fixed that at the source:",
+   "replace": "// The deployment-stack ruling (now CR 507.5) fixed that at the source:",
+   "why": "history: a CR rule narrated as the fix"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "exactly as the first fix left them as ASSERTIONS",
+   "replace": "exactly as the first fix left them, as ASSERTIONS",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "not `pendingCosts`/CR 111.10's\n",
+   "replace": "not `pendingCosts`/CR 111.10d's\n",
+   "why": "wrong-rule: the imposed additional cost is 111.10d"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "//    the item, CR 710.8a's `E.pushSpellCopy`.",
+   "replace": "//    the item, `E.pushSpellCopy` (CR 710.8a).",
+   "why": "grammar: a CR rule does not own engine code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "// — CR 710.8a, and the same rule the trigger version",
+   "replace": "// — CR 110.1a, and the same rule the trigger version",
+   "why": "wrong-rule: 'fully declared before anyone answers it' is targets-at-stack-time (110.1a, was R57)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": "\"your units\" is the survivors (CR 601.2)",
+   "replace": "\"your units\" is the survivors (CR 601.1b)",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "[Switch1]/[once] budgets per card), CR 601.2, 601.4d (\"each player/opponent\" and",
+   "replace": "[Switch1]/[once] budgets per card), CR 601.1d, 601.4d (\"each player/opponent\" and",
+   "why": "wrong-rule: region-scoped listeners are 601.1d; 601.2 is 'one region at a time'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "and an CR 702.5a ransom",
+   "replace": "and a CR 702.5a ransom",
+   "why": "grammar: 'an CR'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "beside it; CR 705.4 made\n *    that a real `castCost`",
+   "replace": "beside it; the engine made\n *    that a real `castCost`",
+   "why": "history: a CR rule narrated as the change that made engine code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "been a true CAST COST since CR 702.4.",
+   "replace": "been a true CAST COST (CR 702.4).",
+   "why": "history: 'since CR x' narrates a rule as a change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "TARGETING restriction — CR 110.3a put the item's X on TargetCtx",
+   "replace": "TARGETING restriction (CR 110.3a) — the engine put the item's X on TargetCtx",
+   "why": "history: a CR rule narrated as the change that edited code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "at regroup\". CR 711 made\n *    it whole:",
+   "replace": "at regroup\". It is whole\n *    now (CR 711):",
+   "why": "history: a CR section narrated as the change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "hand/bin (CR 400.4).).",
+   "replace": "hand/bin (CR 400.4).",
+   "why": "grammar: doubled punctuation"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "is LITERAL (707.7). This entry",
+   "replace": "is LITERAL (CR 707.7). This entry",
+   "why": "grammar: bare number without 'CR'"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "itself included) and an CR 707.7 `effectAttrs` mod",
+   "replace": "itself included) and an `effectAttrs` mod",
+   "why": "grammar/wrong-rule: 'an CR'; 707.7 is not the effect-attribute channel (an engine mechanism)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "\"target effect\" is CR 700.1's 'stackEffect' — the SUPERSET:",
+   "replace": "\"target effect\" is 'stackEffect' (CR 700.1) — the SUPERSET:",
+   "why": "grammar: a CR rule does not own an engine kind"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "the unit as it spawns'. CR 301.8 made that a DECLARATION on the card",
+   "replace": "the unit as it spawns'. Per CR 301.8 that is now a DECLARATION on the card",
+   "why": "history: a CR rule narrated as the change"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "(CR 206.5's E.setBase)",
+   "replace": "(E.setBase, CR 206.5)",
+   "why": "grammar: a CR rule does not own engine code"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "\"all tokens\" are region-scoped (CR 601.2, 601.4d):",
+   "replace": "\"all tokens\" are region-scoped (CR 601.1b, 601.4d):",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "ability on CR 507.4's 'startOfDeployment' event,\n *    which fires inside a settle() window after CR 507.4's rot damage.",
+   "replace": "ability on the 'startOfDeployment' event,\n *    which fires inside a settle() window after the rot damage (CR 507.4).",
+   "why": "grammar: same CR twice in one sentence; a CR rule does not own an engine event"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "are region-scoped (CR 601.2, 601.4d): every unit in the battle region",
+   "replace": "are region-scoped (CR 601.1b, 601.4d): every unit in the battle region",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "the opponent answered blind. CR 205.3\n// settles it: everything before the colon is a COST",
+   "replace": "the opponent answered blind. CR 705.1\n// settles it: everything before the colon is a COST",
+   "why": "wrong-rule: 205.3 is square-bracketed text; 'everything before the colon is the cost' is 705.1"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "in the resolution region (CR 601.2) —",
+   "replace": "in the resolution region (CR 601.1b) —",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "(attachMod), so CR 601.2 scopes it for free;",
+   "replace": "(attachMod), so CR 601.1c scopes it for free;",
+   "why": "wrong-rule: 'all' meaning all in this region is 601.1c"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "Region-scoped throughout (CR 601.2 — other regions don't exist for this).",
+   "replace": "Region-scoped throughout (CR 601.1a — other regions don't exist for this).",
+   "why": "wrong-rule: 'other regions treated as if they don't exist' is 601.1a"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "reaches the public erased pile (CR 407.2 now answers this) public pile is\n          // round-27's Q3, unanswered.",
+   "replace": "reaches the public erased pile was\n          // round-27's Q3; CR 407.2 now answers it.",
+   "why": "grammar/truth: garbled splice ('... pile (CR 407.2 now answers this) public pile is ... unanswered') contradicts itself"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "(Mycelial Mentor's half of CR 300.5c)",
+   "replace": "(Mycelial Mentor's case, CR 300.5c)",
+   "why": "grammar: 'half of CR 300.5c' (was 'half of R129', a two-part ruling)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "units\" are the resolution region's units (CR 601.2, 601.4d).",
+   "replace": "units\" are the resolution region's units (CR 601.1b, 601.4d).",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "before the event that raised it (CR 707.5), so this card",
+   "replace": "before the event that raised it, so this card",
+   "why": "grammar/wrong-rule: same CR as the label two lines up; the general principle is not 707.5's (was R147, copying)"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "it still reaches CR 708.7's amount layer,",
+   "replace": "it still reaches the amount layer (CR 708.5),",
+   "why": "wrong-rule: 708.7 is count-then-redirect ordering; the amount replacement layer is 708.5"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "UNPARKED by CR 507.4's 'startOfDeployment' event,\n// which fires inside a settle() window right after CR 507.4's rot damage.",
+   "replace": "UNPARKED by the 'startOfDeployment' event,\n// which fires inside a settle() window right after the rot damage (CR 507.4).",
+   "why": "grammar/history: same CR twice; a CR rule narrated as un-parking the card"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "Region-scoped (CR 601.2, 601.4d) via ctx.region",
+   "replace": "Region-scoped (CR 601.1b, 601.4d) via ctx.region",
+   "why": "wrong-rule: effect region-scoping is 601.1b"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": " * resolution), CR 704.6b (fizzle vs partial)",
+   "replace": " * resolution), CR 704.6, 704.6b (fizzle vs partial)",
+   "why": "wrong-rule: 704.6b is only partial resolution; fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts",
+   "find": " * resolution), CR 704.6b (fizzle vs partial)",
+   "replace": " * resolution), CR 704.6, 704.6b (fizzle vs partial)",
+   "why": "wrong-rule: 704.6b is only partial resolution; fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": " * CR 704.6b (fizzle vs partial)",
+   "replace": " * CR 704.6, 704.6b (fizzle vs partial)",
+   "why": "wrong-rule: 704.6b is only partial resolution; fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+   "find": " * CR 704.6b (fizzle vs partial)",
+   "replace": " * CR 704.6, 704.6b (fizzle vs partial)",
+   "why": "wrong-rule: 704.6b is only partial resolution; fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+   "find": "the resolution check stays for CR 704.6b, 704.5;",
+   "replace": "the resolution check stays for CR 704.5, 704.6;",
+   "why": "wrong-rule: a lone target lost at resolution fizzles (704.6); 704.6b is partial loss"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+   "find": "it overturned R59's \"cast from play, not played\",",
+   "replace": "it overturned the old cost-modifier ruling's \"cast from play, not played\",",
+   "why": "surviving bare R-number next to a quotation (the guard misses these); quote kept verbatim"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts",
+   "find": "* CR 101.6 left this card worth nothing in a home region",
+   "replace": "* Region scoping (CR 101.6) left this card worth nothing in a home region",
+   "why": "history: a CR rule narrated as the actor ('CR 101.6 left'); was a ruling"
+  },
+  {
+   "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+   "find": "out of it by CR 410.5b's state-based sweep,",
+   "replace": "out of it by the state-based sweep (CR 410.5b),",
+   "why": "grammar: a CR rule does not own the engine sweep"
+  }
+ ]
+}

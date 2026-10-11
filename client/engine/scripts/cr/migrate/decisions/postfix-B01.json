@@ -1,0 +1,310 @@
+{
+ "edits": [
+  {
+   "file": "client/docs/05-hard-questions.md",
+   "find": "keep the retired ruling register decisions log from day one.",
+   "replace": "keep a decisions log (`digital-rules.md`, the ruling register, since retired) from day one.",
+   "why": "grammar: 'the retired ruling register decisions log' garbled a historical recommendation"
+  },
+  {
+   "file": "client/docs/05-hard-questions.md",
+   "find": "re-explained question) New questions go",
+   "replace": "re-explained question). New questions go",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/docs/06-roadmap.md",
+   "find": "the retired ruling register rulings log starts here.",
+   "replace": "The rulings log (`digital-rules.md`, the ruling register, since retired) starts here.",
+   "why": "grammar: lowercase sentence start, 'register rulings log'"
+  },
+  {
+   "file": "client/docs/06-roadmap.md",
+   "find": "the current client: CR D2.2 — 2026-08-29,",
+   "replace": "the current client: the standing-pass ruling (now CR D2.2) — 2026-08-29,",
+   "why": "history: a rule narrated as the change that split the button"
+  },
+  {
+   "file": "client/docs/06-roadmap.md",
+   "find": "unconditional 2 life documented as CR 801.7e; combat sub-step trigger timing is\nCR 608.9;",
+   "replace": "unconditional 2 life documented as a ruling (now CR 801.7e); combat sub-step trigger timing got a ruling\n(since replaced; now CR 608.9);",
+   "why": "history: things recorded as rulings, not as CR rules; the sub-step timing ruling (immediate resolution) was superseded"
+  },
+  {
+   "file": "client/docs/06-roadmap.md",
+   "find": "   the retired ruling register (the trigger-timing ruling still provisional)\n",
+   "replace": "   the ruling register, since retired (the trigger-conditions ruling still provisional).\n",
+   "why": "grammar: lost period; R1 was 'Trigger conditions vs effect values', not trigger timing"
+  },
+  {
+   "file": "client/docs/06-roadmap.md",
+   "find": "- CR 608.6a voluntary over-assignment",
+   "replace": "- CR 608.6c voluntary over-assignment",
+   "why": "wrong-rule: 608.6a is who divides damage; 608.6c is assigning more than lethal"
+  },
+  {
+   "file": "client/docs/questions-round32.md",
+   "find": "so the {Balanced} glossary row (now CR D6.11)",
+   "replace": "so the reminder-source ruling (now CR D6.11)",
+   "why": "truth: D6.11 is the ruling that chose the sentence, not the {Balanced} glossary row"
+  },
+  {
+   "file": "client/docs/08-light-and-dark.md",
+   "find": "the retired ruling register for the current wording. **This doc does not edit\nthat file** — treat the retired ruling register as the ruling of record",
+   "replace": "the ruling register (since retired) for the current wording. **This doc does not edit\nthat file** — treat the register as the ruling of record",
+   "why": "grammar/history: 'treat the retired ruling register as the ruling of record once it lands' is self-contradictory"
+  },
+  {
+   "file": "client/docs/08-light-and-dark.md",
+   "find": "**`{Pure}` is LIVE as of CR 802.25** —",
+   "replace": "**`{Pure}` is LIVE** (now CR 802.25) —",
+   "why": "history: a rule narrated as the event that made Pure live"
+  },
+  {
+   "file": "client/docs/08-light-and-dark.md",
+   "find": "⚠ the rules record that last point as the owner's reading no designer statement was found.",
+   "replace": "⚠ That last point is the owner's reading; no designer statement was found.",
+   "why": "grammar: lowercase start, two clauses fused"
+  },
+  {
+   "file": "client/docs/08-light-and-dark.md",
+   "find": "the rulings are in the Comprehensive Rules in the retired ruling register.",
+   "replace": "the rulings are now in the Comprehensive Rules.",
+   "why": "grammar: self-contradictory (flagged by audit2 and audit3)"
+  },
+  {
+   "file": "client/docs/08-light-and-dark.md",
+   "find": "the glimpse rule (CR 801.9) as corrected — reveal N",
+   "replace": "the glimpse rule (CR 801.9) as corrected** — reveal N",
+   "why": "grammar: closing bold lost"
+  },
+  {
+   "file": "client/docs/08-light-and-dark.md",
+   "find": "CR 801.2e's \"trashed by the owner of the bin",
+   "replace": "the trashing ruling's (now CR 801.2e) \"trashed by the owner of the bin",
+   "why": "truth: the quoted words are the old ruling's, not CR 801.2e's"
+  },
+  {
+   "file": "client/docs/08-light-and-dark.md",
+   "find": "zone-trigger primitives `Invasive",
+   "replace": "zone-trigger primitives: `Invasive",
+   "why": "grammar: lost colon"
+  },
+  {
+   "file": "client/docs/12-card-text.md",
+   "find": "an CR 803.8d stamp",
+   "replace": "a CR 803.8d stamp",
+   "why": "grammar: article not adjusted"
+  },
+  {
+   "file": "client/docs/13-assessment.md",
+   "find": "scenario.** CR 608.9b gave combat-damage",
+   "replace": "scenario.** The after-combat trigger ruling (now CR 608.9b) gave combat-damage",
+   "why": "history: a rule narrated as the dated change"
+  },
+  {
+   "file": "client/docs/13-assessment.md",
+   "find": "> from commit 7864bb8 moving a claim in passing\n",
+   "replace": "> from commit 7864bb8 moving a claim in passing.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/docs/13-assessment.md",
+   "find": "via the late register entry) (see 164-sweep-sight):",
+   "replace": "via the stripCode ruling's late register entry; see `164-sweep-sight`):",
+   "why": "grammar: ') (' double parenthesis"
+  },
+  {
+   "file": "client/docs/13-assessment.md",
+   "find": "moved a claim underneath it **The",
+   "replace": "moved a claim underneath it. **The",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/docs/13-assessment.md",
+   "find": "Now asserted (`201`) (see 201-assessment-numbers).",
+   "replace": "Now asserted (`201-assessment-numbers`).",
+   "why": "grammar: the same test named twice"
+  },
+  {
+   "file": "client/docs/17-oracle-text-audit.md",
+   "find": "2026-08-28 (owner request, 2026-08-28)",
+   "replace": "2026-08-28 (owner request)",
+   "why": "grammar: the same date twice in the title"
+  },
+  {
+   "file": "client/docs/17-oracle-text-audit.md",
+   "find": "(The bare-digit cost fix already concluded",
+   "replace": "(the bare-digit cost fix already concluded",
+   "why": "grammar: capital letter mid-sentence inside a parenthesis"
+  },
+  {
+   "file": "client/docs/17-oracle-text-audit.md",
+   "find": "the Glimpse-reminder class (report #106) All 98",
+   "replace": "the Glimpse-reminder class (report #106).** All 98",
+   "why": "grammar: bold never closed, period lost (rest of the item renders bold)"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "KEEP-THIS-TARGET (CR 110.9) ·",
+   "replace": "KEEP-THIS-TARGET (CR 110.9a) ·",
+   "why": "wrong-rule: keeping a target while changing others is 110.9a; 110.9 is how a new target is chosen"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "re-opened the CR D6.3 hazard CR D2.1c closed",
+   "replace": "re-opened the suspend-and-roll-back hazard the seat-aware gate closed (CR D2.1c)",
+   "why": "wrong-rule: D6.3 is the resolving-item display rule, not the rollback hazard (old R85); rule-as-actor"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "which is what the spell-copy rule (710.8) had already built for a spell copy.",
+   "replace": "which is what the spell-copy fix (CR 710.8) had already built for a spell copy.",
+   "why": "history: a rule narrated as having built code"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "(CR D2.1b, D2.1c's `decisionBlocks`)",
+   "replace": "(`decisionBlocks`; CR D2.1b, D2.1c)",
+   "why": "grammar: rule numbers as a possessive of code"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "> Two approximations the mid-resolution window leaves standing, deliberately, and names rather than hiding the window starts",
+   "replace": "> **Two approximations the mid-resolution fix leaves standing, deliberately, and names rather than hiding:** the window starts",
+   "why": "grammar: bold and colon lost, two clauses fused"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "**CR 802.23c had already built the machinery**",
+   "replace": "**the Afflicting ruling (now CR 802.23c) had already built the machinery**",
+   "why": "history: a rule narrated as having built machinery"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "better than the table asks: CR 706.13\n> put the played item's",
+   "replace": "better than the table asks: the fix (CR 706.13)\n> put the played item's",
+   "why": "history: a rule narrated as having changed the payload"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "`PER-COLUMN FACE DAMAGE` is closed by the per-column attribution fix (CR 608.9a)**",
+   "replace": "`PER-COLUMN FACE DAMAGE` is **CLOSED** by the per-column attribution fix (CR 608.9a)",
+   "why": "grammar: dangling bold marker in heading"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "predicate is **CR 608.9a**'s `E.columnDealtCombatDamage`, with **CR 608.9a**'s\n",
+   "replace": "predicate is `E.columnDealtCombatDamage` (**CR 608.9a**), with its\n",
+   "why": "grammar: the same CR number twice in one phrase"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "needs an CR 112.11 shield",
+   "replace": "needs a CR 112.11 shield",
+   "why": "grammar: article"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "put that in the SPENDS family A cost cannot whiff",
+   "replace": "put that in the SPENDS family. A cost cannot whiff",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": ">   Ruled in **CR 111.6a**.",
+   "replace": ">   Ruled with the variable-cost row.",
+   "why": "history: 'Ruled in CR x' for a ruling; 111.6a (compound all-or-nothing) is not what was ruled (that is 705.4, cited just above)"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "`E.grantBinCardPlay` — CR 405.9's blanket bin-play permission",
+   "replace": "`E.grantBinCardPlay` — the blanket bin-play permission",
+   "why": "grammar: the same CR number twice in one phrase (405.9 cited in the line above)"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "**the spell-copy rule (710.8) had already built it for a spell copy.",
+   "replace": "**the spell-copy fix (CR 710.8) had already built it** for a spell copy.",
+   "why": "grammar: bold never closed; history: rule as builder"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "push a real StackItem That call site was later removed entirely",
+   "replace": "push a real StackItem; the until-regroup fix then removed that call site entirely",
+   "why": "grammar: lost period/clause join"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "The mid-resolution stack fix's inline work\n> work still serves",
+   "replace": "The mid-resolution stack fix's inline\n> work still serves",
+   "why": "grammar: doubled word 'work work'"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "**CR D6.5** (`handEntered` named the",
+   "replace": "**the hand-entry leak (CR D6.5)** (`handEntered` named the",
+   "why": "truth: the rule did not leak; the leak is what it now forbids"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "**the look-at-a-hand leak (D6.5a)**",
+   "replace": "**the look-at-a-hand leak (CR D6.5a)**",
+   "why": "grammar: consistent CR prefix"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "(CR 112.13: rot never decreases on its own)",
+   "replace": "(CR 112.13a: rot never decreases on its own)",
+   "why": "wrong-rule: 'Rot never decreases on its own' is 112.13a"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "⚠ CR 410.3 added `revertFace`",
+   "replace": "⚠ The transform fix (CR 410.3) added `revertFace`",
+   "why": "history: a rule narrated as having added code (audit3)"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "removed five others Not serialised",
+   "replace": "removed five others. Not serialised",
+   "why": "grammar: lost period (audit3)"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "(since fixed: CR 111.7b) it);",
+   "replace": "(since fixed, CR 111.7b);",
+   "why": "grammar: garbled residue 'CR 111.7b) it)'"
+  },
+  {
+   "file": "client/docs/16-divergence-inventory.md",
+   "find": "**The multiplier ruling's second half The multiplier",
+   "replace": "**The multiplier ruling's second half.** The multiplier",
+   "why": "grammar: bold never closed, period lost (audit3)"
+  },
+  {
+   "file": "client/engine/README.md",
+   "find": "over-assignment (CR 608.6a)",
+   "replace": "over-assignment (CR 608.6c)",
+   "why": "wrong-rule: 608.6a is who divides damage; 608.6c allows assigning more than lethal"
+  },
+  {
+   "file": "client/engine/scripts/cr/check.mjs",
+   "find": " *              evidence (there is no register to check it against any more), so\n *              the checks are its shape (≤200 chars, one line, a date) and that\n *              an owner-basis rule carries one.\n",
+   "replace": " *              evidence, so the checks are its shape (≤200 chars, one line, a date)\n *              and that an owner-basis rule carries one — except a call absorbed from\n *              the retired register (`from: \"register@<sha>\"`), which must be verbatim\n *              in the register at that commit (read from git).\n",
+   "why": "truth: the header says no register check exists, but check() verifies register@<sha> quotes against the archived register (owner-quote-not-in-register)"
+  },
+  {
+   "file": "client/engine/scripts/cr/schema.mjs",
+   "find": "'questions-round27 Q2', or '' for a call absorbed from the old register)",
+   "replace": "'questions-round27 Q2', or 'register@<sha>' for a call absorbed from the old register)",
+   "why": "truth: all 1,935 absorbed owner calls carry from 'register@<sha>' (what check.mjs and render.mjs test for), never ''"
+  },
+  {
+   "file": "client/engine/scripts/cr/schema.d.mts",
+   "find": "('' = absorbed from the retired register)",
+   "replace": "('register@<sha>' = absorbed from the retired register)",
+   "why": "truth: absorbed calls carry from 'register@<sha>', never ''"
+  }
+ ]
+}

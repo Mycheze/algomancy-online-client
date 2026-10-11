@@ -1,0 +1,742 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/test/187-scenario-queue.test.ts",
+   "find": "— and CR 801.6 (an erased card goes to the erased pile) made its",
+   "replace": "— and the owner's ruling that an erased card goes to the erased pile (CR 801.6) made its",
+   "why": "history: a CR rule narrated as the 2026-08-26 actor; the ruling made the promise observable"
+  },
+  {
+   "file": "client/engine/test/187-scenario-queue.test.ts",
+   "find": "the vocabulary said. CR 608.9b gave",
+   "replace": "the vocabulary said. That ruling (CR 608.9b) gave",
+   "why": "history: rule narrated as actor (\"CR 608.9b gave\"); it was the owner's 2026-08-30 ruling"
+  },
+  {
+   "file": "client/engine/test/19-hybrids.test.ts",
+   "find": "// CR 111.10i item 20: an X spell",
+   "replace": "// CR 111.10i: an X spell",
+   "why": "grammar: leftover sub-item label \"item 20\" (from the old §20)"
+  },
+  {
+   "file": "client/engine/test/19-hybrids.test.ts",
+   "find": "// CR 107.5 (2026-10-09): the recalled ally",
+   "replace": "// The RAQ ruling of 2026-10-09 (now CR 107.5): the recalled ally",
+   "why": "history: a CR rule given a date as if it were the ruling"
+  },
+  {
+   "file": "client/engine/test/196-empty-target-fizzle.test.ts",
+   "find": "THE CLASS, MEASURED (CR D7.3a, 2026-08-28)",
+   "replace": "THE CLASS, MEASURED (2026-08-28)",
+   "why": "history: the measurement was a round-29 sweep, not a CR rule"
+  },
+  {
+   "file": "client/engine/test/196-empty-target-fizzle.test.ts",
+   "find": "(CR D7.3a: \"Fizzle, and say so in the log\")",
+   "replace": "(the owner's ruling, CR D7.3a: \"Fizzle, and say so in the log\")",
+   "why": "quote attribution: owner quote credited to CR D7.3a, whose text does not contain it"
+  },
+  {
+   "file": "client/engine/test/205-haste-auto-ready.test.ts",
+   "find": " * CR 504.5 made the haste step UNCONDITIONAL:",
+   "replace": " * The always-offer ruling (now CR 504.5) made the haste step UNCONDITIONAL:",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/engine/test/205-haste-auto-ready.test.ts",
+   "find": " * CR 504.5 recorded the debt that left behind",
+   "replace": " * That ruling recorded the debt that left behind",
+   "why": "history/quote: the recorded words are the old ruling's, not CR 504.5's text"
+  },
+  {
+   "file": "client/engine/test/205-haste-auto-ready.test.ts",
+   "find": "re-derivation of it — the unconditional haste step (504.5) deleted the last hand-maintained copy of",
+   "replace": "re-derivation of it — making the haste step unconditional (CR 504.5) deleted the last hand-maintained copy of",
+   "why": "grammar: bare \"(504.5)\" and a step narrated as deleting code"
+  },
+  {
+   "file": "client/engine/test/205-haste-auto-ready.test.ts",
+   "find": "not \"pass for me\": the rule\n",
+   "replace": "not \"pass for me\"\n",
+   "why": "grammar: dangling \"the rule\" left by a cut citation"
+  },
+  {
+   "file": "client/engine/test/205-haste-auto-ready.test.ts",
+   "find": "test('CR D2.5a.5:",
+   "replace": "test('CR D2.5a:",
+   "why": "wrong-rule: \"D2.5a.5\" is not a CR number (from old §1.5); title unbound"
+  },
+  {
+   "file": "client/engine/test/205-haste-auto-ready.test.ts",
+   "find": "against it (174-secrecy-is-seat-aware) (see 174-secrecy-is-seat-aware).",
+   "replace": "against it (174-secrecy-is-seat-aware).",
+   "why": "grammar: same pointer twice"
+  },
+  {
+   "file": "client/engine/test/205-haste-auto-ready.test.ts",
+   "find": "WHAT CR D2.5e DOES **NOT** CLOSE",
+   "replace": "WHAT CR D2.5d DOES **NOT** CLOSE",
+   "why": "wrong-rule: D2.5e describes the residual itself; the hiding rule that leaves it open is D2.5d"
+  },
+  {
+   "file": "client/engine/test/205-haste-auto-ready.test.ts",
+   "find": "predates CR D2.5e — a player",
+   "replace": "predates the readiness hiding (CR D2.5d) — a player",
+   "why": "wrong-rule/history: the residual predates the D2.5d hiding, not D2.5e"
+  },
+  {
+   "file": "client/engine/test/206-deadly-everywhere.test.ts",
+   "find": " * See scratchpad/rulings.md. The tests here",
+   "replace": " * The tests here",
+   "why": "truth: the migration invented a pointer to a file that does not exist (was a per-ruling scratch note)"
+  },
+  {
+   "file": "client/engine/test/206-deadly-everywhere.test.ts",
+   "find": "// ── CR 802.3g's actual gap: {Deadly} + {Poisonous} through an effect ───────",
+   "replace": "// ── the actual gap: {Deadly} + {Poisonous} through an effect (CR 802.3g) ──",
+   "why": "grammar: a rule cannot have \"an actual gap\"; the gap was the old ruling's"
+  },
+  {
+   "file": "client/engine/test/206-deadly-everywhere.test.ts",
+   "find": "// CR 802.3f's channel: a virus/Rotspore grant reaches a live entity source too.",
+   "replace": "// The Rotspore channel (CR 707.7): a virus/Rotspore grant reaches a live entity source too.",
+   "why": "wrong-rule: 802.3f is about spells having Deadly; reaching a live unit source is 707.7 (\"every unit, spell and spell token\")"
+  },
+  {
+   "file": "client/engine/test/206-deadly-everywhere.test.ts",
+   "find": "// CR 802.3f / Caleb 2023-09-07: the scope is the REGION",
+   "replace": "// CR 707.7 / Caleb 2023-09-07: the scope is the REGION",
+   "why": "wrong-rule: the region scope with no ownership qualifier is 707.7 (\"in its region, on both sides\"), not 802.3f"
+  },
+  {
+   "file": "client/engine/test/206-deadly-everywhere.test.ts",
+   "find": "grants the stack handed it — CR 707.7's `effectAttrs` channel, which is how\n  // Rotspore Herald reaches a resolving spell (CR 802.3f).",
+   "replace": "grants the stack handed it — the `effectAttrs` channel, which is how\n  // Rotspore Herald reaches a resolving spell (CR 707.7, 802.3f).",
+   "why": "grammar: a CR rule does not own a code channel"
+  },
+  {
+   "file": "client/engine/test/206-deadly-everywhere.test.ts",
+   "find": "// ── CR 802.18b's other half: the {Poisonous} hit was DEALT, so it triggers ──",
+   "replace": "// ── the other half: the {Poisonous} hit was DEALT, so it triggers (CR 802.18b) ──",
+   "why": "grammar: \"a rule's other half\" was the old ruling's other half"
+  },
+  {
+   "file": "client/engine/test/206-deadly-everywhere.test.ts",
+   "find": "// ── CR 802.3a, 608.8c at the fourth damage site: Oorblak's redirect ────────────────",
+   "replace": "// ── the fourth damage site: Oorblak's redirect (CR 802.3a, 608.8c) ──",
+   "why": "grammar: awkward pointer phrasing"
+  },
+  {
+   "file": "client/engine/test/206-deadly-everywhere.test.ts",
+   "find": "test('CR 802.18b: a poison hit onto ALREADY-MARKED",
+   "replace": "test('CR 802.18c: a poison hit onto ALREADY-MARKED",
+   "why": "wrong-rule: lethality of a poison hit is 802.18c (lethal damage same for Poisonous); 802.18b is about triggers. Title unbound"
+  },
+  {
+   "file": "client/engine/test/207-replaced-hit-was-dealt.test.ts",
+   "find": "filed it \"Reported, not fixed\". See scratchpad/rulings/See CR 608.8a.md.",
+   "replace": "filed it \"Reported, not fixed\".",
+   "why": "grammar/truth: garbled invented path \"scratchpad/rulings/See CR 608.8a.md\""
+  },
+  {
+   "file": "client/engine/test/208-region-scoping-is-absolute.test.ts",
+   "find": "(reported, CR 601.4d report)",
+   "replace": "(reported at the time)",
+   "why": "history: the report was the region-scoping round's, not a CR rule's"
+  },
+  {
+   "file": "client/engine/test/208-region-scoping-is-absolute.test.ts",
+   "find": "— a file CR 601.4d actually repaired —",
+   "replace": "— a file the region-scoping fix actually repaired —",
+   "why": "history: a rule narrated as repairing a file"
+  },
+  {
+   "file": "client/engine/test/208-region-scoping-is-absolute.test.ts",
+   "find": "'CR 601.4d (owner, 2026-08-28): \"Only players",
+   "replace": "'The owner, 2026-08-28 (CR 601.4d): \"Only players",
+   "why": "quote attribution: owner quote credited to CR 601.4d, whose text does not contain it"
+  },
+  {
+   "file": "client/engine/test/208-region-scoping-is-absolute.test.ts",
+   "find": "(CR D6.5\\'s lesson)",
+   "replace": "(the event-channel leak\\'s lesson)",
+   "why": "history: the lesson was the event-channel leak's, not a rule's"
+  },
+  {
+   "file": "client/engine/test/209-interdiction-rift-type-line.test.ts",
+   "find": "`{Battle}AI Cosmic Spell`. The first repair saw only half of that it read the missing space, proposed a whitespace-only\n",
+   "replace": "`{Battle}AI Cosmic Spell`. The first repair saw\n * only half of that: it read the missing space, proposed a whitespace-only\n",
+   "why": "grammar: lost colon after \"half of that\" (and an overlong rewrapped line)"
+  },
+  {
+   "file": "client/engine/test/209-interdiction-rift-type-line.test.ts",
+   "find": "import sees. CR D7.3 — an agent got this",
+   "replace": "import sees. An agent got this",
+   "why": "wrong-rule: D7.3 (an effect that does nothing says so) has nothing to do with the pool count; the old pointer was CT-81(a)'s rig note"
+  },
+  {
+   "file": "client/engine/test/209-interdiction-rift-type-line.test.ts",
+   "find": "/** CR D7.3/CT-81(a): the pool is 495",
+   "replace": "/** CT-81(a): the pool is 495",
+   "why": "wrong-rule: D7.3 does not state the pool size"
+  },
+  {
+   "file": "client/engine/test/209-interdiction-rift-type-line.test.ts",
+   "find": "DID see, generalised This sweeps",
+   "replace": "DID see, generalised. This sweeps",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/21-fixes.test.ts",
+   "find": "//  · 2026-08-24 (CR 106.8): inverted BACK",
+   "replace": "//  · 2026-08-24 (now CR 106.8c): inverted BACK",
+   "why": "history/wrong-rule: a dated reversal labelled as a rule; the exchange-activates rule is 106.8c"
+  },
+  {
+   "file": "client/engine/test/21-fixes.test.ts",
+   "find": "// CR 105.9: plus a Prismite and a Shard",
+   "replace": "// CR 106.6a: plus a Prismite and a Shard",
+   "why": "wrong-rule: 105.9 is the game's elements; recycling for a Prismite or Shard is 106.6a"
+  },
+  {
+   "file": "client/engine/test/21-fixes.test.ts",
+   "find": "after-combat hold was worth The 2026-08-24",
+   "replace": "after-combat hold was worth. The 2026-08-24",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/21-fixes.test.ts",
+   "find": "built for the after-combat hold is what carries it\n",
+   "replace": "built for the after-combat hold is what carries it.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/21-fixes.test.ts",
+   "find": "MOVED (CR 110.1c, 2026-08-24).",
+   "replace": "MOVED (2026-08-24; see CR 110.1c).",
+   "why": "history: a rule given a date as if it were the change"
+  },
+  {
+   "file": "client/engine/test/22-playtest3.test.ts",
+   "find": " * 602.7 (since playtest UFAB, 2026-08-22) playtest UFAB): the four passes are gone.",
+   "replace": " * Retimed 2026-08-22 (playtest UFAB; CR 602.7): the four passes are gone.",
+   "why": "grammar: garbled (\"602.7 (since playtest UFAB, 2026-08-22) playtest UFAB):\", bare number, unbalanced bracket)"
+  },
+  {
+   "file": "client/engine/test/221-preview-note.test.ts",
+   "find": " * CR 601.1c made \"all\" mean \"all in this region\", which is right and which cost the",
+   "replace": " * The ruling that \"all\" means \"all in this region\" (CR 601.1c) is right, and it cost the",
+   "why": "history: rule narrated as actor (\"CR 601.1c made\")"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "⚠ Half 2 OVERRULES [CR 803.8m]'s \"The mods ride with it\" section",
+   "replace": "⚠ Half 2 OVERRULES the Unstable-trash ruling's \"The mods ride with it\" section",
+   "why": "wrong-rule/quote attribution: \"The mods ride with it\" is a section of the owner's 2026-08-24 ruling, not of CR 803.8m (Pull Under)"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "Everything else in CR 803.8m stands,",
+   "replace": "Everything else in that ruling stands,",
+   "why": "wrong-rule: 803.8m is Pull Under, unrelated"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": " * the mod rule (CR 801.2g) that stops the body trashing has reopened it in the engine — though CR 801.2h says the body is not trashed either (CT-246). silently reopened it.\n",
+   "replace": " * the mod rule (CR 801.2g) that stops the body trashing has silently reopened\n * it in the engine — though CR 801.2h says the body is not trashed either (CT-246).\n",
+   "why": "grammar: duplicated/dangling \"silently reopened it\" after the inserted clause"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "// ── // ── The engine's Unstable-body trash first (CT-246; CR 801.2h differs): the boundary this must not cross ── ─────────────────",
+   "replace": "// ── The engine's Unstable-body trash first (CT-246; CR 801.2h differs): the boundary this must not cross ──",
+   "why": "grammar: doubled \"// ──\" and trailing rule residue"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "(CR 405.5 erases it instead of binning; CT-246) step 4');",
+   "replace": "(CR 405.5 erases it instead of binning; CT-246)');",
+   "why": "grammar: leftover sub-item label \"step 4\" from the old ruling"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "// is called, not of whether the card leaves. ⚠ CR 400.4 moved WHICH SEAT's",
+   "replace": "// is called, not of whether the card leaves. ⚠ The zones-follow-control ruling (CR 400.4) moved WHICH SEAT's",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "the earlier owner\\'s-pile reading destination half is superseded'",
+   "replace": "the mod ruling\\'s destination half is superseded'",
+   "why": "grammar: \"the earlier owner's-pile reading destination half\" is garbled"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "Before\n  // the mod-trash rule this said",
+   "replace": "Before\n  // the mod-trash ruling this said",
+   "why": "history: \"before the rule\" — it was a ruling (2026-08-29)"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "// ⚠ zones following control reversed the earlier destination half This block used to read",
+   "replace": "// ⚠ The zones-follow-control ruling reversed the mod ruling's destination half. This block used to read",
+   "why": "grammar: lost period; vague antecedent"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "gets it in their bin.\"* CR 720.8's ATTRIBUTION half",
+   "replace": "gets it in their bin.\"* The mod ruling's ATTRIBUTION half (CR 720.8)",
+   "why": "history: a rule does not have halves that stand or fall; the ruling did"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "that is CR 405.6 one seat over).",
+   "replace": "that is the wrong-copy bug (CR 405.6) one seat over).",
+   "why": "history: a rule narrated as the bug"
+  },
+  {
+   "file": "client/engine/test/224-mod-trash.test.ts",
+   "find": "// and CR 405.6 is reopened by the fix",
+   "replace": "// and the wrong-copy bug (CR 405.6) is reopened by the fix",
+   "why": "history: a rule cannot be \"reopened\"; the bug can"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "NOT THE REPORT'S. an earlier reading\n",
+   "replace": "NOT THE REPORT'S. The 2026-08-29 ruling\n",
+   "why": "grammar: lowercase sentence start; vague \"an earlier reading\" for the dated ruling"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "not: the combat damage step (CR 608.3a) and deployment (CR 703.7)*. The deployment half\n * stands. **[The owner's 2026-08-30 ruling (now CR 608.9b) supersedes the combat half the owner's sentence was right as written, and it is the engine that\n",
+   "replace": "not: the combat damage step […] and deployment […]* (now CR 608.3a and 703.7).\n * The deployment half stands. **The owner's 2026-08-30 ruling (now CR 608.9b)\n * supersedes the combat half:** the owner's sentence was right as written, and it is the engine that\n",
+   "why": "quote: the italic is a verbatim quotation of the old ruling; R-numbers were swapped for CR numbers inside it (cuts now marked […]); grammar: unclosed \"[\" and lost \":**\""
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "and, since CR 608.9b, gets the SAME answer",
+   "replace": "and, since the 2026-08-30 ruling (CR 608.9b), gets the SAME answer",
+   "why": "history: \"since CR 608.9b\" dates a rule"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "§4. **This REVERSES [superseding the earlier owner's-bin reading] §1's \"⚠ THE DESTINATION DOES NOT MOVE\" outright,",
+   "replace": "§4. **This REVERSES the mod ruling's \"⚠ THE DESTINATION DOES NOT MOVE\" outright,",
+   "why": "grammar: garbled bracket \"[superseding the earlier owner's-bin reading] §1's\""
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "only its destination half is superseded. the earlier reading was written knowing the question was open it recorded that the engine \"could",
+   "replace": "only its destination half is superseded. That ruling was written knowing the question was open: it recorded that the engine \"could",
+   "why": "grammar: lowercase start, lost colon"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "tests the bin: The earlier split ruled that **no CR 405.6 bin ref",
+   "replace": "tests the bin: the mod ruling held that **no CR 405.6 bin ref",
+   "why": "grammar: capital after colon; \"the earlier split ruled\""
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "is CR 405.6's bug (Cthyrian Rector",
+   "replace": "is the wrong-copy bug (Cthyrian Rector",
+   "why": "history: a rule narrated as a bug"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "DOES NOT DECIDE The ruling as given",
+   "replace": "DOES NOT DECIDE. The ruling as given",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "FIXTURE. CR 601.1c:\n * *\"every card",
+   "replace": "FIXTURE. The owner\n * (2026-08-29; CR 601.1c): *\"every card",
+   "why": "quote attribution: owner quote credited to CR 601.1c, whose text does not contain it"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "NOT A LIMITATION. CR 601.1c (owner, 2026-08-29): *\"every",
+   "replace": "NOT A LIMITATION. The owner, 2026-08-29 (CR 601.1c): *\"every",
+   "why": "quote attribution: owner quote credited to CR 601.1c"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "'but it NEVER reached the stack — a special action between damage sub-steps');",
+   "replace": "'but it NEVER reached the stack — […], a special action between damage sub-steps');",
+   "why": "quote: verbatim quotation of the old test; the migration silently cut the R-number — cut marked"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "one step too far So the",
+   "replace": "one step too far. So the",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "the earlier reading was re-read\n",
+   "replace": "the earlier reading was re-read,\n",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "// CR 608.9's log shape, and the reason",
+   "replace": "// The after-combat hold's log shape (CR 608.9), and the reason",
+   "why": "grammar: a rule does not have a log shape"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "what CR 608.9 moved is the build",
+   "replace": "what the after-combat hold (CR 608.9) moved is the build",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "// ⚠ THIS REVERSES [superseding the earlier owner's-bin reading] §1's *\"⚠ THE DESTINATION",
+   "replace": "// ⚠ THIS REVERSES the mod ruling's *\"⚠ THE DESTINATION",
+   "why": "grammar: garbled bracket"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "no split.** CR 720.8's ATTRIBUTION",
+   "replace": "no split.** The mod ruling's ATTRIBUTION (CR 720.8)",
+   "why": "history: the ruling's half, not the rule's"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "// The earlier reading itself flagged this seam it recorded",
+   "replace": "// The mod ruling itself flagged this seam: it recorded",
+   "why": "grammar: lost colon; vague antecedent"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "trashed (CR 803.8m, 801.2f) and",
+   "replace": "trashed (CR 801.2f) and",
+   "why": "wrong-rule: 803.8m is Pull Under; a mod left behind on a recall is trashed under 801.2f"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "'and every one carries an CR 405.6 bin ref",
+   "replace": "'and every one carries a CR 405.6 bin ref",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "// CR 711.1 walks u.mods",
+   "replace": "// walks u.mods (CR 711.2)",
+   "why": "wrong-rule: mods changing controller with the unit is 711.2"
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "// The earlier split ruled drops the CR 405.6 bin ref",
+   "replace": "// The mod ruling dropped the CR 405.6 bin ref",
+   "why": "grammar: \"ruled drops\""
+  },
+  {
+   "file": "client/engine/test/229-cosmic-and-control.test.ts",
+   "find": "// // The worry the mod rule (CR 801.2g) opened with",
+   "replace": "// The worry the mod ruling (CR 801.2g) opened with",
+   "why": "grammar: doubled \"//\"; a ruling, not a rule, had the worry"
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": "— and CR 802.9 (2026-08-23) shipped stat layer 6:",
+   "replace": "— and the 2026-08-23 {Unaware} change (CR 802.9) shipped stat layer 6:",
+   "why": "history: rule narrated as the change that shipped code"
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": "// CR 603.3 (Bena 2026-09-25, report YUZY): \"The columns",
+   "replace": "// Bena 2026-09-25, report YUZY (CR 603.3): \"The columns",
+   "why": "quote attribution: the owner's words credited to CR 603.3, whose text does not contain them"
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": "and this made one 1/1\n",
+   "replace": "and this made one 1/1.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": "(CR 601.5 — was an was a home-region override now the general rule)'",
+   "replace": "(CR 601.5 — once an override of the withdrawn home-region rule, now the general rule)'",
+   "why": "grammar: \"was an was a home-region override now\""
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": "// CR 601.2: round 1 is fought in the DEFENDER's region",
+   "replace": "// CR 505.3: round 1 is fought in the DEFENDER's region",
+   "why": "wrong-rule (systemic R12→601.2): round 1 attacking into the non-initiative player's region is 505.3"
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": "'CR 704.6b: the second copy fizzled — all its targets are gone'",
+   "replace": "'CR 704.6: the second copy fizzled — all its targets are gone'",
+   "why": "wrong-rule (systemic 704.6b): 704.6b is partial loss; losing ALL targets is 704.6"
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": "— and CR 704.6b means it does not put one",
+   "replace": "— and CR 704.6 means it does not put one",
+   "why": "wrong-rule (systemic 704.6b): a full fizzle is 704.6"
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": "// CR 700.1, playtest DEYK: \"I'm not able",
+   "replace": "// Playtest DEYK (CR 700.1): \"I'm not able",
+   "why": "quote attribution: a player's report quoted as if CR 700.1 said it"
+  },
+  {
+   "file": "client/engine/test/23-wood-a.test.ts",
+   "find": " * CR 110.10a gave Graxxlid is in",
+   "replace": " * the Virus-targets-its-host ruling (CR 110.10a) gave Graxxlid is in",
+   "why": "history: rule narrated as giving code an arm"
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "would do. The no-second-opinion fix\n * fixed two",
+   "replace": "would do. The no-second-opinion round (CR D1.3)\n * fixed two",
+   "why": "grammar: \"fix fixed\""
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "declined (ui/main.ts) —",
+   "replace": "declined (the no-second-opinion round, ui/main.ts) —",
+   "why": "quote/grammar: the migration cut the clause and half of the quotation \"new since the last window I passed\" — restored verbatim [reconciled: postfix-000 restored the quotation first; this keeps its R245 description on top of it]"
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "it keeps every clause derived from the engine derived\n",
+   "replace": "it keeps every clause the no-second-opinion round derived\n",
+   "why": "grammar: \"derived from the engine derived\""
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "(CR D2.4(b), `hasteAutoOut`)",
+   "replace": "(CR D2.5, `hasteAutoOut`)",
+   "why": "grammar/wrong-rule: leftover sub-item \"(b)\"; the haste-step auto-ready is D2.5"
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "The no-second-opinion fix made the clause ask by id\n",
+   "replace": "The no-second-opinion round made the clause ask by id.\n",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "// the pre-the older arm (no snapshot",
+   "replace": "// the older arm (no snapshot",
+   "why": "grammar: \"the pre-the older arm\""
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "WAS TRUE UNTIL CR D5.5, AND IS NOT ANY MORE",
+   "replace": "WAS TRUE UNTIL CT-123, AND IS NOT ANY MORE",
+   "why": "history: a rule used as a date; the change was CT-123 (and D5.5 itself says no skip control is drawn)"
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "re-take behaviour this change removes `ui/main.ts` used to",
+   "replace": "re-take behaviour this change removes: `ui/main.ts` used to",
+   "why": "grammar: lost colon"
+  },
+  {
+   "file": "client/engine/test/230-pass-modes.test.ts",
+   "find": "it is not: CR D2.6b made the point",
+   "replace": "it is not: the battle-end announcement round (CR D2.6b) made the point",
+   "why": "history: rule narrated as making a point"
+  },
+  {
+   "file": "client/engine/test/237-live-while-held.test.ts",
+   "find": "WHAT STAYS LIVE WHILE CR D5.5a's THROTTLE IS HOLDING.",
+   "replace": "WHAT STAYS LIVE WHILE THE THROTTLE (CR D5.4b) IS HOLDING.",
+   "why": "wrong-rule: the throttle is D5.4b; D5.5a is what stays live"
+  },
+  {
+   "file": "client/engine/test/237-live-while-held.test.ts",
+   "find": "// The real arrival pattern was measured as \"a few hundred ms apart\"",
+   "replace": "// The pacing round recorded the real arrival pattern as \"a few hundred ms apart\"",
+   "why": "truth: \"was measured\" is a new claim; the old ruling documented it"
+  },
+  {
+   "file": "client/engine/test/238-question-sheets.test.ts",
+   "find": "the pattern CR D6.9 used for printed Xs",
+   "replace": "the pattern the printed-X forecast round used",
+   "why": "history: a rule narrated as using a method"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "That was CR 608.3e's \"no\n * priority window between damage sub-steps\" read one step too far — CR 608.3e is\n",
+   "replace": "That was the sub-step ruling's \"no\n * priority window between damage sub-steps\" read one step too far — that ruling (now CR 608.3e) is\n",
+   "why": "quote attribution: the quoted words are the old sub-step ruling's, not CR 608.3e's text"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "carries an CR 608.9b hold",
+   "replace": "carries a CR 608.9b hold",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "choke point — an\n * CR 608.6a election answer and an CR 111.10g pay answer",
+   "replace": "choke point — a\n * CR 608.6a election answer and a CR 111.10g pay answer",
+   "why": "grammar: \"an CR\" twice"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "and dropped that clause so\n",
+   "replace": "and dropped that clause, so\n",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "'stackFlash' is CR D6.7's signal for",
+   "replace": "'stackFlash' is the simultaneity signal (CR D6.7) for",
+   "why": "grammar: a rule does not own an event signal"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "its own first clause A subject printing",
+   "replace": "its own first clause. A subject printing",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "CostMod-style radiation is region-scoped (CR 601.2),",
+   "replace": "CostMod-style radiation is region-scoped (CR 601.1d),",
+   "why": "wrong-rule (systemic R12→601.2): a trigger hearing only its own region is 601.1d"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "only widened which triggers get here IT at the BOTTOM",
+   "replace": "only widened which triggers get here. IT at the BOTTOM",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "column 1 raises an CR 608.6a elective",
+   "replace": "column 1 raises a CR 608.6a elective",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "suspended by an CR 608.6a election resumes",
+   "replace": "suspended by a CR 608.6a election resumes",
+   "why": "grammar: \"an CR\" in a test title (title unbound)"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "MOVED THE FIRST HALF OF THIS TEST and the move is the point.",
+   "replace": "MOVED THE FIRST HALF OF THIS TEST, and the move is the point.",
+   "why": "grammar: lost comma"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "That was the old unconditional hold The exchange",
+   "replace": "That was the old unconditional hold. The exchange",
+   "why": "grammar: lost period"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "asserted below: an\n   * CR 608.6a suspension",
+   "replace": "asserted below: a\n   * CR 608.6a suspension",
+   "why": "grammar: \"an CR\""
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "/* ══ §4 — CR 608.9d, WIDENED ══",
+   "replace": "/* ══ §4 — THE TRIGGER TAX (CR 111.10g), WIDENED ══",
+   "why": "wrong-rule: what was widened is the pay-to-trigger tax (111.10g); 608.9d is the widening itself"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": " * Under CR 608.9d these triggers arrive",
+   "replace": " * Under the after-combat hold (CR 608.9b) these triggers arrive",
+   "why": "wrong-rule: arriving with damageStep null is the after-combat move (608.9b); 608.9d is the taxing"
+  },
+  {
+   "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+   "find": "before the after-combat move (CR 608.9d)",
+   "replace": "before the after-combat move (CR 608.9b)",
+   "why": "wrong-rule: the after-combat move is 608.9b"
+  },
+  {
+   "file": "client/engine/test/24-wood-b.test.ts",
+   "find": "'units in other regions are untouched (CR 601.2)'",
+   "replace": "'units in other regions are untouched (CR 601.1b)'",
+   "why": "wrong-rule (systemic R12→601.2): an effect never affecting another region is 601.1b"
+  },
+  {
+   "file": "client/engine/test/24-wood-b.test.ts",
+   "find": "PASS-ALONG floor (CR 802.3b, 608.6f)",
+   "replace": "PASS-ALONG floor (CR 802.3c, 608.6f)",
+   "why": "wrong-rule: Deadly lethal = 1 then pass along is 802.3c; 802.3b is \"Deadly does not reduce damage\""
+  },
+  {
+   "file": "client/engine/test/24-wood-b.test.ts",
+   "find": "// unlike CR 708.11's replacements (\"replacing the damage does NOT unmake it\").",
+   "replace": "// unlike the rot ruling's replacements (\"replacing the damage does NOT unmake it\"; CR 708.11).",
+   "why": "quote attribution: the quoted words are the old rot ruling's, not CR 708.11's text"
+  },
+  {
+   "file": "client/engine/test/241-played-from-zone.test.ts",
+   "find": "ride both. CR 701.4's push\n",
+   "replace": "ride both. The push\n",
+   "why": "grammar: a rule does not own a code path"
+  },
+  {
+   "file": "client/engine/test/241-played-from-zone.test.ts",
+   "find": " * standing (CR 601.2), so a rig",
+   "replace": " * standing (CR 601.1d), so a rig",
+   "why": "wrong-rule (systemic R12→601.2): a trigger hears only its own region — 601.1d"
+  },
+  {
+   "file": "client/engine/test/246-zones-follow-control.test.ts",
+   "find": " * Round-32 Q2. CR 405.3 answered the BIN — *\"The controller",
+   "replace": " * Round-32 Q2. The owner's 2026-08-29 ruling (CR 405.3) answered the BIN — *\"The controller",
+   "why": "quote attribution/history: the owner's words credited to CR 405.3 \"answering\""
+  },
+  {
+   "file": "client/engine/test/246-zones-follow-control.test.ts",
+   "find": "this is the line CR 801.7a changed, overruling the Manual\\'s sentence changed, and the Manual '",
+   "replace": "this is the line the zones ruling changed, and the Manual '",
+   "why": "grammar: garbled doubled clause; history: rule narrated as the change"
+  },
+  {
+   "file": "client/engine/test/246-zones-follow-control.test.ts",
+   "find": "\". CR 400.4, 400.4b changed the DEFAULT",
+   "replace": "\". The zones ruling (CR 400.4) changed the DEFAULT",
+   "why": "history: rule narrated as the change; 400.4b is the override that must survive, not the change"
+  },
+  {
+   "file": "client/engine/test/246-zones-follow-control.test.ts",
+   "find": "report the OWNER. CR 400.4a moved zones, not ownership.'",
+   "replace": "report the OWNER. The zones ruling moved zones, not ownership (CR 400.4a).'",
+   "why": "history: rule narrated as actor"
+  },
+  {
+   "file": "client/engine/test/246-zones-follow-control.test.ts",
+   "find": "// CR 400.4's public erased pile is a per-seat zone like the other three, and it\n  // was the one zones following control already moved the mod bin this way\n",
+   "replace": "// The public erased pile (CR 407.1) is a per-seat zone like the other three, and it\n  // was the one left behind when the mod BIN was moved this way.\n",
+   "why": "truth/grammar: garbled; the original said this pile was the one left behind when the mod bin moved, the migration inverted it"
+  },
+  {
+   "file": "client/engine/test/248-augment-box-scope.test.ts",
+   "find": "in the CR 710.7 write-up)",
+   "replace": "in the Ancient One write-up, now CR 710.7)",
+   "why": "grammar: a CR rule has no write-up; it was the Ancient One ruling's"
+  },
+  {
+   "file": "client/engine/test/248-augment-box-scope.test.ts",
+   "find": "first place. CR 721.1 moves\n",
+   "replace": "first place. The augment-box change moves\n",
+   "why": "history: rule narrated as moving code"
+  },
+  {
+   "file": "client/engine/test/249-suppression-scope.test.ts",
+   "find": "after CR 721.1 adds the augment-box channel",
+   "replace": "after the augment-box change (CR 721.1) adds that channel",
+   "why": "history: rule narrated as adding code"
+  }
+ ]
+}

@@ -335,7 +335,7 @@
   "client/engine/src/cards/sets/helpers.ts##R177#ef2cbce250#0": {
    "action": "reword",
    "find": " (R177), and",
-   "replace": " (see 150-registration-order), and"
+   "replace": " (see 180-pool-sight), and"
   },
   "client/engine/src/engine.ts##R137#da69b18ab7#0": {
    "action": "reword",

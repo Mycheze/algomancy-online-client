@@ -1,0 +1,568 @@
+{
+ "edits": [
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "existed passed `checkDeck`\n",
+   "replace": "existed passed `checkDeck`.\n",
+   "why": "[grammar] closing period lost"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "could not reach Playtest #98:",
+   "replace": "could not reach. Playtest #98:",
+   "why": "[grammar] period lost between sentences"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "before CR D2.1. You must answer it (or concede — CR D2.1).",
+   "replace": "before the seat-aware gate. You must answer it (or concede — CR 104.4a).",
+   "why": "[history] \"before CR D2.1\" narrates a rule as an event; same number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "carries an CR D6.3\n",
+   "replace": "carries a\n",
+   "why": "[wrong-rule] \"an CR\"; D6.3 (show the resolving item) says nothing about the rollback snapshot"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "between CR D2.1d's permissive gate",
+   "replace": "between CR D2.1b's permissive gate",
+   "why": "[wrong-rule] the permissive gate is D2.1b; D2.1d is the guard that refuses"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "TWO CALLERS as of CR 106.8:",
+   "replace": "TWO CALLERS (CR 106.8c):",
+   "why": "[history] \"as of CR 106.8\" narrates a rule as a date; 106.8 is the Prismite definition, 106.8c is the exchange activation"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "(This comment used to read \"ONE CALLER, by the old exchange ruling: an exchange is not an\n * activation\", which",
+   "replace": "(This comment used to say there was ONE CALLER, on the old ruling that an exchange is not an\n * activation, which",
+   "why": "[quote] text inside quotation marks was altered (R116 replaced); reworded so it no longer pretends to quote"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "because an CR 803.2b haste GRANT",
+   "replace": "because a CR 803.2b haste GRANT",
+   "why": "[grammar] \"an CR\""
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "printed cost line and the engine keeps it outside the play-tax layer alike — CR 111.10e taxes it as a card played (engine differs, CT-243) */",
+   "replace": "printed cost line, and the engine keeps it outside the play-tax layer too, though CR 111.10e\n   * taxes it as a card played (engine differs, CT-243). */",
+   "why": "[grammar] \"alike\" left dangling, no closing period, overlong line"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "(the old global decision hold) gate), and",
+   "replace": "(the decision gate), and",
+   "why": "[grammar] unbalanced \"hold) gate)\""
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "*  - CR 402.6's \"I can't be played from your hand\" (Calming Force) is read",
+   "replace": "*  - \"I can't be played from your hand\" (Calming Force, CR 402.6) is read",
+   "why": "[grammar] the card's words were attributed to the rule as its own (\"CR 402.6's \\\"...\\\"\")"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "explicit override; flagged as open, since settled by CR 702.2a rather than assumed.",
+   "replace": "explicit override; CR 702.2a gives none (a permission never waives timing).",
+   "why": "[grammar] garbled splice \"flagged as open, since settled by\""
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "today. CR 110.3a, 110.9's\n  // whole shape",
+   "replace": "today. The restriction seam's\n  // (CR 110.3) whole shape",
+   "why": "[wrong-rule] possessive on a list of numbers; 110.9 (retargeting) is not the seam"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "Discarding is not playing (CR 111.12a): the card",
+   "replace": "Discarding is not playing: the card",
+   "why": "[grammar] same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "the `item.augments` CR 723.4 already built for the battle-time version.",
+   "replace": "the `item.augments` already built for the battle-time version (CR 723.4).",
+   "why": "[history] rule narrated as the builder of code"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "the same bill CR 801.9g sets",
+   "replace": "the same bill CR 801.9e sets",
+   "why": "[wrong-rule] 801.9g is the glimpse MOD permission; the play bill is 801.9e"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "* CR 504.8a's HASTE-timing sibling: may",
+   "replace": "* The Rook rule's HASTE-timing sibling: may",
+   "why": "[wrong-rule] 504.8a IS the sibling (Slurpr), not the thing it is a sibling of"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "* during the CR 504.8a haste step — \"[Augment] You can apply other mods during\n * [Haste] as if it was deployment\" (Slurpr)?",
+   "replace": "* during the haste step — \"[Augment] You can apply other mods during\n * [Haste] as if it was deployment\" (Slurpr, CR 504.8a)?",
+   "why": "[grammar] pointer placed on the card it states"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "in mod form The step is now",
+   "replace": "in mod form. The step is now",
+   "why": "[grammar] period lost"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "// CR 601.2: the grantor has to be in the region",
+   "replace": "// CR 101.6: the grantor has to be in the region",
+   "why": "[wrong-rule] 601.2 is one-region-per-unit; region-scoped effects are 101.6"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "which is why a pre-a log from before that change replays byte for byte\n",
+   "replace": "which is why a log from before the cache gained this route replays byte for\n * byte.\n",
+   "why": "[grammar] garbled \"pre-a log\", lost period"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "// CR 723.5a CLOSED the ⚠ OPEN flag that stood here.",
+   "replace": "// A later ruling CLOSED the ⚠ OPEN flag that stood here (CR 723.5a).",
+   "why": "[history] a rule narrated as the event that closed the flag"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "// the deployment counterpart of 723.4's missing half. Caleb,",
+   "replace": "// CR 721.4a — the deployment half the stack-Virus ruling left out. Caleb,",
+   "why": "[grammar] garbled (\"counterpart of ... missing half\")"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "so the stack-host rule (723.4) first listed the whole half as \"⚠ Not in scope\" It is in scope now",
+   "replace": "so the stack-Virus ruling first listed the whole half as\n  // \"⚠ Not in scope\". It is in scope now",
+   "why": "[grammar] lost period after the quote; a rule narrated as history"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "any more: CR 504.8a's haste sibling asks the granting card",
+   "replace": "any more: the Slurpr grant (CR 504.8a) asks the granting card",
+   "why": "[wrong-rule] \"504.8a's haste sibling\" is circular (504.8a is the sibling)"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "deployment\" — R37's \"mod\" is an augment OR a graft, so",
+   "replace": "deployment\" — a \"mod\" is an augment OR a graft (CR 701.2), so",
+   "why": "[wrong-rule] leftover R37 citation (hidden from the 184 scan by the quote pairing on its line)"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "'cannot pay for that');  // CR 722.3d, 701.2b",
+   "replace": "'cannot pay for that');  // CR 701.2b",
+   "why": "[wrong-rule] 722.3d (graft insertion position) has nothing to do with the mod being affordable"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "* The judgement, widened to EVERY",
+   "replace": "* The Alluring judgement, widened to EVERY",
+   "why": "[grammar] \"The judgement\" lost its referent when R84 was dropped"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "the line may have moved (CR 704.6b, 704.5).",
+   "replace": "the line may have moved (CR 602.7a).",
+   "why": "[wrong-rule] 704.6b (partial target loss) does not govern a moved formation spot; 602.7a does"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "// CR D6.3: the rollback to the part boundary",
+   "replace": "// The rollback to the part boundary",
+   "why": "[wrong-rule] D6.3 (show the resolving item) describes no rollback"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "// The shadow-clone-with-decision-nulled produce the same list.",
+   "replace": "// the server's shadow-clone-with-decision-nulled produce the same list.",
+   "why": "[grammar] sentence continues from the line above; capital \"The\" mid-sentence and lost subject"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "so an CR 702.2d grant\n  // (Dispatch Courier) or an CR 504.7 erase",
+   "replace": "so a haste grant\n  // (Dispatch Courier) or a CR 504.7 erase",
+   "why": "[grammar] \"an CR\"; CR 702.2d twice in one sentence"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "Before the change the hand had a walk per window",
+   "replace": "Before the cache gained every hand mode, the hand had a walk per window",
+   "why": "[grammar] \"the change\" has no antecedent"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "by an CR 702.2d grant\n *    or an CR 504.7 erase, asked",
+   "replace": "by a CR 702.2d grant\n *    or a CR 504.7 erase, asked",
+   "why": "[grammar] \"an CR\""
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "exists: an CR 504.7a allowance",
+   "replace": "exists: a CR 504.7a allowance",
+   "why": "[grammar] \"an CR\""
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "// CR 405.9's grant reaches SPELLS; CR 405.9's names ONE card and runs until\n    // regroup (Spell Excavation); CR 405.9's `playsFromBin`",
+   "replace": "// The blanket grant reaches SPELLS (CR 405.9); the single-card grant names\n    // ONE card and runs until regroup (Spell Excavation); `playsFromBin`",
+   "why": "[grammar] one number three times standing in for three different grants"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "// CR 403.3d, 801.9f: printed timing applies, so the battle window",
+   "replace": "// CR 702.2a: printed timing applies, so the battle window",
+   "why": "[wrong-rule] 403.3d/801.9f are cache/glimpse rules; a BIN play keeps its timing by 702.2a"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "the haste step asks CR 504.8a's haste sibling",
+   "replace": "the haste step asks the Slurpr grant (CR 504.8a)",
+   "why": "[wrong-rule] \"504.8a's haste sibling\" is circular"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "invisible — the stack-host rule (723.4) shipped the",
+   "replace": "invisible — the stack-Virus ruling shipped the",
+   "why": "[history] a rule narrated as having shipped code"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "* during the CR 504.8a haste step. Shaped on",
+   "replace": "* during the haste step. Shaped on",
+   "why": "[grammar] same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "// CR 710.1 layer 0: the activated text",
+   "replace": "// CR 710.1: the activated text",
+   "why": "[grammar] \"layer 0\" is the retired ruling's term; 710.1 has no layer 0"
+  },
+  {
+   "file": "client/engine/src/apply.ts",
+   "find": "(CR 109.9k gives each mod its own use; the engine keys the budget by card name — no ticket yet) exactly as two real ones do — and never",
+   "replace": "(CR 109.9k gives each mod its own use; the engine keys the budget by card name — no ticket yet) — and never",
+   "why": "[grammar] \"exactly as two real ones do\" doubled"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "FIZZLES for want of a target (CR 704.6b) is",
+   "replace": "FIZZLES for want of a target (CR 704.6) is",
+   "why": "[wrong-rule] fizzling is 704.6; 704.6b is the partial-loss case"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "be left ON THE ITEM (CR D6.3: a part can suspend",
+   "replace": "be left ON THE ITEM (a part can suspend",
+   "why": "[wrong-rule] D6.3 (show the resolving item) says nothing of suspend-and-replay"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "\"an ally with greater defense than power\" is CR 109.3a's own\n   * worked example",
+   "replace": "\"an ally with greater defense than power\" is the very\n   * condition CR 109.3a judges at event time",
+   "why": "[wrong-rule] false: 109.3a's example is Earthbound Replicator, not this condition (it was R1's example)"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "SUPERSEDED — read CR 109.9a first. — read that first.",
+   "replace": "SUPERSEDED BY CR 109.9b — read that first.",
+   "why": "[wrong-rule] doubled \"read ... first\"; the narrowing (\"declined, or no offer was possible\") is 109.9b"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "information, so both are legal targets, and it is not region-scoped.",
+   "replace": "information, so either is a legal target while its owner is present in the\n   * effect's region.",
+   "why": "[wrong-rule] CR 403.6 (cited here) says a cache is targetable only from a region its player is in; \"not region-scoped\" contradicted the cite (and the engine, engine.ts cachedCard)"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "because CR 110.3 gave every slot its\n * own kind:",
+   "replace": "because every slot has its own kind\n * (CR 110.3):",
+   "why": "[history] a rule narrated as the change that gave slots kinds"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "target (CR D7.3a, 2026-08-28): **\"Fizzle",
+   "replace": "target (2026-08-28): **\"Fizzle",
+   "why": "[history] owner's dated answer labelled with a CR number; D7.3a already heads the block"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* CR 107.3a's actual ruling, which outlives the function:",
+   "replace": "* The actual rule (CR 107.3a), which outlives the function:",
+   "why": "[history] a CR rule called a \"ruling\""
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "is the bug CR 405.6 removes. */",
+   "replace": "is the bug CR 405.6 rules out. */",
+   "why": "[history] a rule narrated as removing a bug"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "`E.noteTrashed` (CR 405.6) and `E.destroy`\n * (CR 405.6) put on their events:",
+   "replace": "`E.noteTrashed` and `E.destroy`\n * put on their events (CR 405.6):",
+   "why": "[grammar] same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "{Unstable} sweep — the engine's; CR 801.2h never bins that card, CT-246) and an older",
+   "replace": "{Unstable} sweep, which the engine runs though CR 801.2h never bins that card — CT-246)\n * and an older",
+   "why": "[grammar] \"the engine's;\" fragment is unreadable"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "resolution. CR 705.3b — *\"paying X replaces the",
+   "replace": "resolution. The X ruling (CR 705.3b) — *\"paying X replaces the",
+   "why": "[quote] the designer quotation was attributed to the rule"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "CR 110.2, 110.2c rules that the Wraith's",
+   "replace": "CR 110.2c rules that the Wraith's",
+   "why": "[grammar] list with singular verb; 110.2c is the Wraith rule"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* CR 706.12a grants **1 and 2**",
+   "replace": "* CR 706.12 grants **1 and 2**",
+   "why": "[wrong-rule] 706.12a WITHHOLDS 3 and 4 (no targeted event, no redirect); 706.12 grants 1 and 2"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "the CR 601.2 region scope, and",
+   "replace": "the CR 101.6 region scope, and",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "the SAME REGION as the holder (CR 601.2)",
+   "replace": "the SAME REGION as the holder (CR 101.6)",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* (CR 601.2). `delta` returns",
+   "replace": "* (CR 101.6). `delta` returns",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "/** the region the item is resolving in (CR 601.2) */",
+   "replace": "/** the region the item is resolving in (CR 101.6) */",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "scoped to the holder's region (CR 601.2) — and",
+   "replace": "scoped to the holder's region (CR 101.6) — and",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "/** the region the application happens in (CR 601.2) */",
+   "replace": "/** the region the application happens in (CR 101.6) */",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "reading from its HOST, same CR 601.2 region",
+   "replace": "reading from its HOST, same CR 101.6 region",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "/** the region the play happens in (CR 601.2) */",
+   "replace": "/** the region the play happens in (CR 101.6) */",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "from its HOST), CR 601.2 region scope",
+   "replace": "from its HOST), CR 101.6 region scope",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "`anchored()`, CR 601.2 region",
+   "replace": "`anchored()`, CR 101.6 region",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "the region it happens in (CR 601.2) — a mod",
+   "replace": "the region it happens in (CR 101.6) — a mod",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* CR 601.2 region scope, the same shallow CR 712.1a suppression",
+   "replace": "* CR 101.6 region scope, the same shallow CR 712.1a suppression",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "the same `anchored()` walk, the same CR 601.2\n",
+   "replace": "the same `anchored()` walk, the same CR 101.6\n",
+   "why": "[wrong-rule] R12 region scope is 101.6 (effects are specific to their region); 601.2 is one-region-per-unit"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "/** 'play'/'mod' is CR 701.2b's original split (applying a mod is not\n   * playing). CR 111.10f widens the union with the ability-cost purposes:",
+   "replace": "/** 'play'/'mod' is the original split (CR 701.2b: applying a mod is not\n   * playing). The ability-cost tax (CR 111.10f) widens the union with these purposes:",
+   "why": "[history] rules narrated as the original split and the widening"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "of the channel CR 721.4b built the read side of",
+   "replace": "of the channel the stack-Virus ruling (CR 721.4b) built the read side of",
+   "why": "[history] a rule narrated as having built code"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "*  · CR 702.7a (2026-09-28), asked \"Should casting a spell token count as playing a\n *    spell?\": *\"Yes, taxed + counted.\"* Casting The old carve-out — \"a spell token is cast from play, not played\" — is dead a token pays every \"spells cost more to play\" tax and",
+   "replace": "*  · 2026-09-28 (CR 702.7a), asked \"Should casting a spell token count as playing a\n *    spell?\": *\"Yes, taxed + counted.\"* Casting a spell token IS playing a\n *    spell. The old carve-out — \"a spell token is cast from play, not\n *    played\" — is dead: a token pays every \"spells cost more to play\" tax and",
+   "why": "[grammar] sentence \"Casting a spell token IS playing a spell.\" lost, colon lost, a rule made the subject of \"asked\"; quotation re-wrapped as it was"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "a token is still not a CARD (CR 304.2's first half), so a",
+   "replace": "a token is still not a CARD (CR 304.2), so a",
+   "why": "[grammar] \"first half\" residue: 304.2 is one sentence"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "The MOD-timing twin of CR 504.7a's `playAtHaste`, and deliberately CR 504.8a's shape\n   * rather than CR 504.7a's: an OR-FOLD",
+   "replace": "The MOD-timing twin of Dispatch Courier's `playAtHaste` (CR 504.7a), and deliberately\n   * Rook's shape rather than Courier's: an OR-FOLD",
+   "why": "[wrong-rule] \"504.8a's shape\" is Slurpr's own rule, not the Rook ModPermission shape it copies"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* Radiation is CR 723.5c's, unchanged:",
+   "replace": "* Radiation is `ModPermission`'s, unchanged:",
+   "why": "[wrong-rule] R95 meant the ModPermission seam, not a rule"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "What is NOT the is the FOLD",
+   "replace": "What is NOT `ModPermission`'s is the FOLD",
+   "why": "[grammar] garbled \"NOT the is the\""
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* HASTE step (CR 504.7a) despite its printed timing?",
+   "replace": "* HASTE step despite its printed timing?",
+   "why": "[grammar] same CR number twice in one phrase"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "CR 207.4a, 803.2b's two general refusals",
+   "replace": "The grant's two general refusals (CR 207.4a, 803.2b)",
+   "why": "[grammar] possessive on a list of numbers"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* CR 112.1a adds the two LIFE quantities.",
+   "replace": "* The two LIFE quantities came later (CR 112.1a).",
+   "why": "[history] a rule narrated as adding code"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "THE COMPOSITION RULE IS THE OWNER'S (first stated for two Arbiters, \"quadruple it!\", later made exponential):):",
+   "replace": "THE COMPOSITION RULE IS THE OWNER'S FORMULA, VERBATIM (as first stated for two Arbiters;\n *   CR 708.6 since makes it exponential):",
+   "why": "[quote] \"):):\" doubled; \"quadruple it!\" misquotes the owner's \"quadruple it!!\""
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "ANSWERED. CR 708.6a records the interim decision — apply the multiplier AFTER",
+   "replace": "ANSWERED. The interim decision, now CR 708.6a, is to apply the multiplier AFTER",
+   "why": "[history] \"CR 708.6a records\" — a rule narrated as a record of a decision"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "quoted at `E.fireEvent` and in the CR 710.7 write-up,",
+   "replace": "quoted at `E.fireEvent` and in the retired Ancient One ruling,",
+   "why": "[history] a CR rule has no \"write-up\"; the write-up was the retired ruling"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "Writhing Host). Not the family:",
+   "replace": "Writhing Host). Not the `playPermissions` family:",
+   "why": "[grammar] \"the family\" lost its referent"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* from CR 803.8d, which is a battle-scoped GRANT",
+   "replace": "* from the blanket bin grant, which is a battle-scoped GRANT",
+   "why": "[wrong-rule] 803.8d is the Unstable-until-regroup duration, not the bin-play grant"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "still applies — the CR 403.3d cache reading CR 702.2a also\n   * follows — so",
+   "replace": "still applies, by CR 702.2a, exactly as it does from the\n   * cache (CR 403.3d) — so",
+   "why": "[grammar] garbled: rules made subjects of \"reading ... also follows\""
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "The CR 405.9a stamp is the GRANTING",
+   "replace": "The grant's stamp (CR 405.9a) is the GRANTING",
+   "why": "[grammar] \"The CR 405.9a stamp\" reads as if the rule were the stamp"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "because nothing existing means this. CR 110.3a's\n   * `restrict`",
+   "replace": "because nothing existing means this. The\n   * targeting `restrict` (CR 110.3a)",
+   "why": "[grammar] a rule does not own a code field"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "Distinct from CR 602.6's `E.placeInFormation`,",
+   "replace": "Distinct from `E.placeInFormation` (CR 602.6),",
+   "why": "[grammar] a rule does not own an engine function"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "This is CR 303.11's shape one field over",
+   "replace": "This is the spell-unit copy body's shape (CR 303.11) one field over",
+   "why": "[grammar] a rule does not have a code shape"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "It reaches CR 708.7's AMOUNT layer",
+   "replace": "It reaches the AMOUNT layer (CR 708.5)",
+   "why": "[wrong-rule] 708.7 is change-then-redirect ordering; the additive AMOUNT layer is 708.5"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "the same unit CR 112.8 gave effect damage.",
+   "replace": "the same unit effect damage uses (CR 112.8).",
+   "why": "[history] a rule narrated as a change"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* CR 601.1c made \"all\" mean \"all in this region\", which is right and which cost",
+   "replace": "* \"All\" means \"all in this region\" (CR 601.1c), which is right and which costs",
+   "why": "[history] a rule narrated as the change that made it"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "* not a CARD (CR 304.2's first half), and this is",
+   "replace": "* not a CARD (CR 304.2), and this is",
+   "why": "[grammar] \"first half\" residue: 304.2 is one sentence"
+  },
+  {
+   "file": "client/engine/src/cards/dsl.ts",
+   "find": "would make it blind to the 44 cards CR 721.1 moved.",
+   "replace": "would make it blind to the 44 cards the augment-box change moved.",
+   "why": "[history] a rule narrated as having moved cards"
+  }
+ ]
+}
