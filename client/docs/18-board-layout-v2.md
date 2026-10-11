@@ -300,6 +300,95 @@ The vertical budget is the constraint left: on a 768px window the board gets
 - Guard: `client/ui/test/351-counterattack-build.test.ts`; review board: the
   `counter-build` scenario (`server/scenarios-h.ts`).
 
+### Round 7 — battle space (report #204, owner 2026-10-11)
+
+The report: *"We should rework the whole UI, especially during battle, to
+better use the available space and be more dynamic. There are so many moments
+where there is an absolute ton of unused space on screen, but the units and the
+'important' area is all scrunched into the side of the screen."* Measured on
+HPTR before the round: in every battle slice the cards covered 5.5–12.9% of the
+board. The fight's block was always half the board wide (the six equal columns),
+its rows a fixed 1 : 1.5 against In Play, its cards capped at 86px (`GROW`), and
+its columns packed against the block's left edge; the other region's battle
+block held nothing in any slice. At 1440×900 a two-column, four-rank fight stood
+at 43px beside a 1048×388 empty rectangle; at 1280×720 its back blocker rank was
+cut off.
+
+**The owner's choices** (asked 2026-10-11; not to be re-asked):
+
+1. **The fight block grows.** The two Ls, their tints, the seam and the ring
+   stay. During a battle the block holding the fight takes most of the board,
+   width and height; what is not in use is "smooshed to the side" — the idle
+   battle block is a narrow band at the side that still shows what it holds,
+   and an empty or near-empty In Play gives its height to the fight. The
+   columns stand in the middle of the fight and are sized to fill it.
+2. **Units may grow to ~120px** where there is room — a moderate cap, not
+   unbounded. The 40px battle floor stays the floor.
+3. **The edges do not change much**: the rail, the info offshoot, the hand
+   dock, the top bar, the action bar and the 1500px `#app` cap stay.
+4. **Every screen size matters equally**: it scales with the window.
+
+**What changed** (battle only — outside a battle the board is the grid it was,
+and the classic board is untouched):
+
+- **A battle grid.** `.lboard` carries `data-fight="mine|theirs"` (whose column
+  holds the fight) and style.css `.lboard.fighting[data-fight]` makes it five
+  rows — band · invaders row · fight · invaders row · band — over three
+  tracks. The bands (info offshoot · In Play) are still split at exactly half
+  (`calc(50% - 4px)`, the old three tracks and two gaps), so the info offshoots
+  keep their place and width; below them the fight's column is two tracks, the
+  idle column one (`--lidle`). Each L is still a band and a column, so the tints
+  (`.lback`), the seam and the ring follow by grid lines alone.
+- **The shape is planned from the room** (`ui/fit.ts planBattleBoard`, written by
+  `ui/layout.ts shapeBoard` before any zone is fitted, as `--lidle`, `--lbandt`,
+  `--lbandb`). The bands stand at the info offshoot's two-line height (`BAND.two`,
+  80px) while the fight can use the height; whatever the fight cannot use — its
+  cards at the cap, or held by its width — goes back to the bands, half each.
+  Where even the fight's floor will not stand, the bands give more, down to the
+  name-and-life line (`BAND.one`; the resources clip before the name, as they
+  always have) — which is what puts the fourth rank on a 720px window. The idle
+  column is as wide as what it holds wants (its cards one row deep at the row
+  size; the send box's cards and two-card slot at the line size), never under
+  one card at the floor (two for the send slot), never over a quarter of the
+  board (`IDLE_SHARE`), and never into width the fight's columns need. Its
+  inputs are the board's own box, card counts and paddings, so it cannot chase
+  its tail.
+- **The cap is 120px** (`BATTLE_CAP`; the field keeps `GROW`). The invader strip's
+  cards stay 0.6× the line's.
+- **The columns are centred** in the fight, by auto margins (which give way to
+  the edge when the row is full, so a crowded row is never cut at both ends),
+  in the width the invader strip leaves them (`--invw` on the block pads
+  `.cols`).
+- **Counterattackers on their way wrap** down the narrow idle column (fit
+  `band`, the row size) instead of fanning along one row.
+- **The info offshoot's two-line form applies.** Its smaller resources (24px,
+  the mana inline) had never taken effect — the base rules came later in the
+  file at the same weight. In a battle they do now; that form is what the bands
+  are planned at.
+- **The ring** takes in the visitor's info offshoot at that block's own width
+  (half the board), not the fight column's; in a battle both shapes have the
+  same eight corners, so the entry still tweens.
+
+Before → after on the same HPTR slices (`client/ui/test/448` pins the
+arithmetic on these boards): the four-rank fight (s084) 43 → 66px at 1440×900,
+60 → 98px at 1920×1080, and at 1280×720 still the 40px floor but with all four
+ranks standing (the back blocker was cut off); the three-column attack (s129)
+77 → 120px at 1440×900, 48 → 65px at 1280×720, 56 → 82px at 1344×768; the
+largest empty rectangle at 1440×900 in s084 1048×388 (55% of the board) →
+516×552 (39%). Cards cover more of the board in every slice at 1440×900 and
+1920×1080 (s129 12.5 → 20%); at 1280×720 and 1344×768 the four-rank slices
+cover less (s084 6.9 → 5.7%), because the In Play cards beside the info
+shrink to give the fight its height — the trade the owner chose.
+
+What the round did NOT change: outside a battle (the same waste is there — the
+two idle bands and the stack's band — but YOUR region is the focus and stays as
+it was; for a later round), the field's `GROW`, the hand dock, the column labels
+and vs line inside the battle table.
+
+Guards: `client/ui/test/448-battle-space-plan` (the plan's arithmetic and the
+DOM pass that writes it), `449-battle-board-grid` (`data-fight` in both rounds
+from both seats, the grid per side, the centring), `450-ring-takes-the-visitor-info`.
+
 ## The toggle
 
 `algoLayout` in localStorage (`'2'` = regions), read by `ui/layout.ts
@@ -320,6 +409,7 @@ Flipping the default later is one character in `layoutV2()`.
   the toggle, every anchor once in both boards for every state, nothing
   swallowed, the battle in the right block in both rounds, invaders and tokens
   where they belong, the stylesheet's grid.
+- `client/ui/test/448`–`450` — the battle board's shape (round 7).
 - The whole rest of the ui suite is the classic board's guard.
 - Headless: a solo Learn-to-Play game walked at 1440×900 and 1280×720 with
   `document.scrollHeight === clientHeight`, `.main` unscrollable, and no
@@ -332,5 +422,5 @@ right rail; the cache, bin, life and hand-count widgets; the hotseat rig.
 (The targeting arrows were on this list, aiming a *formation* at the field
 zone, until report RCPN on 2026-09-26: each battle half now carries
 `data-fside` and a formation arrow lands on all of its player's halves.) The In Play vs
-In Battle track ratio is fixed (1 : 1.5 during a battle), not weighted by card
-count.
+In Battle track ratio was fixed (1 : 1.5 during a battle) until round 7, which
+plans the battle's rows and columns from the room there is.

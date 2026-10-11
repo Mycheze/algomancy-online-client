@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-11', kind: 'change', text: 'In a battle the fight now takes most of the table: its units stand in the middle and grow into the room there is, and the region not in use shrinks to a narrow strip at the side. On a small screen every rank of a formation now fits.' },
   { date: '2026-10-11', kind: 'fix', text: 'Life gained or lost from a trigger, such as Iyngstra\'s, now shows and sounds when the trigger resolves on the stack, not the moment you play the card.' },
   { date: '2026-10-11', kind: 'change', text: 'The game toggles (auto-pass, bluff haste, motion, board, sound) now sit behind "⋯ more" on a computer too, as they already did on a tablet. Rules and the judge stay where they were.' },
   { date: '2026-10-11', kind: 'fix', text: 'The tilted dice and chips on a zoomed card no longer have their corners cut off.' },

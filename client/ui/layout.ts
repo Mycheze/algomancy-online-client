@@ -13,7 +13,7 @@
  * the first one that draws both.
  */
 import type { GameState, Seat } from '../engine/src/types.ts';
-import { fitBattle, fitCards, fitSendBox, type FitPlan } from './fit.ts';
+import { FLOOR as CARD_FLOOR, fitBattle, fitCards, fitSendBox, planBattleBoard, type FitPlan } from './fit.ts';
 
 const PREF = 'algoLayout';
 
@@ -64,7 +64,8 @@ const lastFit = new WeakMap<Element, string>();
 
 /** how far past the base card width a zone with room to spare may grow its
  * cards (owner, 2026-09-23: "really small on the screen despite there being a
- * decent bit of empty space"). The field and the battle only: a one-row zone
+ * decent bit of empty space"). The field only — the battle has had its own
+ * cap since round 7 (BATTLE_CAP): a one-row zone
  * in an auto-sized grid row would take the height it grew from the rows
  * around it. It was 1.5 for one round, and the owner's next word was "they're
  * huge now!" — cards on the table are meant to be fairly small, and the hover
@@ -72,11 +73,12 @@ const lastFit = new WeakMap<Element, string>();
 export const GROW = 1.1;
 
 export function fitBoard(root: ParentNode, baseCw: number): void {
+  shapeBoard(root, baseCw);
   const zones: Iterable<HTMLElement> = root.querySelectorAll?.('.lboard [data-fit]') ?? [];
   for (const el of zones) {
     const kind = el.dataset['fit'];
     const plan = kind === 'battle' ? battlePlan(el, baseCw)
-      : cardsPlan(el, baseCw, kind === 'row' ? 'row' : kind === 'line' ? 'line' : 'box');
+      : cardsPlan(el, baseCw, kind === 'row' ? 'row' : kind === 'line' ? 'line' : kind === 'band' ? 'band' : 'box');
     if (!plan) continue;
     // a battle's key also counts its invaders: a second one changes how the
     // strip's cards overlap without changing the plan
@@ -101,7 +103,7 @@ function boxOf(el: Element | null): { w: number; h: number } | null {
   return r.width > 0 && r.height > 0 ? { w: r.width, h: r.height } : null;
 }
 
-/** `row`: a zone in an auto-sized grid row (the Invaders row of a region that
+/** `box`: a field, wrapped in its block. `row`: a zone in an auto-sized grid row (the Invaders row of a region that
  * is not fighting, an idle band
  * with counterattackers in transit) — its height follows its content, so
  * measuring it would only ever confirm it; the fit is by width alone, one
@@ -112,10 +114,13 @@ function boxOf(el: Element | null): { w: number; h: number } | null {
  * making, so its cards are battle-sized. It has a whole battle block's height
  * to stand in, and since report #196 it USES it: the box wraps, and the fit is
  * over the block's height, not one card's (ui/fit.ts fitSendBox) */
-function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line'): FitPlan | null {
+function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line' | 'band'): FitPlan | null {
   if (how === 'line') return sendPlan(el, baseCw);
   const maxCw = how === 'box' ? Math.round(baseCw * GROW) : Math.round(baseCw * 2 / 3);
-  const row = how !== 'box';
+  // `band` (round 7): the counterattackers heading for the idle block, in the
+  // narrow column at the side of a battle. They wrap down its height at the
+  // row size, so the fit is over the zone's whole box (style.css stretches it)
+  const row = how === 'row';
   // the In Play block also holds the token corner, whose zone comes first in
   // the markup: the FIELD is what the fit is for (the corner is a [data-fit]
   // of its own, and finds its token zone by the fallback)
@@ -172,6 +177,16 @@ const INV_FRAC = 0.6, INV_PAD = 12, INV_GAP = 4;
 const STAGE_CHROME = 8;
 /** the battle's card floor on this board */
 const FLOOR = 40;
+/** the battle's card CAP (owner, 2026-10-11, report #204: units "may grow up
+ * to ~120px" when there is room — a moderate cap, not unbounded). It was the
+ * field's GROW, 86px, beside a block that was half empty. */
+export const BATTLE_CAP = 120;
+/** a band's height in a battle (style.css `.linfo` in its two-line form, the
+ * name and life line over the resources, and its 6px padding): `two` is what
+ * it needs, `one` the name-and-life line alone, which is as far as it gives
+ * before the battle's own floor stops standing (the resources clip first, as
+ * they always have, never the name) */
+export const BAND = { two: 80, one: 44 } as const;
 
 function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
   const cols = el.querySelector<HTMLElement>('.cols');
@@ -182,23 +197,84 @@ function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
   const inv = el.querySelectorAll('.linvside .card').length;
   // a lower floor than a field's: three ranks (attackers, front and back
   // blockers) have to stand in the block, and 40px still reads on the line
-  const o = {
-    cw: Math.round(baseCw * GROW), gap: COL_GAP, chrome: COL_CHROME, floor: FLOOR,
-    side: { n: inv, frac: INV_FRAC, pad: INV_PAD },
-  };
+  const o = battleOpts(inv);
   // Report #200: watching the other seat declare with nothing placed yet
   // draws no columns at all — the strip still needs its size
   if (!cols || !box) return inv ? fitBattle(0, 0, 0, { w: 0, h: 0 }, o) : null;
   const n = cols.querySelectorAll(':scope > .col').length;
+  const stage = el.querySelector<HTMLElement>('.stagewrap > .stagerow');
+  if (stage) return stagePlan(el, stage, n, o);
+  const ranks = ranksOf(cols);
+  return fitBattle(n, ranks.top, ranks.bot, box, o);
+}
+
+/** the battle's fit options: the cap, its own spacing, the floor, the strip */
+function battleOpts(inv: number): Parameters<typeof fitBattle>[4] {
+  return { cw: BATTLE_CAP, gap: COL_GAP, chrome: COL_CHROME, floor: FLOOR, side: { n: inv, frac: INV_FRAC, pad: INV_PAD } };
+}
+
+/** the battle table's ranks, off the variables battleHtml writes on `.cols`
+ * (the declare step writes none: its flat two-slot columns stand two ranks
+ * on one side, the same height as one on each) */
+function ranksOf(cols: HTMLElement): { top: number; bot: number } {
   const rank = (v: string, dflt: number): number => {
     const x = parseInt(cols.style.getPropertyValue(v), 10);
     return Number.isFinite(x) ? x : dflt;
   };
-  const stage = el.querySelector<HTMLElement>('.stagewrap > .stagerow');
-  if (stage) return stagePlan(el, stage, n, o);
-  // the declare step draws flat two-slot columns and sets no rank variables:
-  // two ranks on one side is the same height as one on each
-  return fitBattle(n, rank('--rowstop', 2), rank('--rowsbot', 0), box, o);
+  return { top: rank('--rowstop', 2), bot: rank('--rowsbot', 0) };
+}
+
+/**
+ * ROUND 7 — THE BOARD'S SHAPE IN A BATTLE (report #204; ui/fit.ts
+ * planBattleBoard decides it). Runs before any zone is fitted, since every
+ * zone's box follows from it: the idle column's width and the two bands'
+ * heights, written on `.lboard` as `--lidle`, `--lbandt`, `--lbandb` (style.css
+ * `.lboard[data-fight]` makes the grid of them). Its inputs are the board's
+ * own box (which the flex column sets, not its content), card counts and the
+ * stylesheet's paddings — nothing it writes — so it cannot chase its tail.
+ * Outside a battle there is no `data-fight` and the board is the grid it was.
+ */
+const lastShape = new WeakMap<Element, string>();
+function shapeBoard(root: ParentNode, baseCw: number): void {
+  const lb = root.querySelector?.<HTMLElement>('.lboard[data-fight]');
+  const fight = lb?.querySelector<HTMLElement>('.lfight.focus');
+  const idleEl = lb?.querySelector<HTMLElement>('.lfight:not(.focus)');
+  const box = boxOf(lb ?? null);
+  if (!lb || !fight || !idleEl || !box) return;
+  const cs = getComputedStyle(lb);
+  const cols = fight.querySelector<HTMLElement>('.cols');
+  const stage = !!fight.querySelector('.stagewrap > .stagerow');
+  const ranks = cols ? ranksOf(cols) : { top: 1, bot: 1 };
+  const battle = fight.querySelector('.battle');
+  const inv = fight.querySelectorAll('.linvside .card').length;
+  const idleRegion = idleEl.dataset['region'];
+  const plan = planBattleBoard({
+    board: { w: box.w - chrome(lb, 'h'), h: box.h - chrome(lb, 'v') },
+    gapX: parseFloat(cs.columnGap) || 0, gapY: parseFloat(cs.rowGap) || 0,
+    cols: cols ? cols.querySelectorAll(':scope > .col').length : 0,
+    // the counterattack tray stands as a third rank under the columns
+    ranksTop: stage ? 2 : ranks.top, ranksBot: stage ? 1 : ranks.bot,
+    o: battleOpts(inv),
+    chrome: {
+      w: chrome(fight, 'h') + (battle ? chrome(battle, 'h') : 0),
+      h: chrome(fight, 'v') + (battle ? chrome(battle, 'v') : 0) + (stage ? STAGE_CHROME : 0),
+    },
+    bandMin: BAND.two, bandFloor: BAND.one,
+    idle: {
+      send: idleEl.classList.contains('sendhere'),
+      cards: idleEl.querySelectorAll('.zone > .card').length,
+      invaders: lb.querySelectorAll(`.linv[data-region="${idleRegion}"] .card`).length,
+      pad: chrome(idleEl, 'h'), gap: 6,
+      rowCw: Math.round(baseCw * 2 / 3), lineCw: baseCw, floor: CARD_FLOOR,
+    },
+  });
+  if (!plan) return;
+  const key = JSON.stringify(plan);
+  if (lastShape.get(lb) === key) return;
+  lastShape.set(lb, key);
+  lb.style.setProperty('--lidle', `${plan.idle}px`);
+  lb.style.setProperty('--lbandt', `${plan.bandTop}px`);
+  lb.style.setProperty('--lbandb', `${plan.bandBot}px`);
 }
 
 /**
@@ -235,6 +311,9 @@ function sideStrip(el: HTMLElement, plan: FitPlan): void {
   if (!strip || !plan.side) return;
   strip.style.setProperty('--cw', `${plan.side.cw}px`);
   strip.style.setProperty('--invw', `${plan.side.w}px`);
+  // on the block too: the columns centre in the width the strip leaves them
+  // (style.css pads `.cols` by it)
+  el.style.setProperty('--invw', `${plan.side.w}px`);
   const n = strip.querySelectorAll('.card').length;
   const ch = Math.round(plan.side.cw * 1.4);
   const h = boxOf(strip)?.h ?? 0;
@@ -294,9 +373,19 @@ export function ringBoard(root: ParentNode, animate = false): void {
   if (!o || !a || !b || (visit && !far)) { path.removeAttribute('d'); return; }
   const i = 1.5;   // half the stroke: the line stands just inside the tint
   const L = a.l + i, R = a.r - i;
+  // the visitor's info offshoot is half the board wide whatever the column
+  // below it is (round 7: in a battle the fight's column is wider than that),
+  // so the ring takes in that block's width and not the column's. Both shapes
+  // coincide — so the entry tween still moves point for point. Where the two
+  // are the same width (outside a battle) it is the six-cornered L it was.
+  const inf = box(top ? '.linfo.mine' : '.linfo.theirs');
+  const ex = top ? Math.max(b.l, inf?.l ?? b.l) + i : Math.min(b.r, inf?.r ?? b.r) - i;
+  const step = Math.abs(ex - (top ? b.l + i : b.r - i)) >= 1;
   const pts: Array<[number, number]> = top
-    ? [[L, a.t + i], [R, a.t + i], [R, (far ?? b).b - i], [b.l + i, (far ?? b).b - i], [b.l + i, a.b - i], [L, a.b - i]]
-    : [[L, (far ?? b).t + i], [b.r - i, (far ?? b).t + i], [b.r - i, a.t + i], [R, a.t + i], [R, a.b - i], [L, a.b - i]];
+    ? [[L, a.t + i], [R, a.t + i], [R, (far ?? b).b - i], ...(step ? [[ex, (far ?? b).b - i], [ex, b.b - i]] as Array<[number, number]> : []),
+      [b.l + i, (step ? b.b : (far ?? b).b) - i], [b.l + i, a.b - i], [L, a.b - i]]
+    : [[L, (far ?? b).t + i], ...(step ? [[ex, (far ?? b).t + i], [ex, b.t + i]] as Array<[number, number]> : []),
+      [b.r - i, (step ? b.t : (far ?? b).t) + i], [b.r - i, a.t + i], [R, a.t + i], [R, a.b - i], [L, a.b - i]];
   const d = roundedPath(pts, 8);
   path.setAttribute('d', d);
 

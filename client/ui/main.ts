@@ -4236,7 +4236,9 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
     const side_ = here && r.invaderHtml ? `<div class="linvside">${r.invaderHtml}</div>` : '';
     const inner = here ? battle + side_ : send || r.sentStrip;
     const cls = here ? ' focus' : send ? ' sendhere' : inner ? ' incoming' : ' idle';
-    return `<div class="lfight ${side}${cls}" data-region="${region}" data-fit="${here ? 'battle' : send ? 'line' : 'row'}">
+    // round 7: the counterattackers heading here wrap down the narrow idle
+    // column (`band`), where they used to fan along one row of a wide block
+    return `<div class="lfight ${side}${cls}" data-region="${region}" data-fit="${here ? 'battle' : send ? 'line' : inner ? 'band' : 'row'}">
         ${inner}
       </div>`;
   };
@@ -4256,7 +4258,13 @@ function lboardHtml(topSeat: Seat, botSeat: Seat): string {
   const visiting = !!b && !!s.regions[b.region]?.presentSeats.includes(b.attacker);
   const ring = `<svg class="lring rc${focus}" data-ring="${focus === tRegion ? 'top' : 'bottom'}" data-visit="${visiting ? 1 : 0}" aria-hidden="true"><path/></svg>`;
 
-  return `<div class="lboard${b ? ' fighting' : ' idle'}" data-focus="${focus}">
+  // ROUND 7 (report #204): in a battle the block holding the fight takes most
+  // of the board and the other region's column is a narrow band at the side.
+  // `data-fight` says which column is the fight's — mine (left) or theirs
+  // (right); style.css `.lboard[data-fight]` is that grid, and ui/layout.ts
+  // shapeBoard sizes its tracks from the room there is
+  const fightSide = b ? ` data-fight="${b.region === yRegion ? 'mine' : 'theirs'}"` : '';
+  return `<div class="lboard${b ? ' fighting' : ' idle'}" data-focus="${focus}"${fightSide}>
       <div class="lback theirs a rc${tRegion}"></div><div class="lback theirs b rc${tRegion}"></div>
       <div class="lback mine a rc${yRegion}"></div><div class="lback mine b rc${yRegion}"></div>
       <div class="lseam"></div>
