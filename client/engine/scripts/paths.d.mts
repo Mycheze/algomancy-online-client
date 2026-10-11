@@ -75,4 +75,5 @@ export const MARKS_SNAPSHOT: string;
 export const PROD_MIRROR_DIR: string;
 export const DEPLOY_HOST: string;
 export const DEPLOY_ROOT: string;
+export const DEPLOY_GAME_URL: string;
 export function remote(abs: string): string;
