@@ -2626,5 +2626,48 @@
     "sourceHashes": {
       "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
     }
+  },
+  {
+    "key": "combat.blocks.who.always-legal",
+    "parent": "combat.blocks.who",
+    "order": 6,
+    "text": "Alluring duties never leave the defending player without a legal block declaration. However many Alluring triggers have resolved, the game offers the defending player at least one block declaration, and every declaration it offers is legal.",
+    "examples": [
+      {
+        "text": "Two attacking columns both have Alluring, and their triggers targeted the same defending unit. The defending player is still offered a legal declaration.",
+        "test": "53-playtest-round7.test.ts::R84/R76: legalActions always offers a legal declaration (the fuzz-1993 hang)"
+      }
+    ],
+    "see": [
+      "802.15"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "to offer at least one legal block declaration, because Alluring is conjunctive"
+        },
+        {
+          "ref": "R76 (its legalActions contract)",
+          "quote": "*if a legal action exists, at least one must be offered.*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts",
+        "06-fuzz.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R76 (its surviving legalActions contract) had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R76": "887b57987fc71345add55a3b24ebaa22c6f4cbab7ab13689445b5f3c765cd442",
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
   }
 ]

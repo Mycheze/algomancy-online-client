@@ -3318,6 +3318,14 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R263 · Tests: 241-played-from-zone.test.ts · Example test: 241-played-from-zone.test.ts::R263 §7: an effect-created token carries no zone at all · Key: zones.changes.played-from.created</sub>
 
+<a id="r410.7"></a>**410.7.** When a unit leaves play for a bin, it dies (or, if it was exchanged out of play, despawns) before anything is trashed. The unit and its mods leave play; then its death or despawn happens, and the abilities that trigger on it trigger; only then is any card trashed (see rule 801.2).
+
+> *Example: A unit with no mods dies and goes to its controller's bin. Its death comes first, then it is trashed.*
+
+> *Example: Hooba-Mon exchanges itself for a unit card in its controller's bin. It despawns, and only then is it trashed. It does not die.*
+
+<sub>Basis: Owner call · Verified: not verified; 2 gate test files · Rulings: R153 (its step 3, the announce), R153 (its step 3, the announce) · Replaces: R153 (its steps 1 and 4 (mods to their owner's bin; every nontoken mod trashed; a token body trashed) superseded by R250, R244 and R306; its other steps are stated by 400.4, 410.4, 410.5 and 801.2) · Tests: 440-cr-uncovered-rulings.test.ts, 129-disposal-tail.test.ts · Example tests: 440-cr-uncovered-rulings.test.ts::cr:zones.changes.leave-play-order — a unit that dies dies first, and is trashed after, 440-cr-uncovered-rulings.test.ts::cr:zones.changes.leave-play-order — a unit exchanged out of play despawns first, and is trashed after · Key: zones.changes.leave-play-order</sub>
+
 ## 5. Turn Structure
 
 <a id="r500"></a>
@@ -4700,6 +4708,12 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1460216519731577027#0; RAQ 1460216519731577027#2 · Rulings: R84 · Replaces: R76 (its Alluring rule ('defenders that are able to block it must block it') was replaced by R84) · Tests: 53-playtest-round7.test.ts, 388-raq-blocks-and-windows.test.ts · Example tests: 53-playtest-round7.test.ts::R84: a substitute is not good enough — the lured unit must be in the column, 388-raq-blocks-and-windows.test.ts::RAQ Alluring: a lone lured unit cannot block an Evasive column · Key: combat.blocks.who.lured</sub>
 
+<a id="r606.2f"></a>**606.2f** Alluring duties never leave the defending player without a legal block declaration. However many Alluring triggers have resolved, the game offers the defending player at least one block declaration, and every declaration it offers is legal. See rule 802.15.
+
+> *Example: Two attacking columns both have Alluring, and their triggers targeted the same defending unit. The defending player is still offered a legal declaration.*
+
+<sub>Basis: Owner call · Verified: not verified; 2 gate test files · Rulings: R84, R76 (its legalActions contract) · Tests: 53-playtest-round7.test.ts, 06-fuzz.test.ts · Example test: 53-playtest-round7.test.ts::R84/R76: legalActions always offers a legal declaration (the fuzz-1993 hang) · Key: combat.blocks.who.always-legal</sub>
+
 <a id="r606.3"></a>**606.3.** An attacking column is blocked once a defending unit has been placed in front of it. The whole column is blocked, however many attacking units it holds. See rule 608.
 
 > *Example: A column of two attackers is blocked by one unit. Neither attacker deals combat damage to the defending player.*
@@ -6027,7 +6041,7 @@ order.
 
 > *Example: Spewing Mushroom carries Biotoxicity and two Technological Superiority grafts; when it attacks, the two targeted parts aim at the Mushroom and at an enemy 1/1. The 1/1 dies before the trigger resolves. One target remains, so it still resolves: all four Poison tokens are made.*
 
-<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.43 · Designer: RAQ 1410252965276684418#4; RAQ 1354013430805434389#0 · Rulings: R86 · Tests: 78-round17-core.test.ts, 390-raq-stack.test.ts, 425-cr-casting-and-stack.test.ts · Example tests: 390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion still recalls the other unit when one target is removed, 425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — Twin Flame with one of two targets gone still damages the other, 425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — a graft composite with two targets losing one still runs its untargeted part · Demonstrated by test: 78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through · Key: effects.resolution.fizzle.partial</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.43 · Designer: RAQ 1410252965276684418#4; RAQ 1354013430805434389#0 · Rulings: R86, R5 · Tests: 78-round17-core.test.ts, 390-raq-stack.test.ts, 425-cr-casting-and-stack.test.ts · Example tests: 390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion still recalls the other unit when one target is removed, 425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — Twin Flame with one of two targets gone still damages the other, 425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — a graft composite with two targets losing one still runs its untargeted part · Demonstrated by test: 78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through · Key: effects.resolution.fizzle.partial</sub>
 
 <a id="r704.6c"></a>**704.6c** An effect that needs two of its targets together (a fight or an exchange) does nothing if it loses one of them. It does not fizzle.
 
@@ -6306,6 +6320,16 @@ order.
 <sub>Basis: Owner call · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Rulings: R144 (its half (b)), R144 (its half (b)) · Tests: 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::R144(b): a subject is not a target · Key: effects.triggered.chosen-unit.not-target</sub>
 
 <sub>Discrepancies: D-U15-8 (discrepancies.md)</sub>
+
+<a id="r706.13"></a>**706.13.** An ability that triggers on a card being played, and then acts on what was played ("negate that effect"), acts on the item that play put on the stack. Another item with the same name and the same controller is not it, whether it is older or newer. A copy of the played spell is not it either, because a copy is not played (see rule 701.5). See rule 701.5.
+
+> *Example: Two Burgeons by the same player are on the stack, and only the second one's play makes Void Mandible trigger. The Mandible negates the second Burgeon, not the first.*
+
+> *Example: A copy of Burgeon sits below a newly played Burgeon. Void Mandible negates the played Burgeon and leaves the copy alone.*
+
+> *Example: Origon negates the spell whose play made it trigger, even with an identical spell above it on the stack.*
+
+<sub>Basis: Mixed · Verified: not verified; 2 gate test files · Printed: card: Void Mandible · Rulings: R191 (§1), R191 (§1), R207, R207 · Tests: 178-played-item-and-erased-mods.test.ts, 162-item-identity-and-truthful-events.test.ts · Example tests: 178-played-item-and-erased-mods.test.ts::Void Mandible: with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES, 178-played-item-and-erased-mods.test.ts::Void Mandible: a COPY on the stack is never negated — R164, a copy was not played, 162-item-identity-and-truthful-events.test.ts::Origon negates the item the play event NAMES, with a second identical spell above it on the stack · Key: effects.triggered.that-item</sub>
 
 <a id="r707"></a>
 ### 707. Static Abilities
@@ -10140,15 +10164,15 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 
 ### Basis
 
-1788 numbered rules.
+1797 numbered rules.
 
 | basis | rules |
 |---|---|
 | Printed | 462 |
 | Designer | 209 |
-| Owner call | 685 |
+| Owner call | 693 |
 | Engine only | 36 |
-| Mixed | 396 |
+| Mixed | 397 |
 
 ### Verification
 
@@ -10159,7 +10183,7 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
-| not verified | 1 |
+| not verified | 10 |
 | text changed | 0 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
@@ -10358,7 +10382,7 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 
 ### Game rulings no rule cites
 
-R5, R47, R92, R191, R207, R212
+R47, R92, R212
 
 ### Process rulings, excluded
 
@@ -10777,4 +10801,4 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1788 rules and 99 sections.
+- New: 1797 rules and 99 sections.

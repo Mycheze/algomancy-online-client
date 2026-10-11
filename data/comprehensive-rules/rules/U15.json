@@ -2988,5 +2988,69 @@
     "sourceHashes": {
       "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
     }
+  },
+  {
+    "key": "effects.triggered.that-item",
+    "parent": "706",
+    "order": 13,
+    "text": "An ability that triggers on a card being played, and then acts on what was played (\"negate that effect\"), acts on the item that play put on the stack. Another item with the same name and the same controller is not it, whether it is older or newer. A copy of the played spell is not it either, because a copy is not played (see effects.playing.copy-not-played).",
+    "examples": [
+      {
+        "text": "Two Burgeons by the same player are on the stack, and only the second one's play makes Void Mandible trigger. The Mandible negates the second Burgeon, not the first.",
+        "test": "178-played-item-and-erased-mods.test.ts::Void Mandible: with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES"
+      },
+      {
+        "text": "A copy of Burgeon sits below a newly played Burgeon. Void Mandible negates the played Burgeon and leaves the copy alone.",
+        "test": "178-played-item-and-erased-mods.test.ts::Void Mandible: a COPY on the stack is never negated — R164, a copy was not played"
+      },
+      {
+        "text": "Origon negates the spell whose play made it trigger, even with an identical spell above it on the stack.",
+        "test": "162-item-identity-and-truthful-events.test.ts::Origon negates the item the play event NAMES, with a second identical spell above it on the stack"
+      }
+    ],
+    "see": [
+      "701.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Void Mandible",
+          "quote": "When a nontoken card is played during battle, sacrifice me. If you do, negate that effect."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R191 (§1)",
+          "quote": "A card that acts on \"the thing the event was about\" matches the event's"
+        },
+        {
+          "ref": "R191 (§1)",
+          "quote": "description; two items can satisfy it at once, and which one a scan reaches"
+        },
+        {
+          "ref": "R207",
+          "quote": "A play event names the item it made, and a listener matches on that id."
+        },
+        {
+          "ref": "R207",
+          "quote": "played — RAQ (_passer): *\"the 1st copy wasn't 'played'\"* — so a card keying"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "178-played-item-and-erased-mods.test.ts",
+        "162-item-identity-and-truthful-events.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R191 and R207 (their game half: which item a play-triggered ability acts on). Not drafted: R207's \"an item-less play leaves nothing to negate\" (it is the asPlay spawn approximation; 703.5 states R198, and the divergence is already a CT entry), and R191 §2-§4 (log event types, despawn dispatch, restore drift: not game rules). had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R191": "7c77fd10bf5323c3197c2485e3de424a63324afe2f3b232d32113b764f3caf23",
+      "R207": "be4a59cc9fa163488f9f9dd900bc9fba3e183729e2f388254386f5664514796e"
+    }
   }
 ]

@@ -4126,5 +4126,300 @@
     "sourceHashes": {
       "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
     }
+  },
+  {
+    "key": "annexd.reveal.beats.journeys",
+    "parent": "annexd.reveal.beats",
+    "order": 2,
+    "text": "Cards that make the same move in one update, from the same place to the same place, move together. Moves between different places are shown one after another. A move whose start or end the client cannot name, such as a card being erased, is shown on its own.",
+    "examples": [
+      {
+        "text": "Four units die in one update and their four triggers go to the stack together. They all fly to the stack at once.",
+        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §6: flights that made the same journey in one render share a beat"
+      },
+      {
+        "text": "A card going from hand to the stack, one going from the stack to the field and one going to the bin are three moves, one after another.",
+        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §6: a sequence still looks sequential — different journeys are spaced"
+      },
+      {
+        "text": "Two cards erased from the field, with nowhere named to go, are not grouped.",
+        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §6: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R205 (its CT-82(d) journey rule)",
+          "quote": "The unit of spacing is a JOURNEY, not an item."
+        },
+        {
+          "ref": "R205 (its CT-82(d) journey rule)",
+          "quote": "place for the same place in one render are one thing happening and share a"
+        },
+        {
+          "ref": "R205 (its CT-82(d) journey rule)",
+          "quote": "a flight joins its neighbours only when *both* ends of its journey are named anchors"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "176-nested-affordance-and-serialiser.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R205 (its animation half) had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R205": "4413e5130bb545ff0625e2ff6e8cc9b996f25a77dfafa70e1956a09d81c71314"
+    }
+  },
+  {
+    "key": "annexd.display.panels",
+    "parent": "D6",
+    "order": 16,
+    "text": "The board shows each player's cache and bin as a small panel. Clicking a panel opens the full cache or bin. A card in the panel that the player can use right now is the exception: one click on it uses the card, as clicking it in the full cache or bin would. Clicking any other card in the panel opens the full cache or bin.",
+    "examples": [
+      {
+        "text": "A cached card that can be played now is played by one click on it in the region's cache panel.",
+        "test": "163-cache-affordance-and-badges.test.ts::R192 §1: a playable cached card plays on the FIRST click of its region-cache thumb"
+      },
+      {
+        "text": "A cached {Battle} card during deployment cannot be played now, so clicking it opens the full cache.",
+        "test": "163-cache-affordance-and-badges.test.ts::R192 §2: an unplayable cache thumb carries no affordance, so the click still opens the zone"
+      },
+      {
+        "text": "A mod in the bin that can be applied now is one click from the bin panel: the click starts applying it.",
+        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §4: a bin card usable RIGHT NOW is one click from the region panel"
+      },
+      {
+        "text": "A bin card that cannot be used now opens the full bin when clicked.",
+        "test": "176-nested-affordance-and-serialiser.test.ts::R205 §4: an unusable bin thumb keeps the old route — the click opens the zone"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R192 (its CT-64 decision)",
+          "quote": "a thumb plays on the first click when — and only when — the entry is playable right now; every other thumb, and every other pixel of the panel, still opens the dialog."
+        },
+        {
+          "ref": "R205 (its CT-82(b) bin panel)",
+          "quote": "a bin card that could be *played* right now (R96/R123), *prophesied* (R42) or *applied as a mod* took two clicks from the panel and one from the dialog."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "163-cache-affordance-and-badges.test.ts",
+        "176-nested-affordance-and-serialiser.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R192 and R205 (their panel halves) had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R192": "adedcbd988e9d0a572f71648f0e048fad01a6dab9d08bc68f2dd70d49a14ad3d",
+      "R205": "4413e5130bb545ff0625e2ff6e8cc9b996f25a77dfafa70e1956a09d81c71314"
+    }
+  },
+  {
+    "key": "annexd.display.panels.cache-dialog-only",
+    "parent": "annexd.display.panels",
+    "order": 1,
+    "text": "A cached card whose only use right now is to be grafted or applied as an augment, or that is a choice in an open decision, is not used from the panel: clicking it opens the full cache.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R192 (its CT-64 decision)",
+          "quote": "an entry whose only offer is an augment or a graft from cache keeps the dialog route"
+        },
+        {
+          "ref": "R192 (its CT-64 decision)",
+          "quote": "and a cached card that is a legal decision TARGET (Prismatic Observer, R41) likewise"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "163-cache-affordance-and-badges.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R192 (its exceptions); no existing test drives either exception had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R192": "adedcbd988e9d0a572f71648f0e048fad01a6dab9d08bc68f2dd70d49a14ad3d"
+    }
+  },
+  {
+    "key": "annexd.display.hover-tip",
+    "parent": "D6",
+    "order": 17,
+    "text": "A scroll hides a card's long-hover tooltip only if the scroll could have moved that card: a scroll of the whole page, or of a panel the card is inside. A scroll of anything else, such as the side rail, leaves the tooltip shown. When no card is hovered, any scroll hides the tooltip.",
+    "examples": [
+      {
+        "text": "The side rail scrolls while the pointer rests on a unit on the board. The unit's tooltip stays.",
+        "test": "199-hover-scroll.test.ts::R230 §1: the focus rail scrolling does NOT hide the tip — this is #110"
+      },
+      {
+        "text": "The page scrolls while the pointer rests on a unit. The tooltip is hidden.",
+        "test": "199-hover-scroll.test.ts::R230 §2: a scroll that could have MOVED the card still hides the tip"
+      },
+      {
+        "text": "A panel holding a different card scrolls. The hovered card's tooltip stays.",
+        "test": "199-hover-scroll.test.ts::R230 §4: a scroller holding some OTHER card does not hide this one"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R230",
+          "quote": "A scroll hides the long-hover tooltip when it could have MOVED the hovered"
+        },
+        {
+          "ref": "R230",
+          "quote": "The document scrolled → everything moved, hide."
+        },
+        {
+          "ref": "R230",
+          "quote": "Nothing hovered → nothing to protect, hide. An element scrolled → hide only if"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "199-hover-scroll.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R230 had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R230": "c99d59d4f1e19bcfb72ced5132ab1b09e63e59b00ba7345357bf886aa8b0371f"
+    }
+  },
+  {
+    "key": "annexd.display.arrows",
+    "parent": "D6",
+    "order": 18,
+    "text": "An arrow from an effect to its target is aimed at the exact centre of the target. Where the target shows text near its centre (a player's life total, the name on a card drawn without its picture, the label of a stack item with no picture), the arrowhead stops just short of that text, so the text can still be read. On a card whose picture has loaded, the arrowhead is not moved. If the text cannot be cleared without the head stopping more than a head's length outside the target, the head stops where it otherwise would.",
+    "examples": [
+      {
+        "text": "An effect targets a player. The arrow points at their life total, and its head stops short of the number.",
+        "test": "234-arrowhead-clears-text.test.ts::[R255] every measured endpoint has an arrowhead that clears its text"
+      },
+      {
+        "text": "An arrow to a unit whose picture has loaded ends in the usual place.",
+        "test": "234-arrowhead-clears-text.test.ts::[R255] an endpoint with nothing legible in the middle is not moved at all"
+      },
+      {
+        "text": "A target whose label is too big to clear keeps the usual stopping point.",
+        "test": "234-arrowhead-clears-text.test.ts::[R255] a label too big to clear keeps the old inset rather than parking outside"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R255",
+          "quote": "When an effect is targeting a player, the arrow covers up their life total, making it impossible to read."
+        },
+        {
+          "ref": "R255",
+          "quote": "the AIM does not move; the STOP does."
+        },
+        {
+          "ref": "R255",
+          "quote": "enough to clear the text the destination actually shows"
+        },
+        {
+          "ref": "R255",
+          "quote": "An endpoint with nothing legible near its middle is not touched."
+        },
+        {
+          "ref": "R255",
+          "quote": "When the label cannot be cleared from inside the element at all, the old inset wins."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "234-arrowhead-clears-text.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R255 had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R255": "373caf333ad53e419e9c91577ff0a1e80b90ded88de68fbda5f13199be3b3838"
+    }
+  },
+  {
+    "key": "annexd.confirm.refusals",
+    "parent": "D7",
+    "order": 5,
+    "text": "When the server refuses something, the player is told, whatever screen they are on: the connecting screen, a waiting room before the game starts, or the board. Joining with a code for which no game exists says that no game has that code.",
+    "examples": [
+      {
+        "text": "A player types a room code that no game has. The connecting screen shows the refusal instead of waiting forever.",
+        "test": "254-join-nonexistent-room.test.ts::R274 §2 a refused join reaches the connecting screen instead of Connecting forever"
+      },
+      {
+        "text": "An error arriving in the constructed waiting room, where there is no board yet, is shown there.",
+        "test": "254-join-nonexistent-room.test.ts::R274 §3 an error in the constructed waiting room lands too, where there is still no board"
+      },
+      {
+        "text": "The refusal for an unknown code names the code.",
+        "test": "254-join-nonexistent-room.test.ts::R274 §1 a code the server never minted is refused, and the refusal names it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R274",
+          "quote": "A refusal from the server reaches the player on the connecting screen, in the constructed/draft waiting room, and on the board alike."
+        },
+        {
+          "ref": "R274",
+          "quote": "There is no screen on which the server may say \"no\" and the client may say nothing."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "254-join-nonexistent-room.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R274 had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R274": "0479ef6ddff6827343ea9cc6a0ebd96b31f6ddfaa9873cc96a5e81af4e1ede3e"
+    }
   }
 ]

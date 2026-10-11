@@ -3947,6 +3947,10 @@
         {
           "ref": "R86",
           "quote": "1 target must remain for whole effect to be carried out"
+        },
+        {
+          "ref": "R5",
+          "quote": "otherwise it **resolves partially** against the remaining legal targets. Applied per card"
         }
       ],
       "history": [],
@@ -3961,6 +3965,7 @@
     "confidence": "high",
     "notes": "Round 2: \"untargeted parts included\" is sourced to RAQ 1354013430805434389#0 (\"whole effect\") and R86. No suite test loses one of two targets with an untargeted part; the verifier's probe (data/comprehensive-rules/build/probes/U14/u14-r2-probes.test.ts) shows it, so example 1 is illustrative.",
     "sourceHashes": {
+      "R5": "6283db6f29d6384bc28d15859947eea3161b10a3a184358aa424158bad304af6",
       "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c",
       "RAQ 1354013430805434389#0": "2f5f70bb31f81207fd0063d8c5b91bb010f1129ee383f5d918fa9b37f20f25bc",
       "RAQ 1410252965276684418#4": "ee20bb154c435ac4808f0e5142e48b71bed3539be7d3ccd79047f57b9f4e98a2"

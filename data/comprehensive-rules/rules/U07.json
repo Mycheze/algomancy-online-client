@@ -4500,5 +4500,54 @@
     "sourceHashes": {
       "R263": "be0e39f8d855e871f137cc7bcc78363790b292063c77aa9530b9e102070144ef"
     }
+  },
+  {
+    "key": "zones.changes.leave-play-order",
+    "parent": "410",
+    "order": 7,
+    "text": "When a unit leaves play for a bin, it dies (or, if it was exchanged out of play, despawns) before anything is trashed. The unit and its mods leave play; then its death or despawn happens, and the abilities that trigger on it trigger; only then is any card trashed (see keywords.actions.trash).",
+    "examples": [
+      {
+        "text": "A unit with no mods dies and goes to its controller's bin. Its death comes first, then it is trashed.",
+        "test": "440-cr-uncovered-rulings.test.ts::cr:zones.changes.leave-play-order — a unit that dies dies first, and is trashed after"
+      },
+      {
+        "text": "Hooba-Mon exchanges itself for a unit card in its controller's bin. It despawns, and only then is it trashed. It does not die.",
+        "test": "440-cr-uncovered-rulings.test.ts::cr:zones.changes.leave-play-order — a unit exchanged out of play despawns first, and is trashed after"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R153 (its step 3, the announce)",
+          "quote": "When something leaves **play** for a bin, exactly one sequence runs:"
+        },
+        {
+          "ref": "R153 (its step 3, the announce)",
+          "quote": "logged *and fired*, after every push and before every trash, so a death listener and a despawn listener see the"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R153",
+          "relation": "its steps 1 and 4 (mods to their owner's bin; every nontoken mod trashed; a token body trashed) superseded by R250, R244 and R306; its other steps are stated by 400.4, 410.4, 410.5 and 801.2"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "440-cr-uncovered-rulings.test.ts",
+        "129-disposal-tail.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Drafted 2026-10-11 (coverage round): R153 (only its announce-between-push-and-trash step survives uncovered) had no CR rule before the register is retired.",
+    "sourceHashes": {
+      "R153": "7c699cd9d3862270ee916e0ea58682ce8b270b4ca0fb69d86f99b6e5e122046a"
+    }
   }
 ]

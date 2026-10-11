@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1788 rules and 99 sections.
+- New: 1797 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -510,6 +510,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 410.6 `zones.changes.played-from`
   - 410.6a `zones.changes.played-from.spell-token`
   - 410.6b `zones.changes.played-from.created`
+  - 410.7 `zones.changes.leave-play-order`
   - 500.1 `turn.general.phases`
   - 500.2 `turn.general.global`
   - 500.2a `turn.general.global.digital`
@@ -725,6 +726,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 606.2c `combat.blocks.who.attributes`
   - 606.2d `combat.blocks.who.not-sent`
   - 606.2e `combat.blocks.who.lured`
+  - 606.2f `combat.blocks.who.always-legal`
   - 606.3 `combat.blocks.blocked`
   - 606.3a `combat.blocks.blocked.stays`
   - 606.3b `combat.blocks.blocked.no-damage-through`
@@ -972,6 +974,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 706.11 `effects.triggered.attributes`
   - 706.12 `effects.triggered.chosen-unit`
   - 706.12a `effects.triggered.chosen-unit.not-target`
+  - 706.13 `effects.triggered.that-item`
   - 707.1 `effects.static.what`
   - 707.2 `effects.static.no-stack`
   - 707.3 `effects.static.printed-form`
@@ -1722,6 +1725,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D6.6e `annexd.reveal.public-zones.deck-elements`
   - D6.7 `annexd.reveal.beats`
   - D6.7a `annexd.reveal.beats.never-gates`
+  - D6.7b `annexd.reveal.beats.journeys`
   - D6.8 `annexd.display.copies`
   - D6.8a `annexd.display.copies.marked`
   - D6.8b `annexd.display.copies.projection`
@@ -1749,6 +1753,10 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D6.14b `annexd.display.hand.resource-menu`
   - D6.15 `annexd.display.menus`
   - D6.15a `annexd.display.menus.log`
+  - D6.16 `annexd.display.panels`
+  - D6.16a `annexd.display.panels.cache-dialog-only`
+  - D6.17 `annexd.display.hover-tip`
+  - D6.18 `annexd.display.arrows`
   - D7.1 `annexd.confirm.never-refuse`
   - D7.1a `annexd.confirm.never-refuse.x-zero`
   - D7.1b `annexd.confirm.never-refuse.ally`
@@ -1768,6 +1776,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D7.4a `annexd.confirm.not-only-log.token-loss`
   - D7.4b `annexd.confirm.not-only-log.toast`
   - D7.4c `annexd.confirm.not-only-log.coalesce`
+  - D7.5 `annexd.confirm.refusals`
   - D8.1 `annexd.modes.learn-to-play`
   - D8.1a `annexd.modes.learn-to-play.deal`
   - D8.1b `annexd.modes.learn-to-play.bot-card`
