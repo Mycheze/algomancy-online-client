@@ -27,7 +27,7 @@ Endpoints
 Run
 ---
   pip install -r requirements.txt
-  python3 app.py <DEEPSEEK_API_KEY>      # or set DEEPSEEK_API_KEY in env/.env
+  python3 app.py                         # LLM_API_KEY (or DEEPSEEK_API_KEY) from env/.env
   # then open http://localhost:8000  (share it publicly with a Cloudflare Tunnel)
 """
 
@@ -37,7 +37,7 @@ from urllib.parse import quote
 
 from dotenv import load_dotenv
 
-load_dotenv()  # populate env before importing core (reads DEEPSEEK_* at import)
+load_dotenv()  # populate env before importing core (reads LLM_*/DEEPSEEK_* at import)
 
 import functools
 import mimetypes
@@ -77,9 +77,9 @@ async def lifespan(app: FastAPI):
     # --reload`, which skips __main__), init it from the environment so the ask
     # endpoint works. No-op when __main__ already called init_client.
     if core.ai is None:
-        key = os.getenv("DEEPSEEK_API_KEY")
+        key = core.api_key()
         if key:
-            core.init_client(key, model=os.getenv("DEEPSEEK_MODEL") or None)
+            core.init_client(key)   # model and base URL: LLM_*/DEEPSEEK_* via core
     yield
 
 
@@ -203,8 +203,10 @@ async def api_ask(req: AskRequest):
     if not question:
         raise HTTPException(status_code=400, detail="Empty question.")
     history = [{"role": t.role, "content": t.content} for t in req.history]
+    meta = {}
     try:
-        answer, hits, reasoning = await core.answer_question(question, history, context=req.context)
+        answer, hits, reasoning = await core.answer_question(question, history,
+                                                             context=req.context, meta=meta)
     except Exception as exc:  # surface API/auth errors instead of a silent 500
         raise HTTPException(status_code=502, detail=f"Couldn't reach the model: {exc}")
 
@@ -215,8 +217,8 @@ async def api_ask(req: AskRequest):
     rid = store.new_response_id()
     store.log_response(
         rid, "lesson" if req.context else "followup" if history else "ask", question, answer, hits,
-        core.DEEPSEEK_MODEL, user_id=req.session_id or "web", channel_id="web",
-        history=history, reasoning=reasoning, engine_version=core.ENGINE_VERSION)
+        core.LLM_MODEL, user_id=req.session_id or "web", channel_id="web",
+        history=history, reasoning=reasoning, engine_version=core.ENGINE_VERSION, llm=meta)
 
     return {
         # Markdown with citation superscripts, icon tokens ([Switch1], [Augment], …)
@@ -228,7 +230,7 @@ async def api_ask(req: AskRequest):
         "sources": _sources_payload(sources),
         "cited_cards": cited_cards,
         "reasoning": reasoning,
-        "model": core.DEEPSEEK_MODEL,
+        "model": meta.get("model") or core.LLM_MODEL,
     }
 
 
@@ -547,15 +549,15 @@ if __name__ == "__main__":
     # public; it is a decision now, not the default.
     # ⚠ AND NO SECRET ON THE COMMAND LINE — see bot.py's note.
     ap = argparse.ArgumentParser(description="Run the Algomancy rules web app.")
-    ap.add_argument("--model", help=f"DeepSeek model id (default: {core.DEEPSEEK_MODEL})")
+    ap.add_argument("--model", help=f"model id (default: {core.LLM_MODEL})")
     ap.add_argument("--host", default="127.0.0.1", help="bind host (default: 127.0.0.1)")
     ap.add_argument("--port", type=int, default=8000, help="bind port (default: 8000)")
     args = ap.parse_args()
 
-    deepseek_key = os.getenv("DEEPSEEK_API_KEY")
-    if not deepseek_key:
-        raise SystemExit("DEEPSEEK_API_KEY must be set in the environment or in .env "
-                         "(see .env.example). It is not accepted on the command line.")
+    llm_key = core.api_key()
+    if not llm_key:
+        raise SystemExit("LLM_API_KEY (or DEEPSEEK_API_KEY) must be set in the environment "
+                         "or in .env (see .env.example). It is not accepted on the command line.")
 
-    core.init_client(deepseek_key, model=args.model)
+    core.init_client(llm_key, model=args.model)
     uvicorn.run(app, host=args.host, port=args.port)

@@ -39,7 +39,7 @@ Where the rest of it is
 Setup
 -----
   pip install -r requirements.txt
-  cp .env.example .env      # then fill in DISCORD_TOKEN and DEEPSEEK_API_KEY
+  cp .env.example .env      # then fill in DISCORD_TOKEN and LLM_API_KEY (or DEEPSEEK_API_KEY)
   python3 bot.py
 
 ⚠ The bot must be invited with BOTH scopes — `bot applications.commands`. With
@@ -55,7 +55,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-# Load .env before importing core, which reads DEEPSEEK_* config at import time.
+# Load .env before importing core, which reads LLM_* (or DEEPSEEK_*) config at import time.
 load_dotenv()
 
 import combos
@@ -167,16 +167,19 @@ class AlgoBot(commands.Bot):
                 and not message.content.startswith(PREFIX)):
             history = THREADS[message.channel.id]
             async with message.channel.typing():
+                meta = {}
                 try:
-                    answer, hits, reasoning = await answer_question(message.content, history)
+                    answer, hits, reasoning = await answer_question(message.content, history,
+                                                                    meta=meta)
                 except Exception as exc:
                     await message.reply(f"⚠️ Couldn't reach the model: `{exc}`")
                     return
             rid = store.new_response_id()
-            store.log_response(rid, "followup", message.content, answer, hits, core.DEEPSEEK_MODEL,
+            store.log_response(rid, "followup", message.content, answer, hits, core.LLM_MODEL,
                                user_id=message.author.id, channel_id=message.channel.parent_id,
                                thread_id=message.channel.id, history=list(history),
-                               reasoning=reasoning, engine_version=core.ENGINE_VERSION)
+                               reasoning=reasoning, engine_version=core.ENGINE_VERSION,
+                               llm=meta)
             history.append({"role": "user", "content": message.content})
             history.append({"role": "assistant", "content": answer})
             await message.reply(embed=answer_embed(message.content, answer, hits, reasoning),
@@ -190,7 +193,7 @@ class AlgoBot(commands.Bot):
     async def on_ready(self):
         # Cache custom emojis from every guild the bot is in, by name, for card icons.
         EMOJI.update({e.name: str(e) for e in self.emojis})
-        print(f"Logged in as {self.user} · model={core.DEEPSEEK_MODEL} · "
+        print(f"Logged in as {self.user} · model={core.LLM_MODEL} · "
               f"{len(retriever.rows)} chunks, {len(cards.names)} cards, "
               f"{len(EMOJI)} custom emojis loaded")
 
@@ -573,15 +576,16 @@ if __name__ == "__main__":
     # API key and the bot token in /proc/<pid>/cmdline, readable by every user
     # and every process-monitoring tool on the box. Environment (or .env) only.
     ap = argparse.ArgumentParser(description="Run the Algomancy rules Discord bot.")
-    ap.add_argument("--model", help=f"DeepSeek model id (default: {core.DEEPSEEK_MODEL})")
+    ap.add_argument("--model", help=f"model id (default: {core.LLM_MODEL})")
     args = ap.parse_args()
 
-    deepseek_key = os.getenv("DEEPSEEK_API_KEY")
+    llm_key = core.api_key()
     token = os.getenv("DISCORD_TOKEN")
-    if not deepseek_key or not token:
+    if not llm_key or not token:
         raise SystemExit(
-            "DEEPSEEK_API_KEY and DISCORD_TOKEN must be set in the environment or in .env "
-            "(see .env.example). They are not accepted on the command line.")
+            "LLM_API_KEY (or DEEPSEEK_API_KEY) and DISCORD_TOKEN must be set in the "
+            "environment or in .env (see .env.example). They are not accepted on the "
+            "command line.")
 
-    core.init_client(deepseek_key, model=args.model)
+    core.init_client(llm_key, model=args.model)
     bot.run(token)

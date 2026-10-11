@@ -109,13 +109,22 @@ def new_response_id():
 
 def log_response(response_id, kind, question, answer, hits, model,
                  *, user_id, channel_id, thread_id=None, history=None,
-                 reasoning=False, engine_version=None):
-    """Persist one AI answer with its full retrieval context for later training."""
+                 reasoning=False, engine_version=None, llm=None):
+    """Persist one AI answer with its full retrieval context for later training.
+
+    `llm` is the dict core.answer_question(meta=...) filled. Its fields are
+    ADDED to the record (latency_ms, total_ms, usage, cost_usd, cost_basis,
+    provider, requested_model, fallback, attempts) and every older field keeps
+    its name and meaning — except that `model` becomes the model that actually
+    answered, which differs from the configured one only when the fallback ran
+    (then `requested_model` and `fallback` say so). Rows from before
+    2026-10-11 simply lack the new keys."""
+    llm = llm or {}
     record = {
         "response_id": response_id,
         "ts": _now(),
         "kind": kind,                       # "ask" | "followup"
-        "model": model,
+        "model": llm.get("model") or model,
         "reasoning": reasoning,             # True if "math mode" thinking was on
         "engine_version": engine_version,   # which prompt+primer+corpus produced it
 
@@ -138,6 +147,12 @@ def log_response(response_id, kind, question, answer, hits, model,
         ],
         "history": history or [],           # prior turns (clean Q/A, no context blobs)
     }
+    # Measured per call (added 2026-10-11). Absent keys stay absent rather than
+    # null when the caller passed no meta, so "not measured" and "unknown" differ.
+    for key in ("requested_model", "provider", "latency_ms", "total_ms", "usage",
+                "cost_usd", "cost_basis", "fallback", "attempts"):
+        if key in llm:
+            record[key] = llm[key]
     _append(responses_log(), record)
 
 def log_feedback(response_id, rating, user_id):

@@ -3,8 +3,9 @@
 core.py — the shared Algomancy rules "brain".
 
 This is the framework-agnostic RAG core: retrieval (BM25 over the rules corpus),
-the verified rules primer, the system prompt, the DeepSeek call with the "math
-mode" reasoning router, and citation rendering. It knows nothing about Discord or
+the verified rules primer, the system prompt, the model call (any OpenAI-compatible
+API; DeepSeek by default) with the "math mode" reasoning router, retry/fallback
+and per-call usage/cost measurement, and citation rendering. It knows nothing about Discord or
 HTTP — both `bot.py` (Discord) and `app.py` (web) import from here so there is a
 single brain behind every front-end.
 
@@ -15,17 +16,54 @@ import hashlib
 import asyncio
 import os
 import re
+import time
+from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
+import openai
 from openai import AsyncOpenAI
 
 from cards import CardIndex
 import retriever as retr
 from retriever import CORPUS, Retriever
 
-DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
-DEEPSEEK_BASE = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
-MAX_HISTORY = 8        # how many prior turns to resend as conversation context
+
+def _env(name, default=None):
+    """`LLM_<name>`, else the pre-2026-10-11 `DEEPSEEK_<name>`, else `default`.
+
+    ⚠ THE OLD NAMES ARE A FALLBACK, NOT DEPRECATED NOISE. The deployed `.env`
+    on the VPS says DEEPSEEK_API_KEY (and maybe DEEPSEEK_MODEL/_TIMEOUT); it has
+    to keep working, unedited, the day this lands. An empty value counts as
+    unset, the way `.env.example`'s blank lines are meant."""
+    for key in (f"LLM_{name}", f"DEEPSEEK_{name}"):
+        v = os.getenv(key)
+        if v is not None and v.strip() != "":
+            return v.strip()
+    return default
+
+
+def api_key():
+    """The primary model's API key, from the environment only — never argv (see
+    the note in bot.py's __main__)."""
+    return _env("API_KEY")
+
+
+# Any OpenAI-compatible chat-completions endpoint. `deepseek-flash` is the
+# current name for V4.1 Flash; `deepseek-v4-flash` (the default until
+# 2026-10-11) is a retired alias DeepSeek still routes to the same model.
+LLM_MODEL = _env("MODEL", "deepseek-flash")
+LLM_BASE_URL = _env("BASE_URL", "https://api.deepseek.com")
+# Kept under the old names: discordui.py's footer and older callers read them.
+DEEPSEEK_MODEL = LLM_MODEL
+DEEPSEEK_BASE = LLM_BASE_URL
+# Optional second model, tried ONCE in place of the retry when the primary times
+# out, errors 5xx/429, drops the connection or returns an empty answer. Its base
+# URL and key default to the primary's.
+FALLBACK_MODEL = os.getenv("LLM_FALLBACK_MODEL") or None
+FALLBACK_BASE_URL = os.getenv("LLM_FALLBACK_BASE_URL") or None
+FALLBACK_API_KEY = os.getenv("LLM_FALLBACK_API_KEY") or None
+MAX_HISTORY = 8       # how many prior turns to resend as conversation context
 # 10, not 6: the rulings corpus is dense enough that 6 slots could be swept
 # entirely by edge-case rulings, leaving no room for the base rule they modify.
 # 10 slots + retriever's FOUNDATION_FLOOR keeps both on the table.
@@ -34,10 +72,35 @@ TOP_K = 10             # chunks retrieved per question
 # "Math mode": stat/arithmetic questions (combat damage, buffs, Electric arcing,
 # Fireball-vs-Growth, regroup math) benefit from DeepSeek's thinking mode. We
 # auto-detect them and enable thinking only then, so the cost hits just the
-# questions that need it. DEEPSEEK_REASONING: "auto" (detect) | "off" | "always".
-REASONING_MODE = os.getenv("DEEPSEEK_REASONING", "auto").lower()
-MODEL_TIMEOUT = float(os.getenv("DEEPSEEK_TIMEOUT", "60"))
-REASONING_EFFORT = os.getenv("DEEPSEEK_REASONING_EFFORT", "high")
+# questions that need it. LLM_REASONING: "auto" (detect) | "off" | "always".
+REASONING_MODE = _env("REASONING", "auto").lower()
+REASONING_EFFORT = _env("REASONING_EFFORT", "high")
+
+# --- time budget ----------------------------------------------------------
+# ⚠ THE GAME SERVER'S /api/judge PROXY GIVES UP AT 60 s (client/server/main.ts,
+# AbortSignal.timeout(60000)). Everything below has to fit inside it.
+#
+# ⚠ AND AN httpx TIMEOUT DOES NOT BOUND A DEEPSEEK CALL. DeepSeek keeps a
+# queued non-streaming request alive by sending blank lines until inference
+# starts (up to 10 minutes — api-docs.deepseek.com, "Rate Limit"), and httpx's
+# timeout is per read, so every blank line resets it. The 60 s DEEPSEEK_TIMEOUT
+# this replaced could therefore never fire on exactly the requests it was for,
+# and the SDK's two default retries stacked on top of it. So: each attempt is
+# bounded by the wall clock (asyncio.wait_for), the SDK does no retrying of its
+# own (max_retries=0), and core makes at most TWO attempts — the primary, then
+# either a retry of it or the fallback model — inside one LLM_DEADLINE.
+#
+# The numbers: a non-thinking answer is ~400 tokens at ~220 tok/s plus ~1 s
+# to first token on a ~10k-token prompt, so ~3 s; a "math mode" answer may
+# think through its whole 4000-token budget, ~20 s. LLM_TIMEOUT=25 s covers
+# that with headroom, and two of them (50 s) plus retrieval sit under a 55 s
+# deadline, which leaves the proxy ~5 s for the response to travel back.
+# The deadline wins over the per-attempt figure: a deploy that still sets
+# DEEPSEEK_TIMEOUT=60 gets one attempt clamped to 55 s and no retry.
+MODEL_TIMEOUT = float(_env("TIMEOUT", "25"))
+LLM_DEADLINE = float(os.getenv("LLM_DEADLINE") or "55")
+# An attempt is not started with less than this left: it could not finish.
+MIN_ATTEMPT_S = 3.0
 
 # Verified core-rules digest, always supplied to the model so it has reliable
 # footing even when retrieval misses. Grounded in the Manual + Rules Glossary;
@@ -367,23 +430,240 @@ ENGINE_VERSION = f"{ENGINE_DATE}.p{PROMPT_SIG}.c{CORPUS_SIG}.r{RETRIEVAL_SIG}"
 # --- indexes & client (loaded once at startup) ---------------------------
 retriever = Retriever()
 cards = CardIndex()
-# The DeepSeek client is built by init_client() once the API key is resolved (CLI
-# arg or env), so this module can be imported without a key present (e.g. tests).
+# The model client is built by init_client() once the API key is resolved (from
+# the environment), so this module can be imported without a key (e.g. tests).
 ai: AsyncOpenAI | None = None
+ai_fallback: AsyncOpenAI | None = None
 
 
-def init_client(api_key, base_url=DEEPSEEK_BASE, model=None):
-    """Build the DeepSeek client (and optionally override the model). Call once at
-    startup before answer_question. Returns the client."""
-    global ai, DEEPSEEK_MODEL
-    # ⚠ timeout: the SDK's default is 600 s. The game server's /api/judge proxy
-    # gives up at 60 s, so anything slower was an orphaned in-flight call on
-    # this side with the caller already gone — and enough of those exhaust the
-    # connection pool. One number here, and both front-ends inherit it.
-    ai = AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=MODEL_TIMEOUT)
+def init_client(api_key, base_url=None, model=None):
+    """Build the model client (and the fallback's, when LLM_FALLBACK_MODEL is
+    set), optionally overriding the model. Call once at startup before
+    answer_question. Returns the primary client."""
+    global ai, ai_fallback, LLM_MODEL, LLM_BASE_URL, DEEPSEEK_MODEL, DEEPSEEK_BASE
+    if base_url:
+        LLM_BASE_URL = DEEPSEEK_BASE = base_url
     if model:
-        DEEPSEEK_MODEL = model
+        LLM_MODEL = DEEPSEEK_MODEL = model
+    # ⚠ timeout: the SDK's default is 600 s. This httpx-level figure still
+    # catches a dead socket, but it is NOT what bounds a call — see the time
+    # budget note at the top: _complete() wraps every attempt in the wall
+    # clock. max_retries=0 because the retry is core's, inside the deadline.
+    ai = AsyncOpenAI(api_key=api_key, base_url=LLM_BASE_URL,
+                     timeout=MODEL_TIMEOUT, max_retries=0)
+    ai_fallback = None
+    if FALLBACK_MODEL:
+        fb_base = FALLBACK_BASE_URL or LLM_BASE_URL
+        fb_key = FALLBACK_API_KEY or api_key
+        ai_fallback = (ai if (fb_base == LLM_BASE_URL and fb_key == api_key)
+                       else AsyncOpenAI(api_key=fb_key, base_url=fb_base,
+                                        timeout=MODEL_TIMEOUT, max_retries=0))
     return ai
+
+
+# --- providers: the request extras that differ between OpenAI-compatible APIs --
+# Keyed by base-URL host (LLM_PROVIDER forces one, for a proxy or a local box).
+# Each entry answers: what turns thinking OFF, what turns it ON at an effort,
+# and whether `temperature` is sent alongside reasoning.
+#
+# ⚠ DEEPSEEK'S "off" IS NOT OPTIONAL. Flash is a hybrid model that thinks BY
+# DEFAULT (effort high, per the Thinking Mode guide). Not merely leaving
+# thinking unrequested but explicitly disabling it is what keeps the cheap path
+# from spending its whole 900-token budget on hidden reasoning and returning
+# empty content (finish_reason=length). Thinking mode ignores temperature.
+#
+# OpenRouter (openrouter.ai/docs, "Reasoning Tokens"): `reasoning.effort:
+# "none"` disables it; `{effort, exclude: true}` reasons without returning the
+# chain. A model flagged `mandatory` rejects "none" — choose another model.
+#
+# Anything else gets the generic entry: nothing sent to switch thinking off
+# (there is no standard), top-level `reasoning_effort` to switch it on. A model
+# there that reasons by default shows up as empty answers in the log
+# (attempts[].error = "empty …") — give its host an entry here.
+PROVIDERS = {
+    "deepseek": {
+        "hosts": ("api.deepseek.com",),
+        "off": lambda: {"extra_body": {"thinking": {"type": "disabled"}}},
+        "on": lambda effort: {"reasoning_effort": effort,
+                              "extra_body": {"thinking": {"type": "enabled"}}},
+        "temperature_with_reasoning": False,
+    },
+    "openrouter": {
+        "hosts": ("openrouter.ai",),
+        "off": lambda: {"extra_body": {"reasoning": {"effort": "none"}}},
+        "on": lambda effort: {"extra_body": {"reasoning": {"effort": effort,
+                                                           "exclude": True}}},
+        "temperature_with_reasoning": False,
+    },
+    "generic": {
+        "hosts": (),
+        "off": lambda: {},
+        "on": lambda effort: {"reasoning_effort": effort},
+        "temperature_with_reasoning": False,
+    },
+}
+
+
+def provider_for(base_url):
+    """The PROVIDERS key for a base URL (LLM_PROVIDER overrides)."""
+    forced = (os.getenv("LLM_PROVIDER") or "").strip().lower()
+    if forced in PROVIDERS:
+        return forced
+    host = (urlparse(base_url or "").hostname or "").lower()
+    for name, p in PROVIDERS.items():
+        if any(host == h or host.endswith("." + h) for h in p["hosts"]):
+            return name
+    return "generic"
+
+
+def request_params(base_url, reasoning, effort=None):
+    """Token budget, temperature and the provider's thinking switch for one call."""
+    p = PROVIDERS[provider_for(base_url)]
+    if reasoning:
+        # Hidden reasoning tokens count against max_tokens, so the budget must
+        # cover the chain-of-thought AND the visible answer.
+        params = {"max_tokens": 4000, **p["on"](effort or REASONING_EFFORT)}
+        if p["temperature_with_reasoning"]:
+            params["temperature"] = 0.2
+    else:
+        params = {"max_tokens": 900, "temperature": 0.2, **p["off"]()}
+    return params
+
+
+# --- usage & cost -----------------------------------------------------------
+# ONE price table. USD per 1M tokens at the provider's standard (peak) rate:
+# input on a cache miss, input on a cache hit, output (reasoning tokens bill as
+# output). From api-docs.deepseek.com/quick_start/pricing, fetched 2026-10-11.
+# A model not in this table gets cost_usd = null — never a guess. A provider
+# that reports its own charge (OpenRouter's usage.cost) is believed over this.
+PRICES = {
+    "deepseek-flash":    {"in": 0.30, "cached": 0.006, "out": 1.20, "offpeak": "deepseek"},
+    # retired alias, routed to and billed as V4.1 Flash
+    "deepseek-v4-flash": {"in": 0.30, "cached": 0.006, "out": 1.20, "offpeak": "deepseek"},
+    "deepseek-v4-pro":   {"in": 1.32, "cached": 0.044, "out": 3.96, "offpeak": "deepseek"},
+}
+
+
+def deepseek_peak(when):
+    """DeepSeek bills full rate 01:00–04:00 and 06:00–10:00 UTC, Monday–Friday,
+    and half everywhere else. ⚠ Chinese public holidays are also off-peak and
+    are NOT modelled: on those days the logged cost is twice the real one."""
+    when = when.astimezone(timezone.utc)
+    return when.weekday() < 5 and (1 <= when.hour < 4 or 6 <= when.hour < 10)
+
+
+def _field(obj, name):
+    if obj is None:
+        return None
+    if isinstance(obj, dict):
+        return obj.get(name)
+    return getattr(obj, name, None)
+
+
+def read_usage(resp):
+    """Normalise resp.usage across providers to {prompt, cached, completion,
+    reasoning} (None where the provider did not say), plus its reported cost."""
+    u = _field(resp, "usage")
+    if u is None:
+        return None, None
+    cached = _field(u, "prompt_cache_hit_tokens")                         # DeepSeek
+    if cached is None:
+        cached = _field(_field(u, "prompt_tokens_details"), "cached_tokens")  # OpenAI-style
+    usage = {
+        "prompt": _field(u, "prompt_tokens"),
+        "cached": cached,
+        "completion": _field(u, "completion_tokens"),
+        "reasoning": _field(_field(u, "completion_tokens_details"), "reasoning_tokens"),
+    }
+    reported = _field(u, "cost")
+    return usage, (float(reported) if isinstance(reported, (int, float)) else None)
+
+
+def cost_usd(model, usage, when=None, reported=None):
+    """(cost, basis) for one call. basis is "provider", "peak", "offpeak", or
+    None when the cost is unknown (cost None too)."""
+    if reported is not None:
+        return round(reported, 8), "provider"
+    price = PRICES.get(model)
+    if not price or not usage or usage.get("prompt") is None or usage.get("completion") is None:
+        return None, None
+    cached = usage.get("cached") or 0
+    dollars = ((usage["prompt"] - cached) * price["in"] + cached * price["cached"]
+               + usage["completion"] * price["out"]) / 1_000_000
+    basis = "peak"
+    if price.get("offpeak") == "deepseek" and not deepseek_peak(when or datetime.now(timezone.utc)):
+        dollars, basis = dollars / 2, "offpeak"
+    return round(dollars, 8), basis
+
+
+class _Retryable(Exception):
+    """An attempt failed in a way worth one more try (or the fallback)."""
+
+
+async def _attempt(client, model, base_url, messages, reasoning, timeout):
+    params = {"model": model, "messages": messages, **request_params(base_url, reasoning)}
+    try:
+        resp = await asyncio.wait_for(client.chat.completions.create(**params), timeout)
+    except (asyncio.TimeoutError, openai.APITimeoutError):
+        raise _Retryable("timeout")
+    except openai.APIConnectionError as exc:
+        raise _Retryable(f"connection: {exc}")
+    except openai.APIStatusError as exc:
+        if exc.status_code >= 500 or exc.status_code == 429:
+            raise _Retryable(f"http {exc.status_code}")
+        raise                      # 4xx: a bad key or request; another try won't help
+    answer = (resp.choices[0].message.content or "").strip()
+    if not answer:
+        raise _Retryable(f"empty (finish_reason={resp.choices[0].finish_reason})")
+    return answer, resp
+
+
+async def _complete(messages, reasoning, meta, start):
+    """Up to two attempts inside LLM_DEADLINE (counted from `start`, a
+    time.monotonic() taken before retrieval): the primary, then the fallback
+    model if one is configured, else the primary once more. Fills `meta` with
+    what the log needs and returns the answer text."""
+    plan = [("primary", ai, LLM_MODEL, LLM_BASE_URL)]
+    if ai_fallback is not None:
+        plan.append(("fallback", ai_fallback, FALLBACK_MODEL, FALLBACK_BASE_URL or LLM_BASE_URL))
+    else:
+        plan.append(("retry", ai, LLM_MODEL, LLM_BASE_URL))
+    attempts = []
+    for kind, client, model, base in plan:
+        remaining = LLM_DEADLINE - (time.monotonic() - start)
+        if remaining < MIN_ATTEMPT_S:
+            break
+        t0 = time.monotonic()
+        try:
+            answer, resp = await _attempt(client, model, base, messages, reasoning,
+                                          min(MODEL_TIMEOUT, remaining))
+        except _Retryable as exc:
+            attempts.append({"kind": kind, "model": model, "error": str(exc),
+                             "ms": round((time.monotonic() - t0) * 1000)})
+            print(f"[llm] {kind} {model}: {exc}")
+            continue
+        ms = round((time.monotonic() - t0) * 1000)
+        attempts.append({"kind": kind, "model": model, "error": None, "ms": ms})
+        usage, reported = read_usage(resp)
+        cost, basis = cost_usd(model, usage, reported=reported)
+        meta.update({
+            "model": model,
+            "requested_model": LLM_MODEL,
+            "provider": provider_for(base),
+            "latency_ms": ms,
+            "usage": usage,
+            "cost_usd": cost,
+            "cost_basis": basis,
+            "fallback": ({"from": LLM_MODEL, "reason": attempts[0]["error"]}
+                         if kind == "fallback" else None),
+            "attempts": attempts,
+        })
+        return answer
+    meta["attempts"] = attempts
+    why = "; ".join(f"{a['kind']} {a['model']}: {a['error']}" for a in attempts) or "no time left"
+    if attempts and all(a["error"] == "timeout" for a in attempts):
+        raise TimeoutError(f"model timed out ({why})")
+    raise RuntimeError(f"model gave no answer ({why})")
 
 
 # --- RAG plumbing --------------------------------------------------------
@@ -454,13 +734,20 @@ def _use_reasoning(question):
     return needs_reasoning(question)
 
 
-async def answer_question(question, history, context=None):
-    """Retrieve, call DeepSeek, return (answer_text, hits, reasoning_used).
+async def answer_question(question, history, context=None, meta=None):
+    """Retrieve, call the model, return (answer_text, hits, reasoning_used).
 
     `context` (R297): the Learn to Play lesson the player is reading, placed in
-    the final user message under LESSON_NOTE. Retrieval stays on the question."""
+    the final user message under LESSON_NOTE. Retrieval stays on the question.
+
+    `meta`: pass a dict and it comes back filled with what store.log_response
+    takes as `llm=` — the model that actually answered, latency, usage, cost,
+    whether the fallback was used. A dict and not a fourth return value, so the
+    three-tuple every caller unpacks is unchanged."""
     if ai is None:
-        raise RuntimeError("DeepSeek client not initialised — call core.init_client() first")
+        raise RuntimeError("model client not initialised — call core.init_client() first")
+    start = time.monotonic()
+    meta = {} if meta is None else meta
     # BM25 over the whole corpus is synchronous and sits on the Discord bot's
     # event loop otherwise — every other command waits while it runs.
     hits = await asyncio.to_thread(retriever.search, question, k=TOP_K)
@@ -487,28 +774,11 @@ async def answer_question(question, history, context=None):
                     f"Current question: {question}"),
     })
     reasoning = _use_reasoning(question)
-    params = {"model": DEEPSEEK_MODEL, "messages": messages}
-    if reasoning:
-        # v4-flash counts hidden reasoning tokens against max_tokens, so the budget
-        # must cover the chain-of-thought AND the visible answer. Thinking mode
-        # ignores temperature.
-        params["max_tokens"] = 4000
-        params["reasoning_effort"] = REASONING_EFFORT
-        params["extra_body"] = {"thinking": {"type": "enabled"}}
-    else:
-        # v4-flash is a hybrid model that reasons BY DEFAULT. Without an explicit
-        # disable it silently spends the whole token budget on hidden reasoning and
-        # returns empty content (finish_reason=length), so thinking must be turned
-        # off for the cheap path — not merely left unrequested.
-        params["max_tokens"] = 900
-        params["temperature"] = 0.2
-        params["extra_body"] = {"thinking": {"type": "disabled"}}
-    resp = await ai.chat.completions.create(**params)
-    answer = (resp.choices[0].message.content or "").strip()
-    if not answer:
-        # Don't return a blank answer silently; surface why instead.
-        raise RuntimeError(
-            f"model returned an empty answer (finish_reason={resp.choices[0].finish_reason})")
+    # The thinking switch, token budget and temperature per provider live in
+    # PROVIDERS / request_params(); the retry, fallback and deadline in _complete().
+    # A blank answer is never returned silently: it is retried, then raised.
+    answer = await _complete(messages, reasoning, meta, start)
+    meta["total_ms"] = round((time.monotonic() - start) * 1000)
     return answer, hits, reasoning
 
 

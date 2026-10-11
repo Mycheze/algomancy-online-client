@@ -27,10 +27,13 @@ from discordui import answer_embed
 
 from .common import fail, start
 
-# How long to wait on the model before giving up and saying so. `core`'s own
-# call has no timeout, so without this a hung API request leaves the "thinking"
-# spinner up until Discord expires the interaction fifteen minutes later.
-ANSWER_TIMEOUT = 600
+# A backstop only. `core` bounds its own model phase by the wall clock
+# (core.LLM_DEADLINE, 55 s by default: at most two attempts — a retry or the
+# fallback model — inside it) and raises TimeoutError when that runs out, which
+# lands in the same branch below. This exists so that nothing core does can
+# leave the "thinking" spinner up until Discord expires the interaction fifteen
+# minutes later. (It was 600 under a comment claiming core had no timeout.)
+ANSWER_TIMEOUT = 90
 
 
 class FeedbackModal(discord.ui.Modal, title="Feedback about the bot"):
@@ -62,9 +65,10 @@ class Judge(commands.Cog):
         # Public: the answer opens a thread, and an ephemeral message cannot
         # have one. See the header.
         await start(interaction)
+        meta = {}
         try:
             answer, hits, reasoning = await asyncio.wait_for(
-                answer_question(question, history=[]), timeout=ANSWER_TIMEOUT)
+                answer_question(question, history=[], meta=meta), timeout=ANSWER_TIMEOUT)
         except asyncio.TimeoutError:
             await fail(interaction, "⚠️ The model took too long. Try again, or "
                                     "ask a narrower question.")
@@ -75,9 +79,9 @@ class Judge(commands.Cog):
 
         from bot import THREADS, feedback_view, post_cited_cards
         rid = store.new_response_id()
-        store.log_response(rid, "ask", question, answer, hits, core.DEEPSEEK_MODEL,
+        store.log_response(rid, "ask", question, answer, hits, core.LLM_MODEL,
                            user_id=interaction.user.id, channel_id=interaction.channel_id,
-                           reasoning=reasoning, engine_version=core.ENGINE_VERSION)
+                           reasoning=reasoning, engine_version=core.ENGINE_VERSION, llm=meta)
         # wait=True so we get a Message back — a WebhookMessage, which
         # subclasses Message and so can still open a thread.
         msg = await interaction.followup.send(
