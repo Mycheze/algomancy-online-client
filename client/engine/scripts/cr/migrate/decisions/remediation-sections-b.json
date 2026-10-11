@@ -1,0 +1,3033 @@
+{
+ "decisions": {
+  "client/engine/src/cards/dsl.ts##R68#e14f02d28a#0": {
+   "action": "cite",
+   "nums": [
+    "406.4b"
+   ],
+   "note": "negated self-erase spell binned; its Erase me never happened"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R68#98ff095614#0": {
+   "action": "cite",
+   "nums": [
+    "406.4b"
+   ],
+   "note": "negated self-erase spell binned; its Erase me never happened"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R68#f0dc9d05b6#0": {
+   "action": "cite",
+   "nums": [
+    "406.4b"
+   ],
+   "note": "negated self-erase spell binned; its Erase me never happened"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R68#c052734103#0": {
+   "action": "cite",
+   "nums": [
+    "406.4b"
+   ],
+   "note": "negated self-erase spell binned; its Erase me never happened"
+  },
+  "client/engine/test/89-self-erase.test.ts##R68#e63a319025#0": {
+   "action": "cite",
+   "nums": [
+    "406.4b"
+   ],
+   "note": "negated self-erase spell binned; its Erase me never happened"
+  },
+  "client/ledgers/card-todo-closed.ts##R68#75fcb5ce39#0": {
+   "action": "cite",
+   "nums": [
+    "406.4b"
+   ],
+   "note": "negated self-erase spell binned; its Erase me never happened"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R68#67ec135d92#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negate removes the item from the stack at once"
+  },
+  "client/engine/src/cards/sets/batch-fire-b.ts##R68#67ec135d92#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negate removes the item from the stack at once"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R68#263d8d8a55#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negate removes the item from the stack at once"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R68#110c6ffab7#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": "recalling a stack spell: negated, card to hand"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R68#9fa3e01201#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": "recalling a stack spell: negated, card to hand"
+  },
+  "client/engine/src/engine.ts##R68#3f83ea7785#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": "recalling a stack spell: negated, card to hand"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R68#30c302f1f4#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/src/engine.ts##R68#2b4408c4b5#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/src/engine.ts##R68#b451ecdddd#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/03-stack.test.ts##R68#53309ee0d4#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/105-semantics-playwatch.test.ts##R68#60d7983453#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/114-literal-dark.test.ts##R68#c61088217a#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/119-play-and-token-events.test.ts##R68#6eeed382ad#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/12-fire-a.test.ts##R68#4c6d1d9b02#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/13-fire-b.test.ts##R68#76524b8773#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/138-spell-copy.test.ts##R68#66257b8cf1#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/14-water-a.test.ts##R68#3d86c33b53#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/14-water-a.test.ts##R68#3d86c33b53#0~2": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/16-earth-a.test.ts##R68#1203d31a28#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/17-earth-b.test.ts##R68#cb1f1e465b#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/18-earth-c.test.ts##R68#1defd54305#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/19-hybrids.test.ts##R68#eb423e7072#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/23-wood-a.test.ts##R68#9b1e7a30e6#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/23-wood-a.test.ts##R68#c35e698b40#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/25-wood-c.test.ts##R68#0ef7b0eb44#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/26-metal-a.test.ts##R68#5dfc66f9c2#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R68#492cf8956f#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R68#0e5335f252#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/40-light-c.test.ts##R68#15dcb39aaf#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/43-dark-c.test.ts##R68#1361d77330#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/43-dark-c.test.ts##R68#cfc4fcab06#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R68#26a911ab99#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R68#a327d47e03#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/61-negation.test.ts##R68#a5d562fa22#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/test/61-negation.test.ts##R68#cd4b65e72e#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R68#292560a49e#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/ui/flash.ts##R68#70250d3614#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/ui/main.ts##R68#26be0ff678#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R68#cf4aa5393b#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/ui/test/56-ui-flash.test.ts##R68#fafc570ce2#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "data/comprehensive-rules/rules/U14.json#j85.examples.test#R68#d444e11b2c#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "negated effect removed from stack at once"
+  },
+  "client/engine/src/engine.ts##R68#02da84a8ec#0": {
+   "action": "cite",
+   "nums": [
+    "406.4"
+   ],
+   "note": "stack card goes to bin, not trashed (unless Unstable etc)"
+  },
+  "client/engine/src/engine.ts##R68#8b7de2616d#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": "where a negated item's card goes by kind"
+  },
+  "client/engine/test/118-stack-effect.test.ts##R68#5be8be9fff#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": "where a negated item's card goes by kind"
+  },
+  "client/engine/test/23-wood-a.test.ts##R68#7ece0acf2d#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": "where a negated item's card goes by kind"
+  },
+  "client/engine/test/61-negation.test.ts##R68#5f8c016a2e#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": "where a negated item's card goes by kind"
+  },
+  "client/engine/test/61-negation.test.ts##R68#7ab6f75043#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": "where a negated item's card goes by kind"
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R68#80df3a2bc1#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": "where a negated item's card goes by kind"
+  },
+  "client/engine/test/89-self-erase.test.ts##R68#d6c64b5f5e#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": "where a negated item's card goes by kind"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R68#cd3a83329a#0": {
+   "action": "cite",
+   "nums": [
+    "704.4",
+    "704.4a"
+   ],
+   "note": "removal plus bin destination"
+  },
+  "client/ui/test/56-ui-flash.test.ts##R68#15ef9bda8f#0": {
+   "action": "cite",
+   "nums": [
+    "704.4",
+    "704.4a"
+   ],
+   "note": "removal plus bin destination"
+  },
+  "client/engine/test/61-negation.test.ts##R68#52b680cf5e#0": {
+   "action": "cite",
+   "nums": [
+    "704.1",
+    "704.4"
+   ],
+   "note": "Finality ordering example; negated card binned during first sentence"
+  },
+  "client/ui/flash.ts##R68#7d95c71714#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "row state 'answered' = negated/removed"
+  },
+  "client/ui/main.ts##R68#764640a56e#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": "row state 'answered' = negated/removed"
+  },
+  "client/docs/12-card-text.md##R62#846e87e8c7#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "continuous strip (StaticMod) takes abilities incl. statics"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R62#4c774e9f98#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "continuous strip (StaticMod) takes abilities incl. statics"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R62#63175bed81#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "continuous strip (StaticMod) takes abilities incl. statics"
+  },
+  "client/docs/12-card-text.md##R62#ede2ecce74#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "the suppression layer; its 'veto' wording is reversed by 712.2 (engine differs)"
+  },
+  "client/engine/src/cards/dsl.ts##R62#2650c7d67e#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/cards/dsl.ts##R62#ace6395aca#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/cards/dsl.ts##R62#bc2bda4eb9#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R62#0002f28cb7#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R62#00f870fe94#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R62#a049033e95#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#0f1321a847#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#21a1f941ac#0~1": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#21a1f941ac#0~3": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#21a1f941ac#0~5": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#490b8eebbf#0~1": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#490b8eebbf#0~3": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#490b8eebbf#0~5": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#490b8eebbf#0~7": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#59e0c560db#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#66eaa6762c#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#70d936bd9f#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#8fa0f1de85#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#a3781e2baf#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#d10e3de6a9#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/engine.ts##R62#f66782f87f#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/test/113-literal-metal.test.ts##R62#f911b29e85#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R62#b576089c1a#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/ledgers/card-todo.ts##R62#42b8194955#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/ledgers/card-todo.ts##R62#ab0cb5cf25#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/ui/inspect.ts##R62#82bfafd82b#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "a stripped unit's statics/abilities stop applying; a static is an ability"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R62#b94f71d6b2#0": {
+   "action": "cite",
+   "nums": [
+    "712.4"
+   ],
+   "note": "static switching off one named behaviour (Wispweaver's self-sacrifice)"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R62#96d9fc6b1a#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "cites the suppression veto, reversed: CR 712.2 says later gains are not taken"
+  },
+  "client/engine/test/393-raq-mods.test.ts##R62#2e63d7dc7f#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "cites the suppression veto, reversed: CR 712.2 says later gains are not taken"
+  },
+  "client/ledgers/card-todo-closed.ts##R62#c9cf0a7006#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "cites the suppression veto, reversed: CR 712.2 says later gains are not taken"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R62#31eecf9902#0": {
+   "action": "cite",
+   "nums": [
+    "712.5"
+   ],
+   "note": "two mutual continuous strips both apply"
+  },
+  "client/engine/test/28-metal-c.test.ts##R62#98f2c22214#0": {
+   "action": "cite",
+   "nums": [
+    "712.5"
+   ],
+   "note": "two mutual continuous strips both apply"
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R62#c01d3630da#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/engine/src/engine.ts##R62#35dc4ab411#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/engine/src/types.ts##R62#1f1f79a237#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/engine/test/27-metal-b.test.ts##R62#5245ce80d7#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/engine/test/27-metal-b.test.ts##R62#c370856d00#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/engine/test/299-formless-column.test.ts##R62#cba2d18c95#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/ui/cardtext.ts##R62#0a77dfc6b5#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/ui/cardtext.ts##R62#b7a9d041d0#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/ui/cardtext.ts##R62#dbebf49aed#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/ui/inspect.ts##R62#fdd4c14028#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/ui/test/57-ui-cardtext.test.ts##R62#22b2d4390a#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "data/comprehensive-rules/rules/U16.json#j41.examples.test#R62#ba0c3ed695#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "data/comprehensive-rules/rules/U16.json#j43.examples.test#R62#fbe1ffe26f#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": "lose attributes, abilities, or both; the suppression layer"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R62#414f7eecf2#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a",
+    "712.1c"
+   ],
+   "note": "Suppression Field: abilities lost and mods erased separately"
+  },
+  "client/engine/test/28-metal-c.test.ts##R62#cb3ea71966#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a",
+    "712.1c"
+   ],
+   "note": "Suppression Field: abilities lost and mods erased separately"
+  },
+  "client/engine/test/28-metal-c.test.ts##R62#18ee54bac8#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": "Transmogrifant continuous strip"
+  },
+  "client/engine/src/engine.ts##R62#ade4b527f7#0": {
+   "action": "cite",
+   "nums": [
+    "506.2d"
+   ],
+   "note": "until-regroup effects end at regroup"
+  },
+  "client/engine/test/38-light-a.test.ts##R62#b46e29c211#0": {
+   "action": "cite",
+   "nums": [
+    "712.6"
+   ],
+   "note": "The Everywhere: named card's units lose all abilities in its region"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#392d4a1855#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#927bc08517#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#a3a755ac6e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#3d33a68708#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#7f1d763a70#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#90f1c2ad6c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#b5687db556#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R271#8f4de6deaa#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/ui/cardtext.ts##R271#46a344fb99#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/ui/cardtext.ts##R271#b9af841e5a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R271#0781df0aef#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "data/comprehensive-rules/rules/U24.json#j39.examples.test#R271#129103c544#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": "Unstable shown on the attribute line with its origin"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#58d80266b2#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": "a modded stack card drawn like a modded unit, mods beneath"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#debe59100f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": "a modded stack card drawn like a modded unit, mods beneath"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#1e6874731b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": "a modded stack card drawn like a modded unit, mods beneath"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#d166dcfbae#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": "a modded stack card drawn like a modded unit, mods beneath"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#e117c07441#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": "a modded stack card drawn like a modded unit, mods beneath"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R271#239ece004d#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": "a modded stack card drawn like a modded unit, mods beneath"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R271#e117c07441#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": "a modded stack card drawn like a modded unit, mods beneath"
+  },
+  "data/comprehensive-rules/rules/U24.json#j47.examples.test#R271#ec464d4563#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": "a modded stack card drawn like a modded unit, mods beneath"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#79107768cf#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "icon pixel size on the strip; no CR/Annex rule states it"
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#f0e5c677e8#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#85a1681296#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/flash.ts##R271#1394697134#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/flash.ts##R271#5876b064ec#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/flash.ts##R271#96342ef1f5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/main.ts##R271#59f4c43b20#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/main.ts##R271#97a97fe639#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/style.css##R271#92f07eb2c8#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R271#d5cf7a66a0#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R271#0fe7353517#1": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R271#59e1608039#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/toast.ts##R271#ee18808cdc#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": "one state per stack row; fizzled never shown as resolved/answered"
+  },
+  "client/ui/flash.ts##R271#37142339aa#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": "a fizzled item has left the stack and its card goes to the bin"
+  },
+  "client/ui/flash.ts##R271#9aa628b76e#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": "a fizzled item has left the stack and its card goes to the bin"
+  },
+  "client/ui/flash.ts##R271#c2765bd777#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": "a fizzled item has left the stack and its card goes to the bin"
+  },
+  "client/ui/flash.ts##R271#e16e9250f9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an older queue entry",
+   "note": "'pre-R271' is history; no rule is cited"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R48#3ace778a13#0": {
+   "action": "cite",
+   "nums": [
+    "802.24a"
+   ],
+   "note": "Lethal: any combat damage to a player kills them"
+  },
+  "client/engine/src/engine.ts##R48#09cfa58594#0": {
+   "action": "cite",
+   "nums": [
+    "802.24a"
+   ],
+   "note": "Lethal: any combat damage to a player kills them"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R48#24dc6a23fc#0": {
+   "action": "cite",
+   "nums": [
+    "802.24a"
+   ],
+   "note": "Lethal: any combat damage to a player kills them"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R48#ee4ee28068#0": {
+   "action": "cite",
+   "nums": [
+    "802.24"
+   ],
+   "note": "Lethal attribute"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R48#1f4100c511#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": "Blessed gain is simultaneous, before the 0-life check"
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R48#6d0bb42866#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": "Blessed gain is simultaneous, before the 0-life check"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R48#97d6749ad6#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": "Blessed gain is simultaneous, before the 0-life check"
+  },
+  "client/engine/src/engine.ts##R48#0507b3ff22#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": "Blessed gain is simultaneous, before the 0-life check"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#f7c302b943#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": "Blessed gain is simultaneous, before the 0-life check"
+  },
+  "client/ui/glossary.ts##R48#eeecf98577#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": "Blessed gain is simultaneous, before the 0-life check"
+  },
+  "client/engine/src/engine.ts##R48#1ab5f23096#0": {
+   "action": "cite",
+   "nums": [
+    "802.23d"
+   ],
+   "note": "Afflicting applies to combat kills"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#df15006ae1#0": {
+   "action": "cite",
+   "nums": [
+    "802.23d"
+   ],
+   "note": "Afflicting applies to combat kills"
+  },
+  "data/comprehensive-rules/rules/U20.json#j96.examples.test#R48#8de3cde606#0": {
+   "action": "cite",
+   "nums": [
+    "802.23d"
+   ],
+   "note": "Afflicting applies to combat kills"
+  },
+  "client/engine/src/engine.ts##R48#3b940dc026#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": "Blessed: controller gains life for damage dealt, combat or not, units or players"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#4d3ed18d40#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": "Blessed: controller gains life for damage dealt, combat or not, units or players"
+  },
+  "client/engine/test/40-light-c.test.ts##R48#3900105cd3#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": "Blessed: controller gains life for damage dealt, combat or not, units or players"
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R48#a22e9d3cf6#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": "Blessed: controller gains life for damage dealt, combat or not, units or players"
+  },
+  "data/comprehensive-rules/rules/U20.json#j86.examples.test#R48#02946e0b66#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": "Blessed: controller gains life for damage dealt, combat or not, units or players"
+  },
+  "data/comprehensive-rules/rules/U20.json#j86.examples.test#R48#f6e0540b56#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": "Blessed: controller gains life for damage dealt, combat or not, units or players"
+  },
+  "client/engine/src/engine.ts##R48#7738f5b255#0": {
+   "action": "cite",
+   "nums": [
+    "802.23a"
+   ],
+   "note": "Afflicting: kills give the dead units' controllers rot"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#9c39b54726#0": {
+   "action": "cite",
+   "nums": [
+    "802.23a"
+   ],
+   "note": "Afflicting: kills give the dead units' controllers rot"
+  },
+  "client/engine/src/engine.ts##R48#96f7621376#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b",
+    "802.22c"
+   ],
+   "note": "Blessed gain before lethal check; cannot kill own controller"
+  },
+  "client/engine/src/engine.ts##R48#e81901fdfa#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": "Afflicting counts kills by counters, stat change etc."
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#107bf484f2#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": "Afflicting counts kills by counters, stat change etc."
+  },
+  "client/engine/test/42-dark-b.test.ts##R48#a209376aa7#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": "Afflicting counts kills by counters, stat change etc."
+  },
+  "client/ui/test/156-reaping-and-formation.test.ts##R48#23ae607c99#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": "Afflicting counts kills by counters, stat change etc."
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#b63d2e9034#0": {
+   "action": "cite",
+   "nums": [
+    "802.23b"
+   ],
+   "note": "one rot per controller per kill event"
+  },
+  "data/comprehensive-rules/rules/U20.json#j94.examples.test#R48#48013f21f9#0": {
+   "action": "cite",
+   "nums": [
+    "802.23b"
+   ],
+   "note": "one rot per controller per kill event"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#c313baec6f#0": {
+   "action": "cite",
+   "nums": [
+    "802.22"
+   ],
+   "note": "Blessed section header"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#d20b5f0424#0": {
+   "action": "cite",
+   "nums": [
+    "802.24c"
+   ],
+   "note": "a replaced Lethal hit still counts as dealt"
+  },
+  "client/engine/src/engine.ts##R289#0e22d04110#0": {
+   "action": "cite",
+   "nums": [
+    "802.25g"
+   ],
+   "note": "outside combat Pure applies per effect-recipient pairing"
+  },
+  "client/engine/src/engine.ts##R289#8eea03752a#0": {
+   "action": "cite",
+   "nums": [
+    "802.1n"
+   ],
+   "note": "Pure interaction: Unaware and stat attributes do not apply"
+  },
+  "client/ui/glossary.ts##R289#3625696c64#0": {
+   "action": "cite",
+   "nums": [
+    "802.1n",
+    "802.25a"
+   ],
+   "note": "Pure and its counterpart ignore all other attributes, its own too"
+  },
+  "client/docs/08-light-and-dark.md##R48#097e2bb835#0": {
+   "action": "reword",
+   "nums": [
+    "802.23b"
+   ],
+   "suggest": "the rules record that last point as the owner's reading",
+   "note": "sentence is about the ruling marking an owner reading"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R195#f1bf4e883a#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "a 0-power unit deals no damage, so it is not 'a unit dealing combat damage'"
+  },
+  "client/engine/src/engine.ts##R195#c0234bb3b7#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "a 0-power unit deals no damage, so it is not 'a unit dealing combat damage'"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#66624761c7#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "a 0-power unit deals no damage, so it is not 'a unit dealing combat damage'"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R195#268dbde63e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R195#6255381d29#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R195#bd59c9dacc#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/src/engine.ts##R195#0836d0acca#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/src/engine.ts##R195#2bad47812b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/src/engine.ts##R195#68ed04dc2d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/src/engine.ts##R195#9103921c12#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/src/engine.ts##R195#99814ab472#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/src/engine.ts##R195#e23ef5f5fc#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/115-literal-light.test.ts##R195#46983af1b3#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R195#99ac33920c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R195#ecacde1ff7#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#046e8e5912#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#1e7cee37e7#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#3232bcd57b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#828cd4e865#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#c4b33c41e7#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#e37a18fc02#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#f3aaf5ad6c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/ledgers/card-todo-closed.ts##R195#0350dbf883#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/ledgers/card-todo-closed.ts##R195#371edfd2c4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/ledgers/card-todo-closed.ts##R195#6e78e3c9bb#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R195#cf269860ae#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'my column deals combat damage' counts only its own column's damage"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#95afbf5ea4#0": {
+   "action": "cite",
+   "nums": [
+    "608.7a",
+    "608.9a"
+   ],
+   "note": "prevented damage is not dealt; own-column attribution"
+  },
+  "client/docs/16-divergence-inventory.md##R195#2d3a39eabd#0": {
+   "action": "reword",
+   "nums": [
+    "608.9a"
+   ],
+   "suggest": "closed by the per-column attribution fix (CR 608.9a)",
+   "note": "'closed by R195' is history; subject rule is 608.9a"
+  },
+  "client/docs/16-divergence-inventory.md##R195#cc7b6cee70#0": {
+   "action": "reword",
+   "nums": [
+    "608.9a"
+   ],
+   "suggest": "closed by the per-column attribution fix (CR 608.9a)",
+   "note": "'closed by R195' is history; subject rule is 608.9a"
+  },
+  "client/engine/src/engine.ts##R195#53a79f2edb#0": {
+   "action": "reword",
+   "nums": [
+    "608.9a"
+   ],
+   "suggest": "closed by the per-column attribution fix (CR 608.9a)",
+   "note": "'closed by R195' is history; subject rule is 608.9a"
+  },
+  "client/docs/questions-round31.md##R3#554b7e59fc#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "question sheet/ledger about the old ruling itself; CR 608.3b now opens a window in a split step",
+   "suggest": "the owner's 2026-07-16 no-window ruling (since amended)"
+  },
+  "client/docs/questions-round31.md##R3#8f0b5e82cd#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "question sheet/ledger about the old ruling itself; CR 608.3b now opens a window in a split step",
+   "suggest": "the owner's 2026-07-16 no-window ruling (since amended)"
+  },
+  "client/docs/questions-round32.md##R3#303a2f3190#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "question sheet/ledger about the old ruling itself; CR 608.3b now opens a window in a split step",
+   "suggest": "the owner's 2026-07-16 no-window ruling (since amended)"
+  },
+  "client/docs/questions-round32.md##R3#62711f0767#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "question sheet/ledger about the old ruling itself; CR 608.3b now opens a window in a split step",
+   "suggest": "the owner's 2026-07-16 no-window ruling (since amended)"
+  },
+  "client/ledgers/card-todo-closed.ts##R3#2fed78207e#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "question sheet/ledger about the old ruling itself; CR 608.3b now opens a window in a split step",
+   "suggest": "the owner's 2026-07-16 no-window ruling (since amended)"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#84f5872f32#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "question sheet/ledger about the old ruling itself; CR 608.3b now opens a window in a split step",
+   "suggest": "the owner's 2026-07-16 no-window ruling (since amended)"
+  },
+  "client/ledgers/card-todo-closed.ts##R3#a9d33af8f4#1": {
+   "action": "reword",
+   "nums": [],
+   "note": "history of the old ruling; CR 608.3b now gives a window",
+   "suggest": "reopening the owner's no-window ruling"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#61212adc07#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "history of the old ruling; CR 608.3b now gives a window",
+   "suggest": "reopening the owner's no-window ruling"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#f6649c01e8#1": {
+   "action": "reword",
+   "nums": [],
+   "note": "history of the old ruling; CR 608.3b now gives a window",
+   "suggest": "reopening the owner's no-window ruling"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#6b93c5e6ff#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "history quote; the ruling was later amended (CR 608.3b)",
+   "suggest": "the old no-window ruling"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#b0046b530e#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "history quote; the ruling was later amended (CR 608.3b)",
+   "suggest": "the old no-window ruling"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#c290aaf778#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "history quote; the ruling was later amended (CR 608.3b)",
+   "suggest": "the old no-window ruling"
+  },
+  "client/engine/test/12-fire-a.test.ts##R3#7b8b6ac15c#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "history: superseded behaviour",
+   "suggest": "the old sub-step drain"
+  },
+  "client/engine/scripts/cr/extract.mjs##R3#8eb09510a5#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "parser comment showing ref syntax 'R3/R31', not a rules citation; rewrite with the parser"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R3#585638bef0#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "relies on 'no priority between sub-steps', amended: CR 608.3a/608.3b"
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R3#c3a801af02#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "relies on 'no priority between sub-steps', amended: CR 608.3a/608.3b"
+  },
+  "client/engine/src/engine.ts##R3#2b8ea38f81#0": {
+   "action": "cite",
+   "nums": [
+    "608.7b"
+   ],
+   "note": "deaths are applied right after a sub-step's damage"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R3#9da6ba303d#0": {
+   "action": "cite",
+   "nums": [
+    "608.7b"
+   ],
+   "note": "deaths are applied right after a sub-step's damage"
+  },
+  "client/engine/src/engine.ts##R3#3663c78fcf#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "state updated between sub-steps: deaths, promotion, shared attributes"
+  },
+  "client/engine/src/engine.ts##R3#8273b0d8d0#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "state updated between sub-steps: deaths, promotion, shared attributes"
+  },
+  "client/engine/test/05-rulings.test.ts##R3#0b56c32f7c#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "state updated between sub-steps: deaths, promotion, shared attributes"
+  },
+  "client/engine/test/05-rulings.test.ts##R3#6869137b58#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "state updated between sub-steps: deaths, promotion, shared attributes"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#4d7e8e21d6#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "state updated between sub-steps: deaths, promotion, shared attributes"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R3#d3df3ebd17#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "state updated between sub-steps: deaths, promotion, shared attributes"
+  },
+  "client/ledgers/card-todo-closed.ts##R3#ee9f412972#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "state updated between sub-steps: deaths, promotion, shared attributes"
+  },
+  "client/ledgers/card-todo.ts##R3#608df99912#1": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "state updated between sub-steps: deaths, promotion, shared attributes"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R3#f00df7001d#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "CR-pipeline test about ruling supersession; R3 is data, not a citation"
+  },
+  "client/ledgers/card-todo.ts##R3#409afc96ea#0": {
+   "action": "cite",
+   "nums": [
+    "608.2"
+   ],
+   "note": "title 'swift column deals damage first': sub-step order; its no-window clause is amended"
+  },
+  "data/comprehensive-rules/rules/U12.json#j39.examples.test#R3#65ef2e6a59#0": {
+   "action": "cite",
+   "nums": [
+    "608.2"
+   ],
+   "note": "title 'swift column deals damage first': sub-step order; its no-window clause is amended"
+  },
+  "data/comprehensive-rules/rules/U12.json#j5.examples.test#R3#65ef2e6a59#0": {
+   "action": "cite",
+   "nums": [
+    "608.2"
+   ],
+   "note": "title 'swift column deals damage first': sub-step order; its no-window clause is amended"
+  },
+  "client/docs/16-divergence-inventory.md##R117#bb9ee8f050#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R117#424e93978d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R117#dd497095bd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R117#3f692e8d43#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/src/engine.ts##R117#f00d6aec88#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/src/engine.ts##R117#fdf52f8a7a#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/test/115-literal-light.test.ts##R117#7a9ef6de87#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/test/115-literal-light.test.ts##R117#e5f62e9ba1#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R117#3ecef00f06#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R117#8b56784cd4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R117#c3721e6cec#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R117#1fd83484ce#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/engine/test/21-fixes.test.ts##R117#3695392876#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ledgers/card-todo-closed.ts##R117#17f861ac38#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ledgers/card-todo-closed.ts##R117#f33dae3b97#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#0850212186#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#367fa10172#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#7f9a3243af#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#8ed1c1e20c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#e22a96b74c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#fe92ff35c8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "'when my column deals combat damage' fires in each sub-step its own column strikes"
+  },
+  "client/ledgers/card-todo-closed.ts##R117#a9d33af8f4#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "history of a blocked change, not a rule citation",
+   "suggest": "reopening the sub-step trigger rulings"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R117#f6649c01e8#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "history of a blocked change, not a rule citation",
+   "suggest": "reopening the sub-step trigger rulings"
+  },
+  "client/ui/glossary.ts##R117#c15571dfde#0": {
+   "action": "cite",
+   "nums": [
+    "608.2a"
+   ],
+   "note": "Sluggish column strikes in the Sluggish sub-step"
+  },
+  "client/docs/16-divergence-inventory.md##R157#bb9ee8f050#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#759da16c64#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R157#d7a0808760#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R157#387092bbc9#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R157#6cd9618649#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R157#b73d71d526#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R157#9dde0bf067#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R157#9d821a7f64#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/engine.ts##R157#f13a95033f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#09174e6a39#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#10ed5bee1b#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#267c7adeb5#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#54011f0643#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#6ced7a62b2#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#b2a600a8ad#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#b8ce5d7461#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#f73b8d292e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "data/comprehensive-rules/rules/U12.json#j25.examples.test#R157#15cb38a668#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "column-power gate: a 0-power unit's column trigger fires if the column's power is >0"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#0c94ba4650#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.5a"
+   ],
+   "note": "the gate is the column's power; 0-power units deal no damage"
+  },
+  "client/engine/src/engine.ts##R157#a95e1c8e51#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "a 0-power unit deals no damage but the column still deals the others' power"
+  },
+  "client/engine/src/engine.ts##R157#c0234bb3b7#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "a 0-power unit deals no damage but the column still deals the others' power"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R157#70b6fb07d2#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "a 0-power unit deals no damage but the column still deals the others' power"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R157#ec6832c7cb#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "a 0-power unit deals no damage but the column still deals the others' power"
+  },
+  "client/docs/17-oracle-text-audit.md##R71#a41061850d#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "token rename / alias is registration, no CR rule"
+  },
+  "client/engine/src/cards/registry.ts##R71#25a95e63c7#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "token rename / alias is registration, no CR rule"
+  },
+  "client/engine/scripts/pool.mjs##R71#d4507686f8#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "token registration / printed data, no CR rule"
+  },
+  "client/engine/src/engine.ts##R71#f348047aa4#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "token registration / printed data, no CR rule"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R71#d990bb7de7#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "generic mention of the Wraith card, no rule relied on"
+  },
+  "client/engine/test/41-dark-a.test.ts##R71#3a576e5405#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "generic mention of the Wraith card, no rule relied on"
+  },
+  "client/engine/test/41-dark-a.test.ts##R71#b9488186e6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "generic mention of the Wraith card, no rule relied on"
+  },
+  "client/engine/src/cards/dsl.ts##R71#616fbbe63f#0": {
+   "action": "cite",
+   "nums": [
+    "110.2",
+    "110.2c"
+   ],
+   "note": "'an ally' is not a target because 'target' is not printed"
+  },
+  "client/engine/src/cards/registry.ts##R71#cfc31628fa#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "no CR rule says a non-target choice with no candidate is a no-op (gap); 706.12 covers left-play"
+  },
+  "client/engine/src/engine.ts##R71#45dca2b2e2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "no CR rule says a non-target choice with no candidate is a no-op (gap); 706.12 covers left-play"
+  },
+  "client/engine/src/types.ts##R71#9e78a649ab#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "no CR rule says a non-target choice with no candidate is a no-op (gap); 706.12 covers left-play"
+  },
+  "client/engine/src/engine.ts##R71#2f18964253#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "reversed: CR 706.12/110.2c choose the Wraith's ally as the trigger is stacked, not at resolution"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R71#8291c7a4c5#0": {
+   "action": "cite",
+   "nums": [
+    "305.4"
+   ],
+   "note": "augment text works when the card is played normally"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R71#3256d5103b#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": "'Augment a Wraith onto a unit' creates the token directly as a mod"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R71#2acde4f450#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": "'Augment a Wraith onto a unit' creates the token directly as a mod"
+  },
+  "client/engine/test/116-literal-hybrids.test.ts##R71#c7d4e7f7a9#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": "'Augment a Wraith onto a unit' creates the token directly as a mod"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#213d575c50#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": "'Augment a Wraith onto a unit' creates the token directly as a mod"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#cad205f09e#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": "'Augment a Wraith onto a unit' creates the token directly as a mod"
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R71#22967ed554#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": "'Augment a Wraith onto a unit' creates the token directly as a mod"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#5a77be0a8d#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ],
+   "note": "a unit is its own ally"
+  },
+  "client/ledgers/card-todo.ts##R71#8bb1e47c51#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ],
+   "note": "a unit is its own ally"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#9144472290#0": {
+   "action": "cite",
+   "nums": [
+    "305.4",
+    "706.12"
+   ],
+   "note": "Wraith body's [Augment] line is live; the ally is chosen without targeting"
+  },
+  "data/comprehensive-rules/rules/U03.json#j30.examples.test#R71#8a144c5948#0": {
+   "action": "cite",
+   "nums": [
+    "305.4",
+    "706.12"
+   ],
+   "note": "Wraith body's [Augment] line is live; the ally is chosen without targeting"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#a310ef421e#0": {
+   "action": "cite",
+   "nums": [
+    "304.4"
+   ],
+   "note": "a unit an effect creates is a unit token"
+  },
+  "client/engine/test/42-dark-b.test.ts##R71#1a7fc192c0#0": {
+   "action": "cite",
+   "nums": [
+    "304.4"
+   ],
+   "note": "a unit an effect creates is a unit token"
+  },
+  "data/comprehensive-rules/rules/U17.json#j50.examples.test#R71#57ca6a7fc9#0": {
+   "action": "cite",
+   "nums": [
+    "721.1"
+   ],
+   "note": "an augment adds its text to the host"
+  },
+  "client/engine/src/apply.ts##R58#f8ae636448#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "each target's legality is its own kind and written restriction"
+  },
+  "client/engine/src/cards/dsl.ts##R58#2b1cd54dd6#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "each target's legality is its own kind and written restriction"
+  },
+  "client/engine/src/cards/dsl.ts##R58#5f93774da1#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "each target's legality is its own kind and written restriction"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R58#b122d64b06#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "each target's legality is its own kind and written restriction"
+  },
+  "client/ledgers/backlog-closed.ts##R58#b669805459#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": "each target's legality is its own kind and written restriction"
+  },
+  "client/engine/src/cards/dsl.ts##R58#4039009043#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "a changed target must be legal for its own slot"
+  },
+  "client/engine/src/engine.ts##R58#e9e36e9516#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "a changed target must be legal for its own slot"
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R58#63ab3d8ac7#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "a changed target must be legal for its own slot"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R58#a16cfb074b#0": {
+   "action": "cite",
+   "nums": [
+    "110.9",
+    "110.4c"
+   ],
+   "note": "redirect only into a slot it could legally fill; ally measured from the effect's controller"
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R58#7c52a5bf83#0": {
+   "action": "cite",
+   "nums": [
+    "110.9",
+    "110.4c"
+   ],
+   "note": "redirect only into a slot it could legally fill; ally measured from the effect's controller"
+  },
+  "client/ledgers/raq.ts##R58#9e0d92ed75#0": {
+   "action": "cite",
+   "nums": [
+    "110.9",
+    "110.4c"
+   ],
+   "note": "redirect only into a slot it could legally fill; ally measured from the effect's controller"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R58#f0951af0e1#0": {
+   "action": "cite",
+   "nums": [
+    "704.5",
+    "110.4c"
+   ],
+   "note": "targets re-checked as the effect resolves; ally of the effect's controller"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R58#78f489bfdd#0": {
+   "action": "cite",
+   "nums": [
+    "704.5"
+   ],
+   "note": "targets re-checked at resolution by the rule they were chosen under"
+  },
+  "client/engine/src/cards/sets/batch-wood-c.ts##R58#49b1088cd3#0": {
+   "action": "cite",
+   "nums": [
+    "704.5"
+   ],
+   "note": "targets re-checked at resolution by the rule they were chosen under"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R58#f09c292377#0": {
+   "action": "cite",
+   "nums": [
+    "110.3c"
+   ],
+   "note": "'target opponent' is measured from the effect's controller"
+  },
+  "client/engine/src/engine.ts##R58#9843e8f05f#0": {
+   "action": "cite",
+   "nums": [
+    "110.4c"
+   ],
+   "note": "ally measured from the effect's controller"
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R58#2a493c8476#0": {
+   "action": "cite",
+   "nums": [
+    "110.3",
+    "110.9"
+   ],
+   "note": "per-slot legality at cast and on retarget"
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R58#8f9a67ac29#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b",
+    "110.3"
+   ],
+   "note": "two 'target' words = two targets, each with its own restriction"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R58#0c45a61fd8#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b"
+   ],
+   "note": "each printed 'target' is a separate cast-time target"
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R58#c9844484ce#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b"
+   ],
+   "note": "each printed 'target' is a separate cast-time target"
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R307#48ef1b4a02#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "a retarget chooses each new target legal for its slot, never a sibling's"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R307#6c0ff8c43a#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "a retarget chooses each new target legal for its slot, never a sibling's"
+  },
+  "client/engine/src/engine.ts##R307#f1abdcaece#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "a retarget chooses each new target legal for its slot, never a sibling's"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R307#fa488e5181#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": "a retarget chooses each new target legal for its slot, never a sibling's"
+  },
+  "client/engine/src/cards/sets/helpers.ts##R307#d3a870dca7#0": {
+   "action": "cite",
+   "nums": [
+    "110.6"
+   ],
+   "note": "one object cannot be two targets of one effect, also when changed"
+  },
+  "client/engine/test/349-retarget-distinct-slots.test.ts##R307#998449edd4#0": {
+   "action": "cite",
+   "nums": [
+    "110.6",
+    "110.9"
+   ],
+   "note": "retarget: no object in two slots, nothing outside the slot's restriction"
+  },
+  "client/engine/test/85-silent-branches.test.ts##R307#0af44255d1#0": {
+   "action": "cite",
+   "nums": [
+    "110.9",
+    "110.5"
+   ],
+   "note": "retarget menu = legal candidates in the item's region"
+  },
+  "client/ledgers/card-todo-closed.ts##R307#450d056108#0": {
+   "action": "reword",
+   "nums": [
+    "110.9"
+   ],
+   "note": "code-history remark",
+   "suggest": "the retarget-legality fix"
+  },
+  "client/engine/src/engine.ts##R266#ce18123c6d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": "an announcement acted on or lost by must reach a surface besides the log"
+  },
+  "client/ledgers/card-todo-closed.ts##R266#ef0857e4a9#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": "an announcement acted on or lost by must reach a surface besides the log"
+  },
+  "client/ui/flash.ts##R266#589b557e95#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": "an announcement acted on or lost by must reach a surface besides the log"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#8be7fcf668#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": "an announcement acted on or lost by must reach a surface besides the log"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#976703f561#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": "an announcement acted on or lost by must reach a surface besides the log"
+  },
+  "client/ledgers/card-todo-closed.ts##R266#5e304c12fe#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/inspect.ts##R266#c3dc0d8d3a#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/main.ts##R266#a43f782217#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/main.ts##R266#dc8f69a999#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/style.css##R266#1acc5c1858#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#164a0389bf#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#6dd6535f51#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#cb25254bfc#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#e90e8ee7ac#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#fa06fe5b17#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R266#5a8bfa9c24#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R266#c3110c9285#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/toast.ts##R266#7815e2e23d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/toast.ts##R266#8bce22c9b2#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/toast.ts##R266#c8d37c3d52#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "data/comprehensive-rules/rules/U24.json#j70.examples.test#R266#0d1e07bb3b#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": "spell-token loss notice in the prompt area, own seat only, until dismissed/next battle"
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#53d6529149#0": {
+   "action": "cite",
+   "nums": [
+    "D7.1c"
+   ],
+   "note": "pass that ends the battle phase confirms token loss"
+  },
+  "client/ledgers/card-todo-closed.ts##R205#09cb968e1f#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "ledger closure history (CT-75/CT-82), not a rule",
+   "suggest": "by the nested-affordance round"
+  },
+  "client/ui/anim.ts##R205#f17f587bd7#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7b"
+   ],
+   "note": "same-journey moves together; unnamed-end move on its own"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#06884e3b74#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7b"
+   ],
+   "note": "same-journey moves together; unnamed-end move on its own"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#e307b5c248#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7b"
+   ],
+   "note": "same-journey moves together; unnamed-end move on its own"
+  },
+  "data/comprehensive-rules/rules/U24.json#j98.examples.test#R205#482a0a575c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7b"
+   ],
+   "note": "same-journey moves together; unnamed-end move on its own"
+  },
+  "data/comprehensive-rules/rules/U24.json#j98.examples.test#R205#9118df2ae2#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7b"
+   ],
+   "note": "same-journey moves together; unnamed-end move on its own"
+  },
+  "client/ui/main.ts##R205#4765c88a42#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": "a usable card in the bin panel is used on one click, same as the full bin"
+  },
+  "client/ui/main.ts##R205#d58f93456c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": "a usable card in the bin panel is used on one click, same as the full bin"
+  },
+  "client/ui/test/163-cache-affordance-and-badges.test.ts##R205#be816359d9#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#2e51beb6f2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#449962dffe#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#5d479483fb#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#808aa4bb7b#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#965170d1df#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#f5e78f60c6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/ui-driver.ts##R205#1aa61b5251#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/ui-driver.ts##R205#a3ec6a7c10#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/ui/test/ui-driver.ts##R205#c2d20da864#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver / markup-shape process point; no CR rule (guard: 176-nested-affordance-and-serialiser)"
+  },
+  "client/engine/test/314-prophecy-units-die.test.ts##R279#7fd2d96e67#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "the meter point is R302's (D6.6a); R279's live-value rule is not what this relies on"
+  },
+  "client/ledgers/card-todo-closed.ts##R279#90f1c2ad6c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": "prophecy banner shown in the text box with its reminder"
+  },
+  "client/ui/cardtext.ts##R279#0ca0dac249#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": "prophecy banner shown in the text box with its reminder"
+  },
+  "client/ui/cardtext.ts##R279#46a344fb99#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": "prophecy banner shown in the text box with its reminder"
+  },
+  "client/ui/cardtext.ts##R279#cfcc3f7e2f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": "prophecy banner shown in the text box with its reminder"
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R279#05c5be784e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": "prophecy banner shown in the text box with its reminder"
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R279#8ff2ce408b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": "prophecy banner shown in the text box with its reminder"
+  },
+  "client/ledgers/card-todo-closed.ts##R279#ca0033e7ce#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9b"
+   ],
+   "note": "named card shown in the text box, also on a host carrying it"
+  },
+  "client/ui/cardtext.ts##R279#b7ac5b2e05#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9b"
+   ],
+   "note": "named card shown in the text box, also on a host carrying it"
+  },
+  "client/ui/cardtext.ts##R279#5e9d11bd96#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "points to the ruling's reasoning about a rejected channel; no CR rule"
+  },
+  "client/ui/cardtext.ts##R279#a9722662de#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "'one fact stated once / synthesized line never restates a row' has no Annex D rule (gap)"
+  },
+  "client/ui/cardtext.ts##R279#e23b94071e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "'one fact stated once / synthesized line never restates a row' has no Annex D rule (gap)"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R279#da47b79595#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "register-bookkeeping comment in a test, no rule"
+  },
+  "client/ui/test/259-card-text-surface.test.ts##R279#1e70ec7d63#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9",
+    "D6.10d"
+   ],
+   "note": "card text box: live value into printed sentence; prophecy banner"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R241#b0d95d0124#0": {
+   "action": "unsure",
+   "nums": [],
+   "note": "string literal: a register heading used as parser-test fixture input, not a citation"
+  },
+  "client/ledgers/card-todo-closed.ts##R241#91b6a5d604#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": "card right-click shows only card things; concede/erased on bare table"
+  },
+  "client/ui/main.ts##R241#8f3273a228#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": "card right-click shows only card things; concede/erased on bare table"
+  },
+  "client/ui/main.ts##R241#e0e031c8c8#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": "card right-click shows only card things; concede/erased on bare table"
+  },
+  "client/ui/test/216-menu-scoping.test.ts##R241#6872bfae2c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": "card right-click shows only card things; concede/erased on bare table"
+  },
+  "client/ledgers/card-todo.ts##R312#94189f2e47#0": {
+   "action": "reword",
+   "nums": [],
+   "note": "process attribution, no rule",
+   "suggest": "the undo-lock agent"
+  },
+  "client/server/rooms.ts##R312#0bd5bbe555#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3d"
+   ],
+   "note": "an undo may not change cards the opponent has been shown"
+  },
+  "client/server/rooms.ts##R312#2a7a50a93e#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e"
+   ],
+   "note": "what an action showed of hidden cards is measured"
+  },
+  "client/server/seen.ts##R312#01f07ac939#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e"
+   ],
+   "note": "what an action showed of hidden cards is measured"
+  },
+  "client/server/rooms.ts##R312#5b6db855eb#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e",
+    "D4.3f"
+   ],
+   "note": "measured per action; re-measured after restart or undo"
+  },
+  "client/server/rooms.ts##R312#b5bb17de52#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3f"
+   ],
+   "note": "the lock survives a restart and an undo"
+  },
+  "client/server/test/374-undo-locks-on-reveal.test.ts##R312#179aab88f4#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3f"
+   ],
+   "note": "the lock survives a restart and an undo"
+  },
+  "data/comprehensive-rules/rules/U23.json#j77.examples.test#R312#936bc402a2#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3f"
+   ],
+   "note": "the lock survives a restart and an undo"
+  },
+  "client/server/seen.ts##R312#6a2329fe0f#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3a"
+   ],
+   "note": "later actions undoable back to just after the revealing action"
+  },
+  "client/server/test/374-undo-locks-on-reveal.test.ts##R312#7e39fce692#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3a"
+   ],
+   "note": "later actions undoable back to just after the revealing action"
+  },
+  "client/server/test/374-undo-locks-on-reveal.test.ts##R312#a450cb49dc#0": {
+   "action": "cite",
+   "nums": [
+    "D4.4"
+   ],
+   "note": "Learn to Play: undo in every phase under the same lock"
+  },
+  "client/ui/solo.ts##R312#05f4dbf667#0": {
+   "action": "cite",
+   "nums": [
+    "D4.4"
+   ],
+   "note": "Learn to Play: undo in every phase under the same lock"
+  },
+  "client/ui/solo.ts##R312#68191718ce#0": {
+   "action": "cite",
+   "nums": [
+    "D4.4"
+   ],
+   "note": "Learn to Play: undo in every phase under the same lock"
+  },
+  "client/ui/solo.ts##R312#fce887c32e#0": {
+   "action": "cite",
+   "nums": [
+    "D4.4"
+   ],
+   "note": "Learn to Play: undo in every phase under the same lock"
+  },
+  "client/server/test/374-undo-locks-on-reveal.test.ts##R312#c7b894d226#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3"
+   ],
+   "note": "an action that showed hidden cards cannot be undone, nor anything before it"
+  },
+  "data/comprehensive-rules/rules/U23.json#j71.examples.test#R312#6e8fbd6a41#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3"
+   ],
+   "note": "an action that showed hidden cards cannot be undone, nor anything before it"
+  },
+  "data/comprehensive-rules/rules/U23.json#j74.examples.test#R312#704540d522#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3c"
+   ],
+   "note": "only the seat that saw is locked"
+  },
+  "client/engine/test/217-reveal-rows.test.ts##R242#a7ed9e64bd#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one tempo, one step per second, for updates and within-update steps"
+  },
+  "client/ledgers/card-todo-closed.ts##R242#0ac27b1d8a#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one tempo, one step per second, for updates and within-update steps"
+  },
+  "client/ui/flash.ts##R242#bada9984c9#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one tempo, one step per second, for updates and within-update steps"
+  },
+  "client/ui/main.ts##R242#5675227658#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one tempo, one step per second, for updates and within-update steps"
+  },
+  "client/ui/pace.ts##R242#d65e017220#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one tempo, one step per second, for updates and within-update steps"
+  },
+  "client/ui/test/340-same-source-pace.test.ts##R242#8ac366de59#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": "one tempo, one step per second, for updates and within-update steps"
+  },
+  "client/ui/main.ts##R242#89b2487d3f#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": "skipping held play: drops animations, keeps held log lines"
+  },
+  "client/ui/test/340-same-source-pace.test.ts##R242#0818faa54c#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4a"
+   ],
+   "note": "items leave one tempo step apart"
+  },
+  "client/engine/src/cards/dsl.ts##R338#c6cb6ab910#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": "a card played mid-resolution pays its bracketed additional cost as from hand"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R338#44a80465e0#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": "a card played mid-resolution pays its bracketed additional cost as from hand"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R338#5c79a42064#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": "a card played mid-resolution pays its bracketed additional cost as from hand"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R338#64b4b97bdf#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": "a card played mid-resolution pays its bracketed additional cost as from hand"
+  },
+  "client/engine/src/engine.ts##R338#1c35fe6ea1#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": "a card played mid-resolution pays its bracketed additional cost as from hand"
+  },
+  "client/engine/src/engine.ts##R338#87cc0e5718#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": "a card played mid-resolution pays its bracketed additional cost as from hand"
+  },
+  "client/engine/test/404-raq-fix-tides.test.ts##R338#2966dc372f#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": "a card played mid-resolution pays its bracketed additional cost as from hand"
+  },
+  "data/comprehensive-rules/rules/U04.json#j31.examples.test#R338#6f297fd536#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": "a card played mid-resolution pays its bracketed additional cost as from hand"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R338#7bdb74c7dc#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e",
+    "702.4a"
+   ],
+   "note": "the cost is owed, and a card whose costs cannot be paid cannot be played"
+  },
+  "client/engine/test/404-raq-fix-tides.test.ts##R338#bc07a76fc0#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e",
+    "702.4a"
+   ],
+   "note": "the cost is owed, and a card whose costs cannot be paid cannot be played"
+  },
+  "data/comprehensive-rules/rules/U14.json#j39.examples.test#R338#8159755654#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e",
+    "702.4a"
+   ],
+   "note": "the cost is owed, and a card whose costs cannot be paid cannot be played"
+  }
+ }
+}

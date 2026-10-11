@@ -1,0 +1,4082 @@
+{
+ "unit": "remediation-history",
+ "decisions": {
+  "client/docs/06-roadmap.md##R3#74cb68dcfe#0": {
+   "action": "reword",
+   "nums": [
+    "608.9b"
+   ],
+   "suggest": "a reading since replaced, CR 608.9b",
+   "find": "(R3)",
+   "replace": "(a reading since replaced, CR 608.9b)",
+   "note": "old roadmap: sub-step triggers no longer resolve at once"
+  },
+  "client/docs/06-roadmap.md##R115#be54a864d4#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the source-region rule (CR 601.5)",
+   "find": "R115",
+   "replace": "the source-region rule (CR 601.5)",
+   "note": "history of the withdrawal; current rule named"
+  },
+  "client/docs/06-roadmap.md##R10#c6a120d77e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "Unaware ruling",
+   "find": "R10",
+   "replace": "Unaware ruling",
+   "note": "roadmap history: the Unaware todo"
+  },
+  "client/docs/06-roadmap.md##R10#c849397d7f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the Unaware ruling",
+   "find": "R10",
+   "replace": "the Unaware ruling",
+   "note": "roadmap history"
+  },
+  "client/docs/08-light-and-dark.md##R47#f584647c64#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The old Wraith ruling",
+   "find": "**R47 is",
+   "replace": "**The old Wraith ruling is",
+   "note": "withdrawn ruling named as history"
+  },
+  "client/docs/08-light-and-dark.md##R47#a21d543787#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "That ruling",
+   "find": "R47 is being",
+   "replace": "That ruling is being",
+   "note": "withdrawn ruling, history"
+  },
+  "client/docs/08-light-and-dark.md##R43#0af16910a4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "prophecy",
+   "find": "R43",
+   "replace": "prophecy",
+   "note": "names the engine sweep, no rule claim"
+  },
+  "client/docs/16-divergence-inventory.md##R171#4b6b0a8c93#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "see 84-card-semantics",
+   "find": "R171",
+   "replace": "see 84-card-semantics",
+   "note": "process pointer, parenthetical"
+  },
+  "client/docs/16-divergence-inventory.md##R147#fb02e20221#0": {
+   "action": "reword",
+   "nums": [
+    "303.11"
+   ],
+   "suggest": "Same class CR 303.11 settled for Borrower",
+   "find": "Same class R147 fixed for Borrower of Forms.",
+   "replace": "Same class CR 303.11 settled for Borrower of Forms.",
+   "note": "enters-as-copy rule"
+  },
+  "client/docs/questions-round27.md##R222#af7c443d74#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "a ruling since reversed (CR D6.2)",
+   "find": "R222",
+   "replace": "a ruling since reversed (CR D6.2)",
+   "note": "answer was later reversed: reveal waits for the barrier"
+  },
+  "client/docs/questions-round31.md##R3#353f066a30#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the sub-step ruling",
+   "find": "amend R3's",
+   "replace": "amend the sub-step ruling's",
+   "note": "proposal text about amending the old ruling"
+  },
+  "client/docs/questions-round32.md##R3#1619241e50#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the sub-step ruling",
+   "find": "amend R3's",
+   "replace": "amend the sub-step ruling's",
+   "note": "proposal text about amending the old ruling"
+  },
+  "client/engine/scripts/cr/extract.mjs##R3#f9a07035d9#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "example string in the supersession-extractor grammar comment"
+  },
+  "client/engine/src/apply.ts##R116#241d792b8d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old exchange ruling",
+   "find": "R116",
+   "replace": "the old exchange ruling",
+   "note": "quote of a reversed comment"
+  },
+  "client/engine/src/apply.ts##R132#a766cc7b83#0": {
+   "action": "cite",
+   "nums": [
+    "106.8c"
+   ],
+   "note": "exchange activates the new resource; Shard owed"
+  },
+  "client/engine/src/apply.ts##R116#a766cc7b83#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the earlier exchange ruling",
+   "find": "of R116,",
+   "replace": "of the earlier exchange ruling,",
+   "note": "reversed ruling, history"
+  },
+  "client/engine/src/apply.ts##R116#feb6f10175#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The earlier ruling",
+   "find": "about. R116 read",
+   "replace": "about. The earlier ruling read",
+   "note": "reversed ruling, history"
+  },
+  "client/engine/src/apply.ts##R269#a777bcb509#0": {
+   "action": "cite",
+   "nums": [
+    "712.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R269#3c06ee55f5#0": {
+   "action": "cite",
+   "nums": [
+    "712.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/registry.ts##R269#357cb42ee2#0": {
+   "action": "cite",
+   "nums": [
+    "712.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/registry.ts##R71#3f8fa7b7c2#0": {
+   "action": "cite",
+   "nums": [
+    "110.2c",
+    "721.6"
+   ],
+   "note": "Wraith header: not-a-target ally choice; created as a mod"
+  },
+  "client/engine/src/cards/registry.ts##R71#68b65aefc6#0": {
+   "action": "reword",
+   "nums": [
+    "110.2c"
+   ],
+   "suggest": "the Wraith ruling (CR 110.2c)",
+   "find": "R71",
+   "replace": "the Wraith ruling (CR 110.2c)",
+   "note": "not-a-target half stands"
+  },
+  "client/engine/src/cards/registry.ts##R47#25a95e63c7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "",
+   "find": "// R47/R71: the token",
+   "replace": "// the token",
+   "note": "rename note; no rule states a rename; drops both tokens of the pair"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R71#3be877940b#0": {
+   "action": "cite",
+   "nums": [
+    "110.2c"
+   ],
+   "note": "the Wraith token"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R71#713c806f7d#0": {
+   "action": "cite",
+   "nums": [
+    "110.2c"
+   ],
+   "note": "the Wraith token"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R48#713c806f7d#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": "Afflicting counts counter kills"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R195#a442eb0910#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "only units with power deal combat damage"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R153#eabecdef7b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the disposal-tail rewrite",
+   "find": "Before R153 that",
+   "replace": "Before the disposal-tail rewrite that",
+   "note": "tooling history"
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#3a73fb3b36#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "0-power passenger deals no damage"
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R174#32335ae3b7#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process ruling in an open-question label"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R116#e7e5e48957#0": {
+   "action": "reword",
+   "nums": [
+    "106.7c"
+   ],
+   "suggest": "CR 106.7c",
+   "find": "R116, R54",
+   "replace": "CR 106.7c",
+   "note": "affinity bonus applies to every element; one CR for the R116/R54 pair"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R116#a6ad1a977d#0": {
+   "action": "cite",
+   "nums": [
+    "106.7c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R117#e4047f7367#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": "sub-step gate"
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R157#e4047f7367#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": "power gate"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R59#73af390ccb#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old cost-modifier ruling",
+   "find": "R59, which R305 overturned.)",
+   "replace": "the old cost-modifier ruling, which has since been overturned.)",
+   "note": "overturned reading, history"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R116#6b95f8c9d3#0": {
+   "action": "reword",
+   "nums": [
+    "106.7c"
+   ],
+   "suggest": "CR 106.7c",
+   "find": "R116, R54",
+   "replace": "CR 106.7c",
+   "note": "affinity bonus applies to every element; one CR for the R116/R54 pair"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R11#86bfb8f68a#0": {
+   "action": "cite",
+   "nums": [
+    "506.2"
+   ],
+   "note": "regroup order"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R12#6da42b7e19#0": {
+   "action": "cite",
+   "nums": [
+    "601.4e"
+   ],
+   "note": "ally = unit in the effect region"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R116#730449fb03#0": {
+   "action": "cite",
+   "nums": [
+    "106.7c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R307#b5003d96d3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the retarget fix",
+   "find": "before R307):",
+   "replace": "before the retarget fix):",
+   "note": "history of the fix"
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R269#c9c8f70639#0": {
+   "action": "reword",
+   "nums": [
+    "712.4"
+   ],
+   "suggest": "THE NARROW-SUPPRESSION RULE (CR 712.4)",
+   "find": "R269",
+   "replace": "THE NARROW-SUPPRESSION RULE (CR 712.4)",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R326#0fded53a61#0": {
+   "action": "cite",
+   "nums": [
+    "107.5"
+   ],
+   "note": "sibling rewords the reversed price"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#b77b2960f3#0": {
+   "action": "cite",
+   "nums": [
+    "705.1"
+   ],
+   "note": "everything before the colon is a cost"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R122#e9a00f9a22#0": {
+   "action": "cite",
+   "nums": [
+    "111.10d"
+   ],
+   "note": "imposed additional cost"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R71#8bd206faae#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": "Wraith created directly as a mod"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R48#dfc996a3a2#0": {
+   "action": "cite",
+   "nums": [
+    "802.24c"
+   ],
+   "note": "Lethal kills through a replaced hit"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R48#b1cf25660e#0": {
+   "action": "cite",
+   "nums": [
+    "802.24c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R147#63215aacc9#0": {
+   "action": "cite",
+   "nums": [
+    "707.5"
+   ],
+   "note": "spawn counters are not a trigger"
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R133#a95e537275#0": {
+   "action": "cite",
+   "nums": [
+    "304.2"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R90#b3c7fddf57#0": {
+   "action": "cite",
+   "nums": [
+    "504.6a"
+   ],
+   "note": "during [Haste] instruction"
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R300#29f88f66a4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The 2026-09-20 source correction",
+   "find": "R300",
+   "replace": "The 2026-09-20 source correction",
+   "note": "data-fix history; no rule"
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R147#9844707dc5#0": {
+   "action": "reword",
+   "nums": [
+    "303.11"
+   ],
+   "suggest": "THE ENTERS-AS-COPY RULE (CR 303.11)",
+   "find": "R147",
+   "replace": "THE ENTERS-AS-COPY RULE (CR 303.11)",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R140#5e8ca1b464#0": {
+   "action": "reword",
+   "nums": [
+    "405.6b"
+   ],
+   "suggest": "THE EXACT-COPY RULE (CR 405.6b)",
+   "find": "R140",
+   "replace": "THE EXACT-COPY RULE (CR 405.6b)",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R147#48a263c8a6#0": {
+   "action": "cite",
+   "nums": [
+    "303.11"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R104#f53e87489f#0": {
+   "action": "reword",
+   "nums": [
+    "708.5"
+   ],
+   "suggest": "the replacement-layer work (CR 708.5)",
+   "find": "R104",
+   "replace": "the replacement-layer work (CR 708.5)",
+   "note": "amount replacement"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R116#ee0afaa0af#0": {
+   "action": "reword",
+   "nums": [
+    "106.7c"
+   ],
+   "suggest": "CR 106.7c",
+   "find": "R116, R54",
+   "replace": "CR 106.7c",
+   "note": "affinity bonus applies to every element; one CR for the R116/R54 pair"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R115#ef4bd33612#0": {
+   "action": "reword",
+   "nums": [
+    "601.5"
+   ],
+   "suggest": "the source-region rule (CR 601.5)",
+   "find": "and R115 withdrew",
+   "replace": "and the source-region rule (CR 601.5) withdrew",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R116#a6ad1a977d#0": {
+   "action": "cite",
+   "nums": [
+    "106.7c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R166#e129c5ae33#0": {
+   "action": "cite",
+   "nums": [
+    "709.7"
+   ],
+   "note": "double = final stat"
+  },
+  "client/engine/src/cards/sets/batch-wood-a.ts##R25#65c1514240#0": {
+   "action": "cite",
+   "nums": [
+    "601.4d"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R48#db746db8e2#0": {
+   "action": "reword",
+   "nums": [
+    "802.23c"
+   ],
+   "suggest": "the Afflicting ruling (CR 802.23c)",
+   "find": "R48",
+   "replace": "the Afflicting ruling (CR 802.23c)",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R268#3e4a187a33#0": {
+   "action": "reword",
+   "nums": [
+    "721.1c"
+   ],
+   "suggest": "The augment-box rule (CR 721.1c)",
+   "find": "it? R268 added",
+   "replace": "it? The augment-box rule (CR 721.1c) added",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R10#725fcba81c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The superseded Unaware ruling",
+   "find": "SCOPE. R10's",
+   "replace": "SCOPE. The superseded Unaware ruling's",
+   "note": "superseded wording, history"
+  },
+  "client/engine/src/engine.ts##R62#c492b8f987#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old suppression ruling",
+   "find": "R62",
+   "replace": "the old suppression ruling",
+   "note": "reversed veto, history"
+  },
+  "client/engine/src/engine.ts##R133#8862261dd7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the token ruling",
+   "find": "(R133's",
+   "replace": "(the token ruling's",
+   "note": "history of the token ruling halves"
+  },
+  "client/engine/src/engine.ts##R133#8862261dd7#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the token ruling",
+   "find": "withdrew R133's",
+   "replace": "withdrew the token ruling's",
+   "note": "withdrawn half, history"
+  },
+  "client/engine/src/engine.ts##R133#2dcb978c17#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the token ruling",
+   "find": "reverses R133's",
+   "replace": "reverses the token ruling's",
+   "note": "withdrawn half, history"
+  },
+  "client/engine/src/engine.ts##R133#2dcb978c17#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The token ruling",
+   "find": "half. R133 (2026-08-24)",
+   "replace": "half. The token ruling (2026-08-24)",
+   "note": "withdrawn half, history"
+  },
+  "client/engine/src/engine.ts##R127#e4edc4dab9#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R191#67657b3f48#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine implementation note"
+  },
+  "client/engine/src/engine.ts##R147#6343b95a11#0": {
+   "action": "cite",
+   "nums": [
+    "707.5"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R47#0ebe007ed0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old Wraith ruling",
+   "find": "R47",
+   "replace": "the old Wraith ruling",
+   "note": "withdrawn, history"
+  },
+  "client/engine/src/engine.ts##R127#8ae9954504#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R127#3d7cdc8d17#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R127#f5ac492423#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R127#9df18cda64#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R127#9171f3d80d#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R4#758ee4487a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the original Electric ruling",
+   "find": "R4",
+   "replace": "the original Electric ruling",
+   "note": "amended reading, history"
+  },
+  "client/engine/src/engine.ts##R153#95cb37dac0#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine disposal detail; sibling dropped too"
+  },
+  "client/engine/src/engine.ts##R108#69f33463e5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "bounded-use",
+   "find": "R108",
+   "replace": "bounded-use",
+   "note": "narrowed answer, history"
+  },
+  "client/engine/src/engine.ts##R108#bf97e13ff8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the decline ruling",
+   "find": "R108's first reading and R113 reverses it.",
+   "replace": "the decline ruling's first reading, and the designer's 2026-08-23 ruling (CR 109.9a) reverses it.",
+   "note": "narrowed reading, history; span keeps the sibling's wording for the reversing ruling"
+  },
+  "client/engine/src/engine.ts##R85#da5df122a6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "resume-rollback",
+   "find": "R85",
+   "replace": "resume-rollback",
+   "note": "old save format"
+  },
+  "client/engine/src/engine.ts##R195#2c7c04e157#0": {
+   "action": "reword",
+   "nums": [
+    "608.9a"
+   ],
+   "suggest": "Per-column attribution (CR 608.9a)",
+   "find": "R195",
+   "replace": "Per-column attribution (CR 608.9a)",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R7#59887f9e2c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old split ruling",
+   "find": "R7",
+   "replace": "the old split ruling",
+   "note": "reversed Piercing half"
+  },
+  "client/engine/src/engine.ts##R119#7c5a07704d#0": {
+   "action": "cite",
+   "nums": [
+    "111.10k"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R127#fa8579bd39#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": ""
+  },
+  "client/engine/src/types.ts##R43#4eda8792d1#0": {
+   "action": "cite",
+   "nums": [
+    "803.7e"
+   ],
+   "note": "counts forward from prophesying"
+  },
+  "client/engine/src/types.ts##R43#d90250145d#0": {
+   "action": "cite",
+   "nums": [
+    "803.7e"
+   ],
+   "note": ""
+  },
+  "client/engine/src/types.ts##R3#a2dfc4bad7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old sub-step ruling",
+   "find": "no priority — R3) before the next\n   * sub-step\". That was the pre-R261 engine, and it had already been wrong\n   * for three weeks when R295 found it.",
+   "replace": "no priority — the old sub-step ruling) before the next\n   * sub-step\". That was the pre-trigger-hold engine, and it had already been wrong\n   * for three weeks when report #165 found it.",
+   "note": "quote of the old comment"
+  },
+  "client/engine/src/types.ts##R44#4a8b8b322f#0": {
+   "action": "cite",
+   "nums": [
+    "803.7g"
+   ],
+   "note": "latching prophecy sweep"
+  },
+  "client/engine/src/types.ts##R119#6177101921#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the discount field",
+   "find": "before R119 read",
+   "replace": "before the discount field read",
+   "note": "save-format history"
+  },
+  "client/engine/test/05-rulings.test.ts##R295#9da5725fab#0": {
+   "action": "reword",
+   "nums": [
+    "608.3b"
+   ],
+   "suggest": "the split-step rule (CR 608.3b)",
+   "find": "and R295 took",
+   "replace": "and the split-step rule (CR 608.3b) took",
+   "note": ""
+  },
+  "client/engine/test/05-rulings.test.ts##R3#cd5b352d78#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": "promotion between sub-steps"
+  },
+  "client/engine/test/05-rulings.test.ts##R10#07115b8be9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "UNAWARE",
+   "find": "* R10 IS",
+   "replace": "* UNAWARE IS",
+   "note": "superseded ruling; the attribute is the subject"
+  },
+  "client/engine/test/05-rulings.test.ts##R10#c1e3ef4732#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ],
+   "note": "printed-stats reading is current"
+  },
+  "client/engine/test/05-rulings.test.ts##R10#ebbf1372f4#0": {
+   "action": "cite",
+   "nums": [
+    "802.9d"
+   ],
+   "note": "same num as sibling so the title prefix keeps one CR"
+  },
+  "client/engine/test/100-elective-assign.test.ts##R7#43b6be0714#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old split ruling",
+   "find": "R7 made Piercing's overflow automatic. R319 reverses",
+   "replace": "the old split ruling made Piercing's overflow automatic. The elective-Piercing rule (CR 802.16c) reverses",
+   "note": "reversed Piercing half"
+  },
+  "client/engine/test/109-attr-channel-conformance.test.ts##R125#d55b247654#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the literal-Everything fix",
+   "find": "R125",
+   "replace": "the literal-Everything fix",
+   "note": "history of the fix"
+  },
+  "client/engine/test/11-fire-wood.test.ts##R347#2d0493ef27#0": {
+   "action": "reword",
+   "nums": [
+    "701.1e"
+   ],
+   "suggest": "CR 701.1e",
+   "find": "R347 (the owner, answering D-U14-11 with reading B; it reverses R26's",
+   "replace": "CR 701.1e (the owner, answering D-U14-11 with reading B; it reverses the earlier reading's",
+   "note": "exact span also rewords the sibling reversed-ruling token on this line"
+  },
+  "client/engine/test/117-copy-everything.test.ts##R127#59483f696e#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "note": ""
+  },
+  "client/engine/test/119-play-and-token-events.test.ts##R37#22645ca5d0#0": {
+   "action": "cite",
+   "nums": [
+    "701.2a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/12-fire-a.test.ts##R116#46945d81c8#0": {
+   "action": "reword",
+   "nums": [
+    "106.7c"
+   ],
+   "suggest": "CR 106.7c",
+   "find": "(R116, R54)",
+   "replace": "(CR 106.7c)",
+   "note": "affinity bonus applies to every element; one CR for the R116/R54 pair"
+  },
+  "client/engine/test/12-fire-a.test.ts##R116#c87cf99ffa#0": {
+   "action": "reword",
+   "nums": [
+    "106.7c"
+   ],
+   "suggest": "CR 106.7c",
+   "find": "R116, R54",
+   "replace": "CR 106.7c",
+   "note": "affinity bonus applies to every element; one CR for the R116/R54 pair"
+  },
+  "client/engine/test/12-fire-a.test.ts##R116#4cf3759254#0": {
+   "action": "cite",
+   "nums": [
+    "106.7c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/12-fire-a.test.ts##R269#e9bc82344d#0": {
+   "action": "cite",
+   "nums": [
+    "712.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/129-disposal-tail.test.ts##R133#7b4ed91eb1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the token ruling",
+   "find": "R306 (owner, 2026-09-28) reverses what this line used to pin: R133's",
+   "replace": "The owner's 2026-09-28 ruling (CR 801.2d) reverses what this line used to pin: the token ruling's",
+   "note": "withdrawn half, history"
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R326#eb1f374e5e#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "CR 107.5 (reversing the earlier price reading)",
+   "find": "R326 (reverses R157 §20)",
+   "replace": "CR 107.5 (reversing the earlier price reading)",
+   "note": "covers the sibling token; fixes audit garble"
+  },
+  "client/engine/test/133-x-cost-semantics.test.ts##R326#a14a1e2029#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "CR 107.5 (reversing the earlier price reading)",
+   "find": "R326 (reverses R157 §20)",
+   "replace": "CR 107.5 (reversing the earlier price reading)",
+   "note": "covers the sibling token; fixes audit garble"
+  },
+  "client/engine/test/139-spawn-and-play.test.ts##R147#0e44824309#0": {
+   "action": "cite",
+   "nums": [
+    "707.5"
+   ],
+   "note": ""
+  },
+  "client/engine/test/139-spawn-and-play.test.ts##R147#c1ab8242e3#0": {
+   "action": "cite",
+   "nums": [
+    "707.5"
+   ],
+   "note": ""
+  },
+  "client/engine/test/140-layers-and-riders.test.ts##R307#4fb10c3187#0": {
+   "action": "cite",
+   "nums": [
+    "110.6"
+   ],
+   "note": "one object cannot be two targets, also on retarget"
+  },
+  "client/engine/test/145-erase-routes.test.ts##R172#eb6bca432a#0": {
+   "action": "reword",
+   "nums": [
+    "410.2"
+   ],
+   "suggest": "the erase-is-a-despawn fix (CR 410.2)",
+   "find": "Before R172 it",
+   "replace": "Before the erase-is-a-despawn fix (CR 410.2) it",
+   "note": ""
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R210#62a311656a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(read",
+   "find": "(R210 — read",
+   "replace": "(read",
+   "note": "removes the process tag from the parenthetical"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R193#8efb79a89d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(it used",
+   "find": "(R193/R201 — it used",
+   "replace": "(it used",
+   "note": "removes the process tags from the parenthetical"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R201#8efb79a89d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "(it used",
+   "find": "(R193/R201 — it used",
+   "replace": "(it used",
+   "note": "removes the process tags from the parenthetical"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R193#0484eacc11#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "THE HOLE THIS",
+   "find": "✔ R193 — THE HOLE THIS HEADER USED TO DESCRIBE IS CLOSED, and saying so is\n * the point of the file. R174 measured",
+   "replace": "✔ THE HOLE THIS HEADER USED TO DESCRIBE IS CLOSED, and saying so is\n * the point of the file. The park-note audit measured",
+   "note": "removes the process tag"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R174#becfe40f47#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the park-note audit",
+   "find": "repair R174 wrote",
+   "replace": "repair the park-note audit wrote",
+   "note": "process history"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R210#8f852de79e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own guard file"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R210#47a761f307#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own guard file"
+  },
+  "client/engine/test/15-water-b.test.ts##R116#b3f6fe6ac7#0": {
+   "action": "reword",
+   "nums": [
+    "106.7c"
+   ],
+   "suggest": "CR 106.7c",
+   "find": "R116, R54",
+   "replace": "CR 106.7c",
+   "note": "affinity bonus applies to every element; one CR for the R116/R54 pair"
+  },
+  "client/engine/test/150-registration-order.test.ts##R214#8a5efb3cad#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the pool-sight fix",
+   "find": "R214",
+   "replace": "the pool-sight fix",
+   "note": "process history"
+  },
+  "client/engine/test/154-guard-shape.test.ts##R173#9a1713e1de#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the guard-shape audit",
+   "find": "BEFORE R173 repaired",
+   "replace": "BEFORE the guard-shape audit repaired",
+   "note": "process history"
+  },
+  "client/engine/test/16-earth-a.test.ts##R116#1c02edcb15#0": {
+   "action": "cite",
+   "nums": [
+    "106.7c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/16-earth-a.test.ts##R116#5760bf55ce#0": {
+   "action": "reword",
+   "nums": [
+    "106.7c"
+   ],
+   "suggest": "CR 106.7c",
+   "find": "R116, R54",
+   "replace": "CR 106.7c",
+   "note": "affinity bonus applies to every element; one CR for the R116/R54 pair"
+  },
+  "client/engine/test/160-simultaneous-trigger-beats.test.ts##R189#d2990138a3#0": {
+   "action": "reword",
+   "nums": [
+    "D6.7"
+   ],
+   "suggest": "the grouping rule (CR D6.7)",
+   "find": "before R189');",
+   "replace": "before the grouping rule (CR D6.7)');",
+   "note": ""
+  },
+  "client/engine/test/164-sweep-sight.test.ts##R201#ec009de6a0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the interpolation fix",
+   "find": "Before R201 it",
+   "replace": "Before the interpolation fix it",
+   "note": "process history"
+  },
+  "client/engine/test/164-sweep-sight.test.ts##R201#cb90094181#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own guard file"
+  },
+  "client/engine/test/170-battle-position-promises.test.ts##R199#448fe135b0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "R199",
+   "replace": "the battle-position fix",
+   "note": ""
+  },
+  "client/engine/test/170-battle-position-promises.test.ts##R199#61c422c3e9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "R199",
+   "replace": "the battle-position fix",
+   "note": ""
+  },
+  "client/engine/test/170-battle-position-promises.test.ts##R199#52525dda30#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "before R199 the",
+   "replace": "before the battle-position fix the",
+   "note": ""
+  },
+  "client/engine/test/170-battle-position-promises.test.ts##R199#cad3d2feb9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "before R199 '",
+   "replace": "before the battle-position fix '",
+   "note": ""
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R203#8c66e7b0b7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the seat-aware log",
+   "find": "R203",
+   "replace": "the seat-aware log",
+   "note": "process history"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R191#4cd6248d3c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the item-id fix",
+   "find": "R191",
+   "replace": "the item-id fix",
+   "note": "history"
+  },
+  "client/engine/test/18-earth-c.test.ts##R59#7dc0b6f98e#0": {
+   "action": "cite",
+   "nums": [
+    "111.10"
+   ],
+   "note": ""
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R211#e3397eabd0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "fix",
+   "find": "R211",
+   "replace": "fix",
+   "note": "pre-fix control"
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R232#9dd7b8bba6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the one-slot fix",
+   "find": "R232",
+   "replace": "the one-slot fix",
+   "note": "process history"
+  },
+  "client/engine/test/19-hybrids.test.ts##R326#bcc8de1a8e#0": {
+   "action": "cite",
+   "nums": [
+    "107.5"
+   ],
+   "note": ""
+  },
+  "client/engine/test/196-empty-target-fizzle.test.ts##R227#f00777061d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.3a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/197-absorb-is-shared.test.ts##R231#32149dde36#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own guard file"
+  },
+  "client/engine/test/197-absorb-is-shared.test.ts##R231#038e9a41d7#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own guard file"
+  },
+  "client/engine/test/197-absorb-is-shared.test.ts##R231#3a96354264#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own guard file"
+  },
+  "client/engine/test/197-absorb-is-shared.test.ts##R231#522f2df103#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own guard file"
+  },
+  "client/engine/test/208-region-scoping-is-absolute.test.ts##R239#cf88748473#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the region-scoping fix",
+   "find": "R239",
+   "replace": "the region-scoping fix",
+   "note": "comment inside a clean-sample string"
+  },
+  "client/engine/test/21-fixes.test.ts##R116#f38a150d2e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "an exchange ruling, since reversed",
+   "find": "(R116):",
+   "replace": "(an exchange ruling, since reversed):",
+   "note": "history"
+  },
+  "client/engine/test/21-fixes.test.ts##R116#b97f74d1b8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "That ruling",
+   "find": "// R116 never",
+   "replace": "// That ruling never",
+   "note": "history"
+  },
+  "client/engine/test/21-fixes.test.ts##R117#531aaebe2e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the column-trigger ruling",
+   "find": "R117",
+   "replace": "the column-trigger ruling",
+   "note": "superseded half, history"
+  },
+  "client/engine/test/21-fixes.test.ts##R126#598283c55b#0": {
+   "action": "cite",
+   "nums": [
+    "110.1c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/217-reveal-rows.test.ts##R188#716227ba3e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the 2026-08-26 investigation",
+   "find": "R188",
+   "replace": "the 2026-08-26 investigation",
+   "note": "investigation history"
+  },
+  "client/engine/test/217-reveal-rows.test.ts##R222#6b63a1e10a#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "(rulings of 2026-08-28 made them arrive immediately inside a hidden segment; the 2026-10-04 ruling (CR D6.2) moved them back to the recap,",
+   "find": "(R222/R235 made them\n * arrive immediately inside a hidden segment; R310 moved them back to the\n * recap,",
+   "replace": "(rulings of 2026-08-28 made them\n * arrive immediately inside a hidden segment; the 2026-10-04 ruling (CR D6.2) moved them back to the\n * recap,",
+   "note": "leads the group"
+  },
+  "client/engine/test/224-mod-trash.test.ts##R153#7f5d539d43#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "code-duplication history; CT-43 stays"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#60289d12d6#0": {
+   "action": "reword",
+   "nums": [
+    "608.3e"
+   ],
+   "suggest": "The sub-step ruling's board half stands (CR 608.3e): deaths and promotion are",
+   "find": "R3 is not overruled; it is narrowed to what it was always about. There is\n * still no priority window BETWEEN DAMAGE SUB-STEPS, deaths and promotion are",
+   "replace": "The sub-step ruling's board half stands (CR 608.3e): deaths and promotion are",
+   "note": "also removes the false no-window claim (608.3b)"
+  },
+  "client/engine/test/23-wood-a.test.ts##R143#5aea0cc06f#0": {
+   "action": "cite",
+   "nums": [
+    "303.10"
+   ],
+   "note": ""
+  },
+  "client/engine/test/23-wood-a.test.ts##R5#5948bac227#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": "item fizzles when its only target is gone"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R3#b7b7b8bc7d#0": {
+   "action": "reword",
+   "nums": [
+    "608.3e"
+   ],
+   "suggest": "THE SUB-STEP RULING (now CR 608.3e)",
+   "find": "/** R3 IS",
+   "replace": "/** THE SUB-STEP RULING (now CR 608.3e) IS",
+   "note": ""
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R261#3d509155ce#0": {
+   "action": "reword",
+   "nums": [
+    "608.9d"
+   ],
+   "suggest": "the after-combat move (CR 608.9d)",
+   "find": "R261",
+   "replace": "the after-combat move (CR 608.9d)",
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#fc05b5b329#0": {
+   "action": "reword",
+   "nums": [
+    "D6.12"
+   ],
+   "suggest": "the fizzle label (CR D6.12)",
+   "find": "R271",
+   "replace": "the fizzle label (CR D6.12)",
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#fb8a8efaf5#0": {
+   "action": "reword",
+   "nums": [
+    "D6.12"
+   ],
+   "suggest": "the fizzle label (CR D6.12)",
+   "find": "before R271,",
+   "replace": "before the fizzle label (CR D6.12),",
+   "note": ""
+  },
+  "client/engine/test/252-viewport-and-log.test.ts##R272#a9caeb61f4#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/26-metal-a.test.ts##R104#d39d7db3a1#0": {
+   "action": "cite",
+   "nums": [
+    "708.3"
+   ],
+   "note": "replaced creation never happens"
+  },
+  "client/engine/test/26-metal-a.test.ts##R73#27f387eb21#0": {
+   "action": "reword",
+   "nums": [
+    "111.8"
+   ],
+   "suggest": "the engine's reading; CR 111.8 differs (F-U04-5)",
+   "find": "which is exactly R73's claim.",
+   "replace": "which is exactly the engine's reading; CR 111.8 differs (F-U04-5).",
+   "note": "CR 111.8 differs (F-U04-5): sacrifice is part of the effect"
+  },
+  "client/engine/test/265-live-slots-without-a-board.test.ts##R258#341e7609ca#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The live-slot work",
+   "find": "R258",
+   "replace": "The live-slot work",
+   "note": "history of shipped slots"
+  },
+  "client/engine/test/30-hybrids-wm-b.test.ts##R326#21becdeb79#0": {
+   "action": "cite",
+   "nums": [
+    "107.5"
+   ],
+   "note": ""
+  },
+  "client/engine/test/308-recycle-for-prismite.test.ts##R116#a9aaa91871#0": {
+   "action": "cite",
+   "nums": [
+    "106.8"
+   ],
+   "note": "a Prismite gives no affinity, so no Shard"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#c751db7aea#0": {
+   "action": "cite",
+   "nums": [
+    "304.10"
+   ],
+   "note": ""
+  },
+  "client/engine/test/36-cache-prophecy.test.ts##R43#639e302009#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine parsing of condition text; no rule"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#461691206b#0": {
+   "action": "cite",
+   "nums": [
+    "706.12",
+    "721.6"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R47#8793725740#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old Wraith ruling",
+   "find": "R47",
+   "replace": "the old Wraith ruling",
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R133#cda2a29ad4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the token ruling",
+   "find": "R133",
+   "replace": "the token ruling",
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#cabbdcaca4#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#dc0e7cf0b9#0": {
+   "action": "cite",
+   "nums": [
+    "802.24c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#fa95e71989#0": {
+   "action": "cite",
+   "nums": [
+    "802.24c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#75fe307b6b#0": {
+   "action": "cite",
+   "nums": [
+    "110.2c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R47#75fe307b6b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old Wraith ruling",
+   "find": "R47",
+   "replace": "the old Wraith ruling",
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R47#3ef771d98f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old Wraith ruling",
+   "find": "R47",
+   "replace": "the old Wraith ruling",
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R47#5db9641c63#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the trashing rule",
+   "find": "R69, reversing R47/R40's old carve-out — and R306 (owner, 2026-09-28)\n// reversing the TRASH half",
+   "replace": "The token-zone ruling (CR 410.5), reversing the trashing rule's old carve-out — and the 2026-09-28 ruling (CR 801.2d)\n// reversing the TRASH half",
+   "note": "group R47/R40: \"reversing the trashing rule's old carve-out\""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#47b71b525c#0": {
+   "action": "reword",
+   "nums": [
+    "110.2c"
+   ],
+   "suggest": "The Wraith ruling (CR 110.2c)",
+   "find": "R71",
+   "replace": "The Wraith ruling (CR 110.2c)",
+   "note": "audit #0"
+  },
+  "client/engine/test/38-light-a.test.ts##R157#8cb3e05b0f#0": {
+   "action": "reword",
+   "nums": [
+    "205.3"
+   ],
+   "suggest": "ruling, now CR 205.3,",
+   "find": "R157 §21",
+   "replace": "ruling, now CR 205.3,",
+   "note": "audit #2: avoid \"The owner's CR\""
+  },
+  "client/engine/test/387-raq-combat.test.ts##R7#77c1c2f04f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old split ruling",
+   "find": "R7",
+   "replace": "the old split ruling",
+   "note": ""
+  },
+  "client/engine/test/399-raq-fix-combat.test.ts##R7#25ee839503#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old split ruling",
+   "find": "R7",
+   "replace": "the old split ruling",
+   "note": ""
+  },
+  "client/engine/test/40-light-c.test.ts##R90#39455e49ee#0": {
+   "action": "reword",
+   "nums": [
+    "504.6a"
+   ],
+   "suggest": "the haste-decision work (CR 504.6a)",
+   "find": "R90",
+   "replace": "the haste-decision work (CR 504.6a)",
+   "note": ""
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R325#ce348f9f2b#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R325#501333e3cc#0": {
+   "action": "cite",
+   "nums": [
+    "714.3"
+   ],
+   "note": ""
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R325#dc2b2ac1a3#0": {
+   "action": "cite",
+   "nums": [
+    "714.3"
+   ],
+   "note": ""
+  },
+  "client/engine/test/401-raq-fix-stack.test.ts##R325#c19cdff7a4#0": {
+   "action": "cite",
+   "nums": [
+    "714.6"
+   ],
+   "note": ""
+  },
+  "client/engine/test/402-raq-fix-stripping.test.ts##R62#fcf17f9081#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old suppression ruling",
+   "find": "R62",
+   "replace": "the old suppression ruling",
+   "note": ""
+  },
+  "client/engine/test/411-cr-extract.test.ts##R3#a94f49dff1#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "cr extractor test data"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R3#a94f49dff1#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "cr extractor test data"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R3#858c365471#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "cr extractor test data"
+  },
+  "client/engine/test/411-cr-extract.test.ts##R3#858c365471#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "cr extractor test data"
+  },
+  "client/engine/test/42-dark-b.test.ts##R47#0021369bc4#0": {
+   "action": "cite",
+   "nums": [
+    "110.2c"
+   ],
+   "note": "withdrawn ruling replaced by the current Wraith rule"
+  },
+  "client/engine/test/42-dark-b.test.ts##R133#b3b2c076a6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the token ruling",
+   "find": "R306 (owner, 2026-09-28) inverts the TRASH half again: \"Tokens are trashed,\n// yes\" (R133) is withdrawn",
+   "replace": "The owner's 2026-09-28 ruling (CR 801.2d) inverts the TRASH half again: \"Tokens are trashed,\n// yes\" (the token ruling) is withdrawn",
+   "note": ""
+  },
+  "client/engine/test/42-dark-b.test.ts##R47#ca88190354#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "alias note"
+  },
+  "client/engine/test/42-dark-b.test.ts##R47#bd54d75285#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": ""
+  },
+  "client/engine/test/42-dark-b.test.ts##R203#dc735d1980#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process ruling label; CT-84 stays"
+  },
+  "client/engine/test/43-dark-c.test.ts##R47#35deec9da7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "retired-name",
+   "find": "R47",
+   "replace": "retired-name",
+   "note": "withdrawn ruling as adjective"
+  },
+  "client/engine/test/43-dark-c.test.ts##R68#60560f4bde#0": {
+   "action": "reword",
+   "nums": [
+    "704.4"
+   ],
+   "suggest": "the CR 704.4 negation fix",
+   "find": "Before R68 it",
+   "replace": "Before the CR 704.4 negation fix it",
+   "note": ""
+  },
+  "client/engine/test/43-dark-c.test.ts##R47#6cc5eb49d4#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "withdrawn ruling in an alias aside"
+  },
+  "client/engine/test/43-dark-c.test.ts##R124#a84898c90c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the bin-use field",
+   "find": "R124",
+   "replace": "the bin-use field",
+   "note": ""
+  },
+  "client/engine/test/43-dark-c.test.ts##R47#37837900f3#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": ""
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R119#f2a0fd9484#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the discount field",
+   "find": "before R119 has",
+   "replace": "before the discount field has",
+   "note": ""
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R119#74918b6494#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "discount",
+   "find": "pre-R119 save",
+   "replace": "pre-discount save",
+   "note": ""
+  },
+  "client/engine/test/46-hybrids-ld-c.test.ts##R157#1de95d37c8#0": {
+   "action": "reword",
+   "nums": [
+    "109.9c"
+   ],
+   "suggest": "the owner's answer (CR 109.9c)",
+   "find": "by R157 §22,",
+   "replace": "by the owner's answer (CR 109.9c),",
+   "note": ""
+  },
+  "client/engine/test/47-costs-events.test.ts##R43#faceeca685#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the prophecy",
+   "find": "R43",
+   "replace": "the prophecy",
+   "note": ""
+  },
+  "client/engine/test/47-costs-events.test.ts##R43#f877b34dd8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the prophecy",
+   "find": "R43",
+   "replace": "the prophecy",
+   "note": ""
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R58#704b4bfa59#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "before the engine could build the seams they needed.",
+   "find": "before R58/R64 built the seams they needed.",
+   "replace": "before the engine could build the seams they needed.",
+   "note": "leads the group; covers the sibling token"
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R5#9865e11ef5#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#a0f11c4ad0#0": {
+   "action": "reword",
+   "nums": [
+    "704.4"
+   ],
+   "suggest": "the CR 704.4 negation fix",
+   "find": "Before R68 the",
+   "replace": "Before the CR 704.4 negation fix the",
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#eb49e74335#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#27a2e3dad1#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": "recalled spell goes to hand, not a bin"
+  },
+  "client/engine/test/61-negation.test.ts##R68#23d2346752#0": {
+   "action": "reword",
+   "nums": [
+    "704.4"
+   ],
+   "suggest": "the CR 704.4 negation fix",
+   "find": "Before R68 it",
+   "replace": "Before the CR 704.4 negation fix it",
+   "note": ""
+  },
+  "client/engine/test/64-formation-collapse.test.ts##R3#f89d71e9a9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the sub-step ruling",
+   "find": "\"R3 says there is no priority window between\n  // sub-steps\", and R295 took that away:",
+   "replace": "\"the sub-step ruling says there is no priority window between\n  // sub-steps\", and split-step windows (CR 608.3b) took that away:",
+   "note": "inside a quote of the old comment"
+  },
+  "client/engine/test/64-formation-collapse.test.ts##R72#8f47765432#0": {
+   "action": "reword",
+   "nums": [
+    "608.4e"
+   ],
+   "suggest": "the empty-column fix (CR 608.4e)",
+   "find": "Before R72 the",
+   "replace": "Before the empty-column fix (CR 608.4e) the",
+   "note": ""
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R209#fa5d32cb40#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "history of a test exception; CT-74 stays"
+  },
+  "client/engine/test/65-effect-conformance.test.ts##R182#1294fa460f#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own guard file"
+  },
+  "client/engine/test/67-resolving-and-stack-viruses.test.ts##R5#8e846df792#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": ""
+  },
+  "client/engine/test/68-target-conformance.test.ts##R214#77b37d1207#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the pool-sight fix",
+   "find": "R214",
+   "replace": "the pool-sight fix",
+   "note": ""
+  },
+  "client/engine/test/71-card-ledger.test.ts##R116#102646a2d1#0": {
+   "action": "cite",
+   "nums": [
+    "106.7c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/71-card-ledger.test.ts##R116#b72983a877#0": {
+   "action": "reword",
+   "nums": [
+    "106.7c"
+   ],
+   "suggest": "See CR 106.7c (the 2026-08-23 correction).",
+   "find": "See R116 and R54's 2026-08-23 correction.",
+   "replace": "See CR 106.7c (the 2026-08-23 correction).",
+   "note": "covers the sibling token"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R214#b0622ce199#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the pool-sight fix",
+   "find": "before R214 it",
+   "replace": "before the pool-sight fix it",
+   "note": ""
+  },
+  "client/engine/test/71-card-ledger.test.ts##R155#cffd75262d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the inert-shape audit",
+   "find": "before R155.",
+   "replace": "before the inert-shape audit.",
+   "note": ""
+  },
+  "client/engine/test/71-card-ledger.test.ts##R268#50e743b6db#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The augment-box work",
+   "find": "R268",
+   "replace": "The augment-box work",
+   "note": ""
+  },
+  "client/engine/test/72-resolution-window.test.ts##R85#ed9f8b58a5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "resume-rollback",
+   "find": "pre-R85 suspension",
+   "replace": "pre-resume-rollback suspension",
+   "note": ""
+  },
+  "client/engine/test/72-resolution-window.test.ts##R85#f848ed616e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "save-compat test title"
+  },
+  "client/engine/test/72-resolution-window.test.ts##R85#6a27f68590#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "resume-rollback",
+   "find": "before R85 looks",
+   "replace": "before resume-rollback looks",
+   "note": ""
+  },
+  "client/engine/test/82-attr-interactions.test.ts##R48#d0bf74106d#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": ""
+  },
+  "client/engine/test/84-card-semantics.test.ts##R211#b0f62c7fef#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process label; CT-87 stays"
+  },
+  "client/engine/test/84-card-semantics.test.ts##R211#6b474a27ab#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the inconclusive-window fix",
+   "find": "Before R211 the",
+   "replace": "Before the inconclusive-window fix the",
+   "note": ""
+  },
+  "client/engine/test/85-silent-branches.test.ts##R209#614f799179#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "history label; CARD-TODO #74 stays"
+  },
+  "client/engine/test/90-coverage-census.test.ts##R153#8fc2b7ecfe#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the disposal-tail rewrite",
+   "find": "R153",
+   "replace": "the disposal-tail rewrite",
+   "note": ""
+  },
+  "client/engine/test/90-coverage-census.test.ts##R51#fc98c4b358#0": {
+   "action": "reword",
+   "nums": [
+    "400.5a"
+   ],
+   "suggest": "the bin-listener rule (CR 400.5a)",
+   "find": "reading R51 already",
+   "replace": "reading the bin-listener rule (CR 400.5a) already",
+   "note": ""
+  },
+  "client/engine/test/91-modular.test.ts##R105#6601b64dc7#0": {
+   "action": "cite",
+   "nums": [
+    "724.5"
+   ],
+   "note": ""
+  },
+  "client/engine/test/93-engine-defects.test.ts##R108#8936d31d27#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the decline ruling",
+   "find": "R108",
+   "replace": "the decline ruling",
+   "note": ""
+  },
+  "client/engine/test/93-engine-defects.test.ts##R113#dc0a70a787#0": {
+   "action": "cite",
+   "nums": [
+    "109.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#c2f71d5190#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the withdrawn home-region reading",
+   "find": "inverts R28:",
+   "replace": "inverts the withdrawn home-region reading:",
+   "note": "audit #48"
+  },
+  "client/engine/test/98-spawn-region.test.ts##R28#208916c0a6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The home-region reading",
+   "find": "R28",
+   "replace": "The home-region reading",
+   "note": "audit #48 sibling"
+  },
+  "client/engine/test/drill.ts##R199#b8913d74f3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "R199",
+   "replace": "the battle-position fix",
+   "note": ""
+  },
+  "client/engine/test/drill.ts##R232#4c0b9546d9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the one-slot fix",
+   "find": "R232",
+   "replace": "the one-slot fix",
+   "note": ""
+  },
+  "client/engine/test/drill.ts##R199#a2f05fd780#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "and R199 exists",
+   "replace": "and the battle-position fix exists",
+   "note": ""
+  },
+  "client/engine/test/util.ts##R231#8afda21bc7#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process label; CT-88 stays"
+  },
+  "client/ledgers/backlog-closed.ts##R241#92a335c393#0": {
+   "action": "reword",
+   "nums": [
+    "D6.15"
+   ],
+   "suggest": "the card-menu ruling (now CR D6.15)",
+   "find": "R241",
+   "replace": "the card-menu ruling (now CR D6.15)",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#54d8566615#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The first Unaware ruling",
+   "find": "R10",
+   "replace": "The first Unaware ruling",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#ee03065564#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the first Unaware ruling",
+   "find": "R10",
+   "replace": "the first Unaware ruling",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#2711a7bdfd#0": {
+   "action": "cite",
+   "nums": [
+    "802.9"
+   ],
+   "note": "binding: moves with its title (#94)"
+  },
+  "client/ledgers/card-todo-closed.ts##R182#b6f9a922b3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The conformance rework",
+   "find": "R182",
+   "replace": "The conformance rework",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R188#2e630e3149#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The glimpse investigation",
+   "find": "R188",
+   "replace": "The glimpse investigation",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R108#df63f89f1b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "bounded-use ruling",
+   "find": "R108",
+   "replace": "bounded-use ruling",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#779ca2f622#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the July Unaware ruling",
+   "find": "— R10 and R76 are marked only in the blockquote, and R10 is exactly",
+   "replace": "— the July Unaware ruling and the invented Alluring ruling are marked only in the blockquote, and that ruling is exactly",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#779ca2f622#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "that ruling",
+   "find": "and R10 is",
+   "replace": "and that ruling is",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#779ca2f622#0~1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the July Unaware ruling",
+   "find": "— R10 and R76 are marked only in the blockquote, and R10 is exactly",
+   "replace": "— the July Unaware ruling and the invented Alluring ruling are marked only in the blockquote, and that ruling is exactly",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#779ca2f622#1~1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "that ruling",
+   "find": "and R10 is",
+   "replace": "and that ruling is",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R76#779ca2f622#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the invented Alluring ruling",
+   "find": "R76",
+   "replace": "the invented Alluring ruling",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R76#779ca2f622#0~1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the invented Alluring ruling",
+   "find": "R76",
+   "replace": "the invented Alluring ruling",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R188#779ca2f622#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "a then-open glimpse ruling",
+   "find": "qualified by R188, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording",
+   "replace": "qualified by a then-open glimpse ruling, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-audit wording",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R188#779ca2f622#0~1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "a then-open glimpse ruling",
+   "find": "qualified by R188, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-R206 wording",
+   "replace": "qualified by a then-open glimpse ruling, which is CT-77\\'s open question, and was left alone. ORCHESTRATOR VERIFIED INDEPENDENTLY: reverting the Piercing row to its pre-audit wording",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R188#48ca41e779#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The glimpse investigation",
+   "find": "ask. R188 already",
+   "replace": "ask. The glimpse investigation already",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R222#b4cafdb7cb#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "since reversed: CR D6.2",
+   "find": "(R222), which is the standing steer applied and the answer that costs work. Implemented as '\n      + 'R235: the hold is PER-EVENT now",
+   "replace": "(since reversed: CR D6.2), which is the standing steer applied and the answer that costs work. Implemented, '\n      + 'since reversed, as a per-event hold",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R188#1f08bf1afb#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the investigation",
+   "find": "R188",
+   "replace": "the investigation",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R188#52dea93992#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "investigating",
+   "find": "the R188 agent:",
+   "replace": "the investigating agent:",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R222#623c1eaa08#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "the 2026-08-28 rulings (since reversed)",
+   "find": "R222/R235",
+   "replace": "the 2026-08-28 rulings (since reversed)",
+   "note": "leads the group"
+  },
+  "client/ledgers/card-todo-closed.ts##R191#ac0c4b9843#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the item-id fix",
+   "find": "R191",
+   "replace": "the item-id fix",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#cfd4f000b5#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the first Unaware ruling",
+   "find": "carries R10\\'s wording, superseded by R106.",
+   "replace": "carries the first Unaware ruling\\'s wording, superseded by the later Unaware ruling.",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R10#e322cec3e0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the first ruling",
+   "find": "and R10\\'s \"everything counts as interacting\" '\n      + 'included TARGETING, which R106 deliberately",
+   "replace": "and the first ruling\\'s \"everything counts as interacting\" '\n      + 'included TARGETING, which the later Unaware ruling deliberately",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R210#4473bcd52b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The exemption-staleness round",
+   "find": "R210",
+   "replace": "The exemption-staleness round",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R204#0d41dc3180#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The port-flake fix",
+   "find": "R204",
+   "replace": "The port-flake fix",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R224#092a6abfba#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R200#cc5d76d36d#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process ruling at clause end"
+  },
+  "client/ledgers/card-todo-closed.ts##R3#10ad253a47#0": {
+   "action": "reword",
+   "nums": [
+    "608.3e"
+   ],
+   "suggest": "THE SUB-STEP RULING SURVIVED, NARROWED: that deaths and promotion between damage sub-steps happen at once (CR 608.3e) is still true",
+   "find": "R3 SURVIVES, NARROWED: no priority window between damage sub-steps is still true",
+   "replace": "THE SUB-STEP RULING SURVIVED, NARROWED: that deaths and promotion between damage sub-steps happen at once (CR 608.3e) is still true",
+   "note": "old text claimed no window between sub-steps; false under 608.3b"
+  },
+  "client/ledgers/card-todo-closed.ts##R117#66c5b97d09#0": {
+   "action": "reword",
+   "nums": [
+    "608.9a"
+   ],
+   "suggest": "The column-trigger rulings (CR 608.9a)",
+   "find": "R117/R157 §5",
+   "replace": "The column-trigger rulings (CR 608.9a)",
+   "note": "leads the group"
+  },
+  "client/ledgers/card-todo-closed.ts##R249#c2b4b84820#0": {
+   "action": "reword",
+   "nums": [
+    "D6.10b"
+   ],
+   "suggest": "the spent-marker ruling (now CR D6.10b)",
+   "find": "as R249,",
+   "replace": "as the spent-marker ruling (now CR D6.10b),",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R255#9ee2a9bf61#0": {
+   "action": "cite",
+   "nums": [
+    "D6.18"
+   ],
+   "note": "binding: moves with its title (#401)"
+  },
+  "client/ledgers/card-todo-closed.ts##R239#f6097b93d4#0": {
+   "action": "reword",
+   "nums": [
+    "601.4d"
+   ],
+   "suggest": "the region-scoping ruling (now CR 601.4d)",
+   "find": "Q2 by R237, Q5 by R238, Q6 by R240, Q8 by R239 — and '\n      + 'R237 and R238 each name the question",
+   "replace": "Q2 by a 2026-08-28 ruling, Q5 by the owner\\'s 2026-08-28 ruling (now CR 608.8a), Q6 by the Interdiction Rift ruling, Q8 by the region-scoping ruling (now CR 601.4d) — and '\n      + 'two of those rulings name the question",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R260#e0a18de38d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the partial-is-not-live fix",
+   "find": "R260",
+   "replace": "the partial-is-not-live fix",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R266#713b5344c2#0": {
+   "action": "reword",
+   "nums": [
+    "D7.4"
+   ],
+   "suggest": "the log-only ruling (now CR D7.4)",
+   "find": "R266",
+   "replace": "the log-only ruling (now CR D7.4)",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R274#e7bf58e3cc#0": {
+   "action": "reword",
+   "nums": [
+    "D7.5"
+   ],
+   "suggest": "The refusal-reach ruling (CR D7.5)",
+   "find": "'R274.",
+   "replace": "'The refusal-reach ruling (CR D7.5).",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R268#20f075e570#0": {
+   "action": "reword",
+   "nums": [
+    "721.1c"
+   ],
+   "suggest": "The augment-box ruling (CR 721.1c)",
+   "find": "R268",
+   "replace": "The augment-box ruling (CR 721.1c)",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R272#03791b1808#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15a"
+   ],
+   "note": "binding: moves with its title (#157)"
+  },
+  "client/ledgers/card-todo-closed.ts##R279#e0a26ed487#0": {
+   "action": "reword",
+   "nums": [
+    "D6.9"
+   ],
+   "suggest": "The live-value ruling (CR D6.9)",
+   "find": "R279",
+   "replace": "The live-value ruling (CR D6.9)",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R63#d1c0881c92#0": {
+   "action": "cite",
+   "nums": [
+    "109.8"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R119#ff7a8c9fdd#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The first discount ruling",
+   "find": "R119",
+   "replace": "The first discount ruling",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R325#ff29c8eee8#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ],
+   "note": "binding: moves with its title (#180)"
+  },
+  "client/ledgers/card-todo-closed.ts##R62#f2b1a6c67e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old suppression ruling",
+   "find": "Reverses R62's",
+   "replace": "Reverses the old suppression ruling's",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R7#76a2b77486#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The old split ruling",
+   "find": "R7 (owner, 2026-07-16) made Piercing automatic. Two RAQ write-ups say otherwise: with Piercing \\\"the attacker may still overkill the front or back unit, keeping that excess off the player\\\", and a Piercing attacker may put all 10 into a Vulnerable unit (20) so none reaches the player. The RAQ is the authority (owner, 2026-10-09), so R7 is reversed.",
+   "replace": "The old split ruling (owner, 2026-07-16) made Piercing automatic. Two RAQ write-ups say otherwise: with Piercing \\\"the attacker may still overkill the front or back unit, keeping that excess off the player\\\", and a Piercing attacker may put all 10 into a Vulnerable unit (20) so none reaches the player. The RAQ is the authority (owner, 2026-10-09), so the old split ruling is reversed.",
+   "note": "reversed Piercing half, history"
+  },
+  "client/ledgers/card-todo-closed.ts##R7#3546d1fb61#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old split ruling",
+   "find": "reversing R7,",
+   "replace": "reversing the old split ruling,",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R347#9780fbf0dd#0": {
+   "action": "reword",
+   "nums": [
+    "701.1e"
+   ],
+   "suggest": "CR 701.1e",
+   "find": "(R347, reversing R26's own-play half)",
+   "replace": "(CR 701.1e, reversing the earlier reading's own-play half)",
+   "note": "exact span also rewords the sibling reversed-ruling token"
+  },
+  "client/ledgers/card-todo.ts##R207#b8419c0f0c#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R3#608df99912#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old sub-step ruling",
+   "find": "R295 amended R3:",
+   "replace": "The split-step rule (CR 608.3b) amended the old sub-step ruling:",
+   "note": "sibling names the split-step rule"
+  },
+  "client/ledgers/card-todo.ts##R62#d20acfd531#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "old",
+   "find": "44: R62 suppression",
+   "replace": "44: old suppression",
+   "note": "quotes an old title"
+  },
+  "client/ledgers/card-todo.ts##R266#2ad950d565#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the retired register said nineteen",
+   "find": "(6) R266 says nineteen",
+   "replace": "(6) the retired register said nineteen",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R207#dae1cc601b#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R36#f477b251d1#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the lone-counterattacker ruling",
+   "find": "and R36's",
+   "replace": "and the lone-counterattacker ruling's",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R36#f477b251d1#2": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "that ruling",
+   "find": "presents R36 as",
+   "replace": "presents that ruling as",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R36#5906681ac9#0": {
+   "action": "reword",
+   "nums": [
+    "D1.2c"
+   ],
+   "suggest": "the lone-counterattacker ruling (CR D1.2c)",
+   "find": "reversed R36,",
+   "replace": "reversed the lone-counterattacker ruling (CR D1.2c),",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R36#5906681ac9#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "its heading",
+   "find": "to R36's heading",
+   "replace": "to its heading",
+   "note": "avoid \"that ruling\" anchoring forward"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R28#6842b6013a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the withdrawn home-region reading",
+   "find": "inverts R28:",
+   "replace": "inverts the withdrawn home-region reading:",
+   "note": "binding: moves with its title (#233)"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R116#d19d028a18#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the exchange ruling",
+   "find": "and R116 is",
+   "replace": "and the exchange ruling is",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R132#d19d028a18#0": {
+   "action": "cite",
+   "nums": [
+    "106.8c"
+   ],
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R116#162ffd5527#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "That ruling",
+   "find": "maybeGrantShard. R116 never",
+   "replace": "maybeGrantShard. That ruling never",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R116#9cf692252f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "exchange",
+   "find": "The R116 test",
+   "replace": "The exchange test",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R149#494da2b80b#0": {
+   "action": "reword",
+   "nums": [
+    "D7.2e"
+   ],
+   "suggest": "the per-victim split prompt (CR D7.2e)",
+   "find": "R149",
+   "replace": "the per-victim split prompt (CR D7.2e)",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R188#85b7caf2c2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "investigation label"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R222#26ab974672#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "since reversed: CR D6.2",
+   "find": "IMMEDIATELY (R222), and '\n      + 'R235 implemented it",
+   "replace": "IMMEDIATELY (since reversed: CR D6.2), and '\n      + 'a since-reversed ruling implemented it",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R173#babb32f8f7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the guard-shape audit",
+   "find": "R173",
+   "replace": "the guard-shape audit",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#3408890b2e#0": {
+   "action": "reword",
+   "nums": [
+    "608.3e",
+    "608.3a"
+   ],
+   "suggest": "The sub-step ruling survived, narrowed (CR 608.3e): that an unsplit step has no priority window",
+   "find": "R3 survives narrowed: no priority window",
+   "replace": "The sub-step ruling survived, narrowed (CR 608.3e): that an unsplit step has no priority window",
+   "note": "old text was false under 608.3b"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#920e67b65a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "SUB-STEP",
+   "find": "THE R3 GUARD",
+   "replace": "THE SUB-STEP GUARD",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R249#f06cd0ac78#0": {
+   "action": "reword",
+   "nums": [
+    "D6.10b"
+   ],
+   "suggest": "the spent-marker ruling (now CR D6.10b)",
+   "find": "as R249,",
+   "replace": "as the spent-marker ruling (now CR D6.10b),",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R255#9ee2a9bf61#0": {
+   "action": "cite",
+   "nums": [
+    "D6.18"
+   ],
+   "note": "binding: moves with its title (#401)"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R268#98fe1813f0#0": {
+   "action": "reword",
+   "nums": [
+    "721.1c"
+   ],
+   "suggest": "THE AUGMENT-BOX RULE (CR 721.1c)",
+   "find": "AND R268 AS",
+   "replace": "AND THE AUGMENT-BOX RULE (CR 721.1c) AS",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R272#03791b1808#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15a"
+   ],
+   "note": "binding: moves with its title (#157)"
+  },
+  "client/ledgers/raq.ts##R325#d1e30bf91d#2": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ],
+   "note": "binding: moves with its title (#180)"
+  },
+  "client/package.json##R181#7607bc5b9f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "`check`",
+   "find": "R181: `check`",
+   "replace": "`check`",
+   "note": "removes the process label"
+  },
+  "client/server/api-admin.ts##R216#c12fe51657#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The scenario-room",
+   "find": "R216",
+   "replace": "The scenario-room",
+   "note": ""
+  },
+  "client/server/e2e/test-forensics.ts##R191#5f35be4abc#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the item-ref fix",
+   "find": "R191",
+   "replace": "the item-ref fix",
+   "note": ""
+  },
+  "client/server/e2e/test-forensics.ts##R200#f42ad372ae#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "[a file",
+   "find": "[R200: a file",
+   "replace": "[a file",
+   "note": "removes the process label"
+  },
+  "client/server/e2e/test-hidden.ts##R312#5a51fee177#0": {
+   "action": "reword",
+   "nums": [
+    "D4.3"
+   ],
+   "suggest": "the undo-lock work (CR D4.3)",
+   "find": "R312",
+   "replace": "the undo-lock work (CR D4.3)",
+   "note": ""
+  },
+  "client/server/e2e/test-postgame.ts##R204#2f313b1eee#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process label; CT-85 stays"
+  },
+  "client/server/e2e/test-undo-segment.ts##R312#5a51fee177#0": {
+   "action": "reword",
+   "nums": [
+    "D4.3"
+   ],
+   "suggest": "the undo-lock work (CR D4.3)",
+   "find": "R312",
+   "replace": "the undo-lock work (CR D4.3)",
+   "note": ""
+  },
+  "client/server/e2e/test-util.ts##R204#231e7fc4de#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the port-flake fix",
+   "find": "R204",
+   "replace": "the port-flake fix",
+   "note": ""
+  },
+  "client/server/e2e/test-util.ts##R204#75416d7a6c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The port-flake fix",
+   "find": "R204",
+   "replace": "The port-flake fix",
+   "note": ""
+  },
+  "client/server/package.json##R181#3f41d4ee3c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the typecheck-reach fix",
+   "find": "R181",
+   "replace": "the typecheck-reach fix",
+   "note": ""
+  },
+  "client/server/replay-room.ts##R200#21c5bc2355#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay versioning",
+   "find": "before R200 —",
+   "replace": "before replay versioning —",
+   "note": ""
+  },
+  "client/server/replay-room.ts##R200#39dbba679c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay versioning",
+   "find": "R200",
+   "replace": "replay versioning",
+   "note": ""
+  },
+  "client/server/replay-room.ts##R200#dd8a9cca0a#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own file label"
+  },
+  "client/server/rooms.ts##R188#e2a694e59b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The glimpse investigation",
+   "find": "R188",
+   "replace": "The glimpse investigation",
+   "note": ""
+  },
+  "client/server/rooms.ts##R200#46a24b4a0a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay versioning",
+   "find": "R200",
+   "replace": "replay versioning",
+   "note": ""
+  },
+  "client/server/rooms.ts##R200#b468b5251a#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "own file label"
+  },
+  "client/server/rooms.ts##R312#9049d15491#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3"
+   ],
+   "note": ""
+  },
+  "client/server/rooms.ts##R200#685ff81e0c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": ""
+  },
+  "client/server/scenarios-a.ts##R207#c6b0e321f3#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ],
+   "note": ""
+  },
+  "client/server/scenarios-e.ts##R11#e580718c70#0": {
+   "action": "cite",
+   "nums": [
+    "506.2"
+   ],
+   "note": ""
+  },
+  "client/server/scenarios.ts##R216#14ff6b3144#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process aside"
+  },
+  "client/server/scenarios.ts##R218#e137dfbe7a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "⚠ THIS",
+   "find": "⚠ R218 — THIS",
+   "replace": "⚠ THIS",
+   "note": "removes the process label"
+  },
+  "client/server/stats.ts##R34#37fcf43d3a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the identical-trigger rule",
+   "find": "R34",
+   "replace": "the identical-trigger rule",
+   "note": ""
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R188#9fbe57843e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "THE GLIMPSE HOLD:",
+   "find": "R188 → R235 → R310:",
+   "replace": "THE GLIMPSE HOLD:",
+   "note": "covers the chain of rulings"
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R188#0e36b1e4d8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The glimpse investigation",
+   "find": "* R188 left",
+   "replace": "* The glimpse investigation left",
+   "note": ""
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R188#ce5eef6f18#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "glimpse-timing",
+   "find": "R188",
+   "replace": "glimpse-timing",
+   "note": ""
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R188#322cc4c36a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The glimpse investigation",
+   "find": "R188",
+   "replace": "The glimpse investigation",
+   "note": ""
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R235#caa4878e5d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "a later ruling, since reversed,",
+   "find": "R235 let it\n  // past the hold; R310 (report #192) puts it back:",
+   "replace": "a later ruling, since reversed, let it\n  // past the hold; the 2026-10-04 ruling (CR D6.2, report #192) puts it back:",
+   "note": ""
+  },
+  "client/server/test/159-glimpse-reveal-visibility.test.ts##R235#d318f890ac#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the earlier exemption ruling",
+   "find": "R310: view.ts exports no exemption from the hidden hold any more (R235 is reversed)",
+   "replace": "view.ts exports no exemption from the hidden hold any more (the earlier exemption ruling is reversed)",
+   "note": ""
+  },
+  "client/server/test/200-haste-step-is-unconditional.test.ts##R50#7e403e15cc#0": {
+   "action": "reword",
+   "nums": [
+    "504.6"
+   ],
+   "suggest": "The end-of-haste event (CR 504.6)",
+   "find": "R50/R18",
+   "replace": "The end-of-haste event (CR 504.6)",
+   "note": "leads the group; the step is no longer skippable (504.5)"
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R203#44ba28540b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "174-secrecy-is-seat-aware",
+   "find": "R203",
+   "replace": "174-secrecy-is-seat-aware",
+   "note": ""
+  },
+  "client/server/test/203-reveal-waits-for-the-barrier.test.ts##R235#4adc306c39#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the reversed ruling",
+   "find": "R235",
+   "replace": "the reversed ruling",
+   "note": ""
+  },
+  "client/server/test/374-undo-locks-on-reveal.test.ts##R312#739e6f9525#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3a"
+   ],
+   "note": ""
+  },
+  "client/server/types.ts##R181#f3cec374b6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process aside"
+  },
+  "client/server/types.ts##R200#e9f3bdc6ae#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay versioning",
+   "find": "before R200 lacks",
+   "replace": "before replay versioning lacks",
+   "note": ""
+  },
+  "client/ui/flash.ts##R68#74a5e35e7b#0": {
+   "action": "reword",
+   "nums": [
+    "704.4"
+   ],
+   "suggest": "the CR 704.4 negation fix",
+   "find": "Before R68,",
+   "replace": "Before the CR 704.4 negation fix,",
+   "note": ""
+  },
+  "client/ui/flash.ts##R271#c8d14b82c7#0": {
+   "action": "reword",
+   "nums": [
+    "D6.12"
+   ],
+   "suggest": "the fizzle label (CR D6.12)",
+   "find": "R271",
+   "replace": "the fizzle label (CR D6.12)",
+   "note": ""
+  },
+  "client/ui/flash.ts##R189#4308bffc8e#0": {
+   "action": "reword",
+   "nums": [
+    "D6.7"
+   ],
+   "suggest": "the grouping rule (CR D6.7)",
+   "find": "R189",
+   "replace": "the grouping rule (CR D6.7)",
+   "note": ""
+  },
+  "client/ui/flash.ts##R68#88dba12407#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R242#5a77082ef6#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": ""
+  },
+  "client/ui/glossary.ts##R10#bbf368ef9e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old wording",
+   "find": "teaching R10 three days after R106.",
+   "replace": "teaching the old wording three days after its ruling was replaced.",
+   "note": ""
+  },
+  "client/ui/glossary.ts##R252#ed6e5934f0#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "note": ""
+  },
+  "client/ui/glossary.ts##R117#c886efece0#0": {
+   "action": "cite",
+   "nums": [
+    "802.4e"
+   ],
+   "note": "Swift row: triggers from Swift damage resolve before normal damage"
+  },
+  "client/ui/glossary.ts##R10#ea1a17c5aa#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the first Unaware ruling",
+   "find": "carried R10's",
+   "replace": "carried the first Unaware ruling's",
+   "note": ""
+  },
+  "client/ui/glossary.ts##R10#769c5c607b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "That ruling",
+   "find": "all. R10's",
+   "replace": "all. That ruling's",
+   "note": ""
+  },
+  "client/ui/glossary.ts##R248#8198d6cab2#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11a"
+   ],
+   "suggest": "CR D6.11a / report #118: this sentence used to carry ruling numbers",
+   "find": "R248 / report #118: this sentence used to read \"(R224)\" and \"(R236)\"",
+   "replace": "CR D6.11a / report #118: this sentence used to carry ruling numbers",
+   "note": "covers the sibling tokens"
+  },
+  "client/ui/glossary.ts##R224#8198d6cab2#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11a"
+   ],
+   "suggest": "CR D6.11a / report #118: this sentence used to carry ruling numbers",
+   "find": "R248 / report #118: this sentence used to read \"(R224)\" and \"(R236)\"",
+   "replace": "CR D6.11a / report #118: this sentence used to carry ruling numbers",
+   "note": "same as #354"
+  },
+  "client/ui/glossary.ts##R132#7586a58b61#0": {
+   "action": "reword",
+   "nums": [
+    "106.8c"
+   ],
+   "suggest": "The Prismite ruling (now CR 106.8c)",
+   "find": "short. R132 reversed",
+   "replace": "short. The Prismite ruling (now CR 106.8c) reversed",
+   "note": ""
+  },
+  "client/ui/glossary.ts##R116#bbb1b24376#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the exchange ruling",
+   "find": "R116",
+   "replace": "the exchange ruling",
+   "note": ""
+  },
+  "client/ui/inspect.ts##R241#d25b80e7e9#0": {
+   "action": "reword",
+   "nums": [
+    "D6.15"
+   ],
+   "suggest": "The card-menu rule, CR D6.15 (BL-20):",
+   "find": "R65, narrowed by R241 (BL-20):",
+   "replace": "The card-menu rule, CR D6.15 (BL-20):",
+   "note": "avoid \"CR D6.15, narrowed by\" self-reference"
+  },
+  "client/ui/inspect.ts##R149#6fb33b84a0#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R68#8a305c264e#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R276#eac7eca7d6#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4b"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R205#bde628816c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R273#5290f2d5fa#0": {
+   "action": "cite",
+   "nums": [
+    "D6.13"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R272#265634ccf6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "hover-repaint half has no CR rule"
+  },
+  "client/ui/main.ts##R272#66f9749215#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "// before",
+   "find": "// R272: before",
+   "replace": "// before",
+   "note": "removes the label; hover half has no CR rule"
+  },
+  "client/ui/main.ts##R272#dacf4ee091#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "hover-repaint half has no CR rule"
+  },
+  "client/ui/resources.ts##R132#30f952e850#0": {
+   "action": "reword",
+   "nums": [
+    "106.8c"
+   ],
+   "suggest": "The Prismite ruling (now CR 106.8c)",
+   "find": "R132",
+   "replace": "The Prismite ruling (now CR 106.8c)",
+   "note": ""
+  },
+  "client/ui/resources.ts##R116#30f952e850#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the exchange ruling",
+   "find": "R116",
+   "replace": "the exchange ruling",
+   "note": ""
+  },
+  "client/ui/reveal.ts##R188#114c8f94d0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The glimpse investigation",
+   "find": "R188",
+   "replace": "The glimpse investigation",
+   "note": ""
+  },
+  "client/ui/reveal.ts##R222#80166a3fcc#0": {
+   "action": "reword",
+   "nums": [
+    "D6.2"
+   ],
+   "suggest": "(rulings of 2026-08-28, since reversed, then made them",
+   "find": "(R222/R235\n * then made them",
+   "replace": "(rulings of 2026-08-28, since reversed,\n * then made them",
+   "note": "leads the group"
+  },
+  "client/ui/solo.ts##R312#2b6e5299d2#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e"
+   ],
+   "note": ""
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R249#217dd04962#0": {
+   "action": "reword",
+   "nums": [
+    "D6.10b"
+   ],
+   "suggest": "THE SPENT-MARKER RULE (CR D6.10b)",
+   "find": "R249",
+   "replace": "THE SPENT-MARKER RULE (CR D6.10b)",
+   "note": ""
+  },
+  "client/ui/test/126-assign-split.test.ts##R139#e090a87163#0": {
+   "action": "reword",
+   "nums": [
+    "D7.2"
+   ],
+   "suggest": "CR D7.2, in the type)",
+   "find": "(R139\\'s ruling, in the type)",
+   "replace": "(CR D7.2, in the type)",
+   "note": ""
+  },
+  "client/ui/test/144-both-seats-decision-gate.test.ts##R170#748b6cbbba#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the hotseat change",
+   "find": "R170",
+   "replace": "the hotseat change",
+   "note": ""
+  },
+  "client/ui/test/155-hand-affordances.test.ts##R183#5d89c9ccb4#0": {
+   "action": "reword",
+   "nums": [
+    "D6.14"
+   ],
+   "suggest": "the hand-verb marks (CR D6.14)",
+   "find": "R183",
+   "replace": "the hand-verb marks (CR D6.14)",
+   "note": ""
+  },
+  "client/ui/test/155-hand-affordances.test.ts##R183#e73b02160f#0": {
+   "action": "reword",
+   "nums": [
+    "D6.14"
+   ],
+   "suggest": "the hand-verb marks (CR D6.14)",
+   "find": "R183",
+   "replace": "the hand-verb marks (CR D6.14)",
+   "note": ""
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R267#8cf221e79e#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11"
+   ],
+   "suggest": "THE GAME'S-WORDS RULE (CR D6.11)",
+   "find": "BY R267,",
+   "replace": "BY THE GAME'S-WORDS RULE (CR D6.11),",
+   "note": ""
+  },
+  "client/ui/test/161-glimpse-reminders.test.ts##R267#4e6aa035d2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the reminder-channel work",
+   "find": "that R267 was",
+   "replace": "that the reminder-channel work was",
+   "note": ""
+  },
+  "client/ui/test/163-cache-affordance-and-badges.test.ts##R205#09427e8588#0": {
+   "action": "reword",
+   "nums": [
+    "D6.16"
+   ],
+   "suggest": "the bin-panel fix (CR D6.16)",
+   "find": "R205",
+   "replace": "the bin-panel fix (CR D6.16)",
+   "note": ""
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#407e5dfdc5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": ""
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#e5b8f12157#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old Unaware ruling",
+   "find": "teaching R10 after R106 replaced it.",
+   "replace": "teaching the old Unaware ruling after the later ruling replaced it.",
+   "note": ""
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#c95814a4c7#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#427cdc1ddc#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#e48a22f614#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#90a59e9e62#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R76#90a59e9e62#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R76#a377c7baf1#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R108#ffd3dd7ab7#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R76#f7428d1c27#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#860126e265#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#1df0333cf3#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#85260a542b#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#de63ec7090#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 parses register bodies; reworked with the register deletion"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#af96ede958#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the first Unaware ruling",
+   "find": "carried R10\\'s",
+   "replace": "carried the first Unaware ruling\\'s",
+   "note": ""
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R10#7e31366c13#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The first Unaware ruling",
+   "find": "'R10\\'s",
+   "replace": "'The first Unaware ruling\\'s",
+   "note": ""
+  },
+  "client/ui/test/218-one-tempo.test.ts##R242#2731aef7e3#0": {
+   "action": "reword",
+   "nums": [
+    "D5.4"
+   ],
+   "suggest": "the one-tempo rule (CR D5.4)",
+   "find": "R242",
+   "replace": "the one-tempo rule (CR D5.4)",
+   "note": ""
+  },
+  "client/ui/test/227-reminder-text.test.ts##R248#b920c77a35#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11"
+   ],
+   "suggest": "the game's-words rule (CR D6.11)",
+   "find": "before R248.",
+   "replace": "before the game's-words rule (CR D6.11).",
+   "note": ""
+  },
+  "client/ui/test/228-spent-marker.test.ts##R249#7556495860#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the spent-marker rule",
+   "find": "R249",
+   "replace": "the spent-marker rule",
+   "note": "audit #36"
+  },
+  "client/ui/test/231-manual-text.test.ts##R248#a77ac91894#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11a"
+   ],
+   "suggest": "the game's-words rule (CR D6.11a)",
+   "find": "\"R79, R95, R161\" was ui/cardpanel.ts printing the `ruling`\n *     FIELD, and R248 deleted",
+   "replace": "ruling numbers came from ui/cardpanel.ts printing the `ruling`\n *     FIELD, and the game's-words rule (CR D6.11a) deleted",
+   "note": ""
+  },
+  "client/ui/test/233-burst-count-and-size.test.ts##R254#e41cf29167#0": {
+   "action": "reword",
+   "nums": [
+    "D6.9d"
+   ],
+   "suggest": "the burst-count work (CR D6.9d)",
+   "find": "R254",
+   "replace": "the burst-count work (CR D6.9d)",
+   "note": ""
+  },
+  "client/ui/test/234-arrowhead-clears-text.test.ts##R255#791d867794#0": {
+   "action": "cite",
+   "nums": [
+    "D6.18"
+   ],
+   "note": ""
+  },
+  "client/ui/test/234-arrowhead-clears-text.test.ts##R255#e5e7e1f16c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.18"
+   ],
+   "note": ""
+  },
+  "client/ui/test/236-browser-glossary-reach.test.ts##R257#71d59ec9af#0": {
+   "action": "reword",
+   "nums": [
+    "D6.11c"
+   ],
+   "suggest": "the browser-reach rule (CR D6.11c)",
+   "find": "R257",
+   "replace": "the browser-reach rule (CR D6.11c)",
+   "note": ""
+  },
+  "client/ui/test/245-printed-reminder-reach.test.ts##R267#6abf857589#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "note": ""
+  },
+  "client/ui/test/245-printed-reminder-reach.test.ts##R267#959acb2d72#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "note": ""
+  },
+  "client/ui/test/254-join-nonexistent-room.test.ts##R258#e04b50a1a1#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process aside; CT-123 stays"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R281#f7d882568e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process; CT-171 stays"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R76#6018bb4d48#0": {
+   "action": "reword",
+   "nums": [
+    "802.15a"
+   ],
+   "suggest": "a rule that had been replaced (CR 802.15a)",
+   "find": "a rule (R76) that had been replaced (R84)",
+   "replace": "a rule that had been replaced (CR 802.15a)",
+   "note": "withdrawn ruling dropped; replacement named"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R76#93e42e128e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the old Alluring ruling",
+   "find": "it taught R76's invented rule (\"Defenders that are able to block it must\n  // block it\") for as long as R76 stood",
+   "replace": "it taught the old Alluring ruling's invented rule (\"Defenders that are able to block it must\n  // block it\") for as long as that ruling stood",
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R155#3dd9523158#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the inert-shape audit",
+   "find": "R155",
+   "replace": "the inert-shape audit",
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#e22bb0498b#0": {
+   "action": "reword",
+   "nums": [
+    "608.9a"
+   ],
+   "suggest": "the column-trigger rule (CR 608.9a)",
+   "find": "R117",
+   "replace": "the column-trigger rule (CR 608.9a)",
+   "note": ""
+  },
+  "client/ui/test/56-ui-flash.test.ts##R242#216f649493#0": {
+   "action": "reword",
+   "nums": [
+    "D5.4"
+   ],
+   "suggest": "THE ONE-TEMPO RULE (CR D5.4)",
+   "find": "R242",
+   "replace": "THE ONE-TEMPO RULE (CR D5.4)",
+   "note": ""
+  },
+  "client/ui/test/57-ui-cardtext.test.ts##R279#21d0d86072#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "one-fact-once half has no CR rule"
+  },
+  "client/ui/test/70-playtest-round15.test.ts##R170#b74437dd25#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "hotseat removed"
+  },
+  "client/ui/test/ui-driver.ts##R205#a460adcdbf#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the container-sight fix",
+   "find": "R205",
+   "replace": "the container-sight fix",
+   "note": ""
+  },
+  "client/ui/test/ui-driver.ts##R258#5442921147#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "driver note"
+  },
+  "client/ui/test/ui-driver.ts##R230#71c4b7249e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "driver note"
+  },
+  "client/ui/test/ui-driver.ts##R258#1748becccf#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "driver note"
+  },
+  "client/ui/toast.ts##R266#bbf1b40f16#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U02.json#j49.examples.test#R326#07c3aa4f8e#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry",
+   "note": "binding: moves with its title (#107)"
+  },
+  "data/comprehensive-rules/rules/U04.json#j25.examples.test#R326#07c3aa4f8e#0": {
+   "action": "reword",
+   "nums": [
+    "107.5"
+   ],
+   "suggest": "CR 107.5 (reversing the earlier price reading) — under a Stasis Sentry",
+   "note": "binding: moves with its title (#107)"
+  },
+  "data/comprehensive-rules/rules/U04.json#j58.examples.test#R47#3dbfb4b28f#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "binding: moves with its title (#196)"
+  },
+  "data/comprehensive-rules/rules/U06.json#j48.examples.test#R69#db1cfd535d#0": {
+   "action": "cite",
+   "nums": [
+    "304.10"
+   ],
+   "note": "binding: moves with its title (#163)"
+  },
+  "data/comprehensive-rules/rules/U10.json#j49.examples.test#R325#15ec09c4a0#0": {
+   "action": "cite",
+   "nums": [
+    "714.4"
+   ],
+   "note": "binding: moves with its title (#180)"
+  },
+  "data/comprehensive-rules/rules/U10.json#j19.examples.test#R28#e014bd5d6d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the withdrawn home-region reading",
+   "note": "binding: moves with its title (#233)"
+  },
+  "data/comprehensive-rules/rules/U11.json#j28.examples.test#R28#e014bd5d6d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the withdrawn home-region reading",
+   "note": "binding: moves with its title (#233)"
+  },
+  "data/comprehensive-rules/rules/U13.json#j28.examples.test#R28#e014bd5d6d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the withdrawn home-region reading",
+   "note": "binding: moves with its title (#233)"
+  },
+  "data/comprehensive-rules/rules/U12.json#j27.examples.test#R10#e9210fa83e#0": {
+   "action": "cite",
+   "nums": [
+    "802.9d"
+   ],
+   "note": "binding: moves with its title (#95)"
+  },
+  "data/comprehensive-rules/rules/U12.json#j42.examples.test#R238#638dbfe96e#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": "binding: moves with its title"
+  },
+  "data/comprehensive-rules/rules/U20.json#j87.examples.test#R48#7266034135#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": "binding (#168)"
+  },
+  "data/comprehensive-rules/rules/U20.json#j101.examples.test#R48#2883625057#0": {
+   "action": "cite",
+   "nums": [
+    "802.24c"
+   ],
+   "note": "binding (#170)"
+  },
+  "data/comprehensive-rules/rules/U23.json#j66.examples.test#R312#8a7c2409a8#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3a"
+   ],
+   "note": "binding (#341)"
+  },
+  "data/comprehensive-rules/rules/U24.json#j53.examples.test#R272#1845bbfea8#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15a"
+   ],
+   "note": "binding (#157)"
+  },
+  "data/comprehensive-rules/rules/U24.json#j102.examples.test#R255#1b0e40a13c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.18"
+   ],
+   "note": "binding (#402)"
+  },
+  "data/comprehensive-rules/rules/U24.json#j99.examples.test#R205#583e6f84de#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": "binding (#380)"
+  },
+  "client/docs/13-assessment.md##R215#9ac7f849f8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the register scan",
+   "find": "R215",
+   "replace": "the register scan",
+   "note": ""
+  },
+  "client/docs/14-scenario-tester.md##R200#e39bf723c2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": ""
+  },
+  "client/docs/14-scenario-tester.md##R200#c840d35917#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay versioning",
+   "find": "R200",
+   "replace": "replay versioning",
+   "note": ""
+  },
+  "client/engine/scripts/fetch-reports.mjs##R275#6306dad46a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "suite.",
+   "find": "suite. R275.",
+   "replace": "suite.",
+   "note": "drop left a double period"
+  },
+  "client/engine/test/108-formation-class.test.ts##R200#937771c91d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": "audit #76"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R181#fd0dc1dd7b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the tooling round (CT-59/60)",
+   "find": "R181",
+   "replace": "the tooling round (CT-59/60)",
+   "note": ""
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R181#01affc485f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The tooling round (CT-59/60)",
+   "find": "R174 wrapped a two-step repair around this call for `stripCode`'s\n * line-comment early-exit. R181 fixed the stripper itself and R193 measured",
+   "replace": "The park-note audit wrapped a two-step repair around this call for `stripCode`'s\n * line-comment early-exit. The tooling round (CT-59/60) fixed the stripper itself and the exemption-list sweep measured",
+   "note": "audit #72"
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R193#fde88cced1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the exemption-list sweep",
+   "find": "which R193 found",
+   "replace": "which the exemption-list sweep found",
+   "note": ""
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R210#fde88cced1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the exemption-staleness round",
+   "find": "R210",
+   "replace": "the exemption-staleness round",
+   "note": ""
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R174#c771f65591#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the park-note audit",
+   "find": "R174",
+   "replace": "the park-note audit",
+   "note": ""
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R181#e88ee1886d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the tooling round (CT-59/60)",
+   "find": "R181",
+   "replace": "the tooling round (CT-59/60)",
+   "note": ""
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R201#efaebd7d36#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "one-day",
+   "find": "the R201 ui/",
+   "replace": "the one-day ui/",
+   "note": ""
+  },
+  "client/engine/test/147-comment-conformance.test.ts##R201#a8cabb7c98#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "ui/-exclusion",
+   "find": "the R201 expiry",
+   "replace": "the ui/-exclusion expiry",
+   "note": ""
+  },
+  "client/engine/test/148-pending-trigger-visibility.test.ts##R173#7fa33a7060#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the guard-shape audit",
+   "find": "* R173 repaired,",
+   "replace": "* the guard-shape audit repaired,",
+   "note": ""
+  },
+  "client/engine/test/153-typecheck-reach.test.ts##R181#44662907f2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the tooling round (CT-59/60)",
+   "find": "R181",
+   "replace": "the tooling round (CT-59/60)",
+   "note": ""
+  },
+  "client/engine/test/154-guard-shape.test.ts##R173#667d05650a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "AUDIT",
+   "find": "R173",
+   "replace": "AUDIT",
+   "note": ""
+  },
+  "client/engine/test/154-guard-shape.test.ts##R173#aa6ea7de29#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "audit",
+   "find": "R173",
+   "replace": "audit",
+   "note": ""
+  },
+  "client/engine/test/154-guard-shape.test.ts##R173#6838334c13#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "audit",
+   "find": "pre-R173 guards",
+   "replace": "pre-audit guards",
+   "note": ""
+  },
+  "client/engine/test/154-guard-shape.test.ts##R173#3f856a2bc7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "AUDIT",
+   "find": "PRE-R173 (the",
+   "replace": "PRE-AUDIT (the",
+   "note": ""
+  },
+  "client/engine/test/154-guard-shape.test.ts##R173#40c23e8d76#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "audit",
+   "find": "R173",
+   "replace": "audit",
+   "note": ""
+  },
+  "client/engine/test/154-guard-shape.test.ts##R182#6684bf4be0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the conformance rework",
+   "find": "R182",
+   "replace": "the conformance rework",
+   "note": ""
+  },
+  "client/engine/test/164-sweep-sight.test.ts##R201#45abab18a4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The interpolation fix",
+   "find": "interpolation. R201 made",
+   "replace": "interpolation. The interpolation fix made",
+   "note": ""
+  },
+  "client/engine/test/170-battle-position-promises.test.ts##R199#265d7d5991#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "what R199 did",
+   "replace": "what the battle-position fix did",
+   "note": "audit #73"
+  },
+  "client/engine/test/170-battle-position-promises.test.ts##R199#a7087b8f50#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the drill's battle-position work",
+   "find": "R199",
+   "replace": "the drill's battle-position work",
+   "note": ""
+  },
+  "client/engine/test/170-battle-position-promises.test.ts##R199#da4fa49a50#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "R199",
+   "replace": "the battle-position fix",
+   "note": ""
+  },
+  "client/engine/test/180-pool-sight.test.ts##R214#918e0f16e0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the pool-sight fix",
+   "find": "state R214 found",
+   "replace": "state the pool-sight fix found",
+   "note": ""
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R199#58cdebef2b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The battle-position fix",
+   "find": "(CT-86). R199 made",
+   "replace": "(CT-86). The battle-position fix made",
+   "note": ""
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R211#e0f48b527a#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The inconclusive-window fix",
+   "find": "measurements. R211 is",
+   "replace": "measurements. The inconclusive-window fix is",
+   "note": ""
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R199#c37f35fb08#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "since R199\"",
+   "replace": "since the battle-position fix\"",
+   "note": ""
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R211#3fce4275a8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "fix",
+   "find": "R211",
+   "replace": "fix",
+   "note": ""
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R211#b75bdd6011#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "fix",
+   "find": "R211",
+   "replace": "fix",
+   "note": ""
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R199#cbd183cdf3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "R199",
+   "replace": "the battle-position fix",
+   "note": ""
+  },
+  "client/engine/test/181-inconclusive-activation-window.test.ts##R211#5981c1ca0f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "fix",
+   "find": "R211",
+   "replace": "fix",
+   "note": ""
+  },
+  "client/engine/test/184-ruling-register.test.ts##R201#0fae0b139d#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "register-resolution narrative in 184-ruling-register"
+  },
+  "client/engine/test/184-ruling-register.test.ts##R201#c04787ae65#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "register-resolution narrative in 184-ruling-register"
+  },
+  "client/engine/test/202-settled-rulings-not-reopened.test.ts##R215#ee744922e7#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "register-direction check narrative"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R215#0be6b4a2bf#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "question-sheet R-number check"
+  },
+  "client/engine/test/238-question-sheets.test.ts##R215#0be6b4a2bf#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "question-sheet R-number check"
+  },
+  "client/engine/test/70-playtest-ledger.test.ts##R275#c5625793b0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the 30 August fix",
+   "find": "R275",
+   "replace": "the 30 August fix",
+   "note": "audit #71"
+  },
+  "client/engine/test/71-card-ledger.test.ts##R214#32f86cef61#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the pool-sight fix",
+   "find": "Until R214 this",
+   "replace": "Until the pool-sight fix this",
+   "note": ""
+  },
+  "client/engine/test/71-card-ledger.test.ts##R174#049dd62e4c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the park-note audit",
+   "find": "R174",
+   "replace": "the park-note audit",
+   "note": ""
+  },
+  "client/engine/test/71-card-ledger.test.ts##R181#8bd029e203#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the tooling round (CT-59/60)",
+   "find": "R181",
+   "replace": "the tooling round (CT-59/60)",
+   "note": ""
+  },
+  "client/engine/test/71-card-ledger.test.ts##R214#a0e810d342#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "adjectival process tag"
+  },
+  "client/engine/test/84-card-semantics.test.ts##R199#c18864b2f4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "'R199 landed)",
+   "replace": "'the battle-position fix landed)",
+   "note": ""
+  },
+  "client/engine/test/84-card-semantics.test.ts##R199#8455a3c1aa#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the 2026-08-26 drill work",
+   "find": "'R199 fixed');",
+   "replace": "'the 2026-08-26 drill work fixed');",
+   "note": ""
+  },
+  "client/engine/test/84-card-semantics.test.ts##R199#d864b65bf0#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "137 after R199, 129",
+   "replace": "137 after the battle-position fix, 129",
+   "note": ""
+  },
+  "client/engine/test/84-card-semantics.test.ts##R199#11c913ddd1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "92 after R199, 86",
+   "replace": "92 after the battle-position fix, 86",
+   "note": ""
+  },
+  "client/engine/test/drill.ts##R199#a41b0c128c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The battle-position fix",
+   "find": "R199",
+   "replace": "The battle-position fix",
+   "note": ""
+  },
+  "client/engine/test/drill.ts##R199#9c0bfe3867#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The battle-position fix",
+   "find": "(CT-86). R199 made",
+   "replace": "(CT-86). The battle-position fix made",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R182#429196a5c3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "THE CONFORMANCE REWORK",
+   "find": "R182",
+   "replace": "THE CONFORMANCE REWORK",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R174#df00cac5f2#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "park-note audit",
+   "find": "(both deleted by R174), plus `batch-metal-a::tokensInRegion` '\n      + 'and `helpers.ts::lifeGainedIn`, which the R174 agent",
+   "replace": "(both deleted by the park-note audit), plus `batch-metal-a::tokensInRegion` '\n      + 'and `helpers.ts::lifeGainedIn`, which the park-note audit agent",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R181#4bd342caf8#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the tooling round",
+   "find": "(R181 fixed it) and R174\\'s",
+   "replace": "(the tooling round fixed it) and the park-note audit\\'s",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R199#66735d4db1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the battle-position fix",
+   "find": "R199",
+   "replace": "the battle-position fix",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R211#09214a0170#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "fix",
+   "find": "R211",
+   "replace": "fix",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R215#a05e243977#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the register scan",
+   "find": "R215",
+   "replace": "the register scan",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R155#ee53c843c6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "inert-shape",
+   "find": "an R155 tally",
+   "replace": "an inert-shape tally",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R155#e953616d88#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "inert-shape audit",
+   "find": "the R155 commit",
+   "replace": "the inert-shape audit commit",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R155#03e9013171#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "inert-shape audit",
+   "find": "against the R155 commit will",
+   "replace": "against the inert-shape audit commit will",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R155#d2c66fff36#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "inert-shape audit",
+   "find": "at the R155 commit (8b92357)",
+   "replace": "at the inert-shape audit commit (8b92357)",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R200#e6ce61d54d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R200#a708c1caa7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R234#0a4113a9b7#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the both-directions register check",
+   "find": "R234",
+   "replace": "the both-directions register check",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R215#2e140bbe2e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the register scan",
+   "find": "R215",
+   "replace": "the register scan",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R234#0e4008785e#1": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the question-sheet check, the mirror of CT-101. The CT-101 check came",
+   "find": "R259, the mirror of R234 / CT-101. R234 came",
+   "replace": "the question-sheet check, the mirror of CT-101. The CT-101 check came",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R234#706ec0daf3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the both-directions check",
+   "find": "R234",
+   "replace": "the both-directions check",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R285#312729b31f#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "verdict-lock",
+   "find": "the R285 guard",
+   "replace": "the verdict-lock guard",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R220#e03f191659#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The 2026-08-26 scenario round",
+   "find": "ransom. R220 fixed",
+   "replace": "ransom. The 2026-08-26 scenario round fixed",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R220#d04439852c#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The 2026-08-26 scenario round",
+   "find": "'R220 fixed",
+   "replace": "'The 2026-08-26 scenario round fixed",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R173#5710afa3a4#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "guard-shape-audit",
+   "find": "R173",
+   "replace": "guard-shape-audit",
+   "note": ""
+  },
+  "client/ledgers/unreached.ts##R215#178833fe1b#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "register-scan narrative"
+  },
+  "client/server/api-replay.ts##R200#7d8efe12d1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "the R200 corpus",
+   "replace": "the replay corpus",
+   "note": ""
+  },
+  "client/server/e2e/test-scenario.ts##R200#ce02966f67#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "the R200 divergence",
+   "replace": "the replay divergence",
+   "note": ""
+  },
+  "client/server/engine-version.ts##R181#0495493caa#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the tooling round (CT-59/60)",
+   "find": "R181",
+   "replace": "the tooling round (CT-59/60)",
+   "note": ""
+  },
+  "client/server/replay-probe.ts##R200#4a967fd3d3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay versioning",
+   "find": "R200",
+   "replace": "replay versioning",
+   "note": ""
+  },
+  "client/server/replay-room.ts##R200#59fb73dc3b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay versioning",
+   "find": "mode R200 exists",
+   "replace": "mode replay versioning exists",
+   "note": ""
+  },
+  "client/server/replay-room.ts##R181#c8a23be0d1#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the tooling round",
+   "find": "R181",
+   "replace": "the tooling round",
+   "note": ""
+  },
+  "client/server/rooms.ts##R200#3bbcd3e8c9#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": ""
+  },
+  "client/server/scenarios-b.ts##R199#09f2b549d6#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "battle-position",
+   "find": "R199",
+   "replace": "battle-position",
+   "note": ""
+  },
+  "client/server/scenarios.ts##R200#6478bf40a3#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "and the R200 divergence diff",
+   "replace": "and the replay divergence diff",
+   "note": ""
+  },
+  "client/server/scenarios.ts##R200#ea5d712c71#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay-versioning",
+   "find": "+ the R200 divergence diff",
+   "replace": "+ the replay-versioning divergence diff",
+   "note": ""
+  },
+  "client/server/scenarios.ts##R200#e5dea914ec#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay-versioning",
+   "find": "the R200 lesson",
+   "replace": "the replay-versioning lesson",
+   "note": ""
+  },
+  "client/server/scenarios.ts##R218#2186c1f46d#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the scenario-authoring round",
+   "find": "R218",
+   "replace": "the scenario-authoring round",
+   "note": ""
+  },
+  "client/server/test/186-scenario-library.test.ts##R200#0ba6632a4b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": ""
+  },
+  "client/server/test/186-scenario-library.test.ts##R200#ad95a47aaf#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": ""
+  },
+  "client/server/test/255-refresh-command.test.ts##R275#e18f10516b#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "The owner's",
+   "find": "R275. The owner's",
+   "replace": "The owner's",
+   "note": "drop left \"*.\" "
+  },
+  "client/server/test/255-refresh-command.test.ts##R275#1ca5e5ea67#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "the path-constants rule",
+   "find": "R275",
+   "replace": "the path-constants rule",
+   "note": ""
+  },
+  "client/server/test/367-idle-rooms-close.test.ts##R200#a6f06e834e#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay",
+   "find": "R200",
+   "replace": "replay",
+   "note": ""
+  },
+  "client/ui/test/319-replay-server.test.ts##R200#17681745dd#0": {
+   "action": "reword",
+   "nums": [],
+   "suggest": "replay versioning",
+   "find": "R200",
+   "replace": "replay versioning",
+   "note": ""
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#c95814a4c7#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "[override M007] test 177 register-body narrative"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R106#c95814a4c7#1": {
+   "action": "machinery",
+   "nums": [],
+   "note": "[override M007] test 177 register-body narrative"
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R76#c95814a4c7#0": {
+   "action": "machinery",
+   "nums": [],
+   "note": "test 177 register-body narrative"
+  },
+  "client/server/scenarios-d.ts##R18#0377d4e8b2#0": {
+   "action": "reword",
+   "nums": [
+    "504.5"
+   ],
+   "suggest": "The haste step opens every turn (CR 504.5)",
+   "find": "R18: the haste step only engages when somebody holds a payable haste\n    // card. Tidal Menace in hand is what opens it — the opponent holds none,\n    // so seat 1 is marked done the moment the step opens and the bot has",
+   "replace": "The haste step opens every turn (CR 504.5); Tidal Menace in hand gives\n    // you a play in it, while the opponent holds none, so seat 1 has nothing to\n    // play there and the bot has",
+   "note": "[override M015] audit #160: the dropped-citation prose said the step opens only for a payable haste card; false under 504.5"
+  }
+ }
+}

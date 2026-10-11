@@ -67,7 +67,9 @@ function walk(dir: string, out: string[] = []): string[] {
 
 /** every rule number cited as `CR <num>`, lists expanded: "CR 702.3, 704.6b" → 702.3, 704.6b */
 export function crCites(text: string): string[] {
-  return [...text.matchAll(/\bCR ((?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*)/g)]
+  // a list goes on only with a rule number ("CR 702.3, 704.6b") or a bare section that ends
+  // the clause ("CR 608, 702)"): "CR 403.6, 421 cr test" names one rule and a test file
+  return [...text.matchAll(/\bCR ((?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:(?:\d{3}|D\d+)\.\d+[a-z]*|(?:\d{3}|D\d+)(?![\w.]|\s+[A-Za-z])))*)/g)]
     .flatMap(m => m[1]!.split(/,\s/));
 }
 
@@ -141,6 +143,7 @@ const SCAN = scan();
 
 test('§1: the scans can go red — synthetic inputs, both directions', () => {
   assert.deepEqual(crCites('per CR 608.2b, and CR 702.3, 704.6b; also CR D6.16a and CR 608'), ['608.2b', '702.3', '704.6b', 'D6.16a', '608']);
+  assert.deepEqual(crCites('(CR 403.6, 421 cr test) and (CR 608, 702)'), ['403.6', '608', '702'], 'a test file number after a list comma is not a rule');
   assert.deepEqual(crCites('no rule numbers here, and 608.2b alone is not a citation'), [],
     'the citation scan must be capable of finding nothing');
   assert.deepEqual(rTokens('this follows R42 and also R7.').map(t => t.n), [42, 7]);
@@ -180,7 +183,7 @@ test('§3: no number of the retired ruling register is cited, outside the allowl
   assert.deepEqual(lines, [],
     `${lines.length} R-number(s) remain. The ruling register is retired: cite the comprehensive `
     + 'rule (`CR 608.2b`), point at the test that holds a process rule, or say it in words. '
-    + 'Do not add an allowlist entry for a citation:\n  ' + lines.join('\n  '));
+    + 'Do not add an allowlist entry for a citation:\n  ' + lines.slice(0, 200).join('\n  '));
 });
 
 test('§3: every allowlist entry still matches a token — a waiver whose subject left is stale', () => {

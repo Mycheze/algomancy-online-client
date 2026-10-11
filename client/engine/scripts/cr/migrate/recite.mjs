@@ -212,7 +212,7 @@ export function dropEdit(line, g) {
     return null;
   }
   // a label at the start of a comment line / title: "// R25: blah", "R25 — blah", "R25 · BLAH"
-  if (/^(\s*(?:\/\/+|\/\*+|\*|#+|-|>)?\s*|['"`]\s*)$/.test(before) && (n = /^\s*(?:[:—–·|]|-(?=\s))\s*/.exec(after))) return { a: g.a, b: g.b + n[0].length, text: '' };
+  if (/((?:^|\s)(?:\/\/+|\/\*+|\*|#+|-|>)\s*[⚠✔❌✅]?\s*|^\s*|['"`]\s*[⚠✔❌✅]?\s*)$/.test(before) && (n = /^\s*(?:[:—–·|]|-(?=\s))\s*/.exec(after))) return { a: g.a, b: g.b + n[0].length, text: '' };
   // "the unit dies — R25." / "… (CT-12) R25" trailing: the cite ends its clause
   if ((m = /\s*(?:[—–-]|,)?\s+$/.exec(before)) && /^\s*(?:[.;:)\]]|$)/.test(after) && before.trim()) return { a: g.a - m[0].length, b: g.b, text: '' };
   // "the R25 rule" / "an R25 test": an article before, a lower-case noun after
@@ -223,18 +223,24 @@ export function dropEdit(line, g) {
   return null;
 }
 
-/** process pointer */
-function pointerEdit(line, g, pointer, rel) {
+/** process pointer: the citation leaves the sentence (grammatically, as a drop) and
+ *  "(see 154-guard-shape)" closes the clause it was in; inside its own file the pointer
+ *  is not needed and the citation is just dropped. `limit` is where the clause may run to
+ *  (a string literal's closing quote). null when no grammatical removal is known. */
+function pointerEdit(line, g, pointer, rel, limit = line.length) {
   if (!pointer) return null;
   const self = basename(rel).replace(/\.test\.ts$/, '').replace(/\.(ts|md|mjs)$/, '') === pointer.replace(/\.(ts|md|mjs)$/, '')
-    || rel.endsWith(pointer);
-  if (self) return dropEdit(line, g) ?? { a: g.a, b: g.b, text: 'this file\'s rule' };
-  const before = line.slice(0, g.a), after = line.slice(g.b);
-  if (/\(\s*$/.test(before) && /^\s*\)/.test(after)) return { a: g.a, b: g.b, text: `see ${pointer}` };
-  // adjectival ("the R200 forensic stack", "the R71 commit"): the pointer names the thing
-  if (/\b(?:the|The|a|A|an|An|this|that)\s+$/.test(before) && /^\s+[a-z`]/.test(after)) return { a: g.a, b: g.b, text: pointer };
-  if (/\b(?:the|The)\s+$/.test(before)) return { a: g.a, b: g.b, text: `rule in ${pointer}` };
-  return { a: g.a, b: g.b, text: `the rule in ${pointer}` };
+    || rel.endsWith(pointer) || (pointer.startsWith('CLAUDE.md') && rel === 'CLAUDE.md');
+  const d = dropEdit(line, g);
+  if (!d) return null;
+  if (self) return d;
+  // the clause ends at the first sentence punctuation after the citation, or the end of the comment / string
+  let end = limit;
+  const tail = line.slice(d.b, limit);
+  const m = /[.;:!?](?=\s|$|['"`])|\s[—–]\s|\s\*\/\s*$|\s*\*\/|\s*$/.exec(tail);
+  if (m) end = d.b + m.index;
+  if (end < d.b) end = d.b;
+  return { a: d.a, b: end, text: `${d.text}${line.slice(d.b, end)} (see ${pointer})`.replace(/^\s+\(see/, ' (see') };
 }
 
 /** a test-title prefix: `R110: x` / `[R266] x` / `R3 STILL STANDS: x` */
@@ -253,7 +259,7 @@ function titlePrefixEdit(line, g, titleStart, nums) {
   // "R259 §0: the scan…" keeps its own section mark: "§0: the scan…"
   const sec = /§\s?\d+[a-z]?(?:[-–]\d+[a-z]?)?/.exec(line.slice(g.members.at(-1).b, g.b));
   if (sec) return { a: g.a, b: g.b, text: sec[0].replace(/\s/g, '') };
-  const sep = /^\s*(?:[:—–·|]|-(?=\s))?\s*/.exec(line.slice(g.b));
+  const sep = /^\s*(?:[:—–·|\/]|-(?=\s))?\s*/.exec(line.slice(g.b));
   return { a: g.a, b: g.b + sep[0].length, text: '' };
 }
 
@@ -594,7 +600,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
         }
         if (!le) {
           if (nums.length) le = citeEdit(line, g, nums);
-          else if (pointers.length === 1) le = pointerEdit(line, g, pointers[0], rel);
+          else if (pointers.length === 1) le = pointerEdit(line, g, pointers[0], rel, lit ? Math.min(line.length, lit.e - 1 - abs) : line.length);
           else if (acts.every((x) => x.act.kind === 'drop' || x.act.kind === 'pointer')) le = dropEdit(line, g);
         }
         if (!le) { for (const x of acts) report.dropUnapplied.push({ id: x.row.id, file: rel, line: ln, kind: x.act.kind, text: normLine(line).slice(0, 200) }); continue; }
@@ -769,7 +775,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
       if (g && act.kind === 'cite') le = citeEdit(s, g, act.nums);
       else if (g && act.kind === 'drop') le = dropEdit(s, g);
       else if (g && act.kind === 'reword' && act.suggest) { const x = anchorReword(s, g.a, g.b, act.suggest); if (x) le = x; }
-      else if (g && act.kind === 'pointer') le = pointerEdit(s, g, act.pointer, rel);
+      else if (g && act.kind === 'pointer') le = pointerEdit(s, g, act.pointer, rel, s.length);
       if (!le) { report.dropUnapplied.push({ id: r.id, file: rel, kind: act.kind, text: s.slice(0, 160) }); continue; }
       cands[0].set(s.slice(0, le.a) + le.text + s.slice(le.b));
       changed = true; report.jsonRows.applied++;
@@ -881,6 +887,9 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     if (!neu || !old) continue;
     for (const e of es) {
       if (!String(e.why).startsWith('reword')) continue;
+      // a splice that ate far more of the original than the suggestion says back
+      const ow = (old.slice(e.a, e.b).match(/\S+/g) ?? []).length, tw = (e.text.match(/\S+/g) ?? []).length;
+      if (ow > tw + 8 && ow > 2 * tw) report.selfCheck.push({ file: rel, line: old.slice(0, e.a).split('\n').length, why: `over-eating splice: ${ow} words replaced by ${tw}`, text: old.slice(e.a, e.b).replace(/\s+/g, ' ').slice(0, 200) });
       const [na, nb] = mapRange(es, e.a, e.b);
       const win = neu.slice(Math.max(0, na - 80), nb + 80), owin = old.slice(Math.max(0, e.a - 80), e.b + 80);
       const was = twice(owin);

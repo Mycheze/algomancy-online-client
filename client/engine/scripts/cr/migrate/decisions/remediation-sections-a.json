@@ -1,0 +1,2998 @@
+{
+ "decisions": {
+  "client/docs/12-card-text.md##R62#2e6800d3e9#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/docs/12-card-text.md##R62#b33f3549c1#0": {
+   "action": "cite",
+   "nums": [
+    "712.5"
+   ],
+   "note": ""
+  },
+  "client/engine/src/apply.ts##R62#709ed97784#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R62#920b5eaf06#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R62#bc1fe37c2d#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R62#c7ce8de7fa#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/registry.ts##R62#8f10863e42#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine sort-order precedent, not a rule"
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R62#0002f28cb7#0~1": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R62#a0ecd8ff75#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R62#2d9053d6a4#0": {
+   "action": "cite",
+   "nums": [
+    "712.6"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R62#75b1a0a28f#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R62#b6eea94987#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a",
+    "712.6"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R62#6e4c73f1aa#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R62#d5ef89c1a2#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R62#44b97e7ded#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "code-history remark; prose stands"
+  },
+  "client/engine/src/cards/sets/batch-metal-c.ts##R62#a15a64e110#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#21a1f941ac#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#21a1f941ac#0~2": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#21a1f941ac#0~4": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#21a1f941ac#0~6": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#490b8eebbf#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#490b8eebbf#0~2": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#490b8eebbf#0~4": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#490b8eebbf#0~6": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#4ec1cf080e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine reentrancy latch, not a rule"
+  },
+  "client/engine/src/engine.ts##R62#63b3cca4ab#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#6c5d81b528#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#8186a792c1#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#9607e30814#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#a5dba073a5#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#b39c6c6a3d#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#f3d77e20ec#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R62#ff3d2ea6de#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/types.ts##R62#efb50e2be5#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/113-literal-metal.test.ts##R62#bbc5bbc7f2#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/12-fire-a.test.ts##R62#c57d6b571f#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R62#810d98400f#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/258-simultaneous-disposal-listeners.test.ts##R62#05465ce23e#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/test/27-metal-b.test.ts##R62#4c556c076e#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/test/27-metal-b.test.ts##R62#5487fc3463#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/test/28-metal-c.test.ts##R62#3687b622b4#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/test/28-metal-c.test.ts##R62#a34cf47116#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/28-metal-c.test.ts##R62#e435269ee6#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/test/299-formless-column.test.ts##R62#d354aafcbf#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R62#8f6831cdda#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R62#cccaf1302c#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R62#e328680da1#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "describes the veto reading since reversed (now 712.2)"
+  },
+  "client/ledgers/card-todo.ts##R62#42b8194955#1": {
+   "action": "cite",
+   "nums": [
+    "712.5"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R62#6b32c7c666#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R62#da31c3dccc#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/ui/inspect.ts##R62#962588a0c7#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R62#977dd99df7#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "client/ui/test/57-ui-cardtext.test.ts##R62#59e8add7db#0": {
+   "action": "cite",
+   "nums": [
+    "712.1"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U16.json#j42.examples.test#R62#da118be016#0": {
+   "action": "cite",
+   "nums": [
+    "712.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R68#f3cc8b465d#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R68#b2abae1627#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R68#9ba95299f6#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R68#487d1d0984#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine primitive (removeFromStack), not a rule"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R68#1f26777bf7#0": {
+   "action": "cite",
+   "nums": [
+    "704.4",
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R68#5a69d30f23#0": {
+   "action": "cite",
+   "nums": [
+    "704.4",
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R68#67ec135d92#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R68#487d1d0984#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine primitive (removeFromStack), not a rule"
+  },
+  "client/engine/src/engine.ts##R68#1b106017ec#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R68#3867d2df71#0": {
+   "action": "cite",
+   "nums": [
+    "704.4",
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R68#48dd2ef9fa#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine primitive (removeFromStack), not a rule"
+  },
+  "client/engine/src/engine.ts##R68#ac8a0bd22a#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/04-mods.test.ts##R68#f8403b4145#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/114-literal-dark.test.ts##R68#41c2bbf16a#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/118-stack-effect.test.ts##R68#31b1c173b7#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/118-stack-effect.test.ts##R68#cf96c00cdb#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/119-play-and-token-events.test.ts##R68#83631b67b2#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a",
+    "704.4b"
+   ],
+   "note": ""
+  },
+  "client/engine/test/13-fire-b.test.ts##R68#0ce5dc6931#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/14-water-a.test.ts##R68#3d86c33b53#0~1": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/16-earth-a.test.ts##R68#4052dd94ae#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/169-mid-resolution-window.test.ts##R68#5c4a7732fe#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R68#6383fb7af5#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/23-wood-a.test.ts##R68#9abffb665d#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/23-wood-a.test.ts##R68#a650322613#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/27-metal-b.test.ts##R68#414e552ba5#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/32-cast-costs.test.ts##R68#020e548bc6#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R68#8eddf971da#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/40-light-c.test.ts##R68#15dcb39aaf#0~1": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/41-dark-a.test.ts##R68#5dfc66f9c2#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/42-dark-b.test.ts##R68#04df19002c#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/43-dark-c.test.ts##R68#0937a08f35#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/43-dark-c.test.ts##R68#cf2d3a9ebe#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/50-ui-inspect.test.ts##R68#5429ef0498#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#4b0e179186#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#5e88d6b455#0": {
+   "action": "cite",
+   "nums": [
+    "801.7d"
+   ],
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#6e6f3a2e3b#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#9d1098f9a0#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#bb30554923#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/61-negation.test.ts##R68#e135e12172#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine primitive (removeFromStack), not a rule"
+  },
+  "client/engine/test/89-self-erase.test.ts##R68#1defd54305#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/engine/test/89-self-erase.test.ts##R68#d9380685c1#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/91-modular.test.ts##R68#24d163da5d#0": {
+   "action": "cite",
+   "nums": [
+    "704.2c"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R68#104649d1cf#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R68#70dfebf50b#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R68#e8109361c2#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/inspect.ts##R68#78ec3bd385#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R68#55dc517a71#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R68#948353af7b#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/style.css##R68#acc5fcb612#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R68#d36b735ed8#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/56-ui-flash.test.ts##R68#8e00dc108f#0": {
+   "action": "cite",
+   "nums": [
+    "704.4"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U14.json#j86.examples.test#R68#e4dc56676c#0": {
+   "action": "cite",
+   "nums": [
+    "704.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#33fa690cd4#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#46127326a7#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#759f5deb62#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#82149a1a1f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#a2b4aeffe1#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#cea0b256c3#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12",
+    "D6.12a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/251-fizzle-label-and-mod-strips.test.ts##R271#e26f1aaa4a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R271#07a1e72f00#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R271#239ece004d#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R271#4df5a39b9d#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "CSS icon-size fix (#140); no rule states it"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#81f17ccd25#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R271#8f4de6deaa#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R271#9ce8c3ea89#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R271#d04f5e4791#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "CSS icon-size fix (#140); no rule states it"
+  },
+  "client/ledgers/card-todo-closed.ts##R271#dfa39bdd2e#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-count bookkeeping, not a rule"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R271#07a1e72f00#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R271#7f1d763a70#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R271#d04f5e4791#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "CSS icon-size fix (#140); no rule states it"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R271#f13edf7b3e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R271#2caaa9c971#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R271#7e5afe97cc#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R271#ee8ce87468#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R271#0658400838#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R271#25af736ed7#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R271#43cd071901#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R271#735a8c36f6#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R271#97debc4f16#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R271#be3f042b82#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R271#df4e279045#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/inspect.ts##R271#9f51548c1a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R271#764640a56e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R271#dfba57f336#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": ""
+  },
+  "client/ui/style.css##R271#3cd49e4b64#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/122-cardtext-markup.test.ts##R271#b708d25686#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R271#5d4502df1f#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-count history, not a rule"
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R271#0fe7353517#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-count history, not a rule"
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R271#20e0e17102#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/ui/test/259-card-text-surface.test.ts##R271#91c8eb401f#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R271#d90455072e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10c"
+   ],
+   "note": ""
+  },
+  "client/ui/toast.ts##R271#90479e88b7#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U24.json#j46.examples.test#R271#474011a4e5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.12"
+   ],
+   "note": ""
+  },
+  "client/docs/16-divergence-inventory.md##R48#99ea9889cd#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R48#bfac8714d3#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R48#1bacc7f7f8#0": {
+   "action": "cite",
+   "nums": [
+    "802.22",
+    "802.24"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R48#5827b4e44d#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-b.ts##R48#4b9f35d0de#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R48#1e4e00cb4e#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-c.ts##R48#a5be89b872#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R48#03c3943234#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R48#afd8eff9d8#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R48#01e4234bd6#0": {
+   "action": "cite",
+   "nums": [
+    "802.24c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R48#06a9e235a7#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R48#16ed4b7bfb#0": {
+   "action": "cite",
+   "nums": [
+    "802.23d"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R48#2cb4790f72#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R48#4b6a7ef796#0": {
+   "action": "cite",
+   "nums": [
+    "802.24a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R48#82c1d4cf54#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R48#b9b8062869#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R48#f66647e103#0": {
+   "action": "cite",
+   "nums": [
+    "802.23b"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#07464ab3fb#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#1f258fffb6#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#59a0858b15#0": {
+   "action": "cite",
+   "nums": [
+    "802.22b",
+    "802.22c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#a70fe0eaad#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#c2bcfa374f#0": {
+   "action": "cite",
+   "nums": [
+    "802.23a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#c6301acca8#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#d2cd46298d#0": {
+   "action": "cite",
+   "nums": [
+    "802.23"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R48#ee99c6849f#0": {
+   "action": "cite",
+   "nums": [
+    "802.24a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/39-light-b.test.ts##R48#d3ec1df4df#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/40-light-c.test.ts##R48#f9bd7d89a6#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/42-dark-b.test.ts##R48#27dfbb814a#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R48#3ab383d1d0#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/44-hybrids-ld-a.test.ts##R48#e8fa0bbb20#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R48#dd4dcb1d72#0": {
+   "action": "cite",
+   "nums": [
+    "802.22"
+   ],
+   "note": ""
+  },
+  "client/ui/glossary.ts##R48#cea41ac07d#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U01.json#j39.examples.test#R48#e924974790#0": {
+   "action": "cite",
+   "nums": [
+    "802.22c"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U20.json#j86.examples.test#R48#b379afdeab#0": {
+   "action": "cite",
+   "nums": [
+    "802.22a"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U20.json#j93.examples.test#R48#4539e15163#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U20.json#j95.examples.test#R48#4539e15163#0": {
+   "action": "cite",
+   "nums": [
+    "802.23c"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U20.json#j99.examples.test#R48#715ced79b4#0": {
+   "action": "cite",
+   "nums": [
+    "802.24a"
+   ],
+   "note": ""
+  },
+  "client/docs/16-divergence-inventory.md##R195#7aaf5788e2#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R195#95fd55e9a1#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.5a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R195#531fad934f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R195#093d2bbc64#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R195#2a6fd71540#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R195#83566ad494#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R195#b776031a2e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#07120ff138#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#21c0875410#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#44a21e5b8c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#6789e0f12f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#8387df6ae4#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#94078192f1#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#b002dd82e9#0": {
+   "action": "cite",
+   "nums": [
+    "608.8a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#d68ad88fa3#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a",
+    "608.5c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R195#ec27eb8793#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R195#02684c156d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R195#a89f04dca8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#01f3209af4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#1ace678613#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#27bc620298#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#4fdf75dfb4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.7a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#68ae5728a8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#86e7f26d89#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "card-literal reading of Sarcophage (\"a unit\"); no CR rule states it"
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#c4728afed9#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.7a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#d40f025cf6#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#ed449ed168#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R195#f997699143#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/184-ruling-register.test.ts##R195#ea3acd4ba2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "register renumbering history; R195 there is another number"
+  },
+  "client/ledgers/card-todo-closed.ts##R195#0d393435e3#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process advice about the register, not a rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R195#6b27255ae4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R195#b2e49413ec#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R195#6ebeffa98d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U12.json#j46.examples.test#R195#8076ef1792#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/docs/16-divergence-inventory.md##R117#2d3a39eabd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R117#8b11423c70#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R117#d7a0808760#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R117#387092bbc9#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R117#582ae99e9a#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R117#999ee85c46#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R117#3f27744e57#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R117#cf2524807d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R117#f73ea424e1#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/115-literal-light.test.ts##R117#53371bc840#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/115-literal-light.test.ts##R117#8cdba149c1#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/115-literal-light.test.ts##R117#e9f7a68a65#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R117#202a9b52f3#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R117#6770449c29#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R117#bda5f5ef71#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/21-fixes.test.ts##R117#0570c320f0#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/21-fixes.test.ts##R117#7faf74099f#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-ledger.ts##R117#523d778cac#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R117#8bd8180f80#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process advice about the register, not a rule"
+  },
+  "client/ledgers/card-todo-closed.ts##R117#c65c127e1d#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.2c"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R117#fb0531c80e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R117#61212adc07#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#00961aa9dc#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#23808015f8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#6369963e6e#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#8cd9794105#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#d885fb2330#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/53-playtest-round7.test.ts##R117#fa053547da#0": {
+   "action": "cite",
+   "nums": [
+    "608.2d",
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U12.json#j8.examples.test#R117#37409390e2#0": {
+   "action": "cite",
+   "nums": [
+    "608.2d",
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U20.json#j106.examples.test#R117#656da64b51#0": {
+   "action": "cite",
+   "nums": [
+    "608.2d",
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/docs/questions-round31.md##R3#0aca9aa2a2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "history of the ruling (amended since); question sheet"
+  },
+  "client/docs/questions-round31.md##R3#7ba22e3630#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "history of the ruling; question sheet"
+  },
+  "client/docs/questions-round32.md##R3#4dd12fb100#0": {
+   "action": "cite",
+   "nums": [
+    "608.3a"
+   ],
+   "note": ""
+  },
+  "client/docs/questions-round32.md##R3#ebbde3ca81#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "history of the ruling (amended since); question sheet"
+  },
+  "client/engine/scripts/cr/extract.mjs##R3#8eb09510a5#1": {
+   "action": "drop",
+   "nums": [],
+   "note": "syntax example in extractor, not a citation"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R3#2ce25cc171#0": {
+   "action": "cite",
+   "nums": [
+    "608.3a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R3#c280d1ad45#0": {
+   "action": "cite",
+   "nums": [
+    "608.3a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R3#3185b8ff58#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "describes an implementation since reversed"
+  },
+  "client/engine/src/engine.ts##R3#6d320aab6e#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/engine/test/02-combat.test.ts##R3#cddb8f2e73#0": {
+   "action": "cite",
+   "nums": [
+    "608.2a",
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/engine/test/05-rulings.test.ts##R3#1995c260d1#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/engine/test/05-rulings.test.ts##R3#85813167ec#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/engine/test/14-water-a.test.ts##R3#9cd5efc7a1#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "history of a test title, reading reversed"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#1944f2e2db#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "quotes an old test whose reading was reversed"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#c7dd9bba0b#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "quotes an old test whose reading was reversed"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#53c5bc6568#0": {
+   "action": "cite",
+   "nums": [
+    "608.3a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#a00b55ad33#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "quotes an old test whose reading was reversed"
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R3#8189d291c2#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R3#e4fb748150#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/engine/test/239-damage-triggers-after-combat.test.ts##R3#a28bb9c3cc#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/engine/test/310-zone-abilities.test.ts##R3#5a38efabfa#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R3#00c9be55fb#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "ruling history (overruled in part)"
+  },
+  "client/ledgers/card-todo-closed.ts##R3#a9d33af8f4#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "ruling history (overruled in part)"
+  },
+  "client/ledgers/card-todo-closed.ts##R3#c11e529bfb#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R3#409afc96ea#1": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R3#a2b076a868#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#78e029c441#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "ruling history (overruled in part)"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#9e6a2d5a2d#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "ruling history (overruled in part)"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R3#f6649c01e8#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "ruling history (overruled in part)"
+  },
+  "data/comprehensive-rules/rules/U12.json#j16.examples.test#R3#ce6e4f8e76#0": {
+   "action": "cite",
+   "nums": [
+    "608.3e"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R71#2c7dec038f#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine name alias (Wraith/Wight); no CR rule"
+  },
+  "client/engine/src/cards/registry.ts##R71#b8a045a2fc#0": {
+   "action": "cite",
+   "nums": [
+    "110.2"
+   ],
+   "note": "not-a-target part only; choose-at-resolution superseded (110.2c)"
+  },
+  "client/engine/src/cards/sets/batch-dark-a.ts##R71#2d3191f450#0": {
+   "action": "cite",
+   "nums": [
+    "304.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R71#51fd69c4b1#0": {
+   "action": "cite",
+   "nums": [
+    "304.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-dark-c.ts##R71#2f35b76ff3#0": {
+   "action": "cite",
+   "nums": [
+    "304.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R71#767481e7e9#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "card-specific (Reclaim the Fallen) token-mod return; no CR rule found"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R71#293245dc99#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "header list of rulings; no single rule"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-b.ts##R71#0f80331acd#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R71#0e151ba760#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "coverage gap: no-candidate non-target choice does nothing, not fizzle"
+  },
+  "client/engine/src/engine.ts##R71#320939179d#0": {
+   "action": "cite",
+   "nums": [
+    "110.2c",
+    "706.12"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R71#8b62e49f8d#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": ""
+  },
+  "client/engine/src/index.ts##R71#a4667e4a57#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine name alias (Wraith/Wight); no CR rule"
+  },
+  "client/engine/test/116-literal-hybrids.test.ts##R71#0e27cb2d37#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#1c18c7caa5#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "coverage gap: no-candidate non-target choice does nothing, not fizzle"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#30f494160c#0": {
+   "action": "cite",
+   "nums": [
+    "721.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#8ba3a2ef90#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "coverage gap: no-candidate non-target choice does nothing, not fizzle"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#93c3516627#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "engine name alias (Wraith/Wight); no CR rule"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#bf60fffc17#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "data provenance, not a rule"
+  },
+  "client/engine/test/37-attrs-wight.test.ts##R71#fc1daa5ec2#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "coverage gap: no-candidate non-target choice does nothing, not fizzle"
+  },
+  "client/engine/test/41-dark-a.test.ts##R71#a607bf8401#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "card behaviour (Cosmic Devourer); no CR rule"
+  },
+  "client/engine/test/41-dark-a.test.ts##R71#c82e5e4299#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "printed token stats, not a rule"
+  },
+  "client/engine/test/43-dark-c.test.ts##R71#e32a358908#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "printed token stats, not a rule"
+  },
+  "client/engine/test/45-hybrids-ld-b.test.ts##R71#ac254dad93#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R71#11ae818d6f#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U17.json#j50.examples.test#R71#290038011c#0": {
+   "action": "cite",
+   "nums": [
+    "721.6"
+   ],
+   "note": ""
+  },
+  "client/docs/questions-round32.md##R266#8ffaea06d6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "question-sheet history"
+  },
+  "client/engine/src/apply.ts##R266#42d9e940fc#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R266#f6991d892f#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R266#59c1106bac#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R266#7c32d06c3c#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "ticket history"
+  },
+  "client/ui/admin.ts##R266#0ed69788fc#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R266#1dd135ee3b#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R266#c9dd8c61f5#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R266#e87d0d4bdd#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/style.css##R266#117c8c4849#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#48cd18dc59#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#542ddc8968#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#70fd7878e1#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#8e247ee090#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#bb39825cb2#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#d55c036565#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R266#f98a457f4a#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R266#39e3c99a99#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/256-cost-toasts.test.ts##R266#5c656b9bbb#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/toast.ts##R266#7c8f842450#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "note": ""
+  },
+  "client/ui/toast.ts##R266#8df8803bab#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4b"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U24.json#j69.examples.test#R266#0d1e07bb3b#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U24.json#j70.examples.test#R266#a7343f4e06#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R58#216d1e5b9d#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R58#312f90171b#0": {
+   "action": "cite",
+   "nums": [
+    "110.4c",
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R58#54c14d01e4#0": {
+   "action": "cite",
+   "nums": [
+    "110.1b"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R58#d4cd58787c#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-earth-a.ts##R58#d224ec7091#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a",
+    "110.1b"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-earth-c.ts##R58#d6eabf4465#0": {
+   "action": "cite",
+   "nums": [
+    "704.5",
+    "110.4c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R58#b204c4edb8#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R58#623c8f136b#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R58#a53a880232#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R58#f1abdcaece#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/engine/test/16-earth-a.test.ts##R58#59453ea022#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R58#3696e1a316#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R58#64b3871d16#0": {
+   "action": "cite",
+   "nums": [
+    "704.5",
+    "704.6c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/49-playtest-round6.test.ts##R58#8e9d9b65dc#0": {
+   "action": "cite",
+   "nums": [
+    "110.4c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/68-target-conformance.test.ts##R58#f5e6dfab7b#0": {
+   "action": "cite",
+   "nums": [
+    "110.3"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R58#0d0e0f3253#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R58#ee0ca1c205#0": {
+   "action": "cite",
+   "nums": [
+    "110.1a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/raq.ts##R58#bf653d7698#0": {
+   "action": "cite",
+   "nums": [
+    "110.9",
+    "110.4c"
+   ],
+   "note": ""
+  },
+  "client/ui/test/243-ally-and-enemy-scope.test.ts##R58#e703a1807c#0": {
+   "action": "cite",
+   "nums": [
+    "110.4c"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U03.json#j64.examples.test#R58#d103b33234#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/docs/16-divergence-inventory.md##R157#2d3a39eabd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/docs/16-divergence-inventory.md##R157#ec47ccaf8b#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a",
+    "608.5c"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-dark-b.ts##R157#40bcefb206#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R157#3f3f7f8ef8#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-light-a.ts##R157#666ec24ff3#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R157#7a9fb1ea04#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R157#bf74c163b7#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R157#d99773b570#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#001c8107e0#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#0ce451ca94#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#261f2c81f2#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#399a75c8f9#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#693ebb9ed4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#a5178a2c80#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#b61a00843c#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.5a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#d4a16e52a5#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.2c"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R157#2af7fc04a7#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": ""
+  },
+  "client/engine/test/166-face-damage-attribution.test.ts##R157#a7b664bbc2#0": {
+   "action": "cite",
+   "nums": [
+    "608.5a"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U12.json#j25.examples.test#R157#a1e6efffed#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R205#2566295095#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "client/ui/main.ts##R205#95520d46c2#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R205#d68658770c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": ""
+  },
+  "client/ui/test/163-cache-affordance-and-badges.test.ts##R205#8dd04f0642#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "client/ui/test/163-cache-affordance-and-badges.test.ts##R205#f61dacba89#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#124c47f3d1#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#352924a545#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#5b0aaafa90#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": ""
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#61798b3906#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "serialiser self-test, not a rule"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#92c0736253#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7b"
+   ],
+   "note": ""
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#d3b43cc2e6#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "client/ui/test/176-nested-affordance-and-serialiser.test.ts##R205#e807f9f039#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7b"
+   ],
+   "note": ""
+  },
+  "client/ui/test/ui-driver.ts##R205#57905fb941#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "client/ui/test/ui-driver.ts##R205#b5256a18ab#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "client/ui/test/ui-driver.ts##R205#c567aaa199#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "test-driver infrastructure, not a rule"
+  },
+  "data/comprehensive-rules/rules/U24.json#j98.examples.test#R205#6ddc6329f3#0": {
+   "action": "cite",
+   "nums": [
+    "D6.7b"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U24.json#j99.examples.test#R205#f4b0cc899e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.16"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R279#18324bf65c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9b"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R279#aa35597936#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "text-box de-duplication; no CR rule states it"
+  },
+  "client/ui/cardtext.ts##R279#3098b1c1a5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R279#5494e7101f#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "text-box de-duplication; no CR rule states it"
+  },
+  "client/ui/cardtext.ts##R279#66d4e89e82#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "text-box de-duplication; no CR rule states it"
+  },
+  "client/ui/cardtext.ts##R279#b49e94696b#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R279#c96b85c1a9#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R279#e155af29da#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9b"
+   ],
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R279#fac1a31c0a#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "text-box de-duplication; no CR rule states it"
+  },
+  "client/ui/glossary.ts##R279#0100b23408#0": {
+   "action": "cite",
+   "nums": [
+    "803.7i"
+   ],
+   "note": ""
+  },
+  "client/ui/test/177-glossary-conformance.test.ts##R279#8c73fe9c8d#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "process note (write-up location)"
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R279#3009a80f1f#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "text-box de-duplication; no CR rule states it"
+  },
+  "client/ui/test/262-type-line-attributes.test.ts##R279#d90455072e#0": {
+   "action": "cite",
+   "nums": [
+    "D6.10d"
+   ],
+   "note": ""
+  },
+  "client/ui/test/57-ui-cardtext.test.ts##R279#1b4b9716db#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "text-box de-duplication; no CR rule states it"
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R312#ca8fe96e7b#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3"
+   ],
+   "note": ""
+  },
+  "client/server/rooms.ts##R312#22642c017d#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3"
+   ],
+   "note": ""
+  },
+  "client/server/rooms.ts##R312#49806fa659#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e"
+   ],
+   "note": ""
+  },
+  "client/server/rooms.ts##R312#88b8ec45be#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e"
+   ],
+   "note": ""
+  },
+  "client/server/seen.ts##R312#352c07d074#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3"
+   ],
+   "note": ""
+  },
+  "client/server/test/374-undo-locks-on-reveal.test.ts##R312#352c07d074#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3"
+   ],
+   "note": ""
+  },
+  "client/server/test/374-undo-locks-on-reveal.test.ts##R312#8ac9cbefce#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3c"
+   ],
+   "note": ""
+  },
+  "client/server/test/374-undo-locks-on-reveal.test.ts##R312#bb6143c7b7#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e"
+   ],
+   "note": ""
+  },
+  "client/ui/solo.ts##R312#49a15cc533#0": {
+   "action": "cite",
+   "nums": [
+    "D4.4"
+   ],
+   "note": ""
+  },
+  "client/ui/solo.ts##R312#cfd5bd9b1b#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U23.json#j72.examples.test#R312#dcf4926334#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3a"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U23.json#j76.examples.test#R312#7f60902fa4#0": {
+   "action": "cite",
+   "nums": [
+    "D4.3e"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U23.json#j78.examples.test#R312#47ae4c1411#0": {
+   "action": "cite",
+   "nums": [
+    "D4.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R338#4812edf254#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R338#5c79a42064#0~1": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R338#0151ffd2a7#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R338#3555614d77#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": ""
+  },
+  "client/engine/test/396-raq-timing.test.ts##R338#c0c19af5a9#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e",
+    "702.4d"
+   ],
+   "note": ""
+  },
+  "client/engine/test/404-raq-fix-tides.test.ts##R338#321747b3df#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R338#d8905e1936#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": ""
+  },
+  "client/ledgers/raq.ts##R338#6557eb5893#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": ""
+  },
+  "data/comprehensive-rules/rules/U14.json#j43.examples.test#R338#6b7a04cd44#0": {
+   "action": "cite",
+   "nums": [
+    "702.4e"
+   ],
+   "note": ""
+  },
+  "client/server/test/219-region-scoped-all.test.ts##R242#e2168101d3#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "analogy to the tempo work, not a rule citation"
+  },
+  "client/ui/flash.ts##R242#2ba9632eec#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/flash.ts##R242#bc1841965d#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R242#64af435fae#0": {
+   "action": "cite",
+   "nums": [
+    "D5.5"
+   ],
+   "note": ""
+  },
+  "client/ui/reveal.ts##R242#d11bf9b533#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": ""
+  },
+  "client/ui/test/218-one-tempo.test.ts##R242#cfaf8484d4#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4",
+    "D5.4a"
+   ],
+   "note": ""
+  },
+  "client/ui/test/340-same-source-pace.test.ts##R242#6773a08a66#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R307#48ef1b4a02#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/engine/src/cards/sets/helpers.ts##R307#77d4039e2c#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R307#a9ce3a6a8c#0": {
+   "action": "cite",
+   "nums": [
+    "110.6",
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/engine/test/85-silent-branches.test.ts##R307#e8f86a4932#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R307#0a03f64a84#0": {
+   "action": "cite",
+   "nums": [
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/server/scenarios-h.ts##R307#201f493b0a#0": {
+   "action": "cite",
+   "nums": [
+    "110.6",
+    "110.9"
+   ],
+   "note": ""
+  },
+  "client/engine/test/232-log-modal.test.ts##R241#56a2fab6a8#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R241#9e271ceca5#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": ""
+  },
+  "client/ui/inspect.ts##R241#3488858b6a#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R241#a8abd57b49#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": ""
+  },
+  "client/ui/main.ts##R241#e111c1a4e1#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": ""
+  },
+  "client/ui/test/216-menu-scoping.test.ts##R241#2836bc46c4#0": {
+   "action": "cite",
+   "nums": [
+    "D6.15"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R289#88797854a7#0": {
+   "action": "cite",
+   "nums": [
+    "802.25g",
+    "802.25i"
+   ],
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R289#e827faa6da#0": {
+   "action": "cite",
+   "nums": [
+    "802.25g"
+   ],
+   "note": ""
+  },
+  "client/engine/test/290-pure-outside-combat.test.ts##R289#50cc7533c8#0": {
+   "action": "cite",
+   "nums": [
+    "802.25g"
+   ],
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R289#452f8f8dad#0": {
+   "action": "drop",
+   "nums": [],
+   "note": "describes the ruling's own stat-attribute reading, which 802.1n overrules"
+  },
+  "client/docs/06-roadmap.md##R32#065933ac6e#0": {
+   "action": "cite",
+   "nums": [
+    "610.2",
+    "610.2a"
+   ],
+   "note": ""
+  }
+ }
+}
