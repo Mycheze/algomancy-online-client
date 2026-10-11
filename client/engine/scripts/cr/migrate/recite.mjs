@@ -295,6 +295,15 @@ export function anchorReword(logical, p, q, suggest) {
     if (end !== null) break;
   }
   if (end === null && Tw.at(-1).w.length >= 6) for (let i = iQ; i <= Math.min(Lw.length - 1, iQ + 20); i++) if (Lw[i].w === Tw.at(-1).w) { end = i; break; }
+  // the suggestion's own tail may be new words ("… scope (803.8a)"): anchor on one of its last
+  // three words that the original goes on with, close after the citation, and keep the rest
+  let tailAnchored = false;
+  if (end === null) {
+    for (let j = Tw.length - 2; j >= Math.max(1, Tw.length - 3) && end === null; j--) {
+      if (Tw[j].w.length < 4) continue;
+      for (let i = iQ + 1; i <= Math.min(Lw.length - 1, iQ + 8); i++) if (Lw[i].w === Tw[j].w) { end = i; tailAnchored = true; break; }
+    }
+  }
   if (start === null && end === null && Tw.length > 6) return null;
   let a = start === null ? p : Lw[start].a;
   let b = end === null ? q : Lw[end].b;
@@ -303,7 +312,7 @@ export function anchorReword(logical, p, q, suggest) {
   let text = suggest.trim();
   // the suggestion's closing punctuation, where the original goes on with its own
   if (end === null && /[.;:,]$/.test(text) && /^\s*[.;:,]/.test(logical.slice(b))) text = text.replace(/[.;:,]+$/, '');
-  if (end !== null && /[.]$/.test(text) && !/[.]$/.test(logical.slice(a, b))) text = text.replace(/[.]$/, '');
+  if (end !== null && !tailAnchored && /[.]$/.test(text) && !/[.]$/.test(logical.slice(a, b))) text = text.replace(/[.]$/, '');
   // minimise: shrink the region and the text by their common leading / trailing words
   const R = wordsWithPos(logical.slice(a, b)), T = wordsWithPos(text);
   let i = 0;
@@ -313,14 +322,47 @@ export function anchorReword(logical, p, q, suggest) {
   const ra = a + (i ? R[i].a : 0), rb = a + (j ? R[R.length - 1 - j].b : (b - a));
   const ta = i ? T[i].a : 0, tb = j ? T[T.length - 1 - j].b : text.length;
   let out = text.slice(ta, tb);
-  // never splice a word next to its own copy: "as" + "as the …" → "as the …"
-  const prevWord = /(\S+)\s*$/.exec(logical.slice(0, ra))?.[1] ?? '';
-  const nextWord = /^\s*(\S+)/.exec(logical.slice(rb))?.[1] ?? '';
-  const first = /^(\S+)(\s+|$)/.exec(out), last = /(^|\s+)(\S+)$/.exec(out);
   const core = (w) => (w.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}'-]*/u) ?? [''])[0];
+  // a suggestion that restates words the original already has just outside the region (its
+  // tail repeats what follows, or its head what precedes, within three words): the region
+  // grows over them instead of printing them twice
+  const O = wordsWithPos(out);
+  let ra2 = ra;
+  let rb2 = rb;
+  {
+    const A2 = wordsWithPos(logical.slice(rb, rb + 400));
+    // the original's next words (from within three of the region's end) reappear inside the
+    // suggestion, three or more in a row: the suggestion already says them, so the region covers them
+    let best = null;
+    for (let k = 0; k <= 3 && k < A2.length; k++) {
+      for (let i = 0; i < O.length; i++) {
+        let m = 0;
+        while (i + m < O.length && k + m < A2.length && core(O[i + m].raw) && core(O[i + m].raw) === core(A2[k + m].raw)) m++;
+        if (m >= 3 && (!best || m > best.m)) best = { k, m, i };
+      }
+    }
+    if (best) rb2 = rb + A2[best.k + best.m - 1].b;
+    const before = logical.slice(Math.max(0, ra - 400), ra);
+    const B2 = wordsWithPos(before);
+    let bestB = null;
+    for (let k = 0; k <= 3 && k < B2.length; k++) {
+      const endB = B2.length - 1 - k; // the word k before the region
+      for (let i = O.length - 1; i >= 0; i--) {
+        let m = 0;
+        while (i - m >= 0 && endB - m >= 0 && core(O[i - m].raw) && core(O[i - m].raw) === core(B2[endB - m].raw)) m++;
+        if (m >= 3 && (!bestB || m > bestB.m)) bestB = { k, m, i };
+      }
+    }
+    if (bestB) ra2 = ra - (before.length - B2[B2.length - 1 - bestB.k - bestB.m + 1].a);
+  }
+  // never splice a word next to its own copy: "as" + "as the …" → "as the …"
+  const prevWord = /(\S+)\s*$/.exec(logical.slice(0, ra2))?.[1] ?? '';
+  const nextWord = /^\s*(\S+)/.exec(logical.slice(rb2))?.[1] ?? '';
+  const first = /^(\S+)(\s+|$)/.exec(out), last = /(^|\s+)(\S+)$/.exec(out);
   if (first && core(first[1]) && core(first[1]) === core(prevWord)) out = out.slice(first[0].length);
   if (last && out && core(last[2]) && core(last[2]) === core(nextWord)) out = out.slice(0, out.length - last[0].length);
-  return { a: ra, b: rb, text: out };
+  if (!out.trim()) { const sep = /^\s*[\/,;·]\s*/.exec(logical.slice(rb)); if (sep) rb2 = rb + sep[0].length; }
+  return { a: ra2, b: rb2, text: out };
 }
 
 /** the comment block / md paragraph around a line, as one logical string with an offset map */
@@ -819,6 +861,21 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
       const why = BADLINE.find((re) => re.test(l)) ? 'states a CR number as reversed / equal to itself, or pastes code into a title'
         : doubles(l).filter((w) => !new RegExp(`\\b${w}\\s+${w}\\b`, 'i').test(oldText)).length ? `doubled word: ${doubles(l).join(', ')}` : null;
       if (why) report.selfCheck.push({ file: rel, line: k + 1, why, text: l.trim().slice(0, 200) });
+    }
+  }
+
+  // a phrase printed twice around a reworded span: the suggestion restated words the original kept
+  const twice = (x) => { const w = x.toLowerCase().match(/[a-z][a-z-]{2,}/g) ?? []; const seen = new Set(); for (let i = 0; i + 1 < w.length; i++) for (let j = i + 2; j + 1 < w.length && j <= i + 8; j++) if (w[i] === w[j] && w[i + 1] === w[j + 1]) seen.add(`${w[i]} ${w[i + 1]}`); return seen; };
+  for (const [rel, es] of editsOf) {
+    const neu = after.get(rel), old = before.get(rel);
+    if (!neu || !old) continue;
+    for (const e of es) {
+      if (!String(e.why).startsWith('reword')) continue;
+      const [na, nb] = mapRange(es, e.a, e.b);
+      const win = neu.slice(Math.max(0, na - 80), nb + 80), owin = old.slice(Math.max(0, e.a - 80), e.b + 80);
+      const was = twice(owin);
+      const now = [...twice(win)].filter((p) => !was.has(p) && neu.slice(na, nb).toLowerCase().includes(p.split(' ')[0]));
+      if (now.length) (report.warnings ??= []).push({ file: rel, line: neu.slice(0, na).split('\n').length, why: `repeated phrase: ${now.join(', ')}`, text: neu.slice(Math.max(0, na - 60), nb + 60).replace(/\s+/g, ' ').slice(0, 200) });
     }
   }
 

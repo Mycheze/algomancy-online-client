@@ -33,13 +33,19 @@ export const BUNDLES = [
 function bundle(root, b, out) {
   const esbuild = join(REPO_ROOT, 'client/engine/node_modules/.bin/esbuild');
   execFileSync(esbuild, [join(root, b.entry), '--bundle', `--platform=${b.platform}`, '--format=esm', '--packages=external',
-    '--minify-whitespace', '--legal-comments=none', '--charset=utf8', '--log-level=error', '--loader:.json=json', `--outfile=${out}`],
+    '--minify-whitespace', '--legal-comments=none', '--charset=utf8', '--log-level=error', '--loader:.json=json', `--outfile=${out}`,
+    // the review page's builder IS the CR pipeline, whose change is the point (step 2; 409 §12 and 436/442 test it)
+    '--external:../engine/scripts/cr/render.mjs'],
   { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 });
   return readFileSync(out, 'utf8');
 }
 
+/** the glossary's citation arrays are data no screen reads (227 guards that): `ruling: ['R13', …]`
+ *  became `cites: ['attr.piercing.excess', …]` — compared as one placeholder, and counted */
+const CITES = /\b(?:ruling|cites):\[[^\]]*\]/g;
 export function compare(before, after, visibleTexts = []) {
-  const A = tokenize(before), B = tokenize(after);
+  const glossaryCites = [(before.match(CITES) ?? []).length, (after.match(CITES) ?? []).length];
+  const A = tokenize(before.replace(CITES, 'cites:[]')), B = tokenize(after.replace(CITES, 'cites:[]'));
   const isStr = (t) => t.t === 'str' || t.t === 'tmpl';
   const codeA = A.filter((t) => !isStr(t)), codeB = B.filter((t) => !isStr(t));
   const codeDiffs = [];
@@ -54,7 +60,7 @@ export function compare(before, after, visibleTexts = []) {
     const neu = sB[i].v;
     strings.push({ before: sA[i].v.slice(0, 300), after: neu.slice(0, 300), visible: visibleTexts.some((v) => v && neu.includes(v)) });
   }
-  return { codeDiffs, strings, sizes: [before.length, after.length] };
+  return { codeDiffs, strings, sizes: [before.length, after.length], glossaryCites };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -72,11 +78,11 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const x = bundle(resolve(before), b, join(dir, `before-${b.name}.js`));
     const y = bundle(resolve(after), b, join(dir, `after-${b.name}.js`));
     const r = compare(x, y, visibleTexts);
-    report[b.name] = { identical: x === y, codeDiffs: r.codeDiffs, stringsChanged: r.strings.length, visible: r.strings.filter((s) => s.visible).length, unlisted: r.strings.filter((s) => !s.visible), sizes: r.sizes };
+    report[b.name] = { identical: x === y, glossaryCites: r.glossaryCites, codeDiffs: r.codeDiffs, stringsChanged: r.strings.length, visible: r.strings.filter((s) => s.visible).length, unlisted: r.strings.filter((s) => !s.visible), sizes: r.sizes };
     bad += r.codeDiffs.length + r.strings.filter((s) => !s.visible).length;
   }
   writeFileSync(join(CR_BUILD_DIR, 'migrate', 'proof.json'), JSON.stringify(report, null, 1) + '\n');
-  for (const [k, v] of Object.entries(report)) console.log(`${k}: ${v.identical ? 'byte-identical' : `${v.codeDiffs.length} code token difference(s), ${v.stringsChanged} string(s) changed (${v.visible} from visible.json, ${v.unlisted.length} not)`}`);
+  for (const [k, v] of Object.entries(report)) console.log(`${k}: ${v.identical ? 'byte-identical' : `${v.codeDiffs.length} code token difference(s), ${v.stringsChanged} string(s) changed (${v.visible} from visible.json, ${v.unlisted.length} not)${v.glossaryCites[0] ? `; glossary citation arrays ${v.glossaryCites.join(' → ')} (ruling → cites)` : ''}`}`);
   console.log(`wrote ${join(CR_BUILD_DIR, 'migrate', 'proof.json')}`);
   process.exit(bad ? 1 : 0);
 }
