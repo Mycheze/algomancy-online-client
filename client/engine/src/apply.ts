@@ -11,7 +11,7 @@ import type {
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
-  affinityPips, ambushEffect, costAmount, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
+  affinityPips, ambushEffect, canonicalCardName, costAmount, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
   type EffectDef,
 } from './cards/dsl.ts';
@@ -50,12 +50,18 @@ export function sanitizeTrio(els: unknown, count = 3): Element[] {
 }
 
 /** Constructed deck rules (Manual: min 30 cards, max 2 copies) against the
- * scripted pool. Returns the cleaned list or a human-readable error. */
+ * scripted pool. Returns the cleaned list or a human-readable error.
+ *
+ * The cleaned list is in CANONICAL names, position for position: a deck saved
+ * or pasted under a card's other name (registerAlias — "Counter Theif", the
+ * printed spelling of Counter Thief, or a card renamed upstream) is the same
+ * deck, and the copy cap counts the two spellings as one card. Positions never
+ * move, so a stored deck still shuffles into exactly the game it dealt. */
 export function checkDeck(cards: unknown): { ok: true; cards: CardName[] } | { ok: false; error: string } {
   if (!Array.isArray(cards) || cards.some(c => typeof c !== 'string')) {
     return { ok: false, error: 'a deck must be a list of card names' };
   }
-  const list = cards as CardName[];
+  const list = (cards as CardName[]).map(canonicalCardName);
   const pool = new Set(DECK_LIST);
   const unknown = [...new Set(list.filter(n => !pool.has(n)))];
   if (unknown.length) {
@@ -84,8 +90,9 @@ export const SINGLE_CARD_COPIES = 30;
 /** the thirty-card deck for `name`, or the reason there is none */
 export function checkSingleCard(name: unknown): { ok: true; cards: CardName[] } | { ok: false; error: string } {
   if (typeof name !== 'string' || !name) return { ok: false, error: 'pick a card' };
-  if (!DECK_LIST.includes(name)) return { ok: false, error: `not a card you can put in a deck: ${name}` };
-  return { ok: true, cards: Array.from({ length: SINGLE_CARD_COPIES }, () => name) };
+  const card = canonicalCardName(name);   // an alias is the same card (see checkDeck)
+  if (!DECK_LIST.includes(card)) return { ok: false, error: `not a card you can put in a deck: ${name}` };
+  return { ok: true, cards: Array.from({ length: SINGLE_CARD_COPIES }, () => card) };
 }
 
 /**
@@ -108,7 +115,8 @@ export function makesUnits(name: string): boolean {
 
 /** Is this list a single-card deck? — exactly thirty of one deck card */
 export function checkSingleDeck(cards: unknown): { ok: true; cards: CardName[] } | { ok: false; error: string } {
-  if (!Array.isArray(cards) || cards.length !== SINGLE_CARD_COPIES || cards.some(c => c !== cards[0])) {
+  if (!Array.isArray(cards) || cards.length !== SINGLE_CARD_COPIES
+    || cards.some(c => typeof c !== 'string' || canonicalCardName(c) !== canonicalCardName(cards[0]))) {
     return { ok: false, error: `a single-card deck is ${SINGLE_CARD_COPIES} copies of one card` };
   }
   return checkSingleCard(cards[0]);
@@ -164,6 +172,10 @@ export function createGame(
       const check = lesson ? checkLessonDeck(d) : checkDeck(d);
       if (!check.ok && !checkSingleDeck(d).ok) throw new Error(check.error);
     }
+    // canonical names, position for position (see checkDeck): a deck stored
+    // under a card's alias deals the same game, and the state only ever holds
+    // the name the registry is keyed by
+    decks = decks.map(d => d.map(canonicalCardName)) as [CardName[], CardName[]];
     // CR D8.2a: two single-card decks are a duel, and a duel skips the bottoming
     singleCard = !lesson && decks.every(d => checkSingleDeck(d).ok);
     deckElements = decks.map(d => {

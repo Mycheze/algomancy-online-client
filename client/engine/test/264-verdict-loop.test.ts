@@ -62,7 +62,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import '../src/cards/registry.ts';
-import { getCard } from '../src/cards/dsl.ts';
+import { canonicalCardName, getCard } from '../src/cards/dsl.ts';
 import { CARD_TODO } from '../../ledgers/card-todo.ts';
 import { WITNESSED } from '../../ledgers/unreached.ts';
 import { VERDICTS_SNAPSHOT } from '../scripts/paths.mjs';
@@ -194,7 +194,10 @@ test('§3 the committed snapshot and the WITNESSED transcription describe the sa
   // `unreached.ts` WITNESSED is a hand transcription of the same verdicts, and
   // it is the reason the snapshot was thought unnecessary. Two copies of one
   // fact rot apart; this is the cheapest possible check that they have not.
-  const inSnapshot = new Set(ROWS.map(r => r.card));
+  // A row names the card as it was called on the day of the verdict; a card
+  // aliased or renamed since (registerAlias) is the same card under its other
+  // name, and the snapshot is history, so it is never respelled.
+  const inSnapshot = new Set(ROWS.map(r => canonicalCardName(r.card)));
   const missing = Object.keys(WITNESSED).filter(c => !inSnapshot.has(c));
   assert.deepEqual(missing, [],
     'unreached.ts claims a witness for cards the verdict snapshot has no row for:\n  '

@@ -15,6 +15,7 @@
  * card ledger misreads. 333-zone-delta-parse pins it.
  */
 import type { CardName, GameState, Seat } from '../engine/src/types.ts';
+import { cardAliases } from '../engine/src/cards/dsl.ts';
 
 /** The acting seat's own private zones, as card names — no entity ids, so a
  * renumbering cannot move it. */
@@ -90,4 +91,71 @@ export function parseRef(ref: string): ParsedRef {
     } catch { /* an unreadable slot names nothing */ }
   }
   return { type, named: indexed.map(([, c]) => c), indexed, delta: parseZoneDelta(tail), tail };
+}
+
+/* ── A SAVED REF IN TODAY'S CARD NAMES ───────────────────────────────────
+ *
+ * A card named by an alias (registerAlias) is the same card — the printed
+ * "Counter Theif" is Counter Thief, and a card renamed upstream is the same
+ * card under a new name, while every ref written before the rename spells the
+ * old one: in its resolved slots (`0:"Old Name"`), in a decision's label, and
+ * in the zone delta (`-1h:Old Name`). Compared as text, each of those actions
+ * would read as drifted ("it now refers to a different card") on a game that
+ * replays exactly.
+ *
+ * The rule for a stored ref is therefore the rule for every stored name:
+ * canonicalise ON READ, never rewrite the file, and never change what
+ * `referenceKey` writes. The names come from the registry's own alias table
+ * (`registerAlias`), so the next rename is one `registerAlias` line and this
+ * follows it. The delta is RE-SORTED after respelling, because `zoneDelta`
+ * sorts its entries by their text and a new name can sort to a new place.
+ */
+
+const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** every whole-word occurrence of an old name, replaced by the name it is now */
+function respell(text: string, pairs: readonly [string, string][]): string {
+  for (const [old, now] of pairs) {
+    if (!text.includes(old)) continue;
+    text = text.replace(new RegExp(`(?<![A-Za-z0-9])${escapeRe(old)}(?![A-Za-z0-9])`, 'g'), now);
+  }
+  return text;
+}
+
+/** a zone delta respelled and re-rendered exactly as `zoneDelta` renders one;
+ * anything it cannot read as a delta is respelled as plain text */
+function respellDelta(tail: string, pairs: readonly [string, string][]): string {
+  if (!tail) return tail;
+  const n = new Map<string, number>();
+  for (const part of tail.split(/,(?=[+-]\d+[hbcx]:)/)) {
+    const m = /^([+-]\d+)([hbcx]:.*)$/s.exec(part);
+    if (!m) return respell(tail, pairs);
+    const key = respell(m[2]!, pairs);
+    n.set(key, (n.get(key) ?? 0) + Number(m[1]));
+  }
+  return [...n.entries()].filter(([, k]) => k !== 0).sort(([x], [y]) => (x < y ? -1 : 1))
+    .map(([c, k]) => `${k > 0 ? '+' : ''}${k}${c}`).join(',');
+}
+
+/** A saved reference key, spelled in today's card names. Identity on every ref
+ * that names no aliased card, which is nearly all of them.
+ *
+ * Compare refs with it on BOTH sides, never one: an alias is a whole word, and
+ * a fresh ref can carry one in printed text the engine echoes (Blight's End's
+ * prompt still says "Wight", the alias of Wraith). Respelled on one side only,
+ * that would read as a difference where the raw text agreed. */
+export function canonicalRef(ref: string): string {
+  const pairs = cardAliases();
+  if (!pairs.some(([old]) => ref.includes(old))) return ref;
+  const bar = ref.lastIndexOf('|');
+  if (bar < 0) return respell(ref, pairs);
+  return respell(ref.slice(0, bar + 1), pairs) + respellDelta(ref.slice(bar + 1), pairs);
+}
+
+/** A bare zone delta (a ref's tail) in today's card names — canonicalRef for
+ * the part after the last `|`. */
+export function canonicalDelta(tail: string): string {
+  const pairs = cardAliases();
+  if (!pairs.some(([old]) => tail.includes(old))) return tail;
+  return respellDelta(tail, pairs);
 }

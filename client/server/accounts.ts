@@ -30,6 +30,7 @@ import {
 import type { PublicDeckView } from './publicdecks.ts';
 import type { TrioHistoryRow } from './trio.ts';
 import { accountsFile } from './statepaths.ts';
+import { canonicalCardName } from '../engine/src/cards/dsl.ts';
 // CR D8.5: a conceded game weighs by the turn it was conceded on. The fold below
 // reads the stamp through this one function; the thresholds live over there.
 import { concessionWeight, type Concession, type ConcessionWeight } from './concession.ts';
@@ -769,6 +770,17 @@ export function removeFriend(me: Account, theirId: string): { ok: boolean; error
 const addInto = (into: Record<string, number>, from: Record<string, number>): void => {
   for (const [k, v] of Object.entries(from)) into[k] = (into[k] ?? 0) + v;
 };
+/** addInto for CARD-keyed counts: a history row that names a card by an alias
+ * (registerAlias — a card summarised before it was renamed keeps the old name
+ * for good, since rows are not re-summarised) is folded into the card's one
+ * key here, or "Different cards" would count it twice and the top cards would
+ * list a name the client cannot show */
+const addCardsInto = (into: Record<string, number>, from: Record<string, number>): void => {
+  for (const [k, v] of Object.entries(from)) {
+    const c = canonicalCardName(k);
+    into[c] = (into[c] ?? 0) + v;
+  }
+};
 
 /** Fold one seat of one game into one profile. Pure addition plus the two
  * order-dependent bits (streaks and first/last played). */
@@ -795,7 +807,7 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   for (const el of seatElements(game, seat)) profile.byElement[el]++;
   addInto(profile.cardElements, s.cardElements);
   addInto(profile.recycled, s.recycled);
-  addInto(profile.cards, s.cards);
+  addCardsInto(profile.cards, s.cards);
   profile.unitsPlayed += s.unitsPlayed;
   profile.spellsPlayed += s.spellsPlayed;
   profile.tokensCast += s.tokensCast;

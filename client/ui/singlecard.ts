@@ -14,6 +14,7 @@
  * so the input keeps its focus (the same reason ui/customrulespanel.ts gives).
  */
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
+import { canonicalCardName } from '../engine/src/cards/dsl.ts';
 import { SINGLE_CARD_COPIES, makesUnits } from '../engine/src/apply.ts';
 import { artHtml } from './cardpanel.ts';
 import { rowFor } from './cardindex.ts';
@@ -27,7 +28,8 @@ let focusInput = false;
 /** the card this browser last picked, if it is still a deck card */
 export function chosen(): string | null {
   try {
-    const n = typeof localStorage === 'undefined' ? null : localStorage.getItem(STORE_KEY);
+    const raw = typeof localStorage === 'undefined' ? null : localStorage.getItem(STORE_KEY);
+    const n = raw ? canonicalCardName(raw) : null;   // remembered under a card's old name
     return n && DECK_LIST.includes(n) ? n : null;
   } catch { return null; }
 }

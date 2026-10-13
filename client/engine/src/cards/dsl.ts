@@ -2301,6 +2301,12 @@ export function registerAlias(alias: string, target: string): void {
 export function canonicalCardName(name: string): string {
   return ALIASES.get(name) ?? name;
 }
+/** every registered alias as [old name, the name it resolves to] — for the
+ * readers of stored TEXT (a saved game's refs, a pasted decklist) that meet a
+ * card name inside a string rather than as a whole value */
+export function cardAliases(): [string, string][] {
+  return [...ALIASES];
+}
 
 export function getCard(name: string): CardDef {
   const def = REGISTRY.get(name) ?? REGISTRY.get(canonicalCardName(name));

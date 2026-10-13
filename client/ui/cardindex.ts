@@ -25,7 +25,7 @@
  * is that ui/cardsearch.ts can be tested with node --test and no browser.
  */
 import catalogueJson from '../engine/src/cards/catalogue.json' with { type: 'json' };
-import { affinityPips, allCardNames, getCard, isGraftable, type Printed } from '../engine/src/cards/dsl.ts';
+import { affinityPips, allCardNames, cardAliases, getCard, isGraftable, type Printed } from '../engine/src/cards/dsl.ts';
 import { DECK_LIST, createsOf, transformsInto } from '../engine/src/cards/registry.ts';
 /* IMPORTED FOR ITS SIDE EFFECT, and this is not optional.
  *
@@ -93,6 +93,10 @@ const CATALOGUE = catalogueJson as unknown as Record<string, CatalogueEntry>;
 export interface CardRow {
   name: string;
   nameLc: string;
+  /** the other names this card goes by (registerAlias), lowercased — so a
+   * search for the printed "Counter Theif" still finds Counter Thief. Usually
+   * empty. */
+  formerLc: string[];
   text: string;
   textLc: string;
   type: string;
@@ -229,6 +233,7 @@ function toRow(e: CatalogueEntry, playable: boolean): CardRow {
   return {
     name: e.name,
     nameLc: lc(e.name),
+    formerLc: cardAliases().filter(([, now]) => now === e.name).map(([old]) => lc(old)),
     text: e.text ?? '',
     textLc: lc(e.text ?? ''),
     type: e.type,

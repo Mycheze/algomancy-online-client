@@ -22,6 +22,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkDeck } from '../engine/src/apply.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
+import { cardAliases } from '../engine/src/cards/dsl.ts';
 import type { CardName } from '../engine/src/types.ts';
 import { expandEntries, looksLikeDeckFile, parseDeckFile, type DeckFile } from '../ui/deckformat.ts';
 
@@ -57,6 +58,10 @@ export interface DeckInfo {
 const norm = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
 const POOL = new Map<string, CardName>();
 for (const n of DECK_LIST) POOL.set(norm(n), n);
+// a list written under a card's alias (registerAlias: the printed "Counter
+// Theif", or a name from before a rename) imports as the card it is today; an
+// alias never shadows a real name
+for (const [old, now] of cardAliases()) if (POOL.has(norm(now)) && !POOL.has(norm(old))) POOL.set(norm(old), POOL.get(norm(now))!);
 
 /** engine name for an algomancer card name/slug, or null if unscripted */
 const resolveName = (raw: string): CardName | null => POOL.get(norm(raw)) ?? null;

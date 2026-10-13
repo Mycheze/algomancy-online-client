@@ -37,12 +37,12 @@ import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Action, CardName, Element, EngineEvent, GameMode, GameState, Seat } from '../engine/src/types.ts';
 import { apply, IllegalAction, sanitizeTrio } from '../engine/src/apply.ts';
-import { getCard } from '../engine/src/cards/dsl.ts';
+import { canonicalCardName, getCard } from '../engine/src/cards/dsl.ts';
 import { sanitizeDraftDeal } from '../engine/src/draftdeal.ts';
 import { engineVersion } from './engine-version.ts';
 import { digest, signature } from './replay-probe.ts';
 import { dealScenario } from './scenarios.ts';
-import { parseRef, zoneDelta } from './zonedelta.ts';
+import { canonicalDelta, canonicalRef, parseRef, zoneDelta } from './zonedelta.ts';
 
 // ── what is written into the game file ────────────────────────────────
 
@@ -240,7 +240,14 @@ const emptySeat = (): SeatLedger => ({
   played: {}, firstTurn: {}, recycled: {}, bottomed: {}, prophesied: {}, elements: {},
 });
 
-const add = (c: Counts, card: CardName, n = 1): void => { c[card] = (c[card] ?? 0) + n; };
+/** every ledger row is keyed by the card's name TODAY: a game that names a
+ * card by an alias (registerAlias; a game recorded before a rename) counts
+ * toward the card it is now, in every metric, whichever rung of the ladder
+ * read it */
+const add = (c: Counts, card: CardName, n = 1): void => {
+  const k = canonicalCardName(card);
+  c[k] = (c[k] ?? 0) + n;
+};
 
 const REAL_ELEMENTS = new Set<string>(['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark']);
 
@@ -250,6 +257,7 @@ export function factionsOf(card: CardName): Element[] {
 }
 
 function creditPlay(s: SeatLedger, card: CardName, turn: number | null): void {
+  card = canonicalCardName(card);
   add(s.played, card);
   if (turn !== null && (s.firstTurn[card] === undefined || turn < s.firstTurn[card]!)) s.firstTurn[card] = turn;
   const f = factionsOf(card);
@@ -348,7 +356,9 @@ export function ledgerForFile(raw: LedgerFile): { ledger: GameLedger; audit: Led
 
   // 2. a replay, trusted only as far as the record can check it
   const sigs = strings(raw.sigs, n);
-  const refs = strings(raw.refs, n);
+  // in today's card names (canonicalRef), so a game that spells a card by its
+  // alias still verifies against a replay that spells the canonical name
+  const refs = strings(raw.refs, n)?.map(r => (r ? canonicalRef(r) : r)) ?? null;
   const checkable = !!sigs?.some(Boolean) || !!refs;
   let why = 'no fingerprints or refs to check a replay against';
   if (n && checkable) {
@@ -406,7 +416,7 @@ function verifiedReplay(raw: LedgerFile, sigs: (string | null)[] | null, refs: (
     const ref = refs?.[i];
     if (ref && !ref.startsWith('refused:')) {
       const tail = ref.slice(ref.lastIndexOf('|') + 1);
-      if (zoneDelta(before, r.state, a.seat) !== tail) {
+      if (canonicalDelta(zoneDelta(before, r.state, a.seat)) !== tail) {
         return { open, facts, validUpTo: i, why: `cards moved differ at action ${i} (${a.type})` };
       }
     }

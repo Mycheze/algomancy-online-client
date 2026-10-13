@@ -20,6 +20,7 @@
  */
 import type { CardName, Seat } from '../engine/src/types.ts';
 import { checkSingleDeck } from '../engine/src/apply.ts';
+import { canonicalCardName } from '../engine/src/cards/dsl.ts';
 import { concessionWeight, EARLY_K_SCALE, type Concession } from './concession.ts';
 import { kFactor, nextRating, PUBLIC_AFTER, ratingOrder, START_RATING } from './rating.ts';
 
@@ -51,8 +52,11 @@ export interface CardStanding {
  * construction. */
 export function singleCardsOf(decks: readonly (readonly CardName[] | null | undefined)[] | undefined): [CardName, CardName] | null {
   const a = decks?.[0], b = decks?.[1];
-  if (!a || !b || !checkSingleDeck(a).ok || !checkSingleDeck(b).ok) return null;
-  return [a[0]!, b[0]!];
+  const ca = checkSingleDeck(a), cb = checkSingleDeck(b);
+  if (!ca.ok || !cb.ok) return null;
+  // checkSingleDeck answers in canonical names, so a duel saved under a card's
+  // old name is tagged with the card it is today
+  return [ca.cards[0]!, cb.cards[0]!];
 }
 
 /** A card is ranked once it has this many duels — the same bar as a player. */
@@ -73,7 +77,10 @@ export function foldCardLadder(history: readonly DuelGame[]): Map<CardName, Card
     return s;
   };
   for (const g of [...history].filter(isDuelResult).sort(ratingOrder)) {
-    const [c0, c1] = g.single;
+    // the history stamps the cards when the game is imported, so a duel that
+    // names a card by an alias (registerAlias; a card's name before a rename)
+    // carries it for good: fold it into the card's one row
+    const [c0, c1] = g.single.map(canonicalCardName) as [CardName, CardName];
     if (c0 === c1) { standing(c0).mirrors++; continue; }
     const a = standing(c0), b = standing(c1);
     // both read before either is written — rating.ts's ⚠, for the same reason

@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-13', kind: 'fix', text: 'Counter Thief is printed "Counter Theif": a deck or search using that spelling now finds the card, and so do saved decks, custom games and card stats.' },
   { date: '2026-10-12', kind: 'change', text: 'The game log and card details no longer show internal ruling numbers, and the About page now describes the comprehensive rules the client follows.' },
   { date: '2026-10-12', kind: 'new', text: 'The judge now answers from the full rules document as well, says when an answer rests on an unofficial ruling or on how the online client plays, and lists its sources under each answer with a link to the rule it rests on.' },
   { date: '2026-10-11', kind: 'change', text: 'In a battle the units grow into the room there is and stand in the middle of the fight, which widens only when a big attack needs it. Units waiting to block match the size of their slots, and on a small screen every rank now fits.' },

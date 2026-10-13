@@ -437,6 +437,13 @@ const TEXT_ALIASES: Record<string, RegExp> = {
   bounded: /\[switch1\]/,
 };
 
+/** the name, or — for a positive match only — a name the card used to go by:
+ * a card renamed upstream is still found by what every older ruling calls it */
+function nameMatch(op: Op, r: CardRow, value: string): boolean {
+  if (textMatch(op, r.nameLc, r.name, value)) return true;
+  return op !== '!=' && r.formerLc.some(f => textMatch(op, f, f, value));
+}
+
 function textMatch(op: Op, hayLc: string, hayRaw: string, value: string): boolean {
   const re = asRegex(value);
   if (re) return op === '!=' ? !re.test(hayRaw) : re.test(hayRaw);
@@ -582,10 +589,10 @@ function termMatch(term: Term, r: CardRow, ctx: Ctx): boolean {
   switch (key) {
     case '':
       // a bare word: name, type line, or rules text
-      return textMatch(op, r.nameLc, r.name, value)
+      return nameMatch(op, r, value)
         || textMatch(op, r.typeLc, r.type, value)
         || textMatch(op, r.textLc, r.text, value);
-    case 'name': return textMatch(op, r.nameLc, r.name, value);
+    case 'name': return nameMatch(op, r, value);
     case 'text': return textMatch(op, r.textLc, r.text, value);
     case 'type': return textMatch(op, r.typeLc, r.type, value);
     case 'sub': return listMatch(op, r.subtypesLc, value);
@@ -680,6 +687,7 @@ export function relevance(q: Query, r: CardRow): number {
     if (r.nameLc === v) score += 100;
     else if (r.nameLc.startsWith(v)) score += 60;
     else if (r.nameLc.includes(v)) score += 40;
+    else if (r.formerLc.some(f => f.includes(v))) score += 30;   // a name it used to have
     else if (r.typeLc.includes(v)) score += 15;
     else if (r.textLc.includes(v)) score += 5;
   }

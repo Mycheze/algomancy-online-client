@@ -896,6 +896,17 @@ const OPEN: TodoEntry[] = [
     verify: "Register \"rules editor\": refused. A reply through /api/cr/editor shows the system mark on the page; a player's comment never does.",
     status: 'open',
   },
+  {
+    id: 281, area: "card", severity: "minor",
+    cards: ["Combustible Bogwalker"],
+    title: "Combustible Bogwalker's \"Sacrifice a nontoken unit\" cost may not offer the Bogwalker itself",
+    detail: "(Found 2026-10-13 reading the shared either/or cost code.) Combustible Bogwalker prints \"[Augment][once] Sacrifice a nontoken unit or discard a card: Recall target unit in your bin.\" with no \"another\". Its cost is `discardOrSacrifice: 1`, and the shared sacrifice-cost code leaves the ability's own source out of the choices, both in the payability gate and in the option list, so the Bogwalker (or, when it is donated, its host) can never sacrifice itself to pay. Printed text and the permissive steer both say it can. Lilbot, the third card on this cost, prints \"another\" and is right as it is. Pallid Gorger prints no \"another\" either, but its implementation comment records excluding itself as a deliberate reading (it would eat itself and then fail to grow); a fix that reads the printed text must decide the Gorger on purpose rather than by accident.",
+    evidence: "Oracle: \"[Augment][once] Sacrifice a nontoken unit or discard a card: Recall target unit in your bin.\" engine/src/apply.ts (the payability gate): \"const sacs = e.unitsOf(seat, region).filter(o => o.id !== u.id && !o.token).length;\" engine/src/engine.ts itemCostSacrifices: \".filter(u => u.id !== item.sourceId && (!nontokenOnly || !u.token));\" Read in the code, not yet reproduced in a test.",
+    fix: "Give the `discardOrSacrifice` cost an `another` flag (or read it off the printed text) so only cards that print \"another\" exclude their source; set it on Lilbot, and on Pallid Gorger only if its reading is kept. Test: a Bogwalker alone with an empty hand is offered itself.",
+    proof: null,
+    verify: "Bogwalker alone on the board, empty hand: the ability is offered and sacrificing itself pays for it.",
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

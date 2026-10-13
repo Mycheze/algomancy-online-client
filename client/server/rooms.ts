@@ -41,7 +41,7 @@ import { engineVersion } from './engine-version.ts';
 // replay-probe.ts may import nothing but the engine, because it is executed
 // inside checkouts of arbitrary past commits. Importing FROM it is free.
 import { digest, signature } from './replay-probe.ts';
-import { zoneDelta } from './zonedelta.ts';
+import { canonicalRef, zoneDelta } from './zonedelta.ts';
 // CR D4.3e: what an action showed each seat of the hidden cards (the undo floor)
 import { lastSeen, NOTHING_SEEN, SEEN_REFUSAL, seenBy, type Seen } from './seen.ts';
 import { cardFact, cardOpen, sanitizeFact, sanitizeOpen, type CardFact, type CardOpen } from './cardledger.ts';
@@ -2153,6 +2153,11 @@ function driftedAgainst(saved: unknown, refs: string[], actions: Action[], skipp
   const out: LostAction[] = [];
   for (let i = 0; i < actions.length; i++) {
     if (saved[i] === refs[i]) continue;
+    // a ref that spells a card by its alias (registerAlias — e.g. one written
+    // before a card was renamed) names the same card, so it is the same action
+    // (zonedelta.ts canonicalRef; both sides, see there)
+    const fresh = refs[i];
+    if (typeof saved[i] === 'string' && typeof fresh === 'string' && canonicalRef(saved[i]) === canonicalRef(fresh)) continue;
     const a = actions[i]!;
     out.push({
       i, type: a.type, seat: a.seat, kind: 'changed',

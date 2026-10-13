@@ -18,6 +18,7 @@
  */
 import type { CardName } from './types.ts';
 import { DECK_LIST, draftDeckList } from './cards/registry.ts';
+import { canonicalCardName } from './cards/dsl.ts';
 
 export interface DraftDeal {
   /** how many elements the draft is played with (the standard game: a trio) */
@@ -63,7 +64,11 @@ export function sanitizeDraftDeal(raw: unknown): DraftDeal | undefined {
     const [lo, hi] = DEAL_BOUNDS[k];
     knobs[k] = typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, Math.round(v))) : DEAL_DEFAULTS[k];
   }
-  const asked = new Set(Array.isArray(r['excluded']) ? r['excluded'].filter((n): n is string => typeof n === 'string') : []);
+  // canonical names: a saved custom game that left a card out under an alias
+  // (registerAlias: "Counter Theif", or a card's name before a rename) left the
+  // same card out, and dropping it here would re-deal that game from a bigger pool
+  const asked = new Set(Array.isArray(r['excluded'])
+    ? r['excluded'].filter((n): n is string => typeof n === 'string').map(canonicalCardName) : []);
   const deal: DraftDeal = { ...knobs, excluded: DECK_LIST.filter(n => asked.has(n)) };
   return isStandardDeal(deal) ? undefined : deal;
 }

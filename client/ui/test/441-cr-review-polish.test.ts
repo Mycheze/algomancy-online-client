@@ -42,9 +42,11 @@ const R: CrReview = await buildReview({ ex: EX });
 const INPUTS = loadInputs();
 const FILES = render(INPUTS, EX).files;
 
-/** every rule article in some html, as [number, the article's html] */
-const articles = (html: string): [string, string][] =>
-  [...html.matchAll(/<article class="rule[^"]*" id="r([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)].map(m => [m[1]!, m[2]!]);
+/** every rule article in some html, as [number, the article's html, its class].
+ *  The class is the article tag's own — a tombstone says so there (`rule … tomb`),
+ *  never inside the body, so a skip has to read it from here. */
+const articles = (html: string): [string, string, string][] =>
+  [...html.matchAll(/<article class="(rule[^"]*)" id="r([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)].map(m => [m[2]!, m[3]!, m[1]!]);
 /** what a reader sees of a rule with its fold closed */
 const unfolded = (body: string): string => body.replace(/<details class="prov">[\s\S]*?<\/details>/, '');
 
@@ -63,8 +65,8 @@ test('§1 a rule body holds no verification line, test binding, chip or source: 
     const rules = articles(html);
     assert.ok(rules.length > 1700, `${where}: only ${rules.length} rules found`);
     let folds = 0;
-    for (const [num, body] of rules) {
-      if (/class="rule[^"]*tomb/.test(body) || !/<p class="rt">/.test(body)) continue;
+    for (const [num, body, cls] of rules) {
+      if (/\btomb\b/.test(cls) || !/<p class="rt">/.test(body)) continue;
       const n = (body.match(/<details class="prov">/g) ?? []).length;
       if (/\[No record\]/.test(body)) continue;
       assert.equal(n, 1, `${where} ${num}: ${n} folds`);

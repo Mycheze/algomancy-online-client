@@ -21,6 +21,7 @@
 import type { Element } from '../engine/src/types.ts';
 import { ALL_ELEMENTS, sanitizeTrio } from '../engine/src/apply.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
+import { canonicalCardName } from '../engine/src/cards/dsl.ts';
 import {
   DEAL_BOUNDS, DEAL_DEFAULTS, DEAL_KNOBS, draftPool, minPool, sanitizeDraftDeal,
   type DealKnob, type DraftDeal,
@@ -79,7 +80,10 @@ export function sanitizeCustomRules(raw: unknown): CustomRules | null {
     const [lo, hi] = DEAL_BOUNDS[k];
     knobs[k] = typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, Math.round(v))) : DEAL_DEFAULTS[k];
   }
-  const bans = [...new Set(Array.isArray(r['bans']) ? r['bans'].filter((n): n is string => typeof n === 'string' && DECK_SET.has(n)) : [])];
+  // a ban saved under a card's old name bans the same card (canonicalCardName)
+  const bans = [...new Set(Array.isArray(r['bans'])
+    ? r['bans'].filter((n): n is string => typeof n === 'string').map(canonicalCardName).filter(n => DECK_SET.has(n))
+    : [])];
   const query = typeof r['query'] === 'string' ? r['query'].trim().slice(0, MAX_QUERY_LENGTH) : '';
   const rules: CustomRules = {
     v: 1,

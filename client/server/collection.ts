@@ -32,7 +32,7 @@
 import { randomUUID } from 'node:crypto';
 import { checkDeck } from '../engine/src/apply.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
-import { getCard } from '../engine/src/cards/dsl.ts';
+import { canonicalCardName, getCard } from '../engine/src/cards/dsl.ts';
 import type { CardName, Seat } from '../engine/src/types.ts';
 import { accountById, gameHistory, saveAccounts, type Account } from './accounts.ts';
 import { defaultDecks } from './decks.ts';
@@ -160,7 +160,8 @@ function sanitize(raw: unknown): { cards: CardName[]; dropped: string[] } {
   const cards: CardName[] = [];
   const dropped: string[] = [];
   for (const item of list.slice(0, MAX_CARDS)) {
-    const name = String(item ?? '');
+    // an alias is the card it names (registerAlias: "Counter Theif", a renamed card)
+    const name = canonicalCardName(String(item ?? ''));
     if (POOL.has(name)) cards.push(name);
     else if (name) dropped.push(name);
   }
@@ -218,7 +219,25 @@ export function decksOf(account: Account): CollectionDeck[] {
     account.decks = starterDecks();
     saveAccounts();
   }
+  for (const d of account.decks) canonicalizeDeck(d);
   return account.decks;
+}
+
+/**
+ * A stored deck in today's card names, IN PLACE. A card named by an alias
+ * (registerAlias — the printed "Counter Theif", or a card renamed upstream,
+ * which is still its old name in every deck saved before the rename) must be
+ * respelled, because the editor, the cover art and the pool check all look
+ * names up as they are now. Positions never move. Nothing
+ * is written here: the store picks the new spelling up whenever it is next
+ * saved for some other reason, and until then every read spells it this way.
+ */
+function canonicalizeDeck(d: CollectionDeck): void {
+  const canon = (list: CardName[]): CardName[] =>
+    list.some(n => canonicalCardName(n) !== n) ? list.map(canonicalCardName) : list;
+  if (Array.isArray(d.cards)) d.cards = canon(d.cards);
+  if (Array.isArray(d.maybe)) d.maybe = canon(d.maybe);
+  if (typeof d.cover === 'string') d.cover = canonicalCardName(d.cover);
 }
 
 export const deckById = (account: Account, id: string): CollectionDeck | undefined =>
@@ -373,7 +392,7 @@ export function updateDeck(
   }
   if (patch.maybe !== undefined) deck.maybe = sanitize(patch.maybe).cards;
   if (patch.cover !== undefined) {
-    const want = String(patch.cover ?? '');
+    const want = canonicalCardName(String(patch.cover ?? ''));
     deck.cover = POOL.has(want) ? want : defaultCover(deck.cards);
   }
   if (!deck.cover) deck.cover = defaultCover(deck.cards);
