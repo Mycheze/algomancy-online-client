@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:89aaf65d13b48178",
+ "generated_from": "sha256:7cf6207581290035",
  "rules": [
   {
    "num": "100.1",
@@ -15865,7 +15865,7 @@
    "sectionTitle": "Attacking",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "604.2",
-   "text": "Spell tokens may go with an attack, but only together with at least one unit, and only spell tokens the attacking player controls in the region the attack leaves from.",
+   "text": "Spell tokens may go with an attack, but only together with at least one unit, and only spell tokens the attacking player controls in the region the attack leaves from. Spell tokens sent with a counterattack are not optional in round 2: they must ride (see rule 610.3).",
    "see": [
     "304",
     "606.5a"
@@ -15939,14 +15939,15 @@
    "sectionTitle": "Attacking",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "604.2",
-   "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). Every sent unit still there and able to attack must be in the formation; only the formation's shape is chosen (see rule 610.4b).",
+   "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). Every sent unit still there and able to attack must be in the formation, and every spell token sent with them must ride along; only the formation's shape is chosen (see rule 610.4b).",
    "see": [
     "610",
     "604.4a"
    ],
    "examples": [
     "The non-initiative player sent one unit to counterattack and kept another at home. In the second round, only the sent unit may attack.",
-    "Three units were sent. Attacking with only two of them is refused; any formation holding all three is accepted."
+    "Three units were sent. Attacking with only two of them is refused; any formation holding all three is accepted.",
+    "A Fireball token sent with the counterattack is left behind: the declaration is refused."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -16866,7 +16867,7 @@
    "sectionTitle": "Blocking",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "606.5",
-   "text": "Spell tokens may go with the counterattacking units, under the same conditions as with an attack (see 604).",
+   "text": "Spell tokens may go with the counterattacking units, under the same conditions as with an attack (see 604). A spell token sent this way must then ride with the counterattack in round 2 (see rule 610.3).",
    "see": [
     "604.2c",
     "610"
@@ -18917,12 +18918,15 @@
    "sectionTitle": "Counterattacks and Later Battle Rounds",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "610",
-   "text": "Spell tokens may go with counterattacking units, under the same conditions as with an attack (see rule 604.2c). A counterattack made only of spell tokens is not allowed: spell tokens need at least one counterattacking unit to go with.",
+   "text": "Spell tokens may go with counterattacking units, under the same conditions as with an attack (see rule 604.2c). A counterattack made only of spell tokens is not allowed: spell tokens need at least one counterattacking unit to go with. A spell token sent with a counterattack is committed as the units are: in round 2 it must ride with the counterattacking formation, with the formation as a whole rather than with any one unit. If every unit sent with it has died, it cannot ride and is not owed: it reaches no priority window, and is erased unused at regroup.",
    "see": [
     "604.2c",
     "606.5a"
    ],
-   "examples": [],
+   "examples": [
+    "Three units and a Fireball token were sent. In round 2 a formation that leaves the Fireball behind is refused.",
+    "The only unit sent with a Fireball token dies before round 2: no attack is possible, the battle phase ends with no window, and the token is erased at regroup."
+   ],
    "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
@@ -18986,7 +18990,7 @@
    "sectionTitle": "Counterattacks and Later Battle Rounds",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "610.4",
-   "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round, and every one of them still there and able to attack must attack. In its attack step the non-initiative team puts all of them into formation, in any shape; the shape is chosen then, not when the units are sent. A sent unit that died on its return is not owed.",
+   "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round, and every one of them still there and able to attack must attack. In its attack step the non-initiative team puts all of them into formation, in any shape; the shape is chosen then, not when the units are sent. Every spell token sent with them that is still there rides along too (see rule 610.3). A sent unit that died on its return is not owed.",
    "see": [
     "604.2f"
    ],
@@ -36732,7 +36736,7 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1.2",
-   "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them; a lone counterattacker with no spell token to ride along has its one-unit formation declared (see rule D1.2c); and a defender with no unit in the battle region, or facing an attack with no attacking unit left and unable to send a counterattacker, has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
+   "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them; a lone counterattacker has its one-unit formation declared, its sent spell tokens riding (see rule D1.2c); and a defender with no unit in the battle region, or facing an attack with no attacking unit left and unable to send a counterattacker, has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
    "see": [
     "610",
     "D1.2c",
@@ -36761,13 +36765,13 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1.2",
-   "text": "In round 2, a counterattack pool that holds exactly one unit able to attack, and no spell token that could ride along, declares the one-unit formation by itself: the unit must attack, and one unit has only one shape.",
+   "text": "In round 2, a counterattack pool that holds exactly one unit able to attack declares the one-unit formation by itself, with every spell token sent with it riding along: the unit and its tokens must attack, and one unit has only one shape.",
    "see": [
     "610"
    ],
    "examples": [
     "A player who sent one unit to counterattack, and no spell token, is not asked to form it: the one-unit formation is declared for them.",
-    "With a spell token that could ride along, the player is asked whether it comes, and still may not decline."
+    "A unit sent with a spell token is formed for the player with the token riding, and a formation that drops the token is refused."
    ],
    "basis": "owner",
    "scope": "digital",
@@ -38118,11 +38122,12 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4.1",
-   "text": "An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. Nor can a player's own undo, in any step, go back past an agreed edit or past the point an agreed rewind returned the game to (see rule D4.5): only another agreed rewind can.",
+   "text": "An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. A player's own undo, in any step, never takes back an agreed edit (see rule D4.5), and takes back an action from before one only if the edit would mean exactly the same afterwards. It never goes back past the point an agreed rewind returned the game to: only another agreed rewind can.",
    "see": [],
    "examples": [
     "An undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back.",
-    "After an agreed rewind of one action in planning, the player cannot undo, alone, the action before it."
+    "After an agreed rewind of one action in planning, the player cannot undo, alone, the action before it.",
+    "After an agreed fix in planning names a card by its place in the hand, the player cannot undo the earlier recycle that would put a different card there, while the other player may still undo a move the fix does not depend on."
    ],
    "basis": "engine",
    "scope": "digital",
@@ -38462,12 +38467,14 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4.5",
-   "text": "An edit cannot be proposed or made inside the hidden planning, haste or deploy steps, nor while a decision is open. A rewind may be proposed at any time.",
+   "text": "An agreed edit may be made in any step, the hidden planning, haste and deploy steps included, except while a decision is open for either player; it is shown to both players at once. A rewind may be proposed at any time.",
    "see": [
     "D1.4"
    ],
    "examples": [
-    "In the hidden planning step a draw fix is refused, but a rewind is on offer and may be proposed."
+    "An edit is accepted inside the hidden planning step and inside the hidden deploy step.",
+    "An edit is refused while either player is being asked something.",
+    "A fix made in the hidden planning step reaches both players at once, and the other player's frozen view of the board shows it."
    ],
    "basis": "engine",
    "scope": "digital",

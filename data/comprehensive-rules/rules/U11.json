@@ -265,7 +265,7 @@
     "key": "combat.attack.declaring.spell-tokens",
     "parent": "combat.attack.declaring",
     "order": 3,
-    "text": "Spell tokens may go with an attack, but only together with at least one unit, and only spell tokens the attacking player controls in the region the attack leaves from.",
+    "text": "Spell tokens may go with an attack, but only together with at least one unit, and only spell tokens the attacking player controls in the region the attack leaves from. Spell tokens sent with a counterattack are not optional in round 2: they must ride (see rule combat.counterattack.tokens).",
     "examples": [
       {
         "text": "A player sending a counterattack names a Poison token and no unit when declaring blocks. The declaration is refused.",
@@ -307,18 +307,24 @@
           "quote": "a spell token you control, standing in the region this formation",
           "adopted": "2026-08-23",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yeah, counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN or never have access to them in the other region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 spell tokens (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
-        "422-cr-attacking-blocking.test.ts"
+        "422-cr-attacking-blocking.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Printed text gives the 'needs a unit' half; the owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) gives 'you control' and 'in the region the formation leaves from'. Round 1: the engine takes an ATTACK naming only spell tokens as declining to attack (the token stays home), where a counterattack naming only tokens is refused; measured by the verifier's probe. See D-U11-10.",
+    "notes": "Printed text gives the 'needs a unit' half; the owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) gives 'you control' and 'in the region the formation leaves from'. Round 1: the engine takes an ATTACK naming only spell tokens as declining to attack (the token stays home), where a counterattack naming only tokens is refused; measured by the verifier's probe. See D-U11-10. Last sentence: owner 2026-10-16.",
     "sourceHashes": {}
   },
   {
@@ -401,7 +407,7 @@
     "key": "combat.attack.declaring.round-two",
     "parent": "combat.attack.declaring",
     "order": 6,
-    "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). Every sent unit still there and able to attack must be in the formation; only the formation's shape is chosen (see rule combat.counterattack.round-two.attackers).",
+    "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). Every sent unit still there and able to attack must be in the formation, and every spell token sent with them must ride along; only the formation's shape is chosen (see rule combat.counterattack.round-two.attackers).",
     "examples": [
       {
         "text": "The non-initiative player sent one unit to counterattack and kept another at home. In the second round, only the sent unit may attack.",
@@ -410,6 +416,10 @@
       {
         "text": "Three units were sent. Attacking with only two of them is refused; any formation holding all three is accepted.",
         "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined"
+      },
+      {
+        "text": "A Fireball token sent with the counterattack is left behind: the declaration is refused.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent spell token must ride with a counterattack of several units"
       }
     ],
     "see": [
@@ -440,6 +450,11 @@
           "quote": "But you don't decide the shape of that formation until the attack step of the second battle.",
           "adopted": "2026-10-16",
           "from": "report round 2026-10-16 b, CT-298 (in session)"
+        },
+        {
+          "quote": "Yeah, counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN or never have access to them in the other region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 spell tokens (in session)"
         }
       ],
       "engine": [],
@@ -452,7 +467,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) is assigned to U13 (610); cited here, outside my pack, because it fixes who may be declared as an attacker. Manual p.20 Phase 2 step 1 names the units 'sent in Phase 1' only implicitly ('their attacking units'). Second sentence: CT-298, owner 2026-10-16.",
+    "notes": "The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) is assigned to U13 (610); cited here, outside my pack, because it fixes who may be declared as an attacker. Manual p.20 Phase 2 step 1 names the units 'sent in Phase 1' only implicitly ('their attacking units'). Second sentence: CT-298, owner 2026-10-16. Tokens: owner 2026-10-16.",
     "sourceHashes": {}
   },
   {
@@ -2016,7 +2031,7 @@
     "key": "combat.blocks.counterattack.tokens",
     "parent": "combat.blocks.counterattack",
     "order": 1,
-    "text": "Spell tokens may go with the counterattacking units, under the same conditions as with an attack (see 604).",
+    "text": "Spell tokens may go with the counterattacking units, under the same conditions as with an attack (see 604). A spell token sent this way must then ride with the counterattack in round 2 (see rule combat.counterattack.tokens).",
     "examples": [
       {
         "text": "The defending player sends a unit to counterattack and names a Poison token to go with it. The token leaves with the unit and arrives with it for round 2.",
@@ -2036,17 +2051,23 @@
           "quote": "Spell tokens travel with a formation, in either direction, and they need a",
           "adopted": "2026-08-23",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yeah, counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN or never have access to them in the other region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 spell tokens (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "78-round17-core.test.ts"
+        "78-round17-core.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) quotes Caleb ('or you can bring them into enemy regions during an attack') and _passer from Discord, outside the RAQ register, so the basis is the ruling.",
+    "notes": "The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) quotes Caleb ('or you can bring them into enemy regions during an attack') and _passer from Discord, outside the RAQ register, so the basis is the ruling. Last sentence: owner 2026-10-16.",
     "sourceHashes": {}
   },
   {

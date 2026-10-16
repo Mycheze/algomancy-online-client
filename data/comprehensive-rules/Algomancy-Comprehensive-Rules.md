@@ -4546,13 +4546,13 @@ order.
 
 <sub>Discrepancies: D-U11-8 (discrepancies.md)</sub>
 
-<a id="r604.2c"></a>**604.2c** Spell tokens may go with an attack, but only together with at least one unit, and only spell tokens the attacking player controls in the region the attack leaves from. See rules 304, 606.5a.
+<a id="r604.2c"></a>**604.2c** Spell tokens may go with an attack, but only together with at least one unit, and only spell tokens the attacking player controls in the region the attack leaves from. Spell tokens sent with a counterattack are not optional in round 2: they must ride (see rule 610.3). See rules 304, 606.5a.
 
 > *Example: A player sending a counterattack names a Poison token and no unit when declaring blocks. The declaration is refused.*
 
 > *Example: A player declares an attack naming a Poison token and no unit. The Poison does not go: with no unit, the declaration is no attack at all.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 78-round17-core.test.ts, 422-cr-attacking-blocking.test.ts · Example tests: 78-round17-core.test.ts::CR 604.2c: spell tokens still travel only with units, and only from the region they stand in, 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.spell-tokens — an attack naming a spell token and no unit is not refused: it is taken as declining to attack, and the token stays home · Key: combat.attack.declaring.spell-tokens</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 78-round17-core.test.ts, 422-cr-attacking-blocking.test.ts, 479-empty-attack-and-committed-counterattack.test.ts · Example tests: 78-round17-core.test.ts::CR 604.2c: spell tokens still travel only with units, and only from the region they stand in, 422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.spell-tokens — an attack naming a spell token and no unit is not refused: it is taken as declining to attack, and the token stays home · Key: combat.attack.declaring.spell-tokens</sub>
 
 <sub>Discrepancies: D-U11-10 (discrepancies.md)</sub>
 
@@ -4568,13 +4568,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 53-playtest-round7.test.ts · Example test: 53-playtest-round7.test.ts::CR 604.2e: a lured unit cannot be sent out to counterattack · Demonstrated by test: 53-playtest-round7.test.ts::CR 604.2e: a lured unit may not be declared as an attacker (a guard, by hand) · Key: combat.attack.declaring.lured</sub>
 
-<a id="r604.2f"></a>**604.2f** In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). Every sent unit still there and able to attack must be in the formation; only the formation's shape is chosen (see rule 610.4b). See rules 610, 604.4a.
+<a id="r604.2f"></a>**604.2f** In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). Every sent unit still there and able to attack must be in the formation, and every spell token sent with them must ride along; only the formation's shape is chosen (see rule 610.4b). See rules 610, 604.4a.
 
 > *Example: The non-initiative player sent one unit to counterattack and kept another at home. In the second round, only the sent unit may attack.*
 
 > *Example: Three units were sent. Attacking with only two of them is refused; any formation holding all three is accepted.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.20 · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 02-combat.test.ts, 21-fixes.test.ts, 479-empty-attack-and-committed-counterattack.test.ts · Example tests: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2, 479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined · Key: combat.attack.declaring.round-two</sub>
+> *Example: A Fireball token sent with the counterattack is left behind: the declaration is refused.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 3 gate test files · Printed: Manual p.20 · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 02-combat.test.ts, 21-fixes.test.ts, 479-empty-attack-and-committed-counterattack.test.ts · Example tests: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2, 479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined, 479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent spell token must ride with a counterattack of several units · Key: combat.attack.declaring.round-two</sub>
 
 <a id="r604.3"></a>**604.3.** When an attack is declared, the attacking units, and the spell tokens with them, move into the region attacked. They remain there until the regroup phase, when they return to their own region (see 506). See rules 506, 601.
 
@@ -4828,11 +4830,11 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.20; Manual p.20; Manual p.27 · Tests: 02-combat.test.ts · Example test: 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: combat.blocks.counterattack</sub>
 
-<a id="r606.5a"></a>**606.5a** Spell tokens may go with the counterattacking units, under the same conditions as with an attack (see 604). See rules 604.2c, 610.
+<a id="r606.5a"></a>**606.5a** Spell tokens may go with the counterattacking units, under the same conditions as with an attack (see 604). A spell token sent this way must then ride with the counterattack in round 2 (see rule 610.3). See rules 604.2c, 610.
 
 > *Example: The defending player sends a unit to counterattack and names a Poison token to go with it. The token leaves with the unit and arrives with it for round 2.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::CR 610.3: declareBlocks takes spellTokens · Key: combat.blocks.counterattack.tokens</sub>
+<sub>Basis: Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 78-round17-core.test.ts, 479-empty-attack-and-committed-counterattack.test.ts · Example test: 78-round17-core.test.ts::CR 610.3: declareBlocks takes spellTokens · Key: combat.blocks.counterattack.tokens</sub>
 
 <a id="r606.5b"></a>**606.5b** In the second battle round the defending player declares blocks only. There are no further counterattacks. See rule 610.
 
@@ -5442,9 +5444,13 @@ order.
 
 <sub>Discrepancies: D-U13-5 (discrepancies.md)</sub>
 
-<a id="r610.3"></a>**610.3.** Spell tokens may go with counterattacking units, under the same conditions as with an attack (see rule 604.2c). A counterattack made only of spell tokens is not allowed: spell tokens need at least one counterattacking unit to go with. See rules 604.2c, 606.5a.
+<a id="r610.3"></a>**610.3.** Spell tokens may go with counterattacking units, under the same conditions as with an attack (see rule 604.2c). A counterattack made only of spell tokens is not allowed: spell tokens need at least one counterattacking unit to go with. A spell token sent with a counterattack is committed as the units are: in round 2 it must ride with the counterattacking formation, with the formation as a whole rather than with any one unit. If every unit sent with it has died, it cannot ride and is not owed: it reaches no priority window, and is erased unused at regroup. See rules 604.2c, 606.5a.
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.20 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 78-round17-core.test.ts, 77-playtest-round17.test.ts, 424-cr-after-combat.test.ts · Demonstrated by tests: 78-round17-core.test.ts::CR 610.3: declareBlocks takes spellTokens, and they ride out with the counterattackers, 77-playtest-round17.test.ts::[67] a token-only counterattack is refused by the engine · Key: combat.counterattack.tokens</sub>
+> *Example: Three units and a Fireball token were sent. In round 2 a formation that leaves the Fireball behind is refused.*
+
+> *Example: The only unit sent with a Fireball token dies before round 2: no attack is possible, the battle phase ends with no window, and the token is erased at regroup.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 4 gate test files · Printed: Manual p.20 · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 78-round17-core.test.ts, 77-playtest-round17.test.ts, 424-cr-after-combat.test.ts, 479-empty-attack-and-committed-counterattack.test.ts · Example tests: 479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent spell token must ride with a counterattack of several units, 479-empty-attack-and-committed-counterattack.test.ts::CT-298 a sent token whose units all died is not owed and never reaches a window · Demonstrated by tests: 78-round17-core.test.ts::CR 610.3: declareBlocks takes spellTokens, and they ride out with the counterattackers, 77-playtest-round17.test.ts::[67] a token-only counterattack is refused by the engine · Key: combat.counterattack.tokens</sub>
 
 <a id="r610.4"></a>**610.4.** The second battle round begins only once the first battle round has completely finished, its after combat step included. In a two-player game it is fought in the initiative player's region. See rules 505.4b, 609.2.
 
@@ -5458,7 +5464,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.27 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 424-cr-after-combat.test.ts, 02-combat.test.ts · Example test: 424-cr-after-combat.test.ts::cr:combat.counterattack.round-two.return — sent units and a sent spell token reappear in the region they attack when round 2 begins · Key: combat.counterattack.round-two.return</sub>
 
-<a id="r610.4b"></a>**610.4b** If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round, and every one of them still there and able to attack must attack. In its attack step the non-initiative team puts all of them into formation, in any shape; the shape is chosen then, not when the units are sent. A sent unit that died on its return is not owed. See rule 604.2f.
+<a id="r610.4b"></a>**610.4b** If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round, and every one of them still there and able to attack must attack. In its attack step the non-initiative team puts all of them into formation, in any shape; the shape is chosen then, not when the units are sent. Every spell token sent with them that is still there rides along too (see rule 610.3). A sent unit that died on its return is not owed. See rule 604.2f.
 
 > *Example: The non-initiative player sent Conduit of Pain at block time. In round 2 it is the only unit they can attack with, and it must attack: declining is refused.*
 
@@ -10327,10 +10333,10 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - [D3.4a](#rD3.4a) A connected player or a watcher keeps an idle game open, and an empty game is given a grace period for a player to reconnect.
 - [D3.4b](#rD3.4b) A game closed for being idle has no winner, is not rated, and is recorded as unfinished.
 - [D4.1a](#rD4.1a) The opponent acting in the same step does not stop a player's undo.
-- [D4.1b](#rD4.1b) An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. Nor can a player's own undo, in any step, go back past an agreed edit or past the point an agreed rewind returned the game to (see rule D4.5): only another agreed rewind can.
+- [D4.1b](#rD4.1b) An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. A player's own undo, in any step, never takes back an agreed edit (see rule D4.5), and takes back an action from before one only if the edit would mean exactly the same afterwards. It never goes back past the point an agreed rewind returned the game to: only another agreed rewind can.
 - [D4.5a](#rD4.5a) An edit is one of: setting a player's life total, to a whole number from 1 to 999; a player drawing from 1 to 10 cards off the top of their deck; moving one of the proposer's own cards from their hand, bin or cache to their hand, bin or cache, or to the top or bottom of their deck; or taking a unit off the board to its controller's hand, bin or the bottom of their deck. A token taken off the board is simply gone.
 - [D4.5b](#rD4.5b) An edit is quiet: nothing triggers on it. A unit it takes off the board neither dies nor despawns, a card it puts into a bin is not trashed, a card it takes out of a bin does not count as leaving the bin, and the cards it draws are not a draw for anything that listens for one.
-- [D4.5c](#rD4.5c) An edit cannot be proposed or made inside the hidden planning, haste or deploy steps, nor while a decision is open. A rewind may be proposed at any time.
+- [D4.5c](#rD4.5c) An agreed edit may be made in any step, the hidden planning, haste and deploy steps included, except while a decision is open for either player; it is shown to both players at once. A rewind may be proposed at any time.
 - [D4.5e](#rD4.5e) A proposal states the fix and the proposer's reason, which is required. It lapses after 60 seconds, or as soon as any action lands, and the proposer may withdraw it. Only the other player can accept it; after a decline the proposer must wait 15 seconds before proposing again. When a fix lands, the proposer's reason is filed as a bug report.
 - [D5.1a](#rD5.1a) The recap changes nothing in the game. A game played with recap frames is the same game, action for action, as one without them.
 - [D5.1b](#rD5.1b) A frame of the opponent's move shows that move on their side, their hand still face down, and the player's own side as the player left it.

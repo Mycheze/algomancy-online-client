@@ -140,7 +140,7 @@
     "key": "annexd.general.player-decides.forced",
     "parent": "annexd.general.player-decides",
     "order": 2,
-    "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them; a lone counterattacker with no spell token to ride along has its one-unit formation declared (see rule annexd.general.player-decides.forced.lone-counterattacker); and a defender with no unit in the battle region, or facing an attack with no attacking unit left and unable to send a counterattacker, has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
+    "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them; a lone counterattacker has its one-unit formation declared, its sent spell tokens riding (see rule annexd.general.player-decides.forced.lone-counterattacker); and a defender with no unit in the battle region, or facing an attack with no attacking unit left and unable to send a counterattacker, has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
     "examples": [
       {
         "text": null,
@@ -185,6 +185,11 @@
           "quote": "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block",
           "adopted": "2026-10-16",
           "from": "report round 2026-10-16 b, CT-297 (in session)"
+        },
+        {
+          "quote": "Yeah, counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN or never have access to them in the other region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 spell tokens (in session)"
         }
       ],
       "engine": [
@@ -200,22 +205,22 @@
     "basis": "mixed",
     "scope": "digital",
     "confidence": "high",
-    "notes": "Which actions are forced is engine-only (D-U23-21): the verifier measured apply.ts forcedAction forcing only the empty declareAttack (no eligible attacker) and the empty declareBlocks (defender has no unit in the region), and main.ts drainForced applying them through applyToRoom (logged) and stopping for a seat under full control ('if (room.fullControl[f.seat as Seat]) break;'). The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) supports 'logged like any other'; the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) supports full control outranking the drain. The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s own case, the lone round-2 counterattacker, is the sub-rule and is stated as the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) rules it (engine differs, F-U23-4). Other one-option choices are not forced actions: a lone target is still a click (forced-target) and a lone non-target subject is recorded without asking (one-subject). Round 2: narrowed from 'where a player has only one possible action', which the verifier's probe forced-target.test.ts disproved. Engine location outside engine/src: client/server/main.ts drainForced. 2026-10-16: the lone counterattacker is forced again (CT-251), and the emptied-attack block is forced where nothing can be sent (CT-297, the owner: no blocking can occur).",
+    "notes": "Which actions are forced is engine-only (D-U23-21): the verifier measured apply.ts forcedAction forcing only the empty declareAttack (no eligible attacker) and the empty declareBlocks (defender has no unit in the region), and main.ts drainForced applying them through applyToRoom (logged) and stopping for a seat under full control ('if (room.fullControl[f.seat as Seat]) break;'). The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) supports 'logged like any other'; the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) supports full control outranking the drain. The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s own case, the lone round-2 counterattacker, is the sub-rule and is stated as the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) rules it (engine differs, F-U23-4). Other one-option choices are not forced actions: a lone target is still a click (forced-target) and a lone non-target subject is recorded without asking (one-subject). Round 2: narrowed from 'where a player has only one possible action', which the verifier's probe forced-target.test.ts disproved. Engine location outside engine/src: client/server/main.ts drainForced. 2026-10-16: the lone counterattacker is forced again (CT-251), and the emptied-attack block is forced where nothing can be sent (CT-297, the owner: no blocking can occur). Lone counterattacker with tokens: owner 2026-10-16.",
     "sourceHashes": {}
   },
   {
     "key": "annexd.general.player-decides.forced.lone-counterattacker",
     "parent": "annexd.general.player-decides",
     "order": 2.5,
-    "text": "In round 2, a counterattack pool that holds exactly one unit able to attack, and no spell token that could ride along, declares the one-unit formation by itself: the unit must attack, and one unit has only one shape.",
+    "text": "In round 2, a counterattack pool that holds exactly one unit able to attack declares the one-unit formation by itself, with every spell token sent with it riding along: the unit and its tokens must attack, and one unit has only one shape.",
     "examples": [
       {
         "text": "A player who sent one unit to counterattack, and no spell token, is not asked to form it: the one-unit formation is declared for them.",
         "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — a lone sent counterattacker with no token is formed for the player"
       },
       {
-        "text": "With a spell token that could ride along, the player is asked whether it comes, and still may not decline.",
-        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-251 a lone counterattacker with a ridable token is asked, but still may not decline"
+        "text": "A unit sent with a spell token is formed for the player with the token riding, and a formation that drops the token is refused.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-251 a lone counterattacker with a sent token is formed with the token riding and cannot drop it"
       }
     ],
     "see": [
@@ -240,6 +245,11 @@
           "quote": "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region.",
           "adopted": "2026-10-16",
           "from": "report round 2026-10-16 b, CT-298 (in session)"
+        },
+        {
+          "quote": "Yeah, counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN or never have access to them in the other region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 spell tokens (in session)"
         }
       ],
       "engine": [
@@ -254,7 +264,7 @@
     "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-08-18 holds again (CT-251): the 2026-08-24 audit removed the auto-form because a decline was then still offered; the owner's 2026-10-16 call (a sent counterattacker must attack) removed the decline, so nothing is left to decide. F-U23-4/7/8 closed.",
+    "notes": "The owner ruling of 2026-08-18 holds again (CT-251): the 2026-08-24 audit removed the auto-form because a decline was then still offered; the owner's 2026-10-16 call (a sent counterattacker must attack) removed the decline, so nothing is left to decide. F-U23-4/7/8 closed. 2026-10-16: sent tokens are owed too, so a ridable token no longer leaves a choice.",
     "sourceHashes": {}
   },
   {
@@ -2602,7 +2612,7 @@
     "key": "annexd.undo.hidden-step.floor",
     "parent": "annexd.undo.hidden-step",
     "order": 2,
-    "text": "An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. Nor can a player's own undo, in any step, go back past an agreed edit or past the point an agreed rewind returned the game to (see rule annexd.undo.agreed-fix): only another agreed rewind can.",
+    "text": "An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. A player's own undo, in any step, never takes back an agreed edit (see rule annexd.undo.agreed-fix), and takes back an action from before one only if the edit would mean exactly the same afterwards. It never goes back past the point an agreed rewind returned the game to: only another agreed rewind can.",
     "examples": [
       {
         "text": "An undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back.",
@@ -2611,6 +2621,10 @@
       {
         "text": "After an agreed rewind of one action in planning, the player cannot undo, alone, the action before it.",
         "test": "485-agreed-fix-rooms.test.ts::§2 the per-seat undo cannot walk back past an agreed fix"
+      },
+      {
+        "text": "After an agreed fix in planning names a card by its place in the hand, the player cannot undo the earlier recycle that would put a different card there, while the other player may still undo a move the fix does not depend on.",
+        "test": "485-agreed-fix-rooms.test.ts::§7 in the step, an undo passes a fix only when the fix would mean the same"
       }
     ],
     "see": [],
@@ -2629,7 +2643,7 @@
     "basis": "engine",
     "scope": "digital",
     "confidence": "low",
-    "notes": "ENGINE-ONLY: e2e/test-undo-segment.ts §4c 'the FLOOR: what the phase itself started is not yours to take back'; the owner's words (debt, 'at the beginning of deployment') are quoted there. D-U23-7. Last sentence: BL-46 (2026-10-16), amendFloor in server/rooms.ts.",
+    "notes": "ENGINE-ONLY: e2e/test-undo-segment.ts §4c 'the FLOOR: what the phase itself started is not yours to take back'; the owner's words (debt, 'at the beginning of deployment') are quoted there. D-U23-7. Last sentence: BL-46 (2026-10-16), amendFloor in server/rooms.ts. Revised 2026-10-16 (BL-46 hidden steps): an edit is guarded by measurement (referenceKey), a rewind by a hard floor (amendFloor).",
     "sourceHashes": {}
   },
   {
@@ -3923,7 +3937,7 @@
       },
       {
         "text": null,
-        "test": "485-agreed-fix-rooms.test.ts::§5 edits wait for the public steps; a rewind works in a hidden one; some rooms take no fixes"
+        "test": "485-agreed-fix-rooms.test.ts::§5 edits and rewinds both work in a hidden step; some rooms take no fixes"
       }
     ],
     "see": [
@@ -4049,19 +4063,27 @@
     "key": "annexd.undo.agreed-fix.timing",
     "parent": "annexd.undo.agreed-fix",
     "order": 3,
-    "text": "An edit cannot be proposed or made inside the hidden planning, haste or deploy steps, nor while a decision is open. A rewind may be proposed at any time.",
+    "text": "An agreed edit may be made in any step, the hidden planning, haste and deploy steps included, except while a decision is open for either player; it is shown to both players at once. A rewind may be proposed at any time.",
     "examples": [
       {
-        "text": "In the hidden planning step a draw fix is refused, but a rewind is on offer and may be proposed.",
-        "test": "485-agreed-fix-rooms.test.ts::§5 edits wait for the public steps; a rewind works in a hidden one; some rooms take no fixes"
+        "text": "An edit is accepted inside the hidden planning step and inside the hidden deploy step.",
+        "test": "484-agreed-fix-action.test.ts::§4 accepted inside the hidden planning and deploy steps (owner, 2026-10-16)"
+      },
+      {
+        "text": "An edit is refused while either player is being asked something.",
+        "test": "484-agreed-fix-action.test.ts::§4 refused: agreed by the proposer, or with a question open for either seat"
+      },
+      {
+        "text": "A fix made in the hidden planning step reaches both players at once, and the other player's frozen view of the board shows it.",
+        "test": "485-agreed-fix-rooms.test.ts::§7 a fix in the hidden planning step reaches both seats at once and shows on the frozen half"
       },
       {
         "text": null,
-        "test": "484-agreed-fix-action.test.ts::§4 refused: agreed by the proposer, in a hidden step, with a question open"
+        "test": "486-agreed-fix-over-the-wire.test.ts::§4b fixes inside the hidden planning and deploy steps reach the other seat at once"
       },
       {
         "text": null,
-        "test": "487-propose-a-fix-ui.test.ts::§6 in a hidden step only Rewind is live"
+        "test": "487-propose-a-fix-ui.test.ts::§6 in a hidden step every fix is live, from the table menu; only an open decision leaves Rewind alone"
       }
     ],
     "see": [
@@ -4076,13 +4098,14 @@
       "tests": [
         "484-agreed-fix-action.test.ts",
         "485-agreed-fix-rooms.test.ts",
-        "487-propose-a-fix-ui.test.ts"
+        "487-propose-a-fix-ui.test.ts",
+        "486-agreed-fix-over-the-wire.test.ts"
       ]
     },
     "basis": "engine",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "editTiming (server/rooms.ts) and doAmend (apply.ts).",
+    "notes": "BL-46: the hidden-step refusal was lifted on 2026-10-16 (the owner agreed: a fix is public and agreed by both). Open decisions are still refused (doAmend, apply.ts); the fix is never held for the barrier (applyToRoom, server/rooms.ts).",
     "sourceHashes": {}
   },
   {

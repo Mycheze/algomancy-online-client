@@ -703,7 +703,7 @@
   },
   {
     "key": "combat.counterattack.round-two.attackers",
-    "textHash": "b0d3a26941574c1c",
+    "textHash": "88bcb7325116ed77",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U13-r4",
@@ -711,12 +711,17 @@
       {
         "loc": "client/engine/src/apply.ts:counterattackersOwed",
         "agrees": true,
-        "note": "owed = pool units still in the region and not lured"
+        "note": "owed = sent units still in the region and not lured; a dead one is not owed"
       },
       {
         "loc": "client/engine/src/apply.ts:doDeclareAttack",
         "agrees": true,
-        "note": "any shape accepted provided every owed unit is placed"
+        "note": "no decline, no leaving a unit out, sent tokens must ride; any shape"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:forcedAction",
+        "agrees": true,
+        "note": "one owed unit is formed for the player"
       }
     ],
     "tests_run": [
@@ -728,19 +733,19 @@
       },
       {
         "file": "479-empty-attack-and-committed-counterattack.test.ts",
-        "pattern": "CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined",
+        "pattern": "CT-298 every sent counterattacker must be in the formation",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "479-empty-attack-and-committed-counterattack.test.ts",
-        "pattern": "CT-251 a lone sent counterattacker is formed for the player and one that died on arrival is owed nothing",
+        "pattern": "CT-251 a lone sent counterattacker is formed for the player",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "02-combat.test.ts",
-        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "pattern": "1v1 counterattack: NIT sends units at block time",
         "passed": true,
         "asserts_claim": true
       }
@@ -750,42 +755,64 @@
       {
         "ref": "Manual p.20",
         "supports": "yes",
-        "note": ""
+        "note": "Phase 2: 'The NIT puts their attacking units into formation.'"
       },
       {
         "ref": "Manual p.27",
         "supports": "yes",
-        "note": ""
+        "note": "'NIT attack IT regions with units sent in Phase 1'"
       },
       {
         "ref": "Rulebook 2023 p.5",
         "supports": "yes",
-        "note": "counterattacking units are put into formation in the second part"
+        "note": "'Second, the counterattacking units are put into formation and the entire combat sequence takes place again'"
       },
       {
         "ref": "RQ 1171229657740345384",
         "supports": "yes",
-        "note": "author calebgannon; send units over and pick the formation later"
+        "note": "author calebgannon: send units over, 'pick the formation later with counter attacks'"
       },
       {
-        "ref": "owner register@72de434 (2026-08-18)",
+        "ref": "owner 2026-08-18 register 'round-2 attackers are **exactly the'",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner report round 2026-10-16 b, CT-298 (both quotes)",
+        "ref": "owner 2026-10-16 (CT-298) 'if you decide to counterattack with something, it MUST be put into formation…'",
         "supports": "yes",
-        "note": ""
+        "note": "every sent unit must be in the formation"
+      },
+      {
+        "ref": "owner 2026-10-16 (CT-298) 'But you don't decide the shape of that formation until the attack step…'",
+        "supports": "yes",
+        "note": "shape chosen in round 2"
+      },
+      {
+        "ref": "owner 2026-10-16 (CT-298 spell tokens)",
+        "supports": "yes",
+        "note": "'counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN' — same conditions, and committed at send"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "for quality of life right now I'm allowing players to send units over, and then pick the formation later with counter attacks"
+        "file": "client/engine/src/apply.ts",
+        "text": "return e.unitsOf(seat, b.region).filter(u => pool.includes(u.id) && !u.allured).map(u => u.id);"
       },
       {
         "file": "client/engine/src/apply.ts",
-        "text": "return e.unitsOf(seat, b.region).filter(u => pool.includes(u.id) && !u.allured).map(u => u.id);"
+        "text": "`every sent counterattacker must be put into the formation (missing: ${missing.join(', ')})`);"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "`every spell token sent with the counterattack must ride along (missing: ${left.join(', ')})`);"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!pool || pool.includes(id), 'only units sent at block time may counterattack');"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "pick the formation later with counter attacks"
       },
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
@@ -1570,81 +1597,110 @@
   },
   {
     "key": "combat.counterattack.tokens",
-    "textHash": "4ed958398874c96e",
+    "textHash": "cd20be9899b35c0b",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U13-r2",
+    "round": 4,
+    "verifier": "U13-r4",
     "engine": [
       {
         "loc": "client/engine/src/apply.ts:checkBlocks",
         "agrees": true,
-        "note": "A spell token in send/spellTokens passes needRidingToken(e, seat, id, b.region), the same helper doDeclareAttack uses; then need(send.length === 0 || sentUnits > 0) refuses a token-only counterattack."
+        "note": "same riding check as an attack; token-only refused"
       },
       {
-        "loc": "client/engine/src/apply.ts:needRidingToken",
+        "loc": "client/engine/src/apply.ts:counterTokensOwed / doDeclareAttack",
         "agrees": true,
-        "note": "One legality helper for attack and counterattack riders: own token, not absent, in the region the formation leaves from."
+        "note": "one spellTokens list per declaration (rides with the whole formation); a sent token must ride; owed only when an owed unit remains"
       },
       {
-        "loc": "client/engine/src/engine.ts:endBattleRound",
+        "loc": "client/engine/src/apply.ts:forcedAction",
         "agrees": true,
-        "note": "Sent tokens arrive with the sent units in round 2 and form the attackerPool."
+        "note": "no unit left: the empty declaration is forced, battle ends"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "remaining spell tokens erased at regroup"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/78-round17-core.test.ts",
-        "pattern": "R87: declareBlocks takes spellTokens",
+        "file": "78-round17-core.test.ts",
+        "pattern": "CR 610.3: declareBlocks takes spellTokens, and they ride out",
         "passed": true,
-        "asserts_claim": "yes: token rides out with the counterattacker and is declared with it in round 2"
+        "asserts_claim": true
       },
       {
-        "file": "client/ui/test/77-playtest-round17.test.ts",
-        "pattern": "[67] a token-only counterattack",
+        "file": "77-playtest-round17.test.ts",
+        "pattern": "[67] a token-only counterattack is refused by the engine",
         "passed": true,
-        "asserts_claim": "yes: declareBlocks with send [] and a token throws 'spell tokens travel only with units'"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/424-cr-after-combat.test.ts",
+        "file": "424-cr-after-combat.test.ts",
         "pattern": "cr:combat.counterattack.tokens",
         "passed": true,
-        "asserts_claim": "yes: token-only refused; token from another region refused (the same-condition clause); token with unit goes"
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-298 every sent spell token must ride",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-298 a sent token whose units all died",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.20",
-        "supports": "partly",
-        "note": "Says spell tokens may be brought into an enemy region on attack; says nothing about counterattacks or needing a unit. On-topic, general permission only."
+        "supports": "yes",
+        "note": "'players select a set of units and other cards in play, such as spell tokens, to bring into a neighboring enemy region'"
       },
       {
-        "ref": "R87",
+        "ref": "owner 2026-08-23 register@72de434 'Spell tokens travel with a formation, in either direction, and they need a…'",
         "supports": "yes",
-        "note": "States both halves: tokens travel with a formation in either direction and need a unit; quotes _passer and Caleb."
+        "note": "owner quote is its own evidence: tokens move with a formation, either direction, need a unit"
+      },
+      {
+        "ref": "owner 2026-10-16 (CT-298 spell tokens)",
+        "supports": "yes",
+        "note": "'counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN' — same conditions, and committed at send"
       }
     ],
     "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (t.kind === 'spellToken') needRidingToken(e, seat, id, b.region);"
+      },
       {
         "file": "client/engine/src/apply.ts",
         "text": "e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');"
       },
       {
         "file": "client/engine/src/apply.ts",
-        "text": "if (t.kind === 'spellToken') needRidingToken(e, seat, id, b.region);"
+        "text": "`every spell token sent with the counterattack must ride along (missing: ${left.join(', ')})`);"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "Spell tokens travel with a formation, in either direction, and they need a unit"
+        "file": "client/engine/src/apply.ts",
+        "text": "return e.tokensOf(seat, b.region).filter(t => pool.includes(t.id)).map(t => t.id);"
       },
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "and other cards in play, such as spell tokens, to bring"
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!owed || !owed.length) return;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": ".filter(e => e.kind === 'spellToken' && !this.spellTokenSurvivesRegroup(e))"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.counterattack.what-it-is",

@@ -2779,7 +2779,7 @@
   },
   {
     "key": "annexd.general.player-decides.forced",
-    "textHash": "38e8995754ab87ab",
+    "textHash": "6fcd4b37ca029a51",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
@@ -2787,13 +2787,18 @@
       {
         "loc": "client/engine/src/apply.ts:forcedAction",
         "agrees": true,
-        "note": "exactly the three cases: no eligible attacker; lone owed counterattacker with no rider; defender with no unit or empty attack and cannot send"
+        "note": "battle only; empty attack when no eligible unit; lone owed counterattacker formed with owed tokens; empty block when defender has no unit, or attack is empty and nothing can be sent"
+      },
+      {
+        "loc": "client/server/main.ts:drainForced",
+        "agrees": true,
+        "note": "applies forced actions through applyToRoom (logged); stops at a seat with full control"
       }
     ],
     "tests_run": [
       {
         "file": "21-fixes.test.ts",
-        "pattern": "a whole empty-board battle drains through forced actions to deployment",
+        "pattern": "a whole empty-board battle drains through forced actions",
         "passed": true,
         "asserts_claim": true
       },
@@ -2805,13 +2810,19 @@
       },
       {
         "file": "273-full-control-both-seats.test.ts",
-        "pattern": "BL-18 §2 with full control ON the drain stops and the player is left the window",
+        "pattern": "BL-18 §2 with full control ON the drain stops",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "479-empty-attack-and-committed-counterattack.test.ts",
-        "pattern": "CT-297 an emptied counterattack in round 2 leaves the defender nothing to declare",
+        "pattern": "CT-297 an emptied counterattack in round 2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-297 an emptied attacking formation cannot be blocked",
         "passed": true,
         "asserts_claim": true
       },
@@ -2820,30 +2831,49 @@
         "pattern": "cr:annexd.general.player-decides.forced",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "485-agreed-fix-rooms.test.ts",
+        "pattern": "§4 rewind options: never a cut at a forced step",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner register@72de434 (2026-08-18)",
-        "supports": "yes",
-        "note": "forced action logged like any other"
-      },
-      {
-        "ref": "owner questions-round36 Q5 (2026-09-01)",
+        "ref": "owner 2026-08-18 register 'action, logged like any other)…'",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner report round 2026-10-16 b, CT-297",
+        "ref": "owner 2026-09-01 questions-round36 Q5 'the server's `forcedAction` drain reads one per-seat'",
         "supports": "yes",
-        "note": ""
+        "note": "per-seat full-control switch on the drain"
+      },
+      {
+        "ref": "owner 2026-10-16 CT-297",
+        "supports": "yes",
+        "note": "no block on an empty formation, counterattackers still allowed (so not forced in round 1 when one can be sent)"
+      },
+      {
+        "ref": "owner 2026-10-16 (CT-298 spell tokens)",
+        "supports": "yes",
+        "note": "'counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN' — same conditions, and committed at send"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/apply.ts",
+        "text": "if (state.decision || state.phase !== 'battle' || !state.battle) return null;"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
         "text": "if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const canSend = b.round === 1 && mine.some(u => !u.allured);"
       },
       {
         "file": "client/engine/src/apply.ts",
@@ -2852,6 +2882,14 @@
       {
         "file": "client/engine/src/apply.ts",
         "text": " * the action log, so replays stay explicit. Returns null when someone has a"
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "if (room.fullControl[f.seat as Seat]) break;"
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "into.push(...applyToRoom(room, f));"
       }
     ],
     "basis_ok": true,
@@ -2907,7 +2945,7 @@
   },
   {
     "key": "annexd.general.player-decides.forced.lone-counterattacker",
-    "textHash": "0a6b16b69b02788a",
+    "textHash": "05ce3ddaf3b2019a",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
@@ -2915,7 +2953,12 @@
       {
         "loc": "client/engine/src/apply.ts:forcedAction",
         "agrees": true,
-        "note": "owed.length === 1 and no riders -> one-unit formation forced"
+        "note": "owed.length === 1 -> declareAttack [[unit]] with every owed token as spellTokens"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "dropping the token or declining is refused"
       }
     ],
     "tests_run": [
@@ -2927,7 +2970,13 @@
       },
       {
         "file": "479-empty-attack-and-committed-counterattack.test.ts",
-        "pattern": "CT-251 a lone counterattacker with a ridable token is asked, but still may not decline",
+        "pattern": "CT-251 a lone counterattacker with a sent token",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "forcedAction: a lone counterattacker with a sent spell token",
         "passed": true,
         "asserts_claim": true
       },
@@ -2941,24 +2990,37 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner register@72de434 (2026-08-18, two quotes)",
-        "supports": "yes",
-        "note": ""
+        "ref": "owner 2026-08-18 register 'When a round-2 counterattack pool holds EXACTLY one unit and no spell token…'",
+        "supports": "partial",
+        "note": "the older call excluded a ridable token; superseded on that point by the owner's 2026-10-16 tokens ruling, which the record follows"
       },
       {
-        "ref": "owner report round 2026-10-16 b, CT-298",
+        "ref": "owner 2026-10-16 (CT-298) 'if you decide to counterattack with something, it MUST be put into formation…'",
         "supports": "yes",
-        "note": ""
+        "note": "every sent unit must be in the formation"
+      },
+      {
+        "ref": "owner 2026-10-16 (CT-298 spell tokens)",
+        "supports": "yes",
+        "note": "'counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN' — same conditions, and committed at send"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/apply.ts",
-        "text": "if (!riders.length) return { type: 'declareAttack', seat: b.attacker, columns: [[owed[0]!]] };"
+        "text": "if (owed && owed.length === 1) {"
       },
       {
-        "file": "client/engine/test/479-empty-attack-and-committed-counterattack.test.ts",
-        "text": "assert.equal(forcedAction(h.state), null, 'whether the token rides is a real choice');"
+        "file": "client/engine/src/apply.ts",
+        "text": "? { type: 'declareAttack', seat: b.attacker, columns: [[owed[0]!]], spellTokens: riders }"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "return e.unitsOf(seat, b.region).filter(u => pool.includes(u.id) && !u.allured).map(u => u.id);"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "`every spell token sent with the counterattack must ride along (missing: ${left.join(', ')})`);"
       }
     ],
     "basis_ok": true,
@@ -4251,7 +4313,7 @@
   },
   {
     "key": "annexd.undo.agreed-fix",
-    "textHash": "e1cba0565b678785",
+    "textHash": "0ba436f21c046da2",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
@@ -4259,17 +4321,22 @@
       {
         "loc": "client/server/rooms.ts:fixesRefusal",
         "agrees": true,
-        "note": "not started / over / frozen / sandbox / scenario take no fixes"
+        "note": "not started, over, frozen, sandbox, scenario: no fixes"
       },
       {
-        "loc": "client/server/main.ts:action handler",
+        "loc": "client/server/rooms.ts:answerFix",
         "agrees": true,
-        "note": "an amend arriving as an action is refused"
+        "note": "only the other seat accepts"
       },
       {
         "loc": "client/engine/src/apply.ts:doAmend",
         "agrees": true,
         "note": "by must be the other seat"
+      },
+      {
+        "loc": "client/server/main.ts: action handler gate",
+        "agrees": true,
+        "note": "an amend sent as an action is refused"
       }
     ],
     "tests_run": [
@@ -4287,27 +4354,33 @@
       },
       {
         "file": "485-agreed-fix-rooms.test.ts",
-        "pattern": "§5 edits wait for the public steps; a rewind works in a hidden one; some rooms take no fixes",
+        "pattern": "§5 edits and rewinds both work in a hidden step; some rooms take no fixes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "484-agreed-fix-action.test.ts",
+        "pattern": "§4 refused: agreed by the proposer",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "probe U23-1b: a game not started, over, or a scenario takes no fixes",
+        "file": "client/server/test/zz-probe-U23-2.test.ts",
+        "test": "probe U23-2a: a scenario, a game not started, and a game that is over take no fixes",
         "passed": true,
-        "demonstrates": "yes: a constructed room still waiting, a scenario room and a conceded game are all refused; control: an ordinary game in progress is not"
+        "demonstrates": "yes: fixesRefusal/proposeFix refuse a scenario room, a draft lobby not started, and a conceded game; an ordinary started game takes fixes (485 §5 covers test mode)"
       }
     ],
     "source_checks": [
       {
-        "ref": "owner 2026-10-16 'Assuming both players agree, it doesn't change anything in the game. it'll only be used to solve broken engine/game issues.'",
+        "ref": "owner 2026-10-16 BL-46 'Assuming both players agree…'",
         "supports": "yes",
-        "note": "both players must agree"
+        "note": "fix needs both players' agreement"
       },
       {
-        "ref": "owner 2026-10-16 'don't worry about the \"rules\" of this. It has to be agreed upon and is used in friendly matches.'",
+        "ref": "owner 2026-10-16 BL-46 'It has to be agreed upon and is used in friendly matches.'",
         "supports": "yes",
         "note": ""
       }
@@ -4330,12 +4403,12 @@
         "text": "if (room.scenario) return 'fixes are for a game between two players';"
       },
       {
-        "file": "client/server/main.ts",
-        "text": "return send(ws, { t: 'error', msg: 'a fix is proposed, and lands only when your opponent agrees' });"
-      },
-      {
         "file": "client/engine/src/apply.ts",
         "text": "e.need(by === other(seat), 'a fix is agreed by the other player');"
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "return send(ws, { t: 'error', msg: 'a fix is proposed, and lands only when your opponent agrees' });"
       }
     ],
     "basis_ok": true,
@@ -4747,56 +4820,108 @@
   },
   {
     "key": "annexd.undo.agreed-fix.timing",
-    "textHash": "692ec2416893dfba",
+    "textHash": "d912b8d2a79311da",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/server/rooms.ts:editTiming",
-        "agrees": true,
-        "note": "edits refused in a hidden segment or with a decision open; a rewind has no timing rule"
-      },
-      {
         "loc": "client/engine/src/apply.ts:doAmend",
         "agrees": true,
-        "note": "the engine refuses an edit in a hidden segment or with a decision/suspension"
+        "note": "only gate on timing: no open decision/suspension, for either seat; no hidden-step refusal"
+      },
+      {
+        "loc": "client/server/rooms.ts:editTiming",
+        "agrees": true,
+        "note": "edit refused with a decision open; rewind has no timing rule"
+      },
+      {
+        "loc": "client/server/rooms.ts:applyToRoom",
+        "agrees": true,
+        "note": "an amend is never held for the barrier; frozen half patched (amendFrozen)"
       }
     ],
     "tests_run": [
       {
-        "file": "485-agreed-fix-rooms.test.ts",
-        "pattern": "§5 edits wait for the public steps",
+        "file": "484-agreed-fix-action.test.ts",
+        "pattern": "§4 accepted inside the hidden planning and deploy steps",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "484-agreed-fix-action.test.ts",
-        "pattern": "§4 refused: agreed by the proposer, in a hidden step, with a question open",
+        "pattern": "§4 refused: agreed by the proposer, or with a question open for either seat",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "485-agreed-fix-rooms.test.ts",
+        "pattern": "§7 a fix in the hidden planning step reaches both seats at once",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "486-agreed-fix-over-the-wire.test.ts",
+        "pattern": "§4b fixes inside the hidden planning and deploy steps",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "487-propose-a-fix-ui.test.ts",
-        "pattern": "§6 in a hidden step only Rewind is live",
+        "pattern": "§6 in a hidden step every fix is live",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "485-agreed-fix-rooms.test.ts",
+        "pattern": "§5 edits and rewinds both work in a hidden step",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
-    "source_checks": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "probe U23-1: an agreed edit lands inside the hidden haste step, and is refused there while a decision is open",
+        "passed": true,
+        "demonstrates": "yes: the haste step (not covered by the bound tests) takes an edit; an open decision refuses it"
+      },
+      {
+        "file": "client/server/test/zz-probe-U23-2.test.ts",
+        "test": "probe U23-2b: with a decision open an edit waits but a rewind may still be proposed",
+        "passed": true,
+        "demonstrates": "yes: proposeFix refuses an edit with a decision standing (white-box decision) and accepts a rewind proposal"
+      },
+      {
+        "file": "client/server/test/zz-probe-U23-2.test.ts",
+        "test": "probe U23-2c: an agreed edit in the hidden haste step reaches the other seat at once",
+        "passed": true,
+        "demonstrates": "yes: inside the haste segment the other seat's view shows the edit immediately and nothing is held"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "basis engine",
+        "supports": "yes",
+        "note": "code + executed tests and probes"
+      }
+    ],
     "quote_spans": [
       {
-        "file": "client/server/rooms.ts",
-        "text": "return 'no edits during the hidden planning, haste or deploy steps — a rewind still works';"
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!e.s.decision && !e.s.suspension, 'no fixes while a decision is pending — answer it first');"
       },
       {
         "file": "client/server/rooms.ts",
         "text": "if (room.state.decision) return 'no edits while a decision is pending — a rewind still works';"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.need(!e.s.decision && !e.s.suspension, 'no fixes while a decision is pending — answer it first');"
+        "file": "client/server/rooms.ts",
+        "text": "const holding = !isFix && room.segKey !== null && segmentKey(before) === room.segKey;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "/** Why an EDIT cannot be proposed right now (the timing half) — null when it"
       }
     ],
     "basis_ok": true,
@@ -5112,25 +5237,25 @@
   },
   {
     "key": "annexd.undo.hidden-step.floor",
-    "textHash": "8da9729d5bb469ab",
+    "textHash": "8f1da3b597287d8a",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/server/rooms.ts:undoForSeat",
+        "loc": "client/server/rooms.ts:segmentFloor",
         "agrees": true,
-        "note": "segmentFloor stops at the step's opening; i < amendFloor refuses with FIX_UNDO_REFUSAL in a segment, and on the cast-chain path"
+        "note": "the leading run of decide actions answering a start-of-step question is below the floor; start-of-step payments land inside the barrier action, before segStartIndex"
       },
       {
-        "loc": "client/server/rooms.ts:amendFloor",
+        "loc": "client/server/rooms.ts:undoForSeat",
         "agrees": true,
-        "note": "edit → at+1, rewind → the length it left"
+        "note": "walk skips amend actions; i < amendFloor refused; outside a segment a last amend is refused"
       },
       {
         "loc": "client/server/rooms.ts:rewindOptions",
         "agrees": true,
-        "note": "no amendment floor: another agreed rewind can go back past"
+        "note": "no amendFloor check: a later rewind may cut past an earlier one"
       }
     ],
     "tests_run": [
@@ -5148,36 +5273,46 @@
       },
       {
         "file": "485-agreed-fix-rooms.test.ts",
-        "pattern": "§1 an accepted edit lands",
+        "pattern": "§7 in the step, an undo passes a fix only when the fix would mean the same",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "probe U23-1d: a rewind may go back past an agreed edit (the per-seat undo cannot)",
+        "file": "client/server/test/zz-probe-U23-3.test.ts",
+        "test": "probe U23-3: past an agreed rewind the per-seat undo stops, but another agreed rewind may go further back",
         "passed": true,
-        "demonstrates": "yes: after an accepted edit a rewind to before it is on offer and removes the amend from the log"
+        "demonstrates": "yes: after an agreed rewind both seats' lone undo is refused, and a second agreed rewind to an earlier point is offered and lands"
       }
     ],
-    "source_checks": [],
+    "source_checks": [
+      {
+        "ref": "basis engine",
+        "supports": "yes",
+        "note": "code + executed tests and a probe; no other source needed"
+      }
+    ],
     "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "while (i < room.actions.length && room.actions[i]!.type === 'decide') i++;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "while (i >= floor && i >= 0 && (room.actions[i]!.seat !== seat || room.actions[i]!.type === 'amend')) i--;"
+      },
       {
         "file": "client/server/rooms.ts",
         "text": "if (i < fixFloor) return { ok: false, why: FIX_UNDO_REFUSAL };"
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "for (const a of room.amendments) floor = Math.max(floor, a.kind === 'edit' ? a.at + 1 : a.at);"
+        "text": "if (room.actions.length - 1 < fixFloor || last.type === 'amend') return { ok: false, why: FIX_UNDO_REFUSAL };"
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "if (room.actions.length - 1 < fixFloor) return { ok: false, why: FIX_UNDO_REFUSAL };"
-      },
-      {
-        "file": "client/server/rooms.ts",
-        "text": "? { ok: false, why: 'that is the start of the phase — its triggers cannot be taken back' }"
+        "text": "for (const a of room.amendments) if (a.kind === 'rewind') floor = Math.max(floor, a.at);"
       }
     ],
     "basis_ok": true,

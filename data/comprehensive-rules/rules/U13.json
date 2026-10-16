@@ -879,7 +879,7 @@
     "key": "combat.counterattack.tokens",
     "parent": "610",
     "order": 3,
-    "text": "Spell tokens may go with counterattacking units, under the same conditions as with an attack (see rule 604.2c). A counterattack made only of spell tokens is not allowed: spell tokens need at least one counterattacking unit to go with.",
+    "text": "Spell tokens may go with counterattacking units, under the same conditions as with an attack (see rule 604.2c). A counterattack made only of spell tokens is not allowed: spell tokens need at least one counterattacking unit to go with. A spell token sent with a counterattack is committed as the units are: in round 2 it must ride with the counterattacking formation, with the formation as a whole rather than with any one unit. If every unit sent with it has died, it cannot ride and is not owed: it reaches no priority window, and is erased unused at regroup.",
     "examples": [
       {
         "text": null,
@@ -888,6 +888,14 @@
       {
         "text": null,
         "test": "77-playtest-round17.test.ts::[67] a token-only counterattack is refused by the engine"
+      },
+      {
+        "text": "Three units and a Fireball token were sent. In round 2 a formation that leaves the Fireball behind is refused.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent spell token must ride with a counterattack of several units"
+      },
+      {
+        "text": "The only unit sent with a Fireball token dies before round 2: no attack is possible, the battle phase ends with no window, and the token is erased at regroup.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-298 a sent token whose units all died is not owed and never reaches a window"
       }
     ],
     "see": [
@@ -908,19 +916,25 @@
           "quote": "Spell tokens travel with a formation, in either direction, and they need a unit",
           "adopted": "2026-08-23",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yeah, counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN or never have access to them in the other region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 spell tokens (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "78-round17-core.test.ts",
         "77-playtest-round17.test.ts",
-        "424-cr-after-combat.test.ts"
+        "424-cr-after-combat.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) quotes _passer, lofavreel, tecera and calebgannon; only the owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) text is in the pack (no RAQ claim id), so the designer words are cited through the ruling.",
+    "notes": "The owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) quotes _passer, lofavreel, tecera and calebgannon; only the owner ruling of 2026-08-23 (“A counterattacker may bring spell tokens…”) text is in the pack (no RAQ claim id), so the designer words are cited through the ruling. Owed tokens: owner 2026-10-16 (counterTokensOwed, apply.ts).",
     "sourceHashes": {}
   },
   {
@@ -1013,7 +1027,7 @@
     "key": "combat.counterattack.round-two.attackers",
     "parent": "combat.counterattack.round-two",
     "order": 2,
-    "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round, and every one of them still there and able to attack must attack. In its attack step the non-initiative team puts all of them into formation, in any shape; the shape is chosen then, not when the units are sent. A sent unit that died on its return is not owed.",
+    "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round, and every one of them still there and able to attack must attack. In its attack step the non-initiative team puts all of them into formation, in any shape; the shape is chosen then, not when the units are sent. Every spell token sent with them that is still there rides along too (see rule combat.counterattack.tokens). A sent unit that died on its return is not owed.",
     "examples": [
       {
         "text": "The non-initiative player sent Conduit of Pain at block time. In round 2 it is the only unit they can attack with, and it must attack: declining is refused.",
@@ -1072,6 +1086,11 @@
           "quote": "But you don't decide the shape of that formation until the attack step of the second battle.",
           "adopted": "2026-10-16",
           "from": "report round 2026-10-16 b, CT-298 (in session)"
+        },
+        {
+          "quote": "Yeah, counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN or never have access to them in the other region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 spell tokens (in session)"
         }
       ],
       "engine": [],
@@ -1084,7 +1103,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Whether every sent unit must go into the formation is D-U13-4. CT-298/CT-251 (2026-10-16): the owner — a sent counterattacker must be put into formation; the shape is chosen in round 2 (as Caleb allowed for quality of life, 2023-11-07). Settles owner question D-U13-4 (reading B).",
+    "notes": "Whether every sent unit must go into the formation is D-U13-4. CT-298/CT-251 (2026-10-16): the owner — a sent counterattacker must be put into formation; the shape is chosen in round 2 (as Caleb allowed for quality of life, 2023-11-07). Settles owner question D-U13-4 (reading B). Tokens: owner 2026-10-16.",
     "sourceHashes": {
       "RQ 1171229657740345384": "c3c3276f72ba73997cfe8b319f9edb6b725f892f449a66d992556d928ab8b4af"
     }
