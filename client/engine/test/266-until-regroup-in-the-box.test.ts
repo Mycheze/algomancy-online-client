@@ -166,6 +166,7 @@ const FIXTURE: Record<string, (u: Entity) => void> = {
 const NO_REPRESENTATION: Record<string, string> = {
   baseSetSeq: 'a last-wins tiebreak timestamp for baseSet, with no meaning of its own',
   tempAttrsAt: 'CR 712.2: when each tempAttrs entry was granted, read only to order it against a stripper; tempAttrs itself is represented',
+  damageShieldBy: 'CR 708.8b (report #210): the seat that cast the damageShield, read only to attribute its +1/+1 counters; damageShield itself is represented',
 };
 
 /** the parts of the box `textBoxHtml` keeps when `compact` is set — i.e.

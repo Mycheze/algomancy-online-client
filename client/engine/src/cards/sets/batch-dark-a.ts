@@ -199,7 +199,8 @@ card('Burn the Blight', {
     run: (g, ctx) => {
       let stripped = 0;
       for (const u of g.unitsIn(ctx.region)) {
-        if (u.counters) { g.addCounters(u, -u.counters); stripped++; }
+        // CR 708.8: a REMOVAL (E.removeCounters), not a -1/-1 placement — report #210
+        if (g.removeCounters(u, Math.abs(u.counters))) stripped++;
       }
       for (const seat of presentSeats(g, ctx.region)) {
         const rot = g.rot(seat), debt = g.debt(seat);

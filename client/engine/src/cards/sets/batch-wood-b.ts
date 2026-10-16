@@ -464,6 +464,7 @@ card('Phytochemical Protection', {
         return;
       }
       u.damageShield = 'Phytochemical Protection';
+      u.damageShieldBy = ctx.controller;   // CR 708.8b: the caster puts the +1/+1 counters
       g.ev('info',
         `Phytochemical Protection: all damage to ${u.card} is prevented until regroup `
         + '(it gets a +1/+1 counter for each damage prevented).',

@@ -807,7 +807,7 @@ card('Sarcophage', {
         if (victim === undefined) { g.ev('info', 'Sarcophage: no damaged player on the event — no counters removed.'); return; }
         let stripped = 0;
         for (const u of unitsThatHit(g, ctx.event)) {
-          if (u.counters !== 0) { g.addCounters(u, -u.counters); stripped++; }
+          if (g.removeCounters(u, Math.abs(u.counters))) stripped++;   // CR 708.8: a removal
         }
         if (!stripped) g.ev('info', 'Sarcophage: none of the units that dealt that damage carries a counter.');
       },
@@ -834,7 +834,9 @@ card('Skittering Blight', {
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     replaceRotDamage: (g, self, _seat, amount) => {
-      g.addCounters(self, amount);
+      // CR 708.8b: a replacement runs outside any stack part, so name the
+      // actor — this card's controller puts them (its effect, report #210's sweep)
+      g.addCounters(self, amount, self.controller);
       return true;
     },
   },

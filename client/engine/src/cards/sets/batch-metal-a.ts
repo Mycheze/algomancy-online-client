@@ -644,7 +644,7 @@ card('Celestial Fluxmorph', {
       run: (g, ctx) => {
         let stripped = 0;
         for (const u of g.unitsOf(ctx.controller, ctx.region)) {
-          if (u.counters) { g.addCounters(u, -u.counters); stripped++; }
+          if (g.removeCounters(u, Math.abs(u.counters))) stripped++;   // CR 708.8: a removal
         }
         if (!stripped) g.ev('info', 'Celestial Fluxmorph: none of your units carries a counter — nothing to remove.');
       },

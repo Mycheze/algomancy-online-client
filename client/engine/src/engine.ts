@@ -270,6 +270,11 @@ interface CombatUnitHit {
    * carrier of the attribute) and the seat dealing, so the rider can be
    * queued as that unit's trigger. */
   resonantSrc?: EntityId; resonantBy?: Seat;
+  /** CR 708.8b, 802.18a: the seat whose column dealt this hit. A {Poisonous}
+   * hit's -1/-1 counters are PUT BY that seat (report #210/#216: Wandering
+   * Blightshell beside a Poisonous blocker never drew) — combat damage is not
+   * a stack part, so `addCounters` has no `partActor` to fall back on here. */
+  by?: Seat;
 }
 
 /**
@@ -3971,6 +3976,49 @@ export class E {
     this.checkDeaths();
   }
 
+  /**
+   * CR 708.8, 112.15: **REMOVING** counters from a unit — the unit half of
+   * `loseRot`/`loseDebt`, and a different operation from putting the opposite
+   * kind on. Counters are one signed net int (CR 206.6a), so `n` is a COUNT of
+   * the kind the unit carries: removing 2 from a net +3 leaves +1, removing 2
+   * from a net -3 leaves -1. Clamped — you cannot remove counters that are not
+   * there — and it returns how many went, so a caller can say "if you do".
+   *
+   * It used to be `addCounters(u, -k)`, and the engine could not tell
+   * "remove two +1/+1 counters" from "put two -1/-1 counters" (report #210's
+   * second bug): Burn the Blight stripping an enemy's +1/+1s drew you a card
+   * off Wandering Blightshell, stripping your own ally's drew one off Scrapyard
+   * Custodian and fed Pestilent Mycelion, and Flux Resonator / Proliferating
+   * Slime made the removal one BIGGER, so a +2 unit ended on -1 — against
+   * CR 708.8's own example ("Proliferating Slime does not change how many
+   * counters Burn the Blight removes").
+   *
+   * So, exactly as the player-counter half does: no `amountDelta` (Flux
+   * Resonator and Proliferating Slime price what is PUT ON — owner, 2026-08-25:
+   * "Removing counters isn't 'putting on'"), no `replaceCounters` (Counter
+   * Thief takes counters that would be PLACED), and its own event,
+   * `countersRemoved`, so no "counters are put on" listener hears it. The event
+   * carries the same `{ unit, n, total }` as `countersChanged` — `n` the signed
+   * change, `total` the net after — plus `removed` (the count) and `by` when
+   * an actor is known. Runs `checkDeaths`: a unit living on its +1/+1s can die.
+   */
+  removeCounters(target: Entity, n: number, by?: Seat): number {
+    const u = this.entity(target.id);
+    if (!u || !u.counters) return 0;
+    const removed = Math.min(Math.max(0, Math.trunc(n)), Math.abs(u.counters));
+    if (removed <= 0) return 0;
+    const delta = u.counters > 0 ? -removed : removed;
+    const kind = u.counters > 0 ? '+1/+1' : '-1/-1';
+    u.counters += delta;
+    const actor = by ?? this.partActor ?? undefined;
+    const ev = this.ev('countersRemoved',
+      `${u.card} loses ${removed} ${kind} counter(s) (net ${u.counters}).`,
+      { unit: u.id, n: delta, removed, total: u.counters, ...(actor !== undefined ? { by: actor } : {}) });
+    this.fireEvent('countersRemoved', ev);
+    this.checkDeaths();
+    return removed;
+  }
+
   addTemp(target: Entity, dp: number, dt: number): void {
     target.tempPower += dp;
     target.tempToughness += dt;
@@ -4589,7 +4637,10 @@ export class E {
         `${u.damageShield ?? 'The shield'}: ${u.card} gets ${n} +1/+1 counter(s)`
         + ' — one for each damage prevented.',
         { unit: u.id, n });
-      this.addCounters(u, n);
+      // CR 708.8b: the shield's caster puts these, not whoever dealt the damage
+      // (on the effect-damage path `partActor` is the DEALER's effect) and not
+      // nobody (combat damage has no resolving part at all).
+      this.addCounters(u, n, u.damageShieldBy);
     }
   }
 
@@ -8681,7 +8732,7 @@ export class E {
       (paid.counters ??= []).push({ unit: u!.id, card: u!.card, n });
       this.ev('info', `${this.pname(item.controller)} removes ${
         n === 1 ? 'a +1/+1 counter' : `${n} +1/+1 counters`} from ${u!.card} — the cost of ${item.label}.`);
-      this.addCounters(u!, -n);
+      this.removeCounters(u!, n);   // CR 111.2, 708.8: a removal, not a placement
       return;
     }
     const id = (val as { unit: EntityId }).unit;
@@ -12710,6 +12761,7 @@ export class E {
       const cur = L.perUnit.get(id) ?? { pool: 0, poisonous, resonant };
       cur.pool += a; cur.poisonous = poisonous; cur.resonant = resonant;
       cur.attrs = srcAttrs; cur.label = src.label;   // CR 608.7a
+      cur.by = src.dealer;                            // CR 708.8b: who puts a Poisonous hit's counters
       if (resonant && src.resonantSrc !== undefined) { cur.resonantSrc = src.resonantSrc; cur.resonantBy = src.dealer; }   // CR 802.19a
       if (pure) cur.pure = true;
       if (blessedTo !== undefined) { cur.blessedTo = blessedTo; cur.blessedFrom = src.label; }
@@ -12838,7 +12890,8 @@ export class E {
       // the MARK: the one line the two forms do not share. After the dispatch,
       // because `addCounters` runs `checkDeaths` and a lethal poison hit would
       // otherwise destroy the victim before it could hear the hit.
-      if (hit.poisonous) this.addCounters(u, -received);   // permanent
+      // CR 708.8b: put BY the dealing column's seat (reports #210/#216)
+      if (hit.poisonous) this.addCounters(u, -received, hit.by);   // permanent
       // CR 802.19i: the rider is the source's trigger, held to after combat (CR 608.9b)
       if (hit.resonant && hit.resonantSrc !== undefined) {
         this.queueResonant(hit.resonantSrc, hit.resonantBy ?? b.attacker, u.controller, received, b.region);
@@ -13480,6 +13533,7 @@ export class E {
       delete e.suppressed;   // CR 506.2d: so is a switched-off attribute/ability layer
       delete e.unstable;     // CR 803.8d: "they gain unstable UNTIL REGROUP" — this is that
       delete e.damageShield; // CR 506.2d: "UNTIL REGROUP, prevent all damage …" — and this
+      delete e.damageShieldBy;
       delete e.shieldPending;
       delete e.granted;      // CR 109.8: and so is granted text
       delete e.allured;      // CR 802.15e {Alluring}: "can't attack" lasted the battle phase

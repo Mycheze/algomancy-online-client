@@ -672,7 +672,7 @@ card('Aethercap Siphoner', {
           return;
         }
         const delta = self.counters > 0 ? 1 : -1;
-        g.addCounters(self, -delta);
+        g.removeCounters(self, 1);   // CR 708.8: the FROM side of a move is a removal
         g.addCounters(t, delta);
       },
     },

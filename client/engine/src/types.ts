@@ -243,6 +243,10 @@ export interface Entity {
    * doesn't trigger". Read `E.preventUnitDamage`, never this raw.
    */
   damageShield?: CardName;
+  /** CR 708.8b: the seat whose effect set `damageShield` — the player who PUTS
+   * the "+1/+1 counter for each damage prevented" (Phytochemical Protection).
+   * Cleared with the shield at regroup. */
+  damageShieldBy?: Seat;
   /**
    * damage prevented by `damageShield` that has not yet been paid out as
    * +1/+1 counters ("Put a +1/+1 counter on it for each damage prevented this
@@ -1580,6 +1584,12 @@ export type EventType =
   // them leave as well as arrive. NOT scaled by an AmountMod: the owner ruled
   // that "Resonater says 'put on'", and a removal is not putting on.
   | 'rotLost' | 'debtLost'
+  // CR 708.8: counters REMOVED from a unit (Burn the Blight, Sarcophage, Celestial
+  // Fluxmorph, a "[Remove X +1/+1 counters]" cost, the FROM side of a move).
+  // Fired by `E.removeCounters` with `{ unit, n, removed, total, by? }` — `n`
+  // signed as on 'countersChanged'. A separate event so that no "when counters
+  // are PUT on" listener (Blightshell, Custodian, Mycelion) hears a removal.
+  | 'countersRemoved'
   // CR 402.4, 706.6a: ONE OR MORE CARDS ENTERED A HAND. Fired by `E.toHand` — the one
   // hand-entry point every route in the tree now goes through (a draw, a
   // recall out of play, a bin recursion, a pull off the stack, an uncache,

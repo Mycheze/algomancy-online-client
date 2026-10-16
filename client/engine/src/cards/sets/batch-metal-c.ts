@@ -198,10 +198,11 @@ const scrapForParts: EffectDef = {
     }
     const n = from.counters;
     if (!n) { g.ev('info', `Scrap For Parts: ${from.card} has no counters to move.`); return; }
-    from.counters = 0;
     g.ev('info', `Scrap For Parts moves ${Math.abs(n)} ${n > 0 ? '+1/+1' : '-1/-1'} counter(s) from ${from.card} to ${to.card}.`);
+    // CR 708.8: a move REMOVES from the first unit (E.removeCounters — announced,
+    // never scaled, no "put on" listener hears it) and PUTS on the second
+    g.removeCounters(from, Math.abs(n));           // the stripped source may die (death check)
     g.addCounters(to, n);                          // fires countersChanged + death check
-    g.checkDeaths();                               // the stripped source may die too
   },
 };
 card('Scrap For Parts', {

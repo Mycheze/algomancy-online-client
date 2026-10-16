@@ -935,7 +935,9 @@ const moveCounters: EffectDef = {
       counterMax: avail,
     }) as number;
     if (n <= 0) { g.ev('info', 'Chombot: no counters moved.'); return; }
-    g.addCounters(from, -sign * n);
+    // CR 708.8: a MOVE removes from the first unit and puts on the second — the
+    // removal is not a placement (no -1/-1 "put" on the source, no Flux Resonator)
+    g.removeCounters(from, n);
     g.addCounters(to, sign * n);
   },
 };

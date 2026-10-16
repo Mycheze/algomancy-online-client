@@ -712,7 +712,9 @@ card('Inexorable Miasma', {
         if (choice === -1) { g.ev('info', 'Inexorable Miasma: declined — it stays in the bin.'); return; }
         const u = g.entity(choice as EntityId);
         if (!u) { g.ev('info', 'Inexorable Miasma: the chosen unit is gone — it stays in the bin.'); return; }
-        g.addCounters(u, 1);                        // net counters: +1 removes a -1/-1
+        // CR 708.8: REMOVING a -1/-1 is not putting a +1/+1 on (no Flux Resonator
+        // extra, no Custodian / Blightshell draw) — report #210's second bug
+        g.removeCounters(u, 1);
         const idx = g.player(ctx.controller).bin.lastIndexOf('Inexorable Miasma');
         if (idx === -1) { g.ev('info', 'Inexorable Miasma: it left the bin — nothing is recalled.'); return; }
         g.removeFromBin(ctx.controller, idx, 'recalled');   // CR 405.7

@@ -46,7 +46,7 @@
  * added one, which is exactly the failure this ruling is about.
  *
  * ⚠ AND THE THIRD PREMISE WAS WRONG TOO: log-only is NOT cleanly computable at
- * the granularity of the event TYPE. §2 measures why — 48 of the 54 EventType
+ * the granularity of the event TYPE. §2 measures why — 49 of the 55 EventType
  * members announce something, and almost every one of them has a surface
  * SOMEWHERE, including 'erased', which is the type the spell-token loss uses.
  * The unit that works is the CALL SITE, and the reason is `info`: a catch-all
@@ -413,7 +413,9 @@ function eventUnion(): string[] {
 
 test('[CR D7.4] the type-level question is answerable and gives the wrong answer', () => {
   const union = eventUnion();
-  assert.equal(union.length, 54, `EventType has ${union.length} members: ${union.join(' ')}`);
+  // 54 -> 55 on 2026-10-16: 'countersRemoved' (CR 708.8, report #210) — removing a
+  // unit's counters is its own event, so no "counters are put on" listener hears it
+  assert.equal(union.length, 55, `EventType has ${union.length} members: ${union.join(' ')}`);
 
   // an event with an empty message is never a log line (src/harness.ts absorb,
   // and NetBackend.applyUpdate follows the same rule), so ANNOUNCING is the
@@ -423,7 +425,7 @@ test('[CR D7.4] the type-level question is answerable and gives the wrong answer
   const cardSites = cardEvSites();
   const announcing = new Set([...all, ...cardSites].filter(s => s.msg).map(s => s.type));
   const silent = union.filter(u => !announcing.has(u));
-  assert.equal(announcing.size, 48, `${announcing.size} announcing types`);
+  assert.equal(announcing.size, 49, `${announcing.size} announcing types`);
   assert.deepEqual(silent.sort(), [
     'cardPlayed', 'combatFaceDamage', 'grafted', 'handEntered', 'leftBin', 'stackFlash',
   ], 'the signal-only types, plus the one ("grafted") no ev() call site uses at all');
@@ -640,7 +642,9 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // 218 → 219 with the target re-check (CR 704.5; CT-208, RAQ "Valid targets becomes invalid"): "<item>:
   // <target> is not a legal target any more", said as resolution begins. It
   // carries the unit it is about, so it is not log-only either.
-  assert.equal(sites.length, 219, `the engine and apply make ${sites.length} announcements`);
+  // 219 → 220 with E.removeCounters (CR 708.8, report #210): "<unit> loses n
+  // +1/+1 counter(s) (net t)." It carries the unit, so it is not log-only.
+  assert.equal(sites.length, 220, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
