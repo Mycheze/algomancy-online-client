@@ -1009,66 +1009,6 @@ const OPEN: Entry[] = [
       + 'theirs — everything fits at the 46px floor, but it is small; the dock tucking during '
       + 'battle would give the fight the room.',
   },
-  {
-    id: "BL-46",
-    slug: "agreed-game-fixes",
-    title: "Beta: agreed game fixes (\"god mode\") — a player proposes a fix, the opponent accepts",
-    area: "client",
-    size: "L",
-    status: 'open',
-    track: "feature",
-    said: "Discord, relayed by the owner 2026-10-16: \"We should also add a \\\"beta god mode\\\" option since there are plenty of BIG bugs causing issues with games and changing results. I think we should add a button (to the right click menu) which basically acts like the test mode thing where you can add cards to hand or set life totals. Then, you hit Submit and then if your opponent agrees, it does that thing. It doesn't have to have EVERYTHING as an option, but should help fix game breaking bugs. The most common things I can think of are manually editing life totals, undoing the last \\\"not undoable action\\\", someone drawing (a) card(s) or changing the zone of a card.\"",
-    means: "A fix is one new engine action (amend) that only the server sends, after the opponent accepts through a soft-state flow shaped like rematch, so a fixed game still replays faithfully (the BL-06 sandbox cheats are the model: logged actions gated on a flag). \"Undo the last action that can't be undone\" is a mutual rewind that truncates the log like Learn to Play's undo and archives the removed actions. Every fix is stamped on the room and the history row. v1: set a life total, draw N, move a card between zones, mutual rewind. Hazards: the existing undo must stop at an amend; a rewind must clear standing pass-all settings.",
-    doneWhen: [
-      "Both players in a live game can propose and accept a life change, a draw, a zone move and a rewind from the table / card menus, and the game replays FAITHFUL afterwards",
-      "An amend sent from a socket is refused; a proposal is dropped when any action lands or it expires",
-      "A fixed game is tagged in match history, and counts for exactly what the owner decides",
-    ],
-    decided: [
-      "Owner, 2026-10-16: \"Assuming both players agree, it doesn't change anything in the game. it'll only be used to solve broken engine/game issues. For example, Debeli lost a game yesterday since their card draw didn't trigger (twice) and the game would have been 100% normal if they could have just given themselves a card\" — a fixed game counts for everything (result, rating, league, achievements, card stats); it only carries a visible tag.",
-      "Owner, 2026-10-16: \"Rewinding a whole step or two seems fine to me. Either say \\\"up to 5 actions\\\" or \\\"restart this step\\\"\" — both are offered.",
-      "Owner, 2026-10-16: \"don't worry about the \\\"rules\\\" of this. It has to be agreed upon and is used in friendly matches.\" — agreement overrides the seen-cards undo lock.",
-      "Owner, 2026-10-16, accepting the rest: removals are quiet and arrivals spawn like test mode; every accepted fix files a report with a required reason; named \"Beta: propose a fix\"; no fixes inside the hidden planning/deploy steps or while a question is pending (a rewind any time); clocks pause while a proposal is open; it expires after 60 seconds. Adding a card from nothing is later, not v1.",
-    ],
-    touches: [
-      "client/engine/src/types.ts",
-      "client/engine/src/apply.ts",
-      "client/server/rooms.ts",
-      "client/server/main.ts",
-      "client/server/history.ts",
-      "client/ui/main.ts",
-      "client/ui/inspect.ts",
-      "client/ui/sandbox.ts",
-      "client/ui/solo.ts",
-    ],
-    notes: "Design survey 2026-10-16 (report round b): about 16-18 files, ~1,400 lines plus ~1,000 of tests, one round. Rejected: propose and accept as two engine actions (declined offers clutter the log, trips decisionBlocks and deployActed, solo undo could splice a proposal out from under its acceptance).",
-  },
-  {
-    id: "BL-47",
-    slug: "stack-order-ui",
-    title: "Ordering things onto the stack: numbered picks, start over, confirm",
-    area: "client",
-    size: "S",
-    status: 'open',
-    track: "qol",
-    said: "Discord, relayed by the owner 2026-10-16: \"When putting multiple things on the stack (burst spells or stacking triggers), there should be a way to visually see what order you're chosing and then a way to undo that or cancel and restart. It's easy to misstack your triggers, so just adding a tiny bit of UI polish will make it much nicer\"",
-    means: "Triggers: the engine takes the whole order in one decide and the client already holds the picks until the last click, so it is all client-side: picked scans stay in place, dimmed, with a number badge; clicking a numbered scan cuts back to it; Start over (and Escape) clears; a Confirm order button sends. Burst already shows a numbered strip; add a visible Undo last pick (one server undo, already accepted) and call Cancel \"Start over\". Replacement-order questions are one board click and stay as they are. No engine, server or saved-log change; replays and fuzz unaffected. Fixes CT-304 on the way.",
-    doneWhen: [
-      "Ordering simultaneous triggers shows each pick numbered on its card, can be cut back or started over, and sends nothing until Confirm (ui/test/225 and 75 updated)",
-      "A Burst cast in battle has a visible Undo last pick that sends exactly one undo",
-    ],
-    decided: [
-      "Owner, 2026-10-16: a final Confirm order — yes; with one trigger left, place it automatically — yes. Burst Start over cancels the group whole (CR D4.2).",
-    ],
-    touches: [
-      "client/ui/main.ts",
-      "client/ui/style.css",
-      "client/ui/test/225-stack-readout.test.ts",
-      "client/ui/test/358-burst-order-ui.test.ts",
-      "client/ui/test/75-ui-reachability.test.ts",
-    ],
-    notes: "Stack-order survey 2026-10-16 (report round b), with screenshots of the current prompt. About half a day for triggers, 1-2 hours for Burst. Minor, not asked for: identical triggers in a mixed batch are ordered separately (two Wisps + a Bloodwind = 6 orders, 3 distinct).",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

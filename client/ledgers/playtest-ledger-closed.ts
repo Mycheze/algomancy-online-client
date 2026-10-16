@@ -4338,4 +4338,30 @@ export const CLOSED: LedgerEntry[] = [
     note:
       "Display only; the engine was right. Vroot (\"When my column deals combat damage, each opponent gains that much life\") resolved its own column's 4 (CR 608.9a), but the stack chip showed the face-damage event's total of every connecting column, 10. The trigger now declares how its amount is read (eventAmount 'myColumn'), and the resolver, the stack X and the does-line all read that one declaration.",
   },
+  {
+    id: 217, room: "UAPQ", date: "2026-10-16",
+    report: "Yagamino, seat 1, action 38: \"I should be able to play Linked Extinction, but i cannot.\"",
+    status: "by-design",
+    note: "Not a bug: affinity. Linked Extinction costs one metal pip (oracle cost \"m\"). At action 38 seat 1 had three fire and a Shard, and Shards give no affinity (CR 105.5); the engine refused \"cannot pay for that\" (canPayCard). The same state with one metal resource added offers and casts it. Seat 1 exchanged both Prismites for fire at actions 8 and 9 and recycled for fire at 26. What made it look broken is that a hand card never says why it cannot be played: CT-288.",
+  },
+  {
+    id: 218, room: "UAPQ", date: "2026-10-16",
+    report: "invi, seat 0, action 226 (gamebreaking): \"cosmic reversal has bounced slimebeast, which is not a spell but only a unit\"",
+    status: 'fixed',
+    guards: [
+      "475-ambush-is-not-a-spell.test.ts::Cosmic Reversal recalls the spell but not the Ambush",
+      "476-ambush-spell-sweep.test.ts::negate or recall all spells leaves the Ambush on the stack",
+    ],
+    note: "Real. An Ambush on the stack counted as a spell effect in six hand-copied kind lists; owner: \"If Caleb says its not a spell, it's not a spell and we need to fix that.\" One predicate now (CT-301). Mutation-checked: Cosmic Reversal's old line turns 475 and 476 red.",
+  },
+  {
+    id: 219, room: "UAPQ", date: "2026-10-16",
+    report: "invi, seat 0, action 334: \"tides of the cosmos should reveal the 8 cards to the opponent\"",
+    status: 'fixed',
+    guards: [
+      "481-public-deck-reveal.test.ts::Tides of the Cosmos for one seat shows the other seat all 8 cards in the notice",
+      "481-public-deck-reveal.test.ts::every card that reveals deck cards without the Glimpse keyword emits the typed reveal",
+    ],
+    note: "Real. The eight reached the opponent only as a log line; the reveal is now a typed event the glimpse notice draws as cards (CT-302); Big Glimpse Card's caster gets the same. Mutation-checked: the old info line turns 481 red.",
+  },
 ];
