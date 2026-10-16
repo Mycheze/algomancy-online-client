@@ -651,13 +651,17 @@ card('Spore of Regenesis', {
 // leave-play/return-to-hand verb; from a bin there is nothing to leave).
 // CR 110.1a: "two TARGET units in your bin" is real targeting — two cast-time
 // targets, and BinRef.nth means two copies of one card are two separate
-// targets. min 0: the spell is castable with an empty bin, because "then
-// discard a card" still happens (CR 704.6 fizzling would swallow the whole spell,
-// and the printed text makes the discard unconditional).
+// targets. BOTH are required (CR 110.7): with fewer than two units in your bin
+// the spell is not castable. It used to be `min: 0` so the "then discard a card"
+// could happen off an empty bin; the owner, 2026-10-16 (CT-299): it needs both
+// targets, "otherwise it'd say 'up to two'". The RAQ agrees in general
+// (_passer, 2025-08-27): "In order to play a card, you must be able to select
+// the valid targets". Once cast, one target leaving the bin is CR 704.6b partial
+// resolution — the other returns and the discard still happens.
 card('Tilling the Graves', {
   spellEffect: {
     targets: {
-      what: 'binCard', count: 2, min: 0,
+      what: 'binCard', count: 2, min: 2,
       symmetric: true,
       prompt: 'Tilling the Graves: recall two target units in your bin',
       restrict: (_g, t) => 'binCard' in t && isUnitCard(t.binCard.card),

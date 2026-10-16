@@ -248,22 +248,24 @@ test('Combustible Bogwalker: discard a card to recall a unit from your bin ([onc
     'the [once] budget is spent for the turn');
 });
 
-test('Combustible Bogwalker: CR 111.7 — with an empty bin the cost is paid for nothing', () => {
+test('Combustible Bogwalker: CR 110.7 — with no unit in the bin the ability is not offered and nothing is paid', () => {
   const h = new Harness(4510);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   const bog = spawn(h, p, 'Combustible Bogwalker');
   emptyHand(h, p);
   give(h, p, 'Darkblast');                                     // a SPELL: not recallable
-  h.do({ type: 'activateAbility', seat: p, entityId: bog, abilityIndex: 0, via: 'augment' });
-  pickCard(h, 'Darkblast');
-  // ⚠ the printed line is a COST, and CR 111.7 pays costs before effects — so an
-  // activation with nothing to recall wastes the payment. The old
-  // resolution-time version checked the bin first and paid nothing; that was
-  // the more forgiving reading, not the more correct one.
-  assert.deepEqual(h.state.players[p]!.bin, ['Darkblast'], 'the cost was paid');
-  assert.ok(!h.state.players[p]!.hand.includes('Darkblast'), 'and left the hand');
-  assert.ok(h.log.some(m => m.includes('no unit in your bin')), 'and it says why');
+  // the owner, 2026-10-16: "Unless a card says 'up to', it must have targets in
+  // order to be cast" — the recall's target is required, so an empty bin means
+  // the ability cannot be activated, and the cost is never paid for nothing.
+  // (It used to be activatable and waste the discard.)
+  assert.ok(!h.legal(p).some(a => a.type === 'activateAbility' && a.entityId === bog),
+    'no unit in the bin: the activation is not offered');
+  assert.throws(
+    () => h.do({ type: 'activateAbility', seat: p, entityId: bog, abilityIndex: 0, via: 'augment' }),
+    /nothing it can be used on/);
+  assert.ok(h.state.players[p]!.hand.includes('Darkblast'), 'the would-be payment stays in hand');
+  assert.deepEqual(h.state.players[p]!.bin, [], 'and nothing reached the bin');
 });
 
 test('Combustible Bogwalker: CR 111.6 — with no payment available the activation is refused', () => {

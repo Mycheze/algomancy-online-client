@@ -269,8 +269,8 @@ test('Eldritch Reclaimer: recalls a unit from your bin to your hand, spawns 4/2'
   giveResources(h, p, 'water', 4);                          // bb/4
   // CR 110.3: a real cast-time target — the spell in the bin is never on the menu
   h.do({ type: 'playCard', seat: p, handIndex: give(h, p, 'Eldritch Reclaimer') });
-  assert.equal(h.state.decision!.options.length, 2,
-    'the one unit, plus the "up to" decline (an empty bin must not block the 4/2)');
+  // CR 110.7 (owner, 2026-10-16): the target is required — no decline beside it
+  assert.equal(h.state.decision!.options.length, 1, 'the one unit, and no "No targets"');
   notOffered(h, { bin: { seat: p, card: 'Overwhelm' } }, 'a spell is not a unit');
   pick(h, { bin: { seat: p, card: 'Echo of Despair' } });
   assert.deepEqual(h.state.players[p]!.bin, ['Overwhelm'], 'unit left the bin');

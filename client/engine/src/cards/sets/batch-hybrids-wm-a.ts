@@ -139,7 +139,7 @@
 import type { CardName, Entity, EntityId, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import {
-  card, doneTargetsLabel, getCard, isAugment, isPlayedSpellKind, specForSlot,
+  card, doneTargetsLabel, getCard, isAugment, isPlayedSpellKind, specForSlot, targetMinimum,
   type EffectCtx, type EffectDef, type ResolvedTarget,
 } from '../dsl.ts';
 import { selfOf, isEnt, pickUnit, perSeatRows } from './helpers.ts';
@@ -190,7 +190,7 @@ function chooseCopyTargets(
   // inherited X) plus the fixed extraSlots; min gates the "no more" option
   const counted = spec.count === 'X' ? (x ?? 0) : (spec.count ?? 1);
   const max = counted + (spec.extraSlots ?? 0);
-  const min = Math.min(spec.min ?? 1, max);
+  const min = targetMinimum(spec, counted);   // CR 110.7
   if (max <= 0) return undefined;
   const candsFor = (n: number, chosen: ResolvedTarget[], taken: Set<string>): TargetRef[] =>
     g.targetCandidates(specForSlot(spec, n), region, undefined, copier,

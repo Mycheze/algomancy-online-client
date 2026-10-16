@@ -22,8 +22,9 @@
  *  - MULTI-TARGET spells (Channel Through, Torrential Reclamation): NO LONGER
  *    an approximation. This said "the engine's cast-time targeting holds ONE
  *    target per part, so the caster picks the units mid-resolution"; now
- *    `count: 'X'` (with min: 0; CR 110.1a) collects them all as the spell goes on the
- *    stack, which both cards use. What stays mid-resolution is Channel
+ *    `count: 'X'` with `min: 'X'` (CR 110.1a, 110.7) collects all X as the spell
+ *    goes on the stack, which both cards use — and an X the board cannot fill
+ *    is not offered (CT-303). What stays mid-resolution is Channel
  *    Through's DISTRIBUTION of its 2 damage among the opponent's units — a
  *    division of damage, not a set of declared targets.
  *  - PLAIN "spell" includes spell tokens (Origon, Death Greeter): the pool's
@@ -389,8 +390,11 @@ card('Tempest Oracle', {
 // floor stands — but if the owner ever revisits this, THIS is the seam.
 card('Torrential Reclamation', {
   spellEffect: {
+    // CR 110.7 (CT-303): "X target nontoken allies" is exactly X — `min: 'X'`
+    // requires every one, so X = 3 is not offered with two nontoken allies, and
+    // X = 0 (no target at all) is, which is where the sacrifice floor below bites.
     targets: {
-      what: 'allyUnit', count: 'X', min: 0,
+      what: 'allyUnit', count: 'X', min: 'X',
       symmetric: true,
       prompt: 'Torrential Reclamation: recall X target nontoken allies',
       restrict: unitRestrict((_g, u) => !u.token),
@@ -465,7 +469,9 @@ card('Torrential Reclamation', {
 card('Channel Through', {
   spellEffect: {
     targets: {
-      what: 'allyUnit', count: 'X', extraSlots: 1, min: 1,
+      // CR 110.7 (CT-303): the opponent AND all X allies are required — at
+      // X = 0 that is just the opponent, as it was when this said `min: 1`
+      what: 'allyUnit', count: 'X', extraSlots: 1, min: 'X',
       roles: "2 each to {1+}; 2 spread over {0}'s units",
       slots: ['opponent'],
       prompt: 'Channel Through: X target allies, and target opponent',

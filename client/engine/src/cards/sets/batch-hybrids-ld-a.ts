@@ -245,7 +245,9 @@ card('Hyper Beam', {
 // is requested before the deck is touched.
 card('Big Glimpse Card', {
   spellEffect: {
-    targets: { what: 'opponent', min: 0, prompt: 'Big Glimpse Card: target opponent splits the 7' },
+    // CR 110.7: the opponent is a required target (no "up to"), so with no
+    // opponent in the region the spell is not castable — it used to be `min: 0`.
+    targets: { what: 'opponent', prompt: 'Big Glimpse Card: target opponent splits the 7' },
     run: (g, ctx) => {
       // CR 601.4d (owner, 2026-08-28) — REGION SCOPING IS ABSOLUTE: "Only players
       // that are in the region as an effect can even see that it exists. So

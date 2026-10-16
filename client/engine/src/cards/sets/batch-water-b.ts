@@ -215,9 +215,13 @@ card('Rippleback Skulker', {
       // column just damaged, which only the EVENT knows — so the restriction
       // reads `tc.event`, the same snapshot run() sees as ctx.event. The kind
       // is 'anyBinCard' (it reaches a bin that is not mine) narrowed by the
-      // restriction to exactly the victim's.
+      // restriction to exactly the victim's. REQUIRED (CR 110.7): the text has no
+      // "may" and no "up to", so a card is taken whenever that bin holds one —
+      // the owner, 2026-10-16: "If a trigger doesn't have the 'up to' caviat, it
+      // MUST have targets (unless there are no legal ones)". It used to be
+      // `min: 0`, which offered "No targets" beside a full bin.
       targets: {
-        what: 'anyBinCard', min: 0,
+        what: 'anyBinCard',
         prompt: "Rippleback Skulker: put target card from that player's bin into your hand",
         restrict: (_g, t, tc) => 'binCard' in t && t.binCard.seat === tc.event?.data?.seat,
       },
@@ -409,9 +413,12 @@ card('Spell Excavation', {
   spellEffect: {
     // CR 110.1a: "target spell from your bin" is a DECLARED target, chosen as the
     // Excavation goes on the stack (CR 110.3's 'binCard'), not a mid-resolution
-    // pick. min 0 carries the "You may".
+    // pick. The target is REQUIRED (CR 110.7): the "You may" is about playing the
+    // spell later, not about choosing one now — the owner, 2026-10-16: "Unless a
+    // card says 'up to', it must have targets in order to be cast." No battle
+    // spell in your bin, no Spell Excavation. (It used to be `min: 0`.)
     targets: {
-      what: 'binCard', min: 0,
+      what: 'binCard',
       prompt: 'Spell Excavation: you may play target spell from your bin until regroup '
         + '(it will be erased, not binned)',
       restrict: (g, t, tc) => 'binCard' in t && tc.ally !== undefined

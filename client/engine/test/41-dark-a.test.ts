@@ -434,8 +434,8 @@ test('Tilling the Graves: two bin units back to hand, then a discard', () => {
   const bn = h.state.players[A]!.name;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tilling the Graves') });
   assert.deepEqual(h.state.decision!.options.map(o => o.label),
-    [`Curio Drifter (${bn}'s bin)`, `Bumblecrab (${bn}'s bin)`, 'No targets'],   // #206: nothing picked yet
-    'only UNITS in the bin are offered');
+    [`Curio Drifter (${bn}'s bin)`, `Bumblecrab (${bn}'s bin)`],
+    'only UNITS in the bin are offered, and both are required (CR 110.7) — no "No targets"');
   pick(h, { bin: { seat: A, card: 'Curio Drifter' } });
   pick(h, { bin: { seat: A, card: 'Bumblecrab' } });
   pass(h); pass(h);                                     // resolve

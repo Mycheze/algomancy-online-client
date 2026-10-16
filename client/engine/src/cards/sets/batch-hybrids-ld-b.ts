@@ -487,11 +487,10 @@ card('Murkstalker', {
 // paid card (CR 801.2a), which is the point in a dark-element deck. The engine's
 // sacrifice pool excludes tokens and the ability's own source.
 //
-// ⚠ Consequence of paying at the right time: with nothing in your bin to
-// recall, the cost is still paid — the printed line is a cost, not a targeted
-// spell, and CR 111.7 pays costs before effects. The old resolution-time version
-// checked the bin first and paid nothing; that was the more forgiving reading,
-// not the more correct one.
+// CR 110.7: the target is REQUIRED — with no unit in your bin the ability cannot
+// be activated at all, so the cost is never paid for nothing. (It used to be
+// `min: 0`, activatable at an empty bin; the owner, 2026-10-16: "Unless a card
+// says 'up to', it must have targets in order to be cast.")
 // "Recall … in your bin" moves a unit card from the bin to the HAND (recall is
 // always to hand, Manual). Bounded by [once] (CR 109.9).
 card('Combustible Bogwalker', {
@@ -507,7 +506,7 @@ card('Combustible Bogwalker', {
       // reading (the cost is paid to use the ability, not as part of it) and
       // it is also the kinder one: you see what you would get first.
       targets: {
-        what: 'binCard', min: 0,
+        what: 'binCard',
         prompt: 'Combustible Bogwalker: recall target unit in your bin',
         restrict: (_g, t) => 'binCard' in t && isUnitCard(t.binCard.card),
       },
@@ -589,14 +588,17 @@ card('Splort', {
 // CR 110.1a: the X targets are DECLARED targets, collected as the spell goes on the
 // stack (`count: 'X'`, which the collector reads off the X already fixed by
 // CR 107.2a's cast-time payment) — they used to be mid-resolution picks, so the
-// spell sat on the stack aiming at nobody. "Target units" is unqualified, so an ENEMY unit
+// spell sat on the stack aiming at nobody. CR 110.7 (CT-303): all X are required
+// (`min: 'X'`) — X is chosen first, so an X larger than the number of units in
+// the region is simply not offered, and the target menu never offers "No more
+// targets" short of X. "Target units" is unqualified, so an ENEMY unit
 // is a legal host: the Wraith's donated "[Augment] When I attack or block, put
 // a -1/-1 counter on me" then shrinks THEM. X = 0 does nothing (the card does
 // not print "X can't be zero", so xMin stays at the default 0).
 card("Blight's End", {
   spellEffect: {
     targets: {
-      what: 'unit', count: 'X', min: 0,
+      what: 'unit', count: 'X', min: 'X',
       symmetric: true,
       prompt: "Blight's End: augment a Wight onto target unit",
     },

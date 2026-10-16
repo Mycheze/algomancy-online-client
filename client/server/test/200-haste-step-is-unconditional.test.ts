@@ -59,7 +59,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../../engine/src/harness.ts';
 import { allCardNames, getCard } from '../../engine/src/cards/dsl.ts';
 import type { Seat } from '../../engine/src/types.ts';
-import { give, giveResources, logFor, spawn, unitsOf } from '../../engine/test/util.ts';
+import { give, giveResources, logFor, spawn } from '../../engine/test/util.ts';
 import { viewFor } from '../view.ts';
 
 /* ── the fixture ───────────────────────────────────────────────────────
@@ -145,7 +145,7 @@ test('CR 504.5 control: the same comparison DOES fire on a difference seat 1 may
 
 /* ═══ §2 — the repro, its bin control and its negative control ═════════ */
 
-const RECLAIMER = 'Eldritch Reclaimer';   // bb/4 spell unit, "recall target unit in your bin", min 0
+const RECLAIMER = 'Eldritch Reclaimer';   // bb/4 spell unit, "recall target unit in your bin" — min 0 until 2026-10-16
 
 test(`CR 504.5: ${RECLAIMER} under Dispatch Courier, EMPTY BIN — the step used to vanish`, () => {
   // THE REPRO. `canHaste` judged the spec-wide `targets` and treated a min-0
@@ -154,27 +154,32 @@ test(`CR 504.5: ${RECLAIMER} under Dispatch Courier, EMPTY BIN — the step used
   // (it decided whether the window existed at all), and the step was skipped
   // outright while `legalActions` would have offered the play and `apply`
   // would have accepted it.
+  //
+  // CR 110.7 (owner, 2026-10-16: "Unless a card says 'up to', it must have
+  // targets in order to be cast"): the Reclaimer's target is REQUIRED now, so
+  // with an empty bin the play is not legal at all. The step must open anyway
+  // — its presence never depends on what the hand can do, which is the point.
   const h = board([RECLAIMER], { courier: true, bin: [] });
   assert.deepEqual(h.state.players[A]!.bin, [], 'the bin really is empty — that is the repro');
   assert.deepEqual(h.state.hasteDone, [false, false], 'the step opens');
-  assert.ok(h.legal(A).some(a => a.type === 'playCard' && a.handIndex === 0),
-    'and the play the old window hid is offered in it');
-  h.do({ type: 'playCard', seat: A, handIndex: 0 });
-  assert.ok(unitsOf(h, A).some(u => u.card === RECLAIMER),
-    'and accepted — the offer and the enforcement always agreed; only the window did not');
+  assert.deepEqual(h.legal(A).map(a => a.type), ['doneHaste'],
+    'and, with nothing in the bin to recall, the Reclaimer is not offered in it (CR 110.7)');
+  assert.throws(() => h.do({ type: 'playCard', seat: A, handIndex: 0 }), /no legal targets/,
+    'nor accepted — the offer and the enforcement agree');
 });
 
 test(`CR 504.5 bin control: a UNIT in the bin is what used to open the same board`, () => {
   // the control that isolates the divergence to the empty-bin case: with a
   // candidate to recall, `canHaste`'s copy agreed with `castable()` and the
   // step opened even before the step became unconditional. A SPELL in the bin did not — the spec is
-  // unit-restricted — which is how narrow the old gate was.
+  // unit-restricted — which is how narrow the old gate was. Since 2026-10-16 the
+  // target is required (CR 110.7), so a spell in the bin is no target and no play.
   const unit = board([RECLAIMER], { courier: true, bin: ['Nebula Drifter'] });
   const spell = board([RECLAIMER], { courier: true, bin: ['Fireball'] });
   for (const [what, h] of [['unit', unit], ['spell', spell]] as const) {
     assert.deepEqual(h.state.hasteDone, [false, false], `the step opens with a ${what} in the bin`);
-    assert.ok(h.legal(A).some(a => a.type === 'playCard'),
-      `and the play is offered with a ${what} in the bin`);
+    assert.equal(h.legal(A).some(a => a.type === 'playCard'), what === 'unit',
+      `and the play is offered with a unit in the bin, and not with only a spell (${what})`);
   }
   // and the restriction itself is unchanged: only the unit is a legal target
   assert.ok(getCard(RECLAIMER).spellEffect?.targets, 'the spec is still there to be restricted');
@@ -256,18 +261,20 @@ test('CR 504.5: the over-permissive half of the old divergence had population ZE
   assert.ok(reachable.length > 200, `only ${reachable.length} reachable cards — this would pass vacuously`);
 });
 
-test(`CR 504.5: ${RECLAIMER} is still the whole under-permissive population`, () => {
+test(`CR 504.5: the under-permissive population (once just ${RECLAIMER}) is empty`, () => {
   // The other half: `canHaste` said NO to a min-0 spec with no candidate,
   // where `castable()` says yes. Only a grant-eligible card could reach the
-  // step to be refused, and there is exactly one. If a second ever appears,
-  // §2's repro has stopped being the whole story and this says so by name.
+  // step to be refused, and there was exactly one, Eldritch Reclaimer — whose
+  // target became REQUIRED on 2026-10-16 (CR 110.7), leaving none. If one ever
+  // appears, §2's repro has stopped being the whole story and this says so by name.
   const minZero = allCardNames().filter(n => {
     const t = getCard(n).spellEffect?.targets;
-    return !!t && (t.min ?? 1) === 0 && grantEligible(n);
+    return !!t && t.min === 0 && grantEligible(n);
   });
-  assert.deepEqual(minZero, [RECLAIMER],
-    'the set of cards that could be refused a haste step they were legally able to use has '
-    + 'changed. §2 repros the named one; a new entry needs its own line there.');
+  assert.deepEqual(minZero, [],
+    'a grant-eligible card now has a min-0 ("up to") cast-time target spec — the set of cards '
+    + 'that could be refused a haste step they were legally able to use has changed. §2 '
+    + 'repros the old one; a new entry needs its own line there.');
 
   // and the 21 printed {Haste} cards were vacuously fine on both counts —
   // none of them has a target spec at all, which is why the fault could only

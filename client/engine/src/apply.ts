@@ -12,7 +12,7 @@ import type {
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
   affinityPips, ambushEffect, canonicalCardName, costAmount, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
-  registerSynthetic, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
+  registerSynthetic, requiresTargets, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
   type EffectDef,
 } from './cards/dsl.ts';
 import { DECK_LIST, createsOf } from './cards/registry.ts';
@@ -741,7 +741,7 @@ function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | '
   // Reversion with one side empty are not castable (RAQ, Target requirements).
   // CR 702.3a, 702.3c (report #211): …judged at an X the play could actually be
   // declared with, because X is chosen before the targets.
-  if (eff.targets && (eff.targets.min ?? 1) > 0
+  if (eff.targets && requiresTargets(eff.targets)
     && !e.requiredSlotsFillable(eff.targets, region, seat, undefined, castXChoices(e, c, region, seat, reserve, fixedX))) {
     return false;
   }
@@ -1623,7 +1623,7 @@ function abilityUnusable(
   const xs = eff.castCost && costAmount(eff.castCost) === null
     ? e.variableCostXChoices(seat, eff.castCost, region, 0, u.id, manaReserve)
     : undefined;
-  if (eff.targets && (eff.targets.min ?? 1) > 0
+  if (eff.targets && requiresTargets(eff.targets)
     && !e.requiredSlotsFillable(eff.targets, region, seat, u.id, xs)) {   // CR 110.7
     return 'that ability has nothing it can be used on';
   }

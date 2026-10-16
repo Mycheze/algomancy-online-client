@@ -360,6 +360,9 @@ test('an X spell pays the tax on top, and X is offered after it', () => {
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
   spawn(h, D, 'Tranquility');
+  // CR 110.7 (CT-303): every X Channel Through declares needs that many allies,
+  // so five of them keep the whole affordable range on the menu
+  for (let i = 0; i < 4; i++) spawn(h, D, 'Unit Token');
   giveResources(h, D, 'earth', 4);
   giveResources(h, D, 'fire', 2);
   toNextBattle(h, A);

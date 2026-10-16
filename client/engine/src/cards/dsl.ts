@@ -329,8 +329,19 @@ export interface TargetSpec {
    * effects", "Recall X target nontoken allies"). X is fixed before targets
    * are asked for, so by the time this is read it is a number. */
   count?: number | 'X';
-  /** minimum targets before "done" is offered (default 1) */
-  min?: number;
+  /** minimum targets before "done" is offered (default 1). CR 110.7: below `count`
+   * only where the card prints "up to" or "any number" (or, on a triggered
+   * ability, "you may … target" — declining the whole may); the owner,
+   * 2026-10-16: *"Unless a card says 'up to', it must have targets in order to
+   * be cast."* test/477 sweeps the registry against the printed text.
+   *
+   * `'X'` (CR 110.7, CT-303): EVERY slot is required — the counted X plus the
+   * `extraSlots`. "Recall X target nontoken allies" at X = 3 needs three
+   * allies, so an X the board cannot fill is not offered (collectX) and the
+   * chooser is never given "No more targets" short of X. At X = 0 nothing is
+   * required, so the spell may be cast at nothing. Read it through
+   * `targetMinimum`, never directly. */
+  min?: number | 'X';
   /**
    * CR 110.2b: fixed slots asked for IN ADDITION to `count`, so a spec can mix a
    * variable-count slot with a fixed one. Channel Through prints "I deal 2
@@ -693,6 +704,26 @@ export function slotRestrict(spec: TargetSpec, i: number): TargetRestrict | unde
   const per = spec.slotRestricts?.[i];
   if (per !== undefined) return per ?? undefined;
   return spec.restrict;
+}
+
+/**
+ * CR 110.7 — how many of a spec's slots are REQUIRED once its counted size is
+ * known (`counted` is `count`, or the spell's X for `count: 'X'`; `extraSlots`
+ * are added here). The one reading of `min`: every collector and gate asks
+ * this, so `min: 'X'` (all of them) cannot mean one thing to the cast gate
+ * and another to the target menu.
+ */
+export function targetMinimum(spec: TargetSpec, counted: number): number {
+  const max = counted + (spec.extraSlots ?? 0);
+  return spec.min === 'X' ? max : Math.min(spec.min ?? 1, max);
+}
+
+/** CR 110.7: does the spec require ANY target before the play is legal? `min: 'X'`
+ * does — sized by the X it is declared at, so X = 0 still requires none
+ * (`requiredSlotsFillable` asks per X). Only an "up to" / "any number" spec
+ * (min 0) may go on the stack at nothing regardless. */
+export function requiresTargets(spec: TargetSpec): boolean {
+  return spec.min === 'X' || (spec.min ?? 1) > 0;
 }
 
 /** CR 110.3: the spec as it applies to slot `i` — what targetCandidates should be

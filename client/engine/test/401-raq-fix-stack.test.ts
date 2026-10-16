@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
-import { allCardNames, getCard } from '../src/cards/dsl.ts';
+import { allCardNames, getCard, slotWhat, targetMinimum } from '../src/cards/dsl.ts';
 import { effStats, ent, finishBattle, giveResources, pass, pick, spawn, toDeployment, toNextBattle, unitsOf } from './util.ts';
 import type { EntityId, Seat } from '../src/types.ts';
 
@@ -25,9 +25,11 @@ function multiTargetSpells(): string[] {
   return allCardNames().filter(n => {
     const t = getCard(n).spellEffect?.targets;
     if (!t) return false;
-    const extra = t.extraSlots ?? 0;
-    const max = t.count === 'X' ? extra + 1 : (t.count ?? 1) + extra;
-    return Math.min(t.min ?? 1, max) >= 2;
+    // an X count is judged at X = 1, the smallest X that aims at anything; a
+    // required PLAYER slot (Channel Through's opponent) is not a second unit
+    const need = targetMinimum(t, t.count === 'X' ? 1 : (t.count ?? 1));
+    return Array.from({ length: need }, (_, i) => slotWhat(t, i))
+      .filter(w => w !== 'opponent' && w !== 'player').length >= 2;
   });
 }
 

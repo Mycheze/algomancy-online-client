@@ -159,7 +159,7 @@ test('CR D7.2a Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar
 
 /** play Spell Excavation in the round-1 attack window, aiming at `name` in the
  * caster's own bin; returns the two seats */
-function excavate(h: Harness, seed: number, name: string): { A: Seat; D: Seat } {
+function excavate(h: Harness, seed: number, name: string, cast = true): { A: Seat; D: Seat } {
   const A = h.state.initiative as Seat, D = other(A);
   const atk = spawn(h, A, 'Curio Drifter');
   h.state.players[D]!.bin.push(name);
@@ -169,7 +169,7 @@ function excavate(h: Harness, seed: number, name: string): { A: Seat; D: Seat } 
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
+  if (cast) h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Spell Excavation') });
   return { A, D };
 }
 
@@ -254,22 +254,19 @@ test('CR 702.2a Spell Excavation: the grant does NOT waive printed timing '
   const DEPLOY = 'Sylvan Sprouting';
   assert.notEqual(getCard(DEPLOY).timing, 'battle', 'the fixture is a non-battle spell');
   assert.equal(getCard(DEPLOY).kind, 'spell');
-  const { D } = excavate(h, 16812, DEPLOY);
+  const { D } = excavate(h, 16812, DEPLOY, false);
   // the fixture is AFFORDABLE — the only thing standing between it and being
   // played is its printed timing, which is precisely what is under test
   assert.ok(new E(h.state).canPayCard(D, DEPLOY), 'the seat can pay for it');
-  const dec = h.state.decision;
   // CR D1.2a: an illegal target is not something you pick and have refused, it is
-  // something you were never shown — and with nothing legal at all and `min 0`
-  // carrying the "You may", the question is not even raised.
-  if (dec) {
-    assert.equal(dec.kind, 'targets');
-    assert.ok(!dec.options.some(o => o.label.startsWith(DEPLOY)),
-      'a spell whose printed timing can never be met before regroup is not offered: '
-      + 'the grant would be dead on arrival');
-    h.do({ type: 'decide', seat: dec.seat, choice: dec.options.length - 1 });   // decline (min 0)
-  }
-  pass(h); pass(h);
+  // something you were never shown — and the target is REQUIRED (CR 110.7; the
+  // owner, 2026-10-16: "Unless a card says 'up to', it must have targets in order
+  // to be cast"), so with nothing legal the Excavation is not castable at all.
+  const hi = give(h, D, 'Spell Excavation');
+  assert.ok(!legalActions(h.state, D).some(a => a.type === 'playCard' && a.handIndex === hi),
+    'a spell whose printed timing can never be met before regroup is not a target, '
+    + 'so the Excavation has none and is not offered');
+  assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: hi }), /no legal targets/);
   assert.ok(h.state.players[D]!.bin.includes(DEPLOY),
     'THE WAIVER THAT USED TO HAPPEN: a deploy-timing spell was played out of the '
     + 'bin in the middle of a battle, because an inline play never asks the timing');

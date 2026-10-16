@@ -276,7 +276,11 @@ test('CR 702.2a: a Spell Excavation in the bin is a legal target of another Spel
   assert.equal(h.state.decision?.kind, 'targets');
   assert.ok(h.state.decision!.options.some(o => o.label.startsWith('Spell Excavation')),
     'the bin copy is offered, and asking about it terminated');
-  pick(h, { doneTargets: true });                    // min 0: decline the "you may"
+  // CR 110.7 (owner, 2026-10-16): the target is required — the "you may" is about
+  // playing the spell later, so there is no "No targets" here
+  assert.ok(!h.state.decision!.options.some(o => 'doneTargets' in (o.value as object)),
+    'no decline: Spell Excavation must have its target');
+  pick(h, h.state.decision!.options[0]!.value);
   pass(h); pass(h);
   finishBattle(h);
 });

@@ -22,7 +22,7 @@ import type {
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
-  isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, specForSlot, zoneTriggersFor,
+  isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, requiresTargets, specForSlot, targetMinimum, zoneTriggersFor,
   type AsYouPlayOption,
   type Ability, type CardBehavior,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
@@ -7420,11 +7420,14 @@ export class E {
    */
   requiredSlotsFillable(spec: TargetSpec, region: number, ally: Seat, sourceId?: EntityId,
     xs?: readonly number[]): boolean {
-    const extra = spec.extraSlots ?? 0;
-    const max = spec.count === 'X' ? extra + 1 : (spec.count ?? 1) + extra;
-    const need = Math.min(spec.min ?? 1, max);
+    // CR 110.7, CT-303: `min: 'X'` requires every counted slot, so how many is a
+    // question about the X being judged — X = 3 against one legal unit is not
+    // fillable, X = 0 is fillable at nothing. Any other X spec keeps the
+    // x-independent rule above (one counted slot).
+    const needAt = (x: number | undefined): number => targetMinimum(spec,
+      spec.count !== 'X' ? (spec.count ?? 1) : spec.min === 'X' && x !== undefined ? x : 1);
     const fill = (x: number | undefined, i: number, picked: TargetRef[]): boolean => {
-      if (i >= need) return true;
+      if (i >= needAt(x)) return true;
       const taken = new Set(picked.map(r => JSON.stringify(r)));
       const chosen = picked.map(r => this.resolveTargetRef(r)).filter((t): t is ResolvedTarget => t !== null);
       const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)
@@ -8315,7 +8318,7 @@ export class E {
     // nothing. Only an X the targets are judged by is filtered: a variable cast
     // cost sizes the targets itself (collectPartTargets reads costPaid.x first).
     const eff = c.spellEffect;
-    const sized = eff?.targets && (eff.targets.min ?? 1) > 0
+    const sized = eff?.targets && requiresTargets(eff.targets)
       && !(eff.castCost && costAmount(eff.castCost) === null) ? eff.targets : undefined;
     const aimable = sized
       ? payable.filter(x => this.requiredSlotsFillable(sized, item.region, item.controller, item.sourceId, [x]))
@@ -9624,7 +9627,7 @@ export class E {
       if (!spec || !reaim) { c.done = true; continue; }
       const counted = spec.count === 'X' ? (item.x ?? 0) : (spec.count ?? 1);
       const max = counted + (spec.extraSlots ?? 0);
-      const min = Math.min(spec.min ?? 1, max);
+      const min = targetMinimum(spec, counted);
       const picked = c.targets ?? [];
       const taken = new Set(picked.map(r => JSON.stringify(r)));
       const chosen = picked
@@ -9867,6 +9870,14 @@ export class E {
     for (const m of mods) delete this.s.entities[m.id];
   }
 
+  /** CR 110.7: how many targets this part was REQUIRED to declare — its spec's
+   * minimum at the X it was cast for. At resolution a part with none declared
+   * runs only when this is 0: an "up to" spec, or `min: 'X'` cast at X = 0
+   * (Torrential Reclamation's sacrifice still happens, CR 107.2b). */
+  private requiredTargetsOf(item: StackItem, part: EffectPart, spec: TargetSpec): number {
+    return targetMinimum(spec, spec.count === 'X' ? (part.costPaid?.x ?? item.x ?? 0) : (spec.count ?? 1));
+  }
+
   private collectPartTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     for (let pi = 0; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
@@ -9881,7 +9892,7 @@ export class E {
         ? (part.costPaid?.x ?? item.x ?? 0)
         : (def.targets.count ?? 1);
       const max = counted + (def.targets.extraSlots ?? 0);
-      const min = Math.min(def.targets.min ?? 1, max);
+      const min = targetMinimum(def.targets, counted);   // CR 110.7 (min 'X' = all X)
       if (max <= 0) { part.targetsDone = true; continue; }
       while (!part.targetsDone && part.targets.length < max) {
         const n = part.targets.length;
@@ -10679,7 +10690,7 @@ export class E {
       // the part collectTargets already reported as "there is no legal target
       // for that — it does nothing", and an item made only of those is an
       // effect that wanted a target and never had one.
-      if (!part.targets.length) return (def.targets.min ?? 1) === 0;
+      if (!part.targets.length) return this.requiredTargetsOf(item, part, def.targets) === 0;
       return part.targets.some((t, ti) => !part.invalid?.includes(ti) && this.targetStillLegal(t));
     };
     const targeted = item.parts.some(p => !p.spent && !!effectByKey(p.effectKey).targets);
@@ -10846,7 +10857,7 @@ export class E {
       }
       // never had a target — but "up to one" (min 0) still runs, with an empty
       // ctx.targets, so its unconditional half happens
-      if (def.targets && !part.targets.length && (def.targets.min ?? 1) > 0) continue;
+      if (def.targets && !part.targets.length && this.requiredTargetsOf(item, part, def.targets) > 0) continue;
       const ctx: EffectCtx = {
         controller: item.controller,
         sourceName: item.card ?? item.label,

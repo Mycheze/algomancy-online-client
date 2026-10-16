@@ -26,7 +26,7 @@ import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
 import {
-  affinityPips, allCardNames, getCard, slotRestrict, specForSlot,
+  affinityPips, allCardNames, getCard, slotRestrict, specForSlot, targetMinimum,
   type ResolvedTarget, type TargetCtx, type TargetSpec,
 } from '../src/cards/dsl.ts';
 import { DECK_LIST, effectsOf } from '../src/cards/registry.ts';
@@ -85,9 +85,8 @@ function xReaders(): Reader[] {
 
 /** CR 110.7, judged independently: can `need` distinct slots be filled at `x`? */
 function fillableAt(g: E, spec: TargetSpec, region: number, ally: Seat, x: number): boolean {
-  const extra = spec.extraSlots ?? 0;
-  const max = spec.count === 'X' ? extra + 1 : (spec.count ?? 1) + extra;
-  const need = Math.min(spec.min ?? 1, max);
+  // an X count requires one counted slot, or all X of them for `min: 'X'` (CT-303)
+  const need = targetMinimum(spec, spec.count !== 'X' ? (spec.count ?? 1) : spec.min === 'X' ? x : 1);
   const go = (i: number, picked: TargetRef[]): boolean => {
     if (i >= need) return true;
     const chosen = picked.map(r => g.resolveTargetRef(r)).filter((t): t is ResolvedTarget => t !== null);

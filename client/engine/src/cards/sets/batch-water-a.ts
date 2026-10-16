@@ -804,13 +804,15 @@ card('Echo of Despair', {
 });
 
 // "Recall target unit in your bin. (Put it into your hand.)" — bb/4 4/2
-// Fish Horror Spell Unit. CR 110.1a: a real cast-time target ('binCard'). min 0
-// because it is a SPELL UNIT — an empty bin must not make the 4/2 uncastable,
-// and with nothing to recall the body still arrives.
+// Fish Horror Spell Unit. CR 110.1a: a real cast-time target ('binCard'), and a
+// REQUIRED one (CR 110.7): with no unit in your bin it is not castable, body and
+// all. It used to be `min: 0` so the 4/2 could be cast for the body alone; the
+// owner, 2026-10-16, ruled it is not castable without a target ("Unless a card
+// says 'up to', it must have targets in order to be cast").
 card('Eldritch Reclaimer', {
   spellEffect: {
     targets: {
-      what: 'binCard', min: 0,
+      what: 'binCard',
       prompt: 'Eldritch Reclaimer: recall target unit in your bin',
       restrict: (_g, t) => {
         if (!('binCard' in t)) return false;
