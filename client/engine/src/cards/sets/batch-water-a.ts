@@ -35,7 +35,7 @@
  */
 import type { EffectPart, Entity, FormationSpot, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E, InlineCostAsk } from '../../engine.ts';
-import { ambushEffect, card, getCard, isGraftMultiplier, specForSlot, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { ambushEffect, card, getCard, isGraftMultiplier, isSpellEffect, specForSlot, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
 import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -635,10 +635,14 @@ card('Celestial Purge', {
 //   > stack with type spell goes to the owners hand) and recalls all spell
 //   > units *from the board*."
 //
-//  1. THE STACK. Every other stack item that is a spell effect (spell /
-//     spellUnit / ambush / spellToken) leaves the stack; real cards go to
-//     their controller's hand, spell tokens are erased. Triggered/activated
-//     abilities and viruses stay (they are not "spell effects").
+//  1. THE STACK. Every other stack item that is a spell effect
+//     (`isSpellEffect`: spell / spellUnit / spellToken) leaves the stack; real
+//     cards go to their controller's hand, spell tokens are erased.
+//     Triggered/activated abilities, viruses, {Battle} units and AMBUSHES stay
+//     — none is a spell (report #218: "anything currently on the stack with
+//     type spell", and an Ambush is a unit card — _passer, Caleb deferring:
+//     "From 'not spell' you can have Triggered/Activated ability, Ambush or
+//     units"). The Ambush stays and resolves after the Reversal.
 //  2. THE BOARD. Every printed **Spell Unit** standing in this region is
 //     recalled to its CONTROLLER's hand. This half did not exist until the owner's 2026-08-29 ruling —
 //     the card iterated `g.s.stack` and nothing else, and `recallKinds` is a
@@ -667,14 +671,13 @@ card('Celestial Purge', {
 card('Cosmic Reversal', {
   spellEffect: {
     run: (g, ctx) => {
-      const recallKinds = new Set(['spell', 'spellUnit', 'spellToken', 'ambush']);
       // removeFromStack() is the bare primitive — the item leaves the
       // stack and the CALLER says where its card goes. This used to rebuild
       // g.s.stack from a `keep` array because that primitive did not exist.
       const considered = g.s.stack.length;
       let recalled = 0;
       for (const it of [...g.s.stack]) {
-        if (!recallKinds.has(it.kind)) continue;
+        if (!isSpellEffect(it.kind)) continue;   // CR 700.1a
         const item = g.removeFromStack(it.id);
         if (!item) continue;
         recalled++;

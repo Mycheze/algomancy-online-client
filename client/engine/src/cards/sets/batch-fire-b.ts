@@ -24,7 +24,7 @@
  *    a bin holds names, so naming the card IS the reference (BinRef).
  */
 import type { EntityId, Seat } from '../../types.ts';
-import { card, firstTarget, getCard, type EffectDef } from '../dsl.ts';
+import { card, firstTarget, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eventCardCost } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -50,7 +50,8 @@ const isSpellCard = (name: string): boolean => {
 // on the host's controller: "allied" is read from the carrier's side).
 // Despawn = ANY leave-play: 'died' + 'despawned' (the Bloated Manablub
 // reading). "All allied spells" = every un-negated spell-effect item the
-// carrier's controller has on the stack (same kinds as stackSpell targeting).
+// carrier's controller has on the stack — `isSpellEffect`, the same predicate
+// stackSpell targeting reads (an Ambush is not a spell: report #218).
 card('Molten Riftbreaker', {
   abilities: [{
     type: 'triggered', events: ['spawned'], self: true,
@@ -69,8 +70,7 @@ card('Molten Riftbreaker', {
       run: (g, ctx) => {
         let negated = 0;
         for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
-          if ((it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'spellToken' || it.kind === 'ambush')
-            && it.controller === ctx.controller) { g.negate(it.id); negated++; }
+          if (isSpellEffect(it.kind) && it.controller === ctx.controller) { g.negate(it.id); negated++; }
         }
         if (!negated) g.ev('info', 'Molten Riftbreaker: you have no spell on the stack — nothing is negated.');
       },

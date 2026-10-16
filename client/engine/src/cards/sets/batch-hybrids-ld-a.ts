@@ -112,7 +112,7 @@
  */
 import type { CardName, EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, type EffectDef } from '../dsl.ts';
+import { card, isSpellEffect, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, isUnitCard, pickUnit } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -658,8 +658,11 @@ card('Dream Lapse', {
         return;
       }
       g.ev('negated', `${it.label} is recalled off the stack.`, { id: it.id });
-      const recallable = it.card !== undefined
-        && (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'virus' || it.kind === 'ambush');
+      // Its target is a spell effect (`isSpellEffect`, the 'stackSpell' kind),
+      // so the card behind it is a spell or a spell unit — or a spell token,
+      // which has no card to return (below). Derived from the same predicate,
+      // never a second kind list: an Ambush is not a spell (report #218).
+      const recallable = it.card !== undefined && it.kind !== 'spellToken' && isSpellEffect(it.kind);
       if (recallable) {
         // CR 402.4: off the STACK and into a hand — `from: 'stack'`
         g.toHand(it.controller, it.card!, 'stack');

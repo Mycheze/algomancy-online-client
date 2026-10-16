@@ -64,18 +64,21 @@ test('Nothyr: "target nonspell effect" reaches a VIRUS on the stack (CR 700.1b)'
   finishBattle(h);
 });
 
-test('Nothyr: an AMBUSH stays out of reach — CR 700.1a puts it on the SPELL side', () => {
+test('Nothyr: an AMBUSH is a nonspell effect, so it is in reach (report 218)', () => {
   // The other direction of the same line, so the widening above cannot drift
-  // into "Nothyr negates anything". `stackSpell` is "spell / spell unit /
-  // spell token / ambush"; "nonspell" is precisely its complement.
+  // into "Nothyr negates anything": the spell kinds stay out. "Nonspell" is
+  // precisely the complement of `isSpellEffect` — and an Ambush is NOT a spell
+  // (report #218, the owner 2026-10-16: "If Caleb says its not a spell, it's
+  // not a spell"; _passer, Caleb deferring: "From 'not spell' you can have
+  // Triggered/Activated ability, Ambush or units"). It used to be pinned out.
   const spec = getCard('Nothyr').abilities![0]!.effect.targets!;
   assert.equal(spec.what, 'stackEffect', 'the superset kind (CR 700.1)');
-  const kinds = ['spell', 'spellUnit', 'spellToken', 'ambush', 'triggered', 'activated', 'virus'];
+  const kinds = ['spell', 'spellUnit', 'spellToken', 'ambush', 'unit', 'triggered', 'activated', 'virus'];
   const g = { s: { stack: kinds.map((kind, i) => ({ id: i, kind })) } } as never;
   const allowed = kinds.filter((_, i) => spec.restrict!(g, { stack: i } as never, {} as never));
-  assert.deepEqual(allowed, ['triggered', 'activated', 'virus'],
-    'exactly CR 700.1b\'s nonspell half — no more (ambush and the spell kinds are spell-side) '
-    + 'and no less (a virus being applied is a nonspell effect)');
+  assert.deepEqual(allowed, ['ambush', 'unit', 'triggered', 'activated', 'virus'],
+    'exactly the nonspell half: an ambush, a {Battle} unit mid-cast, the two abilities and a virus '
+    + 'being applied; the three spell kinds stay out');
 });
 
 // ── Rotling: [Switch1] is a graft symbol ─────────────────────────────────

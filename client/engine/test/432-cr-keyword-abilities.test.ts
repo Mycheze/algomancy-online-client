@@ -187,7 +187,10 @@ test('cr:keywords.abilities.ambush.saves — ambushing the target of a Fireball 
   finishBattle(h);
 });
 
-test('cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer, which negates a target spell effect, negates an Ambush; the ambusher goes to the bin', () => {
+test('cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer, which negates a target spell effect, cannot target an Ambush; the Ambush resolves (report 218)', () => {
+  // Report #218 (the owner, 2026-10-16: "If Caleb says its not a spell, it's
+  // not a spell"): an Ambush is a unit card played during battle, NOT a spell
+  // effect. This test used to pin the opposite — Dreadwave negating it.
   const h = new Harness(52203);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -201,14 +204,15 @@ test('cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer, which ne
   pick(h, { unit: raider });
   const amb = h.state.stack.find(i => i.kind === 'ambush')!;
   assert.ok(amb, 'the Ambush is on the stack');
+  assert.equal(h.state.stack.length, 1, 'and it is the only thing there');
   passUntil(h, D);
-  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dreadwave Devourer') });
-  assert.ok(offered(h).includes(JSON.stringify({ stack: amb.id })), 'the Ambush is a legal spell effect target');
-  pick(h, { stack: amb.id });
+  const dw = give(h, D, 'Dreadwave Devourer');
+  assert.ok(!h.legal(D).some(a => a.type === 'playCard' && a.handIndex === dw),
+    'Dreadwave is not castable: an Ambush is not a spell effect, so it has no legal target');
+  assert.throws(() => h.do({ type: 'playCard', seat: D, handIndex: dw }), IllegalAction, 'and refused');
   drain(h);
-  assert.ok(!unitsOf(h, A).some(u => u.card === 'Lurking Slimebeast'), 'the ambusher never arrived');
-  assert.ok(h.state.players[A]!.bin.includes('Lurking Slimebeast'), 'the ambushing card is in its bin');
-  assert.ok(ent(h, raider), 'its target was not recalled');
+  assert.ok(unitsOf(h, A).some(u => u.card === 'Lurking Slimebeast'), 'the Ambush resolved: the ambusher arrived');
+  assert.ok(!ent(h, raider), 'and its ally was recalled');
   finishBattle(h);
 });
 

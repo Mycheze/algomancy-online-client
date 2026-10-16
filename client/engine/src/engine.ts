@@ -22,7 +22,7 @@ import type {
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
-  isEntityTarget, isGraftable, isPlayedSpellKind, isTriggered, mixedAllegiance, specForSlot, zoneTriggersFor,
+  isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, specForSlot, zoneTriggersFor,
   type AsYouPlayOption,
   type Ability, type CardBehavior,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
@@ -7618,9 +7618,10 @@ export class E {
     if (spec.what === 'stackSpell' || spec.what === 'stackEffect') {
       for (const it of this.s.stack) {
         if (it.id === excludeStackId) continue;   // CR 704.4: a negated item is not here to skip
-        // an ambush is a played card's effect on the stack — negatable (CR 803.6h)
-        const spellish = it.kind === 'spell' || it.kind === 'spellUnit'
-          || it.kind === 'spellToken' || it.kind === 'ambush';
+        // CR 700.1a: "spell effect" is `isSpellEffect` — never a hand-copied kind
+        // list. An Ambush is NOT one (report #218): a plain "target effect"
+        // reaches it, "target spell effect" does not.
+        const spellish = isSpellEffect(it.kind);
         // CR 700.1, 700.1a (owner, 2026-08-24): "ANYTHING on the stack is an effect,
         // including units and spell units. Units aren't spells, so if they say
         // 'spell effect' a unit would be unaffected." So 'stackEffect' is

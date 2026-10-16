@@ -430,8 +430,10 @@ card('Fire Resource', {});
 // create a Fireball 1." — rr/4 {Battle} Arcane Spell. At resolution Flame
 // Shield is already off the stack, so "all other effects" = every remaining
 // un-negated stack item (spells, spell units, spell tokens, triggered/
-// activated abilities, viruses, ambushes — CR 803.6h counts them all as negatable
-// effects). Only nontoken SPELLS (kind spell / spellUnit) pay out Fireballs.
+// activated abilities, viruses, ambushes — CR 700.1: all of them are effects).
+// Only nontoken SPELLS pay out Fireballs: `isSpellEffect` minus the spell
+// token — never a hand-copied kind list, so an Ambush (not a spell, report
+// #218) pays nothing.
 card('Flame Shield', {
   spellEffect: {
     creates: ['Fireball'],
@@ -441,7 +443,7 @@ card('Flame Shield', {
       // is taken off the copy's own entries, never off the live stack.
       for (const it of [...g.s.stack]) {
         g.negate(it.id);
-        if (it.kind === 'spell' || it.kind === 'spellUnit') fireballs++;
+        if (isSpellEffect(it.kind) && it.kind !== 'spellToken') fireballs++;
       }
       if (!g.s.stack.length && !fireballs) {
         g.ev('info', 'Flame Shield: there is no other effect on the stack — nothing is negated.');

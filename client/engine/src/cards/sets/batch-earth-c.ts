@@ -8,8 +8,8 @@
  * CR 704.6, 704.6b (fizzle vs partial), CR 704.1a (mid-resolution choices via ctx.choose),
  * CR 803.4 (bounded budgets per card), CR 601.2, 101.6 (regions exclusive — listeners and
  * "all units" are region-scoped), CR 608.4c (a blocked column stays blocked — the
- * sticky blocks keys ARE the blocked columns), CR 802.3 (Deadly), CR 803.6h (an ambush
- * on the stack counts as a spell effect), CR 601.4d ("each opponent" reads the
+ * sticky blocks keys ARE the blocked columns), CR 802.3 (Deadly), CR 700.1a (`isSpellEffect`
+ * is "spell effect"; an ambush on the stack is NOT one — report #218), CR 601.4d ("each opponent" reads the
  * event region's present seats).
  *
  * PARKED (needs engine machinery that does not exist yet — every card still
@@ -74,7 +74,7 @@
  */
 import type { EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, firstTarget, getCard, isPlayedSpellKind, unitRestrict, type EffectDef } from '../dsl.ts';
+import { card, firstTarget, getCard, isPlayedSpellKind, isSpellEffect, unitRestrict, type EffectDef } from '../dsl.ts';
 import { isEnt } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -168,9 +168,9 @@ card('Seismomancy', {
 // "[Augment] Erase me: Negate all spell effects." — ee/2 2/2 Arcane
 // Primordial {Virus} Unit. An ACTIVATED ability in the [Augment] text box
 // (live when played normally, donated to hosts, playable as a battle Virus).
-// "All spell effects" = every un-negated spell / spell unit / spell token /
-// ambush on the stack (CR 803.6h counts ambushes; triggered and activated abilities
-// are not spell effects).
+// "All spell effects" = every un-negated stack item `isSpellEffect` accepts —
+// spell / spell unit / spell token (CR 700.1a). An Ambush is not one (report
+// #218), and neither is a triggered or activated ability.
 //
 // "ERASE ME" IS A COST, and that is what makes this card the odd one out of
 // the four CARD-TODO #15 named. The other three are SPELLS erasing themselves
@@ -193,7 +193,7 @@ card('Skybreaker', {
       run: (g) => {
         let negated = 0;
         for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
-          if (it.kind === 'spell' || it.kind === 'spellUnit' || it.kind === 'spellToken' || it.kind === 'ambush') {
+          if (isSpellEffect(it.kind)) {
             g.negate(it.id);
             negated++;
           }

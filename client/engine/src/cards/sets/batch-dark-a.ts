@@ -77,7 +77,7 @@
  */
 import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
+import { card, isSpellEffect, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -442,8 +442,8 @@ card('Nothyr', {
       // which is exactly the qualifier Nothyr prints. min 0 = "up to one".
       //
       // The NONSPELL half is the COMPLEMENT of the spell one, and nothing
-      // else: 'stackSpell' is "spell / spell unit / spell token / ambush", so
-      // "nonspell effect" is every OTHER item on the stack. That used to mean
+      // else: 'stackSpell' is `isSpellEffect` (spell / spell unit / spell
+      // token), so "nonspell effect" is every OTHER item on the stack. That used to mean
       // triggered + activated + virus, because an earlier ruling said a unit on the stack was not an effect at all.
       //
       // The owner (2026-08-24) reversed that reading (now CR 700.1): "ANYTHING on the stack is an
@@ -453,16 +453,17 @@ card('Nothyr', {
       // sentence), which is precisely what "nonspell effect" names — so
       // Nothyr answers it, and the restriction is written as the complement
       // rather than as a whitelist that would have to be edited again the next
-      // time a kind is added. An 'ambush' is spell-side by CR 700.1a (still
-      // good law: the effect half was widened later, the spell line did not move) and stays out.
+      // time a kind is added. An AMBUSH is a nonspell effect too (report #218: an
+      // Ambush is a unit card, not a spell — _passer, Caleb deferring: "From
+      // 'not spell' you can have Triggered/Activated ability, Ambush or units"),
+      // so Nothyr reaches it.
       targets: {
         what: 'stackEffect', min: 0,
         prompt: 'Nothyr: negate up to one target nonspell effect',
         restrict: (g, t) => {
           if (!('stack' in t)) return false;
           const it = g.s.stack.find(i => i.id === t.stack);
-          return !!it && it.kind !== 'spell' && it.kind !== 'spellUnit'
-            && it.kind !== 'spellToken' && it.kind !== 'ambush';
+          return !!it && !isSpellEffect(it.kind);   // CR 700.1b: the complement
         },
       },
       run: (g, ctx) => {

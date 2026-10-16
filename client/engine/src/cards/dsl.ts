@@ -291,8 +291,9 @@ export interface TargetSpec {
    * Null Drone, Dream Lapse) and one says "target NONSPELL effect" (Nothyr).
    * Both qualifiers would be dead words if plain "effect" meant only spells,
    * so plain "effect" is the SUPERSET.
-   *   'stackSpell'  — spell / spell unit / spell token / ambush. The cards
-   *                   that spell out "spell effect".
+   *   'stackSpell'  — `isSpellEffect`: spell / spell unit / spell token (an
+   *                   Ambush is NOT one, report #218). The cards that spell
+   *                   out "spell effect".
    *   'stackEffect' — LITERALLY EVERY ITEM ON THE STACK. The cards that just
    *                   say "effect".
    * CR 700.1, 700.1a (owner, 2026-08-24): "ANYTHING on the stack is an effect, including
@@ -1495,9 +1496,35 @@ export function isPlayedSpellKind(kind: StackItem['kind']): boolean {
   return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';
 }
 
-/** CR 707.7a: "your SPELLS" on the effect-attribute channel (Emberflame, Envoy of
- * Lightning). The same noun as `isPlayedSpellKind`, and deliberately the same
- * predicate — see there for why a spell token is in. */
+/**
+ * CR 700.1a — "SPELL EFFECT" ON THE STACK, in one place. Every card whose text
+ * asks whether a stack item is a spell reads it through this, and nothing
+ * lists the stack kinds by hand:
+ *  · "your SPELLS" on the effect-attribute channel (CR 707.7a: Emberflame,
+ *    Envoy of Lightning);
+ *  · "target spell effect" — the 'stackSpell' target kind (Dreadwave
+ *    Devourer, Null Drone, Dream Lapse);
+ *  · "all (other / allied) spell effects / spells" — Cosmic Reversal,
+ *    Skybreaker, Molten Riftbreaker;
+ *  · "target NONSPELL effect" — Nothyr, which is its complement.
+ * (apply.ts's STACK_VIRUS_HOSTS spells out the same three kinds; it is pinned
+ * by a comprehensive-rules span, so it is left as written.)
+ *
+ * The same noun as `isPlayedSpellKind`, and deliberately the same predicate —
+ * see there for why a spell token is in.
+ *
+ * ⚠ AN AMBUSH IS NOT A SPELL EFFECT (report #218). The old reading put it on
+ * the spell side on an engine call with no designer source behind it. The
+ * designer's side says otherwise: _passer (2025-12-13, rules-questions,
+ * Caleb deferring to him) — *"From 'not spell' you can have Triggered/Activated
+ * ability, Ambush or units that can be played during combat"*; Caleb
+ * (2023-07-09) — an Ambush cannot be Cosmic Denial'd *"because it's not a
+ * spell"*. The owner, 2026-10-16: *"If Caleb says its not a spell, it's not
+ * a spell and we need to fix that."* An Ambush is a UNIT card played during
+ * battle; it is still an EFFECT (CR 700.1), so a plain "target effect" and a
+ * "target nonspell effect" both reach it. A unit, a virus and a triggered or
+ * activated ability are not spells either.
+ */
 export function isSpellEffect(kind: EffectAttrCtx['kind']): boolean {
   return isPlayedSpellKind(kind);
 }
