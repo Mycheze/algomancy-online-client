@@ -44,7 +44,7 @@
  */
 import doesJson from './does-lines.json' with { type: 'json' };
 import type { EffectPart, Entity, EntityId, GameState, Seat, StackItem, TargetRef } from '../engine/src/types.ts';
-import { getCard } from '../engine/src/cards/dsl.ts';
+import { effectByKey, eventAmountOf, getCard, type EffectDef } from '../engine/src/cards/dsl.ts';
 import { eventCardCost } from '../engine/src/cards/sets/helpers.ts';
 import { E } from '../engine/src/engine.ts';
 
@@ -212,7 +212,11 @@ export const AMOUNT: Readonly<Record<string, AmountFn>> = {
  */
 export function amountOf(item: StackItem, part: EffectPart, state: GameState): Amount | undefined {
   if (item.x !== undefined && part.effectKey === `spell:${item.card}`) return fixed(item.x);
-  const n = num(eventData(item)['n']);
+  // CR 608.9a, report #215: the amount this part's effect declares it reads
+  // off the event (EffectDef.eventAmount), not always the event's `n`.
+  let def: EffectDef | undefined;
+  try { def = effectByKey(part.effectKey); } catch { def = undefined; }
+  const n = item.event ? eventAmountOf(def, item.event, item.sourceId) : undefined;
   const sac = part.costPaid?.sacrificedUnits;
   const fn = AMOUNT[part.effectKey];
   let e: E;

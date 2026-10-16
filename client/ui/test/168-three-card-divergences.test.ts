@@ -147,8 +147,9 @@ test('CR D7.2a Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar
   const after = ui.state();
   assert.equal(after.decision, null, 'the click answered the question');
   const prophet = Object.values(after.entities).find(x => x.card === 'Prediction Prophet')!;
-  assert.equal(prophet.budgets['predictedLife'], life + 20 + 1,
-    'the client sent the NUMBER, not an index: the card stored prediction+1 for life+20');
+  // the prediction is a real field now (it was budgets.predictedLife, stored +1)
+  assert.equal(prophet.predicted?.life, life + 20,
+    'the client sent the NUMBER, not an index: the card stored life+20');
 });
 
 // ═══ §2 — UNTIL-REGROUP PLAY WINDOW ══════════════════════════════════════

@@ -278,7 +278,7 @@ test("Rippleback Skulker: my column connects to a player → take a card from th
   assert.equal(dec.kind, 'targets', 'CR 110.1a: a declared target, not a mid-resolution pick');
   assert.equal(dec.seat, A, 'the ability controller picks');
   // only the DAMAGED player's bin is offered — the restriction reads the event
-  assert.ok(dec.options.every(o => /No more targets|Player 1's bin/.test(o.label)),
+  assert.ok(dec.options.every(o => /^No (more )?targets$|Player 1's bin/.test(o.label)),
     `only that player's bin: [${dec.options.map(o => o.label)}]`);
   decide(h, l => l.startsWith('Jelly'));
   // CR 608.9b, 608.9: the target question above is unmoved (it is asked on the way to the

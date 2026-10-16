@@ -213,7 +213,7 @@ test('a bin is a targetable zone, and two copies of one card are two targets', (
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Tilling the Graves') });
   const bn = h.state.players[A]!.name;
   assert.deepEqual(h.state.decision!.options.map(o => o.label),
-    [`Curio Drifter (${bn}'s bin)`, `Curio Drifter #2 (${bn}'s bin)`, 'No more targets'],
+    [`Curio Drifter (${bn}'s bin)`, `Curio Drifter #2 (${bn}'s bin)`, 'No targets'],   // #206: nothing picked yet
     'both copies are separate targets, and the spell in the bin is not one');
   pick(h, { bin: { seat: A, card: 'Curio Drifter' } });
   pick(h, { bin: { seat: A, card: 'Curio Drifter', nth: 1 } });

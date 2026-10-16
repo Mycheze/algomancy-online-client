@@ -139,7 +139,7 @@
 import type { CardName, Entity, EntityId, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import {
-  card, getCard, isAugment, isPlayedSpellKind, specForSlot,
+  card, doneTargetsLabel, getCard, isAugment, isPlayedSpellKind, specForSlot,
   type EffectCtx, type EffectDef, type ResolvedTarget,
 } from '../dsl.ts';
 import { selfOf, isEnt, pickUnit, perSeatRows } from './helpers.ts';
@@ -217,7 +217,7 @@ function chooseCopyTargets(
     if (!cands.length) break;   // a later slot with nothing legal ends the collection
     const options: { label: string; value: unknown }[] =
       cands.map(c => ({ label: g.targetLabel(c), value: c }));
-    if (picked.length >= min) options.push({ label: 'No more targets', value: { doneTargets: true } });
+    if (picked.length >= min) options.push({ label: doneTargetsLabel(picked.length), value: { doneTargets: true } });
     const v = ctx.choose(`newTarget${n}`, {
       kind: 'electricPath', seat: copier,
       prompt: `${ctx.sourceName}: new target for the copy of ${cardName}`

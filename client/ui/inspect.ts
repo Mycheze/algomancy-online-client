@@ -6,7 +6,7 @@
  * document. main.ts renders the answers; test/50-ui-inspect.test.ts checks
  * them.
  */
-import { allCardNames, effectByKey, getCard, isAugment, isGraftable } from '../engine/src/cards/dsl.ts';
+import { allCardNames, effectByKey, eventAmountOf, getCard, isAugment, isGraftable, NO_TARGETS, type EffectDef } from '../engine/src/cards/dsl.ts';
 import { E } from '../engine/src/engine.ts';
 import { allureViolation } from '../engine/src/apply.ts';
 import { specForSlot } from '../engine/src/cards/dsl.ts';
@@ -819,6 +819,37 @@ export function suppressionNote(sup: { attrs: boolean; abilities: boolean; by: r
     badge: { t: `⊘ ${sup.attrs && sup.abilities ? 'all off' : `${what} off`}`, cls: 'supp', title: `${what} switched off${by}` },
     banner: `⊘ ${what.charAt(0).toUpperCase()}${what.slice(1)} off${sup.by.length ? ` — ${sup.by.join(', ')}` : ''}`,
   };
+}
+
+/**
+ * The TYPE BAR's height as a fraction of the scan's height. The bar is a fixed
+ * band: its bottom edge sits 45–51 px (of 1000) below `textTop` on every one
+ * of the 505 read scans (bot/pipeline/read_text_boxes.py) — so 0.052 covers it
+ * on all of them without reaching the first line of the text box.
+ */
+export const TYPE_BAR_HEIGHT = 0.052;
+
+/**
+ * Report #208 (HVJE, the owner): *"The "attributes off" UI looks like it's
+ * covering abilities as well, which it shouldn't be. Attributes and abilities
+ * are different things."* The engine always kept them apart (E.suppressionOf);
+ * the zoom drew ONE grey block from the type bar down whatever was off.
+ *
+ * Which part of a zoomed card goes grey, as fractions of the card's height:
+ *  - attributes off (Formless, Suppression Field's column): the TYPE BAR only,
+ *    [textTop, textTop + TYPE_BAR_HEIGHT] — the line the attributes print on;
+ *  - abilities off (The Everywhere): from the bar's bottom edge down, over the
+ *    text box and the mod strips under the card (`bottom: null` = run to the
+ *    copy's bottom, the owner's "The Unaware mod is half visible");
+ *  - both (Monke): the whole rules box, the bar included, to the bottom.
+ * Null when nothing is off.
+ */
+export function suppressionBand(sup: { attrs: boolean; abilities: boolean }, textTop: number):
+  { kind: 'attrs' | 'abilities' | 'all'; top: number; bottom: number | null } | null {
+  if (sup.attrs && sup.abilities) return { kind: 'all', top: textTop, bottom: null };
+  if (sup.attrs) return { kind: 'attrs', top: textTop, bottom: textTop + TYPE_BAR_HEIGHT };
+  if (sup.abilities) return { kind: 'abilities', top: textTop + TYPE_BAR_HEIGHT, bottom: null };
+  return null;
 }
 
 /** one of the five things a card in hand can be offering */
@@ -1903,6 +1934,16 @@ export function stackItemModes(item: StackItem, g?: E): StackModeRow[] {
   return out;
 }
 
+/** CR 608.9a — the "that much" a triggered item will resolve with, read the
+ * way its effect declares (`eventAmountOf`); the event's `n` when it declares
+ * nothing or its key cannot be resolved here. */
+export function triggerAmount(item: StackItem): number | undefined {
+  const key = item.parts.find(p => !p.spent)?.effectKey ?? item.parts[0]?.effectKey;
+  let def: EffectDef | undefined;
+  try { def = key ? effectByKey(key) : undefined; } catch { def = undefined; }
+  return eventAmountOf(def, item.event, item.sourceId);
+}
+
 export function stackItemX(item: StackItem): StackXRow[] {
   const out: StackXRow[] = [];
   if (item.x !== undefined) {
@@ -1910,7 +1951,10 @@ export function stackItemX(item: StackItem): StackXRow[] {
   }
   if (item.kind === 'triggered' && VARIABLE_LABEL.test(item.label)) {
     const d = item.event?.data;
-    const n = d?.n;
+    // CR 608.9a, report #215: the amount the effect itself DECLARES it reads
+    // (EffectDef.eventAmount) — Vroot's is its own column's share of a combat
+    // hit, not the event's `n`, which totals every connecting column.
+    const n = triggerAmount(item);
     if (typeof n === 'number') {
       const total = d?.total;
       const from = [
@@ -2001,6 +2045,23 @@ export interface OptionSplit {
   plain: number[];
   /** "No more targets" / "Don't pay" — last, and secondary */
   decline: number[];
+}
+
+/**
+ * How a member of the decline bucket is drawn.
+ *  - `doneCost` is the AFFIRMATIVE end of a ramp ("this is my X") — `commitbtn`;
+ *  - report #206 (APNA, Minor Kraken grafted with Fester): the stop of an
+ *    "up to N" collection with NOTHING picked yet reads "No targets" and is an
+ *    ordinary button. The owner: *"Make there be a "No targets" as the button,
+ *    especially for an "up to 1" option."* Debeli could not find the decline
+ *    when it was the dim dashed "No more targets" at the far right;
+ *  - everything else backs out and stays quiet (`declinebtn`, playtest UZRG).
+ */
+export function declineButtonClass(o: DecisionOptionLike): 'commitbtn' | 'declinebtn' | '' {
+  const v = o.value;
+  if (!!v && typeof v === 'object' && 'doneCost' in (v as object)) return 'commitbtn';
+  if (!!v && typeof v === 'object' && 'doneTargets' in (v as object) && o.label === NO_TARGETS) return '';
+  return 'declinebtn';
 }
 
 /**

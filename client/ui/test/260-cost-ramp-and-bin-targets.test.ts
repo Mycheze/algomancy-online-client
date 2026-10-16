@@ -50,6 +50,7 @@ import { E } from '../../engine/src/engine.ts';
 import { give, giveResources, spawn, toDeployment, toNextBattle, withE } from '../../engine/test/util.ts';
 import { viewFor } from '../../server/view.ts';
 import { client, zone } from './ui-driver.ts';
+import { declineButtonClass } from '../inspect.ts';
 import type { Action, Decision } from '../../engine/src/types.ts';
 
 /** the real client, driven — see test/ui-driver.ts */
@@ -193,8 +194,23 @@ test('CR D7.2c that is enough is a full button, and the plain declines stay quie
   const stop = optIdx(dec, 'doneTargets');
   assert.ok(stop >= 0, 'the fixture really offers a "no more targets" decline');
   const bhtml = ui.join(hb.state, 0, []);
-  assert.ok(bhtml.includes(`<button class="declinebtn" data-btn="decide" data-i="${stop}"`),
-    '"No more targets" was promoted too — only doneCost commits; the rest back out');
+  // Report #206 (APNA, Minor Kraken) moved ONE member out of the quiet bucket,
+  // by the owner's ruling: *"Make there be a "No targets" as the button,
+  // especially for an "up to 1" option."* The stop of an up-to slot with
+  // NOTHING picked yet reads "No targets" and is an ordinary button. It is
+  // still drawn in the decline span, after the picks, so it never sits where
+  // "go" was a click ago — the UZRG half of this control still holds.
+  assert.equal(dec.options[stop]!.label, 'No targets', 'nothing is picked in this fixture');
+  assert.ok(bhtml.includes(`<button data-btn="decide" data-i="${stop}"`),
+    '"No targets" is an ordinary button (report 206)');
+  assert.match(bhtml, new RegExp(`<span class="decdecline"><button data-btn="decide" data-i="${stop}"`),
+    'and it is still drawn last, in the decline span');
+  // …and every stop that BACKS OUT stays quiet: only doneCost commits
+  for (const o of [
+    { label: 'No more targets', value: { doneTargets: true } },
+    { label: "Don't pay — skip this effect", value: { declineCost: true } },
+    { label: 'No more mods', value: { doneMods: true } },
+  ]) assert.equal(declineButtonClass(o), 'declinebtn', `${o.label} was promoted — only doneCost commits; the rest back out`);
 });
 
 // ═══ §4 ONE CLICK SPENDS THE DIALLED X, AND NO MORE ═══════════════════

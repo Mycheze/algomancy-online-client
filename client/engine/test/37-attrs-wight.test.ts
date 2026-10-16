@@ -839,7 +839,7 @@ test('CR 110.1c: "recall UP TO ONE target cached card" still gains the life when
   whiteBox(h, e => { e.cacheCard(A, 'T37 Wall', 'effect'); });
   life = h.state.players[A]!.life;
   h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'T37 Observer') });
-  pickBy(h, o => o.label === 'No more targets');
+  pickBy(h, o => o.label === 'No targets');   // #206: nothing picked yet
   drainStack(h);
   assert.equal(h.state.players[A]!.life, life + 3, 'declining is a choice, not a fizzle');
   assert.deepEqual(h.q.cache(A).map(c => c.card), ['T37 Wall'], 'and the cache is untouched');

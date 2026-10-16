@@ -867,6 +867,19 @@ function untilRegroupLines(e: E, u: Entity): TextLine[] {
 // ── the box ───────────────────────────────────────────────────────────
 
 /**
+ * CR 107.9 — the life total this unit PREDICTED this turn (Prediction Prophet),
+ * or undefined. A prediction is said out loud, so it is public and both seats
+ * read it (Discord, relayed by the owner: *"The prediction made with a card like
+ * Prediction Prophet is public information and needs to be displayed on the
+ * card so all can see."*). Only the current turn's counts — the engine checks
+ * it at that turn's start of deployment and never after.
+ */
+export function predictionOf(u: Entity, turn: number): number | undefined {
+  const p = u.predicted;
+  return p && p.turn === turn ? p.life : undefined;
+}
+
+/**
  * The text box of a live entity, as the game sees it.
  *
  * Order is the order a physical modded card reads: the printed box first
@@ -1181,6 +1194,9 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   // the only one, and it stays.
   if (u.x !== undefined && !xShown) state.push(`X = ${u.x}`);
   if (u.token) state.push('token — erased when it leaves play');
+  // a remembered PUBLIC choice is shown on the card (Prediction Prophet) — CR D6.9 family
+  const predicted = predictionOf(u, e.s.turn);
+  if (predicted !== undefined) state.push(`Predicted life: ${predicted}`);
 
   const stats = u.kind === 'mod' ? null : statBreakdown(e, u);
   return {

@@ -28,6 +28,7 @@ import {
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
   type ResolvedTarget, type TargetCtx, type TargetRestrict, type TargetSpec, type TokenRequest, type TriggeredAbility,
 } from './cards/dsl.ts';
+import { doneTargetsLabel } from './cards/dsl.ts';   // report #206: the stop option's label
 import { rngShuffle } from './rng.ts';
 
 /** CR 710.1: a whole-identity copy — "become a copy of target unit" contributes
@@ -9275,7 +9276,7 @@ export class E {
       if (!cands.length) { c.done = true; continue; }   // a later slot with nothing legal ends it
       const options: DecisionOption[] = cands.map(cd =>
         ({ label: this.targetLabel(cd), value: cd }));
-      if (picked.length >= min) options.push({ label: 'No more targets', value: { doneTargets: true } });
+      if (picked.length >= min) options.push({ label: doneTargetsLabel(picked.length), value: { doneTargets: true } });
       this.suspend(
         { type: 'cast', stage: 'asYouPlay', item, partIndex: i, targetIndex: 0, then, moreItems },
         {
@@ -9567,7 +9568,7 @@ export class E {
             : {}),
         }));
         if (part.targets.length >= min) {
-          options.push({ label: 'No more targets', value: { doneTargets: true } });
+          options.push({ label: doneTargetsLabel(part.targets.length), value: { doneTargets: true } });   // #206
         }
         const base = def.targets.slotPrompts?.[n] ?? def.targets.prompt;
         this.suspend(

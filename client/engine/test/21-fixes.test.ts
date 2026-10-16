@@ -372,14 +372,16 @@ test('multi-target validation: no duplicate targets, and no done below the minim
   const i = h.state.players[D]!.hand.push('Fight') - 1;
   h.do({ type: 'playCard', seat: D, handIndex: i });
   const first = h.state.decision!;
-  assert.ok(!first.options.some(o => o.label === 'No more targets'),
+  // keyed on the VALUE: the stop's label depends on how many are picked (#206)
+  const isStop = (v: unknown) => !!v && typeof v === 'object' && 'doneTargets' in (v as object);
+  assert.ok(!first.options.some(o => isStop(o.value)),
     'no done before the min — Fight prints two targets and means both');
   h.do({ type: 'decide', seat: D, choice: 0 });
   const second = h.state.decision!;
   const firstVal = JSON.stringify(first.options[0]!.value);
   assert.ok(!second.options.some(o => JSON.stringify(o.value) === firstVal),
     'no duplicate targets');
-  assert.ok(!second.options.some(o => o.label === 'No more targets'),
+  assert.ok(!second.options.some(o => isStop(o.value)),
     'still no done at one of two — the minimum is two');
   assert.ok(mine, 'the ally fixture is used');
 });
@@ -399,9 +401,10 @@ test('CR 110.1c: an "up to" spell may decline every target — Twin Flame declar
   const i = h.state.players[D]!.hand.push('Twin Flame') - 1;
   h.do({ type: 'playCard', seat: D, handIndex: i });
   const first = h.state.decision!;
-  assert.ok(first.options.some(o => o.label === 'No more targets'),
+  // #206: with nothing picked yet the stop reads "No targets"
+  assert.ok(first.options.some(o => o.label === 'No targets'),
     '"up to two" — declaring NONE is a legal declaration, so done is offered at once');
-  const done = first.options.findIndex(o => o.label === 'No more targets');
+  const done = first.options.findIndex(o => o.label === 'No targets');
   h.do({ type: 'decide', seat: D, choice: done });
   assert.equal(h.state.decision, null, 'the cast completes with no targets at all');
   assert.equal(h.state.entities[u1]!.damage, 0, 'and nothing was shot');

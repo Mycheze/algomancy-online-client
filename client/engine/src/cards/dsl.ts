@@ -12,7 +12,7 @@
  *   augment:<Card>#<i> the effect of augmentText[i] (text-box [Augment] text)
  */
 import type {
-  Attr, CardName, EffectPart, EngineEvent, Entity, EventType, NumericEntry, PickSetHint, Seat,
+  Attr, CardName, EffectPart, EngineEvent, Entity, EntityId, EventType, NumericEntry, PickSetHint, Seat,
   SpawnFace, StackItem,
 } from '../types.ts';
 import type { E } from '../engine.ts';
@@ -997,8 +997,56 @@ export interface EffectDef {
    * doubler grafted under a doubler).
    */
   graftCopies?: number;
+  /**
+   * CR 608.9a — HOW a triggered effect reads "that much" off the event that
+   * fired it, DECLARED so the stack chip, the does-line and the resolver all
+   * read the one number (`eventAmountOf`). Absent = the event's own `n`.
+   *
+   * 'myColumn': on a combat face-damage event (`combatFaceDamage`, or the combat
+   * `lifeLost`) `n` is the TOTAL every connecting column dealt; the effect is
+   * owed only the share dealt by the column its source stands in (the
+   * per-column `hits` breakdown, `dealt` before any replacement — see
+   * E.faceDamageDealtBy). Report #215 (VDDT): Vroot gave 4 life and its chip
+   * said X=10, because the UI guessed `n`.
+   */
+  eventAmount?: 'myColumn';
   run: (g: E, ctx: EffectCtx) => void;
 }
+
+/**
+ * CR 608.9a — the amount a triggered effect reads off its triggering event, per
+ * its `eventAmount` declaration. Pure: the resolver passes its own
+ * `ctx.sourceId`, the UI passes the stack item's — for donated [Augment] text
+ * both are the HOST (E.queueTrigger), whose column is the one that counts.
+ * `undefined` when the event carries no amount at all.
+ */
+export function eventAmountOf(def: Pick<EffectDef, 'eventAmount'> | undefined,
+  ev: EngineEvent | null | undefined, sourceId: EntityId | undefined): number | undefined {
+  if (!ev) return undefined;
+  const isFace = ev.type === 'combatFaceDamage'
+    || (ev.type === 'lifeLost' && ev.data?.['why'] === 'combat');
+  if (def?.eventAmount === 'myColumn' && isFace) {
+    const hits = ev.data?.['hits'];
+    if (!Array.isArray(hits) || sourceId === undefined) return 0;
+    return (hits as { col: EntityId[]; dealt: number }[])
+      .filter(h => Array.isArray(h.col) && h.col.includes(sourceId))
+      .reduce((n, h) => n + (Number(h.dealt) || 0), 0);
+  }
+  const n = ev.data?.['n'];
+  return typeof n === 'number' ? n : undefined;
+}
+
+/**
+ * The label of the stop option in an "up to N" target collection (value
+ * `{ doneTargets: true }`). Report #206 (APNA): with nothing picked yet it is
+ * not "more" of anything — the owner: *"Make there be a "No targets" as the
+ * button, especially for an "up to 1" option."* The UI draws `NO_TARGETS` as an
+ * ordinary button and `NO_MORE_TARGETS` as the quiet decline (ui/inspect.ts
+ * declineButtonClass). A label never reaches a replay — a choice is an index.
+ */
+export const NO_TARGETS = 'No targets';
+export const NO_MORE_TARGETS = 'No more targets';
+export const doneTargetsLabel = (picked: number): string => (picked > 0 ? NO_MORE_TARGETS : NO_TARGETS);
 
 export interface TriggeredAbility {
   type: 'triggered';

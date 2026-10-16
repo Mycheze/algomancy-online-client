@@ -58,14 +58,14 @@ const toDeployment = [
 const COMMON =
   'WHAT TO JUDGE: every "which one?" question should be answered by clicking (or tapping) the\n'
   + 'glowing unit, hand card, life total or stack card itself. The yellow bar should hold only the\n'
-  + 'question, plain buttons (No more targets, Decline, X = …, Cancel) and — ONLY for cards that\n'
+  + 'question, plain buttons (No targets, Decline, X = …, Cancel) and — ONLY for cards that\n'
   + 'are not in play — small card pictures. Never a card\'s NAME as the thing to click.\n';
 
 export const BATCH_G: Record<string, Scenario> = {
   /**
    * The classic target, a sacrifice asked as a bare entity id (no card on the
    * option — it drew NAME buttons and the board was dead), a bin target (a
-   * card out of play: scans), and an up-to-two with its "No more targets".
+   * card out of play: scans), and an up-to-two with its "No targets" stop.
    */
   'board-pick-targets': {
     id: 'board-pick-targets',
@@ -77,7 +77,7 @@ export const BATCH_G: Record<string, Scenario> = {
       + 'TRY, in any order:\n'
       + '  · Fireball (X = anything) — click a unit or a life total. The X for a player now shows on\n'
       + '    the life total, not a button.\n'
-      + '  · Twin Flame — click up to two units; "No more targets" stays a button.\n'
+      + '  · Twin Flame — click up to two units; "No targets", then "No more targets", stays a button.\n'
       + '  · Torrential Reclamation (X = 1) — recall an ally by clicking it, then "sacrifice a unit":\n'
       + '    your units glow, the bar has NO names in it.\n'
       + '  · Collect Remains once something is in a bin — a bin card is not in play, so it is a\n'

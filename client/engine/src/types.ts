@@ -296,6 +296,25 @@ export interface Entity {
    */
   named?: CardName;
   /**
+   * CR 107.9 — the life total this entity PREDICTED during [Haste] (Prediction
+   * Prophet: "During [Haste], predict your life total. At the start of
+   * deployment, if your life total is exactly that much, create a 5/5 unit").
+   * A prediction is said out loud, so it is PUBLIC: viewFor sends it to both
+   * seats and the board wears it as a chip (Discord, relayed by the owner: *"The
+   * prediction made with a card like Prediction Prophet is public information
+   * and needs to be displayed on the card so all can see."*).
+   *
+   * It used to be `budgets.predictedLife`, stored +1 so that 0 could be told
+   * from absent; a real optional field needs no such trick. `turn` is the turn
+   * it was made in, and the prediction only counts — and only shows — in that
+   * turn: `budgets` were wiped by E.startTurn, so a prediction never outlived
+   * its turn, and the stamp keeps that without a sweep. The start-of-deployment
+   * check deletes it once it has been read.
+   *
+   * Additive/optional, so states serialized before the field still load.
+   */
+  predicted?: { life: number; turn: number };
+  /**
    * CR 710.9, 201.4 — this physical card is TURNED OVER. `card` is the BACK
    * face it is currently showing; this is the FRONT face printed on the other
    * side of the same piece of cardboard.

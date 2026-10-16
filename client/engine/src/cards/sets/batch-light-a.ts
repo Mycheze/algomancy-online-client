@@ -78,7 +78,7 @@
  */
 import type { EngineEvent, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { allCardNames, card, CARD_PLAY_KINDS, getCard, type EffectDef } from '../dsl.ts';
+import { allCardNames, card, CARD_PLAY_KINDS, eventAmountOf, getCard, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay, isOwnArrival } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -798,23 +798,27 @@ card('Triskaidekaphage', {
 // column, both unblocked, handed the opponent 5 life back for a column that
 // dealt 4. `E.faceDamageDealtBy` reads my column's own share off the event's
 // per-column breakdown.
+//
+// Report #215 (VDDT): that share is now DECLARED (`eventAmount: 'myColumn'`) and
+// read through `eventAmountOf`, the same call the stack chip and the does-line
+// make — the chip had guessed the event's `n` and said X=10 for a gain of 4.
+// It keys on `ctx.sourceId` (the host, for donated text), so a host that died
+// before this resolved still reads its column's share and not the table's.
+const VROOT_GAIN: EffectDef = {
+  eventAmount: 'myColumn',
+  run: (g, ctx) => {
+    const n = eventAmountOf(VROOT_GAIN, ctx.event, ctx.sourceId) ?? 0;
+    if (n <= 0) { g.ev('info', 'Vroot: no combat damage was dealt — nobody gains life.'); return; }
+    const foes = opponentsOf(g, ctx.region, ctx.controller);
+    if (!foes.length) { g.ev('info', 'Vroot: no opponent is present here — nobody gains life.'); return; }
+    for (const s of foes) g.gainLife(s, n, 'Vroot');
+  },
+};
 card('Vroot', {
   augmentText: [{
     type: 'triggered', events: ['damage', 'combatFaceDamage'],   // CR 608.8a
     label: 'each opponent gains that much life',
     when: (g, self, ev) => myColumnDealtCombatDamage(g, self, ev),
-    effect: {
-      run: (g, ctx) => {
-        const self = selfOf(g, ctx);
-        const ev = ctx.event;
-        const n = ev && ev.type === 'combatFaceDamage' && self
-          ? g.faceDamageDealtBy(self, ev)
-          : Number(ev?.data?.['n'] ?? 0);
-        if (n <= 0) { g.ev('info', 'Vroot: no combat damage was dealt — nobody gains life.'); return; }
-        const foes = opponentsOf(g, ctx.region, ctx.controller);
-        if (!foes.length) { g.ev('info', 'Vroot: no opponent is present here — nobody gains life.'); return; }
-        for (const s of foes) g.gainLife(s, n, 'Vroot');
-      },
-    },
+    effect: VROOT_GAIN,
   }],
 });

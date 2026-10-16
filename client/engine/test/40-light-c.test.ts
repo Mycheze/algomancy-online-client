@@ -139,7 +139,7 @@ test('Delver of the Ephemeral: after combat, caches a cost-1 card from your bin,
   const dec = h.state.decision!;
   assert.equal(dec.seat, A, 'the Delver\'s controller chooses');
   assert.deepEqual(dec.options.map(o => o.label),
-    [`Hand Peeper (${h.state.players[A]!.name}'s bin)`, 'No more targets'],
+    [`Hand Peeper (${h.state.players[A]!.name}'s bin)`, 'No targets'],   // #206: nothing picked yet
     'only cost-1 cards, plus the "up to one" decline');
   pick(h, { bin: { seat: A, card: 'Hand Peeper' } });
   pass(h); pass(h);                                           // resolve the trigger

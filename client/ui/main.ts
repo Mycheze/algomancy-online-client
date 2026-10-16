@@ -24,7 +24,7 @@ import {
   dismissSeenCard, dismissSeenHand,
   erasedPileView, growCardLedger, handOfferBadge, handOffers,
   linkCardNames, modHostCount, modHostPhrase,
-  modHosts, modStrips, nameBarIcon, numberEntry, suppressionNote, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
+  modHosts, modStrips, nameBarIcon, numberEntry, declineButtonClass, suppressionBand, suppressionNote, numberEntrySubmit, onlyKnownNames, optionPingId, packBadgeLine,
   partitionOptions, planOffer, playableCachedIndexes, playableCachedNames, restoreSeenHand,
   seenHandView,
   scrollHidesHoverTip, spellAugmentNote,
@@ -57,7 +57,7 @@ import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
 import { glimpseNotice, glimpseNoticeUntil, revealView } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
-import { entityTextBox, iconizeText, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
+import { entityTextBox, iconizeText, predictionOf, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
 import type { AttrOrigin, CardTextBox, LineOrigin, StatBreakdown } from './cardtext.ts';
 import { census, diffCensus, HIDDEN_CARD, nameKeys } from './motion.ts';
 import { glossaryHits, GLOSSARY } from './glossary.ts';
@@ -3292,6 +3292,20 @@ function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): 
         : 'its last naming was released: nothing is being silenced',
     });
   }
+  /* A PREDICTION IS PUBLIC (CR D6.9 family). Prediction Prophet's "predict your life
+   * total" is said out loud; the owner (relayed from Discord): *"The prediction
+   * made with a card like Prediction Prophet is public information and needs to
+   * be displayed on the card so all can see."* Read off `Entity.predicted`,
+   * which viewFor sends to both seats — so the chip is on the board and in the
+   * zoom dice for the opponent too, like The Everywhere's naming above. */
+  const predicted = predictionOf(u, h.state.turn);
+  if (predicted !== undefined) {
+    badges.push({
+      t: `🔮 predicts ${predicted}`,
+      mod: true,
+      title: 'makes a 5/5 if its controller is at exactly this life at the start of deployment',
+    });
+  }
   /* CR D6.8 — THE MARKING THAT DOES NOT DEPEND ON THE NUMBERS.
    *
    * Now that the art follows the face, the board's only "this is a copy" tell
@@ -5857,11 +5871,9 @@ function decisionBarHtml(dec: Decision, err: string): string {
      * rather than abandons. So the split is by value, here, where the
      * distinction is about what the button DOES.
      */
-    const isCommit = (i: number): boolean => {
-      const v = dec.options[i]!.value;
-      return !!v && typeof v === 'object' && 'doneCost' in (v as object);
-    };
-    const declines = ramp ? '' : split.decline.map(i => optBtn(i, isCommit(i) ? 'commitbtn' : 'declinebtn')).join(' ');
+    // report #206: and "No targets" — the stop of an up-to-N slot with nothing
+    // picked yet — is an ordinary button too (inspect.ts declineButtonClass)
+    const declines = ramp ? '' : split.decline.map(i => optBtn(i, declineButtonClass(dec.options[i]!))).join(' ');
     // CR D2.8/BL-30: the misclick question stands in front of the pick it is
     // about — same bar, so the board underneath is untouched and the target
     // highlights are still there to look at while you answer.
@@ -5958,7 +5970,7 @@ function decisionBarHtml(dec: Decision, err: string): string {
   const btns = [...split.refs, ...split.plain]
     .filter(i => !onBoard(i) && (step.mode !== 'pick' || !isCtrOpt(i)))
     .map(i => optBtn(i)).join(' ');
-  const declines = split.decline.map(i => optBtn(i, 'declinebtn')).join(' ');
+  const declines = split.decline.map(i => optBtn(i, declineButtonClass(dec.options[i]!))).join(' ');
   return `<div class="promptbar pending"><span class="who">${who}:</span> ${iconizeText(dec.prompt)}${boardHint}
       ${stepperHtml}
       ${cardRow('decide')} <span class="decpicks">${btns}</span>
@@ -9712,14 +9724,20 @@ setZoomDecorator((src, copy) => {
   if (pname && nameBarIcon(pname)) copy.classList.add('nbicon');
   if (u) {
     badges = unitBadges(u, { inert: src.dataset['act'] === undefined, zoom: true });
-    // its rules are OFF: grey the rules box and say so across it. The box
+    // its rules are OFF: grey what is off and say so across it. The box
     // starts at a different height on every scan (bot/pipeline/
-    // read_text_boxes.py → the catalogue's textTop).
-    const off = suppressionNote(q().suppressionOf(u));
-    if (off) {
+    // read_text_boxes.py → the catalogue's textTop). Report #208: attributes
+    // and abilities are different things — attributes off greys the type
+    // bar only, abilities off the text box below it (inspect.ts suppressionBand).
+    const sup = q().suppressionOf(u);
+    const off = suppressionNote(sup);
+    const band = suppressionBand(sup, rowFor(u.card)?.textTop ?? TEXT_TOP_FALLBACK);
+    if (off && band) {
       copy.classList.add('zsupp');
-      copy.style.setProperty('--tbtop', String(rowFor(u.card)?.textTop ?? TEXT_TOP_FALLBACK));
-      copy.insertAdjacentHTML('beforeend', `<div class="zoomsupp"><span>${esc(off.banner)}</span></div>`);
+      copy.style.setProperty('--tbtop', String(band.top));
+      if (band.bottom !== null) copy.style.setProperty('--tbbot', String(band.bottom));
+      copy.insertAdjacentHTML('beforeend',
+        `<div class="zoomsupp band-${band.kind}"><span>${esc(off.banner)}</span></div>`);
     }
     mods = u.mods.map(mid => h.state.entities[mid])
       .filter((m): m is Entity => !!m)

@@ -378,20 +378,21 @@ card('Nullbringer', {
 //      decision, and `ctx.choose` IS the number-picker — the same CR 704.1a dialogue
 //      Reap the Due uses two cards below. No new player action was ever
 //      needed; the prediction is simply asked for at the tail of the step.
-//  (b) THE FIELD. `Entity.budgets` is a per-entity number store that E.startTurn
-//      wipes ("for (const e of Object.values(this.s.entities)) e.budgets = {}")
-//      and NOTHING else touches. The turn runs mana → [Haste] → battle →
+//  (b) THE FIELD. It was first kept in `Entity.budgets`, which E.startTurn wipes
+//      and nothing else touches: the turn runs mana → [Haste] → battle →
 //      deployment, so a number written at the end of the haste step is still
 //      there at the start of deployment IN THE SAME TURN. (`battleCounters`
 //      would NOT do: finishHasteEnd wipes them on the way into battle, which
-//      is exactly the window the prediction has to survive.) Ancient One
-//      (batch-metal-a) writes `self.budgets[key]` by hand the same way.
+//      is exactly the window the prediction has to survive.) See below for
+//      where it lives now.
 //
-// The stored value is prediction + 1. `budgets[k] ?? 0` cannot tell "absent"
-// from "zero", and 0 is a legal prediction (you predict your life total at the
-// start of deployment, and a player who is about to be at 0 has other
-// problems) — so the +1 keeps "never predicted" distinguishable and the
-// start-of-deployment trigger can say which of the two happened.
+// The prediction lives in `Entity.predicted` now ({ life, turn }), not in
+// `budgets`: a prediction is PUBLIC (owner, relayed from Discord: *"needs to be
+// displayed on the card so all can see"*), so the board reads it as a chip,
+// and a real optional field can hold 0 without the old "+1 so 0 is storable"
+// trick. The `turn` stamp keeps what the budget wipe gave for free — a
+// prediction only ever counts in the turn it was made — and the
+// start-of-deployment check deletes it once read.
 //
 // CR 107.9: "PREDICT YOUR LIFE TOTAL" IS ANY NUMBER, AND NOW IT REALLY IS.
 // This used to be a `payOrDecline` menu running `0 … life + 5`, so a
@@ -408,7 +409,6 @@ card('Nullbringer', {
 // reached with a negative life total, and a prediction below 0 could not be
 // matched by any reachable board. See NumericEntry in types.ts for the
 // contract and ui/inspect.ts::numberEntry for the client affordance.
-const PREDICTION_KEY = 'predictedLife';
 card('Prediction Prophet', {
   abilities: [{
     type: 'triggered', events: ['endOfHaste'],
@@ -426,7 +426,7 @@ card('Prediction Prophet', {
           options: [],                             // CR D7.2a: the value IS the answer
           numeric: { min: 0, max: null, suggest: life, suggestLabel: 'where you stand now' },
         }) as number;
-        self.budgets[PREDICTION_KEY] = n + 1;    // +1: 0 is a real prediction
+        self.predicted = { life: n, turn: g.s.turn };   // CR 107.9: public, this turn only
         g.ev('info', `${ctx.sourceName}: ${g.pname(ctx.controller)} predicts ${n}.`);
       },
     },
@@ -437,14 +437,16 @@ card('Prediction Prophet', {
       creates: ['Unit Token'],
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
-        const stored = self?.budgets[PREDICTION_KEY] ?? 0;
-        if (!stored) {
+        const stored = self?.predicted;
+        // read once: after this check the prediction has done its job
+        if (self) delete self.predicted;
+        if (!stored || stored.turn !== g.s.turn) {
           // no prediction this turn: it arrived after the haste step (or the
           // step's trigger never reached it). Not a gap — a miss.
           g.ev('info', `${ctx.sourceName}: no prediction was made during [Haste] — no unit.`);
           return;
         }
-        const predicted = stored - 1;
+        const predicted = stored.life;
         const life = g.player(ctx.controller).life;
         if (life !== predicted) {
           g.ev('info', `${ctx.sourceName}: predicted ${predicted}, life is ${life} — no unit.`);
