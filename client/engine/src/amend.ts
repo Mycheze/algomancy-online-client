@@ -43,7 +43,7 @@ function zoneOf(s: GameState, seat: Seat, from: string): readonly string[] {
 
 /**
  * Why `edit`, proposed by `seat`, cannot land on `s` — or null when it can.
- * Timing (hidden steps, an open decision) is apply.ts's, not this: a rewind is
+ * Timing (an open decision) is apply.ts's, not this: a rewind is
  * judged by the server and an edit by both, and the timing words differ.
  */
 export function amendProblem(s: GameState, seat: Seat, edit: AmendEdit): string | null {

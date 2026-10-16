@@ -13,7 +13,8 @@
  *      once the server has the proposal up
  *   §4 the other seat's bar: Agree and Decline answer the proposal by id
  *   §5 while the dialog is up no game key gets through, and Escape closes it
- *   §6 in a hidden step the server says edits must wait: only Rewind is live
+ *   §6 in a hidden step every fix is live (owner, 2026-10-16); only a
+ *      decision open for either seat leaves Rewind alone
  *
  * Seeds 48700-48799.
  */
@@ -151,20 +152,35 @@ test('§5 while the dialog is up no game key gets through, and Escape closes it'
 
 /* ── §6 ─────────────────────────────────────────────────────────────── */
 
-test('§6 in a hidden step only Rewind is live', () => {
+test('§6 in a hidden step every fix is live, from the table menu; only an open decision leaves Rewind alone', () => {
+  // owner, 2026-10-16: edits work in the hidden planning / deploy steps too
   const h = new Harness(48705, ['Ann', 'Bo']);
+  assert.equal(h.state.phase, 'planning', 'fixture: the hidden planning step');
   joinWithFixes(h, 0);
+  const labels = menuLabels(ui.rightClick({ act: 'player', p: 0 }));
+  assert.ok(labels.includes(FIX), `the table menu offers a fix in the hidden step (${labels.join(' | ')})`);
+  ui.click({ btn: 'menuitem', i: String(labels.indexOf(FIX)) });
+  ui.sent();
+  let html = ui.push({ t: 'amendopts', rewinds: [{ to: 1, label: 'Take back the last 1 action' }], editWhy: null });
+  for (const k of ['life', 'drawCards', 'move', 'unit']) {
+    assert.doesNotMatch(html, new RegExp(`data-kind="${k}" title="[^"]*" disabled`), `${k} is live in the hidden step`);
+  }
+  ui.click({ amend: 'kind', kind: 'drawCards' });
+  ui.type('amend-reason', 'the turn draw was skipped');
+  ui.click({ amend: 'send' });
+  assert.deepEqual(fixSent(), [{ t: 'amend', op: 'propose', reason: 'the turn draw was skipped', edit: { kind: 'drawCards', target: 0, n: 1 } }]);
+  ui.click({ amend: 'close' });
+  // a question open for either seat: the server says edits must wait
   ui.rightClick({ act: 'player', p: 0 });
   ui.click({ btn: 'menuitem', i: String(menuLabels(ui.html()).indexOf(FIX)) });
   ui.sent();
-  const html = ui.push({ t: 'amendopts', rewinds: [{ to: 1, label: 'Take back the last 1 action' }],
-    editWhy: 'no edits during the hidden planning, haste or deploy steps — a rewind still works' });
-  assert.match(html, /data-amend="kind" data-kind="rewind"[^>]*>/, 'rewind is offered');
-  assert.match(html, /aria-checked="true" class="on"\s+data-amend="kind" data-kind="rewind"/, 'and chosen');
+  html = ui.push({ t: 'amendopts', rewinds: [{ to: 1, label: 'Take back the last 1 action' }],
+    editWhy: 'no edits while a decision is pending — a rewind still works' });
+  assert.match(html, /aria-checked="true" class="on"\s+data-amend="kind" data-kind="rewind"/, 'rewind is chosen');
   for (const k of ['life', 'drawCards', 'move', 'unit']) {
-    assert.match(html, new RegExp(`data-kind="${k}" title="[^"]*" disabled`), `${k} is off in a hidden step`);
+    assert.match(html, new RegExp(`data-kind="${k}" title="[^"]*" disabled`), `${k} waits for the answer`);
   }
-  assert.match(html, /no edits during the hidden planning/, 'and the dialog says why');
+  assert.match(html, /no edits while a decision is pending/, 'and the dialog says why');
   ui.type('amend-reason', 'he misclicked');
   ui.click({ amend: 'send' });
   assert.deepEqual(fixSent(), [{ t: 'amend', op: 'propose', reason: 'he misclicked', rewind: 1 }]);

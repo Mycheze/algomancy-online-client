@@ -3368,11 +3368,12 @@ function doSandboxAdvance(e: E, seat: Seat): void {
 function doAmend(e: E, seat: Seat, by: Seat, edit: AmendEdit): void {
   e.need(seat === 0 || seat === 1, 'no such seat');
   e.need(by === other(seat), 'a fix is agreed by the other player');
-  // the owner's timing (2026-10-16): no edits while either seat is behind the
-  // screen of a hidden step, nor while a question is open — a rewind (the
-  // server's, by truncation) is the tool for those moments
-  e.need(hiddenSegment(e.s) === null,
-    'no fixes during the hidden planning, haste or deploy steps — a rewind still works');
+  // the owner's timing: never while a question is open, for EITHER seat — the
+  // answer re-runs a part from a snapshot the fix would not be in. The hidden
+  // planning / haste / deploy steps were refused too at first, and the owner
+  // lifted that the same day (2026-10-16): a turn with no battle is ALL hidden
+  // steps, so an edit had nowhere to go, and a fix is public and agreed by
+  // both players anyway. server/rooms.ts shows it to both seats at once.
   e.need(!e.s.decision && !e.s.suspension, 'no fixes while a decision is pending — answer it first');
   const problem = amendProblem(e.s, seat, edit);
   if (problem !== null) e.illegal(problem);
@@ -3416,6 +3417,62 @@ function doAmend(e: E, seat: Seat, by: Seat, edit: AmendEdit): void {
   }
   e.ev('info', `🛠 Agreed fix: ${text} — proposed by ${e.pname(seat)}, agreed by ${e.pname(by)}.`,
     { amend: edit.kind, seat, by });
+}
+
+/**
+ * BL-46 — the same agreed fix, applied to a hidden step's FROZEN board.
+ *
+ * Inside a hidden simultaneous step each seat is shown the other's half of
+ * the board as the step began (server/view.ts `viewFor`, the room's
+ * `segSnapshot`). A fix is public — both players agreed to it in the open —
+ * so it must show on that frozen half as well, or the opponent would not see
+ * an edit they just agreed to until the barrier. This makes the frozen board
+ * say what the fix said, and nothing else the step has done.
+ *
+ * Not `apply`: the frozen board is not the live one (hand indices, the deck
+ * top and what is in play may all have moved since the step began), so the
+ * edit is carried over by what it MEANT — the card by name, the unit by id
+ * if the frozen board has it at all — and whatever the frozen board does not
+ * have is only added where it goes. Display-only and deterministic: the room
+ * calls it as the action lands and again on every rebuild (restart, undo).
+ */
+export function amendFrozen(frozen: GameState, action: Extract<Action, { type: 'amend' }>, before: GameState): GameState {
+  const e = new E(structuredClone(frozen));
+  const { seat, edit } = action;
+  switch (edit.kind) {
+    case 'life':
+      e.player(edit.target).life = edit.life;
+      break;
+    case 'drawCards':
+      e.quietDraw(edit.target, edit.n);
+      break;
+    case 'move': {
+      const p = e.player(seat);
+      if (edit.from === 'hand') { const i = p.hand.indexOf(edit.card); if (i >= 0) p.hand.splice(i, 1); }
+      else if (edit.from === 'bin') { const i = p.bin.lastIndexOf(edit.card); if (i >= 0) e.removeFromBin(seat, i, 'an agreed fix', { quiet: true }); }
+      else { const i = e.cache(seat).findIndex(c => c.card === edit.card); if (i >= 0) e.uncache(seat, i); }
+      if (edit.to === 'hand') e.toHand(seat, edit.card, edit.from, { quiet: true });
+      else if (edit.to === 'bin') e.toBin(seat, edit.card, 'amend');
+      else if (edit.to === 'cache') e.cacheCard(seat, edit.card, edit.from as 'hand' | 'bin', { quiet: true });
+      else if (edit.to === 'deckTop') e.deckOf(seat).unshift(edit.card);
+      else e.recycleToBottom(seat, edit.card);
+      break;
+    }
+    case 'unit': {
+      const u = e.s.entities[edit.id];
+      const known = !!u && u.card === edit.card;
+      // the card goes to its controller's zone, read off the LIVE board the
+      // fix was applied to (the frozen board may never have seen the unit)
+      const to = before.entities[edit.id]?.controller ?? seat;
+      if (known) e.quietLeavePlay(u!);
+      if (known && u!.token) break;
+      if (edit.to === 'hand') e.toHand(to, edit.card, 'play', { quiet: true });
+      else if (edit.to === 'bin') e.toBin(to, edit.card, 'amend');
+      else e.recycleToBottom(to, edit.card);
+      break;
+    }
+  }
+  return e.s;
 }
 
 // ── legalActions ──────────────────────────────────────────────────────

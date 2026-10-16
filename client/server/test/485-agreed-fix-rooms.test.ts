@@ -18,6 +18,9 @@
  *   §5 the proposal: both clocks stop, it lapses, an action ends it, a
  *      decline cools the proposer down, and the rooms that take no fixes
  *   §6 a fixed game survives a restart and replays FAITHFUL, sigs and all
+ *   §7 inside a hidden step: shown to both seats at once, on the frozen half
+ *      too; an undo passes it only when it would mean the same; a planning
+ *      and a deploy fix survive a restart FAITHFUL
  *
  * Seeds 48500-48599.
  */
@@ -31,6 +34,7 @@ import type { Action, Seat } from '../../engine/src/types.ts';
 import type { Proposal, Room } from '../rooms.ts';
 import { digest, signature } from '../replay-probe.ts';
 import { analyze, reportLines, type RoomFile } from '../replay-room.ts';
+import { viewFor } from '../view.ts';
 
 const DIR = mkdtempSync(join(tmpdir(), 'algo-485-'));
 process.env['ALGO_GAMES_DIR'] = DIR;
@@ -116,7 +120,7 @@ test('§1 an accepted edit lands as a logged amend action and is recorded', () =
   assert.equal(room.amendments.length, 1);
   assert.equal(room.amendments[0]!.at, room.actions.length - 1);
   assert.equal(room.amendments[0]!.reason, 'my draw did not happen');
-  assert.equal(R.amendFloor(room), room.actions.length, 'nothing up to and including the fix is one seat to undo alone');
+  assert.equal(R.amendFloor(room), -1, 'an edit sets no hard floor: it is guarded by measurement (§7)');
 });
 
 /* ── §2 ─────────────────────────────────────────────────────────────── */
@@ -258,14 +262,15 @@ test('§5 a decline cools the proposer down; a withdraw does not', () => {
   assert.deepEqual(R.proposeFix(room, P, { edit: life, reason: 'please' }, t + R.FIX_COOLDOWN_MS + 10), { ok: true });
 });
 
-test('§5 edits wait for the public steps; a rewind works in a hidden one; some rooms take no fixes', () => {
+test('§5 edits and rewinds both work in a hidden step; some rooms take no fixes', () => {
   const room = R.createRoom('FX5C', 48542, [...NAMES], 'shared');
   live(room);
   const first = R.legalInRoom(room, 0).find(a => a.type === 'recycleForResource')!;
   tick(R, room, first);
   assert.equal(room.segKey, 'plan', 'fixture: the hidden planning step');
-  assert.match((R.proposeFix(room, 0, { edit: { kind: 'drawCards', target: 0, n: 1 }, reason: 'draw missed' }) as { why: string }).why,
-    /no edits during the hidden planning/);
+  assert.equal(R.editTiming(room), null, 'owner, 2026-10-16: edits are allowed in the hidden steps too');
+  assert.deepEqual(R.proposeFix(room, 0, { edit: { kind: 'drawCards', target: 0, n: 1 }, reason: 'draw missed' }), { ok: true });
+  assert.ok(R.answerFix(room, 0, 'cancel', room.proposal!.id).ok);
   const opts = R.rewindOptions(room);
   assert.ok(opts.length, 'a rewind is on offer in the hidden step');
   assert.deepEqual(R.proposeFix(room, 1, { rewind: opts[0]!.to, reason: 'they misclicked' }), { ok: true }, 'owner: "a rewind any time"');
@@ -328,4 +333,108 @@ test('§6 a rematch starts with no fixes', () => {
   const next = R.createRematch(room, 'FX7R');
   assert.deepEqual(next.amendments, []);
   assert.equal(next.proposal, null);
+});
+
+/* ── §7 inside a hidden step ───────────────────────────────────────── */
+//
+// The owner, 2026-10-16, lifting the first version's refusal: edits work in
+// the hidden planning / haste / deploy steps too — a fix is public and agreed
+// by both players. So it must reach BOTH seats at once (never held for the
+// barrier), show on the frozen half each seat is shown of the other, stay
+// standing against the per-seat undo, and survive a restart.
+
+
+/** what `seat` is shown right now */
+const shownTo = (room: Room, seat: Seat): string => JSON.stringify(viewFor(room.state, seat, room.segSnapshot));
+const fixEvent = (evs: readonly { data?: Record<string, unknown> }[]): boolean => evs.some(e => e.data?.['amend'] !== undefined);
+
+/** turn 1 planning: both seats recycle their FIRST card behind the screen */
+function planning(code: string, seed: number): Room {
+  const room = R.createRoom(code, seed, [...NAMES], 'shared');
+  live(room);
+  for (const seat of [0, 1] as Seat[]) {
+    const rec = R.legalInRoom(room, seat).find(a => a.type === 'recycleForResource' && a.handIndex === 0)!;
+    tick(R, room, rec);
+  }
+  assert.equal(room.segKey, 'plan');
+  return room;
+}
+
+test('§7 a fix in the hidden planning step reaches both seats at once and shows on the frozen half', () => {
+  const room = planning('FX8', 48570);
+  const hand0 = room.state.players[0]!.hand;
+  const card = hand0[0]!;
+  const frozenHand = room.segSnapshot!.players[0]!.hand.length;
+  const frozenRes = room.segSnapshot!.players[0]!.resources.length;
+  assert.ok(room.state.players[0]!.resources.length > frozenRes, 'fixture: seat 0 made a resource behind the screen');
+  assert.equal(JSON.parse(shownTo(room, 1)).players[0].resources.length, frozenRes, 'fixture: which seat 1 cannot see');
+  assert.deepEqual(R.proposeFix(room, 0, { edit: { kind: 'move', from: 'hand', index: 0, card, to: 'bin' }, reason: 'the discard did not happen' }), { ok: true });
+  const ans = R.answerFix(room, 1, 'accept', room.proposal!.id);
+  acceptEdit(room, ans.ok ? ans.proposal : null!, 1);
+  assert.equal(room.segKey, 'plan', 'still inside the hidden step');
+  const seen = JSON.parse(shownTo(room, 1));
+  assert.ok(seen.players[0].bin.includes(card), 'seat 1 sees the card seat 0 moved to the bin — now, not at the barrier');
+  assert.equal(seen.players[0].hand.length, frozenHand - 1, 'and the hand it is shown is one card smaller');
+  assert.equal(seen.players[0].resources.length, frozenRes, 'while seat 0 own hidden recycle stays hidden');
+  assert.ok(!fixEvent(room.heldEvents[1]!), 'the fix is not held for the barrier');
+  assert.ok(!fixEvent(room.heldEvents[0]!));
+  assert.ok(fixEvent(room.events), 'its line is in the log, for both');
+});
+
+test('§7 in the step, an undo passes a fix only when the fix would mean the same', () => {
+  const room = planning('FX9', 48571);
+  const hand0 = room.state.players[0]!.hand;
+  assert.notEqual(hand0[0], room.segSnapshot!.players[0]!.hand[0], 'fixture: the recycled first card differs from the new first card');
+  assert.deepEqual(R.proposeFix(room, 0, { edit: { kind: 'move', from: 'hand', index: 0, card: hand0[0]!, to: 'bin' }, reason: 'a discard went missing' }), { ok: true });
+  const ans = R.answerFix(room, 1, 'accept', room.proposal!.id);
+  acceptEdit(room, ans.ok ? ans.proposal : null!, 1);
+  const len = room.actions.length;
+  // seat 0's own recycle came before the fix, and un-recycling it would put a
+  // different card at the hand index the fix names: refused, by measurement
+  assert.deepEqual(R.undoForSeat(room, 0), { ok: false, why: 'taking that back would change an agreed fix — it cannot be undone now' });
+  assert.equal(room.actions.length, len);
+  // seat 1's recycle touched nothing the fix names: the other seat is not frozen by it
+  assert.deepEqual(R.undoForSeat(room, 1), { ok: true }, 'the other seat may still take back its own move');
+  assert.equal(room.actions.length, len - 1);
+  assert.equal(room.actions.at(-1)!.type, 'amend', 'and the fix itself is never the thing taken back');
+  assert.ok(JSON.parse(shownTo(room, 1)).players[0].bin.length >= 1, 'the rebuilt frozen board still shows the fix');
+});
+
+test('§7 a fix in the hidden deploy step, and both hidden-step fixes survive a restart FAITHFUL', async () => {
+  // a mid-planning fix…
+  const plan = planning('FXA', 48572);
+  assert.deepEqual(R.proposeFix(plan, 1, { edit: { kind: 'drawCards', target: 1, n: 1 }, reason: 'the turn draw was skipped' }), { ok: true });
+  const a1 = R.answerFix(plan, 0, 'accept', plan.proposal!.id);
+  acceptEdit(plan, a1.ok ? a1.proposal : null!, 0);
+  const planShown = [shownTo(plan, 0), shownTo(plan, 1)];
+  // …and a mid-deploy one: a unit taken off the board while its owner deploys
+  const dep = game('FXB', 48573);
+  drive(R, dep, r => r.segKey === 'deploy' && Object.values(r.state.entities).some(e => e.kind === 'unit'));
+  live(dep);
+  const u = Object.values(dep.state.entities).find(e => e.kind === 'unit')!;
+  const owner = u.controller as Seat, P = other(owner);
+  const handBefore = JSON.parse(shownTo(dep, P)).players[owner].hand.length;
+  assert.deepEqual(R.proposeFix(dep, P, { edit: { kind: 'unit', id: u.id, card: u.card, to: 'hand' }, reason: 'it should have died' }), { ok: true });
+  const a2 = R.answerFix(dep, owner, 'accept', dep.proposal!.id);
+  acceptEdit(dep, a2.ok ? a2.proposal : null!, owner);
+  assert.equal(dep.segKey, 'deploy');
+  const seenByP = JSON.parse(shownTo(dep, P));
+  assert.ok(!Object.values(seenByP.entities as Record<string, { id: number }>).some(e => e.id === u.id), 'the proposer sees the unit gone from the frozen half');
+  assert.equal(seenByP.players[owner].hand.length, handBefore + 1, 'and its card back in its owner hand');
+  const depShown = [shownTo(dep, 0), shownTo(dep, 1)];
+
+  const R2 = await fresh();
+  R2.restoreRooms();
+  for (const [code, room, shown] of [['FXA', plan, planShown], ['FXB', dep, depShown]] as const) {
+    const back = R2.getRoom(code)!;
+    assert.equal(sig(back), sig(room), `${code}: the same board after a restart`);
+    assert.deepEqual(back.lost, [], `${code}: nothing refused`);
+    assert.deepEqual(back.drifted, [], `${code}: nothing changed meaning`);
+    assert.deepEqual([shownTo(back, 0), shownTo(back, 1)], [...shown], `${code}: each seat is shown exactly what it was shown before`);
+    const raw = JSON.parse(readFileSync(join(DIR, `${code}.json`), 'utf8')) as RoomFile;
+    const an = analyze(raw);
+    assert.deepEqual(an.refusals, []);
+    assert.deepEqual(an.sigs, raw.sigs, `${code}: every recorded fingerprint matches`);
+    assert.match(reportLines(`${code}.json`, raw, an).lines.join('\n'), /FAITHFUL/);
+  }
 });

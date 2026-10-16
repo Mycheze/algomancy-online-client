@@ -17,7 +17,7 @@ import type { Action, ActivateVia, AmendDest, AmendEdit, AmendSource, AmendUnitD
 import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS } from '../engine/src/types.ts';
 import { amendProblem, amendText } from '../engine/src/amend.ts';
 import { singleCardsOf } from './cardladder.ts';
-import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { amendFrozen, apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // CR D8.4 — the scenario tester. `dealScenario` IS `createGame` when no scenario
 // id is passed, byte for byte, so every ordinary room is unaffected; when one
 // is passed it applies the scenario's deterministic board mutation. It is
@@ -518,6 +518,8 @@ function entityRefs(a: Action): EntityId[] {
     case 'declareAttack': return [...a.columns.flat(), ...(a.spellTokens ?? [])];
     case 'declareBlocks':
       return [...Object.values(a.blocks).flat(), ...(a.send ?? []), ...(a.spellTokens ?? [])];
+    // BL-46: a fix that takes a unit off the board names it
+    case 'amend': return a.edit.kind === 'unit' ? [a.edit.id] : [];
     default: return [];
   }
 }
@@ -626,6 +628,19 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
       const picked = (Array.isArray(a.choice) ? a.choice : [a.choice])
         .map(i => { const o = d?.options[i]; return o ? `${o.label}/${o.card ?? ''}` : '∅'; });
       parts.push(String(d?.kind ?? '-'), String(d?.options.length ?? 0), picked.join(','));
+      break;
+    }
+    // BL-46: what the agreed fix MEANT — the card at the index it names, the
+    // unit by its creation identity, whose draw and what it drew. An undo of
+    // an earlier action is let through an agreed fix only if every part of
+    // this is unchanged (undoActionAt measures it), so a fix keeps meaning
+    // exactly what both players agreed to.
+    case 'amend': {
+      const ed = a.edit;
+      if (ed.kind === 'life') parts.push(`life:${ed.target}:${ed.life}`);
+      else if (ed.kind === 'drawCards') parts.push(`draw:${ed.target}:${ed.n}`, zoneDelta(s, after, ed.target));
+      else if (ed.kind === 'move') parts.push(`move:${ed.from}`, at(modZone(ed.from), ed.index), ed.to);
+      else parts.push(`unit:${sym(ed.id)}:${ed.card}:${ed.to}`, zoneDelta(s, after, s.entities[ed.id]?.controller ?? a.seat));
       break;
     }
     // donePlanning / doneHaste / doneDeploying / passPriority / concede name
@@ -2079,7 +2094,9 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     segIdFloor.push(before.nextId);
     // hold only while the open segment is still the one this action is in:
     // the forced battle drain runs public actions after the key has moved on
-    const holding = segKey !== null && segmentKey(before) === segKey;
+    // (BL-46: and never an agreed fix, which is public — see applyToRoom)
+    const isFix = a.type === 'amend';
+    const holding = !isFix && segKey !== null && segmentKey(before) === segKey;
     let r;
     try {
       r = apply(state, a);
@@ -2106,6 +2123,11 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     all.push(...r.events);
     segSeen.push(NOTHING_SEEN);   // the open segment's entries are filled in below
     if (holding) inSegment.push({ i, before, a, after: state, events: r.events });
+    // BL-46: the frozen board shows an agreed fix, exactly as applyToRoom
+    // patched it when the fix landed — or a restart would un-show it
+    if (isFix && segKey !== null && segSnapshot && segmentKey(state) === segKey) {
+      segSnapshot = amendFrozen(segSnapshot, a as Extract<Action, { type: 'amend' }>, before);
+    }
     // CR D6.1a, D6.2: EVERY event of a hidden step is held for the barrier, a reveal included
     const now = segmentKey(state);
     if (holding) {
@@ -2609,7 +2631,12 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // it was taken in is the one still open. (main.ts drains a run of forced
   // battle actions after a segment's key has already moved on; those are
   // public and must not land in anybody's held queue.)
-  const holding = room.segKey !== null && segmentKey(before) === room.segKey;
+  //
+  // BL-46: an AGREED FIX is never held. It is public — both players agreed to
+  // it in the open — so its events reach both seats now, and the frozen board
+  // each seat is shown of the other's half is patched to show it (below).
+  const isFix = action.type === 'amend';
+  const holding = !isFix && room.segKey !== null && segmentKey(before) === room.segKey;
   // the reference key is taken against the state the action is applied to,
   // with the floors of every action BEFORE it (rebuild() does the same)
   const sym = symbolizer(room.actions, room.segIdFloor, room.actions.length, before.nextId);
@@ -2638,6 +2665,9 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
     ? seenBy(before, action, r.state, r.events, { frozen: room.segSnapshot, holding: true, names: room.names })
     : NOTHING_SEEN);
   room.events.push(...r.events);
+  if (isFix && room.segSnapshot && room.segKey !== null && segmentKey(r.state) === room.segKey) {
+    room.segSnapshot = amendFrozen(room.segSnapshot, action, before);
+  }
   // CR D6.1a, D6.2: EVERY event of a hidden step is held for the barrier, a reveal included
   if (holding) {
     const held = [...r.events];
@@ -2847,6 +2877,10 @@ export function renumberAction(a: Action, lo: number, hi: number): Action {
         ...(a.spellTokens ? { spellTokens: list(a.spellTokens) } : {}) };
       break;
     }
+    case 'amend':
+      if (a.edit.kind !== 'unit') return a;
+      out = { ...a, edit: { ...a.edit, id: one(a.edit.id) } };
+      break;
     default: return a;                   // names no id: nothing to renumber
   }
   if (!moved) return a;
@@ -3028,9 +3062,14 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   // rebuild(), not through it), and editing a log that has already stopped
   // describing its board is the one thing freezing exists to prevent.
   if (room.frozen) return { ok: false, why: room.frozen };
-  // BL-46: an AGREED FIX stands. Nothing at or before the last one can be
-  // taken back by one seat alone — both of them agreed to the board it made,
-  // and a rewind (which needs both again) is the way back past it.
+  // BL-46: an AGREED FIX stands. A rewind's cut is a hard floor — both
+  // players agreed to the board it left, and nothing of the cut is in the log
+  // to measure against. An agreed EDIT is never undone itself (the walk
+  // passes over it), and an action before it may be taken back only when
+  // undoActionAt measures the edit as meaning exactly what it meant
+  // (referenceKey's 'amend' case); otherwise the refusal says it would change
+  // an agreed fix. So the other seat's earlier moves are not frozen by a fix
+  // that does not depend on them.
   const fixFloor = amendFloor(room);
   const segKey = room.segKey;
   // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
@@ -3065,7 +3104,9 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
     // done, the step's decisions lock.
     const floor = segmentFloor(room);
     let i = room.actions.length - 1;
-    while (i >= floor && i >= 0 && room.actions[i]!.seat !== seat) i--;
+    // BL-46: an agreed fix is nobody's own action to take back — the walk
+    // passes over it (see FIX_UNDO_REFUSAL for what still stops it)
+    while (i >= floor && i >= 0 && (room.actions[i]!.seat !== seat || room.actions[i]!.type === 'amend')) i--;
     if (floor < 0 || i < 0 || i < floor) {
       // distinguish the two ways the walk ends, because they mean different
       // things to the player: "there is nothing left of mine" versus "what is
@@ -3103,7 +3144,7 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   }
   const last = room.actions[room.actions.length - 1];
   if (!last) return { ok: false, why: 'nothing to undo' };
-  if (room.actions.length - 1 < fixFloor) return { ok: false, why: FIX_UNDO_REFUSAL };
+  if (room.actions.length - 1 < fixFloor || last.type === 'amend') return { ok: false, why: FIX_UNDO_REFUSAL };
   if (last.seat !== seat) return { ok: false, why: 'your opponent acted since — nothing of yours to undo' };
   const refused = undoLastAction(room);
   if (refused.length) return { ok: false, why: undoRefusal(refused) };
@@ -3188,11 +3229,12 @@ function sanitizeAmendments(raw: unknown, actions: number): Amendment[] {
     && typeof a.what === 'string' && typeof a.reason === 'string');
 }
 
-/** The log index below which one seat's undo may not reach: just past the
- * last agreed edit, or the length the last rewind left. -1 when none. */
+/** The log index below which one seat's undo may not reach: the length the
+ * last agreed REWIND left (-1 when none). An agreed edit is guarded by
+ * measurement instead — see undoForSeat. */
 export function amendFloor(room: Room): number {
   let floor = -1;
-  for (const a of room.amendments) floor = Math.max(floor, a.kind === 'edit' ? a.at + 1 : a.at);
+  for (const a of room.amendments) if (a.kind === 'rewind') floor = Math.max(floor, a.at);
   return floor;
 }
 
@@ -3212,9 +3254,8 @@ export function fixesRefusal(room: Room): string | null {
 /** Why an EDIT cannot be proposed right now (the timing half) — null when it
  * can. A rewind has no timing rule: "a rewind any time". */
 export function editTiming(room: Room): string | null {
-  if (hiddenSegment(room.state) !== null) {
-    return 'no edits during the hidden planning, haste or deploy steps — a rewind still works';
-  }
+  // (the hidden steps were refused here at first — lifted the same day, see
+  // apply.ts doAmend; a fix is shown to both seats at once)
   if (room.state.decision) return 'no edits while a decision is pending — a rewind still works';
   return null;
 }
@@ -3483,6 +3524,8 @@ export function rewindRoom(room: Room, p: Proposal, by: Seat): { ok: true; amend
  * name what was measured, or the player has no way to tell a rule from a bug
  * — which is how #76 came to be filed. */
 function undoRefusal(refused: LostAction[]): string {
+  // BL-46: an agreed fix in the way is named as one
+  if (refused.some(r => r.type === 'amend')) return 'taking that back would change an agreed fix — it cannot be undone now';
   const changed = refused.every(r => r.kind === 'changed');
   const what = refused.length === 1 ? 'a move' : `${refused.length} moves`;
   return changed

@@ -159,17 +159,35 @@ test('§3 quiet: a fix draw is not a draw for anything listening', () => {
 
 /* ── §4 refused ─────────────────────────────────────────────────────── */
 
-test('§4 refused: agreed by the proposer, in a hidden step, with a question open', () => {
+test('§4 refused: agreed by the proposer, or with a question open for either seat', () => {
   const { h, A, D } = battle(48430);
   assert.match(refusal(h.state, amend(A, { kind: 'life', target: D, life: 5 }, A)), /agreed by the other player/);
+  for (const asked of [D, A]) {
+    const s = structuredClone(h.state);
+    s.decision = { id: 1, seat: asked, kind: 'targets', prompt: 'x', options: [] } as unknown as GameState['decision'];
+    assert.match(refusal(s, amend(A, { kind: 'drawCards', target: A, n: 1 })), /decision is pending/,
+      `refused while seat ${asked} is being asked something`);
+  }
+  // inside a hidden step a question for the OTHER seat does not block a seat
+  // (CR D2.1b) — so here the fix's own gate is the one that refuses
+  const plan = new Harness(48434, ['Ann', 'Bo']);
+  plan.state.decision = { id: 1, seat: 1, kind: 'targets', prompt: 'x', options: [] } as unknown as GameState['decision'];
+  assert.match(refusal(plan.state, amend(0, { kind: 'drawCards', target: 0, n: 1 })), /no fixes while a decision is pending/,
+    'a hidden step with the other seat being asked something: still refused');
+});
+
+test('§4 accepted inside the hidden planning and deploy steps (owner, 2026-10-16)', () => {
+  // the owner lifted the hidden-step refusal the same day: a turn with no
+  // battle is all hidden steps, and a fix is public and agreed by both
   const plan = new Harness(48431, ['Ann', 'Bo']);
-  assert.match(refusal(plan.state, amend(0, { kind: 'drawCards', target: 0, n: 1 })), /hidden planning, haste or deploy/);
+  const hand = plan.state.players[0]!.hand.length;
+  const r = apply(plan.state, amend(0, { kind: 'drawCards', target: 0, n: 1 }));
+  assert.equal(r.state.players[0]!.hand.length, hand + 1, 'planning: the draw landed');
   const dep = new Harness(48432, ['Ann', 'Bo']);
   toDeployment(dep);
-  assert.match(refusal(dep.state, amend(0, { kind: 'drawCards', target: 0, n: 1 })), /hidden planning, haste or deploy/);
-  const asked = structuredClone(h.state);
-  asked.decision = { id: 1, seat: D, kind: 'targets', prompt: 'x', options: [] } as unknown as GameState['decision'];
-  assert.match(refusal(asked, amend(A, { kind: 'drawCards', target: A, n: 1 })), /decision is pending/);
+  const life = apply(dep.state, amend(1, { kind: 'life', target: 0, life: 17 })).state;
+  assert.equal(life.players[0]!.life, 17, 'deployment: the life total was set');
+  assert.equal(life.deployActed?.[1] ?? false, false, 'and a fix is not the seat acting in deployment');
 });
 
 test('§4 refused: a card that is no longer where the proposer saw it, and life 0', () => {

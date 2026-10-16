@@ -12,6 +12,8 @@
  *   §3 the proposer cannot accept their own; a decline cools them down
  *   §4 a rewind: both seats get a whole fresh view, the file archives what
  *      was taken back
+ *   §4b fixes inside the hidden planning and deploy steps reach the other
+ *      seat at once
  *   §5 the fixed game survives a restart of the server and replays FAITHFUL
  *
  * Seeds: the server picks its own.
@@ -108,10 +110,13 @@ const battleWindow = (v: any): boolean => v && v.phase === 'battle' && !v.decisi
   && !(v.phase === 'planning' || v.phase === 'deploy');
 
 async function driveToBattle(a: Client, b: Client): Promise<void> {
+  return driveUntil(a, b, v => battleWindow(v));
+}
+async function driveUntil(a: Client, b: Client, want: (v: any) => boolean): Promise<void> {
   const recycled = new Set<string>();
   for (let i = 0; i < 300; i++) {
     await quiesce(a, b);
-    if (battleWindow(a.view) && battleWindow(b.view) && a.view.actionCount === b.view.actionCount) return;
+    if (want(a.view) && want(b.view) && a.view.actionCount === b.view.actionCount) return;
     let sent = false;
     for (const [c, seat] of [[a, 0], [b, 1]] as [Client, Seat][]) {
       const pick = greedy(c, seat, recycled);
@@ -124,7 +129,7 @@ async function driveToBattle(a: Client, b: Client): Promise<void> {
     }
     if (!sent) await sleep(80);
   }
-  throw new Error('never reached a battle window');
+  throw new Error('never reached the state asked for');
 }
 
 let server: ServerHandle;
@@ -243,6 +248,28 @@ test('§4 a rewind: both seats get a fresh view, and the file archives what was 
   assert.ok(rw.removed.length >= 1, 'the actions taken back are archived');
   assert.equal(rw.reason, 'I misclicked the pass');
   afterRewind = file.actions.length;
+});
+
+test('§4b fixes inside the hidden planning and deploy steps reach the other seat at once', async () => {
+  const P = (cooled === 0 ? 1 : 0) as Seat, O = cooled;
+  const prop = seatClient(P), opp = seatClient(O);
+  for (const [step, edit, check] of [
+    ['planning', { kind: 'drawCards', target: P, n: 1 }, (before: any, after: any) => after.players[P].hand.length === before.players[P].hand.length + 1],
+    ['deploy', { kind: 'life', target: P, life: 23 }, (_b: any, after: any) => after.players[P].life === 23],
+  ] as const) {
+    await driveUntil(a, b, v => v.phase === step && !v.decision && !v.pendingAsk);
+    await quiesce(a, b);
+    const before = opp.view;
+    const up = await prop.ask({ t: 'amend', op: 'propose', edit, reason: `${step}: the game skipped it` }, m => m.t === 'amend' && m.how === 'proposed');
+    const markO = opp.msgs.length;
+    opp.send({ t: 'amend', op: 'accept', id: up.fix.proposal.id });
+    const upd = await opp.next(m => m.t === 'update' && !!m.events?.some(e => /Agreed fix/.test(e.msg)), markO);
+    assert.equal(upd.view.phase, step, `${step}: still inside the hidden step`);
+    assert.ok(check(before, upd.view), `${step}: the other seat is shown the fix at once, on the half it otherwise sees frozen`);
+  }
+  await quiesce(a, b);
+  await sleep(300);
+  afterRewind = JSON.parse(readFileSync(join(ENV.ALGO_GAMES_DIR, `${ROOM}.json`), 'utf8')).actions.length;
 });
 
 test('§5 the fixed game survives a restart of the server and replays FAITHFUL', async () => {
