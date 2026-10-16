@@ -148,17 +148,25 @@ test('CR 710.7: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-ta
 
 test('CR 710.7: an adjacent Counter Thief\'s REPLACEMENT HOOK radiates from the Ancient One too', () => {
   // "[Augment] If one or more counters would be placed on one or more units
-  // during battle, those counters are placed on me instead." A replacement is
-  // consumed by the FIRST holder in entity-id order, and `board()` spawns the
-  // Ancient One first — so when it is adjacent, the mimic claims the counters
-  // and the Thief never sees them.
+  // during battle, those counters are placed on me instead." `board()` spawns
+  // the Ancient One first, so when it is adjacent its borrowed clause applies
+  // first and redirects the counters onto it.
+  //
+  // INVERTED 2026-10-16 (report round 2026-10-16, WP9): this pinned "the
+  // mimic claims them and the Thief never sees them". CR 708.4, Caleb
+  // 2025-11-25: replacements CHAIN, each applying once — counters on the
+  // Ancient One are still counters placed on a unit during battle, so the
+  // Thief, which has not applied yet, takes them from it. The Ancient One
+  // holding the clause is proven by its redirect in the log.
   const near = board(12731, 'Counter Thief', true);
   const far = board(12732, 'Counter Thief', false);
 
+  const said = new Map<typeof near, string[]>();
   for (const b of [far, near]) {
     const g = new E(b.h.state);
     g.addCounters(g.entity(b.filler)!, 1);
     b.h.state = g.s;
+    said.set(b, g.events.map(ev => ev.msg));
   }
   assert.equal(ent(far.h, far.filler)!.counters, 0, 'the Thief steals them either way');
   assert.equal(ent(far.h, far.donor)!.counters, 1,
@@ -166,10 +174,11 @@ test('CR 710.7: an adjacent Counter Thief\'s REPLACEMENT HOOK radiates from the 
   assert.equal(ent(far.h, far.ancient)!.counters, 0, 'and not on the Ancient One');
 
   assert.equal(ent(near.h, near.filler)!.counters, 0, 'still stolen');
-  assert.equal(ent(near.h, near.ancient)!.counters, 1,
-    'adjacent, the Ancient One holds the same clause and (lower id) claims them first');
-  assert.equal(ent(near.h, near.donor)!.counters, 0,
-    'a replacement is consumed once — the Thief gets nothing');
+  assert.ok(said.get(near)!.some(l => /^Counter Thief: the 1 counter\(s\) for .* are placed on Ancient One instead/.test(l)),
+    'adjacent, the Ancient One holds the same clause and (lower id) applies it first');
+  assert.equal(ent(near.h, near.ancient)!.counters, 0,
+    'each replacement applies once — the Thief, not yet applied, takes them from the Ancient One');
+  assert.equal(ent(near.h, near.donor)!.counters, 1, 'so they end on the Thief');
 });
 
 // ── the stated exclusion: ATTRIBUTES ─────────────────────────────────────

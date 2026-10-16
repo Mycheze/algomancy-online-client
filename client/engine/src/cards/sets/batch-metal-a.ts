@@ -770,7 +770,13 @@ card('Cosmic Conspirator', {
         + 'is nowhere to ask — it is kept as printed.');
       return null;
     }
-    if (pick === 'keep' || typeof pick !== 'string') return null;
+    // CR 708.4: KEEPING is this replacement applying — the player made its one
+    // choice — so it hands the request back unchanged rather than null, and a
+    // second Conspirator (which the engine chains after this one) is asked
+    // next, while this one is never asked about the same creation again. null
+    // is kept for "does not apply" (not yours, not one of the four kinds,
+    // nowhere to ask), which leaves the card eligible later in the chain.
+    if (pick === 'keep' || typeof pick !== 'string') return req;
     // Robot is the only unit token of the four; the other three are spell
     // tokens. The form travels with the kind, so the caller never has to know.
     return { ...req, name: pick, form: pick === 'Robot' ? 'unit' : 'spell' };

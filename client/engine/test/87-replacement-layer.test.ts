@@ -155,9 +155,13 @@ test('a replacement fires once, not once per source that could have fired it', (
 
 test('a counter REDIRECT moves the counters, it does not copy them', () => {
   // Counter Thief is the redirect half of the family: the number is untouched
-  // and the recipient changes. Two thieves do not each get a set — the first
-  // claimant consumes, ties by entity id, exactly as replaceRotDamage resolves
-  // them.
+  // and the recipient changes. Two thieves do not each get a set.
+  //
+  // INVERTED 2026-10-16 (report round 2026-10-16, WP9): this pinned "the first
+  // claimant consumes" (the lowest-id thief kept them). CR 708.4, Caleb
+  // 2025-11-25: "replacement effects only apply once onto an effect" — they
+  // CHAIN: the first thief's redirect is still a placement the second, not yet
+  // applied, matches, so they end on the second (timestamp order).
   const h = new Harness(8707);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -168,8 +172,8 @@ test('a counter REDIRECT moves the counters, it does not copy them', () => {
   whiteBox(h, e => e.addCounters(e.entity(victim)!, 4));
   assert.deepEqual(
     [ent(h, victim)!.counters, ent(h, first)!.counters, ent(h, second)!.counters],
-    [0, 4, 0],
-    'four counters exist in total, and they are all on the lowest-id thief');
+    [0, 0, 4],
+    'four counters exist in total, and they are all on the thief the chain ends on');
 });
 
 test('an AmountMod runs BEFORE the redirect — the thief steals the plus-one too', () => {

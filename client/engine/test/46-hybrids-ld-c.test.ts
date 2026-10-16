@@ -289,12 +289,18 @@ test('Counter Thief: outside battle the counters land where they were put', () =
 });
 
 test('Counter Thief: two thieves do not ping-pong, and the theft never reaches the stack', () => {
-  // The redirect really re-enters — putting the counters on the thief IS a
-  // counter placement — so two thieves would bounce one placement between them
-  // forever without a latch. The latch lives in the engine
-  // (`E.inReplaceCounters`, in E.inCostMods' shape) and not as a module-level
-  // `let` in a card file, which is the correction playtest report #60 asked
-  // for. Lowest entity id claims, exactly as replaceRotDamage resolves ties.
+  // Counters a thief redirects onto itself are still a counter placement, so
+  // two thieves could bounce one placement between them forever. They do not,
+  // because each replacement applies to the placement once (CR 708.4) — the
+  // engine's chain, not a module-level `let` in a card file (report #60).
+  //
+  // INVERTED 2026-10-16 (report round 2026-10-16, WP9): this used to assert
+  // that the LOWER id claims them ("first one wins"). Caleb, rules-questions
+  // 2025-11-25: "the tldr is replacement effects only apply once onto an
+  // effect", and the owner: "the chain should work in the way he says". The
+  // first thief's redirect leaves counters "placed on one or more units", which
+  // the second thief, not yet applied, still matches — so they end on the
+  // SECOND (timestamp order; who orders them is an open item).
   const h = new Harness(4622);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -304,8 +310,9 @@ test('Counter Thief: two thieves do not ping-pong, and the theft never reaches t
   toNextBattle(h, P);
   const before = h.events.length;
   whiteBox(h, e => e.addCounters(e.entity(other)!, 3));
-  assert.equal(ent(h, first)!.counters, 3, 'the lower id claims them');
-  assert.equal(ent(h, second)!.counters, 0, 'and the other gets nothing — a redirect, not a copy');
+  assert.equal(ent(h, second)!.counters, 3, 'the chain ends on the later thief');
+  assert.equal(ent(h, first)!.counters, 0, 'and the other gets nothing — a redirect, not a copy');
+  assert.equal(ent(h, other)!.counters, 0);
   const after = h.events.slice(before);
   assert.equal(after.filter(ev => ev.type === 'countersChanged').length, 1,
     'ONE countersChanged for one placement');

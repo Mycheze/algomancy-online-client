@@ -87,7 +87,7 @@
  * UN-PARKED (kept as history; nothing in this batch is parked):
  *  - Counter Thief: UN-PARKED (CR 708.1). "those counters are placed on me instead"
  *    is a REDIRECT — the second family of the replacement layer — expressed as
- *    `replaceCounters`, a first-claimant-consumes hook E.addCounters consults
+ *    `replaceCounters`, a chained redirect hook (CR 708.4) E.addCounters consults
  *    before it commits. Nothing reaches the stack, so nothing can negate it.
  *  - Trench Stalker: LIVE, and it landed WHOLE the way its ledger
  *    entry demanded — the CR 111.2 "[Discard two cards]" cast cost went on in the
@@ -475,9 +475,16 @@ card('Buffer Overflow', {
 // {Virus} Infection Unit.
 // UNPARKED (CR 708.1). A REDIRECT, which is the second family in the replacement
 // layer: the number is untouched and the RECIPIENT changes, so it is a
-// first-claimant-consumes hook rather than a summed AmountMod. The counters
-// land on exactly one unit either way — that is what "instead" means, and it
-// is why two thieves do not each get a copy.
+// redirect hook rather than a summed AmountMod. The counters land on exactly
+// one unit either way — that is what "instead" means, and it is why two
+// thieves do not each get a copy.
+//
+// TWO THIEVES CHAIN (CR 708.4, Caleb 2025-11-25: "replacement effects only
+// apply once onto an effect"): counters the first thief redirects onto itself
+// are still counters "placed on one or more units during battle", so the
+// second thief, which has not applied yet, takes them from the first, and the
+// first never takes them back. They end on the LATER thief in the engine's
+// order (entity id; Caleb says the player orders them — an open item).
 //
 // "DURING BATTLE" is the printed restriction and it is real: outside battle
 // the thief takes nothing. The engine's own battle state answers it, and it
@@ -491,11 +498,9 @@ card('Buffer Overflow', {
 // HOST when the text arrived on an augment mod — the same rebinding Skittering
 // Blight's "counters on me" gets, and it comes free from E.anchored().
 //
-// The engine's `inReplaceCounters` latch is what makes the self-placement safe
-// (the theft is itself a counter placement, and two thieves would otherwise
-// bounce one placement between them forever). It lives in the engine, in
-// E.inCostMods' shape, and NOT as a module-level `let` in this file — which is
-// the correction report #60 asked for.
+// No ping-pong: each thief applies to one placement once, and the engine's
+// chain (E.chainReplacements), not a flag in this file, is what enforces it —
+// a module-level `let` here was the thing report #60 asked to be rid of.
 //
 // ⚠ TRANSCRIPTION — a DELIBERATE, RECORDED divergence from the printed card.
 // The physical card prints the name "Counter Theif". Our data spells it

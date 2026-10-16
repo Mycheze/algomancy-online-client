@@ -2127,7 +2127,7 @@ export interface CardBehavior {
    * instead", "put that many counters plus one instead". Same radiation rules
    * as `statics`/`costMods` (a unit in play, or an augment mod reading from
    * its HOST, scoped to the anchor's region), and SUMMED like `costMods`
-   * rather than first-true-consumes like the `replaceX` hooks below. See
+   * rather than chained one at a time like the `replaceX` hooks below. See
    * `AmountMod` for why the two families compose differently.
    */
   amountMods?: AmountMod[];
@@ -2143,8 +2143,8 @@ export interface CardBehavior {
    * step in mode 'draft' (look at your pack, merge, leave 10), the draw phase
    * in mode 'constructed' (draw 4, put 2 back). Return true to REPLACE it: the
    * normal step does not happen at all and the hook does whatever the card
-   * does instead. First true consumes, like the other replacements, so two
-   * copies replace the step once.
+   * does instead. First true consumes, so two copies replace the step once —
+   * the CR 708.4 chain: once one has skipped the step there is no step left.
    *
    * Worldbender is the pool's only one, and it is the reason the hook takes
    * the MODE into account rather than being "skip and draw one": what the step
@@ -2167,7 +2167,8 @@ export interface CardBehavior {
    * CR 708.3 replacement: `seat` is about to gain `amount` life. Return true to
    * REPLACE the gain — the hook does whatever the card does instead
    * (Nullbringer: "they lose that much life instead" → `g.loseLife(seat, n)`)
-   * — false to let it through. First true consumes; the gain never happens, so
+   * — false to let it through. First true consumes (CR 708.4: the substitute
+   * is not a gain, so no other holder matches it); the gain never happens, so
    * NO `lifeGained` event is fired and nothing that watches life gain hears
    * about a gain that did not occur.
    *
@@ -2180,8 +2181,10 @@ export interface CardBehavior {
   /**
    * CR 708.4a replacement: `n` counters are about to be put on `target`. Return the
    * entity they should be put on INSTEAD (Counter Thief: "those counters are
-   * placed on me instead" → the anchor), or null to decline. First non-null
-   * consumes; the counters land on exactly one unit either way, so this is a
+   * placed on me instead" → the anchor), or null to decline. The holders CHAIN
+   * (CR 708.4): each is offered the placement as the ones before it left it,
+   * `target` being whoever would receive the counters NOW, and applies at most
+   * once. The counters land on exactly one unit either way, so this is a
    * REDIRECT and never a multiplier.
    *
    * `n` is already post-`AmountMod` — a Flux Resonator's "plus one" is part of
@@ -2191,7 +2194,9 @@ export interface CardBehavior {
   /**
    * CR 708.3 replacement: one token is about to be created. Return a substituted
    * request (Cosmic Conspirator: "you may instead create a token of any of
-   * these types"), or null to decline. First non-null consumes.
+   * these types"), or null when it does not apply. The holders CHAIN (CR
+   * 708.4): each is offered the creation as the ones before it left it, and
+   * applies at most once — return `req` itself to apply and keep it.
    *
    * Consulted BEFORE anything is created — that is the whole point, and it is
    * playtest report #64: the old trigger really created the Robot, fired a

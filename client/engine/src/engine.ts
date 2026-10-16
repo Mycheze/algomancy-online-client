@@ -821,8 +821,9 @@ export class E {
    * have already sorted by entity id) and, within a holder, layer order —
    * identity face first, then whatever is projected onto it.
    *
-   * The seven `replace*` hooks all read "first one to claim it consumes the
-   * event", so what they iterate has to be a flat, ordered list of CANDIDATE
+   * The seven `replace*` hooks offer one event to their donors IN ORDER (CR
+   * 708.4: each applies once, in turn, to the event as the ones before it left
+   * it), so what they iterate has to be a flat, ordered list of CANDIDATE
    * CLAUSES rather than of entities. `anchor` rides along because an
    * [Augment]-donated or projected clause reads from its HOST/mimic, which is
    * what `anchored()` means by the anchor.
@@ -2978,9 +2979,15 @@ export class E {
    * framework (docs/04 has no replacement layer): a card declares
    * `replaceRotDamage` in its behavior, the hook is asked only for cards the
    * damaged player controls, and the first one to return true consumes the
-   * whole event. Ties are resolved by entity id — the pool has exactly one
-   * such card so no real ordering question arises; if a second ever ships,
-   * this is where the "choose which replacement applies" decision goes.
+   * whole event. That is the CR 708.4 chain, not an exception to it: what a
+   * holder puts in the damage's place (counters on Skittering Blight, Beyond's
+   * -1/-1 counters) is no longer rot damage, so no other holder's "if rot
+   * would deal damage to you" matches it any more. ORDER is entity id, and it
+   * DOES change the outcome — two Skittering Blights (which one grows), or a
+   * Blight beside Beyond, Codex Incarnate (counters on the Blight, or -1/-1 on
+   * a target). Caleb: "you the player control how they stack"; every holder is
+   * the damaged player's own, so that player would choose. OPEN: there is no
+   * decision seam for it at the start of deployment yet.
    *
    * Skittering Blight prints the text under [Augment], so — exactly like
    * staticsFor() — the hook radiates from units in play AND from augment mods,
@@ -4069,9 +4076,9 @@ export class E {
    * "Put that many counters PLUS ONE instead" (Flux Resonator, Proliferating
    * Slime) changes the number, so it is an `AmountMod` and it is summed — two
    * Resonators put two more. "Those counters are placed on ME instead"
-   * (Counter Thief) changes the recipient, so it is a redirect and the first
-   * claimant consumes it. The amount runs FIRST, because the thief steals what
-   * would have been placed, plus-one included.
+   * (Counter Thief) changes the recipient, so it is a redirect, and redirects
+   * chain (CR 708.4, `replaceCounters`). The amount runs FIRST, because the
+   * thief steals what would have been placed, plus-one included.
    *
    * Both are consulted, not re-entered, which is why the module-level `let
    * proliferating` flag that used to guard this path is gone (report #60).
@@ -4249,7 +4256,7 @@ export class E {
       return;
     }
     if (this.replaceLifeGain(seat, n, why)) return;
-    // CR 112.3: the two AMOUNT families, after the first-true-consumes substitution
+    // CR 112.3: the two AMOUNT families, after the substitution
     // above and before anything is committed. Deliberately AFTER
     // `replaceLifeGain`: Nullbringer turns a gain into a LOSS, and that loss is
     // a fresh life change that `loseLife` prices on its own — pricing here too
@@ -4357,7 +4364,19 @@ export class E {
    * hook reads from their HOST) — but region-scoped instead of seat-scoped:
    * the printed text says "columns" without an owner, so every holder IN THIS
    * REGION is offered the replacement and the card decides whose columns it
-   * cares about. First to return true consumes the hit; ties by entity id.
+   * cares about.
+   *
+   * CR 708.4, the chain: every holder is offered the hit AS THE ONES BEFORE IT
+   * LEFT IT, and applies at most once. A holder that soaks the whole hit leaves
+   * nothing for the next one to match (two Oorblaks, no Piercing: one takes all
+   * of it, the other takes 0 — the owner, 2026-10-16). A {Piercing} excess an
+   * Oorblak lets through is still combat damage that would be dealt to the
+   * player, so the NEXT Oorblak, which has not applied, takes it — the owner,
+   * 2026-10-16: "it's all combat damage, and that damage is still considered
+   * combat damage, so it'd go to the second one". Order is entity id; it
+   * decides WHICH Oorblak soaks (and dies), and whether Blightsea Polyp or
+   * Oorblak gets a hit first — OPEN: Caleb says the player orders them, and
+   * the combat-damage commit has no decision seam to ask on.
    */
   private replaceCombatDamage(seat: Seat, amount: number,
     info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean }): number {
@@ -4410,13 +4429,63 @@ export class E {
   //
   //   · `AmountMod` (see amountDelta above) — CONTINUOUS and SUMMED. It
   //     changes a number and nothing else.
-  //   · the `replaceX` hooks below — FIRST-TRUE-CONSUMES. They substitute or
-  //     redirect the thing itself, and a thing can only be replaced once.
+  //   · the `replaceX` hooks below — they substitute or redirect the thing
+  //     itself, and they CHAIN (CR 708.4): each applies to one event at most
+  //     once, in turn, to the event as the ones before it left it.
+  //
+  // THE CHAIN. Caleb Gannon, rules-questions 2025-11-25, on Resonant against
+  // Oorblak: "replacement effects don't work like triggers" … "its a
+  // replacement effect so it just takes one thing and replaces it with another
+  // (you the player control how they stack)" … "if you have two automatons" …
+  // "1 token -> 2tokens -> 3 tokens" … "Damage unit -> controller -> unit" …
+  // "the tldr is replacement effects only apply once onto an effect". The
+  // owner, 2026-10-16: "Go with Caleb. ... But the chain should work in the way
+  // he says". So no single holder "wins": every holder whose condition still
+  // matches the event AS THE EARLIER ONES LEFT IT applies, once, and one that
+  // has applied never applies again — which is what stops a loop, not a
+  // first-one-consumes rule. Where the substitute is a different KIND of event
+  // (rot damage → counters, a gain → a loss, a card step → a draw) no other
+  // holder's condition matches it any more, so "only the first applies" falls
+  // out of the chain rather than being a rule of its own. `chainReplacements`
+  // is the loop for the hooks whose substitute is still the same kind of event.
+  //
+  // ORDER is timestamp (entity id) today. Caleb says the player controls it;
+  // where the order changes the outcome (two Counter Thieves, two Oorblaks,
+  // Oorblak with Blightsea Polyp, two Skittering Blights) it is an OPEN item —
+  // there is no decision seam for it yet, and most of these run outside any
+  // resolving part, where there is nothing to hang a question on.
   //
   // Deliberately NO general "any event" framework, for the reason
   // replaceRotDamage's own comment already gives: one named hook per
   // replaceable quantity, so every replaceable thing in the engine is
   // greppable and nothing becomes replaceable by accident.
+
+  /**
+   * CR 708.4: run one event through a list of replacement donors as a CHAIN.
+   *
+   * `apply(donor, event)` returns the event as that donor replaces it, or
+   * null when the donor's condition does not match the event AS IT NOW STANDS
+   * (it has then not applied, and stays eligible). Repeatedly, the earliest
+   * donor in `donors` order that has not applied yet and does apply is
+   * applied — MTG 616.1f's "repeat, taking into account only the effects that
+   * would now be applicable", with timestamp order standing in for the
+   * player's choice — until none does. Each donor applies at most once, so
+   * the chain always ends, and with n donors it asks at most n² questions.
+   */
+  private chainReplacements<D, V>(donors: readonly D[], event: V, apply: (d: D, ev: V) => V | null): V {
+    const applied = new Set<number>();
+    let ev = event;
+    for (;;) {
+      let next: V | null = null;
+      for (let i = 0; i < donors.length && next === null; i++) {
+        if (applied.has(i)) continue;
+        next = apply(donors[i]!, ev);
+        if (next !== null) applied.add(i);
+      }
+      if (next === null) return ev;
+      ev = next;
+    }
+  }
 
   /**
    * CR 708.10: is `seat`'s life total LOCKED right now? ("Target player's life
@@ -4449,8 +4518,10 @@ export class E {
    *
    * Nullbringer: "[Augment] If a player would gain life, they lose that much
    * life instead." Shaped on `replaceRotDamage` (first true consumes, ties by
-   * entity id, radiating from units in play and from augment mods whose hook
-   * reads from their HOST) but NOT seat-scoped: the printed subject is "a
+   * entity id — the CR 708.4 chain, because the loss a Nullbringer puts in the
+   * gain's place is not a gain, and no other Nullbringer's "would gain life"
+   * matches it; the order changes nothing a player can see — radiating from
+   * units in play and from augment mods whose hook reads from their HOST) but NOT seat-scoped: the printed subject is "a
    * PLAYER", unowned, so every holder in the region is asked and the card
    * decides whose gains it cares about — the same reasoning
    * `replaceCombatDamageToPlayer` uses for "columns".
@@ -4492,10 +4563,18 @@ export class E {
    * them. A REDIRECT and never a multiplier — the counters land on exactly one
    * unit either way, which is what "instead" means.
    *
-   * `inReplaceCounters` is the latch that makes this safe. The redirect really
-   * does re-enter (the thief puts the counters on itself, and that is a
-   * counter placement), and skipping the anchor would not be enough: two
-   * thieves would bounce one placement between them forever.
+   * CR 708.4: the redirects CHAIN (`chainReplacements`). Counters a thief
+   * redirects onto itself are still counters that "would be placed on one or
+   * more units during battle", so a SECOND thief that has not applied yet
+   * takes them from the first — and the first, having applied, never takes
+   * them back. Two thieves: the counters end on the later one in the order,
+   * not on the earlier one (which is what first-one-wins gave). No ping-pong:
+   * each thief applies once. A hook that names the unit already receiving the
+   * counters (or nobody) has not applied.
+   *
+   * `inReplaceCounters` is a re-entry latch for a hook that puts counters
+   * itself while it is being asked. No hook does today — Counter Thief only
+   * names a unit — and the chain, not the latch, is what stops two thieves.
    */
   private replaceCounters(target: Entity, n: number): Entity {
     if (this.inReplaceCounters) return target;
@@ -4508,17 +4587,16 @@ export class E {
     this.inReplaceCounters = true;
     this.replacementDepth++;
     try {
-      for (const { face, def, anchor } of donors) {
-        const to = def.replaceCounters!(this, anchor, target, n);
-        if (!to || to.id === target.id || !this.entity(to.id)) continue;
+      return this.chainReplacements(donors, target, ({ face, def, anchor }, now) => {
+        const to = def.replaceCounters!(this, anchor, now, n);
+        if (!to || to.id === now.id || !this.entity(to.id)) return null;
         this.ev('info',
-          `${face}: the ${Math.abs(n)} counter(s) for ${target.card} are placed on `
+          `${face}: the ${Math.abs(n)} counter(s) for ${now.card} are placed on `
           + `${to.card} instead.`,
-          { unit: to.id, from: target.id, n, by: face });
+          { unit: to.id, from: now.id, n, by: face });
         return to;
-      }
+      });
     } finally { this.inReplaceCounters = false; this.replacementDepth--; }
-    return target;
   }
 
   // ── CR 708.9: token creation, and the BATCH ─────────────────────────────
@@ -4595,8 +4673,17 @@ export class E {
    * CR 708.3: one token is about to be created — may a card substitute it?
    *
    * Cosmic Conspirator: "If you would create a Robot, Poison, Crystal or
-   * Fireball, you may instead create a token of any of these types." First
-   * non-null consumes. The hook may ask a question (`askInResolution`), and a
+   * Fireball, you may instead create a token of any of these types."
+   *
+   * CR 708.4: the substitutions CHAIN (`chainReplacements`). A Fireball one
+   * Conspirator made of a Robot is still a token "you would create", so a
+   * second Conspirator that has not applied yet is offered THAT, and may swap
+   * it again; neither is ever offered the same creation twice. A hook that
+   * returns null has not applied (not its controller's creation, not one of
+   * its kinds, nowhere to ask); one that returns a request — the same one,
+   * when the player kept it — has applied.
+   *
+   * The hook may ask a question (`askInResolution`), and a
    * question raised here suspends the whole resolving part and replays it —
    * which is correct and is why the substitution must happen before ANY state
    * is mutated: the rollback would otherwise undo a token that was already on
@@ -4611,17 +4698,16 @@ export class E {
     const donors = this.donorFaces(holders, 'replaceTokenCreation');
     this.replacementDepth++;
     try {
-      for (const { face, def, anchor } of donors) {
-        const sub = def.replaceTokenCreation!(this, anchor, req);
-        if (!sub) continue;
-        if (sub.name === req.name && sub.form === req.form) return req;   // declined in substance
+      return this.chainReplacements(donors, req, ({ face, def, anchor }, now) => {
+        const sub = def.replaceTokenCreation!(this, anchor, now);
+        if (!sub) return null;
+        if (sub.name === now.name && sub.form === now.form) return now;   // applied, and kept it
         this.ev('info',
-          `${face}: a ${req.name} ${req.x} is created as a ${sub.name} ${sub.x} instead.`,
-          { by: face, was: req.name, now: sub.name, x: sub.x, seat: req.seat });
+          `${face}: a ${now.name} ${now.x} is created as a ${sub.name} ${sub.x} instead.`,
+          { by: face, was: now.name, now: sub.name, x: sub.x, seat: now.seat });
         return sub;
-      }
+      });
     } finally { this.replacementDepth--; }
-    return req;
   }
 
   /**
@@ -13298,8 +13384,10 @@ export class E {
    * which is exactly what `CardBehavior.replaceCardStep` is for.
    *
    * Returns true when some card took the step over, in which case the caller
-   * must NOT run the normal one. First true consumes (the CR 708.4a rule): two
-   * Worldbenders replace the step once, not twice.
+   * must NOT run the normal one. First true consumes: two Worldbenders replace
+   * the step once, not twice. That is the CR 708.4 chain — once one has
+   * skipped the step there is no step left for the other to skip — and since
+   * Worldbender is the only holder, the order changes nothing.
    *
    * Anchored like the other replacement hooks — units in play plus augment
    * mods reading from their host — but scoped by CONTROLLER instead of by
