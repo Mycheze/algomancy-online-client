@@ -332,6 +332,13 @@ export function decisionBlocks(s: GameState, seat: Seat): boolean {
   if (dec.seat === seat) return true;
   if (hiddenSegment(s) === null) return true;
   if (s.suspension?.type === 'resolve' && s.suspension.snapshot) return true;
+  // CR 708.4a, 507.4: a replacement-order question from the rot step is asked
+  // BEFORE anyone may deploy — the step it belongs to has rewound to its start
+  // and no rot has been dealt yet — so the other seat waits for it rather than
+  // deploying ahead of its own rot. Nothing hidden is in it: the rot, the
+  // cards that replace it and the units they stand on are all public. (A
+  // combat question is in battle, where every question already blocks.)
+  if (s.suspension?.type === 'replaceOrder') return true;
   return false;
 }
 
@@ -361,6 +368,7 @@ export function decisionBlocks(s: GameState, seat: Seat): boolean {
  *                   ordering question is not the batch that was asked about.
  *   'combatAssign'  battle-only, so `decisionBlocks` never lets anything past
  *                   it in the first place.
+ *   'replaceOrder'  blocks both seats (see `decisionBlocks`), so never here.
  *   'resolve'       likewise excluded, for the snapshot reason above.
  *
  * Cheap by construction: it is only ever computed on the path `decisionBlocks`
@@ -2925,6 +2933,27 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     const plan = (plans[sus.key] ??= { picks: [] });
     if (val === 'default') plan.def = true;
     else plan.picks.push(val as number);
+    e.settle();
+    return;
+  }
+
+  if (sus.type === 'replaceOrder') {
+    // CR 708.4a: which replacement effect applies next (E.askReplacement). The
+    // seam that asked rewound to its own start before suspending, so the
+    // answer is recorded and the seam simply runs again — a combat sub-step
+    // through the damage pump (settle() resumes it), the rot step directly,
+    // followed by the start-of-deployment event it was holding (CR 507.4).
+    e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
+    const v = dec.options[choice]!.value as { pick?: unknown } | null;
+    e.need(typeof v?.pick === 'number', 'bad choice');
+    (e.s.replaceOrders ??= {})[sus.key] = v!.pick as number;
+    if (sus.scope === 'rot') {
+      e.need(e.s.phase === 'deploy', 'the rot step is over');
+      e.rotDamage();
+      e.finishDeployStart();
+      return;
+    }
+    e.need(!!e.s.battle?.damageStep, 'no combat damage in progress');
     e.settle();
     return;
   }

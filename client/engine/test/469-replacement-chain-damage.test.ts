@@ -54,6 +54,10 @@ function oorblaks(seed: number, n: number, power: number, piercing: boolean) {
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                  // combat damage
+  // CR 708.4a: with two or more Oorblaks the defender is now ASKED which takes
+  // the damage first (471). Answering with the first choice each time is the
+  // timestamp order, which is the chain these tests pin.
+  while (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
   return {
     lost: life - h.state.players[D]!.life,
     damage: oo.map(id => ent(h, id)?.damage ?? 'dead'),
@@ -96,6 +100,10 @@ test('CR 708.4: two Skittering Blights — rot damage becomes counters on ONE of
   const b2 = spawn(h, P, 'Skittering Blight');
   const life = h.state.players[P]!.life;
   whiteBox(h, e => { e.gainRot(P, 3 - e.rot(P)); e.rotDamage(); });
+  // CR 708.4a: the player is now asked which Blight replaces it (472); the
+  // first choice is the timestamp order this test pins
+  assert.equal(h.state.decision?.seat, P, 'the player is asked which one');
+  h.do({ type: 'decide', seat: P, choice: 0 });
   assert.equal(h.state.players[P]!.life, life, 'the rot dealt no damage');
   assert.deepEqual([ent(h, b1)!.counters, ent(h, b2)!.counters], [3, 0],
     'the first replaced it with 3 counters; the second "if rot would deal damage to you" has no rot damage left to match');

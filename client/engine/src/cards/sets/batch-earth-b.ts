@@ -352,6 +352,10 @@ card('Oorblak', {
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
     replaceCombatDamageToPlayer: (g, self, seat, amount, info) => {
+      // CR 608.8c: a REDIRECT — "if combat damage WOULD be dealt to you" — so it
+      // acts in the first pass, before anything is dealt to the player (and
+      // so before Blightsea Polyp, which acts on damage being dealt)
+      if (info.stage !== 'redirect') return false;
       if (seat !== self.controller) return false;
       // CR 802.11e {Pure}: an attribute-blind exchange cannot see this body's
       // {Vulnerable} either — same guard combat's own commit loop uses.

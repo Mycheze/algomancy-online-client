@@ -156,6 +156,25 @@ class PartChoice {
   }
 }
 
+/**
+ * CR 708.4a: thrown by `E.askReplacement` inside a replacement-order SEAM (a
+ * combat-damage sub-step, the start-of-deployment rot step) when the question
+ * it would ask has no recorded answer yet. The seam catches it, rewinds the
+ * world to its own start and suspends there (see `E.orderSeamRun`).
+ */
+class OrderNeeded {
+  key: string;
+  dec: Omit<Decision, 'id'>;
+  constructor(key: string, dec: Omit<Decision, 'id'>) {
+    this.key = key;
+    this.dec = dec;
+  }
+}
+
+/** one choice in a replacement-order question: the unit it is about (a board
+ * click, ui/boardpick.ts reads `unit`), and the index the asker maps back */
+interface ReplacementPick { label: string; card: CardName; unit: EntityId; pick: number }
+
 export function other(seat: Seat): Seat { return 1 - seat; }
 
 /** Manual p.17: each player may flip up to TWO dormant resources face-up per
@@ -682,6 +701,12 @@ export class E {
    * added a token", which is by construction undeclarable.
    */
   private replacementDepth = 0;
+  /**
+   * CR 708.4a: the replacement-order seam running right now, and how many
+   * questions it has asked so far this run (the n in `${key}#${n}`). Null
+   * outside one. See `orderSeamRun`.
+   */
+  private orderSeam: { key: string; asked: number } | null = null;
   /** is a replacement running right now? See `replacementDepth`. */
   get inReplacement(): boolean { return this.replacementDepth > 0; }
 
@@ -2957,18 +2982,38 @@ export class E {
    * way regroup/end-of-turn triggers are handled.
    */
   rotDamage(): void {
-    for (const seat of [this.initiative, this.nit]) {
-      const n = this.rot(seat);
-      if (n <= 0) continue;
-      if (this.replaceRotDamage(seat, n)) continue;
-      // mirrors dealEffectDamage's player branch (a 'damage' event so triggers
-      // hear face hits, then the life loss) without needing an EffectCtx
-      const ev = this.ev('damage', `${this.pname(seat)}'s ${n} rot deals ${n} damage to them.`,
-        { player: seat, n, source: 'rot', controller: seat, region: this.homeRegion(seat) });
-      this.fireEvent('damage', ev);
-      this.loseLife(seat, n, 'rot');
-    }
+    const run = (): void => {
+      for (const seat of [this.initiative, this.nit]) {
+        const n = this.rot(seat);
+        if (n <= 0) continue;
+        if (this.replaceRotDamage(seat, n)) continue;
+        // mirrors dealEffectDamage's player branch (a 'damage' event so triggers
+        // hear face hits, then the life loss) without needing an EffectCtx
+        const ev = this.ev('damage', `${this.pname(seat)}'s ${n} rot deals ${n} damage to them.`,
+          { player: seat, n, source: 'rot', controller: seat, region: this.homeRegion(seat) });
+        this.fireEvent('damage', ev);
+        this.loseLife(seat, n, 'rot');
+      }
+    };
+    // CR 708.4a: two rot replacements of one seat's may each be the one that
+    // applies, so the step is a seam the player can be asked from. Only where
+    // that can happen — every other rot step runs exactly as it always did.
+    const mayAsk = [this.initiative, this.nit].some(seat =>
+      this.rot(seat) > 0 && this.rotDonors(seat).length >= 2);
+    if (mayAsk) this.orderSeamRun('rot', 'rot', run);
+    else run();
     this.settle();
+  }
+
+  /** CR 112.13d: the rot replacements `seat` holds, one entry per face, in
+   * timestamp (entity id) order */
+  private rotDonors(seat: Seat): { face: CardName; def: CardBehavior; anchor: Entity }[] {
+    const holders = this.anchored((h, a) =>
+      this.donates(h, a, 'replaceRotDamage')                    // CR 710.7: off the FACES
+      && a.controller === seat
+      && !this.textStripped(h, a));                         // CR 712.1a (full projection)
+    holders.sort((a, z) => a.holder.id - z.holder.id);
+    return this.donorFaces(holders, 'replaceRotDamage');
   }
 
   /**
@@ -2986,8 +3031,10 @@ export class E {
    * DOES change the outcome — two Skittering Blights (which one grows), or a
    * Blight beside Beyond, Codex Incarnate (counters on the Blight, or -1/-1 on
    * a target). Caleb: "you the player control how they stack"; every holder is
-   * the damaged player's own, so that player would choose. OPEN: there is no
-   * decision seam for it at the start of deployment yet.
+   * the damaged player's own, so THAT PLAYER CHOOSES which one applies (CR
+   * 708.4a) — asked from the rot step's seam (`orderSeamRun`) whenever two
+   * holders differ in face or in the unit they act from. Two copies of one
+   * card's text on ONE unit are interchangeable, and nothing is asked.
    *
    * Skittering Blight prints the text under [Augment], so — exactly like
    * staticsFor() — the hook radiates from units in play AND from augment mods,
@@ -2995,12 +3042,28 @@ export class E {
    * host's perspective, so "counters on me" lands on the host.
    */
   private replaceRotDamage(seat: Seat, n: number): boolean {
-    const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceRotDamage')                    // CR 710.7: off the FACES
-      && a.controller === seat
-      && !this.textStripped(h, a));                         // CR 712.1a (full projection)
-    holders.sort((a, z) => a.holder.id - z.holder.id);
-    for (const { face, def, anchor } of this.donorFaces(holders, 'replaceRotDamage')) {
+    const donors = this.rotDonors(seat);
+    // CR 708.4a: the player orders them. Each one consumes the whole event, so
+    // the only question is which goes first.
+    let distinct = donors.filter((d, i) =>
+      donors.findIndex(o => o.face === d.face && o.anchor.id === d.anchor.id) === i);
+    // only the ones that WOULD replace it are choices — asked of a copy of the
+    // world, because a hook does what it does (counters, a queued trigger)
+    if (distinct.length >= 2) {
+      distinct = distinct.filter(d => {
+        const g = new E(structuredClone(this.s));
+        return d.def.replaceRotDamage!(g, g.entity(d.anchor.id) ?? d.anchor, seat, n);
+      });
+    }
+    let order = donors;
+    if (distinct.length >= 2) {
+      const got = this.askReplacement(seat,
+        `Your ${n} rot would deal ${n} damage to you — which card replaces it?`,
+        distinct.map(d => ({ label: this.replacerLabel(d.face, d.anchor), card: d.face,
+          unit: d.anchor.id, pick: donors.indexOf(d) })));
+      if (got !== null) order = [donors[got]!, ...donors.filter((_, i) => i !== got)];
+    }
+    for (const { face, def, anchor } of order) {
       if (def.replaceRotDamage!(this, anchor, seat, n)) {
         // CR 112.13d — the replacement's log line is now a DISPATCHED event.
         //
@@ -4374,9 +4437,22 @@ export class E {
    * player, so the NEXT Oorblak, which has not applied, takes it — the owner,
    * 2026-10-16: "it's all combat damage, and that damage is still considered
    * combat damage, so it'd go to the second one". Order is entity id; it
-   * decides WHICH Oorblak soaks (and dies), and whether Blightsea Polyp or
-   * Oorblak gets a hit first — OPEN: Caleb says the player orders them, and
-   * the combat-damage commit has no decision seam to ask on.
+   * decides WHICH Oorblak soaks (and dies), so THE DAMAGED PLAYER CHOOSES
+   * (CR 708.4a; Caleb: "you the player control how they stack"): whenever two
+   * or more holders on different units would each take some of the hit, the
+   * player is asked which takes it first — from the combat sub-step's seam
+   * (`orderSeamRun`), and again for the next one if a {Piercing} excess is
+   * left for it. One holder, or two that would take nothing, ask nothing.
+   *
+   * CR 608.8c, TWO PASSES. A hit is first offered as damage that WOULD be
+   * dealt to the player (`stage: 'redirect'`: Oorblak), and only what every
+   * redirect let through is then offered as damage being DEALT to the player
+   * (`stage: 'dealt'`: Blightsea Polyp's "as 1 rot"). The owner, 2026-10-16:
+   * "The column doesn't even get to deal damage to the player. It gets
+   * redirected to the Oorblak instead. There's no way for it to add rot
+   * (unless piercing is added into the mix)". Not a choice: a redirect always
+   * comes first. The second pass keeps timestamp order — its holders (Polyps)
+   * all do the same thing to the same player, so their order changes nothing.
    */
   private replaceCombatDamage(seat: Seat, amount: number,
     info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean }): number {
@@ -4385,23 +4461,178 @@ export class E {
       && a.region === info.region
       && !this.textStripped(h, a));                         // CR 712.1a (full projection)
     holders.sort((a, z) => a.holder.id - z.holder.id);
+    const donors = this.donorFaces(holders, 'replaceCombatDamageToPlayer');
+    const applied = new Set<number>();
     let left = amount;
-    for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {
-      if (left <= 0) break;
-      const r = def.replaceCombatDamageToPlayer!(this, anchor, seat, left, info);
+    // what donor i lets through of `left`, offered on engine `g` — this one for
+    // real, or a throwaway copy of the world for a dry run (`wouldTake`)
+    const offer = (g: E, i: number, stage: 'redirect' | 'dealt'): number => {
+      const { def, anchor } = donors[i]!;
+      const r = def.replaceCombatDamageToPlayer!(g, g.entity(anchor.id) ?? anchor, seat, left,
+        { ...info, stage });
       // the return widened from all-or-nothing to a NUMBER — the damage
       // LET THROUGH — so a card can absorb part of a hit and pass the rest on.
       // `true`/`false` keep their old meaning (all / none), which is what makes
       // this a widening rather than a break: Blightsea Polyp still returns true.
-      const through = r === true ? 0 : r === false ? left : Math.max(0, Math.min(left, r));
-      if (through === left) continue;                           // this holder declined
+      return r === true ? 0 : r === false ? left : Math.max(0, Math.min(left, r));
+    };
+    // CR 708.4a: would donor i take any of what is left? Asked of a COPY of the
+    // world, because a hook does whatever it does (Oorblak takes the damage)
+    // and the question has to be answered before anything is done
+    const wouldTake = (i: number): boolean => offer(new E(structuredClone(this.s)), i, 'redirect') < left;
+    const commit = (i: number, stage: 'redirect' | 'dealt'): boolean => {
+      const through = offer(this, i, stage);
+      if (through === left) return false;                       // this holder declined
+      applied.add(i);
+      const face = donors[i]!.face;
       this.ev('info',
         `${face} replaces ${left - through} of the ${left} combat damage to ` +
         `${this.pname(seat)} (the damage still counts as having been dealt).`,
         { seat, amount: left - through, by: face });
       left = through;
+      return true;
+    };
+    // pass 1, the redirects — re-asked after each one, because a {Piercing}
+    // excess is a new "would be dealt to you" for the ones that have not applied
+    const declined = new Set<number>();
+    const firstPerUnit = (ids: number[]): number[] => ids.filter((i, k) =>
+      ids.findIndex(j => donors[j]!.anchor.id === donors[i]!.anchor.id) === k);
+    while (left > 0) {
+      const open = donors.map((_, i) => i).filter(i => !applied.has(i) && !declined.has(i));
+      // one choice per unit: two copies of the text on one body are one choice.
+      // Only where two units could each take some is anything dry-run at all —
+      // otherwise this is the plain CR 708.4 chain, in timestamp order.
+      const byUnit = firstPerUnit(open).length >= 2 ? firstPerUnit(open.filter(wouldTake)) : open.slice(0, 1);
+      if (!byUnit.length) break;
+      let pick = byUnit[0]!;
+      if (byUnit.length >= 2) {
+        const faces = [...new Set(byUnit.map(i => donors[i]!.face))];
+        const got = this.askReplacement(seat,
+          (faces.length === 1
+            ? `Which ${faces[0]} takes the ${left} combat damage first?`
+            : `Which takes the ${left} combat damage first — ${faces.join(' or ')}?`)
+          + (info.attrs.has('Piercing')
+            ? ' (it is Piercing: what it does not take goes on to the next one)' : ''),
+          byUnit.map(i => ({ label: this.replacerLabel(donors[i]!.face, donors[i]!.anchor),
+            card: donors[i]!.face, unit: donors[i]!.anchor.id, pick: i })));
+        if (got !== null) pick = got;
+      }
+      if (commit(pick, 'redirect')) declined.clear();
+      else declined.add(pick);    // not now — but perhaps once another has applied
+    }
+    // pass 2, damage being dealt to the player — the CR 708.4 chain, in timestamp order
+    for (let changed = true; changed && left > 0;) {
+      changed = false;
+      for (let i = 0; i < donors.length && left > 0; i++) {
+        if (applied.has(i)) continue;
+        if (commit(i, 'dealt')) { changed = true; break; }
+      }
     }
     return left;
+  }
+
+  /** a replacement holder as a choice names it: the card, and the unit it acts
+   * from when that is another unit (an [Augment] mod reads from its host) */
+  private replacerLabel(face: CardName, anchor: Entity): string {
+    const on = this.faceName(anchor);
+    return on === face ? face : `${face} (on ${on})`;
+  }
+
+  /**
+   * CR 708.4a — ask `seat` which replacement effect applies NEXT, when two or
+   * more apply to one event and the order changes the outcome. Caleb Gannon,
+   * rules-questions 2025-11-25: "its a replacement effect so it just takes one
+   * thing and replaces it with another (you the player control how they
+   * stack)"; the owner, 2026-10-16, chose to ask the player.
+   *
+   * Every choice names a unit, so the question is answered by clicking it on
+   * the board (ui/boardpick.ts reads `value.unit`) or from the prompt bar.
+   * Returns the chosen `pick`, or null where there is nowhere to ask — then the
+   * caller keeps timestamp (entity id) order.
+   *
+   * Two places to ask from:
+   *  · inside a resolving part (a spell or ability putting counters on a unit
+   *    during battle) it is an ordinary `ctx.choose`: the part suspends, and
+   *    replays with the answer — which is why no replacement may mutate before
+   *    it has been ordered.
+   *  · inside a SEAM — a combat-damage sub-step or the rot step, which run
+   *    outside any part (`orderSeamRun`). The answer is read off
+   *    `GameState.replaceOrders`; a missing one throws `OrderNeeded`, and the
+   *    seam rewinds and suspends. The n-th question of a seam run is keyed
+   *    `${seam}#${n}`: the seam re-runs from its start, so n is the same each
+   *    time, and a saved game's `decide` replays into the same question.
+   */
+  private askReplacement(seat: Seat, prompt: string, picks: ReplacementPick[]): number | null {
+    const dec: Omit<Decision, 'id'> & PartChoice['dec'] = {
+      seat, kind: 'electricPath', prompt,
+      options: picks.map(p => ({ label: p.label, card: p.card, value: { unit: p.unit, pick: p.pick } })),
+    };
+    if (this.partChoose) {
+      const v = this.partChoose('replaceOrder', dec) as { pick?: unknown } | null;
+      return typeof v?.pick === 'number' && picks.some(p => p.pick === v.pick) ? v.pick : null;
+    }
+    const seam = this.orderSeam;
+    if (seam) {
+      const key = `${seam.key}#${seam.asked++}`;
+      const got = this.s.replaceOrders?.[key];
+      if (typeof got === 'number' && picks.some(p => p.pick === got)) return got;
+      throw new OrderNeeded(key, dec);
+    }
+    // nowhere to ask: in play every route that can raise this question runs
+    // inside a part or a seam, so this is a direct engine call (a test, a
+    // probe on a copy of the world) and timestamp order is the answer
+    return null;
+  }
+
+  /**
+   * CR 708.4a — run `body` (a combat-damage sub-step, the rot step) as a SEAM a
+   * replacement-order question can be asked from.
+   *
+   * Neither runs inside a resolving part, so there is no `ctx.choose` to
+   * suspend and replay. Instead the seam keeps a copy of the world as it
+   * starts, and when `askReplacement` finds a question unanswered the seam
+   * REWINDS to that copy — every event since dropped, every point of damage
+   * undone — and suspends there. The question is asked over the board as it
+   * stood before the damage, which is the board the question is about.
+   * doDecide's 'replaceOrder' branch records the answer and runs the seam
+   * again from the top; it finds the answer this time and goes on, perhaps to
+   * the next question. The same from-scratch re-entry as the 'combatAssign'
+   * question one step earlier, so nothing half-done is ever on the table and
+   * the suspension carries no snapshot.
+   *
+   * The copy is only taken where a question is possible (the callers check
+   * that two or more order-sensitive holders are about), so every other
+   * combat and rot step runs exactly as it did.
+   */
+  private orderSeamRun(scope: 'combat' | 'rot', key: string, body: () => void): void {
+    const snap = structuredClone(this.s);
+    const evLen = this.events.length;
+    const outer = this.orderSeam;
+    this.orderSeam = { key, asked: 0 };
+    try {
+      body();
+    } catch (sig) {
+      if (!(sig instanceof OrderNeeded)) throw sig;
+      this.orderSeam = outer;
+      // carried FORWARD across the rewind, exactly as E.resumeResolve does:
+      // the action latch, the decision-id high-water mark and the seat names
+      // belong to the session, not to the damage
+      const live = this.s;
+      this.s = snap;
+      this.s.actionCount = live.actionCount;
+      this.s.decisionHigh = live.decisionHigh;
+      live.players.forEach((p, i) => { const q = this.s.players[i]; if (q) q.name = p.name; });
+      this.events.length = evLen;
+      this.suspend({ type: 'replaceOrder', scope, seat: sig.dec.seat, key: sig.key }, sig.dec);
+    } finally {
+      this.orderSeam = outer;
+    }
+    // the seam is done: its answers are spent
+    const orders = this.s.replaceOrders;
+    if (orders) {
+      for (const k of Object.keys(orders)) if (k.startsWith(`${key}#`)) delete orders[k];
+      if (!Object.keys(orders).length) delete this.s.replaceOrders;
+    }
   }
 
 
@@ -4449,11 +4680,18 @@ export class E {
   // out of the chain rather than being a rule of its own. `chainReplacements`
   // is the loop for the hooks whose substitute is still the same kind of event.
   //
-  // ORDER is timestamp (entity id) today. Caleb says the player controls it;
-  // where the order changes the outcome (two Counter Thieves, two Oorblaks,
-  // Oorblak with Blightsea Polyp, two Skittering Blights) it is an OPEN item —
-  // there is no decision seam for it yet, and most of these run outside any
-  // resolving part, where there is nothing to hang a question on.
+  // ORDER is the player's (CR 708.4a; Caleb: "you the player control how they
+  // stack"; the owner, 2026-10-16: "Ask the player now"). Where the order
+  // changes the outcome — two Counter Thieves (which keeps the counters), two
+  // Oorblaks (which takes the hit), two Skittering Blights or a Blight beside
+  // Beyond, Codex Incarnate (which replaces the rot) — the player the event
+  // happens to is asked (`askReplacement`); everywhere else, and where there
+  // is nowhere to ask, it is timestamp (entity id). Oorblak beside Blightsea
+  // Polyp is NOT a choice: a redirect always comes before "as 1 rot" (CR
+  // 608.8c, `replaceCombatDamage`). Not order-sensitive, so never asked:
+  // Nullbringers, Worldbenders, Automatons (summed), Polyps among themselves,
+  // and Cosmic Conspirators (each asks its own controller, who can reach any
+  // kind from any order).
   //
   // Deliberately NO general "any event" framework, for the reason
   // replaceRotDamage's own comment already gives: one named hook per
@@ -4468,8 +4706,8 @@ export class E {
    * (it has then not applied, and stays eligible). Repeatedly, the earliest
    * donor in `donors` order that has not applied yet and does apply is
    * applied — MTG 616.1f's "repeat, taking into account only the effects that
-   * would now be applicable", with timestamp order standing in for the
-   * player's choice — until none does. Each donor applies at most once, so
+   * would now be applicable" — until none does. `donors` arrive in the order
+   * the player chose where that was asked (`askReplacement`), else timestamp. Each donor applies at most once, so
    * the chain always ends, and with n donors it asks at most n² questions.
    */
   private chainReplacements<D, V>(donors: readonly D[], event: V, apply: (d: D, ev: V) => V | null): V {
@@ -4578,15 +4816,11 @@ export class E {
    */
   private replaceCounters(target: Entity, n: number): Entity {
     if (this.inReplaceCounters) return target;
-    const holders = this.anchored((h, a) =>
-      this.donates(h, a, 'replaceCounters')                   // CR 710.7: off the FACES
-      && a.region === target.region
-      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
-    holders.sort((a, z) => a.holder.id - z.holder.id);
-    const donors = this.donorFaces(holders, 'replaceCounters');
+    let donors = this.counterDonors(target.region);
     this.inReplaceCounters = true;
     this.replacementDepth++;
     try {
+      donors = this.orderCounterDonors(donors, target, n);
       return this.chainReplacements(donors, target, ({ face, def, anchor }, now) => {
         const to = def.replaceCounters!(this, anchor, now, n);
         if (!to || to.id === now.id || !this.entity(to.id)) return null;
@@ -4597,6 +4831,69 @@ export class E {
         return to;
       });
     } finally { this.inReplaceCounters = false; this.replacementDepth--; }
+  }
+
+  /** CR 708.4a: the counter redirects radiating in `region`, one per face, in
+   * timestamp (entity id) order */
+  private counterDonors(region: number): { face: CardName; def: CardBehavior; anchor: Entity }[] {
+    const holders = this.anchored((h, a) =>
+      this.donates(h, a, 'replaceCounters')                   // CR 710.7: off the FACES
+      && a.region === region
+      && !this.textStripped(h, a));                       // CR 712.1a (full projection)
+    holders.sort((a, z) => a.holder.id - z.holder.id);
+    return this.donorFaces(holders, 'replaceCounters');
+  }
+
+  /**
+   * CR 708.4a — two or more counter redirects: the player chooses where the
+   * counters end up, when the order decides it.
+   *
+   * With redirects chaining (each applies once, to the placement as the ones
+   * before it left it), the counters end on whichever applies LAST — so the
+   * question is put the way a player thinks of it: "which unit keeps them?".
+   * A `replaceCounters` hook only NAMES a unit (it mutates nothing), so every
+   * order can be tried here without touching the board, and the player is
+   * asked only when two orders end on different units. The chosen unit's first
+   * order (in the order tried, which starts from timestamp order) is the one
+   * the chain then runs, for real, with its log lines.
+   *
+   * WHO: the controller of the unit the counters were going to be placed on —
+   * the affected object, as in MTG 616.1. The redirects need not be theirs
+   * (Counter Thief says "one or more units", anyone's), and that is the reading
+   * this takes; it is reported as such.
+   *
+   * More than five holders: 120 orders is the cap; past it the order stays
+   * timestamp and nothing is asked (the pool has one card with this hook).
+   */
+  private orderCounterDonors<D extends { face: CardName; def: CardBehavior; anchor: Entity }>(
+    donors: D[], target: Entity, n: number): D[] {
+    if (donors.length < 2 || donors.length > 5) return donors;
+    const endOf = (order: D[]): Entity => this.chainReplacements(order, target, ({ def, anchor }, now) => {
+      const to = def.replaceCounters!(this, anchor, now, n);
+      return !to || to.id === now.id || !this.entity(to.id) ? null : to;
+    });
+    const ends = new Map<EntityId, D[]>();
+    const walk = (done: D[], rest: D[]): void => {
+      if (!rest.length) {
+        const end = endOf(done);
+        if (!ends.has(end.id)) ends.set(end.id, done);
+        return;
+      }
+      rest.forEach((d, i) => walk([...done, d], rest.filter((_, j) => j !== i)));
+    };
+    walk([], donors);
+    if (ends.size < 2) return donors;
+    const keepers = [...ends.keys()];
+    const faces = [...new Set(donors.map(d => d.face))];
+    const who = faces.length === 1 ? `${faces[0]}: which` : 'Which';
+    const got = this.askReplacement(target.controller,
+      `${who} unit keeps the ${Math.abs(n)} counter(s) meant for ${this.faceName(target)}?`,
+      keepers.map((id, k) => {
+        const u = this.entity(id)!;
+        return { label: u.id === target.id ? `${this.faceName(u)} (where they were going)` : this.faceName(u),
+          card: this.faceName(u), unit: id, pick: k };
+      }));
+    return got === null ? donors : ends.get(keepers[got]!)!;
   }
 
   // ── CR 708.9: token creation, and the BATCH ─────────────────────────────
@@ -12546,22 +12843,38 @@ export class E {
     // nothing half-done and the sub-step re-enters from scratch when the
     // answer lands (settle() resumes the pump).
     this.collectAssignPlans(b, sub);
-    const L = this.newCombatLedger();
-    this.assignCombatDamage(b, sub, L);
-    // CR 608.6h: the plans were consumed by the assignment above, and they are
-    // meaningless outside their own sub-step (`ci` is only an identity for
-    // its length), so they do not outlive it.
-    b.assignPlans = undefined;
-    const shielded = this.commitUnitDamage(b, L);
-    this.sweepDeadly(L, shielded);
-    // CR 802.9e {Unaware}: an exchange collapsed to printed stats settles its own
-    // deaths, because the state-based sweep reads effStats and would keep a
-    // Robot 7 that just fought as a 0/0 alive. Beside sweepDeadly on purpose:
-    // both are "this exchange killed something the ordinary check misses".
-    this.sweepCollapsedDeaths(L.collapsed);
-    this.afflictingAftermath(L);
-    this.commitPlayerDamage(b, L);
-    this.thievingDraws(L);
+    const run = (): void => {
+      const b = this.s.battle!;   // re-read: a seam rewind replaces the state
+      const L = this.newCombatLedger();
+      this.assignCombatDamage(b, sub, L);
+      // CR 608.6h: the plans were consumed by the assignment above, and they are
+      // meaningless outside their own sub-step (`ci` is only an identity for
+      // its length), so they do not outlive it.
+      b.assignPlans = undefined;
+      const shielded = this.commitUnitDamage(b, L);
+      this.sweepDeadly(L, shielded);
+      // CR 802.9e {Unaware}: an exchange collapsed to printed stats settles its own
+      // deaths, because the state-based sweep reads effStats and would keep a
+      // Robot 7 that just fought as a 0/0 alive. Beside sweepDeadly on purpose:
+      // both are "this exchange killed something the ordinary check misses".
+      this.sweepCollapsedDeaths(L.collapsed);
+      this.afflictingAftermath(L);
+      this.commitPlayerDamage(b, L);
+      this.thievingDraws(L);
+    };
+    // CR 708.4a: where two Oorblaks, or two Counter Thieves, could each take what
+    // this sub-step deals, the sub-step is a seam the player is asked from
+    // (`orderSeamRun`). Anywhere else it runs exactly as it always did.
+    const mayAsk = this.combatDonorCount(b.region, 'replaceCombatDamageToPlayer') >= 2
+      || this.counterDonors(b.region).length >= 2;
+    if (mayAsk) this.orderSeamRun('combat', `combat:${sub}`, run);
+    else run();
+  }
+
+  /** CR 708.4a: how many faces radiate `key` in `region` (see `orderSeamRun`) */
+  private combatDonorCount(region: number, key: 'replaceCombatDamageToPlayer'): number {
+    return this.donorFaces(this.anchored((h, a) =>
+      this.donates(h, a, key) && a.region === region && !this.textStripped(h, a)), key).length;
   }
 
   /** a fresh ledger (see `CombatLedger` for what each field is for) */

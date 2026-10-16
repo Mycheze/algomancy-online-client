@@ -370,7 +370,19 @@ card('Blightsea Polyp', {
   // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
-    replaceCombatDamageToPlayer: (g, _self, seat) => { g.gainRot(seat, 1); return true; },
+    // CR 608.8c: "deal combat damage to players AS 1 rot" is about damage being
+    // DEALT to a player, so it acts in the second pass, on whatever every
+    // redirect let through. The owner, 2026-10-16, on Polyp beside Oorblak:
+    // "The column doesn't even get to deal damage to the player. It gets
+    // redirected to the Oorblak instead. There's no way for it to add rot
+    // (unless piercing is added into the mix) since it gets directed to the
+    // Oorblak, which isn't a player". A {Piercing} excess past the Oorblak IS
+    // dealt to the player, and that is the column's 1 rot.
+    replaceCombatDamageToPlayer: (g, _self, seat, _amount, info) => {
+      if (info.stage !== 'dealt') return false;
+      g.gainRot(seat, 1);
+      return true;
+    },
   },
 });
 
@@ -483,8 +495,10 @@ card('Buffer Overflow', {
 // apply once onto an effect"): counters the first thief redirects onto itself
 // are still counters "placed on one or more units during battle", so the
 // second thief, which has not applied yet, takes them from the first, and the
-// first never takes them back. They end on the LATER thief in the engine's
-// order (entity id; Caleb says the player orders them — an open item).
+// first never takes them back. They end on the LATER thief in the order —
+// and the order is the player's (CR 708.4a, the owner 2026-10-16: "Ask the
+// player now"): the controller of the unit the counters were meant for is
+// asked which unit keeps them (E.orderCounterDonors).
 //
 // "DURING BATTLE" is the printed restriction and it is real: outside battle
 // the thief takes nothing. The engine's own battle state answers it, and it

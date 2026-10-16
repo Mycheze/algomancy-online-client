@@ -1471,6 +1471,24 @@ export type Suspension =
       seat: Seat;
     }
   | {
+      /** CR 708.4a: WHICH replacement effect applies next, where two or more
+       * apply to one event and the order changes the outcome (two Oorblaks,
+       * two Counter Thieves, Skittering Blight beside another rot
+       * replacement). Raised from a SEAM — a combat-damage sub-step
+       * (`scope: 'combat'`) or the start-of-deployment rot step (`'rot'`) —
+       * that runs outside any resolving part. The seam REWINDS the world to
+       * its own start before it suspends, so this carries no snapshot and the
+       * state on the table is the one from before the damage: doDecide records
+       * the answer in `GameState.replaceOrders[key]` and re-runs the seam,
+       * which finds it and goes on (the same from-scratch re-entry as
+       * 'combatAssign'). Inside a resolving part the question is a plain
+       * `ctx.choose` ('resolve') instead. */
+      type: 'replaceOrder';
+      scope: 'combat' | 'rot';
+      seat: Seat;
+      key: string;
+    }
+  | {
       /** CR 608.6h: collecting one striking column's ELECTIVE damage split, one
        * victim at a time, before the sub-step assigns anything. `key` names
        * the strike (`${sub}:atk:${ci}` / `${sub}:blk:${ci}`) in
@@ -2215,6 +2233,17 @@ export interface GameState {
   triggerOrderedSeats: Seat[];
   suspension: Suspension | null;
   decision: Decision | null;
+  /**
+   * CR 708.4a: the answers to the replacement-order questions of the seam now
+   * running (a combat-damage sub-step or the rot step), keyed
+   * `${seam}#${n}` — the n-th question that seam asks, which is deterministic
+   * because the seam re-runs from its start — each the index of the chosen
+   * donor in that question's timestamp-ordered list. Written by doDecide's
+   * 'replaceOrder' branch, read as the seam replays, deleted when the seam
+   * completes. Absent everywhere else, and in every state saved before the
+   * question existed: "nothing chosen", which is right for both.
+   */
+  replaceOrders?: Record<string, number> | null;
   /** The highest decision id ever issued. Decision ids come off `nextId`,
    * which a resolution replay rewinds to the part boundary — so without a
    * high-water mark the second question of a multi-step resolution can be

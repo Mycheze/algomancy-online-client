@@ -2121,6 +2121,18 @@ export interface CardBehavior {
       /** CR 802.25b {Pure}: the exchange was attribute-blind, so `attrs` is empty
        * and the card should behave as if the column printed nothing. */
       pure: boolean;
+      /**
+       * CR 608.8c — WHICH PASS this offer belongs to. Every hit is offered
+       * twice: first as damage that WOULD be dealt to the player
+       * ('redirect' — Oorblak's "if combat damage would be dealt to you, that
+       * damage is dealt to me instead"), then, whatever every redirect let
+       * through, as damage being DEALT to the player ('dealt' — Blightsea
+       * Polyp's "columns deal combat damage to players as 1 rot"). The owner,
+       * 2026-10-16: "The column doesn't even get to deal damage to the
+       * player. It gets redirected to the Oorblak instead." So a hook acts in
+       * the pass its text names and declines the other.
+       */
+      stage: 'redirect' | 'dealt';
     }) => boolean | number;
   /**
    * CR 708.5: continuous AMOUNT modifiers — "it deals that much damage plus 1

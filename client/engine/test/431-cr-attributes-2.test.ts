@@ -318,6 +318,9 @@ test('cr:attr.piercing.redirect — engine differs: with two Oorblaks, 10 Pierci
   blockStep(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
+  // CR 708.4a: the defender is now asked which Oorblak takes it first (471);
+  // the first choice is the timestamp order this example was written against
+  while (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
   const lost = life - h.state.players[D]!.life;
   const deadO = [o1, o2].filter(o => !ent(h, o)).length;
   // the rule: one redirect, 4 into one Oorblak, 6 to the player
