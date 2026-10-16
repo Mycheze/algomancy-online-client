@@ -434,12 +434,14 @@ test('Transmogrifant: a silenced unit radiates nothing of its own (CR 712.1a)', 
   toDeployment(h);
   const A = h.state.deployPlayer!;
   const other = spawn(h, A, 'Unit Token');
-  // two Transmogrifants: each is the OTHER's "other unit", so each silences
-  // the other. Static-vs-static suppression resolves in ONE pass (CR 712.5), so
-  // both keep radiating and the token gets +2/+2 twice.
+  // two Transmogrifants: each is the OTHER's "other unit". INVERTED for report
+  // #214 / CT-256: this used to pin the one-pass answer (both keep radiating,
+  // +2/+2 twice). Caleb, rules-questions 2023-08-27: "the second transmogrifant
+  // turns off the irst one" — the newer applies, the older is silenced, and
+  // the token gets +2/+2 once.
   spawn(h, A, 'Transmogrifant');
   spawn(h, A, 'Transmogrifant');
-  assert.deepEqual(effStats(h, other), [5, 5], 'both statics still project');
+  assert.deepEqual(effStats(h, other), [3, 3], 'only the newer static projects');
 });
 
 // ── Trashling ────────────────────────────────────────────────────────────

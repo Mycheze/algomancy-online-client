@@ -446,9 +446,10 @@ card('Manufacture', {
 //     — the text says units, not your units, and this one is symmetrical on
 //     purpose (it is a 1/1 that turns the battle vanilla for everyone).
 //   - region scope is the engine's (CR 601.1d), as for every other static.
-// Two Monkes do not silence each other: staticsFor's suppression check is the
-// entity flag only, so simultaneous static-vs-static suppression resolves in
-// one pass and both keep radiating (CR 712.5).
+// Two Monkes in battle each fall under the other: the NEWER applies and the
+// older is silenced (CR 712.5 as the engine now reads it, after Caleb on two
+// Transmogrifants: "the second transmogrifant turns off the irst one"). See
+// E.activeStrippersAmong (report #214).
 card('Monke', {
   statics: [{
     affects: (g, self, t) => t.kind === 'unit' && t.id !== self.id

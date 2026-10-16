@@ -852,9 +852,11 @@ export class E {
     const out: { holder: Entity; mod: CostMod; via: CardName }[] = [];
     this.inCostMods = true;
     try {
+      const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
         a.region === region
-        && !this.textStrippedShallow(h, a))) {                         // CR 712.1a, as staticsFor (shallow)
+        && this.donates(h, a, 'costMods')                      // CR 710.7: off the FACES
+        && live(h, a))) {                                      // CR 712.1a, as staticsFor
         // `via` is the card the mod is PRINTED on — the FACE (CR 710.7), which for
         // a donated augment is the holder rather than the anchor (the logs
         // name it) and for a projected/copied face is the borrowed card
@@ -894,10 +896,11 @@ export class E {
     const out: Attr[] = [];
     this.inEffectAttrs = true;
     try {
+      const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'effectAttrs')                     // CR 710.7: off the FACES
         && a.region === ctx.region
-        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
+        && live(h, a))) {                                     // CR 712.1a, as staticsFor
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.effectAttrs ?? []) {
             if (mod.affects(this, anchor, ctx)) out.push(...mod.attrs);
@@ -934,10 +937,11 @@ export class E {
     let total = 0;
     this.inAmountMods = true;
     try {
+      const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'amountMods')                       // CR 710.7: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
-        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
+        && live(h, a))) {                                      // CR 712.1a, as staticsFor
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.amountMods ?? []) {
             total += mod.delta(this, anchor, ctx);
@@ -986,10 +990,11 @@ export class E {
     let product = 1;
     this.inAmountMultipliers = true;
     try {
+      const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'amountMultipliers')                // CR 710.7: off the FACES
         && (ctx.region === undefined || a.region === ctx.region)   // fireEvent's rule
-        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as amountDelta (shallow)
+        && live(h, a))) {                                      // CR 712.1a, as amountDelta
         for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.amountMultipliers ?? []) {
             const f = mod.factor(this, anchor, ctx);
@@ -1476,10 +1481,11 @@ export class E {
     this.inFaces = true;
     try {
       const mine = this.faceName(e);
+      const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.ownBlocks(h, a).some(d => !!d.projects)          // CR 721.1: body or box
         && a.region === e.region
-        && !this.textStrippedShallow(h, a))) {                       // CR 712.1a, as staticsFor (shallow)
+        && live(h, a))) {                                     // CR 712.1a, as staticsFor
         for (const pr of this.ownBlocks(holder, anchor).flatMap(d => d.projects ?? [])) {
           if (!(pr.onto ? pr.onto(this, anchor, e) : anchor.id === e.id)) continue;
           const facets = pr.facets ?? PROJECTED_FACETS;
@@ -1669,22 +1675,26 @@ export class E {
       // augment mods (text-box [Augment] statics transfer with the card —
       // Animated Spark, Sandstone Defender), each read from its anchor.
       // CR 712.1a: a silenced unit radiates nothing — a static IS an ability.
-      // Shallow by construction (the reentrancy guard is already held, so a
-      // nested suppression query sees no statics): a unit silenced by a
-      // SPELL stops radiating immediately, while two units whose statics
-      // silence each other both keep radiating and both go quiet, which is
-      // the simultaneous answer the layer model wants anyway.
-      for (const { holder, anchor } of this.anchored((h, a) =>
+      // Both halves of the strip, resolved in the two phases documented at
+      // `activeStrippersAmong` (report #214, CT-256): the one-shot stamp a
+      // spell left, and every continuous stripper that APPLIES in this region.
+      // The walk is the region's, once; phase A reads the same blocks.
+      const radiators = this.anchored((h, a) =>
         a.region === target.region
-        && !this.textStrippedShallow(h, a))) {
-        // CR 710.1 layer 0: the statics come off the FACES the holder is wearing,
-        // not off `holder.card`. The identity face is the copied card (Apex
-        // Prime, Borrower of Forms); the projected ones are the neighbours'
-        // (Ancient One), and those land on the ANCHOR, so they are only
-        // gathered when the holder IS its anchor. CR 721.1: and off the right HALF
-        // of each face — a unit reads its body text and its own [Augment] box,
-        // an augment MOD reads only the box (report #139).
-        for (const { face, def } of this.behaviorBlocks(holder, anchor, 'statics')) {
+        && !this.textStrippedShallow(h, a));
+      // CR 710.1 layer 0: the statics come off the FACES the holder is wearing,
+      // not off `holder.card`. The identity face is the copied card (Apex
+      // Prime, Borrower of Forms); the projected ones are the neighbours'
+      // (Ancient One), and those land on the ANCHOR, so they are only
+      // gathered when the holder IS its anchor. CR 721.1: and off the right HALF
+      // of each face — a unit reads its body text and its own [Augment] box,
+      // an augment MOD reads only the box (report #139).
+      const blocks = radiators.map(({ holder, anchor }) => this.behaviorBlocks(holder, anchor, 'statics'));
+      const active = this.activeStrippersAmong(radiators, blocks);
+      for (let i = 0; i < radiators.length; i++) {
+        const { holder, anchor } = radiators[i]!;
+        if (this.silencedBy(holder, anchor, active)) continue;    // CR 712.1a, phase B
+        for (const { face, def } of blocks[i]!) {
           for (const mod of def.statics ?? []) {
             // `srcId` is the entity CARRYING the text (the unit, or the augment
             // mod that donated it), not the anchor — it is the tick of the
@@ -2066,12 +2076,131 @@ export class E {
     const strips = this.strippersOf(anchor, 'abilities');
     return strips.length > 0 && E.strippedBy(E.textStamp(holder, anchor), strips);
   }
-  /** The SHALLOW form the static walks use (the entity stamp only —
-   * the reentrancy reason `staticsFor` documents) */
+  /** The ONE-SHOT half of the radiator question: the entity stamp a spell left
+   * (Suppression Field). Reads no statics, so it is safe under any latch. The
+   * radiator walks ask `radiates()` below, which adds the continuous half. */
   textStrippedShallow(holder: Entity, anchor: Entity): boolean {
     const sup = anchor.suppressed;
     if (!sup?.abilities) return false;
     return E.older(E.textStamp(holder, anchor), sup.abilitiesAt ?? E.LATEST);
+  }
+
+  // ── CR 712.1a, 712.5: WHICH CONTINUOUS STRIPS APPLY, AND WHAT THEY SILENCE ──────
+  //
+  // Report #214 / CT-256. Owner: "static effects count as abilities.
+  // Everything (besides an attribute) is an ability." So a unit that
+  // Transmogrifant, Monke or The Everywhere strips stops radiating — every
+  // static, cost change, amount mod, permission, projection and must-target
+  // line it carries — exactly as one Suppression Field stamped does.
+  //
+  // It used to be the one-shot stamp only (`textStrippedShallow`), because the
+  // radiator walks run under the `inStatics` latch and a nested `staticsFor`
+  // answers []: a continuous strip is itself a static, so the full question
+  // ("what statics land on this anchor?") could not be asked from inside the
+  // walk that collects statics. The answer is to ask a SMALLER question first,
+  // in two phases, without recursing:
+  //
+  //  PHASE A (`activeStrippers`): the continuous ability-strippers in one
+  //   region — statics with `suppressAbilities`, off radiators the one-shot
+  //   stamp leaves alone — and which of them APPLY. A stripper X strips a
+  //   stripper Y when X affects Y's anchor and Y's text is older than X
+  //   (CR 113.2: printed text is older than any effect; a mod's text is as old
+  //   as the mod). Where only one strips the other, timestamp order decides:
+  //   the one that is not stripped applies and the other does not. Where each
+  //   strips the other, the NEWER applies and the older does not — Caleb,
+  //   rules-questions 2023-08-27: "the second transmogrifant turns off the irst
+  //   one", and 2023-09-05: "The two transmogrifants would turn off the other
+  //   one though so you could only have one of them active at once" / "one
+  //   would get +2/+2 and one would mot". (This replaces the one-pass "both
+  //   apply" answer the engine used to give two Monkes.)
+  //  PHASE B (`radiates`): a radiator's text is silent when it is older than an
+  //   APPLYING stripper that affects its anchor. A stripper never silences the
+  //   text that carries it (The Everywhere naming itself still radiates).
+  //
+  // Phase A runs under `inStatics`, so every callback it makes (a stripper's
+  // `affects`, a face walk) gets the old shallow answer from any nested static
+  // query — the same bounded depth as before, one level further out. Asked
+  // from INSIDE a latched walk, `radiates` falls back to that shallow answer.
+
+  /** PHASE A over radiators already walked for one region: the continuous
+   * ability-strippers among them that apply. Caller holds `inStatics`. */
+  private activeStrippersAmong(
+    radiators: readonly { holder: Entity; anchor: Entity }[],
+    blocks: readonly { face: CardName; def: CardBehavior }[][],
+  ): { holderId: EntityId; anchor: Entity; mod: import('./cards/dsl.ts').StaticMod; at: Stamp }[] {
+    type S = { holderId: EntityId; anchor: Entity; mod: import('./cards/dsl.ts').StaticMod; at: Stamp; text: Stamp };
+    let cand: S[] | undefined;
+    radiators.forEach(({ holder, anchor }, i) => {
+      for (const { def } of blocks[i]!) {
+        for (const mod of def.statics ?? []) {
+          if (!mod.suppressAbilities) continue;
+          (cand ??= []).push({ holderId: holder.id, anchor, mod, at: E.entityStamp(holder.id), text: E.textStamp(holder, anchor) });
+        }
+      }
+    });
+    if (!cand) return [];                                      // almost every board
+    const c = cand;
+    const n = c.length;
+    // strips[x][y]: X would silence Y's text (another carrier, Y's anchor under X, Y's text older)
+    const strips = c.map(x => c.map(y => x.holderId !== y.holderId
+      && E.older(y.text, x.at) && x.mod.affects(this, x.anchor, y.anchor)));
+    // newest first: the order Caleb's tie-break reads
+    const order = c.map((_, i) => i).sort((i, j) => (E.older(c[i]!.at, c[j]!.at) ? 1 : E.older(c[j]!.at, c[i]!.at) ? -1 : i - j));
+    const st: (0 | 1 | 2)[] = c.map(() => 0);                 // 0 undecided · 1 applies · 2 silenced
+    for (;;) {
+      for (let y = 0; y < n; y++) {
+        if (st[y] === 0 && c.some((_, x) => st[x] === 1 && strips[x]![y])) st[y] = 2;
+      }
+      const open = order.filter(i => st[i] === 0);
+      if (!open.length) break;
+      // the newest stripper nothing undecided can silence ONE-WAY; a mutual pair
+      // is no obstacle (the newer of the two wins it)
+      const pick = open.find(y => !open.some(x => x !== y && strips[x]![y] && !strips[y]![x])) ?? open[0]!;
+      st[pick] = 1;
+    }
+    return c.filter((_, i) => st[i] === 1).map(({ holderId, anchor, mod, at }) => ({ holderId, anchor, mod, at }));
+  }
+
+  /** PHASE B for one radiator against a region's applying strippers. */
+  private silencedBy(
+    holder: Entity, anchor: Entity,
+    active: readonly { holderId: EntityId; anchor: Entity; mod: import('./cards/dsl.ts').StaticMod; at: Stamp }[],
+  ): boolean {
+    if (!active.length) return false;
+    const t = E.textStamp(holder, anchor);
+    return active.some(x => x.holderId !== holder.id && E.older(t, x.at) && x.mod.affects(this, x.anchor, anchor));
+  }
+
+  /** CR 712.1a, THE radiator filter every `anchored()` channel asks: does the text
+   * `holder` carries on `anchor` apply right now? A fresh closure per walk, so
+   * phase A is worked out at most once per region per walk, and only for a
+   * region where some donor actually asked. */
+  private radiates(): (holder: Entity, anchor: Entity) => boolean {
+    let byRegion: Map<number, Map<EntityId, boolean>> | undefined;
+    let actives: Map<number, ReturnType<E['activeStrippersAmong']>> | undefined;
+    return (holder, anchor) => {
+      if (this.textStrippedShallow(holder, anchor)) return false;
+      if (this.inStatics) return true;                        // nested: the shallow answer
+      let active = actives?.get(anchor.region);
+      if (!active) {
+        this.inStatics = true;
+        try {
+          const radiators = this.anchored((h, a) => a.region === anchor.region && !this.textStrippedShallow(h, a));
+          active = this.activeStrippersAmong(radiators, radiators.map(r => this.behaviorBlocks(r.holder, r.anchor, 'statics')));
+        } finally { this.inStatics = false; }
+        (actives ??= new Map()).set(anchor.region, active);
+      }
+      if (!active.length) return true;
+      const memo = ((byRegion ??= new Map()).get(anchor.region) ?? new Map<EntityId, boolean>());
+      byRegion.set(anchor.region, memo);
+      let silent = memo.get(holder.id);
+      if (silent === undefined) {
+        this.inStatics = true;
+        try { silent = this.silencedBy(holder, anchor, active); } finally { this.inStatics = false; }
+        memo.set(holder.id, silent);
+      }
+      return !silent;
+    };
   }
 
   suppressionOf(e: Entity): { attrs: boolean; abilities: boolean; by: CardName[] } {
@@ -7269,10 +7398,11 @@ export class E {
     if (this.inModPermissions) return false;
     this.inModPermissions = true;
     try {
+      const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'modPermissions')                   // CR 710.7: off the FACES
         && a.region === ctx.region
-        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
+        && live(h, a))) {                                      // CR 712.1a, as staticsFor
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.modPermissions ?? []) {
             if (p.augmentInBattle?.(this, anchor, ctx)) return true;
@@ -7320,10 +7450,11 @@ export class E {
     if (this.inModPermissions) return false;
     this.inModPermissions = true;
     try {
+      const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'modPermissions')                   // CR 710.7: off the FACES
         && a.region === ctx.region
-        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
+        && live(h, a))) {                                      // CR 712.1a, as staticsFor
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.modPermissions ?? []) {
             if (p.applyAtHaste?.(this, anchor, ctx)) return true;
@@ -7375,10 +7506,11 @@ export class E {
     this.inPlayPermissions = true;
     try {
       let total = 0;
+      const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
         this.donates(h, a, 'playPermissions')                  // CR 710.7: off the FACES
         && a.region === ctx.region
-        && !this.textStrippedShallow(h, a))) {                        // CR 712.1a, as staticsFor (shallow)
+        && live(h, a))) {                                      // CR 712.1a, as staticsFor
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
           for (const p of def.playPermissions ?? []) {
             total += p.playAtHaste?.(this, anchor, ctx) ?? 0;
@@ -7443,10 +7575,11 @@ export class E {
    * silenced by CR 712.1a exactly as an ability is. */
   mustBeTargetedIn(region: number): Set<EntityId> {
     const out = new Set<EntityId>();
+    const live = this.radiates();
     for (const { anchor } of this.anchored((h, a) =>
       this.donates(h, a, 'mustBeTargeted')                      // CR 710.7: off the FACES
       && a.region === region
-      && !this.textStrippedShallow(h, a))) {                          // CR 712.1a, as staticsFor (shallow)
+      && live(h, a))) {                                       // CR 712.1a, as staticsFor
       out.add(anchor.id);
     }
     return out;
@@ -9031,8 +9164,9 @@ export class E {
    */
   private asYouPlayOffers(item: StackItem): { self: Entity; via: CardName; key: string; opt: AsYouPlayOption }[] {
     const out: { self: Entity; via: CardName; key: string; opt: AsYouPlayOption }[] = [];
+    const live = this.radiates();
     const holders = this.anchored((h, a) =>
-      a.region === item.region && !this.textStrippedShallow(h, a) && this.donates(h, a, 'asYouPlay'));
+      a.region === item.region && this.donates(h, a, 'asYouPlay') && live(h, a));
     for (const { holder, anchor } of holders) {
       for (const { face: via, def } of this.behaviorBlocks(holder, anchor)) {
         for (const opt of def.asYouPlay ?? []) {

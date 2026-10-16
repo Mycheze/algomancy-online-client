@@ -8,10 +8,11 @@
  * in data/comprehensive-rules/rules/U16.json lists this file in its
  * sources.tests, and an example may be bound to the test by its title.
  *
- * The two tests titled "engine differs" are the exception: their rules carry
- * an engineDiffers mark, and these tests pin the divergence the mark
- * describes. They are deliberately NOT listed in those rules' sources. When
- * one goes red the engine has been changed: re-read the rule, drop or update
+ * The test titled "engine differs" is the exception (there were two; the
+ * stripping one was inverted for report #214): its rule carries
+ * an engineDiffers mark, and the test pins the divergence the mark
+ * describes. It is deliberately NOT listed in that rule's sources. When
+ * it goes red the engine has been changed: re-read the rule, drop or update
  * the engineDiffers mark and the test, and bind a real example.
  *
  * If one of these fails, either the engine changed or the rule is wrong.
@@ -340,14 +341,19 @@ test('cr:effects.stripping.what.abilities — Sandstone Defender silenced by a o
   assert.deepEqual(effStats(h, t), [1, 1], 'the silenced unit radiates nothing');
 });
 
-test('cr:effects.stripping.what.abilities — engine differs: Sandstone Defender stripped by Transmogrifant still gives +0/+2, so a 1/1 token is 3/5 not 3/3', () => {
+// INVERTED for report #214 / CT-256: this used to pin the engine-differs 3/5
+// (F-U16-3). A continuously stripped unit now stops applying its statics, as
+// CR 712.1a and its example say; the 712.1a engineDiffers mark is for the CR
+// scripts to clear, and this test can then be bound as that example.
+test('cr:effects.stripping.what.abilities — Sandstone Defender stripped by Transmogrifant stops giving +0/+2, so a 1/1 token is 3/3', () => {
   const h = new Harness(71637);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   spawn(h, p, 'Sandstone Defender');
   const t = tok(h, p, 1, 1);
+  assert.deepEqual(effStats(h, t), [1, 3], 'setup: the static applies');
   spawn(h, p, 'Transmogrifant');
-  assert.deepEqual(effStats(h, t), [3, 5], 'engine measurement: the continuously stripped unit keeps radiating');
+  assert.deepEqual(effStats(h, t), [3, 3], 'only the +2/+2: the stripped Sandstone Defender radiates nothing');
 });
 
 test('cr:effects.stripping.what.not-stats — a silenced Good Whale with a +1/+1 counter keeps its stats and its counter, an 8/6', () => {
