@@ -54,7 +54,7 @@ import { boardIndex, imposedCost, isBoard, optionSubjects, pickVerbs } from './b
 import type { Subject } from './boardpick.ts';
 import { EFFECT_ART_TOP, effectFace, lostTargetsForRow, roleSentence, stackBadges, type EffectFace } from './effectface.ts';
 import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
-import { glimpseNotice, glimpseNoticeUntil, revealView } from './reveal.ts';
+import { glimpseHeadline, glimpseNotice, glimpseNoticeUntil, revealView } from './reveal.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, predictionOf, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
@@ -1440,7 +1440,7 @@ function noteCast(state: GameState, mySeat: Seat, quiet: boolean): void {
  * expires. A client that reconnects while it is up has missed it and has the
  * log line, which is the residual the old live reveal left and this does not close.
  */
-let glimpseUp: { seat: Seat; cards: CardName[]; until: number } | null = null;
+let glimpseUp: { seat: Seat; cards: CardName[]; source?: string; until: number } | null = null;
 
 /** note somebody else's glimpse, for as long as it takes to read it */
 function absorbGlimpse(events: readonly EngineEvent[]): void {
@@ -1450,6 +1450,8 @@ function absorbGlimpse(events: readonly EngineEvent[]): void {
   glimpseUp = {
     seat: seen.seat as Seat,
     cards: seen.cards,
+    // CT-302: a card's reveal (Tides of the Cosmos, Big Glimpse Card) names it
+    ...(seen.source ? { source: seen.source } : {}),
     // CR D5.4: the client's one tempo, not a number of this surface's own
     until: glimpseNoticeUntil(Date.now(), seen.cards.length, HOLD_MS, STAGGER_MS),
   };
@@ -1462,9 +1464,9 @@ function absorbGlimpse(events: readonly EngineEvent[]): void {
 /** the strip itself: the same scans the glimpser got, briefly, on your screen */
 function glimpseNoticeHtml(): string {
   if (!glimpseUp || Date.now() >= glimpseUp.until) return '';
-  const who = esc(h.state.players[glimpseUp.seat]?.name ?? 'Your opponent');
+  const who = h.state.players[glimpseUp.seat]?.name ?? 'Your opponent';
   return `<div class="glimpsenotice" data-btn="glimpseclose" title="click to dismiss">
-    <div class="glimpsehead">👁 ${who} glimpsed ${glimpseUp.cards.length}</div>
+    <div class="glimpsehead">👁 ${esc(glimpseHeadline(glimpseUp, who, NET ? NET.seat : null))}</div>
     <div class="glimpsecards">${glimpseUp.cards.map(n => cardHtml(n)).join('')}</div>
   </div>`;
 }

@@ -623,7 +623,16 @@ card('Tides of the Cosmos', {
         g.ev('info', 'Tides of the Cosmos: the deck is empty — nothing is revealed.');
         return;
       }
-      g.ev('info', `Tides of the Cosmos reveals: ${top.join(', ')}.`);
+      // CT-302 / report #219: the eight are PUBLIC, so the reveal is a typed
+      // event the other seat's client can draw as cards (ui/reveal.ts), with
+      // the same log line. The caster is the `chooser` only when the first
+      // pick below will actually be asked — the same filter, read once here
+      // before anything moves — or the caster would see the eight nowhere.
+      const asked = top.some(n => manaOf(n) <= 8 && tidesCanPlay(g, n, ctx.region, ctx.controller));
+      g.ev('revealed', `Tides of the Cosmos reveals: ${top.join(', ')}.`, {
+        seat: ctx.controller, n: top.length, cards: top, source: 'Tides of the Cosmos',
+        ...(asked ? { chooser: ctx.controller } : {}),
+      });
       const picks: number[] = [];
       let budget = 8;
       for (let k = 0; k < 2; k++) {

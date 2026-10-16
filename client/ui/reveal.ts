@@ -422,9 +422,16 @@ export function revealWorthShowing(view: RevealView): boolean {
 
 /** what the non-glimpsing seat is shown, or null when this batch has none */
 export interface GlimpseNotice {
-  /** the seat that looked — never the viewer */
+  /** whose deck the cards came off. For a glimpse, the seat that looked —
+   * never the viewer. For a card's reveal it CAN be the viewer: Big Glimpse
+   * Card's caster is shown their own seven, because the opponent holds the
+   * split modal and the caster has only the pile labels. */
   seat: number;
   cards: CardName[];
+  /** CT-302: the card that revealed them, when it was not a Glimpse — the
+   * headline names it ("revealed 8 — Tides of the Cosmos"). Absent for a
+   * glimpse, which the headline already names by its keyword. */
+  source?: string;
 }
 
 /**
@@ -442,21 +449,47 @@ export interface GlimpseNotice {
  *
  * The LAST such glimpse in the batch wins: two in one batch is a cascade, and
  * the newest is the one the board is now sitting on.
+ *
+ * ── CT-302 / report #219: A REVEAL IS NOT ONLY A GLIMPSE ──────────────
+ *
+ * Tides of the Cosmos ("Reveal the top eight cards of the deck") and Big
+ * Glimpse Card ("Reveal the top 7 cards of the deck") are public reveals that
+ * are not the Glimpse keyword, and this notice keyed on `glimpsed` alone — so
+ * their opponent read eight names in a log line and saw no card. They emit
+ * `revealed` now, and it is drawn the same way. The skip is the same idea,
+ * said by the event rather than guessed from it: the seat to leave out is the
+ * one whose decision already shows these scans — `chooser` on a `revealed`
+ * (absent when nobody is asked, so then nobody is left out), the glimpser on
+ * a `glimpsed`.
  */
 export function glimpseNotice(
   events: readonly EngineEvent[], mySeat: number | null,
 ): GlimpseNotice | null {
   let out: GlimpseNotice | null = null;
   for (const ev of events) {
-    if (ev.type !== 'glimpsed') continue;
+    if (ev.type !== 'glimpsed' && ev.type !== 'revealed') continue;
     const seat = ev.data?.['seat'];
     const cards = ev.data?.['cards'];
-    if (typeof seat !== 'number' || seat === mySeat) continue;
+    if (typeof seat !== 'number') continue;
+    // whose modal already holds these scans: the glimpser, or a reveal's chooser
+    const shownTo = ev.type === 'glimpsed' ? seat : ev.data?.['chooser'];
+    if (typeof shownTo === 'number' && shownTo === mySeat) continue;
     // "glimpses 3 — the deck is empty" carries no cards and is not a reveal
     if (!Array.isArray(cards) || !cards.length) continue;
-    out = { seat, cards: cards as CardName[] };
+    const source = ev.type === 'revealed' ? ev.data?.['source'] : undefined;
+    out = { seat, cards: cards as CardName[], ...(typeof source === 'string' ? { source } : {}) };
   }
   return out;
+}
+
+/**
+ * The notice's headline. A glimpse reads as it always has ("Rashi glimpsed
+ * 3"); a card's reveal names the card, and says "You" when the deck was the
+ * viewer's own (Big Glimpse Card's caster). `who` is the deck owner's name.
+ */
+export function glimpseHeadline(n: GlimpseNotice, who: string, mySeat: number | null): string {
+  if (!n.source) return `${who} glimpsed ${n.cards.length}`;
+  return `${n.seat === mySeat ? 'You' : who} revealed ${n.cards.length} — ${n.source}`;
 }
 
 /**

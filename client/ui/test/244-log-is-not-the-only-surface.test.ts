@@ -415,7 +415,10 @@ test('[CR D7.4] the type-level question is answerable and gives the wrong answer
   const union = eventUnion();
   // 54 -> 55 on 2026-10-16: 'countersRemoved' (CR 708.8, report #210) — removing a
   // unit's counters is its own event, so no "counters are put on" listener hears it
-  assert.equal(union.length, 55, `EventType has ${union.length} members: ${union.join(' ')}`);
+  // 55 -> 56 on 2026-10-16: 'revealed' (CT-302, report #219) — a card's public
+  // reveal off the top of a deck (Tides of the Cosmos, Big Glimpse Card), typed
+  // so the other seat's client can draw the cards and not just the log line
+  assert.equal(union.length, 56, `EventType has ${union.length} members: ${union.join(' ')}`);
 
   // an event with an empty message is never a log line (src/harness.ts absorb,
   // and NetBackend.applyUpdate follows the same rule), so ANNOUNCING is the
@@ -425,7 +428,8 @@ test('[CR D7.4] the type-level question is answerable and gives the wrong answer
   const cardSites = cardEvSites();
   const announcing = new Set([...all, ...cardSites].filter(s => s.msg).map(s => s.type));
   const silent = union.filter(u => !announcing.has(u));
-  assert.equal(announcing.size, 49, `${announcing.size} announcing types`);
+  // 49 -> 50 on 2026-10-16: 'revealed' (CT-302) carries the card's log line
+  assert.equal(announcing.size, 50, `${announcing.size} announcing types`);
   assert.deepEqual(silent.sort(), [
     'cardPlayed', 'combatFaceDamage', 'grafted', 'handEntered', 'leftBin', 'stackFlash',
   ], 'the signal-only types, plus the one ("grafted") no ev() call site uses at all');
@@ -470,7 +474,10 @@ test('[CR D7.4] the type-level question is answerable and gives the wrong answer
   // 'lifeLost', already consumed) inside a stack beat's window, so a life
   // change waits for the trigger that made it (report #203, test/445). Same
   // direction.
-  assert.equal(consumed.length, 33, `${consumed.length} announcing types have a ui consumer`);
+  // 33 -> 34 on 2026-10-16: ui/reveal.ts `glimpseNotice` draws a 'revealed'
+  // event (CT-302, report #219: Tides of the Cosmos showed its opponent eight
+  // names in the log and no card). The new type arrived WITH its surface.
+  assert.equal(consumed.length, 34, `${consumed.length} announcing types have a ui consumer`);
 });
 
 /** every card file's `ev()` sites — only the TYPES are used, so this is cheap.

@@ -1638,6 +1638,20 @@ export type EventType =
   // that are not inside a settle() window, so they deliberately do not fire
   // triggers. 'cached' and 'prophesied' do dispatch to listeners.
   | 'cached' | 'prophesied' | 'prophecyFulfilled' | 'glimpsed'
+  // CT-302 / report #219: cards off the top of a deck REVEALED by a card that
+  // is not the Glimpse keyword (Tides of the Cosmos "Reveal the top eight
+  // cards of the deck", Big Glimpse Card "Reveal the top 7 cards of the
+  // deck"). Same shape as 'glimpsed' plus the card that did it:
+  // `{ seat, n, cards, source, chooser? }` — `seat` is whose deck, `chooser`
+  // the seat whose decision already shows these cards as scans (so the client
+  // does not pop a second copy at them); absent when nobody is asked. The
+  // message is the log line the site always printed, unchanged. PUBLIC, by
+  // analogy with CR 402.2a (a revealed hand "shows it to every player") and
+  // CR D6.2c (glimpsed cards are public). LOG-ONLY like 'glimpsed': `E.ev`
+  // dispatches nothing, so no card hears it. Inside a hidden step it is held
+  // for the recap like every other event (CR D6.2). Emitted by the card's own
+  // `g.ev` (a literal message, so the log census in ui/test/244 reads it).
+  | 'revealed'
   // CR 504.6, 507.4: the two turn-structure seams that had no dispatched event. Both are
   // fired inside a proper settle() window, so they DO trigger cards.
   // 'endOfHaste' fires while hasteDone still describes the step that is

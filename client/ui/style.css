@@ -902,11 +902,13 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
    prose in an 80-line log. Both are "the reveal" and only one looked like one.
    NON-MODAL on purpose: a glimpse can happen in a battle window you may still
    have to act in, so this must never be something to dismiss before playing.
-   It sits above the hand dock, out of the table's way, and expires by itself. */
+   It sits above the hand dock, out of the table's way, and expires by itself.
+   CT-302: a card's reveal uses it too, and Tides of the Cosmos shows EIGHT —
+   the width fits eight 58px cards on one row (it wrapped the eighth at 520). */
 .glimpsenotice { position: fixed; right: 16px; bottom: 16px; z-index: 60;
   background: var(--panel); border: 2px solid var(--target); border-radius: 8px;
   padding: 8px 10px; box-shadow: 0 6px 24px rgba(0,0,0,.55); cursor: pointer;
-  max-width: min(46vw, 520px); animation: glimpsein .18s ease-out; }
+  max-width: min(46vw, 560px); animation: glimpsein .18s ease-out; }
 .glimpsehead { font-size: 11px; color: var(--target); font-weight: 700;
   letter-spacing: .04em; margin-bottom: 5px; }
 .glimpsecards { display: flex; gap: 5px; flex-wrap: wrap; }

@@ -271,7 +271,14 @@ card('Big Glimpse Card', {
       const deck = g.deckOf(ctx.controller);
       const revealed = deck.slice(0, 7);
       if (!revealed.length) { g.ev('info', 'Big Glimpse Card: the deck is empty.'); return; }
-      g.ev('info', `Big Glimpse Card reveals: ${revealed.join(', ')}.`);
+      // CT-302 / report #219: a typed public reveal (same log line). The
+      // OPPONENT is the chooser — the split below shows them the seven as
+      // scans — so it is the CASTER's client that pops them as cards: the pile
+      // question it is asked next names them only in its labels.
+      g.ev('revealed', `Big Glimpse Card reveals: ${revealed.join(', ')}.`, {
+        seat: ctx.controller, n: revealed.length, cards: revealed, source: 'Big Glimpse Card',
+        chooser: opp,
+      });
       // the opponent splits: pick cards into pile 1 until "Done"
       const pile1: number[] = [];
       for (let k = 0; k < revealed.length; k++) {

@@ -401,6 +401,10 @@ test('§4a every event carrying a message reaches the surface somewhere', () => 
     ev('stackFlash', ''),                                    // signal-only, no line
     ev('phase', 'Player 2 is done deploying.'),
     ev('info', 'a line about a card that is gone.', { unit: 404 }),
+    // CT-302: a card's public deck reveal is its own type now, and its line
+    // (unchanged from when it was 'info') must still reach the recap
+    ev('revealed', 'Tides of the Cosmos reveals: Grox, Palewing.',
+      { seat: 1, n: 2, cards: ['Grox', 'Palewing'], source: 'Tides of the Cosmos', chooser: 1 }),
   ];
   const view = revealView(events, id => names[id] ?? null);
   const shown = new Set([
