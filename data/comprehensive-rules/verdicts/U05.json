@@ -1256,21 +1256,27 @@
   },
   {
     "key": "card.name.unique-token",
-    "textHash": "47d5dc65d24cebae",
+    "textHash": "9f510999a493db05",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "Automaton of Abundance",
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Automaton of Abundance replaceTokenBatch",
         "agrees": true,
-        "note": "(name, X) pairs"
+        "note": "uniqueness keyed on (name, X, stats set by the creation)"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "R157 §24: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras",
+        "pattern": "CR 201.3: a batch of a Robot 3",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "pattern": "CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens",
         "passed": true,
         "asserts_claim": true
       }
@@ -1278,25 +1284,29 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R157 §24",
-        "supports": "yes",
-        "note": ""
+        "ref": "card: Automaton of Abundance",
+        "supports": "partial",
+        "note": "printed 'each unique token' is the word being defined; it does not itself say what makes a token unique"
       },
       {
-        "ref": "history R104",
+        "ref": "owner 2026-08-25",
         "supports": "yes",
-        "note": "correctly cited as history"
+        "note": "unique = (name, X) pair"
+      },
+      {
+        "ref": "owner 2026-10-16",
+        "supports": "yes",
+        "note": "a 3/3 and a 5/5 unit token count as unique tokens — adds the stats to the key"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "'Unique' means unique (name, X) pair"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "instead create those tokens plus an additional copy of each unique token you created."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "card.stats.base",

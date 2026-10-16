@@ -2865,7 +2865,7 @@
     "key": "types.tokens.unique",
     "parent": "304",
     "order": 14,
-    "text": "When an effect refers to each unique token (Automaton of Abundance), two tokens are the same unique token only if they have both the same name and the same X.",
+    "text": "When an effect refers to each unique token (Automaton of Abundance), two tokens are the same unique token only if they have the same name, the same X and the same stats set by the effect that created them. A token created with no stats set has its own printed stats.",
     "examples": [
       {
         "text": "With Automaton of Abundance in play, Manufacture creates a Robot 3, a Robot 2 and a Robot 1: three unique tokens, so one extra of each is made.",
@@ -2874,11 +2874,24 @@
       {
         "text": "Three Robot 2s are one unique token.",
         "test": "136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s"
+      },
+      {
+        "text": "A 3/3 and a 5/5 unit token made together are two unique tokens, so Automaton of Abundance makes a 3/3 and a 5/5 more.",
+        "test": "458-automaton-copies-stats.test.ts::CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens"
+      },
+      {
+        "text": "A unit token created with no stats set and one created as a 1/1 are one unique token.",
+        "test": "458-automaton-copies-stats.test.ts::CR 304.14: a Unit Token created with no stats and one created as a 1/1 are ONE unique token"
       }
     ],
     "see": [],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Automaton of Abundance",
+          "quote": "instead create those tokens plus an additional copy of each unique token you created."
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -2891,17 +2904,64 @@
           "quote": "this is one card's word, not a redefinition.",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yeah, those would count as unique tokens.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, a 3/3 and a 5/5 Unit Token with Automaton of Abundance (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "136-triggers-and-modes.test.ts"
+        "136-triggers-and-modes.test.ts",
+        "458-automaton-copies-stats.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-25 (“six of […] answers, and the one…”) says the answer is about Automaton of Abundance's wording and redefines nothing else.",
+    "notes": "The owner's 2026-08-25 call names (name, X). The 2026-08-25 call is about Automaton of Abundance's wording and redefines nothing else. The stats clause is the owner's call of 2026-10-16 (asked whether a 3/3 and a 5/5 Unit Token made together are two unique tokens: \"Yeah, those would count as unique tokens.\"); D-U06-13 is resolved.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.unique.copy",
+    "parent": "types.tokens.unique",
+    "order": 1,
+    "text": "An additional copy of a token (Automaton of Abundance) is created with what the effect that created the original gave it: its name, its X, and any stats that effect set (\"a 3/3\", \"an X/X\").",
+    "examples": [
+      {
+        "text": "With Automaton of Abundance in play, creating a 3/3 unit makes two 3/3s.",
+        "test": "458-automaton-copies-stats.test.ts::CR 304.14: with Automaton of Abundance, creating a 3/3 Unit Token gives two 3/3s"
+      },
+      {
+        "text": "With Automaton of Abundance in play, Spawntender (\"Create an 8/8 unit.\") makes two 8/8s.",
+        "test": "458-automaton-copies-stats.test.ts::CR 304.14: Spawntender with Automaton of Abundance makes two 8/8 Unit Tokens"
+      },
+      {
+        "text": null,
+        "test": "458-automaton-copies-stats.test.ts::CR 304.14: with Automaton of Abundance, an X/X Unit Token is copied as the same X/X"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Automaton of Abundance",
+          "quote": "instead create those tokens plus an additional copy of each unique token you created."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "458-automaton-copies-stats.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Reports #212/#213. A copy of a token is that token as created. Not stated: whether counters, damage or mods the original gained after it was created are copied — no source or test speaks to it (the copy is made in the same creation).",
     "sourceHashes": {}
   },
   {

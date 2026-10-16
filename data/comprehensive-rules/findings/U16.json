@@ -56,15 +56,16 @@
         "quote": "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "&& !this.textStrippedShallow(h, a))) {"
+        "file": "client/engine/test/462-continuous-strip-silences-statics.test.ts",
+        "quote": "test('462 Sandstone Defender under Transmogrifant gives a 1/1 token nothing, a 3/3', () => {"
       }
     ],
     "ct": "CT-256",
     "dupes": [
       "F-U16-5",
       "F-U16-7"
-    ]
+    ],
+    "closed": "fixed on 2026-10-16 (report #214, CT-256; owner 2026-10-16: \"Everything (besides an attribute) is an ability.\"): a unit a continuous effect strips stops applying its static abilities; 462 and 427 show a Sandstone Defender under Transmogrifant giving a 1/1 token nothing (a 3/3)."
   },
   {
     "id": "F-U16-4",
@@ -102,15 +103,16 @@
         "quote": "*entity flag* is set, not one silenced by another static. So a unit silenced by"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "      // SPELL stops radiating immediately, while two units whose statics"
-      },
-      {
         "file": "data/cards/AlgomancyCards-OracleText.json",
         "quote": "\"text\": \"[Augment] Your other units gain +2/+2 and lose all attributes and abilities.\","
+      },
+      {
+        "file": "client/engine/test/462-continuous-strip-silences-statics.test.ts",
+        "quote": "test('462 Sandstone Defender under Transmogrifant gives a 1/1 token nothing, a 3/3', () => {"
       }
     ],
-    "ct": "CT-256"
+    "ct": "CT-256",
+    "closed": "fixed on 2026-10-16 with F-U16-3 (report #214, CT-256): 462 shows a unit under Transmogrifant applying none of its statics."
   },
   {
     "id": "F-U16-6",
@@ -146,8 +148,13 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
+      },
+      {
+        "file": "client/engine/test/462-continuous-strip-silences-statics.test.ts",
+        "quote": "test('462 Sandstone Defender under Transmogrifant gives a 1/1 token nothing, a 3/3', () => {"
       }
     ],
-    "ct": "CT-256"
+    "ct": "CT-256",
+    "closed": "fixed on 2026-10-16 with F-U16-3 (report #214, CT-256): 462 shows a unit under Transmogrifant applying none of its statics."
   }
 ]

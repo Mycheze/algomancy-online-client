@@ -2841,54 +2841,133 @@
   },
   {
     "key": "types.tokens.unique",
-    "textHash": "cb49e1704b28f28b",
+    "textHash": "0ec1d3704e1c4d8c",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards (Automaton of Abundance)",
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Automaton of Abundance replaceTokenBatch",
         "agrees": true,
-        "note": "uniqueness keyed on (name, X)"
+        "note": "key (name, X, stats); an unset stats creation = the definition's printed stats"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/136-triggers-and-modes.test.ts",
-        "pattern": "R157 §24: end to end",
+        "pattern": "CR 708.9: end to end",
         "passed": true,
-        "asserts_claim": true,
-        "passed_note": "yes: Manufacture with Automaton in play yields 6 Robots with counters [1,1,2,2,3,3]"
+        "asserts_claim": true
       },
       {
         "file": "client/engine/test/136-triggers-and-modes.test.ts",
-        "pattern": "R157 §24: three IDENTICAL Robot 2s",
+        "pattern": "CR 304.14: three IDENTICAL Robot 2s",
         "passed": true,
-        "asserts_claim": true,
-        "passed_note": "yes: three Robot 2 requests yield one extra"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "pattern": "CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "pattern": "CR 304.14: a Unit Token created with no stats and one created as a 1/1 are ONE unique token",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R157 §24",
+        "ref": "card: Automaton of Abundance",
+        "supports": "partial",
+        "note": "the word 'unique' is printed; its meaning comes from the owner calls"
+      },
+      {
+        "ref": "owner 2026-08-25 'unique (name, X) pair'",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R161",
+        "ref": "owner 2026-08-25 'one card's word'",
         "supports": "yes",
-        "note": "§24: one card's word, not a redefinition"
+        "note": "scope note"
+      },
+      {
+        "ref": "owner 2026-10-16 'those would count as unique tokens'",
+        "supports": "yes",
+        "note": "3/3 vs 5/5 are distinct"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "instead create those tokens plus an additional copy of each unique token you created."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "else's notion of identity moved — this is one card's word, not a redefinition."
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch1] Create a Robot 3, a Robot 2 and a Robot 1."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.unique.copy",
+    "textHash": "7c3a6762c9f48f45",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U06-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.spawnUnit noteTokenCreated stats / createToken",
+        "agrees": true,
+        "note": "copy carries the creation's name, X and stats"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "pattern": "CR 304.14: with Automaton of Abundance, creating a 3/3 Unit Token gives two 3/3s",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "pattern": "CR 304.14: Spawntender with Automaton of Abundance makes two 8/8 Unit Tokens",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "pattern": "CR 304.14: with Automaton of Abundance, an X/X Unit Token is copied as the same X/X",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Automaton of Abundance",
+        "supports": "yes",
+        "note": "'an additional copy of each unique token you created' — a copy of a 3/3 is a 3/3; read literally"
+      },
+      {
+        "ref": "card: Spawntender (example)",
+        "supports": "yes",
+        "note": "printed 'Create an 8/8 unit.'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "instead create those tokens plus an additional copy of each unique token you created."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch1] Create an 8/8 unit."
       }
     ],
     "basis_ok": true,

@@ -3779,46 +3779,67 @@
   },
   {
     "key": "effects.stripping.mutual",
-    "textHash": "09333785c9cbae07",
+    "textHash": "7c95788219a63680",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:staticsFor",
+        "loc": "client/engine/src/engine.ts:E.abilitiesSuppressed",
         "agrees": true,
-        "note": "one pass: only entity stamps stop radiating, so mutual continuous strippers both apply"
+        "note": "Newer of two mutual strippers applies; the older is silenced and comes back when the newer leaves; a one-way stripper entering under another is silenced."
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/28-metal-c.test.ts",
-        "pattern": "Transmogrifant: a silenced unit radiates nothing of its own",
+        "file": "client/engine/test/462-continuous-strip-silences-statics.test.ts",
+        "pattern": "462 two Transmogrifants in play: only the newer applies",
         "passed": true,
-        "asserts_claim": "yes: two Transmogrifants, each silenced by the other, both still radiate"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/462-continuous-strip-silences-statics.test.ts",
+        "pattern": "462 two Monkes in battle: the newer applies",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/462-continuous-strip-silences-statics.test.ts",
+        "pattern": "462 a stripper only one way under another",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R62",
+        "ref": "RQ 1145226276911714384",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon; the message it replied to is deleted and the 'before' context is unrelated (Glimpse), but the content is self-contained: two Transmogrifants, +2/+2, the second turns off the first."
       },
       {
-        "ref": "R328",
+        "ref": "RQ 1148449043282927626",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon: only one of two Transmogrifants is active at once."
+      },
+      {
+        "ref": "RQ 1148463157115887656",
+        "supports": "yes",
+        "note": "calebgannon follow-up: one gets +2/+2 and one does not (the older gets the newer's buff)."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "\"other unit\" — both keep radiating and both go quiet. That is the simultaneous"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "they would end up with +2/+2 buff, the second transmogrifant turns off the irst one"
       },
       {
-        "file": "client/engine/test/28-metal-c.test.ts",
-        "text": "assert.deepEqual(effStats(h, other), [5, 5], 'both statics still project');"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Oh true I guess one would get +2/+2 and one would mot"
+      },
+      {
+        "file": "client/engine/test/462-continuous-strip-silences-statics.test.ts",
+        "text": "assert.ok(!stripped(h, older), 'the older is back');"
       }
     ],
     "basis_ok": true,
@@ -4043,78 +4064,83 @@
   },
   {
     "key": "effects.stripping.what.abilities",
-    "textHash": "7ab9eaaafd9d7869",
+    "textHash": "bcb5c86497833c36",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U16-r3",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:suppress / staticsFor (one-shot stamp)",
+        "loc": "client/engine/src/engine.ts:E.abilitiesSuppressed",
         "agrees": true,
-        "note": "a stamped unit radiates nothing at once (probe, and 44-hybrids R118)"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:staticsFor (continuous strip)",
-        "agrees": false,
-        "note": "flagged divergence is real: staticsFor reads only the entity stamp, so Sandstone Defender stripped by Transmogrifant keeps radiating +0/+2 (token measures 3/5, rule says 3/3)"
+        "note": "Continuous and one-shot strips both silence statics (radiators read abilitiesSuppressed); activated abilities are not offered."
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/44-hybrids-ld-a.test.ts",
-        "pattern": "R118: R62 suppression is a veto ABOVE copy",
+        "pattern": "CR 712.1a, 710.1: suppression is a veto ABOVE copy",
         "passed": true,
-        "asserts_claim": "yes: a copy silenced by Suppression Field radiates nothing"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/427-cr-continuous-effects.test.ts",
+        "pattern": "cr:effects.stripping.what.abilities — Sandstone Defender",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/462-continuous-strip-silences-statics.test.ts",
+        "pattern": "462 Mirage Walker with Aberrant Statweaver and Transmogrifant",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U16/u16-r3-probes.test.ts",
-        "title": "effects.stripping.what.abilities: one-shot strip silences Sandstone Defender's static at once",
+        "file": "client/engine/test/zz-probe-U16-2.test.ts",
+        "test": "zz-probe-U16-2: Prismatic Observer under Transmogrifant offers no activation",
         "passed": true,
-        "demonstrates": "yes: token 1/3 -> 1/1"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U16/u16-r3-probes.test.ts",
-        "title": "effects.stripping.what.abilities: (engine divergence) Sandstone Defender under Transmogrifant still radiates; token is 3/5 not 3/3",
-        "passed": true,
-        "demonstrates": "yes: confirms the flagged engine divergence (F-U16-3) is real"
+        "demonstrates": "yes: the '(which cannot be activated)' clause — a unit stripped by a continuous Transmogrifant is offered no activateAbility."
       }
     ],
     "source_checks": [
       {
         "ref": "card: Transmogrifant",
         "supports": "yes",
-        "note": "\"lose all attributes and abilities\" — read with R62 \"a static *is* an ability\", the stripped unit's static goes."
+        "note": "Verbatim."
       },
       {
         "ref": "RAQ 1355845893219287132#0",
-        "supports": "partly",
-        "note": "Says Monke/Transmogrifant are continuous statics that also hit later entrants; it does not address whether a stripped unit stops radiating its own static. On-topic, not direct."
+        "supports": "yes",
+        "note": "_passer [Solved]: Monke/Transmogrifant are continuous statics; status covered."
       },
       {
-        "ref": "R62",
+        "ref": "owner 2026-10-16 (#214): \"static effects count as abilities. Everything (besides an attribute) is an ability.\"",
         "supports": "yes",
-        "note": "The list of what \"abilities\" covers (triggered, activated, statics and cost modifiers, replacement hooks; own, donated, granted). Note R62/R328 also record staticsFor reading only the entity stamp, which is the engine side of the divergence."
+        "note": "Supports statics, cost changes, replacement effects and activated abilities all being abilities."
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-21), two fragments",
+        "supports": "yes",
+        "note": "Triggered abilities incl. mods' donated text; statics; replacement hooks."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Your other units gain +2/+2 and lose all attributes and abilities."
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Your other units gain +2/+2 and lose all attributes and abilities."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "radiates — a static *is* an ability — and both R38 replacement hooks."
+        "file": "client/engine/test/427-cr-continuous-effects.test.ts",
+        "text": "assert.deepEqual(effStats(h, t), [3, 3], 'only the +2/+2: the stripped Sandstone Defender radiates nothing');"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "text": "'CR 712.1a sits ABOVE layer 0: a silenced copy radiates nothing, all faces at once');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling supported by printed text plus R62; divergence real. Caveat: our own R62/R328 describe the static-vs-static one-pass behaviour as intended, so the divergence is between the printed reading and an engine choice the register endorses, not a mere bug.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.stripping.what.erase-mods",

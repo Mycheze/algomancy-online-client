@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:3b83e8a905dcd241",
+ "generated_from": "sha256:9b53b6a84197886d",
  "rules": [
   {
    "num": "100.1",
@@ -1690,6 +1690,29 @@
     "Rampart Guardian costs 2: of three open earth, two become expended and one stays open."
    ],
    "basis": "printed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "106.5c",
+   "key": "concepts.resources.expend.only-to-pay",
+   "title": null,
+   "section": "106",
+   "sectionTitle": "Resources",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "106.5",
+   "text": "A resource is expended only to pay a cost. No action expends a resource for nothing, and mana is not kept for later use.",
+   "see": [
+    "106.5b"
+   ],
+   "examples": [
+    "Keeper of Tithes (\"At the end of [Haste], if X is not 0, create an X/X unit, where X is the number of expended resources you have\") is in play, its controller has six open resources and nothing to pay for: no resource can be expended, so X is 0 and no unit is made."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -3690,12 +3713,13 @@
    "sectionTitle": "Targets",
    "chapterTitle": "1. Game Concepts",
    "parent": "110.2",
-   "text": "The Wraith's \"an ally\" is not a target, but the ally is chosen as the trigger is put on the stack. If that ally has left play when the trigger resolves, the trigger fizzles.",
+   "text": "The Wraith's \"an ally\" is not a target. The ally is chosen as the trigger resolves, from the allies in play then, so the trigger cannot lose its ally and does not fizzle while an ally is in play. With no ally in play, it fizzles.",
    "see": [
     "704"
    ],
    "examples": [
-    "Three Wraith triggers may all choose the same 1/1; one -1/-1 counter lands and the other two fizzle."
+    "Three Wraith triggers and one 1/1 ally: only the first trigger is offered the 1/1, and it kills it. The other two put their counters on Wraiths still in play, and nothing fizzles.",
+    "A 1/1 carrying two Wraith augments: the first shrink kills it, and the second finds no ally in play and fizzles."
    ],
    "basis": "owner",
    "scope": "game",
@@ -4071,7 +4095,8 @@
    ],
    "examples": [
     "Fight cannot be played unless its region holds an ally and another unit.",
-    "Rebalance, which targets nothing, can be played with no unit of its controller's."
+    "Rebalance, which targets nothing, can be played with no unit of its controller's.",
+    "Abduct (\"Gain control of target unit with cost [x] or less …\") against a lone cost-1 attacker can be played when its caster can pay an X of 1 or more. X = 0 is not offered, since at 0 there is no unit to take."
    ],
    "basis": "designer",
    "scope": "game",
@@ -6039,14 +6064,15 @@
    "sectionTitle": "Name",
    "chapterTitle": "2. Parts of a Card",
    "parent": "201",
-   "text": "Where a card speaks of a \"unique\" token, a token is identified by its name and its X together: a Robot 2 and a Robot 5 are two unique tokens.",
+   "text": "Where a card speaks of a \"unique\" token, a token is identified by its name, its X and the stats the effect that created it set, together: a Robot 2 and a Robot 5 are two unique tokens, and so are a 3/3 and a 5/5 unit token.",
    "see": [
     "304"
    ],
    "examples": [
-    "Automaton of Abundance: when its controller creates a Robot 3, a Robot 2 and a Robot 1 together, those are three unique tokens, so three extra Robots are made."
+    "Automaton of Abundance: when its controller creates a Robot 3, a Robot 2 and a Robot 1 together, those are three unique tokens, so three extra Robots are made.",
+    "Automaton of Abundance: a 3/3 and a 5/5 unit token created together are two unique tokens, so two extra tokens are made."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -8963,13 +8989,39 @@
    "sectionTitle": "Tokens",
    "chapterTitle": "3. Card Types",
    "parent": "304",
-   "text": "When an effect refers to each unique token (Automaton of Abundance), two tokens are the same unique token only if they have both the same name and the same X.",
+   "text": "When an effect refers to each unique token (Automaton of Abundance), two tokens are the same unique token only if they have the same name, the same X and the same stats set by the effect that created them. A token created with no stats set has its own printed stats.",
    "see": [],
    "examples": [
     "With Automaton of Abundance in play, Manufacture creates a Robot 3, a Robot 2 and a Robot 1: three unique tokens, so one extra of each is made.",
-    "Three Robot 2s are one unique token."
+    "Three Robot 2s are one unique token.",
+    "A 3/3 and a 5/5 unit token made together are two unique tokens, so Automaton of Abundance makes a 3/3 and a 5/5 more.",
+    "A unit token created with no stats set and one created as a 1/1 are one unique token."
    ],
-   "basis": "owner",
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [
+    "D-U06-13"
+   ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "304.14a",
+   "key": "types.tokens.unique.copy",
+   "title": null,
+   "section": "304",
+   "sectionTitle": "Tokens",
+   "chapterTitle": "3. Card Types",
+   "parent": "304.14",
+   "text": "An additional copy of a token (Automaton of Abundance) is created with what the effect that created the original gave it: its name, its X, and any stats that effect set (\"a 3/3\", \"an X/X\").",
+   "see": [],
+   "examples": [
+    "With Automaton of Abundance in play, creating a 3/3 unit makes two 3/3s.",
+    "With Automaton of Abundance in play, Spawntender (\"Create an 8/8 unit.\") makes two 8/8s."
+   ],
+   "basis": "printed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -18231,18 +18283,22 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.8",
-   "text": "If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is dealt to the player, and it is not redirected again.",
+   "text": "If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took.",
    "see": [
     "708",
     "802.16"
    ],
    "examples": [
     "10 Piercing combat damage that would be dealt to a player is redirected into a 2/4 Oorblak. 4 destroy it, and the other 6 are dealt to the player.",
-    "A non-Piercing overkill redirected into Oorblak is absorbed whole; nothing reaches the player."
+    "A non-Piercing overkill redirected into Oorblak is absorbed whole; nothing reaches the player.",
+    "10 Piercing combat damage and two 2/4 Oorblaks: 4 destroy the first, the 6 left are still combat damage and the second takes 4 of them, and 2 reach the player.",
+    "With three 2/4 Oorblaks the third takes the last 2, and nothing reaches the player.",
+    "Blightsea Polyp and Oorblak, in either order: Oorblak takes the column's damage, and no rot is gained. With a Piercing column, the excess past the Oorblak reaches the player and is dealt as 1 rot.",
+    "Blightsea Polyp beside two Oorblaks: the player chooses only between the Oorblaks, and no rot is gained."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U12-13"
    ],
@@ -22192,13 +22248,15 @@
    "sectionTitle": "Triggered Abilities",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "706",
-   "text": "Some triggered abilities choose a unit without targeting it, such as a Wraith's start-of-deployment ability choosing \"an ally\". The unit is chosen as the ability is put on the stack. Several such abilities may choose the same unit, even if together they would do more than destroying it takes; if the chosen unit has left play when one resolves, that one fizzles.",
+   "text": "Some triggered abilities choose a unit without targeting it, such as a Wraith's start-of-deployment ability choosing \"an ally\". The unit is chosen as the ability begins to resolve, from the units in play then. Several such abilities resolve one at a time, each choosing among the units still in play, so a unit an earlier one destroyed is not offered to a later one. One that finds no unit to choose fizzles.",
    "see": [
     "704.5c"
    ],
    "examples": [
-    "three Wraith abilities all choose one 1/1 ally. The first kills it, and the other two fizzle.",
-    "a Wraith with no other ally is its own only ally. Its ability chooses it without asking, resolves on it (it shrinks to 2/2), and nothing fizzles."
+    "three Wraith abilities and one 1/1 ally: only the first is offered the 1/1 and kills it; the other two put their counters on Wraiths still in play, and nothing fizzles.",
+    "all three Wraith abilities are on the stack before the first one asks for its ally, and each asks only after the one before it has fully resolved.",
+    "a Wraith with no other ally is its own only ally. Its ability chooses it without asking and it shrinks to 2/2; nothing fizzles.",
+    "a 1/1 carrying two Wraith augments: the first ability kills it, and the second finds no ally in play and fizzles."
    ],
    "basis": "owner",
    "scope": "game",
@@ -22683,7 +22741,7 @@
     "708.4a"
    ],
    "examples": [
-    "10 {Piercing} combat damage redirected into a 2/4 Oorblak: 4 destroy it, and the other 6 reach the player and are not redirected again.",
+    "10 {Piercing} combat damage redirected into a 2/4 Oorblak: 4 destroy it, and the other 6 reach the player; the same Oorblak does not take them again.",
     "two Nullbringers turn one life gain into one loss, not into a gain again."
    ],
    "basis": "designer",
@@ -22702,14 +22760,20 @@
    "sectionTitle": "Replacement and Prevention Effects",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "708.4",
-   "text": "If two or more effects could each replace or redirect the same event (two Nullbringers, two Counter Thieves, two Oorblaks), only one of them does. An event a redirect produces is not redirected again by another such effect. (engine differs, see F-U15-3)",
+   "text": "If two or more replacement effects could apply to one event, they apply one at a time. Each applies at most once, to the event as the earlier ones left it, and only if that event still matches its own text; one that has applied does not apply again, so nothing loops. The player the event affects (the player who would be dealt the damage, the player whose rot it is, or the controller of the unit the counters would be put on) chooses the order in which they apply, except where rule 608.8c fixes it. When only one such effect applies, nothing is asked.",
    "see": [],
    "examples": [
-    "two Counter Thieves do not pass the same counters back and forth."
+    "two Oorblaks and combat damage that would be dealt to their controller: the first to apply takes all of it, and the other takes 0, because the damage is no longer being dealt to that player.",
+    "the player who would be dealt the damage chooses which of two Oorblaks applies first, and that one takes it.",
+    "two Counter Thieves: the counters the first redirects onto itself are still being placed on a unit, so the second, which has not applied, takes them; they end on the second to apply.",
+    "the controller of the unit the counters were meant for chooses the order of two Counter Thieves; choosing the second to apply last puts the counters on it.",
+    "two Counter Thieves do not pass the same counters back and forth: each applies once.",
+    "two Automatons of Abundance turn one created token into three: 1, then 2, then 3.",
+    "two Skittering Blights: the player whose rot it is chooses which one takes it as counters; the other has nothing left to replace."
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U12-13",
     "D-U15-3"
@@ -22889,7 +22953,30 @@
     "counters an opponent's effect puts on your unit do not get your Flux Resonator's extra counter.",
     "counters your effect puts on an enemy unit do."
    ],
-   "basis": "owner",
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "708.8c",
+   "key": "effects.replacement.scope.move",
+   "title": null,
+   "section": "708",
+   "sectionTitle": "Replacement and Prevention Effects",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "708.8",
+   "text": "Moving counters from one unit onto another removes them from the first and puts them on the second. Only the second half puts counters on a unit, so a replacement effect that applies when counters would be put on a unit changes how many arrive, not how many leave.",
+   "see": [
+    "708.8b"
+   ],
+   "examples": [
+    "Your Flux Resonator is in play and you cast Scrap For Parts (\"Move all counters from target unit onto another target unit\"), moving an enemy unit's two +1/+1 counters onto your unit: the enemy unit is left with none, and your unit gets three."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -22905,13 +22992,14 @@
    "sectionTitle": "Replacement and Prevention Effects",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "708",
-   "text": "All the tokens one resolution of one effect creates are created together. A replacement effect that acts on \"each unique token you created\" sees all of them at once, and a token is unique by its name and its X together.",
+   "text": "All the tokens one resolution of one effect creates are created together. A replacement effect that acts on \"each unique token you created\" sees all of them at once, and a token is unique by its name, its X and the stats the effect that created it set, together.",
    "see": [],
    "examples": [
     "Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.",
-    "three identical Robot 2s created together are one unique token and yield one extra."
+    "three identical Robot 2s created together are one unique token and yield one extra.",
+    "a 3/3 and a 5/5 unit token created together are two unique tokens and yield two extras."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -24002,7 +24090,7 @@
    "sectionTitle": "Stripping and Suppression",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "712.1",
-   "text": "Losing all abilities takes everything the unit's text does by itself: its triggered abilities, its activated abilities (which cannot be activated), its static abilities and cost changes, and its replacement effects, whether printed on it, given by its mods or granted to it. A unit that loses its abilities stops applying its static abilities at once, whether a one-time effect (Suppression Field) or a continuous one (Transmogrifant, Monke) took them; two continuous strips that each fall under the other are rule 712.5. Engine differs, see F-U16-3: a unit that a continuous effect strips keeps applying its static abilities.",
+   "text": "Losing all abilities takes everything the unit's text does by itself: its triggered abilities, its activated abilities (which cannot be activated), its static abilities and cost changes, and its replacement effects, whether printed on it, given by its mods or granted to it. A unit that loses its abilities stops applying its static abilities at once, whether a one-time effect (Suppression Field) or a continuous one (Transmogrifant, Monke) took them; two continuous strips that each fall under the other are rule 712.5.",
    "see": [
     "712.5"
    ],
@@ -24012,7 +24100,7 @@
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U16-14"
    ],
@@ -24202,10 +24290,14 @@
    "sectionTitle": "Stripping and Suppression",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "712",
-   "text": "Two continuous strips whose sources each fall under the other (two Monkes, each another's \"other unit\") both apply. Each source loses its abilities, and neither stops the other.",
+   "text": "Two continuous strips whose sources each fall under the other do not both apply: the newer one applies, and the source of the older one loses its abilities, so the older strip does not apply. If the newer source leaves play, the older strip applies again. Where only one of the two sources falls under the other's strip, that source loses its abilities, even if it came into play later (rule 113.3a).",
    "see": [],
-   "examples": [],
-   "basis": "owner",
+   "examples": [
+    "With two Transmogrifants in play, a 1/1 token is a 3/3: only the newer Transmogrifant's +2/+2 applies. The older one gets the newer one's +2/+2 and has lost its abilities; when the newer one leaves play, the older one applies again.",
+    "Two Monkes in battle: the newer Monke keeps its abilities, and the older one loses them.",
+    "The Everywhere comes into play under its controller's Transmogrifant: it loses its abilities, so the card it names keeps its abilities."
+   ],
+   "basis": "designer",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -31538,17 +31630,18 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.16",
-   "text": "If Piercing combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), that unit is dealt its lethal damage and the rest is still Piercing excess. That excess is dealt to the player, and it is not redirected again (see rule 608.8c).",
+   "text": "If Piercing combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), that unit is dealt its lethal damage and the rest is still Piercing excess. That excess is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player (see rule 608.8c).",
    "see": [
     "608.8c"
    ],
    "examples": [
     "10 Piercing combat damage is redirected into a 2/4 Oorblak. 4 kill it and the other 6 reach the player.",
-    "5 Piercing combat damage is redirected into Oorblak on a 1/1 host. 1 kills the host and the remaining 4 reach the player."
+    "5 Piercing combat damage is redirected into Oorblak on a 1/1 host. 1 kills the host and the remaining 4 reach the player.",
+    "10 Piercing combat damage and two 2/4 Oorblaks: each takes 4 and dies, and 2 reach the player."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U20-23"
    ],
@@ -32069,6 +32162,30 @@
     "A Poisonous column is blocked by Just a Unit. Just a Unit is dealt ordinary marked damage, not -1/-1 counters."
    ],
    "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "802.18j",
+   "key": "attr.poisonous.who-puts",
+   "title": null,
+   "section": "802",
+   "sectionTitle": "Attributes",
+   "chapterTitle": "8. Keywords",
+   "parent": "802.18",
+   "text": "The -1/-1 counters a Poisonous source's combat damage puts on a unit are put by that source's controller (see rule 708.8b).",
+   "see": [
+    "708.8b"
+   ],
+   "examples": [
+    "A Poisonous blocker deals combat damage to the attacker: its -1/-1 counters on the attacker are put by the defending player, so the defender's Wandering Blightshell (\"When you put a counter on an enemy, [Switch1] Draw a card.\") draws a card.",
+    "A Poisonous attacker's -1/-1 counters on its blocker are put by the attacking player, and the attacker's Wandering Blightshell draws."
+   ],
+   "basis": "printed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -36669,7 +36786,7 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1.2",
-   "text": "A non-target choice that an ability makes as it goes on the stack (such as the ally a Wraith's start-of-deployment trigger aims at) is recorded without asking when there is only one candidate. With two or more candidates the player is asked.",
+   "text": "A non-target choice that an ability makes as it begins to resolve (such as the ally a Wraith's start-of-deployment trigger chooses) is recorded without asking when there is only one candidate. With two or more candidates the player is asked.",
    "see": [
     "507",
     "706"
@@ -36743,6 +36860,30 @@
    ],
    "examples": [],
    "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D1.2i",
+   "key": "annexd.general.player-decides.replacement-order",
+   "title": null,
+   "section": "D1",
+   "sectionTitle": "General and Precedence",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D1.2",
+   "text": "When a player chooses the order of replacement effects (see rule 708.4a), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, the choices are not also buttons in the prompt bar, and the prompt says what is being chosen. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.",
+   "see": [],
+   "examples": [
+    "Two Oorblaks: the prompt asks which Oorblak takes the damage first, and clicking the second Oorblak chooses it.",
+    "The attacker sees that the defender is being asked, but not the question.",
+    "Two Skittering Blights at the start of deployment: the rot question is answered on the board, and the other player can deploy only once it is answered.",
+    "A Poisonous blocker and two Counter Thieves: the question comes before any of the combat damage is dealt."
+   ],
+   "basis": "engine",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
@@ -37972,12 +38113,15 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4.1",
-   "text": "Actions taken in battle are not undone. For that reason an irreversible activated ability asks for confirmation in battle, while in deployment it activates on the click and undo is the safety net.",
+   "text": "Actions taken in battle are not undone. For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net.",
    "see": [
     "D7"
    ],
-   "examples": [],
-   "basis": "engine",
+   "examples": [
+    "Cadaverous Cultivator (\"[Battle] Discard a card: …\") raises no confirmation: the click activates it, and the game asks which card to discard.",
+    "While the confirmation is up, clicking a card in hand plays nothing."
+   ],
+   "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [
@@ -39407,6 +39551,50 @@
    "verdict": "partial"
   },
   {
+   "num": "D6.9f",
+   "key": "annexd.display.live-values.public-choice",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6.9",
+   "text": "A prediction made with Prediction Prophet is shown on that card to both players, as a chip on the card and a line in its text box, from when it is made until the start of deployment reads it. A prediction left from an earlier turn is not shown.",
+   "see": [],
+   "examples": [
+    "The opponent sees the Prophet's predicted life on the card and in its text box.",
+    "A prediction of 0 is shown like any other."
+   ],
+   "basis": "engine",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D6.9g",
+   "key": "annexd.display.live-values.event-x",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6.9",
+   "text": "A triggered ability whose amount is its own column's share of combat damage (Vroot: \"When my column deals combat damage, each opponent gains that much life.\") shows that share on the stack as its X, the same amount it resolves with, not the total every column dealt.",
+   "see": [],
+   "examples": [
+    "Vroot (4/4) and a 1/1 attack in two columns and are not blocked: the stack shows X=4, and the opponent gains 4.",
+    "Vroot's text carried by a host: the stack shows the host's column share."
+   ],
+   "basis": "engine",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "D6.10",
    "key": "annexd.display.text-box",
    "title": null,
@@ -39530,6 +39718,29 @@
     "Scholar of the Void's details say it transforms into Beyond, Codex Incarnate, before its hand-discard cost is paid."
    ],
    "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D6.10f",
+   "key": "annexd.display.text-box.suppression-band",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6.10",
+   "text": "In the card zoom, a unit whose attributes are off has only its type bar greyed; a unit whose abilities are off has its text box below the type bar greyed; a unit with both off has both greyed.",
+   "see": [],
+   "examples": [
+    "A unit Formless has stamped (attributes off) greys its type bar and not its text box.",
+    "A unit The Everywhere names (abilities off) greys below the type bar and leaves the bar.",
+    "A unit Monke switches off in battle (both off) greys the bar and the box."
+   ],
+   "basis": "engine",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
@@ -40102,6 +40313,28 @@
    ],
    "examples": [
     "A strike of 4 into a column of two: the player chooses how much the front unit takes, and the back unit gets the rest."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D7.2f",
+   "key": "annexd.confirm.dials.no-targets",
+   "title": null,
+   "section": "D7",
+   "sectionTitle": "Confirmations and Misclicks",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D7.2",
+   "text": "In an \"up to\" target choice, the button that stops picking reads \"No targets\" and is drawn as an ordinary button while nothing has been picked; after a pick it reads \"No more targets\" and is drawn as the quieter decline button. An \"up to N\" choice ends by itself at its Nth pick, with nothing more asked about it.",
+   "see": [],
+   "examples": [
+    "Minor Kraken, grafted with Fester, attacks: its up-to-one target choice offers \"No targets\" as an ordinary button, and answering it moves on to Fester.",
+    "Twin Flame (up to two targets): after one pick the stop reads \"No more targets\"; the second pick ends the choice."
    ],
    "basis": "owner",
    "scope": "digital",

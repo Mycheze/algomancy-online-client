@@ -293,9 +293,17 @@
       {
         "source": "owner ruling, adopted 2026-08-23",
         "quote": "Substitutes or redirects the thing itself. A thing can only be replaced once, so"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-16",
+        "quote": "it's all combat damage, and that damage is still considered combat damage, so it'd go to the second one"
+      },
+      {
+        "source": "RQ 1442982460034912287",
+        "quote": "the tldr is replacement effects only apply once onto an effect"
       }
     ],
-    "resolution": "Settled by the designer: \"replacement effects only apply once in an effect\", with the Oorblak example (the leftover 6 \"goes to players face\"), reads per damage: a leftover one redirect let through is not redirected again. The owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) says the same (\"A thing can only be replaced once\"). combat.damage.player.redirect and effects.replacement.once.one-applies state it. The engine offers the leftover to every further holder: F-U12-1 (CT-228)."
+    "resolution": "Settled per effect by the owner on 2026-10-16 (\"it's all combat damage, and that damage is still considered combat damage, so it'd go to the second one\"; \"Go with Caleb\"), following Caleb in rules-questions 2025-11-25 (\"replacement effects only apply once onto an effect\"): each replacement effect applies once, so a second Oorblak may take the leftover and the same one may not. combat.damage.player.redirect, attr.piercing.redirect and effects.replacement.once.one-applies state it; F-U12-1 is closed (CT-228 ruled correct). The 2026-08-23 per-damage reading above is history."
   },
   {
     "id": "D-U12-14",

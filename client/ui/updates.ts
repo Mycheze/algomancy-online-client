@@ -44,6 +44,17 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-16', kind: 'new', text: 'Prediction Prophet\'s prediction now shows on the card, for both players.' },
+  { date: '2026-10-16', kind: 'fix', text: 'Vroot\'s stack shows its own column\'s damage, not the whole attack\'s. A zoomed card greys only its type bar when attributes are off, and only its text box when abilities are off.' },
+  { date: '2026-10-16', kind: 'fix', text: 'When nothing is picked yet for an "up to" target, the button reads "No targets" and is a normal button. An "up to" choice ends by itself once you have picked the most it allows.' },
+  { date: '2026-10-16', kind: 'fix', text: 'Typing in the Report form no longer reaches the game: Enter, Ctrl+Z and Ctrl stay in the form, and the board waits a moment after you send.' },
+  { date: '2026-10-16', kind: 'fix', text: '"Yes, activate?" now waits for an answer: only clicking the same unit again, Yes or Enter confirms, and other clicks do nothing. Discard and sacrifice costs skip the question and go straight to the pick.' },
+  { date: '2026-10-16', kind: 'change', text: 'When several replacement effects apply at once they all apply, one after another, and when the order matters (two Oorblaks, two Counter Thieves) you choose it. Oorblak always takes a hit before Blightsea Polyp can turn it into rot.' },
+  { date: '2026-10-16', kind: 'change', text: 'Wraiths choose which ally to shrink or augment as each one resolves, so a pile of Wraiths no longer fizzles while you still have an ally.' },
+  { date: '2026-10-16', kind: 'fix', text: 'A unit that loses its abilities to Transmogrifant, Monke or The Everywhere now stops giving its other effects too. With two Transmogrifants in play, only the newer one works.' },
+  { date: '2026-10-16', kind: 'fix', text: 'Automaton of Abundance copies a 3/3 or X/X token at its full size instead of as a 1/1, and two Automatons each add a copy.' },
+  { date: '2026-10-16', kind: 'fix', text: 'Poisonous combat damage now counts as counters you put, so Wandering Blightshell draws. Removing counters no longer counts as putting them on.' },
+  { date: '2026-10-16', kind: 'fix', text: 'Abduct can be played in battle against units that cost 1 or more, and its X menu offers only values that can take something.' },
   { date: '2026-10-13', kind: 'fix', text: 'Counter Thief is printed "Counter Theif": a deck or search using that spelling now finds the card, and so do saved decks, custom games and card stats.' },
   { date: '2026-10-12', kind: 'change', text: 'The game log and card details no longer show internal ruling numbers, and the About page now describes the comprehensive rules the client follows.' },
   { date: '2026-10-12', kind: 'new', text: 'The judge now answers from the full rules document as well, says when an answer rests on an unofficial ruling or on how the online client plays, and lists its sources under each answer with a link to the rule it rests on.' },

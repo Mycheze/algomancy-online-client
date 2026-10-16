@@ -971,34 +971,34 @@
   },
   {
     "key": "effects.replacement.once",
-    "textHash": "79c91eb021655131",
+    "textHash": "8acd430a7c476f4b",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U15-r2",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:replaceCombatDamage",
+        "loc": "client/engine/src/engine.ts:E.replaceCombatDamage",
         "agrees": true,
-        "note": "each holder is consulted once per hit; one Oorblak absorbs 4 and passes 6 through, not re-offered"
+        "note": "Each holder is offered what the earlier ones left, once; the Oorblak that took the damage is not offered its excess again."
       },
       {
-        "loc": "client/engine/src/engine.ts:gainLife/replaceLifeGain",
+        "loc": "client/engine/src/cards/sets/batch-light-c.ts:Nullbringer",
         "agrees": true,
-        "note": "first-true-consumes; a loss is not a gain, so Nullbringer does not re-apply"
+        "note": "One inversion per life-gain event."
       }
     ],
     "tests_run": [
       {
-        "file": "387-raq-combat.test.ts",
-        "pattern": "RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak",
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4",
         "passed": true,
-        "asserts_claim": "yes — Oorblak dies, D at 30-6"
+        "asserts_claim": true
       },
       {
-        "file": "40-light-c.test.ts",
+        "file": "client/engine/test/40-light-c.test.ts",
         "pattern": "Nullbringer: two copies do not stack",
         "passed": true,
-        "asserts_claim": "yes — exactly -3 (one loss), not -6/-9"
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1006,98 +1006,180 @@
       {
         "ref": "RAQ 1397188292239163454#0",
         "supports": "yes",
-        "note": "calebgannon quoted in the thread; same text in the guard test's comment"
+        "note": "Quote is in the claim's source (calebgannon, quoted); status covered."
       },
       {
-        "ref": "R104 (its two families and hooks)",
-        "supports": "partly",
-        "note": "the quoted Caleb line is used in R104 for the AmountMod fold (Conduit); on-topic, the 'first-true-consumes' paragraph is the closer support"
+        "ref": "RQ 1442982460034912287",
+        "supports": "yes",
+        "note": "calebgannon; closes his explanation of Automaton/Oorblak loops: 'replacement effects only apply once onto an effect'."
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-23)",
+        "supports": "yes",
+        "note": "Consistent fragment."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/387-raq-combat.test.ts",
-        "text": "// face\" — and Caleb: \"replacement effects only apply once in an effect\", so"
+        "file": "client/ledgers/raq.ts",
+        "text": "calebgannon (quoted): \\\"replacement effects only apply once in an effect Unless a new trigger occurs\\\""
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "redirects the thing itself. A thing can only be replaced once, so the first"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "the tldr is replacement effects only apply once onto an effect"
+      },
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "text": "assert.equal(h.state.players[D]!.life, 30 - 6, 'and the leftover 6 is still Piercing');"
+      },
+      {
+        "file": "client/engine/test/40-light-c.test.ts",
+        "text": "assert.equal(h.state.players[D]!.life, lifeD - 3, 'still exactly -3, not -6 or -9');"
       }
     ],
     "basis_ok": true,
-    "problem": "None material. The Nullbringer example concerns two copies (strictly the one-applies sibling rule), but the claim it states matches its test.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.replacement.once.one-applies",
-    "textHash": "6406f213d357f6d0",
+    "textHash": "c7891b359b0a78da",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U15-r2",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:replaceCombatDamage",
-        "agrees": false,
-        "note": "loops over every holder with `left`: a second Oorblak absorbs the leftover of the first — the divergence the text flags is real"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:addCounters/inReplaceCounters",
+        "loc": "client/engine/src/engine.ts:E.replaceCombatDamage / E.orderSeamRun / E.replaceCounters",
         "agrees": true,
-        "note": "lowest id claims; the latch stops ping-pong"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:gainLife",
-        "agrees": true,
-        "note": "two Nullbringers: one inversion"
+        "note": "Chain: each holder applies once to what the earlier left; with two or more holders the affected player is asked (orderSeamRun for combat and rot, before any is dealt); one holder asks nothing."
       }
     ],
     "tests_run": [
       {
-        "file": "46-hybrids-ld-c.test.ts",
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "pattern": "CR 708.4: two Oorblaks and combat damage to you — one takes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
+        "pattern": "CR 708.4a: two Oorblaks and combat damage — the player being",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/468-replacement-chain-redirects.test.ts",
+        "pattern": "CR 708.4: two Counter Thieves chain — the second takes the c",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
+        "pattern": "CR 708.4a: two Counter Thieves — choosing the second puts th",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/46-hybrids-ld-c.test.ts",
         "pattern": "Counter Thief: two thieves do not ping-pong",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "40-light-c.test.ts",
-        "pattern": "Nullbringer: two copies do not stack",
+        "file": "client/engine/test/459-automatons-chain.test.ts",
+        "pattern": "CR 708.4: two Automatons of Abundance turn one created token",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
+        "pattern": "CR 708.4a: two Skittering Blights — the player is asked whic",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
+        "pattern": "CR 708.4a: one Counter Thief asks nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
+        "pattern": "CR 708.4a: one Oorblak asks nothing",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U15/u15-probes.test.ts",
-        "title": "effects.replacement.once.one-applies: two Oorblaks and one 10-point Piercing hit — does the second absorb the leftover?",
-        "passed": true,
-        "demonstrates": "yes — measured the divergence: D life 28 and both Oorblaks die (ruling reading: 24, one dies)"
-      }
-    ],
+    "probes": [],
     "source_checks": [
+      {
+        "ref": "card: Oorblak",
+        "supports": "yes",
+        "note": "Verbatim."
+      },
+      {
+        "ref": "card: Counter Thief",
+        "supports": "yes",
+        "note": "Verbatim."
+      },
       {
         "ref": "RAQ 1397188292239163454#0",
         "supports": "yes",
-        "note": "Caleb: replacement effects only apply once in an effect"
+        "note": ""
       },
       {
-        "ref": "R104 (its two families and hooks)",
+        "ref": "RQ 1442982460034912287",
         "supports": "yes",
-        "note": "first-true-consumes; two thieves would bounce forever without the latch"
+        "note": ""
+      },
+      {
+        "ref": "RQ 1442981461476245685",
+        "supports": "yes",
+        "note": "calebgannon, in his Automaton/Oorblak explanation: the player controls how replacements stack."
+      },
+      {
+        "ref": "RQ 1442981580535496807",
+        "supports": "yes",
+        "note": "With 1442981663603687588: two Automatons, 1 -> 2 -> 3 tokens (the chain)."
+      },
+      {
+        "ref": "RQ 1442981663603687588",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-10-16 (four quotes)",
+        "supports": "yes",
+        "note": "Two Oorblaks: one takes all, the other 0; Counter Thieves end on the second; 'Ask the player now' for the order. Which player is asked is the engine/test's reading (the player the event affects); Caleb's 'you the player' is consistent."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "redirects the thing itself. A thing can only be replaced once, so the first"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "its a replacement effect so it just takes one thing and replaces it with another (you the player control how they stack)"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "1 token -> 2tokens -> 3 tokens"
+      },
+      {
+        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
+        "text": "assert.equal(dec!.seat, r.D, 'the player the damage would be dealt to chooses');"
+      },
+      {
+        "file": "client/engine/test/472-counter-thief-and-rot-order.test.ts",
+        "text": "assert.equal(dec!.seat, r.D, 'the controller of the unit the counters were going to');"
+      },
+      {
+        "file": "client/engine/test/468-replacement-chain-redirects.test.ts",
+        "text": "assert.equal(ent(h, second)!.counters, 3, 'so they end on the second thief');"
+      },
+      {
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "text": "'owner 2026-10-16: \"only ONE of them will actually get damaged. The other receives 0 damage.\"');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed; engine divergence (two Oorblaks chain) confirmed real by probe.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.replacement.prevention",
@@ -1247,51 +1329,61 @@
   },
   {
     "key": "effects.replacement.scope",
-    "textHash": "bd3e8b0454b9907c",
+    "textHash": "b1d70198a19a71da",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U15-r1",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:loseRot/loseDebt (amountMods not consulted)",
+        "loc": "client/engine/src/engine.ts:E.removeCounters / E.addCounters",
         "agrees": true,
-        "note": "removal is unscaled"
+        "note": "Removal goes through removeCounters, which consults no AmountMod; only addCounters (a 'put on') does."
       }
     ],
     "tests_run": [
       {
-        "file": "152-hand-entry.test.ts",
-        "pattern": "a counter-amount replacement does NOT scale a REMOVAL",
+        "file": "client/engine/test/455-counter-removal-is-not-placement.test.ts",
+        "pattern": "CR 708.8 example: Proliferating Slime does not change how ma",
         "passed": true,
-        "asserts_claim": "yes (white-box loseRot/loseDebt, not Burn the Blight itself)"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/455-counter-removal-is-not-placement.test.ts",
+        "pattern": "Flux Resonator does not enlarge a removal",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R179",
+        "ref": "owner register@72de434 (2026-08-25): \"Resonater says 'put on' so this question is irrelevant. Removing counters",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": "A put-on replacement does not touch a removal."
       },
       {
-        "ref": "R179",
+        "ref": "owner register@72de434: \"THE GENERALISABLE FORM ... the scope of a layer",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": "Fragment; read with the first quote it is the generalisation the first sentence states."
+      },
+      {
+        "ref": "card: Proliferating Slime / Burn the Blight",
+        "supports": "yes",
+        "note": "Slime: 'would be put on'; Burn the Blight: 'Remove all counters'."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"Resonater says 'put on' so this question is irrelevant. Removing counters"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] If one or more counters would be put on an enemy unit or player, put that many counters plus one instead."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**THE GENERALISABLE FORM, which is the half worth keeping: the scope of a layer"
+        "file": "client/engine/test/455-counter-removal-is-not-placement.test.ts",
+        "text": "assert.equal(ent(h, victim)!.counters, 0, 'a scaled removal would leave -1');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.replacement.scope.all-counters",
@@ -1331,6 +1423,62 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "effects.replacement.scope.move",
+    "textHash": "2a86cd850adbf0b4",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U15-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-c.ts:Scrap For Parts",
+        "agrees": true,
+        "note": "The source side goes through removeCounters, the destination through addCounters (AmountMod applies)."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/455-counter-removal-is-not-placement.test.ts",
+        "pattern": "a MOVE removes from the source and puts on the destination",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Scrap For Parts",
+        "supports": "yes",
+        "note": "Verbatim."
+      },
+      {
+        "ref": "card: Flux Resonator",
+        "supports": "yes",
+        "note": "Verbatim; Scrap For Parts cast by you is an allied source."
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-25)",
+        "supports": "yes",
+        "note": "A removal is not a 'put on'."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch] Move all counters from target unit onto another target unit."
+      },
+      {
+        "file": "client/engine/test/455-counter-removal-is-not-placement.test.ts",
+        "text": "assert.equal(ent(h, mine)!.counters, 3, 'the destination is a placement by me: plus one');"
+      },
+      {
+        "file": "client/engine/test/455-counter-removal-is-not-placement.test.ts",
+        "text": "assert.equal(ent(h, enemy)!.counters, 0, 'the source is stripped bare, not pushed below zero');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "effects.replacement.scope.who-put",
@@ -1448,27 +1596,33 @@
   },
   {
     "key": "effects.replacement.token-batch",
-    "textHash": "2946a76b98cb548e",
+    "textHash": "53109a2ffd0c91a5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U15-r1",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:token creation batch (R104/R157 §24)",
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Automaton of Abundance",
         "agrees": true,
-        "note": "unique by (name, X)"
+        "note": "One extra per (name, X, stats) in one creation batch."
       }
     ],
     "tests_run": [
       {
-        "file": "136-triggers-and-modes.test.ts",
-        "pattern": "R157 §24: end to end",
+        "file": "client/engine/test/136-triggers-and-modes.test.ts",
+        "pattern": "CR 708.9: end to end",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "136-triggers-and-modes.test.ts",
-        "pattern": "R157 §24: three IDENTICAL Robot 2s",
+        "file": "client/engine/test/136-triggers-and-modes.test.ts",
+        "pattern": "CR 304.14: three IDENTICAL Robot 2s",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "pattern": "CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO",
         "passed": true,
         "asserts_claim": true
       }
@@ -1476,34 +1630,42 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R104 (its token-batch section)",
+        "ref": "card: Automaton of Abundance",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": "Quote verbatim."
       },
       {
-        "ref": "R157 (its §24)",
+        "ref": "owner register@72de434 (2026-08-23): one resolving part is one creation batch",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": ""
       },
       {
-        "ref": "history R104",
+        "ref": "owner register@72de434 (2026-08-25): unique (name, X) pair",
         "supports": "yes",
-        "note": "its \"UNIQUE is by token kind, the X is not part of it\" was reversed by R157 §24"
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-10-16: \"Yeah, those would count as unique tokens.\"",
+        "supports": "yes",
+        "note": "On a 3/3 and a 5/5 Unit Token: supports stats as part of uniqueness. No designer source speaks to uniqueness."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**One resolving part is one creation batch**, which is the unit R80 already gave"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "instead create those tokens plus an additional copy of each unique token you created."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*"
+        "file": "client/engine/test/458-automaton-copies-stats.test.ts",
+        "text": "assert.equal(extras.length, 2, 'one extra per (name, X, stats), not one per name');"
+      },
+      {
+        "file": "client/engine/test/136-triggers-and-modes.test.ts",
+        "text": "assert.equal(extras.length, 1, 'same name AND same X is one unique token');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.replacement.what",
@@ -2471,57 +2633,80 @@
   },
   {
     "key": "effects.triggered.chosen-unit",
-    "textHash": "b62b19e026d1c7ca",
+    "textHash": "ac4e438146284fda",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U15-r2",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:collectSubjects",
+        "loc": "client/engine/src/cards/registry.ts:Wraith shrink (chooses its ally on resolution; fizzle line)",
         "agrees": true,
-        "note": "subject aimed in the stack window; 1 candidate recorded without asking; aimed-and-gone fizzles"
-      },
-      {
-        "loc": "client/engine/src/cards/registry.ts:wraithAllies",
-        "agrees": true,
-        "note": "the carrier is included — a unit is its own ally"
+        "note": "Ally chosen as each trigger resolves; no ally in play logs a fizzle; one candidate is taken without asking."
       }
     ],
     "tests_run": [
       {
-        "file": "37-attrs-wight.test.ts",
-        "pattern": "R144\\(b\\): three Wraith triggers may all aim",
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "CR 706.12: three Wraith triggers and one 1/1 choose as each",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "37-attrs-wight.test.ts",
-        "pattern": "R144\\(b\\): \"no ally at all\" still does nothing",
+        "file": "client/engine/test/460-wraith-chooses-on-resolution.test.ts",
+        "pattern": "report 2026-10-16: three Wraith triggers and a 1/1 ask nothi",
         "passed": true,
-        "asserts_claim": "yes — the title says 'does nothing', but the assertions are what the example says: no decision, shrank to 2/2, no fizzle"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "CR 706.12: a lone Wraith is its own only ally",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/461-wraith-no-ally-and-one-ally.test.ts",
+        "pattern": "report 2026-10-16: a Wraith shrink that finds no ally in pla",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R144 (its half (b))",
+        "ref": "owner 2026-10-16 (Wraith report): \"They don't target which means they can't be fizzled.\"",
         "supports": "yes",
-        "note": "owner ruling, verbatim"
+        "note": "Supports 'without targeting'; the printed Wraith line says 'an ally', not 'target'."
+      },
+      {
+        "ref": "owner 2026-10-16 (Wraith report): \"Waiths can fizzle once you're fully out of units ... it's just a raw choice\"",
+        "supports": "yes",
+        "note": "Supports the fizzle-with-no-unit sentence and the raw choice made on resolution."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> stack simultaneously and be allowed to target the same unit, even exceeding"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] At the start of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith onto an ally."
       },
       {
         "file": "client/engine/test/37-attrs-wight.test.ts",
-        "text": "assert.deepEqual(effStats(h, id), [2, 2], 'and it shrank itself');"
+        "text": "assert.deepEqual(chooseEach(h, ally), [true, false, false],"
+      },
+      {
+        "file": "client/engine/test/460-wraith-chooses-on-resolution.test.ts",
+        "text": "assert.equal(asks[0]!.pushed, 3, 'all three triggers were on the stack before the first question');"
+      },
+      {
+        "file": "client/engine/test/461-wraith-no-ally-and-one-ally.test.ts",
+        "text": "'the second shrink fizzles, and says why');"
+      },
+      {
+        "file": "client/engine/src/cards/registry.ts",
+        "text": "if (!ally) { g.ev('info', 'Wraith fizzles — there is no ally to put a -1/-1 counter on.'); return; }"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.triggered.chosen-unit.not-target",

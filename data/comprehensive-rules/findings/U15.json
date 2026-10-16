@@ -51,15 +51,16 @@
         "quote": "//     effect\") — the engine's own loop moves on to the next holder — which is"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "    for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {"
-      },
-      {
         "file": "client/ledgers/raq.ts",
         "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+      },
+      {
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "quote": "test('CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first, the 6 left are still combat damage and the second takes them, 2 reach you', () => {"
       }
     ],
-    "ct": "CT-228"
+    "ct": "CT-228",
+    "closed": "not a bug: the owner ruled on 2026-10-16 that a Piercing leftover \"is still considered combat damage, so it'd go to the second one\" and adopted Caleb's chain (each replacement effect applies once); the engine's chain is the rule (CT-228 ruled correct; 469 shows it)."
   },
   {
     "id": "F-U15-4",
@@ -85,14 +86,15 @@
     "summary": "replaceCombatDamage offers the leftover of one holder's replacement to the next holder, so two Oorblaks both absorb a single Piercing hit (D at 28, both die) where the designer says a replacement applies once per event (D at 24, one dies). Already flagged by the rule as engineDiffers.",
     "evidence": [
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {"
-      },
-      {
         "file": "client/engine/test/387-raq-combat.test.ts",
         "quote": "// face\" — and Caleb: \"replacement effects only apply once in an effect\", so"
+      },
+      {
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "quote": "test('CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first, the 6 left are still combat damage and the second takes them, 2 reach you', () => {"
       }
     ],
-    "ct": "CT-228"
+    "ct": "CT-228",
+    "closed": "not a bug: the owner ruled on 2026-10-16 that a Piercing leftover \"is still considered combat damage, so it'd go to the second one\" and adopted Caleb's chain (each replacement effect applies once); the engine's chain is the rule (CT-228 ruled correct; 469 shows it)."
   }
 ]

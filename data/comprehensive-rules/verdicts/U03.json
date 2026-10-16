@@ -3272,21 +3272,33 @@
   },
   {
     "key": "concepts.targets.not-target.wraith",
-    "textHash": "40ab67795b967f3b",
+    "textHash": "621ef71363e8d4b4",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts subjects declared at stack, fizzle when lost (R144b)",
+        "loc": "client/engine/src/cards/registry.ts:Wraith (augmentWraith / createWraith)",
         "agrees": true,
-        "note": ""
+        "note": "ally chosen at resolution; fizzles only with no ally in play"
       }
     ],
     "tests_run": [
       {
-        "file": "37-attrs-wight.test.ts",
-        "pattern": "R144(b): three Wraith triggers may all aim at one 1/1",
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "CR 706.12: three Wraith triggers",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/461-wraith-no-ally-and-one-ally.test.ts",
+        "pattern": "report 2026-10-16: a Wraith shrink that finds no ally in play",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/460-wraith-chooses-on-resolution.test.ts",
+        "pattern": "report 2026-10-16",
         "passed": true,
         "asserts_claim": true
       }
@@ -3294,15 +3306,25 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R144",
+        "ref": "owner 2026-10-16 (Wraith report)",
         "supports": "yes",
-        "note": ""
+        "note": "they don't target, so cannot be fizzled by losing a target"
+      },
+      {
+        "ref": "owner 2026-10-16 (clarification)",
+        "supports": "yes",
+        "note": "fizzle once fully out of units; a raw choice where it is augmented"
+      },
+      {
+        "ref": "card: Wraith (not cited)",
+        "supports": "yes",
+        "note": "printed 'put a -1/-1 counter on an ally' has no 'target'; nothing printed or designer outranks the owner here"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/37-attrs-wight.test.ts",
-        "text": "assert.equal(fizzles.length, 2, 'the two that outlived it fizzled — one line each');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "At the start of deployment, put a -1/-1 counter on an ally. When I die, Augment a Wraith onto an ally."
       }
     ],
     "basis_ok": true,
@@ -3499,27 +3521,33 @@
   },
   {
     "key": "concepts.targets.required",
-    "textHash": "507962111b333888",
+    "textHash": "6c0ca299940951fe",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "apply.ts:legalActions + collectTargets (R323)",
+        "loc": "client/engine/src/engine.ts:E.canFillSlot",
         "agrees": true,
-        "note": "every required slot must be fillable at once"
+        "note": "every required slot checked (CR 110.7); Fight with only its ally in the region is not playable"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
+        "file": "client/engine/test/390-raq-stack.test.ts",
         "pattern": "RAQ target requirements: Fight cannot be played",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "396-raq-timing.test.ts",
+        "file": "client/engine/test/396-raq-timing.test.ts",
         "pattern": "Rebalance is playable with no unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/452-abduct-x-gate.test.ts",
+        "pattern": "Abduct is castable against a cost-1 attacker",
         "passed": true,
         "asserts_claim": true
       }
@@ -3529,23 +3557,31 @@
       {
         "ref": "RAQ 1410252965276684418#1",
         "supports": "yes",
-        "note": ""
+        "note": "_passer, [Solved]: Fight needs two units, one an ally — i.e. every required target, distinct"
       },
       {
         "ref": "RAQ 1454169054402314362#1",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon: Rebalance targets nothing so has no unit requirement"
       },
       {
-        "ref": "R323",
-        "supports": "yes",
-        "note": ""
+        "ref": "owner register@72de434",
+        "supports": "partial",
+        "note": "a truncated fragment; consistent but not needed — the designer sources carry the rule"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A spell or ability that needs targets can be played only when **every required"
+        "file": "client/ledgers/raq.ts",
+        "text": "You cannot play Fight if there isn't 2 units in the region (one of which must be an allied unit)."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "it doesn't target anything so there are no requirements for you having a unit"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Target ally and another target unit fight."
       }
     ],
     "basis_ok": true,

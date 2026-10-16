@@ -129,9 +129,21 @@
       {
         "source": "Manual p.42",
         "quote": "A: Stats have 6 layers to them, which are applied in"
+      },
+      {
+        "source": "RQ 1145226276911714384",
+        "quote": "they would end up with +2/+2 buff, the second transmogrifant turns off the irst one"
+      },
+      {
+        "source": "RQ 1148449043282927626",
+        "quote": "The two transmogrifants would turn off the other one though so you could only have one of them active at once."
+      },
+      {
+        "source": "RQ 1148463157115887656",
+        "quote": "Oh true I guess one would get +2/+2 and one would mot"
       }
     ],
-    "resolution": "No dependency rule is written. 709 states the layer order and timestamps; 712 states the two-strippers case. Recorded so the judge's CR, if it has a dependency rule, is compared against nothing rather than against an invented one."
+    "resolution": "The two-strippers case is settled by the designer (RQ 1145226276911714384, RQ 1148449043282927626, RQ 1148463157115887656): of two Transmogrifants only one is active, the second turning off the first. effects.stripping.mutual states it (the newer applies, the older does not), replacing the owner's 2026-08-21 and 2026-10-09 calls; the one-pass side above is history. No general dependency rule is written: 709 states the layer order and timestamps."
   },
   {
     "id": "D-U16-6",
@@ -273,9 +285,13 @@
       {
         "source": "owner ruling, adopted 2026-10-09",
         "quote": "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-16",
+        "quote": "Yeah, static effects count as abilities. Everything (besides an attribute) is an ability."
       }
     ],
-    "resolution": "Settled by printed text: Transmogrifant's \"lose all attributes and abilities\" takes every ability, and a static is an ability (owner ruling of 2026-08-21, “The suppression layer: \"loses all attributes…”). The owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”)’s one-pass sentence is reasoned only from the mutual case, which effects.stripping.mutual keeps. effects.stripping.what.abilities states print; the engine keeps a one-sided stripped unit's statics on: F-U16-3 (CT-256)."
+    "resolution": "Settled by printed text and the owner (2026-10-16: \"Everything (besides an attribute) is an ability.\"): Transmogrifant's \"lose all attributes and abilities\" takes every ability, statics included, and effects.stripping.what.abilities states it. The engine now agrees (report #214, CT-256; F-U16-3 closed, 462 and 427). The one-pass reading of the mutual case is replaced by Caleb's answer, effects.stripping.mutual (D-U16-5)."
   },
   {
     "id": "D-U16-16",

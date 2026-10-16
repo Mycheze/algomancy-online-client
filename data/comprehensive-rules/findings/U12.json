@@ -19,7 +19,8 @@
       "F-U15-3",
       "F-U15-5",
       "F-U20-6"
-    ]
+    ],
+    "closed": "not a bug: the owner ruled on 2026-10-16 that a Piercing leftover \"is still considered combat damage, so it'd go to the second one\" and adopted Caleb's chain (each replacement effect applies once); the engine's chain is the rule (CT-228 ruled correct; 469 shows it)."
   },
   {
     "id": "F-U12-2",

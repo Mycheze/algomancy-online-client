@@ -1870,7 +1870,7 @@
     "key": "effects.stripping.what.abilities",
     "parent": "effects.stripping.what",
     "order": 1,
-    "text": "Losing all abilities takes everything the unit's text does by itself: its triggered abilities, its activated abilities (which cannot be activated), its static abilities and cost changes, and its replacement effects, whether printed on it, given by its mods or granted to it. A unit that loses its abilities stops applying its static abilities at once, whether a one-time effect (Suppression Field) or a continuous one (Transmogrifant, Monke) took them; two continuous strips that each fall under the other are rule effects.stripping.mutual. Engine differs, see F-U16-3: a unit that a continuous effect strips keeps applying its static abilities.",
+    "text": "Losing all abilities takes everything the unit's text does by itself: its triggered abilities, its activated abilities (which cannot be activated), its static abilities and cost changes, and its replacement effects, whether printed on it, given by its mods or granted to it. A unit that loses its abilities stops applying its static abilities at once, whether a one-time effect (Suppression Field) or a continuous one (Transmogrifant, Monke) took them; two continuous strips that each fall under the other are rule effects.stripping.mutual.",
     "examples": [
       {
         "text": "a copy silenced by Suppression Field stops applying the static it copied.",
@@ -1878,7 +1878,7 @@
       },
       {
         "text": "With Transmogrifant and Sandstone Defender in play, Sandstone Defender has lost its abilities, so a 1/1 token gets only Transmogrifant's +2/+2 and is a 3/3.",
-        "test": null
+        "test": "427-cr-continuous-effects.test.ts::cr:effects.stripping.what.abilities — Sandstone Defender stripped by Transmogrifant stops giving +0/+2, so a 1/1 token is 3/3"
       }
     ],
     "see": [
@@ -1908,25 +1908,27 @@
           "quote": "radiates — a static *is* an ability — and both R38 replacement hooks.",
           "adopted": "2026-08-21",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yeah, static effects count as abilities. Everything (besides an attribute) is an ability.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, #214 (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "44-hybrids-ld-a.test.ts",
-        "427-cr-continuous-effects.test.ts"
+        "427-cr-continuous-effects.test.ts",
+        "462-continuous-strip-silences-statics.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
-    "digitalClause": "Engine differs, see F-U16-3: a unit that a continuous effect strips keeps applying its static abilities.",
-    "confidence": "medium",
-    "notes": "Printed text (\"lose all attributes and abilities\") and the owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”)’s own coverage (\"a static is an ability\") put a unit's statics under a continuous strip. The owner ruling of 2026-08-21 (“The suppression layer: \"loses all attributes…”) is cited only for what losing abilities covers: its sentence that only a unit silenced by a spell 'stops radiating immediately', and the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”)’s 'static-vs-static still resolves in one pass', side with the engine and are recorded as the other side of D-U16-14, not as support. The RAQ claim supports only that Transmogrifant's and Monke's strips are continuous and reach new units; it does not speak to the stripped unit's own statics. The verifier's probes measured a Sandstone Defender under Transmogrifant still giving +0/+2 (a 1/1 token at 3/5). Card text for Transmogrifant was read from printed.json, outside the pack. See D-U16-14.",
+    "confidence": "high",
+    "notes": "Printed text (\"lose all attributes and abilities\") and the owner (2026-10-16, O3: \"Everything (besides an attribute) is an ability\") put a unit's statics under a continuous strip. The engine now agrees (report #214, CT-256): F-U16-3 and its dupes are closed. See D-U16-14.",
     "sourceHashes": {
       "RAQ 1355845893219287132#0": "37412e26f9f412386a6af7e6252564a6a7e1f53154977fe9f24c3e66b8378807"
-    },
-    "engineDiffers": [
-      "F-U16-3"
-    ]
+    }
   },
   {
     "key": "effects.stripping.what.not-stats",
@@ -2280,33 +2282,55 @@
     "key": "effects.stripping.mutual",
     "parent": "712",
     "order": 5,
-    "text": "Two continuous strips whose sources each fall under the other (two Monkes, each another's \"other unit\") both apply. Each source loses its abilities, and neither stops the other.",
-    "examples": [],
+    "text": "Two continuous strips whose sources each fall under the other do not both apply: the newer one applies, and the source of the older one loses its abilities, so the older strip does not apply. If the newer source leaves play, the older strip applies again. Where only one of the two sources falls under the other's strip, that source loses its abilities, even if it came into play later (rule concepts.timestamps.removal.entering).",
+    "examples": [
+      {
+        "text": "With two Transmogrifants in play, a 1/1 token is a 3/3: only the newer Transmogrifant's +2/+2 applies. The older one gets the newer one's +2/+2 and has lost its abilities; when the newer one leaves play, the older one applies again.",
+        "test": "462-continuous-strip-silences-statics.test.ts::462 two Transmogrifants in play: only the newer applies, a token gets +2/+2 once"
+      },
+      {
+        "text": "Two Monkes in battle: the newer Monke keeps its abilities, and the older one loses them.",
+        "test": "462-continuous-strip-silences-statics.test.ts::462 two Monkes in battle: the newer applies, the older is silenced"
+      },
+      {
+        "text": "The Everywhere comes into play under its controller's Transmogrifant: it loses its abilities, so the card it names keeps its abilities.",
+        "test": "462-continuous-strip-silences-statics.test.ts::462 a stripper only one way under another: The Everywhere entering under Transmogrifant is silenced, so what it names keeps its abilities"
+      }
+    ],
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
+      "designer": [
         {
-          "quote": "both keep radiating and both go quiet.",
-          "adopted": "2026-08-21",
-          "from": "register@72de434"
+          "ref": "RQ 1145226276911714384",
+          "quote": "they would end up with +2/+2 buff, the second transmogrifant turns off the irst one"
         },
         {
-          "quote": "static-vs-static still resolves in one pass",
-          "adopted": "2026-10-09",
-          "from": "register@72de434"
+          "ref": "RQ 1148449043282927626",
+          "quote": "The two transmogrifants would turn off the other one though so you could only have one of them active at once."
+        },
+        {
+          "ref": "RQ 1148463157115887656",
+          "quote": "Oh true I guess one would get +2/+2 and one would mot"
         }
       ],
+      "ours": [],
+      "owner": [],
       "engine": [],
-      "tests": []
+      "tests": [
+        "462-continuous-strip-silences-statics.test.ts",
+        "28-metal-c.test.ts"
+      ]
     },
-    "basis": "owner",
+    "basis": "designer",
     "scope": "game",
-    "confidence": "medium",
-    "notes": "The only statement in the sources about one continuous effect depending on another. See D-U16-5.",
-    "sourceHashes": {}
+    "confidence": "high",
+    "notes": "Caleb, rules-questions 2023-08-27 and 2023-09-05 (RQ refs): the newer Transmogrifant turns off the older. He outranks the owner's 2026-08-21 \"both apply\" and 2026-10-09 \"one pass\" calls, which are dropped. The one-way case is 113.3a applied. D-U16-5.",
+    "sourceHashes": {
+      "RQ 1145226276911714384": "109be2e2544ce5896e344f852a693220a0a52f6864bca0106d1c47bcfdb1ba62",
+      "RQ 1148449043282927626": "5be1f4188cdc17589e460942b0e85b00cef6eadea34dd58292a449b9328780f7",
+      "RQ 1148463157115887656": "93b32e3099b28320e0b6df8936ae6e5ded4b284cb0ba668489607168fef99112"
+    }
   },
   {
     "key": "effects.stripping.named-card",

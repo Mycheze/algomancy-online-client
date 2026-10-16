@@ -291,7 +291,7 @@
     "key": "annexd.general.player-decides.one-subject",
     "parent": "annexd.general.player-decides",
     "order": 4,
-    "text": "A non-target choice that an ability makes as it goes on the stack (such as the ally a Wraith's start-of-deployment trigger aims at) is recorded without asking when there is only one candidate. With two or more candidates the player is asked.",
+    "text": "A non-target choice that an ability makes as it begins to resolve (such as the ally a Wraith's start-of-deployment trigger chooses) is recorded without asking when there is only one candidate. With two or more candidates the player is asked.",
     "examples": [
       {
         "text": "A lone Wraith aims at its only ally without asking; with a second ally the player is asked.",
@@ -308,14 +308,14 @@
       "ours": [],
       "owner": [
         {
-          "quote": "- **≥ 2 candidates** — one decision, in the stack window, `stage: 'subject'`.",
+          "quote": "- **1 candidate** — recorded without asking. A lone Wraith is not asked which",
           "adopted": "2026-08-24",
           "from": "register@72de434"
         },
         {
-          "quote": "- **1 candidate** — recorded without asking. A lone Wraith is not asked which",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
+          "quote": "To be clear, Waiths can fizzle once you're fully out of units, but since they don't target, it's just a raw choice where it gets augmented.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, Wraith report (in session)"
         }
       ],
       "engine": [],
@@ -326,7 +326,7 @@
     "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "Contrast with annexd.general.player-decides.forced-target: The owner ruling of 2026-08-21 (“\"Target\" is chosen when the effect…”) keeps a forced TARGET as a click, the owner ruling of 2026-08-24 (“deployment uses the stack, and a…”) records a forced SUBJECT silently. Both are current; the owner ruling of 2026-08-21 (“\"Target\" is chosen when the effect…”) gives the replay reason for its choice.",
+    "notes": "The 2026-08-24 entry that put the two-candidate question \"in the stack window\" is dropped: since 2026-10-16 the choice is made as the trigger begins to resolve (O2). The one-candidate entry still holds. Contrast annexd.general.player-decides.forced-target, which keeps a forced TARGET as a click.",
     "sourceHashes": {}
   },
   {
@@ -445,6 +445,48 @@
     "scope": "digital",
     "confidence": "high",
     "notes": "The Burst rule itself is U21's (803).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.general.player-decides.replacement-order",
+    "parent": "annexd.general.player-decides",
+    "order": 8,
+    "text": "When a player chooses the order of replacement effects (see rule effects.replacement.once.one-applies), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, the choices are not also buttons in the prompt bar, and the prompt says what is being chosen. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.",
+    "examples": [
+      {
+        "text": "Two Oorblaks: the prompt asks which Oorblak takes the damage first, and clicking the second Oorblak chooses it.",
+        "test": "473-replacement-order-on-the-board.test.ts::two Oorblaks: the question is drawn on the board, says what it asks, and a click on an Oorblak answers it"
+      },
+      {
+        "text": "The attacker sees that the defender is being asked, but not the question.",
+        "test": "473-replacement-order-on-the-board.test.ts::two Oorblaks: the attacker sees that a question is open, and not the question"
+      },
+      {
+        "text": "Two Skittering Blights at the start of deployment: the rot question is answered on the board, and the other player can deploy only once it is answered.",
+        "test": "473-replacement-order-on-the-board.test.ts::two Skittering Blights at the rot step: drawn on the board, and the other player waits"
+      },
+      {
+        "text": "A Poisonous blocker and two Counter Thieves: the question comes before any of the combat damage is dealt.",
+        "test": "472-counter-thief-and-rot-order.test.ts::CR 708.4a: Poisonous combat damage and two Counter Thieves — asked before the damage"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "473-replacement-order-on-the-board.test.ts",
+        "471-oorblak-order-and-polyp.test.ts",
+        "472-counter-thief-and-rot-order.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "The client side of the owner's 2026-10-16 \"Ask the player now\" (effects.replacement.once.one-applies).",
     "sourceHashes": {}
   },
   {
@@ -2569,7 +2611,7 @@
     "key": "annexd.undo.hidden-step.battle",
     "parent": "annexd.undo.hidden-step",
     "order": 3,
-    "text": "Actions taken in battle are not undone. For that reason an irreversible activated ability asks for confirmation in battle, while in deployment it activates on the click and undo is the safety net.",
+    "text": "Actions taken in battle are not undone. For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net.",
     "examples": [
       {
         "text": null,
@@ -2578,6 +2620,22 @@
       {
         "text": null,
         "test": "373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks"
+      },
+      {
+        "text": "Cadaverous Cultivator (\"[Battle] Discard a card: …\") raises no confirmation: the click activates it, and the game asks which card to discard.",
+        "test": "456-activate-confirm-is-modal.test.ts::D2 §1 the reported card raises no bar"
+      },
+      {
+        "text": "While the confirmation is up, clicking a card in hand plays nothing.",
+        "test": "456-activate-confirm-is-modal.test.ts::D2 §2 with the bar up a hand click sends nothing"
+      },
+      {
+        "text": null,
+        "test": "456-activate-confirm-is-modal.test.ts::D2 §2 clicking the same unit again says yes"
+      },
+      {
+        "text": null,
+        "test": "456-activate-confirm-is-modal.test.ts::D2 §2 Enter says yes"
       }
     ],
     "see": [
@@ -2587,16 +2645,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "The only ways to say \"yes, activate\" should be clicking the SAME unit/thing again or clicking the Yes or hitting enter. Otherwise, it should do nothing",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, Discord report D2 (in session)"
+        }
+      ],
       "engine": [],
       "tests": [
-        "373-no-confirm-where-undo-works.test.ts"
+        "373-no-confirm-where-undo-works.test.ts",
+        "456-activate-confirm-is-modal.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "ENGINE-ONLY. No ruling in the pack says battle actions cannot be undone; only 373's title ('nothing there is undone'). A cast not yet on the stack can still be cancelled in battle (annexd.undo.cast-cancel). D-U23-11.",
+    "notes": "The confirmation's answers are the owner's call (O4). That battle actions are not undone is still engine-derived (373; D-U23-11). Which costs ask is the client's split, shown over the pool by 456 §1.",
     "sourceHashes": {}
   },
   {

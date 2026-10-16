@@ -176,6 +176,75 @@
     "carried": "example-label 2026-10-11"
   },
   {
+    "key": "annexd.confirm.dials.no-targets",
+    "textHash": "46ff5492dcc983c2",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:NO_TARGETS / NO_MORE_TARGETS",
+        "agrees": true,
+        "note": "Stop reads 'No targets' before a pick, 'No more targets' after."
+      },
+      {
+        "loc": "client/ui/inspect.ts:declineButtonClass",
+        "agrees": true,
+        "note": "'' (ordinary) for No targets; 'declinebtn' for No more targets."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/466-no-targets-is-a-button.test.ts",
+        "pattern": "report 206 - Kraken grafted with Fester offers No targets as",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/466-no-targets-is-a-button.test.ts",
+        "pattern": "report 206 - an up to one slot finishes at one pick",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/466-no-targets-is-a-button.test.ts",
+        "pattern": "report 206 - an up to two spell finishes at two picks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/466-no-targets-is-a-button.test.ts",
+        "pattern": "report 206 - an up to X spell finishes at X picks",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner 2026-10-16 (#206)",
+        "supports": "yes",
+        "note": "Verbatim; 'No targets' as the button, and up to X finishes at the max."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/test/466-no-targets-is-a-button.test.ts",
+        "text": "assert.doesNotMatch(btn![1]!, /declinebtn/, 'as an ordinary button, not the dim dashed decline');"
+      },
+      {
+        "file": "client/ui/test/466-no-targets-is-a-button.test.ts",
+        "text": "assert.equal(mid.label, NO_MORE_TARGETS, 'one picked: the quiet \"No more targets\"');"
+      },
+      {
+        "file": "client/ui/test/466-no-targets-is-a-button.test.ts",
+        "text": "assert.ok(h.state.decision?.kind !== 'targets', 'two of up to two: the collection closes itself');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.confirm.dials.number",
     "textHash": "41a340430466b829",
     "verdict": "confirmed",
@@ -183,57 +252,47 @@
     "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/ui/main.ts:numtake",
+        "loc": "client/ui/main.ts:numberEntryHtml",
         "agrees": true,
-        "note": "the typed #num-entry box wins when it holds anything, else the dial count; sends decide with the value"
+        "note": "Typed <input type=number> plus -10/-/+/+10 dial and a confirm; numtake sends the value."
       },
       {
         "loc": "client/ui/inspect.ts:numberEntrySubmit",
         "agrees": true,
-        "note": "choice is the number itself, range-checked"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:decisionValue",
-        "agrees": true,
-        "note": "kind 'number' takes the value, not an option index"
+        "note": "The submitted choice is the number, never an option index."
       }
     ],
     "tests_run": [
       {
         "file": "client/ui/test/168-three-card-divergences.test.ts",
-        "pattern": "R197 §1c Prediction Prophet",
+        "pattern": "CR D7.2a Prediction Prophet: THE CLIENT CAN EXPRESS IT",
         "passed": true,
-        "asserts_claim": "yes: the dial (numup10 x2) answers life+20 past the old cap and the card stores the value, not an index; numberEntrySubmit returns the number as choice. It does not exercise the typed box itself (probe U24-1 does)"
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
         "file": "client/ui/test/zz-probe-U24-1.test.ts",
-        "test": "probe U24-1: Prediction Prophet question shows a typed box, and a typed number is what is sent",
+        "test": "zz-probe-U24-1: the numeric question shows a typed number box as well as the dial",
         "passed": true,
-        "demonstrates": "yes: the Prediction Prophet question renders id=\"num-entry\" and the dial; a value typed in the box (life+37) is what numtake sends"
+        "demonstrates": "yes: the bound test exercises the dial only; the probe shows the typed box (#num-entry, type=number) is drawn for the Prediction Prophet question beside the dial."
       }
     ],
     "source_checks": [
       {
-        "ref": "R197 (its §1)",
+        "ref": "owner register@72de434 (2026-08-26): \"a typed box first and a −10/−1/+1/+10 dial\"",
         "supports": "yes",
-        "note": "a typed box first and a -10/-1/+1/+10 dial; numtake sends the value; R90's life+5 cap superseded per supersession.json"
-      },
-      {
-        "ref": "card: Prediction Prophet",
-        "supports": "yes",
-        "note": "'During [Haste], predict your life total.'"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "`ui/main.ts` a real bar: a typed box **first** and a −10/−1/+1/+10 dial"
+        "file": "client/ui/main.ts",
+        "text": "<input id=\"num-entry\" type=\"number\" inputmode=\"numeric\" value=\"${v.value}\""
       },
       {
         "file": "client/ui/test/168-three-card-divergences.test.ts",
-        "text": "'the client sent the NUMBER, not an index: the card stored prediction+1 for life+20');"
+        "text": "'the submitted choice IS the number — never an option index');"
       }
     ],
     "basis_ok": true,
@@ -1502,6 +1561,58 @@
     "carried": "example-label 2026-10-11"
   },
   {
+    "key": "annexd.display.live-values.event-x",
+    "textHash": "7654e52d9115846a",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:stackXMark / stackItemX (via eventAmountOf)",
+        "agrees": true,
+        "note": "The stack chip reads the declared eventAmount — the column share the resolver uses."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/464-trigger-x-is-what-it-resolves.test.ts",
+        "pattern": "report 215 - Vroot beside a 1/1 shows X=4",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/464-trigger-x-is-what-it-resolves.test.ts",
+        "pattern": "report 215 - Vroot as a virus reads its HOST column share",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Vroot (quoted in text)",
+        "supports": "yes",
+        "note": "Verbatim: \"When my column deals combat damage, each opponent gains that much life.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] When my column deals combat damage, each opponent gains that much life."
+      },
+      {
+        "file": "client/ui/test/464-trigger-x-is-what-it-resolves.test.ts",
+        "text": "assert.equal(stackXMark(item), 'X=4', 'the chip shows MY column share, not the table total');"
+      },
+      {
+        "file": "client/ui/test/464-trigger-x-is-what-it-resolves.test.ts",
+        "text": "assert.equal(h.state.players[D]!.life, life0 + 4, 'and the gain it resolves with is that 4');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.display.live-values.named-card",
     "textHash": "cc076e161800d856",
     "verdict": "confirmed",
@@ -1544,6 +1655,91 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "annexd.display.live-values.public-choice",
+    "textHash": "823daa1bcee0057b",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts:predictionOf / entityTextBox",
+        "agrees": true,
+        "note": "Chip '🔮 predicts N' and 'Predicted life: N' from Entity.predicted, current turn only; cleared once read."
+      },
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": "The prediction is sent to both seats."
+      },
+      {
+        "loc": "client/ui/main.ts:unitBadges (prediction chip)",
+        "agrees": true,
+        "note": "The chip is drawn from predictionOf for whichever seat views the card."
+      },
+      {
+        "loc": "client/ui/cardtext.ts:entityTextBox / predictionOf",
+        "agrees": true,
+        "note": "The text-box line; a prediction stamped with another turn is not shown."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/467-prediction-is-public.test.ts",
+        "pattern": "Prediction Prophet - the opponent sees the prediction",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/467-prediction-is-public.test.ts",
+        "pattern": "Prediction Prophet - a prediction of 0",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/467-prediction-is-public.test.ts",
+        "pattern": "Prediction Prophet - the prediction is read once at deployme",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "tests (basis engine)",
+        "supports": "yes",
+        "note": "Code + executed tests only."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/test/467-prediction-is-public.test.ts",
+        "text": "'the chip is on the prophet card for the OTHER seat');"
+      },
+      {
+        "file": "client/ui/test/467-prediction-is-public.test.ts",
+        "text": "assert.equal(ent(h, prophet)!.predicted, undefined, 'and gone once read');"
+      },
+      {
+        "file": "client/ui/test/467-prediction-is-public.test.ts",
+        "text": "assert.equal(predictionOf(ent(b.h, b.prophet)!, b.h.state.turn), undefined, 'not shown');"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "t: `🔮 predicts ${predicted}`,"
+      },
+      {
+        "file": "client/ui/cardtext.ts",
+        "text": "if (predicted !== undefined) state.push(`Predicted life: ${predicted}`);"
+      },
+      {
+        "file": "client/ui/cardtext.ts",
+        "text": "return p && p.turn === turn ? p.life : undefined;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.display.live-values.token-x",
@@ -2427,6 +2623,81 @@
     "basis_ok": true,
     "problem": "",
     "carried": "demoted-example 2026-10-11"
+  },
+  {
+    "key": "annexd.display.text-box.suppression-band",
+    "textHash": "2f9e1db000b50220",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:suppressionBand",
+        "agrees": true,
+        "note": "attrs -> type bar only; abilities -> below the bar; both -> whole block."
+      },
+      {
+        "loc": "client/ui/inspect.ts:TYPE_BAR_HEIGHT",
+        "agrees": true,
+        "note": "The type bar's height; the attributes band stops there and the abilities band starts there."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/465-attributes-off-is-not-abilities-off.test.ts",
+        "pattern": "report 208 - a Formless-stamped unit greys its type bar",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/465-attributes-off-is-not-abilities-off.test.ts",
+        "pattern": "report 208 - The Everywhere silencing a unit greys below",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/465-attributes-off-is-not-abilities-off.test.ts",
+        "pattern": "report 208 - Monke switching off both greys the bar and the box",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "tests (basis engine)",
+        "supports": "yes",
+        "note": "Code + executed tests only."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/test/465-attributes-off-is-not-abilities-off.test.ts",
+        "text": "assert.equal(band!.kind, 'attrs');"
+      },
+      {
+        "file": "client/ui/test/465-attributes-off-is-not-abilities-off.test.ts",
+        "text": "assert.deepEqual(band, { kind: 'all', top, bottom: null });"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "if (sup.attrs) return { kind: 'attrs', top: textTop, bottom: textTop + TYPE_BAR_HEIGHT };"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "if (sup.abilities) return { kind: 'abilities', top: textTop + TYPE_BAR_HEIGHT, bottom: null };"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "if (sup.attrs && sup.abilities) return { kind: 'all', top: textTop, bottom: null };"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "export const TYPE_BAR_HEIGHT = 0.052;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.display.text-box.transform",

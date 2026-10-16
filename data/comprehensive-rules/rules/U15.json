@@ -1403,15 +1403,23 @@
     "key": "effects.triggered.chosen-unit",
     "parent": "706",
     "order": 12,
-    "text": "Some triggered abilities choose a unit without targeting it, such as a Wraith's start-of-deployment ability choosing \"an ally\". The unit is chosen as the ability is put on the stack. Several such abilities may choose the same unit, even if together they would do more than destroying it takes; if the chosen unit has left play when one resolves, that one fizzles.",
+    "text": "Some triggered abilities choose a unit without targeting it, such as a Wraith's start-of-deployment ability choosing \"an ally\". The unit is chosen as the ability begins to resolve, from the units in play then. Several such abilities resolve one at a time, each choosing among the units still in play, so a unit an earlier one destroyed is not offered to a later one. One that finds no unit to choose fizzles.",
     "examples": [
       {
-        "text": "three Wraith abilities all choose one 1/1 ally. The first kills it, and the other two fizzle.",
-        "test": "37-attrs-wight.test.ts::CR 706.12: three Wraith triggers may all aim at one 1/1, and the surplus fizzles"
+        "text": "three Wraith abilities and one 1/1 ally: only the first is offered the 1/1 and kills it; the other two put their counters on Wraiths still in play, and nothing fizzles.",
+        "test": "37-attrs-wight.test.ts::CR 706.12: three Wraith triggers and one 1/1 choose as each resolves, so only the first is offered the 1/1 and none fizzles"
       },
       {
-        "text": "a Wraith with no other ally is its own only ally. Its ability chooses it without asking, resolves on it (it shrinks to 2/2), and nothing fizzles.",
-        "test": "37-attrs-wight.test.ts::CR 706.12: \"no ally at all\" still does nothing"
+        "text": "all three Wraith abilities are on the stack before the first one asks for its ally, and each asks only after the one before it has fully resolved.",
+        "test": "460-wraith-chooses-on-resolution.test.ts::report 2026-10-16: three Wraith triggers and a 1/1 ask nothing before the first resolves"
+      },
+      {
+        "text": "a Wraith with no other ally is its own only ally. Its ability chooses it without asking and it shrinks to 2/2; nothing fizzles.",
+        "test": "37-attrs-wight.test.ts::CR 706.12: a lone Wraith is its own only ally — it shrinks itself without asking, and nothing fizzles"
+      },
+      {
+        "text": "a 1/1 carrying two Wraith augments: the first ability kills it, and the second finds no ally in play and fizzles.",
+        "test": "461-wraith-no-ally-and-one-ally.test.ts::report 2026-10-16: a Wraith shrink that finds no ally in play asks nothing and fizzles"
       }
     ],
     "see": [
@@ -1423,25 +1431,27 @@
       "ours": [],
       "owner": [
         {
-          "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
+          "quote": "The way that I *guessed* Wraiths work is wrong. It's this new way. They don't target which means they can't be fizzled.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, Wraith report (in session)"
         },
         {
-          "quote": "> its defense (the final triggers would just fizzle).\"",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
+          "quote": "To be clear, Waiths can fizzle once you're fully out of units, but since they don't target, it's just a raw choice where it gets augmented.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, Wraith report (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "37-attrs-wight.test.ts"
+        "37-attrs-wight.test.ts",
+        "460-wraith-chooses-on-resolution.test.ts",
+        "461-wraith-no-ally-and-one-ally.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "The 2026-08-24 owner entries (report #101: chosen as it goes on the stack; the surplus fizzles) are replaced by the owner's 2026-10-16 call.",
     "sourceHashes": {}
   },
   {
@@ -2315,7 +2325,7 @@
     "text": "A replacement effect applies to an event only once. What it produces is not replaced again by the same effect, unless a new event occurs.",
     "examples": [
       {
-        "text": "10 {Piercing} combat damage redirected into a 2/4 Oorblak: 4 destroy it, and the other 6 reach the player and are not redirected again.",
+        "text": "10 {Piercing} combat damage redirected into a 2/4 Oorblak: 4 destroy it, and the other 6 reach the player; the same Oorblak does not take them again.",
         "test": "387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak"
       },
       {
@@ -2333,6 +2343,10 @@
         {
           "ref": "RAQ 1397188292239163454#0",
           "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+        },
+        {
+          "ref": "RQ 1442982460034912287",
+          "quote": "the tldr is replacement effects only apply once onto an effect"
         }
       ],
       "ours": [],
@@ -2352,62 +2366,127 @@
     "basis": "designer",
     "scope": "game",
     "confidence": "high",
-    "notes": "The engine-differs flag (F-U12-1) moved to effects.replacement.once.one-applies: the verifier measured the engine agreeing for the SAME effect (one Oorblak never re-absorbs its own leftover; one inversion per Nullbringer gain); the divergence is a second, different holder re-replacing the product.",
+    "notes": "With a second Oorblak the leftover goes on to it (effects.replacement.once.one-applies, combat.damage.player.redirect): \"once\" is per effect.",
     "sourceHashes": {
-      "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
+      "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635",
+      "RQ 1442982460034912287": "edcc9a20d186b9aac49dde4a5b4e8075aa66f4856337bdca96b4673c713f58ec"
     }
   },
   {
     "key": "effects.replacement.once.one-applies",
     "parent": "effects.replacement.once",
     "order": 1,
-    "text": "If two or more effects could each replace or redirect the same event (two Nullbringers, two Counter Thieves, two Oorblaks), only one of them does. An event a redirect produces is not redirected again by another such effect. (engine differs, see F-U15-3)",
+    "text": "If two or more replacement effects could apply to one event, they apply one at a time. Each applies at most once, to the event as the earlier ones left it, and only if that event still matches its own text; one that has applied does not apply again, so nothing loops. The player the event affects (the player who would be dealt the damage, the player whose rot it is, or the controller of the unit the counters would be put on) chooses the order in which they apply, except where rule combat.damage.player.redirect fixes it. When only one such effect applies, nothing is asked.",
     "examples": [
       {
-        "text": "two Counter Thieves do not pass the same counters back and forth.",
+        "text": "two Oorblaks and combat damage that would be dealt to their controller: the first to apply takes all of it, and the other takes 0, because the damage is no longer being dealt to that player.",
+        "test": "469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and combat damage to you — one takes all of it, the other takes 0"
+      },
+      {
+        "text": "the player who would be dealt the damage chooses which of two Oorblaks applies first, and that one takes it.",
+        "test": "471-oorblak-order-and-polyp.test.ts::CR 708.4a: two Oorblaks and combat damage — the player being hit is asked which takes it, and the answer decides it"
+      },
+      {
+        "text": "two Counter Thieves: the counters the first redirects onto itself are still being placed on a unit, so the second, which has not applied, takes them; they end on the second to apply.",
+        "test": "468-replacement-chain-redirects.test.ts::CR 708.4: two Counter Thieves chain — the second takes the counters from the first, once"
+      },
+      {
+        "text": "the controller of the unit the counters were meant for chooses the order of two Counter Thieves; choosing the second to apply last puts the counters on it.",
+        "test": "472-counter-thief-and-rot-order.test.ts::CR 708.4a: two Counter Thieves — choosing the second puts them on the second (the owner, 2026-10-16)"
+      },
+      {
+        "text": "two Counter Thieves do not pass the same counters back and forth: each applies once.",
         "test": "46-hybrids-ld-c.test.ts::Counter Thief: two thieves do not ping-pong"
+      },
+      {
+        "text": "two Automatons of Abundance turn one created token into three: 1, then 2, then 3.",
+        "test": "459-automatons-chain.test.ts::CR 708.4: two Automatons of Abundance turn one created token into three"
+      },
+      {
+        "text": "two Skittering Blights: the player whose rot it is chooses which one takes it as counters; the other has nothing left to replace.",
+        "test": "472-counter-thief-and-rot-order.test.ts::CR 708.4a: two Skittering Blights — the player is asked which takes their rot"
       }
     ],
     "see": [],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Oorblak",
+          "quote": "If combat damage would be dealt to you, that damage is dealt to me instead."
+        },
+        {
+          "ref": "card: Counter Thief",
+          "quote": "If one or more counters would be placed on one or more units during battle, those counters are placed on me instead."
+        }
+      ],
       "designer": [
         {
           "ref": "RAQ 1397188292239163454#0",
           "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+        },
+        {
+          "ref": "RQ 1442982460034912287",
+          "quote": "the tldr is replacement effects only apply once onto an effect"
+        },
+        {
+          "ref": "RQ 1442981461476245685",
+          "quote": "its a replacement effect so it just takes one thing and replaces it with another (you the player control how they stack)"
+        },
+        {
+          "ref": "RQ 1442981580535496807",
+          "quote": "if you have two automatons"
+        },
+        {
+          "ref": "RQ 1442981663603687588",
+          "quote": "1 token -> 2tokens -> 3 tokens"
         }
       ],
       "ours": [],
       "owner": [
         {
-          "quote": "Substitutes or redirects the thing itself. A thing can only be replaced once, so",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
+          "quote": "Go with Caleb. i was misunderstanding your summary of it. But the chain should work in the way he says",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, replacement chain (in session)"
         },
         {
-          "quote": "thief puts the counters on itself, and that is a counter placement — and two",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
+          "quote": "What I meant by doubling is that if you have two Oorblaks, then take damage, only ONE of them will actually get damanged. The other receives 0 damage.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, replacement chain (in session)"
+        },
+        {
+          "quote": "On the second Thief",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, two Counter Thieves (in session; the option he chose)"
+        },
+        {
+          "quote": "Ask the player now",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, who orders replacement effects (in session; the option he chose)"
         }
       ],
       "engine": [],
       "tests": [
+        "469-replacement-chain-damage.test.ts",
+        "468-replacement-chain-redirects.test.ts",
+        "471-oorblak-order-and-polyp.test.ts",
+        "472-counter-thief-and-rot-order.test.ts",
+        "459-automatons-chain.test.ts",
         "46-hybrids-ld-c.test.ts",
         "40-light-c.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
-    "digitalClause": "(engine differs, see F-U15-3)",
-    "confidence": "medium",
-    "notes": "Which one applies is not stated by any designer or printed source; the owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) takes the first by entity id (D-U15-3). The verifier's probe measured two Oorblaks both redirecting one 10-point Piercing hit (the player loses 2, not 6; both die): F-U15-3, the same defect as F-U12-1 (D-U15-11).",
+    "digitalClause": "When only one such effect applies, nothing is asked.",
+    "confidence": "high",
+    "notes": "The owner's 2026-08-23 entries (\"A thing can only be replaced once\"; two thieves) are replaced by his 2026-10-16 calls: O6 adopts Caleb's chain, O8 the second Thief, O9 asking the player. The chain and the player's order are Caleb's (RQ refs, 2025-11-25). F-U15-3 and F-U12-1 are closed (CT-228 ruled correct, CT-290 done). D-U15-3.",
     "sourceHashes": {
-      "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
-    },
-    "engineDiffers": [
-      "F-U15-3",
-      "F-U12-1"
-    ]
+      "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635",
+      "RQ 1442981461476245685": "2e53cbfabcf077323598bae7c038f082e3dee71b19f1a0c3071d4f5d85210ffd",
+      "RQ 1442981580535496807": "37dfed9ea804dd8b473d9884062e9c439d99fad0c5cf1dad9aa481eaecc29180",
+      "RQ 1442981663603687588": "230c64bb04b8f05a5582dd3e0688cfd411876bdca2b1e25ba3c8f6751842dee2",
+      "RQ 1442982460034912287": "edcc9a20d186b9aac49dde4a5b4e8075aa66f4856337bdca96b4673c713f58ec"
+    }
   },
   {
     "key": "effects.replacement.amount-modifiers",
@@ -2626,7 +2705,7 @@
     "examples": [
       {
         "text": "Proliferating Slime does not change how many counters Burn the Blight removes.",
-        "test": "152-hand-entry.test.ts::a counter-amount replacement does NOT scale a REMOVAL"
+        "test": "455-counter-removal-is-not-placement.test.ts::CR 708.8 example: Proliferating Slime does not change how many counters Burn the Blight removes"
       }
     ],
     "see": [],
@@ -2648,7 +2727,8 @@
       ],
       "engine": [],
       "tests": [
-        "152-hand-entry.test.ts"
+        "152-hand-entry.test.ts",
+        "455-counter-removal-is-not-placement.test.ts"
       ]
     },
     "basis": "owner",
@@ -2709,7 +2789,12 @@
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1362265958088966396",
+          "quote": "Yes"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -2728,17 +2813,64 @@
         "120-counter-attribution.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "RQ 1362265958088966396 is Caleb's \"Yes\" to \"Does plague bellower trigger wandering blight shell?\": Plague Bellower's counters go on units the opponent chooses, and still count as counters its controller put.",
+    "sourceHashes": {
+      "RQ 1362265958088966396": "eafee54d62308ae51e97aa8cfd510e205372a4c669ba4d8d9c8d20c8cf074f5d"
+    }
+  },
+  {
+    "key": "effects.replacement.scope.move",
+    "parent": "effects.replacement.scope",
+    "order": 3,
+    "text": "Moving counters from one unit onto another removes them from the first and puts them on the second. Only the second half puts counters on a unit, so a replacement effect that applies when counters would be put on a unit changes how many arrive, not how many leave.",
+    "examples": [
+      {
+        "text": "Your Flux Resonator is in play and you cast Scrap For Parts (\"Move all counters from target unit onto another target unit\"), moving an enemy unit's two +1/+1 counters onto your unit: the enemy unit is left with none, and your unit gets three.",
+        "test": "455-counter-removal-is-not-placement.test.ts::a MOVE removes from the source and puts on the destination: Flux Resonator enlarges only the put"
+      }
+    ],
+    "see": [
+      "effects.replacement.scope.who-put"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Scrap For Parts",
+          "quote": "Move all counters from target unit onto another target unit."
+        },
+        {
+          "ref": "card: Flux Resonator",
+          "quote": "If one or more counters would be put on a unit by an allied source, put that many counters plus one instead."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "> *\"Resonater says 'put on' so this question is irrelevant. Removing counters",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "455-counter-removal-is-not-placement.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "The owner's 2026-08-25 call (removing counters is not putting them on) applied to a move, which is a removal and a placement.",
     "sourceHashes": {}
   },
   {
     "key": "effects.replacement.token-batch",
     "parent": "708",
     "order": 9,
-    "text": "All the tokens one resolution of one effect creates are created together. A replacement effect that acts on \"each unique token you created\" sees all of them at once, and a token is unique by its name and its X together.",
+    "text": "All the tokens one resolution of one effect creates are created together. A replacement effect that acts on \"each unique token you created\" sees all of them at once, and a token is unique by its name, its X and the stats the effect that created it set, together.",
     "examples": [
       {
         "text": "Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.",
@@ -2747,11 +2879,20 @@
       {
         "text": "three identical Robot 2s created together are one unique token and yield one extra.",
         "test": "136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s"
+      },
+      {
+        "text": "a 3/3 and a 5/5 unit token created together are two unique tokens and yield two extras.",
+        "test": "458-automaton-copies-stats.test.ts::CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens"
       }
     ],
     "see": [],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Automaton of Abundance",
+          "quote": "instead create those tokens plus an additional copy of each unique token you created."
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -2764,18 +2905,24 @@
           "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yeah, those would count as unique tokens.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, a 3/3 and a 5/5 Unit Token with Automaton of Abundance (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "136-triggers-and-modes.test.ts",
-        "87-replacement-layer.test.ts"
+        "87-replacement-layer.test.ts",
+        "458-automaton-copies-stats.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "The stats clause is the owner's call of 2026-10-16 (asked whether a 3/3 and a 5/5 Unit Token made together are two unique tokens: \"Yeah, those would count as unique tokens.\"); D-U06-13 is resolved.",
     "sourceHashes": {}
   },
   {

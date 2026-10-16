@@ -1745,7 +1745,7 @@
     "key": "attr.piercing.redirect",
     "parent": "attr.piercing",
     "order": 14,
-    "text": "If Piercing combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), that unit is dealt its lethal damage and the rest is still Piercing excess. That excess is dealt to the player, and it is not redirected again (see rule 608.8c).",
+    "text": "If Piercing combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), that unit is dealt its lethal damage and the rest is still Piercing excess. That excess is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player (see rule 608.8c).",
     "examples": [
       {
         "text": "10 Piercing combat damage is redirected into a 2/4 Oorblak. 4 kill it and the other 6 reach the player.",
@@ -1754,6 +1754,10 @@
       {
         "text": "5 Piercing combat damage is redirected into Oorblak on a 1/1 host. 1 kills the host and the remaining 4 reach the player.",
         "test": "17-earth-b.test.ts::Oorblak: Caleb's case — 5 Piercing redirected, 1 kills the body, the remaining 4 hit the player"
+      },
+      {
+        "text": "10 Piercing combat damage and two 2/4 Oorblaks: each takes 4 and dies, and 2 reach the player.",
+        "test": "469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first"
       }
     ],
     "see": [
@@ -1777,24 +1781,27 @@
           "quote": "With the kill delivered, R103 step 4's 1-point floor becomes the *right*",
           "adopted": "2026-08-28",
           "from": "questions-round27 Q2; register@72de434"
+        },
+        {
+          "quote": "it's all combat damage, and that damage is still considered combat damage, so it'd go to the second one",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, Oorblak and Piercing (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "387-raq-combat.test.ts",
-        "17-earth-b.test.ts"
+        "17-earth-b.test.ts",
+        "469-replacement-chain-damage.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) is cited for the Deadly floor on the redirect path (1 is lethal for a Deadly hit). The round-1 verifier measured with two Oorblaks that the engine redirects the Piercing excess a second time (both die, 2 reach the player); the RAQ says a replacement applies once. Filed by U12 as F-U12-1. Whether the attacker may keep excess on a redirect target (the elective keep of 608) is not addressed: D-U20-23.",
+    "notes": "The owner ruling of 2026-08-28 is cited for the Deadly floor on the redirect path (1 is lethal for a Deadly hit). The excess going on to a second Oorblak is the owner's 2026-10-16 call (O7); F-U12-1/F-U20-6 closed. Whether the attacker may keep excess on a redirect target is not addressed: D-U20-23.",
     "sourceHashes": {
       "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
-    },
-    "engineDiffers": [
-      "F-U12-1"
-    ]
+    }
   },
   {
     "key": "attr.piercing.electric",
@@ -2741,6 +2748,49 @@
     "scope": "game",
     "confidence": "high",
     "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.poisonous.who-puts",
+    "parent": "attr.poisonous",
+    "order": 10,
+    "text": "The -1/-1 counters a Poisonous source's combat damage puts on a unit are put by that source's controller (see rule effects.replacement.scope.who-put).",
+    "examples": [
+      {
+        "text": "A Poisonous blocker deals combat damage to the attacker: its -1/-1 counters on the attacker are put by the defending player, so the defender's Wandering Blightshell (\"When you put a counter on an enemy, [Switch1] Draw a card.\") draws a card.",
+        "test": "454-poisonous-counter-attribution.test.ts::Poisonous BLOCKER: its -1/-1 counters on the attacker are put by the defender, and Blightshell draws"
+      },
+      {
+        "text": "A Poisonous attacker's -1/-1 counters on its blocker are put by the attacking player, and the attacker's Wandering Blightshell draws.",
+        "test": "454-poisonous-counter-attribution.test.ts::Poisonous ATTACKER: its -1/-1 counters on the blocker are put by the attacker, and Blightshell draws"
+      }
+    ],
+    "see": [
+      "effects.replacement.scope.who-put"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Blightmound",
+          "quote": "Poisonous sources damage units in the form of -1/-1 counters."
+        },
+        {
+          "ref": "card: Wandering Blightshell",
+          "quote": "When you put a counter on an enemy,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "454-poisonous-counter-attribution.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "Reports #210/#216. The Poisonous source deals the damage, so its counters are its controller's placement (708.8b: whose effect put them). Only combat damage is tested here.",
     "sourceHashes": {}
   },
   {

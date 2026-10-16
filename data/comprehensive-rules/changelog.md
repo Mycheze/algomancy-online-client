@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1797 rules and 99 sections.
+- New: 1806 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -79,6 +79,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 106.5 `concepts.resources.expend`
   - 106.5a `concepts.resources.expend.generic`
   - 106.5b `concepts.resources.expend.paying`
+  - 106.5c `concepts.resources.expend.only-to-pay`
   - 106.6 `concepts.resources.recycle`
   - 106.6a `concepts.resources.recycle.prismite-shard`
   - 106.6b `concepts.resources.recycle.made-prismite`
@@ -397,6 +398,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 304.12b `types.tokens.spell-tokens.moving.created-there`
   - 304.13 `types.tokens.spell-tokens.regroup`
   - 304.14 `types.tokens.unique`
+  - 304.14a `types.tokens.unique.copy`
   - 304.15 `types.tokens.creating-not-playing`
   - 305.1 `types.mods.what`
   - 305.2 `types.mods.applied-not-played`
@@ -1003,6 +1005,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 708.8 `effects.replacement.scope`
   - 708.8a `effects.replacement.scope.all-counters`
   - 708.8b `effects.replacement.scope.who-put`
+  - 708.8c `effects.replacement.scope.move`
   - 708.9 `effects.replacement.token-batch`
   - 708.10 `effects.replacement.locked-life`
   - 708.11 `effects.replacement.prevention`
@@ -1400,6 +1403,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 802.18g `attr.poisonous.players`
   - 802.18h `attr.poisonous.resonant`
   - 802.18i `attr.poisonous.pure`
+  - 802.18j `attr.poisonous.who-puts`
   - 802.19 `attr.resonant`
   - 802.19a `attr.resonant.trigger`
   - 802.19b `attr.resonant.not-combat`
@@ -1609,6 +1613,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D1.2f `annexd.general.player-decides.forced-target`
   - D1.2g `annexd.general.player-decides.default-first`
   - D1.2h `annexd.general.player-decides.burst-order`
+  - D1.2i `annexd.general.player-decides.replacement-order`
   - D1.3 `annexd.general.one-opinion`
   - D1.3a `annexd.general.one-opinion.affordances`
   - D1.4 `annexd.general.hidden-segment`
@@ -1735,12 +1740,15 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D6.9c `annexd.display.live-values.x-forecast`
   - D6.9d `annexd.display.live-values.burst`
   - D6.9e `annexd.display.live-values.x-not-forecast`
+  - D6.9f `annexd.display.live-values.public-choice`
+  - D6.9g `annexd.display.live-values.event-x`
   - D6.10 `annexd.display.text-box`
   - D6.10a `annexd.display.text-box.modal`
   - D6.10b `annexd.display.text-box.spent`
   - D6.10c `annexd.display.text-box.unstable`
   - D6.10d `annexd.display.text-box.prophecy`
   - D6.10e `annexd.display.text-box.transform`
+  - D6.10f `annexd.display.text-box.suppression-band`
   - D6.11 `annexd.display.reminders`
   - D6.11a `annexd.display.reminders.no-numbers`
   - D6.11b `annexd.display.reminders.fuller-rule`
@@ -1767,6 +1775,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D7.2c `annexd.confirm.dials.commit`
   - D7.2d `annexd.confirm.dials.counters`
   - D7.2e `annexd.confirm.dials.damage-split`
+  - D7.2f `annexd.confirm.dials.no-targets`
   - D7.3 `annexd.confirm.say-so`
   - D7.3a `annexd.confirm.say-so.no-target`
   - D7.3b `annexd.confirm.say-so.no-opponent`

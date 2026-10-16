@@ -2269,11 +2269,15 @@
     "key": "concepts.targets.not-target.wraith",
     "parent": "concepts.targets.not-target",
     "order": 3,
-    "text": "The Wraith's \"an ally\" is not a target, but the ally is chosen as the trigger is put on the stack. If that ally has left play when the trigger resolves, the trigger fizzles.",
+    "text": "The Wraith's \"an ally\" is not a target. The ally is chosen as the trigger resolves, from the allies in play then, so the trigger cannot lose its ally and does not fizzle while an ally is in play. With no ally in play, it fizzles.",
     "examples": [
       {
-        "text": "Three Wraith triggers may all choose the same 1/1; one -1/-1 counter lands and the other two fizzle.",
-        "test": "37-attrs-wight.test.ts::CR 706.12: three Wraith triggers may all aim at one 1/1"
+        "text": "Three Wraith triggers and one 1/1 ally: only the first trigger is offered the 1/1, and it kills it. The other two put their counters on Wraiths still in play, and nothing fizzles.",
+        "test": "37-attrs-wight.test.ts::CR 706.12: three Wraith triggers and one 1/1 choose as each resolves, so only the first is offered the 1/1 and none fizzles"
+      },
+      {
+        "text": "A 1/1 carrying two Wraith augments: the first shrink kills it, and the second finds no ally in play and fizzles.",
+        "test": "461-wraith-no-ally-and-one-ally.test.ts::report 2026-10-16: a Wraith shrink that finds no ally in play asks nothing and fizzles"
       }
     ],
     "see": [
@@ -2285,25 +2289,27 @@
       "ours": [],
       "owner": [
         {
-          "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
+          "quote": "The way that I *guessed* Wraiths work is wrong. It's this new way. They don't target which means they can't be fizzled.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, Wraith report (in session)"
         },
         {
-          "quote": "item that has lost every target *and* subject it declared **fizzles**, with a",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
+          "quote": "To be clear, Waiths can fizzle once you're fully out of units, but since they don't target, it's just a raw choice where it gets augmented.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, Wraith report (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "37-attrs-wight.test.ts"
+        "37-attrs-wight.test.ts",
+        "460-wraith-chooses-on-resolution.test.ts",
+        "461-wraith-no-ally-and-one-ally.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "A one-card rule; it is here because it is the only place a non-target choice is made up front.",
+    "notes": "The owner reversed his 2026-08-24 call (report #101: the ally chosen as the trigger goes on the stack, the surplus fizzling) on 2026-10-16. That entry is dropped.",
     "sourceHashes": {}
   },
   {
@@ -3023,6 +3029,10 @@
       {
         "text": "Rebalance, which targets nothing, can be played with no unit of its controller's.",
         "test": "396-raq-timing.test.ts::Rebalance is playable with no unit"
+      },
+      {
+        "text": "Abduct (\"Gain control of target unit with cost [x] or less …\") against a lone cost-1 attacker can be played when its caster can pay an X of 1 or more. X = 0 is not offered, since at 0 there is no unit to take.",
+        "test": "452-abduct-x-gate.test.ts::Abduct is castable against a cost-1 attacker, its X menu starts at 1, and control flips"
       }
     ],
     "see": [
@@ -3052,7 +3062,8 @@
       "tests": [
         "390-raq-stack.test.ts",
         "396-raq-timing.test.ts",
-        "401-raq-fix-stack.test.ts"
+        "401-raq-fix-stack.test.ts",
+        "452-abduct-x-gate.test.ts"
       ]
     },
     "basis": "designer",

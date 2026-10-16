@@ -314,5 +314,27 @@
       }
     ],
     "resolution": "The rule scopes the three types to non-resource cards and points resources at 106. No source decides whether \"resource\" is a fourth card type or a category of its own."
+  },
+  {
+    "id": "D-U06-13",
+    "kind": "c-owner-call-only",
+    "rule": "types.tokens.unique",
+    "tier": 2,
+    "summary": "The owner's 2026-08-25 call made a token unique by its name and X. Whether the stats its creating effect set also count (a 3/3 and a 5/5 unit token) rested on the engine (test 458, reports #212/#213) and the permissive reading of \"unique\".",
+    "sides": [
+      {
+        "source": "owner ruling, adopted 2026-08-25",
+        "quote": "'Unique' means unique (name, X) pair — you get two extras."
+      },
+      {
+        "source": "card: Automaton of Abundance",
+        "quote": "instead create those tokens plus an additional copy of each unique token you created."
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-16",
+        "quote": "Yeah, those would count as unique tokens."
+      }
+    ],
+    "resolution": "Answered by the owner on 2026-10-16: asked \"If one effect makes a 3/3 Unit Token and a 5/5 Unit Token at the same time, are they two different unique tokens for Automaton of Abundance?\", he answered \"Yeah, those would count as unique tokens.\" types.tokens.unique, card.name.unique-token and effects.replacement.token-batch state it."
   }
 ]

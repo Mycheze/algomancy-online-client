@@ -220,7 +220,7 @@ Sources are silent on WHEN "attacking alone" is judged. If a Sneaky unit attacks
 
 **Resolution:** Question for the owner. The owner ruling of 2026-08-18 (“Sneaky's "attacking alone"”) says what "alone" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.
 
-## 2. Record and test fixes (50)
+## 2. Record and test fixes (52)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -386,6 +386,16 @@ The owner ruling of 2026-08-22 (“A token entering a ZONE is…”) still warns
 
 **Resolution:** Register fix: mark the owner ruling of 2026-08-22 (“A token entering a ZONE is…”)’s conflicting-ruling warning as answered by RAQ 1355689559609839787 (point 3). No change to the rule.
 
+### D-U06-13 · Owner call only · rule 304.14
+
+The owner's 2026-08-25 call made a token unique by its name and X. Whether the stats its creating effect set also count (a 3/3 and a 5/5 unit token) rested on the engine (test 458, reports #212/#213) and the permissive reading of "unique".
+
+- owner ruling, adopted 2026-08-25: "'Unique' means unique (name, X) pair — you get two extras."
+- card: Automaton of Abundance: "instead create those tokens plus an additional copy of each unique token you created."
+- owner ruling, adopted 2026-10-16: "Yeah, those would count as unique tokens."
+
+**Resolution:** Answered by the owner on 2026-10-16: asked "If one effect makes a 3/3 Unit Token and a 5/5 Unit Token at the same time, are they two different unique tokens for Automaton of Abundance?", he answered "Yeah, those would count as unique tokens." rule 304.14, rule 201.3 and rule 708.9 state it.
+
 ### D-U07-10 · Other · rule 400.4
 
 The owner ruling of 2026-08-30 (“zones follow control, in all four…”) says it knowingly overrules a Manual sentence ("a recall goes to its owner's hand"), but no page of the printed Manual or Rulebook that this project extracts contains that sentence.
@@ -522,8 +532,10 @@ Caleb's 'replacement effects only apply once in an effect' can be read per damag
 - RAQ 1397188292239163454#0: "replacement effects only apply once in an effect Unless a new trigger occurs"
 - file: client/ledgers/raq.ts: "the other 6 still reach the player, and are not redirected again."
 - owner ruling, adopted 2026-08-23: "Substitutes or redirects the thing itself. A thing can only be replaced once, so"
+- owner ruling, adopted 2026-10-16: "it's all combat damage, and that damage is still considered combat damage, so it'd go to the second one"
+- RQ 1442982460034912287: "the tldr is replacement effects only apply once onto an effect"
 
-**Resolution:** Settled by the designer: "replacement effects only apply once in an effect", with the Oorblak example (the leftover 6 "goes to players face"), reads per damage: a leftover one redirect let through is not redirected again. The owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) says the same ("A thing can only be replaced once"). rule 608.8c and rule 708.4a state it. The engine offers the leftover to every further holder: F-U12-1 (CT-228).
+**Resolution:** Settled per effect by the owner on 2026-10-16 ("it's all combat damage, and that damage is still considered combat damage, so it'd go to the second one"; "Go with Caleb"), following Caleb in rules-questions 2025-11-25 ("replacement effects only apply once onto an effect"): each replacement effect applies once, so a second Oorblak may take the leftover and the same one may not. rule 608.8c, rule 802.16p and rule 708.4a state it; F-U12-1 is closed (CT-228 ruled correct). The 2026-08-23 per-damage reading above is history.
 
 ### D-U12-15 · Other · rule 608.4c
 
@@ -629,6 +641,16 @@ The owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”)
 
 **Resolution:** Mark that sentence of the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) as overtaken by the owner ruling of 2026-08-30 (“Combat-damage triggers resolve AFTER combat, on…”) and the owner ruling of 2026-09-16 (“A split damage step is several…”). The rule text does not rely on it.
 
+### D-U15-3 · Owner call only · rule 708.4a
+
+When two effects could each replace or redirect the same event, only one applies. No printed or designer source says which one; the owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) takes the first in entity order ("ties break by entity id"), an engine choice.
+
+- owner ruling, adopted 2026-08-23: "the first claimant takes it and ties break by entity id, exactly as `replaceRotDamage`"
+- owner ruling, adopted 2026-10-16: "Ask the player now"
+- RQ 1442981461476245685: "its a replacement effect so it just takes one thing and replaces it with another (you the player control how they stack)"
+
+**Resolution:** Answered by the owner on 2026-10-16: asked who orders replacement effects whose order changes the outcome, he chose "Ask the player now", after Caleb (rules-questions 2025-11-25): "you the player control how they stack". The player the event affects chooses the order (rule 708.4a); the entity-id order is retired, and with two Counter Thieves the counters end on the second to apply ("On the second Thief").
+
 ### D-U15-7 · Ruling chain wrong · rule 706.11
 
 The owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”) is presented as current, but its "OPEN" section says the engine computes the {Resonant} rider from the undoubled amount and that this was deliberately not changed. The owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) later made the rider damage from the source, so {Powerful} doubles it (the RAQ's 2/4 Powerful Resonant deals 8 to the face). The owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”) carries no partial-supersession mark.
@@ -647,8 +669,9 @@ Whether a unit stripped by a continuous effect (Transmogrifant, Monke) stops app
 - owner ruling, adopted 2026-08-21: "*entity flag* is set, not one silenced by another static. So a unit silenced by"
 - owner ruling, adopted 2026-08-21: "a spell stops radiating immediately, while two Monkes — each the other's"
 - owner ruling, adopted 2026-10-09: "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
+- owner ruling, adopted 2026-10-16: "Yeah, static effects count as abilities. Everything (besides an attribute) is an ability."
 
-**Resolution:** Settled by printed text: Transmogrifant's "lose all attributes and abilities" takes every ability, and a static is an ability (owner ruling of 2026-08-21, “The suppression layer: "loses all attributes…”). The owner ruling of 2026-08-21 (“The suppression layer: "loses all attributes…”)’s one-pass sentence is reasoned only from the mutual case, which rule 712.5 keeps. rule 712.1a states print; the engine keeps a one-sided stripped unit's statics on: F-U16-3 (CT-256).
+**Resolution:** Settled by printed text and the owner (2026-10-16: "Everything (besides an attribute) is an ability."): Transmogrifant's "lose all attributes and abilities" takes every ability, statics included, and rule 712.1a states it. The engine now agrees (report #214, CT-256; F-U16-3 closed, 462 and 427). The one-pass reading of the mutual case is replaced by Caleb's answer, rule 712.5 (D-U16-5).
 
 ### D-U18-8 · Other · rule 801.8a
 
@@ -775,7 +798,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (92)
+## 3. Engine-only and owner-only rules (91)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -1289,14 +1312,6 @@ The owner ruling of 2026-10-09 (“Every target is re-checked against its…”)
 
 **Resolution:** Engine decides. The rule states only the owner ruling of 2026-10-09 (“Every target is re-checked against its…”)’s legality exception; the leaving-play case is left to the engine until a source speaks.
 
-### D-U15-3 · Owner call only · rule 708.4a
-
-When two effects could each replace or redirect the same event, only one applies. No printed or designer source says which one; the owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) takes the first in entity order ("ties break by entity id"), an engine choice.
-
-- owner ruling, adopted 2026-08-23: "the first claimant takes it and ties break by entity id, exactly as `replaceRotDamage`"
-
-**Resolution:** The rule states only that one applies. Which one is the engine's order. Question for the owner only if two such effects controlled by different players can claim the same event in a real game (two Counter Thieves on opposite sides of a battle), where the choice decides who gets the counters.
-
 ### D-U15-4 · Owner call only · rule 708.6a
 
 The order "add, then double" is the designer's for damage and {Powerful} (the owner ruling of 2026-10-09 (“Additive damage modifiers apply before {Powerful}…”), from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, the owner ruling of 2026-08-30 (“multipliers are exponential (round-32 Q4)”) says the composition is still unruled and the engine's order is an interim decision.
@@ -1551,7 +1566,7 @@ No ruling says that battle actions cannot be undone. Test 373's title is the onl
 
 - file: client/ui/test/373-no-confirm-where-undo-works.test.ts: "nothing there is undone"
 
-**Resolution:** The rule ships as engine-derived (Annex P).
+**Resolution:** The rule ships as engine-derived (Annex P). Since 2026-10-16 the rule also states the owner's call on how the confirmation is answered; the battle-undo premise is still engine-derived.
 
 ### D-U23-19 · Engine only · rule D3.1d
 
@@ -2397,7 +2412,7 @@ The owner ruled that several Wraith deployment triggers may "target the same uni
 - owner ruling, adopted 2026-08-24: "> stack simultaneously and be allowed to target the same unit, even exceeding"
 - owner ruling, adopted 2026-08-24: "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
 
-**Resolution:** Settled by printed text: the Wraith prints "put a -1/-1 counter on an ally", not "target ally", so the choice is not a target and fires no "when I become targeted" ability. The owner ruling of 2026-08-24 (“deployment uses the stack, and a…”)’s "target the same unit" is loose wording for what the owner asked (several Wraiths may choose one unit, and the surplus fizzles). The rule states that.
+**Resolution:** Settled by printed text: the Wraith prints "put a -1/-1 counter on an ally", not "target ally", so the choice is not a target and fires no "when I become targeted" ability. The owner ruling of 2026-08-24 (“deployment uses the stack, and a…”)’s "target the same unit" is loose wording for what the owner asked (several Wraiths may choose one unit, and the surplus fizzles). The rule states that. Since 2026-10-16 the owner's call is that the Wraith's choice is not a target and is made as the trigger resolves, so it no longer fizzles while an ally is in play (rule 110.2c, rule 706.12); the 2026-08-24 call quoted above is history.
 
 ### D-U16-12 · Other · rule 713.6a
 
@@ -2436,8 +2451,11 @@ The sources are silent on a general dependency rule: how one continuous effect t
 
 - owner ruling, adopted 2026-10-09: "static-vs-static still resolves in one pass"
 - Manual p.42: "A: Stats have 6 layers to them, which are applied in"
+- RQ 1145226276911714384: "they would end up with +2/+2 buff, the second transmogrifant turns off the irst one"
+- RQ 1148449043282927626: "The two transmogrifants would turn off the other one though so you could only have one of them active at once."
+- RQ 1148463157115887656: "Oh true I guess one would get +2/+2 and one would mot"
 
-**Resolution:** No dependency rule is written. 709 states the layer order and timestamps; 712 states the two-strippers case. Recorded so the judge's CR, if it has a dependency rule, is compared against nothing rather than against an invented one.
+**Resolution:** The two-strippers case is settled by the designer (RQ 1145226276911714384, RQ 1148449043282927626, RQ 1148463157115887656): of two Transmogrifants only one is active, the second turning off the first. rule 712.5 states it (the newer applies, the older does not), replacing the owner's 2026-08-21 and 2026-10-09 calls; the one-pass side above is history. No general dependency rule is written: 709 states the layer order and timestamps.
 
 ### D-U16-6 · Sources disagree · rule 712.7
 

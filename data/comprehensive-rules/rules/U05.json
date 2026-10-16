@@ -182,18 +182,27 @@
     "key": "card.name.unique-token",
     "parent": "201",
     "order": 3,
-    "text": "Where a card speaks of a \"unique\" token, a token is identified by its name and its X together: a Robot 2 and a Robot 5 are two unique tokens.",
+    "text": "Where a card speaks of a \"unique\" token, a token is identified by its name, its X and the stats the effect that created it set, together: a Robot 2 and a Robot 5 are two unique tokens, and so are a 3/3 and a 5/5 unit token.",
     "examples": [
       {
         "text": "Automaton of Abundance: when its controller creates a Robot 3, a Robot 2 and a Robot 1 together, those are three unique tokens, so three extra Robots are made.",
         "test": "26-metal-a.test.ts::CR 201.3: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras"
+      },
+      {
+        "text": "Automaton of Abundance: a 3/3 and a 5/5 unit token created together are two unique tokens, so two extra tokens are made.",
+        "test": "458-automaton-copies-stats.test.ts::CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens"
       }
     ],
     "see": [
       "304"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Automaton of Abundance",
+          "quote": "instead create those tokens plus an additional copy of each unique token you created."
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -201,17 +210,23 @@
           "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Yeah, those would count as unique tokens.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, a 3/3 and a 5/5 Unit Token with Automaton of Abundance (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "26-metal-a.test.ts"
+        "26-metal-a.test.ts",
+        "458-automaton-copies-stats.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) (heading: \"its unique-by-kind reversed by the owner ruling of 2026-08-25 (“the owner's answers to the 27…”)\") is history. Placed under Name because it is the one ruling on what a token's name includes.",
+    "notes": "The owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) (heading: \"its unique-by-kind reversed by the owner ruling of 2026-08-25 (“the owner's answers to the 27…”)\") is history. Placed under Name because it is the one ruling on what a token's name includes. The stats clause is the owner's call of 2026-10-16 (asked whether a 3/3 and a 5/5 Unit Token made together are two unique tokens: \"Yeah, those would count as unique tokens.\"); D-U06-13 is resolved.",
     "sourceHashes": {}
   },
   {

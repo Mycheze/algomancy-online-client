@@ -47,11 +47,11 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; no gate test · Key: annexd.general.player-decides.identical-triggers</sub>
 
-<a id="rD1.2e"></a>**D1.2e** A non-target choice that an ability makes as it goes on the stack (such as the ally a Wraith's start-of-deployment trigger aims at) is recorded without asking when there is only one candidate. With two or more candidates the player is asked. See rules 507, 706.
+<a id="rD1.2e"></a>**D1.2e** A non-target choice that an ability makes as it begins to resolve (such as the ally a Wraith's start-of-deployment trigger chooses) is recorded without asking when there is only one candidate. With two or more candidates the player is asked. See rules 507, 706.
 
 > *Example: A lone Wraith aims at its only ally without asking; with a second ally the player is asked.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.one-subject — a lone Wraith aims at its only ally without asking; with a second ally the player is asked · Key: annexd.general.player-decides.one-subject</sub>
+<sub>Basis: Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.one-subject — a lone Wraith aims at its only ally without asking; with a second ally the player is asked · Key: annexd.general.player-decides.one-subject</sub>
 
 <a id="rD1.2f"></a>**D1.2f** A target is asked for even when exactly one candidate is legal. A forced target is still a click. See rule 110.
 
@@ -66,6 +66,18 @@ These are the conventions of this digital client: how it times, shows and confir
 <a id="rD1.2h"></a>**D1.2h** The caster always chooses the order of a Burst group, one token at a time; the client offers no automatic order. A lone token is not asked to be ordered. See rule 803.
 
 <sub>Basis: Owner ruling, adopted 2026-10-01 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 358-burst-order.test.ts · Demonstrated by test: 358-burst-order.test.ts::CR 803.5d: a lone token is not asked to be ordered · Key: annexd.general.player-decides.burst-order</sub>
+
+<a id="rD1.2i"></a>**D1.2i** When a player chooses the order of replacement effects (see rule 708.4a), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, the choices are not also buttons in the prompt bar, and the prompt says what is being chosen. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.
+
+> *Example: Two Oorblaks: the prompt asks which Oorblak takes the damage first, and clicking the second Oorblak chooses it.*
+
+> *Example: The attacker sees that the defender is being asked, but not the question.*
+
+> *Example: Two Skittering Blights at the start of deployment: the rot question is answered on the board, and the other player can deploy only once it is answered.*
+
+> *Example: A Poisonous blocker and two Counter Thieves: the question comes before any of the combat damage is dealt.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 3 gate test files · Tests: 473-replacement-order-on-the-board.test.ts, 471-oorblak-order-and-polyp.test.ts, 472-counter-thief-and-rot-order.test.ts · Example tests: 473-replacement-order-on-the-board.test.ts::two Oorblaks: the question is drawn on the board, says what it asks, and a click on an Oorblak answers it, 473-replacement-order-on-the-board.test.ts::two Oorblaks: the attacker sees that a question is open, and not the question, 473-replacement-order-on-the-board.test.ts::two Skittering Blights at the rot step: drawn on the board, and the other player waits, 472-counter-thief-and-rot-order.test.ts::CR 708.4a: Poisonous combat damage and two Counter Thieves — asked before the damage · Key: annexd.general.player-decides.replacement-order</sub>
 
 <a id="rD1.3"></a>**D1.3.** The client holds no opinion of its own about legality. Wherever the client decides something the engine also decides, the client's answer is derived from the engine's, in one place. *(Untested: no executed test demonstrates it.)*
 
@@ -368,9 +380,13 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.floor — an undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back · Key: annexd.undo.hidden-step.floor</sub>
 
-<a id="rD4.1c"></a>**D4.1c** Actions taken in battle are not undone. For that reason an irreversible activated ability asks for confirmation in battle, while in deployment it activates on the click and undo is the safety net. See rule D7.
+<a id="rD4.1c"></a>**D4.1c** Actions taken in battle are not undone. For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net. See rule D7.
 
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 373-no-confirm-where-undo-works.test.ts · Demonstrated by tests: 373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click, 373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks · Key: annexd.undo.hidden-step.battle</sub>
+> *Example: Cadaverous Cultivator ("[Battle] Discard a card: …") raises no confirmation: the click activates it, and the game asks which card to discard.*
+
+> *Example: While the confirmation is up, clicking a card in hand plays nothing.*
+
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 10 tests, all passed; 2 gate test files · Tests: 373-no-confirm-where-undo-works.test.ts, 456-activate-confirm-is-modal.test.ts · Example tests: 456-activate-confirm-is-modal.test.ts::D2 §1 the reported card raises no bar, 456-activate-confirm-is-modal.test.ts::D2 §2 with the bar up a hand click sends nothing · Demonstrated by tests: 373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click, 373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks, 456-activate-confirm-is-modal.test.ts::D2 §2 clicking the same unit again says yes, 456-activate-confirm-is-modal.test.ts::D2 §2 Enter says yes · Key: annexd.undo.hidden-step.battle</sub>
 
 <sub>Discrepancies: D-U23-11 (discrepancies.md)</sub>
 
@@ -742,6 +758,22 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Discrepancies: D-U24-8 (discrepancies.md)</sub>
 
+<a id="rD6.9f"></a>**D6.9f** A prediction made with Prediction Prophet is shown on that card to both players, as a chip on the card and a line in its text box, from when it is made until the start of deployment reads it. A prediction left from an earlier turn is not shown.
+
+> *Example: The opponent sees the Prophet's predicted life on the card and in its text box.*
+
+> *Example: A prediction of 0 is shown like any other.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Tests: 467-prediction-is-public.test.ts · Example tests: 467-prediction-is-public.test.ts::Prediction Prophet - the opponent sees the prediction on the card, 467-prediction-is-public.test.ts::Prediction Prophet - a prediction of 0 is a prediction and shows · Demonstrated by test: 467-prediction-is-public.test.ts::Prediction Prophet - the prediction is read once at deployment, and an old one never counts · Key: annexd.display.live-values.public-choice</sub>
+
+<a id="rD6.9g"></a>**D6.9g** A triggered ability whose amount is its own column's share of combat damage (Vroot: "When my column deals combat damage, each opponent gains that much life.") shows that share on the stack as its X, the same amount it resolves with, not the total every column dealt.
+
+> *Example: Vroot (4/4) and a 1/1 attack in two columns and are not blocked: the stack shows X=4, and the opponent gains 4.*
+
+> *Example: Vroot's text carried by a host: the stack shows the host's column share.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 464-trigger-x-is-what-it-resolves.test.ts · Example tests: 464-trigger-x-is-what-it-resolves.test.ts::report 215 - Vroot beside a 1/1 shows X=4 on the stack and the opponent gains 4, 464-trigger-x-is-what-it-resolves.test.ts::report 215 - Vroot as a virus reads its HOST column share · Key: annexd.display.live-values.event-x</sub>
+
 <a id="rD6.10"></a>**D6.10.** A card whose printed text box is empty, but whose type line carries attributes, shows those attributes and their reminders in its text box instead of "no rules text". A card with no text and no attributes still says it has no rules text. See rule 204.
 
 > *Example: Whispering Mantid has no ability text and {Sneaky} on its type line. Its text box shows {Sneaky} and its reminder.*
@@ -779,6 +811,16 @@ These are the conventions of this digital client: how it times, shows and confir
 > *Example: Scholar of the Void's details say it transforms into Beyond, Codex Incarnate, before its hand-discard cost is paid.*
 
 <sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 50-ui-inspect.test.ts · Example test: 50-ui-inspect.test.ts::the inspector says what Scholar of the Void transforms into, before the hand is discarded · Key: annexd.display.text-box.transform</sub>
+
+<a id="rD6.10f"></a>**D6.10f** In the card zoom, a unit whose attributes are off has only its type bar greyed; a unit whose abilities are off has its text box below the type bar greyed; a unit with both off has both greyed.
+
+> *Example: A unit Formless has stamped (attributes off) greys its type bar and not its text box.*
+
+> *Example: A unit The Everywhere names (abilities off) greys below the type bar and leaves the bar.*
+
+> *Example: A unit Monke switches off in battle (both off) greys the bar and the box.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Tests: 465-attributes-off-is-not-abilities-off.test.ts · Example tests: 465-attributes-off-is-not-abilities-off.test.ts::report 208 - a Formless-stamped unit greys its type bar and not its text box, 465-attributes-off-is-not-abilities-off.test.ts::report 208 - The Everywhere silencing a unit greys below the type bar, 465-attributes-off-is-not-abilities-off.test.ts::report 208 - Monke switching off both greys the bar and the box · Key: annexd.display.text-box.suppression-band</sub>
 
 <a id="rD6.11"></a>**D6.11.** The reminder shown for a keyword is the game's own words wherever the game has them, in this order of preference: a reminder printed on a card in the pool; the Manual's sentence under a heading that names the term; a dated quote of a designer-posted card; and only then this client's own sentence.
 
@@ -960,6 +1002,14 @@ These are the conventions of this digital client: how it times, shows and confir
 > *Example: A strike of 4 into a column of two: the player chooses how much the front unit takes, and the back unit gets the rest.*
 
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 126-assign-split.test.ts, 435-cr-digital-2.test.ts · Example test: 126-assign-split.test.ts::CR D7.2e (1): the total is forced — under and over allocations are refused, with the remainder said out loud · Key: annexd.confirm.dials.damage-split</sub>
+
+<a id="rD7.2f"></a>**D7.2f** In an "up to" target choice, the button that stops picking reads "No targets" and is drawn as an ordinary button while nothing has been picked; after a pick it reads "No more targets" and is drawn as the quieter decline button. An "up to N" choice ends by itself at its Nth pick, with nothing more asked about it.
+
+> *Example: Minor Kraken, grafted with Fester, attacks: its up-to-one target choice offers "No targets" as an ordinary button, and answering it moves on to Fester.*
+
+> *Example: Twin Flame (up to two targets): after one pick the stop reads "No more targets"; the second pick ends the choice.*
+
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 1 gate test file · Tests: 466-no-targets-is-a-button.test.ts · Example tests: 466-no-targets-is-a-button.test.ts::report 206 - Kraken grafted with Fester offers No targets as an ordinary button, 466-no-targets-is-a-button.test.ts::report 206 - an up to two spell finishes at two picks · Demonstrated by test: 466-no-targets-is-a-button.test.ts::report 206 - an up to X spell finishes at X picks · Key: annexd.confirm.dials.no-targets</sub>
 
 <a id="rD7.3"></a>**D7.3.** When an effect does nothing, the game says so and says why. A printed clause that promises a per-seat outcome and then resolves over an empty collection of seats or of picks is announced for that clause, even when another clause of the same card is speaking. Saying so never changes what the effect does.
 

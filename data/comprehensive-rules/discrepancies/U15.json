@@ -57,15 +57,23 @@
     "id": "D-U15-3",
     "kind": "c-owner-call-only",
     "rule": "effects.replacement.once.one-applies",
-    "tier": 3,
+    "tier": 2,
     "summary": "When two effects could each replace or redirect the same event, only one applies. No printed or designer source says which one; the owner ruling of 2026-08-23 (“the REPLACEMENT-EFFECT LAYER: two families, and…”) takes the first in entity order (\"ties break by entity id\"), an engine choice.",
     "sides": [
       {
         "source": "owner ruling, adopted 2026-08-23",
         "quote": "the first claimant takes it and ties break by entity id, exactly as `replaceRotDamage`"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-16",
+        "quote": "Ask the player now"
+      },
+      {
+        "source": "RQ 1442981461476245685",
+        "quote": "its a replacement effect so it just takes one thing and replaces it with another (you the player control how they stack)"
       }
     ],
-    "resolution": "The rule states only that one applies. Which one is the engine's order. Question for the owner only if two such effects controlled by different players can claim the same event in a real game (two Counter Thieves on opposite sides of a battle), where the choice decides who gets the counters."
+    "resolution": "Answered by the owner on 2026-10-16: asked who orders replacement effects whose order changes the outcome, he chose \"Ask the player now\", after Caleb (rules-questions 2025-11-25): \"you the player control how they stack\". The player the event affects chooses the order (effects.replacement.once.one-applies); the entity-id order is retired, and with two Counter Thieves the counters end on the second to apply (\"On the second Thief\")."
   },
   {
     "id": "D-U15-4",
@@ -143,7 +151,7 @@
         "quote": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
       }
     ],
-    "resolution": "Settled by printed text: the Wraith prints \"put a -1/-1 counter on an ally\", not \"target ally\", so the choice is not a target and fires no \"when I become targeted\" ability. The owner ruling of 2026-08-24 (“deployment uses the stack, and a…”)’s \"target the same unit\" is loose wording for what the owner asked (several Wraiths may choose one unit, and the surplus fizzles). The rule states that."
+    "resolution": "Settled by printed text: the Wraith prints \"put a -1/-1 counter on an ally\", not \"target ally\", so the choice is not a target and fires no \"when I become targeted\" ability. The owner ruling of 2026-08-24 (“deployment uses the stack, and a…”)’s \"target the same unit\" is loose wording for what the owner asked (several Wraiths may choose one unit, and the surplus fizzles). The rule states that. Since 2026-10-16 the owner's call is that the Wraith's choice is not a target and is made as the trigger resolves, so it no longer fizzles while an ally is in play (concepts.targets.not-target.wraith, effects.triggered.chosen-unit); the 2026-08-24 call quoted above is history."
   },
   {
     "id": "D-U15-12",

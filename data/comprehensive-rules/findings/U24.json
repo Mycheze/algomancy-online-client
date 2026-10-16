@@ -51,7 +51,7 @@
     "id": "F-U24-4",
     "rule": "annexd.confirm.not-only-log",
     "title": "Announcements of a loss the player paid for are still shown only in the game log",
-    "summary": "The owner ruling of 2026-08-30 (“nothing may exist only in the…”) requires an announcement the player acts on or has lost something by to reach a surface other than the log. The verifier measured the client's own derived inventory in 244-log-is-not-the-only-surface: 39 announcements are log-only, 21 of them tier 1 (spells fizzling, costs that cannot be paid, declined costs, life not gained or not lost, nothing lured). The owner ruling of 2026-08-30 (“nothing may exist only in the…”) records nineteen and the test asserts 21, so the ruling's count is also stale.",
+    "summary": "The owner ruling of 2026-08-30 (“nothing may exist only in the…”) requires an announcement the player acts on or has lost something by to reach a surface other than the log. The verifier measured the client's own derived inventory in 244-log-is-not-the-only-surface: 39 announcements are log-only, 21 of them tier 1 (spells fizzling, costs that cannot be paid, declined costs, life not gained or not lost, nothing lured). The owner ruling of 2026-08-30 (“nothing may exist only in the…”) records nineteen and the test asserted 21 (20 since 2026-10-16, when the Wraith change removed one), so the ruling's count is also stale.",
     "evidence": [
       {
         "file": "client/docs/digital-rules.md",
@@ -59,7 +59,7 @@
       },
       {
         "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
-        "quote": "assert.equal(costly.length, 21, 'tier 1:"
+        "quote": "assert.equal(costly.length, 20, 'tier 1:"
       }
     ],
     "ct": "CT-236",

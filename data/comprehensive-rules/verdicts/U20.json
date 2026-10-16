@@ -3375,54 +3375,59 @@
   },
   {
     "key": "attr.piercing.redirect",
-    "textHash": "55b06acf24fc2630",
+    "textHash": "a43e3ef7b21a2d62",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U20-r2",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "cards/sets/batch-earth-b.ts:Oorblak replaceCombatDamageToPlayer",
+        "loc": "client/engine/src/engine.ts:E.replaceCombatDamage",
         "agrees": true,
-        "note": "single Oorblak: absorbs lethal, Piercing leftover reaches the player"
-      },
-      {
-        "loc": "cards/sets/batch-earth-b.ts:Oorblak replaceCombatDamageToPlayer",
-        "agrees": false,
-        "note": "with two Oorblaks the leftover is redirected again into the second one (the flagged engineDiffers)"
+        "note": "Each Oorblak takes its lethal share of a Piercing hit; the excess is offered to the next holder that has not applied, then to the player."
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/387-raq-combat.test.ts",
-        "pattern": "RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak",
+        "pattern": "RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/17-earth-b.test.ts",
-        "pattern": "Oorblak: Caleb's case",
+        "pattern": "Oorblak: Caleb's case — 5 Piercing redirected",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "pattern": "CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "pattern": "CR 708.4: three Oorblaks and 10 Piercing",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
-        "title": "attr.piercing.redirect: with TWO Oorblaks, 10 Piercing combat damage — is the excess redirected again?",
-        "passed": true,
-        "demonstrates": "yes: the divergence is real; both Oorblaks die and only 2 reach the player"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1397188292239163454#0",
         "supports": "yes",
-        "note": "4 kill it, leftover 6 still Piercing to the face; replacement effects apply once"
+        "note": "_passer [Solved] + Caleb quoted: 4 kill the Oorblak, 6 still Piercing to the face; replacements apply once."
       },
       {
-        "ref": "R237",
-        "supports": "partly",
-        "note": "about the Deadly floor on the redirect path; on-topic, not the not-redirected-again clause"
+        "ref": "owner 2026-10-16: \"that damage is still considered combat damage, so it'd go to the second one\"",
+        "supports": "yes",
+        "note": "Supports a second Oorblak taking the excess."
+      },
+      {
+        "ref": "owner questions-round27 Q2 fragment",
+        "supports": "partial",
+        "note": "Fragment, not needed for the claim."
       }
     ],
     "quote_spans": [
@@ -3431,13 +3436,16 @@
         "text": "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
       },
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "replacement effects only apply once in an effect Unless a new trigger occurs"
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "text": "'and the remaining 4 is still Piercing, so it goes to the player');"
+      },
+      {
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "text": "assert.deepEqual(r.damage, ['dead', 'dead'], 'each Oorblak took its 4 and died');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed against the designer; the flagged divergence is real (two Oorblaks: the leftover is redirected a second time). Whether \"apply once\" forbids a SECOND Oorblak redirecting is a reading of Caleb's line, not something the thread states.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.piercing.same-damage",
@@ -3980,6 +3988,63 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "attr.poisonous.who-puts",
+    "textHash": "9a7d63e75dc32ac4",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U20-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.commitUnitDamage",
+        "agrees": true,
+        "note": "A Poisonous hit's -1/-1 counters carry by = the source unit's controller."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/454-poisonous-counter-attribution.test.ts",
+        "pattern": "Poisonous BLOCKER: its -1/-1 counters on the attacker are pu",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/454-poisonous-counter-attribution.test.ts",
+        "pattern": "Poisonous ATTACKER: its -1/-1 counters on the blocker are pu",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Blightmound",
+        "supports": "yes",
+        "note": "Reminder text verbatim: Poisonous damage is -1/-1 counters."
+      },
+      {
+        "ref": "card: Wandering Blightshell",
+        "supports": "yes",
+        "note": "Verbatim. That the counters a player's own Poisonous source deals are put by that player is the plain reading (the source's controller is the one acting); no designer or owner source cited for it."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Poisonous sources damage units in the form of -1/-1 counters."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When you put a counter on an enemy, {/n}[Switch1] Draw a card."
+      },
+      {
+        "file": "client/engine/test/454-poisonous-counter-attribution.test.ts",
+        "text": "assert.equal(cc[0]!.data?.['by'], D, 'CR 708.8b: put by the Poisonous unit\\'s controller');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "attr.pure",

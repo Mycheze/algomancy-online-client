@@ -1088,6 +1088,62 @@
     "sourceHashes": {}
   },
   {
+    "key": "concepts.resources.expend.only-to-pay",
+    "parent": "concepts.resources.expend",
+    "order": 3,
+    "text": "A resource is expended only to pay a cost. No action expends a resource for nothing, and mana is not kept for later use.",
+    "examples": [
+      {
+        "text": "Keeper of Tithes (\"At the end of [Haste], if X is not 0, create an X/X unit, where X is the number of expended resources you have\") is in play, its controller has six open resources and nothing to pay for: no resource can be expended, so X is 0 and no unit is made.",
+        "test": "470-expend-only-to-pay.test.ts::CR 106.5: Keeper of Tithes with six open resources and nothing paid makes no token"
+      },
+      {
+        "text": null,
+        "test": "470-expend-only-to-pay.test.ts::CR 106.5: no action expends a resource except by paying a cost"
+      },
+      {
+        "text": null,
+        "test": "470-expend-only-to-pay.test.ts::CR 106.5: the Action union has no expend, tap, spend or float action"
+      }
+    ],
+    "see": [
+      "concepts.resources.expend.paying"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RQ 1151901699108241438",
+          "quote": "There is no floating currently. I'd like to avoid that concept if possible"
+        }
+      ],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Caleb's message was just two letters: \"no\" in response to my question about it.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, #209 (in session)"
+        },
+        {
+          "quote": "We just need to codify it and put it into the rules to ensure that it's clear there's no way to expend resources without paying a cost.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, #209 (in session)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "470-expend-only-to-pay.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Report #209. The owner relays Caleb's \"no\" to \"Can you expend resources for no reason?\" (O1). \"Mana is not kept for later\" is Caleb's (RQ 1151901699108241438, 2023-09-14, answering whether mana floats).",
+    "sourceHashes": {
+      "RQ 1151901699108241438": "f7939f52e699a73d85e77369ec456ffbefc7d6f642d38caac86cc38b545c2c83"
+    }
+  },
+  {
     "key": "concepts.resources.recycle",
     "parent": "106",
     "order": 6,

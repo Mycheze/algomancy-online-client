@@ -2274,6 +2274,70 @@
     "problem": ""
   },
   {
+    "key": "concepts.resources.expend.only-to-pay",
+    "textHash": "86f27b3fa56298e0",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U02-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.payMana",
+        "agrees": true,
+        "note": "the only place a resource becomes 'expended'; the Action union has no expend/float action"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/470-expend-only-to-pay.test.ts",
+        "pattern": "CR 106.5: Keeper of Tithes with six open resources",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/470-expend-only-to-pay.test.ts",
+        "pattern": "CR 106.5: no action expends a resource except by paying a cost",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/470-expend-only-to-pay.test.ts",
+        "pattern": "CR 106.5: the Action union has no expend, tap, spend or float action",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RQ 1151901699108241438",
+        "supports": "yes",
+        "note": "author calebgannon; answers mikemarshallillustrations' 'does mana float in this game? ... use the mana later?' — supports 'mana is not kept for later use'"
+      },
+      {
+        "ref": "owner: Caleb's message was just two letters: \"no\"",
+        "supports": "yes",
+        "note": "owner reports Caleb's 'no' to expending for no reason"
+      },
+      {
+        "ref": "owner: We just need to codify it",
+        "supports": "yes",
+        "note": "owner call: no way to expend resources without paying a cost"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "There is no floating currently. I'd like to avoid that concept if possible"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "also does many float in this game? for example can I tap a resource and bounce it with slumbering ancient to use the many later?"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "concepts.resources.expend.paying",
     "textHash": "0c0f9a0a324cffab",
     "verdict": "confirmed",

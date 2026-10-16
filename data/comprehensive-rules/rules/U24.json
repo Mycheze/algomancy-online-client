@@ -1512,6 +1512,74 @@
     "sourceHashes": {}
   },
   {
+    "key": "annexd.display.live-values.public-choice",
+    "parent": "annexd.display.live-values",
+    "order": 6,
+    "text": "A prediction made with Prediction Prophet is shown on that card to both players, as a chip on the card and a line in its text box, from when it is made until the start of deployment reads it. A prediction left from an earlier turn is not shown.",
+    "examples": [
+      {
+        "text": "The opponent sees the Prophet's predicted life on the card and in its text box.",
+        "test": "467-prediction-is-public.test.ts::Prediction Prophet - the opponent sees the prediction on the card"
+      },
+      {
+        "text": "A prediction of 0 is shown like any other.",
+        "test": "467-prediction-is-public.test.ts::Prediction Prophet - a prediction of 0 is a prediction and shows"
+      },
+      {
+        "text": null,
+        "test": "467-prediction-is-public.test.ts::Prediction Prophet - the prediction is read once at deployment, and an old one never counts"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "467-prediction-is-public.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "Discord report relayed by the owner (test 467 header). Narrowed to the one card tested: no source generalises it to every remembered choice.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.display.live-values.event-x",
+    "parent": "annexd.display.live-values",
+    "order": 7,
+    "text": "A triggered ability whose amount is its own column's share of combat damage (Vroot: \"When my column deals combat damage, each opponent gains that much life.\") shows that share on the stack as its X, the same amount it resolves with, not the total every column dealt.",
+    "examples": [
+      {
+        "text": "Vroot (4/4) and a 1/1 attack in two columns and are not blocked: the stack shows X=4, and the opponent gains 4.",
+        "test": "464-trigger-x-is-what-it-resolves.test.ts::report 215 - Vroot beside a 1/1 shows X=4 on the stack and the opponent gains 4"
+      },
+      {
+        "text": "Vroot's text carried by a host: the stack shows the host's column share.",
+        "test": "464-trigger-x-is-what-it-resolves.test.ts::report 215 - Vroot as a virus reads its HOST column share"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "464-trigger-x-is-what-it-resolves.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "Report #215. Narrowed to per-column combat shares, the case 464 tests and sweeps.",
+    "sourceHashes": {}
+  },
+  {
     "key": "annexd.display.text-box",
     "parent": "D6",
     "order": 10,
@@ -1754,6 +1822,42 @@
     "scope": "digital",
     "confidence": "high",
     "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.display.text-box.suppression-band",
+    "parent": "annexd.display.text-box",
+    "order": 6,
+    "text": "In the card zoom, a unit whose attributes are off has only its type bar greyed; a unit whose abilities are off has its text box below the type bar greyed; a unit with both off has both greyed.",
+    "examples": [
+      {
+        "text": "A unit Formless has stamped (attributes off) greys its type bar and not its text box.",
+        "test": "465-attributes-off-is-not-abilities-off.test.ts::report 208 - a Formless-stamped unit greys its type bar and not its text box"
+      },
+      {
+        "text": "A unit The Everywhere names (abilities off) greys below the type bar and leaves the bar.",
+        "test": "465-attributes-off-is-not-abilities-off.test.ts::report 208 - The Everywhere silencing a unit greys below the type bar"
+      },
+      {
+        "text": "A unit Monke switches off in battle (both off) greys the bar and the box.",
+        "test": "465-attributes-off-is-not-abilities-off.test.ts::report 208 - Monke switching off both greys the bar and the box"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "465-attributes-off-is-not-abilities-off.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "Report #208.",
     "sourceHashes": {}
   },
   {
@@ -2636,6 +2740,48 @@
     "scope": "digital",
     "confidence": "high",
     "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.confirm.dials.no-targets",
+    "parent": "annexd.confirm.dials",
+    "order": 6,
+    "text": "In an \"up to\" target choice, the button that stops picking reads \"No targets\" and is drawn as an ordinary button while nothing has been picked; after a pick it reads \"No more targets\" and is drawn as the quieter decline button. An \"up to N\" choice ends by itself at its Nth pick, with nothing more asked about it.",
+    "examples": [
+      {
+        "text": "Minor Kraken, grafted with Fester, attacks: its up-to-one target choice offers \"No targets\" as an ordinary button, and answering it moves on to Fester.",
+        "test": "466-no-targets-is-a-button.test.ts::report 206 - Kraken grafted with Fester offers No targets as an ordinary button"
+      },
+      {
+        "text": "Twin Flame (up to two targets): after one pick the stop reads \"No more targets\"; the second pick ends the choice.",
+        "test": "466-no-targets-is-a-button.test.ts::report 206 - an up to two spell finishes at two picks"
+      },
+      {
+        "text": null,
+        "test": "466-no-targets-is-a-button.test.ts::report 206 - an up to X spell finishes at X picks"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Make there be a \"No targets\" as the button, especially for an \"up to 1\" option. But also, up to x should just \"finish\" when the max number is chosen.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16, #206 (in session)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "466-no-targets-is-a-button.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "Report #206.",
     "sourceHashes": {}
   },
   {

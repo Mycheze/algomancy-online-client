@@ -753,19 +753,31 @@
     "key": "combat.damage.dealing",
     "textHash": "7c92e65d6126d92b",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "loc": "client/engine/src/engine.ts:column damage-replacement attrs (Poisonous → counters) / Vulnerable doubling",
         "agrees": true,
-        "note": "one ledger per sub-step; Vulnerable doubles received; Poisonous marks -1/-1 counters"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "09-attrs.test.ts",
-        "pattern": "Vulnerable: Crumbling Ancient marks double the combat damage it receives",
+        "file": "client/engine/test/09-attrs.test.ts",
+        "pattern": "Vulnerable: Crumbling Ancient marks double",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/09-attrs.test.ts",
+        "pattern": "Poisonous: Noxious Sporefiend deals combat damage",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.overview.simultaneous",
         "passed": true,
         "asserts_claim": true
       }
@@ -775,41 +787,35 @@
       {
         "ref": "Manual p.23",
         "supports": "yes",
-        "note": ""
+        "note": "damage processes happen simultaneously"
       },
       {
         "ref": "card: Blightmound",
         "supports": "yes",
-        "note": ""
+        "note": "the {Poisonous} reminder"
       },
       {
         "ref": "RAQ 1372451771632320512#4",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R237",
-        "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved]: 10 assigned to a Vulnerable unit is doubled to 20"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "const mult = (!hit.pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Every damage exchange happens at the same time"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (hit.poisonous) this.addCounters(u, -received);   // permanent"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Poisonous sources damage units in the form of -1/-1 counters.)"
       },
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Poisonous sources damage units in the form of -1/-1 counters."
+        "file": "client/ledgers/raq.ts",
+        "text": "You could assign all 10 damage to Crumbling, which would then get doubled to 20"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.damage.dealing.deaths",
@@ -1664,27 +1670,39 @@
   },
   {
     "key": "combat.damage.player.redirect",
-    "textHash": "bda7f8161a37bcb7",
+    "textHash": "c9f50085d4a122eb",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitPlayerDamage (Oorblak replacement)",
+        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Oorblak",
         "agrees": true,
-        "note": "tests: Piercing remainder past Oorblak lethal reaches player; non-Piercing absorbed"
+        "note": "each Oorblak applies once; Piercing excess stays combat damage and may be taken by another; the redirect precedes Blightsea Polyp's rot conversion"
       }
     ],
     "tests_run": [
       {
-        "file": "387-raq-combat.test.ts",
+        "file": "client/engine/test/387-raq-combat.test.ts",
         "pattern": "RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "17-earth-b.test.ts",
+        "file": "client/engine/test/17-earth-b.test.ts",
         "pattern": "Oorblak: a NON-Piercing overkill is absorbed whole",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "pattern": "CR 708.4",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
+        "pattern": "CR 608.8c",
         "passed": true,
         "asserts_claim": true
       }
@@ -1697,15 +1715,39 @@
         "note": ""
       },
       {
+        "ref": "card: Blightsea Polyp",
+        "supports": "yes",
+        "note": ""
+      },
+      {
         "ref": "RAQ 1397188292239163454#0",
         "supports": "yes",
-        "note": "both quotes"
+        "note": "_passer [Solved]: 4 kill it, 6 still Piercing go to the player; Caleb quoted: replacement effects apply once"
+      },
+      {
+        "ref": "RQ 1442982460034912287",
+        "supports": "yes",
+        "note": "calebgannon, same conversation as his two-Automaton chain ('1 token -> 2tokens -> 3 tokens') and the Resonant/Oorblak replacement discussion"
+      },
+      {
+        "ref": "owner 2026-10-16 (Oorblak and Piercing)",
+        "supports": "yes",
+        "note": "the excess is still combat damage, so a second Oorblak takes it — designer silent on two Oorblaks"
+      },
+      {
+        "ref": "owner 2026-10-16 (Polyp and Oorblak) x2",
+        "supports": "yes",
+        "note": "redirect first; rot only from Piercing excess"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "file": "client/engine/src/cards/printed.json",
         "text": "If combat damage would be dealt to you, that damage is dealt to me instead."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Columns deal combat damage to players as 1 rot."
       },
       {
         "file": "client/ledgers/raq.ts",
@@ -1714,11 +1756,14 @@
       {
         "file": "client/ledgers/raq.ts",
         "text": "replacement effects only apply once in an effect Unless a new trigger occurs"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "the tldr is replacement effects only apply once onto an effect"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.damage.player.replaced-still-dealt",
