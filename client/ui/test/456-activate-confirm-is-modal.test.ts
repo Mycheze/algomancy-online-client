@@ -70,7 +70,7 @@ function table(seed: number): Table {
   assert.ok(seat !== null, 'reached a battle window with both abilities and a hand card live');
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
   ui.sent();
-  const hand = h.state.players[seat].hand.indexOf('Flame of History');
+  const hand = h.state.players[seat]!.hand.indexOf('Flame of History');
   assert.ok(hand >= 0);
   return { h, seat, asks: asks[seat]!, picks: picks[seat]!, hand, a: usable(seat, asks[seat]!)!, b: usable(seat, picks[seat]!)! };
 }
