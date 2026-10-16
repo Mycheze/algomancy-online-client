@@ -411,10 +411,15 @@ card('Arcane Echo', {
 // fact from the other side — the X travels with the token, so a swap that
 // keeps it is worth saying out loud.
 //
-// THE COPY IS OF THE FIRST REQUEST WITH THAT (name, X), which is now a
-// distinction without a difference for unit tokens — two requests with the
-// same name AND the same X are identical requests — and stays deterministic
-// if a request ever grows a third field.
+// THE COPY IS OF THE FIRST REQUEST WITH THAT KEY, and the copy is the whole
+// request — name, X AND the stats the creation set (CR 304.14). Reports
+// #212/#213 (room TJGW): the request used to carry no stats, so the copy of a
+// Mirage Walker 3/3 or a Soul Siphon 24/24 was the bare 1/1 Unit Token.
+//
+// TWO AUTOMATONS CHAIN (CR 708.4; Caleb 2025-11-25: "1 token -> 2tokens -> 3
+// tokens"): the engine applies each once and hands the next one the batch as
+// replaced so far, so its "each unique token" counts the first one's extras
+// too — which, being copies, are never new unique tokens.
 //
 // "UNIT TOKENS" only, printed: the batch may contain spell tokens (Biotoxicity's
 // Poisons) and this ignores them. "YOU would create": the batch belongs to the
@@ -430,7 +435,13 @@ card('Automaton of Abundance', {
       const extra: TokenRequest[] = [];
       for (const r of batch) {
         if (r.form !== 'unit' || r.seat !== self.controller) continue;
-        const key = `${r.name} #${r.x}`;         // CR 304.14: the (name, X) pair
+        // CR 304.14: the (name, X) pair — and the stats the creation set
+        // (reports #212/#213): a 3/3 and a 5/5 Unit Token made
+        // together are two unique tokens, the reading that lets more happen.
+        // A creation that set no stats is the definition's own, so a bare
+        // Unit Token and one created "as a 1/1" are the same unique token.
+        const def = r.stats ?? [getCard(r.name).power, getCard(r.name).toughness];
+        const key = `${r.name} #${r.x} ${def[0]}/${def[1]}`;
         if (seen.has(key)) continue;                 // one copy per unique pair
         seen.add(key);
         extra.push({ ...r });

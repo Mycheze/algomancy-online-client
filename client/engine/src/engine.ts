@@ -3658,6 +3658,7 @@ export class E {
     if (opts.token && !this.substitutingToken) {
       const req = this.replaceTokenCreation({
         form: 'unit', name, x: opts.counters ?? 0, seat, region,
+        ...(opts.tokenStats ? { stats: opts.tokenStats } : {}),
       });
       if (req.name !== name || req.form !== 'unit' || req.x !== (opts.counters ?? 0)) {
         this.substitutingToken = true;          // the substitute is not itself replaceable
@@ -3844,8 +3845,15 @@ export class E {
     // batch replacement can never observe a half-created board. The REQUEST
     // (opts.counters), not the amount-modified outcome: a batch copy replays
     // the creation, and the layer applies to the copy on its own spawn.
+    //
+    // CR 304.14: …and the STATS the creation set (`tokenStats`: "a 3/3 Unit
+    // Token", Soul Siphon's X/X). Reports #212/#213 (room TJGW): without them
+    // Automaton's copy of a Mirage Walker 3/3 was the bare 1/1 definition.
     if (opts.token) {
-      this.noteTokenCreated({ form: 'unit', name, x: opts.counters ?? 0, seat, region });
+      this.noteTokenCreated({
+        form: 'unit', name, x: opts.counters ?? 0, seat, region,
+        ...(opts.tokenStats ? { stats: [opts.tokenStats[0], opts.tokenStats[1]] as [number, number] } : {}),
+      });
     }
     return u;
   }
@@ -4501,8 +4509,19 @@ export class E {
    *
    * Automaton of Abundance: "[Augment] If you would create one or more unit
    * tokens, instead create those tokens plus an additional copy of each unique
-   * token you created." First non-null consumes, like every other replacement:
-   * a creation is replaced once.
+   * token you created."
+   *
+   * EVERY donor applies, each ONCE, in entity-id order, and each is handed the
+   * batch as the donors before it left it — CR 708.4, Caleb (rules-questions
+   * 2025-11-25) on two Automatons: "1 token -> 2tokens -> 3 tokens", "the tldr
+   * is replacement effects only apply once onto an effect". So a replacement
+   * never re-applies to what it produced, but a DIFFERENT one that has not
+   * applied yet still sees the replaced event. This used to be first-non-null
+   * consumes, and two Automatons gave one extra token instead of two.
+   *
+   * The extras are created only after every donor has answered, so no donor
+   * ever observes a half-paid batch, and they are created in the order the
+   * donors produced them.
    *
    * The extras are created INLINE, in the same resolution, with nothing on the
    * stack in between and no priority window — the CR 802.16i test for "part of
@@ -4523,16 +4542,19 @@ export class E {
     this.inTokenBatchSettle = true;
     this.replacementDepth++;
     try {
+      let replaced: readonly TokenRequest[] = batch;   // the event as replaced so far
+      const toCreate: TokenRequest[] = [];
       for (const { face, def, anchor } of donors) {
-        const extra = def.replaceTokenBatch!(this, anchor, batch);
+        const extra = def.replaceTokenBatch!(this, anchor, replaced);
         if (!extra || !extra.length) continue;
         this.ev('info',
           `${face}: the creation is replaced — ${extra.length} more token(s) `
           + `(${extra.map(r => r.name).join(', ')}) are created with it.`,
           { by: face, unit: anchor.id, n: extra.length });
-        for (const r of extra) this.createToken(r);
-        return;                                   // first to replace consumes
+        replaced = [...replaced, ...extra];       // CR 708.4: the next donor sees this
+        toCreate.push(...extra);                  // …and this donor never applies again
       }
+      for (const r of toCreate) this.createToken(r);
     } finally { this.inTokenBatchSettle = false; this.replacementDepth--; }
   }
 
@@ -4543,7 +4565,12 @@ export class E {
    */
   createToken(req: TokenRequest): Entity {
     return req.form === 'unit'
-      ? this.spawnUnit(req.seat, req.name, req.region, { token: true, ...(req.x ? { counters: req.x } : {}) })
+      ? this.spawnUnit(req.seat, req.name, req.region, {
+        token: true,
+        ...(req.x ? { counters: req.x } : {}),
+        // CR 304.14: the stats the original creation set travel with the copy
+        ...(req.stats ? { tokenStats: [req.stats[0], req.stats[1]] as [number, number] } : {}),
+      })
       : this.createSpellToken(req.seat, req.name, req.x, req.region);
   }
 

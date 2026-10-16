@@ -1870,6 +1870,16 @@ export interface TokenRequest {
   x: number;
   seat: Seat;
   region: number;
+  /**
+   * CR 304.14: the stats the creating effect SET on a unit token ("create a
+   * 3/3 Unit Token", "an X/X"), i.e. `spawnUnit`'s `tokenStats`. Absent = the
+   * token definition's own printed stats. Reports #212/#213 (room TJGW): the
+   * request carried no stats, so Automaton of Abundance's copy of a 3/3 (or a
+   * 24/24) was the bare 1/1 Unit Token definition. A request that replays a
+   * creation must carry everything the creation set; counters, damage and
+   * mods gained since are not part of it.
+   */
+  stats?: [number, number];
 }
 
 export interface CardBehavior {
@@ -2150,7 +2160,9 @@ export interface CardBehavior {
    * and `batch` is everything it created, in creation order. Return extra
    * tokens to create alongside them (Automaton of Abundance: "instead create
    * those tokens plus an additional copy of each unique token you created"),
-   * or null to decline. First non-null consumes.
+   * or null to decline. Every donor applies ONCE, in entity-id order, and each
+   * sees the batch as the donors before it left it (CR 708.4: Caleb 2025-11-25,
+   * two Automatons: "1 token -> 2tokens -> 3 tokens").
    *
    * A BATCH and not a per-token hook because the printed word is "each UNIQUE
    * token", and uniqueness is a property of the whole creation, not of one
