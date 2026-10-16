@@ -112,7 +112,7 @@ import type {
   GameState, Phase, ResourceKind, Seat, StackItem, TargetRef,
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
-import { installReport, isReportOpen, openReport } from './report.ts';
+import { installReport, isReportOpen, openReport, reportJustSent } from './report.ts';
 import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
 import { dragActive, installDrag, type DragPlan } from './drag.ts';
 // BL-38 — the match replay viewer: a saved game driven through the same
@@ -5544,10 +5544,10 @@ const CONFIRM_BARS = {
   ally:   { cancel: 'allycancel',      back: 'No, pick again', confirm: 'allyconfirm',    go: 'Yes, target my own' },
 } as const;
 /** one armed-confirm bar; `attrs` rides on the confirm button (doneplanconfirm
- * carries the seat it is answering for) */
-function confirmBarHtml(kind: keyof typeof CONFIRM_BARS, seat: Seat, question: string, err: string, attrs = ''): string {
+ * carries the seat it is answering for), `cls` on the bar (the act bar's nudge) */
+function confirmBarHtml(kind: keyof typeof CONFIRM_BARS, seat: Seat, question: string, err: string, attrs = '', cls = ''): string {
   const c = CONFIRM_BARS[kind];
-  return `<div class="promptbar pending"><span class="who">${esc(h.state.players[seat]!.name)}:</span>
+  return `<div class="promptbar pending${cls}"><span class="who">${esc(h.state.players[seat]!.name)}:</span>
         ${question}
         <button data-btn="${c.cancel}">${c.back}</button>
         <button class="primary" data-btn="${c.confirm}"${attrs}>${c.go}</button>${err}</div>`;
@@ -6006,7 +6006,8 @@ function promptHtml(): string {
   if (ui.confirmAct) {
     const a = ui.confirmAct;
     return confirmBarHtml('act', a.seat, `activate <b>${esc(a.unit)}</b> — ${iconizeText(a.label)}?
-        <span style="color:var(--dim)">this cost cannot be taken back</span>`, err);
+        <span style="color:var(--dim)">this cost cannot be taken back</span>`, err, '',
+      actNudge ? ` nudge${actNudge % 2 ? 'a' : 'b'}` : '');
   }
   // [59] this window is already being given away — a pass is scheduled for
   // this exact state. Painting "you have priority — Pass" over it was a lie
@@ -8044,6 +8045,7 @@ function dragSourceOf(el: Element): HTMLElement | null {
 
 function dragPlanFor(src: HTMLElement): DragPlan | null {
   if (!inGame || !h.state || NET?.waiting || replayActive()) return null;
+  if (actBarUp()) return null;   // D2: nothing is picked up while "Yes, activate" is asking
   const kind = src.dataset['act'];
   if (kind === 'hand' || kind === 'cache') {
     return dragCardPlan(kind, Number(src.dataset['p']) as Seat, Number(src.dataset['i']));
@@ -9809,7 +9811,61 @@ window.addEventListener('scroll', e => {
 document.addEventListener('pointerdown', primeAudio, { passive: true });
 document.addEventListener('keydown', primeAudio);
 
+/* ── Report D2 (2026-10-16): the "Yes, activate" bar is MODAL ─────────────
+ *
+ * Discord: "When you are asked a safety question … it should not be possible
+ * to do anything else but answer that question. We had it twice that we
+ * wanted to choose a target because we did not notice the safety question and
+ * ended up (casting / activating) the thing we wanted to choose as a target
+ * instead." The owner's ruling: "The only ways to say "yes, activate" should
+ * be clicking the SAME unit/thing again or clicking the Yes or hitting enter.
+ * Otherwise, it should do nothing." Its No button and Escape still cancel.
+ *
+ * So while it is on screen every input path asks `actBarUp()` first — the
+ * click listener (`actBarClick`), drag (`dragPlanFor`), the right-click menu
+ * and the hotkeys — and a refused input nudges the bar so it is noticed.
+ *
+ * ONLY this bar. The done-planning, pass and end-deployment bars are left as
+ * they were: the resource, cached card or token each one names is how you
+ * answer its "go back and do it", so a click on the board is their Go back.
+ */
+let actNudge = 0;
+/** the bar is up and on screen (a playback or a stopped game paints over it) */
+function actBarUp(): boolean {
+  return inGame && !!ui.confirmAct && !playbackNow && !NET?.frozen;
+}
+/** an input the bar refused: say so on the bar (two alternating classes, so
+ * every refusal restarts the animation) */
+function nudgeAct(): void { actNudge++; render(); }
+/** "Yes, activate" — the button, Enter, or the same unit clicked again */
+function confirmActivation(): void {
+  const a = ui.confirmAct;
+  ui.confirmAct = null;
+  if (a) {
+    act({ type: 'activateAbility', seat: a.seat, entityId: a.entityId,
+      abilityIndex: a.abilityIndex, ...(a.via ? { via: a.via } : {}) });
+  }
+}
+/** a click while the bar is up; true when this took it */
+function actBarClick(target: HTMLElement): boolean {
+  if (!actBarUp()) return false;
+  const btn = target.closest('[data-btn]') as HTMLElement | null;
+  const b = btn?.dataset['btn'];
+  if (b === 'actconfirm' || b === 'actcancel') return false;   // the bar's own two answers
+  // the nearest [data-act], as handleAction reads it — a hand card or a slot
+  // inside the unit's area is not the unit
+  const t = btn ? null : target.closest('[data-act]') as HTMLElement | null;
+  if (t?.dataset['act'] === 'unit' && Number(t.dataset['id']) === ui.confirmAct!.entityId) {
+    confirmActivation();
+    render();
+    return true;
+  }
+  nudgeAct();
+  return true;
+}
+
 document.addEventListener('click', e => {
+  if (actBarClick(e.target as HTMLElement)) return;
   const btn = (e.target as HTMLElement).closest('[data-btn]') as HTMLElement | null;
   if (btn) { handleButton(btn, e as MouseEvent); return; }
   // outside a game (home screen / kicked screen) a stray click must not
@@ -10187,14 +10243,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     if (seat !== null) act({ type: 'doneDeploying', seat });
   },
   actcancel: () => { ui.confirmAct = null; },
-  actconfirm: () => {
-    const a = ui.confirmAct;
-    ui.confirmAct = null;
-    if (a) {
-      act({ type: 'activateAbility', seat: a.seat, entityId: a.entityId,
-        abilityIndex: a.abilityIndex, ...(a.via ? { via: a.via } : {}) });
-    }
-  },
+  actconfirm: () => { confirmActivation(); },
   skipattack: () => {
     act({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
     ui.columns = []; ui.backOnly = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false;
@@ -10688,6 +10737,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
         if (o.kind === 'formation') { takeFormation(); return; }
         const a = o.action!;
         if (needsConfirm(u, a)) {
+          actNudge = 0;
           ui.confirmAct = {
             seat: u.controller, entityId: id, abilityIndex: a.abilityIndex,
             ...(a.via ? { via: a.via } : {}),
@@ -11164,6 +11214,9 @@ function serveStaticBoard(state: GameState, log: string[]): void {
 // ── bootstrap: home screen by default; ?ws=1&room=… network game,
 //    ?replay=CODE a finished game, ?demo a scripted mid-battle ───────────
 document.addEventListener('keydown', e => {
+  // D3: Ctrl+Z in a text box is the box's own undo, and with the report (or
+  // any other layer) up it is not aimed at the game at all
+  if (inputOwned(e)) return;
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && NET) {
     e.preventDefault();
     NET.undo();
@@ -11184,8 +11237,12 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Control') {
     // `repeat` is the OS auto-repeat of the held key; it is not a fresh press,
-    // so it must not clear a chord latch set by the key pressed in between
-    if (!ctrlIsChord) setFullControl(true);
+    // so it must not clear a chord latch set by the key pressed in between.
+    // D3: and Control pressed for a chord in a text box (Ctrl+Enter sends the
+    // report) or over a layer is not a hold for the game — taking it as one
+    // dropped an armed Pass all. Dropping full control below stays unguarded:
+    // letting go is always safe.
+    if (!ctrlIsChord && !inputOwned(e)) setFullControl(true);
     return;
   }
   // (c): Control is being used as a modifier — this is Ctrl+Z, or the
@@ -11241,6 +11298,35 @@ function closeTopOverlay(): boolean {
   return false;
 }
 
+/** is the event's target a box being typed in? */
+function typingIn(t: EventTarget | null): boolean {
+  const el = t as HTMLElement | null;
+  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || !!el.isContentEditable);
+}
+/** CT-135: every overlay a hotkey must not reach through — THE list (269 reads
+ * it here). `withPick` false leaves out the two pick dialogs: those are the
+ * game's own question, which Enter answers and undo may take back, not a layer
+ * over the game. D3: and the moment just after a sent report closes. */
+function overlaysUp(withPick = true): boolean {
+  const overlayUp = isReportOpen() || judgeOpen || helpOpen || logOpen || !!inspect
+    || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
+    || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || reportJustSent()
+    || (withPick && (pickOpen() || pickSetOpen()));
+  return overlayUp;
+}
+/**
+ * Report D3 (2026-10-16): is this key someone else's? A text box has it, a
+ * layer over the game is open (the report, the judge, help, the log, the
+ * inspector, any dialog, a menu, a replay), or the "Yes, activate" bar is
+ * asking (D2 — it answers to Enter and Escape only, in the hotkeys below).
+ * EVERY game keydown handler returns on it: 457 is the census. The hotkey
+ * handler below is the one that reads its parts separately, because it is
+ * also where Escape closes those layers and Enter answers the pick dialog.
+ */
+function inputOwned(e: KeyboardEvent): boolean {
+  return typingIn(e.target) || (inGame && (overlaysUp(false) || actBarUp()));
+}
+
 document.addEventListener('keydown', e => {
   // the card browser is a pre-game page, so its keys are handled before the
   // in-game guard below turns everything else off
@@ -11249,7 +11335,7 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.repeat) return;   // held key must not machine-gun actions
   const el = e.target as HTMLElement | null;
-  const inField = !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+  const inField = typingIn(el);
 
   if (e.key === 'Escape') {
     // close whatever is on top first; game-state cancels only come after every
@@ -11294,9 +11380,7 @@ document.addEventListener('keydown', e => {
   // no priority to pass in a spectator view, but the board's handler does not
   // know that, and "Space did something on the board" is not a thing a replay
   // may ever do.
-  const overlayUp = isReportOpen() || judgeOpen || helpOpen || logOpen || !!inspect
-    || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
-    || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || pickOpen() || pickSetOpen();
+  const overlayUp = overlaysUp();
 
   // 2026-10-03: a playback is showing — the board offers nothing to act on
   // (every frame's `legal` is empty), so the keys that act are free, and
@@ -11324,6 +11408,7 @@ document.addEventListener('keydown', e => {
   // column — the front if it is free, else the back. A full column keeps it
   // in your hand, so the next number can try another.
   if (/^[1-9]$/.test(e.key) && !overlayUp) {
+    if (actBarUp()) { e.preventDefault(); nudgeAct(); return; }   // D2: the bar asks first
     const ci = Number(e.key) - 1;
     if (ci >= numberableColumns()) return;
     const row = forwardRow(ui.columns[ci + ui.blockLeft], ui.backOnly);
@@ -11336,6 +11421,7 @@ document.addEventListener('keydown', e => {
 
   if (e.key === ' ') {
     if (overlayUp) return;
+    if (actBarUp()) { e.preventDefault(); nudgeAct(); return; }   // D2: Space is not a yes
     const btn = document.querySelector('[data-btn="pass"], [data-btn="passconfirm"]') as HTMLButtonElement | null;
     if (btn && !btn.disabled) { e.preventDefault(); btn.click(); }   // consumed: no page scroll
     return;
@@ -11346,6 +11432,11 @@ document.addEventListener('keydown', e => {
     // …and the pick dialog, when it is the only thing up, IS the game action
     // Enter confirms (Keep / Put on the bottom)
     if (overlayUp && !(pickOpen() && !ui.menu && !document.querySelector('.overlay:not(.pickover)'))) return;
+    // D3: …and that exception reads the DOM for `.overlay`, which the report's
+    // scrim is not — every layer that is not a pick dialog swallows Enter here
+    if (overlaysUp(false)) return;
+    // D2 (owner): Enter is one of the three ways to say "Yes, activate"
+    if (actBarUp()) { e.preventDefault(); confirmActivation(); render(); return; }
     for (const sel of ENTER_BTNS) {
       const btn = document.querySelector(sel) as HTMLButtonElement | null;
       if (btn && !btn.disabled) { e.preventDefault(); btn.click(); return; }
@@ -11409,6 +11500,8 @@ function concedeHtml(): string {
 // right-click any card (board, hand, bin, preview, reveal) → inspector menu
 document.addEventListener('contextmenu', e => {
   if (!inGame) return;   // never paint game UI over the home screen
+  // D2: no menu (its entries act) while "Yes, activate" is asking
+  if (actBarUp()) { e.preventDefault(); nudgeAct(); return; }
   const t = (e.target as HTMLElement).closest('[data-prev], [data-previd]') as HTMLElement | null;
   if (!t) {
     // bare table: the board menu on its own

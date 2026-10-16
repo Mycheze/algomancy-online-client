@@ -230,6 +230,15 @@ export function abilityOf(
  * print the word target". An ability whose targets have no legal candidates
  * skips the decision entirely and pays the cost anyway — precisely the trap
  * that "up to one target" with nothing to aim at sets.
+ *
+ * A cost that is itself a CHOICE — "Discard a card:", "Sacrifice another
+ * unit:", either/or — is a third: the engine always stops to ask WHICH card or
+ * unit (an "(activation cost)" pick, and a cancelable one — the cast is still
+ * pre-commit), so that pick is the moment to notice. Report D2 (2026-10-16):
+ * asking "are you sure?" here as well put the bar exactly where the player
+ * expected the pick, and their click on the card they meant to discard cast
+ * it instead. Only when the rest of the cost is free of anything irreversible:
+ * life, debt and sacrifice-self are charged BEFORE that pick (CR 705.3d).
  */
 export function activationNeedsConfirm(
   e: E, unit: Entity, a: Extract<Action, { type: 'activateAbility' }>,
@@ -237,9 +246,10 @@ export function activationNeedsConfirm(
   const ab = abilityOf(e.s, unit, a);
   if (!ab) return false;
   const c = ab.cost;
-  const irreversible = !!(c.sacrificeSelf || c.life || c.discard
-    || c.sacrificeOther || c.discardOrSacrifice || c.debt);
-  if (!irreversible) return false;
+  // what is spent with no question asked first; discard / sacrificeOther /
+  // discardOrSacrifice are not here, because each one IS a question
+  const unasked = !!(c.sacrificeSelf || c.life || c.debt);
+  if (!unasked) return false;                   // only mana, or a cost the engine stops to pick
   const spec = ab.effect.targets;
   if (!spec) return true;                       // nothing will stop to ask
   try {

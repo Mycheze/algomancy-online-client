@@ -54,6 +54,13 @@ button:disabled { opacity: .4; cursor: default; }
 .promptbar { background: #262c18; border: 1px solid #4a5b2a; border-radius: 6px; padding: 8px 12px;
   margin-bottom: 8px; display: flex; align-items: center; gap: 12px; min-height: 38px; flex-wrap: wrap; }
 .promptbar.pending { background: #33270f; border-color: #7a5e1e; }
+/* report D2: "Yes, activate" refused a click or a key — flash it so it is seen.
+   Two names for one flash: the class alternates, so each refusal restarts it.
+   A glow, not a shake, so it needs no reduced-motion variant. */
+.promptbar.nudgea { animation: barnudgea .45s ease-out 2; }
+.promptbar.nudgeb { animation: barnudgeb .45s ease-out 2; }
+@keyframes barnudgea { 50% { border-color: #f0c040; box-shadow: 0 0 0 2px #f0c040, 0 0 16px 4px rgba(240,192,64,.55); } }
+@keyframes barnudgeb { 50% { border-color: #f0c040; box-shadow: 0 0 0 2px #f0c040, 0 0 16px 4px rgba(240,192,64,.55); } }
 .promptbar .who { font-weight: 700; color: var(--accent); }
 /* 2026-10-03: the playback — the opponent's hidden step, a board at a time
    (main.ts playbackBarHtml). Calmer than a question: nothing here is yours to

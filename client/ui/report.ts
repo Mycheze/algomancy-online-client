@@ -87,6 +87,16 @@ let layer: HTMLElement | null = null;
 
 export const isReportOpen = (): boolean => open;
 
+/** Report D3 (2026-10-16): "I used Enter to submit a report and it skipped over
+ * my combat." A sent report closes when the server answers, not when the key
+ * is pressed, and the page underneath has the keyboard again the instant it
+ * does — so a key aimed at the dialog a moment ago lands on the board. For a
+ * short settle after a SEND closes it, the board still treats its keys as the
+ * dialog's (ui/main.ts `inputOwned` and the hotkeys' overlay gate read this). */
+const SETTLE_MS = 750;
+let sentAt = 0;
+export const reportJustSent = (): boolean => sentAt > 0 && Date.now() - sentAt < SETTLE_MS;
+
 /** CT-182: who is told when the dialog opens or closes — main.ts, whose
  * standing auto-pass holds while it is open (installReport's argument) */
 let onOpenChange: ((open: boolean) => void) | null = null;
@@ -210,6 +220,7 @@ function send(): void {
   fetch('/api/report', { method: 'POST', headers: acct.authHeaders(), body: JSON.stringify(body) })
     .then(r => r.json()).then((r: { ok?: boolean }) => {
       if (r.ok) {
+        sentAt = Date.now();
         setOpen(false);
         draft = '';
         kind = null;
@@ -277,9 +288,17 @@ export function installReport(openChanged?: (open: boolean) => void): void {
     onButton(t.dataset['report']!, t);
   }, { capture: true });
 
+  // D3: while the form is up it owns the keyboard. A key aimed at the page
+  // behind it stops here; one typed in the form's own box runs that box's
+  // listener (Ctrl+Enter) and is stopped on its way back up by the layer's, so
+  // no game hotkey — Ctrl+Z, the Control hold, Enter, Space — hears either.
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && open) { e.stopPropagation(); closeReport(); }
+    if (!open) return;
+    if (e.key === 'Escape') { e.stopPropagation(); closeReport(); return; }
+    const t = e.target as Node | null;
+    if (!(t && typeof layer?.contains === 'function' && layer.contains(t))) e.stopPropagation();
   }, { capture: true });
+  layer.addEventListener('keydown', e => { if (open) e.stopPropagation(); });
 
   // the pill follows the board: `#app`'s class is the only signal, set by a
   // render this module never hears about — hence the observer (as legal.ts)
