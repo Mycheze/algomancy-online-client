@@ -276,7 +276,7 @@ function mineHtml(s: SeasonView): string {
   const rows = now.length ? `<ul class="lgbrows">${now.map(m => `<li><span>vs <b>${esc(m.opponent.name)}</b>${
     m.opponent.contact ? ` <span class="dim">(${esc(m.opponent.contact)} on Discord)</span>` : ''}</span><span>${
       m.result ? (m.won === true ? '✅ won' : m.won === false ? 'lost' : '<span class="dim">not played</span>')
-        : m.playable ? `<button class="primary" data-btn="lg-play" data-match="${esc(m.id)}">Play</button>` : '<span class="dim">to play</span>'
+        : m.playable ? `<button class="primary" data-btn="lg-play" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Play</button>` : '<span class="dim">to play</span>'
     }</span></li>`).join('')}</ul>` : '';
   if (s.phase === 0) {
     const free = me?.suggestions.filter(x => x.days > 0).length ?? 0;
@@ -550,7 +550,7 @@ function myMatchesHtml(s: SeasonView): string {
       <table class="accttable lgmatches"><tbody>${me.matches.filter(m => m.week === k).map(m => `<tr>
         <td>vs <b>${esc(m.opponent.name)}</b>${m.opponent.contact
           ? `<br><span class="dim">Discord: </span>${esc(m.opponent.contact)}` : ''}</td>
-        <td class="lgplay">${m.playable ? `<button class="primary" data-btn="lg-play" data-match="${esc(m.id)}">Play</button>
+        <td class="lgplay">${m.playable ? `<button class="primary" data-btn="lg-play" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Play</button>
           ${m.week === 0 ? `<button data-btn="lg-cancel" data-match="${esc(m.id)}" class="${arming === `cancel:${m.id}` ? 'danger' : ''}">${
             arming === `cancel:${m.id}` ? 'Press again to call it off' : 'Call off'}</button>` : ''}` : ''}</td>
         <td>${m.result
@@ -874,10 +874,27 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     }
     case 'lg-play': {
+      /* The home banner has a Play button too, and it is drawn from `hint`,
+       * not `data`: `data` is only there once the League page has been
+       * opened, and then it holds whichever season that page last showed,
+       * which need not be the banner's. So each Play button says which
+       * season it belongs to, and the fallbacks follow the page it is on. */
       const match = btn.dataset['match'] ?? '';
-      if (!s || busy) return true;
-      void post('/api/league/play', { season: s.id, match }).then(r => {
-        if (!r.ok) { msg = r.error ?? 'could not open the match'; paint(); return; }
+      const season = btn.dataset['season']
+        || (open ? s?.id : hint?.season?.id) || s?.id || hint?.season?.id || '';
+      if (busy) return true;   // the first press is still on its way
+      const fail = (why: string): void => {
+        if (!open) {
+          // pressed on the home page, which has nowhere to say it: the League
+          // page lists the same match, so open it and say it there
+          openLeague(season && season !== hint?.season?.id ? season : undefined);
+        }
+        msg = why;
+        paint();
+      };
+      if (!season || !match) { fail('could not find that match: try its Play button here'); return true; }
+      void post('/api/league/play', { season, match }).then(r => {
+        if (!r.ok) { fail(r.error ?? 'could not open the match'); return; }
         // into the game the way the queue goes: a full navigation, room in the query
         const seat = Number(r['seat']);
         location.search = `?ws=1&room=${encodeURIComponent(String(r['room']))}`
