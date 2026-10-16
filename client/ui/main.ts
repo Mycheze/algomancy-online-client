@@ -1013,7 +1013,13 @@ interface UiState {
    * so the in-progress mod has to name it too. */
   modding: { from: ModZone; index: number; seat: Seat; mode: 'augment' | 'graft' } | null;
   menu: { x: number; y: number; items: MenuItem[] } | null;
+  /** BL-47: the trigger order being built, first-resolving first — held here
+   * until "Confirm order" sends it as ONE decide (CR 706.5). */
   orderPicked: number[];
+  /** CT-304: the decision id `orderPicked` was built for. gcStaleUi drops the
+   * picks the moment the open question is any other one, so a pick can never
+   * be carried onto a later ordering question and sent as if chosen there. */
+  orderFor: number;
   /** BL-25/CR D7.2: how many counters the next counter-removal click takes, and
    * the decision id it was dialled for — a fresh question always starts at
    * the floor, so the count can never be carried onto a menu that never
@@ -1187,7 +1193,7 @@ const savedEls = (): string[] => {
   } catch { return ['fire', 'water', 'earth']; }
 };
 const freshUi = (): UiState => ({
-  carrying: null, columns: [], backOnly: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [],
+  carrying: null, columns: [], backOnly: [], send: [], spellTokens: [], modding: null, menu: null, orderPicked: [], orderFor: -1,
   counterCount: 1, counterFor: -1,
   assignCount: 0, assignFor: -1,
   numberCount: 0, numberFor: -1,
@@ -2241,9 +2247,32 @@ function maybeCostRamp(): void {
   rampStep();
 }
 
-/** the ✕ Cancel button for the current pre-commit cast decision, if any */
+/** CR 803.5d/BL-47: an ordered {Burst} cast is being built and at least one
+ * token has been picked — so there is a pick for "↶ Undo last pick" to take
+ * back. Read off the same suspension burstStripHtml draws. */
+function burstPicked(): boolean {
+  const sus = h.state.suspension;
+  if (sus?.type === 'burstPick') return sus.aimed.length > 0;
+  return sus?.type === 'cast' && !!sus.item.burstRest;
+}
+/** an ordered {Burst} cast is under construction at all (first question included) */
+function burstBuilding(): boolean {
+  const sus = h.state.suspension;
+  return sus?.type === 'burstPick' || (sus?.type === 'cast' && !!sus.item.burstRest);
+}
+/** the ✕ Cancel button for the current pre-commit cast decision, if any.
+ *
+ * BL-47: for a Burst it is "↺ Start over" — the owner, 2026-10-16: start over
+ * is cancel only, the whole group taken back (CR D4.2: "Burst cancelled
+ * whole") — and beside it "↶ Undo last pick", ONE server undo, which takes
+ * back the last pick or aim of this same pre-commit cast (the server's
+ * cast-chain undo, rooms.ts undoForSeat; 483 proves it is accepted). */
 function castCancelBtnHtml(): string {
   if (!cancelableCast()) return '';
+  if (burstBuilding()) {
+    return `${burstPicked() ? `<button data-btn="burstundo" title="take back the last token you picked or aimed">↶ Undo last pick</button> ` : ''}`
+      + `<button data-btn="castcancel" title="take the whole burst back and choose again — your opponent has not acted yet">↺ Start over <span class="kh">(esc)</span></button>`;
+  }
   return `<button data-btn="castcancel" title="take the play back — your opponent has not acted yet">✕ Cancel <span class="kh">(esc)</span></button>`;
 }
 
@@ -3232,6 +3261,10 @@ function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): 
     });
   }
   if (u.absent) badges.push({ t: 'sent', mod: true });
+  // BL-47: its place in the trigger order being built — the same number the
+  // ordering bar wears, so the order can be read off the board as well
+  const order = opts.zoom ? '' : orderPlacesOf(u.id);
+  if (order) badges.unshift({ t: order, cls: 'orderno', title: 'its trigger’s place in the order you are building — #1 resolves first' });
   // CR D7.1 on the board: the warning a target button used to carry in its label
   // rides on the unit itself now that the unit IS the button
   const warn = opts.zoom ? '' : pickWarning(`unit:${u.id}`);
@@ -5697,6 +5730,36 @@ function orderTriggerCards(dec: Decision): { card: string; sourceId: EntityId }[
   return mine.map(t => ({ card: t.sourceCard, sourceId: t.sourceId }));
 }
 
+/** BL-47/CT-304: the trigger order built so far FOR THIS QUESTION — the picks
+ * are keyed to the decision id they were made on, and a pick made on any
+ * other question reads as no pick at all (gcStaleUi then drops it outright). */
+function orderPicks(dec: Decision): number[] {
+  return dec.kind === 'orderTriggers' && ui.orderFor === dec.id ? ui.orderPicked : [];
+}
+/** BL-47 (owner, 2026-10-16): "auto-place the last trigger — yes". With one
+ * option left there is nothing to choose, so it takes the last place by
+ * itself and the bar goes straight to Confirm. Run after every change to the
+ * picks, so the n-1 state is never on screen. */
+function setOrderPicks(dec: Decision, picks: number[]): void {
+  const n = dec.options.length;
+  const next = picks.filter((i, k) => Number.isInteger(i) && i >= 0 && i < n && picks.indexOf(i) === k);
+  if (next.length === n - 1 && n > 1) next.push(dec.options.findIndex((_o, i) => !next.includes(i)));
+  ui.orderPicked = next;
+  ui.orderFor = next.length ? dec.id : -1;
+}
+/** BL-47: "#1", "#1 #3" — the places this entity's triggers hold in the order
+ * being built, or '' (no ordering question, no picks, or none of them its). */
+function orderPlacesOf(id: EntityId): string {
+  const dec = h.state.decision;
+  if (!dec) return '';
+  const picks = orderPicks(dec);
+  if (!picks.length) return '';
+  const faces = orderTriggerCards(dec);
+  if (!faces) return '';
+  return picks.map((i, k) => faces[i]?.sourceId === id ? `#${k + 1}` : '').filter(Boolean).join(' ');
+}
+function clearOrderPicks(): void { ui.orderPicked = []; ui.orderFor = -1; }
+
 /** Live report 2026-09-05 (VNNW, Soul Siphon): *"When casting Soul Siphon,
  * you can't actually see which player lost which amount of life. It needs to
  * tell you in the UI."* The card's X is read off the battle ledger PER TARGET
@@ -5941,24 +6004,54 @@ function decisionBarHtml(dec: Decision, err: string): string {
      * to trust it unless every label still matches — a mismatch means the queue
      * moved under the question, and the bar falls back to the labels rather
      * than pinning a click to the wrong trigger. */
+    /* BL-47 — THE ORDER IS BUILT ON SCREEN AND SENT ONCE.
+     *
+     * The owner, relayed from Discord 2026-10-16: *"there should be a way to
+     * visually see what order you're chosing and then a way to undo that or
+     * cancel and restart. It's easy to misstack your triggers"*. And on the two
+     * questions that raised: a final Confirm — yes; with one trigger left,
+     * place it automatically — yes.
+     *
+     * So nothing leaves the client until "✓ Confirm order": a picked scan stays
+     * where it was, dimmed, wearing its place in the order; clicking it takes
+     * that pick and every later one back; "↺ Start over" (and Escape) clears
+     * the lot and brings auto-stack back. The answer is still the ONE decide the
+     * engine has always taken (CR 706.5: first picked resolves first), so no
+     * log, replay or legal-action list moves. `orderPicks` is the only reader of
+     * the picks — it refuses picks built for another question (CT-304). */
     const faces = orderTriggerCards(dec);
-    const picked = (i: number): boolean => ui.orderPicked.includes(i);
+    const picks = orderPicks(dec);
+    const place = (i: number): number => picks.indexOf(i) + 1;
+    const n = dec.options.length;
+    const done = picks.length === n;
     const scans = faces
-      ? dec.options.map((o, i) => (picked(i) ? '' : cardHtml(faces[i]!.card, {
-        playable: true,
-        badges: [{ t: iconizeText(o.label), html: true, mod: true }],
-        data: `data-btn="orderpick" data-i="${i}" data-ping="${faces[i]!.sourceId}" data-previd="${faces[i]!.sourceId}"`,
-      }))).join('')
+      ? dec.options.map((o, i) => {
+        const at = place(i);
+        const card = cardHtml(faces[i]!.card, {
+          playable: !at,
+          badges: [{ t: iconizeText(o.label), html: true, mod: true }],
+          data: `data-btn="${at ? 'orderunpick' : 'orderpick'}" data-i="${i}" data-ping="${faces[i]!.sourceId}" data-previd="${faces[i]!.sourceId}"`,
+        });
+        return `<div class="ordertile${at ? ' picked' : ''}"${at ? ` title="#${at} to resolve — click to take this pick and the later ones back"` : ''}>${
+          card}${at ? `<span class="burstn">${at}</span>` : ''}</div>`;
+      }).join('')
       : '';
-    const btns = dec.options.map((o, i) => picked(i)
-      ? `<span style="color:var(--dim)">${ui.orderPicked.indexOf(i) + 1}. ${iconizeText(o.label)}</span>`
+    // with scans the picked card itself wears the number; a label is drawn as
+    // a numbered button only where there is no scan to wear it
+    const btns = dec.options.map((o, i) => place(i)
+      ? faces ? '' : `<button data-btn="orderunpick" data-i="${i}" class="orderdone"${pingAttrs(o)}
+          title="click to take this pick and the later ones back"><span class="burstn">${place(i)}</span> ${iconizeText(o.label)}</button>`
       : (faces || o.card) ? '' : `<button data-btn="orderpick" data-i="${i}"${pingAttrs(o)}>${iconizeText(o.label)}</button>`).join(' ');
-    const auto = ui.orderPicked.length
-      ? ''
+    const tail = picks.length
+      ? `${done ? `<button class="primary" data-btn="orderconfirm"
+          title="put them on the stack in this order — #1 resolves first">✓ Confirm order <span class="kh">(enter)</span></button>` : ''}
+        <button data-btn="orderreset" class="declinebtn" title="clear the order and pick again">↺ Start over <span class="kh">(esc)</span></button>`
       : `<button data-btn="orderauto" class="declinebtn"
-          title="stack them in the listed order — for when the order cannot matter">⚡ auto-stack (${dec.options.length})</button>`;
+          title="stack them in the listed order — for when the order cannot matter">⚡ auto-stack (${n})</button>`;
+    const hint = picks.length && !done
+      ? ` <span class="pickhint">— ${n - picks.length} more to order</span>` : '';
     return `<div class="promptbar pending"><span class="who">${who}:</span>
-        ${iconizeText(dec.prompt)} — ${scans ? `<div class="deccards">${scans}</div>` : cardRow('orderpick', picked)} ${btns} ${auto}${err}</div>`;
+        ${iconizeText(dec.prompt)}${hint} — ${scans ? `<div class="deccards">${scans}</div>` : cardRow('orderpick', i => place(i) > 0)} ${btns} ${tail}${err}</div>`;
   }
   // "choose up to two" (Wake the Dead, Tides): the picker is a dialog
   // (ui/pickset.ts), and this bar is the way back into it once it is hidden
@@ -7538,6 +7631,14 @@ function gcStaleUi(): void {
   // menu it was never about.
   if (ui.confirmTarget !== null && !h.state.decision?.options[ui.confirmTarget]?.confirm) {
     ui.confirmTarget = null;
+  }
+  // CT-304: a trigger order belongs to ONE ordering question. Any other open
+  // question (or none) and the picks are stale: carried forward, they would
+  // hide a card on the next ordering question and go out first in its answer
+  // without the player ever choosing them there.
+  if (ui.orderFor !== -1 || ui.orderPicked.length) {
+    const od = h.state.decision;
+    if (!od || od.kind !== 'orderTriggers' || od.id !== ui.orderFor) clearOrderPicks();
   }
   if (ui.confirmPass !== null && (h.state.priority === null
     || !passEndsBattlePhase(h.state, h.state.priority)
@@ -10422,14 +10523,37 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     if (costRamp(dec).active) startCostRamp(sub.choice);
     else act({ type: 'decide', seat: dec!.seat, choice: sub.choice });
   },
+  /* BL-47: a click ADDS to the order and never sends — "✓ Confirm order" does.
+   * The last one left is placed by itself (setOrderPicks). */
   orderpick: btn => {
-    const s = h.state;
-    ui.orderPicked.push(Number(btn.dataset['i']));
-    if (ui.orderPicked.length === s.decision!.options.length) {
-      const choice = ui.orderPicked.slice();
-      ui.orderPicked = [];
-      act({ type: 'decide', seat: s.decision!.seat, choice });
-    }
+    const dec = h.state.decision;
+    if (!dec || dec.kind !== 'orderTriggers') return;
+    const i = Number(btn.dataset['i']);
+    const picks = orderPicks(dec);
+    if (picks.includes(i)) return;
+    setOrderPicks(dec, [...picks, i]);
+  },
+  /* BL-47: clicking a numbered pick takes it back — and every pick after it,
+   * because those were placed relative to it. Clicking the auto-placed last one
+   * changes nothing: it is placed again, there being nowhere else for it. */
+  orderunpick: btn => {
+    const dec = h.state.decision;
+    if (!dec || dec.kind !== 'orderTriggers') return;
+    const picks = orderPicks(dec);
+    const at = picks.indexOf(Number(btn.dataset['i']));
+    if (at >= 0) setOrderPicks(dec, picks.slice(0, at));
+  },
+  /* BL-47: "↺ Start over" — Escape is its shortcut */
+  orderreset: () => { clearOrderPicks(); },
+  /* BL-47: the one send, exactly the decide the last click used to make. The
+   * picks stay on screen until the server answers (gcStaleUi drops them when
+   * the question goes), and act()'s [59] latch stops a second Enter. */
+  orderconfirm: () => {
+    const dec = h.state.decision;
+    if (!dec || dec.kind !== 'orderTriggers') return;
+    const choice = orderPicks(dec).slice();
+    if (choice.length !== dec.options.length) return;
+    act({ type: 'decide', seat: dec.seat, choice });
   },
   /* #126: "an 'auto stack triggers' button that you can press when it doesn't
    * matter what order they go on the stack in." The identity permutation —
@@ -10445,7 +10569,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   orderauto: () => {
     const dec = h.state.decision;
     if (!dec || dec.kind !== 'orderTriggers') return;
-    if (ui.orderAutoFor === dec.id || ui.orderPicked.length) return;
+    if (ui.orderAutoFor === dec.id || orderPicks(dec).length) return;
     ui.orderAutoFor = dec.id;
     act({ type: 'decide', seat: dec.seat, choice: dec.options.map((_o, i) => i) });
   },
@@ -10513,6 +10637,14 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   },
   modcancel: () => { ui.modding = null; },
   castcancel: () => { startCastCancel(); },
+  /* BL-47: one step back inside an ordered Burst — exactly one undo, and only
+   * while the cast is still the player's own pre-commit chain. NET.undo latches
+   * this state, so a double click cannot send a second. */
+  burstundo: () => {
+    if (!NET || !cancelableCast() || !burstPicked() || ui.cancelling) return;
+    if (ui.sentFor === h.state.actionCount) return;
+    NET.undo();
+  },
   // BL-19: the one-click start-again, on the attack bar and the block bar
   // alike. resetFormation is the whole of it — and the repaint that
   // handleButton does next republishes the now-empty formation.
@@ -11286,6 +11418,8 @@ document.addEventListener('visibilitychange', () => {
  * presence in the DOM ⇒ the action is legal right now (render() guarantees) */
 const ENTER_BTNS = [
   '[data-btn="passconfirm"]', '[data-btn="doneplanconfirm"]',
+  // BL-47: the trigger order, once every trigger has its place
+  '[data-btn="orderconfirm"]',
   // [69] "Bring none" is deliberately NOT here: Enter is how the token-less
   // attack got sent ten times in GETD, and the whole point of this bar is that
   // declining is a choice somebody makes, not a key they were already holding.
@@ -11377,6 +11511,8 @@ document.addEventListener('keydown', e => {
     if (ui.confirmDeploy !== null) { ui.confirmDeploy = null; render(); return; }
     if (ui.confirmAct) { ui.confirmAct = null; render(); return; }
     if (ui.modding) { ui.modding = null; render(); return; }
+    // BL-47: Escape is "↺ Start over" on a trigger order being built
+    if (h.state.decision && orderPicks(h.state.decision).length) { clearOrderPicks(); render(); return; }
     if (canCancelNow()) { startCastCancel(); render(); return; }
     if (ui.carrying !== null) { ui.carrying = null; render(); return; }
     // BL-19: Esc is the Clear button's shortcut, so it must do the Clear

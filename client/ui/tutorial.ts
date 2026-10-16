@@ -193,8 +193,9 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['allyconfirm', 'allycancel'],
       },
       {
-        text: '✕ Cancel (Esc) takes the whole play back for as long as nothing has resolved.',
-        btns: ['castcancel'],
+        text: '✕ Cancel (Esc) takes the whole play back for as long as nothing has resolved. Casting a group of spell tokens, you pick '
+          + 'which resolves first, then next: Undo last pick steps back one, Start over (Esc) takes the whole group back.',
+        btns: ['castcancel', 'burstundo'],
       },
       {
         text: 'Abilities: click a unit with an activated ability. One ability fires at once; several open a menu. Anything that spends what you '
@@ -213,8 +214,9 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['binplay', 'cacheplay'],
       },
       {
-        text: 'When several abilities trigger at once the bar asks for their order: click them in the order you want, or take the order shown.',
-        btns: ['orderpick', 'orderauto'],
+        text: 'When several abilities trigger at once the bar asks for their order: click them in the order you want (each gets its number; '
+          + 'click a numbered one to take it back), then Confirm order (Enter). Start over (Esc) clears them; auto-stack takes the order shown.',
+        btns: ['orderpick', 'orderunpick', 'orderconfirm', 'orderreset', 'orderauto'],
       },
       {
         text: 'A choice too big for a bar — naming a card — gets a search box over what is on the board; “search all” widens it to every card.',

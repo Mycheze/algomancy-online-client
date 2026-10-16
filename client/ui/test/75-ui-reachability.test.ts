@@ -939,10 +939,14 @@ const REACH: Record<string, Evidence> = {
     needs: [/^  decide: btn =>/m, /choice: Number\(btn\.dataset\['i'\]\)/, /function pickOnBoard/],
   },
   'decide:order': {
-    via: 'wiring', anchor: 'the ordering panel: click the options one at a time',
-    why: 'a pickOrder decision wants a LIST, so the panel collects clicks until it has them all',
-    needs: [/^  orderpick: btn =>/m, /ui\.orderPicked\.length === s\.decision!\.options\.length/,
-      /act\(\{ type: 'decide', seat: s\.decision!\.seat, choice \}\)/],
+    via: 'wiring', anchor: 'the ordering panel: click the options one at a time, then Confirm order',
+    why: 'a pickOrder decision wants a LIST, so the panel collects clicks (the last one placed by itself) '
+      + 'and BL-47\'s Confirm order sends them, once every option has its place',
+    needs: [/^  orderpick: btn =>/m, /^  orderconfirm: \(\) =>/m, /data-btn="orderconfirm"/,
+      // …and Enter answers it: the button is on the Enter hotkey's list
+      /^  '\[data-btn="orderconfirm"\]',$/m,
+      /if \(choice\.length !== dec\.options\.length\) return;/,
+      /act\(\{ type: 'decide', seat: dec\.seat, choice \}\)/],
   },
 
   // ── never offered ─────────────────────────────────────────────────────

@@ -447,3 +447,172 @@ test('§3c the ordering options are drawn as the cards they came from', async ()
     assert.ok(html.includes(t.sourceCard), `and it names ${t.sourceCard}`);
   }
 });
+
+/* ── §3d-§3j — BL-47: the order is built on screen and sent once ──────────
+ *
+ * The owner, relayed from Discord 2026-10-16: "there should be a way to
+ * visually see what order you're chosing and then a way to undo that or cancel
+ * and restart. It's easy to misstack your triggers". Settled the same day: a
+ * final Confirm, yes; with one trigger left, place it automatically, yes.
+ * And CT-304: the picks are held by the client, so they must belong to the
+ * question they were made on and to no later one.
+ *
+ * Enter answering Confirm order is not here: the driver's document has no
+ * querySelector, which is how the Enter hotkey finds its button. 75 pins
+ * that the button is on the Enter list; the browser walk drove it. */
+
+/** THREE orderable triggers: a Minor Kraken alone, and Ancient One beside a
+ * second Kraken (it borrows that ally's attack trigger). Throws, like the
+ * two-trigger fixture, rather than going quiet. */
+function threeTriggers(seed: number): { h: Harness; seat: Seat } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.deployPlayer! as Seat;
+  const D = (1 - A) as Seat;
+  const k1 = spawn(h, A, 'Minor Kraken');
+  const ancient = spawn(h, A, 'Ancient One');
+  const k2 = spawn(h, A, 'Minor Kraken');
+  spawn(h, D, 'Unit Token');
+  spawn(h, D, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[k1], [ancient, k2]] });
+  assert.equal(h.state.decision?.kind, 'orderTriggers', 'the three-trigger fixture still asks for an order');
+  assert.equal(h.state.decision?.options.length, 3, 'and it asks about three');
+  return { h, seat: A };
+}
+
+/** which options the bar shows as picked, by data-i, in the order of their numbers */
+function numbered(html: string): number[] {
+  const out: [number, number][] = [];
+  for (const m of html.matchAll(/<div class="ordertile picked"[^>]*>[\s\S]*?data-btn="orderunpick" data-i="(\d+)"[\s\S]*?<span class="burstn">(\d+)<\/span><\/div>/g)) {
+    out.push([Number(m[2]), Number(m[1])]);
+  }
+  return out.sort((a, b) => a[0] - b[0]).map(([, i]) => i);
+}
+
+const decides = (ui: { actions(): Action[] }): Action[] => ui.actions().filter(a => a.type === 'decide');
+
+test('§3d nothing goes out until Confirm order, and Confirm sends the order as picked', async () => {
+  const { h, seat } = threeTriggers(22530);
+  const ui = await client();
+  ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  ui.sent();
+  ui.click({ btn: 'orderpick', i: 2 });
+  assert.deepEqual(decides(ui), [], 'one pick sends nothing');
+  assert.ok(!ui.has({ btn: 'orderconfirm' }), 'and there is nothing to confirm yet');
+  ui.click({ btn: 'orderpick', i: 0 });
+  assert.deepEqual(decides(ui), [], 'nor does the pick that completes the order');
+  assert.ok(ui.has({ btn: 'orderconfirm' }), 'Confirm order is up');
+  ui.click({ btn: 'orderconfirm' });
+  const outs = decides(ui);
+  assert.equal(outs.length, 1, 'one answer, once');
+  assert.deepEqual((outs[0] as { choice: unknown }).choice, [2, 0, 1], 'the order as picked, the last placed by itself');
+  assert.ok(apply(h.state, outs[0]!).state, 'and the engine takes it');
+});
+
+test('§3e the last trigger left is placed by itself', async () => {
+  const { h, seat } = threeTriggers(22531);
+  const ui = await client();
+  ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  let html = ui.click({ btn: 'orderpick', i: 1 });
+  assert.deepEqual(numbered(html), [1], 'one pick, numbered 1');
+  assert.match(html, /2 more to order/);
+  html = ui.click({ btn: 'orderpick', i: 0 });
+  assert.deepEqual(numbered(html), [1, 0, 2], 'the second pick places the third');
+  assert.ok(!ui.has({ btn: 'orderpick' }), 'nothing is left to pick');
+});
+
+test('§3f every pick wears its number, on its scan and on the unit it came from', async () => {
+  const { h, seat } = threeTriggers(22532);
+  const mine = h.state.triggerQueue.filter(t => t.controller === seat);
+  const ui = await client();
+  ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  const before = ui.html();
+  assert.deepEqual(numbered(before), [], 'nothing numbered before a pick');
+  assert.doesNotMatch(before, /class="badge orderno"/, 'and no unit wears a number');
+  const html = ui.click({ btn: 'orderpick', i: 2 });
+  assert.deepEqual(numbered(html), [2], 'the picked scan stays, numbered 1');
+  assert.ok(ui.has({ btn: 'orderunpick', previd: mine[2]!.sourceId }), 'still pointing at its unit');
+  // the unit on the board: its card markup carries the number chip
+  const at = html.indexOf(`data-id="${mine[2]!.sourceId}"`);
+  assert.ok(at >= 0, 'the source unit is on the board');
+  const end = html.indexOf('data-id="', at + 10);
+  const unit = html.slice(at, end < 0 ? undefined : end);
+  assert.match(unit, /class="badge orderno"[^>]*>#1</, 'and the unit says #1');
+});
+
+test('§3g clicking a numbered pick takes it back, and every pick after it', async () => {
+  const { h, seat } = threeTriggers(22533);
+  const ui = await client();
+  ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  ui.sent();
+  ui.click({ btn: 'orderpick', i: 1 });
+  ui.click({ btn: 'orderpick', i: 2 });                 // order 1, 2, (0)
+  const html = ui.click({ btn: 'orderunpick', i: 2 });  // take #2 back: #3 goes too
+  assert.deepEqual(numbered(html), [1], 'only #1 is left');
+  assert.ok(ui.has({ btn: 'orderpick', i: 2 }) && ui.has({ btn: 'orderpick', i: 0 }), 'the other two are pickable again');
+  assert.ok(!ui.has({ btn: 'orderconfirm' }), 'and there is nothing to confirm');
+  assert.deepEqual(numbered(ui.click({ btn: 'orderunpick', i: 1 })), [], '#1 clicked: no picks at all');
+  assert.ok(ui.has({ btn: 'orderauto' }), 'and auto-stack is back');
+  assert.deepEqual(decides(ui), [], 'none of it sent anything');
+});
+
+test('§3h Start over and Escape clear the order, and auto-stack comes back', async () => {
+  const { h, seat } = threeTriggers(22534);
+  const ui = await client();
+  ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  ui.sent();
+  ui.click({ btn: 'orderpick', i: 0 });
+  assert.ok(!ui.has({ btn: 'orderauto' }), 'auto-stack steps aside once an order is started');
+  assert.deepEqual(numbered(ui.click({ btn: 'orderreset' })), [], 'Start over clears it');
+  assert.ok(ui.has({ btn: 'orderauto' }), 'and auto-stack is back');
+  ui.click({ btn: 'orderpick', i: 1 });
+  ui.click({ btn: 'orderpick', i: 2 });
+  assert.deepEqual(numbered(ui.key('Escape')), [], 'Escape clears a whole order too');
+  assert.ok(ui.has({ btn: 'orderauto' }));
+  assert.deepEqual(decides(ui), [], 'nothing was sent');
+});
+
+test('§3i CT-304 a pick does not survive its question', async () => {
+  const { h, seat } = threeTriggers(22536);
+  const view = viewFor(h.state, seat);
+  const legal = legalActions(h.state, seat);
+  const ui = await client();
+  ui.join(view, seat, legal);
+  ui.sent();
+  ui.click({ btn: 'orderpick', i: 2 });
+  // the question goes (an undo, a resync) and then the SAME question is asked
+  // again — a rebuilt game hands out the same decision id
+  const gone = structuredClone(view);
+  gone.decision = null;
+  gone.actionCount += 1;
+  ui.update(gone, []);
+  ui.tick();
+  let html = ui.update(view, legal);
+  ui.tick(); html = ui.html();
+  assert.deepEqual(numbered(html), [], 'the old pick is not shown on the new asking');
+  assert.ok(ui.has({ btn: 'orderpick', i: 2 }), 'the card it hid is back');
+  ui.click({ btn: 'orderpick', i: 0 });
+  ui.click({ btn: 'orderpick', i: 1 });
+  ui.click({ btn: 'orderconfirm' });
+  assert.deepEqual(decides(ui).map(a => (a as { choice: unknown }).choice), [[0, 1, 2]],
+    'and the answer is the order chosen HERE, with no stale pick in front');
+});
+
+test('§3j CT-304 a pick is not carried onto a different ordering question', async () => {
+  const { h, seat } = threeTriggers(22537);
+  const view = viewFor(h.state, seat);
+  const legal = legalActions(h.state, seat);
+  const ui = await client();
+  ui.join(view, seat, legal);
+  ui.sent();
+  ui.click({ btn: 'orderpick', i: 2 });
+  // a later question about the same three triggers, straight after
+  const next = structuredClone(view);
+  next.decision = { ...next.decision!, id: next.decision!.id + 7 };
+  next.actionCount += 1;
+  ui.update(next, legal);
+  ui.tick();
+  assert.deepEqual(numbered(ui.html()), [], 'a different question starts with no picks');
+  assert.ok(ui.has({ btn: 'orderauto' }), 'and offers auto-stack');
+});

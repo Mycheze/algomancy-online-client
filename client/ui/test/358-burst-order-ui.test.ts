@@ -5,6 +5,8 @@
  *      Fireball resolves first — answered by clicking a token on the board
  *   §2 the bar shows the order built so far: numbered, with each one's aim
  *   §3 a token's X is a die face across its art, not "X=3" in the corner
+ *   §4 BL-47: "↶ Undo last pick" steps back ONE (a single undo, which the
+ *      server takes — server/test/483), and Cancel reads "↺ Start over"
  *
  * Seeds 35810-35819.
  */
@@ -13,9 +15,11 @@ import assert from 'node:assert/strict';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
+import { legalActions } from '../../engine/src/apply.ts';
+import { viewFor } from '../../server/view.ts';
 import type { Seat } from '../../engine/src/types.ts';
 
-const { local } = await import('./ui-driver.ts');
+const { local, client } = await import('./ui-driver.ts');
 const ui = local();
 
 /** a battle where D holds priority with Fireball 1, 3 and 2 at home. D is
@@ -81,4 +85,31 @@ test('§3 a token wears its X as a die face, not "X=n" in the stat corner', () =
   assert.match(card, /class="xdie" title="X = 3"/, 'the die');
   assert.equal((card.match(/class="pip p\d"/g) ?? []).length, 3, 'three pips for 3');
   assert.doesNotMatch(card, /class="stats">X=/, 'and no "X=3" in the corner');
+});
+
+test('§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over', async () => {
+  const { h, D } = battle(35813);
+  const ids = (x: number): number =>
+    Object.values(h.state.entities).find(t => t.kind === 'spellToken' && t.controller === D && t.x === x)!.id;
+  h.do({ type: 'castSpellToken', seat: D, entityId: ids(1), ordered: true });
+  assert.equal(h.state.suspension?.type, 'burstPick');
+  const net = await client();
+  const undos = (): number => net.sent().filter(m => m['t'] === 'undo').length;
+  // the first question: nothing picked yet, so nothing to step back over
+  let html = net.join(viewFor(h.state, D), D, legalActions(h.state, D));
+  assert.ok(!net.has({ btn: 'burstundo' }), 'no Undo last pick before the first pick');
+  assert.match(html, /data-btn="castcancel"[^>]*>↺ Start over/, 'Cancel is called Start over for a Burst');
+  assert.doesNotMatch(html, /✕ Cancel/, 'and the old word is gone');
+  // pick #1: now it is being aimed, and that pick can be taken back
+  const pick = h.state.decision!.options.findIndex(o => (o.value as { unit: number }).unit === ids(3));
+  h.do({ type: 'decide', seat: D, choice: pick });
+  assert.equal(h.state.suspension?.type, 'cast');
+  html = net.update(viewFor(h.state, D), legalActions(h.state, D));
+  net.tick();
+  net.sent();
+  assert.ok(net.has({ btn: 'burstundo' }), 'Undo last pick is on the bar');
+  net.click({ btn: 'burstundo' });
+  assert.equal(undos(), 1, 'one click, one undo');
+  net.click({ btn: 'burstundo' });
+  assert.equal(undos(), 0, 'and a second click on the same state sends no second one');
 });
