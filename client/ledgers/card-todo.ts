@@ -204,23 +204,6 @@ function electricAskedOfEffectController(): boolean {
   return asked.length > 0 && asked[0] === A && g.entity(b0)!.controller === D;
 }
 
-/** CT-228: 10 Piercing into two 2/4 Oorblaks — both die and only 2 reach the player */
-function piercingLeftoverRedirectedTwice(): boolean {
-  const h = new Harness(92028);
-  toDeployment(h);
-  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
-  const atk = tok(h, A, 10, 10);
-  withE(h, g => { g.addTempAttr(g.entity(atk)!, 'Piercing' as Attr); });
-  const o1 = spawn(h, D, 'Oorblak'), o2 = spawn(h, D, 'Oorblak');
-  const life = h.state.players[D]!.life;
-  toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  toBlocks(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
-  pass(h); pass(h);
-  const lost = life - h.state.players[D]!.life;
-  return lost === 2 && !ent(h, o1) && !ent(h, o2);
-}
 
 /** CT-229: a stolen unit erased from play lands on its OWNER's erased pile */
 function erasedStolenUnitGoesToOwner(): boolean {
@@ -533,16 +516,6 @@ const OPEN: TodoEntry[] = [
     evidence: "Finding F-U19-3. batch-earth-b.ts: \"const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;\". digital-rules.md: \"A Pure recipient takes plain damage from anyone.\" The pilot verifier's probe measured it; the probe is not committed. 290-pure-outside-combat has no Pure-recipient case (see CT-241).",
     fix: "Treat the redirect as an interaction between the column and Oorblak: mult is 1 if the column OR Oorblak is Pure (and pass that purity on to preventUnitDamage). Add a test with a Pure Vulnerable Oorblak under a plain column.",
     proof: () => still('engine/src/cards/sets/batch-earth-b.ts', "const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;"),
-    status: 'open',
-  },
-  {
-    id: 228, area: "engine", severity: "minor",
-    cards: ["Oorblak", "Blightsea Polyp"],
-    title: "a Piercing leftover that one redirect let through is redirected again by the next holder (two Oorblaks both soak one hit)",
-    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules combat.damage.player.redirect, effects.replacement.once.one-applies and attr.piercing.redirect state the designer's answer: Piercing combat damage redirected into Oorblak kills it and the rest reaches the player, \"not redirected again\", because \"replacement effects only apply once in an effect\". replaceCombatDamage offers what one holder lets through to EVERY next holder, so a second Oorblak or a Blightsea Polyp in the region takes the leftover. Measured: 10 Piercing into two 2/4 Oorblaks, both die and the player loses 2 (the ruling: one dies, the player loses 6).",
-    evidence: "Findings F-U12-1 (dups F-U15-3, F-U15-5, F-U20-6). raq.ts: \"the other 6 still reach the player, and are not redirected again.\" raq.ts (calebgannon): \"replacement effects only apply once in an effect Unless a new trigger occurs\". engine.ts replaceCombatDamage: \"if (through === left) continue;\" and \"left = through;\" with no stop after a replacement. Re-measured 2026-10-10 by the proof below.",
-    fix: "Once one holder has replaced part of a hit, stop offering the leftover to further holders (break after the first holder that returns less than it was given). Keep the decline path (through === left) moving on. Pin it with the two-Oorblak board and an Oorblak + Polyp board.",
-    proof: () => piercingLeftoverRedirectedTwice(),
     status: 'open',
   },
   {
@@ -915,16 +888,6 @@ const OPEN: TodoEntry[] = [
     fix: "Extend the question to a single optional slot where every candidate is the player's own unit; never refuse the choice (CR D1.1a).",
     proof: null,
     verify: "Attack with Minor Kraken when only your own units are in reach and pick one.",
-    status: 'open',
-  },
-  {
-    id: 290, area: "engine", severity: "major",
-    title: "OWNER QUESTION: does Caleb's 'replacement effects only apply once onto an effect' make every other first-wins replacement loop chain too?",
-    detail: "Caleb, rules-questions 2025-11-25: \"the tldr is replacement effects only apply once onto an effect\" (said of two Automatons, now CT-287). CR 708.4a still says two of the same replacement \"only one of them does\" and names two Nullbringers, two Counter Thieves, two Oorblaks. Loops that stop at the first donor: replaceTokenCreation (Cosmic Conspirator), replaceCardStep (Worldbender, documented as replacing once), replaceRotDamage, combat damage to a player, Counter Thief / replaceCounters, replaceLifeGain, unit-damage prevention.",
-    evidence: "Report #212 diagnosis (WP4 agent's survey of the loops).",
-    fix: "Ask the owner whether the tldr is general. If it is, make each loop apply every effect once, in order, and rewrite CR 708.4a.",
-    proof: null,
-    verify: "Two Counter Thieves and a counter placement: today one of them takes it.",
     status: 'open',
   },
   {
