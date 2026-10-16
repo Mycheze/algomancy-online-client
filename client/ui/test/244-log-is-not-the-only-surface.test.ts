@@ -644,7 +644,10 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // carries the unit it is about, so it is not log-only either.
   // 219 → 220 with E.removeCounters (CR 708.8, report #210): "<unit> loses n
   // +1/+1 counter(s) (net t)." It carries the unit, so it is not log-only.
-  assert.equal(sites.length, 220, `the engine and apply make ${sites.length} announcements`);
+  // 220 → 219 with the Wraith ruling of report round 2026-10-16: an untargeted
+  // effect's subject is chosen as it resolves and can no longer go stale, so
+  // "<item>: a part fizzles (what it was aimed at is gone)" has no site.
+  assert.equal(sites.length, 219, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
@@ -664,7 +667,9 @@ test('[CR D7.4] the derived inventory of announcements that exist only in the lo
   // 38 → 39 with the Deferral Drone errata (see the site census above): a
   // charge expiring at a phase boundary is a loss the board cannot show, since
   // nothing on it draws a pending discount in the first place.
-  assert.equal(inv.length, 39,
+  // 39 → 38 with the Wraith ruling of 2026-10-16 (the site census above): the
+  // stale-subject fizzle line is gone with the stale subject.
+  assert.equal(inv.length, 38,
     'the count moved — a new announcement with no surface, or one that gained one.\n'
     + 'THE INVENTORY AS MEASURED NOW:\n' + show(inv));
 
@@ -678,7 +683,8 @@ test('[CR D7.4] the derived inventory of announcements that exist only in the lo
   // info 35 → 36 with the Deferral Drone errata, which is the finding above
   // repeating itself: a new structural announcement had nowhere to go and
   // became an 'info' line, exactly like the other thirty-five.
-  assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 36]]);
+  // info 36 → 35 with the Wraith ruling of 2026-10-16 (see the count above).
+  assert.deepEqual([...byType].sort(), [['erased', 1], ['fizzled', 2], ['info', 35]]);
   assert.equal(read('../ui/main.ts').includes("info: 'ev-"), false,
     "'info' earns no colour in the log either — it is the plainest line the panel draws");
 });
@@ -691,7 +697,9 @@ test('[CR D7.4] the ranked half: the announcements where the absence cost the pl
   // the rest: the player PAID 4 debt for that charge, so losing it unspent is
   // an irreversible loss rather than bookkeeping — which is the axis this
   // ranking is on.
-  assert.equal(costly.length, 21, 'tier 1:\n' + costly.map(s => `  ${s.file}:${s.line} ${s.msg}`).join('\n'));
+  // 21 → 20 with the Wraith ruling of 2026-10-16: "a part fizzles (what it was
+  // aimed at is gone)" left the engine with the stale subject it reported.
+  assert.equal(costly.length, 20, 'tier 1:\n' + costly.map(s => `  ${s.file}:${s.line} ${s.msg}`).join('\n'));
   assert.equal(rest.length, 18);
 
   /* THE TICKET LIST. Keyed on a stem of the sentence rather than a line
@@ -712,7 +720,6 @@ test('[CR D7.4] the ranked half: the announcements where the absence cost the pl
     ['~ fizzles (~)', 1],
     ['fizzles — all targets are gone', 1],
     ['a part fizzles (target gone)', 1],
-    ['a part fizzles (what it was aimed at is gone)', 1],
     ['the [~] cost cannot be paid', 2],
     ['cost must be paid ~ times and cannot be', 1],
     ['the [cost] is declined', 1],

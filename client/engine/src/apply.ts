@@ -346,6 +346,9 @@ export function decisionBlocks(s: GameState, seat: Seat): boolean {
  *   'cast'          reads `sus.item` / `sus.partIndex` / the decision options,
  *                   all carried ON the suspension. Covered by the pair.
  *   'payTrigger'    reads `sus.trigger` and `sus.tax`. Same.
+ *   'subject'       reads `sus.item` (by id, off the stack) and the options;
+ *                   the copy on the suspension is in the pair, and the other
+ *                   seat cannot reach the asking seat's stack (CR D2.1d).
  *   'orderTriggers' ⚠ reads `s.triggerQueue` LIVE — `mine = queue.filter(t =>
  *                   t.controller === sus.seat)` — and then insists
  *                   `choice.length === mine.length`. An action that queues one
@@ -2817,12 +2820,6 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       // so it rides onto the stack with the item — the opponent responds to a
       // fully declared effect, not to a question that is still open.
       sus.item.parts[sus.partIndex]!.mode = val;
-    } else if (sus.stage === 'subject') {
-      // CR 706.12: WHAT an untargeted effect is aimed at. Same window and same
-      // reason as a mode — the aim is part of declaring the effect — but it
-      // can go STALE: several triggers may all name one unit, and the ones
-      // that outlive it fizzle in resolveItem rather than being re-aimed.
-      sus.item.parts[sus.partIndex]!.subject = val as EntityId;
     } else if (sus.stage === 'asYouPlay') {
       // CR 705.6: a cost-shaped, NON-STACK option that ANOTHER card in play offers
       // as this one is played ("As you play a nonunit spell, you may sacrifice
@@ -2929,6 +2926,22 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
     if (val === 'default') plan.def = true;
     else plan.picks.push(val as number);
     e.settle();
+    return;
+  }
+
+  if (sus.type === 'subject') {
+    // CR 706.12: what an untargeted effect acts on, chosen as it begins to resolve
+    // (E.askSubjects). The item is still on its stack; find it by id (a saved
+    // or redacted state does not keep object identity), record the choice and
+    // resolve it — resolveStackAt asks the next subject-bearing part, if any.
+    e.need(typeof choice === 'number' && dec.options[choice], 'bad choice');
+    const i = e.s.stack.findIndex(it => it.id === sus.item.id);
+    e.need(i !== -1, 'that effect is no longer on the stack');
+    const id = dec.options[choice]!.value as EntityId;
+    // a choice that left play in the meantime stays unmade, so it is asked again
+    // from the board as it is now rather than handed to the effect dead
+    if (e.entity(id)) e.s.stack[i]!.parts[sus.partIndex]!.subject = id;
+    e.resolveStackAt(i);
     return;
   }
 

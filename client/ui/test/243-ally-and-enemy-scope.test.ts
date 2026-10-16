@@ -23,8 +23,8 @@
  * file measures each of them rather than assuming the first one is the rule:
  *
  *   · `E.pushUnitTargets`   — target MENUS. `unitsIn(region)` + controller.
- *   · `EffectDef.subject` / `pickAlly` (Wraith) — an UNTARGETED "an ally",
- *     chosen at cast or at resolution. Its own `unitsOf(controller, region)`.
+ *   · `EffectDef.subject` / `pickAlly` (Wraith) — an UNTARGETED "an ally", chosen as
+ *     the trigger begins to resolve (since 2026-10-16; at cast before). Its own `unitsOf(controller, region)`.
  *   · cast-COST pools (`recallUnit`, `sacrificeUnit`, `removeCounters`) —
  *     `unitsOf(seat, item.region)`, engine-side, and "another" is spelled
  *     `u.id !== sourceId` there.

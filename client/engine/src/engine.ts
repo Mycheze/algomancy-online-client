@@ -8969,13 +8969,6 @@ export class E {
     // (Manual p.33 — the composite resolves as ONE ability)
     this.collectModular(item, then, moreItems);
     this.collectPartTargets(item, then, moreItems);
-    // CR 706.12: the AIM of an untargeted effect ("put a -1/-1 counter on an
-    // ally"). Beside the targets and for the same reason CR 110.1a puts targets
-    // here: an effect is DECLARED before it is on the stack, so several
-    // simultaneous triggers are all aimed while the board still looks the way
-    // it did when they fired. Before the modes, so a mode may read the aim,
-    // exactly as it may read the targets.
-    this.collectSubjects(item, then, moreItems);
     // CR 702.3d: WHICH HALF of a modal effect. AFTER the targets, so a mode can name
     // what it is aimed at ("double Good Whale's power (5 → 10) or defense
     // (3 → 6)?"); BEFORE the costs, so the rule that "nothing irreversible is spent
@@ -9426,62 +9419,6 @@ export class E {
           },
         );
       }
-    }
-  }
-
-  /**
-   * CR 706.12 — ask WHAT an untargeted effect is aimed at, once per subject-bearing
-   * part, in the stack window.
-   *
-   * THE BUG THIS EXISTS FOR, and the owner's ruling on it (report #101, room
-   * SMVJ): *"All Wraith triggers should go onto the stack simultaneously and
-   * be allowed to target the same unit, even exceeding its defense (the final
-   * triggers would just fizzle)."* The Wraith's "an ally" is not a target (CR 110.2c, 706.12
-   * — the word is not printed), so it was picked with a `ctx.choose` INSIDE
-   * the resolution. Four Wraiths at the start of deployment therefore aimed
-   * one at a time in four different worlds: the first killed the 3/3, and the
-   * other three were offered a menu it was no longer on and had to shrink
-   * somebody else. The player could not spend a pile of triggers on one unit,
-   * and the leftovers ate his own board instead of doing nothing.
-   *
-   * Moving the choice HERE is the fix, and it is the only thing that could be:
-   * a trigger cannot be aimed at a unit an earlier one is about to kill unless
-   * it is aimed BEFORE that one resolves. `E.resolveItem` then does the other
-   * half — a part whose subject has left play is lost, and an item that has
-   * lost every subject and target it declared fizzles (CR 704.6's rule, unchanged,
-   * with subjects counted alongside targets).
-   *
-   * A SUBJECT IS NOT A TARGET and `EffectDef.subject` says at length what that
-   * withholds — no `'targeted'` event, no redirect, no compulsion. Read that
-   * before reaching for a `TargetSpec` instead of this.
-   *
-   * `part.subject !== undefined` is the idempotence guard — collectTargets
-   * re-runs from the top after every answered decision — which is why a part
-   * with nothing to aim at records `null` rather than staying undefined and
-   * asking again forever. Fewer than two candidates is not a question, exactly
-   * as in `collectModes`; the auto-pick is what keeps a lone Wraith from being
-   * asked which of its single ally it means.
-   */
-  private collectSubjects(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
-    for (let pi = 0; pi < item.parts.length; pi++) {
-      const part = item.parts[pi]!;
-      if (part.spent) continue;
-      if (part.subject !== undefined) continue;   // idempotence guard (see above)
-      const def = effectByKey(part.effectKey);
-      if (!def.subject) continue;
-      const cands = def.subject.candidates(this, item, part);
-      if (cands.length < 2) {
-        part.subject = cands.length ? cands[0]!.id : null;
-        continue;
-      }
-      this.suspend(
-        { type: 'cast', stage: 'subject', item, partIndex: pi, targetIndex: 0, then, moreItems },
-        {
-          seat: item.controller, kind: 'electricPath',
-          prompt: def.subject.prompt(this, item, part),
-          options: cands.map(u => ({ label: u.card, value: u.id, card: u.card })),
-        },
-      );
     }
   }
 
@@ -9955,6 +9892,7 @@ export class E {
    * seat's own top is not the array's top, so the index is the parameter.
    */
   resolveStackAt(i: number): void {
+    this.askSubjects(this.s.stack[i]!);   // CR 706.12: may suspend, rewinding nothing
     const item = this.s.stack.splice(i, 1)[0]!;
     // CR D6.3: it is off the stack — nobody may respond to it or negate it now —
     // but it has not resolved yet, and it says so until it has.
@@ -9962,6 +9900,51 @@ export class E {
     this.resolveItem(item);
     this.endResolving(outer);
     this.finishResolutionTail();
+  }
+
+  /**
+   * CR 110.2, 706.12 — choose what each subject-bearing part of `item` acts on, as
+   * the item BEGINS TO RESOLVE: it is the top of its stack, it is about to
+   * come off, and nothing of its resolution has happened yet.
+   *
+   * THE RULING (Discord report, report round 2026-10-16), the owner verbatim:
+   * "They don't target which means they can't be fizzled." and "Waiths can
+   * fizzle once you're fully out of units, but since they don't target, it's
+   * just a raw choice where it gets augmented." Until then (his 2026-08-24
+   * ruling, report #101) this choice was made as the item went ONTO the stack
+   * and a part whose subject had left by resolution fizzled: three Wraiths and
+   * a 1/1 asked three questions up front, the first killed the 1/1 and the
+   * other two fizzled. Now each one is asked here, in turn, from the board the
+   * previous one left — "fully resolve their effect one at a time".
+   *
+   * WHY HERE AND NOT A `ctx.choose` INSIDE `run`: see `SubjectSpec`. A question
+   * raised here carries no GameState snapshot, so it does not freeze the
+   * other seat in deployment (CR 507.5a, CR D2.1c — playtest #98). doDecide's
+   * 'subject' branch records the answer on the stack item and calls
+   * `resolveStackAt` again, which comes back through here, finds the part
+   * answered and goes on.
+   *
+   * `part.subject !== undefined` is the idempotence guard. Fewer than two
+   * candidates is not a question (CR D1.2e): one is recorded, none records
+   * `null` and the run announces that it fizzles.
+   */
+  private askSubjects(item: StackItem): void {
+    for (let pi = 0; pi < item.parts.length; pi++) {
+      const part = item.parts[pi]!;
+      if (part.spent || part.subject !== undefined) continue;
+      const def = effectByKey(part.effectKey);
+      if (!def.subject) continue;
+      const cands = def.subject.candidates(this, item, part);
+      if (cands.length < 2) { part.subject = cands.length ? cands[0]!.id : null; continue; }
+      this.suspend(
+        { type: 'subject', item, partIndex: pi },
+        {
+          seat: item.controller, kind: 'electricPath',
+          prompt: def.subject.prompt(this, item, part),
+          options: cands.map(u => ({ label: u.card, value: u.id, card: u.card })),
+        },
+      );
+    }
   }
 
   /**
@@ -10142,12 +10125,6 @@ export class E {
     const partAlive = (part: EffectPart): boolean => {
       if (part.spent) return false;
       const def = effectByKey(part.effectKey);
-      // CR 706.12: a declared SUBJECT is exactly a declared target for this vote —
-      // it was aimed in the stack window and it can go stale. A part that
-      // declared NOTHING (`subject === null`: there was no ally at all) still
-      // does not vote and still cannot fizzle the item, which is the engine's "with
-      // no ally it simply does nothing", unmoved.
-      if (def.subject) return part.subject != null && !!this.entity(part.subject);
       if (!def.targets) return false;   // CR 704.6d: untargeted parts do not vote
       // "UP TO one target …" (min 0): declaring no target is a legal choice, so
       // the part still resolves — anything printed alongside the optional
@@ -10159,25 +10136,16 @@ export class E {
       if (!part.targets.length) return (def.targets.min ?? 1) === 0;
       return part.targets.some((t, ti) => !part.invalid?.includes(ti) && this.targetStillLegal(t));
     };
-    // CR 706.12: "did this item declare anything it could lose?" — a target, or a
-    // subject that actually named something. A subject-bearing part whose
-    // `subject` is null declared nothing and keeps the item off this branch.
-    const declaredTargets = item.parts.some(p => !p.spent && !!effectByKey(p.effectKey).targets);
-    const declaredSubject = item.parts.some(p =>
-      !p.spent && !!effectByKey(p.effectKey).subject && p.subject != null);
-    const targeted = declaredTargets || declaredSubject;
+    const targeted = item.parts.some(p => !p.spent && !!effectByKey(p.effectKey).targets);
     if (targeted && !item.parts.some(partAlive)) {
-      // CR D7.3d's precedent, and the owner's "the final triggers would just
-      // fizzle": a no-op ANNOUNCES. A trigger that vanished silently because
-      // the unit it was aimed at died under it is indistinguishable from a bug
-      // at the table, which is the whole reason this line is not a `return`.
+      // CR D7.3d's precedent: a no-op ANNOUNCES. An effect that vanished
+      // silently because its target died under it is indistinguishable from a
+      // bug at the table, which is the whole reason this line is not a `return`.
       const anyIllegal = item.parts.some(p => p.invalid?.length);
       this.ev('fizzled',
-        declaredTargets
-          ? (anyIllegal
-            ? `${item.label} fizzles — its targets are gone or not legal any more.`
-            : `${item.label} fizzles — all targets are gone.`)
-          : `${item.label} fizzles — what it was aimed at has left play.`,
+        (anyIllegal
+          ? `${item.label} fizzles — its targets are gone or not legal any more.`
+          : `${item.label} fizzles — all targets are gone.`),
         { id: item.id });
       /**
        * CR 109.9a / CARD-TODO #20: a fizzle SPENDS the bounded budget. It does NOT
@@ -10333,17 +10301,6 @@ export class E {
       // never had a target — but "up to one" (min 0) still runs, with an empty
       // ctx.targets, so its unconditional half happens
       if (def.targets && !part.targets.length && (def.targets.min ?? 1) > 0) continue;
-      // CR 706.12: the part's declared SUBJECT, looked up NOW. A part that aimed at
-      // something which has since left play is lost — the sibling of the
-      // target line above, and the reason a pile of triggers may all be aimed
-      // at one unit: the surplus lands here. `null` (nothing to aim at) is not
-      // a loss and runs normally, so the effect can say it did nothing.
-      const subject = def.subject && part.subject != null
-        ? (this.entity(part.subject) ?? null) : null;
-      if (def.subject && part.subject != null && !subject) {
-        this.ev('info', `${item.label}: a part fizzles (what it was aimed at is gone).`);
-        continue;                                       // CR 704.6b: partial resolution
-      }
       const ctx: EffectCtx = {
         controller: item.controller,
         sourceName: item.card ?? item.label,
@@ -10362,11 +10319,14 @@ export class E {
         // visible on the stack for the whole response window. The effect reads
         // it; it never asks.
         ...(part.mode !== undefined ? { mode: part.mode } : {}),
-        // CR 706.12: what this effect was AIMED at, declared in the stack window by
-        // collectSubjects. The live entity, or null when there was nothing to
-        // aim at — never a dead one, because the branch above already fizzled
-        // that part rather than handing its run a corpse.
-        ...(def.subject ? { subject } : {}),
+        // CR 706.12: what this untargeted effect acts on, chosen by askSubjects as
+        // the item began to resolve. Looked up live; a choice whose entity has
+        // since left play is handed over as `undefined` (choose again, now),
+        // never as a corpse and never as a fizzle.
+        ...(def.subject && part.subject !== undefined
+          ? (part.subject === null ? { subject: null }
+            : this.entity(part.subject) ? { subject: this.entity(part.subject)! } : {})
+          : {}),
         ...(part.mods ? { mods: part.mods } : {}),
         // CR 721.4b's virus grants UNIONED with CR 724.4a's {Modular}-mod grants and
         // the continuous ones. All three are "attributes this effect has
@@ -10888,9 +10848,11 @@ export class E {
      * resolved a Wraith's start-of-deployment trigger INLINE, which suspended
      * and stranded the outer battle item's marker in the deploy phase.
      *
-     * Aiming the Wraith on the way to the stack reopened that hole from a new direction: the Wraith now
-     * suspends in `collectSubjects` — a 'cast' suspension raised on the way TO
-     * the stack — which never went anywhere near that catch. Two sites cannot
+     * A 'cast' suspension raised on the way TO the stack never goes anywhere
+     * near that catch, and reopened the hole from a new direction while the
+     * Wraith chose its ally there (2026-08-24 to 2026-10-16; it chooses on
+     * resolution again now, but any deployment trigger with a target or a
+     * mode still suspends on the way to the stack). Two sites cannot
      * both be remembered, so the gate moves to the one door every suspension
      * goes through. Nothing is lost by clearing it here: outside battle the
      * marker was never legal to publish in the first place, and the throw has

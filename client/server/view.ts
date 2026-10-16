@@ -119,7 +119,7 @@ function pendingAskFor(v: SeatView, seat: Seat, frozenOpp?: GameState | null): P
   if (asker === undefined || asker === seat || frozenOpp) return null;
   const ask: PendingAsk = { seat: asker };
   const susp = v.suspension;
-  const source = susp?.type === 'cast' || susp?.type === 'resolve'
+  const source = susp?.type === 'cast' || susp?.type === 'resolve' || susp?.type === 'subject'
     ? susp.item.sourceId
     : susp?.type === 'payTrigger' ? susp.trigger.sourceId : undefined;
   // the lookup IS the "already public" test: `v.entities` here is the map this

@@ -159,7 +159,11 @@ function askedSeat0(): { state: GameState; hand1: number; hand0: number } {
   assert.equal(h.state.phase, 'deploy');
   assert.equal(hiddenSegment(h.state), 'deploy');
   assert.equal(h.state.decision?.seat, 0, 'the fixture really does suspend seat 0');
-  assert.equal(h.state.suspension?.type, 'cast', 'and on a cast-time suspension (no rollback snapshot)');
+  // 2026-10-16 (report round 2026-10-16): a Wraith asks as its trigger BEGINS TO
+  // RESOLVE now, a 'subject' suspension; until then it was aimed on the way to
+  // the stack, a 'cast' one. Either way the point is the same: no rollback snapshot.
+  assert.equal(h.state.suspension?.type, 'subject', 'and on a pre-resolution suspension (no rollback snapshot)');
+  assert.ok(!(h.state.suspension as { snapshot?: unknown }).snapshot);
   return { state: h.state, hand1, hand0 };
 }
 
@@ -312,7 +316,7 @@ test('CR D2.1: a BATTLE question still freezes the whole screen', () => {
   h.do({ type: 'playCard', seat: caster, handIndex: give(h, caster, BATTLE_ASKS) });
   assert.equal(h.state.phase, 'battle');
   assert.equal(h.state.decision?.seat, caster);
-  assert.equal(h.state.suspension?.type, 'cast', 'on a cast-time suspension, as in §1');
+  assert.equal(h.state.suspension?.type, 'cast', 'on a cast-time suspension, snapshot-free like the one in §1');
   assert.equal(hiddenSegment(h.state), null, 'battle is no hidden simultaneous segment');
   assert.ok(decisionBlocks(h.state, other(caster)), 'so the engine blocks the idle seat');
 

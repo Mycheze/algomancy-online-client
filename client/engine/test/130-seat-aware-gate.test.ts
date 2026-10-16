@@ -106,7 +106,8 @@ registerSynthetic({
 });
 
 /** A BATTLE-timed spell that asks its question in the CAST window (CR 702.5 modes),
- * i.e. the same suspension kind §1's Wraith pile raises. §4's control needs
+ * a snapshot-free suspension like §1's Wraith pile raises (that one is a
+ * 'subject' suspension since 2026-10-16; a 'cast' one until then). §4's control needs
  * that: if the battle-phase test used a mid-resolution suspension instead it
  * would pass for the wrong reason, blocked by the rewind rule rather than by
  * the phase rule, and deleting the phase rule would leave it green. */
@@ -135,9 +136,13 @@ test('CR 507.5a: a Wraith pile suspends its own seat, not the other one', () => 
   assert.equal(h.state.phase, 'deploy');
   assert.equal(hiddenSegment(h.state), 'deploy', 'deployment is a hidden simultaneous segment');
   assert.equal(h.state.decision?.seat, 1, 'seat 1 is being asked about their own trigger pile');
-  assert.ok(h.state.triggerQueue.length > 0, 'and more of the pile is still queued behind it');
-  assert.equal(h.state.suspension?.type, 'cast',
-    'a cast-time suspension — the trigger is being AIMED, nothing has resolved yet');
+  // 2026-10-16 (report round 2026-10-16): the Wraith asks as each trigger BEGINS
+  // TO RESOLVE now, not as it is aimed on the way to the stack — so the pile
+  // waits ON the stack behind the question, and the question is a 'subject'
+  // suspension (no snapshot, nothing resolved yet) rather than a 'cast' one.
+  assert.equal(h.state.stack.length, 3, 'and the whole pile is on the stack behind it');
+  assert.equal(h.state.suspension?.type, 'subject',
+    'a pre-resolution suspension — the trigger is choosing its ally, nothing has resolved yet');
 
   // half one: OFFERED. This is the list the client's "Waiting for X…" bar was
   // drawn from, and it used to be empty.
@@ -151,7 +156,7 @@ test('CR 507.5a: a Wraith pile suspends its own seat, not the other one', () => 
   h.do({ type: 'doneDeploying', seat: 0 });
   assert.equal(h.state.deployDone?.[0], true, 'seat 0 really is done deploying');
   assert.equal(h.state.decision?.seat, 1, "and seat 1 is still being asked, undisturbed");
-  assert.ok(h.state.triggerQueue.length > 0, 'with their pile still queued behind it');
+  assert.equal(h.state.stack.length, 3, 'with their pile still on the stack behind it');
 
   // and the pile finishes normally afterwards
   while (h.state.decision) {
@@ -178,10 +183,13 @@ test('CR D2.1d: seat 0 acting does not drain seat 1\'s trigger pile for them', (
   // the slot full. Let the other seat act and it would build, aim and resolve
   // the ASKING seat's triggers on the acting seat's tick, and re-enter
   // `suspend` while doing it.
+  // 2026-10-16: the pile waits on seat 1's STACK now (each Wraith asks as it
+  // begins to resolve), so that is what must come through untouched.
   const h = withWraiths(1, 3);
   const asked = h.state.decision!;
   const queued = structuredClone(h.state.triggerQueue);
-  assert.ok(queued.length > 0 && queued.every(t => t.controller === 1),
+  const pile = structuredClone(h.state.stack);
+  assert.ok(pile.length === 3 && pile.every(t => t.controller === 1),
     'the pile waiting behind seat 1\'s question is entirely seat 1\'s');
 
   // a play, not a done: `doPlayCard` ends in settle(), `doDoneDeploying` does
@@ -194,10 +202,10 @@ test('CR D2.1d: seat 0 acting does not drain seat 1\'s trigger pile for them', (
   assert.equal(h.state.players[0]!.life, life0 + 1, 'and it really resolved for seat 0');
 
   assert.deepEqual(h.state.decision, asked, "seat 1's question is untouched");
-  assert.deepEqual(h.state.triggerQueue.filter(t => t.controller === 1), queued,
-    'and so is every trigger still queued behind it — nobody resolved seat 1\'s pile '
+  assert.deepEqual(h.state.stack.filter(t => t.controller === 1), pile,
+    'and so is every trigger on the stack behind it — nobody resolved seat 1\'s pile '
     + 'while seat 1 was in the middle of being asked about it');
-  assert.equal(h.state.stack.length, 0, 'nothing of theirs reached the stack either');
+  assert.deepEqual(h.state.triggerQueue, queued, 'and nothing was queued or built for them either');
 });
 
 /* ═══ §2 THE CLOBBER — one slot, and it is not up for grabs ═══════════ */

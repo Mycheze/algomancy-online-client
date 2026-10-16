@@ -314,7 +314,9 @@ test('[CR D7.4] the derived tier-1 population, and every member of it earns a to
   // "this phase", so an unspent [3] discount now expires at a phase boundary
   // and the engine says "the [N] discount goes unused". The player paid 4 debt
   // for it, which is what puts it in this tier rather than in bookkeeping.
-  assert.equal(costly.length, 21,
+  // 21 → 20 with the Wraith ruling of report round 2026-10-16: the stale-subject
+  // line "a part fizzles (what it was aimed at is gone)" has no site any more.
+  assert.equal(costly.length, 20,
     'the tier-1 count moved — a new costly absence, or one reworded out of the class.\n'
     + 'AS MEASURED NOW:\n' + listing(costly));
 
@@ -329,7 +331,9 @@ test('[CR D7.4] the derived tier-1 population, and every member of it earns a to
   // board draws a pending discount, so the strip is the only place it can go.
   // That it lands here without a per-case entry is the shipping rule working:
   // the tier is derived from the sentence, not from a typed list of cases.
-  assert.equal(toasted.length, 18,
+  // 18 → 17 with the Wraith ruling of 2026-10-16: the stale-subject part fizzle
+  // was a toasted member, and its site is gone.
+  assert.equal(toasted.length, 17,
     'the number of costly absences the toast tier carries has moved.\n'
     + 'TOASTED:\n' + listing(toasted) + '\nNOT TOASTED:\n' + listing(surfaced));
 
@@ -390,7 +394,8 @@ test('[CR D7.4] the whole tier, as one number, over engine and pool together', (
   const all = [...costlyClass(structuralSites()), ...costlyClass(cardSites())];
   const toasted = all.filter(s => costToast(eventOf(s)));
   // 22 → 23 with the Deferral Drone errata; see the tier-1 population above.
-  assert.equal(toasted.length, 23,
+  // 23 → 22 with the Wraith ruling of 2026-10-16; likewise.
+  assert.equal(toasted.length, 22,
     'CT-142 counted 19 rows in the 244 stem table. Per SITE, and after asking every existing '
     + 'surface whether it already draws the thing, the tier is:\n' + listing(toasted));
 });

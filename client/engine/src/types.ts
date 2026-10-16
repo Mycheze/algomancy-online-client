@@ -905,27 +905,12 @@ export interface EffectPart {
    */
   mode?: unknown;
   /**
-   * CR 706.12 — the entity this part is AIMED AT, declared in the stack window and
-   * read back at resolution as `ctx.subject`. A SUBJECT, deliberately not a
-   * target (see `EffectDef.subject` in cards/dsl.ts for what that distinction
-   * buys and what it refuses).
-   *
-   * Three states, and the difference between the last two is the whole ruling:
-   *  · `undefined` — not collected yet, or this part declares no subject at
-   *    all. Its absence is the idempotence guard, exactly like `mode`'s
-   *    presence is: `collectTargets` re-runs from the top after every answered
-   *    decision and must not ask twice.
-   *  · `null` — collected, and there was NOTHING to aim at. The part declared
-   *    nothing, so it has nothing to lose: it resolves and its `run` says so
-   *    (the retired ally ruling: "with no ally it simply does nothing — it cannot fizzle").
-   *  · an `EntityId` — aimed. If that entity is gone by the time the part
-   *    resolves, the part is lost and the item FIZZLES, which is what the
-   *    owner asked for: several triggers may all be aimed at one unit and the
-   *    ones that outlive it fizzle rather than being re-aimed at a bystander.
-   *
-   * ON THE PART, not the item, for the same reason `mode` and `costPaid` are:
-   * a graft composite can carry several subject-bearing parts, and `part` is
-   * what a suspension carries across the round trip.
+   * CR 706.12: the entity this part acts on WITHOUT targeting it (`EffectDef.subject`),
+   * chosen by `E.resolveStackAt` as the item begins to resolve and read back
+   * as `ctx.subject`. `undefined` = not chosen yet (the idempotence guard);
+   * `null` = there was nothing to choose from. Never set on the way to the
+   * stack (report round 2026-10-16: the Wraith does not target, so nothing
+   * is declared for it and nothing can fizzle it).
    */
   subject?: EntityId | null;
 }
@@ -1430,19 +1415,13 @@ export type Suspension =
        * 'mode' (CR 702.5): WHICH HALF of a modal effect ("[… or …]"), answered
        * onto `parts[partIndex].mode` — declared before the item reaches the
        * stack so the opponent can see what they are responding to.
-       * 'subject' (CR 706.12): WHICH ENTITY an untargeted effect is aimed at
-       * ("put a -1/-1 counter on an ally"), answered onto
-       * `parts[partIndex].subject`. Same window and same reason as 'mode' —
-       * the aim is part of declaring the effect — but it can go STALE, and a
-       * part whose subject has left play fizzles.
        * 'asYouPlay' (CR 109.6): a cost-shaped, NON-STACK, optional decision that
        * ANOTHER card in play offers while this one is being played ("As you
        * play a nonunit spell, you may sacrifice me…" — Maelstrom Charger).
        * The LAST stage of the window, so everything else about the play is
        * declared before it is asked; the answers land on
        * `StackItem.asYouPlay`, and `E.applyAsYouPlay` reads them back. */
-      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode' | 'subject'
-        | 'asYouPlay';
+      stage?: 'x' | 'mods' | 'cost' | 'itemCost' | 'formation' | 'mode' | 'asYouPlay';
     }
   | {
       /** CR 803.5d: an ordered {Burst} cast — which of the group's REMAINING tokens
@@ -1455,6 +1434,17 @@ export type Suspension =
       then: 'push' | 'resolve';
       aimed: StackItem[];
       remaining: EntityId[];
+    }
+  | {
+      /** CR 706.12: which entity an UNTARGETED effect acts on (`EffectDef.subject`),
+       * asked as `item` — still on top of its stack — begins to resolve. Raised
+       * before anything in the resolution happens, so it carries no snapshot
+       * and rewinds nothing: the other seat may act through it in deployment
+       * (CR 507.5a). doDecide records the answer on the stack item with this
+       * id and resolves it. */
+      type: 'subject';
+      item: StackItem;
+      partIndex: number;
     }
   | {
       /** ordering simultaneous triggers for one seat (CR 706.5) */

@@ -413,7 +413,7 @@ test('cr:annexd.general.player-decides.unoffered — every option the engine off
   assert.ok(tried > 500, `positive control: ${tried} offered options were taken`);
 });
 
-/** a Wraith (and `others` Lithoghuls) for seat 0, carried into deployment, where its trigger aims */
+/** a Wraith (and `others` Lithoghuls) for seat 0, carried into deployment, where its trigger chooses an ally */
 function wraithInDeployment(others: number): Harness {
   const h = new Harness(23101);
   h.do({ type: 'donePlanning', seat: 0 });
@@ -433,7 +433,11 @@ test('cr:annexd.general.player-decides.one-subject — a lone Wraith aims at its
   assert.equal(w.counters, -1, 'and the -1/-1 counter went on that one candidate');
   const two = wraithInDeployment(1);
   assert.equal(two.state.decision?.seat, 0, 'two candidates: the controller is asked');
-  assert.equal((two.state.suspension as { stage?: string } | null)?.stage, 'subject', 'the question is the ability subject, as it goes on the stack');
+  // 2026-10-16 (Discord report; owner: "They don't target which means they can't be
+  // fizzled"): the ally is chosen as the trigger RESOLVES, no longer as it goes on the
+  // stack (the retired cast-window 'subject' stage). The one-candidate / two-candidate rule is unchanged.
+  assert.equal((two.state.suspension as { type?: string } | null)?.type, 'subject', 'the question is asked as the trigger begins to resolve, not as it goes on the stack');
+  assert.equal(two.state.stack.length, 1, 'with the trigger already on the stack, about to come off it');
   assert.equal(two.state.decision!.options.length, 2);
   assert.equal(forcedAction(two.state), null, 'and nothing answers it for them');
 });

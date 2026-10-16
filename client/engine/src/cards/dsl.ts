@@ -245,16 +245,13 @@ export interface EffectCtx {
    */
   mode?: unknown;
   /**
-   * CR 706.12: the entity this effect was AIMED at, declared in the stack window
-   * (see `EffectDef.subject` and `EffectPart.subject`). Card code reads it and
-   * acts — it never asks, because the aim has been fixed since before the item
-   * reached the stack.
-   *
-   * `null` when there was nothing to aim at, which is a real outcome the `run`
-   * must announce ("there is no ally to put a counter on"), NOT a fizzle — the
-   * effect declared nothing, so it lost nothing. `undefined` on an effect that
-   * declares no `subject` at all. It is never a DEAD entity: a subject that
-   * left play fizzles the part before `run` is entered.
+   * CR 706.12: the entity this effect acts on, chosen as the item began to
+   * resolve (see `EffectDef.subject`). Live, never a dead entity.
+   *  · an Entity — chosen (or the only candidate);
+   *  · `null` — there was nothing to choose from; `run` announces the fizzle;
+   *  · `undefined` — not chosen: the effect declares no subject, or the item
+   *    did not resolve through the stack, or what was chosen has since left
+   *    play. `run` must choose for itself, from what is in play now.
    */
   subject?: Entity | null;
   /** mid-resolution choice (CR 802.17 electric path, CR 704.1a payments). Returns the stored
@@ -866,48 +863,46 @@ export interface ModeSpec {
 }
 
 /**
- * CR 706.12 — a SUBJECT: the entity an untargeted effect is AIMED AT, declared in
- * the stack window and read back at resolution as `ctx.subject`.
+ * CR 110.2, 706.12 — a SUBJECT: the one entity an UNTARGETED effect acts on ("put a
+ * -1/-1 counter on an ally"), chosen AS THE EFFECT BEGINS TO RESOLVE, from
+ * what is in play at that moment, and read by `run` as `ctx.subject`.
  *
- * THE PROBLEM IT SOLVES, in the owner's own words (report #101, room SMVJ):
- * *"All Wraith triggers should go onto the stack simultaneously and be allowed
- * to target the same unit, even exceeding its defense (the final triggers
- * would just fizzle)."* Four Wraith triggers must be able to pile onto one
- * 3/3; the first three kill it and the fourth fizzles. That is impossible
- * while the ally is picked INSIDE the resolution, because by then the ally is
- * dead and the menu is a menu of bystanders — the leftover triggers were
- * forced onto your other units instead of doing nothing.
+ * THE RULING (Discord report, report round 2026-10-16), the owner verbatim:
+ * "The way that I *guessed* Wraiths work is wrong. It's this new way. They
+ * don't target which means they can't be fizzled." and "Waiths can fizzle once
+ * you're fully out of units, but since they don't target, it's just a raw
+ * choice where it gets augmented." It reverses his 2026-08-24 ruling (report
+ * #101), under which this seam chose the subject as the item went ONTO the
+ * stack and fizzled it if the subject had left by resolution.
  *
- * ⚠ WHY THIS IS NOT JUST A `TargetSpec`. It would have been three lines
- * instead of a seam, and it was the wrong answer. CR 110.2c rules that the Wraith's
- * "an ally" is not a target, on the ground that the word *target* is not
- * printed — and being a target is not one property, it is four:
+ * So a subject is NOT a target and has none of a target's four properties:
+ * it is not declared on the way to the stack, it cannot go stale or fizzle
+ * the effect, it fires no `'targeted'` event (Mohruung pays nothing), and it
+ * cannot be redirected or compelled. A pile of such triggers resolves one at a
+ * time, each choosing among what the ones before it left.
  *
- *   1. it is chosen when the effect is declared, not when it resolves;
- *   2. it can go stale, and losing every one of them fizzles the effect (CR 704.6);
- *   3. it fires the `'targeted'` event — Mohruung creates a Crystal when it
- *      "becomes targeted", and a Wraith counter is aimed at an ALLY, so every
- *      deployment would have handed its controller a free Crystal;
- *   4. it can be REDIRECTED into a slot (CR 110.9/`canFillSlot`) and is subject to
- *      "must be targeted if able" compulsion.
+ * WHY A SEAM AND NOT A PLAIN `ctx.choose` IN `run`. Both choose at resolution;
+ * the difference is what the question costs the OTHER player. A `ctx.choose`
+ * suspends mid-resolution with a whole-GameState snapshot, and answering it
+ * rewinds to that snapshot, so `decisionBlocks` (CR D2.1c) must freeze the
+ * other seat for as long as it is open — which in deployment is exactly the
+ * playtest #98 complaint ("Rashi's ... Wraith triggers doesn't need to take
+ * away from what I'm doing in Deployment", CR 507.5a). This question is
+ * raised by `E.resolveStackAt` while the item is still on top of the stack,
+ * before anything in the resolution has happened, so it carries no snapshot
+ * and the other seat plays straight through it.
  *
- * CR 706.12 grants **1 and 2**, which is exactly what the owner asked for, and
- * withholds **3 and 4**, which he did not. A subject fires no event, cannot be
- * redirected, compels nothing, and is invisible to every targeting
- * restriction in the pool.
- *
- * `candidates` is asked ONCE, in the stack window, and is never re-asked at
- * resolution — CR 704.6b, 704.5, the same rule a `TargetSpec.restrict` obeys. Fewer than
- * two candidates is not a question: `E.collectSubjects` records the single
- * entity (or `null` for none) without asking, which is what keeps
- * `EffectPart.subject`'s presence a sound idempotence guard, and what keeps a
- * lone Wraith from being asked which of its one ally it means.
+ * Fewer than two candidates is not a question: one is recorded without
+ * asking (CR D1.2e), none records `null` and `run` says the effect fizzles.
+ * An item resolved WITHOUT going through the stack (`commitItem(…, 'resolve')`)
+ * reaches `run` with `ctx.subject === undefined`, and the run must then choose
+ * for itself (the Wraith falls back to its `pickAlly`).
  */
 export interface SubjectSpec {
-  /** a name for the choice, for logs and for the ledger — 'ally', 'subject', … */
+  /** a name for the choice, for logs and for the ledger */
   key: string;
   prompt: (g: E, item: StackItem, part: EffectPart) => string;
-  /** every entity this effect may legally be aimed at, right now */
+  /** every entity this effect may act on, right now */
   candidates: (g: E, item: StackItem, part: EffectPart) => Entity[];
 }
 
@@ -916,9 +911,9 @@ export interface EffectDef {
   /** CR 702.5: this effect is MODAL — the caster declares which half in the cast
    * window, and `run` reads the answer back as `ctx.mode` (see ModeSpec). */
   modes?: ModeSpec;
-  /** CR 706.12a: this effect is AIMED at one entity without targeting it — declared
-   * in the stack window, read back as `ctx.subject`, and FIZZLES if what it
-   * was aimed at has left play by the time it resolves (see SubjectSpec). */
+  /** CR 110.2, 706.12: this effect acts on one entity WITHOUT targeting it, chosen as
+   * the effect begins to resolve and read back as `ctx.subject` (see
+   * SubjectSpec). Never declared on the way to the stack; never fizzles. */
   subject?: SubjectSpec;
   /** cast-time additional cost (CR 702.4). On a spell: paying is part of casting —
    * with nothing to pay the cast is illegal. On a graft part joining a
@@ -1640,7 +1635,7 @@ export interface PlayPermission {
  * else keying on the two ability KINDS reached it too.
  *
  * SO IT IS NOT AN ABILITY, IT IS A STAGE OF THE CAST WINDOW. `E.collectTargets`
- * runs it last, after X, {Modular} mods, targets, subjects, modes, the
+ * runs it last, after X, {Modular} mods, targets, modes, the
  * formation spot and the costs — everything about the play is settled, and the
  * option is the final thing asked before the item is committed. Nothing about
  * it is ever on the stack; only what it BUYS is.

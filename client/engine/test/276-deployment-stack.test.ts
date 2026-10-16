@@ -132,17 +132,21 @@ test('CR 507.5: the play really went ON a stack — it did not skip one', () => 
 test('CR 703.7: seat 0 acting does not build, aim or resolve seat 1\'s held triggers', () => {
   // CR D2.1d's rule, unchanged. CR 507.5a narrows the SCOPE of the hold from "everyone"
   // to "the seat being asked" and must not narrow it any further than that.
+  // 2026-10-16 (report round 2026-10-16): the Wraith now asks as each trigger
+  // BEGINS TO RESOLVE, so the pile behind the question is already on seat 1's
+  // stack (it used to wait in the trigger queue while each one was aimed on
+  // the way up). The rule is the same: seat 0's tick touches none of it.
   const h = withWraiths(1, 3);
+  const pile = structuredClone(h.state.stack);
   const queued = structuredClone(h.state.triggerQueue);
-  assert.ok(queued.length > 0 && queued.every(t => t.controller === 1),
+  assert.ok(pile.length === 3 && pile.every(i => i.controller === 1),
     'the pile behind seat 1\'s question is entirely seat 1\'s');
 
   h.do({ type: 'playCard', seat: 0, handIndex: give(h, 0, QUIET) });
 
-  assert.deepEqual(h.state.triggerQueue.filter(t => t.controller === 1), queued,
-    'every one of them is still queued, in the same order');
-  assert.equal(h.state.stack.filter(i => i.controller === 1).length, 0,
-    'and none of them reached a stack on somebody else\'s tick');
+  assert.deepEqual(h.state.stack.filter(i => i.controller === 1), pile,
+    'every one of them is still on seat 1\'s stack, unresolved, in the same order');
+  assert.deepEqual(h.state.triggerQueue, queued, 'and nothing was queued or built on somebody else\'s tick');
 });
 
 /* ═══ §2 TWO STACKS, NOT ONE ARRAY ═══════════════════════════════════ */

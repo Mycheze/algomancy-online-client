@@ -572,9 +572,13 @@ test('CR 721.6: a dying Wraith mints a NEW Wraith onto a chosen ally', () => {
 });
 
 // "an ally" is not a TARGET (the word "target" is not printed), so it is
-// exempt ON PURPOSE from choosing at the stack (CR 110.2): the ally is chosen on resolution, and with no
-// candidate the trigger simply does nothing rather than fizzling.
-test('with no ally left the death trigger does nothing — it cannot fizzle', () => {
+// exempt ON PURPOSE from choosing at the stack (CR 110.2): the ally is chosen on resolution.
+// INVERTED 2026-10-16 (report round 2026-10-16), the owner verbatim: "Waiths
+// can fizzle once you're fully out of units, but since they don't target, it's
+// just a raw choice where it gets augmented." With no candidate the trigger
+// asks nothing and does nothing, and the log now says it FIZZLES. (Was: 'with
+// no ally left the death trigger does nothing — it cannot fizzle'.)
+test('with no ally left the death trigger fizzles — it asks nothing and mints no Wraith', () => {
   const h = sterile(3734);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -584,8 +588,8 @@ test('with no ally left the death trigger does nothing — it cannot fizzle', ()
   assert.equal(h.state.decision, null, 'nothing to choose between');
   assert.equal(Object.values(h.state.entities).filter(e => e.card === 'Wraith').length, 0,
     'no body and no mod: gone');
-  assert.ok(!h.log.some(l => l.includes('fizzles')),
-    'and nothing fizzled — "an ally" was never a target to lose');
+  assert.ok(h.log.some(l => l.includes('Wraith fizzles — there is no ally to Augment a Wraith onto')),
+    'and it says it fizzled for want of any ally');
 });
 
 // The token-zone ruling (CR 410.5), reversing the trashing rule's old carve-out — and the 2026-09-28 ruling (CR 801.2d)
@@ -1011,7 +1015,8 @@ test('the new actions replay deterministically from the same setup', () => {
  *    stack simultaneously and be allowed to target the same unit, even
  *    exceeding its defense (the final triggers would just fizzle)."
  *
- * Two halves, one commit each. (a) is this block; (b) is the one after it.
+ * Two halves, one commit each. (a) is this block; (b) is the one after it —
+ * (b) was INVERTED on 2026-10-16, see its header.
  *
  * WHAT THE BEHAVIOUR ACTUALLY WAS, measured before anything moved: three
  * Wraiths at the start of deployment queued three triggers, `battleMode` was
@@ -1048,9 +1053,9 @@ registerSynthetic(unit('T144 Watcher', 1, 1), {
 // The claim in one number. A resolving deployment trigger used to see an empty
 // stack because there was never anything on it; now the whole batch is pushed
 // first and popped FILO, so the first to resolve can still see the two waiting
-// behind it. That is what "simultaneously" means mechanically, and it is the
-// precondition for half (b): a trigger cannot be aimed at a unit an earlier one
-// is about to kill unless it was aimed BEFORE that one resolved.
+// behind it. That is what "simultaneously" means mechanically. (Half (b) used
+// to rest on it to aim a pile at one unit; since 2026-10-16 each trigger
+// chooses as it resolves instead, and this half is unchanged.)
 test('CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves', () => {
   const h = sterile(3790);
   toDeployment(h);
@@ -1131,58 +1136,71 @@ test('CR 507.5: the deployment stack is not taxed — CR 505.1b is a battle-phas
   assert.ok(!h.log.some(l => l.includes('is taxed')), 'no tax line at all');
 });
 
-/* ── (b) CR 706.12: several triggers may aim at ONE unit; the surplus fizzles ──
+/* ── (b) CR 706.12: each Wraith trigger chooses its ally AS IT RESOLVES ──────────
  *
- * The load-bearing half. The Wraith's deployment line is aimed in the STACK
- * window now (`EffectDef.subject`), not inside its own resolution, so the whole
- * pile is aimed while the board still looks the way it did when they fired.
+ * INVERTED 2026-10-16 (Discord report, report round 2026-10-16). The owner's
+ * decision, verbatim, reversing his own 2026-08-24 ruling of report #101: "The
+ * way that I *guessed* Wraiths work is wrong. It's this new way. They don't
+ * target which means they can't be fizzled." And, clarifying: "Waiths can
+ * fizzle once you're fully out of units, but since they don't target, it's
+ * just a raw choice where it gets augmented." The report: "They should not
+ * target and need to fully resolve their effect one at a time."
  *
- * ⚠ Still NOT a target. The Wraith ruling (CR 110.2c) is narrowed, not reversed: no `'targeted'` event,
- * no redirect, no compulsion, invisible to every targeting restriction. See
- * `EffectDef.subject` for why those three were withheld — chiefly Mohruung,
- * which creates a Crystal "when I become targeted" and would have paid its
- * controller once per Wraith per deployment.
+ * From 2026-08-24 the deployment line was aimed in the STACK window (the
+ * retired `EffectDef.subject` seam): several triggers could all name one 1/1
+ * and the ones that outlived it fizzled. These tests pinned that, and now pin
+ * the opposite: nothing is declared on the way to the stack (CR 110.2), each
+ * trigger resolves fully before the next one asks, a unit an earlier trigger
+ * killed is not on the next menu, and nothing fizzles while any ally is left.
+ * Half (a) above (the whole batch is on the stack before the first resolves)
+ * is unchanged.
+ *
+ * Still NOT a target: no `'targeted'` event, no redirect, invisible to every
+ * targeting restriction (Mohruung, "when I become targeted, create a Crystal",
+ * would otherwise pay out once per Wraith per deployment).
  */
 
-/** a BOUNDED start-of-deployment shrinker, for the CR 109.9a interaction below */
+/** a BOUNDED start-of-deployment shrinker that chooses on resolution, for the
+ * CR 109.9a interaction below */
 registerSynthetic(unit('T144 Bounded Shrinker', 1, 1), {
   abilities: [{
     type: 'triggered', events: ['startOfDeployment'], bounded: true,   // [once]
     label: 'put a -1/-1 counter on an ally',
     effect: {
-      subject: {
-        key: 'shrink',
-        prompt: () => 'T144 Bounded Shrinker: put a -1/-1 counter on an ally',
-        candidates: (g: E, item) => g.unitsOf(item.controller, item.region),
-      },
       run: (g: E, ctx) => {
-        if (!ctx.subject) { g.ev('info', 'T144 Bounded Shrinker: no ally.'); return; }
-        g.addCounters(ctx.subject, -1);
+        const allies = g.unitsOf(ctx.controller, ctx.region);
+        if (!allies.length) { g.ev('info', 'T144 Bounded Shrinker: no ally.'); return; }
+        const id = allies.length === 1 ? allies[0]!.id : ctx.choose('shrink', {
+          kind: 'electricPath', seat: ctx.controller,
+          prompt: 'T144 Bounded Shrinker: put a -1/-1 counter on an ally',
+          options: allies.map(u => ({ label: u.card, value: u.id, card: u.card })),
+        }) as number;
+        g.addCounters(g.entity(id)!, -1);
       },
     },
   }],
 });
 
-/** answer every pending deployment aim with `id` if it is still offered */
-function aimAllAt(h: Harness, id: EntityId): number {
-  let asked = 0, guard = 20;
+/** answer every pending ally question with `id` when it is offered (else the
+ * first option); returns, per question, whether `id` was on the menu */
+function chooseEach(h: Harness, id: EntityId): boolean[] {
+  const offered: boolean[] = [];
+  let guard = 20;
   while (h.state.decision && guard-- > 0) {
     const dec = h.state.decision;
     const i = dec.options.findIndex(o => o.value === id);
-    assert.notEqual(i, -1,
-      `the aim must still be offered ${id}; menu was [${dec.options.map(o => o.label).join(' | ')}]`);
-    h.do({ type: 'decide', seat: dec.seat, choice: i });
-    asked++;
+    offered.push(i !== -1);
+    h.do({ type: 'decide', seat: dec.seat, choice: Math.max(0, i) });
   }
-  return asked;
+  return offered;
 }
 
-// The owner's sentence, executed. Three Wraiths, one 1/1: all three are
-// offered it, all three take it, the first kills it and the other two fizzle.
-// Before half (b), the second and third were asked AFTER the first had resolved,
-// so the 1/1 was not on their menus at all and their counters were forced onto
-// the Wraiths instead — the leftovers ate the player's own board.
-test('CR 706.12: three Wraith triggers may all aim at one 1/1, and the surplus fizzles', () => {
+// The report's case, executed. Three Wraiths, one 1/1: the first trigger is
+// offered the 1/1 and kills it; the second and third are asked only after
+// that, the 1/1 is not on their menus, and their counters land on Wraiths.
+// Under the 2026-08-24 ruling all three were asked up front, all three named
+// the 1/1, and two fizzled.
+test('CR 706.12: three Wraith triggers and one 1/1 choose as each resolves, so only the first is offered the 1/1 and none fizzles', () => {
   const h = sterile(3794);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1191,24 +1209,18 @@ test('CR 706.12: three Wraith triggers may all aim at one 1/1, and the surplus f
   whiteBox(h, e => { w1 = e.createWraith(P).id; w2 = e.createWraith(P).id; w3 = e.createWraith(P).id; });
   toNextBattle(h, P);
   finishBattle(h);                                          // → next deployment
-  assert.equal(aimAllAt(h, ally), 3, 'all three were aimed, and all three were offered the 1/1');
+  assert.deepEqual(chooseEach(h, ally), [true, false, false],
+    'three questions, one per resolution; the dead 1/1 is offered only to the first');
   assert.equal(ent(h, ally), undefined, 'it took its one counter and died');
-  const fizzles = h.log.filter(l => l.includes('fizzles'));
-  assert.equal(fizzles.length, 2, 'the two that outlived it fizzled — one line each');
-  assert.ok(fizzles.every(l => l.includes('what it was aimed at has left play')),
-    'and the log SAYS why (CR D7.3d: a no-op announces; it does not vanish)');
-  // the point of the whole ruling: nothing was re-aimed at a bystander
-  for (const w of [w1, w2, w3]) {
-    assert.deepEqual(effStats(h, w), [3, 3], 'no Wraith was shrunk as a consolation prize');
-  }
+  assert.ok(!h.log.some(l => l.includes('fizzle')), 'nothing fizzled');
+  const lost = [w1, w2, w3].reduce((n, w) => n + (3 - effStats(h, w)[1]), 0);
+  assert.equal(lost, 2, 'the other two counters landed on Wraiths still in play');
 });
 
-// Over-aiming is legal, not merely tolerated: the aim never pre-validates
-// against what an earlier trigger is about to consume. The owner's own phrase
-// is "even exceeding its defense", so this is the arithmetic version — a 4/4
-// absorbs exactly four -1/-1 counters (4/4 → 3/3 → 2/2 → 1/1 → 0/0, dead), and
-// the fifth is the surplus.
-test('CR 706.12: the aim does not pre-validate against a limit an earlier trigger will consume', () => {
+// The arithmetic version: a 4/4 absorbs exactly four -1/-1 counters
+// (4/4 → 3/3 → 2/2 → 1/1 → 0/0, dead). It is offered while it lives and not
+// after, and the fifth counter goes on a unit still in play.
+test('CR 706.12: a 4/4 is offered to Wraith triggers only while it is in play, and the fifth counter still lands', () => {
   const h = sterile(3795);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1216,16 +1228,17 @@ test('CR 706.12: the aim does not pre-validate against a limit an earlier trigge
   whiteBox(h, e => { for (let i = 0; i < 5; i++) e.createWraith(P); });
   toNextBattle(h, P);
   finishBattle(h);
-  assert.equal(aimAllAt(h, ally), 5, 'a 4/4 may be named by FIVE triggers at once');
+  assert.deepEqual(chooseEach(h, ally), [true, true, true, true, false]);
   assert.equal(ent(h, ally), undefined, 'four counters killed it');
-  assert.equal(h.log.filter(l => l.includes('fizzles')).length, 1,
-    'exactly one surplus, exactly one fizzle');
+  assert.ok(!h.log.some(l => l.includes('fizzle')), 'and nothing fizzled');
 });
 
-// The other half, unmoved. "There is no ally at all" declares NOTHING, so
-// there is nothing to lose and the trigger does nothing rather than fizzling.
-// That distinction is the whole reason `EffectPart.subject` has three states.
-test('CR 706.12: "no ally at all" still does nothing — it is not a fizzle', () => {
+// A lone Wraith: its only ally is itself, so nothing is asked and it shrinks.
+// RENAMED 2026-10-16 from 'CR 706.12: "no ally at all" still does nothing — it
+// is not a fizzle': the body never had "no ally" (the Wraith is its own), and
+// under the owner's clarification a Wraith with NO ally at all now fizzles —
+// that case is 461-wraith-no-ally-and-one-ally.test.ts's job.
+test('CR 706.12: a lone Wraith is its own only ally — it shrinks itself without asking, and nothing fizzles', () => {
   const h = sterile(3796);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1238,11 +1251,10 @@ test('CR 706.12: "no ally at all" still does nothing — it is not a fizzle', ()
   assert.ok(!h.log.some(l => l.includes('fizzles')), 'nothing fizzled');
 });
 
-// The three properties of a TARGET that CR 706.12a deliberately does NOT grant. The
-// first is the expensive one: Mohruung prints "when I become targeted, create a
-// Crystal", a Wraith counter is aimed at an ALLY, and a pool where this fired
-// would hand its controller a free Crystal per Wraith per deployment — a power
-// gain the owner never asked for and could not have been reading in.
+// The properties of a TARGET the Wraith's "an ally" does not have (CR 110.2a).
+// The expensive one: Mohruung prints "when I become targeted, create a
+// Crystal", and a pool where this fired would hand its controller a free
+// Crystal per Wraith per deployment.
 test('CR 706.12a: a subject is not a target — no "targeted" event is ever fired for it', () => {
   const h = sterile(3797);
   toDeployment(h);
@@ -1252,20 +1264,17 @@ test('CR 706.12a: a subject is not a target — no "targeted" event is ever fire
   const from = h.events.length;
   toNextBattle(h, P);
   finishBattle(h);
-  aimAllAt(h, ally);
+  chooseEach(h, ally);
   assert.equal(h.events.slice(from).filter(ev => ev.type === 'targeted').length, 0,
     'the word "target" is still not printed on the card, and nothing behaves as if it were');
   assert.deepEqual(effStats(h, ally), [2, 2], 'both counters landed all the same');
 });
 
-// ⚠ The designer's ruling (now CR 109.9a) beats the owner's first reading. That reading ("a [once] is spent only
-// when the ability does something") would refund a fizzle; the DESIGNER
-// narrowed it on 2026-08-23 — a bounded ability "can only be activated or
-// triggered once per turn. REGARDLESS OF IF THAT ABILITY RESOLVES OR DOESN'T"
-// — so the use is spent by reaching the stack and a fizzle cannot hand it back.
-// CR 706.12's fizzle is an ordinary fizzle and obeys the ordinary rule. The decline
-// side of the same line is 94-bounded-uses.test.ts's job.
-test('CR 706.12 x CR 109.9a: a bounded ability that FIZZLES still spends its use', () => {
+// CR 109.9a: a bounded use is spent by reaching the stack. A chooser that
+// chooses on resolution has nothing to lose while an ally is left, so both
+// [once] triggers resolve and both spend their use; the second simply chooses
+// among what is left. (Fizzle-spends-the-use is 93-engine-defects.test.ts's job.)
+test('CR 706.12 x CR 109.9a: a bounded chooser that chooses on resolution spends its use and never fizzles', () => {
   const h = sterile(3798);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1274,18 +1283,18 @@ test('CR 706.12 x CR 109.9a: a bounded ability that FIZZLES still spends its use
   const s2 = spawn(h, P, 'T144 Bounded Shrinker');
   toNextBattle(h, P);
   finishBattle(h);
-  assert.equal(aimAllAt(h, ally), 2, 'both [once] triggers were aimed at the 1/1');
+  assert.deepEqual(chooseEach(h, ally), [true, false],
+    'the first is offered the 1/1 and kills it; the second asks after, without it');
   assert.equal(ent(h, ally), undefined, 'one counter, one death');
-  assert.equal(h.log.filter(l => l.includes('fizzles')).length, 1, 'and one fizzle');
+  assert.ok(!h.log.some(l => l.includes('fizzle')), 'nothing fizzled');
   const key = 'ability:T144 Bounded Shrinker#0';
-  assert.equal(ent(h, s1)!.budgets[key], 1, 'the one that resolved spent its use');
-  assert.equal(ent(h, s2)!.budgets[key], 1,
-    'and so did the one that FIZZLED — the designer (CR 109.9a): "regardless of if that ability resolves or doesn\'t"');
-  assert.ok(!h.log.some(l => l.includes('its use is not spent')),
-    'no refund was announced, because none was made');
+  const left = [s1, s2].filter(s => ent(h, s));
+  assert.ok(left.length >= 1, 'the second counter landed on a Shrinker, and at most one died of it');
+  for (const s of left) assert.equal(ent(h, s)!.budgets[key], 1, 'each [once] that resolved spent its use');
+  assert.ok(!h.log.some(l => l.includes('its use is not spent')), 'no refund was announced');
 });
 
-// The aim is a decision like any other, so the replay depends on it being
+// The choice is a decision like any other, so the replay depends on it being
 // raised in a stable order and answered the same way. Same setup, same picks,
 // same world.
 test('CR 706.12: the aim is deterministic — same picks, same state', () => {
@@ -1297,7 +1306,7 @@ test('CR 706.12: the aim is deterministic — same picks, same state', () => {
     whiteBox(h, e => { e.createWraith(P); e.createWraith(P); e.createWraith(P); });
     toNextBattle(h, P);
     finishBattle(h);
-    aimAllAt(h, ally);
+    chooseEach(h, ally);
     return { h, ally };
   };
   const a = build(), b = build();
@@ -1305,4 +1314,3 @@ test('CR 706.12: the aim is deterministic — same picks, same state', () => {
   assert.deepEqual(b.h.actions, a.h.actions);
   assert.equal(a.h.state.rngState, b.h.state.rngState, 'and the RNG never diverged');
 });
-

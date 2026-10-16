@@ -697,15 +697,17 @@ const wraithAllies = (g: E, ctx: EffectCtx): Entity[] => {
 };
 
 /** CR 706.12: the same list, asked of a STACK ITEM instead of an EffectCtx — the
- * deployment line is aimed in the stack window now, where there is no ctx yet.
- * One rule, two callers; `item` carries the same three facts `ctx` does. */
+ * subject seam (E.askSubjects) chooses as the item comes off the stack, before
+ * there is a ctx. One rule, two callers; `item` carries the same three facts
+ * `ctx` does. */
 const wraithAlliesOf = (g: E, item: StackItem): Entity[] => {
   const self = item.sourceId !== undefined ? g.entity(item.sourceId) : undefined;
   return g.unitsOf(item.controller, self?.region ?? item.region);
 };
 
 /** `seat` picks one of `candidates` (auto-picked when there is only one).
- * NOT a target (no "target" printed): chosen here, at resolution. */
+ * NOT a target (no "target" printed): chosen here, at resolution. The
+ * fallback for a Wraith line resolved without a stack (`ctx.subject` unset). */
 const pickAlly = (
   g: E, ctx: EffectCtx, key: string, candidates: Entity[], prompt: string,
 ): Entity | null => {
@@ -722,26 +724,36 @@ card('Wraith', {
   augmentText: [
     // "At the start of deployment, put a -1/-1 counter on an ally."
     //
-    // CR 706.12, OWNER RULING (report #101, room SMVJ, 2026-08-24): *"All Wraith
-    // triggers should go onto the stack simultaneously and be allowed to
-    // target the same unit, even exceeding its defense (the final triggers
-    // would just fizzle)."* The ally is therefore chosen when the trigger goes
-    // ONTO THE STACK (`EffectDef.subject`), not inside the resolution — four
-    // Wraiths may all name one 3/3, the first three kill it and the fourth
-    // fizzles. While it was a `pickAlly` at resolution the fourth was aimed in
-    // a later world, was offered a menu the 3/3 was no longer on, and had to
-    // shrink one of your other units instead of doing nothing.
+    // CR 110.2, OWNER DECISION (Discord report, report round 2026-10-16),
+    // verbatim: *"The way that I *guessed* Wraiths work is wrong. It's this
+    // new way. They don't target which means they can't be fizzled."* It
+    // reverses his 2026-08-24 ruling (report #101, room SMVJ), under which
+    // the ally was chosen as the trigger went ONTO THE STACK and a trigger
+    // whose ally had died under it fizzled: three Wraiths and a 1/1 asked
+    // three questions up front, the first killed the 1/1, the other two
+    // fizzled. The report: "They should not target and need to fully resolve
+    // their effect one at a time."
     //
-    // ⚠ STILL NOT A TARGET — the Wraith ruling (CR 110.2c) is narrowed, not reversed. The word "target"
-    // is still not printed, so this fires no `'targeted'` event (Mohruung does
-    // not hand you a Crystal every deployment), cannot be redirected, and is
-    // invisible to every targeting restriction. See `EffectDef.subject` for
-    // what CR 706.12a grants and what it deliberately withholds.
+    // So the ally is chosen as this trigger RESOLVES, from the allies in play
+    // at that moment — and the death line below does the same. A pile of
+    // Wraith triggers resolves one at a time, each fully, and the next is
+    // asked only after the last has landed; a unit an earlier one killed is
+    // simply not on the next one's menu. Nothing is declared for it on the
+    // way to the stack, so nothing can go stale and nothing fizzles while an
+    // ally is left. The owner's clarification, same day, verbatim: "Waiths can
+    // fizzle once you're fully out of units, but since they don't target,
+    // it's just a raw choice where it gets augmented." So: no ally at all → it
+    // fizzles, asks nothing, and the log says so; one ally → chosen without
+    // asking; two or more → the controller is asked. Not a target either way
+    // — no 'targeted' event (Mohruung pays nothing), no redirect.
     //
-    // The DEATH line below is untouched and still picks at resolution: the
-    // owner's ruling is about the start-of-deployment pile, and "Augment a
-    // Wraith onto an ally" has no limit to exceed — a unit can carry any
-    // number of Wraith augments, so no pile of them can ever over-aim.
+    // The choice is `effect.subject` (EffectDef.subject), asked by
+    // E.askSubjects as the item comes off the top of the stack, BEFORE the
+    // resolution starts — not a `ctx.choose` in `run`, because a mid-run
+    // question rewinds on its answer and so freezes the other player for as
+    // long as it is open (CR D2.1c), and a Wraith pile in deployment must
+    // not (CR 507.5a, playtest #98). `pickAlly` is only the fallback for an
+    // item resolved without a stack, where `ctx.subject` is undefined.
     {
       type: 'triggered', events: ['startOfDeployment'],
       label: 'put a -1/-1 counter on an ally',
@@ -752,11 +764,9 @@ card('Wraith', {
           candidates: (g, item) => wraithAlliesOf(g, item),
         },
         run: (g, ctx) => {
-          const ally = ctx.subject;
-          // `null` only — a subject that has LEFT PLAY never reaches a run:
-          // that part fizzled, and said so. This is the "there was no ally at
-          // all" case, which the engine treats as a no-op and not a fizzle.
-          if (!ally) { g.ev('info', 'Wraith: there is no ally to put a -1/-1 counter on.'); return; }
+          const ally = ctx.subject !== undefined ? ctx.subject
+            : pickAlly(g, ctx, 'wraithShrink', wraithAllies(g, ctx), 'Wraith: put a -1/-1 counter on an ally');
+          if (!ally) { g.ev('info', 'Wraith fizzles — there is no ally to put a -1/-1 counter on.'); return; }
           g.addCounters(ally, -1);
         },
       },
@@ -770,10 +780,18 @@ card('Wraith', {
       label: 'Augment a Wraith onto an ally',
       effect: {
         creates: ['Wraith'],
+        // the same choice as the line above, made the same way and for the
+        // same reason: a Wraith that dies in deployment must not freeze the
+        // other player while its controller picks the new host
+        subject: {
+          key: 'wraithAugment',
+          prompt: () => 'Wraith: Augment a Wraith onto an ally',
+          candidates: (g, item) => wraithAlliesOf(g, item),
+        },
         run: (g, ctx) => {
-          const ally = pickAlly(g, ctx, 'wraithAugment', wraithAllies(g, ctx),
-            'Wraith: Augment a Wraith onto an ally');
-          if (!ally) { g.ev('info', 'Wraith: there is no ally to Augment a Wraith onto.'); return; }
+          const ally = ctx.subject !== undefined ? ctx.subject
+            : pickAlly(g, ctx, 'wraithAugment', wraithAllies(g, ctx), 'Wraith: Augment a Wraith onto an ally');
+          if (!ally) { g.ev('info', 'Wraith fizzles — there is no ally to Augment a Wraith onto.'); return; }
           g.augmentWraith(ally, ctx.controller);
         },
       },
