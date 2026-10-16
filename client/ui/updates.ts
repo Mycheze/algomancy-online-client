@@ -45,7 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
   { date: '2026-10-16', kind: 'new', text: "Beta: if the game gets something wrong, propose a fix from the table menu. When your opponent agrees you can set a life total, draw a missed card, move a card, or rewind a few actions." },
-  { date: '2026-10-16', kind: 'change', text: "Units you send to counterattack now have to attack: there is no \"Don't attack\" in a counterattack, and a lone one forms by itself. If every attacker is gone before blocks, nothing can block, but you can still counterattack." },
+  { date: '2026-10-16', kind: 'change', text: "Units and spell tokens you send to counterattack now have to go: there is no \"Don't attack\" in a counterattack, and a lone unit forms by itself. If every attacker is gone before blocks, nothing can block, but you can still counterattack." },
   { date: '2026-10-16', kind: 'fix', text: "An Ambush is no longer treated as a spell: Cosmic Reversal, Dreadwave Devourer and other spell-only effects leave it alone, and Nothyr can now negate one." },
   { date: '2026-10-16', kind: 'fix', text: "Cards that say \"target\" now need their targets: Tilling the Graves needs two units in your bin, and X spells like Blight's End only let you pick an X you can fill." },
   { date: '2026-10-16', kind: 'new', text: "Ordering triggers: each pick shows its number, click one to take it back or Start over, then Confirm. Casting a group of spell tokens has an Undo last pick button." },

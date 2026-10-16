@@ -11131,9 +11131,9 @@ export const CLOSED: TodoEntry[] = [
     verify: "Send one counterattacker at blocks with no spell token: round 2 forms it by itself, with no Dont attack.",
     guards: [
       "479-empty-attack-and-committed-counterattack.test.ts::CT-251 a lone sent counterattacker is formed for the player",
-      "479-empty-attack-and-committed-counterattack.test.ts::CT-251 a lone counterattacker with a ridable token is asked",
+      "479-empty-attack-and-committed-counterattack.test.ts::CT-251 a lone counterattacker with a sent token is formed with the token riding",
     ],
-    closed: "FIXED 2026-10-16 with CT-298: the owner restored the committed counterattack (\"if you decide to counterattack with something, it MUST be put into formation\"); a lone owed counterattacker is formed for the player when no sent spell token could ride, and is still asked (never declined) when one could.",
+    closed: "FIXED 2026-10-16 with CT-298: the owner restored the committed counterattack (\"if you decide to counterattack with something, it MUST be put into formation\"); a lone owed counterattacker is formed for the player when no sent spell token could ride, with every sent spell token riding.",
     status: 'done',
   },
   {
@@ -11163,9 +11163,10 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       "479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent counterattacker must be in the formation",
       "479-empty-attack-and-committed-counterattack.test.ts::CT-298 a second round after a first round with no attack",
+      "479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent spell token must ride with a counterattack of several units",
       "480-counterattack-and-empty-block-bars.test.ts::CT-298 a first-round attack still offers Dont attack",
     ],
-    closed: "FIXED 2026-10-16. counterattackersOwed: every sent unit still alive, in the region and not lured must be in the round-2 formation, in any shape; no decline while one is owed; the decline stays when round 1 had no attack. The bar has no Dont attack in a counterattack and Attack waits for every sent unit. Spell tokens stay optional (the ruling names units) — asked of the owner.",
+    closed: "FIXED 2026-10-16. counterattackersOwed: every sent unit still alive, in the region and not lured must be in the round-2 formation, in any shape; no decline while one is owed; the decline stays when round 1 had no attack. The bar has no Dont attack in a counterattack and Attack waits for every sent unit. Sent spell tokens are owed too (owner: \"counterattacking wiht spell tokens is the same as attacking with them. You gotta take them with you THEN or never have access to them in the other region.\"); they ride with the whole formation.",
     status: 'done',
   },
   {
