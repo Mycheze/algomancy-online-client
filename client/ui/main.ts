@@ -114,6 +114,7 @@ import type {
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { installReport, isReportOpen, openReport, reportJustSent } from './report.ts';
+import * as amend from './amend.ts';
 import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
 import { dragActive, installDrag, type DragPlan } from './drag.ts';
 // BL-38 — the match replay viewer: a saved game driven through the same
@@ -247,6 +248,15 @@ interface NetMsg {
    * whether there is a second seat here to carry on WITH.
    */
   both?: boolean;
+  /** BL-46: present on every push of a room that takes agreed fixes (the open
+   * proposal rides a join and an `amend` message, never a paced update) */
+  fix?: amend.FixInfo | null;
+  /** BL-46: an `amend` message — what just happened to the proposal */
+  how?: string;
+  /** BL-46: a 'joined' sent after an agreed rewind cut the log */
+  rewound?: true;
+  /** BL-46: the answer to the fix dialog's `options` */
+  rewinds?: amend.RewindOption[]; editWhy?: string | null; why?: string;
 }
 
 /** Remote backend: sends intents over WS, renders from server-pushed redacted views.
@@ -432,7 +442,7 @@ class NetBackend implements Backend {
       on: fullControlOn(),
       // CT-182: …and the report dialog's hold, when this join is made with the
       // form open (a reconnect under it) — a join forgets it on the server
-      ...(isReportOpen() ? { hold: true } : {}),
+      ...(isReportOpen() || amend.isAmendOpen() ? { hold: true } : {}),
       // …and, when the deck came out of the saved collection, WHICH deck it
       // is, so the game counts toward that deck's record (server/collection.ts)
       //
@@ -615,6 +625,11 @@ class NetBackend implements Backend {
   rematch(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'rematch', ...msg }));
   }
+  /** BL-46: propose, answer or withdraw an agreed fix (ui/amend.ts) */
+  amend(msg: Record<string, unknown>): void {
+    if (this.ws.readyState !== WebSocket.OPEN) return;
+    this.ws.send(JSON.stringify({ t: 'amend', ...msg }));
+  }
   private onMsg(m: NetMsg): void {
     // the post-game screen: the whole payload on game over, then just the
     // rematch state as the two of you make up your minds
@@ -650,6 +665,13 @@ class NetBackend implements Backend {
     }
     if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };
     if (m.names) this.names = m.names;
+    // BL-46 — the agreed-fix channel. Not paced: a proposal is not game news
+    // the table has to read in order, and its bar is answered in seconds.
+    if (m.t === 'amend') { amend.setFixInfo(m.fix ?? null, m.how); render(); return; }
+    if (m.t === 'amendopts') { amend.setFixOptions(m); return; }
+    if (m.t === 'amenderr') { amend.fixRefused(m.msg ?? 'the fix was refused'); return; }
+    // whether this room takes fixes at all rides every push (the menu entry)
+    if (m.t === 'update' && !m.waiting && m.view) amend.setFixesOn(m.fix !== undefined && m.fix !== null);
     // CR D5.5a: WHO IS CONNECTED IS NOT GAME NEWS. It is true the moment it
     // arrives, it is not something the player acts on, and CR D5.4b's gate does
     // not look at it — so a disconnect (server/main.ts pushes a view when a
@@ -727,6 +749,10 @@ class NetBackend implements Backend {
       // the room you were sitting in just filled: say so to a background tab
       if (this.waiting) alertTab('Your game has started');
       this.waiting = null;
+      // BL-46: an agreed rewind cut the log. Every update still queued here
+      // describes a board that no longer exists — drop them, not play them
+      if (m.rewound) { this.paced = emptyPace(); lastPlayback = null; }
+      amend.setFixInfo(m.fix ?? null);
       // the lobby just resolved: show what the trio is and how it got there
       if (m.trio) { pendingTrio = m.trio; lob.resetLobby(); }
       this.state = m.view!;   // CT-179: non-null — the no-view join was refused above
@@ -8488,6 +8514,9 @@ function planAutoPass(): AutoPassPlan {
   // dropped (its releases above still run): closing the dialog repaints, and
   // this function decides again against the state as it is then.
   if (isReportOpen()) return { disarm: plan.disarm, pass: null };
+  // BL-46: …nor while the fix dialog is open, or a proposed fix waits for its
+  // answer — a pass is an action, and any action ends the proposal
+  if (amend.isAmendOpen() || amend.proposalOpen()) return { disarm: plan.disarm, pass: null };
   // CR 703.8: the haste step is not a priority window — there is no priority in
   // it and nothing to pass — so it is asked LAST and only when the priority
   // machinery has nothing to say. `plan.disarm` is carried through untouched:
@@ -8509,7 +8538,8 @@ function planAutoPass(): AutoPassPlan {
  * by itself. */
 function reportOpenChanged(open: boolean): void {
   if (!NET || !inGame) return;
-  NET.reportHold(open);
+  // BL-46: the fix dialog holds the same way — one server flag for either
+  NET.reportHold(isReportOpen() || amend.isAmendOpen());
   if (open) {
     if (autoPassTimer !== null) { cancelAutoPass(); ui.autoAt = -1; }
     return;
@@ -8763,7 +8793,7 @@ function sendAutoPass(at: number): void {
     if (!NET || s.actionCount !== at || s.decision || s.priority !== NET.seat) return;
     // CT-182: the report dialog opened while this waited — hold, and let the
     // repaint on its close decide again (the latch is freed for it)
-    if (isReportOpen()) { ui.autoAt = -1; return; }
+    if (isReportOpen() || amend.isAmendOpen() || amend.proposalOpen()) { ui.autoAt = -1; return; }
     // [59] …and "moved on" includes an intent that is still in flight. A click
     // during the wait spends this state without changing actionCount yet, so
     // the timer would otherwise land the second pass the report complained
@@ -11477,7 +11507,7 @@ function typingIn(t: EventTarget | null): boolean {
  * game's own question, which Enter answers and undo may take back, not a layer
  * over the game. D3: and the moment just after a sent report closes. */
 function overlaysUp(withPick = true): boolean {
-  const overlayUp = isReportOpen() || judgeOpen || helpOpen || logOpen || !!inspect
+  const overlayUp = isReportOpen() || amend.isAmendOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
     || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || reportJustSent()
     || (withPick && (pickOpen() || pickSetOpen()));
@@ -11638,14 +11668,16 @@ function boardMenuItems(): MenuItem[] {
   // ui/inspect.ts (boardMenuEntries) where it is tested. This hangs the two
   // behaviours on them — and note that neither one ACTS: concede opens the
   // confirmation (concedeHtml), it never concedes.
-  return boardMenuEntries(h.state, NET ? NET.seat : null).map(entry => ({
+  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn() }).map(entry => ({
     label: entry.label,
     confirm: entry.confirm,
     go: entry.kind === 'log'
       ? (): void => { logOpen = true; render(); }
       : entry.kind === 'erased'
         ? (): void => { erasedView = entry.seat; render(); }
-        : (): void => { concedeAsk = entry.seat; render(); },
+        : entry.kind === 'fix'
+          ? (): void => { amend.openFix(); }
+          : (): void => { concedeAsk = entry.seat; render(); },
   }));
 }
 
@@ -11709,6 +11741,24 @@ document.addEventListener('contextmenu', e => {
   render();
 });
 
+/** BL-46: which fix a card's menu would preselect — the unit, or the first of
+ * your own copies of the card (hand, then cache, then bin) — or null */
+function fixPresetFor(name: string, id: EntityId | undefined): amend.FixPreset | null {
+  if (!NET) return null;
+  const en = id !== undefined ? h.state.entities[id] : undefined;
+  if (en && en.kind === 'unit') return { kind: 'unit', id: en.id };
+  if (en) return null;   // a mod, a token on the stack: not a v1 fix
+  const p = h.state.players[NET.seat];
+  if (!p) return null;
+  const inHand = p.hand.indexOf(name);
+  if (inHand >= 0) return { kind: 'move', from: 'hand', index: inHand };
+  const inCache = (p.cache ?? []).findIndex(c => c.card === name);
+  if (inCache >= 0) return { kind: 'move', from: 'cache', index: inCache };
+  const inBin = p.bin.lastIndexOf(name);
+  if (inBin >= 0) return { kind: 'move', from: 'bin', index: inBin };
+  return null;
+}
+
 /**
  * The card menu — what a right-click on a readable card offers. Built here
  * and offered from TWO places: the right-click itself, and (iPad, 2026-09-05)
@@ -11761,6 +11811,13 @@ function cardMenuItems(name: string, id: EntityId | undefined, sid: number | und
       });
     }
   }
+  // BL-46 — "Propose: move this card" (owner, 2026-10-16): a fix about THIS
+  // card, the dialog opened with it chosen. A unit on the board (anyone's —
+  // it is public), or one of YOUR cards in hand, cache or bin; never a card in
+  // the opponent's hidden zones. Touch reaches it too: the rail's card menu is
+  // this same list.
+  const preset = NET && amend.fixesOn() ? fixPresetFor(name, id) : null;
+  if (preset) items.push({ label: '🛠 Propose: move this card', go: () => amend.openFix(preset) });
   // CR D6.15/BL-20: card things only. `boardMenuItems()` is NOT appended here —
   // concede and "view erased" are field entries and belong to a right-click of
   // bare table, which still offers them.
@@ -11819,6 +11876,14 @@ installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
 installReport(reportOpenChanged);
+// BL-46: the agreed-fix dialog and the bar the other seat answers on — a layer
+// of its own beside #app, like the report form (ui/amend.ts)
+amend.installAmend({
+  send: msg => NET?.amend(msg),
+  view: () => (NET && inGame && NET.joined && !NET.waiting ? { state: h.state, seat: NET.seat, names: NET.names } : null),
+  openChanged: reportOpenChanged,
+  proposalChanged: () => { if (autoPassTimer !== null) { cancelAutoPass(); ui.autoAt = -1; } },
+});
 // the rules review page's selection chip, comment composer and sheet (ui/crlayer.ts)
 installCrLayer();
 // tablets and foldables (2026-09-27): html.touch, the one-shot click swallow

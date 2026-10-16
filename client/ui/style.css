@@ -1250,6 +1250,29 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .reportchoices button[data-severity="gamebreaking"].on { border-color: var(--danger); color: var(--danger); background: #2b1a1a; }
 .reportbox .judgerow { align-items: center; }
 .reporthint { flex: 1; text-align: right; color: var(--dim); font-size: 11px; }
+
+/* BL-46: "Beta: propose a fix" (ui/amend.ts) — its own layer beside #app, like
+   the report form: the dialog's scrim, and the bar the other seat answers on */
+.amendscrim { position: fixed; inset: 0; z-index: 69; background: rgba(6,8,11,.72);
+  display: flex; align-items: center; justify-content: center; }
+.amendbox { width: min(94vw, 560px); }
+.amendbox textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 8px 10px; font: inherit; resize: vertical; }
+.amendbox select, .amendbox input { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 5px; padding: 5px 8px; font: inherit; max-width: 100%; }
+.amendbox input[type="number"] { width: 5.5em; }
+.amendrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.amendrewinds { flex-direction: column; }
+.amendrewinds button { text-align: left; }
+.betatag { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim);
+  border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; vertical-align: middle; }
+.amendbar { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 66;
+  width: min(94vw, 720px); background: var(--panel); border: 1px solid var(--accent); border-radius: 8px;
+  padding: 10px 14px; box-shadow: 0 6px 24px rgba(0,0,0,.55); font-size: 14px; line-height: 1.45; }
+.amendbar.mine { border-color: var(--line); color: var(--dim); }
+.amendbar .amendwhy { color: var(--dim); font-style: italic; }
+.amendbar .amendleft { color: var(--dim); font-variant-numeric: tabular-nums; margin: 0 6px; }
+.amendbar button { margin-left: 4px; }
 .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 90;
   background: #1d2b1a; border: 1px solid var(--glow); color: var(--glow); border-radius: 8px;
   padding: 10px 18px; font-weight: 700; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
@@ -1749,6 +1772,7 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
   color: var(--dim); border: 1px solid var(--line); cursor: help; vertical-align: middle; }
 .constag.early { color: var(--accent); border-color: var(--accent); }
+.constag.fixed { color: var(--text); }   /* BL-46: counted, and tagged */
 .accttable.games .weight-walkover td { color: var(--dim); }
 .accttable.games .weight-walkover .resultcell { color: var(--dim); font-weight: 500; }
 

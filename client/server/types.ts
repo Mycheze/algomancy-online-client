@@ -17,7 +17,7 @@
  * types and declares no values — it can never pull `ws` in, so both sides can
  * name the same interface and a rename is a compile error in both.
  */
-import type { Action, Seat } from '../engine/src/types.ts';
+import type { Action, AmendEdit, Seat } from '../engine/src/types.ts';
 
 /** One logged action a rebuild could not apply FAITHFULLY — it was refused,
  *  or it was accepted and came to mean something else. */
@@ -112,4 +112,41 @@ export interface RoomClosed {
   /** the inactivity window that closed it, so the sentence a late visitor is
    *  shown names the rule that applied then, not whatever it is today */
   afterMs: number;
+}
+
+/**
+ * BL-46 — ONE AGREED FIX, as the file records it ("Beta: propose a fix").
+ *
+ * The owner, 2026-10-16: a fixed game counts for EVERYTHING — result, rating,
+ * league, achievements, card stats — and only gets a visible "fixed" tag in
+ * the match history and the organizer's view. This list is where that tag is
+ * read from (history.ts), and the record of what was done.
+ *
+ *   'edit'    an `amend` action, which IS in the log at index `at` — the
+ *             entry is the context the action cannot carry (why, who agreed)
+ *   'rewind'  the log was TRUNCATED to `at` actions by mutual agreement. The
+ *             actions taken back are not in the log any more, so they are
+ *             archived here (`removed`) — `replay-room.ts` prints them. A
+ *             rewind is never a fork: seed + actions still reproduces the game.
+ *
+ * Persisted, additive (absent on every game nobody fixed); NOT copied to a
+ * rematch, and dropped with the log on a re-deal.
+ */
+export interface Amendment {
+  kind: 'edit' | 'rewind';
+  /** 'edit': the amend action's index; 'rewind': the log length it went back to */
+  at: number;
+  /** who proposed and who agreed */
+  seat: Seat;
+  by: Seat;
+  /** the fix in one sentence (engine/src/amend.ts amendText, or the rewind's) */
+  what: string;
+  /** what went wrong, in the proposer's words (required to propose) */
+  reason: string;
+  /** when it was agreed (ISO) */
+  when: string;
+  /** 'edit': the edit itself */
+  edit?: AmendEdit;
+  /** 'rewind': the actions taken back, in log order — `removed[0]` was index `at` */
+  removed?: Action[];
 }

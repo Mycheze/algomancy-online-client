@@ -195,7 +195,8 @@ function onPage(id: string): boolean {
  * Fresh DOM after every paint, like the browser: the app root's innerHTML
  * setter drops these, and main.ts re-creates value and listeners.
  */
-const TYPED = new Set(['report-note']);
+// BL-46: the fix dialog's reason box is a layer's typing box, like the report's
+const TYPED = new Set(['report-note', 'amend-reason']);
 const FIELDS = new Map<string, { el: Record<string, unknown>; on: Map<string, Listener[]> }>();
 function fieldEl(id: string): Record<string, unknown> | null {
   if (!(String(APP['innerHTML']) + layersHtml()).includes(`id="${id}"`)) return null;

@@ -29,7 +29,7 @@ interface Win { start: number; hours: number }
  * to this viewer — the season's own entrants and its organizers */
 interface Person { id: string; name: string; contact?: string | null }
 interface Suggestion { id: string; name: string; contact: string | null; days: number; hours: number; windows: Win[]; problem: string | null }
-interface Result { outcome: 'a' | 'b' | 'unplayed' | 'double-loss'; how: string; code?: string; at: string; note?: string }
+interface Result { outcome: 'a' | 'b' | 'unplayed' | 'double-loss'; how: string; code?: string; at: string; note?: string; fixed?: true }
 interface SeasonView {
   id: string; name: string; phase: number; label: string; weeks: number; perWeek: number; lateUntil: number;
   signupOpens: string; start: string; phases: { phase: number; label: string; at: string }[];
@@ -405,7 +405,9 @@ function resultText(m: { a: Person; b: Person; result: Result | null }): string 
   if (r.outcome === 'unplayed') return '<span class="dim">not played</span>';
   if (r.outcome === 'double-loss') return '<span class="dim">double loss</span>';
   const w = r.outcome === 'a' ? m.a : m.b;
-  return `<b>${esc(w.name)}</b> won${r.how === 'organizer' ? ' <span class="dim">(organizer)</span>' : ''}`;
+  return `<b>${esc(w.name)}</b> won${r.how === 'organizer' ? ' <span class="dim">(organizer)</span>' : ''}`
+    // BL-46: the game took agreed fixes — it counts, and says so
+    + (r.fixed ? ' <span class="dim" title="the players agreed to fix the board during this game">(fixed)</span>' : '');
 }
 
 // ── the page ──────────────────────────────────────────────────────────

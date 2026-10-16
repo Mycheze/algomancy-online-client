@@ -125,6 +125,7 @@ export const STORED_GAME: readonly StoredLine[] = [
   { covers: ['seats'], what: "Both players' numbers for that game: damage, cards played, units lost, and the rest of what the stat sheet is a sum of." },
   { covers: ['custom'], what: 'If the game was played with custom rules (pack size, elements, simple cards only, banned cards and so on): which rules. A custom game stays in your match history and counts toward nothing.' },
   { covers: ['single'], what: 'If the game was a Single Card Duel: the card each of you played. It stays in your match history, counts toward nothing of yours, and moves those two cards on the public card ladder.' },
+  { covers: ['amended'], what: 'If you and your opponent agreed to fix the board during the game: how many times. It is shown as a "fixed" tag in your match history; the game counts like any other.' },
   { covers: ['concession'], what: 'If the game ended by concession: which seat conceded and on which turn. That decides how much the game weighs — a turn-1 concession is a walkover that counts for nothing, a turn-2 one counts at half rating weight, later ones count in full.' },
 ];
 

@@ -1910,7 +1910,56 @@ export type Action =
    * end-of-step really runs. It stops the moment a decision opens: a question
    * is the human's to answer, not a step to skip.
    */
-  | { type: 'sandboxAdvance'; seat: Seat };
+  | { type: 'sandboxAdvance'; seat: Seat }
+  /**
+   * BL-46 — AN AGREED FIX ("Beta: propose a fix"). One seat proposed an edit
+   * to the board, the other agreed, and the server logged it as this action.
+   *
+   * The owner, 2026-10-16: *"Assuming both players agree, it doesn't change
+   * anything in the game. it'll only be used to solve broken engine/game
+   * issues"* — the case was a draw that did not happen, twice, in a game
+   * that "would have been 100% normal if they could have just given
+   * themselves a card".
+   *
+   * An ACTION, for BL-06's reason: replay, undo, the restore and the record
+   * all rest on "seed + actions reproduces this game", and an edit made out of
+   * band would break exactly the game somebody is most likely to replay.
+   *
+   * ⚠ THE GATE IS THE SERVER, NOT THE ENGINE, and the difference from the
+   * sandbox is deliberate. The engine must ACCEPT a logged amend on every
+   * replay of an ordinary game, so it cannot refuse one by the kind of room.
+   * What stops a client minting one is that server/main.ts refuses any
+   * `amend` arriving on a socket's `action` message: the only thing that
+   * builds one is the server's own accept path, after the OTHER seat agreed
+   * (server/test/486 is the negative test). `seat` is the proposer — whose
+   * cards a `move` names — and `by` the seat that agreed.
+   *
+   * Like `concede` and the sandbox cheats, never in `legalActions`.
+   */
+  | { type: 'amend'; seat: Seat; by: Seat; edit: AmendEdit };
+
+/**
+ * BL-46 — what an agreed fix may change (the owner's v1 list, 2026-10-16):
+ * either seat's life, either seat draws N, one of the PROPOSER's own cards
+ * moved between hand / bin / cache / deck top / deck bottom, a unit taken off
+ * the board. Every edit is QUIET (no triggers fire for it). Adding a card from
+ * nothing and putting one onto the board are not in v1.
+ *
+ * `card` rides with each index or id as a check: the edit names the card the
+ * proposer was looking at, and the engine refuses it if that is no longer
+ * what sits there.
+ */
+export type AmendEdit =
+  | { kind: 'life'; target: Seat; life: number }
+  | { kind: 'drawCards'; target: Seat; n: number }
+  | { kind: 'move'; from: AmendSource; index: number; card: CardName; to: AmendDest }
+  | { kind: 'unit'; id: EntityId; card: CardName; to: AmendUnitDest };
+export type AmendSource = 'hand' | 'bin' | 'cache';
+export type AmendDest = 'hand' | 'bin' | 'cache' | 'deckTop' | 'deckBottom';
+export type AmendUnitDest = 'hand' | 'bin' | 'deckBottom';
+export const AMEND_SOURCES = ['hand', 'bin', 'cache'] as const satisfies readonly AmendSource[];
+export const AMEND_DESTS = ['hand', 'bin', 'cache', 'deckTop', 'deckBottom'] as const satisfies readonly AmendDest[];
+export const AMEND_UNIT_DESTS = ['hand', 'bin', 'deckBottom'] as const satisfies readonly AmendUnitDest[];
 
 // ── the whole game ────────────────────────────────────────────────────
 
@@ -2352,4 +2401,11 @@ export type EnumArraysAreExhaustive = [
   Exhaustive<Exclude<NonNullable<StackItem['mods']>[number]['from'], Zone>>,
   Exhaustive<Exclude<Extract<Action, { type: 'prophesy' | 'augment' | 'graft' }>['from'], Zone>>,
   Exhaustive<Exclude<Extract<Action, { type: 'sandboxSpawn' }>['to'], Zone>>,
+];
+/** BL-46: the same proof for the agreed-fix destination lists (kept out of
+ * the tuple above, whose width `410-enum-exports` pins) */
+export type AmendArraysAreExhaustive = [
+  Exhaustive<Exclude<AmendSource, (typeof AMEND_SOURCES)[number]>>,
+  Exhaustive<Exclude<AmendDest, (typeof AMEND_DESTS)[number]>>,
+  Exhaustive<Exclude<AmendUnitDest, (typeof AMEND_UNIT_DESTS)[number]>>,
 ];

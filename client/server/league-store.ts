@@ -673,14 +673,15 @@ export function overrideResult(s: Season, matchId: string, outcome: Outcome | 'c
 
 /** A league room reached a result at the table (docs/20 §5). The first decided
  * game settles the match; later ones are ignored. */
-export function recordPlayed(matchId: string, winnerUserId: string, code: string, now: number): boolean {
+export function recordPlayed(matchId: string, winnerUserId: string, code: string, now: number, opts: { fixed?: boolean } = {}): boolean {
   for (const s of db().seasons) {
     const m = s.matches.find(x => x.id === matchId);
     if (!m) continue;
     if (m.result && m.result.outcome !== 'unplayed') return false;
     if (winnerUserId !== m.a && winnerUserId !== m.b) return false;
-    m.result = { outcome: winnerUserId === m.a ? 'a' : 'b', how: 'played', code, at: iso(now) } satisfies MatchResult;
-    note(s, `${m.id}: ${nameOf(winnerUserId)} won (${code})`, now);
+    m.result = { outcome: winnerUserId === m.a ? 'a' : 'b', how: 'played', code, at: iso(now),
+      ...(opts.fixed ? { fixed: true as const } : {}) } satisfies MatchResult;
+    note(s, `${m.id}: ${nameOf(winnerUserId)} won (${code})${opts.fixed ? ' — the game took agreed fixes' : ''}`, now);
     resultMessages(s, m, now);
     persist(now);
     return true;

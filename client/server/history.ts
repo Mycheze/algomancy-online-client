@@ -45,6 +45,8 @@ interface SavedRoom extends GameRecord {
   rated?: boolean;
   /** CR D8.2: a single card duel — the cards are `decks[seat][0]` */
   single?: boolean;
+  /** BL-46: the agreed fixes (rooms.ts) — only their count is read, as the tag */
+  amendments?: unknown[];
   // `winner`, the result stamped at the time, comes from GameRecord — it is
   // what keeps an old game's outcome readable after the rules have moved
 }
@@ -136,6 +138,9 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // A single-card file whose decks are unreadable is still TAGGED (with no
     // cards the ladder can read), never recorded as an ordinary constructed game.
     ...(raw.single ? { single: singleCardsOf(raw.decks) ?? ['', ''] as [string, string] } : {}),
+    // BL-46: a game that took agreed fixes is TAGGED and nothing more — the
+    // owner, 2026-10-16: it counts for everything. No fold reads this field.
+    ...(Array.isArray(raw.amendments) && raw.amendments.length ? { amended: raw.amendments.length } : {}),
   };
   const isNew = stashHistory(game);
   return { code, game, isNew };
@@ -166,6 +171,8 @@ export function recordLiveGame(room: {
   custom?: { rules: unknown; deal: unknown };
   /** CR D8.2: a single card duel */
   single?: true;
+  /** BL-46: the agreed fixes, for the "fixed" tag */
+  amendments?: unknown[];
 }): ImportedRow {
   const row = importGame(
     {
@@ -191,6 +198,8 @@ export function recordLiveGame(room: {
       ...(room.custom ? { custom: room.custom } : {}),
       // CR D8.2e: the tag, so a live-recorded duel reaches the card ladder at once
       ...(room.single ? { single: true } : {}),
+      // BL-46: the tag, so a live-recorded fixed game carries it at once
+      ...(room.amendments?.length ? { amendments: room.amendments } : {}),
     } as SavedRoom,
     room.code,
     new Date().toISOString(),

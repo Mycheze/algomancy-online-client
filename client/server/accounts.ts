@@ -428,6 +428,14 @@ export interface RecordedGame {
    * card ladder is folded from (cardladder.ts). Absent on every other game.
    */
   single?: [CardName, CardName];
+  /**
+   * BL-46 — how many AGREED FIXES this game took (rooms.ts `Room.amendments`).
+   * The owner, 2026-10-16: a fixed game counts for everything — result,
+   * rating, league, achievements, card stats — and is only TAGGED, in the
+   * match history and the organizer's view. So no fold reads this; it is the
+   * tag. Absent on every game nobody fixed.
+   */
+  amended?: number;
 }
 
 export const emptyProfile = (): Profile => ({
@@ -1250,6 +1258,8 @@ export interface MatchRow {
   custom?: string[];
   /** CR D8.2: present only for a single card duel — [your card, theirs] */
   single?: [CardName, CardName];
+  /** BL-46: present only for a game that took agreed fixes — how many */
+  amended?: number;
 }
 
 /**
@@ -1311,6 +1321,7 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
           : {}),
         ...(g.custom ? { custom: rulesSummary(g.custom) } : {}),
         ...(g.single ? { single: [g.single[seat], g.single[seat === 0 ? 1 : 0]] as [CardName, CardName] } : {}),
+        ...(g.amended ? { amended: g.amended } : {}),
       };
     });
 }

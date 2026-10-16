@@ -126,7 +126,7 @@ import { digest, probe, signature, type ProbeRefusal } from './replay-probe.ts';
  * This file still reads every field defensively: its input is a FILE, and an
  * old one may predate any of them.
  */
-import type { Fork, LostAction, VersionStamp } from './types.ts';
+import type { Amendment, Fork, LostAction, VersionStamp } from './types.ts';
 import { gamesDir } from './statepaths.ts';
 import { sanitizeDraftDeal, type DraftDeal } from '../engine/src/draftdeal.ts';
 
@@ -150,6 +150,8 @@ export interface RoomFile {
   /** BL-43: a live draft's custom rules and the deal they resolved to. Absent
    * on every standard game; present means the deal is not a standard draft. */
   custom?: { rules?: unknown; deal?: unknown } | null;
+  /** BL-46: the agreed fixes. Absent on every game nobody fixed. */
+  amendments?: Amendment[];
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -822,6 +824,25 @@ export function reportLines(file: string, raw: RoomFile, an: Analysis, opts: {
     `  ${p.name}: ${p.life} life · ${p.hand.length} in hand · ${p.bin.length} in bin · ${p.resources.length} resources`));
   const units = Object.values(s.entities).filter(e => e.kind === 'unit');
   say(`  units in play: ${units.map(u => `${u.card} (${names[u.controller]})`).join(', ') || 'none'}`);
+
+  // ── BL-46: what the two players agreed to change ────────────────────
+  // Not a divergence: an edit is an ordinary logged action (it replays like
+  // any other) and a rewind CUT the log, so seed + actions is still the game.
+  // What the log cannot say is WHY, nor what a rewind took back — printed here.
+  const fixes: Amendment[] = Array.isArray(raw.amendments) ? raw.amendments : [];
+  if (fixes.length) {
+    say(`\n── agreed fixes (${fixes.length}) ──`);
+    for (const f of fixes) {
+      const who = `${names[f.seat] ?? `seat ${f.seat}`} proposed, ${names[f.by] ?? `seat ${f.by}`} agreed`;
+      say(f.kind === 'edit'
+        ? `  [${f.at}] edit: ${f.what} (${who})`
+        : `  rewind to ${f.at} actions: ${f.what} (${who})`);
+      say(`      what went wrong: ${f.reason}`);
+      if (f.kind === 'rewind' && Array.isArray(f.removed)) {
+        say(`      taken back (${f.removed.length}): ${f.removed.map((a, k) => `[${f.at + k}] ${a.type}/${a.seat}`).join(', ')}`);
+      }
+    }
+  }
 
   // ── what the file says about itself ──────────────────────────────────
   const declared: Fork[] = Array.isArray(raw.forks) ? raw.forks : [];

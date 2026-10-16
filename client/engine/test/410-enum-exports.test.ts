@@ -91,8 +91,8 @@ test('§2 every DECISION_KIND is raised: `kind: \'<k>\'` somewhere in src/', () 
   assert.deepEqual(missing, [], `decision kinds nothing raises: ${missing.join(', ')}`);
 });
 
-test('§2 ZONES holds places, not origins: no "sandbox", no "effect"', () => {
-  for (const notAZone of ['sandbox', 'effect']) {
+test('§2 ZONES holds places, not origins: no "sandbox", no "effect", no "amend"', () => {
+  for (const notAZone of ['sandbox', 'effect', 'amend']) {
     assert.ok(!(ZONES as readonly string[]).includes(notAZone), `${notAZone} is an origin with no pile`);
   }
 });
@@ -100,7 +100,8 @@ test('§2 ZONES holds places, not origins: no "sandbox", no "effect"', () => {
 /* ══ §3 · THE MOVERS NAME ONLY ZONES (compile time) ═════════════════════ */
 
 type Exhaustive<T extends never> = T;
-type NotAZone = 'sandbox' | 'effect';
+// BL-46: 'amend' — an agreed fix placing a card in a bin (E.toBin), an origin with no pile
+type NotAZone = 'sandbox' | 'effect' | 'amend';
 type MoverRows = [
   Exhaustive<Exclude<Parameters<E['toHand']>[2], Zone | NotAZone>>,
   Exhaustive<Exclude<Parameters<E['toBin']>[2], Zone | NotAZone>>,

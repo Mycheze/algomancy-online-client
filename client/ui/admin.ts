@@ -60,6 +60,8 @@ interface GameRow {
   finished: boolean; diverged: boolean; winner: number | null; turns: number;
   minutes: number | null; players: [string, string]; known: [boolean, boolean];
   rated: boolean; custom: boolean;
+  /** BL-46: agreed fixes the game took (absent on an older server) */
+  amended?: number;
 }
 
 interface RoomRow {
@@ -296,7 +298,7 @@ function gamesHtml(): string {
       <td><a class="replaylink" href="?replay=${encodeURIComponent(g.code)}"
         title="watch this game back — both hands, since you did not play it">▶ ${esc(g.code)}</a></td>
       <td>${when(g.playedAt)}</td>
-      <td>${esc(g.mode)}${g.custom ? ' <span class="stchip">custom</span>' : ''}${g.rated ? ' <span class="stchip">rated</span>' : ''}</td>
+      <td>${esc(g.mode)}${g.custom ? ' <span class="stchip">custom</span>' : ''}${g.rated ? ' <span class="stchip">rated</span>' : ''}${g.amended ? ` <span class="stchip" title="${g.amended} agreed fix${g.amended === 1 ? '' : 'es'}">fixed</span>` : ''}</td>
       <td>${esc(g.sides
         ? g.sides.map(side => side.join('+') || '—').join(' vs ')
         : g.els.join('+'))}</td>

@@ -86,6 +86,8 @@ export interface MatchRow {
   custom?: string[];
   /** CR D8.2e: only on a single card duel — [your card, theirs]. Counted nowhere of yours. */
   single?: [string, string];
+  /** BL-46: the game took agreed fixes — how many (the row is tagged, still counted) */
+  amended?: number;
 }
 
 export interface Me {
@@ -774,6 +776,13 @@ export function concessionTag(g: MatchRow): string {
   return `<span class="constag early" title="${who} conceded on turn ${c.turn} — no fast-game achievements">early concession · half weight</span>`;
 }
 
+/** BL-46 — the label a row carries when the game took agreed fixes. It
+ * COUNTS (owner, 2026-10-16) — the tag only says the board was fixed. */
+export function fixedTag(g: MatchRow): string {
+  if (!g.amended) return '';
+  return `<span class="constag fixed" title="the players agreed to fix the board ${g.amended === 1 ? 'once' : `${g.amended} times`} during this game">fixed</span>`;
+}
+
 /** BL-43 — the label a custom-rules row carries: kept in the history, counted toward nothing. */
 export function customTag(g: MatchRow): string {
   // CR D8.2e: a single card duel is tagged the same way, for the same reason
@@ -801,7 +810,7 @@ export function gameElementsHtml(els: readonly string[], sides?: readonly [reado
 /** The match-history table body, one row per game. Pure: takes the rows. */
 export function historyRowsHtml(history: MatchRow[]): string {
   return history.map(g => `<tr class="res-${g.result}${g.concession && g.concession.weight !== 'normal' ? ` weight-${g.concession.weight}` : ''}">
-      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}</td>
+      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}${fixedTag(g)}</td>
       <td>${esc(g.opponent)}</td>
       <td>${esc(modeName(g.mode))}</td>
       <td>${gameElementsHtml(g.els, g.sides)}</td>

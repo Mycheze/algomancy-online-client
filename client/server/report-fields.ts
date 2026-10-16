@@ -111,4 +111,15 @@ export interface IssueRow {
    * with a room, else the screen's own name off #app's root class — deck,
    * cb (card browser), acct, home, lobby, queue, meta. Absent on older rows. */
   page?: string;
+  /**
+   * BL-46 — this row was filed BY AN AGREED FIX, not by the report form. The
+   * owner, 2026-10-16: every accepted fix files a bug report automatically,
+   * carrying the proposer's required "what went wrong" (the row's `note`).
+   * `what` is the fix itself; `kind` whether it edited the board or rewound
+   * it; `agreedBy` the seat that said yes. The row's `seat` and `by` are the
+   * PROPOSER's, and `actionIndex` is the log length the fix was proposed at
+   * — the broken moment, which is what a replay wants to stop on. Absent on
+   * every row the form filed.
+   */
+  fix?: { kind: 'edit' | 'rewind'; what: string; agreedBy: number };
 }

@@ -344,6 +344,9 @@ export interface MatchResult {
   code?: string;
   at: string;
   note?: string;
+  /** BL-46: the game that settled it took agreed fixes — a tag for the
+   * organizer, nothing more (owner, 2026-10-16: a fixed game counts) */
+  fixed?: true;
 }
 
 export interface LeagueMatch {

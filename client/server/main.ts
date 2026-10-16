@@ -49,6 +49,8 @@ import {
   seatVerdict,
   notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
   closedNotice, codeTaken, sweepIdleRooms,
+  answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
+  rewindOptions, rewindRoom, type Proposal,
 } from './rooms.ts';
 // CR D8.4a — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
@@ -1272,6 +1274,9 @@ function baseView(room: Room, seat: Seat) {
     // see there is an audience.
     ...(room.watchers.size ? { watchers: room.watchers.size } : {}),
     ...(clock ? { clock } : {}),
+    // BL-46: present only in a room that takes agreed fixes — the menu entry
+    // is drawn from it — with the open proposal, if any (a reconnect sees it)
+    ...((): object => { const f = fixInfo(room, seat); return f ? { fix: f } : {}; })(),
   };
 }
 
@@ -1321,6 +1326,16 @@ function drainForced(room: Room, into: import('../engine/src/types.ts').EngineEv
  * there is no second way for an action to reach a room.
  */
 function landAction(room: Room, seat: Seat, action: Action): void {
+  // BL-46: an action that lands ends a proposed fix (applyToRoom clears it);
+  // both seats are told once the action is in
+  const hadProposal = !!room.proposal;
+  try {
+    landActionInner(room, seat, action);
+  } finally {
+    if (hadProposal && !room.proposal) broadcastFix(room, 'moved');
+  }
+}
+function landActionInner(room: Room, seat: Seat, action: Action): void {
   // a seat that acts is plainly not watching a playback any more
   setWatchHold(room, seat, null);
   // which hidden segment (if any) this action was taken INSIDE
@@ -1624,7 +1639,7 @@ function recordFinishedGame(room: Room): void {
     const seat = room.winner ?? decidedWinner(room);
     const winner = seat === 0 || seat === 1 ? room.users[seat] : null;
     try {
-      if (winner) leagueRecordPlayed(room.league.match, winner, room.code, Date.now());
+      if (winner) leagueRecordPlayed(room.league.match, winner, room.code, Date.now(), { fixed: room.amendments.length > 0 });
     } catch (err) {
       console.error(`[league] could not record ${room.code} for ${room.league.match}:`, err);
     }
@@ -1740,12 +1755,95 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
     ...(room.custom ? { custom: room.custom.rules } : {}),
     // …and the single-card tag, for the same reason
     ...(singleCards(room) ? { single: singleCards(room)! } : {}),
+    // BL-46: and the "fixed" tag
+    ...(room.amendments.length ? { amended: room.amendments.length } : {}),
   };
 }
 
 /** Push the current rematch state to both seats. */
 function broadcastRematch(room: Room): void {
   forEachSeat(seat => sendToSeat(room, seat, { t: 'rematch', rematch: [...room.rematch], room: room.rematchRoom }));
+}
+
+/**
+ * BL-46 — tell both seats where the proposed fix stands. Not paced and not a
+ * view (nothing on the board moved): the proposal, the cooldown, the clock
+ * (a proposal stops both, its end starts them) and, when one just ended,
+ * how — so the proposer hears a decline and both hear an expiry.
+ */
+function broadcastFix(room: Room, how: 'proposed' | 'declined' | 'cancelled' | 'expired' | 'moved' | 'applied'): void {
+  const clock = clockSnapshot(room);
+  forEachSeat(seat => sendToSeat(room, seat, {
+    t: 'amend', how,
+    fix: fixInfo(room, seat) ?? null,
+    ...(clock ? { clock } : {}),
+  }));
+}
+
+/**
+ * BL-46 — carry out an ACCEPTED fix: the edit lands as an `amend` action
+ * through the one door every action takes; a rewind cuts the log. Either way
+ * a bug report is filed into the ordinary report journal with the proposer's
+ * "what went wrong" (owner, 2026-10-16), and the room records the fix.
+ */
+function carryOutFix(room: Room, p: Proposal, by: Seat): void {
+  if (p.kind === 'edit') {
+    const at = room.actions.length;
+    landAction(room, p.seat, { type: 'amend', seat: p.seat, by, edit: p.edit! });
+    // landAction refuses by throwing, and parks only what a decision blocks —
+    // which a proposal never reaches (editTiming). Landed means logged.
+    if (room.actions.length !== at + 1) throw new IllegalAction('the fix did not land');
+    recordAmendment(room, { kind: 'edit', at, seat: p.seat, by, what: p.what, reason: p.reason,
+      when: new Date().toISOString(), edit: p.edit! });
+  } else {
+    const out = rewindRoom(room, p, by);
+    if (!out.ok) throw new IllegalAction(out.why);
+    // the rebuilt board may owe a forced step, exactly as after any action
+    const forced: import('../engine/src/types.ts').EngineEvent[] = [];
+    drainForced(room, forced);
+    // the public line, in both logs (the edit's own engine event is its line)
+    room.events.push({
+      type: 'note',
+      msg: `🛠 Agreed fix: ${p.what} — proposed by ${room.names[p.seat]}, agreed by ${room.names[by]}.`,
+      data: { amend: 'rewind', seat: p.seat, by },
+    } as unknown as import('../engine/src/types.ts').EngineEvent);
+    // a WHOLE fresh view, as on a join: the log lost lines, and each client
+    // must drop its standing pass, its half-built formation and its queue of
+    // paced updates about a board that no longer exists (`rewound`)
+    forEachSeat(s => sendToSeat(room, s, seatMsg('joined', {
+      room: room.code, seat: s, boot: BOOT_ID,
+      ...baseView(room, s),
+      log: visibleLog(room, s),
+      names: room.names, building: null, rewound: true,
+    })));
+  }
+  console.log(`[fix] ${room.code}: seat ${by} agreed to seat ${p.seat}'s fix: ${p.what}`);
+  broadcastFix(room, 'applied');
+  void fileFixReport(room, p, by);
+}
+
+/** the bug report every accepted fix files (owner, 2026-10-16) — the same
+ * journal and row shape as the in-game 📝 Report, recognisable by `fix` */
+async function fileFixReport(room: Room, p: Proposal, by: Seat): Promise<void> {
+  const entry: IssueRow = {
+    ts: new Date().toISOString(),
+    room: room.code,
+    seat: p.seat,
+    note: `[Agreed fix] ${p.what}. What went wrong: ${p.reason}`.slice(0, 4000),
+    // the moment it was proposed at — the broken board a replay should stop on
+    actionIndex: p.at,
+    kind: 'bug',
+    severity: null,
+    by: reportedBy(accountById(room.users[p.seat])),
+    page: 'game',
+    fix: { kind: p.kind, what: p.what, agreedBy: by },
+  };
+  try {
+    await appendFile(ISSUES_FILE, JSON.stringify(entry) + '\n');
+    console.log(`[report] ${room.code} seat ${p.seat} @action ${p.at} by ${reporterLabel(entry.by)} [fix]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
+  } catch (err) {
+    console.error(`[fix] could not file the report for ${room.code}:`, err);
+  }
 }
 
 /** Push freshly-produced events + new state to both seats (per-seat redacted). */
@@ -2307,6 +2405,14 @@ wss.on('connection', ws => {
       if (action.seat !== conn.seat) {
         return send(ws, { t: 'error', msg: `you are seat ${conn.seat}, not seat ${action.seat}` });
       }
+      // BL-46 — ⚠ THE GATE. An agreed fix is built by the server's accept path
+      // and nowhere else; the engine accepts a logged one on every replay, so
+      // nothing below this line could tell a forged one from a real one. A
+      // client proposes with { t: 'amend' } and the other seat must agree.
+      // server/test/486 is the negative test.
+      if ((action as { type?: unknown }).type === 'amend') {
+        return send(ws, { t: 'error', msg: 'a fix is proposed, and lands only when your opponent agrees' });
+      }
       // The standing pass: the backstop already passed THIS window for the
       // seat, and this is the client's own answer to it arriving late (its view
       // was still paced behind the server's). Landing it would pass whatever
@@ -2461,7 +2567,9 @@ wss.on('connection', ws => {
       // that only exists inside a WebSocket message handler can only be
       // tested by playing a whole game over a socket — which is why #37's
       // guards pinned the segment machinery and never the take-back itself.
+      const hadProposal = !!room.proposal;
       const outcome = undoForSeat(room, conn.seat);
+      if (hadProposal && !room.proposal) broadcastFix(room, 'moved');
       if (!outcome.ok) return send(ws, { t: 'error', msg: outcome.why });
       // Playtest VEAV: "I was able to see in the deployment recap that 'Rashi
       // undid an action.' No need to show that to the other person, it's just
@@ -2481,6 +2589,64 @@ wss.on('connection', ws => {
         log: visibleLog(room, s),   // full log replace: lines were removed
       })));
       return;
+    }
+
+    /*
+     * BL-46 — AGREED FIXES ("Beta: propose a fix"). Owner, 2026-10-16:
+     * "Assuming both players agree, it doesn't change anything in the game.
+     * it'll only be used to solve broken engine/game issues."
+     *
+     *   options   what a rewind could go back to now, and whether an edit can
+     *             be proposed now (the dialog greys out what cannot)
+     *   propose   { edit } or { rewind }, with the required `reason`
+     *   accept / decline   the OTHER seat's answer; cancel   the proposer's
+     *
+     * A refusal comes back as `amenderr`, not `error`: the client's error path
+     * releases its action latch and paints the prompt bar, and the fix dialog
+     * is where a fix refusal has to be read.
+     *
+     * Soft until accepted, like a rematch offer: nothing reaches the log but
+     * the accepted edit (an `amend` action) or the accepted rewind (a cut).
+     */
+    if (msg.t === 'amend') {
+      const conn = conns.get(ws);
+      if (!conn) return send(ws, { t: 'amenderr', msg: 'join a room first' });
+      const room = conn.room;
+      const m = msg as unknown as { op?: unknown; id?: unknown; edit?: unknown; rewind?: unknown; reason?: unknown };
+      if (m.op === 'options') {
+        const no = fixesRefusal(room);
+        return send(ws, {
+          t: 'amendopts',
+          ...(no !== null ? { why: no } : { rewinds: rewindOptions(room), editWhy: editTiming(room) }),
+        });
+      }
+      if (m.op === 'propose') {
+        const out = proposeFix(room, conn.seat, { edit: m.edit, rewind: m.rewind, reason: m.reason });
+        if (!out.ok) return send(ws, { t: 'amenderr', msg: out.why });
+        console.log(`[fix] ${room.code}: seat ${conn.seat} proposes: ${room.proposal!.what}`);
+        broadcastFix(room, 'proposed');
+        return;
+      }
+      if (m.op === 'accept' || m.op === 'decline' || m.op === 'cancel') {
+        const out = answerFix(room, conn.seat, m.op, m.id);
+        if (!out.ok) { broadcastFix(room, 'moved'); return send(ws, { t: 'amenderr', msg: out.why }); }
+        if (m.op !== 'accept') {
+          broadcastFix(room, m.op === 'decline' ? 'declined' : 'cancelled');
+          return;
+        }
+        try {
+          carryOutFix(room, out.proposal, conn.seat);
+        } catch (err) {
+          if (err instanceof IllegalAction) {
+            broadcastFix(room, 'moved');
+            return send(ws, { t: 'amenderr', msg: `the fix could not be applied: ${err.message}` });
+          }
+          console.error('[fix] apply error:', err);
+          return send(ws, { t: 'amenderr', msg: 'internal error' });
+        }
+        return;
+      }
+      return send(ws, { t: 'amenderr', msg: 'unknown fix message' });
     }
 
     send(ws, { t: 'error', msg: `unknown message ${msg.t}` });
@@ -2517,6 +2683,9 @@ wss.on('connection', ws => {
       setPassAll(conn.room, conn.seat, null);   // and nothing passes for an empty chair
       setReportHold(conn.room, conn.seat, false);   // …or holds for one (CT-182)
       setWatchHold(conn.room, conn.seat, null);     // …or watches a playback in one
+      // BL-46: nobody is left to answer (or to be answered) — and the clocks
+      // a proposal stopped must not stay stopped for an empty chair
+      if (dropProposal(conn.room)) broadcastFix(conn.room, 'moved');
       settleClock(conn.room);   // a disconnected seat is not billed
     }
     const otherSeat = other(conn.seat);
@@ -2809,7 +2978,14 @@ function sweepLeague(): void {
   try { leagueTick(now); } catch (err) { console.error('[league] tick failed:', err); }
 }
 
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepQueue(); sweepFinished(); sweepIdle(); sweepLeague(); }, EXPIRY_TICK_MS);
+/** BL-46: a proposed fix lapses after FIX_PROPOSAL_MS (owner, 2026-10-16),
+ * and the clocks it stopped run again */
+function sweepFixes(): void {
+  for (const room of allRooms()) {
+    if (proposalExpired(room)) broadcastFix(room, 'expired');
+  }
+}
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepLeague(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();

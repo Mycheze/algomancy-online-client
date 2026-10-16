@@ -611,7 +611,8 @@ test('[08b] the click path routes prophesy through planOffer with the flag set',
 
 test('[30]/[31] the board menu hangs the two behaviours on boardMenuEntries', () => {
   const body = fn('boardMenuItems');
-  assert.match(body, /boardMenuEntries\(h\.state, NET \? NET\.seat : null\)/);
+  // (BL-46 added a third argument: whether the room takes agreed fixes)
+  assert.match(body, /boardMenuEntries\(h\.state, NET \? NET\.seat : null[,)]/);
   assert.match(body, /erasedView = entry\.seat/, '[31] the erased entry opens the pile dialog');
   assert.match(body, /concedeAsk = entry\.seat/, '[30] the concede entry opens the CONFIRMATION');
   assert.equal(/act\(\s*\{\s*type: 'concede'/.test(body), false,

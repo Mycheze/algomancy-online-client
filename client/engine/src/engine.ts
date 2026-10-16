@@ -2488,6 +2488,22 @@ export class E {
     this.refillFromRecycled(seat);
     return this.deckOf(seat).shift();
   }
+  /**
+   * BL-46 — an agreed fix's "draw N": the top `n` cards of `seat`'s deck into
+   * their hand (the recycle pile shuffled in if the deck runs out, as for any
+   * draw), and NOTHING hears it — no 'draw' dispatch, no hand-entry dispatch
+   * (owner, 2026-10-16: fixes are quiet). Returns the cards drawn.
+   */
+  quietDraw(seat: Seat, n: number): CardName[] {
+    const drawn: CardName[] = [];
+    for (let i = 0; i < n; i++) {
+      const c = this.takeFromDeck(seat);
+      if (c === undefined) break;
+      drawn.push(c);
+    }
+    if (drawn.length) this.toHand(seat, drawn, 'deck', { quiet: true });
+    return drawn;
+  }
   draw(seat: Seat, n: number, silent = false): void {
     const drawn: CardName[] = [];
     for (let i = 0; i < n; i++) {
@@ -2598,7 +2614,7 @@ export class E {
 
   toHand(seat: Seat, cards: CardName | readonly CardName[],
          from: 'deck' | 'bin' | 'play' | 'stack' | 'cache' | 'hand' | 'sandbox',
-         opts: { unit?: EntityId; token?: boolean } = {}): void {
+         opts: { unit?: EntityId; token?: boolean; quiet?: boolean } = {}): void {
     const names: CardName[] = typeof cards === 'string' ? [cards] : [...cards];
     if (!names.length) return;
     this.player(seat).hand.push(...names);
@@ -2607,7 +2623,9 @@ export class E {
       ...(opts.unit !== undefined ? { unit: opts.unit } : {}),
       ...(opts.token ? { token: true } : {}),
     });
-    if (this.s.battle) this.fireEvent('handEntered', ev);
+    // BL-46: an agreed fix is QUIET (owner, 2026-10-16) — the event is still
+    // recorded, so the stream stays complete, but nothing hears it
+    if (this.s.battle && !opts.quiet) this.fireEvent('handEntered', ev);
   }
 
   /**
@@ -2662,9 +2680,11 @@ export class E {
    * BL-06's ⚠ line ("the cheat is in setting the board up, not in how it then
    * behaves") pointed at this method.
    */
-  toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache' | 'sandbox'): void {
+  // BL-46: 'amend' is the third non-trashing entry — an agreed fix PLACES a
+  // card where it should have been, and is quiet (owner, 2026-10-16)
+  toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache' | 'sandbox' | 'amend'): void {
     this.player(seat).bin.push(name);
-    if (from === 'stack' || from === 'sandbox') return;
+    if (from === 'stack' || from === 'sandbox' || from === 'amend') return;
     this.noteTrashed(seat, name, from);
   }
 
@@ -3248,7 +3268,7 @@ export class E {
    * permission (CR 801.9e, 801.9i): playable until the end of THIS turn, then inert.
    */
   cacheCard(seat: Seat, name: CardName, from: 'hand' | 'bin' | 'deck' | 'play' | 'effect',
-    opts: { prophecy?: string; playable?: boolean } = {}): CachedCard {
+    opts: { prophecy?: string; playable?: boolean; quiet?: boolean } = {}): CachedCard {
     // a stable handle for targeting the entry (Prismatic Observer): cache
     // INDICES shift as cards leave the zone, so a TargetRef cannot use one
     const cc: CachedCard = { card: name, uid: this.s.nextId++ };
@@ -3259,7 +3279,7 @@ export class E {
       : cc.playableUntilTurn !== undefined ? ' — playable until end of turn' : '';
     const ev = this.ev('cached', `${this.pname(seat)} caches ${name}${extra}.`,
       { seat, card: name, from, ...(cc.prophecy ? { condition: cc.prophecy.condition } : {}) });
-    this.fireEvent('cached', ev);
+    if (!opts.quiet) this.fireEvent('cached', ev);   // BL-46: an agreed fix is quiet
     return cc;
   }
 
@@ -3287,12 +3307,12 @@ export class E {
    * Returns the removed name, or undefined when the index is out of range
    * (callers keep their own "it already left" messages).
    */
-  removeFromBin(seat: Seat, binIndex: number, reason: string): CardName | undefined {
+  removeFromBin(seat: Seat, binIndex: number, reason: string, opts: { quiet?: boolean } = {}): CardName | undefined {
     const bin = this.player(seat).bin;
     if (binIndex < 0 || binIndex >= bin.length) return undefined;
     const [name] = bin.splice(binIndex, 1);
     const ev = this.ev('leftBin', '', { seat, card: name!, reason });
-    this.fireEvent('leftBin', ev);
+    if (!opts.quiet) this.fireEvent('leftBin', ev);   // BL-46: an agreed fix is quiet
     return name;
   }
 
@@ -3447,6 +3467,18 @@ export class E {
    * CR 410.5 token sweep all name the FRONT face, which is the card that is really
    * moving zones.
    */
+  /**
+   * BL-46 — an agreed fix takes `u` off the board QUIETLY: out of play and out
+   * of any formation, its mods to their bins (the leavePlay line), and no
+   * 'died' / 'despawned' / trash event for anything to hear. The caller puts
+   * the card where it goes. Returns false when `u` is not in play.
+   */
+  quietLeavePlay(u: Entity): boolean {
+    const mods = this.leavePlay(u);
+    if (!mods) return false;
+    for (const m of mods) delete this.s.entities[m.id];
+    return true;
+  }
   private leavePlay(u: Entity): Entity[] | null {
     if (!this.entity(u.id)) return null;
     this.stampLastKnown(u);                     // CR 714.1: before the face turns back

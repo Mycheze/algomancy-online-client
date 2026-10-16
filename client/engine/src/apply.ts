@@ -6,7 +6,7 @@
  * caller keeps the old state.
  */
 import type {
-  Action, ActivateVia, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
+  Action, ActivateVia, AmendEdit, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
   EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest, type CostOpts } from './engine.ts';
@@ -19,6 +19,7 @@ import { DECK_LIST, createsOf } from './cards/registry.ts';
 import { dealSummary, draftPool, sanitizeDraftDeal, type DraftDeal } from './draftdeal.ts';
 import { checkLessonDeck, sanitizeLessonDeal, type LessonDeal } from './lessondeal.ts';
 import { rngShuffle, rngNext } from './rng.ts';
+import { amendProblem, amendText } from './amend.ts';
 
 export { IllegalAction };
 
@@ -490,7 +491,8 @@ function dispatch(e: E, action: Action): void {
   // an action that turns out to be illegal throws, and the caller discards the
   // whole draft, stamp included. (`??=`: a pre-fix save has no field — R note
   // in types.ts.)
-  if (e.s.phase === 'deploy' && action.type !== 'doneDeploying' && action.type !== 'decide') {
+  // (BL-46: an agreed fix is not the seat acting — and is refused in deploy anyway)
+  if (e.s.phase === 'deploy' && action.type !== 'doneDeploying' && action.type !== 'decide' && action.type !== 'amend') {
     (e.s.deployActed ??= e.s.players.map(() => false))[action.seat] = true;
   }
   switch (action.type) {
@@ -526,6 +528,8 @@ function dispatch(e: E, action: Action): void {
     case 'sandboxResources': return doSandboxResources(e, action.seat, action.pool);
     case 'sandboxLife': return doSandboxLife(e, action.seat, action.life);
     case 'sandboxAdvance': return doSandboxAdvance(e, action.seat);
+    // BL-46 — an agreed fix. Only the server builds one (see types.ts).
+    case 'amend': return doAmend(e, action.seat, action.by, action.edit);
     // a type the switch does not know must be refused, not silently recorded:
     // the action log's whole contract is "seed + actions reproduces this game",
     // and a no-op entry from a buggy client would pollute it forever
@@ -3321,6 +3325,72 @@ function doSandboxAdvance(e: E, seat: Seat): void {
   }
   e.ev('info', `[test mode] ${e.pname(seat)} advanced the table to ${e.s.phase}`,
     { sandbox: 'advance', seat, phase: e.s.phase });
+}
+
+// ── BL-46: agreed fixes ───────────────────────────────────────────────
+//
+// One seat proposed an edit, the other agreed, and the server logged it.
+// ⚠ NOT gated by the kind of room, unlike the sandbox: a replay of an ordinary
+// game must accept the amends in its log. The gate is server/main.ts, which
+// refuses an `amend` arriving on any socket (types.ts says why).
+//
+// QUIET, every one (owner, 2026-10-16, accepting the recommendation): nothing
+// triggers on a fix — no draw or hand-entry dispatch, no trash, no 'leftBin',
+// no 'died' or 'despawned'. A fix restores the board the rules should have
+// produced; it is not an event of the game for cards to answer.
+
+/** Apply an agreed fix. */
+function doAmend(e: E, seat: Seat, by: Seat, edit: AmendEdit): void {
+  e.need(seat === 0 || seat === 1, 'no such seat');
+  e.need(by === other(seat), 'a fix is agreed by the other player');
+  // the owner's timing (2026-10-16): no edits while either seat is behind the
+  // screen of a hidden step, nor while a question is open — a rewind (the
+  // server's, by truncation) is the tool for those moments
+  e.need(hiddenSegment(e.s) === null,
+    'no fixes during the hidden planning, haste or deploy steps — a rewind still works');
+  e.need(!e.s.decision && !e.s.suspension, 'no fixes while a decision is pending — answer it first');
+  const problem = amendProblem(e.s, seat, edit);
+  if (problem !== null) e.illegal(problem);
+  // the sentence is read off the board BEFORE the change ("it was 9")
+  const text = amendText(e.s, seat, edit);
+  switch (edit.kind) {
+    case 'life':
+      // a SET, like the sandbox's, and never to zero (amendProblem): a fix
+      // keeps a game going; ending one is a concede
+      e.player(edit.target).life = edit.life;
+      break;
+    case 'drawCards':
+      e.quietDraw(edit.target, edit.n);
+      break;
+    case 'move': {
+      const card = edit.card;
+      if (edit.from === 'hand') e.player(seat).hand.splice(edit.index, 1);
+      else if (edit.from === 'bin') e.removeFromBin(seat, edit.index, 'an agreed fix', { quiet: true });
+      else e.uncache(seat, edit.index);
+      if (edit.to === 'hand') e.toHand(seat, card, edit.from, { quiet: true });
+      else if (edit.to === 'bin') e.toBin(seat, card, 'amend');
+      // (from the cache to the cache was refused by amendProblem)
+      else if (edit.to === 'cache') e.cacheCard(seat, card, edit.from as 'hand' | 'bin', { quiet: true });
+      else if (edit.to === 'deckTop') e.deckOf(seat).unshift(card);
+      // CR 408.2: the bottom of a deck is past the mark, as for every card
+      // that reaches it
+      else e.recycleToBottom(seat, card);
+      break;
+    }
+    case 'unit': {
+      const u = e.s.entities[edit.id]!;
+      const to = u.controller;   // CR 400.4: zones follow control
+      e.quietLeavePlay(u);
+      // a token has no card to put anywhere (CR 410.5): it is simply gone
+      if (u.token) break;
+      if (edit.to === 'hand') e.toHand(to, u.card, 'play', { unit: u.id, quiet: true });
+      else if (edit.to === 'bin') e.toBin(to, u.card, 'amend');
+      else e.recycleToBottom(to, u.card);
+      break;
+    }
+  }
+  e.ev('info', `🛠 Agreed fix: ${text} — proposed by ${e.pname(seat)}, agreed by ${e.pname(by)}.`,
+    { amend: edit.kind, seat, by });
 }
 
 // ── legalActions ──────────────────────────────────────────────────────

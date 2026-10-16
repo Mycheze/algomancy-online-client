@@ -656,7 +656,8 @@ export function planOffer(items: readonly { confirm?: boolean }[]): OfferPlan {
 export type BoardMenuEntry =
   | { kind: 'erased'; seat: Seat; label: string; confirm: boolean }
   | { kind: 'concede'; seat: Seat; label: string; confirm: boolean }
-  | { kind: 'log'; label: string; confirm: boolean };
+  | { kind: 'log'; label: string; confirm: boolean }
+  | { kind: 'fix'; label: string; confirm: boolean };
 
 /**
  * The card-menu rule, CR D6.15 (BL-20): the two things THE BOARD offers on a
@@ -673,7 +674,7 @@ export type BoardMenuEntry =
  * `mySeat` is the seat this client drives, or null where the screen drives
  * both (so both are offered) or none at all.
  */
-export function boardMenuEntries(s: GameState, mySeat: Seat | null): BoardMenuEntry[] {
+export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixes?: boolean } = {}): BoardMenuEntry[] {
   const items: BoardMenuEntry[] = [];
   // CT-124 / report #131: *"the game log would be better to hide by default.
   // Instead of always being on screen, it should be accessible by the
@@ -694,6 +695,13 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null): BoardMenuEn
       kind: 'erased', seat: p, confirm: false,
       label: `🚫 ${mine ? 'My' : `${pl.name}'s`} erased cards (${n})`,
     });
+  }
+  // BL-46 (owner, 2026-10-16): "Beta: propose a fix" — in the TABLE's menu,
+  // because a fix is about the game rather than a card. Only where the server
+  // says this room takes fixes (`opts.fixes`: two people, a live game), and
+  // only for a seat this client plays.
+  if (opts.fixes && mySeat !== null && s.phase !== 'gameover') {
+    items.push({ kind: 'fix', confirm: true, label: '🛠 Beta: propose a fix' });
   }
   if (s.phase !== 'gameover') {
     // net: you may only concede your own seat. Hotseat: one person is driving

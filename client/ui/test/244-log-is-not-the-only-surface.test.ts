@@ -654,7 +654,10 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // 220 → 219 with the Wraith ruling of report round 2026-10-16: an untargeted
   // effect's subject is chosen as it resolves and can no longer go stale, so
   // "<item>: a part fizzles (what it was aimed at is gone)" has no site.
-  assert.equal(sites.length, 219, `the engine and apply make ${sites.length} announcements`);
+  // 219 → 220 with BL-46's agreed fix (apply.ts doAmend): "🛠 Agreed fix: <what>
+  // — proposed by X, agreed by Y." Public, said once per accepted edit; the
+  // board shows the result and this says that the players chose it.
+  assert.equal(sites.length, 220, `the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

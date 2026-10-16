@@ -13,9 +13,11 @@ import { join } from 'node:path';
 // type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
 // the real WebSockets main.ts plugs in; this module only checks presence
 import type { WebSocket } from 'ws';
-import type { Action, ActivateVia, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Phase, Seat } from '../engine/src/types.ts';
+import type { Action, ActivateVia, AmendDest, AmendEdit, AmendSource, AmendUnitDest, CardName, Element, EngineEvent, EntityId, GameMode, GameState, Phase, Seat } from '../engine/src/types.ts';
+import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS } from '../engine/src/types.ts';
+import { amendProblem, amendText } from '../engine/src/amend.ts';
 import { singleCardsOf } from './cardladder.ts';
-import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { apply, checkDeck, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
 // CR D8.4 — the scenario tester. `dealScenario` IS `createGame` when no scenario
 // id is passed, byte for byte, so every ordinary room is unaffected; when one
 // is passed it applies the scenario's deterministic board mutation. It is
@@ -31,8 +33,8 @@ import type { HeldFrame, SegmentClose } from './view.ts';
 // without importing this module (and `ws` with it). Re-exported here because
 // this is still where they are WRITTEN, and the old import path is the one
 // every reader knows.
-import type { Fork, LostAction, RoomClosed, VersionStamp } from './types.ts';
-export type { Fork, LostAction, VersionStamp } from './types.ts';
+import type { Amendment, Fork, LostAction, RoomClosed, VersionStamp } from './types.ts';
+export type { Amendment, Fork, LostAction, VersionStamp } from './types.ts';
 import { engineVersion } from './engine-version.ts';
 // BL-38 — the per-action board fingerprint written into every saved game.
 // `signature` is a SEMANTIC projection (card names and counts, sorted, never
@@ -1288,6 +1290,25 @@ export interface Room {
    * reconnects into the finished game) is still sent where their opponent
    * went rather than into a second, empty rematch */
   rematchRoom: string | null;
+  /**
+   * BL-46 — EVERY AGREED FIX this game took (see `Amendment` in types.ts).
+   * PERSISTED: it is what the history's "fixed" tag is read from, and the
+   * archive of what a rewind took back. A claim about THIS log, so a re-deal
+   * drops it (resetSegment) and a rematch starts without it.
+   */
+  amendments: Amendment[];
+  /**
+   * BL-46 — the fix waiting for the other seat's answer, if any. Soft state
+   * shaped like `rematch`: never an action, never logged, NOT persisted (a
+   * restart is a reconnect, and a proposal does not deserve to outlive one).
+   * Dropped when any action lands, on an undo, on a disconnect, on decline or
+   * cancel, and 60 s after it was made (owner, 2026-10-16). Both clocks stop
+   * while it stands (`clockRunning`).
+   */
+  proposal: Proposal | null;
+  /** BL-46: per seat, until when a proposal is refused after a DECLINE (ms
+   * since the epoch; 0 = none). Soft, like `proposal`. */
+  fixCooldown: [number, number];
 }
 
 /** see Room.league */
@@ -1432,6 +1453,10 @@ export function clockRunning(room: Room): [boolean, boolean] {
   // clock". Splitting it rather than copying it is the whole point: a room
   // with the clock off is precisely the room whose length you want to know.
   if (!matchRunning(room)) return [false, false];
+  // BL-46 (owner, 2026-10-16): BOTH clocks stop while a proposed fix waits
+  // for its answer — the table is talking, not playing. Bounded: a proposal
+  // lapses after FIX_PROPOSAL_MS (main.ts sweeps it).
+  if (room.proposal) return [false, false];
   // The standing pass: a seat whose Pass all / Pass through stack is answering
   // THIS window is not billed for it. It has already said what it will do, so
   // the time its client spends pacing, staggering and sending that answer is
@@ -1532,7 +1557,9 @@ function settlePassAll(room: Room, now: number): void {
       if (release !== null) room.passAll[seat] = null;
       // CT-182: a seat with its report dialog open keeps its arm but is not
       // answered for — no stamp, so no backstop and no unbilled window
-      else held = !room.reportHold[seat] && inPassWindow(s0, seat, legal);
+      else held = !room.reportHold[seat] && !room.proposal && inPassWindow(s0, seat, legal);
+      // BL-46: …nor while a proposed fix waits for its answer — a pass for the
+      // seat would land an action, and an action ends the proposal
     }
     const w = room.passAllWait[seat];
     if (!held) room.passAllWait[seat] = null;
@@ -2346,6 +2373,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ...(single && mode === 'constructed' ? { single: true as const } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
+    amendments: [], proposal: null, fixCooldown: [0, 0],   // BL-46: nothing fixed yet
     state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [], lost: [], drifted: [],
     frozen: null,
     // stamped a line below, by resetSegment(), which is where EVERY
@@ -2573,6 +2601,9 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // engine's own business, so no in-state path can be changed by this line.
   if (decidedOutsideState(room)) throw new IllegalAction('this game is already over');
   settleClock(room);   // bill elapsed time to whoever WAS on the clock
+  // BL-46: any action that lands ends a proposed fix (owner, 2026-10-16) — it
+  // was a proposal about the board as it stood. main.ts tells both seats.
+  room.proposal = null;
   const before = room.state;
   // hold this action's events back from the opponent only while the segment
   // it was taken in is the one still open. (main.ts drains a run of forced
@@ -2673,6 +2704,9 @@ function resetSegment(room: Room): void {
   // claim about `actions` is dropped with `actions`" has no exception to
   // remember.)
   room.frozen = null;
+  // BL-46: an agreed fix is a claim about the discarded log too
+  room.amendments = [];
+  room.proposal = null;
   // and so is the version ledger, for exactly the same reason — the old
   // stamps index an action log that no longer exists, and a `from` pointing
   // into a discarded log is worse than no stamp at all. The re-deal happens on
@@ -2861,6 +2895,7 @@ function asLost(l: LostAction[], kind: 'lost' | 'changed'): LostAction[] {
  */
 export function undoActionAt(room: Room, index: number): LostAction[] {
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
+  room.proposal = null;   // BL-46: the board a proposed fix was about is moving
   const restore = [...room.actions];
   const wasRefs = [...room.segRefs];
   // CR D4.3d: what each later action in the open step SHOWED somebody of the
@@ -2993,6 +3028,10 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   // rebuild(), not through it), and editing a log that has already stopped
   // describing its board is the one thing freezing exists to prevent.
   if (room.frozen) return { ok: false, why: room.frozen };
+  // BL-46: an AGREED FIX stands. Nothing at or before the last one can be
+  // taken back by one seat alone — both of them agreed to the board it made,
+  // and a rewind (which needs both again) is the way back past it.
+  const fixFloor = amendFloor(room);
   const segKey = room.segKey;
   // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
   // target stages, CR 702.3) is undoable in ANY phase: while their decision
@@ -3046,6 +3085,7 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
     // shows you something, your opponent's); an opponent's peek at a shared
     // deck showed you nothing and does not stop you. Measured per action —
     // server/seen.ts says how, and why there is no list of "reveal" cards.
+    if (i < fixFloor) return { ok: false, why: FIX_UNDO_REFUSAL };
     if (i <= lastSeen(room.segSeen, seat, room.segStartIndex)) {
       return { ok: false, why: SEEN_REFUSAL };
     }
@@ -3063,10 +3103,380 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   }
   const last = room.actions[room.actions.length - 1];
   if (!last) return { ok: false, why: 'nothing to undo' };
+  if (room.actions.length - 1 < fixFloor) return { ok: false, why: FIX_UNDO_REFUSAL };
   if (last.seat !== seat) return { ok: false, why: 'your opponent acted since — nothing of yours to undo' };
   const refused = undoLastAction(room);
   if (refused.length) return { ok: false, why: undoRefusal(refused) };
   return { ok: true };
+}
+
+/* ══ BL-46 — AGREED FIXES ("Beta: propose a fix") ═══════════════════════
+ *
+ * The owner, 2026-10-16: *"Assuming both players agree, it doesn't change
+ * anything in the game. it'll only be used to solve broken engine/game
+ * issues. For example, Debeli lost a game yesterday since their card draw
+ * didn't trigger (twice) and the game would have been 100% normal if they
+ * could have just given themselves a card."* And: *"don't worry about the
+ * 'rules' of this. It has to be agreed upon and is used in friendly matches."*
+ *
+ * Two shapes, both needing the other seat's yes:
+ *
+ *   EDIT    an `amend` action (engine/src/types.ts). Logged like any action,
+ *           so replay, restore and the record see it; built ONLY here, by the
+ *           accept path — main.ts refuses one off a socket.
+ *   REWIND  the log is TRUNCATED, the way Learn to Play rewinds (ui/solo.ts):
+ *           "Rewinding a whole step or two seems fine to me. Either say 'up to
+ *           5 actions' or 'restart this step'" — both are offered. The actions
+ *           taken back are archived on the room (`Amendment.removed`), and the
+ *           agreement waives the seen-cards undo lock (CR D4.3).
+ *
+ * The proposal itself is soft state (`Room.proposal`), shaped like a rematch
+ * offer; the record is `Room.amendments`.
+ */
+
+/** how long a proposal waits for its answer (owner, 2026-10-16) */
+export const FIX_PROPOSAL_MS = 60_000;
+/** after a decline, how long the proposer waits before proposing again */
+export const FIX_COOLDOWN_MS = 15_000;
+/** the most non-forced actions a rewind may take back (the owner: "up to 5") */
+export const FIX_REWIND_MAX = 5;
+/** how far back a rewind's search looks, in logged actions */
+const FIX_REWIND_WINDOW = 80;
+/** the proposer's "what went wrong" — it becomes a bug report */
+export const FIX_REASON_MAX = 600;
+
+/** the refusal an undo reads when an agreed fix stands in the way */
+export const FIX_UNDO_REFUSAL = 'an agreed fix stands — it cannot be undone by one player (propose a rewind instead)';
+
+export interface Proposal {
+  id: number;
+  /** the proposer — whose cards a `move` names */
+  seat: Seat;
+  kind: 'edit' | 'rewind';
+  edit?: AmendEdit;
+  /** 'rewind': the log length it goes back to */
+  to?: number;
+  /** the fix in one sentence */
+  what: string;
+  reason: string;
+  /** `actions.length` when it was made — an answer to a different board is refused */
+  at: number;
+  /** ms since the epoch */
+  expires: number;
+}
+
+/** what a seat is shown of the open proposal (and of nothing else) */
+export interface ProposalView {
+  id: number; seat: Seat; kind: 'edit' | 'rewind'; what: string; reason: string;
+  /** ms left to answer */
+  left: number;
+}
+
+/** one rewind on offer */
+export interface RewindOption { to: number; label: string }
+
+let proposalSeq = 0;
+
+/** a file's fixes back off disk — drop what is not one; an `at` past the log
+ * cannot index anything and is dropped with it */
+function sanitizeAmendments(raw: unknown, actions: number): Amendment[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((a): a is Amendment => !!a && typeof a === 'object'
+    && (a.kind === 'edit' || a.kind === 'rewind')
+    && Number.isInteger(a.at) && a.at >= 0 && a.at <= actions
+    && (a.seat === 0 || a.seat === 1) && (a.by === 0 || a.by === 1)
+    && typeof a.what === 'string' && typeof a.reason === 'string');
+}
+
+/** The log index below which one seat's undo may not reach: just past the
+ * last agreed edit, or the length the last rewind left. -1 when none. */
+export function amendFloor(room: Room): number {
+  let floor = -1;
+  for (const a of room.amendments) floor = Math.max(floor, a.kind === 'edit' ? a.at + 1 : a.at);
+  return floor;
+}
+
+/** Why this ROOM takes no fixes at all — or null when it does. Asked before
+ * anything is offered: the menu entry is drawn only where this is null. */
+export function fixesRefusal(room: Room): string | null {
+  if (roomWaiting(room)) return 'the game has not started';
+  if (decidedWinner(room) !== null || room.state.phase === 'gameover') return 'the game is over';
+  if (room.frozen) return room.frozen;
+  // two people agreeing is the whole of the safety: a scripted opponent
+  // cannot agree to anything, and test mode has tools of its own
+  if (room.state.sandbox) return 'test mode has its own tools for this';
+  if (room.scenario) return 'fixes are for a game between two players';
+  return null;
+}
+
+/** Why an EDIT cannot be proposed right now (the timing half) — null when it
+ * can. A rewind has no timing rule: "a rewind any time". */
+export function editTiming(room: Room): string | null {
+  if (hiddenSegment(room.state) !== null) {
+    return 'no edits during the hidden planning, haste or deploy steps — a rewind still works';
+  }
+  if (room.state.decision) return 'no edits while a decision is pending — a rewind still works';
+  return null;
+}
+
+/** The fix-related fields every push carries — undefined for a room that
+ * takes no fixes, so an ordinary scenario or sandbox payload is unchanged. */
+export function fixInfo(room: Room, seat: Seat, now = Date.now()): { proposal?: ProposalView; cooldown?: number } | undefined {
+  if (fixesRefusal(room) !== null) return undefined;
+  const p = room.proposal;
+  const cool = room.fixCooldown[seatSlot(seat)] - now;
+  return {
+    ...(p ? { proposal: { id: p.id, seat: p.seat, kind: p.kind, what: p.what, reason: p.reason, left: Math.max(0, p.expires - now) } } : {}),
+    ...(cool > 0 ? { cooldown: cool } : {}),
+  };
+}
+
+/** a step, as far as "back to the start of this step" means one: the phase
+ * and its sub-step, the battle window and round, on this turn */
+function stepKey(s: GameState): string {
+  return [s.turn, s.phase, hiddenSegment(s) ?? '', s.battleRound, s.battle?.region ?? '',
+    s.battle?.round ?? '', s.battle?.step ?? ''].join('|');
+}
+function stepLabel(s: GameState): string {
+  const seg = hiddenSegment(s);
+  const what = seg === 'plan' ? 'planning' : seg === 'haste' ? 'the haste step' : seg === 'deploy' ? 'deployment'
+    : s.phase === 'battle' && s.battle ? `battle (${s.battle.step}${s.battle.round === 2 ? ', counterattack' : ''})`
+      : s.phase;
+  return `turn ${s.turn}, ${what}`;
+}
+
+/**
+ * The boards before each of the last `FIX_REWIND_WINDOW` actions: `states[k]`
+ * is the board action `lo + k` was applied to, and the last entry is the board
+ * now. One replay of the log, which a proposal is rare enough to afford.
+ */
+function tailStates(room: Room): { lo: number; states: GameState[] } {
+  const actions = room.actions;
+  const lo = Math.max(0, actions.length - FIX_REWIND_WINDOW);
+  let { state } = fresh(room.seed, room.names, room.mode, room.els,
+    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal);
+  const states: GameState[] = [];
+  for (let i = 0; i < actions.length; i++) {
+    if (i >= lo) states.push(state);
+    try { state = apply(state, actions[i]!).state; } catch (err) {
+      if (!(err instanceof IllegalAction)) throw err;
+    }
+  }
+  states.push(state);
+  return { lo, states };
+}
+
+/**
+ * What a rewind may go back to, right now: up to five non-forced actions, the
+ * start of this step, and the start of the step before (the owner: "up to 5
+ * actions" or "restart this step").
+ *
+ * NON-FORCED, because a forced step (an empty board "attacking", main.ts
+ * drainForced) re-applies itself the moment the board owes it: a rewind
+ * that cut just after one would land, and immediately take it again.
+ */
+export function rewindOptions(room: Room): RewindOption[] {
+  if (fixesRefusal(room) !== null || !room.actions.length) return [];
+  const { lo, states } = tailStates(room);
+  const len = room.actions.length;
+  const at = (i: number): GameState => states[i - lo]!;
+  const forced = (i: number): boolean => {
+    const f = forcedAction(at(i));
+    return f !== null && JSON.stringify(f) === JSON.stringify(room.actions[i]);
+  };
+  const out: RewindOption[] = [];
+  const offer = (to: number, label: string, alsoStart?: string): void => {
+    if (to >= len) return;
+    const same = out.find(o => o.to === to);
+    // the start of a step that is also "the last N actions": one option, and
+    // its label says both, so "restart this step" is always findable
+    if (same) { if (alsoStart) same.label += ` (back to the start of ${alsoStart})`; return; }
+    // a cut whose every later action was forced lands right back here
+    let real = false;
+    for (let i = to; i < len; i++) if (!forced(i)) { real = true; break; }
+    if (real) out.push({ to, label });
+  };
+  let n = 0;
+  for (let i = len - 1; i >= lo && n < FIX_REWIND_MAX; i--) {
+    if (forced(i)) continue;
+    n++;
+    offer(i, `Take back the last ${n} action${n === 1 ? '' : 's'}`);
+  }
+  // the start of a step: the earliest index whose board is still in it
+  const startOf = (end: number): number => {
+    const key = stepKey(at(end));
+    let j = end;
+    while (j > lo && stepKey(at(j - 1)) === key) j--;
+    return j;
+  };
+  const here = startOf(len);
+  offer(here, `Back to the start of this step (${stepLabel(at(len))})`, `this step`);
+  if (here > lo) {
+    const prev = startOf(here - 1);
+    offer(prev, `Back to the start of the step before (${stepLabel(at(here - 1))})`, stepLabel(at(here - 1)));
+  }
+  return out;
+}
+
+/** the edit as a client sent it, rebuilt from known fields only — or null */
+function sanitizeEdit(raw: unknown): AmendEdit | null {
+  const r = raw as Record<string, unknown> | null;
+  if (!r || typeof r !== 'object') return null;
+  const seat = (v: unknown): Seat | null => v === 0 || v === 1 ? v : null;
+  const int = (v: unknown): number | null => typeof v === 'number' && Number.isInteger(v) ? v : null;
+  const str = (v: unknown): string | null => typeof v === 'string' && v.length <= 80 ? v : null;
+  switch (r['kind']) {
+    case 'life': { const t = seat(r['target']), l = int(r['life']); return t !== null && l !== null ? { kind: 'life', target: t, life: l } : null; }
+    case 'drawCards': { const t = seat(r['target']), n = int(r['n']); return t !== null && n !== null ? { kind: 'drawCards', target: t, n } : null; }
+    case 'move': {
+      const from = r['from'], to = r['to'], index = int(r['index']), card = str(r['card']);
+      if (!(AMEND_SOURCES as readonly unknown[]).includes(from) || !(AMEND_DESTS as readonly unknown[]).includes(to)) return null;
+      return index !== null && card !== null
+        ? { kind: 'move', from: from as AmendSource, index, card, to: to as AmendDest } : null;
+    }
+    case 'unit': {
+      const id = int(r['id']), card = str(r['card']), to = r['to'];
+      if (!(AMEND_UNIT_DESTS as readonly unknown[]).includes(to)) return null;
+      return id !== null && card !== null ? { kind: 'unit', id, card, to: to as AmendUnitDest } : null;
+    }
+    default: return null;
+  }
+}
+
+export type FixOutcome = { ok: true } | { ok: false; why: string };
+
+/**
+ * `seat` proposes a fix. `req` is the client's `{ edit }` or `{ rewind }` and
+ * `reason`, untrusted. On success the proposal stands and both clocks stop;
+ * the caller tells both seats.
+ *
+ * An edit is TRIED on a copy of the board first (the engine is pure), so the
+ * other seat is never asked to agree to something that would then bounce.
+ */
+export function proposeFix(room: Room, seat: Seat, req: { edit?: unknown; rewind?: unknown; reason?: unknown }, now = Date.now()): FixOutcome {
+  const no = fixesRefusal(room);
+  if (no !== null) return { ok: false, why: no };
+  if (!room.sockets[0] || !room.sockets[1]) return { ok: false, why: 'your opponent is not here to agree' };
+  if (room.proposal) return { ok: false, why: 'a fix is already waiting for an answer' };
+  const cool = room.fixCooldown[seatSlot(seat)] - now;
+  if (cool > 0) return { ok: false, why: `your last fix was declined — wait ${Math.ceil(cool / 1000)}s` };
+  const reason = typeof req.reason === 'string' ? req.reason.trim().slice(0, FIX_REASON_MAX) : '';
+  if (reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };
+  let p: Omit<Proposal, 'id' | 'expires' | 'at' | 'seat' | 'reason'>;
+  if (req.rewind !== undefined) {
+    const to = req.rewind;
+    const opt = rewindOptions(room).find(o => o.to === to);
+    if (!opt) return { ok: false, why: 'that rewind is not on offer any more — open the fix again' };
+    p = { kind: 'rewind', to: opt.to, what: `${opt.label.charAt(0).toLowerCase()}${opt.label.slice(1)} (${room.actions.length - opt.to} logged action${room.actions.length - opt.to === 1 ? '' : 's'})` };
+  } else {
+    const edit = sanitizeEdit(req.edit);
+    if (!edit) return { ok: false, why: 'that is not a fix this version knows' };
+    const t = editTiming(room);
+    if (t !== null) return { ok: false, why: t };
+    const problem = amendProblem(room.state, seat, edit);
+    if (problem !== null) return { ok: false, why: problem };
+    try {
+      apply(room.state, { type: 'amend', seat, by: other(seat), edit });
+    } catch (err) {
+      if (err instanceof IllegalAction) return { ok: false, why: err.message };
+      throw err;
+    }
+    p = { kind: 'edit', edit, what: amendText(room.state, seat, edit) };
+  }
+  settleClock(room);
+  room.proposal = { ...p, id: ++proposalSeq, seat, reason, at: room.actions.length, expires: now + FIX_PROPOSAL_MS };
+  settleClock(room);   // both clocks stop from here
+  return { ok: true };
+}
+
+/**
+ * An answer to the open proposal: the OTHER seat accepts or declines, the
+ * proposer cancels. Returns the proposal it settles (cleared from the room;
+ * the caller carries an accept out), or the refusal.
+ */
+export function answerFix(room: Room, seat: Seat, op: 'accept' | 'decline' | 'cancel', id: unknown, now = Date.now()): { ok: true; proposal: Proposal } | { ok: false; why: string } {
+  const p = room.proposal;
+  if (!p || p.id !== id) return { ok: false, why: 'that fix is no longer waiting for an answer' };
+  if (op === 'cancel' ? seat !== p.seat : seat === p.seat) {
+    return { ok: false, why: op === 'cancel' ? 'only the player who proposed it can cancel it' : 'the other player answers your proposal' };
+  }
+  if (now > p.expires) { dropProposal(room); return { ok: false, why: 'that fix ran out of time' }; }
+  if (op === 'accept' && room.actions.length !== p.at) {
+    dropProposal(room);
+    return { ok: false, why: 'the board moved since it was proposed' };
+  }
+  dropProposal(room);
+  if (op === 'decline') room.fixCooldown[seatSlot(p.seat)] = now + FIX_COOLDOWN_MS;
+  return { ok: true, proposal: p };
+}
+
+/** Clear the open proposal, restarting the clocks. True if there was one. */
+export function dropProposal(room: Room): boolean {
+  if (!room.proposal) return false;
+  settleClock(room);
+  room.proposal = null;
+  settleClock(room);
+  return true;
+}
+
+/** the expiry sweep's question: a proposal past its minute is dropped */
+export function proposalExpired(room: Room, now = Date.now()): boolean {
+  return !!room.proposal && now > room.proposal.expires && dropProposal(room);
+}
+
+/** Record an agreed EDIT whose `amend` action has just landed at `at`. */
+export function recordAmendment(room: Room, entry: Amendment): void {
+  room.amendments.push(entry);
+  persist(room);
+}
+
+/**
+ * Carry out an agreed REWIND: truncate the log to `p.to` and rebuild — the
+ * Learn to Play shape, server-side. Returns the record, or a refusal (the room
+ * is then untouched).
+ *
+ * What goes with the cut, because it was a claim about the actions cut: the
+ * fingerprints and card facts (`sigs`, `cardLog`), version stamps past the
+ * end (clamped, so the actions that follow are still credited to this
+ * engine), and the soft state an action would have dropped — the standing
+ * passes, the deferral queues, a formation being built, a playback hold.
+ * The caller drains the forced steps the rebuilt board owes and re-sends each
+ * seat a whole fresh view (a join), which drops the clients' own arms too.
+ */
+export function rewindRoom(room: Room, p: Proposal, by: Seat): { ok: true; amendment: Amendment } | { ok: false; why: string } {
+  const to = p.to;
+  if (p.kind !== 'rewind' || to === undefined || to < 0 || to >= room.actions.length) {
+    return { ok: false, why: 'that rewind is not on offer any more' };
+  }
+  settleClock(room);
+  const restore = room.actions;
+  room.actions = restore.slice(0, to);
+  const rb = rebuildRoom(room);
+  if (rb.skipped.length) {
+    // a prefix of a clean log always replays; if this one does not, the room
+    // was never clean, and cutting it would hide that
+    room.actions = restore;
+    return { ok: false, why: 'this game cannot be rewound — part of its log no longer replays' };
+  }
+  assignRebuild(room, rb);
+  room.sigs = room.sigs.slice(0, to);
+  room.cardLog = room.cardLog.slice(0, to);
+  for (const v of room.versions) if (v.from > to) v.from = to;
+  room.versions = room.versions.filter((v, i, all) => !all.slice(i + 1).some(w => w.from === v.from));
+  room.passAll = [null, null]; room.passAllWait = [null, null]; room.passAllCovered = [null, null];
+  room.deferred = [[], []];
+  room.building = [null, null];
+  room.watchHold = [null, null];
+  room.proposal = null;
+  const amendment: Amendment = {
+    kind: 'rewind', at: to, seat: p.seat, by, what: p.what, reason: p.reason,
+    when: new Date().toISOString(), removed: restore.slice(to),
+  };
+  room.amendments.push(amendment);
+  room.lastActionAt = Date.now();
+  settleClock(room);
+  persist(room);
+  return { ok: true, amendment };
 }
 
 /** The refusal a player reads when an undo is rolled back. A refusal has to
@@ -3597,6 +4007,9 @@ function persist(room: Room): void {
         ? { cardLog: room.cardLog }
         : {}),
       ...(room.cardOpen && room.actions.length ? { cardOpen: room.cardOpen } : {}),
+      // BL-46: the agreed fixes — the "fixed" tag's source and a rewind's
+      // archive. Additive: written only when there is one.
+      ...(room.amendments.length ? { amendments: room.amendments } : {}),
       // every restore that could not faithfully rebuild this game. Without
       // it the file goes on claiming to be a straight-through record of a
       // game it no longer describes (additive field)
@@ -3677,6 +4090,8 @@ export function restoreRooms(now = Date.now()): void {
         lastActionAt?: unknown;
         /** 2026-10-04: the idle sweep closed it — never restored */
         closed?: unknown;
+        /** BL-46: the agreed fixes */
+        amendments?: unknown;
       };
       // 2026-10-04: a CLOSED game is over for good — never back in the map
       if (raw.closed) { closedCount++; continue; }
@@ -3777,6 +4192,8 @@ export function restoreRooms(now = Date.now()): void {
         // …and a league room stays one, or its result would never reach the league
         ...((): { league?: RoomLeague } => { const lg = sanitizeLeague(raw.league); return lg ? { league: lg } : {}; })(),
         rematch: [false, false], rematchRoom: null,
+        // BL-46: the record survives the restart; a proposal does not
+        amendments: sanitizeAmendments(raw.amendments, actions.length), proposal: null, fixCooldown: [0, 0],
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
         // CR D8.5: the concession stamp survives the restart with the result
