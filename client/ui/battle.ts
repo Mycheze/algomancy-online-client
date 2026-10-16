@@ -168,14 +168,19 @@ export function attackToBlock(s: GameState): boolean {
   return !!b && b.columns.flat().some(id => !!s.entities[id]);
 }
 
-/** CT-298 — the sent units still to be placed in a counterattack (empty when
- * every one is in a column, or when this is not a counterattack). The owner,
- * 2026-10-16: a sent unit "MUST be put into formation", so Attack! waits on it. */
-export function counterUnplaced(s: GameState, seat: Seat, columns: readonly (readonly EntityId[])[]): EntityId[] {
+/** CT-298 — what a counterattack still has to take with it: the sent units not
+ * yet in a column, and the sent spell tokens not yet riding (empty when all
+ * are in, or when this is not a counterattack). The owner, 2026-10-16: a sent
+ * unit "MUST be put into formation", and of sent tokens: "You gotta take them
+ * with you THEN or never have access to them in the other region". So Attack!
+ * waits on both — the engine refuses anything less. */
+export function counterUnplaced(
+  s: GameState, seat: Seat, columns: readonly (readonly EntityId[])[], riding: readonly EntityId[],
+): EntityId[] {
   const pool = counterPool(s, seat);
   if (!pool) return [];
-  const placed = new Set(columns.flat());
-  return pool.filter(id => !placed.has(id));
+  const placed = new Set([...columns.flat(), ...riding]);
+  return [...pool, ...ridableTokens(s, seat)].filter(id => !placed.has(id));
 }
 
 /** may this entity be picked up into the declaration being built? */

@@ -2,7 +2,7 @@
  * set up states directly, then drive real actions through the reducer. */
 import { Harness } from '../src/harness.ts';
 import { E, Suspended } from '../src/engine.ts';
-import { counterattackersOwed } from '../src/apply.ts';
+import { counterattackersOwed, counterTokensOwed } from '../src/apply.ts';
 import { redactLog } from '../../server/view.ts';
 import type { EngineEvent, Entity, EntityId, ResourceKind, Seat } from '../src/types.ts';
 
@@ -238,8 +238,12 @@ export function finishBattle(h: Harness): void {
       // CR 610.4b: a counterattack cannot be declined while a sent unit lives
       // (owner, 2026-10-16) — the "skip it" answer is then the plainest shape,
       // one unit per column; anything else declines
-      const owed = counterattackersOwed(new E(h.state), b.attacker) ?? [];
-      h.do({ type: 'declareAttack', seat: b.attacker, columns: owed.map(id => [id]) });
+      const q = new E(h.state);
+      const owed = counterattackersOwed(q, b.attacker) ?? [];
+      // …and its sent spell tokens ride along (owner, 2026-10-16)
+      const riders = owed.length ? counterTokensOwed(q, b.attacker) ?? [] : [];
+      h.do({ type: 'declareAttack', seat: b.attacker, columns: owed.map(id => [id]),
+        ...(riders.length ? { spellTokens: riders } : {}) });
     } else if (b.step === 'blocks') h.do({ type: 'declareBlocks', seat: b.defender, blocks: {} });
     else pass(h);
   }

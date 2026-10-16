@@ -143,16 +143,40 @@ test('CT-251 a lone sent counterattacker is formed for the player and one that d
   assert.deepEqual(h.state.battle!.columns, [[d1]]);
 });
 
-test('CT-251 a lone counterattacker with a ridable token is asked, but still may not decline', () => {
+test('CT-251 a lone counterattacker with a sent token is formed with the token riding and cannot drop it', () => {
+  // owner, 2026-10-16: "counterattacking wiht spell tokens is the same as
+  // attacking with them. You gotta take them with you THEN or never have
+  // access to them in the other region."
   const { h, A, D, sent: [d1], tok } = toCounterattack(3221, ['Conduit of Pain'], true);
-  assert.equal(forcedAction(h.state), null, 'whether the token rides is a real choice');
+  assert.deepEqual(forcedAction(h.state), { type: 'declareAttack', seat: D, columns: [[d1]], spellTokens: [tok] },
+    'one unit, and the token can only ride with it: nothing to ask');
   assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [] }), IllegalAction, 'no decline');
-  const fork = structuredClone(h.state);
-  h.do({ type: 'declareAttack', seat: D, columns: [[d1!]] });
-  assert.ok(h.state.battle!.columns.flat().includes(d1!), 'without the token');
-  h.state = fork;
+  assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [[d1!]] }), IllegalAction,
+    'no leaving the token behind');
   h.do({ type: 'declareAttack', seat: D, columns: [[d1!]], spellTokens: [tok!] });
-  assert.equal(ent(h, tok!)!.region, new E(h.state).homeRegion(A), 'with the token');
+  assert.equal(ent(h, tok!)!.region, new E(h.state).homeRegion(A), 'it rode along');
+});
+
+test('CT-298 every sent spell token must ride with a counterattack of several units', () => {
+  const { h, D, sent: [d1, d2], tok } = toCounterattack(3225, ['Conduit of Pain', 'The Foretold'], true);
+  assert.equal(forcedAction(h.state), null, 'two units: the shape is still a choice');
+  assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [[d1!], [d2!]] }), IllegalAction,
+    'the whole formation, but without the token, is refused');
+  const offered = legalActions(h.state, D).filter(a => a.type === 'declareAttack') as Attack[];
+  assert.ok(offered.length > 0 && offered.every(a => (a.spellTokens ?? []).includes(tok!)),
+    'every offered formation carries the token');
+  h.do({ type: 'declareAttack', seat: D, columns: [[d2!, d1!]], spellTokens: [tok!] });
+  assert.deepEqual(h.state.battle!.columns, [[d2, d1]]);
+});
+
+test('CT-298 a sent token whose units all died is not owed and never reaches a window', () => {
+  const { h, D, sent: [d1], tok } = toCounterattack(3226, ['Conduit of Pain'], true);
+  whiteBox(h, e => { e.destroy(ent(h, d1!)!, 'dies'); });
+  assert.deepEqual(forcedAction(h.state), { type: 'declareAttack', seat: D, columns: [] },
+    'a token cannot ride without a unit (CR 610.3), so the empty declaration is forced');
+  h.do(forcedAction(h.state)!);
+  assert.notEqual(h.state.phase, 'battle', 'the battle phase ends with no window in between');
+  assert.equal(ent(h, tok!), undefined, 'and the token is cleaned up at regroup unused');
 });
 
 test('CT-298 a second round after a first round with no attack is a fresh attack and may still be declined', () => {

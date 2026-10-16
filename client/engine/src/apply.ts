@@ -2198,6 +2198,22 @@ export function counterattackersOwed(e: E, seat: Seat): EntityId[] | null {
   return e.unitsOf(seat, b.region).filter(u => pool.includes(u.id) && !u.allured).map(u => u.id);
 }
 
+/**
+ * CR 610.3, CR 610.4b — the spell tokens a counterattack OWES: every token sent
+ * at block time that is still here. The owner, 2026-10-16: "counterattacking
+ * wiht spell tokens is the same as attacking with them. You gotta take them
+ * with you THEN or never have access to them in the other region." So a sent
+ * token is committed exactly as a sent unit is. A token rides with the whole
+ * formation (the declaration carries one list, not a unit per token), so there
+ * is no further choice about it. `null` when this is not a counterattack.
+ */
+export function counterTokensOwed(e: E, seat: Seat): EntityId[] | null {
+  const b = e.s.battle;
+  if (!b || b.round !== 2 || b.attackerPool === null || seat !== b.attacker) return null;
+  const pool = b.attackerPool;
+  return e.tokensOf(seat, b.region).filter(t => pool.includes(t.id)).map(t => t.id);
+}
+
 function validFormation(e: E, seat: Seat, columns: EntityId[][], fromRegion: number, pool: EntityId[] | null): void {
   const used = new Set<EntityId>();
   for (const col of columns) {
@@ -2253,6 +2269,12 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
     const missing = owed.filter(id => !placed.has(id)).map(id => e.entity(id)!.card);
     e.need(!missing.length,
       `every sent counterattacker must be put into the formation (missing: ${missing.join(', ')})`);
+    // …and every sent spell token rides with it (owner, 2026-10-16: "You gotta
+    // take them with you THEN or never have access to them in the other region")
+    const riding = new Set(spellTokens);
+    const left = (counterTokensOwed(e, seat) ?? []).filter(id => !riding.has(id)).map(id => e.entity(id)!.card);
+    e.need(!left.length,
+      `every spell token sent with the counterattack must ride along (missing: ${left.join(', ')})`);
   };
   if (!columns.length) needWholePool();
   if (!columns.length) {
@@ -3091,11 +3113,14 @@ export function forcedAction(state: GameState): Action | null {
     // it comes is still a real choice, so the player is asked.
     // (This branch was removed 2026-08-24 because the decline was then still
     // offered; with the decline gone it is forced again.)
+    // The sent spell tokens no longer make it a choice: they are owed too
+    // (owner, 2026-10-16) and ride with the formation, so they come along.
     const owed = counterattackersOwed(e, b.attacker);
     if (owed && owed.length === 1) {
-      const pool = b.attackerPool!;
-      const riders = e.tokensOf(b.attacker, b.region).filter(t => pool.includes(t.id));
-      if (!riders.length) return { type: 'declareAttack', seat: b.attacker, columns: [[owed[0]!]] };
+      const riders = counterTokensOwed(e, b.attacker) ?? [];
+      return riders.length
+        ? { type: 'declareAttack', seat: b.attacker, columns: [[owed[0]!]], spellTokens: riders }
+        : { type: 'declareAttack', seat: b.attacker, columns: [[owed[0]!]] };
     }
   }
   if (b.step === 'blocks') {
@@ -3595,9 +3620,14 @@ function legalDeclareAttackActions(e: E, seat: Seat): Action[] {
     // CR 610.4b: a counterattack takes every sent unit — only the SHAPE is open.
     // Representative shapes: all in a line, and (with two or more) the first
     // two stacked in one column.
-    out.push({ type: 'declareAttack', seat, columns: owed.map(id => [id]) });
+    // CR 610.3: and every sent spell token rides along with it
+    const riders = counterTokensOwed(e, seat) ?? [];
+    const withRiders = (columns: EntityId[][]): Action => riders.length
+      ? { type: 'declareAttack', seat, columns, spellTokens: riders.slice() }
+      : { type: 'declareAttack', seat, columns };
+    out.push(withRiders(owed.map(id => [id])));
     if (owed.length > 1) {
-      out.push({ type: 'declareAttack', seat, columns: [[owed[0]!, owed[1]!], ...owed.slice(2).map(id => [id])] });
+      out.push(withRiders([[owed[0]!, owed[1]!], ...owed.slice(2).map(id => [id])]));
     }
     return out;
   }

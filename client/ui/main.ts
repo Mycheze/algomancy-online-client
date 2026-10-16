@@ -6320,10 +6320,11 @@ function phaseBarHtml(err: string): string {
       // CT-192: a counterattack says what it is and how many it has to place,
       // and offers its whole-formation shapes beside "everything"
       const pool = myCounterPool();
-      // CT-298 (owner, 2026-10-16): every sent unit "MUST be put into formation" —
-      // a counterattack has no "Don't attack", and Attack! waits until all of
-      // them are placed (the engine refuses anything less: CR 610.4b)
-      const unplaced = pool ? counterUnplaced(s, b.attacker, ui.columns) : [];
+      // CT-298 (owner, 2026-10-16): every sent unit "MUST be put into formation"
+      // and every sent spell token rides along — a counterattack has no "Don't
+      // attack", and Attack! waits until all of them are in (the engine refuses
+      // anything less: CR 610.4b, CR 610.3)
+      const unplaced = pool ? counterUnplaced(s, b.attacker, ui.columns, ui.spellTokens) : [];
       const what = pool
         ? `Build your counterattack (${pool.length} sent)`
           + (unplaced.length ? ` <span class="remind">all must attack — ${unplaced.length} to place</span>` : '')
@@ -10242,6 +10243,14 @@ function declareBuiltAttack(): void {
   if (!uiError) { ui.columns = []; ui.backOnly = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false; }
 }
 
+/** CT-298: put every sent spell token a counterattack owes into the ride list
+ * (ui/battle.ts ridableTokens — in round 2 exactly the sent ones still here) */
+function addOwedRiders(): void {
+  const b = h.state.battle;
+  if (!b) return;
+  for (const id of ridableTokens(h.state, b.attacker)) if (!ui.spellTokens.includes(id)) ui.spellTokens.push(id);
+}
+
 /** [67] send the block declaration that has been built, riders and all */
 function declareBuiltBlocks(): void {
   const s = h.state;
@@ -10430,6 +10439,9 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
       while (ui.columns[ci]?.length) ci++;
       ui.columns[ci] = [id];
     }
+    // CT-298: in a counterattack "everything" includes the sent spell tokens,
+    // which must ride along (owner, 2026-10-16)
+    if (myCounterPool()) addOwedRiders();
     ui.carrying = null;
   },
   // report #196: "counter attack with remaining" — every unit not already
@@ -10450,6 +10462,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     if (!shape) return;
     ui.columns = shape.columns.map(c => [...c]);
     ui.backOnly = [];
+    addOwedRiders();   // CT-298: a whole counterattack carries its sent tokens too
     ui.carrying = null;
   },
   confirmattack: () => {

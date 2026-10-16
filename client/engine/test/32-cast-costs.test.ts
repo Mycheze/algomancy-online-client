@@ -236,7 +236,11 @@ test('forcedAction: a single sent counterattacker IS auto-formed — the unit wa
   assert.ok(h.state.battle!.columns.flat().includes(d1), 'it attacks');
 });
 
-test('forcedAction: NOT forced when a sent spell token could ride along', () => {
+test('forcedAction: a lone counterattacker with a sent spell token is formed with the token riding', () => {
+  // FLIPPED 2026-10-16. The owner: "counterattacking wiht spell tokens is the
+  // same as attacking with them. You gotta take them with you THEN or never
+  // have access to them in the other region." A sent token is owed like a sent
+  // unit, so it leaves no choice either (CR 610.3, CR D1.2c).
   const h = new Harness(3221);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -248,10 +252,11 @@ test('forcedAction: NOT forced when a sent spell token could ride along', () => 
   const tok = e.createSpellToken(D, 'Fireball', 2, e.homeRegion(D));
   throughRoundOne(h, A, atk, [d1, tok.id]);
   assert.equal(h.state.battle!.round, 2);
-  assert.equal(forcedAction(h.state), null,
-    'the player must choose whether the token rides — no forcing');
-  // both single-unit and unit+token formations stay legal
-  h.do({ type: 'declareAttack', seat: D, columns: [[d1]], spellTokens: [tok.id] });
+  assert.deepEqual(forcedAction(h.state), { type: 'declareAttack', seat: D, columns: [[d1]], spellTokens: [tok.id] },
+    'the unit forms and the token rides — nothing is left to decide');
+  assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [[d1]] }), IllegalAction,
+    'leaving the sent token behind is refused');
+  h.do(forcedAction(h.state)!);
   assert.equal(ent(h, tok.id)!.region, new E(h.state).homeRegion(A), 'the token rode along');
 });
 
