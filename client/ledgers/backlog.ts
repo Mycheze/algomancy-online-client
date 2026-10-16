@@ -1024,13 +1024,11 @@ const OPEN: Entry[] = [
       "An amend sent from a socket is refused; a proposal is dropped when any action lands or it expires",
       "A fixed game is tagged in match history, and counts for exactly what the owner decides",
     ],
-    asks: [
-      "What a fixed game counts for: everything with a tag; record, tag and exclude like custom rules; or wins, rating and league but no achievements or card stats (recommended)",
-      "How far a rewind reaches (recommended: the last ~15 non-forced actions, this turn and the previous one), and whether agreement overrides the seen-cards undo lock (recommended yes)",
-      "Whether a fix fires card triggers (recommended: removals quiet, arrivals onto the board spawn like test mode), and whether adding a card from nothing is v1 or later",
-      "When a fix can be proposed (recommended: not inside the hidden planning/deploy steps or while a question is pending; a rewind any time), and whether the clocks pause while a proposal is open",
-      "Whether every fix files a bug report with a required reason (recommended yes); whether a fix can reopen a game a bug ended or unfreeze a frozen one (recommended later)",
-      "The name and placement: \"Beta: propose a fix\" in the table menu plus \"Propose: move this card\" in the card menu, or \"god mode\"",
+    decided: [
+      "Owner, 2026-10-16: \"Assuming both players agree, it doesn't change anything in the game. it'll only be used to solve broken engine/game issues. For example, Debeli lost a game yesterday since their card draw didn't trigger (twice) and the game would have been 100% normal if they could have just given themselves a card\" — a fixed game counts for everything (result, rating, league, achievements, card stats); it only carries a visible tag.",
+      "Owner, 2026-10-16: \"Rewinding a whole step or two seems fine to me. Either say \\\"up to 5 actions\\\" or \\\"restart this step\\\"\" — both are offered.",
+      "Owner, 2026-10-16: \"don't worry about the \\\"rules\\\" of this. It has to be agreed upon and is used in friendly matches.\" — agreement overrides the seen-cards undo lock.",
+      "Owner, 2026-10-16, accepting the rest: removals are quiet and arrivals spawn like test mode; every accepted fix files a report with a required reason; named \"Beta: propose a fix\"; no fixes inside the hidden planning/deploy steps or while a question is pending (a rewind any time); clocks pause while a proposal is open; it expires after 60 seconds. Adding a card from nothing is later, not v1.",
     ],
     touches: [
       "client/engine/src/types.ts",
@@ -1059,10 +1057,8 @@ const OPEN: Entry[] = [
       "Ordering simultaneous triggers shows each pick numbered on its card, can be cut back or started over, and sends nothing until Confirm (ui/test/225 and 75 updated)",
       "A Burst cast in battle has a visible Undo last pick that sends exactly one undo",
     ],
-    asks: [
-      "Triggers: a final Confirm (one extra click on every ordering question), or only taking picks back with the last click still committing",
-      "With one trigger left, place it automatically and go straight to Confirm?",
-      "Burst \"Start over\": cancel only, or cancel and restart the group automatically?",
+    decided: [
+      "Owner, 2026-10-16: a final Confirm order — yes; with one trigger left, place it automatically — yes. Burst Start over cancels the group whole (CR D4.2).",
     ],
     touches: [
       "client/ui/main.ts",
