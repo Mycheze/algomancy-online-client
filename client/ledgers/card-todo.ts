@@ -941,6 +941,17 @@ const OPEN: TodoEntry[] = [
     verify: "Read 453's tripwire and test 30's header.",
     status: 'open',
   },
+  {
+    id: 296, area: "engine", severity: "minor",
+    cards: ["Oorblak", "Gublin", "Blightsea Polyp"],
+    title: "a Lethal column whose combat damage is all redirected into Oorblak still kills the defending player",
+    detail: "Lethal: \"Any combat damage from a lethal unit will kill a player.\" Oorblak: \"If combat damage would be dealt to you, that damage is dealt to me instead.\" Today a fully redirected Lethal column still kills (431 \"cr:attr.lethal.replaced\", resolving D-U12-21 on CR 608.8a's \"a replaced combat hit was still dealt\", which rests on Caleb's \"Yes\" of 2024-10-24, RQ 1298894533718970370, to \"Is combat damage still applied after this replacement effect?\", asked about a replacement like Blightsea Polyp's rot). The owner ruled on 2026-10-16 about Oorblak: \"The column doesn't even get to deal damage to the player. It gets redirected to the Oorblak instead.\" That reads as: no damage reached the player, so Lethal does not kill.",
+    evidence: "Found by the comprehensive-rules drafter in report round 2026-10-16 while redrafting 608.8c; the owner chose to save it for the next round.",
+    fix: "Ask the owner to confirm the recommended reading: a column whose combat damage is wholly redirected to a unit (Oorblak) deals none to the player, so Lethal does not kill; Piercing excess that does reach the player kills; Blightsea Polyp's rot is still damage dealt to the player (608.8a), so Lethal still kills there. Then fix the engine, invert 431's test, redraft 608.8a / 802.24c / D-U12-21 and re-verify.",
+    proof: null,
+    verify: "Attack with a Lethal unit into a player who has Oorblak and no blockers: today the player dies.",
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
