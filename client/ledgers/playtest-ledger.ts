@@ -120,6 +120,24 @@ const OPEN: LedgerEntry[] = [
       + 'draft" could be drafting a pool and building from it (BL-05 as written) or bringing '
       + 'a constructed deck into a draft pod, which is a different game. Ask before building.',
   },
+  {
+    id: 217, room: "UAPQ", date: "2026-10-16",
+    report: "Yagamino, seat 1, action 38: \"I should be able to play Linked Extinction, but i cannot.\"",
+    status: "by-design",
+    note: "Not a bug: affinity. Linked Extinction costs one metal pip (oracle cost \"m\"). At action 38 seat 1 had three fire and a Shard, and Shards give no affinity (CR 105.5); the engine refused \"cannot pay for that\" (canPayCard). The same state with one metal resource added offers and casts it. Seat 1 exchanged both Prismites for fire at actions 8 and 9 and recycled for fire at 26. What made it look broken is that a hand card never says why it cannot be played: CT-288.",
+  },
+  {
+    id: 218, room: "UAPQ", date: "2026-10-16",
+    report: "invi, seat 0, action 226 (gamebreaking): \"cosmic reversal has bounced slimebeast, which is not a spell but only a unit\"",
+    status: "live",
+    note: "Reporter right. Lurking Slimebeast was on the stack as an Ambush (action 221); Cosmic Reversal (\"Recall all other spell effects and spell units\") recalled it because the engine counts an Ambush as a spell effect (CR 700.1a / 803.6h, whose only basis was an engine call of 2026-07-16). Caleb: \"it's not a spell\"; _passer 2025-12-13: \"From 'not spell' you can have Triggered/Activated ability, Ambush ...\". Six hand-copied kind lists, seven cards: CT-301.",
+  },
+  {
+    id: 219, room: "UAPQ", date: "2026-10-16",
+    report: "invi, seat 0, action 334: \"tides of the cosmos should reveal the 8 cards to the opponent\"",
+    status: "live",
+    note: "Reporter right. The engine sends the eight names to the opponent as one log line; the only on-screen reveal for an opponent is the glimpse notice, which reads only glimpse events. Big Glimpse Card has the mirror gap (its caster gets only text). CT-302.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
