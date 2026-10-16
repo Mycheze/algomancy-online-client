@@ -4227,6 +4227,18 @@ export const CLOSED: LedgerEntry[] = [
       "Not reproduced. At [245] (turn 7 deployment) Karanda had one open resource of twelve (Reality Bender 2, Tides of the Cosmos 8, Dune Drifter 1), and legalActions offered all four 1-cost bin mods: Throwing Boulder, Tempest Wrangler and Bumblecrab as augments onto Crevice Lurker or Minor Kraken, and Fight as a graft onto Minor Kraken only. Identical at the played commit eb4a2ce and at HEAD; the real client (ui-driver, the server's seat view) highlights all four and a click sends the augment. One open mana pays for one mod (CR 720.4: a mod must meet its affinity and pay its mana cost); Crevice Lurker cannot take Fight because it has no graft cause (RAQ \"Graft 101\"); Crevice Lurker's tax does not apply to mods (CR 720.4a). Asked the player what was clicked.",
   },
   {
+    id: 209, room: "DFRH", date: "2026-10-15",
+    report: "Owner, at [65]: \"Rules confirmation that isn't in our rules (caleb responded to this question with \\\"no\\\"): - Can you expend resources for no reason? Like if you have one of the cards that gives you a benefit for having expended resources after haste?\"",
+    status: 'fixed',
+    guards: [
+      "470-expend-only-to-pay.test.ts::CR 106.5: Keeper of Tithes with six open resources and nothing paid makes no token",
+      "470-expend-only-to-pay.test.ts::CR 106.5: no action expends a resource except by paying a cost",
+      "470-expend-only-to-pay.test.ts::CR 106.5: the Action union has no expend, tap, spend or float action",
+    ],
+    note:
+      "A rules gap, not an engine bug: the engine already had no way to expend a resource except paying a cost (only payMana expends, and every caller pays one; a 100-game fuzz agreed), but the comprehensive rules never said so. Owner, 2026-10-16: \"Caleb's message was just two letters: \\\"no\\\" in response to my question about it. We just need to codify it and put it into the rules to ensure that it's clear there's no way to expend resources without paying a cost.\" Now a rule under 106.5, with regression guards (a seeded fuzz invariant and the Keeper of Tithes board). Keeper of Tithes and Debt Plant are the cards that reward expended resources.",
+  },
+  {
     id: 210, room: "FFAH", date: "2026-10-15",
     report: "Debeli, at [201]: \"wandering blightshell. it doesnt draw a card if negative counters are put in combat by a poisonous creature\"",
     status: 'fixed',
