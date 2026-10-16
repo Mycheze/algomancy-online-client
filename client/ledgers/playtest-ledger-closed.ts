@@ -1897,8 +1897,6 @@ export const CLOSED: LedgerEntry[] = [
     status: 'fixed',
     guards: [
       '37-attrs-wight.test.ts::CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves',
-      '37-attrs-wight.test.ts::CR 706.12: three Wraith triggers may all aim at one 1/1, and the surplus fizzles',
-      '37-attrs-wight.test.ts::does not pre-validate against a limit an earlier trigger will consume',
       '37-attrs-wight.test.ts::a subject is not a target',
       '37-attrs-wight.test.ts::CR 706.3c, 601.1b: a shared deployment stack does not let a Wraith reach across regions',
       '67-resolving-and-stack-viruses.test.ts::a NESTED resolution that suspends does not strand the outer marker',
@@ -1912,7 +1910,7 @@ export const CLOSED: LedgerEntry[] = [
       + 'NOT pre-validate against a limit that later triggers might consume, which is the ordinary '
       + 'fizzle-on-resolution rule. Touches the deployment phase, the stack and every '
       + 'start-of-deployment trigger. Related to #98 (the same Wraith pile, seen as a flow '
-      + 'complaint). Carried as CT-35.',
+      + 'complaint). Carried as CT-35. ' + 'SUPERSEDED IN PART 2026-10-16: the owner reversed claim (b) — "The way that I *guessed* Wraiths work is wrong. It\'s this new way. They don\'t target which means they can\'t be fizzled." Each Wraith trigger now chooses its ally as it resolves, among the allies in play then, and fizzles only with no ally left (CT-282). Claim (a), deployment triggers on the stack, stands.',
   },
   {
     id: 102, room: 'SMVJ', date: '2026-08-24',
@@ -4220,5 +4218,66 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note:
       "Real on a computer: the ⋯ more menu (2026-09-27) existed only on touch and under 900px, because the owner then asked for 'the same, normal view for computers'. Now a computer hides the six toggles (full control, auto-pass, bluff haste, motion, board, sound) behind more too; rules and the judge stay out as tools, the words stay, and the toggles open AFTER more so nothing shifts under the pointer. Touch unchanged. Mutation-checked; measured at 1440px over CDP on HPTR.",
+  },
+  {
+    id: 207, room: "KCAX", date: "2026-10-13",
+    report: "Karanda (sent on Discord, filed by the owner), around [245]: \"I was not able to Graft or augment my one cost cards from my Bin. My guess is that Crevice Lurker was the cause but it could be something else.\"",
+    status: 'by-design',
+    note:
+      "Not reproduced. At [245] (turn 7 deployment) Karanda had one open resource of twelve (Reality Bender 2, Tides of the Cosmos 8, Dune Drifter 1), and legalActions offered all four 1-cost bin mods: Throwing Boulder, Tempest Wrangler and Bumblecrab as augments onto Crevice Lurker or Minor Kraken, and Fight as a graft onto Minor Kraken only. Identical at the played commit eb4a2ce and at HEAD; the real client (ui-driver, the server's seat view) highlights all four and a click sends the augment. One open mana pays for one mod (CR 720.4: a mod must meet its affinity and pay its mana cost); Crevice Lurker cannot take Fight because it has no graft cause (RAQ \"Graft 101\"); Crevice Lurker's tax does not apply to mods (CR 720.4a). Asked the player what was clicked.",
+  },
+  {
+    id: 210, room: "FFAH", date: "2026-10-15",
+    report: "Debeli, at [201]: \"wandering blightshell. it doesnt draw a card if negative counters are put in combat by a poisonous creature\"",
+    status: 'fixed',
+    guards: [
+      "454-poisonous-counter-attribution.test.ts::Poisonous BLOCKER: its -1/-1 counters on the attacker are put by the defender, and Blightshell draws",
+      "454-poisonous-counter-attribution.test.ts::Poisonous ATTACKER: its -1/-1 counters on the blocker are put by the attacker, and Blightshell draws",
+    ],
+    note:
+      "Real. Poisonous combat damage put its -1/-1 counters with no recorded actor (commitUnitDamage called addCounters with no `by`, and partActor is null outside a stack resolution), so \"when YOU put a counter\" never matched (CR 708.8b). FFAH [198] and [235]: two missed draws. The hit now carries its dealer. Same seam fixed for Skittering Blight's rot replacement and Phytochemical Protection; readers: Wandering Blightshell, Scrapyard Custodian, Flux Resonator, Pestilent Mycelion. Mutation-checked.",
+  },
+  {
+    id: 211, room: "XFFB", date: "2026-10-15",
+    report: "mcauthor, at [58]: \"Can't play abduct here for some reason\"",
+    status: 'fixed',
+    guards: [
+      "452-abduct-x-gate.test.ts::Abduct is castable against a cost-1 attacker, its X menu starts at 1, and control flips",
+      "453-x-restrict-sweep.test.ts::an X-reading spell is offered exactly when some payable X reaches a target",
+    ],
+    note:
+      "Real, game-breaking since 140de9b (2026-08-21). The can-it-be-cast gate checked targets before X was chosen, so Abduct's \"cost [x] or less\" read X as 0 and no cost-1 unit was ever a legal target: in this Single Card Duel it was offered in none of 11 battle windows. The gate now asks whether some payable X has a target (CR 702.3a, 110.7), the X menu drops X values with no target, and a free prophecy release is judged at X = 0. Test 30 had hidden it behind a cost-0 token. Mutation-checked.",
+  },
+  {
+    id: 212, room: "TJGW", date: "2026-10-15",
+    report: "LordZZX, at [116]: \"Mirage Walker and Automation of Abundance resulted in a 3/3 and a 1/1 instead of two 3/3s.\"",
+    status: 'fixed',
+    guards: [
+      "458-automaton-copies-stats.test.ts::CR 304.14: with Automaton of Abundance, creating a 3/3 Unit Token gives two 3/3s",
+      "458-automaton-copies-stats.test.ts::CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the printed stats of its original",
+    ],
+    note:
+      "Real. Automaton of Abundance copied the creation request without the stats the creating effect set, so the copy was the bare 1/1 Unit Token (15 cards). The request now carries them, and they are part of what makes a token unique. Same round: two Automatons chain (1 -> 2 -> 3), per Caleb 2025-11-25. Mutation-checked.",
+  },
+  {
+    id: 213, room: "TJGW", date: "2026-10-15",
+    report: "LordZZX, at [179]: \"Soul Siphon plus Automaton of Abundance creates a 1/1 as the second unit.\"",
+    status: 'fixed',
+    guards: [
+      "458-automaton-copies-stats.test.ts::CR 304.14: with Automaton of Abundance, an X/X Unit Token is copied as the same X/X",
+    ],
+    note:
+      "Real; same cause as #212 and worse here: Soul Siphon's 24/24 was copied as a 1/1. Fixed with #212.",
+  },
+  {
+    id: 216, room: "FFAH", date: "2026-10-16",
+    report: "Owner, from the replay viewer: \"Debeli should have drawn a card here from the Wandering Blightshell since a counter was put onto a enemy. My guess is that this didn't happen because the wording is strange. Enemy = unit controlled by an opponent. That or it's considering \"you\" to only be your spells or something, but all your stuff should count.\"",
+    status: 'fixed',
+    guards: [
+      "454-poisonous-counter-attribution.test.ts::Flux Resonator: a Poisonous combat hit by your unit is an allied source, one counter more",
+      "455-counter-removal-is-not-placement.test.ts::Burn the Blight removing an enemy +1/+1 counters is not a counter you put: Blightshell draws nothing",
+    ],
+    note:
+      "Real; the owner's read of #210. \"You\" includes your units' combat damage (CR 708.8b). Fixed with #210. Found alongside: removing counters went through the same call as putting -1/-1 counters, so Burn the Blight removing an enemy's +1/+1 made Blightshell draw and Flux Resonator enlarged a removal; removal is its own event now (E.removeCounters, countersRemoved).",
   },
 ];
