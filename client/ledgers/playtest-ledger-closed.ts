@@ -4280,4 +4280,50 @@ export const CLOSED: LedgerEntry[] = [
     note:
       "Real; the owner's read of #210. \"You\" includes your units' combat damage (CR 708.8b). Fixed with #210. Found alongside: removing counters went through the same call as putting -1/-1 counters, so Burn the Blight removing an enemy's +1/+1 made Blightshell draw and Flux Resonator enlarged a removal; removal is its own event now (E.removeCounters, countersRemoved).",
   },
+  {
+    id: 206, room: "APNA", date: "2026-10-12",
+    report: "Debeli, at [194]: \"when Minor Kraken attacks, grafted with fester doesnt let me decline the \\\"up to one\\\". since fester has a targett it automatically resolves\"",
+    status: 'fixed',
+    guards: [
+      "466-no-targets-is-a-button.test.ts::report 206 - Kraken grafted with Fester offers No targets as an ordinary button",
+      "466-no-targets-is-a-button.test.ts::report 206 - an up to one slot finishes at one pick with no further decision",
+    ],
+    note:
+      "The engine was right and the screen was not. Kraken's slot is up to one (min 0) and the decline was offered both times, but it read \"No more targets\" on a dim dashed button at the far end, which reads as \"done\", not \"none\"; every legal target was Debeli's own unit, so the player picked one. Owner, 2026-10-16: \"Make there be a \\\"No targets\\\" as the button, especially for an \\\"up to 1\\\" option. But also, up to x should just \\\"finish\\\" when the max number is chosen.\" With nothing picked the stop now reads \"No targets\" and is an ordinary button (25 cards); up-to-N already finished at N picks and is now guarded. Asking before an own-unit pick in a single up-to slot is CT-289.",
+  },
+  {
+    id: 208, room: "HVJE", date: "2026-10-15",
+    report: "Owner, at [109]: \"The \\\"attributes off\\\" UI looks like it's covering abilities as well, which it shouldn't be. Attributes and abilities are different things.\"",
+    status: 'fixed',
+    guards: [
+      "465-attributes-off-is-not-abilities-off.test.ts::report 208 - a Formless-stamped unit greys its type bar and not its text box",
+      "465-attributes-off-is-not-abilities-off.test.ts::report 208 - The Everywhere silencing a unit greys below the type bar and leaves the bar",
+      "465-attributes-off-is-not-abilities-off.test.ts::report 208 - Monke switching off both greys the bar and the box",
+    ],
+    note:
+      "Display only; the engine keeps the two apart (Formless's targets still fired their abilities in HVJE). The card zoom drew one grey block from the type bar to the bottom whenever anything was off. Now attributes-off greys the type bar only, abilities-off greys the text box below it, both greys both. The type bar is a fixed band (its bottom edge at textTop + 45-51 of 1000 on all 505 read scans). Not covered: an attribute's reminder sentence printed at the top of the text box, and mod strips.",
+  },
+  {
+    id: 214, room: "TJGW", date: "2026-10-15",
+    report: "Gogorobot123, at [203]: \"Transmogrifant augmented on a unit with Abberant Statweaver in play does not cancel the abberant statweaver effect.\"",
+    status: 'fixed',
+    guards: [
+      "462-continuous-strip-silences-statics.test.ts::462 the report shape: Transmogrifant augmented onto an enemy host silences that player Statweaver",
+      "462-continuous-strip-silences-statics.test.ts::462 Mirage Walker with Aberrant Statweaver and Transmogrifant reads 4/6",
+      "463-strip-reaches-every-channel.test.ts::463 every anchored walk in the engine applies a strip filter",
+    ],
+    note:
+      "Real; already filed as CT-256. A unit whose abilities a CONTINUOUS effect took (Transmogrifant, Monke, The Everywhere) kept applying its static abilities, because every channel checked only the one-shot mark Suppression Field leaves (11 call sites, 43 cards). Owner, 2026-10-16: \"static effects count as abilities. Everything (besides an attribute) is an ability.\" Strips now resolve in two phases, through one helper. Of two strippers that each fall under the other, the newer applies (Caleb 2023-09-05: \"you could only have one of them active at once\"), replacing the owner's 2026-08-21 \"both apply\". The outcome of TJGW did not depend on it.",
+  },
+  {
+    id: 215, room: "VDDT", date: "2026-10-15",
+    report: "LordZZX, at [280]: \"X=10 on Vroot\"",
+    status: 'fixed',
+    guards: [
+      "464-trigger-x-is-what-it-resolves.test.ts::report 215 - Vroot beside a 1/1 shows X=4 on the stack and the opponent gains 4",
+      "464-trigger-x-is-what-it-resolves.test.ts::report 215 - every effect that reads a per-column combat share declares eventAmount",
+    ],
+    note:
+      "Display only; the engine was right. Vroot (\"When my column deals combat damage, each opponent gains that much life\") resolved its own column's 4 (CR 608.9a), but the stack chip showed the face-damage event's total of every connecting column, 10. The trigger now declares how its amount is read (eventAmount 'myColumn'), and the resolver, the stack X and the does-line all read that one declaration.",
+  },
 ];

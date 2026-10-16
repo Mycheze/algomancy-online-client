@@ -797,17 +797,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 256, area: "engine", severity: "major",
-    cards: ["Transmogrifant", "Monke"],
-    title: "a unit stripped of abilities by a continuous effect (Monke, Transmogrifant) keeps applying its own static abilities",
-    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.stripping.what.abilities. Transmogrifant and Monke print that other units \"lose all attributes and abilities\", and CR 712.1a says a static is an ability. staticsFor resolves static-vs-static in one pass that skips only a holder with its own entity stamp (textStrippedShallow), so a unit silenced by another static keeps radiating. Measured: Sandstone Defender under Transmogrifant still gives +0/+2 (a 1/1 token reads 3/5, where the printed text gives 3/3). CR 712.5 justifies the one pass only for the mutual case (two Monkes).",
-    evidence: "Findings F-U16-3 (dups F-U16-5, F-U16-7). Oracle: \"[Augment] Your other units gain +2/+2 and lose all attributes and abilities.\" digital-rules.md: \"*entity flag* is set, not one silenced by another static. So a unit silenced by\" and \"**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only\". engine.ts: \"&& !this.textStrippedShallow(h, a))) {\". Measured by verifier probes (not committed).",
-    fix: "Resolve the one-sided case: a unit stripped by a static that is not itself stripped stops radiating. Keep the mutual case's one-pass answer. Pin both.",
-    proof: null,
-    verify: "Put Sandstone Defender and a 1/1 token under Transmogrifant; the token should read 3/3, not 3/5.",
-    status: 'open',
-  },
-  {
     id: 257, area: "attribute", severity: "minor",
     cards: ["Child of Aether", "Rampart Guardian"],
     title: "OWNER DECISION: Tough augmented onto a printed-Balanced unit is balanced first; the Manual's first clause doubles first",
