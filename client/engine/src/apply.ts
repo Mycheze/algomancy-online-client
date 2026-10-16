@@ -715,7 +715,8 @@ function timingAllowsDeploy(c: CardDef): boolean { return c.timing === 'deploy' 
  * (CR 111.6b) not enough life to SURVIVE paying, the cast is ILLEGAL. A printed
  * "[Gain N debt]" line (Printed.gainDebt, Hyper Beam) is a real cast cost too,
  * and one that is always payable. */
-function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | 'cache' | 'bin' = 'hand'): boolean {
+function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | 'cache' | 'bin' = 'hand',
+  fixedX?: number): boolean {
   // the card is still in the hand this check reads, and a spell cannot discard
   // ITSELF to pay its own [Discard a card] cost
   const reserve = from === 'hand' ? 1 : 0;
@@ -727,9 +728,35 @@ function castable(e: E, c: CardDef, region: number, seat: Seat, from: 'hand' | '
   // slot is judged by its own kind and restriction. CR 110.7: EVERY required slot
   // (below `min`), not just the first — Fight with no second unit and Tidal
   // Reversion with one side empty are not castable (RAQ, Target requirements).
+  // CR 702.3a, 702.3c (report #211): …judged at an X the play could actually be
+  // declared with, because X is chosen before the targets.
   if (eff.targets && (eff.targets.min ?? 1) > 0
-    && !e.requiredSlotsFillable(eff.targets, region, seat)) return false;
+    && !e.requiredSlotsFillable(eff.targets, region, seat, undefined, castXChoices(e, c, region, seat, reserve, fixedX))) {
+    return false;
+  }
   return true;
+}
+
+/**
+ * CR 702.3a, 107.2a — the X values a play of `c` could be declared with, or
+ * `undefined` for a play that has no X. Report #211: Abduct ("target unit with
+ * cost [x] or less") was gated with NO X, so its restriction read X as 0 and
+ * a {Battle} window with only cost-1 attackers never offered it — the gate
+ * must ask "is there an X I could pay at which every required target exists?".
+ *
+ *  - `fixedX`: the X is not chosen at all (CR 702.6c: a free prophecy release
+ *    casts an X spell at X = 0), so that is the only one;
+ *  - a VARIABLE bracketed cost sizes the targets itself (collectPartTargets
+ *    reads `costPaid.x` first), so its payable sizes;
+ *  - a mana X: `E.manaXChoices`, the very list `collectX` builds its menu from.
+ */
+function castXChoices(e: E, c: CardDef, region: number, seat: Seat, handReserve: number,
+  fixedX?: number): number[] | undefined {
+  const cc = c.spellEffect?.castCost;
+  if (cc && costAmount(cc) === null) return e.variableCostXChoices(seat, cc, region, handReserve);
+  if (fixedX !== undefined) return [fixedX];
+  if (c.mana === 'X') return e.manaXChoices(seat, c.name, region);
+  return undefined;
 }
 
 /** CR 803.7d: the prophecy banner's cost — <mana> with <pips> affinity, exactly
@@ -810,7 +837,7 @@ function playAtTiming(
   // one; the erase is paid in the planning branch with the play's other costs.
   binErase?: { index: number },
 ): void {
-  const canCast = (region: number) => castable(e, c, region, seat, from);
+  const canCast = (region: number) => castable(e, c, region, seat, from, fixedX);
   /** CR 112.14c: the printed "[Gain N debt]" bracketed line (Hyper Beam) is a real
    * additional CAST cost — taken here, with the rest of the payment, before
    * the item exists. A negated Hyper Beam therefore still cost its caster the
@@ -1579,8 +1606,14 @@ function abilityUnusable(
   }
   const graft = graftCostUnpayable(e, seat, ab, u, region, manaReserve);
   if (graft) return graft;
+  // CR 110.7, judged at an X the activation could be declared with (CR 702.3a,
+  // report #211): an ability's X is its variable bracketed cost, collected
+  // before its targets — the same seam castable() had, with no card on it yet.
+  const xs = eff.castCost && costAmount(eff.castCost) === null
+    ? e.variableCostXChoices(seat, eff.castCost, region, 0, u.id, manaReserve)
+    : undefined;
   if (eff.targets && (eff.targets.min ?? 1) > 0
-    && !e.requiredSlotsFillable(eff.targets, region, seat, u.id)) {   // CR 110.7
+    && !e.requiredSlotsFillable(eff.targets, region, seat, u.id, xs)) {   // CR 110.7
     return 'that ability has nothing it can be used on';
   }
   return null;
@@ -3561,7 +3594,8 @@ function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache
     : { type: 'playCached', seat, index: src.index, ...(extra as { mode?: 'ambush'; eraseGrant?: true }) };
   const playable = (!hand || !c.noPlayFromHand)                    // CR 402.6
     && sourceAffordable(e, seat, src.name, src.price)
-    && castable(e, c, region, seat, src.from);
+    // CR 702.6c: a free release casts an X spell at X = 0 — the same fixedX doPlayFrom passes
+    && castable(e, c, region, seat, src.from, src.price.free && c.mana === 'X' ? 0 : undefined);
   if (window === 'haste') {
     // CR 803.2b, gate 2 of three: the printed [Haste] timing OR a live grant. The
     // client's play affordance is built from this list, and a refusal the UI

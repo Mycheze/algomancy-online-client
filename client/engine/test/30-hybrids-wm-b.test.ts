@@ -248,20 +248,25 @@ test('Abduct: controller may pay [x] to keep the unit; otherwise control flips (
   // forces X itself to 3), so a plain cost-3 unit stands in and the test is
   // about Abduct alone again.
   const sentry = spawn(h, A, 'Rune Channeler');               // cost 3 — the real target
-  const atk = spawn(h, A, 'Unit Token');                      // cost 0 — the x=0 target
+  // Report #211: this used to be a cost-0 Unit Token, and that token is what hid
+  // the bug — the gate judged Abduct with no X (read as 0), so it was castable
+  // only when a cost-0 unit stood in the battle. A cost-1 attacker is the
+  // honest first target: the X menu has to start at 1 for it.
+  const atk = spawn(h, A, 'Cinder Scuttler');                 // cost 1 — the x=1 target
   giveResources(h, D, 'wood', 1);
   giveResources(h, D, 'metal', 6);                            // gm affinity + mana for both casts
   toNextBattle(h, A);
+  giveResources(h, A, 'fire', 1);                             // exactly the [1] ransom, and no more
   h.do({ type: 'declareAttack', seat: A, columns: [[sentry], [atk]] });
   pass(h);                                                    // priority → D
-  // X = 0 chosen at cast (CR 107.2a) — A ransoms the token for [0]
+  // X = 1 chosen at cast (CR 107.2a) — A ransoms the Scuttler for [1]
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abduct') });
-  pick(h, 0);                                                 // X = 0
+  pick(h, 1);                                                 // X = 1
   pick(h, { unit: atk });
   pass(h); pass(h);                                           // resolve
-  pick(h, true);                                              // A pays [0] to keep it
-  assert.equal(ent(h, atk)!.controller, A, 'ransom paid — the token stays');
-  // X = 3: A has no open mana → cannot pay → the Sentry is abducted
+  pick(h, true);                                              // A pays [1] to keep it
+  assert.equal(ent(h, atk)!.controller, A, 'ransom paid — the Scuttler stays');
+  // X = 3: A spent its only open mana on the ransom → cannot pay → the Sentry is abducted
   pass(h);                                                    // priority → D again
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Abduct') });
   pick(h, 3);                                                 // X = 3 at cast — the cost-3 unit qualifies

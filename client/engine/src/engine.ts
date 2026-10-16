@@ -6818,20 +6818,64 @@ export class E {
    * taken — and the search backtracks, because the first legal pick for slot 0
    * can be the one that leaves slot 1 empty. A count of X is not known before
    * the cast, so only the fixed slots and one counted slot are required then.
+   *
+   * CR 702.3a, 702.3c (report #211): X is chosen BEFORE targets, so a restriction
+   * that reads X ("target unit with cost [x] or less", Abduct) is judged at a
+   * given X. `xs` is every X the play could be declared with (`castXChoices`);
+   * the slots are fillable if they are at SOME of them. Omitted, the restriction
+   * sees no X — right for a play that has none. The counted-slot rule above is
+   * deliberately x-independent, so for a restriction that does not read X every
+   * X answers alike and the first one settles it.
    */
-  requiredSlotsFillable(spec: TargetSpec, region: number, ally: Seat, sourceId?: EntityId): boolean {
+  requiredSlotsFillable(spec: TargetSpec, region: number, ally: Seat, sourceId?: EntityId,
+    xs?: readonly number[]): boolean {
     const extra = spec.extraSlots ?? 0;
     const max = spec.count === 'X' ? extra + 1 : (spec.count ?? 1) + extra;
     const need = Math.min(spec.min ?? 1, max);
-    const fill = (i: number, picked: TargetRef[]): boolean => {
+    const fill = (x: number | undefined, i: number, picked: TargetRef[]): boolean => {
       if (i >= need) return true;
       const taken = new Set(picked.map(r => JSON.stringify(r)));
       const chosen = picked.map(r => this.resolveTargetRef(r)).filter((t): t is ResolvedTarget => t !== null);
-      const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, undefined, chosen)
+      const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)
         .filter(c => !taken.has(JSON.stringify(c)));
-      return cands.some(c => fill(i + 1, [...picked, c]));
+      return cands.some(c => fill(x, i + 1, [...picked, c]));
     };
-    return fill(0, []);
+    return xs === undefined ? fill(undefined, 0, []) : xs.some(x => fill(x, 0, []));
+  }
+
+  /**
+   * CR 107.2a, 702.3a — every X `name` could be played with right now: from its
+   * floor (CR 111.10i, raised by a Stasis Sentry) up to the open mana, keeping
+   * only the values whose WHOLE bill (CR 202.5, cost modifiers included) is
+   * payable. The one list both the castability gate and `collectX`'s menu read,
+   * so the gate can never accept a play on an X the menu will not offer.
+   */
+  manaXChoices(seat: Seat, name: CardName, region: number): number[] {
+    const min = this.xFloor(seat, name, { region });
+    const open = this.openMana(seat);
+    const out: number[] = [];
+    for (let x = min; x <= open; x++) {
+      if (this.manaToPlay(seat, name, { region, x }) <= open) out.push(x);
+    }
+    return out;
+  }
+
+  /**
+   * CR 702.3a — every X a VARIABLE bracketed cost ("[Sacrifice X units]", "[x]")
+   * could be paid at right now: its floor up to the most the payer can afford,
+   * asked of `canPayCastCost` one size at a time (payability is monotone in the
+   * size for every cost kind). Capped, because a life cost has no natural
+   * ceiling below a very large number.
+   */
+  variableCostXChoices(seat: Seat, cost: CastCost, region: number, handReserve = 0,
+    sourceId?: EntityId, manaReserve = 0): number[] {
+    if (costAmount(cost) !== null || !('n' in cost)) return [];
+    const out: number[] = [];
+    for (let k = costXMin(cost); k <= 99; k++) {
+      if (!this.canPayCastCost(seat, { ...cost, n: k } as CastCost, region, handReserve, sourceId, manaReserve)) break;
+      out.push(k);
+    }
+    return out;
   }
 
   /** Stage one of `targetCandidates`: everything `spec.what` reaches, family
@@ -7657,24 +7701,36 @@ export class E {
    * paid for is not offered: a bare X is not the same as what it costs once a
    * Stasis Sentry or a Tranquility has spoken.
    *
-   * `min` is always offered: `canPayCard` gated the play on
+   * `min` is always PAYABLE: `canPayCard` gated the play on
    * `manaToPlay(…)` with no x, which is by construction bill(min) — same base
    * (`xMin`) and, for any modifier that falls back to `xMin` when `ctx.x` is
-   * undefined as CostCtx.x asks, the same delta. */
+   * undefined as CostCtx.x asks, the same delta. It is not always offered: an X
+   * whose targets would be empty is dropped (CR 702.3c, 110.7; report #211). */
   private collectX(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
     if (item.x !== undefined || !item.card) return;
     if (item.kind !== 'spell' && item.kind !== 'spellUnit') return;
     const c = this.card(item.card);
     if (c.mana !== 'X') return;
     const min = this.xFloor(item.controller, item.card, { region: item.region });   // CR 111.10i
-    const open = this.openMana(item.controller);   // canPayCard guaranteed bill(min) <= open
-    const options: DecisionOption[] = [];
-    for (let x = min; x <= open; x++) {
-      const bill = this.manaToPlay(item.controller, item.card, { region: item.region, x });
-      if (bill > open) continue;
-      options.push({ label: bill === x ? `X = ${x}` : `X = ${x} — pay [${bill}]`, value: x });
-    }
-    if (!options.length) options.push({ label: `X = ${min}`, value: min });
+    const payable = this.manaXChoices(item.controller, item.card, item.region);
+    // CR 702.3c, 110.7 (report #211): X comes first and the targets after it, so an X
+    // that leaves a REQUIRED slot with nothing legal is not a legal declaration —
+    // Abduct at X = 0 against a cost-1 attacker would reach the stack aimed at
+    // nothing. Only an X the targets are judged by is filtered: a variable cast
+    // cost sizes the targets itself (collectPartTargets reads costPaid.x first).
+    const eff = c.spellEffect;
+    const sized = eff?.targets && (eff.targets.min ?? 1) > 0
+      && !(eff.castCost && costAmount(eff.castCost) === null) ? eff.targets : undefined;
+    const aimable = sized
+      ? payable.filter(x => this.requiredSlotsFillable(sized, item.region, item.controller, item.sourceId, [x]))
+      : payable;
+    // castable() accepted the play on one of these, so `aimable` is never empty on
+    // a live play; the fallbacks keep an old log's answer resolvable regardless
+    const xs = aimable.length ? aimable : payable.length ? payable : [min];
+    const options: DecisionOption[] = xs.map(x => {
+      const bill = this.manaToPlay(item.controller, item.card!, { region: item.region, x });
+      return { label: bill === x ? `X = ${x}` : `X = ${x} — pay [${bill}]`, value: x };
+    });
     this.suspend(
       { type: 'cast', stage: 'x', item, partIndex: 0, targetIndex: 0, then, moreItems },
       {
