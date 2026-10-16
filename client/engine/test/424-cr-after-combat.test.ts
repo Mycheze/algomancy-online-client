@@ -16,7 +16,8 @@ import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import type { EntityId, Seat } from '../src/types.ts';
+import type { Action, EntityId, Seat } from '../src/types.ts';
+import { IllegalAction, legalActions } from '../src/apply.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, offered, pass, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
 } from './util.ts';
@@ -182,22 +183,31 @@ test('cr:combat.counterattack.round-two.other-region-absent — the initiative a
   assert.throws(() => h.do({ type: 'declareBlocks', seat: A, blocks: { 0: [atk] } }), /another region/);
 });
 
-test('cr:combat.counterattack.round-two.may-decline — declining with a sent unit opens no window and ends the battle phase', () => {
+test('cr:combat.counterattack.round-two.may-decline — declining is refused while a sent unit lives; with nothing sent there is no second round', () => {
+  // FLIPPED 2026-10-16. The owner: "if you decide to counterattack with
+  // something, it MUST be put into formation, you cannot change your mind and
+  // leave a unit off to the side/not attacking in the new region." CR 610.4b.
   const h = new Harness(91307);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
   const atk = tok(h, A, 1, 9);
   const c = tok(h, D, 1, 9);
+  const c2 = tok(h, D, 1, 9);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h); pass(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [c] });
+  h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [c, c2] });
   let guard = 20;
   while (h.state.battleRound === 1 && guard-- > 0) pass(h);
-  assert.deepEqual(h.state.battle!.attackerPool, [c]);
-  const evs = h.do({ type: 'declareAttack', seat: D, columns: [] });
-  assert.ok(evs.some(e => e.type === 'regroup'), 'regroup inside the decline itself');
-  assert.notEqual(h.state.phase, 'battle');
+  assert.deepEqual(h.state.battle!.attackerPool, [c, c2]);
+  assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [] }), IllegalAction,
+    'no decline with a living counterattack pool');
+  assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [[c]] }), IllegalAction,
+    'no leaving one of them behind');
+  const decl = legalActions(h.state, D).filter(a => a.type === 'declareAttack') as Extract<Action, { type: 'declareAttack' }>[];
+  assert.ok(decl.length > 0 && decl.every(a => a.columns.flat().length === 2), 'every offered formation holds both');
+  h.do({ type: 'declareAttack', seat: D, columns: [[c2], [c]] });
+  assert.equal(h.state.battle!.step === 'declare', false, 'the counterattack is declared');
   finishBattle(h);
 });
 

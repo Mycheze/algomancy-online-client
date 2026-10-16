@@ -154,6 +154,30 @@ export function formationCandidates(s: GameState, seat: Seat): EntityId[] {
   return [];
 }
 
+/**
+ * CT-297 — is there anything to block? False in a block step whose attacking
+ * formation has no unit left in it (every attacker died or was removed before
+ * blocks). The owner, 2026-10-16: "If there's no attacking formation
+ * (everyone died or something), no blocking can occur. It does still need to
+ * allow counter attackers, but you can't put something in to block". The
+ * engine's checkBlocks refuses any block, side-blocks included, on the same
+ * reading; this is that fact for the builder, so it draws no slot to block in.
+ */
+export function attackToBlock(s: GameState): boolean {
+  const b = s.battle;
+  return !!b && b.columns.flat().some(id => !!s.entities[id]);
+}
+
+/** CT-298 — the sent units still to be placed in a counterattack (empty when
+ * every one is in a column, or when this is not a counterattack). The owner,
+ * 2026-10-16: a sent unit "MUST be put into formation", so Attack! waits on it. */
+export function counterUnplaced(s: GameState, seat: Seat, columns: readonly (readonly EntityId[])[]): EntityId[] {
+  const pool = counterPool(s, seat);
+  if (!pool) return [];
+  const placed = new Set(columns.flat());
+  return pool.filter(id => !placed.has(id));
+}
+
 /** may this entity be picked up into the declaration being built? */
 export const canJoinFormation = (s: GameState, id: EntityId): boolean => {
   const e = s.entities[id];

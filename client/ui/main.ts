@@ -39,7 +39,8 @@ import type {
   SeenHandDismissals, UnitClickOption,
 } from './inspect.ts';
 import {
-  armSnapshot, attackFrom, autoPassDecision, blockVerdict, canJoinFormation, counterPool, counterShapes,
+  armSnapshot, attackFrom, attackToBlock, autoPassDecision, blockVerdict, canJoinFormation, counterPool, counterShapes,
+  counterUnplaced,
   formationCandidates, passEndsBattlePhase, ridableTokens, sendableRest, sendableTokens, shouldAskRide,
   shouldAskSend, splitCounterattack,
 } from './battle.ts';
@@ -5220,7 +5221,8 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
     });
   })() : '';
   const stepLabel: Record<string, string> = {
-    attackWindow: 'response window (attack)', blocks: `${esc(D)} declares blocks & counterattackers`,
+    attackWindow: 'response window (attack)',
+    blocks: attackToBlock(h.state) ? `${esc(D)} declares blocks & counterattackers` : `${esc(D)} may send counterattackers`,
     blockWindow: 'response window (blocks)',
     // CR 608.3b: the window between two damage sub-steps. It only exists when
     // {Swift} or {Sluggish} split the step, and the label has to say what is
@@ -5240,7 +5242,7 @@ function battleHtml(opts: { sendApart?: boolean } = {}): string {
  * — only in the block step: the ones built so far (mine, or the opponent's
  * live build) and, for the seat building them, one more open one. */
 function sideBlockColumns(b: NonNullable<GameState['battle']>, iBlock: boolean): number {
-  if (b.step !== 'blocks') return 0;
+  if (b.step !== 'blocks' || !attackToBlock(h.state)) return 0;   // CT-297: nothing to block beside
   const built = iBlock ? ui.columns.slice(ui.blockLeft) : (NET?.building?.cols ?? []);
   let last = b.columns.length - 1;
   built.forEach((c, ci) => { if (ci > last && c?.length) last = ci; });
@@ -5249,7 +5251,7 @@ function sideBlockColumns(b: NonNullable<GameState['battle']>, iBlock: boolean):
 
 /** CR 606.4a: the same, to the LEFT of the attack — keys -1, -2, … outward. */
 function leftSideColumns(b: NonNullable<GameState['battle']>, iBlock: boolean): number {
-  if (b.step !== 'blocks') return 0;
+  if (b.step !== 'blocks' || !attackToBlock(h.state)) return 0;   // CT-297
   return iBlock ? leftReach(ui.columns, ui.blockLeft) + 1 : (NET?.building?.left?.length ?? 0);
 }
 
@@ -6292,13 +6294,21 @@ function phaseBarHtml(err: string): string {
       // CT-192: a counterattack says what it is and how many it has to place,
       // and offers its whole-formation shapes beside "everything"
       const pool = myCounterPool();
-      const what = pool ? `Build your counterattack (${pool.length} sent)` : 'build your attack';
+      // CT-298 (owner, 2026-10-16): every sent unit "MUST be put into formation" —
+      // a counterattack has no "Don't attack", and Attack! waits until all of
+      // them are placed (the engine refuses anything less: CR 610.4b)
+      const unplaced = pool ? counterUnplaced(s, b.attacker, ui.columns) : [];
+      const what = pool
+        ? `Build your counterattack (${pool.length} sent)`
+          + (unplaced.length ? ` <span class="remind">all must attack — ${unplaced.length} to place</span>` : '')
+        : 'build your attack';
       const shapes = pool ? counterShapes(pool).map(sh =>
         `<button data-btn="countershape" data-shape="${sh.key}" title="${esc(sh.title)}">${esc(sh.label)}</button>`).join('') : '';
+      const canAttack = ui.columns.some(c => c.length) && !unplaced.length;
       return `<div class="promptbar"><span class="who">${esc(s.players[b.attacker]!.name)}:</span> ${what}
         <button data-btn="attackall" title="one unit per column — adjust before confirming">${txtIcon('battle', '[battle]')} Attack with everything</button>${shapes}
-        <button class="primary" data-btn="confirmattack" ${ui.columns.some(c => c.length) ? '' : 'disabled'}>Attack! <span class="kh">(enter)</span></button>
-        <button data-btn="skipattack">Don't attack</button>
+        <button class="primary" data-btn="confirmattack" ${canAttack ? '' : 'disabled'}${unplaced.length ? ' title="place every sent unit first"' : ''}>Attack! <span class="kh">(enter)</span></button>
+        ${pool ? '' : '<button data-btn="skipattack">Don\'t attack</button>'}
         ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
     }
     if (b.step === 'blocks') {
@@ -6329,13 +6339,17 @@ function phaseBarHtml(err: string): string {
       // surfaced as a red error after the fact. blockPlanIssue (ui/inspect.ts)
       // asks the engine's own validator what it would say to this declaration.
       const duty = blockPlanIssue(s, b.defender, blockPlan());
+      // CT-297: an emptied attacking formation cannot be blocked — only sent past
+      const nothingToBlock = !attackToBlock(s);
       // report #196: one click sends every unit left over — the bar's half of
       // the fix; the other half is the send box wrapping (ui/layout.ts)
       const rest = sendableRest(s, b.defender, [...ui.columns.flat(), ...ui.send]);
       return `<div class="promptbar${duty || ui.blockRefusal ? ' pending' : ''}"><span class="who">${esc(s.players[b.defender]!.name)}:</span>
         ${blockRefusalHtml()}${duty
           ? `<b class="duty">${esc(duty)}</b> — that block is compulsory.`
-          : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
+          : nothingToBlock
+            ? `no attackers left to block${b.round === 1 ? ' — you may still send counterattackers' : ''}`
+            : `assign blockers (click unit, then slot)${b.round === 1 ? ' and optionally send counterattackers' : ''}`}
         ${rest.length ? `<button data-btn="sendrest" title="adjust before confirming">${txtIcon('battle', '[battle]')} Counterattack with the rest</button>` : ''}
         <button class="primary" data-btn="confirmblocks" ${duty ? 'disabled' : ''}>Confirm <span class="kh">(enter)</span></button>
         ${built ? '<button data-btn="clearform" title="empty the blocks/send being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
@@ -10366,6 +10380,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   actcancel: () => { ui.confirmAct = null; },
   actconfirm: () => { confirmActivation(); },
   skipattack: () => {
+    if (myCounterPool()) return;   // CT-298: a living counterattack cannot be declined
     act({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
     ui.columns = []; ui.backOnly = []; ui.carrying = null; ui.spellTokens = []; ui.rideAnswered = false;
   },

@@ -690,13 +690,21 @@ test('CR 606.2f: an attack that has collapsed to nothing still lets the defender
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'The Foretold');
-  spawn(h, D, 'The Foretold');
+  const d1 = spawn(h, D, 'The Foretold');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   toBlockStep(h);
   whiteBox(h, e => { e.destroy(ent(h, atk)!, 'is deleted'); });
   assert.deepEqual(h.state.battle!.columns, [], 'the whole attack collapsed away');
   offersAreHonest(h, D);
+  // CT-297 (owner, 2026-10-16): "no blocking can occur" — a side-block is a block
+  assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d1] } }), IllegalAction,
+    'nothing to block, not even to the side');
+  // "It does still need to allow counter attackers"
+  const fork = structuredClone(h.state);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [d1] });
+  assert.deepEqual(h.state.battle!.sentAttackers, [d1], 'sending is still allowed');
+  h.state = fork;
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   assert.equal(h.state.battle!.step, 'blockWindow', 'and the battle moves on');
   finishBattle(h);

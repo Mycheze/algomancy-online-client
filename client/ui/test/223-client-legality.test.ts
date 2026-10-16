@@ -124,8 +124,15 @@ test('[127] the attack affordance names exactly the units the engine would take'
   // DERIVED, never enumerated: the client's set is checked against the ENGINE's
   // own verdict on a one-unit declaration, unit by unit, over everything the
   // seat controls. Nothing here restates a region rule or a pool rule.
+  // Since the owner's ruling of 2026-10-16 (CR 610.4b) a counterattack must
+  // hold every sent unit, so a ONE-unit declaration is refused for a pool of
+  // more than one. The question per unit is therefore "does the engine take
+  // the sent pool with this unit added?" — the pool read off the engine's own
+  // state, not the client's.
+  const pool = s.battle!.attackerPool!;
   const engineWould = unitIdsOf(s, D)
-    .filter(id => engineTakes(s, { type: 'declareAttack', seat: D, columns: [[id]] }));
+    .filter(id => engineTakes(s, { type: 'declareAttack', seat: D,
+      columns: [...new Set([...pool, id])].map(x => [x]) }));
   assert.deepEqual(formationCandidates(s, D), engineWould,
     '[127] every unit the client offers is one the engine accepts, and no other');
 

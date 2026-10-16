@@ -73,7 +73,7 @@ test('cr:annexd.general.player-decides.forced — an empty attacker has its empt
   assert.equal(forcedAction(h2.state), null, 'declaring with a unit is a real choice');
 });
 
-test('cr:annexd.general.player-decides.forced.lone-counterattacker — the engine still asks a lone sent counterattacker with no token to declare (engine differs)', () => {
+test('cr:annexd.general.player-decides.forced.lone-counterattacker — a lone sent counterattacker with no token is formed for the player', () => {
   const h = new Harness(23001);
   const it: Seat = 0, nit: Seat = 1;
   const atk = spawn(h, it, 'Ignis Sprite');
@@ -92,9 +92,10 @@ test('cr:annexd.general.player-decides.forced.lone-counterattacker — the engin
   assert.equal(b.step, 'declare');
   assert.equal(b.attacker, nit);
   assert.deepEqual(b.attackerPool, [ctr]);
-  assert.equal(forcedAction(h.state), null, 'the engine does not auto-form the lone counterattacker');
+  assert.deepEqual(forcedAction(h.state), { type: 'declareAttack', seat: nit, columns: [[ctr]] },
+    'the lone counterattacker is formed for the player');
   const decl = legalActions(h.state, nit).filter(a => a.type === 'declareAttack') as Extract<Action, { type: 'declareAttack' }>[];
-  assert.ok(decl.some(a => a.columns.length === 0), 'declining is offered');
+  assert.ok(!decl.some(a => a.columns.length === 0), 'declining is not offered (CR 610.4b)');
   assert.ok(decl.some(a => a.columns.length === 1), 'attacking with it is offered');
 });
 

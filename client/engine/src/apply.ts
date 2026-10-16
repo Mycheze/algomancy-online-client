@@ -2171,6 +2171,29 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
 
 // ── combat declarations ───────────────────────────────────────────────
 
+/**
+ * CR 610.4b — the units a counterattack OWES its formation: every unit sent at
+ * block time that is still here to attack. `null` when this declaration is not
+ * a counterattack at all (round 1, or a round 2 whose first round had no
+ * battle — CR 610.4d — which is a fresh attack from home, any subset or none).
+ *
+ * The owner, 2026-10-16: "if you decide to counterattack with something, it
+ * MUST be put into formation, you cannot change your mind and leave a unit off
+ * to the side/not attacking in the new region. But you don't decide the shape
+ * of that formation until the attack step of the second battle." So the pool
+ * is a commitment and the shape is the only choice left. A sent unit that died
+ * on arrival (CR 610.2e) owes nothing; nor does one that cannot attack
+ * (CR 802.15e, lured) — the same filter the eligibility check has always used.
+ * Spell tokens are not in it: they ride, they are not in formation (CR 610.3),
+ * and the owner's ruling is about units.
+ */
+export function counterattackersOwed(e: E, seat: Seat): EntityId[] | null {
+  const b = e.s.battle;
+  if (!b || b.round !== 2 || b.attackerPool === null || seat !== b.attacker) return null;
+  const pool = b.attackerPool;
+  return e.unitsOf(seat, b.region).filter(u => pool.includes(u.id) && !u.allured).map(u => u.id);
+}
+
 function validFormation(e: E, seat: Seat, columns: EntityId[][], fromRegion: number, pool: EntityId[] | null): void {
   const used = new Set<EntityId>();
   for (const col of columns) {
@@ -2215,6 +2238,19 @@ function needRidingToken(e: E, seat: Seat, id: EntityId, fromRegion: number): vo
 function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: EntityId[]): void {
   const b = e.s.battle;
   e.need(e.s.phase === 'battle' && b && b.step === 'declare' && seat === b.attacker, 'not your attack step');
+  // CR 610.4b: a counterattack is committed at block time — every sent unit still
+  // here goes into the formation, in whatever shape (owner, 2026-10-16). Checked
+  // after the formation itself, so a unit that may not attack at all is refused
+  // for THAT reason first.
+  const needWholePool = (): void => {
+    const owed = counterattackersOwed(e, seat);
+    if (!owed || !owed.length) return;
+    const placed = new Set(columns.flat());
+    const missing = owed.filter(id => !placed.has(id)).map(id => e.entity(id)!.card);
+    e.need(!missing.length,
+      `every sent counterattacker must be put into the formation (missing: ${missing.join(', ')})`);
+  };
+  if (!columns.length) needWholePool();
   if (!columns.length) {
     e.ev('info', `${e.pname(seat)} does not attack.`);
     e.endBattleRound();
@@ -2227,6 +2263,7 @@ function doDeclareAttack(e: E, seat: Seat, columns: EntityId[][], spellTokens: E
   // whenever the initiative player had nothing to attack with in round 1).
   const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
   validFormation(e, seat, columns, fromRegion, b.attackerPool);
+  needWholePool();
   for (const id of spellTokens) {
     needRidingToken(e, seat, id, fromRegion);
     e.need(!b.attackerPool || b.attackerPool.includes(id), 'only tokens sent at block time may come along');
@@ -2557,6 +2594,11 @@ registerSynthetic({
   }],
 });
 
+/** the attacking units still in the formation (a dead or removed one has left it) */
+function attackingUnits(e: E): EntityId[] {
+  return (e.s.battle?.columns ?? []).flat().filter(id => e.entity(id));
+}
+
 /**
  * The Alluring judgement, widened to EVERY block-legality reason: WHY this block
  * declaration would be refused, or null.
@@ -2591,7 +2633,14 @@ function checkBlocks(e: E, seat: Seat, blocks: Record<number, EntityId[]>, send:
   e.need(e.s.phase === 'battle' && b && b.step === 'blocks' && seat === b.defender, 'not your block step');
   const used = new Set<EntityId>();
   // CR 802.14a: a lone Sneaky attacker (the only attacking unit) cannot be blocked
-  const atkUnits = b.columns.flat().filter(id => e.entity(id));
+  const atkUnits = attackingUnits(e);
+  // CR 606.7: an attacking formation with no units left in it cannot be blocked —
+  // not head-on and not to the side. The owner, 2026-10-16: "If there's no
+  // attacking formation (everyone died or something), no blocking can occur.
+  // It does still need to allow counter attackers, but you can't put something
+  // in to block". Sending (below) is untouched.
+  e.need(atkUnits.length > 0 || Object.keys(blocks).length === 0,
+    'there is no attacking formation left to block');
   /**
    * CR 606.4 — SIDE-BLOCKS. The Manual: *"Units may even be placed blocking in
    * slots where attackers aren't, which can be beneficial for adjacency
@@ -3030,19 +3079,31 @@ export function forcedAction(state: GameState): Action | null {
       // the difference between "no attack is possible" and a real choice
       .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);
     if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };
-    // There used to be a second branch here: a round-2 counterattack with
-    // EXACTLY one sent unit and no ridable token auto-declared that unit
-    // ("the player already committed it at block time"). REMOVED 2026-08-24
-    // (decisions-for-the-player audit): sending a counterattacker and
-    // actually attacking with it are two different actions in this state
-    // machine — round 1's damage and priority windows sit between them, and
-    // legalDeclareAttackActions offers `columns: []` (decline) as a real,
-    // distinct choice the whole time. Auto-submitting took that choice away.
-    // If a ruling ever says a sent counterattacker MUST attack, the fix is to
-    // stop offering the decline, not to answer the question for the player.
+    // CR D1.2c: a counterattack pool of exactly ONE unit has nothing left to
+    // decide — the owner ruled on 2026-08-18 that "the player already committed
+    // the unit at block time", and on 2026-10-16 that a sent unit "MUST be put
+    // into formation" (so there is no decline to offer: CR 610.4b), and one unit
+    // has one shape. Unless a spell token could ride along with it: whether
+    // it comes is still a real choice, so the player is asked.
+    // (This branch was removed 2026-08-24 because the decline was then still
+    // offered; with the decline gone it is forced again.)
+    const owed = counterattackersOwed(e, b.attacker);
+    if (owed && owed.length === 1) {
+      const pool = b.attackerPool!;
+      const riders = e.tokensOf(b.attacker, b.region).filter(t => pool.includes(t.id));
+      if (!riders.length) return { type: 'declareAttack', seat: b.attacker, columns: [[owed[0]!]] };
+    }
   }
-  if (b.step === 'blocks' && !e.unitsOf(b.defender, b.region).length) {
-    return { type: 'declareBlocks', seat: b.defender, blocks: {} };
+  if (b.step === 'blocks') {
+    // CR 606: a defender with no unit in the region has nothing to declare.
+    // CR 606.7: nor does one facing an EMPTY attacking formation (every attacker
+    // gone before blocks) that cannot send a counterattacker — nothing can be
+    // blocked, and in round 2 nothing can be sent.
+    const mine = e.unitsOf(b.defender, b.region);
+    const canSend = b.round === 1 && mine.some(u => !u.allured);
+    if (!mine.length || (!attackingUnits(e).length && !canSend)) {
+      return { type: 'declareBlocks', seat: b.defender, blocks: {} };
+    }
   }
   return null;
 }
@@ -3456,10 +3517,21 @@ function legalBattleActions(e: E, seat: Seat): Action[] {
 function legalDeclareAttackActions(e: E, seat: Seat): Action[] {
   const b = e.s.battle!;
   const out: Action[] = [];
-  out.push({ type: 'declareAttack', seat, columns: [] });
   const fromRegion = b.round === 1 || b.attackerPool === null ? e.homeRegion(seat) : b.region;
   const mine = e.unitsOf(seat, fromRegion)
     .filter(u => (!b.attackerPool || b.attackerPool.includes(u.id)) && !u.allured);   // CR 604.2e
+  const owed = counterattackersOwed(e, seat);
+  if (owed && owed.length) {
+    // CR 610.4b: a counterattack takes every sent unit — only the SHAPE is open.
+    // Representative shapes: all in a line, and (with two or more) the first
+    // two stacked in one column.
+    out.push({ type: 'declareAttack', seat, columns: owed.map(id => [id]) });
+    if (owed.length > 1) {
+      out.push({ type: 'declareAttack', seat, columns: [[owed[0]!, owed[1]!], ...owed.slice(2).map(id => [id])] });
+    }
+    return out;
+  }
+  out.push({ type: 'declareAttack', seat, columns: [] });
   for (const u of mine) out.push({ type: 'declareAttack', seat, columns: [[u.id]] });
   if (mine.length > 1) out.push({ type: 'declareAttack', seat, columns: mine.map(u => [u.id]) });
   return out;

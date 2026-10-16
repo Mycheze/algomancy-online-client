@@ -209,11 +209,12 @@ function throughRoundOne(h: Harness, A: number, atk: number, send: number[]): vo
   while (h.state.phase === 'battle' && h.state.battle!.round === 1) pass(h);
 }
 
-test('forcedAction: a single sent counterattacker is NOT auto-formed — attacking is still a choice', () => {
-  // FLIPPED 2026-08-24 (decisions-for-the-player audit). This test used to
-  // assert the auto-declare; the branch is deleted. Sending a unit at block
-  // time and attacking with it in round 2 are two actions with a whole damage
-  // step between them, and declining (`columns: []`) is legal the whole time.
+test('forcedAction: a single sent counterattacker IS auto-formed — the unit was committed at block time', () => {
+  // FLIPPED BACK 2026-10-16. It was flipped on 2026-08-24 because declining
+  // (`columns: []`) was then still legal. The owner, 2026-10-16: "if you decide
+  // to counterattack with something, it MUST be put into formation" — so there
+  // is no decline, one unit has one shape, and nothing is left to decide
+  // (CR 610.4b, CR D1.2c).
   const h = new Harness(3220);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -225,17 +226,14 @@ test('forcedAction: a single sent counterattacker is NOT auto-formed — attacki
   assert.equal(b.round, 2);
   assert.equal(b.attacker, D);
   assert.deepEqual(b.attackerPool, [d1], 'the pool holds exactly the sent unit');
-  assert.equal(forcedAction(h.state), null,
-    'one sent counterattacker is still a real choice: attack, or decline');
-  // both answers are legal — attack…
-  const fork = structuredClone(h.state);
-  h.do({ type: 'declareAttack', seat: D, columns: [[d1]] });
-  assert.ok(h.state.battle!.columns.flat().includes(d1), 'attacking is legal');
-  // …and decline
-  h.state = fork;
-  h.do({ type: 'declareAttack', seat: D, columns: [] });
-  assert.ok(h.state.phase !== 'battle' || h.state.battle!.round !== 2
-    || h.state.battle!.step !== 'declare', 'declining is legal too and the step advances');
+  assert.deepEqual(forcedAction(h.state), { type: 'declareAttack', seat: D, columns: [[d1]] },
+    'the one-unit formation is declared for the player');
+  // the decline is refused…
+  assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [] }), IllegalAction,
+    'a sent counterattacker cannot be left out of the formation');
+  // …and the forced action is accepted
+  h.do(forcedAction(h.state)!);
+  assert.ok(h.state.battle!.columns.flat().includes(d1), 'it attacks');
 });
 
 test('forcedAction: NOT forced when a sent spell token could ride along', () => {
@@ -271,6 +269,11 @@ test('forcedAction: NOT forced with two sent units, nor in round 1 with one unit
   assert.equal(h.state.battle!.round, 2);
   assert.equal(h.state.battle!.attackerPool!.length, 2);
   assert.equal(forcedAction(h.state), null, 'two counterattackers → a real formation choice');
+  // CR 610.4b: but the choice is the SHAPE only — leaving one out is refused
+  assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [[d1]] }), IllegalAction,
+    'both sent units must be in the formation');
+  h.do({ type: 'declareAttack', seat: D, columns: [[d1, d2]] });
+  assert.deepEqual(h.state.battle!.columns, [[d1, d2]], 'any shape that holds them all is legal');
 });
 
 /* ── "[Sacrifice me]" — a self-scoped sacrifice cast cost (CR 111.8 differs, F-U04-5) ──

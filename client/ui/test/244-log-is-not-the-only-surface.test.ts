@@ -83,8 +83,8 @@ function declinedOnTokens(seed: number): { h: Harness; loser: Seat; decliner: Se
   const h = new Harness(seed);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
-  const atk = spawn(h, A, 'Good Whale');
-  const def = spawn(h, D, 'Conduit of Pain');
+  spawn(h, A, 'Good Whale');
+  spawn(h, D, 'Conduit of Pain');                 // D has a unit, so declining is a real choice
   toNextBattle(h, A);
   const e = new E(h.state);
   const toks = [
@@ -92,15 +92,15 @@ function declinedOnTokens(seed: number): { h: Harness; loser: Seat; decliner: Se
     e.createSpellToken(A, 'Poison', 1, e.homeRegion(A)).id,
   ];
   e.settle();
-  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  for (let g = 0; g < 40 && h.state.battleRound === 1; g++) {
-    const s = h.state;
-    if (s.decision) { h.do({ type: 'decide', seat: s.decision.seat, choice: s.decision.options.map((_, i) => i) }); continue; }
-    if (s.priority !== null) { h.do({ type: 'passPriority', seat: s.priority }); continue; }
-    if (s.battle!.step === 'blocks') { h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [def] }); continue; }
-    break;
-  }
+  // Round 1 is declined. It used to be fought, with D's unit sent to
+  // counterattack and then the counterattack declined — which the owner ruled
+  // out on 2026-10-16 (a sent unit "MUST be put into formation", CR 610.4b).
+  // A round 2 after an unfought round 1 is a fresh attack, so it may still be
+  // declined (CR 610.4d), and it is fought in the same region with the same
+  // tokens in it.
+  h.do({ type: 'declareAttack', seat: A, columns: [] });
   assert.equal(h.state.battleRound, 2, 'the fixture reached round 2');
+  assert.equal(h.state.battle!.attackerPool, null, 'a fresh attack, which may be declined');
   assert.equal(h.state.battle!.attacker, D, 'and round 2 belongs to the non-initiative seat');
   return { h, loser: A, decliner: D, toks };
 }

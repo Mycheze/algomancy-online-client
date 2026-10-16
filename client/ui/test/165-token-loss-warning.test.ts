@@ -46,7 +46,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
-import { legalActions } from '../../engine/src/apply.ts';
+import { forcedAction, legalActions } from '../../engine/src/apply.ts';
 import { passEndsBattlePhase, tokensAtRisk } from '../battle.ts';
 import { pass, spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import { client, closeLog, openLog } from './ui-driver.ts';
@@ -89,6 +89,25 @@ function settleDecisions(h: Harness): void {
     const dec = h.state.decision;
     h.do({ type: 'decide', seat: dec.seat, choice: dec.options.map((_, i) => i) });
   }
+}
+
+/**
+ * The round-2 decline after a FOUGHT round 1. Since the owner's ruling of
+ * 2026-10-16 a sent counterattacker "MUST be put into formation" (CR 610.4b),
+ * so the attacker can no longer just decline: the route that is left is the
+ * pool emptying before the declaration (a counterattacker that dies on
+ * arrival, CR 610.2e), and then the empty declaration is FORCED — still a
+ * declaration with no priority window in it, which is all CT-55 needs.
+ */
+function declineRound2(h: Harness, D: Seat, sent: EntityId): EngineEvent[] {
+  const e = new E(h.state);
+  e.destroy(h.state.entities[sent]!, 'dies');
+  e.settle();
+  h.state = e.s;
+  const f = forcedAction(h.state);
+  assert.deepEqual(f, { type: 'declareAttack', seat: D, columns: [] },
+    'with no counterattacker left, the empty declaration is forced');
+  return h.do(f!);
 }
 
 /* ── §1. the premise ──────────────────────────────────────────────────── */
@@ -160,7 +179,7 @@ test('[CT-55] the premise: a round-2 defender really is holding castable tokens 
   assert.equal(warned, 1, 'and exactly one of those windows is the one that warns');
 
   // …which is the whole point: the decline takes all of that away
-  h.do({ type: 'declareAttack', seat: D, columns: [] });
+  declineRound2(h, D, def);
   assert.notEqual(h.state.phase, 'battle', 'a declined round 2 goes straight to regroup');
   assert.equal(h.state.entities[toks[0]!], undefined, 'and the token is gone');
 });
@@ -181,10 +200,10 @@ test('[CT-55] a round-2 attacker who declines no longer erases the defenders spe
   assert.equal(h.state.battleRound, 2);
   assert.equal(h.state.battle!.attacker, D);
 
-  // the decline, through the real action — no hand-built state, no direct
-  // call to startRegroup
+  // the decline, through the real (forced) action — no direct call to
+  // startRegroup
   const at = h.log.length;
-  h.do({ type: 'declareAttack', seat: D, columns: [] });
+  declineRound2(h, D, def);
   const said = h.log.slice(at);
 
   const line = said.find(l => /unused spell token\(s\) to regroup/.test(l));

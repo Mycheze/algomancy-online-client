@@ -122,7 +122,8 @@ test('§4 only the blocker is offered it, and only in round 1', () => {
   for (let g = 0; g < 80 && !(h.state.battle?.round === 2 && h.state.battle.step === 'blocks'); g++) {
     const b = h.state.battle;
     if (!b) break;
-    if (b.round === 2 && b.step === 'declare') { h.do({ type: 'declareAttack', seat: b.attacker, columns: [[mine[0]!]] }); continue; }
+    // CR 610.4b: every sent unit goes into the counterattack (owner, 2026-10-16)
+    if (b.round === 2 && b.step === 'declare') { h.do({ type: 'declareAttack', seat: b.attacker, columns: mine.map(id => [id]) }); continue; }
     const dec = h.state.decision;
     if (dec) { h.do({ type: 'decide', seat: dec.seat, choice: 0 }); continue; }
     pass(h);
