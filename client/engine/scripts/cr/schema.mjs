@@ -49,6 +49,14 @@ export const TIERS = {
 };
 /** how long a quoted source span may be (the contract: ≤200 chars, one line) */
 export const MAX_QUOTE = 200;
+/**
+ * The designer's Discord name. A designer source is his words or a RAQ write-up of
+ * them; a message in the flat rules-questions channel (`RQ <messageId>`) counts only
+ * when he wrote it (check.mjs `rq-not-designer`; index-rq.mjs refuses anyone else's).
+ */
+export const DESIGNER_AUTHOR = 'calebgannon';
+/** a sourceHashes key: a RAQ claim or a rules-questions message */
+export const SOURCE_HASH_KEY_RE = /^(?:RAQ \d+#\d+|RQ \d+)$/;
 
 /** whitespace-normalised: every run of whitespace is one space, trimmed */
 export const norm = (s) => String(s).replace(/\s+/g, ' ').trim();
@@ -91,6 +99,8 @@ export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
  *   Manual p.N · Rulebook 2023 p.N       → printed page
  *   card: <Name>                         → a card's printed text
  *   RAQ <threadId>#<i>                   → a designer claim
+ *   RQ <messageId>                       → the designer's message in the flat rules-questions
+ *                                          channel (client/ledgers/rules-questions.snapshot.jsonl)
  *   owner ruling, adopted YYYY-MM-DD     → an owner call (its quote is its own evidence)
  *   glossary: <Term>                     → our glossary (never authority)
  *   file: <repo-relative path>           → a file in the repo (engine code, a test)
@@ -102,6 +112,7 @@ export function parseRef(ref) {
   if ((m = /^Rulebook 2023 p\.(\d+)$/.exec(s))) return { type: 'page', doc: 'Rulebook 2023', page: Number(m[1]) };
   if ((m = /^card: (.+)$/.exec(s))) return { type: 'card', name: m[1].trim() };
   if ((m = /^RAQ (\d+)#(\d+)$/.exec(s))) return { type: 'raq', id: `${m[1]}#${m[2]}`, threadId: m[1] };
+  if ((m = /^RQ (\d+)$/.exec(s))) return { type: 'rq', id: m[1] };
   if ((m = /^glossary: (.+)$/.exec(s))) return { type: 'glossary', term: m[1].trim() };
   if ((m = /^file: (.+)$/.exec(s))) return { type: 'file', path: m[1].trim() };
   if ((m = /^owner ruling, adopted (\d{4}-\d{2}-\d{2})$/.exec(s))) return { type: 'owner', adopted: m[1] };
@@ -193,9 +204,9 @@ export function validateRecord(r) {
   if (r.untested !== undefined && typeof r.untested !== 'boolean') P('untested must be a boolean');
   // a rule with nothing to execute says why, so the document can print "not executable: <reason>"
   if (r.untestableReason !== undefined && (!nonEmpty(r.untestableReason) || /[\r\n]/.test(r.untestableReason))) P('untestableReason must be a one-line non-empty string');
-  if (!isObj(r.sourceHashes)) P('sourceHashes must be an object ({"RAQ <id>#<i>": textHash})');
+  if (!isObj(r.sourceHashes)) P('sourceHashes must be an object ({"RAQ <id>#<i>" | "RQ <messageId>": textHash})');
   else for (const [k, v] of Object.entries(r.sourceHashes)) {
-    if (!/^RAQ \d+#\d+$/.test(k)) P(`sourceHashes key ${JSON.stringify(k)} is not "RAQ <id>#<i>"`);
+    if (!SOURCE_HASH_KEY_RE.test(k)) P(`sourceHashes key ${JSON.stringify(k)} is not "RAQ <id>#<i>" or "RQ <messageId>"`);
     if (!nonEmpty(v)) P(`sourceHashes[${k}] is empty`);
   }
   const s = r.sources;
@@ -204,7 +215,7 @@ export function validateRecord(r) {
   for (const k of SOURCE_FIELDS) if (s[k] !== undefined && !Array.isArray(s[k])) P(`sources.${k} must be an array`);
   const pre = `${id}: sources`;
   if (Array.isArray(s.printed)) out.push(...refQuoteList(`${pre}.printed`, s.printed, (x) => parseRef(x)?.type === 'page' || parseRef(x)?.type === 'card', '"Manual p.N", "Rulebook 2023 p.N" or "card: <Name>"'));
-  if (Array.isArray(s.designer)) out.push(...refQuoteList(`${pre}.designer`, s.designer, (x) => parseRef(x)?.type === 'raq', '"RAQ <threadId>#<i>"'));
+  if (Array.isArray(s.designer)) out.push(...refQuoteList(`${pre}.designer`, s.designer, (x) => ['raq', 'rq'].includes(parseRef(x)?.type), '"RAQ <threadId>#<i>" or "RQ <messageId>"'));
   if (Array.isArray(s.ours)) out.push(...refQuoteList(`${pre}.ours`, s.ours, (x) => parseRef(x)?.type === 'glossary', '"glossary: <Term>"'));
   if (Array.isArray(s.owner)) s.owner.forEach((x, i) => {
     if (!isObj(x)) { P(`sources.owner[${i}] must be {quote, adopted, from}`); return; }

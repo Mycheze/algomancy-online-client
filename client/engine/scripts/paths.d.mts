@@ -65,6 +65,8 @@ export const VERDICTS_JSONL: string;
 export const GAMES_DIR: string;
 export const ISSUES_SNAPSHOT: string;
 export const RAQ_SNAPSHOT: string;
+/** the cited designer messages of the flat rules-questions channel (`RQ <messageId>`) */
+export const RQ_SNAPSHOT: string;
 export const VERDICTS_SNAPSHOT: string;
 /** BL-16: the admin's triage marks on reports — live file, then its snapshot */
 export const MARKS_JSONL: string;

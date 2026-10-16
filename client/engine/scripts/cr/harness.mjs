@@ -570,14 +570,16 @@ export const roundsIn = (names) => [...new Set(names.map((n) => /^mutants-r(\d+)
 
 /**
  * Fill each record's sourceHashes from the extract: every designer claim it
- * quotes (`RAQ id#i` → textHash). An owner call needs none: its quote is
+ * quotes (`RAQ id#i` → textHash) and every rules-questions message (`RQ <id>`
+ * → textHash). An owner call needs none: its quote is
  * carried in the record itself (`sources.owner`), so nothing outside can drift. A hash already there is KEPT — it is what the drafter read, and
  * a mismatch is the checker's "changed since drafting" — unless `refresh`.
  * Hashes for sources no longer cited are dropped.
  */
 export function stamp(records, ex, { refresh = false } = {}) {
   const claims = new Map();
-  for (const t of ex.raq ?? []) for (const c of t.claims ?? []) claims.set(c.id, c.textHash);
+  for (const t of ex.raq ?? []) for (const c of t.claims ?? []) claims.set(`RAQ ${c.id}`, c.textHash);
+  for (const m of ex.rq ?? []) claims.set(`RQ ${m.id}`, m.textHash);
   let filled = 0, dropped = 0, refreshed = 0;
   const missing = [];
   const out = records.map((r0) => {
@@ -586,8 +588,7 @@ export function stamp(records, ex, { refresh = false } = {}) {
     const want = new Map();
     for (const x of r.sources?.designer ?? []) {
       const ref = String(x?.ref ?? '');
-      const id = ref.replace(/^RAQ /, '');
-      if (claims.has(id)) want.set(ref, claims.get(id)); else missing.push(`${r.key}: ${ref}`);
+      if (claims.has(ref)) want.set(ref, claims.get(ref)); else missing.push(`${r.key}: ${ref}`);
     }
     const old = r.sourceHashes && typeof r.sourceHashes === 'object' ? r.sourceHashes : {};
     const next = {};

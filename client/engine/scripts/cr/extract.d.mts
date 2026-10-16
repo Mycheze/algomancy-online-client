@@ -24,6 +24,28 @@ export interface RaqThread {
   claims: RaqClaimRow[];
 }
 
+/** one message of the flat rules-questions channel, as the snapshot holds it */
+export interface RqContextMessage {
+  id: string;
+  timestamp: string;
+  author: string;
+  content: string;
+}
+/**
+ * A designer message a rule cites as `RQ <id>` (client/ledgers/rules-questions.snapshot.jsonl,
+ * written by index-rq.mjs). Its author is calebgannon; the context rows are anyone's.
+ */
+export interface RqMessage extends RqContextMessage {
+  /** when Discord says the message was edited, or null */
+  edited: string | null;
+  /** the message it replies to; `missing` when the export no longer has it (a deleted message) */
+  replyTo: (RqContextMessage | { id: string; missing: true }) | null;
+  /** the non-bot messages just before it, oldest first, back to and including the nearest one by someone else */
+  before: RqContextMessage[];
+  /** sha256 hex of JSON [content] */
+  textHash: string;
+}
+
 export interface CardRow {
   name: string; kind: string; timing: string; attrs: string[]; typeLine: string; text: string;
 }
@@ -46,6 +68,8 @@ export interface TestFile {
 
 export interface Extract {
   raq: RaqThread[];
+  /** the cited designer messages of the flat rules-questions channel (absent = none) */
+  rq?: RqMessage[];
   /** GlossEntry rows verbatim (a RegExp field as its `/source/flags` text). Authority: ours */
   glossary: Record<string, unknown>[];
   cards: CardRow[];
@@ -60,5 +84,7 @@ export interface Extract {
 }
 
 export function extract(): Extract;
+/** the rules-questions snapshot (default RQ_SNAPSHOT) as extract rows */
+export function rqMessages(file?: string): RqMessage[];
 /** the names one TypeScript source declares (the engineSymbols scan, per file) */
 export function symbolsIn(text: string): Set<string>;

@@ -237,6 +237,12 @@ function fixtureExtract(): Extract {
       threadId: '111', title: '[Solved] Front and back', status: 'reviewed', note: null,
       claims: [{ id: '111#0', claim: 'You can deal all damage to the front unit.', source: 'calebgannon: "yes"', status: 'covered', guards: [], ticket: null, note: null, textHash: 'c0' }],
     }],
+    // the flat rules-questions channel: a designer answer (with the question before it), and a player's message
+    rq: [
+      { id: '9001', timestamp: '2025-11-25T21:57:07+01:00', edited: null, author: 'calebgannon', content: 'the tldr is\n\nthe front unit takes it all', replyTo: null,
+        before: [{ id: '9000', timestamp: '2025-11-25T21:50:16+01:00', author: 'ainecaptain', content: 'Who takes the damage?' }], textHash: 'q0' },
+      { id: '9002', timestamp: '2025-11-25T21:58:00+01:00', edited: null, author: 'ainecaptain', content: 'so the back unit takes it all', replyTo: null, before: [], textHash: 'q1' },
+    ],
     glossary: [{ term: 'Swift', text: 'Swift units deal combat damage first.' }],
     cards: [{ name: 'Rime Wraith', kind: 'unit', timing: 'deploy', attrs: [], typeLine: 'Spirit Unit', text: 'Sluggish units deal combat damage last.' }],
     printedPages: [{ doc: 'Manual', page: 23, text: 'all of the following damage\nprocesses happen  simultaneously, unless modified by an ability:\nUnblocked units deal combat damage to the defend-\ning player.' }],
@@ -285,8 +291,8 @@ function fixtureInputs(): CrInputs {
     text: 'The dealing player may assign all of a column\'s damage to the front unit.',
     examples: [{ text: 'Example: the recipient\'s choice is never asked.', test: "02-combat.test.ts::the recipient's choice" }],
     see: [],
-    sources: { printed: [], designer: [{ ref: 'RAQ 111#0', quote: 'deal all damage to the front unit' }], ours: [], owner: [], engine: [], tests: [] },
-    basis: 'designer', scope: 'game', confidence: 'high', engineDiffers: ['F-1'], sourceHashes: { 'RAQ 111#0': 'c0' },
+    sources: { printed: [], designer: [{ ref: 'RAQ 111#0', quote: 'deal all damage to the front unit' }, { ref: 'RQ 9001', quote: 'the tldr is the front unit takes it all' }], ours: [], owner: [], engine: [], tests: [] },
+    basis: 'designer', scope: 'game', confidence: 'high', engineDiffers: ['F-1'], sourceHashes: { 'RAQ 111#0': 'c0', 'RQ 9001': 'q0' },
   };
   const C: RuleRecord = {
     key: 'attr.deadly', parent: '802', order: 3, text: 'Deadly is an attribute.',
@@ -380,6 +386,13 @@ const PLANTS: Plant[] = [
   { name: 'a digital clause that is not in the text', code: 'schema', plant: (i) => { rec(i, 'combat.damage.client').digitalClause = 'The client shows it twice.'; } },
   { name: 'a digital clause on a digital rule', code: 'schema', plant: (i) => { rec(i, 'annexd.general.pace').digitalClause = 'Each animation'; } },
   { name: 'a RAQ claim that does not exist', code: 'raq-missing', plant: (i) => { B(i).sources.designer![0]!.ref = 'RAQ 111#9'; } },
+  { name: 'a designer quote is not in the rules-questions message', code: 'quote-not-verbatim', plant: (i) => { B(i).sources.designer![1]!.quote = 'the tldr is the back unit takes it all'; } },
+  { name: 'a rules-questions message the snapshot does not hold', code: 'rq-missing', plant: (i) => { B(i).sources.designer![1]!.ref = 'RQ 9999'; } },
+  { name: 'a rules-questions message held only as the context of another', code: 'rq-missing', plant: (i) => { B(i).sources.designer![1] = { ref: 'RQ 9000', quote: 'Who takes the damage?' }; } },
+  { name: 'a rules-questions message a player wrote, not the designer', code: 'rq-not-designer', plant: (i) => { B(i).sources.designer![1] = { ref: 'RQ 9002', quote: 'the back unit takes it all' }; } },
+  { name: 'a quoted rules-questions message with no source hash', code: 'source-hash-missing', plant: (i) => { delete B(i).sourceHashes['RQ 9001']; } },
+  { name: 'a source hash for a rules-questions message the snapshot does not hold', code: 'rq-missing', plant: (i) => { B(i).sourceHashes['RQ 9999'] = 'q9'; } },
+  { name: 'a rules-questions ref that is not a message id', code: 'schema', plant: (i) => { B(i).sources.designer![1]!.ref = 'RQ the automaton thread'; } },
   { name: 'an engine symbol that does not exist', code: 'engine-symbol-missing', plant: (i) => { A(i).sources.engine = ['engine.ts:assignCombatDamageTwice']; } },
   { name: 'an example bound to no test title', code: 'example-test-unresolved', plant: (i) => { A(i).examples[0]!.test = '02-combat.test.ts::no such title'; } },
   { name: 'an example bound to two test titles', code: 'example-test-unresolved', plant: (i) => { A(i).examples[0]!.test = '02-combat.test.ts::dup'; } },
@@ -906,6 +919,22 @@ test('§10 a promoted CR example keeps the verdict; any other example change unv
   assert.ok(sameAsVerified(rec([...ver.examples, { text: 'New.', test: '423-cr-combat-damage.test.ts::cr:k new' }]), ver), 'a promoted example added');
   assert.ok(!sameAsVerified(rec([{ text: 'A Swift column strikes.', test: '02-combat.test.ts::other' }]), ver), 'rebound elsewhere');
   assert.ok(!sameAsVerified(rec([{ text: 'A Sluggish column strikes.', test: null }]), ver), 'example text changed');
+});
+
+test('§8 a rules-questions message edited upstream stales the rule quoting it, and only that', () => {
+  const i = fixtureInputs(), x = fixtureExtract();
+  x.rq![0]!.textHash = 'edited';
+  const r = check(i, x);
+  assert.deepEqual(r.problems, []);
+  assert.deepEqual(r.stale.map((s) => `${s.kind} ${s.where}: ${s.msg}`), ['source combat.damage.choice: RQ 9001 changed since drafting']);
+});
+
+test('§10 stamp fills the hash of a quoted rules-questions message as it does a RAQ claim', () => {
+  const x = fixtureExtract();
+  const r: RuleRecord = { ...structuredClone(fixtureInputs().records[0]!), sourceHashes: {} };
+  r.sources.designer = [{ ref: 'RQ 9001', quote: 'q' }, { ref: 'RQ 9999', quote: 'q' }];
+  const out = stamp([r], x);
+  assert.deepEqual([out.records[0]!.sourceHashes, out.filled, out.missing], [{ 'RQ 9001': 'q0' }, 1, ['combat.damage.overview: RQ 9999']]);
 });
 
 test('§10 stamp fills the hashes of the quoted claims, keeps what is there, drops the uncited; an owner call needs none', () => {

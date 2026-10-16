@@ -12,7 +12,11 @@
  *
  * Quotes are compared whitespace-normalised, as substrings of their source:
  *   printed  → the extract's printedPages (Manual / Rulebook 2023 pages) or a card's text
- *   designer → the RAQ claim's `claim` / `source` text
+ *   designer → the RAQ claim's `claim` / `source` text, or (`RQ <messageId>`) the
+ *              content of the designer's message in the flat rules-questions channel,
+ *              as client/ledgers/rules-questions.snapshot.jsonl holds it. An id the
+ *              snapshot does not hold fails (`rq-missing`), and so does a message
+ *              someone other than calebgannon wrote (`rq-not-designer`)
  *   ours     → our glossary (never authority)
  *   owner    → nothing outside the record: `sources.owner[].quote` IS the owner's
  *              call, in his words, with the date he adopted it. It is its own
@@ -32,7 +36,7 @@ import { join, basename, isAbsolute } from 'node:path';
 import { parseArgs } from 'node:util';
 import { REPO_ROOT } from '../paths.mjs';
 import {
-  ANY_NUM_RE, norm, parseRef, recordHash,
+  ANY_NUM_RE, DESIGNER_AUTHOR, norm, parseRef, recordHash,
   validateDiscrepancy, validateFinding, validateOutline, validateRecord, validateVerdict,
 } from './schema.mjs';
 import { buildModel, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
@@ -101,10 +105,16 @@ export function indexExtract(ex) {
     threads.add(String(t.threadId));
     for (const c of t.claims ?? []) claims.set(c.id, c);
   }
+  /* the cited rules-questions messages, and every message shown only as one's context */
+  const rq = new Map((ex.rq ?? []).map((m) => [String(m.id), m]));
+  const rqContext = new Map();
+  for (const m of ex.rq ?? []) {
+    for (const c of [m.replyTo, ...(m.before ?? [])]) if (c?.id && !rq.has(String(c.id))) rqContext.set(String(c.id), { author: c.author ?? '(deleted)', of: String(m.id) });
+  }
   const gloss = (ex.glossary ?? []).map((g) => ({ term: String(g.term ?? ''), text: norm(Object.values(g).filter((v) => typeof v === 'string').join(' \n ')) }));
   const tests = ex.tests ?? [];
   const symbols = new Set(ex.engineSymbols ?? []);
-  return { pages, cards, claims, threads, gloss, tests, symbols };
+  return { pages, cards, claims, threads, rq, rqContext, gloss, tests, symbols };
 }
 
 /**
@@ -204,6 +214,17 @@ export function check(inputs, ex, opts = {}) {
       const c = X.claims.get(r.id);
       if (!c) { P('raq-missing', where, `RAQ claim ${r.id} does not exist`); return; }
       text = norm(`${c.claim ?? ''} \n ${c.source ?? ''}`);
+    } else if (r.type === 'rq') {
+      const m = X.rq.get(r.id);
+      if (!m) {
+        const ctx = X.rqContext.get(r.id);
+        P('rq-missing', where, ctx
+          ? `RQ ${r.id} is only context (${ctx.author}'s message before RQ ${ctx.of}), not a cited message: ${ctx.author === DESIGNER_AUTHOR ? `index it to cite it (npm --prefix client run rq:index -- ${r.id})` : 'cite the designer\'s answer — other players are not authority'}`
+          : `RQ ${r.id} is not in client/ledgers/rules-questions.snapshot.jsonl (npm --prefix client run rq:index -- ${r.id}, in the main checkout)`);
+        return;
+      }
+      if (m.author !== DESIGNER_AUTHOR) { P('rq-not-designer', where, `RQ ${r.id} was written by ${m.author}, not ${DESIGNER_AUTHOR}: other players are not authority`); return; }
+      text = norm(m.content ?? '');
     } else if (r.type === 'owner') {
       return; // an owner call is its own evidence: the quote is what he said
     } else if (r.type === 'glossary') {
@@ -344,13 +365,19 @@ export function check(inputs, ex, opts = {}) {
     const hashes = r.sourceHashes ?? {};
     for (const x of arr('designer')) {
       const k = String(x?.ref ?? '');
-      if (X.claims.has(k.replace(/^RAQ /, '')) && !(k in hashes)) P('source-hash-missing', w, `quotes ${k} but carries no sourceHashes["${k}"]`);
+      const pr = parseRef(k);
+      const known = pr?.type === 'raq' ? X.claims.has(pr.id) : pr?.type === 'rq' ? X.rq.has(pr.id) : false;
+      if (known && !(k in hashes)) P('source-hash-missing', w, `quotes ${k} but carries no sourceHashes["${k}"]`);
     }
     for (const [k, h] of Object.entries(hashes)) {
       if (k.startsWith('RAQ ')) {
         const cl = X.claims.get(k.slice(4));
         if (!cl) P('raq-missing', `${w} sourceHashes`, `${k} does not exist`);
         else if (cl.textHash !== h) S('source', w, `${k} changed since drafting`);
+      } else if (k.startsWith('RQ ')) {
+        const m = X.rq.get(k.slice(3));
+        if (!m) P('rq-missing', `${w} sourceHashes`, `${k} is not in client/ledgers/rules-questions.snapshot.jsonl`);
+        else if (m.textHash !== h) S('source', w, `${k} changed since drafting`);
       }
     }
 

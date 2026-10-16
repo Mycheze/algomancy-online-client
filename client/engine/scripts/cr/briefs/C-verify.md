@@ -38,6 +38,12 @@ Judge every record on the evidence, never on how plausible it sounds.
 - Designer (Caleb / RAQ write-ups): `client/ledgers/raq.ts`. A ref "RAQ <threadId>#<i>" is
   claim i (0-based) of the thread with that id; check its `claim`, `source`, and `status`
   (an `outdated` claim is not authority).
+- Designer (Caleb in the flat rules-questions channel): `client/ledgers/rules-questions.snapshot.jsonl`,
+  one JSON row per message. A ref "RQ <messageId>" is the row with that `id`; the quote must be in
+  its `content`. Its `author` must be `calebgannon` (anyone else is not authority). Read
+  `replyTo` (the message it answers; `missing: true` = deleted) and `before` (the messages just
+  before it, ending at the question) to judge what he was answering: a bare "Yes" supports only
+  what the question asked. The full export is not in MIRROR; the snapshot is the source.
 - Owner calls: `sources.owner[]` in the record itself — `{quote, adopted, from}`, the owner's
   words and the date he adopted them. The quote is its own evidence (there is no register to
   check it against); judge whether it says what the record uses it for, and whether a printed

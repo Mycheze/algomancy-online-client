@@ -9,7 +9,8 @@
 
 Built by the scripts in `client/engine/scripts/cr/` from four kinds of input:
 the printed text (`data/rules/`, the card pool), the designer's own answers
-(the RAQ threads in the Discord export), the owner's calls (recorded in the
+(the RAQ threads in the Discord export, and his messages in the flat
+rules-questions channel), the owner's calls (recorded in the
 rule records themselves, `sources.owner`), and the engine's tests. Every path below is
 named in `client/engine/scripts/paths.mjs` (`CR_*`); `bot/paths.py` names the
 directory and the document. Do not spell them again.
@@ -151,7 +152,7 @@ One JSON object per rule, in `rules/<section>.json`:
 | `examples[]` | `{ text, test }` — `test` is `<file>::<test title>` of an executed test |
 | `see[]` | cross-references, by number |
 | `sources.printed[]` | `{ ref, quote }`; `ref` is `Manual p.N`, `Rulebook 2023 p.N` or `card: <Name>` |
-| `sources.designer[]` | `{ ref: "RAQ <threadId>#<i>", quote }` |
+| `sources.designer[]` | `{ ref: "RAQ <threadId>#<i>", quote }`, or `{ ref: "RQ <messageId>", quote }` for one of Caleb's messages in the flat rules-questions channel (see "Designer answers outside the RAQ threads") |
 | `sources.ours[]` | `{ ref, quote }` from our own text (the glossary) — never authority |
 | `sources.owner[]` | `{ quote, adopted, from }` — the owner's call, the date he adopted it (YYYY-MM-DD), and where it is written: `comment <id>` (a review comment, his own words), `questions-round27 Q2` (a question sheet), or `register@<sha>` for a call absorbed from the retired register (the register's write-up, verified against it; a sheet pointer may precede it: `questions-round27 Q2; register@72de434`) |
 | `sources.engine[]` | engine symbols (the verifier's citations) |
@@ -163,7 +164,7 @@ One JSON object per rule, in `rules/<section>.json`:
 | `notes` | the drafter's reasoning; stripped before verification |
 | `engineDiffers?` | `[findingId]` (`F-U12-3`) — the rule is stated; the engine does otherwise |
 | `untested?` | `true` when no executed test or probe demonstrates it — set by `harness.mjs finalize`, cleared when a probe is promoted |
-| `sourceHashes` | `{"RAQ <id>#<i>": textHash}` of the designer claims quoted — filled by `harness.mjs stamp` (an owner call needs none: its words are in the record) |
+| `sourceHashes` | `{"RAQ <id>#<i>" \| "RQ <messageId>": textHash}` of the designer claims and messages quoted — filled by `harness.mjs stamp` (an owner call needs none: its words are in the record) |
 
 A verdict pins the record by `recordHash` (schema.mjs): its text, plus its
 examples and their test bindings. An example bound to a promoted
@@ -316,6 +317,42 @@ hidden truth, never in rules/, verdicts/, findings/ or the feedback, so no
 real rule goes unverified in its round. A batch that misses any mutant or
 decoy is discarded whole; a fresh verifier re-runs it as the next attempt.
 
+
+## Designer answers outside the RAQ threads (`RQ <messageId>`)
+
+Caleb also answers in the flat **rules-questions** channel — chat, not
+write-ups, 31k messages in a gitignored 67 MB export that `index-raq.mjs` leaves
+out on purpose. A rule cites one of his messages there as
+
+```json
+{ "ref": "RQ 1442982460034912287", "quote": "the tldr is replacement effects only apply once onto an effect" }
+```
+
+and the message must be in **`client/ledgers/rules-questions.snapshot.jsonl`**
+(`RQ_SNAPSHOT`): the committed copy of the cited messages and nothing else,
+verbatim — `id`, `timestamp`, `edited`, `author`, `content`, plus the context a
+verifier needs to read it: `replyTo` (the message it replies to; `{id, missing:
+true}` when the export no longer has it, i.e. it was deleted) and `before` (the
+non-bot messages just before it, oldest first, back to and including the
+nearest one by someone else — the question, normally; a `$card <name>` bot call
+does not stop the walk). Context rows are anyone's; only the cited row counts.
+
+- **Add a message** (from the main checkout, where the export lives; or pass
+  `--export <file>`): `npm --prefix client run rq:index -- <messageId> [<messageId>…]`.
+  It REFUSES — writes nothing, exits 1 — on an id the export does not hold, or a
+  message whose author is not `calebgannon`: other players are not authority.
+- **After a new export** (`bot/pipeline/export_rulings.sh`):
+  `npm --prefix client run rq:index -- --refresh` re-reads every held message.
+- **`cr:check`** checks an `RQ` quote exactly as it checks a RAQ quote — a
+  whitespace-normalised substring of the message's `content`, ≤200 chars, one
+  line — and fails `rq-missing` on an id the snapshot does not hold (including
+  one that is only another message's context) and `rq-not-designer` on a
+  message someone else wrote. `harness.mjs stamp` puts `sourceHashes["RQ <id>"]`
+  (a hash of the content) on the record, and a refresh that changes the content
+  — Caleb edited it — makes the rule stale (409 §6), as a changed RAQ claim does.
+- A one-word answer ("Yes") is citable, but it supports only what its question
+  asked: the verifier reads `before`/`replyTo` to see what that was.
+  `engine/test/474` keeps the snapshot honest and pins the seeded citations.
 
 ## When a quoted source changes upstream
 

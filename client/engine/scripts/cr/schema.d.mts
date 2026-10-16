@@ -5,6 +5,10 @@ export const VERDICTS: readonly string[];
 export const DISC_KINDS: readonly string[];
 export const TIERS: Record<1 | 2 | 3 | 4, string>;
 export const MAX_QUOTE: number;
+/** the designer's Discord name: an `RQ <messageId>` source counts only when he wrote it */
+export const DESIGNER_AUTHOR: string;
+/** a sourceHashes key: `RAQ <id>#<i>` or `RQ <messageId>` */
+export const SOURCE_HASH_KEY_RE: RegExp;
 export const KEY_RE: RegExp;
 export const GLOSSARY_TAG_KINDS: readonly string[];
 export const GLOSSARY_TAG_RE: RegExp;

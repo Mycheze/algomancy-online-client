@@ -252,6 +252,15 @@ export const VERDICTS_SNAPSHOT =
  */
 export const RAQ_SNAPSHOT =
   join(REPO_ROOT, 'client', 'ledgers', 'raq-threads.snapshot.jsonl');
+/**
+ * The committed copy of the designer's messages in the FLAT rules-questions
+ * channel that a comprehensive rule cites (`RQ <messageId>`), verbatim, each
+ * with the message it replies to and the messages just before it. Only the
+ * cited messages, and only calebgannon's: `npm run rq:index -- <id>…` refuses
+ * anyone else's. The export is gitignored and 67 MB, so cr:check reads this.
+ */
+export const RQ_SNAPSHOT =
+  join(REPO_ROOT, 'client', 'ledgers', 'rules-questions.snapshot.jsonl');
 /** BL-16 — the admin's triage marks on reports; the live file, on the server */
 export const MARKS_JSONL = join(VAR_DIR, 'report-marks.jsonl');
 /**

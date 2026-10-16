@@ -11,6 +11,9 @@
  * WHERE EACH PART COMES FROM, AND HOW (derive, never enumerate: a data
  * structure that exists as a module is IMPORTED, never regexed out of source):
  *   raq            imported: ledgers/raq.ts `RAQ`
+ *   rq             ledgers/rules-questions.snapshot.jsonl (RQ_SNAPSHOT): the designer's
+ *                  messages in the flat rules-questions channel that a rule cites,
+ *                  verbatim, with their context (written by index-rq.mjs)
  *   glossary       imported: ui/glossary.ts `GLOSSARY` (the rows a player sees;
  *                  authority `ours`, never a source of law)
  *   cards          printed.json — the PRINTED pool. The registry holds more
@@ -28,11 +31,11 @@
  *                  cannot say what the name does.
  */
 import { createHash } from 'node:crypto';
-import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CR_BUILD_DIR, CR_PRINTED_PAGES, ENGINE_SRC_DIR, ENGINE_TEST_DIR, ORACLE_JSON, REPO_ROOT,
+  CR_BUILD_DIR, CR_PRINTED_PAGES, ENGINE_SRC_DIR, ENGINE_TEST_DIR, ORACLE_JSON, REPO_ROOT, RQ_SNAPSHOT,
   SERVER_E2E_DIR, SERVER_TEST_DIR, UI_TEST_DIR,
 } from '../paths.mjs';
 import { ATTRS, OUT as PRINTED_JSON } from '../extract-printed.mjs';
@@ -57,6 +60,17 @@ function raqThreads() {
       textHash: sha256(JSON.stringify([c.claim, c.source])),
     })),
   }));
+}
+
+/**
+ * The cited rules-questions messages, as the snapshot holds them, each with a
+ * textHash over its content (what `sourceHashes["RQ <id>"]` pins: Caleb editing
+ * the message upstream and a refresh of the snapshot stales the rule).
+ */
+export function rqMessages(file = RQ_SNAPSHOT) {
+  if (!existsSync(file)) return [];
+  return readFileSync(file, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l))
+    .map(m => ({ ...m, textHash: sha256(JSON.stringify([m.content])) }));
 }
 
 /** a GlossEntry as data: a RegExp is kept as its `/source/flags` text */
@@ -208,6 +222,7 @@ export function extract() {
   const cards = printedCards();
   return {
     raq: raqThreads(),
+    rq: rqMessages(),
     glossary: glossaryRows(),
     cards,
     cardBacks: cardBacks(),
@@ -228,6 +243,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   writeFileSync(file, json);
   console.log(`Wrote ${repoRel(file)} (${(json.length / 1024).toFixed(0)} KiB) in ${ms} ms: `
     + `${x.raq.length} RAQ threads / ${x.raq.reduce((a, t) => a + t.claims.length, 0)} claims, `
+    + `${x.rq.length} rules-questions messages, `
     + `${x.glossary.length} glossary rows, ${x.cards.length} printed cards, ${x.printedPages.length} printed pages, `
     + `${x.tests.reduce((a, t) => a + t.titles.length, 0)} test titles in ${x.tests.length} files, `
     + `${x.engineSymbols.length} engine symbols`);

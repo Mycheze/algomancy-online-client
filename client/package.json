@@ -9,6 +9,7 @@
     "backlog": "npm --prefix ledgers run ready",
     "reports": "node engine/scripts/fetch-reports.mjs",
     "raq:index": "node engine/scripts/index-raq.mjs",
+    "rq:index": "node engine/scripts/index-rq.mjs",
     "cr:extract": "node engine/scripts/cr/extract.mjs",
     "cr:render": "node engine/scripts/cr/render.mjs",
     "cr:check": "node engine/scripts/cr/check.mjs",

@@ -15,6 +15,7 @@ test here, and it exists to keep the entries honest.
 | `verdicts.snapshot.jsonl` | committed copy of the server's live `var/verdicts.jsonl` — the owner's card verdicts from the scenario tester |
 | `raq.ts` | every Discord rulings thread (the RAQ forum + rules-questions threads), read against the engine: each worked example a claim, each claim a guard test, a CT ticket, or a reason (engine/test/386) |
 | `raq-threads.snapshot.jsonl` | the committed index of those threads — `npm run raq:index` after `bot/pipeline/export_rulings.sh` |
+| `rules-questions.snapshot.jsonl` | the designer's messages in the flat rules-questions channel that a comprehensive rule cites (`RQ <messageId>`), verbatim, with their context — `npm run rq:index -- <id>…` (refuses anyone but Caleb); data/comprehensive-rules/README.md |
 
 ## Step 0 of every round: `npm run reports`
 
