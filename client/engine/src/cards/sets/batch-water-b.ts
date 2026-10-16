@@ -218,8 +218,8 @@ card('Rippleback Skulker', {
       // restriction to exactly the victim's. REQUIRED (CR 110.7): the text has no
       // "may" and no "up to", so a card is taken whenever that bin holds one —
       // the owner, 2026-10-16: "If a trigger doesn't have the 'up to' caviat, it
-      // MUST have targets (unless there are no legal ones)". It used to be
-      // `min: 0`, which offered "No targets" beside a full bin.
+      // MUST have targets (unless there are no legal ones)". No "No targets" is
+      // offered beside a bin with a card in it.
       targets: {
         what: 'anyBinCard',
         prompt: "Rippleback Skulker: put target card from that player's bin into your hand",
@@ -416,7 +416,7 @@ card('Spell Excavation', {
     // pick. The target is REQUIRED (CR 110.7): the "You may" is about playing the
     // spell later, not about choosing one now — the owner, 2026-10-16: "Unless a
     // card says 'up to', it must have targets in order to be cast." No battle
-    // spell in your bin, no Spell Excavation. (It used to be `min: 0`.)
+    // spell in your bin, no Spell Excavation.
     targets: {
       what: 'binCard',
       prompt: 'Spell Excavation: you may play target spell from your bin until regroup '

@@ -13,6 +13,7 @@
  *   §4 refused: the same seat agreeing, a hidden step, an open decision, a
  *      card that is no longer where the proposer saw it, life 0
  *   §5 a log with fixes in it replays to the same board, twice
+ *   §6 amendFrozen carries a fix onto a frozen board (the hidden-step view)
  *
  * Seeds 48400-48499.
  */
@@ -20,7 +21,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { apply, legalActions, replay } from '../src/apply.ts';
+import { amendFrozen, apply, legalActions, replay } from '../src/apply.ts';
 import type { Action, AmendEdit, GameState, Seat } from '../src/types.ts';
 import { spawn, toDeployment, toNextBattle } from './util.ts';
 
@@ -236,4 +237,13 @@ test('§5 a log with agreed fixes in it replays to the same board, twice', () =>
   const b = replay(48440, log, ['Ann', 'Bo']).state;
   assert.equal(JSON.stringify(a), JSON.stringify(h.state), 'the replay is the game');
   assert.equal(JSON.stringify(a), JSON.stringify(b), 'and deterministic');
+});
+
+test('§6 amendFrozen sets a life total on a frozen board and leaves the frozen board it was given alone', () => {
+  const { h, A, D } = battle(48490);
+  const frozen = structuredClone(h.state);
+  const before = structuredClone(frozen);
+  const out = amendFrozen(frozen, { type: 'amend', seat: A, by: D, edit: { kind: 'life', target: D, life: 7 } }, h.state);
+  assert.equal(out.players[D]!.life, 7, 'the frozen view shows the agreed life total');
+  assert.deepEqual(frozen, before, 'the board passed in is not mutated');
 });

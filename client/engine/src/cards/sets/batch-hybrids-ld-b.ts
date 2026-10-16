@@ -488,9 +488,9 @@ card('Murkstalker', {
 // sacrifice pool excludes tokens and the ability's own source.
 //
 // CR 110.7: the target is REQUIRED — with no unit in your bin the ability cannot
-// be activated at all, so the cost is never paid for nothing. (It used to be
-// `min: 0`, activatable at an empty bin; the owner, 2026-10-16: "Unless a card
-// says 'up to', it must have targets in order to be cast.")
+// be activated at all, so the cost is never paid for nothing (the owner,
+// 2026-10-16: "Unless a card says 'up to', it must have targets in order to be
+// cast.").
 // "Recall … in your bin" moves a unit card from the bin to the HAND (recall is
 // always to hand, Manual). Bounded by [once] (CR 109.9).
 card('Combustible Bogwalker', {

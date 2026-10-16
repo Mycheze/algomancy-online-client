@@ -443,8 +443,8 @@ card('Nothyr', {
       //
       // The NONSPELL half is the COMPLEMENT of the spell one, and nothing
       // else: 'stackSpell' is `isSpellEffect` (spell / spell unit / spell
-      // token), so "nonspell effect" is every OTHER item on the stack. That used to mean
-      // triggered + activated + virus, because an earlier ruling said a unit on the stack was not an effect at all.
+      // token), so "nonspell effect" is every OTHER item on the stack: triggered
+      // and activated abilities, viruses, units, and an Ambush (CR 700.1b).
       //
       // The owner (2026-08-24) reversed that reading (now CR 700.1): "ANYTHING on the stack is an
       // effect, including units and spell units. Units aren't spells, so if
@@ -652,8 +652,8 @@ card('Spore of Regenesis', {
 // CR 110.1a: "two TARGET units in your bin" is real targeting — two cast-time
 // targets, and BinRef.nth means two copies of one card are two separate
 // targets. BOTH are required (CR 110.7): with fewer than two units in your bin
-// the spell is not castable. It used to be `min: 0` so the "then discard a card"
-// could happen off an empty bin; the owner, 2026-10-16 (CT-299): it needs both
+// the spell is not castable, even though "then discard a card" has no target;
+// the owner, 2026-10-16 (CT-299): it needs both
 // targets, "otherwise it'd say 'up to two'". The RAQ agrees in general
 // (_passer, 2025-08-27): "In order to play a card, you must be able to select
 // the valid targets". Once cast, one target leaving the bin is CR 704.6b partial
