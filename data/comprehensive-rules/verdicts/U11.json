@@ -435,21 +435,32 @@
   },
   {
     "key": "combat.attack.declaring.optional",
-    "textHash": "c7f4f7e480a925ea",
+    "textHash": "7a283382c0c6b834",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
         "loc": "client/engine/src/apply.ts:doDeclareAttack",
         "agrees": true,
-        "note": "columns [] is a legal declaration"
+        "note": "empty columns accepted and ends the round unless counterattackersOwed is non-empty"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:counterattackersOwed",
+        "agrees": true,
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/396-raq-timing.test.ts",
+        "file": "396-raq-timing.test.ts",
         "pattern": "RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined",
         "passed": true,
         "asserts_claim": true
       }
@@ -458,74 +469,104 @@
     "source_checks": [
       {
         "ref": "Manual p.20",
-        "supports": "partly",
-        "note": "\"if the IT decides not to attack\" implies the option rather than stating it"
+        "supports": "yes",
+        "note": "'decides not to attack' — not attacking is an option"
+      },
+      {
+        "ref": "owner report round 2026-10-16 b, CT-298",
+        "supports": "yes",
+        "note": "a sent counterattacker MUST be put into formation"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "The NIT can still declare attacks even if the IT decides not to attack."
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!columns.length) needWholePool();"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.ev('info', `${e.pname(seat)} does not attack.`);"
+      },
+      {
+        "file": "client/engine/test/479-empty-attack-and-committed-counterattack.test.ts",
+        "text": "assert.throws(() => h.do({ type: 'declareAttack', seat: D, columns: [] }), IllegalAction, 'no decline');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.attack.declaring.round-two",
-    "textHash": "1cdb19e9b24fcfe0",
+    "textHash": "cc5572a52d0521fa",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
-      {
-        "loc": "client/engine/src/engine.ts:endBattleRound",
-        "agrees": true,
-        "note": "after a real round 1, attackerPool = sentAttackers; after a declined one it stays null"
-      },
       {
         "loc": "client/engine/src/apply.ts:validFormation",
         "agrees": true,
-        "note": "'only units sent at block time may counterattack'"
+        "note": "only units in attackerPool may counterattack"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "needWholePool: every owed unit must be placed; attackerPool null when round 1 had no battle"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/02-combat.test.ts",
+        "file": "02-combat.test.ts",
         "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/21-fixes.test.ts",
-        "pattern": "REGRESSION: NIT can attack in round 2 when IT had no units in round 1",
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined",
         "passed": true,
-        "asserts_claim": "yes - the exception"
+        "asserts_claim": true
+      },
+      {
+        "file": "21-fixes.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": false
       }
     ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.20",
-        "supports": "partly",
-        "note": "phase 2 step 1 says the NIT puts its attacking units into formation"
+        "supports": "yes",
+        "note": "Phase 2: NIT puts their attacking units into formation"
       },
       {
-        "ref": "R15",
+        "ref": "owner register@72de434 (2026-08-18)",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "owner report round 2026-10-16 b, CT-298 (both quotes)",
+        "supports": "yes",
+        "note": "must be put into formation; shape decided at the second attack step"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/apply.ts",
         "text": "e.need(!pool || pool.includes(id), 'only units sent at block time may counterattack');"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "`every sent counterattacker must be put into the formation (missing: ${missing.join(', ')})`);"
+      },
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "text": "'only units sent at block time may counterattack');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.attack.declaring.spell-tokens",
@@ -642,65 +683,70 @@
   },
   {
     "key": "combat.attack.decline",
-    "textHash": "cda07bab2533d529",
+    "textHash": "d4dcf624797032a3",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U11-r2",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "apply.ts:doDeclareAttack",
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
         "agrees": true,
-        "note": "`if (!columns.length)` logs 'does not attack' and calls endBattleRound before any openPriority"
+        "note": "an empty declaration calls endBattleRound before any window opens"
       },
       {
-        "loc": "engine.ts:endBattleRound",
+        "loc": "client/engine/src/engine.ts:endBattleRound",
         "agrees": true,
-        "note": "goes straight to round 2 / regroup; no window, no block step"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/ui/test/165-token-loss-warning.test.ts",
-        "pattern": "a battle both players decline opens no priority window",
+        "file": "165-token-loss-warning.test.ts",
+        "pattern": "[CT-55] a battle both players decline opens no priority window at all",
         "passed": true,
-        "asserts_claim": "yes: after the round-1 decline priority is null; after the round-2 decline the phase is no longer battle"
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.20",
-        "supports": "partly",
-        "note": "says combat and after combat are skipped in a region not attacked; it does not name the attack/block windows"
+        "supports": "yes",
+        "note": "regions that did not get attacked skip combat and after combat"
       },
       {
-        "ref": "R194",
+        "ref": "owner register@72de434 (2026-08-26, 2026-08-18)",
         "supports": "yes",
-        "note": "'A declined attack fights no combat, so there is no after-combat step' — owner/engine call, consistent with the code"
+        "note": ""
       },
       {
-        "ref": "R15",
+        "ref": "owner report round 2026-10-16 b, CT-298",
         "supports": "yes",
-        "note": "on a round-1 decline 'NIT never gets a block step'"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "with the exception of regions that"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
-      },
-      {
         "file": "client/engine/src/apply.ts",
-        "text": "    e.ev('info', `${e.pname(seat)} does not attack.`);"
+        "text": "e.endBattleRound();"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "did not get attacked, in which case combat and after"
+      },
+      {
+        "file": "client/ui/test/165-token-loss-warning.test.ts",
+        "text": "// declined too, so the whole battle phase contains zero priority windows"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.attack.decline.next-round",
@@ -1942,41 +1988,71 @@
   },
   {
     "key": "combat.blocks.empty-attack",
-    "textHash": "53a1d5c44e2f82f5",
+    "textHash": "ddf87484381394e5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
-      {
-        "loc": "client/engine/src/engine.ts:repairFormation",
-        "agrees": true,
-        "note": "an attack can collapse to [] before blocks"
-      },
       {
         "loc": "client/engine/src/apply.ts:checkBlocks",
         "agrees": true,
-        "note": "still accepts blocks {} and opens the block window"
+        "note": "no block keys allowed with no attacking units; sending untouched"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:forcedAction",
+        "agrees": true,
+        "note": "round 2: canSend false, so the empty block is the only declaration"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "opens blockWindow: the round continues"
       }
     ],
     "tests_run": [
       {
-        "file": "client/ui/test/53-playtest-round7.test.ts",
-        "pattern": "R84: an attack that has collapsed to nothing still lets the defender declare",
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "CR 606.2f: an attack that has collapsed to nothing still lets the defender declare",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-297 an emptied attacking formation cannot be blocked head-on or to the side, but counterattackers may still be sent",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-297 an emptied counterattack in round 2 leaves the defender nothing to declare",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [],
-    "source_checks": [],
+    "source_checks": [
+      {
+        "ref": "owner report round 2026-10-16 b, CT-297",
+        "supports": "yes",
+        "note": "no blocking can occur; still allow counter attackers"
+      }
+    ],
     "quote_spans": [
       {
         "file": "client/engine/src/apply.ts",
-        "text": "e.openPriority('blockWindow');"
+        "text": "'there is no attacking formation left to block');"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const canSend = b.round === 1 && mine.some(u => !u.allured);"
+      },
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "text": "assert.equal(h.state.battle!.step, 'blockWindow', 'and the battle moves on');"
       }
     ],
     "basis_ok": true,
-    "problem": "Basis 'engine' is honest: no printed or designer source is cited.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.blocks.general",
@@ -2331,23 +2407,40 @@
   },
   {
     "key": "combat.blocks.side",
-    "textHash": "9f4f1f2d2d4d0f7a",
+    "textHash": "bf83e6a9310883e6",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "keys past either end of the attack are side-blocks; refused when no attacking unit remains"
+      },
       {
         "loc": "client/engine/src/apply.ts:doDeclareBlocks",
         "agrees": true,
-        "note": "keys past the attack open empty attacking columns (sideCols)"
+        "note": "opens an empty attacking column opposite each side-block"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
-        "pattern": "R321 side-blocks: two units block where no attacker is",
+        "file": "400-raq-fix-blocks.test.ts",
+        "pattern": "side-blocks: two units block where no attacker is",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-297 an emptied attacking formation cannot be blocked head-on or to the side",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": false
       }
     ],
     "probes": [],
@@ -2355,28 +2448,35 @@
       {
         "ref": "Manual p.23",
         "supports": "yes",
-        "note": ""
+        "note": "units may be placed blocking in slots where attackers aren't"
       },
       {
-        "ref": "R321",
+        "ref": "owner register@72de434 (2026-10-09)",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R72 (history)",
+        "ref": "owner report round 2026-10-16 b, CT-297",
         "supports": "yes",
-        "note": ""
+        "note": "no blocking with no attacking formation"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "columns. Units may even be placed blocking in slots"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "where attackers aren’t, which can be beneficial for"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(atkUnits.length > 0 || Object.keys(blocks).length === 0,"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "// CR 606.4: open an empty attacking column opposite every side-block, then key"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.blocks.side.adjacency",

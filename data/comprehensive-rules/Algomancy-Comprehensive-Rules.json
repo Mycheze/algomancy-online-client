@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:9b53b6a84197886d",
+ "generated_from": "sha256:de0f1ed60f7a1446",
  "rules": [
   {
    "num": "100.1",
@@ -3606,12 +3606,14 @@
    "sectionTitle": "Targets",
    "chapterTitle": "1. Game Concepts",
    "parent": "110.1",
-   "text": "\"Up to N target\" lets the player choose any number of targets from none to N.",
+   "text": "\"Up to N target\" lets the player choose any number of targets from none to N, and \"any number of target\" lets the player choose none as well. Only such words make a target optional: without them every target is required (see rule 110.7).",
    "see": [],
    "examples": [
-    "Twin Flame (\"up to two target units\") can be played with no targets."
+    "Twin Flame (\"up to two target units\") can be played with no targets.",
+    "Tilling the Graves (\"Recall two target units in your bin\") says no \"up to\": once cast, it asks for both units and offers no way to stop at one.",
+    "Penance (\"Any number of target players each lose 1 life. Draw a card.\") may be played with no target, and its caster still draws."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -4089,16 +4091,17 @@
    "sectionTitle": "Targets",
    "chapterTitle": "1. Game Concepts",
    "parent": "110",
-   "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. A card that targets nothing has no such requirement.",
+   "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. Every target a card names is required unless the card says \"up to\" or \"any number\" (see rule 110.1c). A card that targets nothing has no such requirement.",
    "see": [
     "702"
    ],
    "examples": [
     "Fight cannot be played unless its region holds an ally and another unit.",
     "Rebalance, which targets nothing, can be played with no unit of its controller's.",
-    "Abduct (\"Gain control of target unit with cost [x] or less …\") against a lone cost-1 attacker can be played when its caster can pay an X of 1 or more. X = 0 is not offered, since at 0 there is no unit to take."
+    "Abduct (\"Gain control of target unit with cost [x] or less …\") against a lone cost-1 attacker can be played when its caster can pay an X of 1 or more. X = 0 is not offered, since at 0 there is no unit to take.",
+    "Tilling the Graves (\"Recall two target units in your bin\") cannot be played while its caster's bin holds fewer than two units."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -15812,14 +15815,15 @@
    "sectionTitle": "Attacking",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "604.2",
-   "text": "Attacking is optional. A player may declare no attack.",
+   "text": "Attacking is optional: a player may declare no attack. The exception is a counterattack: a sent counterattacker that is still able to attack must attack (see rule 610.4e).",
    "see": [
     "604.4"
    ],
    "examples": [
-    "The initiative player has a unit that could attack and declares no attack. The battle moves to the second round."
+    "The initiative player has a unit that could attack and declares no attack. The battle moves to the second round.",
+    "The non-initiative player sent three units to counterattack. In round 2, declaring no attack is refused."
    ],
-   "basis": "printed",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -15935,13 +15939,14 @@
    "sectionTitle": "Attacking",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "604.2",
-   "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610).",
+   "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). Every sent unit still there and able to attack must be in the formation; only the formation's shape is chosen (see rule 610.4b).",
    "see": [
     "610",
     "604.4a"
    ],
    "examples": [
-    "The non-initiative player sent one unit to counterattack and kept another at home. In the second round, only the sent unit may attack."
+    "The non-initiative player sent one unit to counterattack and kept another at home. In the second round, only the sent unit may attack.",
+    "Three units were sent. Attacking with only two of them is refused; any formation holding all three is accepted."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -16080,7 +16085,7 @@
    "sectionTitle": "Attacking",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "604",
-   "text": "If the attacking player declares no attack, there is no combat in that round: no attack window, no block step, no block window, no combat damage step and no after combat step.",
+   "text": "If the attacking player declares no attack, there is no combat in that round: no attack window, no block step, no block window, no combat damage step and no after combat step. A counterattack cannot be declined this way while a sent counterattacker is able to attack (see rule 610.4e).",
    "see": [
     "505",
     "609"
@@ -16655,15 +16660,16 @@
    "sectionTitle": "Blocking",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "606",
-   "text": "A defending unit may be placed blocking where no attacker is. This is a side-block, and the blocking column it makes is a side-blocking column.",
+   "text": "A defending unit may be placed blocking where no attacker is, as long as at least one attacking unit is left in the attacking formation (see rule 606.7). This is a side-block, and the blocking column it makes is a side-blocking column.",
    "see": [
     "602",
     "603"
    ],
    "examples": [
-    "One unit attacks. The defending player places two units to the side of it, each in its own column, and leaves the attacker unblocked."
+    "One unit attacks. The defending player places two units to the side of it, each in its own column, and leaves the attacker unblocked.",
+    "The only attacker is destroyed before blocks: a side-block beside the empty attack is refused."
    ],
-   "basis": "printed",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -16932,14 +16938,16 @@
    "sectionTitle": "Blocking",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "606",
-   "text": "If no attacking unit is left when the block step begins, the block step still takes place: the defending player declares blocks, which may be none, and the battle round continues.",
+   "text": "If no attacking unit is left when the block step begins, nothing can be blocked: no defending unit may be placed blocking, in front of the attack or to the side of it. In the first battle round the defending player may still send units to counterattack; otherwise the block declaration is empty. The battle round then continues.",
    "see": [
     "605.1d"
    ],
    "examples": [
-    "The only attacker is destroyed before blocks and the attack collapses to nothing. The defending player declares no blocks, and the block window follows."
+    "The only attacker is destroyed before blocks. The defending player cannot block, not even to the side, but may still send a unit to counterattack, or declare nothing; the block window follows.",
+    "With the attack emptied, a side-block on either side is refused, with or without a unit sent to counterattack.",
+    "In the second battle round the lone counterattacker is destroyed before blocks: the initiative player can neither block nor send anything."
    ],
-   "basis": "engine",
+   "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -18978,14 +18986,16 @@
    "sectionTitle": "Counterattacks and Later Battle Rounds",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "610.4",
-   "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round. In its attack step, the non-initiative team puts them into formation.",
+   "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round, and every one of them still there and able to attack must attack. In its attack step the non-initiative team puts all of them into formation, in any shape; the shape is chosen then, not when the units are sent. A sent unit that died on its return is not owed.",
    "see": [
     "604.2f"
    ],
    "examples": [
-    "The non-initiative player sent Conduit of Pain at block time. In round 2 it is the only unit they can attack with."
+    "The non-initiative player sent Conduit of Pain at block time. In round 2 it is the only unit they can attack with, and it must attack: declining is refused.",
+    "Three units were sent. Declining, or leaving one off to the side, is refused; any shape that holds all three is accepted.",
+    "Two units were sent and one dies on its return: the other alone is owed, and it forms by itself."
    ],
-   "basis": "printed",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -19051,23 +19061,24 @@
    "sectionTitle": "Counterattacks and Later Battle Rounds",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "610.4",
-   "text": "The non-initiative team may decline to attack in the second battle round, even if it sent units to counterattack. Then the second round has no battle and opens no priority window, and the battle phase ends.",
+   "text": "The non-initiative team may decline to attack in the second battle round only when no unit it sent to counterattack is still there and able to attack, or when the first battle round had no attack (see rule 610.4d). A counterattack with such a unit cannot be declined. A declined second round has no battle and opens no priority window, and the battle phase ends.",
    "see": [
     "604.2a",
     "604.4"
    ],
    "examples": [
-    "One unit was sent to counterattack. In round 2 both attacking with it and declining are legal.",
-    "The initiative player's spell tokens at home cannot be cast in any round-1 window. If the non-initiative player then declines to attack in round 2, those tokens never become castable this battle."
+    "Two units were sent. In round 2 declining is refused, and so is leaving one of them behind; every formation offered holds both.",
+    "The initiative player declined to attack in round 1. In round 2 the non-initiative player may decline too, and the battle phase ends.",
+    "The initiative player's spell tokens at home cannot be cast in any round-1 window. If the non-initiative player's only counterattacker then dies on its return, round 2 has no attack, and those tokens never become castable this battle."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
     "D-U13-3",
     "D-U13-4"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },
@@ -19221,12 +19232,14 @@
    "sectionTitle": "General",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "700.1",
-   "text": "A spell effect is an effect that is a spell: a spell, a spell unit or a spell token on the stack, or an ambush. A unit on the stack is an effect but not a spell effect, so a card that says \"spell effect\" cannot affect it.",
+   "text": "A spell effect is an effect that is a spell: a spell, a spell unit or a spell token on the stack. A unit on the stack is an effect but not a spell effect, and neither is an Ambush, since the card played as an Ambush is a unit: a card that says \"spell effect\" cannot affect either of them.",
    "see": [],
    "examples": [
-    "Null Drone (\"target spell effect\") cannot choose a plain unit on the stack, but can choose a spell unit."
+    "Null Drone (\"target spell effect\") cannot choose a plain unit on the stack, but can choose a spell unit.",
+    "Dreadwave Devourer (\"Negate target spell effect\") cannot target an Ambush on the stack, and the Ambush resolves.",
+    "A spell unit and a spell token on the stack are spell effects; an Ambush is not."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -19242,12 +19255,13 @@
    "sectionTitle": "General",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "700.1",
-   "text": "A nonspell effect is any effect that is not a spell effect: a triggered ability, an activated ability, a Virus being applied, or a unit on the stack.",
+   "text": "A nonspell effect is any effect that is not a spell effect: a triggered ability, an activated ability, a Virus being applied, a unit on the stack, or an Ambush.",
    "see": [],
    "examples": [
-    "Nothyr (\"negate up to one target nonspell effect\") can choose a {Battle} unit on the stack."
+    "Nothyr (\"negate up to one target nonspell effect\") can choose a {Battle} unit on the stack.",
+    "Nothyr can also choose an Ambush on the stack."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -20214,11 +20228,15 @@
    "sectionTitle": "Casting Spells",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "702",
-   "text": "X is chosen when the card is played, before it is put on the stack. Only values the player can pay may be chosen, and responses see the X already fixed.",
+   "text": "X is chosen when the card is played, before it is put on the stack. Only values the player can pay may be chosen, and responses see the X already fixed. When X counts targets (\"X target units\"), all X targets are required: only an X that many legal targets can fill may be chosen, and at X = 0 the card needs no target.",
    "see": [
     "107"
    ],
-   "examples": [],
+   "examples": [
+    "Blight's End (\"Augment a Wight onto X target units\") with one unit in the battle offers X of 0 or 1, and at X = 1 it must take that unit.",
+    "Blight's End cast for X = 2 with two units asks for both and never offers a stop after one.",
+    "Torrential Reclamation (\"Recall X target nontoken allies\") with no ally in the fight can be cast only for X = 0."
+   ],
    "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
@@ -20368,15 +20386,17 @@
    "sectionTitle": "Casting Spells",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "702",
-   "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others.",
+   "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. Every target is required unless the card says \"up to\" or \"any number\". A triggered ability's targets are required in the same way: if a legal target exists, it must take one, even one of its controller's own units. A triggered ability that says \"you may\" may instead be declined as a whole.",
    "see": [
     "110"
    ],
    "examples": [
     "Fight cannot be played unless the region holds an ally and another unit.",
-    "Tidal Reversion cannot be played while one player has no unit to recall."
+    "Tidal Reversion cannot be played while one player has no unit to recall.",
+    "Unstable Singularity (\"When I die, Delete target unit.\") dies in deployment with only its controller's other unit on the board: its trigger must target that unit, with no option to choose none, and deletes it.",
+    "Shoreline Specter (\"After combat, you may recall target ally. If you do, each opponent loses 2 life.\") may decline the recall, and then no opponent loses life."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -34115,17 +34135,18 @@
    "sectionTitle": "Other Keyword Abilities",
    "chapterTitle": "8. Keywords",
    "parent": "803.6",
-   "text": "An Ambush on the stack counts as a spell effect, so an effect that negates spell effects can negate it. A negated Ambush puts its ambushing card into the bin.",
+   "text": "An Ambush on the stack is not a spell effect: the card played as an Ambush is a unit, not a spell. An effect that targets, negates or recalls spell effects cannot affect it, but one that names an effect, or a nonspell effect, can. A negated Ambush puts its ambushing card into the bin.",
    "see": [
     "700.1a",
     "704.4a"
    ],
    "examples": [
-    "Nothyr, which negates only nonspell effects, cannot target an Ambush on the stack: an Ambush is on the spell side.",
+    "Nothyr (\"negate up to one target nonspell effect\") can target an Ambush on the stack and negate it; the ambushing card goes to the bin.",
     "Void Mandible negates an Ambush on the stack: the ambusher never takes the slot and its target is not recalled.",
-    "Dreadwave Devourer, which negates a target spell effect, can target an Ambush on the stack; negated, the ambusher goes to its bin and its target is not recalled."
+    "Dreadwave Devourer, which negates a target spell effect, cannot target an Ambush on the stack, and the Ambush resolves.",
+    "Cosmic Reversal (\"Recall all other spell effects and spell units\") recalls a spell on the stack and leaves an Ambush beside it, which then resolves."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -36711,7 +36732,7 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1.2",
-   "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them, and a defender with no unit in the battle region has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
+   "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them; a lone counterattacker with no spell token to ride along has its one-unit formation declared (see rule D1.2c); and a defender with no unit in the battle region, or facing an attack with no attacking unit left and unable to send a counterattacker, has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
    "see": [
     "610",
     "D1.2c",
@@ -36719,8 +36740,10 @@
     "D1.2e",
     "D2.7"
    ],
-   "examples": [],
-   "basis": "engine",
+   "examples": [
+    "In round 2 the lone counterattacker is destroyed before blocks: the initiative player's empty block is declared for them, though they have a unit in the region."
+   ],
+   "basis": "mixed",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [
@@ -36738,16 +36761,17 @@
    "sectionTitle": "General and Precedence",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D1.2",
-   "text": "In round 2, a counterattack pool that holds exactly one unit, and no spell token that could ride along, declares the one-unit formation by itself. Engine differs, see F-U23-4.",
+   "text": "In round 2, a counterattack pool that holds exactly one unit able to attack, and no spell token that could ride along, declares the one-unit formation by itself: the unit must attack, and one unit has only one shape.",
    "see": [
     "610"
    ],
    "examples": [
-    "A player who sent one unit to counterattack, and no spell token, is not asked to form it: the one-unit formation is declared for them."
+    "A player who sent one unit to counterattack, and no spell token, is not asked to form it: the one-unit formation is declared for them.",
+    "With a spell token that could ride along, the player is asked whether it comes, and still may not decline."
    ],
    "basis": "owner",
    "scope": "digital",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U13-3"
    ],
@@ -38113,7 +38137,7 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4.1",
-   "text": "Actions taken in battle are not undone. For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net.",
+   "text": "Actions taken in battle are not undone, except the steps of a cast that has not yet gone on the stack (see rule D4.2). For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net.",
    "see": [
     "D7"
    ],
@@ -38139,12 +38163,37 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4",
-   "text": "A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled. A Burst group is cancelled whole.",
+   "text": "A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled, in battle as well. A Burst group is cancelled whole, with Start over.",
    "see": [
     "702",
     "803"
    ],
    "examples": [],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D4.2a",
+   "key": "annexd.undo.cast-cancel.burst-step",
+   "title": null,
+   "section": "D4",
+   "sectionTitle": "Undo",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D4.2",
+   "text": "While the order of a Burst group is being chosen, its caster may also take back one step at a time with Undo last pick: the last token picked, or the last aim chosen. The earlier picks stand. Undo last pick is offered once a token has been picked, and only the caster can take a step back.",
+   "see": [
+    "803"
+   ],
+   "examples": [
+    "The caster picks which Fireball resolves first, then takes the pick back: the question \"which resolves first?\" returns with nothing picked, and nothing is on the stack.",
+    "After picking and aiming the first Fireball, one step back returns to aiming it; the pick stands.",
+    "The opponent's undo cannot reach into the burst."
+   ],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
@@ -38948,6 +38997,31 @@
    ],
    "examples": [],
    "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D6.2e",
+   "key": "annexd.reveal.glimpse.deck-reveal",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6.2",
+   "text": "A card that reveals cards from the deck without the Glimpse keyword, such as Tides of the Cosmos or Big Glimpse Card, shows the revealed cards to every player as cards, in the notice a glimpse uses. A player whose own open question already shows those cards is not shown the notice. Inside a hidden step the reveal is held for the reveal at the end of the step, as a glimpse is.",
+   "see": [
+    "D6.2c",
+    "402.2a"
+   ],
+   "examples": [
+    "Tides of the Cosmos resolves for one player: the other player is shown all eight revealed cards.",
+    "Big Glimpse Card: while the opponent splits the seven cards into piles, its caster is shown all seven."
+   ],
+   "basis": "engine",
    "scope": "digital",
    "engineDiffers": false,
    "discrepancies": [],
@@ -42518,7 +42592,7 @@
    "term": "Spell effect",
    "key": "glossary.spell-effect",
    "obsolete": false,
-   "text": "An effect that is a spell: a spell, a spell unit or a spell token on the stack, or an ambush.",
+   "text": "An effect that is a spell: a spell, a spell unit or a spell token on the stack.",
    "see": [
     "700.1a"
    ]

@@ -99,10 +99,10 @@
   },
   {
     "id": "D-U11-6",
-    "kind": "b-engine-only",
+    "kind": "c-owner-call-only",
     "rule": "combat.blocks.empty-attack",
-    "tier": 3,
-    "summary": "That the block step still takes place when every attacking unit has gone before blocks is stated only by a test. The Manual says the attacking player stays present after its units are removed, but not whether the block step happens.",
+    "tier": 2,
+    "summary": "Whether a block step happens when every attacking unit has gone before blocks was stated only by a test. The Manual says the attacking player stays present after its units are removed, but not whether anything can be blocked.",
     "sides": [
       {
         "source": "Manual p.19",
@@ -111,9 +111,13 @@
       {
         "source": "file: client/ui/test/53-playtest-round7.test.ts",
         "quote": "CR 606.2f: an attack that has collapsed to nothing still lets the defender declare"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-16",
+        "quote": "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block"
       }
     ],
-    "resolution": "The rule is basis engine and awaits owner sign-off (Annex P). It matters because the defending player may still want to side-block or send counterattackers."
+    "resolution": "Settled by the owner on 2026-10-16 (CT-297): no unit may block an emptied attack, head-on or to the side, but counterattackers may still be sent in round 1. combat.blocks.empty-attack (basis owner) and combat.blocks.side state it; the engine agrees (479, 53)."
   },
   {
     "id": "D-U11-7",

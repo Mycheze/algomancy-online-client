@@ -2064,16 +2064,29 @@
     "key": "concepts.targets.what.up-to",
     "parent": "concepts.targets.what",
     "order": 3,
-    "text": "\"Up to N target\" lets the player choose any number of targets from none to N.",
+    "text": "\"Up to N target\" lets the player choose any number of targets from none to N, and \"any number of target\" lets the player choose none as well. Only such words make a target optional: without them every target is required (see rule concepts.targets.required).",
     "examples": [
       {
         "text": "Twin Flame (\"up to two target units\") can be played with no targets.",
         "test": "21-fixes.test.ts::CR 110.1c: an \"up to\" spell may decline every target"
+      },
+      {
+        "text": "Tilling the Graves (\"Recall two target units in your bin\") says no \"up to\": once cast, it asks for both units and offers no way to stop at one.",
+        "test": "478-required-targets-at-cast.test.ts::Tilling the Graves with two units in the bin is offered and asks for both with no stop"
+      },
+      {
+        "text": "Penance (\"Any number of target players each lose 1 life. Draw a card.\") may be played with no target, and its caster still draws.",
+        "test": "38-light-a.test.ts::Penance: with no targets declared (min 0) the draw still happens"
       }
     ],
     "see": [],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Penance",
+          "quote": "Any number of target players each lose 1 life."
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -2081,17 +2094,30 @@
           "quote": "\"up to N\" means you may declare NONE",
           "adopted": "2026-08-24",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Unless a card says \"up to\", it must have targets in order to be cast.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-305 (in session)"
+        },
+        {
+          "quote": "Yes, otherwise it'd say \"up to two\"",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-299, Tilling the Graves needing both targets (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "21-fixes.test.ts"
+        "21-fixes.test.ts",
+        "478-required-targets-at-cast.test.ts",
+        "477-target-minimum-sweep.test.ts",
+        "38-light-a.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Second sentence: CT-299/CT-305, owner 2026-10-16. Penance cited for \"any number\" after the round-4 verifier found that clause unsourced.",
     "sourceHashes": {}
   },
   {
@@ -3020,7 +3046,7 @@
     "key": "concepts.targets.required",
     "parent": "110",
     "order": 7,
-    "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. A card that targets nothing has no such requirement.",
+    "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. Every target a card names is required unless the card says \"up to\" or \"any number\" (see rule concepts.targets.what.up-to). A card that targets nothing has no such requirement.",
     "examples": [
       {
         "text": "Fight cannot be played unless its region holds an ally and another unit.",
@@ -3033,6 +3059,10 @@
       {
         "text": "Abduct (\"Gain control of target unit with cost [x] or less …\") against a lone cost-1 attacker can be played when its caster can pay an X of 1 or more. X = 0 is not offered, since at 0 there is no unit to take.",
         "test": "452-abduct-x-gate.test.ts::Abduct is castable against a cost-1 attacker, its X menu starts at 1, and control flips"
+      },
+      {
+        "text": "Tilling the Graves (\"Recall two target units in your bin\") cannot be played while its caster's bin holds fewer than two units.",
+        "test": "478-required-targets-at-cast.test.ts::Tilling the Graves is not offered with"
       }
     ],
     "see": [
@@ -3056,6 +3086,16 @@
           "quote": "A spell or ability that needs targets can be played only when **every required",
           "adopted": "2026-10-09",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Unless a card says \"up to\", it must have targets in order to be cast.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-305 (in session)"
+        },
+        {
+          "quote": "Yes, otherwise it'd say \"up to two\"",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-299, Tilling the Graves needing both targets (in session)"
         }
       ],
       "engine": [],
@@ -3063,13 +3103,15 @@
         "390-raq-stack.test.ts",
         "396-raq-timing.test.ts",
         "401-raq-fix-stack.test.ts",
-        "452-abduct-x-gate.test.ts"
+        "452-abduct-x-gate.test.ts",
+        "478-required-targets-at-cast.test.ts",
+        "477-target-minimum-sweep.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "CT-299/CT-305 (2026-10-16): the owner made every un-\"up to\" target required (\"Unless a card says \\\"up to\\\", it must have targets in order to be cast\"); Tilling the Graves needs both.",
     "sourceHashes": {
       "RAQ 1410252965276684418#1": "e360e6a86909cef31daa2244e8da43a0e668b372e706c45aba749e3728522bea",
       "RAQ 1454169054402314362#1": "e3eaa692bd1e8228402516f598571780911a7bff2101b2445bcf4ac14055a0a1"

@@ -79,19 +79,27 @@
     "id": "D-U21-7",
     "kind": "c-owner-call-only",
     "rule": "keywords.abilities.ambush.spell-effect",
-    "tier": 3,
-    "summary": "The owner ruling of 2026-08-18 (“Ambush details”) labels two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counts as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot.",
+    "tier": 2,
+    "summary": "The owner ruling of 2026-08-18 (“Ambush details”) labelled two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counted as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot. The first was contradicted by the designer.",
     "sides": [
       {
         "source": "owner ruling, adopted 2026-08-18",
-        "quote": "an ambush on the stack counts as a \"spell effect\" for negation targeting (Dreadwave"
+        "quote": "the slot exactly (including a blocking slot). (Engine 2026-07-16.)"
       },
       {
-        "source": "owner ruling, adopted 2026-08-18",
-        "quote": "the slot exactly (including a blocking slot). (Engine 2026-07-16.)"
+        "source": "RQ 1127377066195697725",
+        "quote": "You can't counter it with cosmic denial because it's not a spell"
+      },
+      {
+        "source": "RQ 1138951204257402973",
+        "quote": "Not unless they say so. Spell is a card type"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-16",
+        "quote": "If Caleb says its not a spell, it's not a spell and we need to fix that."
       }
     ],
-    "resolution": "Stated with basis owner (803.6h; the slot half sits in 803.6e beside the printed \"their position in play\"). Question for the owner only if a judge's CR treats an Ambush as a non-spell effect."
+    "resolution": "Settled by the designer (RQ 1127377066195697725, RQ 1138951204257402973): an Ambush is not a spell. The owner adopted it on 2026-10-16 (report #218), and keywords.abilities.ambush.spell-effect, effects.general.effect.spell-effect and effects.general.effect.nonspell-effect now state it; the engine agrees (475, 476). The slot half is unchanged in 803.6e."
   },
   {
     "id": "D-U21-8",

@@ -703,29 +703,46 @@
   },
   {
     "key": "combat.counterattack.round-two.attackers",
-    "textHash": "a75e2801d98a4544",
+    "textHash": "b0d3a26941574c1c",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U13-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:endBattleRound",
+        "loc": "client/engine/src/apply.ts:counterattackersOwed",
         "agrees": true,
-        "note": "if round 1 happened, round-2 attackerPool = the sent counterattackers"
+        "note": "owed = pool units still in the region and not lured"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "any shape accepted provided every owed unit is placed"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/32-cast-costs.test.ts",
-        "pattern": "forcedAction: a single sent counterattacker",
+        "file": "32-cast-costs.test.ts",
+        "pattern": "forcedAction: a single sent counterattacker IS auto-formed",
         "passed": true,
-        "asserts_claim": "yes: NIT sent Conduit of Pain; in round 2 attacker is D and attackerPool is exactly [the Conduit]; attacking with it is legal"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/02-combat.test.ts",
-        "pattern": "1v1 counterattack: NIT sends units at block time",
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined",
         "passed": true,
-        "asserts_claim": "supporting: a non-sent unit staying home is refused as a round-2 attacker"
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-251 a lone sent counterattacker is formed for the player and one that died on arrival is owed nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -733,27 +750,46 @@
       {
         "ref": "Manual p.20",
         "supports": "yes",
-        "note": "Phase 2: '1. The NIT puts their attacking units into formation.'"
+        "note": ""
       },
       {
         "ref": "Manual p.27",
         "supports": "yes",
-        "note": "'1. NIT attack IT regions with units sent in Phase 1'"
+        "note": ""
       },
       {
-        "ref": "R15",
+        "ref": "Rulebook 2023 p.5",
         "supports": "yes",
-        "note": "'If a round-1 battle happened, round-2 attackers are exactly the units sent at block time'"
+        "note": "counterattacking units are put into formation in the second part"
+      },
+      {
+        "ref": "RQ 1171229657740345384",
+        "supports": "yes",
+        "note": "author calebgannon; send units over and pick the formation later"
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-18)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner report round 2026-10-16 b, CT-298 (both quotes)",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.s.battle!.attackerPool = b.sentAttackers;"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "for quality of life right now I'm allowing players to send units over, and then pick the formation later with counter attacks"
       },
       {
-        "file": "client/engine/test/32-cast-costs.test.ts",
-        "text": "assert.deepEqual(b.attackerPool, [d1], 'the pool holds exactly the sent unit');"
+        "file": "client/engine/src/apply.ts",
+        "text": "return e.unitsOf(seat, b.region).filter(u => pool.includes(u.id) && !u.allured).map(u => u.id);"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "1. NIT attack IT regions with units sent in Phase 1"
       }
     ],
     "basis_ok": true,
@@ -804,21 +840,32 @@
   },
   {
     "key": "combat.counterattack.round-two.may-decline",
-    "textHash": "0e0bac1511e9c658",
+    "textHash": "d1a132a8d62dc32f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U13-r1",
+    "round": 4,
+    "verifier": "U13-r4",
     "engine": [
       {
-        "loc": "apply.ts:doDeclareAttack",
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
         "agrees": true,
-        "note": "empty columns -> endBattleRound -> startRegroup, no openPriority"
+        "note": "needWholePool refuses an empty declaration only while counterattackersOwed is non-empty"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "a declined round 2 goes to regroup with no window"
       }
     ],
     "tests_run": [
       {
-        "file": "32-cast-costs.test.ts",
-        "pattern": "forcedAction: a single sent counterattacker is NOT auto-formed",
+        "file": "424-cr-after-combat.test.ts",
+        "pattern": "cr:combat.counterattack.round-two.may-decline",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-298 a second round after a first round with no attack is a fresh attack and may still be declined",
         "passed": true,
         "asserts_claim": true
       },
@@ -827,36 +874,48 @@
         "pattern": "[CT-55] the premise: a round-2 defender really is holding castable tokens when the attacker declines",
         "passed": true,
         "asserts_claim": true
-      }
-    ],
-    "probes": [
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
-        "title": "combat.counterattack.round-two.may-decline: declining with a sent unit opens no window and ends the battle phase",
+        "file": "32-cast-costs.test.ts",
+        "pattern": "(whole file)",
         "passed": true,
-        "demonstrates": "yes"
+        "asserts_claim": false
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R194",
+        "ref": "Manual p.20",
         "supports": "yes",
-        "note": "owner-call basis per the pack: a round-2 decline takes every window away"
+        "note": "Phase 2 begins with NIT putting its attacking units into formation"
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-26)",
+        "supports": "yes",
+        "note": "a round-2 decline takes every window away"
+      },
+      {
+        "ref": "owner report round 2026-10-16 b, CT-298",
+        "supports": "yes",
+        "note": "a sent counterattacker must be put into formation"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "* So a round-2 decline is the whole difference between a live Fireball and"
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!owed || !owed.length) return;"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.ev('info', `${e.pname(seat)} does not attack.`);"
+        "file": "client/engine/test/424-cr-after-combat.test.ts",
+        "text": "'no decline with a living counterattack pool');"
+      },
+      {
+        "file": "client/ui/test/165-token-loss-warning.test.ts",
+        "text": "assert.notEqual(h.state.phase, 'battle', 'a declined round 2 goes straight to regroup');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.counterattack.round-two.no-counter",

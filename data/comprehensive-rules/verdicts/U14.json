@@ -1285,15 +1285,25 @@
   },
   {
     "key": "effects.casting.targets-required",
-    "textHash": "7f404023f53a1762",
+    "textHash": "b56ef2c60db88b6f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:requiredSlotsFillable",
+        "loc": "client/engine/src/apply.ts:castable",
         "agrees": true,
-        "note": "castable() searches all required slots with distinct legal targets"
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.requiredSlotsFillable",
+        "agrees": true,
+        "note": "every required slot, distinct"
+      },
+      {
+        "loc": "client/engine/src/cards/dsl.ts:TargetSpec.min / requiresTargets",
+        "agrees": true,
+        "note": "trigger without up to has min >= 1; 'you may' trigger excused (477)"
       }
     ],
     "tests_run": [
@@ -1310,8 +1320,26 @@
         "asserts_claim": true
       },
       {
-        "file": "401-raq-fix-stack.test.ts",
-        "pattern": "R323",
+        "file": "477-target-minimum-sweep.test.ts",
+        "pattern": "a must-target trigger with only the controllers own units as targets picks one of them",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "477-target-minimum-sweep.test.ts",
+        "pattern": "every target spec that may stop short of its slots prints up to, any number, or a trigger may",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "182-correctness-sample.test.ts",
+        "pattern": "Shoreline Specter: DECLINE the recall and the 2-life drain does not happen",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "478-required-targets-at-cast.test.ts",
+        "pattern": "Tilling the Graves",
         "passed": true,
         "asserts_claim": true
       }
@@ -1319,35 +1347,56 @@
     "probes": [],
     "source_checks": [
       {
+        "ref": "card: Shoreline Specter",
+        "supports": "yes",
+        "note": "printed: '[Augment] After combat, you may recall target ally. If you do, each opponent loses 2 life.'"
+      },
+      {
         "ref": "RAQ 1410252965276684418#0",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "_passer, Resurrect"
       },
       {
         "ref": "RAQ 1410252965276684418#1",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "_passer, Fight"
       },
       {
         "ref": "RAQ 1410252965276684418#3",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "Caleb, Tidal Reversion"
       },
       {
-        "ref": "R323",
+        "ref": "owner register@72de434 (2026-10-09)",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": ""
+      },
+      {
+        "ref": "owner CT-305 2026-10-16 (x2)",
+        "supports": "yes",
+        "note": "triggers without up to MUST target, even own units"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A spell or ability that needs targets can be played only when **every required"
+        "file": "client/engine/src/apply.ts",
+        "text": "if (eff.targets && requiresTargets(eff.targets)\n    && !e.requiredSlotsFillable(eff.targets, region, seat, undefined, castXChoices(e, c, region, seat, reserve, fixedX))) {"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)\n        .filter(c => !taken.has(JSON.stringify(c)));"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "calebgannon (screenshot, 2025-03-16): \\\"You can't play it if one player doesn't have a valid target\\\""
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "After combat, you may recall target ally."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.casting.targets-required.graft-trigger",
@@ -1429,21 +1478,61 @@
   },
   {
     "key": "effects.casting.x",
-    "textHash": "4daccca8b61765e0",
+    "textHash": "3fa179e6a9528b57",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:collectX",
+        "loc": "client/engine/src/engine.ts:E.collectX",
         "agrees": true,
-        "note": "X asked from affordable values in the cast window before push"
+        "note": "X asked at cast before the push, menu = payable (manaXChoices) filtered by requiredSlotsFillable"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.requiredSlotsFillable",
+        "agrees": true,
+        "note": "min 'X' requires every counted slot; X = 0 fillable at nothing"
+      },
+      {
+        "loc": "client/engine/src/cards/dsl.ts:targetMinimum",
+        "agrees": true,
+        "note": "min 'X' -> all slots"
       }
     ],
     "tests_run": [
       {
-        "file": "13-fire-b.test.ts",
-        "pattern": "Wildfire: X is chosen and paid AT CAST",
+        "file": "478-required-targets-at-cast.test.ts",
+        "pattern": "Blight End with one unit in the battle offers X up to 1 only",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "478-required-targets-at-cast.test.ts",
+        "pattern": "Blight End with two units asks for both at X = 2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "478-required-targets-at-cast.test.ts",
+        "pattern": "Torrential Reclamation with no ally in the fight is castable at X = 0 only",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "Wildfire: X is chosen at cast from affordable values, paid, and stored on the item",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "146-report-guards.test.ts",
+        "pattern": "#43 a cast X reaches the REAL stack wearing its number",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "477-target-minimum-sweep.test.ts",
+        "pattern": "the X target spells require every X",
         "passed": true,
         "asserts_claim": true
       }
@@ -1451,15 +1540,28 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R35 (its spell-cost half)",
+        "ref": "owner register@72de434 (2026-08-18)",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "affordable values offered BEFORE the spell reaches the stack"
+      },
+      {
+        "ref": "owner CT-305 2026-10-16",
+        "supports": "yes",
+        "note": "without 'up to' targets are required"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "affordable values are offered) BEFORE the spell reaches the stack, the"
+        "file": "client/engine/src/engine.ts",
+        "text": "const aimable = sized\n      ? payable.filter(x => this.requiredSlotsFillable(sized, item.region, item.controller, item.sourceId, [x]))\n      : payable;"
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "return spec.min === 'X' ? max : Math.min(spec.min ?? 1, max);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "prompt: `${item.card}: choose X (paid now)`, options,"
       }
     ],
     "basis_ok": true,
@@ -1686,15 +1788,20 @@
   },
   {
     "key": "effects.general.effect.nonspell-effect",
-    "textHash": "af9fd7891c26c0ae",
+    "textHash": "8390ee75ec8267a1",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:targetCandidates (stackEffect / Nothyr restrict)",
+        "loc": "client/engine/src/cards/dsl.ts:isSpellEffect / isPlayedSpellKind",
         "agrees": true,
-        "note": "Nothyr restrict is the complement of spell/spellUnit/spellToken/ambush, so triggered, activated, virus and unit items qualify"
+        "note": "spell effect = spell/spellUnit/spellToken; every other stack kind (unit, virus, triggered, activated, ambush) is nonspell"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Nothyr",
+        "agrees": true,
+        "note": "restrict = !isSpellEffect(kind), the complement"
       }
     ],
     "tests_run": [
@@ -1703,37 +1810,82 @@
         "pattern": "Nothyr's \"target nonspell effect\" reaches a unit on the stack",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "114-literal-dark.test.ts",
+        "pattern": "Nothyr: an AMBUSH is a nonspell effect",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "475-ambush-is-not-a-spell.test.ts",
+        "pattern": "Nothyr negates an Ambush",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "476-ambush-spell-sweep.test.ts",
+        "pattern": "the predicate: an Ambush is not a spell effect",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R128",
+        "ref": "RQ 1127377066195697725",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "calebgannon, answering Q4 'do Ambush cards go on the stack and can I counter them with Cosmic Denial'"
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-24)",
+        "supports": "yes",
+        "note": "nonspell is the complement and gains the plain unit"
+      },
+      {
+        "ref": "owner report #218 2026-10-16",
+        "supports": "yes",
+        "note": "Ambush not a spell"
+      },
+      {
+        "ref": "engine (476 predicate test)",
+        "supports": "yes",
+        "note": "virus/triggered/activated/unit/ambush all non-spell"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**\"Target NONSPELL effect\" is the complement, so it GAINS the plain unit.**"
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "text": "return !!it && !isSpellEffect(it.kind);   // CR 700.1b: the complement"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "4.) You can't counter it with cosmic denial because it's not a spell"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.general.effect.spell-effect",
-    "textHash": "a4a65c845f4bce7a",
+    "textHash": "a5f493caeedd33db",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:targetCandidates (stackSpell)",
+        "loc": "client/engine/src/cards/dsl.ts:isSpellEffect",
         "agrees": true,
-        "note": "spell/spellUnit/spellToken/ambush only"
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.targetFamilyCandidates (stackSpell)",
+        "agrees": true,
+        "note": "stackSpell keeps only isSpellEffect items"
       }
     ],
     "tests_run": [
@@ -1742,30 +1894,59 @@
         "pattern": "\"target spell effect\" refuses a plain unit but takes a spell unit",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "432-cr-keyword-abilities.test.ts",
+        "pattern": "cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "476-ambush-spell-sweep.test.ts",
+        "pattern": "the predicate: an Ambush is not a spell effect, a spell unit and a spell token are",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R128",
+        "ref": "RQ 1127377066195697725",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "Caleb: Ambush cannot be Cosmic Denial'd, not a spell"
       },
       {
-        "ref": "R128",
+        "ref": "RQ 1138951204257402973",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "Caleb, answering 'Are units spells?': 'Not unless they say so. Spell is a card type'"
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-24)",
+        "supports": "yes",
+        "note": "units aren't spells; spell effect leaves them unaffected"
+      },
+      {
+        "ref": "owner report #218 2026-10-16",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "spell token / ambush. A plain unit is not a spell, so the three cards that print"
+        "file": "client/engine/src/engine.ts",
+        "text": "if (spec.what === 'stackSpell' ? spellish : true) out.push({ stack: it.id });"
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "4.) Not unless they say so. Spell is a card type"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.general.interaction",

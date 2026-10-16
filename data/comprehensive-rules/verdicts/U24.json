@@ -4215,6 +4215,101 @@
     "carried": "example-label 2026-10-11"
   },
   {
+    "key": "annexd.reveal.glimpse.deck-reveal",
+    "textHash": "3db36168afee6143",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Tides of the Cosmos",
+        "agrees": true,
+        "note": "emits typed public 'revealed' with chooser only when the pick is asked"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-ld-a.ts:Big Glimpse Card",
+        "agrees": true,
+        "note": "chooser = the splitting opponent"
+      },
+      {
+        "loc": "client/ui/reveal.ts:glimpseNotice",
+        "agrees": true,
+        "note": "draws glimpsed and revealed alike; skips the chooser"
+      },
+      {
+        "loc": "client/server/rooms.ts:applyToRoom",
+        "agrees": true,
+        "note": "every event of a hidden step held for the barrier, by no type"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "481-public-deck-reveal.test.ts",
+        "pattern": "Tides of the Cosmos for one seat shows the other seat all 8 cards in the notice",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "481-public-deck-reveal.test.ts",
+        "pattern": "Tides of the Cosmos with nothing it may play shows the caster the cards too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "481-public-deck-reveal.test.ts",
+        "pattern": "Big Glimpse Card shows the caster all 7 in the notice while the opponent splits",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "481-public-deck-reveal.test.ts",
+        "pattern": "every card that reveals deck cards without the Glimpse keyword emits the typed reveal",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "481-public-deck-reveal.test.ts",
+        "pattern": "no hidden-step runner treats a glimpse or a reveal specially",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "CR D6.1: of everything a hidden step emits, nothing reaches the other seat before the barrier",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "engine basis (Annex D)",
+        "supports": "yes",
+        "note": "no printed/designer/owner source by design; ui + server code and executed tests demonstrate every sentence; the hold sentence rests on the type-agnostic hold (rooms.ts) plus 481 section 4 and 203's every-event-type measurement"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/reveal.ts",
+        "text": "const shownTo = ev.type === 'glimpsed' ? seat : ev.data?.['chooser'];"
+      },
+      {
+        "file": "client/ui/reveal.ts",
+        "text": "if (ev.type !== 'glimpsed' && ev.type !== 'revealed') continue;"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-water-b.ts",
+        "text": "g.ev('revealed', `Tides of the Cosmos reveals: ${top.join(', ')}.`, {"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "// CR D6.1a, D6.2: EVERY event of a hidden step is held for the barrier, a reveal included"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.reveal.glimpse.learn-to-play",
     "textHash": "34c330cb95c42e40",
     "verdict": "confirmed",

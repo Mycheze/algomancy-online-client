@@ -140,7 +140,7 @@
     "key": "annexd.general.player-decides.forced",
     "parent": "annexd.general.player-decides",
     "order": 2,
-    "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them, and a defender with no unit in the battle region has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
+    "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them; a lone counterattacker with no spell token to ride along has its one-unit formation declared (see rule annexd.general.player-decides.forced.lone-counterattacker); and a defender with no unit in the battle region, or facing an attack with no attacking unit left and unable to send a counterattacker, has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
     "examples": [
       {
         "text": null,
@@ -153,6 +153,10 @@
       {
         "text": null,
         "test": "273-full-control-both-seats.test.ts::BL-18 §2 with full control ON the drain stops and the player is left the window"
+      },
+      {
+        "text": "In round 2 the lone counterattacker is destroyed before blocks: the initiative player's empty block is declared for them, though they have a unit in the region.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-297 an emptied counterattack in round 2 leaves the defender nothing to declare"
       }
     ],
     "see": [
@@ -176,6 +180,11 @@
           "quote": "automatics are decided, and the server's `forcedAction` drain reads one per-seat",
           "adopted": "2026-09-01",
           "from": "questions-round36 Q5; register@72de434"
+        },
+        {
+          "quote": "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-297 (in session)"
         }
       ],
       "engine": [
@@ -184,28 +193,29 @@
       "tests": [
         "21-fixes.test.ts",
         "273-full-control-both-seats.test.ts",
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "mixed",
     "scope": "digital",
     "confidence": "high",
-    "notes": "Which actions are forced is engine-only (D-U23-21): the verifier measured apply.ts forcedAction forcing only the empty declareAttack (no eligible attacker) and the empty declareBlocks (defender has no unit in the region), and main.ts drainForced applying them through applyToRoom (logged) and stopping for a seat under full control ('if (room.fullControl[f.seat as Seat]) break;'). The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) supports 'logged like any other'; the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) supports full control outranking the drain. The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s own case, the lone round-2 counterattacker, is the sub-rule and is stated as the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) rules it (engine differs, F-U23-4). Other one-option choices are not forced actions: a lone target is still a click (forced-target) and a lone non-target subject is recorded without asking (one-subject). Round 2: narrowed from 'where a player has only one possible action', which the verifier's probe forced-target.test.ts disproved. Engine location outside engine/src: client/server/main.ts drainForced.",
+    "notes": "Which actions are forced is engine-only (D-U23-21): the verifier measured apply.ts forcedAction forcing only the empty declareAttack (no eligible attacker) and the empty declareBlocks (defender has no unit in the region), and main.ts drainForced applying them through applyToRoom (logged) and stopping for a seat under full control ('if (room.fullControl[f.seat as Seat]) break;'). The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) supports 'logged like any other'; the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) supports full control outranking the drain. The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s own case, the lone round-2 counterattacker, is the sub-rule and is stated as the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) rules it (engine differs, F-U23-4). Other one-option choices are not forced actions: a lone target is still a click (forced-target) and a lone non-target subject is recorded without asking (one-subject). Round 2: narrowed from 'where a player has only one possible action', which the verifier's probe forced-target.test.ts disproved. Engine location outside engine/src: client/server/main.ts drainForced. 2026-10-16: the lone counterattacker is forced again (CT-251), and the emptied-attack block is forced where nothing can be sent (CT-297, the owner: no blocking can occur).",
     "sourceHashes": {}
   },
   {
     "key": "annexd.general.player-decides.forced.lone-counterattacker",
     "parent": "annexd.general.player-decides",
     "order": 2.5,
-    "text": "In round 2, a counterattack pool that holds exactly one unit, and no spell token that could ride along, declares the one-unit formation by itself. Engine differs, see F-U23-4.",
+    "text": "In round 2, a counterattack pool that holds exactly one unit able to attack, and no spell token that could ride along, declares the one-unit formation by itself: the unit must attack, and one unit has only one shape.",
     "examples": [
       {
         "text": "A player who sent one unit to counterattack, and no spell token, is not asked to form it: the one-unit formation is declared for them.",
-        "test": null
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — a lone sent counterattacker with no token is formed for the player"
       },
       {
-        "text": null,
-        "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — the engine still asks a lone sent counterattacker with no token to declare (engine differs)"
+        "text": "With a spell token that could ride along, the player is asked whether it comes, and still may not decline.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-251 a lone counterattacker with a ridable token is asked, but still may not decline"
       }
     ],
     "see": [
@@ -225,22 +235,26 @@
           "quote": "that could ride along, the only-unit formation is auto-declared (a forced",
           "adopted": "2026-08-18",
           "from": "register@72de434"
+        },
+        {
+          "quote": "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 (in session)"
         }
       ],
       "engine": [
         "apply.ts:forcedAction"
       ],
       "tests": [
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "32-cast-costs.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "States the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”), which the register still shows as current. The verifier measured that the engine removed this branch on 2026-08-24 (decisions-for-the-player audit: declining is a real choice). F-U23-4, D-U23-17.",
-    "engineDiffers": [
-      "F-U23-4"
-    ],
+    "notes": "The owner ruling of 2026-08-18 holds again (CT-251): the 2026-08-24 audit removed the auto-form because a decline was then still offered; the owner's 2026-10-16 call (a sent counterattacker must attack) removed the decline, so nothing is left to decide. F-U23-4/7/8 closed.",
     "sourceHashes": {}
   },
   {
@@ -2611,7 +2625,7 @@
     "key": "annexd.undo.hidden-step.battle",
     "parent": "annexd.undo.hidden-step",
     "order": 3,
-    "text": "Actions taken in battle are not undone. For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net.",
+    "text": "Actions taken in battle are not undone, except the steps of a cast that has not yet gone on the stack (see rule annexd.undo.cast-cancel). For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net.",
     "examples": [
       {
         "text": null,
@@ -2661,18 +2675,22 @@
     "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "The confirmation's answers are the owner's call (O4). That battle actions are not undone is still engine-derived (373; D-U23-11). Which costs ask is the client's split, shown over the pool by 456 §1.",
+    "notes": "The confirmation's answers are the owner's call (O4). That battle actions are not undone is still engine-derived (373; D-U23-11). Which costs ask is the client's split, shown over the pool by 456 §1. The exception points at D4.2 (BL-47, 2026-10-16).",
     "sourceHashes": {}
   },
   {
     "key": "annexd.undo.cast-cancel",
     "parent": "D4",
     "order": 2,
-    "text": "A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled. A Burst group is cancelled whole.",
+    "text": "A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled, in battle as well. A Burst group is cancelled whole, with Start over.",
     "examples": [
       {
         "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.undo.cast-cancel — a cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack"
+      },
+      {
+        "text": null,
+        "test": "358-burst-order-ui.test.ts::§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over"
       }
     ],
     "see": [
@@ -2702,13 +2720,15 @@
       ],
       "engine": [],
       "tests": [
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "358-burst-order-ui.test.ts",
+        "483-burst-undo-one-step.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-10-04 (“Seeing hidden cards ends your undo”) says the pre-commit chain gets no reveal floor; the owner ruling of 2026-10-01 (“The caster orders a Burst, one…”) that a burst cancels whole. That a pre-commit cast is cancellable at all is presupposed by both.",
+    "notes": "The owner ruling of 2026-10-04 (“Seeing hidden cards ends your undo”) says the pre-commit chain gets no reveal floor; the owner ruling of 2026-10-01 (“The caster orders a Burst, one…”) that a burst cancels whole. That a pre-commit cast is cancellable at all is presupposed by both. BL-47 (2026-10-16): the Burst cancel reads Start over and still cancels the whole group (owner).",
     "sourceHashes": {}
   },
   {
@@ -3790,6 +3810,55 @@
     "scope": "digital",
     "confidence": "high",
     "notes": "ENGINE-ONLY (owner report #198). D-U23-22. Measured by the round-2 verifier: main.ts skipPacing 'if (NET?.playbackStopped()) { NET.continuePlayback(); return; }' then NET.skipToStop(); the play bar draws '<button data-btn=\"playskip\" ...>Skip <span class=\"kh\">(space)</span></button>'. Player-facing line in client/ui/updates.ts: 'Skip jumps to the next stop.' Engine location (client/ui, outside engine/src): main.ts skipPacing, playbar.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.cast-cancel.burst-step",
+    "parent": "annexd.undo.cast-cancel",
+    "order": 1,
+    "text": "While the order of a Burst group is being chosen, its caster may also take back one step at a time with Undo last pick: the last token picked, or the last aim chosen. The earlier picks stand. Undo last pick is offered once a token has been picked, and only the caster can take a step back.",
+    "examples": [
+      {
+        "text": "The caster picks which Fireball resolves first, then takes the pick back: the question \"which resolves first?\" returns with nothing picked, and nothing is on the stack.",
+        "test": "483-burst-undo-one-step.test.ts::BL-47 one undo takes back the last pick of an ordered burst, and only that"
+      },
+      {
+        "text": "After picking and aiming the first Fireball, one step back returns to aiming it; the pick stands.",
+        "test": "483-burst-undo-one-step.test.ts::BL-47 one undo takes back the last aim, leaving the earlier pick standing"
+      },
+      {
+        "text": "The opponent's undo cannot reach into the burst.",
+        "test": "483-burst-undo-one-step.test.ts::BL-47 the opponent cannot reach into the burst with an undo"
+      },
+      {
+        "text": null,
+        "test": "358-burst-order-ui.test.ts::§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "there should be a way to visually see what order you're chosing and then a way to undo that or cancel and restart.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, BL-47, a Discord request the owner relayed (in session)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "483-burst-undo-one-step.test.ts",
+        "358-burst-order-ui.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "BL-47 (2026-10-16): the owner relayed a Discord request to see the order being chosen and to undo it or start over. The client sends one undo per click; the server takes it in battle as part of the pre-commit cast chain.",
     "sourceHashes": {}
   }
 ]

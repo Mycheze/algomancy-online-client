@@ -1099,19 +1099,23 @@
     "key": "keywords.abilities.ambush.spell-effect",
     "parent": "keywords.abilities.ambush",
     "order": 8,
-    "text": "An Ambush on the stack counts as a spell effect, so an effect that negates spell effects can negate it. A negated Ambush puts its ambushing card into the bin.",
+    "text": "An Ambush on the stack is not a spell effect: the card played as an Ambush is a unit, not a spell. An effect that targets, negates or recalls spell effects cannot affect it, but one that names an effect, or a nonspell effect, can. A negated Ambush puts its ambushing card into the bin.",
     "examples": [
       {
-        "text": "Nothyr, which negates only nonspell effects, cannot target an Ambush on the stack: an Ambush is on the spell side.",
-        "test": "114-literal-dark.test.ts::Nothyr: an AMBUSH stays out of reach"
+        "text": "Nothyr (\"negate up to one target nonspell effect\") can target an Ambush on the stack and negate it; the ambushing card goes to the bin.",
+        "test": "475-ambush-is-not-a-spell.test.ts::Nothyr negates an Ambush: it is a nonspell effect (report 218)"
       },
       {
         "text": "Void Mandible negates an Ambush on the stack: the ambusher never takes the slot and its target is not recalled.",
         "test": "119-play-and-token-events.test.ts::Void Mandible: an AMBUSH is a card played too"
       },
       {
-        "text": "Dreadwave Devourer, which negates a target spell effect, can target an Ambush on the stack; negated, the ambusher goes to its bin and its target is not recalled.",
-        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer, which negates a target spell effect, negates an Ambush; the ambusher goes to the bin"
+        "text": "Dreadwave Devourer, which negates a target spell effect, cannot target an Ambush on the stack, and the Ambush resolves.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer, which negates a target spell effect, cannot target an Ambush"
+      },
+      {
+        "text": "Cosmic Reversal (\"Recall all other spell effects and spell units\") recalls a spell on the stack and leaves an Ambush beside it, which then resolves.",
+        "test": "475-ambush-is-not-a-spell.test.ts::Cosmic Reversal recalls the spell but not the Ambush, which stays and resolves (report 218)"
       }
     ],
     "see": [
@@ -1120,32 +1124,40 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1127377066195697725",
+          "quote": "You can't counter it with cosmic denial because it's not a spell"
+        },
+        {
+          "ref": "RQ 1138951204257402973",
+          "quote": "Not unless they say so. Spell is a card type"
+        }
+      ],
       "ours": [],
       "owner": [
         {
-          "quote": "an ambush on the stack counts as a \"spell effect\" for negation targeting (Dreadwave",
-          "adopted": "2026-08-18",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "Devourer can negate it → ambusher to the bin), and a mid-battle formation swap inherits",
-          "adopted": "2026-08-18",
-          "from": "register@72de434"
+          "quote": "If Caleb says its not a spell, it's not a spell and we need to fix that.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, report #218 (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "114-literal-dark.test.ts",
         "119-play-and-token-events.test.ts",
-        "432-cr-keyword-abilities.test.ts"
+        "432-cr-keyword-abilities.test.ts",
+        "475-ambush-is-not-a-spell.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "One of the owner ruling of 2026-08-18 (“Ambush details”)’s two engine calls, with no designer source (D-U21-7). Restates 700.1a. Neither bound test asserts the bin half; the round-1 verifier's probe (a negated Ambush puts the ambushing card into the bin) does. Void Mandible negates any nontoken card played in battle, so its test shows a negated Ambush, not the spell-effect classification; Nothyr's shows the classification.",
-    "sourceHashes": {}
+    "notes": "Reversed 2026-10-16 (report #218, CT-301). The old text was an engine call with no designer source (D-U21-7); Caleb says an Ambush is not a spell (2023-07-09, 2023-08-09). Both register quotes stated the old call and are dropped.",
+    "sourceHashes": {
+      "RQ 1127377066195697725": "537f1de05b52ae7b74d59fa0c1266e57956246b53850ed828984bf2f57f5370d",
+      "RQ 1138951204257402973": "20dd0871bcd0125d879d0d87e06654ecc72fad7cba8689ed010659e87533b3c3"
+    }
   },
   {
     "key": "keywords.abilities.ambush.cache",

@@ -325,69 +325,108 @@
   },
   {
     "key": "keywords.abilities.ambush.spell-effect",
-    "textHash": "2633c58c608dd1a0",
+    "textHash": "a91da71e5ca66738",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U21-r2",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/registry.ts:Dreadwave Devourer",
+        "loc": "client/engine/src/cards/dsl.ts:isSpellEffect",
         "agrees": true,
-        "note": "targets what:'stackSpell' — spell / spell unit / spell token / ambush"
+        "note": "ambush is not a spell kind"
       },
       {
-        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Nothyr",
         "agrees": true,
-        "note": "a negated ambush item puts the card in its owner's bin"
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Cosmic Reversal",
+        "agrees": true,
+        "note": "skips non-spell items"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:NEGATE_BINS",
+        "agrees": true,
+        "note": "a negated ambush item bins its card"
       }
     ],
     "tests_run": [
       {
-        "file": "114-literal-dark.test.ts",
-        "pattern": "Nothyr: an AMBUSH stays out of reach",
+        "file": "475-ambush-is-not-a-spell.test.ts",
+        "pattern": "Nothyr negates an Ambush: it is a nonspell effect",
         "passed": true,
-        "asserts_claim": "yes (static: Nothyr's restrict excludes 'ambush')"
+        "asserts_claim": true
+      },
+      {
+        "file": "475-ambush-is-not-a-spell.test.ts",
+        "pattern": "Cosmic Reversal recalls the spell but not the Ambush",
+        "passed": true,
+        "asserts_claim": true
       },
       {
         "file": "119-play-and-token-events.test.ts",
         "pattern": "Void Mandible: an AMBUSH is a card played too",
         "passed": true,
-        "asserts_claim": "yes for the example; but Void Mandible negates 'that effect' on any nontoken play, so it does not show the spell-effect classification and does not assert the bin"
-      }
-    ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U21/u21-r2-probes.test.ts",
-        "title": "keywords.abilities.ambush.spell-effect: Dreadwave Devourer (\"negate target spell effect\") negates an Ambush; the ambusher goes to the bin",
-        "passed": true,
-        "demonstrates": "yes: the Ambush is a legal 'spell effect' target; negated → ambusher in bin, target not recalled"
+        "asserts_claim": true
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
-        "title": "keywords.abilities.ambush.spell-effect: a negated Ambush (Void Mandible) puts the ambushing card into the bin",
+        "file": "432-cr-keyword-abilities.test.ts",
+        "pattern": "cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer",
         "passed": true,
-        "demonstrates": "yes: the bin half"
+        "asserts_claim": true
+      },
+      {
+        "file": "432-cr-keyword-abilities.test.ts",
+        "pattern": "cr:keywords.abilities.ambush.spell-effect — a negated Ambush (Void Mandible) puts the ambushing card into the bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "114-literal-dark.test.ts",
+        "pattern": "Nothyr: an AMBUSH is a nonspell effect",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R22",
+        "ref": "RQ 1127377066195697725",
         "supports": "yes",
-        "note": "but under its ⚠ 'Engine calls' — an engine decision, not an owner ruling; R128 later kept ambush spell-side"
+        "note": "calebgannon, answering 'do Ambush cards go on the stack and can I counter them with Cosmic Denial'"
+      },
+      {
+        "ref": "RQ 1138951204257402973",
+        "supports": "yes",
+        "note": "units are not spells; spell is a card type"
+      },
+      {
+        "ref": "owner report #218 2026-10-16",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "an ambush on the stack counts as a \"spell effect\" for negation targeting (Dreadwave"
+        "file": "client/engine/src/engine.ts",
+        "text": "const NEGATE_BINS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'unit', 'virus', 'ambush']);"
       },
       {
-        "file": "client/engine/src/cards/registry.ts",
-        "text": "targets: { what: 'stackSpell', prompt: 'Dreadwave Devourer: negate target spell effect' },"
+        "file": "client/engine/src/cards/sets/batch-water-a.ts",
+        "text": "if (!isSpellEffect(it.kind)) continue;   // CR 700.1a"
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "4.) You can't counter it with cosmic denial because it's not a spell"
       }
     ],
-    "basis_ok": false,
-    "problem": "Rule matches the engine and R22. Basis 'owner' overstates it: R22 files this under '⚠ Engine calls' — basis should be 'engine'. Neither example demonstrates the headline claim (a 'spell effect' negator negating an Ambush); the Dreadwave probe does."
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "keywords.abilities.ambush.stack",

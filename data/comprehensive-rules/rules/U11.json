@@ -179,11 +179,15 @@
     "key": "combat.attack.declaring.optional",
     "parent": "combat.attack.declaring",
     "order": 1,
-    "text": "Attacking is optional. A player may declare no attack.",
+    "text": "Attacking is optional: a player may declare no attack. The exception is a counterattack: a sent counterattacker that is still able to attack must attack (see rule combat.counterattack.round-two.may-decline).",
     "examples": [
       {
         "text": "The initiative player has a unit that could attack and declares no attack. The battle moves to the second round.",
         "test": "396-raq-timing.test.ts::RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines"
+      },
+      {
+        "text": "The non-initiative player sent three units to counterattack. In round 2, declaring no attack is refused.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined"
       }
     ],
     "see": [
@@ -198,16 +202,23 @@
       ],
       "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 (in session)"
+        }
+      ],
       "engine": [],
       "tests": [
-        "396-raq-timing.test.ts"
+        "396-raq-timing.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The Manual note presupposes the initiative player may decide not to attack.",
+    "notes": "The Manual note presupposes the initiative player may decide not to attack. The exception: CT-298, owner 2026-10-16.",
     "sourceHashes": {}
   },
   {
@@ -390,11 +401,15 @@
     "key": "combat.attack.declaring.round-two",
     "parent": "combat.attack.declaring",
     "order": 6,
-    "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610).",
+    "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610). Every sent unit still there and able to attack must be in the formation; only the formation's shape is chosen (see rule combat.counterattack.round-two.attackers).",
     "examples": [
       {
         "text": "The non-initiative player sent one unit to counterattack and kept another at home. In the second round, only the sent unit may attack.",
         "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      },
+      {
+        "text": "Three units were sent. Attacking with only two of them is refused; any formation holding all three is accepted.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined"
       }
     ],
     "see": [
@@ -415,18 +430,29 @@
           "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so",
           "adopted": "2026-08-18",
           "from": "register@72de434"
+        },
+        {
+          "quote": "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 (in session)"
+        },
+        {
+          "quote": "But you don't decide the shape of that formation until the attack step of the second battle.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
-        "21-fixes.test.ts"
+        "21-fixes.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) is assigned to U13 (610); cited here, outside my pack, because it fixes who may be declared as an attacker. Manual p.20 Phase 2 step 1 names the units 'sent in Phase 1' only implicitly ('their attacking units').",
+    "notes": "The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) is assigned to U13 (610); cited here, outside my pack, because it fixes who may be declared as an attacker. Manual p.20 Phase 2 step 1 names the units 'sent in Phase 1' only implicitly ('their attacking units'). Second sentence: CT-298, owner 2026-10-16.",
     "sourceHashes": {}
   },
   {
@@ -650,7 +676,7 @@
     "key": "combat.attack.decline",
     "parent": "604",
     "order": 4,
-    "text": "If the attacking player declares no attack, there is no combat in that round: no attack window, no block step, no block window, no combat damage step and no after combat step.",
+    "text": "If the attacking player declares no attack, there is no combat in that round: no attack window, no block step, no block window, no combat damage step and no after combat step. A counterattack cannot be declined this way while a sent counterattacker is able to attack (see rule combat.counterattack.round-two.may-decline).",
     "examples": [
       {
         "text": "Both players decline to attack. The whole battle phase passes with no priority window at all.",
@@ -680,17 +706,23 @@
           "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so",
           "adopted": "2026-08-18",
           "from": "register@72de434"
+        },
+        {
+          "quote": "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "165-token-loss-warning.test.ts"
+        "165-token-loss-warning.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Printed text skips combat and after combat in a region that was not attacked; that the attack window and block window are skipped too is the owner rulings of 2026-08-26 (“a warning is not worth a…”) and 2026-08-18 (“Round-2 attackers when round 1 had…”) (owner calls). See D-U11-1. 'No combat', not 'no battle': the engine still counts a declined round as a completed battle for 'One Battle Passes'. See D-U11-11.",
+    "notes": "Printed text skips combat and after combat in a region that was not attacked; that the attack window and block window are skipped too is the owner rulings of 2026-08-26 (“a warning is not worth a…”) and 2026-08-18 (“Round-2 attackers when round 1 had…”) (owner calls). See D-U11-1. 'No combat', not 'no battle': the engine still counts a declined round as a completed battle for 'One Battle Passes'. See D-U11-11. Last sentence: CT-298, owner 2026-10-16.",
     "sourceHashes": {}
   },
   {
@@ -1599,11 +1631,15 @@
     "key": "combat.blocks.side",
     "parent": "606",
     "order": 4,
-    "text": "A defending unit may be placed blocking where no attacker is. This is a side-block, and the blocking column it makes is a side-blocking column.",
+    "text": "A defending unit may be placed blocking where no attacker is, as long as at least one attacking unit is left in the attacking formation (see rule combat.blocks.empty-attack). This is a side-block, and the blocking column it makes is a side-blocking column.",
     "examples": [
       {
         "text": "One unit attacks. The defending player places two units to the side of it, each in its own column, and leaves the attacker unblocked.",
         "test": "400-raq-fix-blocks.test.ts::side-blocks: two units block where no attacker is"
+      },
+      {
+        "text": "The only attacker is destroyed before blocks: a side-block beside the empty attack is refused.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-297 an emptied attacking formation cannot be blocked head-on or to the side"
       }
     ],
     "see": [
@@ -1628,18 +1664,24 @@
           "quote": "Side-blocks: a defender may block where no attacker is",
           "adopted": "2026-10-09",
           "from": "register@72de434"
+        },
+        {
+          "quote": "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-297 (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "400-raq-fix-blocks.test.ts",
-        "388-raq-blocks-and-windows.test.ts"
+        "388-raq-blocks-and-windows.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "'Side-block' is the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”)’s term (and the RAQ's), not printed.",
+    "notes": "'Side-block' is the owner ruling of 2026-10-09 (“Side-blocks: a defender may block where…”)’s term (and the RAQ's), not printed. The proviso: CT-297, owner 2026-10-16.",
     "sourceHashes": {}
   },
   {
@@ -2097,11 +2139,19 @@
     "key": "combat.blocks.empty-attack",
     "parent": "606",
     "order": 7,
-    "text": "If no attacking unit is left when the block step begins, the block step still takes place: the defending player declares blocks, which may be none, and the battle round continues.",
+    "text": "If no attacking unit is left when the block step begins, nothing can be blocked: no defending unit may be placed blocking, in front of the attack or to the side of it. In the first battle round the defending player may still send units to counterattack; otherwise the block declaration is empty. The battle round then continues.",
     "examples": [
       {
-        "text": "The only attacker is destroyed before blocks and the attack collapses to nothing. The defending player declares no blocks, and the block window follows.",
+        "text": "The only attacker is destroyed before blocks. The defending player cannot block, not even to the side, but may still send a unit to counterattack, or declare nothing; the block window follows.",
         "test": "53-playtest-round7.test.ts::CR 606.2f: an attack that has collapsed to nothing still lets the defender declare"
+      },
+      {
+        "text": "With the attack emptied, a side-block on either side is refused, with or without a unit sent to counterattack.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-297 an emptied attacking formation cannot be blocked head-on or to the side, but counterattackers may still be sent"
+      },
+      {
+        "text": "In the second battle round the lone counterattacker is destroyed before blocks: the initiative player can neither block nor send anything.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-297 an emptied counterattack in round 2 leaves the defender nothing to declare"
       }
     ],
     "see": [
@@ -2111,16 +2161,23 @@
       "printed": [],
       "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-297 (in session)"
+        }
+      ],
       "engine": [],
       "tests": [
-        "53-playtest-round7.test.ts"
+        "53-playtest-round7.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "ENGINE-ONLY: only the test states this. Printed text says the attacking player stays present after its units are removed (Manual p.19) but not whether the block step still happens. See D-U11-6.",
+    "notes": "CT-297 (2026-10-16): the owner — no blocking of any kind against an emptied attack; counterattackers may still be sent. Was engine-only (D-U11-6).",
     "sourceHashes": {}
   },
   {

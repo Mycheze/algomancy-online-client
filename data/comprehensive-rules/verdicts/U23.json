@@ -2746,60 +2746,65 @@
   },
   {
     "key": "annexd.general.player-decides.forced",
-    "textHash": "f6095d3ba8ff5ab5",
+    "textHash": "38e8995754ab87ab",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U23-r3",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/engine/src/apply.ts:forcedAction",
         "agrees": true,
-        "note": "exactly two cases: empty declareAttack when no eligible attacker (pool / allured excluded), empty declareBlocks when the defender has no unit in the battle region; null under any decision"
-      },
-      {
-        "loc": "client/ui/main.ts / server forcedAction drain (R287 full control)",
-        "agrees": true,
-        "note": "full control stops the drain and leaves the window (273 §2)"
+        "note": "exactly the three cases: no eligible attacker; lone owed counterattacker with no rider; defender with no unit or empty attack and cannot send"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/21-fixes.test.ts",
-        "pattern": "a whole empty-board battle drains|forcedAction is null whenever a real choice",
+        "file": "21-fixes.test.ts",
+        "pattern": "a whole empty-board battle drains through forced actions to deployment",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/273-full-control-both-seats.test.ts",
-        "pattern": "BL-18 §2 with full control ON",
+        "file": "21-fixes.test.ts",
+        "pattern": "forcedAction is null whenever a real choice exists",
         "passed": true,
-        "asserts_claim": "yes: forcedAction still non-null but the drain did not take it; the player is offered the window"
-      }
-    ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U23/forced-lone-counterattacker.test.ts",
-        "title": "annexd.general.player-decides.forced.lone-counterattacker / annexd.general.player-decides.forced",
-        "passed": true,
-        "demonstrates": "yes: empty attacker forced, unit holder not; a lone sent counterattacker is NOT forced"
+        "asserts_claim": true
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U23/forced-target.test.ts",
-        "title": "annexd.general.player-decides.forced-target",
+        "file": "273-full-control-both-seats.test.ts",
+        "pattern": "BL-18 §2 with full control ON the drain stops and the player is left the window",
         "passed": true,
-        "demonstrates": "yes: a one-candidate target is still a decision, not forced"
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-297 an emptied counterattack in round 2 leaves the defender nothing to declare",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.general.player-decides.forced",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R36",
-        "supports": "partly",
-        "note": "supports 'logged like any other', but R36 is about a THIRD forced action (lone counterattacker auto-forms) that the engine deleted 2026-08-24; as registered it contradicts the rule's 'only'. Merely on-topic for the sentence it is cited for."
+        "ref": "owner register@72de434 (2026-08-18)",
+        "supports": "yes",
+        "note": "forced action logged like any other"
       },
       {
-        "ref": "R287",
+        "ref": "owner questions-round36 Q5 (2026-09-01)",
         "supports": "yes",
-        "note": "full control outranks the forcedAction drain"
+        "note": ""
+      },
+      {
+        "ref": "owner report round 2026-10-16 b, CT-297",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
@@ -2809,20 +2814,15 @@
       },
       {
         "file": "client/engine/src/apply.ts",
-        "text": "if (b.step === 'blocks' && !e.unitsOf(b.defender, b.region).length) {"
+        "text": "if (!mine.length || (!attackingUnits(e).length && !canSend)) {"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "automatics are decided, and the server's `forcedAction` drain reads one per-seat"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "When a round-2 counterattack pool holds EXACTLY one unit and no spell token"
+        "file": "client/engine/src/apply.ts",
+        "text": " * the action log, so replays stay explicit. Returns null when someone has a"
       }
     ],
     "basis_ok": true,
-    "problem": "Text matches the engine. But the cited R36 still says a lone sent counterattacker auto-forms (a forced action) and was never amended; the engine removed that branch. The rule should not lean on R36, and the register needs R36 amended (see bugs).",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.general.player-decides.forced-target",
@@ -2874,46 +2874,62 @@
   },
   {
     "key": "annexd.general.player-decides.forced.lone-counterattacker",
-    "textHash": "074da5f8d80cb58f",
+    "textHash": "0a6b16b69b02788a",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U23-r2",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/engine/src/apply.ts:forcedAction",
-        "agrees": false,
-        "note": "The lone-counterattacker branch was REMOVED 2026-08-24; round-2 declare with one sent unit and no token returns null and offers both [] and [[unit]]. Divergence flagged by the rule is real."
+        "agrees": true,
+        "note": "owed.length === 1 and no riders -> one-unit formation forced"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U23/forced-lone-counterattacker.test.ts",
-        "title": "annexd.general.player-decides.forced.lone-counterattacker: one sent unit, no token — round 2 declare is NOT forced (engine differs)",
+        "file": "434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.general.player-decides.forced.lone-counterattacker",
         "passed": true,
-        "demonstrates": "yes: the engine does not auto-form (pool [4], forcedAction null, options [] and [[4]]), confirming the flagged divergence"
+        "asserts_claim": true
+      },
+      {
+        "file": "479-empty-attack-and-committed-counterattack.test.ts",
+        "pattern": "CT-251 a lone counterattacker with a ridable token is asked, but still may not decline",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "forcedAction: a single sent counterattacker IS auto-formed",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R36",
+        "ref": "owner register@72de434 (2026-08-18, two quotes)",
         "supports": "yes",
-        "note": "R36 states exactly the ruling; it carries no amendment or reversal marker in the register"
+        "note": ""
+      },
+      {
+        "ref": "owner report round 2026-10-16 b, CT-298",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "When a round-2 counterattack pool holds EXACTLY one unit and no spell token"
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!riders.length) return { type: 'declareAttack', seat: b.attacker, columns: [[owed[0]!]] };"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "(decisions-for-the-player audit): sending a counterattacker and"
+        "file": "client/engine/test/479-empty-attack-and-committed-counterattack.test.ts",
+        "text": "assert.equal(forcedAction(h.state), null, 'whether the token rides is a real choice');"
       }
     ],
     "basis_ok": true,
-    "problem": "None in the rule. The ruling stands in the register while the engine removed it; the open divergence is the engine bug listed below.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.general.player-decides.identical-triggers",
@@ -4202,53 +4218,136 @@
   },
   {
     "key": "annexd.undo.cast-cancel",
-    "textHash": "6eea89baeb69a0db",
+    "textHash": "dc83a04cbea1a7b3",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/server/rooms.ts:undoForSeat (castChain)",
+        "loc": "client/server/rooms.ts:undoForSeat",
         "agrees": true,
-        "note": "cast suspension of own non-triggered item, or burstPick, in any phase"
+        "note": "a pending own pre-commit cast (X/cost/target stages) or burstPick is undoable in any phase"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.undo.cast-cancel — a cast still choosing its targets is cancelled",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.undo.cast-cancel — a Burst group is cancelled whole",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "358-burst-order-ui.test.ts",
+        "pattern": "§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "483-burst-undo-one-step.test.ts",
+        "pattern": "BL-47",
+        "passed": true,
+        "asserts_claim": false
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R312",
+        "ref": "owner register@72de434 (2026-10-04)",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "pre-commit cast chain (X, costs, targets)"
       },
       {
-        "ref": "R309",
+        "ref": "owner register@72de434 (2026-10-01)",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R309",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "cancel works on the whole burst"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- The pre-commit cast chain (X, costs, targets) gets no floor. Every stage"
+        "file": "client/server/rooms.ts",
+        "text": "// A pending PRE-COMMIT cast chain of the requester's own (X / cost /"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- Cancel works on the whole burst: the `burstPick` step counts as a"
+        "file": "client/server/rooms.ts",
+        "text": "// target stages, CR 702.3) is undoable in ANY phase: while their decision"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "pre-commit cast for the client's cast-cancel and the server's undo."
+        "file": "client/ui/test/358-burst-order-ui.test.ts",
+        "text": "assert.match(html, /data-btn=\"castcancel\"[^>]*>↺ Start over/, 'Cancel is called Start over for a Burst');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
+  },
+  {
+    "key": "annexd.undo.cast-cancel.burst-step",
+    "textHash": "965ba1315fc5da0c",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U23-r4",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "castChain covers burstPick for the caster's own seat; one undo splices one action"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "483-burst-undo-one-step.test.ts",
+        "pattern": "BL-47 one undo takes back the last pick of an ordered burst, and only that",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "483-burst-undo-one-step.test.ts",
+        "pattern": "BL-47 one undo takes back the last aim, leaving the earlier pick standing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "483-burst-undo-one-step.test.ts",
+        "pattern": "BL-47 the opponent cannot reach into the burst with an undo",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "358-burst-order-ui.test.ts",
+        "pattern": "§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner report round 2026-10-16 b, BL-47",
+        "supports": "yes",
+        "note": "a way to undo the chosen order or cancel and restart"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": ": sus.type === 'burstPick' && sus.seat === seat);"
+      },
+      {
+        "file": "client/server/test/483-burst-undo-one-step.test.ts",
+        "text": "assert.equal(room.actions.length, before - 1, 'exactly one action came off the log');"
+      },
+      {
+        "file": "client/ui/test/358-burst-order-ui.test.ts",
+        "text": "assert.ok(!net.has({ btn: 'burstundo' }), 'no Undo last pick before the first pick');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.undo.hidden-step",
@@ -4292,7 +4391,7 @@
   },
   {
     "key": "annexd.undo.hidden-step.battle",
-    "textHash": "e9451e80a9b7a315",
+    "textHash": "8bf6b8806842ec14",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
@@ -4300,71 +4399,58 @@
       {
         "loc": "client/ui/inspect.ts:activationNeedsConfirm",
         "agrees": true,
-        "note": "Asks only for sacrificeSelf/life/debt costs with nothing that stops to ask first; discard/sacrificeOther/discardOrSacrifice are not asked."
+        "note": "asks only for sacrificeSelf/life/debt with nothing that stops to ask; discard/sacrificeOther are a question themselves"
       },
       {
-        "loc": "client/ui/main.ts:actconfirm bar (modal)",
+        "loc": "client/ui/main.ts:needsConfirm",
         "agrees": true,
-        "note": "Only same-unit click, Yes, Enter confirm; No/Escape cancel; other input flashes the bar."
+        "note": "skipped when undoAvailable (planning, haste, deployment)"
+      },
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "outside a segment only an own pre-commit cast is undoable"
       }
     ],
     "tests_run": [
       {
-        "file": "client/ui/test/373-no-confirm-where-undo-works.test.ts",
-        "pattern": "in deployment, an irreversible ability activates on the clic",
+        "file": "373-no-confirm-where-undo-works.test.ts",
+        "pattern": "in deployment, an irreversible ability activates on the click",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/373-no-confirm-where-undo-works.test.ts",
+        "file": "373-no-confirm-where-undo-works.test.ts",
         "pattern": "in battle, the same ability still asks",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
+        "file": "456-activate-confirm-is-modal.test.ts",
         "pattern": "D2 §1 the reported card raises no bar",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
-        "pattern": "D2 §1 over the pool",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
+        "file": "456-activate-confirm-is-modal.test.ts",
         "pattern": "D2 §2 with the bar up a hand click sends nothing",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
-        "pattern": "D2 §2 with the bar up a click on another unit sends nothing",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
-        "pattern": "D2 §2 with the bar up a board button, Space",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
+        "file": "456-activate-confirm-is-modal.test.ts",
         "pattern": "D2 §2 clicking the same unit again says yes",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
+        "file": "456-activate-confirm-is-modal.test.ts",
         "pattern": "D2 §2 Enter says yes",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
+        "file": "456-activate-confirm-is-modal.test.ts",
         "pattern": "D2 §2 the Yes button says yes, and No and Escape still cancel",
         "passed": true,
         "asserts_claim": true
@@ -4373,9 +4459,9 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner 2026-10-16 (Discord report D2)",
+        "ref": "owner report round 2026-10-16, Discord report D2",
         "supports": "yes",
-        "note": "Verbatim in the record; says exactly the three ways to confirm and 'Otherwise, it should do nothing'. The undo/deployment halves rest on code + tests (373)."
+        "note": "only same-unit click, Yes or Enter confirm; otherwise nothing"
       }
     ],
     "quote_spans": [
@@ -4384,12 +4470,12 @@
         "text": "const unasked = !!(c.sacrificeSelf || c.life || c.debt);"
       },
       {
-        "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
-        "text": "assert.ok(!ui.has({ btn: 'actconfirm' }), 'no \"Yes, activate\" in front of the discard pick');"
+        "file": "client/server/rooms.ts",
+        "text": "return { ok: false, why: 'undo only works during planning and deploy (or while your own cast is awaiting X, costs or targets)' };"
       },
       {
         "file": "client/ui/test/456-activate-confirm-is-modal.test.ts",
-        "text": "assert.ok(!ui.has({ btn: 'actconfirm' }), 'Escape takes it down');"
+        "text": " *  §2 the owner's ruling, verbatim: \"The only ways to say \"yes, activate\""
       }
     ],
     "basis_ok": true,

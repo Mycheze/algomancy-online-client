@@ -1013,11 +1013,19 @@
     "key": "combat.counterattack.round-two.attackers",
     "parent": "combat.counterattack.round-two",
     "order": 2,
-    "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round. In its attack step, the non-initiative team puts them into formation.",
+    "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round, and every one of them still there and able to attack must attack. In its attack step the non-initiative team puts all of them into formation, in any shape; the shape is chosen then, not when the units are sent. A sent unit that died on its return is not owed.",
     "examples": [
       {
-        "text": "The non-initiative player sent Conduit of Pain at block time. In round 2 it is the only unit they can attack with.",
-        "test": "32-cast-costs.test.ts::forcedAction: a single sent counterattacker is NOT auto-formed"
+        "text": "The non-initiative player sent Conduit of Pain at block time. In round 2 it is the only unit they can attack with, and it must attack: declining is refused.",
+        "test": "32-cast-costs.test.ts::forcedAction: a single sent counterattacker IS auto-formed"
+      },
+      {
+        "text": "Three units were sent. Declining, or leaving one off to the side, is refused; any shape that holds all three is accepted.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-298 every sent counterattacker must be in the formation and the counterattack cannot be declined"
+      },
+      {
+        "text": "Two units were sent and one dies on its return: the other alone is owed, and it forms by itself.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-251 a lone sent counterattacker is formed for the player and one that died on arrival is owed nothing"
       }
     ],
     "see": [
@@ -1032,28 +1040,54 @@
         {
           "ref": "Manual p.27",
           "quote": "1. NIT attack IT regions with units sent in Phase 1"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "Second, the counterattacking units are put"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "into formation and the entire combat sequence"
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1171229657740345384",
+          "quote": "for quality of life right now I'm allowing players to send units over, and then pick the formation later with counter attacks"
+        }
+      ],
       "ours": [],
       "owner": [
         {
           "quote": "of their units. If a round-1 battle happened, round-2 attackers are **exactly the",
           "adopted": "2026-08-18",
           "from": "register@72de434"
+        },
+        {
+          "quote": "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 (in session)"
+        },
+        {
+          "quote": "But you don't decide the shape of that formation until the attack step of the second battle.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "32-cast-costs.test.ts",
-        "02-combat.test.ts"
+        "02-combat.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Whether every sent unit must go into the formation is D-U13-4.",
-    "sourceHashes": {}
+    "notes": "Whether every sent unit must go into the formation is D-U13-4. CT-298/CT-251 (2026-10-16): the owner — a sent counterattacker must be put into formation; the shape is chosen in round 2 (as Caleb allowed for quality of life, 2023-11-07). Settles owner question D-U13-4 (reading B).",
+    "sourceHashes": {
+      "RQ 1171229657740345384": "c3c3276f72ba73997cfe8b319f9edb6b725f892f449a66d992556d928ab8b4af"
+    }
   },
   {
     "key": "combat.counterattack.round-two.none-sent",
@@ -1154,14 +1188,18 @@
     "key": "combat.counterattack.round-two.may-decline",
     "parent": "combat.counterattack.round-two",
     "order": 5,
-    "text": "The non-initiative team may decline to attack in the second battle round, even if it sent units to counterattack. Then the second round has no battle and opens no priority window, and the battle phase ends.",
+    "text": "The non-initiative team may decline to attack in the second battle round only when no unit it sent to counterattack is still there and able to attack, or when the first battle round had no attack (see rule combat.counterattack.round-two.no-round-one). A counterattack with such a unit cannot be declined. A declined second round has no battle and opens no priority window, and the battle phase ends.",
     "examples": [
       {
-        "text": "One unit was sent to counterattack. In round 2 both attacking with it and declining are legal.",
-        "test": "32-cast-costs.test.ts::forcedAction: a single sent counterattacker is NOT auto-formed"
+        "text": "Two units were sent. In round 2 declining is refused, and so is leaving one of them behind; every formation offered holds both.",
+        "test": "424-cr-after-combat.test.ts::cr:combat.counterattack.round-two.may-decline — declining is refused while a sent unit lives"
       },
       {
-        "text": "The initiative player's spell tokens at home cannot be cast in any round-1 window. If the non-initiative player then declines to attack in round 2, those tokens never become castable this battle.",
+        "text": "The initiative player declined to attack in round 1. In round 2 the non-initiative player may decline too, and the battle phase ends.",
+        "test": "479-empty-attack-and-committed-counterattack.test.ts::CT-298 a second round after a first round with no attack is a fresh attack and may still be declined"
+      },
+      {
+        "text": "The initiative player's spell tokens at home cannot be cast in any round-1 window. If the non-initiative player's only counterattacker then dies on its return, round 2 has no attack, and those tokens never become castable this battle.",
         "test": "165-token-loss-warning.test.ts::[CT-55] the premise: a round-2 defender really is holding castable tokens when the attacker declines"
       }
     ],
@@ -1170,7 +1208,12 @@
       "604.4"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "1. The NIT puts their attacking units into formation."
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -1183,19 +1226,25 @@
           "quote": "nothing, and it takes every window away at once.",
           "adopted": "2026-08-26",
           "from": "register@72de434"
+        },
+        {
+          "quote": "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-298 (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "424-cr-after-combat.test.ts",
         "32-cast-costs.test.ts",
-        "165-token-loss-warning.test.ts"
+        "165-token-loss-warning.test.ts",
+        "479-empty-attack-and-committed-counterattack.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The printed round-2 step reads 'The NIT puts their attacking units into formation' (Manual p.20), which can be read as mandatory; question for the owner in D-U13-4. The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) (lone counterattacker auto-forms) is contradicted by test 32's flipped title (D-U13-3, F-U13-1).",
+    "notes": "Reversed 2026-10-16 (CT-298): the owner answered question #6 (D-U13-4) with reading B — a sent counterattacker must attack. The decline survives only where nothing sent can attack, or round 1 had no attack. The 2026-08-26 register quotes still describe what a declined round 2 costs.",
     "sourceHashes": {}
   },
   {

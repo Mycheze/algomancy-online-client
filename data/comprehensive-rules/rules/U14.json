@@ -48,74 +48,114 @@
     "key": "effects.general.effect.spell-effect",
     "parent": "effects.general.effect",
     "order": 1,
-    "text": "A spell effect is an effect that is a spell: a spell, a spell unit or a spell token on the stack, or an ambush. A unit on the stack is an effect but not a spell effect, so a card that says \"spell effect\" cannot affect it.",
+    "text": "A spell effect is an effect that is a spell: a spell, a spell unit or a spell token on the stack. A unit on the stack is an effect but not a spell effect, and neither is an Ambush, since the card played as an Ambush is a unit: a card that says \"spell effect\" cannot affect either of them.",
     "examples": [
       {
         "text": "Null Drone (\"target spell effect\") cannot choose a plain unit on the stack, but can choose a spell unit.",
         "test": "118-stack-effect.test.ts::\"target spell effect\" refuses a plain unit but takes a spell unit"
+      },
+      {
+        "text": "Dreadwave Devourer (\"Negate target spell effect\") cannot target an Ambush on the stack, and the Ambush resolves.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer, which negates a target spell effect, cannot target an Ambush"
+      },
+      {
+        "text": "A spell unit and a spell token on the stack are spell effects; an Ambush is not.",
+        "test": "476-ambush-spell-sweep.test.ts::the predicate: an Ambush is not a spell effect, a spell unit and a spell token are"
       }
     ],
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1127377066195697725",
+          "quote": "You can't counter it with cosmic denial because it's not a spell"
+        },
+        {
+          "ref": "RQ 1138951204257402973",
+          "quote": "Not unless they say so. Spell is a card type"
+        }
+      ],
       "ours": [],
       "owner": [
-        {
-          "quote": "spell token / ambush. A plain unit is not a spell, so the three cards that print",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
-        },
         {
           "quote": "an effect, including units and spell units. Units aren't spells, so if they say",
           "adopted": "2026-08-24",
           "from": "register@72de434"
+        },
+        {
+          "quote": "If Caleb says its not a spell, it's not a spell and we need to fix that.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, report #218 (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "118-stack-effect.test.ts"
+        "118-stack-effect.test.ts",
+        "432-cr-keyword-abilities.test.ts",
+        "476-ambush-spell-sweep.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The spell / spell unit / spell token / ambush list is the owner ruling of 2026-08-24 (“anything on the stack is an…”) restating the owner ruling of 2026-08-20 (“\"Target effect\" vs \"target spell effect\"…”)’s target kind; that an ambush is a spell effect is sourced only from that list (the owner ruling of 2026-08-18 (“Ambush details”) is not in the pack).",
-    "sourceHashes": {}
+    "notes": "Report #218 (CT-301), 2026-10-16: an Ambush moved off the spell side. Caleb, rules-questions 2023-07-09 (an Ambush card cannot be Cosmic Denial'd \"because it's not a spell\") and 2023-08-09 (\"Are units spells?\" — \"Not unless they say so. Spell is a card type\"); _passer 2025-12-13 lists Ambush under \"not spell\" (msg 1449450341589450773, a player and so not citable; Caleb deferred to him in 1449453999014281237). The owner adopted it. The register quote that listed \"ambush\" on the spell side is dropped as replaced.",
+    "sourceHashes": {
+      "RQ 1127377066195697725": "537f1de05b52ae7b74d59fa0c1266e57956246b53850ed828984bf2f57f5370d",
+      "RQ 1138951204257402973": "20dd0871bcd0125d879d0d87e06654ecc72fad7cba8689ed010659e87533b3c3"
+    }
   },
   {
     "key": "effects.general.effect.nonspell-effect",
     "parent": "effects.general.effect",
     "order": 2,
-    "text": "A nonspell effect is any effect that is not a spell effect: a triggered ability, an activated ability, a Virus being applied, or a unit on the stack.",
+    "text": "A nonspell effect is any effect that is not a spell effect: a triggered ability, an activated ability, a Virus being applied, a unit on the stack, or an Ambush.",
     "examples": [
       {
         "text": "Nothyr (\"negate up to one target nonspell effect\") can choose a {Battle} unit on the stack.",
         "test": "118-stack-effect.test.ts::Nothyr's \"target nonspell effect\" reaches a unit on the stack"
+      },
+      {
+        "text": "Nothyr can also choose an Ambush on the stack.",
+        "test": "114-literal-dark.test.ts::Nothyr: an AMBUSH is a nonspell effect, so it is in reach (report 218)"
       }
     ],
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1127377066195697725",
+          "quote": "You can't counter it with cosmic denial because it's not a spell"
+        }
+      ],
       "ours": [],
       "owner": [
         {
           "quote": "**\"Target NONSPELL effect\" is the complement, so it GAINS the plain unit.**",
           "adopted": "2026-08-24",
           "from": "register@72de434"
+        },
+        {
+          "quote": "If Caleb says its not a spell, it's not a spell and we need to fix that.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, report #218 (in session)"
         }
       ],
       "engine": [],
       "tests": [
-        "118-stack-effect.test.ts"
+        "118-stack-effect.test.ts",
+        "114-literal-dark.test.ts",
+        "475-ambush-is-not-a-spell.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
-    "sourceHashes": {}
+    "notes": "Report #218 (CT-301): an Ambush is not a spell (Caleb 2023-07-09), so it is on the nonspell side; the owner adopted it 2026-10-16.",
+    "sourceHashes": {
+      "RQ 1127377066195697725": "537f1de05b52ae7b74d59fa0c1266e57956246b53850ed828984bf2f57f5370d"
+    }
   },
   {
     "key": "effects.general.cast-is-play",
@@ -1850,8 +1890,21 @@
     "key": "effects.casting.x",
     "parent": "702",
     "order": 6,
-    "text": "X is chosen when the card is played, before it is put on the stack. Only values the player can pay may be chosen, and responses see the X already fixed.",
-    "examples": [],
+    "text": "X is chosen when the card is played, before it is put on the stack. Only values the player can pay may be chosen, and responses see the X already fixed. When X counts targets (\"X target units\"), all X targets are required: only an X that many legal targets can fill may be chosen, and at X = 0 the card needs no target.",
+    "examples": [
+      {
+        "text": "Blight's End (\"Augment a Wight onto X target units\") with one unit in the battle offers X of 0 or 1, and at X = 1 it must take that unit.",
+        "test": "478-required-targets-at-cast.test.ts::Blight End with one unit in the battle offers X up to 1 only, and X = 1 needs its target"
+      },
+      {
+        "text": "Blight's End cast for X = 2 with two units asks for both and never offers a stop after one.",
+        "test": "478-required-targets-at-cast.test.ts::Blight End with two units asks for both at X = 2, never offering a stop at one"
+      },
+      {
+        "text": "Torrential Reclamation (\"Recall X target nontoken allies\") with no ally in the fight can be cast only for X = 0.",
+        "test": "478-required-targets-at-cast.test.ts::Torrential Reclamation with no ally in the fight is castable at X = 0 only"
+      }
+    ],
     "see": [
       "107"
     ],
@@ -1864,15 +1917,23 @@
           "quote": "affordable values are offered) BEFORE the spell reaches the stack, the",
           "adopted": "2026-08-18",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Unless a card says \"up to\", it must have targets in order to be cast.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-305 (in session)"
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "478-required-targets-at-cast.test.ts",
+        "477-target-minimum-sweep.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Third sentence: CT-303 (2026-10-16), the owner's rule that a target without \"up to\" is required, applied to X-counted targets.",
     "sourceHashes": {}
   },
   {
@@ -2106,7 +2167,7 @@
     "key": "effects.casting.targets-required",
     "parent": "702",
     "order": 8,
-    "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others.",
+    "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. Every target is required unless the card says \"up to\" or \"any number\". A triggered ability's targets are required in the same way: if a legal target exists, it must take one, even one of its controller's own units. A triggered ability that says \"you may\" may instead be declined as a whole.",
     "examples": [
       {
         "text": "Fight cannot be played unless the region holds an ally and another unit.",
@@ -2115,13 +2176,26 @@
       {
         "text": "Tidal Reversion cannot be played while one player has no unit to recall.",
         "test": "390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall"
+      },
+      {
+        "text": "Unstable Singularity (\"When I die, Delete target unit.\") dies in deployment with only its controller's other unit on the board: its trigger must target that unit, with no option to choose none, and deletes it.",
+        "test": "477-target-minimum-sweep.test.ts::a must-target trigger with only the controllers own units as targets picks one of them"
+      },
+      {
+        "text": "Shoreline Specter (\"After combat, you may recall target ally. If you do, each opponent loses 2 life.\") may decline the recall, and then no opponent loses life.",
+        "test": "182-correctness-sample.test.ts::Shoreline Specter: DECLINE the recall and the 2-life drain does not happen"
       }
     ],
     "see": [
       "110"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Shoreline Specter",
+          "quote": "After combat, you may recall target ally."
+        }
+      ],
       "designer": [
         {
           "ref": "RAQ 1410252965276684418#0",
@@ -2142,18 +2216,31 @@
           "quote": "A spell or ability that needs targets can be played only when **every required",
           "adopted": "2026-10-09",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Unless a card says \"up to\", it must have targets in order to be cast.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-305 (in session)"
+        },
+        {
+          "quote": "If a trigger doesn't have the \"up to\" caviat, it MUST have targets (unless there are no legal ones), which might result in damanging your own units if you trigger something during deployment",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, CT-305 (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
-        "401-raq-fix-stack.test.ts"
+        "401-raq-fix-stack.test.ts",
+        "477-target-minimum-sweep.test.ts",
+        "478-required-targets-at-cast.test.ts",
+        "182-correctness-sample.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "CT-299/CT-305 (2026-10-16): the owner — a target without \"up to\" is required, and a trigger must take a legal target, even its controller's own unit. The \"you may\" decline is the printed text read literally (Shoreline Specter); 477 lets a trigger that prints \"may\" stop short, and lists those cards for the owner.",
     "sourceHashes": {
       "RAQ 1410252965276684418#0": "ba1407e8e0f304aa35e09368684382ac118a561eaf5895d4c5b21ff2d1bc14d3",
       "RAQ 1410252965276684418#1": "e360e6a86909cef31daa2244e8da43a0e668b372e706c45aba749e3728522bea",

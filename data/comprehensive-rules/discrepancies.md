@@ -2,7 +2,7 @@
 
 Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision, and owner-questions.md lists it on its own; every other item already says which source decides and which side the document follows. An item filed by more than one drafting unit is kept once, and names the others under "Also filed as".
 
-## 1. Questions for the owner (10)
+## 1. Questions for the owner (9)
 
 ### D-U03-13 · Other · rule 110.11
 
@@ -110,26 +110,6 @@ Pure in combat is defined per attacking-half/blocking-half pair; an unblocked co
 
 **Resolution:** Question for the owner. Pure in combat is defined per pair of an attacking half and a blocking half (rule 608.2d); an unblocked column has no pair, and no source speaks to it.
 
-### D-U13-4 · Sources disagree · rule 610.4e
-
-The printed round-2 procedure reads as if the sent counterattackers are always put into formation; the owner ruling of 2026-08-26 (“a warning is not worth a…”) and the engine's test let the non-initiative player decline the round-2 attack after sending units.
-
-- Manual p.20: "1. The NIT puts their attacking units into formation."
-- Rulebook 2023 p.5: "▪ Second, the counterattacking units are put"
-- owner ruling, adopted 2026-08-26: "* So a round-2 decline is the whole difference between a live Fireball and"
-- file: client/engine/test/32-cast-costs.test.ts: "// time and attacking with it in round 2 are two actions with a whole damage"
-
-**Question:** After sending counterattackers, may the non-initiative player decline to attack with them in round 2?
-
-- **Reading A.** Yes: round 2's attack step is optional like any attack step; sending moves the units, and attacking is a second choice. *At the table:* As today (document and engine).
-- **Reading B.** No: sending them commits them, and "The NIT puts their attacking units into formation" is mandatory. *At the table:* A sent unit always attacks; the round-2 decline goes.
-
-**The document today:** A (the owner ruling of 2026-08-26 (“a warning is not worth a…”) and the engine).
-
-**Recommended:** A, the permissive reading. Under A the player may also attack with only some of the sent units, which no source addresses.
-
-**Resolution:** Question for the owner. The rule follows reading A, which the engine plays (32-cast-costs.test.ts). A related point no source addresses: whether the non-initiative player may attack with only some of the sent units.
-
 ### D-U16-1 · Sources disagree · rule 709.4b
 
 The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a Balanced unit. Its first sentence says Tough "augmented onto" a Balanced unit is doubled, then balanced; its last sentence says Tough "applied to" a Balanced unit is balanced, then doubled. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) says the order between printed, mod-given and column-shared attributes is the engine's own call, and the engine balances first.
@@ -220,7 +200,7 @@ Sources are silent on WHEN "attacking alone" is judged. If a Sneaky unit attacks
 
 **Resolution:** Question for the owner. The owner ruling of 2026-08-18 (“Sneaky's "attacking alone"”) says what "alone" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.
 
-## 2. Record and test fixes (52)
+## 2. Record and test fixes (55)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -523,6 +503,16 @@ Sources do not say in so many words whether two blockers with an unblocked attac
 
 **Resolution:** The rule follows the Manual: where a blocker stands matters for adjacency, and blocking columns are keyed to the attacking columns they face, so an unblocked column is a gap. The engine differs: F-U10-3 (CT-249).
 
+### D-U11-6 · Owner call only · rule 606.7
+
+Whether a block step happens when every attacking unit has gone before blocks was stated only by a test. The Manual says the attacking player stays present after its units are removed, but not whether anything can be blocked.
+
+- Manual p.19: "if the units they’ve sent into the region are removed."
+- file: client/ui/test/53-playtest-round7.test.ts: "CR 606.2f: an attack that has collapsed to nothing still lets the defender declare"
+- owner ruling, adopted 2026-10-16: "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block"
+
+**Resolution:** Settled by the owner on 2026-10-16 (CT-297): no unit may block an emptied attack, head-on or to the side, but counterattackers may still be sent in round 1. rule 606.7 (basis owner) and rule 606.4 state it; the engine agrees (479, 53).
+
 ### D-U12-13 · Engine only · rule 608.8c
 
 Caleb's 'replacement effects only apply once in an effect' can be read per damage (the leftover is not replaced again by anything) or per effect (each replacement effect applies once, so another Oorblak or a Blightsea Polyp may take the leftover). The engine takes the per-effect reading.
@@ -593,11 +583,23 @@ The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…�
 *Also filed as D-U23-17 (rule D1.2c).*
 
 - owner ruling, adopted 2026-08-18: "that could ride along, the only-unit formation is auto-declared (a forced"
-- file: client/engine/test/32-cast-costs.test.ts: "// FLIPPED 2026-08-24 (decisions-for-the-player audit). This test used to"
-- file: client/engine/test/32-cast-costs.test.ts: "'one sent counterattacker is still a real choice: attack, or decline');"
-- file: client/engine/src/apply.ts: "// There used to be a second branch here: a round-2 counterattack with"
+- owner ruling, adopted 2026-10-16: "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region."
+- file: client/engine/test/32-cast-costs.test.ts: "test('forcedAction: a single sent counterattacker IS auto-formed — the unit was committed at block time', () => {"
 
-**Resolution:** The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) is a digital convention (Annex D, U23); the game rule here states what the current test asserts. Register fix: mark the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) as reversed and record the 2026-08-24 audit that reversed it: F-U13-1 (CT-251). The Annex D sub-rule D1.2c states the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) with an engine-differs marker (F-U23-4 (CT-251)) and goes when the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) is marked.
+**Resolution:** Closed on 2026-10-16 (CT-251, CT-298). The 2026-08-24 audit removed the lone auto-form because a decline was then still offered. The owner then ruled that a sent counterattacker must attack, so the decline is gone and the owner ruling of 2026-08-18 holds again: rule D1.2c states it with no engine-differs marker, and the engine auto-forms the lone unit (32-cast-costs, 434, 479). F-U13-1, F-U23-4/7/8 closed.
+
+### D-U13-4 · Sources disagree · rule 610.4e
+
+The printed round-2 procedure reads as if the sent counterattackers are always put into formation; the owner ruling of 2026-08-26 (“a warning is not worth a…”) and the engine's test let the non-initiative player decline the round-2 attack after sending units.
+
+- Manual p.20: "1. The NIT puts their attacking units into formation."
+- Rulebook 2023 p.5: "▪ Second, the counterattacking units are put"
+- owner ruling, adopted 2026-08-26: "* So a round-2 decline is the whole difference between a live Fireball and"
+- RQ 1171229657740345384: "for quality of life right now I'm allowing players to send units over, and then pick the formation later with counter attacks"
+- owner ruling, adopted 2026-10-16: "if you decide to counterattack with something, it MUST be put into formation, you cannot change your mind and leave a unit off to the side/not attacking in the new region."
+- owner ruling, adopted 2026-10-16: "But you don't decide the shape of that formation until the attack step of the second battle."
+
+**Resolution:** Answered by the owner on 2026-10-16 (CT-298), reading B: a sent counterattacker must be put into formation and cannot be left out, and the shape is chosen in round 2's attack step. rule 610.4b, rule 610.4e, rule 604.2f and rule 604.2a state it; the decline survives only when nothing sent can attack or round 1 had no attack. The related point (attacking with only some of the sent units) is settled the same way: not allowed. The engine agrees (479, 424, 32-cast-costs).
 
 ### D-U13-6 · Other · rule 610.2c
 
@@ -746,6 +748,17 @@ The owner ruling of 2026-08-18 (“Ambush details”) is classified current, but
 
 **Resolution:** Mark the owner ruling of 2026-08-18 (“Ambush details”)’s recall sentence as narrowed by the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) in digital-rules.md. The ambush rules cite the owner ruling of 2026-08-18 (“Ambush details”) only for the target, the slot and the fizzle, and leave the destination to the recall rule (rule 801.7a, controller's hand). Question for the owner only if the engine's ambush path still recalls to the owner's hand; the verifier should check. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
+### D-U21-7 · Owner call only · rule 803.6h
+
+The owner ruling of 2026-08-18 (“Ambush details”) labelled two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counted as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot. The first was contradicted by the designer.
+
+- owner ruling, adopted 2026-08-18: "the slot exactly (including a blocking slot). (Engine 2026-07-16.)"
+- RQ 1127377066195697725: "You can't counter it with cosmic denial because it's not a spell"
+- RQ 1138951204257402973: "Not unless they say so. Spell is a card type"
+- owner ruling, adopted 2026-10-16: "If Caleb says its not a spell, it's not a spell and we need to fix that."
+
+**Resolution:** Settled by the designer (RQ 1127377066195697725, RQ 1138951204257402973): an Ambush is not a spell. The owner adopted it on 2026-10-16 (report #218), and rule 803.6h, rule 700.1a and rule 700.1b now state it; the engine agrees (475, 476). The slot half is unchanged in 803.6e.
+
 ### D-U23-13 · Ruling chain wrong · rule D2.4
 
 The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) describes the haste auto-ready's latch (its own hasteAutoAt). The owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b) reports that this client re-sent doneHaste once per arriving state, and replaced the latch with one keyed on the answer being outstanding. supersession.json has no the owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”) → the owner ruling of 2026-08-28 (“the haste step readies itself, and…”) edge.
@@ -798,7 +811,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (91)
+## 3. Engine-only and owner-only rules (89)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -1197,15 +1210,6 @@ Two details of the late-blocker rule are the owner ruling of 2026-10-09 (“A bl
 
 **Resolution:** The rules state the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) and are marked basis owner (rule 607.2d, rule 607.2e). Question for the owner only if a unit with a 'When I block' ability can reach a blocking spot after blocks (for example one played by a blocking Hooba-Pon 'into an open position in my formation'); then whether its trigger fires needs a decision.
 
-### D-U11-6 · Engine only · rule 606.7
-
-That the block step still takes place when every attacking unit has gone before blocks is stated only by a test. The Manual says the attacking player stays present after its units are removed, but not whether the block step happens.
-
-- Manual p.19: "if the units they’ve sent into the region are removed."
-- file: client/ui/test/53-playtest-round7.test.ts: "CR 606.2f: an attack that has collapsed to nothing still lets the defender declare"
-
-**Resolution:** The rule is basis engine and awaits owner sign-off (Annex P). It matters because the defending player may still want to side-block or send counterattackers.
-
 ### D-U11-9 · Engine only · rule 604.3c
 
 Sources silent on exactly when 'When I attack' and 'When I block' triggers reach the stack relative to the following priority window, and on when 'After the blocking step' resolves. Only the owner ruling of 2026-08-22 (“{Alluring} TARGETS one enemy unit, from…”) (for Alluring: it goes on the stack and can be negated) and the tests say so. The same applies to rule 606.6 and rule 607.3.
@@ -1515,15 +1519,6 @@ Caleb's glossary line limits Unstable to a card entering a bin "from an active z
 
 **Resolution:** Stated as the owner's ruling with the zone list marked owner. Question for the owner only if a judge's CR lists the active zones differently (for example, including the cache).
 
-### D-U21-7 · Owner call only · rule 803.6h
-
-The owner ruling of 2026-08-18 (“Ambush details”) labels two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counts as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot.
-
-- owner ruling, adopted 2026-08-18: "an ambush on the stack counts as a "spell effect" for negation targeting (Dreadwave"
-- owner ruling, adopted 2026-08-18: "the slot exactly (including a blocking slot). (Engine 2026-07-16.)"
-
-**Resolution:** Stated with basis owner (803.6h; the slot half sits in 803.6e beside the printed "their position in play"). Question for the owner only if a judge's CR treats an Ambush as a non-spell effect.
-
 ### D-U21-8 · Owner call only · rule 803.8m
 
 Pull Under tells its caster to put the deleted unit and its mods into a bin; Unstable says a modded card that would enter a bin is erased instead. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) records the engine's reading that the card's own destination wins. No designer source decides between the two printed texts.
@@ -1593,8 +1588,9 @@ Sources silent on which actions the game takes for a player. The only ruling nam
 - owner ruling, adopted 2026-08-18: "that could ride along, the only-unit formation is auto-declared (a forced"
 - file: client/engine/src/apply.ts: "if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };"
 - file: client/engine/src/apply.ts: "return { type: 'declareBlocks', seat: b.defender, blocks: {} };"
+- owner ruling, adopted 2026-10-16: "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block"
 
-**Resolution:** The rule states the engine's two forced cases, basis engine, for owner sign-off in Annex P; the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s case stays a sub-rule stating the ruling (F-U23-4 (CT-251), D-U13-3).
+**Resolution:** The rule states the engine's forced cases. Two now rest on owner calls: the lone counterattacker (the owner ruling of 2026-08-18, in force again since 2026-10-16, CT-251) and the empty block against an emptied attack when nothing can be sent (owner 2026-10-16, CT-297). The empty attack and the defender with no unit still rest on forcedAction and tests 21 and 273, for owner sign-off.
 
 ### D-U23-22 · Engine only · rule D5.5c
 

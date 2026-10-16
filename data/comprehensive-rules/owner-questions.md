@@ -1,6 +1,6 @@
 # Algomancy Comprehensive Rules: Questions for the Owner
 
-10 questions. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.
+9 questions. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.
 
 ## Triggers and the stack
 
@@ -98,27 +98,9 @@
 
 **Answer:**
 
-### 6. After sending counterattackers, may the non-initiative player decline to attack with them in round 2?
-
-*D-U13-4, rule 610.4e.*
-
-- Manual p.20: "1. The NIT puts their attacking units into formation."
-- Rulebook 2023 p.5: "▪ Second, the counterattacking units are put"
-- owner ruling, adopted 2026-08-26: "* So a round-2 decline is the whole difference between a live Fireball and"
-- file: client/engine/test/32-cast-costs.test.ts: "// time and attacking with it in round 2 are two actions with a whole damage"
-
-- **A.** Yes: round 2's attack step is optional like any attack step; sending moves the units, and attacking is a second choice. *At the table:* As today (document and engine).
-- **B.** No: sending them commits them, and "The NIT puts their attacking units into formation" is mandatory. *At the table:* A sent unit always attacks; the round-2 decline goes.
-
-**Today:** A (the owner ruling of 2026-08-26 (“a warning is not worth a…”) and the engine).
-
-**Recommended:** A, the permissive reading. Under A the player may also attack with only some of the sent units, which no source addresses.
-
-**Answer:**
-
 ## Stats and attributes
 
-### 7. A Balanced unit gets Tough from an augment: is it doubled, then balanced, or balanced, then doubled?
+### 6. A Balanced unit gets Tough from an augment: is it doubled, then balanced, or balanced, then doubled?
 
 *D-U16-1, rule 709.4b; also filed as D-U19-1 (rule 802.1m).*
 
@@ -139,7 +121,7 @@
 
 **Answer:**
 
-### 8. May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
+### 7. May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
 
 *D-U19-5, rule 802.2a.*
 
@@ -158,7 +140,7 @@
 
 **Answer:**
 
-### 9. Does Inverted invert from the printed stats, or from a rewritten base?
+### 8. Does Inverted invert from the printed stats, or from a rewritten base?
 
 *D-U19-3, rule 802.8c.*
 
@@ -182,7 +164,7 @@
 
 **Answer:**
 
-### 10. Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
+### 9. Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
 
 *D-U20-2, rule 802.14a.*
 

@@ -11,11 +11,11 @@
       },
       {
         "file": "client/engine/test/32-cast-costs.test.ts",
-        "quote": "// FLIPPED 2026-08-24 (decisions-for-the-player audit). This test used to"
+        "quote": "test('forcedAction: a single sent counterattacker IS auto-formed — the unit was committed at block time', () => {"
       },
       {
-        "file": "client/engine/test/32-cast-costs.test.ts",
-        "quote": "// assert the auto-declare; the branch is deleted. Sending a unit at block"
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "quote": "test('cr:annexd.general.player-decides.forced.lone-counterattacker — a lone sent counterattacker with no token is formed for the player', () => {"
       }
     ],
     "ct": "CT-251",
@@ -23,7 +23,8 @@
       "F-U23-4",
       "F-U23-7",
       "F-U23-8"
-    ]
+    ],
+    "closed": "fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker \"MUST be put into formation\"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479)."
   },
   {
     "id": "F-U13-2",

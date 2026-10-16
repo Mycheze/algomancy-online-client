@@ -355,9 +355,13 @@
       {
         "source": "file: client/engine/src/apply.ts",
         "quote": "return { type: 'declareBlocks', seat: b.defender, blocks: {} };"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-16",
+        "quote": "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block"
       }
     ],
-    "resolution": "The rule states the engine's two forced cases, basis engine, for owner sign-off in Annex P; the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s case stays a sub-rule stating the ruling (F-U23-4 (CT-251), D-U13-3)."
+    "resolution": "The rule states the engine's forced cases. Two now rest on owner calls: the lone counterattacker (the owner ruling of 2026-08-18, in force again since 2026-10-16, CT-251) and the empty block against an emptied attack when nothing can be sent (owner 2026-10-16, CT-297). The empty attack and the defender with no unit still rest on forcedAction and tests 21 and 273, for owner sign-off."
   },
   {
     "id": "D-U23-22",

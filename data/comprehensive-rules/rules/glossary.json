@@ -2013,7 +2013,7 @@
   {
     "key": "glossary.spell-effect",
     "term": "Spell effect",
-    "text": "An effect that is a spell: a spell, a spell unit or a spell token on the stack, or an ambush.",
+    "text": "An effect that is a spell: a spell, a spell unit or a spell token on the stack.",
     "see": [
       "effects.general.effect.spell-effect"
     ],

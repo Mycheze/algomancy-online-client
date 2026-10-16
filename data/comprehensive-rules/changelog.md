@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1806 rules and 99 sections.
+- New: 1808 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -1674,6 +1674,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D4.1b `annexd.undo.hidden-step.floor`
   - D4.1c `annexd.undo.hidden-step.battle`
   - D4.2 `annexd.undo.cast-cancel`
+  - D4.2a `annexd.undo.cast-cancel.burst-step`
   - D4.3 `annexd.undo.seen-cards`
   - D4.3a `annexd.undo.seen-cards.after`
   - D4.3b `annexd.undo.seen-cards.message`
@@ -1713,6 +1714,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D6.2b `annexd.reveal.glimpse.once`
   - D6.2c `annexd.reveal.glimpse.public`
   - D6.2d `annexd.reveal.glimpse.learn-to-play`
+  - D6.2e `annexd.reveal.glimpse.deck-reveal`
   - D6.3 `annexd.reveal.resolving`
   - D6.3a `annexd.reveal.resolving.battle-only`
   - D6.3b `annexd.reveal.resolving.partial`

@@ -27,17 +27,21 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.unoffered — every option the engine offers is accepted when taken; none is shown and then refused · Key: annexd.general.player-decides.unoffered</sub>
 
-<a id="rD1.2b"></a>**D1.2b** The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them, and a defender with no unit in the battle region has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them. See rules 610, D1.2c, D1.2f, D1.2e, D2.7.
+<a id="rD1.2b"></a>**D1.2b** The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them; a lone counterattacker with no spell token to ride along has its one-unit formation declared (see rule D1.2c); and a defender with no unit in the battle region, or facing an attack with no attacking unit left and unable to send a counterattacker, has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them. See rules 610, D1.2c, D1.2f, D1.2e, D2.7.
 
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 3 gate test files · Owner ruling, adopted 2026-08-18, 2026-09-01 (quoted from the retired ruling register) · Engine: apply.ts:forcedAction · Tests: 21-fixes.test.ts, 273-full-control-both-seats.test.ts, 434-cr-digital-1.test.ts · Demonstrated by tests: 21-fixes.test.ts::a whole empty-board battle drains through forced actions to deployment, 21-fixes.test.ts::forcedAction is null whenever a real choice exists, 273-full-control-both-seats.test.ts::BL-18 §2 with full control ON the drain stops and the player is left the window · Key: annexd.general.player-decides.forced</sub>
+> *Example: In round 2 the lone counterattacker is destroyed before blocks: the initiative player's empty block is declared for them, though they have a unit in the region.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 4 gate test files · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-18, 2026-09-01 (quoted from the retired ruling register) · Engine: apply.ts:forcedAction · Tests: 21-fixes.test.ts, 273-full-control-both-seats.test.ts, 434-cr-digital-1.test.ts, 479-empty-attack-and-committed-counterattack.test.ts · Example test: 479-empty-attack-and-committed-counterattack.test.ts::CT-297 an emptied counterattack in round 2 leaves the defender nothing to declare · Demonstrated by tests: 21-fixes.test.ts::a whole empty-board battle drains through forced actions to deployment, 21-fixes.test.ts::forcedAction is null whenever a real choice exists, 273-full-control-both-seats.test.ts::BL-18 §2 with full control ON the drain stops and the player is left the window · Key: annexd.general.player-decides.forced</sub>
 
 <sub>Discrepancies: D-U23-21 (discrepancies.md)</sub>
 
-<a id="rD1.2c"></a>**D1.2c** In round 2, a counterattack pool that holds exactly one unit, and no spell token that could ride along, declares the one-unit formation by itself. Engine differs, see F-U23-4. See rule 610. *(Engine differs, see F-U23-4.)*
+<a id="rD1.2c"></a>**D1.2c** In round 2, a counterattack pool that holds exactly one unit able to attack, and no spell token that could ride along, declares the one-unit formation by itself: the unit must attack, and one unit has only one shape. See rule 610.
 
 > *Example: A player who sent one unit to counterattack, and no spell token, is not asked to form it: the one-unit formation is declared for them.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Engine: apply.ts:forcedAction · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — the engine still asks a lone sent counterattacker with no token to declare (engine differs) · Key: annexd.general.player-decides.forced.lone-counterattacker</sub>
+> *Example: With a spell token that could ride along, the player is asked whether it comes, and still may not decline.*
+
+<sub>Basis: Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Engine: apply.ts:forcedAction · Tests: 434-cr-digital-1.test.ts, 32-cast-costs.test.ts, 479-empty-attack-and-committed-counterattack.test.ts · Example tests: 434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — a lone sent counterattacker with no token is formed for the player, 479-empty-attack-and-committed-counterattack.test.ts::CT-251 a lone counterattacker with a ridable token is asked, but still may not decline · Key: annexd.general.player-decides.forced.lone-counterattacker</sub>
 
 <sub>Discrepancies: D-U13-3 (discrepancies.md)</sub>
 
@@ -380,19 +384,29 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.floor — an undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back · Key: annexd.undo.hidden-step.floor</sub>
 
-<a id="rD4.1c"></a>**D4.1c** Actions taken in battle are not undone. For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net. See rule D7.
+<a id="rD4.1c"></a>**D4.1c** Actions taken in battle are not undone, except the steps of a cast that has not yet gone on the stack (see rule D4.2). For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net. See rule D7.
 
 > *Example: Cadaverous Cultivator ("[Battle] Discard a card: …") raises no confirmation: the click activates it, and the game asks which card to discard.*
 
 > *Example: While the confirmation is up, clicking a card in hand plays nothing.*
 
-<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 10 tests, all passed; 2 gate test files · Tests: 373-no-confirm-where-undo-works.test.ts, 456-activate-confirm-is-modal.test.ts · Example tests: 456-activate-confirm-is-modal.test.ts::D2 §1 the reported card raises no bar, 456-activate-confirm-is-modal.test.ts::D2 §2 with the bar up a hand click sends nothing · Demonstrated by tests: 373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click, 373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks, 456-activate-confirm-is-modal.test.ts::D2 §2 clicking the same unit again says yes, 456-activate-confirm-is-modal.test.ts::D2 §2 Enter says yes · Key: annexd.undo.hidden-step.battle</sub>
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 7 tests, all passed; 2 gate test files · Tests: 373-no-confirm-where-undo-works.test.ts, 456-activate-confirm-is-modal.test.ts · Example tests: 456-activate-confirm-is-modal.test.ts::D2 §1 the reported card raises no bar, 456-activate-confirm-is-modal.test.ts::D2 §2 with the bar up a hand click sends nothing · Demonstrated by tests: 373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click, 373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks, 456-activate-confirm-is-modal.test.ts::D2 §2 clicking the same unit again says yes, 456-activate-confirm-is-modal.test.ts::D2 §2 Enter says yes · Key: annexd.undo.hidden-step.battle</sub>
 
 <sub>Discrepancies: D-U23-11 (discrepancies.md)</sub>
 
-<a id="rD4.2"></a>**D4.2.** A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled. A Burst group is cancelled whole. See rules 702, 803.
+<a id="rD4.2"></a>**D4.2.** A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled, in battle as well. A Burst group is cancelled whole, with Start over. See rules 702, 803.
 
-<sub>Basis: Owner ruling, adopted 2026-10-01, 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.undo.cast-cancel — a cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack · Key: annexd.undo.cast-cancel</sub>
+<sub>Basis: Owner ruling, adopted 2026-10-01, 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Tests: 434-cr-digital-1.test.ts, 358-burst-order-ui.test.ts, 483-burst-undo-one-step.test.ts · Demonstrated by tests: 434-cr-digital-1.test.ts::cr:annexd.undo.cast-cancel — a cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack, 358-burst-order-ui.test.ts::§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over · Key: annexd.undo.cast-cancel</sub>
+
+<a id="rD4.2a"></a>**D4.2a** While the order of a Burst group is being chosen, its caster may also take back one step at a time with Undo last pick: the last token picked, or the last aim chosen. The earlier picks stand. Undo last pick is offered once a token has been picked, and only the caster can take a step back. See rule 803.
+
+> *Example: The caster picks which Fireball resolves first, then takes the pick back: the question "which resolves first?" returns with nothing picked, and nothing is on the stack.*
+
+> *Example: After picking and aiming the first Fireball, one step back returns to aiming it; the pick stands.*
+
+> *Example: The opponent's undo cannot reach into the burst.*
+
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 483-burst-undo-one-step.test.ts, 358-burst-order-ui.test.ts · Example tests: 483-burst-undo-one-step.test.ts::BL-47 one undo takes back the last pick of an ordered burst, and only that, 483-burst-undo-one-step.test.ts::BL-47 one undo takes back the last aim, leaving the earlier pick standing, 483-burst-undo-one-step.test.ts::BL-47 the opponent cannot reach into the burst with an undo · Demonstrated by test: 358-burst-order-ui.test.ts::§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over · Key: annexd.undo.cast-cancel.burst-step</sub>
 
 <a id="rD4.3"></a>**D4.3.** An action that showed a player hidden cards cannot be undone, and neither can anything that player did before it.
 
@@ -587,6 +601,14 @@ These are the conventions of this digital client: how it times, shows and confir
 <a id="rD6.2d"></a>**D6.2d** The same holds in Learn to Play: a glimpse by the Tutorial Bot inside a hidden step is shown to the learner in the recap. See rule D8.1.
 
 <sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 371-glimpse-in-the-recap.test.ts · Demonstrated by test: 371-glimpse-in-the-recap.test.ts::CR D6.2d: Learn to Play holds the bot's glimpse for the recap, and the recap pops it · Key: annexd.reveal.glimpse.learn-to-play</sub>
+
+<a id="rD6.2e"></a>**D6.2e** A card that reveals cards from the deck without the Glimpse keyword, such as Tides of the Cosmos or Big Glimpse Card, shows the revealed cards to every player as cards, in the notice a glimpse uses. A player whose own open question already shows those cards is not shown the notice. Inside a hidden step the reveal is held for the reveal at the end of the step, as a glimpse is. See rules D6.2c, 402.2a.
+
+> *Example: Tides of the Cosmos resolves for one player: the other player is shown all eight revealed cards.*
+
+> *Example: Big Glimpse Card: while the opponent splits the seven cards into piles, its caster is shown all seven.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 1 gate test file · Tests: 481-public-deck-reveal.test.ts · Example tests: 481-public-deck-reveal.test.ts::Tides of the Cosmos for one seat shows the other seat all 8 cards in the notice, 481-public-deck-reveal.test.ts::Big Glimpse Card shows the caster all 7 in the notice while the opponent splits · Demonstrated by test: 481-public-deck-reveal.test.ts::no hidden-step runner treats a glimpse or a reveal specially · Key: annexd.reveal.glimpse.deck-reveal</sub>
 
 <a id="rD6.3"></a>**D6.3.** During the battle phase, when an item has begun to resolve and is waiting on a choice from its controller, every player is shown that the item is resolving and whose it is. The item has left the stack, and no player can respond to it (see 703.6). See rule 703.6.
 

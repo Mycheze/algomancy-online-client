@@ -3521,33 +3521,65 @@
   },
   {
     "key": "concepts.targets.required",
-    "textHash": "6c0ca299940951fe",
+    "textHash": "b1f0812748b2bd91",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.canFillSlot",
+        "loc": "client/engine/src/apply.ts:canCast (requiresTargets && requiredSlotsFillable gate)",
         "agrees": true,
-        "note": "every required slot checked (CR 110.7); Fight with only its ally in the region is not playable"
+        "note": "cast gate refuses a play whose required slots cannot all be filled"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:requiredSlotsFillable",
+        "agrees": true,
+        "note": "backtracking search over every required slot, excluding refs already taken (distinct), at some declarable X"
+      },
+      {
+        "loc": "client/engine/src/cards/dsl.ts:requiresTargets/targetMinimum",
+        "agrees": true,
+        "note": "min defaults to 1 per slot; only min 0 specs (up to / any number) may go on the stack at nothing"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Tilling the Graves",
+        "agrees": true,
+        "note": "count 2, min 2"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:requiredSlotsFillable (scope note)",
+        "agrees": true,
+        "note": "'different from the others' rests on Fight's '2 units' ruling and the engine's distinct-slot collector; no cited source states distinctness in general. The engine also lets a triggered 'you may ... target' ability (Reclaimer of Secrets, Rousing Spirit, Blightwalker) take zero targets; that declines the whole optional effect, so it does not contradict this rule about played cards."
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/390-raq-stack.test.ts",
+        "file": "390-raq-stack.test.ts",
         "pattern": "RAQ target requirements: Fight cannot be played",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/396-raq-timing.test.ts",
+        "file": "396-raq-timing.test.ts",
         "pattern": "Rebalance is playable with no unit",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/452-abduct-x-gate.test.ts",
+        "file": "452-abduct-x-gate.test.ts",
         "pattern": "Abduct is castable against a cost-1 attacker",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "478-required-targets-at-cast.test.ts",
+        "pattern": "Tilling the Graves",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "477-target-minimum-sweep.test.ts",
+        "pattern": "",
         "passed": true,
         "asserts_claim": true
       }
@@ -3557,17 +3589,27 @@
       {
         "ref": "RAQ 1410252965276684418#1",
         "supports": "yes",
-        "note": "_passer, [Solved]: Fight needs two units, one an ally — i.e. every required target, distinct"
+        "note": "[Solved] thread, _passer; Fight needs ally + another unit in the region; supports simultaneous, distinct required targets (status covered)"
       },
       {
         "ref": "RAQ 1454169054402314362#1",
         "supports": "yes",
-        "note": "calebgannon: Rebalance targets nothing so has no unit requirement"
+        "note": "calebgannon's own words; Rebalance targets nothing so no requirement"
       },
       {
         "ref": "owner register@72de434",
-        "supports": "partial",
-        "note": "a truncated fragment; consistent but not needed — the designer sources carry the rule"
+        "supports": "yes",
+        "note": "truncated quote, says every required target"
+      },
+      {
+        "ref": "owner CT-305 2026-10-16",
+        "supports": "yes",
+        "note": "unless 'up to', targets required"
+      },
+      {
+        "ref": "owner CT-299 2026-10-16",
+        "supports": "yes",
+        "note": "Tilling the Graves needs both targets"
       }
     ],
     "quote_spans": [
@@ -3580,8 +3622,32 @@
         "text": "it doesn't target anything so there are no requirements for you having a unit"
       },
       {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (eff.targets && requiresTargets(eff.targets)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "requiredSlotsFillable(spec: TargetSpec, region: number, ally: Seat, sourceId?: EntityId,"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": ".filter(c => !taken.has(JSON.stringify(c)));"
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "return spec.min === 'X' || (spec.min ?? 1) > 0;"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "text": "what: 'binCard', count: 2, min: 2,"
+      },
+      {
         "file": "client/engine/src/cards/printed.json",
-        "text": "Target ally and another target unit fight."
+        "text": "\"text\": \"Recall two target units in your bin, then discard a card.\","
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"Each player gives an opponent control of one of their units.\","
       }
     ],
     "basis_ok": true,
@@ -3759,21 +3825,54 @@
   },
   {
     "key": "concepts.targets.what.up-to",
-    "textHash": "a0fa6f30e57e45f7",
+    "textHash": "d792faa68dbf4cc1",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts collectTargets doneTargets for up-to",
+        "loc": "client/engine/src/cards/sets/batch-fire-b.ts:twinFlame",
         "agrees": true,
-        "note": ""
+        "note": "count 2, min 0"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts:Penance",
+        "agrees": true,
+        "note": "count 2, min 0; draw still runs"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:collectPartTargets",
+        "agrees": true,
+        "note": "done option offered only once part.targets.length >= min"
+      },
+      {
+        "loc": "client/engine/test/477-target-minimum-sweep.test.ts",
+        "agrees": true,
+        "note": "registry sweep: a spec allowing fewer than its slots must print up to / any number (or a trigger 'may')"
       }
     ],
     "tests_run": [
       {
         "file": "21-fixes.test.ts",
-        "pattern": "R126: an \"up to\" spell may decline every target",
+        "pattern": "CR 110.1c: an \"up to\" spell may decline",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "478-required-targets-at-cast.test.ts",
+        "pattern": "Tilling the Graves with two units in the bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "38-light-a.test.ts",
+        "pattern": "Penance: with no targets",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "477-target-minimum-sweep.test.ts",
+        "pattern": "every target spec that may stop short",
         "passed": true,
         "asserts_claim": true
       }
@@ -3781,15 +3880,50 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R126",
+        "ref": "card: Penance",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "up to N means you may declare none"
+      },
+      {
+        "ref": "owner CT-305 2026-10-16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner CT-299 2026-10-16",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "## R126 — \"up to N\" means you may declare NONE"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"Any number of target players each lose 1 life. Draw a card.\","
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[Switch1] I deal 2 damage to each of up to two target units.\","
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-fire-b.ts",
+        "text": "count: 2, min: 0, symmetric: true },"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-light-a.ts",
+        "text": "targets: { what: 'player', prompt: 'Penance: any number of target players each lose 1 life', count: 2, min: 0, symmetric: true },"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (part.targets.length >= min) {"
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "return spec.min === 'X' ? max : Math.min(spec.min ?? 1, max);"
       }
     ],
     "basis_ok": true,

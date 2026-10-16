@@ -4511,5 +4511,44 @@
     "confidence": "high",
     "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-30 (“A refusal the player earns before…”) had no CR rule before the register is retired.",
     "sourceHashes": {}
+  },
+  {
+    "key": "annexd.reveal.glimpse.deck-reveal",
+    "parent": "annexd.reveal.glimpse",
+    "order": 5,
+    "text": "A card that reveals cards from the deck without the Glimpse keyword, such as Tides of the Cosmos or Big Glimpse Card, shows the revealed cards to every player as cards, in the notice a glimpse uses. A player whose own open question already shows those cards is not shown the notice. Inside a hidden step the reveal is held for the reveal at the end of the step, as a glimpse is.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos resolves for one player: the other player is shown all eight revealed cards.",
+        "test": "481-public-deck-reveal.test.ts::Tides of the Cosmos for one seat shows the other seat all 8 cards in the notice"
+      },
+      {
+        "text": "Big Glimpse Card: while the opponent splits the seven cards into piles, its caster is shown all seven.",
+        "test": "481-public-deck-reveal.test.ts::Big Glimpse Card shows the caster all 7 in the notice while the opponent splits"
+      },
+      {
+        "text": null,
+        "test": "481-public-deck-reveal.test.ts::no hidden-step runner treats a glimpse or a reveal specially"
+      }
+    ],
+    "see": [
+      "annexd.reveal.glimpse.public",
+      "zones.hand.hidden.look-at"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "481-public-deck-reveal.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "CT-302 / report #219 (2026-10-16). No owner or designer words on how a deck reveal is displayed; the client draws it as a glimpse is drawn. Engine-derived, for owner sign-off (Annex P). The printed cards say \"Reveal\"; how the reveal is displayed is the client's.",
+    "sourceHashes": {}
   }
 ]
