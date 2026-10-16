@@ -2997,7 +2997,7 @@ order.
 
 <a id="r405.4"></a>**405.4.** A card that enters a bin from any zone except the stack is trashed. A card that comes from the stack is not, and a token is never trashed. A nontoken mod erased together with its {Unstable} host is not trashed either. See 801. See rule 801.
 
-<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-29, 2026-09-28 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Tests: 35-rot-debt-trash.test.ts, 338-tokens-are-not-trashed.test.ts, 224-mod-trash.test.ts · Demonstrated by tests: 35-rot-debt-trash.test.ts::CR 801.2b: a spell going to the bin after RESOLVING is not trashed, 35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, is NOT trashed, and is then erased, 224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all · Key: zones.bin.trash</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-29, 2026-09-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 8 tests, all passed; 3 gate test files · Tests: 35-rot-debt-trash.test.ts, 338-tokens-are-not-trashed.test.ts, 224-mod-trash.test.ts · Demonstrated by tests: 35-rot-debt-trash.test.ts::CR 801.2b: a spell going to the bin after RESOLVING is not trashed, 35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, is NOT trashed, and is then erased, 224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all · Key: zones.bin.trash</sub>
 
 <a id="r405.4a"></a>**405.4a** A spell played for free while another effect resolves (for example by Tides of the Cosmos) and then put into the bin counts as coming from the stack, so it is not trashed.
 
@@ -7932,7 +7932,7 @@ order.
 
 > *Example: A card that leaves a cache for a bin is trashed.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-09-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 36-cache-prophecy.test.ts · Example tests: 35-rot-debt-trash.test.ts::discarding from hand trashes, by the owner of the bin it enters, 36-cache-prophecy.test.ts::CR 801.2: a card leaving the cache for a BIN is trashed (classified automatically) · Key: keywords.actions.trash</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-09-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 36-cache-prophecy.test.ts · Example tests: 35-rot-debt-trash.test.ts::discarding from hand trashes, by the owner of the bin it enters, 36-cache-prophecy.test.ts::CR 801.2: a card leaving the cache for a BIN is trashed (classified automatically) · Key: keywords.actions.trash</sub>
 
 <sub>Discrepancies: D-U18-2 (discrepancies.md)</sub>
 
@@ -10278,21 +10278,21 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1808 numbered rules.
+1816 numbered rules.
 
 | basis | rules |
 |---|---|
 | Printed | 461 |
 | Designer | 206 |
-| Owner call | 686 |
-| Engine only | 38 |
+| Owner call | 690 |
+| Engine only | 42 |
 | Mixed | 417 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1795 |
+| confirmed | 1803 |
 | partial | 11 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -10318,16 +10318,20 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - [D3.1b](#rD3.1b) A game with no clock shows no clocks.
 - [D3.1c](#rD3.1c) Choosing a clock setting does not make a game a custom game.
 - [D3.1d](#rD3.1d) A player's clock is shown as critical when it is down to a tenth of the game's bank or to one minute, whichever is less.
-- [D3.2](#rD3.2) A player's clock runs only while the game is waiting on that player, and only while both players are connected.
+- [D3.2](#rD3.2) A player's clock runs only while the game is waiting on that player, and only while both players are connected. Neither clock runs while a proposed fix waits for its answer (see rule D4.5e).
 - [D3.2a](#rD3.2a) In a step both players take at once, both clocks run; a player's clock stops when that player finishes the step.
-- [D3.2b](#rD3.2b) A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other.
+- [D3.2b](#rD3.2b) A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other. While a proposed fix waits for its answer, the server does not pass for a standing pass.
 - [D3.2c](#rD3.2c) A player watching a recap is off the clock until the playback ends or the server's hold on it lapses. Acting ends the hold.
 - [D3.3](#rD3.3) A player whose clock runs out loses the game, and the log says they ran out of time. This happens even if neither player acts.
 - [D3.4](#rD3.4) A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open.
 - [D3.4a](#rD3.4a) A connected player or a watcher keeps an idle game open, and an empty game is given a grace period for a player to reconnect.
 - [D3.4b](#rD3.4b) A game closed for being idle has no winner, is not rated, and is recorded as unfinished.
 - [D4.1a](#rD4.1a) The opponent acting in the same step does not stop a player's undo.
-- [D4.1b](#rD4.1b) An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step.
+- [D4.1b](#rD4.1b) An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. Nor can a player's own undo, in any step, go back past an agreed edit or past the point an agreed rewind returned the game to (see rule D4.5): only another agreed rewind can.
+- [D4.5a](#rD4.5a) An edit is one of: setting a player's life total, to a whole number from 1 to 999; a player drawing from 1 to 10 cards off the top of their deck; moving one of the proposer's own cards from their hand, bin or cache to their hand, bin or cache, or to the top or bottom of their deck; or taking a unit off the board to its controller's hand, bin or the bottom of their deck. A token taken off the board is simply gone.
+- [D4.5b](#rD4.5b) An edit is quiet: nothing triggers on it. A unit it takes off the board neither dies nor despawns, a card it puts into a bin is not trashed, a card it takes out of a bin does not count as leaving the bin, and the cards it draws are not a draw for anything that listens for one.
+- [D4.5c](#rD4.5c) An edit cannot be proposed or made inside the hidden planning, haste or deploy steps, nor while a decision is open. A rewind may be proposed at any time.
+- [D4.5e](#rD4.5e) A proposal states the fix and the proposer's reason, which is required. It lapses after 60 seconds, or as soon as any action lands, and the proposer may withdraw it. Only the other player can accept it; after a decline the proposer must wait 15 seconds before proposing again. When a fix lands, the proposer's reason is filed as a bug report.
 - [D5.1a](#rD5.1a) The recap changes nothing in the game. A game played with recap frames is the same game, action for action, as one without them.
 - [D5.1b](#rD5.1b) A frame of the opponent's move shows that move on their side, their hand still face down, and the player's own side as the player left it.
 - [D5.1c](#rD5.1c) A move with nothing to show is not given a frame, but its log line is kept.
@@ -10884,4 +10888,4 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1808 rules and 99 sections.
+- New: 1816 rules and 99 sections.

@@ -2276,11 +2276,15 @@
     "key": "annexd.clocks.running",
     "parent": "D3",
     "order": 2,
-    "text": "A player's clock runs only while the game is waiting on that player, and only while both players are connected.",
+    "text": "A player's clock runs only while the game is waiting on that player, and only while both players are connected. Neither clock runs while a proposed fix waits for its answer (see rule annexd.undo.agreed-fix.proposal).",
     "examples": [
       {
         "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.running — a clock runs only for a seat the game is waiting on, and only while both players are connected"
+      },
+      {
+        "text": "A player proposes a fix: both clocks stop, and they run again once the proposal lapses.",
+        "test": "485-agreed-fix-rooms.test.ts::§5 a proposal stops both clocks, lapses after a minute, and ends on any action"
       }
     ],
     "see": [],
@@ -2292,13 +2296,15 @@
       "engine": [],
       "tests": [
         "suite.test.ts",
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "485-agreed-fix-rooms.test.ts",
+        "486-agreed-fix-over-the-wire.test.ts"
       ]
     },
     "basis": "engine",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "ENGINE-ONLY. Stated by client/server/e2e/test-clock.ts (run through e2e/suite.test.ts; its checks are not in the title index). D-U23-2.",
+    "notes": "ENGINE-ONLY. Stated by client/server/e2e/test-clock.ts (run through e2e/suite.test.ts; its checks are not in the title index). D-U23-2. Last sentence: BL-46 (2026-10-16), clockRunning in server/rooms.ts.",
     "sourceHashes": {}
   },
   {
@@ -2336,7 +2342,7 @@
     "key": "annexd.clocks.running.standing-pass",
     "parent": "annexd.clocks.running",
     "order": 2,
-    "text": "A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other.",
+    "text": "A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other. While a proposed fix waits for its answer, the server does not pass for a standing pass.",
     "examples": [
       {
         "text": null,
@@ -2360,7 +2366,7 @@
     "basis": "engine",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "ENGINE-ONLY: client/server/e2e/test-passall-clock.ts, whose header quotes the owner (2026-09-28, 'their timer should never go down'). No R-ruling. D-U23-3.",
+    "notes": "ENGINE-ONLY: client/server/e2e/test-passall-clock.ts, whose header quotes the owner (2026-09-28, 'their timer should never go down'). No R-ruling. D-U23-3. Last sentence: BL-46 (2026-10-16), settlePassAll in server/rooms.ts (a pass would land an action and end the proposal).",
     "sourceHashes": {}
   },
   {
@@ -2596,11 +2602,15 @@
     "key": "annexd.undo.hidden-step.floor",
     "parent": "annexd.undo.hidden-step",
     "order": 2,
-    "text": "An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step.",
+    "text": "An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. Nor can a player's own undo, in any step, go back past an agreed edit or past the point an agreed rewind returned the game to (see rule annexd.undo.agreed-fix): only another agreed rewind can.",
     "examples": [
       {
         "text": "An undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back.",
         "test": "434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.floor — an undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back"
+      },
+      {
+        "text": "After an agreed rewind of one action in planning, the player cannot undo, alone, the action before it.",
+        "test": "485-agreed-fix-rooms.test.ts::§2 the per-seat undo cannot walk back past an agreed fix"
       }
     ],
     "see": [],
@@ -2612,20 +2622,21 @@
       "engine": [],
       "tests": [
         "suite.test.ts",
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "485-agreed-fix-rooms.test.ts"
       ]
     },
     "basis": "engine",
     "scope": "digital",
     "confidence": "low",
-    "notes": "ENGINE-ONLY: e2e/test-undo-segment.ts §4c 'the FLOOR: what the phase itself started is not yours to take back'; the owner's words (debt, 'at the beginning of deployment') are quoted there. D-U23-7.",
+    "notes": "ENGINE-ONLY: e2e/test-undo-segment.ts §4c 'the FLOOR: what the phase itself started is not yours to take back'; the owner's words (debt, 'at the beginning of deployment') are quoted there. D-U23-7. Last sentence: BL-46 (2026-10-16), amendFloor in server/rooms.ts.",
     "sourceHashes": {}
   },
   {
     "key": "annexd.undo.hidden-step.battle",
     "parent": "annexd.undo.hidden-step",
     "order": 3,
-    "text": "Actions taken in battle are not undone, except the steps of a cast that has not yet gone on the stack (see rule annexd.undo.cast-cancel). For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net.",
+    "text": "One player cannot undo actions taken in battle, except the steps of a cast that has not yet gone on the stack (see rule annexd.undo.cast-cancel); both players together may take them back with an agreed rewind (see rule annexd.undo.agreed-fix.rewind). For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net.",
     "examples": [
       {
         "text": null,
@@ -2664,18 +2675,24 @@
           "quote": "The only ways to say \"yes, activate\" should be clicking the SAME unit/thing again or clicking the Yes or hitting enter. Otherwise, it should do nothing",
           "adopted": "2026-10-16",
           "from": "report round 2026-10-16, Discord report D2 (in session)"
+        },
+        {
+          "quote": "Rewinding a whole step or two seems fine to me. Either say \"up to 5 actions\" or \"restart this step\"",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, BL-46 (in session)"
         }
       ],
       "engine": [],
       "tests": [
         "373-no-confirm-where-undo-works.test.ts",
-        "456-activate-confirm-is-modal.test.ts"
+        "456-activate-confirm-is-modal.test.ts",
+        "485-agreed-fix-rooms.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "The confirmation's answers are the owner's call (O4). That battle actions are not undone is still engine-derived (373; D-U23-11). Which costs ask is the client's split, shown over the pool by 456 §1. The exception points at D4.2 (BL-47, 2026-10-16).",
+    "notes": "The confirmation's answers are the owner's call (O4). That battle actions are not undone is still engine-derived (373; D-U23-11). Which costs ask is the client's split, shown over the pool by 456 §1. The exception points at D4.2 (BL-47, 2026-10-16). The agreed rewind: BL-46 (2026-10-16).",
     "sourceHashes": {}
   },
   {
@@ -3859,6 +3876,344 @@
     "scope": "digital",
     "confidence": "high",
     "notes": "BL-47 (2026-10-16): the owner relayed a Discord request to see the order being chosen and to undo it or start over. The client sends one undo per click; the server takes it in battle as part of the pre-commit cast chain.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.seen-cards.agreed-rewind",
+    "parent": "annexd.undo.seen-cards",
+    "order": 7,
+    "text": "The lock binds one player's own undo. An agreed rewind (see rule annexd.undo.agreed-fix.rewind) may take the game back past an action that showed a player hidden cards: the other player's agreement waives the lock.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "don't worry about the \"rules\" of this. It has to be agreed upon and is used in friendly matches.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, BL-46 (in session)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "485-agreed-fix-rooms.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "BL-46 (2026-10-16): the owner — agreement overrides the seen-cards lock in friendly matches. rewindRoom truncates the log without consulting the lock.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.agreed-fix",
+    "parent": "D4",
+    "order": 5,
+    "text": "In a game between two players, either player may propose a fix, and the fix happens only if the other player agrees. A fix is an edit or a rewind. Test mode, a scenario, and a game that has not started or is over take no fixes. A fix sent as an ordinary action is refused: only an agreed proposal makes one.",
+    "examples": [
+      {
+        "text": null,
+        "test": "486-agreed-fix-over-the-wire.test.ts::§1 an amend sent as an action is refused, whoever it names as agreeing"
+      },
+      {
+        "text": null,
+        "test": "486-agreed-fix-over-the-wire.test.ts::§3 the proposer cannot accept their own fix; a decline cools them down"
+      },
+      {
+        "text": null,
+        "test": "485-agreed-fix-rooms.test.ts::§5 edits wait for the public steps; a rewind works in a hidden one; some rooms take no fixes"
+      }
+    ],
+    "see": [
+      "annexd.undo"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Assuming both players agree, it doesn't change anything in the game. it'll only be used to solve broken engine/game issues.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, BL-46 (in session)"
+        },
+        {
+          "quote": "don't worry about the \"rules\" of this. It has to be agreed upon and is used in friendly matches.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, BL-46 (in session)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "484-agreed-fix-action.test.ts",
+        "485-agreed-fix-rooms.test.ts",
+        "486-agreed-fix-over-the-wire.test.ts",
+        "487-propose-a-fix-ui.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "BL-46, landed 2026-10-16 (\"Beta: propose a fix\").",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.agreed-fix.edits",
+    "parent": "annexd.undo.agreed-fix",
+    "order": 1,
+    "text": "An edit is one of: setting a player's life total, to a whole number from 1 to 999; a player drawing from 1 to 10 cards off the top of their deck; moving one of the proposer's own cards from their hand, bin or cache to their hand, bin or cache, or to the top or bottom of their deck; or taking a unit off the board to its controller's hand, bin or the bottom of their deck. A token taken off the board is simply gone.",
+    "examples": [
+      {
+        "text": null,
+        "test": "484-agreed-fix-action.test.ts::§2 life: the target life total is SET, and the log says so publicly"
+      },
+      {
+        "text": null,
+        "test": "484-agreed-fix-action.test.ts::§2 draw: the target draws N off the top of their deck"
+      },
+      {
+        "text": null,
+        "test": "484-agreed-fix-action.test.ts::§2 move: one of your cards between hand, bin, cache and the deck"
+      },
+      {
+        "text": null,
+        "test": "484-agreed-fix-action.test.ts::§2 unit: taken off the board to its controller hand, bin or deck bottom"
+      },
+      {
+        "text": "A fix cannot set a life total to 0, nor move a card that is no longer where the proposer saw it.",
+        "test": "484-agreed-fix-action.test.ts::§4 refused: a card that is no longer where the proposer saw it, and life 0"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "484-agreed-fix-action.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "amendProblem / doAmend (client/engine/src/amend.ts, apply.ts).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.agreed-fix.quiet",
+    "parent": "annexd.undo.agreed-fix",
+    "order": 2,
+    "text": "An edit is quiet: nothing triggers on it. A unit it takes off the board neither dies nor despawns, a card it puts into a bin is not trashed, a card it takes out of a bin does not count as leaving the bin, and the cards it draws are not a draw for anything that listens for one.",
+    "examples": [
+      {
+        "text": null,
+        "test": "484-agreed-fix-action.test.ts::§3 quiet: a unit taken off the board neither dies nor despawns"
+      },
+      {
+        "text": "Afflicting Anima does not hear a card that a fix puts into the bin.",
+        "test": "484-agreed-fix-action.test.ts::§3 quiet: a fix into the bin is not a trash (Afflicting Anima stays silent)"
+      },
+      {
+        "text": "Rotling does not hear a card that a fix takes out of the bin.",
+        "test": "484-agreed-fix-action.test.ts::§3 quiet: a card leaving the bin by a fix does not fire leftBin (Rotling stays silent)"
+      },
+      {
+        "text": null,
+        "test": "484-agreed-fix-action.test.ts::§3 quiet: a fix draw is not a draw for anything listening"
+      }
+    ],
+    "see": [
+      "zones.bin.trash"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "484-agreed-fix-action.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "BL-46: the owner accepted \"quiet\" as recommended (paraphrased in the ledger, not his words), so the basis is the code and 484.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.agreed-fix.timing",
+    "parent": "annexd.undo.agreed-fix",
+    "order": 3,
+    "text": "An edit cannot be proposed or made inside the hidden planning, haste or deploy steps, nor while a decision is open. A rewind may be proposed at any time.",
+    "examples": [
+      {
+        "text": "In the hidden planning step a draw fix is refused, but a rewind is on offer and may be proposed.",
+        "test": "485-agreed-fix-rooms.test.ts::§5 edits wait for the public steps; a rewind works in a hidden one; some rooms take no fixes"
+      },
+      {
+        "text": null,
+        "test": "484-agreed-fix-action.test.ts::§4 refused: agreed by the proposer, in a hidden step, with a question open"
+      },
+      {
+        "text": null,
+        "test": "487-propose-a-fix-ui.test.ts::§6 in a hidden step only Rewind is live"
+      }
+    ],
+    "see": [
+      "annexd.general.hidden-segment"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "484-agreed-fix-action.test.ts",
+        "485-agreed-fix-rooms.test.ts",
+        "487-propose-a-fix-ui.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "editTiming (server/rooms.ts) and doAmend (apply.ts).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.agreed-fix.rewind",
+    "parent": "annexd.undo.agreed-fix",
+    "order": 4,
+    "text": "A rewind takes the game back to one of: up to five of the last actions, counting only actions the player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before. The actions taken back are removed from the game, as if they had not been taken.",
+    "examples": [
+      {
+        "text": null,
+        "test": "485-agreed-fix-rooms.test.ts::§4 rewind options: never a cut at a forced step, at most five actions, and the start of the step"
+      },
+      {
+        "text": null,
+        "test": "485-agreed-fix-rooms.test.ts::§3 a rewind cuts the log and every claim about the cut actions"
+      },
+      {
+        "text": null,
+        "test": "486-agreed-fix-over-the-wire.test.ts::§4 a rewind: both seats get a fresh view, and the file archives what was taken back"
+      }
+    ],
+    "see": [
+      "annexd.general.player-decides.forced"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Rewinding a whole step or two seems fine to me. Either say \"up to 5 actions\" or \"restart this step\"",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, BL-46 (in session)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "485-agreed-fix-rooms.test.ts",
+        "486-agreed-fix-over-the-wire.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "rewindOptions / rewindRoom (server/rooms.ts); FIX_REWIND_MAX = 5.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.agreed-fix.proposal",
+    "parent": "annexd.undo.agreed-fix",
+    "order": 5,
+    "text": "A proposal states the fix and the proposer's reason, which is required. It lapses after 60 seconds, or as soon as any action lands, and the proposer may withdraw it. Only the other player can accept it; after a decline the proposer must wait 15 seconds before proposing again. When a fix lands, the proposer's reason is filed as a bug report.",
+    "examples": [
+      {
+        "text": null,
+        "test": "485-agreed-fix-rooms.test.ts::§5 a proposal stops both clocks, lapses after a minute, and ends on any action"
+      },
+      {
+        "text": null,
+        "test": "485-agreed-fix-rooms.test.ts::§5 a decline cools the proposer down; a withdraw does not"
+      },
+      {
+        "text": null,
+        "test": "486-agreed-fix-over-the-wire.test.ts::§2 propose then accept: the edit lands for both, the clocks stop meanwhile, a report is filed"
+      },
+      {
+        "text": null,
+        "test": "487-propose-a-fix-ui.test.ts::§4 the other seat agrees or declines on a bar, by the proposal id"
+      }
+    ],
+    "see": [
+      "annexd.clocks.running"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "485-agreed-fix-rooms.test.ts",
+        "486-agreed-fix-over-the-wire.test.ts",
+        "487-propose-a-fix-ui.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "FIX_PROPOSAL_MS, FIX_COOLDOWN_MS (server/rooms.ts). The 60-second lapse was accepted by the owner as recommended (paraphrase only).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.agreed-fix.counts",
+    "parent": "annexd.undo.agreed-fix",
+    "order": 6,
+    "text": "A game with a fix in it counts like any other game: its result, rating, league result, achievements and card statistics. It is only tagged as fixed where the game is listed.",
+    "examples": [
+      {
+        "text": null,
+        "test": "488-a-fixed-game-counts.test.ts::§2 a fixed game counts: the profile, the rating gate, the card-stats gate"
+      },
+      {
+        "text": null,
+        "test": "488-a-fixed-game-counts.test.ts::§3 the match history and the admin games list show the tag"
+      },
+      {
+        "text": null,
+        "test": "488-a-fixed-game-counts.test.ts::§4 the league result carries the tag, and a fixed room reports it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Assuming both players agree, it doesn't change anything in the game. it'll only be used to solve broken engine/game issues.",
+          "adopted": "2026-10-16",
+          "from": "report round 2026-10-16 b, BL-46 (in session)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "488-a-fixed-game-counts.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "The owner: a fix \"doesn't change anything in the game\"; the ledger records that a fixed game counts for everything and is only tagged.",
     "sourceHashes": {}
   }
 ]

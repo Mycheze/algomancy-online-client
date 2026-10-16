@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1808 rules and 99 sections.
+- New: 1816 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -1682,7 +1682,15 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D4.3d `annexd.undo.seen-cards.opponent-shown`
   - D4.3e `annexd.undo.seen-cards.measured`
   - D4.3f `annexd.undo.seen-cards.restart`
+  - D4.3g `annexd.undo.seen-cards.agreed-rewind`
   - D4.4 `annexd.undo.learn-to-play`
+  - D4.5 `annexd.undo.agreed-fix`
+  - D4.5a `annexd.undo.agreed-fix.edits`
+  - D4.5b `annexd.undo.agreed-fix.quiet`
+  - D4.5c `annexd.undo.agreed-fix.timing`
+  - D4.5d `annexd.undo.agreed-fix.rewind`
+  - D4.5e `annexd.undo.agreed-fix.proposal`
+  - D4.5f `annexd.undo.agreed-fix.counts`
   - D5.1 `annexd.recap.what`
   - D5.1a `annexd.recap.what.no-effect`
   - D5.1b `annexd.recap.what.opponent-frame`

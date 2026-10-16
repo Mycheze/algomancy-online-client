@@ -2096,25 +2096,43 @@
     "key": "keywords.actions.trash",
     "textHash": "62f6bfefc61d62de",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:toBin",
         "agrees": true,
-        "note": "from==='stack' (or sandbox) returns before noteTrashed; noteTrashed drops tokens (R306)"
+        "note": "hand, deck, play, cache entries trash; 'stack' does not"
       }
     ],
     "tests_run": [
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "R40: discarding from hand trashes, by the owner of the bin it enters",
+        "pattern": "discarding from hand trashes",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "36-cache-prophecy.test.ts",
-        "pattern": "R41: a card leaving the cache for a BIN is trashed (R40 classifies it automatically)",
+        "pattern": "CR 801.2: a card leaving the cache for a BIN is trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "CR 801.2a: milling from the deck trashes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "CR 801.2a: sacrificing and dying both trash",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "CR 801.2b: a spell going to the bin after RESOLVING",
         "passed": true,
         "asserts_claim": true
       }
@@ -2122,12 +2140,12 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R306",
+        "ref": "owner 2026-09-28 'with its noun restored: *a card entering a bin from anywhere but the stack is'",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R40 (its bin-entry definition, for cards)",
+        "ref": "owner 2026-08-19 'Trashing: a card entering a bin from anywhere but the stack'",
         "supports": "yes",
         "note": ""
       }
@@ -2135,7 +2153,15 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "    if (from === 'stack' || from === 'sandbox') return;"
+        "text": "toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache' | 'sandbox' | 'amend'): void {"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (from === 'stack' || from === 'sandbox' || from === 'amend') return;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.noteTrashed(seat, name, from);"
       }
     ],
     "basis_ok": true,

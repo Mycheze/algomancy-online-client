@@ -329,9 +329,11 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Discrepancies: D-U23-19 (discrepancies.md)</sub>
 
-<a id="rD3.2"></a>**D3.2.** A player's clock runs only while the game is waiting on that player, and only while both players are connected.
+<a id="rD3.2"></a>**D3.2.** A player's clock runs only while the game is waiting on that player, and only while both players are connected. Neither clock runs while a proposed fix waits for its answer (see rule D4.5e).
 
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running — a clock runs only for a seat the game is waiting on, and only while both players are connected · Key: annexd.clocks.running</sub>
+> *Example: A player proposes a fix: both clocks stop, and they run again once the proposal lapses.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 4 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts, 485-agreed-fix-rooms.test.ts, 486-agreed-fix-over-the-wire.test.ts · Example test: 485-agreed-fix-rooms.test.ts::§5 a proposal stops both clocks, lapses after a minute, and ends on any action · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running — a clock runs only for a seat the game is waiting on, and only while both players are connected · Key: annexd.clocks.running</sub>
 
 <sub>Discrepancies: D-U23-2 (discrepancies.md)</sub>
 
@@ -339,9 +341,9 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.simultaneous — in planning and the haste step both seats are waited on, and a seat that has finished has no legal action left · Key: annexd.clocks.running.simultaneous</sub>
 
-<a id="rD3.2b"></a>**D3.2b** A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other. See rule D2.2.
+<a id="rD3.2b"></a>**D3.2b** A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other. While a proposed fix waits for its answer, the server does not pass for a standing pass. See rule D2.2.
 
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.standing-pass — the armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log · Key: annexd.clocks.running.standing-pass</sub>
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.clocks.running.standing-pass — the armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log · Key: annexd.clocks.running.standing-pass</sub>
 
 <sub>Discrepancies: D-U23-3 (discrepancies.md)</sub>
 
@@ -378,19 +380,21 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.opponent — the opponent acting in the same step does not stop my undo · Key: annexd.undo.hidden-step.opponent</sub>
 
-<a id="rD4.1b"></a>**D4.1b** An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step.
+<a id="rD4.1b"></a>**D4.1b** An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step. Nor can a player's own undo, in any step, go back past an agreed edit or past the point an agreed rewind returned the game to (see rule D4.5): only another agreed rewind can.
 
 > *Example: An undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back.*
 
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.floor — an undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back · Key: annexd.undo.hidden-step.floor</sub>
+> *Example: After an agreed rewind of one action in planning, the player cannot undo, alone, the action before it.*
 
-<a id="rD4.1c"></a>**D4.1c** Actions taken in battle are not undone, except the steps of a cast that has not yet gone on the stack (see rule D4.2). For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net. See rule D7.
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Tests: suite.test.ts, 434-cr-digital-1.test.ts, 485-agreed-fix-rooms.test.ts · Example tests: 434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.floor — an undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back, 485-agreed-fix-rooms.test.ts::§2 the per-seat undo cannot walk back past an agreed fix · Key: annexd.undo.hidden-step.floor</sub>
+
+<a id="rD4.1c"></a>**D4.1c** One player cannot undo actions taken in battle, except the steps of a cast that has not yet gone on the stack (see rule D4.2); both players together may take them back with an agreed rewind (see rule D4.5d). For that reason, in battle, an activated ability whose cost spends life, debt or the unit itself, with no choice to make before that cost is paid, asks for confirmation. While it asks, only a second click on the same unit, the Yes button or Enter confirms; No and Escape cancel; every other input does nothing. An ability whose cost asks which card to discard or which other unit to sacrifice does not ask for confirmation: choosing what to pay is the question. In deployment such an ability activates on the click, and undo is the safety net. See rule D7.
 
 > *Example: Cadaverous Cultivator ("[Battle] Discard a card: …") raises no confirmation: the click activates it, and the game asks which card to discard.*
 
 > *Example: While the confirmation is up, clicking a card in hand plays nothing.*
 
-<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 7 tests, all passed; 2 gate test files · Tests: 373-no-confirm-where-undo-works.test.ts, 456-activate-confirm-is-modal.test.ts · Example tests: 456-activate-confirm-is-modal.test.ts::D2 §1 the reported card raises no bar, 456-activate-confirm-is-modal.test.ts::D2 §2 with the bar up a hand click sends nothing · Demonstrated by tests: 373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click, 373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks, 456-activate-confirm-is-modal.test.ts::D2 §2 clicking the same unit again says yes, 456-activate-confirm-is-modal.test.ts::D2 §2 Enter says yes · Key: annexd.undo.hidden-step.battle</sub>
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 11 tests (a probe it wrote), all passed; 3 gate test files · Tests: 373-no-confirm-where-undo-works.test.ts, 456-activate-confirm-is-modal.test.ts, 485-agreed-fix-rooms.test.ts · Example tests: 456-activate-confirm-is-modal.test.ts::D2 §1 the reported card raises no bar, 456-activate-confirm-is-modal.test.ts::D2 §2 with the bar up a hand click sends nothing · Demonstrated by tests: 373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click, 373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks, 456-activate-confirm-is-modal.test.ts::D2 §2 clicking the same unit again says yes, 456-activate-confirm-is-modal.test.ts::D2 §2 Enter says yes · Key: annexd.undo.hidden-step.battle</sub>
 
 <sub>Discrepancies: D-U23-11 (discrepancies.md)</sub>
 
@@ -444,9 +448,49 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 374-undo-locks-on-reveal.test.ts::CR D4.3f: the lock survives a restart · Key: annexd.undo.seen-cards.restart</sub>
 
+<a id="rD4.3g"></a>**D4.3g** The lock binds one player's own undo. An agreed rewind (see rule D4.5d) may take the game back past an action that showed a player hidden cards: the other player's agreement waives the lock.
+
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 485-agreed-fix-rooms.test.ts · Key: annexd.undo.seen-cards.agreed-rewind</sub>
+
 <a id="rD4.4"></a>**D4.4.** In Learn to Play, undo works in every phase, under the same lock: a turn's draw, a glimpse or a look at the Bot's hand ends the undo of whatever came before it. Starting a turn again after a loss is a fresh attempt, not an undo. See rule D8.
 
 <sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Tests: 374-undo-locks-on-reveal.test.ts, 306-solo-backend.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 374-undo-locks-on-reveal.test.ts::CR D4.4: Learn to Play applies the same floor · Key: annexd.undo.learn-to-play</sub>
+
+<a id="rD4.5"></a>**D4.5.** In a game between two players, either player may propose a fix, and the fix happens only if the other player agrees. A fix is an edit or a rewind. Test mode, a scenario, and a game that has not started or is over take no fixes. A fix sent as an ordinary action is refused: only an agreed proposal makes one. See rule D4.
+
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 4 gate test files · Tests: 484-agreed-fix-action.test.ts, 485-agreed-fix-rooms.test.ts, 486-agreed-fix-over-the-wire.test.ts, 487-propose-a-fix-ui.test.ts · Demonstrated by tests: 486-agreed-fix-over-the-wire.test.ts::§1 an amend sent as an action is refused, whoever it names as agreeing, 486-agreed-fix-over-the-wire.test.ts::§3 the proposer cannot accept their own fix; a decline cools them down, 485-agreed-fix-rooms.test.ts::§5 edits wait for the public steps; a rewind works in a hidden one; some rooms take no fixes · Key: annexd.undo.agreed-fix</sub>
+
+<a id="rD4.5a"></a>**D4.5a** An edit is one of: setting a player's life total, to a whole number from 1 to 999; a player drawing from 1 to 10 cards off the top of their deck; moving one of the proposer's own cards from their hand, bin or cache to their hand, bin or cache, or to the top or bottom of their deck; or taking a unit off the board to its controller's hand, bin or the bottom of their deck. A token taken off the board is simply gone.
+
+> *Example: A fix cannot set a life total to 0, nor move a card that is no longer where the proposer saw it.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 7 tests (2 probes it wrote), all passed; 1 gate test file · Tests: 484-agreed-fix-action.test.ts · Example test: 484-agreed-fix-action.test.ts::§4 refused: a card that is no longer where the proposer saw it, and life 0 · Demonstrated by tests: 484-agreed-fix-action.test.ts::§2 life: the target life total is SET, and the log says so publicly, 484-agreed-fix-action.test.ts::§2 draw: the target draws N off the top of their deck, 484-agreed-fix-action.test.ts::§2 move: one of your cards between hand, bin, cache and the deck, 484-agreed-fix-action.test.ts::§2 unit: taken off the board to its controller hand, bin or deck bottom · Key: annexd.undo.agreed-fix.edits</sub>
+
+<a id="rD4.5b"></a>**D4.5b** An edit is quiet: nothing triggers on it. A unit it takes off the board neither dies nor despawns, a card it puts into a bin is not trashed, a card it takes out of a bin does not count as leaving the bin, and the cards it draws are not a draw for anything that listens for one. See rule 405.4.
+
+> *Example: Afflicting Anima does not hear a card that a fix puts into the bin.*
+
+> *Example: Rotling does not hear a card that a fix takes out of the bin.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 1 gate test file · Tests: 484-agreed-fix-action.test.ts · Example tests: 484-agreed-fix-action.test.ts::§3 quiet: a fix into the bin is not a trash (Afflicting Anima stays silent), 484-agreed-fix-action.test.ts::§3 quiet: a card leaving the bin by a fix does not fire leftBin (Rotling stays silent) · Demonstrated by tests: 484-agreed-fix-action.test.ts::§3 quiet: a unit taken off the board neither dies nor despawns, 484-agreed-fix-action.test.ts::§3 quiet: a fix draw is not a draw for anything listening · Key: annexd.undo.agreed-fix.quiet</sub>
+
+<a id="rD4.5c"></a>**D4.5c** An edit cannot be proposed or made inside the hidden planning, haste or deploy steps, nor while a decision is open. A rewind may be proposed at any time. See rule D1.4.
+
+> *Example: In the hidden planning step a draw fix is refused, but a rewind is on offer and may be proposed.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Tests: 484-agreed-fix-action.test.ts, 485-agreed-fix-rooms.test.ts, 487-propose-a-fix-ui.test.ts · Example test: 485-agreed-fix-rooms.test.ts::§5 edits wait for the public steps; a rewind works in a hidden one; some rooms take no fixes · Demonstrated by tests: 484-agreed-fix-action.test.ts::§4 refused: agreed by the proposer, in a hidden step, with a question open, 487-propose-a-fix-ui.test.ts::§6 in a hidden step only Rewind is live · Key: annexd.undo.agreed-fix.timing</sub>
+
+<a id="rD4.5d"></a>**D4.5d** A rewind takes the game back to one of: up to five of the last actions, counting only actions the player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before. The actions taken back are removed from the game, as if they had not been taken. See rule D1.2b.
+
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Tests: 485-agreed-fix-rooms.test.ts, 486-agreed-fix-over-the-wire.test.ts · Demonstrated by tests: 485-agreed-fix-rooms.test.ts::§4 rewind options: never a cut at a forced step, at most five actions, and the start of the step, 485-agreed-fix-rooms.test.ts::§3 a rewind cuts the log and every claim about the cut actions, 486-agreed-fix-over-the-wire.test.ts::§4 a rewind: both seats get a fresh view, and the file archives what was taken back · Key: annexd.undo.agreed-fix.rewind</sub>
+
+<a id="rD4.5e"></a>**D4.5e** A proposal states the fix and the proposer's reason, which is required. It lapses after 60 seconds, or as soon as any action lands, and the proposer may withdraw it. Only the other player can accept it; after a decline the proposer must wait 15 seconds before proposing again. When a fix lands, the proposer's reason is filed as a bug report. See rule D3.2.
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Tests: 485-agreed-fix-rooms.test.ts, 486-agreed-fix-over-the-wire.test.ts, 487-propose-a-fix-ui.test.ts · Demonstrated by tests: 485-agreed-fix-rooms.test.ts::§5 a proposal stops both clocks, lapses after a minute, and ends on any action, 485-agreed-fix-rooms.test.ts::§5 a decline cools the proposer down; a withdraw does not, 486-agreed-fix-over-the-wire.test.ts::§2 propose then accept: the edit lands for both, the clocks stop meanwhile, a report is filed, 487-propose-a-fix-ui.test.ts::§4 the other seat agrees or declines on a bar, by the proposal id · Key: annexd.undo.agreed-fix.proposal</sub>
+
+<a id="rD4.5f"></a>**D4.5f** A game with a fix in it counts like any other game: its result, rating, league result, achievements and card statistics. It is only tagged as fixed where the game is listed.
+
+<sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 1 gate test file · Tests: 488-a-fixed-game-counts.test.ts · Demonstrated by tests: 488-a-fixed-game-counts.test.ts::§2 a fixed game counts: the profile, the rating gate, the card-stats gate, 488-a-fixed-game-counts.test.ts::§3 the match history and the admin games list show the tag, 488-a-fixed-game-counts.test.ts::§4 the league result carries the tag, and a fixed room reports it · Key: annexd.undo.agreed-fix.counts</sub>
 
 <a id="rD5"></a>
 ### D5. Recap and Playback

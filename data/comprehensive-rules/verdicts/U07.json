@@ -573,21 +573,21 @@
     "key": "zones.bin.trash",
     "textHash": "6130fac4b4ce4dc4",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:toBin",
+        "loc": "client/engine/src/engine.ts:toBin",
         "agrees": true,
-        "note": "from 'stack' (and test-only 'sandbox') returns before noteTrashed; every other zone trashes"
+        "note": "every non-stack entry calls noteTrashed; 'stack' returns first ('sandbox'/'amend' are digital-only non-zones, covered by Annex D)"
       },
       {
-        "loc": "engine.ts:noteTrashed",
+        "loc": "client/engine/src/engine.ts:noteTrashed",
         "agrees": true,
-        "note": "token anchor never trashed"
+        "note": "a token anchor returns before any trash"
       },
       {
-        "loc": "engine.ts:disposeToBin",
+        "loc": "client/engine/src/engine.ts:disposeToBin",
         "agrees": true,
         "note": "nontoken mods are trashed only when !willSweep, i.e. not when erased with an Unstable host"
       }
@@ -595,19 +595,49 @@
     "tests_run": [
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "spell going to the bin after RESOLVING is not trashed",
+        "pattern": "CR 801.2b: a spell going to the bin after RESOLVING",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "TOKEN dying enters the bin, is NOT trashed",
+        "pattern": "a TOKEN dying enters the bin, is NOT trashed",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "224-mod-trash.test.ts",
-        "pattern": "nontoken mod erased with its Unstable host is not trashed at all",
+        "pattern": "CR 720.8a: a nontoken mod erased with its Unstable host is not trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "discarding from hand trashes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "CR 801.2a: milling from the deck trashes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "CR 801.2a: sacrificing and dying both trash",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "CR 801.2: a card leaving the cache for a BIN is trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "338-tokens-are-not-trashed.test.ts",
+        "pattern": "(whole file, 8 tests)",
         "passed": true,
         "asserts_claim": true
       }
@@ -615,38 +645,45 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R40",
+        "ref": "owner 2026-08-19 'ability going to the bin after resolving does NOT (it comes from the stack),'",
         "supports": "yes",
-        "note": "the destination definition, stack excluded"
+        "note": "supports the stack exclusion"
       },
       {
-        "ref": "R306",
+        "ref": "owner 2026-09-28 'with its noun restored: *a card entering a bin from anywhere but the stack is'",
         "supports": "yes",
-        "note": "restores the noun: a CARD entering a bin; tokens not trashed"
+        "note": "the restored noun is 'card': the definition applies to cards, which is what excludes tokens (the 2026-09-28 date is the token reversal). Fragmentary; the token sentence leans on this reading plus the engine"
       },
       {
-        "ref": "R244 §2",
+        "ref": "owner 2026-08-29 '**2. A nontoken mod erased with its {Unstable} host is not trashed at all.**'",
         "supports": "yes",
-        "note": "a nontoken mod erased with its Unstable host is not trashed"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (from === 'stack' || from === 'sandbox') return;"
+        "text": "if (from === 'stack' || from === 'sandbox' || from === 'amend') return;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.noteTrashed(seat, name, from);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (anchor?.token) return;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const willSweep = unstable && !opts.keepBinned;"
       },
       {
         "file": "client/engine/src/engine.ts",
         "text": "if (!willSweep) {"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
       }
     ],
     "basis_ok": true,
-    "problem": "Accurate. Note the engine also does not trash a test-mode 'sandbox' bin placement (outside the rules), and an {Unstable} HOST that dies is itself still trashed in the engine (R137) — consistent with this rule's text, which only exempts the mod.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.bin.trash.inline-play",
