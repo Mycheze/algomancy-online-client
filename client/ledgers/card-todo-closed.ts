@@ -11250,8 +11250,9 @@ export const CLOSED: TodoEntry[] = [
       "477-target-minimum-sweep.test.ts::the X target spells require every X",
       "478-required-targets-at-cast.test.ts::Blight End with one unit in the battle offers X up to 1 only",
       "478-required-targets-at-cast.test.ts::Torrential Reclamation offers X only up to the nontoken allies",
+      "489-x-target-search-is-bounded.test.ts::Blight's End against ten units with X up to 14",
     ],
-    closed: "FIXED 2026-10-16. TargetSpec.min can be X (every slot required); collectX offers only X values the board can fill; the target menu never offers a stop before X picks; X = 0 still castable. Blight End, Torrential Reclamation, Channel Through.",
+    closed: "FIXED 2026-10-16. TargetSpec.min can be X (every slot required); collectX offers only X values the board can fill; the target menu never offers a stop before X picks; X = 0 still castable. Blight End, Torrential Reclamation, Channel Through. 2026-10-17: the fillability search tried every ORDERING of the targets, so an X above the target count never returned (the card drill hung); the counted slots are now searched as a set.",
     status: 'done',
   },
   {

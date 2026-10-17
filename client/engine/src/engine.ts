@@ -22,7 +22,8 @@ import type {
 } from './types.ts';
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
-  isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, requiresTargets, specForSlot, targetMinimum, zoneTriggersFor,
+  isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, requiresTargets, slotRestrict, slotWhat, specForSlot,
+  targetMinimum, zoneTriggersFor,
   type AsYouPlayOption,
   type Ability, type CardBehavior,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
@@ -7458,12 +7459,27 @@ export class E {
     // x-independent rule above (one counted slot).
     const needAt = (x: number | undefined): number => targetMinimum(spec,
       spec.count !== 'X' ? (spec.count ?? 1) : spec.min === 'X' && x !== undefined ? x : 1);
+    // The counted slots of a `count: 'X'` spec are interchangeable, so a run of
+    // them is searched as a SET — picks in one canonical order, and a run with
+    // fewer candidates left than slots fails at once. Searched as sequences, an
+    // X above the candidate count tried every ordering before failing (10 units
+    // at X = 11 is 10! paths), and this runs inside legalActions.
+    const sameSlot = (a: number, b: number): boolean =>
+      slotWhat(spec, a) === slotWhat(spec, b) && slotRestrict(spec, a) === slotRestrict(spec, b);
     const fill = (x: number | undefined, i: number, picked: TargetRef[]): boolean => {
-      if (i >= needAt(x)) return true;
+      const need = needAt(x);
+      if (i >= need) return true;
       const taken = new Set(picked.map(r => JSON.stringify(r)));
       const chosen = picked.map(r => this.resolveTargetRef(r)).filter((t): t is ResolvedTarget => t !== null);
-      const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)
+      let cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)
         .filter(c => !taken.has(JSON.stringify(c)));
+      if (spec.count === 'X') {
+        const last = picked.length > 0 && i > 0 && sameSlot(i, i - 1) ? JSON.stringify(picked[picked.length - 1]) : undefined;
+        if (last !== undefined) cands = cands.filter(c => JSON.stringify(c) > last);
+        let run = 1;
+        while (i + run < need && sameSlot(i, i + run)) run++;
+        if (i + run === need && cands.length < run) return false;
+      }
       return cands.some(c => fill(x, i + 1, [...picked, c]));
     };
     return xs === undefined ? fill(undefined, 0, []) : xs.some(x => fill(x, 0, []));
