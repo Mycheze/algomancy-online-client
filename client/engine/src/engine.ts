@@ -7471,16 +7471,15 @@ export class E {
       if (i >= need) return true;
       const taken = new Set(picked.map(r => JSON.stringify(r)));
       const chosen = picked.map(r => this.resolveTargetRef(r)).filter((t): t is ResolvedTarget => t !== null);
-      let cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)
+      const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)
         .filter(c => !taken.has(JSON.stringify(c)));
-      if (spec.count === 'X') {
-        const last = picked.length > 0 && i > 0 && sameSlot(i, i - 1) ? JSON.stringify(picked[picked.length - 1]) : undefined;
-        if (last !== undefined) cands = cands.filter(c => JSON.stringify(c) > last);
-        let run = 1;
-        while (i + run < need && sameSlot(i, i + run)) run++;
-        if (i + run === need && cands.length < run) return false;
-      }
-      return cands.some(c => fill(x, i + 1, [...picked, c]));
+      if (spec.count !== 'X') return cands.some(c => fill(x, i + 1, [...picked, c]));
+      const last = picked.length > 0 && i > 0 && sameSlot(i, i - 1) ? JSON.stringify(picked[picked.length - 1]) : undefined;
+      const ahead = last === undefined ? cands : cands.filter(c => JSON.stringify(c) > last);
+      let run = 1;
+      while (i + run < need && sameSlot(i, i + run)) run++;
+      if (i + run === need && ahead.length < run) return false;
+      return ahead.some(c => fill(x, i + 1, [...picked, c]));
     };
     return xs === undefined ? fill(undefined, 0, []) : xs.some(x => fill(x, 0, []));
   }
