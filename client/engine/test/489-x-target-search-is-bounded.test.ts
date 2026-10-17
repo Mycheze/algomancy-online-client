@@ -17,7 +17,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { legalActions } from '../src/apply.ts';
-import type { ResourceState, Seat } from '../src/types.ts';
+import type { EntityId, ResourceState, Seat } from '../src/types.ts';
 import { give, pass, pick, spawn, toDeployment, toNextBattle } from './util.ts';
 
 const open = (kind: ResourceState['kind']): ResourceState => ({ kind, state: 'open' });
@@ -33,7 +33,7 @@ function bigBattle(seed: number, n: number, mana: ResourceState[]) {
   toNextBattle(h, A);
   h.state.players[D]!.resources = mana;
   h.state.players[D]!.hand = [];
-  const columns: string[][] = [];
+  const columns: EntityId[][] = [];
   for (let i = 0; i < ids.length; i += 2) columns.push(ids.slice(i, i + 2));
   h.do({ type: 'declareAttack', seat: A, columns });
   pass(h);
