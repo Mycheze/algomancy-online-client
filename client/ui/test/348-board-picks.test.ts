@@ -268,7 +268,7 @@ test('§2c a hand card: {discard}, Mindburn\'s "h:", a {Modular} mod from hand, 
   }
 });
 
-test('§2d "erase one of my mods": the mod\'s badge is clicked, and its host asks which with scans', () => {
+test('§2d "erase one of my mods": the mod\'s strip is clicked, and its host asks which with scans', () => {
   const { h, me, mine } = board(34804);
   const host = mine[1]!;
   // two mods on the host, the way the engine lays them out (modOf / mods)
@@ -285,11 +285,15 @@ test('§2d "erase one of my mods": the mod\'s badge is clicked, and its host ask
     options: mods.map(id => ({ label: `Erase ${s0.entities[id]!.card}`, value: { eraseMod: id }, card: s0.entities[id]!.card })),
   };
   checkDrawn(s, 'eraseMod');
-  // two long chips do not fit one line: the first stays (a pickable chip is
-  // the last to fold), the second folds into "+N" and is reached by the host
-  assert.match(ui.html(), /data-act="mod" data-id="7001" class="modpick"/, 'the badge takes the click and glows');
+  // each mod hangs under its host as a strip (main.ts fieldMods), and each
+  // strip that answers the question takes the click and glows
+  for (const id of mods) {
+    assert.match(ui.html(), new RegExp(`class="modstrip modpick" data-anim="e${id}" data-act="mod" data-id="${id}"`),
+      `mod ${id}: its strip takes the click and glows`);
+  }
   assert.match(ui.html(), new RegExp(`class="card[^"]*\\bcandidate\\b[^"]*" data-act="unit" data-id="${host}"`), 'and so does its host');
-  clickSends(s, { act: 'mod', id: 7001 }, 0, 'clicking the badge erases that mod');
+  clickSends(s, { act: 'mod', id: 7001 }, 0, 'clicking the strip erases that mod');
+  clickSends(s, { act: 'mod', id: 7002 }, 1, 'and the other strip the other');
 
   ui.join(viewFor(s, me), me, decideLegal(s.decision));
   ui.sent();

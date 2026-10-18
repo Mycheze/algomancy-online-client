@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-18', kind: 'change', text: "Augmented and grafted units now show each mod peeking out underneath, like on a real table, so you can see a mod land without hovering. Click the unit to see its mods' names; hover a name to see the card." },
   { date: '2026-10-18', kind: 'fix', text: "Meteor Shower now plays as its current card: it costs two Earth, and when you play it, it copies itself twice, so three separate Meteor Showers fall one after another." },
   { date: '2026-10-17', kind: 'new', text: "Beta: if the game gets something wrong, propose a fix from the table menu. When your opponent agrees you can set a life total, draw a missed card, move a card, or rewind a few actions." },
   { date: '2026-10-17', kind: 'change', text: "Units and spell tokens you send to counterattack now have to go: there is no \"Don't attack\" in a counterattack, and a lone unit forms by itself. If every attacker is gone before blocks, nothing can block, but you can still counterattack." },

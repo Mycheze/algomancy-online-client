@@ -83,6 +83,23 @@ function ghosts(): HTMLDivElement {
 }
 
 // ── measuring ─────────────────────────────────────────────────────────
+/**
+ * A MOD ON THE TABLE is a whole card tucked under its host, of which only the
+ * strip at the foot shows (main.ts fieldMods). Its box for a flight is that
+ * whole card — the strip's width, a scan tall, its foot on the strip's foot —
+ * so a mod played onto a unit lands as a card sliding in under it, not as a
+ * scan squeezed into a 15px band; and one taken off slides out from under.
+ * The landing fades (`fly`), because the ghost is drawn OVER the host.
+ */
+const tucked = new WeakSet<DOMRect>();
+function tuckedRect(el: HTMLElement): DOMRect {
+  const r = el.getBoundingClientRect();
+  const h = r.width * 25 / 18;            // the scans are 720x1000
+  const t = new DOMRect(r.left, r.bottom - h, r.width, h);
+  tucked.add(t);
+  return t;
+}
+
 /** Snapshot every animatable box. Anchors are keyed '@<name>' so a slot key
  * and its zone anchor can share one lookup table. */
 export function captureFrame(): Frame {
@@ -94,7 +111,7 @@ export function captureFrame(): Frame {
     // measuring it would make its arrival look like a card already standing
     // there, and `fly` would never hide it for the landing
     if (deferred.has(k)) continue;
-    if (!f.has(k)) f.set(k, el.getBoundingClientRect());
+    if (!f.has(k)) f.set(k, el.closest('.fieldmods') ? tuckedRect(el) : el.getBoundingClientRect());
   }
   for (const el of document.querySelectorAll<HTMLElement>('[data-animzone]')) {
     const k = '@' + el.dataset['animzone']!;
@@ -363,7 +380,7 @@ function fly(
     ? Math.max(0.2, Math.min(2, Math.min(
       dst.r.width / (src.width || 1), dst.r.height / (src.height || 1))))
     : 0.45;
-  const endOpacity = dst.exact ? 1 : 0.1;
+  const endOpacity = dst.exact ? (tucked.has(dst.r) ? 0.25 : 1) : 0.1;
   // a slight arc reads as travel; a straight slide reads as a glitch
   const arc = Math.min(70, dist * 0.16);
   const perp = dist > 1 ? [-dy / dist, dx / dist] : [0, 0];

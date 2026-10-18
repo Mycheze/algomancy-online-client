@@ -198,6 +198,17 @@ export function inertCopy(el: HTMLElement): HTMLElement {
   return copy;
 }
 
+/** the card's own face: a modded table card is taller than a card by the mod
+ * strips hung under it (main.ts fieldMods, `.fieldmods`), and the zoom is
+ * sized and placed off the face — the decorator hangs its own strips below */
+function faceRect(card: HTMLElement): Rect {
+  const r = card.getBoundingClientRect();
+  const mods = card.querySelector<HTMLElement>(':scope > .fieldmods');
+  if (!mods) return r;
+  const h = Math.max(1, r.height - mods.getBoundingClientRect().height);
+  return { left: r.left, top: r.top, width: r.width, height: h };
+}
+
 const reduced = (): boolean =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -210,7 +221,7 @@ export function zoomAt(el: Element | null, animate = true): void {
 function show(card: HTMLElement | null, animate: boolean, at?: { x: number; y: number }): void {
   if (!card) { drop(); return; }
   if (card === source && layer?.firstChild) return;
-  const r = card.getBoundingClientRect();
+  const r = faceRect(card);
   const copy = inertCopy(card);
   copy.classList.add('zoomcopy');
   const extraH = decorate?.(card, copy)?.extraH ?? 0;

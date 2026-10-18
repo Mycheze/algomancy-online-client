@@ -13,7 +13,7 @@
  * the first one that draws both.
  */
 import type { GameState, Seat } from '../engine/src/types.ts';
-import { FLOOR as CARD_FLOOR, fitBattle, fitCards, fitSendBox, planBattleBoard, type FitPlan } from './fit.ts';
+import { FLOOR as CARD_FLOOR, RATIO, fitBattle, fitCards, fitSendBox, planBattleBoard, type FitPlan } from './fit.ts';
 
 const PREF = 'algoLayout';
 
@@ -80,9 +80,10 @@ export function fitBoard(root: ParentNode, baseCw: number): void {
     const plan = kind === 'battle' ? battlePlan(el, baseCw)
       : cardsPlan(el, baseCw, kind === 'row' ? 'row' : kind === 'line' ? 'line' : kind === 'band' ? 'band' : 'box');
     if (!plan) continue;
-    // a battle's key also counts its invaders: a second one changes how the
-    // strip's cards overlap without changing the plan
-    const key = JSON.stringify(plan) + (kind === 'battle' ? `|${el.querySelectorAll('.linvside .card').length}` : '');
+    // a battle's key also counts its invaders: a second one — or a modded,
+    // taller one — changes how the strip's cards overlap without changing the plan
+    const inv = kind === 'battle' ? cardsIn(el, '.linvside .card') : [];
+    const key = JSON.stringify(plan) + (kind === 'battle' ? `|${inv.length}|${inv.map(modhOf).join(',')}` : '');
     if (lastFit.get(el) === key) continue;
     lastFit.set(el, key);
     el.style.setProperty('--cw', `${plan.cw}px`);
@@ -96,6 +97,24 @@ export function fitBoard(root: ParentNode, baseCw: number): void {
     }
   }
 }
+
+/** how much taller than a card a card here is: the mod strips a modded unit
+ * hangs under it (main.ts fieldMods writes `data-modh`, in card heights) */
+const modhOf = (card: Element | undefined): number => Number((card as HTMLElement | undefined)?.dataset?.['modh'] ?? 0) || 0;
+/** the cards under `el` matching `sel`, as a list (a NodeList, or whatever
+ * array-like a test's stand-in returns) */
+const cardsIn = (el: Element | null | undefined, sel: string): Element[] => Array.from(el?.querySelectorAll?.(sel) ?? []);
+/** the tallest card among `cards`, over a plain one */
+const tallest = (cards: readonly (Element | undefined)[]): number => {
+  let n = 0;
+  for (const c of cards) n = Math.max(n, modhOf(c));
+  return n;
+};
+/** a zone's card shape: a plain card's, stretched for its tallest card. A
+ * fit for every card at the tallest one's height is never short, and a zone
+ * holding a really modded unit shrinks all of its cards a little rather than
+ * clipping one */
+const zoneRatio = (cards: readonly (Element | undefined)[]): number => RATIO * (1 + tallest(cards));
 
 function boxOf(el: Element | null): { w: number; h: number } | null {
   if (!el) return null;
@@ -128,7 +147,8 @@ function cardsPlan(el: HTMLElement, baseCw: number, how: 'box' | 'row' | 'line' 
   const box = boxOf(zone);
   if (!zone || !box) return null;
   const n = zone.querySelectorAll(':scope > .card, :scope > .slot').length;
-  return fitCards(n, row ? { w: box.w, h: Math.round(maxCw * 1.4) + 1 } : box, { cw: maxCw, gap: 6 });
+  const ratio = zoneRatio(cardsIn(zone, ':scope > .card'));
+  return fitCards(n, row ? { w: box.w, h: Math.round(maxCw * ratio) + 1 } : box, { cw: maxCw, gap: 6, ratio });
 }
 
 /** the vertical (or horizontal) padding + border of an element, from its
@@ -158,7 +178,7 @@ function sendPlan(el: HTMLElement, baseCw: number): FitPlan | null {
     h: block.h - chrome(el, 'v') - chrome(wrap, 'v') - chrome(zone, 'v'),
   };
   const n = zone.querySelectorAll(':scope > .card').length;
-  const o = { cw: baseCw, gap: 6 };
+  const o = { cw: baseCw, gap: 6, ratio: zoneRatio(cardsIn(zone, ':scope > .card')) };
   return zone.querySelector(':scope > [data-act="sendslot"]') ? fitSendBox(n, box, o) : fitCards(n, box, o);
 }
 
@@ -198,20 +218,40 @@ function battlePlan(el: HTMLElement, baseCw: number): FitPlan | null {
   const inv = el.querySelectorAll('.linvside .card').length;
   // a lower floor than a field's: three ranks (attackers, front and back
   // blockers) have to stand in the block, and 40px still reads on the line
-  const o = battleOpts(inv);
+  const o = battleOpts(inv, cols ? extraOf(cols) : undefined);
   // Report #200: watching the other seat declare with nothing placed yet
   // draws no columns at all — the strip still needs its size
   if (!cols || !box) return inv ? fitBattle(0, 0, 0, { w: 0, h: 0 }, o) : null;
   const n = cols.querySelectorAll(':scope > .col').length;
   const stage = el.querySelector<HTMLElement>('.stagewrap > .stagerow');
-  if (stage) return stagePlan(el, stage, n, o);
+  if (stage) return stagePlan(el, stage, n, battleOpts(inv, extraOf(cols, stage)));
   const ranks = ranksOf(cols);
   return fitBattle(n, ranks.top, ranks.bot, box, o);
 }
 
-/** the battle's fit options: the cap, its own spacing, the floor, the strip */
-function battleOpts(inv: number): Parameters<typeof fitBattle>[4] {
-  return { cw: BATTLE_CAP, gap: COL_GAP, chrome: COL_CHROME, floor: FLOOR, side: { n: inv, frac: INV_FRAC, pad: INV_PAD } };
+/** the battle's fit options: the cap, its own spacing, the floor, the strip,
+ * and the height its modded units add to each half (`extraOf`) */
+function battleOpts(inv: number, extra?: { top: number; bot: number }): Parameters<typeof fitBattle>[4] {
+  return {
+    cw: BATTLE_CAP, gap: COL_GAP, chrome: COL_CHROME, floor: FLOOR, side: { n: inv, frac: INV_FRAC, pad: INV_PAD },
+    ...(extra && (extra.top || extra.bot) ? { extra } : {}),
+  };
+}
+
+/** how much longer than its plain ranks each half of the table stands: a
+ * column's half is its cards one above another, so a modded unit lengthens
+ * its own column by its strips, and the half is as long as its longest
+ * column. The counterattack tray is one more row along the foot (CT-192), as
+ * tall as its tallest card. */
+function extraOf(cols: HTMLElement, stage?: HTMLElement | null): { top: number; bot: number } {
+  let top = 0, bot = 0;
+  for (const col of cardsIn(cols, ':scope > .col')) {
+    const sum = (sel: string): number => cardsIn(col, `:scope > ${sel} .card`).reduce((n, c) => n + modhOf(c), 0);
+    top = Math.max(top, sum('.bhalf.top'));
+    bot = Math.max(bot, sum('.bhalf.bot'));
+  }
+  if (stage) bot += tallest(cardsIn(stage, '.card'));
+  return { top, bot };
 }
 
 /** the battle table's ranks, off the variables battleHtml writes on `.cols`
@@ -254,7 +294,7 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
     cols: cols ? cols.querySelectorAll(':scope > .col').length : 0,
     // the counterattack tray stands as a third rank under the columns
     ranksTop: stage ? 2 : ranks.top, ranksBot: stage ? 1 : ranks.bot,
-    o: battleOpts(inv),
+    o: battleOpts(inv, cols ? extraOf(cols, fight.querySelector<HTMLElement>('.stagewrap > .stagerow')) : undefined),
     chrome: {
       w: chrome(fight, 'h') + (battle ? chrome(battle, 'h') : 0),
       h: chrome(fight, 'v') + (battle ? chrome(battle, 'v') : 0) + (stage ? STAGE_CHROME : 0),
@@ -324,11 +364,13 @@ function sideStrip(el: HTMLElement, plan: FitPlan): void {
   // on the block too: the columns centre in the width the strip leaves them
   // (style.css pads `.cols` by it)
   el.style.setProperty('--invw', `${plan.side.w}px`);
-  const n = strip.querySelectorAll('.card').length;
-  const ch = Math.round(plan.side.cw * 1.4);
+  const cards = cardsIn(strip, '.card');
+  const n = cards.length;
+  // every card's own height: a modded invader is taller by its strips
+  const tall = cards.reduce((t, c) => t + Math.round(plan.side!.cw * RATIO * (1 + modhOf(c))), 0);
   const h = boxOf(strip)?.h ?? 0;
-  const over = n > 1 && h > 0 && n * ch + (n - 1) * INV_GAP > h;
-  strip.style.setProperty('--invstep', over ? `${Math.floor((h - ch) / (n - 1)) - ch}px` : `${INV_GAP}px`);
+  const over = n > 1 && h > 0 && tall + (n - 1) * INV_GAP > h;
+  strip.style.setProperty('--invstep', over ? `${Math.floor((h - tall) / (n - 1))}px` : `${INV_GAP}px`);
 }
 
 /**

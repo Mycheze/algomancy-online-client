@@ -2337,10 +2337,10 @@ function pickVerb(key: string): string {
   if (!P) return '';
   return [...new Set(pickIndexes(key).map(i => P.verbs.get(i)).filter((v): v is string => !!v))].join(' / ');
 }
-/** a mod badge that answers the open question ("erase one of my mods") takes
- * the click itself, and glows; any other mod badge is part of its unit */
+/** a mod strip that answers the open question ("erase one of my mods") takes
+ * the click itself, and glows; any other mod strip is part of its unit */
 const modPickAttrs = (id: EntityId): string =>
-  pickable(`mod:${id}`) ? ` data-act="mod" data-id="${id}" class="modpick"` : '';
+  pickable(`mod:${id}`) ? ` data-act="mod" data-id="${id}"` : '';
 /** the option indexes a click on this board element answers */
 const pickIndexes = (key: string): number[] => picks()?.board.get(key) ?? [];
 /** CR D7.1's "this will do nothing" for the option(s) behind a board element */
@@ -3157,11 +3157,15 @@ function cardHtml(name: string, opts: {
    * ("Keep", "Discard", "Sacrifice") — a label across the art, not a chip,
    * because the chip line folds and cuts words (ui/boardpick.ts pickVerbs) */
   pickTag?: string;
+  /** the mods this card wears, hung under it (fieldMods), and their
+   * height as a fraction of the card's — what the fit pass reserves */
+  mods?: string; modh?: number;
 } = {}): string {
   // [35] the class list is ui/inspect.ts's cardClasses — `.activatable` is the
   // one class with no behaviour attached to it, so nothing but a test notices
   // when it stops being emitted and the green halo quietly goes away.
   const cls = cardClasses(opts);
+  if (opts.mods) cls.push('modded');
   // BL-23: the strip is ONE line. Chips are pushed from a dozen call
   // sites that cannot each know how many others there will be, so the fold
   // decision lives here, in the container — ui/inspect.ts packBadgeLine, where
@@ -3175,7 +3179,8 @@ function cardHtml(name: string, opts: {
   // assertion written that way passed for a reason unrelated to what it named,
   // and the agent reworking the hand marking only caught it because a mutation failed to redden it.
   const badges = [...line.shown, ...(line.more ? [line.more] : [])].map(badgeSpan).join('');
-  return `<div class="${cls.join(' ')}"${opts.data ? ` ${opts.data}` : ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}>
+  return `<div class="${cls.join(' ')}"${opts.data ? ` ${opts.data}` : ''} data-prev="${esc(name)}"${opts.anim ? ` data-anim="${esc(opts.anim)}"` : ''}${
+    opts.mods ? ` data-modh="${opts.modh ?? 0}"` : ''}>
     <img src="${art(name)}" alt="${esc(name)}" onerror="this.classList.add('noart')">
     <div class="artfallback">${esc(name)}</div>
     ${badges ? `<div class="badges${line.more ? ' hasmore' : ''}"${line.more ? ` title="${esc(line.title)}"` : ''}>${badges}</div>` : ''}
@@ -3183,6 +3188,7 @@ function cardHtml(name: string, opts: {
     ${opts.stats ? `<div class="stats">${opts.stats}</div>` : ''}
     ${opts.die !== undefined ? dieHtml(opts.die) : ''}
     ${opts.dmg ? `<div class="dmg">${opts.dmg}</div>` : ''}
+    ${opts.mods ?? ''}
   </div>`;
 }
 
@@ -3249,8 +3255,9 @@ function previewNoteFor(u: Entity): string | null {
 
 /** every chip a unit wears, in push order — the table strip folds them to one
  * line (packBadgeLine), and the card zoom (round 4, owner 2026-09-26) lays the
- * whole list out as dice on the art. `zoom` leaves out the one chip per mod:
- * the zoom hangs the mod card itself under the unit instead. */
+ * whole list out as dice on the art. `zoom` leaves out the board-only chips
+ * (the trigger-order number, a pick warning). A mod is no chip anywhere: the
+ * card hangs under the unit (fieldMods). */
 function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): Badge[] {
   const badges: Badge[] = [...q().ownAttrs(u)].map(a => ({ t: a }));
   // its abilities or attributes are switched off: said on the unit, first
@@ -3275,18 +3282,8 @@ function unitBadges(u: Entity, opts: { inert?: boolean; zoom?: boolean } = {}): 
     const sign = u.counters > 0 ? '+' : '';
     badges.unshift({ t: `${sign}${u.counters}/${sign}${u.counters}`, ctr: true });
   }
-  // round 4: the zoom draws each mod as the card itself, under the unit
-  for (const modId of opts.zoom ? [] : u.mods) {
-    const m = h.state.entities[modId];
-    if (m) badges.push({
-      // a mod has no card of its own on the table — this badge IS where it
-      // lives, so it carries the mod's motion key and the flight lands here
-      t: `<span data-anim="e${m.id}"${modPickAttrs(m.id)}>`
-        + txtIcon(m.appliedAs === 'graft' ? 'graft' : 'augment', m.appliedAs === 'graft' ? '⇄' : '+')
-        + esc(m.card.split(' ')[0]) + '</span>',
-      mod: true, html: true, pick: pickable(`mod:${m.id}`),
-    });
-  }
+  // a mod is no chip: it hangs under the card itself, on the table as in the
+  // zoom (fieldMods), and the strip is where its flight and its pick land
   if (u.absent) badges.push({ t: 'sent', mod: true });
   // BL-47: its place in the trigger order being built — the same number the
   // ordering bar wears, so the order can be read off the board as well
@@ -3418,6 +3415,7 @@ function unitHtml(u: Entity, opts: { selected?: boolean; clickable?: boolean; in
   // projection (Ancient One) is untouched.
   return cardHtml(faceOf(u), {
     anim: `e${u.id}`,
+    ...fieldMods(u),
     stats, dmg: u.damage ? `−${u.damage}` : '', badges,
     candidate: !opts.inert && pickable(`unit:${u.id}`),
     pickTag: opts.inert ? '' : pickVerb(`unit:${u.id}`),
@@ -3683,16 +3681,10 @@ function tokenHtml(t: Entity): string {
   const modhost = modHostCache.tokens?.has(t.id) ?? false;
   const badges: Badge[] = [];
   if (riding) badges.push({ t: `${txtIcon('battle', '[battle]')} riding`, mod: true, html: true });
-  for (const modId of t.mods) {
-    const m = h.state.entities[modId];
-    if (m) badges.push({
-      t: `<span data-anim="e${m.id}"${modPickAttrs(m.id)}>${txtIcon('augment', '+')}${esc(m.card.split(' ')[0])}</span>`,
-      mod: true, html: true, pick: pickable(`mod:${m.id}`),
-    });
-  }
   if (t.absent) badges.push({ t: 'sent', mod: true });
   return cardHtml(t.card, {
     anim: `e${t.id}`,
+    ...fieldMods(t),
     die: t.x,
     playable: castable || tokenToggleMode(t) !== null,
     selected: riding || ui.send.includes(t.id),
@@ -9343,14 +9335,67 @@ function modStripsHtml(mods: readonly ModStripSource[]): string {
       onerror="this.parentElement.classList.add('noart')"></div>`).join('');
 }
 
+/** the mods a unit (or a spell token) wears, as entities, in the order they
+ * went on — the first is the one nearest the card */
+function modsOf(host: Entity): Entity[] {
+  return host.mods.map(mid => h.state.entities[mid]).filter((m): m is Entity => !!m);
+}
+const modSource = (m: Entity): ModStripSource =>
+  ({ card: m.card, ...(m.appliedAs ? { appliedAs: m.appliedAs } : {}) });
+
+/**
+ * THE MODS ON THE TABLE (owner, 2026-10-18): *"you have to hover over them to
+ * see that they're augmented. I think that you should be able to see the
+ * little card peeking out even while they're smaller on the field. They'd get
+ * physically taller, like actual cards in the real game."* And: *"No limit to
+ * height, I think it's funny when really modded units just get suuuper long."*
+ *
+ * So the strips the zoom and the rail hang under a modded card (modStripsHtml,
+ * each cut at its own card's symbol) hang under the table card too, and the
+ * `+Name` chip they replace is gone. The strip took over the chip's two jobs:
+ * it carries the mod's motion key, so a mod applied in deployment flies to
+ * the foot of its host and becomes the strip, and it takes the click when the
+ * open question is about a mod ("erase one of my mods").
+ *
+ * `modh` is the strips' height as a fraction of the card's — ui/layout.ts
+ * reads it off `data-modh` so a zone, a battle rank or the invader strip makes
+ * room for a card that is taller than a card.
+ */
+function fieldMods(host: Entity): { mods?: string; modh?: number } {
+  const mods = modsOf(host);
+  if (!mods.length) return {};
+  const strips = modStrips(mods.map(modSource));
+  const html = strips.map((st, i) => {
+    const m = mods[i]!;
+    const pick = pickable(`mod:${m.id}`);
+    return `<div class="modstrip${pick ? ' modpick' : ''}" data-anim="e${m.id}"${modPickAttrs(m.id)} title="${esc(st.title)}"${
+      st.peek !== undefined ? ` style="--modpeek: ${st.peek}"` : ''}><img src="${art(st.card)}" alt="${esc(st.card)}"
+      onerror="this.parentElement.classList.add('noart')"></div>`;
+  }).join('');
+  const modh = strips.reduce((n, st) => n + (st.peek ?? MOD_PEEK_FALLBACK), 0);
+  return { mods: `<div class="fieldmods">${html}</div>`, modh: Math.round(modh * 1000) / 1000 };
+}
+
+/** the rail's list of what a card is modded with, by name — the strips show
+ * the bottom of each card and its name is at the top (owner, 2026-10-18: "it'd
+ * be good to have a way to see which cards its modded with (their names, for
+ * example, are impossible to see fully right now)"). A name shows its scan
+ * on hover at once, as a card name in a deck description does. */
+function modNamesHtml(mods: readonly Entity[]): string {
+  if (!mods.length) return '';
+  return `<div class="modnames">${mods.map(m => {
+    const graft = m.appliedAs === 'graft';
+    return `<span class="modname" data-prev="${esc(m.card)}" data-prevart>${
+      txtIcon(graft ? 'graft' : 'augment', graft ? '⇄' : '+')}<span class="modhow">${graft ? 'grafted' : 'augmented'}</span> ${esc(m.card)}</span>`;
+  }).join('')}</div>`;
+}
+
 function previewEntityHtml(id: EntityId): string {
   const u = h.state.entities[id];
   if (!u) return '';
-  const mods = u.mods.map(mid => h.state.entities[mid])
-    .filter((m): m is Entity => !!m)
-    .map(m => ({ card: m.card, ...(m.appliedAs ? { appliedAs: m.appliedAs } : {}) }));
+  const mods = modsOf(u);
   return `<img src="${art(faceOf(u))}" alt="" onerror="this.style.display='none'">${
-    modStripsHtml(mods)}
+    modStripsHtml(mods.map(modSource))}${modNamesHtml(mods)}
     ${textBoxHtml(entityTextBox(q(), u))}`;
 }
 
@@ -9789,6 +9834,16 @@ document.addEventListener('mouseover', e => {
   // the hover (it holds the last card clicked, see the click listener below)
   // and the long-hover box has nothing left to add over a readable scan
   if (zoomOn()) {
+    // a card NAME that asks for its scan (`data-prevart`: a deck
+    // description's link, a mod's name in the rail) has no picture of its own
+    // for the zoom to magnify, so it gets the art tip, at once
+    const named = (e.target as HTMLElement).closest?.('[data-prevart]') as HTMLElement | null;
+    if (named && pointerCanHover()) {
+      zoomOff();
+      resSumOff();
+      armHoverTip(named, (e as MouseEvent).clientX, (e as MouseEvent).clientY);
+      return;
+    }
     hideHoverTip();
     // an info block's resources: the resource window, not the art (ui/ressum.ts)
     if (pointerCanHover() && resSumRow(e.target as Element)) {
@@ -9887,9 +9942,7 @@ setZoomDecorator((src, copy) => {
       copy.insertAdjacentHTML('beforeend',
         `<div class="zoomsupp band-${band.kind}"><span>${esc(off.banner)}</span></div>`);
     }
-    mods = u.mods.map(mid => h.state.entities[mid])
-      .filter((m): m is Entity => !!m)
-      .map(m => ({ card: m.card, ...(m.appliedAs ? { appliedAs: m.appliedAs } : {}) }));
+    mods = modsOf(u).map(modSource);
   } else if (src.dataset['act'] === 'hand') {
     const p = Number(src.dataset['p']) as Seat, i = Number(src.dataset['i']);
     const n = h.state.players[p]?.hand[i];
@@ -9913,6 +9966,14 @@ setZoomDecorator((src, copy) => {
       copy.insertAdjacentHTML('beforeend',
         `<div class="zoomhang ${captionClass(cap)}">${captionBody(cap, effectFace(row.item, h.state)?.from)}</div>`);
     }
+  }
+  // the table's own small strips (fieldMods) are in the copy: the zoom hangs
+  // its own, at its own size, below
+  copy.querySelector(':scope > .fieldmods')?.remove();
+  copy.classList.remove('modded');
+  if (!u && src.dataset['act'] === 'token') {
+    const tok = h.state.entities[Number(src.dataset['id'])];
+    if (tok) mods = modsOf(tok).map(modSource);
   }
   const strip = copy.querySelector('.badges');
   // the damage marker is a die too — a red one, first

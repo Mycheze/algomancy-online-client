@@ -13,10 +13,12 @@
  *    the owner's choice — and the step never drops under the 14px sliver
  * §5 the battle table counts columns and ranks
  * §6 the focus rule: the battle's region during a battle, yours otherwise
+ * §7 a modded card is taller than a card (its mod strips hang under it): a
+ *    zone and a battle half make room for it, and a plain table is unchanged
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fitBattle, fitCards } from '../fit.ts';
+import { RATIO, battleMeasure, fitBattle, fitCards } from '../fit.ts';
 import { focusRegion } from '../layout.ts';
 import type { GameState } from '../../engine/src/types.ts';
 
@@ -109,4 +111,26 @@ test('§7 the battle\'s own spacing, and the invader strip beside it (owner, 202
   const none = fitBattle(3, 1, 1, { w: 400, h: 400 }, { cw: 86, gap: 6, chrome: 8, side: { n: 0, frac: 0.6, pad: 12 } });
   assert.equal(none.side, undefined);
   assert.deepEqual(none, fitBattle(3, 1, 1, { w: 400, h: 400 }, { cw: 86, gap: 6, chrome: 8 }));
+});
+
+test('§7 a modded card stands taller: the zone and the battle half make room for it', () => {
+  // a zone two plain rows deep holds 2 rows at the base width; with one card
+  // a third taller (two mods at ~.16 each), the same box holds fewer rows
+  const box = { w: 3 * 78 + 2 * 6, h: 2 * Math.round(78 * RATIO) + 6 };
+  const plain = fitCards(6, box, O);
+  assert.deepEqual([plain.mode, plain.cw], ['grid', 78], 'six plain cards fit at the base width');
+  const tall = fitCards(6, box, { ...O, ratio: RATIO * 1.32 });
+  assert.ok(tall.cw < plain.cw, `the tall shape shrinks the zone: ${tall.cw} < ${plain.cw}`);
+  // the battle: the extra height is the half's, in card heights
+  const o = { cw: 100, gap: 6, chrome: 8 };
+  const m0 = battleMeasure(3, 1, 1, o), m1 = battleMeasure(3, 1, 1, { ...o, extra: { top: 0.5, bot: 0 } });
+  assert.equal(m1.height(80) - m0.height(80), Math.round(80 * RATIO * 0.5), 'half a card taller on top');
+  assert.equal(m1.width(80), m0.width(80), 'and no wider');
+  // nothing modded is the plain table, exactly
+  assert.deepEqual(fitBattle(3, 2, 1, { w: 500, h: 500 }, { ...o, extra: { top: 0, bot: 0 } }),
+    fitBattle(3, 2, 1, { w: 500, h: 500 }, o));
+  // and a tall half makes the fight's cards smaller in the same box
+  const flat = fitBattle(3, 1, 1, { w: 500, h: 330 }, o);
+  const long = fitBattle(3, 1, 1, { w: 500, h: 330 }, { ...o, extra: { top: 1.2, bot: 0 } });
+  assert.ok(long.cw < flat.cw, `a long column shrinks the fight: ${long.cw} < ${flat.cw}`);
 });

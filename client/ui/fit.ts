@@ -40,6 +40,11 @@ export interface FitOpts {
    * smaller than the units in the line — plus `pad` px of strip around it.
    * Its width comes out of the same box the columns stand in. */
   side?: { n: number; frac: number; pad: number };
+  /** battleMeasure: how much taller than its ranks of plain cards each half
+   * of the table stands, in card heights — a modded unit hangs its mods under
+   * it (main.ts fieldMods), so a column holding one is that much longer. The
+   * tallest column's sum, a half. */
+  extra?: { top: number; bot: number };
 }
 
 export type FitPlan =
@@ -49,7 +54,7 @@ export type FitPlan =
 /** the invader strip beside a battle: its card width and its own width */
 export interface FitSide { cw: number; w: number }
 
-const RATIO = 1.4;
+export const RATIO = 1.4;
 /** the smallest card a zone draws before it fans (the bin thumb's 46px) */
 export const FLOOR = 46;
 const MIN_STEP = 14;
@@ -135,12 +140,14 @@ export function battleMeasure(cols: number, ranksTop: number, ranksBot: number, 
   // its label, the `.vs` rule with its margins, and the "unblocked" ghost
   // slot an empty blocking half still draws
   const COL_CHROME = o.chrome ?? 14, LABEL = 18, VS = 17, GHOST = 22, RANK_GAP = 4;
-  const half = (n: number, cw: number): number => (n ? n * Math.round(cw * ratio) + RANK_GAP * (n - 1) : GHOST);
+  const half = (n: number, cw: number, more = 0): number =>
+    (n ? n * Math.round(cw * ratio) + Math.round(cw * ratio * more) + RANK_GAP * (n - 1) : GHOST);
   const sideCw = (cw: number): number => Math.max(1, Math.round(cw * (o.side?.frac ?? 0)));
   const sideW = (cw: number): number => (o.side && o.side.n > 0 ? sideCw(cw) + o.side.pad : 0);
   return {
     width: (cw: number): number => cols * (cw + COL_CHROME) + o.gap * (cols - 1) + sideW(cw),
-    height: (cw: number): number => LABEL + half(ranksTop, cw) + VS + half(ranksBot, cw) + 12,
+    height: (cw: number): number =>
+      LABEL + half(ranksTop, cw, o.extra?.top) + VS + half(ranksBot, cw, o.extra?.bot) + 12,
     sideW, sideCw,
   };
 }

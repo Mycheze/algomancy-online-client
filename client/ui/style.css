@@ -674,6 +674,40 @@ button:disabled { opacity: .4; cursor: default; }
 .modstrip.noart img { display: none; }
 .modstrip.noart::after { content: attr(title); }
 
+/* THE MODS ON THE TABLE (owner, 2026-10-18 — main.ts fieldMods): the same
+   strips hang under the small table card, so a modded unit stands taller,
+   like the cards on a real table, with no limit ("it's funny when really
+   modded units just get suuuper long"). Strips are cut off the width, so they
+   scale with whatever --cw the fit pass gave the zone (ui/layout.ts reserves
+   the height off `data-modh`).
+
+   ⚠ The card's overlays — the chip strip, the stat plate, the damage marker,
+   the X die, a pick verb — are placed against the CARD, and the card is now
+   taller than its face. A grid puts them all in row 1 with the scan and the
+   strips in row 2: an absolutely placed grid child's containing block is its
+   grid area, so `bottom: 2px` is still the foot of the face and `top: 50%` its
+   middle. Only a modded card is a grid; every other card is drawn as it was. */
+.card.modded { display: grid; grid-template-columns: minmax(0, 1fr); }
+.card.modded > * { grid-area: 1 / 1; }
+.card.modded > .fieldmods { grid-area: 2 / 1; }
+/* tucked UNDER the card: no overlap, a shadow cast down onto the strip */
+.fieldmods .modstrip { max-width: none; margin: 0; border-radius: 0 0 5px 5px; box-shadow: none; }
+/* (::before, because a no-art strip's ::after is its name) */
+.fieldmods .modstrip::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  box-shadow: inset 0 4px 4px -3px rgba(0,0,0,.75); }
+.fieldmods .modstrip.noart { font-size: 8px; padding: 1px 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* a mod that answers the open question ("erase one of my mods") glows and
+   takes the click, as the chip it replaced did */
+.fieldmods .modstrip.modpick { outline: 2px solid var(--target); outline-offset: -2px; cursor: pointer; }
+
+/* the rail: what the card is modded with, by name (the strips show each
+   card's foot, and its name is at its head) */
+.modnames { display: flex; flex-direction: column; gap: 2px; margin: 6px auto 0; max-width: 260px;
+  text-align: left; font-size: 11px; }
+.modname { color: var(--accent); cursor: default; overflow-wrap: anywhere; }
+.modname .txticon { width: 11px; height: 11px; vertical-align: -2px; margin-right: 3px; }
+.modname .modhow { color: var(--dim); font-size: 9px; letter-spacing: .04em; text-transform: uppercase; }
+
 /* ── region-board overhaul + playtest round 2 (2026-08-18) ──────────── */
 
 /* B6: the topbar pins to the viewport top */
