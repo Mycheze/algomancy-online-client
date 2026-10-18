@@ -657,7 +657,11 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // 219 → 220 with BL-46's agreed fix (apply.ts doAmend): "🛠 Agreed fix: <what>
   // — proposed by X, agreed by Y." Public, said once per accepted edit; the
   // board shows the result and this says that the players chose it.
-  assert.equal(sites.length, 220, `the engine and apply make ${sites.length} announcements`);
+  // 220 → 221 with a spawn's counters as a placement (CR 707.5a, report #220):
+  // E.spawnUnit's countersChanged, signal-only on the spawning body, and
+  // "<unit> gets n +1/+1 counter(s) (net t)." when a Counter Thief takes them.
+  // It carries the unit, so it is not log-only.
+  assert.equal(sites.length, 221,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

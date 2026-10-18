@@ -2403,27 +2403,50 @@
   },
   {
     "key": "effects.static.spawn-counters.modifiers",
-    "textHash": "57c35daab4f1117d",
+    "textHash": "8bab3c8b370363b5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U15-r1",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:spawnUnit amountMods, no countersChanged",
+        "loc": "client/engine/src/engine.ts:E.spawnUnit",
         "agrees": true,
-        "note": ""
+        "note": "spawnCounters (opts.counters + spawnsWithCounters) pass amountDelta and replaceCounters before the spawn event; no trigger, no stack item"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.replaceCounters / redirect chain",
+        "agrees": true,
+        "note": "spawn counters are redirected via replaceCounters; holder !== u leaves the body without them"
       }
     ],
     "tests_run": [
       {
         "file": "27-metal-b.test.ts",
-        "pattern": "Flux Resonator: an allied Robot spawns with one more counter (report #88)",
+        "pattern": "Flux Resonator: an allied Robot spawns with one more counter",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "139-spawn-and-play.test.ts",
-        "pattern": "Aethercap Siphoner: spawning with counters is not",
+        "pattern": "Aethercap Siphoner: spawning with counters IS",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "493-spawn-counters-are-put.test.ts",
+        "pattern": "Caleb 2026-03-05: Aethercap Siphoner spawned in battle triggers Pestilent Mycelion",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "493-spawn-counters-are-put.test.ts",
+        "pattern": "Counter Thief, DURING BATTLE",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "493-spawn-counters-are-put.test.ts",
+        "pattern": "Counter Thief, OUTSIDE battle",
         "passed": true,
         "asserts_claim": true
       }
@@ -2431,29 +2454,47 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R165",
+        "ref": "card: Counter Thief",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": "verbatim (after the [Augment] tag); applies to any counters that would be placed during battle, so spawn counters too given Caleb's ruling that they are placed"
       },
       {
-        "ref": "R130 (its counter-attribution ruling)",
+        "ref": "RQ 1154096942083743885",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": "calebgannon; spawn counters trigger 'putting counters' effects"
+      },
+      {
+        "ref": "RQ 1478900090147045427",
+        "supports": "yes",
+        "note": "calebgannon 'Yes' to: Aethercap Siphoner spawned during battle triggers Pestilent Mycelium"
+      },
+      {
+        "ref": "RQ 1465517485750096006",
+        "supports": "yes",
+        "note": "calebgannon 'yes': spawn with X counters counts as putting counters on an ally"
+      },
+      {
+        "ref": "RQ 1378032353959608370",
+        "supports": "yes",
+        "note": "Flux Resonator: a 2/2 robot spawns as a 3/3"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **SILENT.** No `countersChanged` fires, so no \"when **you** put a counter\""
+        "file": "client/engine/src/cards/printed.json",
+        "text": "If one or more counters would be placed on one or more units during battle, those counters are placed on me instead."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "reaches the AMOUNT layer only — an allied Flux Resonator still makes a Robot X"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Hypothetically, if you spawn Aethercap Siphoner during a battle, perhaps with Hooba-Pon, would that trigger Pestilent Mycelium's ability to deal damage to your opponent?"
+      },
+      {
+        "file": "client/engine/test/493-spawn-counters-are-put.test.ts",
+        "text": "assert.equal(robots(h, A).length, 0, 'the Robot arrived as X = 0, a 0/0, and died (CR 713.2)');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.static.what",

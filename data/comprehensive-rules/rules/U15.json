@@ -1829,45 +1829,73 @@
     "key": "effects.static.spawn-counters.modifiers",
     "parent": "effects.static.spawn-counters",
     "order": 1,
-    "text": "Replacement effects that change how many counters are put on a unit apply to those counters. But no player puts them on the unit, so abilities that trigger when a player puts counters on a unit do not trigger.",
+    "text": "The player who spawns the unit puts those counters on it, so everything that applies when counters are put on a unit applies to them: a replacement effect that changes how many are put, a replacement effect that puts them on another unit instead, and an ability that triggers when counters are put on a unit. A unit whose counters are put on another unit instead enters without them.",
     "examples": [
       {
         "text": "under an allied Flux Resonator a Robot 2 enters as a 3/3.",
         "test": "27-metal-b.test.ts::Flux Resonator: an allied Robot spawns with one more counter (report #88)"
       },
       {
-        "text": "Aethercap Siphoner's own -1/-1 counters do not count as its controller putting counters on an ally.",
-        "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters is not"
+        "text": "Aethercap Siphoner's own -1/-1 counters count as its controller putting counters on an ally, so Scrapyard Custodian draws.",
+        "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters IS \"you put counters on an ally\" — the placement a Robot's X is too"
+      },
+      {
+        "text": "Aethercap Siphoner spawned during a battle triggers Pestilent Mycelion (\"whenever one or more -1/-1 counters are put on a unit\").",
+        "test": "493-spawn-counters-are-put.test.ts::Caleb 2026-03-05: Aethercap Siphoner spawned in battle triggers Pestilent Mycelion"
+      },
+      {
+        "text": "During battle, a Robot 2 created where a Counter Thief is enters with no counters: the two counters are placed on the Counter Thief instead, and the Robot, a 0/0, dies.",
+        "test": "493-spawn-counters-are-put.test.ts::Counter Thief, DURING BATTLE: a Robot's spawn counters land on the Thief, and the 0/0 Robot dies"
       }
     ],
-    "see": [],
+    "see": [
+      "708.4",
+      "713.2"
+    ],
     "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
+      "printed": [
         {
-          "quote": "- **SILENT.** No `countersChanged` fires, so no \"when **you** put a counter\"",
-          "adopted": "2026-08-25",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "reaches the AMOUNT layer only — an allied Flux Resonator still makes a Robot X",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
+          "ref": "card: Counter Thief",
+          "quote": "If one or more counters would be placed on one or more units during battle, those counters are placed on me instead."
         }
       ],
+      "designer": [
+        {
+          "ref": "RQ 1154096942083743885",
+          "quote": "It would trigger them"
+        },
+        {
+          "ref": "RQ 1478900090147045427",
+          "quote": "Yes"
+        },
+        {
+          "ref": "RQ 1465517485750096006",
+          "quote": "yes"
+        },
+        {
+          "ref": "RQ 1378032353959608370",
+          "quote": "a 2/2 robot would spawn as a 3/3"
+        }
+      ],
+      "ours": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "27-metal-b.test.ts",
-        "139-spawn-and-play.test.ts"
+        "139-spawn-and-play.test.ts",
+        "493-spawn-counters-are-put.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
-    "sourceHashes": {}
+    "notes": "Caleb: spawning with counters triggers \"put counters on\" abilities (\"It would trigger them\", 2023-09-20, answering \"or do they spawn with the counter so it is never placed?\"; Aethercap Siphoner + Pestilent Mycelion \"Yes\", 2026-03-05). Placed, so Counter Thief's printed \"would be placed on one or more units during battle\" reaches them; the robbed Robot is X = 0, 0/0, and dies by the ordinary state check. Reverses the owner ruling of 2026-08-25 (\"SILENT\"). Report #220.",
+    "sourceHashes": {
+      "RQ 1154096942083743885": "d4ec1e72284b8cd00a3b15aeb940b974f6297cddd35308904f65f1b710205e71",
+      "RQ 1378032353959608370": "1420847e7e64ca167c52e28dc5c2ff2041ae8ac895cd1dab5f45c83602c761ab",
+      "RQ 1465517485750096006": "ba87142089caecc9a5beccc5874d939791fdf143375f552d075a7256860ff5c3",
+      "RQ 1478900090147045427": "eafee54d62308ae51e97aa8cfd510e205372a4c669ba4d8d9c8d20c8cf074f5d"
+    }
   },
   {
     "key": "effects.static.region",

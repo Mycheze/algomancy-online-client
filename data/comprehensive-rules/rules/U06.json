@@ -835,11 +835,15 @@
     "key": "types.units.spawns-with-counters.not-put",
     "parent": "types.units.spawns-with-counters",
     "order": 1,
-    "text": "No player puts those counters on the unit, so an ability that triggers when a player puts counters on a unit does not trigger. An effect that changes how many counters would be put on a unit does change them.",
+    "text": "Those counters are put on the unit as it enters, by the player who spawns it. So an ability that triggers when a player puts counters on a unit triggers, and an effect that changes how many counters would be put on a unit changes them.",
     "examples": [
       {
-        "text": "Aethercap Siphoner arriving with its counters does not count as \"you put counters on an ally\".",
-        "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters is not"
+        "text": "A Robot 2 created by Living Forge counts as \"you put counters on an ally\": its controller's Scrapyard Custodian draws a card.",
+        "test": "493-spawn-counters-are-put.test.ts::report #220: a Living Forge Robot is a counter put on an ally — Scrapyard Custodian draws"
+      },
+      {
+        "text": "Aethercap Siphoner arriving with its counters also counts as \"you put counters on an ally\".",
+        "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters IS \"you put counters on an ally\" — the placement a Robot's X is too"
       },
       {
         "text": "With an allied Flux Resonator, Powerforge Synergist enters with three +1/+1 counters instead of two.",
@@ -852,30 +856,47 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
+      "designer": [
         {
-          "quote": "nobody *puts* a spawn's own counters on",
-          "adopted": "2026-08-25",
-          "from": "register@72de434"
+          "ref": "RQ 1154096942083743885",
+          "quote": "It would trigger them"
         },
         {
-          "quote": "scaled by the amount layer, and nothing for an opponent to negate.",
-          "adopted": "2026-08-25",
-          "from": "register@72de434"
+          "ref": "RQ 1465517485750096006",
+          "quote": "yes"
+        },
+        {
+          "ref": "RQ 1352442090717708400",
+          "quote": "Yes"
+        },
+        {
+          "ref": "RQ 1354291884759187527",
+          "quote": "Yep it also does work this way in mtg as well"
+        },
+        {
+          "ref": "RQ 1378032353959608370",
+          "quote": "a 2/2 robot would spawn as a 3/3"
         }
       ],
+      "ours": [],
+      "owner": [],
       "engine": [],
       "tests": [
-        "139-spawn-and-play.test.ts"
+        "139-spawn-and-play.test.ts",
+        "493-spawn-counters-are-put.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "designer",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”)’s \"SILENT\" and \"amount layer\" details; the replacement effect in question is Flux Resonator (\"if one or more counters would be put on a unit by an allied source, put that many counters plus one instead\").",
-    "sourceHashes": {}
+    "notes": "Caleb, asked whether a Robot spawning triggers \"putting counters on an ally\" effects \"or do they spawn with the counter so it is never placed?\": \"It would trigger them\" (2023-09-20); again 2025-03-21 (Scrapyard Custodian on robot creation), 2025-03-26 and 2026-01-27. Flux Resonator on a Robot: \"a 2/2 robot would spawn as a 3/3\" (2025-05-30). Reverses the owner ruling of 2026-08-25 (\"nobody puts a spawn's own counters on\"), which the designer outranks. Report #220.",
+    "sourceHashes": {
+      "RQ 1154096942083743885": "d4ec1e72284b8cd00a3b15aeb940b974f6297cddd35308904f65f1b710205e71",
+      "RQ 1352442090717708400": "eafee54d62308ae51e97aa8cfd510e205372a4c669ba4d8d9c8d20c8cf074f5d",
+      "RQ 1354291884759187527": "0329b44a73e792f4cf833c48bf1fbd1d43cde99c6d13d8361288962d43b40115",
+      "RQ 1378032353959608370": "1420847e7e64ca167c52e28dc5c2ff2041ae8ac895cd1dab5f45c83602c761ab",
+      "RQ 1465517485750096006": "ba87142089caecc9a5beccc5874d939791fdf143375f552d075a7256860ff5c3"
+    }
   },
   {
     "key": "types.units.put-vs-play",

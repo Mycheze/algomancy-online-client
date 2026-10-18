@@ -3449,27 +3449,50 @@
   },
   {
     "key": "types.units.spawns-with-counters.not-put",
-    "textHash": "dbd5b42fd0a8f81c",
+    "textHash": "4e8041f76f4b0003",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U06-r2",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:spawnUnit (spawnsWithCounters via amountDelta, no countersChanged)",
+        "loc": "client/engine/src/engine.ts:E.spawnUnit",
         "agrees": true,
-        "note": ""
+        "note": "spawnCounters (opts.counters + spawnsWithCounters) pass amountDelta and replaceCounters before the spawn event; no trigger, no stack item"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.spawnUnit (countersChanged by: seat)",
+        "agrees": true,
+        "note": "the placement is signalled as countersChanged attributed to the spawning seat"
       }
     ],
     "tests_run": [
       {
-        "file": "139-spawn-and-play.test.ts",
-        "pattern": "Aethercap Siphoner: spawning with counters is not",
+        "file": "493-spawn-counters-are-put.test.ts",
+        "pattern": "report #220: a Living Forge Robot is a counter put on an ally",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "139-spawn-and-play.test.ts",
-        "pattern": "its two +1/+1 counters are scaled by an allied Flux Resonator",
+        "pattern": "Aethercap Siphoner: spawning with counters IS",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "Powerforge Synergist: its two +1/+1 counters are scaled by an allied Flux Resonator",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "493-spawn-counters-are-put.test.ts",
+        "pattern": "Flux Resonator scales a spawn ONCE",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "493-spawn-counters-are-put.test.ts",
+        "pattern": "every \"I spawn with counters\" card is a placement",
         "passed": true,
         "asserts_claim": true
       }
@@ -3477,19 +3500,47 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R165",
+        "ref": "RQ 1154096942083743885",
         "supports": "yes",
-        "note": "SILENT (nobody puts) and scaled by the amount layer"
+        "note": "calebgannon; answers whether a Robot spawning triggers 'putting counters on an ally' effects 'or do they spawn with the counter so it is never placed?'"
+      },
+      {
+        "ref": "RQ 1465517485750096006",
+        "supports": "yes",
+        "note": "calebgannon 'yes', replyTo: Does \"spawn with X counters\" count as \"putting one or more counters on an ally\"?"
+      },
+      {
+        "ref": "RQ 1352442090717708400",
+        "supports": "partial",
+        "note": "calebgannon 'Yes' to 'does this trigger on robot creation?'; 'this' is unnamed in the snapshot, but RQ 1354291884759187527's context (5 days later) identifies it as Scrapyard Custodian. Corroborative only."
+      },
+      {
+        "ref": "RQ 1354291884759187527",
+        "supports": "yes",
+        "note": "calebgannon confirming codebearer72's statement that such abilities trigger on robot creation"
+      },
+      {
+        "ref": "RQ 1378032353959608370",
+        "supports": "yes",
+        "note": "calebgannon: Flux Resonator makes 'a 2/2 robot would spawn as a 3/3' — the amount-changing half"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "nobody *puts* a spawn's own counters on"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "It would trigger them"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "scaled by the amount layer, and nothing for an opponent to negate."
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Does \\\"spawn with X counters\\\" count as \\\"putting one or more counters on an ally\\\"?"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "a 2/2 robot would spawn as a 3/3"
+      },
+      {
+        "file": "client/engine/test/493-spawn-counters-are-put.test.ts",
+        "text": "assert.equal(put.data?.['by'], A, 'CR 707.5a: put on by the seat that spawned it');"
       }
     ],
     "basis_ok": true,

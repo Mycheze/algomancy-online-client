@@ -1563,10 +1563,11 @@ CONTENTS
       Example: Nothing goes on the stack for Powerforge Synergist's or Aethercap Siphoner's spawn counters.
       [Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) | Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file | Tests: 139-spawn-and-play.test.ts | Example tests: 139-spawn-and-play.test.ts::Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, 139-spawn-and-play.test.ts::a card's own size is not respondable | Key: types.units.spawns-with-counters]
 
-301.8a No player puts those counters on the unit, so an ability that triggers when a player puts counters on a unit does not trigger. An effect that changes how many counters would be put on a unit does change them. See rules 708, 112.
-      Example: Aethercap Siphoner arriving with its counters does not count as "you put counters on an ally".
+301.8a Those counters are put on the unit as it enters, by the player who spawns it. So an ability that triggers when a player puts counters on a unit triggers, and an effect that changes how many counters would be put on a unit changes them. See rules 708, 112.
+      Example: A Robot 2 created by Living Forge counts as "you put counters on an ally": its controller's Scrapyard Custodian draws a card.
+      Example: Aethercap Siphoner arriving with its counters also counts as "you put counters on an ally".
       Example: With an allied Flux Resonator, Powerforge Synergist enters with three +1/+1 counters instead of two.
-      [Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) | Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file | Tests: 139-spawn-and-play.test.ts | Example tests: 139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters is not, 139-spawn-and-play.test.ts::its two +1/+1 counters are scaled by an allied Flux Resonator | Key: types.units.spawns-with-counters.not-put]
+      [Basis: Designer | Verified: confirmed in round 4; verifier ran 5 tests, all passed; 2 gate test files | Designer: RQ 1154096942083743885; RQ 1465517485750096006; RQ 1352442090717708400; RQ 1354291884759187527; RQ 1378032353959608370 | Tests: 139-spawn-and-play.test.ts, 493-spawn-counters-are-put.test.ts | Example tests: 493-spawn-counters-are-put.test.ts::report #220: a Living Forge Robot is a counter put on an ally -- Scrapyard Custodian draws, 139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters IS "you put counters on an ally" -- the placement a Robot's X is too, 139-spawn-and-play.test.ts::its two +1/+1 counters are scaled by an allied Flux Resonator | Key: types.units.spawns-with-counters.not-put]
 
 301.9. A unit that an effect "puts into play" was not played. A unit that an effect lets a player "play" was played, wherever it came from. See rule 701.
       Example: Bloomcaster creates a 1/1 when its controller plays a unit, but not when a unit is put into play.
@@ -4164,10 +4165,12 @@ CONTENTS
       Example: neither Powerforge Synergist's nor Aethercap Siphoner's counters can be responded to.
       [Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) | Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file | Tests: 139-spawn-and-play.test.ts | Example tests: 139-spawn-and-play.test.ts::Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, not the printed 4/4, 139-spawn-and-play.test.ts::Powerforge Synergist / Aethercap Siphoner: "I spawn with N counters" never reaches the stack | Key: effects.static.spawn-counters]
 
-707.5a Replacement effects that change how many counters are put on a unit apply to those counters. But no player puts them on the unit, so abilities that trigger when a player puts counters on a unit do not trigger.
+707.5a The player who spawns the unit puts those counters on it, so everything that applies when counters are put on a unit applies to them: a replacement effect that changes how many are put, a replacement effect that puts them on another unit instead, and an ability that triggers when counters are put on a unit. A unit whose counters are put on another unit instead enters without them. See rules 708.4, 713.2.
       Example: under an allied Flux Resonator a Robot 2 enters as a 3/3.
-      Example: Aethercap Siphoner's own -1/-1 counters do not count as its controller putting counters on an ally.
-      [Basis: Owner ruling, adopted 2026-08-24, 2026-08-25 (quoted from the retired ruling register) | Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files | Tests: 27-metal-b.test.ts, 139-spawn-and-play.test.ts | Example tests: 27-metal-b.test.ts::Flux Resonator: an allied Robot spawns with one more counter (report #88), 139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters is not | Key: effects.static.spawn-counters.modifiers]
+      Example: Aethercap Siphoner's own -1/-1 counters count as its controller putting counters on an ally, so Scrapyard Custodian draws.
+      Example: Aethercap Siphoner spawned during a battle triggers Pestilent Mycelion ("whenever one or more -1/-1 counters are put on a unit").
+      Example: During battle, a Robot 2 created where a Counter Thief is enters with no counters: the two counters are placed on the Counter Thief instead, and the Robot, a 0/0, dies.
+      [Basis: Mixed | Verified: confirmed in round 4; verifier ran 5 tests, all passed; 3 gate test files | Printed: card: Counter Thief | Designer: RQ 1154096942083743885; RQ 1478900090147045427; RQ 1465517485750096006; RQ 1378032353959608370 | Tests: 27-metal-b.test.ts, 139-spawn-and-play.test.ts, 493-spawn-counters-are-put.test.ts | Example tests: 27-metal-b.test.ts::Flux Resonator: an allied Robot spawns with one more counter (report #88), 139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters IS "you put counters on an ally" -- the placement a Robot's X is too, 493-spawn-counters-are-put.test.ts::Caleb 2026-03-05: Aethercap Siphoner spawned in battle triggers Pestilent Mycelion, 493-spawn-counters-are-put.test.ts::Counter Thief, DURING BATTLE: a Robot's spawn counters land on the Thief, and the 0/0 Robot dies | Key: effects.static.spawn-counters.modifiers]
 
 707.6. A static ability applies only in the region its source is in. See rule 601.
       Example: Rotspore Herald ("Everything is {deadly}") in its home region does not make a spell resolving in the battle region deadly.
@@ -6607,10 +6610,10 @@ Basis
 | basis | rules |
 |---|---|
 | Printed | 461 |
-| Designer | 206 |
-| Owner call | 690 |
+| Designer | 207 |
+| Owner call | 688 |
 | Engine only | 42 |
-| Mixed | 416 |
+| Mixed | 417 |
 
 Verification
 

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:dbd0c3b83de64d10",
+ "generated_from": "sha256:9f4afc08a76daa7e",
  "rules": [
   {
    "num": "100.1",
@@ -7926,16 +7926,17 @@
    "sectionTitle": "Units",
    "chapterTitle": "3. Card Types",
    "parent": "301.8",
-   "text": "No player puts those counters on the unit, so an ability that triggers when a player puts counters on a unit does not trigger. An effect that changes how many counters would be put on a unit does change them.",
+   "text": "Those counters are put on the unit as it enters, by the player who spawns it. So an ability that triggers when a player puts counters on a unit triggers, and an effect that changes how many counters would be put on a unit changes them.",
    "see": [
     "708",
     "112"
    ],
    "examples": [
-    "Aethercap Siphoner arriving with its counters does not count as \"you put counters on an ally\".",
+    "A Robot 2 created by Living Forge counts as \"you put counters on an ally\": its controller's Scrapyard Custodian draws a card.",
+    "Aethercap Siphoner arriving with its counters also counts as \"you put counters on an ally\".",
     "With an allied Flux Resonator, Powerforge Synergist enters with three +1/+1 counters instead of two."
    ],
-   "basis": "owner",
+   "basis": "designer",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -22508,13 +22509,18 @@
    "sectionTitle": "Static Abilities",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "707.5",
-   "text": "Replacement effects that change how many counters are put on a unit apply to those counters. But no player puts them on the unit, so abilities that trigger when a player puts counters on a unit do not trigger.",
-   "see": [],
+   "text": "The player who spawns the unit puts those counters on it, so everything that applies when counters are put on a unit applies to them: a replacement effect that changes how many are put, a replacement effect that puts them on another unit instead, and an ability that triggers when counters are put on a unit. A unit whose counters are put on another unit instead enters without them.",
+   "see": [
+    "708.4",
+    "713.2"
+   ],
    "examples": [
     "under an allied Flux Resonator a Robot 2 enters as a 3/3.",
-    "Aethercap Siphoner's own -1/-1 counters do not count as its controller putting counters on an ally."
+    "Aethercap Siphoner's own -1/-1 counters count as its controller putting counters on an ally, so Scrapyard Custodian draws.",
+    "Aethercap Siphoner spawned during a battle triggers Pestilent Mycelion (\"whenever one or more -1/-1 counters are put on a unit\").",
+    "During battle, a Robot 2 created where a Counter Thief is enters with no counters: the two counters are placed on the Counter Thief instead, and the Robot, a 0/0, dies."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
