@@ -248,6 +248,10 @@ async function refreshMe(): Promise<Me | null> {
   return me;
 }
 
+/** Something outside this module changed the friends list (the bell's
+ * Accept, ui/inbox.ts): fetch the profile again so the friends tab agrees. */
+export function reloadMe(): void { if (token()) void refreshMe(); }
+
 /** The server pushes a fresh profile over the websocket after a game — take
  * it without a round trip. */
 export function applyMe(next: Me): void {

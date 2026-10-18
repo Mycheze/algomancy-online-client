@@ -114,6 +114,7 @@ import type {
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { installReport, isReportOpen, openReport, reportJustSent } from './report.ts';
+import { installInbox, roomFriendsHtml } from './inbox.ts';
 import * as amend from './amend.ts';
 import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
 import { dragActive, installDrag, type DragPlan } from './drag.ts';
@@ -9058,7 +9059,7 @@ function renderHome(): void {
       </div>
     </div>
 
-    <p class="homefoot">To play a friend, start a game and send them the code.</p>
+    <p class="homefoot">To play a friend, start a game and invite them, or send them the code.</p>
   </div>
   ${updatesHtml()}`;
   const codeInput = document.getElementById('h-code') as HTMLInputElement | null;
@@ -9090,6 +9091,7 @@ function renderWaiting(): void {
     $app.innerHTML = lob.lobbyHtml({
       lobby: w.trio, seat: net.seat as 0 | 1, names: net.names,
       peers: net.peers, room: net.room, link,
+      friends: roomFriendsHtml(!net.peers[other(net.seat)]),
       ...(w.custom ?? net.custom ? { custom: (w.custom ?? net.custom)! } : {}),
     });
     return;
@@ -9111,6 +9113,7 @@ function renderWaiting(): void {
     </div>
 
     ${shareBar('Send your opponent the room code', net.room, link)}
+    ${roomFriendsHtml(!net.peers[opp])}
 
     ${mineIn ? '' : `<div class="lobbypanel deckpicker">
       <div class="zonelabel">Your deck</div>
@@ -9155,6 +9158,7 @@ function renderSingleWaiting(): void {
     </div>
 
     ${shareBar('Send your opponent the room code', net.room, link)}
+    ${roomFriendsHtml(!net.peers[opp])}
 
     ${w.drawn ? `<div class="lobbypanel scdraw">
       <div class="zonelabel">Draw — pick again</div>
@@ -11950,6 +11954,15 @@ installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
 installReport(reportOpenChanged);
+// the bell, the invite popup and the waiting room's friends panel — a layer
+// beside #app on every page that is not a board (ui/inbox.ts)
+installInbox({
+  token: acct.token,
+  authHeaders: () => acct.authHeaders(),
+  room: () => (NET?.waiting ? NET.room : null),
+  quiet: () => inGame && !NET?.waiting,
+  friendsChanged: acct.reloadMe,
+});
 // BL-46: the agreed-fix dialog and the bar the other seat answers on — a layer
 // of its own beside #app, like the report form (ui/amend.ts)
 amend.installAmend({

@@ -63,6 +63,8 @@ import { METHOD_LABELS, methodBlurbs, TRIO_METHODS, type TrioHistoryRow } from '
 // BL-43: a creator's custom rules are checked with the resolver the home screen previews them with
 import { checkCustomRules, fixedElements, rulesSummary, sanitizeCustomRules, type CustomRules } from '../ui/customrules.ts';
 import { accountRoutes } from './api-accounts.ts';
+import { inboxRoutes } from './api-inbox.ts';
+import { seenRecently, type InviteRoom } from './inbox.ts';
 import { addrOf, rateLimited, tokenOf, readBody } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
 import { adminRoutes } from './api-admin.ts';
@@ -191,12 +193,43 @@ const STARTED_AT = Date.now();
 // Counted rather than flagged: the same account can have two tabs open (the
 // share-link flow encourages exactly that), and the first one to close must
 // not make its owner look offline to their friends list.
+//
+// …and a seat is only half of it. The home screen has no socket, so the
+// other half is the inbox poll every signed-in page makes (inbox.ts): a
+// friend on the home page is exactly the one a game invite is for.
 
 const onlineCount = new Map<string, number>();
-const isOnline = (userId: string): boolean => (onlineCount.get(userId) ?? 0) > 0;
+const isOnline = (userId: string): boolean => (onlineCount.get(userId) ?? 0) > 0 || seenRecently(userId);
 function markOnline(userId: string, delta: 1 | -1): void {
   const n = (onlineCount.get(userId) ?? 0) + delta;
   if (n > 0) onlineCount.set(userId, n); else onlineCount.delete(userId);
+}
+
+/** The accounts at a table that has been dealt and is not over — "in a game"
+ * on a friends list, where an invite waits in the bell rather than popping up
+ * over the board. A pass over every room, once per inbox poll. */
+function playingNow(): Set<string> {
+  const out = new Set<string>();
+  for (const room of allRooms()) {
+    if (roomWaiting(room) || decidedWinner(room) !== null) continue;
+    forEachSeat(s => { const u = room.users[s]; if (u && room.sockets[s]) out.add(u); });
+  }
+  return out;
+}
+
+/** a room as an invite sees it (inbox.ts InviteRoom) */
+function inviteRoom(room: Room): InviteRoom {
+  return {
+    code: room.code,
+    mode: room.mode,
+    label: room.single ? 'Single Card Duel' : room.custom ? 'Custom live draft'
+      : room.mode === 'draft' ? 'Live draft' : room.mode === 'constructed' ? 'Constructed' : 'A game',
+    seatOf: id => room.users[0] === id ? 0 : room.users[1] === id ? 1 : null,
+    // a seat somebody claimed — an account bound to it, or anybody connected
+    // — is not free, and neither is any seat of a decided game
+    free: s => !room.users[s] && !room.sockets[s] && decidedWinner(room) === null,
+    here: s => !!room.sockets[s],
+  };
 }
 
 // ── static file server ────────────────────────────────────────────────
@@ -340,6 +373,13 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // answers true when the request was one of its own
   if (await accountRoutes(req, res, path, url, {
     online: isOnline, discordLinking: Boolean(BOT_TOKEN),
+  })) return;
+  // the bell and the room's friends panel: game invites between friends,
+  // friend requests, and who is around (api-inbox.ts)
+  if (await inboxRoutes(req, res, path, url, {
+    online: isOnline,
+    playing: playingNow,
+    lookup: code => { const room = getRoom(code); return room ? inviteRoom(room) : null; },
   })) return;
   // …and the saved deck collection everything under /api/decks
   if (await deckRoutes(req, res, path)) return;

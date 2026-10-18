@@ -7,11 +7,12 @@
  * the page wants you and you are not looking at it, the title flashes the
  * reason until you come back.
  *
- * Three callers, each at the place that already knows it wants you:
+ * Four callers, each at the place that already knows it wants you:
  *   · ui/queue.ts — a match was found, and the offer expires;
  *   · ui/main.ts's soundPass — the game is asking you something (the same
  *     diff that picks the "decision"/"priority" cue), or it ended;
- *   · ui/main.ts's NetBackend — the room you were waiting in filled up.
+ *   · ui/main.ts's NetBackend — the room you were waiting in filled up;
+ *   · ui/inbox.ts — a friend invited you to a game.
  *
  * Nothing happens while the tab is visible: a player looking at the page does
  * not need the title to tell them what is on it. The flashing stops, and the

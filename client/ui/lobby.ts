@@ -84,6 +84,8 @@ export interface LobbyView {
   link: string;
   /** BL-43: the room's custom rules, shown to both seats before the deal */
   custom?: CustomRulesInfo;
+  /** the "Invite a friend" panel (ui/inbox.ts), drawn under the share bar */
+  friends?: string;
 }
 
 function methodPickerHtml(lobby: TrioLobby, iAmLocked: boolean): string {
@@ -172,7 +174,7 @@ export function lobbyHtml(v: LobbyView): string {
 
     ${theyAreHere ? '' : lobby.method === 'random'
       ? '<p class="hint lobbywait">Waiting for your opponent. They join from their own League page — tell them on Discord you are here.</p>'
-      : shareBar('Send your opponent the room code', room, link)}
+      : shareBar('Send your opponent the room code', room, link) + (v.friends ?? '')}
 
     ${v.custom ? customPanelHtml(v.custom) : ''}
 

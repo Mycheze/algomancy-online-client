@@ -174,6 +174,8 @@ const SUITE: { file: string; covers: string }[] = [
     covers: 'T6 /api/report: the form\'s kind + severity land on the issues.jsonl row; an unknown value is coerced (other / null) and the note still logs; the pre-form body shape and a 5 KB enum are both one clean row' },
   { file: 'test-favorite.ts',
     covers: 'the favourite element you CHOOSE (POST /api/me/favorite): shown by /api/me, /api/player and the board, an unknown element clears it back to the one played most, signed out is refused; and an unclaimed guest is off the no-mode /api/players board until claimed' },
+  { file: 'test-invites.ts',
+    covers: 'game invites between friends (/api/inbox, /api/invite): an inbox poll marks you online; a stranger, a room you are not in and signed out are refused; an invite carries the room, the other seat and its mode; it hides while the sender is away and after a decline (the sender sees "declined"), and is gone once the friend sits down; a dealt game reads as "playing"; friend requests are in the bell' },
   { file: 'test-badge.ts',
     covers: 'BL-17 first slice: POST /api/admin/badge is 404 without the tester token; with it an owner/judge mark is set on a named account, shown by /api/player and /api/me, and cleared; a report filed with a session carries `by` = the account and its mark as a SNAPSHOT (a later revoke does not rewrite the row), a signed-out or wrong-bearer report carries by: null, and a `by` typed into the body is ignored' },
   { file: 'test-league.ts',
