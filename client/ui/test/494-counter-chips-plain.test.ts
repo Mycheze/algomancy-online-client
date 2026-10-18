@@ -21,18 +21,20 @@ const PICTO = /[\u{1F000}-\u{1FAFF}\u{2190}-\u{2BFF}\u{FE0F}]/u;
 const chips = (html: string): string[] =>
   [...html.matchAll(/<span class="pcount [^"]*"[^>]*>([^<]*)<\/span>/g)].map(m => m[1]!);
 
-for (const [board, pref] of [['regions', '2'], ['classic', '1']] as const) {
-  test(`${board} board: rot and debt read as words, with no pictograph`, () => {
-    store.setItem('algoLayout', pref);
-    const h = new Harness(49401);
-    h.state.players[0]!.rot = 3;
-    h.state.players[1]!.debt = 2;
-    const html = ui.join(h.state, 0, legalActions(h.state, 0));
-    const got = chips(html);
-    assert.deepEqual(got.map(t => t.trim()).sort(), ['debt 2', 'rot 3'], `the chips: ${JSON.stringify(got)}`);
-    for (const t of got) assert.doesNotMatch(t, PICTO, `a pictograph on a counter chip: "${t}"`);
-  });
+function plainOn(pref: '1' | '2'): void {
+  store.setItem('algoLayout', pref);
+  const h = new Harness(49401);
+  h.state.players[0]!.rot = 3;
+  h.state.players[1]!.debt = 2;
+  const html = ui.join(h.state, 0, legalActions(h.state, 0));
+  const got = chips(html);
+  assert.deepEqual(got.map(t => t.trim()).sort(), ['debt 2', 'rot 3'], `the chips: ${JSON.stringify(got)}`);
+  for (const t of got) assert.doesNotMatch(t, PICTO, `a pictograph on a counter chip: "${t}"`);
 }
+
+// literal names: the playtest ledger cites them, and its resolver reads titles off the source
+test('regions board: rot and debt read as words, with no pictograph', () => plainOn('2'));
+test('classic board: rot and debt read as words, with no pictograph', () => plainOn('1'));
 
 test('a player with no rot and no debt has no chip at all', () => {
   store.setItem('algoLayout', '2');

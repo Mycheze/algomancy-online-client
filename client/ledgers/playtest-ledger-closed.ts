@@ -4364,4 +4364,57 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "Real. The eight reached the opponent only as a log line; the reveal is now a typed event the glimpse notice draws as cards (CT-302); Big Glimpse Card's caster gets the same. Mutation-checked: the old info line turns 481 red.",
   },
+  {
+    id: 220, room: "", date: "2026-10-16",
+    report: "Djentleman, from the home page (bug, medium): \"When activating Living Forge with a Scrapyard Custodian in play, you don't draw a card\"",
+    status: 'fixed',
+    guards: [
+      "493-spawn-counters-are-put.test.ts::report #220: a Living Forge Robot is a counter put on an ally",
+      "493-spawn-counters-are-put.test.ts::Caleb 2026-03-05: Aethercap Siphoner spawned in battle triggers Pestilent Mycelion",
+      "493-spawn-counters-are-put.test.ts::Counter Thief, OUTSIDE battle: the Robot keeps its own counters",
+    ],
+    note: "Real; our CR was wrong. A unit spawning with counters fired no counter event (CR 301.8a/707.5a said nobody puts them on, an unsourced call). Caleb ruled five times that it is putting counters on (\"You're still putting it on them\"; Custodian on Robot creation: \"Yes\"). Now a placement in every respect: Custodian draws, Mycelion triggers, and in battle Counter Thief takes them. Room XPDJ. Mutation-checked: dropping the signal turns 493 red 5/6.",
+  },
+  {
+    id: 221, room: "PYPX", date: "2026-10-18",
+    report: "mycheze, seat 1, action 90 (ux): \"Debt doesn't need the little chain emoji. It just looks out of place.\"",
+    status: 'fixed',
+    guards: [
+      "494-counter-chips-plain.test.ts::regions board: rot and debt read as words, with no pictograph",
+      "494-counter-chips-plain.test.ts::classic board: rot and debt read as words, with no pictograph",
+    ],
+    note: "Real. The debt chip read \"⛓ debt N\" and rot \"☠ rot N\"; owner: remove both, \"they're weird\". Mutation-checked: the chain back turns 494 red.",
+  },
+  {
+    id: 222, room: "PYPX", date: "2026-10-18",
+    report: "mycheze, seat 1, action 281: \"I'm pretty sure Void Mandible should trigger on Viruses too. They're not tokens and they're 'played'.\"",
+    status: "by-design",
+    guards: [
+      "119-play-and-token-events.test.ts::CR 701.2a holds: applying a VIRUS fires neither event, and Void Mandible sleeps",
+    ],
+    note: "Not a bug. A Virus is not a token, but applying one is not playing it (CR 701.1). Caleb, rules-questions 2026-08-22: _passer \"Applying mod never triggers 'unit/spell being played'\" — \"yes\"; then \"We never really considered Virus/Mods/Graft as 'playing a unit' or 'playing a spell'\" — \"awesome\"; cards played from Tides trigger \"unless you play them as mods\". In PYPX Gember APPLIED Dreadspawn Horror [278] and Tidepool Terror [287]. A Virus PLAYED as a unit in battle (from Tides) does trigger Mandible: measured.",
+  },
+  {
+    id: 223, room: "UAHC", date: "2026-10-18",
+    report: "mycheze, seat 0, action 149 (ux): \"Cards that are clicked on during drafting/hand crafting in planning shouldn't get pinned to the right hand info column … Same goes for making resources\"",
+    status: 'fixed',
+    guards: [
+      "497-planning-clicks-skip-rail.test.ts::the draw step: a bottom pick does not take the rail",
+      "497-planning-clicks-skip-rail.test.ts::the resource step: the click that opens the recycle menu does not take the rail",
+      "497-planning-clicks-skip-rail.test.ts::the draft step: a pick off the dock does not take the rail",
+      "497-planning-clicks-skip-rail.test.ts::deployment: a click that PLAYS a card still puts it in the rail",
+    ],
+    note: "Real, regions board only: every card click filled the rail, moves included (2026-09-23). Owner: \"only in planning … When you're attacking/playing with cards, it's fine to show them\" — so the classic board's did-the-click-do-something test now applies in the draw, draft and resource steps; the haste step, deployment and battle still show a clicked card. Mutation-checked both ways.",
+  },
+  {
+    id: 224, room: "TRST", date: "2026-10-18",
+    report: "mycheze, seat 0, action 176 (ux): \"When the game shows you what your opponent is choosing from while glimpsing, it shouldn't go away automatically. It should wait to be dismissed\"",
+    status: 'fixed',
+    guards: [
+      "495-glimpse-notice-waits.test.ts::a minute later, and every tick on the way, it is still up",
+      "495-glimpse-notice-waits.test.ts::a newer reveal takes its place",
+      "496-past-reveals.test.ts::it opens every reveal, newest first: who, from what, and exactly the cards shown",
+    ],
+    note: "Real by design: the strip expired after about four seconds (Celestial Purge glimpsing 3 at [173]). Owner: close on dismiss or when a new thing takes that space, plus past reveals in the right-click menu. The strip now sits in the board grid (it covered the hand dock), and Past reveals lists every reveal this seat was sent. Mutation-checked: a 5 s expiry turns 495 red 6/7.",
+  },
 ];

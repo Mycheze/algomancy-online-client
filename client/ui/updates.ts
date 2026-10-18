@@ -44,6 +44,10 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-18', kind: 'fix', text: "Scrapyard Custodian now draws when you create a Robot. Anything that arrives with counters counts as having them put on it, so Pestilent Mycelion triggers too, and in battle a Counter Thief takes them." },
+  { date: '2026-10-18', kind: 'new', text: "Cards revealed to you now stay on screen until you close them or something new is revealed, and they no longer cover your hand. Right-click the table (or tap ☰) for Past reveals." },
+  { date: '2026-10-18', kind: 'change', text: "In planning, drafting, choosing cards for the bottom and recycling no longer swap the card in the right-hand panel. Cards you play still show there." },
+  { date: '2026-10-18', kind: 'fix', text: "The rot and debt counters next to a player's life are plain words now, without the little icons." },
   { date: '2026-10-18', kind: 'new', text: "League news now arrives in the bell: pairings, results, an opponent waiting. On the League page, suggest a time for a match; your opponent sees it in their own time zone, and you both get a reminder 15 minutes before." },
   { date: '2026-10-18', kind: 'new', text: "Invite your friends to a game. Make a room and your friends are listed under the room code, online ones first. Click one and they get a popup that takes them straight to your table. The new bell holds invites and friend requests." },
   { date: '2026-10-18', kind: 'change', text: "Augmented and grafted units now show each mod peeking out underneath, like on a real table, so you can see a mod land without hovering. Click the unit to see its mods' names; hover a name to see the card." },
