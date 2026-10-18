@@ -3958,18 +3958,23 @@ export class E {
     // enter with X+1 counters (Caleb 2025-03-21: "Yep."; 2025-05-30: "it's
     // just X+1 … a 2/2 robot would spawn as a 3/3, not a 4/4"). Positive
     // spawns only: "if ONE OR MORE counters would be put" — a counterless
-    // spawn is no placement and never becomes one. Deliberately NOT routed
-    // through replaceCounters: whether a redirect (Counter Thief) can steal a
-    // token's own spawn counters is an unsourced rules question.
+    // spawn is no placement and never becomes one.
     //
-    // CR 707.5a: the actor of a spawn's OWN counters is the seat creating it. There
-    // is no "putter" in the usual sense — nobody puts a Robot's X on it, it
-    // arrives holding them — so the answer had to be chosen rather than found,
-    // and `seat` is the only party involved: the source of the counters is the
-    // source of the token. It reaches the AMOUNT layer only (an allied Flux
-    // Resonator still makes a Robot X enter as X+1, report #88, which is the
-    // behaviour this line has to preserve); no `countersChanged` fires here, so
-    // no "when YOU put a counter" trigger sees a spawn, exactly as before.
+    // CR 301.8a, 707.5a: a spawn's counters ARE PUT ON it, as it enters, by the
+    // seat creating it. Caleb, asked whether a Robot spawning "is never placed"
+    // (2023-09-20): "It would trigger them"; Scrapyard Custodian on Robot
+    // creation (2025-03-21): "Yes" — "it also does work this way in mtg" (whose
+    // rules count an object given counters as it enters as "put on"). Report
+    // #220 (room XPDJ): a Living Forge Robot drew nothing off a Custodian. So
+    // it is a placement in all three respects a placement has:
+    //   · the AMOUNT layer (just above), as it always was;
+    //   · the REDIRECT (`replaceCounters`): during battle a Counter Thief takes
+    //     them, and the unit arrives without — a Robot so robbed is X = 0, a
+    //     0/0, and dies at the next state check (CR 713.2) like any other;
+    //   · the SIGNAL: a `countersChanged` after 'spawned' (below), so "when
+    //     you put counters on…" hears it. Signalled, not routed through
+    //     `addCounters`: that would run the amount layer a second time and a
+    //     death check against a body still being dressed (`wearing`).
     //
     // CR 301.8: …and the same field carries what the CARD ITSELF prints —
     // `CardBehavior.spawnsWithCounters` ("I spawn with two +1/+1 counters",
@@ -3991,13 +3996,17 @@ export class E {
     // it. No caller passes a negative `opts.counters`, so nothing that was
     // here before changes; it only stops the declarative half above from
     // getting a different answer than the `addCounters` call it replaced.
+    // `holder` is where they land: the body itself, or a redirect's unit.
+    let holder: Entity = u;
     if (spawnCounters !== 0) {
       spawnCounters += this.amountDelta({
         kind: 'counters', region, amount: spawnCounters, unit: u, combat: false,
         sourceSeat: seat,
       });
+      if (spawnCounters) holder = this.replaceCounters(u, spawnCounters);
     }
-    if (spawnCounters) u.counters = spawnCounters;
+    if (spawnCounters) holder.counters += spawnCounters;
+    const ownCounters = holder === u ? spawnCounters : 0;
     // CR 602.7: a card PLAYED into an open spot in the formation is put there
     // BEFORE the spawn event exists, so no listener and no player ever sees it
     // standing anywhere else. See takeSpot.
@@ -4073,7 +4082,7 @@ export class E {
       // negative spawn ("three -1/-1 counters on me"). It used to read
       // "(-3 +1/+1)" the moment one did.
       `${this.pname(seat)} spawns ${name}`
-      + (spawnCounters ? ` (${Math.abs(spawnCounters)} ${spawnCounters > 0 ? '+1/+1' : '-1/-1'})` : '')
+      + (ownCounters ? ` (${Math.abs(ownCounters)} ${ownCounters > 0 ? '+1/+1' : '-1/-1'})` : '')
       + (owner !== seat ? ` — ${this.pname(owner)}'s card.` : '.'),
       {
         seat, unit: u.id, region, card: name,
@@ -4115,6 +4124,16 @@ export class E {
     // card being played never hears its own play — so it is not a listener.
     if (playEv) this.fireEvent('cardPlayed', playEv, undefined, u.id);
     this.fireEvent('spawned', ev);
+    // CR 707.5a: …and the placement, after the arrival it is part of. On the body
+    // itself it is signal-only (`msg: ''`) — the spawn line already says it;
+    // on a redirect's unit it is that unit's own line, as addCounters writes it.
+    if (spawnCounters && this.entity(holder.id)) {
+      const cev = this.ev('countersChanged', holder === u ? ''
+        : `${holder.card} gets ${Math.abs(spawnCounters)} ${spawnCounters > 0 ? '+1/+1' : '-1/-1'} `
+          + `counter(s) (net ${holder.counters}).`,
+        { unit: holder.id, n: spawnCounters, total: holder.counters, by: seat, spawn: u.id });
+      this.fireEvent('countersChanged', cev);
+    }
     // CR 708.9: record the creation in the open batch, so "each unique token you
     // created" has a creation to be unique across. After the spawn event, so a
     // batch replacement can never observe a half-created board. The REQUEST

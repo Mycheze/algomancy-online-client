@@ -23,8 +23,9 @@
  *    NO approximation survives (CR 708.8b): "by an allied source" is the printed
  *    clause now that `addCounters` carries `by` (→ `AmountCtx.sourceSeat`),
  *    the recipient may be any unit, and the sign filter is gone ("all counters
- *    count as counters"). Spawn-with-X counters (Robot X) still get the bonus
- *    through the amount layer (report #88) and still fire no countersChanged.
+ *    count as counters"). Spawn-with-X counters (Robot X) get the bonus
+ *    through the amount layer (report #88), once, and are signalled as the
+ *    placement they are (CR 707.5a, report #220).
  *  - Formless: "becomes a base 4/4" REWRITES layer 2 (E.setBase), and the
  *    "loses all attributes until regroup" half is CR 712.1's until-regroup
  *    suppression — both cleared at regroup.
@@ -49,8 +50,8 @@
  *    exists now (CR 707.5) — `CardBehavior.spawnsWithCounters`, applied by
  *    E.spawnUnit before the 'spawned' event and THROUGH the amount layer (CR 707.5a),
  *    which the raw `self.counters += 2` bypassed (an allied Flux Resonator gave
- *    this card 2 where it gave "Create a Robot 2" 3). Still silent — no
- *    countersChanged event, matching Robot's spawn-with-counters (CR 707.5a).
+ *    this card 2 where it gave "Create a Robot 2" 3). A placement, like
+ *    Robot's spawn-with-counters: countersChanged after 'spawned' (CR 707.5a).
  *    "Move my counters" needs NO snapshot of its
  *    own: every leave-play event carries `counters` (E.leftPlayFacts, CR 714.9),
  *    which is the same fact the note two paragraphs down credits for

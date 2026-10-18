@@ -629,10 +629,11 @@ card('Wither and Bloom', {
 // aimed at it: there is nothing there to answer, and above all the two cards
 // must not differ about whether there is.
 //
-// Nothing else about the number moved: it is still SIGNED, still
-// silent (no countersChanged — CR 707.5a: nobody PUTS a spawn's own counters on
-// it), and it still reaches the amount layer (CR 708.5), so an allied Flux Resonator
-// still makes it -4 exactly as the addCounters call it replaced did.
+// Nothing else about the number moved: it is still SIGNED, it is put on by
+// the seat spawning it (CR 707.5a — Caleb 2026-03-05: spawned in battle it
+// triggers Pestilent Mycelion, "Yes"), and it still reaches the amount layer
+// (CR 708.5), so an allied Flux Resonator still makes it -4 exactly as the
+// addCounters call it replaced did.
 //
 // The [Augment] clause transfers: "me" = the carrier, "you" = its
 // controller; "a counter" is one of the NET counters (the engine's signed

@@ -2130,7 +2130,8 @@ export interface CardBehavior {
    * negative is -1/-1. It reaches the AMOUNT layer (CR 708.5) exactly as a Robot X's
    * spawn counters do, so an allied Flux Resonator scales both — two cards
    * printing the same kind of sentence must not disagree about whether a
-   * replacement effect touches them.
+   * replacement effect touches them. And, like a Robot X's, they are PUT ON
+   * (CR 707.5a): a redirect may take them, and "when you put counters on…" hears them.
    */
   spawnsWithCounters?: number;
   /** effect of a spell / spell unit / spell token when played */

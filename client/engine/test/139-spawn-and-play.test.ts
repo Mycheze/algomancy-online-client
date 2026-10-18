@@ -132,11 +132,11 @@ test('Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, not the 
     'Iyngstra gained 1, the defense the card prints — it used to gain 4');
 });
 
-test('Aethercap Siphoner: spawning with counters is not "you put counters on an ally" — the same silence a Robot\'s X keeps', () => {
-  // CR 707.5a: nobody PUTS a spawn's own counters on it — it arrives holding them —
-  // so no 'countersChanged' fires and no "when you put a counter" trigger
-  // hears a spawn. That was already true of a Robot X and NOT true of this
-  // card, whose counters came through addCounters like any other placement.
+test('Aethercap Siphoner: spawning with counters IS "you put counters on an ally" — the placement a Robot\'s X is too', () => {
+  // CR 707.5a: a spawn's own counters are PUT ON it, by the seat spawning it
+  // (Caleb 2026-01-27, asked whether "spawn with X counters" counts as
+  // "putting one or more counters on an ally": "yes"). Report #220: this test
+  // used to pin the opposite — no countersChanged, no draw.
   const h = new Harness(13904);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -144,16 +144,17 @@ test('Aethercap Siphoner: spawning with counters is not "you put counters on an 
   const hand0 = h.state.players[p]!.hand.length;
   whiteBox(h, e => { e.spawnUnit(p, 'Aethercap Siphoner', e.homeRegion(p)); });
   drainTriggers(h);
-  assert.equal(h.state.players[p]!.hand.length, hand0,
-    'the Siphoner\'s own spawn counters are not a placement — no card is drawn');
+  assert.equal(h.state.players[p]!.hand.length, hand0 + 1,
+    'the Siphoner\'s three -1/-1 spawn counters are a placement on an ally — one card is drawn');
+  assert.equal(unitByCard(h, 'Aethercap Siphoner')!.counters, -3,
+    'and they are on it once: the signal is not a second placement');
 
-  // the positive control: a REAL placement on an ally still draws, so the
-  // watcher above was alive the whole time
+  // [Switch1]: the draw was the Custodian's once, so a second placement this
+  // turn draws nothing — which is what makes the count above exactly one
   const ally = unitByCard(h, 'Aethercap Siphoner')!;
   whiteBox(h, e => { e.addCounters(e.entity(ally.id)!, 1, p); });
   drainTriggers(h);
-  assert.equal(h.state.players[p]!.hand.length, hand0 + 1,
-    'putting a counter on that same ally by hand DOES draw — the Custodian was live');
+  assert.equal(h.state.players[p]!.hand.length, hand0 + 1, 'bounded: no second draw');
 });
 
 // ═══════════════════ (b) PLAY vs PUT INTO PLAY ═══════════════════════════

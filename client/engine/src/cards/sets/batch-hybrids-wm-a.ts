@@ -94,8 +94,9 @@
  *  - Scrapyard Custodian: NO LONGER an approximation (CR 708.8b) — 'countersChanged'
  *    carries `by`, the seat that placed the counters, so "when YOU put
  *    counters on an ally" is exact: my placement, either sign, onto a unit I
- *    control. Robots spawning with counters still do NOT fire it (spawn
- *    counters are on before the spawn event — engine note).
+ *    control. A unit SPAWNING with counters fires it too (CR 707.5a, report
+ *    #220): they are put on, by the seat spawning it — Caleb on Custodian and
+ *    Robot creation: "Yes".
  *  - Soulforger: "nontoken" is a FACT ON THE DEATH EVENT (`token`, CR 714.9,
  *    stamped by E.leftPlayFacts precisely because the entity is erased before
  *    the event fires). This entry used to say the event had no token flag and
