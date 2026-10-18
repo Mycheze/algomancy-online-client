@@ -44,6 +44,11 @@ from pathlib import Path
 BOT_DIR = Path(__file__).resolve().parent
 #: the repository root, one level above bot/
 REPO_ROOT = BOT_DIR.parent
+#: the game server's league store: its `OutboxKind` union is the list of
+#: messages cogs/league.py must render. Read by test_league.py only, which
+#: fails on a kind the bot cannot render (it would be acked "unknown-kind"
+#: and never delivered).
+LEAGUE_STORE_TS = REPO_ROOT / "client" / "server" / "league-store.ts"
 
 # ── shared data: read by BOTH the Python bot and the TypeScript client ───────
 # The client reaches these over its own constants (engine/paths.ts, ui/assets.ts)

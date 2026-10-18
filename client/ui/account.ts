@@ -116,6 +116,9 @@ export interface Me {
   /** present (true) only on an admin's OWN profile — it draws the Admin
    * button and nothing else; the dashboard asks the server (ui/admin.ts) */
   admin?: true;
+  /** the league availability (privateView only): its zone is the one league
+   * times are shown in, in the bell as on the League page */
+  availability?: { tz: string; grid: string } | null;
 }
 
 /** the badge as a chip: "Owner", "Judge L2" — nothing for an unmarked account */

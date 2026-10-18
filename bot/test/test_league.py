@@ -71,6 +71,12 @@ ROWS = {
     "challenge": {"season": "Pilot", "match": "p-w0-1", "from": {"id": "u2", "name": "Bob", "contact": "bob_typed"},
                   "windows": WIN, "deadline": T},
     "waiting": {"season": "Pilot", "match": "p-w1-1", "from": {"id": "u2", "name": "Bob", "contact": "bob_typed"}},
+    "time": {"season": "Pilot", "match": "p-w1-1", "at": T + 19 * 3600, "deadline": T + 7 * 86400,
+             "from": {"id": "u2", "name": "Bob", "contact": "bob_typed"}},
+    "time-agreed": {"season": "Pilot", "match": "p-w1-1", "at": T + 19 * 3600,
+                    "from": {"id": "u2", "name": "Bob", "contact": "bob_typed"}},
+    "time-reminder": {"season": "Pilot", "match": "p-w1-1", "at": T + 19 * 3600,
+                      "opponent": {"id": "u2", "name": "Bob", "contact": "bob_typed"}},
 }
 
 
@@ -91,6 +97,15 @@ check("⭐ a corrupt file reads as empty, never raises", lg.channels() == {})
 
 # ── §2 ────────────────────────────────────────────────────────────────
 print("[§2 ⭐ every kind renders]")
+# derived, not listed: every kind the SERVER can send must have a sample row
+# here, so a new kind with no renderer fails this test instead of being acked
+# "unknown-kind" by the live bot and never reaching anybody
+import re  # noqa: E402
+_union = re.search(r"export type OutboxKind =(.*?);", paths.LEAGUE_STORE_TS.read_text(encoding="utf-8"), re.S)
+SERVER_KINDS = re.findall(r"'([a-z-]+)'", re.sub(r"//[^\n]*", "", _union.group(1))) if _union else []
+check("the server's OutboxKind list was found", len(SERVER_KINDS) >= 10)
+for kind in SERVER_KINDS:
+    check(f"⭐ server kind {kind} has a sample row here", kind in ROWS)
 for kind in ROWS:
     msg = lg.render(row(kind), "https://algomancy.online")
     check(f"{kind} renders", msg is not None)
@@ -104,7 +119,8 @@ for kind in ROWS:
               len(e.get("title", "")) <= 256 and len(e.get("description", "")) <= 4096
               and all(len(f["value"]) <= 1024 and len(f["name"]) <= 256 for f in e.get("fields", [])))
     check(f"{kind}: content under 2000 characters", len(msg.get("content") or "") <= 2000)
-    if kind in ("signup", "signups-open", "pairings", "week-pairings", "final", "challenge"):
+    if kind in ("signup", "signups-open", "pairings", "week-pairings", "final", "challenge",
+                "time", "time-agreed", "time-reminder"):
         check(f"⭐ {kind}: times are Discord stamps, never formatted by the bot", "<t:" in text)
     if msg.get("view"):
         urls = [c.url for c in msg["view"].children]

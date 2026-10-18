@@ -1,7 +1,8 @@
 /* /api/inbox and /api/invite — the bell and the room's friends panel.
  *
  * Every signed-in page polls GET /api/inbox (ui/inbox.ts). The answer is
- * everything the bell counts — invites to a game, friend requests — plus
+ * everything the bell counts — invites to a game, friend requests, league
+ * messages and a suggested match time waiting on an answer — plus
  * the friends list with who is around, which the room's friends panel is
  * drawn from. `?room=CODE` adds, per friend, whether this player has
  * already invited them to that room. State and the rules about it are in
@@ -11,6 +12,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { addrOf, json, rateLimited, readBody, str, tokenOf } from './api-util.ts';
 import { accountById, accountForToken, favoriteOf } from './accounts.ts';
 import { acceptInvite, declineInvite, invitesFor, sendInvite, sentFrom, touch, type RoomLookup } from './inbox.ts';
+import { markNotesRead, notesFor, timesAskedOf } from './league-store.ts';
 import type { Element } from '../engine/src/types.ts';
 
 export interface InboxContext {
@@ -36,7 +38,7 @@ const ORDER: Record<FriendStatus, number> = { online: 0, playing: 1, offline: 2 
 export async function inboxRoutes(
   req: IncomingMessage, res: ServerResponse, path: string, url: URL, ctx: InboxContext,
 ): Promise<boolean> {
-  if (path !== '/api/inbox' && !path.startsWith('/api/invite')) return false;
+  if (!path.startsWith('/api/inbox') && !path.startsWith('/api/invite')) return false;
   const me = accountForToken(tokenOf(req));
   if (!me) return json(res, { ok: false, error: 'log in first' }, 401), true;
 
@@ -59,7 +61,19 @@ export async function inboxRoutes(
         return a ? [{ id, username: a.username }] : [];
       }),
       friends,
+      // the league: its messages to this player (the outbox the Discord bot
+      // also delivers), and any suggested time waiting on their answer
+      league: notesFor(me.id, Date.now()),
+      times: timesAskedOf(me.id, Date.now()),
     }), true;
+  }
+
+  // the bell was opened: the league messages it showed are read
+  if (path === '/api/inbox/read' && req.method === 'POST') {
+    const b = await readBody(req);
+    const upTo = Number(b['upTo']);
+    if (Number.isFinite(upTo)) markNotesRead(me.id, upTo, Date.now());
+    return json(res, { ok: true }), true;
   }
 
   if (path === '/api/invite' && req.method === 'POST') {

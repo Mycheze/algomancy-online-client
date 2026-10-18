@@ -349,6 +349,18 @@ export interface MatchResult {
   fixed?: true;
 }
 
+/** When the two players mean to play: one suggestion at a time (owner,
+ * 2026-10-18). Either may suggest; a new one replaces the old; the OTHER
+ * player accepts. Epoch ms — every screen shows it in its viewer's zone. */
+export interface MatchTime {
+  at: number;
+  /** who suggested it */
+  by: string;
+  agreed?: true;
+  /** when both were reminded it is nearly time (ISO), once */
+  remindedAt?: string;
+}
+
 export interface LeagueMatch {
   id: string;
   /** 1..weeks for a week match; weeks + 1 for the final; 0 for a game two
@@ -363,6 +375,8 @@ export interface LeagueMatch {
   room?: string;
   /** when the opponent was last told somebody is waiting in it (ISO) */
   pingAt?: string;
+  /** the time they mean to play, suggested or agreed */
+  time?: MatchTime;
 }
 
 export interface StandingRow {

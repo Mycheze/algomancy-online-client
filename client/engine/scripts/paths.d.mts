@@ -55,6 +55,7 @@ export const ENGINE_TEST_DIR: string;
 export const UI_TEST_DIR: string;
 export const SERVER_TEST_DIR: string;
 export const SERVER_E2E_DIR: string;
+export const LEAGUE_STORE_TS: string;
 /** the whole browser client — the game server resolves this for itself too */
 export const UI_DIR: string;
 /** the sound cues, one .ogg per ui/sfx.ts Cue; provenance in sfx/NOTICE.md */

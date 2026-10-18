@@ -11962,6 +11962,15 @@ installInbox({
   room: () => (NET?.waiting ? NET.room : null),
   quiet: () => inGame && !NET?.waiting,
   friendsChanged: acct.reloadMe,
+  tz: () => acct.currentUser()?.availability?.tz ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+  // from a waiting room (a game page) the League page is a navigation away;
+  // anywhere else it is the screen, opened the way its nav button opens it
+  openLeague: season => {
+    if (inGame) { location.search = `?league=${encodeURIComponent(season || '1')}`; return; }
+    acct.leaveScreen();
+    lg.openLeague(season || undefined);
+  },
+  playLeague: lg.playMatch,
 });
 // BL-46: the agreed-fix dialog and the bar the other seat answers on — a layer
 // of its own beside #app, like the report form (ui/amend.ts)

@@ -204,6 +204,22 @@ def render(row, base=None):
                     + (f" — {d['rank']} of {d['of']}." if d.get("rank") else "."))
         return {"content": text, "view": view}
 
+    if kind == "time":
+        f = d.get("from") or {}
+        return {"content": (f"🏅 {_who(people, f.get('id'))} suggests playing your **{season}** match "
+                            f"{_ts(d['at'], 'F')} ({_ts(d['at'], 'R')}). Accept it, or suggest another time, "
+                            "on the League page."), "view": view}
+
+    if kind == "time-agreed":
+        f = d.get("from") or {}
+        return {"content": (f"🏅 {_who(people, f.get('id'))} accepted: your **{season}** match is on for "
+                            f"{_ts(d['at'], 'F')} ({_ts(d['at'], 'R')})."), "view": view}
+
+    if kind == "time-reminder":
+        o = d.get("opponent") or {}
+        return {"content": (f"⏰ Your **{season}** match against {_who(people, o.get('id'))} starts "
+                            f"{_ts(d['at'], 'R')}. Open the League page and press Play."), "view": view}
+
     if kind == "season":
         if "place" in d:
             place = {"champion": "🏆 **Champion!**", "finalist": "🥈 **Finalist.**",

@@ -1300,6 +1300,9 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .rfstatus { flex: 1; color: var(--dim); font-size: 11px; }
 .roomfriend button { font-size: 12px; padding: 3px 10px; }
 .fdot.busy { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+/* league news in the bell: unread ones carry the accent edge */
+.inboxlist > .zonelabel + .zonelabel, .inboxlist .zonelabel { margin: 4px 0 0; }
+.leaguenote.unread { border-left: 3px solid var(--accent); }
 .reportbox { width: min(92vw, 520px); }
 .reportbox textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 8px 10px; font: inherit; resize: vertical; }
@@ -4661,6 +4664,20 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
  * week suggestions, and the organizer's copy-for-Discord post */
 .lgplay { white-space: nowrap; text-align: right; }
 .lgplay button + button { margin-left: 6px; }
+/* when to play (ui/league.ts timeHtml): the time on the table, and the picker */
+.lgtime { margin-bottom: 4px; }
+.lgtime.agreed b { color: var(--glow); }
+.lgbtime { font-size: 12px; }
+.lgbtime.agreed { color: var(--glow); }
+.lgbtime.ask { color: var(--accent); }
+.lgtime.ask { color: var(--accent); }
+.lgtime button { margin-left: 8px; font-size: 12px; padding: 2px 10px; }
+.lgmatches td > button[data-btn="lg-time-open"] { font-size: 12px; padding: 2px 10px; margin: 2px 0 6px; }
+.lgtimeform { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 8px; padding: 8px 10px;
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; }
+.lgtimechips, .lgtimepick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.lgtimechips button, .lgtimepick button { font-size: 12px; padding: 3px 9px; }
+.lgtimepick select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 3px 6px; }
 .lgsuggest td { vertical-align: top; }
 .lgpost { width: 100%; box-sizing: border-box; font: 12px/1.4 ui-monospace, monospace; resize: vertical;
   background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 4px; padding: 6px; }

@@ -34,6 +34,7 @@
 import { esc, elIcon } from './util.ts';
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
+import { noteLine, type LeagueNote } from './leaguenotes.ts';
 
 // ── types off the wire (server/api-inbox.ts) ─────────────────────────
 
@@ -44,6 +45,8 @@ export interface RoomFriend {
   id: string; username: string; favoriteElement: string | null;
   status: FriendStatus; invite: 'sent' | 'declined' | null;
 }
+/** a league match time the other player suggested, waiting on this one */
+export interface TimeAsk { season: string; seasonName: string; match: string; from: string; at: number }
 
 export interface InboxDeps {
   token: () => string | null;
@@ -55,6 +58,12 @@ export interface InboxDeps {
   quiet: () => boolean;
   /** a friend request was answered here: the profile should hear of it */
   friendsChanged: () => void;
+  /** the zone league times are shown in: the player's league one, else the browser's */
+  tz: () => string;
+  /** a league note's button: the League page, at this season */
+  openLeague: (season: string) => void;
+  /** …or Play on this match, the way the League page's own button does */
+  playLeague: (season: string, match: string) => void;
 }
 
 // ── state ─────────────────────────────────────────────────────────────
@@ -64,6 +73,8 @@ let layer: HTMLElement | null = null;
 let invites: InviteView[] = [];
 let requests: RequestView[] = [];
 let friends: RoomFriend[] = [];
+let notes: LeagueNote[] = [];
+let times: TimeAsk[] = [];
 /** has a poll answered yet — the panel says "loading" until one has */
 let loaded = false;
 let panelOpen = false;
@@ -89,9 +100,15 @@ function loadSeen(): void {
     dismissed = new Set(raw.d ?? []);
   } catch { /* private mode, or nothing stored: start empty */ }
 }
+/* One key per thing that can pop up or chime: an invite by its id, a league
+ * note as `L<id>`, a suggested time as `T<match>@<at>` (a new time for the
+ * same match is a new thing to hear about). */
+const noteKey = (n: LeagueNote): string => `L${n.id}`;
+const timeKey = (t: TimeAsk): string => `T${t.match}@${t.at}`;
+
 function saveSeen(): void {
   // only the ones still waiting are worth keeping; the rest have gone
-  const live = new Set(invites.map(i => i.id));
+  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey)]);
   try {
     sessionStorage.setItem(SEEN_KEY, JSON.stringify({
       a: [...announced].filter(id => live.has(id)), d: [...dismissed].filter(id => live.has(id)),
@@ -99,8 +116,19 @@ function saveSeen(): void {
   } catch { /* the popup may come back after a reload — that is all */ }
 }
 
-/** what the bell counts */
-const unread = (): number => invites.length + requests.length;
+/** what the bell counts: everything waiting on an answer, and league news not yet read */
+const unread = (): number => invites.length + requests.length + times.length + notes.filter(n => !n.read).length;
+
+/** a league time, in the player's zone */
+function timeText(unix: number): string {
+  const opts: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' };
+  try { return new Intl.DateTimeFormat(undefined, { ...opts, timeZone: deps?.tz() }).format(unix * 1000); }
+  catch { return new Date(unix * 1000).toUTCString(); }
+}
+
+/** the agreed-time reminders worth a popup: unread, and the match not long started */
+const reminders = (): LeagueNote[] => notes.filter(n => n.kind === 'time-reminder' && !n.read
+  && typeof n.data['at'] === 'number' && (n.data['at'] as number) * 1000 + 30 * 60_000 > Date.now());
 
 const appEl = (): HTMLElement | null =>
   typeof document !== 'undefined' && typeof document.getElementById === 'function'
@@ -162,9 +190,34 @@ function inviteCardHtml(i: InviteView, pop: boolean): string {
   </div>`;
 }
 
+function timeAskHtml(t: TimeAsk): string {
+  return `<div class="invitecard">
+    <div><b>${esc(t.from)}</b> suggests playing your ${esc(t.seasonName)} match
+      <b>${esc(timeText(t.at / 1000))}</b> <span class="dim">(your time)</span>.</div>
+    <div class="invbtns">
+      <button class="primary" data-inbox="time-accept" data-season="${esc(t.season)}" data-match="${esc(t.match)}">Accept</button>
+      <button data-inbox="league" data-season="${esc(t.season)}">Suggest another</button>
+    </div>
+  </div>`;
+}
+
+function noteHtml(n: LeagueNote, pop: boolean): string {
+  const { html, action } = noteLine(n, timeText);
+  const match = typeof n.data['match'] === 'string' ? n.data['match'] : '';
+  const btn = action === 'play' && match
+    ? `<button class="primary" data-inbox="league-play" data-season="${esc(n.season)}" data-match="${esc(match)}">Play</button>`
+    : action ? `<button data-inbox="league" data-season="${esc(n.season)}">League page</button>` : '';
+  return `<div class="invitecard leaguenote${n.read ? '' : ' unread'}">
+    ${pop ? `<button class="invx" data-inbox="hide" data-id="${esc(noteKey(n))}" title="keep it in the bell">✕</button>` : ''}
+    <div>${html}</div>
+    ${btn ? `<div class="invbtns">${btn}</div>` : ''}
+  </div>`;
+}
+
 function listHtml(): string {
   const rows = [
     ...invites.map(i => inviteCardHtml(i, false)),
+    ...times.map(timeAskHtml),
     ...requests.map(r => `<div class="invitecard">
       <div><b>${esc(r.username)}</b> wants to be friends.</div>
       <div class="invbtns">
@@ -172,6 +225,7 @@ function listHtml(): string {
         <button data-inbox="friend-decline" data-id="${esc(r.id)}">Decline</button>
       </div>
     </div>`),
+    ...(notes.length ? [`<div class="zonelabel">League</div>`, ...notes.map(n => noteHtml(n, false))] : []),
   ];
   return `<div class="inboxlist">
     <div class="zonelabel">Notifications</div>
@@ -183,10 +237,13 @@ function paint(): void {
   if (!layer) return;
   if (!deps?.token() || onBoard() || deps.quiet()) { if (layer.innerHTML) layer.innerHTML = ''; return; }
   const n = unread();
-  const pops = panelOpen ? [] : invites.filter(i => !dismissed.has(i.id));
+  const pops = panelOpen ? [] : [
+    ...invites.filter(i => !dismissed.has(i.id)).map(i => inviteCardHtml(i, true)),
+    ...reminders().filter(r => !dismissed.has(noteKey(r))).map(r => noteHtml(r, true)),
+  ];
   layer.innerHTML = `<button class="inboxbell${n ? ' lit' : ''}" data-inbox="bell" title="notifications">🔔${n ? `<span class="inboxcount">${n}</span>` : ''}</button>`
     + (panelOpen ? listHtml() : '')
-    + (pops.length ? `<div class="invitepops">${pops.map(i => inviteCardHtml(i, true)).join('')}</div>` : '');
+    + (pops.length ? `<div class="invitepops">${pops.join('')}</div>` : '');
 }
 
 // ── the poll ──────────────────────────────────────────────────────────
@@ -219,29 +276,40 @@ function poll(): void {
   const room = deps.room();
   fetch(`/api/inbox${room ? `?room=${encodeURIComponent(room)}` : ''}`, { headers: deps.authHeaders() })
     .then(r => r.json())
-    .then((r: { ok?: boolean; invites?: InviteView[]; requests?: RequestView[]; friends?: RoomFriend[] }) => {
+    .then((r: { ok?: boolean; invites?: InviteView[]; requests?: RequestView[]; friends?: RoomFriend[];
+      league?: LeagueNote[]; times?: TimeAsk[] }) => {
       if (!r.ok) return;
-      take(r.invites ?? [], r.requests ?? [], r.friends ?? []);
+      take(r.invites ?? [], r.requests ?? [], r.friends ?? [], r.league ?? [], r.times ?? []);
     })
     .catch(() => { /* offline: keep what we had */ })
     .finally(() => { inFlight = false; schedule(); });
 }
 
 /** fold a poll's answer in, and say so only if something changed */
-function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriends: RoomFriend[]): void {
-  const fresh = nextInvites.filter(i => !announced.has(i.id));
-  const before = JSON.stringify([invites, requests, friends, loaded]);
+function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriends: RoomFriend[],
+  nextNotes: LeagueNote[], nextTimes: TimeAsk[]): void {
+  const before = JSON.stringify([invites, requests, friends, notes, times, loaded]);
   invites = nextInvites;
   requests = nextRequests;
   friends = nextFriends;
-  loaded = true;
-  if (fresh.length) {
-    for (const i of fresh) announced.add(i.id);
+  notes = nextNotes;
+  times = nextTimes;
+  // the things worth a chime: an invite, a time to answer, a match about to start
+  const fresh: [string, string][] = [
+    ...invites.map(i => [i.id, `${i.from} invited you`] as [string, string]),
+    ...times.map(t => [timeKey(t), `${t.from} suggests a time`] as [string, string]),
+    ...reminders().map(r => [noteKey(r), 'Your league match is soon'] as [string, string]),
+  ].filter(([k]) => !announced.has(k));
+  // the first answer only fills the set: what was already waiting when the
+  // page opened is shown, not announced again on every load
+  if (fresh.length && loaded) {
     playCue('decision');
-    alertTab(`${fresh[0]!.from} invited you`);
+    alertTab(fresh[0]![1]);
   }
+  for (const [k] of fresh) announced.add(k);
+  loaded = true;
   saveSeen();
-  if (JSON.stringify([invites, requests, friends, loaded]) === before) return;
+  if (JSON.stringify([invites, requests, friends, notes, times, loaded]) === before) return;
   paint();
   paintPanel();
 }
@@ -259,10 +327,34 @@ function post(path: string, body: Record<string, unknown>): Promise<{ ok?: boole
 function onClick(what: string, el: HTMLElement): void {
   const id = el.dataset['id'] ?? '';
   switch (what) {
-    case 'bell':
+    case 'bell': {
       panelOpen = !panelOpen;
+      // opening the bell reads the league news in it
+      const upTo = Math.max(0, ...notes.filter(n => !n.read).map(n => n.id));
+      if (panelOpen && upTo) {
+        notes = notes.map(n => ({ ...n, read: true }));
+        void post('/api/inbox/read', { upTo }).catch(() => undefined);
+      }
       paint();
       return;
+    }
+    case 'league':
+      panelOpen = false;
+      paint();
+      deps?.openLeague(el.dataset['season'] ?? '');
+      return;
+    case 'league-play':
+      panelOpen = false;
+      paint();
+      deps?.playLeague(el.dataset['season'] ?? '', el.dataset['match'] ?? '');
+      return;
+    case 'time-accept': {
+      const match = el.dataset['match'] ?? '';
+      times = times.filter(t => t.match !== match);
+      paint();
+      void post('/api/league/time/accept', { season: el.dataset['season'] ?? '', match }).finally(pollSoon);
+      return;
+    }
     case 'hide':
       dismissed.add(id);
       saveSeen();

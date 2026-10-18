@@ -17,6 +17,7 @@
  */
 import * as acct from './account.ts';
 import { esc } from './util.ts';
+import { dateIn, daysBetween, wallClock, zonedEpoch } from './zonetime.ts';
 
 const GRID_LEN = 168;
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -44,6 +45,8 @@ interface SeasonView {
     matches: {
       id: string; week: number; final: boolean; opponent: Person; windows: Win[]; result: Result | null;
       won: boolean | null; playable: boolean;
+      /** when the two mean to play: suggested (by me or them) or agreed */
+      time: { at: number; mine: boolean; agreed: boolean } | null;
     }[];
   };
   log?: { at: string; what: string }[];
@@ -82,6 +85,8 @@ let preview: Preview | null = null;
 /** a destructive organizer button pressed once, waiting for the second press */
 let arming: string | null = null;
 let busy = false;
+/** the match whose "suggest a time" form is open */
+let timeOpen: string | null = null;
 /** the home banner's copy of the League page's answer (the current season),
  * and the session token it was asked with: a sign-in or out asks again */
 let hint: LeagueState | null = null;
@@ -274,7 +279,11 @@ function mineHtml(s: SeasonView): string {
   const me = s.me;
   const now = me?.matches.filter(m => m.week === s.phase) ?? [];
   const rows = now.length ? `<ul class="lgbrows">${now.map(m => `<li><span>vs <b>${esc(m.opponent.name)}</b>${
-    m.opponent.contact ? ` <span class="dim">(${esc(m.opponent.contact)} on Discord)</span>` : ''}</span><span>${
+    m.opponent.contact ? ` <span class="dim">(${esc(m.opponent.contact)} on Discord)</span>` : ''}${
+    // when they mean to play, in a word: the League page has the controls
+    m.time && !m.result ? `<br><span class="lgbtime${m.time.agreed ? ' agreed' : m.time.mine ? ' dim' : ' ask'}">${
+      m.time.agreed ? `${esc(when(m.time.at))} ✓` : m.time.mine ? `you suggested ${esc(when(m.time.at))}`
+        : `suggests ${esc(when(m.time.at))} — answer on the League page`}</span>` : ''}</span><span>${
       m.result ? (m.won === true ? '✅ won' : m.won === false ? 'lost' : '<span class="dim">not played</span>')
         : m.playable ? `<button class="primary" data-btn="lg-play" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Play</button>` : '<span class="dim">to play</span>'
     }</span></li>`).join('')}</ul>` : '';
@@ -558,12 +567,72 @@ function myMatchesHtml(s: SeasonView): string {
         <td>${m.result
           ? (m.won === true ? '✅ you won' : m.won === false ? 'you lost'
             : m.result.outcome === 'double-loss' ? 'double loss' : '<span class="dim">not played</span>')
-          : m.windows.length
-            ? `<span class="dim">you're both free:</span> ${m.windows.slice(0, 4).map(windowText).map(esc).join(' · ')}`
-            : '<span class="dim">no shared hours — arrange a time on Discord</span>'}</td>
+          : timeHtml(s, m) + (m.windows.length
+            ? `<div><span class="dim">you're both free:</span> ${m.windows.slice(0, 4).map(windowText).map(esc).join(' · ')}</div>`
+            : '<div class="dim">no shared hours — suggest a time anyway, or arrange one on Discord</div>')}</td>
       </tr>`).join('')}</tbody></table>`).join('')}
     <p class="hint">Times are in ${esc(viewTz())}. Play opens your match room; your opponent joins from their own
       League page. Nothing is dealt until you are both there, and the elements are drawn at random.</p>
+  </div>`;
+}
+
+type MyMatch = NonNullable<SeasonView['me']>['matches'][number];
+
+/** a suggestion must leave this long to answer it (the server says the same) */
+const LEAD_MS = 10 * 60_000;
+/** the chips: the first hours of your shared windows still to come */
+const CHIP_MAX = 6;
+
+/** where a match's time stands, and the controls to move it on */
+function timeHtml(s: SeasonView, m: MyMatch): string {
+  const t = m.time;
+  const opp = esc(m.opponent.name);
+  const line = !t ? ''
+    : t.agreed ? `<div class="lgtime agreed">Playing <b>${esc(when(t.at))}</b> ✓</div>`
+    : t.mine ? `<div class="lgtime">You suggested <b>${esc(when(t.at))}</b>. Waiting for ${opp}.</div>`
+    : `<div class="lgtime ask">${opp} suggests <b>${esc(when(t.at))}</b>
+        <button class="primary" data-btn="lg-time-accept" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Accept</button></div>`;
+  if (!m.playable) return line;
+  const toggle = timeOpen === m.id ? '' : `<button data-btn="lg-time-open" data-match="${esc(m.id)}">${
+    t ? 'Suggest another time' : 'Suggest a time'}</button>`;
+  return line + toggle + (timeOpen === m.id ? timeFormHtml(s, m) : '');
+}
+
+/** the week's end for this match: the next phase's start */
+const deadlineOf = (s: SeasonView, m: MyMatch): number =>
+  Date.parse(s.phases.find(p => p.phase === m.week + 1)?.at ?? '') || Date.now() + 7 * 86_400_000;
+
+function timeFormHtml(s: SeasonView, m: MyMatch): string {
+  const now = Date.now();
+  const end = deadlineOf(s, m);
+  const tz = viewTz();
+  const chips: number[] = [];
+  for (const w of m.windows) {
+    for (let h = 0; h < w.hours && chips.length < CHIP_MAX; h++) {
+      const at = w.start + h * 3_600_000;
+      if (at >= now + LEAD_MS && at < end) chips.push(at);
+    }
+  }
+  // the custom picker starts on the current suggestion, else this evening at 7
+  const start = m.time?.at ?? null;
+  const pickDay = start ? dateIn(start, tz) : dateIn(now, tz);
+  const pickMin = start ? (w => w.h * 60 + w.mi)(wallClock(start, tz)) : 19 * 60;
+  const days = daysBetween(now, end - 1, tz);
+  const dayLabel = (d: string): string => fmt(zonedEpoch(d, 12 * 60, tz), { weekday: 'short', day: 'numeric', month: 'short' });
+  // a clock label, not an instant: formatted in UTC on purpose (fmt() would
+  // shift it into the viewer's zone)
+  const minLabel = (mins: number): string =>
+    new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }).format(Date.UTC(2026, 0, 5, 0, mins));
+  return `<div class="lgtimeform">
+    ${chips.length ? `<div class="lgtimechips"><span class="dim">you're both free:</span>
+      ${chips.map(at => `<button data-btn="lg-time" data-season="${esc(s.id)}" data-match="${esc(m.id)}" data-at="${at}">${esc(when(at))}</button>`).join('')}</div>` : ''}
+    <div class="lgtimepick"><span class="dim">or</span>
+      <select id="lgt-day">${days.map(d => `<option value="${d}"${d === pickDay ? ' selected' : ''}>${esc(dayLabel(d))}</option>`).join('')}</select>
+      <select id="lgt-min">${Array.from({ length: 48 }, (_, i) => i * 30).map(mins =>
+        `<option value="${mins}"${mins === pickMin ? ' selected' : ''}>${esc(minLabel(mins))}</option>`).join('')}</select>
+      <button class="primary" data-btn="lg-time-custom" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Suggest</button>
+      <button data-btn="lg-time-close">Cancel</button>
+    </div>
   </div>`;
 }
 
@@ -815,6 +884,29 @@ async function act(path: string, body: Record<string, unknown>, done?: string): 
   load();
 }
 
+/** Open a league match's room and go into it — the Play button here, the
+ * home banner's, and the bell's (ui/inbox.ts) all come through this. */
+export function playMatch(season: string, match: string): void {
+  if (busy) return;   // the first press is still on its way
+  const fail = (why: string): void => {
+    if (!open) {
+      // pressed somewhere with nowhere to say it: the League page lists the
+      // same match, so open it and say it there
+      openLeague(season && season !== hint?.season?.id ? season : undefined);
+    }
+    msg = why;
+    paint();
+  };
+  if (!season || !match) { fail('could not find that match: try its Play button here'); return; }
+  void post('/api/league/play', { season, match }).then(r => {
+    if (!r.ok) { fail(r.error ?? 'could not open the match'); return; }
+    // into the game the way the queue goes: a full navigation, room in the query
+    const seat = Number(r['seat']);
+    location.search = `?ws=1&room=${encodeURIComponent(String(r['room']))}`
+      + (seat === 0 || seat === 1 ? `&seat=${seat}` : '') + '&mode=draft';
+  });
+}
+
 export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
   if (!b.startsWith('lg-')) return false;
@@ -875,6 +967,22 @@ export function handleButton(btn: HTMLElement): boolean {
       if (s) void act('/api/league/cancel', { season: s.id, match }, 'Called off.');
       return true;
     }
+    case 'lg-time-open': timeOpen = btn.dataset['match'] ?? null; paint(); return true;
+    case 'lg-time-close': timeOpen = null; paint(); return true;
+    case 'lg-time':
+    case 'lg-time-custom': {
+      const season = btn.dataset['season'] ?? s?.id ?? '';
+      const match = btn.dataset['match'] ?? '';
+      const at = b === 'lg-time' ? Number(btn.dataset['at'])
+        : zonedEpoch(val('lgt-day'), Number(val('lgt-min')), viewTz());
+      timeOpen = null;
+      void act('/api/league/time', { season, match, at }, `Suggested ${when(at)}. They'll see it in their own time zone.`);
+      return true;
+    }
+    case 'lg-time-accept':
+      void act('/api/league/time/accept', { season: btn.dataset['season'] ?? s?.id ?? '', match: btn.dataset['match'] ?? '' },
+        'Agreed. You both get a reminder fifteen minutes before.');
+      return true;
     case 'lg-play': {
       /* The home banner has a Play button too, and it is drawn from `hint`,
        * not `data`: `data` is only there once the League page has been
@@ -884,24 +992,7 @@ export function handleButton(btn: HTMLElement): boolean {
       const match = btn.dataset['match'] ?? '';
       const season = btn.dataset['season']
         || (open ? s?.id : hint?.season?.id) || s?.id || hint?.season?.id || '';
-      if (busy) return true;   // the first press is still on its way
-      const fail = (why: string): void => {
-        if (!open) {
-          // pressed on the home page, which has nowhere to say it: the League
-          // page lists the same match, so open it and say it there
-          openLeague(season && season !== hint?.season?.id ? season : undefined);
-        }
-        msg = why;
-        paint();
-      };
-      if (!season || !match) { fail('could not find that match: try its Play button here'); return true; }
-      void post('/api/league/play', { season, match }).then(r => {
-        if (!r.ok) { fail(r.error ?? 'could not open the match'); return; }
-        // into the game the way the queue goes: a full navigation, room in the query
-        const seat = Number(r['seat']);
-        location.search = `?ws=1&room=${encodeURIComponent(String(r['room']))}`
-          + (seat === 0 || seat === 1 ? `&seat=${seat}` : '') + '&mode=draft';
-      });
+      playMatch(season, match);
       return true;
     }
     case 'lg-copy': {

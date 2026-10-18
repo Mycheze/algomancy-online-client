@@ -81,6 +81,9 @@ export interface OutboxRow {
   sentAt?: string;
   /** why it could not be delivered: 'dm-closed', 'not-linked', … */
   failed?: string;
+  /** when its recipient read it in the bell (ui/inbox.ts) — the site's own
+   * delivery, beside the bot's. Never set on a channel row. */
+  readAt?: string;
 }
 
 export type OutboxKind =
@@ -94,7 +97,10 @@ export type OutboxKind =
   | 'result'         // a match settled
   | 'challenge'      // week 0: somebody started a league game with you
   | 'waiting'        // your opponent opened your match and is waiting in it
-  | 'season';        // the season is over: your place / channel: the champion
+  | 'season'         // the season is over: your place / channel: the champion
+  | 'time'           // your opponent suggests a time for your match
+  | 'time-agreed'    // your opponent accepted the time you suggested
+  | 'time-reminder'; // your match's agreed time is fifteen minutes away (to both)
 
 interface LeagueStore { version: 1; seasons: Season[]; outbox: OutboxRow[]; nextId: number }
 
@@ -447,6 +453,135 @@ export function matchOpened(s: Season, m: LeagueMatch, me: Account, code: string
   persist(now);
 }
 
+// ── agreeing a time ──────────────────────────────────────────────────
+//
+// Owner, 2026-10-18: one suggestion at a time. Either player suggests; the
+// other accepts or suggests another, which replaces it. The time is epoch ms
+// and the bell, the League page and Discord each show it in the READER's own
+// zone. Fifteen minutes before an agreed time both are reminded, once.
+
+/** how far ahead of an agreed time the reminder goes */
+export const REMIND_BEFORE_MS = 15 * 60_000;
+/** a suggestion must leave at least this long to answer it */
+const SUGGEST_LEAD_MS = 10 * 60_000;
+
+/** Suggest when to play. A suggestion that names the very time the other
+ * player already suggested is an acceptance of it, not a second suggestion. */
+export function suggestTime(s: Season, me: Account, matchId: string, at: number, now: number): Res<{ match: LeagueMatch }> {
+  // a time can be arranged for exactly the matches that can be opened
+  const r = matchToOpen(s, me, matchId);
+  if (!r.ok) return r;
+  const m = r.match;
+  if (!Number.isFinite(at)) return { ok: false, error: 'that is not a time' };
+  at = Math.floor(at / 60_000) * 60_000;
+  const deadline = phaseStart(s, m.week + 1);
+  if (at < now + SUGGEST_LEAD_MS) return { ok: false, error: 'pick a time at least ten minutes from now' };
+  if (at >= deadline) return { ok: false, error: 'pick a time before this week\'s matches close' };
+  if (m.time && !m.time.agreed && m.time.by !== me.id && m.time.at === at) return acceptTime(s, me, matchId, now);
+  m.time = { at, by: me.id };
+  const them = m.a === me.id ? m.b : m.a;
+  send(s, them, 'time', {
+    season: s.name, match: m.id, at: unix(at), deadline: unix(deadline),
+    from: { id: me.id, name: me.username, contact: contactOf(me) }, ids: [them, me.id],
+  }, now);
+  note(s, `${m.id}: ${me.username} suggests ${iso(at)}`, now);
+  persist(now);
+  return { ok: true, match: m };
+}
+
+/** Accept the other player's suggestion. */
+export function acceptTime(s: Season, me: Account, matchId: string, now: number): Res<{ match: LeagueMatch }> {
+  // a time can be arranged for exactly the matches that can be opened
+  const r = matchToOpen(s, me, matchId);
+  if (!r.ok) return r;
+  const m = r.match;
+  if (!m.time) return { ok: false, error: 'nobody has suggested a time yet' };
+  if (m.time.by === me.id) return { ok: false, error: 'that is your own suggestion — your opponent accepts it' };
+  if (m.time.agreed) return { ok: true, match: m };
+  if (m.time.at <= now) return { ok: false, error: 'that time has passed — suggest another' };
+  m.time.agreed = true;
+  send(s, m.time.by, 'time-agreed', {
+    season: s.name, match: m.id, at: unix(m.time.at),
+    from: { id: me.id, name: me.username, contact: contactOf(me) }, ids: [m.time.by, me.id],
+  }, now);
+  note(s, `${m.id}: ${me.username} agreed to ${iso(m.time.at)}`, now);
+  persist(now);
+  return { ok: true, match: m };
+}
+
+/** Fifteen minutes out, tell both — once, and only for a match still to play.
+ * A server that was down over the moment still reminds up to the time itself;
+ * later than that a reminder is no use to anybody. */
+function remindTimes(s: Season, now: number): void {
+  let any = false;
+  for (const m of s.matches) {
+    const t = m.time;
+    if (!t?.agreed || t.remindedAt || m.result || m.week !== s.phase) continue;
+    if (now < t.at - REMIND_BEFORE_MS || now > t.at) continue;
+    t.remindedAt = iso(now);
+    for (const [me, them] of [[m.a, m.b], [m.b, m.a]] as const) {
+      send(s, me, 'time-reminder', {
+        season: s.name, match: m.id, at: unix(t.at),
+        opponent: { id: them, name: nameOf(them), contact: contactById(them) }, ids: [me, them],
+      }, now);
+    }
+    any = true;
+  }
+  if (any) persist(now);
+}
+
+// ── the bell (ui/inbox.ts) ────────────────────────────────────────────
+
+/** how far back the bell looks */
+const NOTES_WINDOW_MS = 14 * 24 * 3_600_000;
+const NOTES_MAX = 12;
+
+/** One league message as the bell shows it: the recipient's own outbox row. */
+export interface LeagueNote {
+  id: number; kind: OutboxKind; season: string; at: number; read: boolean;
+  data: OutboxRow['data'];
+}
+
+/** This player's league messages, newest first. A 'time' row is left out: the
+ * suggestion it carried is shown LIVE instead (timesAskedOf), so an answered
+ * or replaced one cannot sit in the bell asking to be answered. */
+export function notesFor(userId: string, now: number): LeagueNote[] {
+  const out: LeagueNote[] = [];
+  for (let i = db().outbox.length - 1; i >= 0 && out.length < NOTES_MAX; i--) {
+    const r = db().outbox[i]!;
+    if (r.to !== userId || r.kind === 'time') continue;
+    const at = Date.parse(r.createdAt);
+    if (now - at > NOTES_WINDOW_MS) break;
+    out.push({ id: r.id, kind: r.kind, season: r.season, at, read: !!r.readAt, data: r.data });
+  }
+  return out;
+}
+
+/** The bell was opened: every league message to this player up to `upTo` is read. */
+export function markNotesRead(userId: string, upTo: number, now: number): void {
+  let n = 0;
+  for (const r of db().outbox) {
+    if (r.to === userId && r.id <= upTo && !r.readAt) { r.readAt = iso(now); n++; }
+  }
+  if (n) persist(now);
+}
+
+/** A suggestion waiting on this player's answer, as the bell shows it. */
+export interface TimeAsk { season: string; seasonName: string; match: string; from: string; at: number }
+
+export function timesAskedOf(userId: string, now: number): TimeAsk[] {
+  const out: TimeAsk[] = [];
+  for (const s of db().seasons) {
+    for (const m of s.matches) {
+      const t = m.time;
+      if (!t || t.agreed || t.by === userId || (m.a !== userId && m.b !== userId)) continue;
+      if (m.result || m.week !== s.phase || t.at <= now) continue;
+      out.push({ season: s.id, seasonName: s.name, match: m.id, from: nameOf(t.by), at: t.at });
+    }
+  }
+  return out;
+}
+
 // ── moving a season on ────────────────────────────────────────────────
 
 /** Who gets paired in week k: in, not withdrawn, joined before week k began, not sitting it out. */
@@ -647,7 +782,7 @@ function catchUp(s: Season, now: number): boolean {
 
 /** The server's sweep calls this; it is cheap and does nothing most minutes. */
 export function tick(now: number): void {
-  for (const s of db().seasons) catchUp(s, now);
+  for (const s of db().seasons) { catchUp(s, now); remindTimes(s, now); }
 }
 
 // ── results ───────────────────────────────────────────────────────────
@@ -769,6 +904,8 @@ export function seasonView(s: Season, viewer: Account | undefined, opts: { admin
         windows: m.week === 0 ? m.windows.filter(w => w.start + w.hours * 3_600_000 > now) : m.windows,
         result: m.result ?? null,
         playable: m.week === s.phase && !m.result,
+        time: m.time && !m.result
+          ? { at: m.time.at, mine: m.time.by === viewer.id, agreed: m.time.agreed === true } : null,
         won: m.result?.outcome === 'a' ? m.a === viewer.id : m.result?.outcome === 'b' ? m.b === viewer.id : null,
       })),
     } : null,

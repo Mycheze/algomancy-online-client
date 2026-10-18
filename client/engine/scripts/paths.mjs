@@ -180,6 +180,10 @@ export const UI_TEST_DIR = join(REPO_ROOT, 'client', 'ui', 'test');
 export const SERVER_TEST_DIR = join(REPO_ROOT, 'client', 'server', 'test');
 /** the scripts that spawn the real server */
 export const SERVER_E2E_DIR = join(REPO_ROOT, 'client', 'server', 'e2e');
+/** the league store: its `OutboxKind` union is every league message, which the
+ * bell (ui/leaguenotes.ts, test 491) and the Discord bot (bot/paths.py
+ * LEAGUE_STORE_TS) must each have a line for */
+export const LEAGUE_STORE_TS = join(REPO_ROOT, 'client', 'server', 'league-store.ts');
 
 /* ── THE BROWSER CLIENT'S OWN FILES ──────────────────────────────────────
  *

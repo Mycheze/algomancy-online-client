@@ -25,9 +25,9 @@ import {
 import { adminFor } from './admin.ts';
 import { MIN_HOURS, sanitizeGrid, validTz, type Outcome } from './league.ts';
 import {
-  ackOutbox, advance, allSeasons, canSee, cancelChallenge, challenge, contactOf, createSeason, currentSeason,
+  acceptTime, ackOutbox, advance, allSeasons, canSee, cancelChallenge, challenge, contactOf, createSeason, currentSeason,
   deleteSeason, joinSeason, leaveSeason, matchOpened, matchToOpen, overrideResult, pendingOutbox, previewNext,
-  seasonById, seasonView, setSkip, updateSeason,
+  seasonById, seasonView, setSkip, suggestTime, updateSeason,
   type Season,
 } from './league-store.ts';
 
@@ -135,6 +135,9 @@ export async function leagueRoutes(
     json(res, { ok: true, room: opened.code, seat: opened.users.indexOf(me.id), mode: 'draft' });
     return true;
   }
+  // when to play: one suggestion at a time, the other player accepts (league-store.ts)
+  if (path === '/api/league/time') { json(res, suggestTime(s, me, str(b['match'], 80), num(b['at']), now)); return true; }
+  if (path === '/api/league/time/accept') { json(res, acceptTime(s, me, str(b['match'], 80), now)); return true; }
   if (path === '/api/league/leave') { json(res, leaveSeason(s, me, now)); return true; }
   if (path === '/api/league/skip') { json(res, setSkip(s, me, num(b['week']), bool(b['skip']), now)); return true; }
   return notFound(res);
