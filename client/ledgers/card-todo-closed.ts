@@ -4406,7 +4406,7 @@ export const CLOSED: TodoEntry[] = [
       '217-reveal-rows.test.ts::§5a the OPPONENT glimpse becomes a surface; your own does not',
       '217-reveal-rows.test.ts::§5b an empty glimpse is not a reveal',
       '217-reveal-rows.test.ts::§5d the client does not re-decide what is public',
-      '217-reveal-rows.test.ts::§5f a MOMENT: non-modal, self-expiring, and gone on a resync',
+      '217-reveal-rows.test.ts::§5f non-modal: a glimpse may land in a window you still have to act in',
     ],
     closed:
       '✔ FIXED 2026-08-29 (round 30). The non-glimpsing seat gets a card-sized surface — the same '

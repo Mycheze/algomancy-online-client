@@ -166,6 +166,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoLeagueBanner'], what: 'whether you folded the league banner on the home page' },
   { covers: ['algoInboxSeen'], what: 'which game invites this tab has already shown you, so a closed one does not pop up again (cleared when you close the tab)' },
   { covers: ['algoUpdatesSeen'], what: 'how many entries of the Recent updates list you have seen, so the new ones can be marked' },
+  { covers: ['algoReveals'], what: 'the cards revealed to you in your current game, so Past reveals still has them after a reload' },
 ];
 
 // ── the copy ──────────────────────────────────────────────────────────

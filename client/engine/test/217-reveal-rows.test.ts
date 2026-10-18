@@ -65,7 +65,7 @@ import { fileURLToPath } from 'node:url';
 import { forcedAction } from '../src/apply.ts';
 import { playbackFrames, redactEvent, visibleToSeat } from '../../server/view.ts';
 import type { HeldFrame, SegmentClose } from '../../server/view.ts';
-import { glimpseNotice, glimpseNoticeUntil, pastTense, revealView, revealWorthShowing, rowId } from '../../ui/reveal.ts';
+import { glimpseNotice, pastTense, revealView, revealWorthShowing, rowId } from '../../ui/reveal.ts';
 import type { Action, CardName, EngineEvent, EntityId, Seat } from '../src/types.ts';
 import type { Room } from '../../server/rooms.ts';
 
@@ -503,23 +503,24 @@ test('§5d the client does not re-decide what is public', () => {
     'glimpseNotice must not second-guess the redactor');
 });
 
-test('§5e how long it stays up scales with the tempo, not a number of its own', () => {
-  // CR D5.4: one opinion about how fast a human reads, and a reveal is not exempt
-  const one = glimpseNoticeUntil(0, 1, 1200, 1000);
-  const five = glimpseNoticeUntil(0, 5, 1200, 1000);
-  assert.ok(five > one, 'five cards get longer than one');
-  assert.equal(five - one, 4000, 'one tempo-step per extra card');
-  assert.equal(glimpseNoticeUntil(0, 0, 1200, 1000), 2200, 'never zero-length');
+test('§5e it stays up: no expiry of its own, and not dropped by a resync (report #224)', () => {
+  // The owner, 2026-10-18: the notice closes ONLY when the viewer dismisses it
+  // or a newer reveal takes its place. It used to expire after a dwell scaled
+  // to the tempo, and flashReset (a resync, a layout or motion toggle) dropped
+  // it. The behaviour is driven in ui/test/495; this is the source half.
+  const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
+  const fn = src.slice(src.indexOf('function glimpseNoticeHtml('), src.indexOf('\n}\n', src.indexOf('function glimpseNoticeHtml(')));
+  assert.ok(fn.length > 50, 'positive control: the notice function was found');
+  assert.equal(/Date\.now|until/.test(fn), false, 'the notice reads no clock');
+  const reset = src.slice(src.indexOf('function flashReset('), src.indexOf('\n}\n', src.indexOf('function flashReset(')));
+  assert.ok(reset.length > 50, 'positive control: flashReset was found');
+  assert.equal(/glimpseUp|dismissNotice\(|loadReveals\(/.test(reset), false, 'a resync or a toggle does not put the notice away');
 });
 
-test('§5f a MOMENT: non-modal, self-expiring, and gone on a resync', () => {
+test('§5f non-modal: a glimpse may land in a window you still have to act in', () => {
   const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
   assert.match(src, /class="glimpsenotice"/, 'positive control: the surface is really drawn');
   assert.equal(/glimpsenotice[^`]*\boverlay\b/.test(src), false,
     'a glimpse can land in a battle window you still have to act in — it must never be '
     + 'something to dismiss before you may play');
-  assert.match(src, /const glimpse = glimpseUp && glimpseUp\.until > now \? glimpseUp\.until : null;/,
-    'it expires on scheduleFlashWake timer, or it would sit there until the next paint');
-  assert.match(src, /glimpseUp = null;\s+\/\/ CT-78: a resync is not somebody glimpsing at you/,
-    'a wholesale state is not something somebody just did — flashReset own rule');
 });

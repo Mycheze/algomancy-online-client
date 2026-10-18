@@ -15,6 +15,8 @@
  *      "revealed too early" into "revealed as one log line".
  *   §2 Learn to Play (ui/solo.ts) holds the bot's glimpse the same way, and its
  *      recap pops the notice through the same branch.
+ *   §3 (report #224) the notice outlives the recap: it waits for the viewer to
+ *      put it away, the recap's end and the live board after it included.
  *
  * The frames are never hand-built: §1's come from a real Room through the
  * server's own builder (server/view.ts playbackFrames), §2's from the
@@ -119,6 +121,19 @@ test('CR D5.2: the opponent\'s glimpse notice pops when its recap frame plays, n
   assert.ok(shown, 'the frame carrying the glimpse pops the notice');
   assert.match(shown!, new RegExp(`${NAMES[A]} glimpsed ${revealed.length}`), 'naming the glimpser and the count');
   for (const name of revealed) assert.ok(shown!.includes(name), `and showing ${name}`);
+
+  // §3 report #224: the recap ends — the rest of its frames play, Continue,
+  // the live board lands — and the notice is still up. It waits for the viewer.
+  // (the last frame is a stop: it waits for Continue, report #198)
+  for (let i = 0; i < pb!.frames.length + 2 && /promptbar playbar/.test(ui.html()); i++) {
+    if (ui.has({ btn: 'playskip' })) ui.click({ btn: 'playskip' }); else later();
+  }
+  assert.doesNotMatch(ui.html(), /promptbar playbar/, 'non-vacuous: the playback is over');
+  const still = notice(ui.html());
+  assert.ok(still, 'the notice outlives the recap');
+  for (const name of revealed) assert.ok(still!.includes(name), `still showing ${name}`);
+  for (let s = 0; s < 6; s++) later();
+  assert.ok(notice(ui.html()), 'and a minute on the live board');
 });
 
 // ── Learn to Play ────────────────────────────────────────────────────────

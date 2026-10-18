@@ -657,7 +657,8 @@ export type BoardMenuEntry =
   | { kind: 'erased'; seat: Seat; label: string; confirm: boolean }
   | { kind: 'concede'; seat: Seat; label: string; confirm: boolean }
   | { kind: 'log'; label: string; confirm: boolean }
-  | { kind: 'fix'; label: string; confirm: boolean };
+  | { kind: 'fix'; label: string; confirm: boolean }
+  | { kind: 'reveals'; label: string; confirm: boolean };
 
 /**
  * The card-menu rule, CR D6.15 (BL-20): the two things THE BOARD offers on a
@@ -674,7 +675,7 @@ export type BoardMenuEntry =
  * `mySeat` is the seat this client drives, or null where the screen drives
  * both (so both are offered) or none at all.
  */
-export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixes?: boolean } = {}): BoardMenuEntry[] {
+export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixes?: boolean; reveals?: number } = {}): BoardMenuEntry[] {
   const items: BoardMenuEntry[] = [];
   // CT-124 / report #131: *"the game log would be better to hide by default.
   // Instead of always being on screen, it should be accessible by the
@@ -686,6 +687,10 @@ export function boardMenuEntries(s: GameState, mySeat: Seat | null, opts: { fixe
   // list, so an entry that existed only in main.ts would be a silent
   // divergence between the two ways into the same menu (CR D6.15).
   items.push({ kind: 'log', confirm: false, label: '📜 View game log' });
+  // report #224 (owner, 2026-10-18): "make it possible to see past revealed
+  // zones in the right click menu". `opts.reveals` is how many this seat has
+  // been shown (ui/reveallog.ts); with none there is nothing to open.
+  if (opts.reveals) items.push({ kind: 'reveals', confirm: false, label: `👁 Past reveals (${opts.reveals})` });
   for (const p of [0, 1] as Seat[]) {
     const pl = s.players[p]!;
     // the same count the dialog shows: real cards only (tokens uncounted)

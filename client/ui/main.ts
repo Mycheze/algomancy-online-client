@@ -55,7 +55,8 @@ import { boardIndex, imposedCost, isBoard, optionSubjects, pickVerbs } from './b
 import type { Subject } from './boardpick.ts';
 import { EFFECT_ART_TOP, effectFace, lostTargetsForRow, roleSentence, stackBadges, type EffectFace } from './effectface.ts';
 import { doesLine, lastKnown, noteTable, tableMemory } from './doesline.ts';
-import { glimpseHeadline, glimpseNotice, glimpseNoticeUntil, revealView } from './reveal.ts';
+import { glimpseHeadline, glimpseNotice, revealRecords, revealView } from './reveal.ts';
+import { dismissNotice, installRevealsLayer, isRevealsOpen, loadReveals, noticeReveal, openReveals, recordReveals, revealCount } from './reveallog.ts';
 import { costToastHtml, nextCostToastWake, queueCostToasts, type LiveCostToast } from './toast.ts';
 import type { SpotTarget } from './fslot.ts';
 import { entityTextBox, iconizeText, predictionOf, printedTextBox, textBoxFor, txtIcon, attrReminders} from './cardtext.ts';
@@ -88,7 +89,7 @@ import type { SfxSnap } from './sfx.ts';
 import {
   beatCensus, combatStages, deferredKeys, dueBeats, flashBatches, heldLines, nextBeatWake, nextFlashWake,
   flushBeats, flushFlashes, heldLife, pendingFlashes, shownLife,
-  pruneFlashes, queueBeats, queueFlashes, rowCaption, rowState, stackCaption, stackRows, HOLD_MS, STAGGER_MS,
+  pruneFlashes, queueBeats, queueFlashes, rowCaption, rowState, stackCaption, stackRows, STAGGER_MS,
 } from './flash.ts';
 import type { Beat, Flash, StackCaption } from './flash.ts';
 import { emptyPace, holdable, pace, paceBehind, paceDue, paceFlush, paceGo, paceHeld, paceSequence, paceStopped, paceToStop, paceWake, PACE_MS, PACE_SAME_SOURCE_MS, playbackGapsOf, playbackStopsOf, sameSourceTop } from './pace.ts';
@@ -764,6 +765,9 @@ class NetBackend implements Backend {
       this.serverPlayback = false;   // a join is the live board, never frames
       this.sentPassAll = '';      // the server dropped the standing pass on this join, and resetUi drops ours
       resetUi();
+      // report #224: the reveals this seat was shown, kept across a reconnect
+      // or a refresh of the same game (ui/reveallog.ts)
+      loadReveals(revealGame(this), this.state.actionCount);
       // seed the cast watch AFTER resetUi has dropped the baselines, so
       // the first update after a join has something to diff against. Never
       // `quiet` — a join is not an action somebody just took.
@@ -892,7 +896,7 @@ class NetBackend implements Backend {
       // as it would have live. A "watch again" pops it again: it is the same
       // recap, watched again. (Your own glimpse never pops: glimpseNotice
       // skips the viewer's seat, and you saw it live in your own modal.)
-      absorbGlimpse(evs);
+      absorbGlimpse(evs, m.view);
       return;
     }
     playbackNow = null;
@@ -959,7 +963,7 @@ class NetBackend implements Backend {
     // of that step's close. CR D6.2: a haste or deployment glimpse arrives in a
     // playback frame instead (the branch above) — it is held for the recap, and
     // never reaches this live path while the step is open.
-    absorbGlimpse(m.events ?? []);
+    absorbGlimpse(m.events ?? [], this.state);
     // CR D7.4a/CT-134: and the one announcement that has NO window to warn in —
     // the tokens a declined attack erases at regroup. Off the same batch, and
     // not held behind a reveal: it is a loss, not a beat.
@@ -1469,47 +1473,44 @@ function noteCast(state: GameState, mySeat: Seat, quiet: boolean): void {
 /**
  * CT-78 / report #104 — the opponent's glimpse, as something you NOTICE.
  *
- * A moment, not a piece of state: `E.glimpse` leaves no structured record in
- * GameState (ui/reveal.ts says why), so this is set from the event batch and
- * expires. A client that reconnects while it is up has missed it and has the
- * log line, which is the residual the old live reveal left and this does not close.
+ * `E.glimpse` leaves no structured record in GameState (ui/reveal.ts says
+ * why), so the reveal is taken off the event batch that carries it, into the
+ * record ui/reveallog.ts keeps of every reveal this seat was sent. Report #224
+ * (owner, 2026-10-18): the notice is that record's newest pop-up, and it stays
+ * until the viewer dismisses it or a newer reveal takes its place — no timer,
+ * and a repaint, a toggle, a reconnect or a refresh leaves it where it is.
  */
-let glimpseUp: { seat: Seat; cards: CardName[]; source?: string; until: number } | null = null;
-
-/** note somebody else's glimpse, for as long as it takes to read it */
-function absorbGlimpse(events: readonly EngineEvent[]): void {
-  if (!NET) return;                     // no seat, no viewer to notify
-  const seen = glimpseNotice(events, NET.seat);
-  if (!seen) return;
-  glimpseUp = {
-    seat: seen.seat as Seat,
-    cards: seen.cards,
-    // CT-302: a card's reveal (Tides of the Cosmos, Big Glimpse Card) names it
-    ...(seen.source ? { source: seen.source } : {}),
-    // CR D5.4: the client's one tempo, not a number of this surface's own
-    until: glimpseNoticeUntil(Date.now(), seen.cards.length, HOLD_MS, STAGGER_MS),
-  };
+function absorbGlimpse(events: readonly EngineEvent[], state: GameState): void {
+  if (!NET || NET.spectating) return;   // no seat, no viewer to notify
+  recordReveals(revealRecords(events), glimpseNotice(events, NET.seat), state.turn, state.actionCount);
   // deliberately SILENT. Every existing cue is a state change you may have to
   // act on (ui/sfx.ts: decision, phase, subphase, priority); this is news, and
   // giving news its own sound is a decision for the sound layer, not something
   // to slip in on the back of a visual fix.
 }
 
-/** the strip itself: the same scans the glimpser got, briefly, on your screen */
+/** which game the reveal record belongs to, as this seat sits in it */
+const revealGame = (n: NetBackend): string => [n.room, n.seat, ...n.state!.players.map(p => p.name)].join('\u0001');
+
+/** the strip itself: the same scans the glimpser got, on your screen until you
+ * put it away (CT-302: a card's reveal — Tides of the Cosmos, Big Glimpse Card
+ * — names the card). Its ✕ is a real button, so a finger has it too. */
 function glimpseNoticeHtml(): string {
-  if (!glimpseUp || Date.now() >= glimpseUp.until) return '';
-  const who = h.state.players[glimpseUp.seat]?.name ?? 'Your opponent';
-  return `<div class="glimpsenotice" data-btn="glimpseclose" title="click to dismiss">
-    <div class="glimpsehead">👁 ${esc(glimpseHeadline(glimpseUp, who, NET ? NET.seat : null))}</div>
-    <div class="glimpsecards">${glimpseUp.cards.map(n => cardHtml(n)).join('')}</div>
+  const r = noticeReveal();
+  if (!r) return '';
+  const who = h.state.players[r.seat]?.name ?? 'Your opponent';
+  return `<div class="glimpsenotice">
+    <div class="glimpsehead">👁 ${esc(glimpseHeadline(r, who, NET ? NET.seat : null))}<button class="glimpsex"
+      data-btn="glimpseclose" title="dismiss" aria-label="dismiss">✕</button></div>
+    <div class="glimpsecards">${r.cards.map(n => cardHtml(n)).join('')}</div>
   </div>`;
 }
 
 /**
  * CR D7.4a / CT-134 — the unused spell tokens somebody just lost, still on screen.
  *
- * Sibling of `glimpseUp` and deliberately NOT the same shape. A glimpse is a
- * moment you may miss; this is a LOSS, so it has no `until`: it stays up until
+ * Sibling of the glimpse notice, and like it (since report #224) it has no
+ * `until`: this is a LOSS, so it stays up until
  * the player puts it away or until the next battle makes it old news
  * (`gcStaleUi`). Nothing is undone by dismissing it — the tokens are already
  * gone, and a declined round opens no window (CR 610.4e), so the client cannot be handed the chance to stop it.
@@ -1549,7 +1550,7 @@ function tokenLossBarHtml(): string {
 /**
  * CR D7.4 / CT-142 — the cost toasts that are up.
  *
- * Third sibling of `glimpseUp` and `tokenLossUp`, and the same argument for
+ * Third sibling of the glimpse notice and `tokenLossUp`, and the same argument for
  * being a moment rather than state: every one of these announcements says that
  * something did NOT happen, so there is nothing left in `GameState` to read it
  * off afterwards. If it is not taken off the batch it is gone.
@@ -1574,8 +1575,8 @@ function absorbCostToasts(events: readonly EngineEvent[]): void {
 
 /** one scheduled repaint, at the moment the strip next changes. Without it a
  * notice about one resolution can sit over the board for minutes purely
- * because nothing else happened to repaint — which is how the glimpse notice
- * behaves and is not good enough for a row that appears several at a time. */
+ * because nothing else happened to repaint, which is not good enough for a
+ * row that appears several at a time. */
 function scheduleCostToastWake(): void {
   if (costToastTimer !== null) { clearTimeout(costToastTimer); costToastTimer = null; }
   const at = nextCostToastWake(costToastsUp, Date.now());
@@ -1590,9 +1591,9 @@ let flashTimer: ReturnType<typeof setTimeout> | null = null;
  * a state that arrives WHOLESALE (a fresh join, a resync, an undo's replay) is
  * not something somebody just did, and must not replay old beats. */
 function flashReset(): void {
-  glimpseUp = null;     // CT-78: a resync is not somebody glimpsing at you
-  tokenLossUp = null;   // CR D7.4a: nor is it somebody losing their tokens
+  tokenLossUp = null;   // CR D7.4a: a resync is not somebody losing their tokens
   costToastsUp = [];    // CR D7.4: nor anything a resolution cost somebody
+  // (the reveal notice is not dropped here: it waits for the viewer, report #224)
   flashQueue = [];
   beatQueue = [];       // CR D5.4: and the narrative beats holding back log lines
   cancelAutoPass();     // CR D5.4: a pass scheduled against a board that is gone
@@ -1823,12 +1824,9 @@ function scheduleFlashWake(): void {
   flashQueue = pruneFlashes(flashQueue, now);
   const flash = nextFlashWake(flashQueue, now);
   const beat = nextBeatWake(beatQueue, now);
-  // CT-78: the glimpse strip expires on the same timer — without this it would
-  // sit on screen until something else happened to repaint
-  const glimpse = glimpseUp && glimpseUp.until > now ? glimpseUp.until : null;
   // the stack window's closing frame comes down on time (stackBoardHtml)
   const closing = stackClosedAt + STACK_CLOSE_MS > now ? stackClosedAt + STACK_CLOSE_MS : null;
-  const at = [flash, beat, glimpse, closing].filter((t): t is number => t !== null)
+  const at = [flash, beat, closing].filter((t): t is number => t !== null)
     .reduce<number | null>((best, t) => (best === null || t < best ? t : best), null);
   if (at === null) return;
   flashTimer = setTimeout(() => { flashTimer = null; render(); }, Math.max(16, at - now));
@@ -10457,7 +10455,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // CR D5.5/CT-28: jump to the live state. flushPace() renders on its own, and
   // the handler table's trailing render() is harmless on top of it.
   // CT-78: a moment you have already read is a moment you can put away
-  glimpseclose: () => { glimpseUp = null; },
+  glimpseclose: () => { dismissNotice(); },
   // CR D7.4a: the tokens are gone either way, so this only puts the notice away
   tokenlossclose: () => { tokenLossUp = null; },
   costtoastclose: () => { costToastsUp = []; },
@@ -11595,7 +11593,7 @@ function typingIn(t: EventTarget | null): boolean {
  * game's own question, which Enter answers and undo may take back, not a layer
  * over the game. D3: and the moment just after a sent report closes. */
 function overlaysUp(withPick = true): boolean {
-  const overlayUp = isReportOpen() || amend.isAmendOpen() || judgeOpen || helpOpen || logOpen || !!inspect
+  const overlayUp = isReportOpen() || isRevealsOpen() || amend.isAmendOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
     || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || reportJustSent()
     || (withPick && (pickOpen() || pickSetOpen()));
@@ -11756,7 +11754,7 @@ function boardMenuItems(): MenuItem[] {
   // ui/inspect.ts (boardMenuEntries) where it is tested. This hangs the two
   // behaviours on them — and note that neither one ACTS: concede opens the
   // confirmation (concedeHtml), it never concedes.
-  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn() }).map(entry => ({
+  return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount() }).map(entry => ({
     label: entry.label,
     confirm: entry.confirm,
     go: entry.kind === 'log'
@@ -11765,6 +11763,8 @@ function boardMenuItems(): MenuItem[] {
         ? (): void => { erasedView = entry.seat; render(); }
         : entry.kind === 'fix'
           ? (): void => { amend.openFix(); }
+          : entry.kind === 'reveals'
+            ? (): void => { openReveals(); }
           : (): void => { concedeAsk = entry.seat; render(); },
   }));
 }
@@ -12019,6 +12019,12 @@ installDrag({
 // the ? rules overlay off the board — home, cards, decks, metagame, account —
 // as its own layer, opened by any [data-help] (ui/helplayer.ts)
 installHelpLayer();
+// report #224: this game's past reveals, off the table menu (ui/reveallog.ts)
+installRevealsLayer({
+  name: seat => h.state.players[seat]?.name ?? '',
+  mySeat: () => (NET ? NET.seat : null),
+  card: n => cardHtml(n),
+});
 // BL-38: the replay transport. A layer for the usual reason — renderNow()
 // writes over #app on every frame and would wipe the controls with it.
 installReplayBar();

@@ -1989,7 +1989,7 @@ export const CLOSED: LedgerEntry[] = [
     report: 'Glimpse is supposed to REVEAL the cards, but opponents cannot see them right now',
     status: 'fixed',
     guards: ['217-reveal-rows.test.ts::§5a the OPPONENT glimpse becomes a surface; your own does not',
-      '217-reveal-rows.test.ts::§5f a MOMENT: non-modal, self-expiring, and gone on a resync',
+      '217-reveal-rows.test.ts::§5f non-modal: a glimpse may land in a window you still have to act in',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 5 reveal is public to the opponent',
       '159-glimpse-reveal-visibility.test.ts::its reveal is inside the hidden deployment segment, and waits for the barrier',
       '159-glimpse-reveal-visibility.test.ts::the Glimpse 1 reveal is public to the opponent'],

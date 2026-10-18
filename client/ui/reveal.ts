@@ -405,19 +405,20 @@ export function revealWorthShowing(view: RevealView): boolean {
  * in a decision modal; the opponent gets ONE LINE OF PROSE in an 80-line log.
  * Both are "the reveal", and only one of them looks like one.
  *
- * ── ⚠ THE DESIGN CALL: A REVEAL IS A MOMENT, NOT A PIECE OF STATE ─────
+ * ── ⚠ THE DESIGN CALL: THE GAME STATE KEEPS NO RECORD OF A REVEAL ──────
  *
  * `E.glimpse` writes NO structured record into `GameState` — only the
  * transient `glimpsed` event, which inside a hidden step is held for the
  * barrier like every other event (CR D6.2), just as CR 403.2's public cache is held by
- * the frozen STATE channel. So there is nothing for a client to re-render from,
- * and a surface that pretended otherwise would be lying on the first reconnect.
+ * the frozen STATE channel. So there is nothing for a client to re-render from
+ * a fresh view; what it was sent, it has to keep itself.
  *
- * It is therefore a MOMENT: it is shown when it happens and it expires. The
- * residual is real and is named rather than hidden — **a player who reconnects
- * during the seconds a glimpse is on screen has missed it**, and their log
- * line is what remains. Closing that needs a record in `GameState`, which is a
- * rules-visible change and a separate decision.
+ * It used to be a MOMENT that expired after a few seconds. Report #224
+ * (owner, 2026-10-18): it stays until the viewer dismisses it or a newer
+ * reveal takes its place, and every reveal this seat was sent can be looked
+ * at again from the table menu. Both read one record the CLIENT keeps, of the
+ * events it was sent (ui/reveallog.ts) — so a refresh keeps them too, and
+ * nothing in it was not already on this screen.
  */
 
 /** what the non-glimpsing seat is shown, or null when this batch has none */
@@ -466,40 +467,57 @@ export function glimpseNotice(
   events: readonly EngineEvent[], mySeat: number | null,
 ): GlimpseNotice | null {
   let out: GlimpseNotice | null = null;
+  for (const r of revealRecords(events)) {
+    // whose modal already holds these scans: the glimpser, or a reveal's chooser
+    if (r.shownTo !== undefined && r.shownTo === mySeat) continue;
+    out = { seat: r.seat, cards: r.cards, ...(r.source ? { source: r.source } : {}) };
+  }
+  return out;
+}
+
+/** one reveal as the batch carried it, before the viewer is asked about */
+export interface RevealRecord extends GlimpseNotice {
+  /** the seat whose own decision already shows these scans (the glimpser; a
+   * reveal's chooser), or undefined when nobody was asked */
+  shownTo?: number;
+}
+
+/**
+ * EVERY reveal with cards in this batch, in order — the viewer's own
+ * included. `glimpseNotice` is the subset worth a pop-up; the table menu's
+ * past reveals (report #224) are all of them, because a player re-reading
+ * what they glimpsed two turns ago is reading their own. Same rule as
+ * glimpseNotice about privacy: whatever the server sent is what there is.
+ */
+export function revealRecords(events: readonly EngineEvent[]): RevealRecord[] {
+  const out: RevealRecord[] = [];
   for (const ev of events) {
     if (ev.type !== 'glimpsed' && ev.type !== 'revealed') continue;
     const seat = ev.data?.['seat'];
     const cards = ev.data?.['cards'];
     if (typeof seat !== 'number') continue;
-    // whose modal already holds these scans: the glimpser, or a reveal's chooser
-    const shownTo = ev.type === 'glimpsed' ? seat : ev.data?.['chooser'];
-    if (typeof shownTo === 'number' && shownTo === mySeat) continue;
     // "glimpses 3 — the deck is empty" carries no cards and is not a reveal
     if (!Array.isArray(cards) || !cards.length) continue;
+    const shownTo = ev.type === 'glimpsed' ? seat : ev.data?.['chooser'];
     const source = ev.type === 'revealed' ? ev.data?.['source'] : undefined;
-    out = { seat, cards: cards as CardName[], ...(typeof source === 'string' ? { source } : {}) };
+    out.push({
+      seat, cards: cards as CardName[],
+      ...(typeof source === 'string' ? { source } : {}),
+      ...(typeof shownTo === 'number' ? { shownTo } : {}),
+    });
   }
   return out;
 }
 
 /**
  * The notice's headline. A glimpse reads as it always has ("Rashi glimpsed
- * 3"); a card's reveal names the card, and says "You" when the deck was the
- * viewer's own (Big Glimpse Card's caster). `who` is the deck owner's name.
+ * 3"); a card's reveal names the card. Either says "You" when the deck was
+ * the viewer's own (Big Glimpse Card's caster; the viewer's own glimpse in the
+ * past reveals). `who` is the deck owner's name.
  */
 export function glimpseHeadline(n: GlimpseNotice, who: string, mySeat: number | null): string {
-  if (!n.source) return `${who} glimpsed ${n.cards.length}`;
-  return `${n.seat === mySeat ? 'You' : who} revealed ${n.cards.length} — ${n.source}`;
+  const by = n.seat === mySeat ? 'You' : who;
+  if (!n.source) return `${by} glimpsed ${n.cards.length}`;
+  return `${by} revealed ${n.cards.length} — ${n.source}`;
 }
 
-/**
- * How long the notice stays up: a base dwell plus one tempo-step per card, so
- * a glimpse of five is readable and a glimpse of one does not linger.
- *
- * Both knobs are the client's ONE tempo (CR D5.4) rather than numbers of this
- * surface's own — the whole point of that ruling is that there is a single
- * opinion about how fast a human reads, and a reveal is not exempt from it.
- */
-export function glimpseNoticeUntil(now: number, cards: number, hold: number, step: number): number {
-  return now + hold + Math.max(1, cards) * step;
-}
