@@ -230,12 +230,20 @@ export interface BattleBoardIn {
   chrome: FitBox;
   /** a band's height: the info offshoot's two lines, and its one line */
   bandMin: number; bandFloor: number;
+  /** the tallest unit standing in each In Play band, over a plain card (its
+   * mods hang under it — main.ts fieldMods), in card heights, and the band's
+   * padding: a band never stands shorter than that unit at the field's floor
+   * width, or the unit — and the fit of every card beside it — spills out */
+  tall?: { top: number; bot: number; pad: number };
   /** the In Play bands that are the SOURCE of a formation being built (the
    * units the viewer can put in the declaration, `.card.playable`): how many
    * stand in each, the largest a field card grows (`cap`), and the band's
    * padding. While you build, they are the cards you are moving into the
    * fight, so their band keeps them at the fight's own size (up to `cap`). */
-  source?: { top: number; bot: number; cap: number; pad: number };
+  source?: { top: number; bot: number; cap: number; pad: number;
+    /** how much taller than a card the tallest of each band's units stands
+     * (its mods hang under it), in card heights */
+    extra?: { top: number; bot: number } };
   /** the idle block at its narrowest: whether it holds the send box (whose
    * slot is two cards wide), its padding across, the gap between its cards
    * and the floor card width */
@@ -266,8 +274,13 @@ export function planBattleBoard(i: BattleBoardIn): BattleBoard | null {
   // 1. height first: the bands at two lines; less, down to one, if the floor needs it
   const room = H - OUTER_GAPS * i.gapY;
   const most = W - i.gapX - idleMin;
-  const short = Math.max(0, m.height(floor) + i.chrome.h - (room - 2 * i.bandMin));
-  let bandT = Math.max(i.bandFloor, i.bandMin - Math.ceil(short / 2)), bandB = bandT;
+  const lift = (t: number): number =>
+    (t > 0 && i.tall ? Math.round(FLOOR * (i.o.ratio ?? RATIO) * (1 + t)) + i.tall.pad : 0);
+  const liftT = lift(i.tall?.top ?? 0), liftB = lift(i.tall?.bot ?? 0);
+  const minT = Math.max(i.bandMin, liftT), minB = Math.max(i.bandMin, liftB);
+  const short = Math.max(0, m.height(floor) + i.chrome.h - (room - minT - minB));
+  let bandT = Math.max(i.bandFloor, liftT, minT - Math.ceil(short / 2));
+  let bandB = Math.max(i.bandFloor, liftB, minB - Math.ceil(short / 2));
   // …but a band you are building a formation FROM holds its units at the
   // size of the slots they go to (owner's review board, 2026-10-11: the units
   // waiting to block stood at ~50px beside ~85px slots): the largest card
@@ -275,11 +288,14 @@ export function planBattleBoard(i: BattleBoardIn): BattleBoard | null {
   const src = i.source;
   if (src && (src.top > 0 || src.bot > 0)) {
     const ratio = i.o.ratio ?? RATIO;
-    const bandFor = (n: number, cw: number): number =>
-      (n > 0 ? Math.max(i.bandMin, Math.round(Math.min(cw, src.cap) * ratio) + src.pad) : i.bandMin);
-    const cw = largest(floor, Math.floor(i.o.cw), x => m.height(x) + i.chrome.h + bandFor(src.top, x) + bandFor(src.bot, x) <= room
+    const tall = src.extra ?? { top: 0, bot: 0 };
+    const bandFor = (n: number, cw: number, more: number, least: number): number =>
+      (n > 0 ? Math.max(least, Math.round(Math.min(cw, src.cap) * ratio * (1 + more)) + src.pad) : least);
+    const top = (x: number): number => bandFor(src.top, x, tall.top, minT);
+    const bot = (x: number): number => bandFor(src.bot, x, tall.bot, minB);
+    const cw = largest(floor, Math.floor(i.o.cw), x => m.height(x) + i.chrome.h + top(x) + bot(x) <= room
       && m.width(x) + i.chrome.w <= most);
-    if (cw !== null) { bandT = bandFor(src.top, cw); bandB = bandFor(src.bot, cw); }
+    if (cw !== null) { bandT = top(cw); bandB = bot(cw); }
   }
   const fightH = room - bandT - bandB;
   const box = { w: most - i.chrome.w, h: fightH - i.chrome.h };

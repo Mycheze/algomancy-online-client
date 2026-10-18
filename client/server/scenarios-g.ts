@@ -139,7 +139,7 @@ export const BATCH_G: Record<string, Scenario> = {
 
   /**
    * "Erase one of my mods" — a mod has no card of its own on the table; its
-   * badge on the host is where it lives. Two mods, so the host click has to
+   * strip under the host is where it lives. Two mods, so the host click has to
    * ask which, and it asks with pictures.
    */
   'board-pick-erase-mod': {
@@ -154,7 +154,7 @@ export const BATCH_G: Record<string, Scenario> = {
       + 'DO: click the Good Whale and use "[one], Erase one of my mods: … 2 damage to any target".\n'
       + 'FIRST it asks where the 2 damage goes: in deployment that reaches only your own region, so\n'
       + 'click your own life total (or a unit of yours).\n'
-      + 'THEN "erase one of my mods": the mod badge on the Whale glows — click it. Or click the Whale\n'
+      + 'THEN "erase one of my mods": the mod strips under the Whale glow — click one. Or click the Whale\n'
       + 'itself: it asks "which one?" with the two MOD CARDS as pictures, not their names.',
     initiative: YOU,
     you: {

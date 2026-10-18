@@ -29,10 +29,12 @@
  * §6 more columns or more ranks never mean bigger cards
  * §7 the DOM pass writes the shape on the board before any zone is fitted
  * §8 the band you build a formation from keeps its units at the slots' size
+ * §9 a band holding a modded (taller) unit never stands shorter than that
+ *    unit at the floor — and with nothing modded the plan is unchanged
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { battleMeasure, FLOOR, planBattleBoard, SEND_SLOT_SPAN, type BattleBoardIn } from '../fit.ts';
+import { battleMeasure, FLOOR, planBattleBoard, RATIO, SEND_SLOT_SPAN, type BattleBoardIn } from '../fit.ts';
 import { BAND, BATTLE_CAP, fitBoard, GROW } from '../layout.ts';
 
 /** the `.lboard` content boxes measured on HPTR (board box less its 2+4px padding) */
@@ -244,5 +246,21 @@ test('§8 a band you build a formation from keeps its units at the size of the s
     assert.ok(built.bandTop < built.bandBot, `${name}: the other band still gives way (${built.bandTop} < ${built.bandBot})`);
     const f = fightBox(base, built);
     assert.ok(battleMeasure(6, 1, 2, base.o).height(built.cw) + CHROME.h <= f.h, `${name}: and the fight still stands`);
+  }
+});
+
+test('§9 a band holding a modded unit stands at least that unit\'s height at the floor', () => {
+  for (const [name, board] of Object.entries(BOARDS)) {
+    const base = input(board, 3, 1, 1);
+    // nothing modded: `tall` with zeros changes nothing
+    assert.deepEqual(plan({ ...base, tall: { top: 0, bot: 0, pad: 12 } }), plan(base), `${name}: no mods, same plan`);
+    // their band holds a unit with seven mods (.83 of a card hanging under it)
+    const p = plan({ ...base, tall: { top: 0.83, bot: 0, pad: 12 } });
+    const need = Math.round(FLOOR * RATIO * 1.83) + 12;
+    assert.ok(p.bandTop >= need, `${name}: their band ${p.bandTop} >= ${need}, the long unit at the floor`);
+    assert.ok(p.bandTop > plan(base).bandTop || plan(base).bandTop >= need, `${name}: it grew for it`);
+    // and the fight still stands in what is left
+    const f = fightBox(base, p);
+    assert.ok(battleMeasure(3, 1, 1, base.o).height(p.cw) + CHROME.h <= f.h + 1, `${name}: the fight still stands`);
   }
 });

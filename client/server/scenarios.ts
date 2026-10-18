@@ -256,12 +256,13 @@ import { BATCH_J } from './scenarios-j.ts';
 import { BATCH_K } from './scenarios-k.ts';
 import { BATCH_L } from './scenarios-l.ts';
 import { BATCH_M } from './scenarios-m.ts';
+import { BATCH_N } from './scenarios-n.ts';
 
 /** every batch, in registration order — exported so the collision guard can
  *  sum them without re-listing the imports */
 export const BATCHES: readonly Record<string, Scenario>[] =
   [BATCH_A, BATCH_B, BATCH_C, BATCH_D, BATCH_E, BATCH_F, BATCH_G, BATCH_H, BATCH_I, BATCH_J,
-   BATCH_K, BATCH_L, BATCH_M];
+   BATCH_K, BATCH_L, BATCH_M, BATCH_N];
 
 const CORE: Record<string, Scenario> = {
   /**

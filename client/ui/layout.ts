@@ -300,6 +300,7 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
       h: chrome(fight, 'v') + (battle ? chrome(battle, 'v') : 0) + (stage ? STAGE_CHROME : 0),
     },
     bandMin: BAND.two, bandFloor: BAND.one,
+    tall: bandsTall(lb),
     idle: { send: idleEl.classList.contains('sendhere'), pad: chrome(idleEl, 'h'), gap: 6, floor: CARD_FLOOR },
     // the units you can put in the declaration being built (ui/battle.ts
     // formationCandidates → `playable` on a standing unit)
@@ -317,14 +318,29 @@ function shapeBoard(root: ParentNode, baseCw: number): void {
   lb.style.setProperty('--lbandb', `${plan.bandBot}px`);
 }
 
+/** the tallest unit in each In Play band, over a plain card, for
+ * planBattleBoard's `tall` */
+function bandsTall(lb: HTMLElement): { top: number; bot: number; pad: number } | undefined {
+  const top = tallest(cardsIn(lb, '.lplay.theirs .regionmain .card'));
+  const bot = tallest(cardsIn(lb, '.lplay.mine .regionmain .card'));
+  if (!top && !bot) return undefined;
+  const play = lb.querySelector?.(top ? '.lplay.theirs' : '.lplay.mine');
+  return { top, bot, pad: play ? chrome(play, 'v') : 12 };
+}
+
 /** the In Play bands holding units the viewer can put in the formation being
  * built, for planBattleBoard's `source` */
-function sourceOf(lb: HTMLElement, baseCw: number): { top: number; bot: number; cap: number; pad: number } | undefined {
-  const n = (side: string): number => lb.querySelectorAll(`.lplay.${side} .regionmain .card.playable`).length;
-  const top = n('theirs'), bot = n('mine');
+function sourceOf(lb: HTMLElement, baseCw: number): NonNullable<Parameters<typeof planBattleBoard>[0]['source']> | undefined {
+  const cards = (side: string): Element[] => cardsIn(lb, `.lplay.${side} .regionmain .card.playable`);
+  const theirs = cards('theirs'), mine = cards('mine');
+  const top = theirs.length, bot = mine.length;
   if (!top && !bot) return undefined;
   const play = lb.querySelector(top ? '.lplay.theirs' : '.lplay.mine');
-  return { top, bot, cap: Math.round(baseCw * GROW), pad: play ? chrome(play, 'v') : 12 };
+  // a band holding a modded unit stands as tall as that unit, or the fit
+  // shrinks every unit in it to make the long one fit
+  const extra = { top: tallest(theirs), bot: tallest(mine) };
+  return { top, bot, cap: Math.round(baseCw * GROW), pad: play ? chrome(play, 'v') : 12,
+    ...(extra.top || extra.bot ? { extra } : {}) };
 }
 
 /**
