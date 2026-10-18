@@ -1821,3 +1821,4 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D8.5b `annexd.modes.concession.early`
   - D8.5c `annexd.modes.concession.normal`
   - D8.5d `annexd.modes.concession.rated-only`
+- Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)

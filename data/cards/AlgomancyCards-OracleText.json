@@ -4319,12 +4319,12 @@
             "name": "Meteor Shower",
             "power": "2",
             "toughness": "2",
-            "cost": "e",
+            "cost": "ee",
             "total_cost": "4",
             "type": "{Battle} Cosmic Rock Spell",
-            "text": "Rockfall 3 three times. {i}(To rockfall 3: Each player chooses one of their units. I deal 3 damage to each of the chosen units.)",
+            "text": "When you play me, copy me twice.{/n}Rockfall 3 {i}(Each player chooses one of their units. I deal 3 damage to each of the chosen units.)",
             "image": "images_out/Stable/aster.png",
-            "revision_date_time": "2024-03-14 14:26:18.408017",
+            "revision_date_time": "2026-10-13 00:00:00.000000",
             "details": "",
             "factions": [
                 "earth"

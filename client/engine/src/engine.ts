@@ -2851,6 +2851,48 @@ export class E {
     if (queued) this.s.triggerOrderedSeats = [];
   }
 
+  /**
+   * CR 108.4, 701.5 — a nonunit spell's OWN "When you play me, …" (Meteor
+   * Shower: "When you play me, copy me twice.").
+   *
+   * The sibling of fireOwnTrashTrigger, for the same reason: fireEvent()
+   * scans entities in play, and a spell being played is not one — it is a
+   * stack item. So its own play trigger has to be collected from the card, and
+   * is anchored on a DETACHED stand-in (id -1) whose controller is the player
+   * who played it and whose region is the spell's.
+   *
+   * RAQ "[Solved] Meteor Shower. How it works." (_passer): *"When you play
+   * Meteor Shower first thing on the stack is Triggered Ability 'When you play
+   * me, copy me twice'. This part is not an Spell Effect … but as Triggered
+   * Ability it's affected by Crevice Lurker or Containment Protocol."* So it
+   * QUEUES like any trigger: processTriggerQueue stacks it ABOVE the spell
+   * (this runs before pushItem, and the queue drains after), its CR 111.10g tax
+   * gate applies, and it can be negated as an ability.
+   *
+   * Only a PLAY reaches here — this is called from commitItem — so a copy,
+   * which is pushed by pushSpellCopy and never played (CR 701.5), cannot set
+   * its own trigger off again. That is what keeps "copy me twice" at two.
+   * Only `self: true` 'spellPlayed' abilities of a NONUNIT spell card fire —
+   * a text that names its OWN play ("me"). CR 701.1e is the other shape and is
+   * untouched: an ability that triggers when its controller plays "a unit" /
+   * "a card" still never hears the play of the card it is printed on.
+   */
+  private fireOwnPlayTrigger(item: StackItem, ev: EngineEvent): void {
+    if (item.copy || item.card === undefined || item.kind !== 'spell') return;
+    const name = item.card;
+    const abilities = this.card(name).abilities ?? [];
+    if (!abilities.length) return;
+    const ghost = this.standIn(name, item.controller, item.region);
+    let queued = false;
+    abilities.forEach((ability, idx) => {
+      if (!isTriggered(ability) || !ability.self || ability.zone) return;
+      if (!ability.events.includes('spellPlayed')) return;
+      queued = this.queueTrigger(ghost, name, idx, ability, 'ability', ev,
+        `Trigger: ${name} — ${ability.label} (played).`, { card: name }) || queued;
+    });
+    if (queued) this.s.triggerOrderedSeats = [];
+  }
+
   /** Discard a card from `seat`'s hand — it is trashed (CR 801.3). Returns the
    * card, or undefined when the index is out of range. */
   discardFromHand(seat: Seat, handIndex: number): CardName | undefined {
@@ -10379,6 +10421,8 @@ export class E {
       // (grant AND spend).
       if (item.kind !== 'spellToken') this.spendNextPlayDiscount(item.controller);
       this.fireEvent('spellPlayed', ev);
+      // the played spell's OWN "When you play me" (Meteor Shower) — see fireOwnPlayTrigger
+      this.fireOwnPlayTrigger(item, ev);
     }
     // CR 108.1a: "when a CARD is played" — the wide event, fired ALONGSIDE
     // 'spellPlayed' rather than replacing it, so every existing listener keeps

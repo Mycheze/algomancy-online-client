@@ -2563,16 +2563,16 @@ The owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”) lists 
 
 **Resolution:** The rule keeps the word because a card moved from the deck to a bin does enter a bin from outside the stack, which is the definition. Define "mill" in the glossary as "put from the deck into the bin" if a judge's CR uses the word.
 
-### D-U18-4 · RAQ open · rule 801.12c
+### D-U18-4 · RAQ open · rule 801.12
 
-Do abilities triggered by one rockfall resolve before the next rockfall of the same effect? The designer's write-up said they do, when Meteor Shower made three copies of itself. The card now prints one spell ("Rockfall 3 three times"), the RAQ register marks the claim outdated, and the engine lets the triggers wait until the whole spell has resolved.
+Do abilities triggered by one rockfall resolve before the next rockfall of the same Meteor Shower? The designer's write-up said they do, when Meteor Shower made two copies of itself. An older printing read "Rockfall 3 three times" (one spell), and the owner answered for that printing on 2026-10-11 (reading B: the triggers wait). On 2026-10-18 the owner confirmed the current card is "When you play me, copy me twice.", the printing the write-up describes.
 
 - RAQ 1353899470156206152#2: "any check for triggers will happen in-between resolving each Rockfall 3"
-- card: Meteor Shower: "Rockfall 3 three times."
+- card: Meteor Shower: "When you play me, copy me twice."
 - RAQ 1353899470156206152#4: "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
 - owner ruling, adopted 2026-08-22: "three batches for the same reason."
 
-**Resolution:** Answered by the owner on 2026-10-11, reading B (owner ruling of 2026-10-11, “Abilities that trigger during "Rockfall N…”): Meteor Shower is one spell now, so abilities that trigger during its rockfalls wait until it has resolved. rule 801.12c states it. The engine already does B.
+**Resolution:** Moot since 2026-10-18, when the owner confirmed Meteor Shower's current card prints "When you play me, copy me twice.": the original and its two copies are three spells, each resolving on its own (rule 710.8), and the designer's write-up applies as written: triggers are checked between them. The owner's 2026-10-11 answer was about the older one-spell "Rockfall 3 three times" printing; the rule that stated it (801.12c, "Rockfall N, X times") was removed, because no card prints that any more. The engine resolves the three separately.
 
 ### D-U18-6 · Other · rule 801.11
 

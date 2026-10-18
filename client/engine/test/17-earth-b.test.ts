@@ -3,7 +3,7 @@
  * static -7/-7 (Malformed Monstrosity — its augment-donated half stays a ⚠
  * counters approximation: mod-carried statics), Crystal makers
  * (Metamorphic Luminary, Mohruung), a plan-then-commit each-player damage
- * spell (Meteor Shower, CR 601.4d), survive-damage growth (Mirage Scuttler),
+ * spell that copies itself twice as it is played (Meteor Shower, CR 601.4d, 710.8), survive-damage growth (Mirage Scuttler),
  * augment-application triggers (Morphic Mentor, Perpetual Construct), CR 109.3a's
  * textbook spawn condition (Nectar Ridge Oracle), damage-triggered growth
  * (Plodding Pebble), retaliation (Restitution), attrs-only registration
@@ -106,29 +106,80 @@ test('Metamorphic Luminary: attacking creates a Crystal 1', () => {
   finishBattle(h);
 });
 
-test('Meteor Shower: rockfall 3 three times — each player picks, damage stacks up', () => {
+/** pass priority until the top stack item has resolved, or a decision is asked */
+function resolveTop(h: Harness): void {
+  const top = h.state.stack.at(-1)?.id;
+  let guard = 10;
+  while (h.state.stack.some(i => i.id === top) && !h.state.decision && guard-- > 0) pass(h);
+}
+
+test('Meteor Shower: when you play me, copy me twice — three Meteor Showers, each its own rockfall 3', () => {
+  // The 2026-10-13 face: "When you play me, copy me twice. Rockfall 3". The
+  // older printing ("Rockfall 3 three times.") was ONE spell that rockfell
+  // three times in one resolution; now it is three spell effects on the
+  // stack, each resolving — and each answerable — on its own (CR 710.8).
   const h = new Harness(1703);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const u1 = spawnToken(h, A, 4, 4);
   const u2 = spawnToken(h, A, 4, 4);
   const d1 = spawnToken(h, D, 5, 5);
-  giveResources(h, D, 'earth', 4);                    // e / 4
+  giveResources(h, D, 'earth', 4);                    // ee / 4
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[u1], [u2]] });
   pass(h);                                            // priority → D
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Meteor Shower') });
-  pass(h); pass(h);                                   // resolve
-  // rockfall 1: A has two units in the region → A picks (D's lone unit auto)
+  // the trigger is the first thing on the stack, ABOVE the spell (RAQ)
+  assert.deepEqual(h.state.stack.map(i => [i.kind, i.card]),
+    [['spell', 'Meteor Shower'], ['triggered', 'Meteor Shower']],
+    'the spell, and its "copy me twice" trigger on top of it');
+  resolveTop(h);                                      // the trigger resolves
+  assert.deepEqual(h.state.stack.map(i => [i.card, !!i.copy]),
+    [['Meteor Shower', false], ['Meteor Shower', true], ['Meteor Shower', true]],
+    'three Meteor Showers: the original under its two copies');
+  // copy 1: A has two units in the region → A picks (D's lone unit auto)
+  resolveTop(h);
   assert.equal(h.state.decision!.seat, A, 'A chooses their rockfall victim');
   pick(h, u1);                                        // u1: 3 damage; d1: 3 damage
-  // rockfall 2: A picks again (u1 survived rockfall 1 with 3 on it)
+  assert.equal(ent(h, u1)!.damage, 3);
+  assert.equal(ent(h, d1)!.damage, 3);
+  assert.equal(h.state.stack.length, 2, 'one rockfall per resolution: two Meteor Showers still wait');
+  // copy 2: A picks again (u1 survived with 3 on it)
+  resolveTop(h);
   pick(h, u1);                                        // u1: 6 ≥ 4 dies; d1: 6 ≥ 5 dies
-  // rockfall 3: only u2 remains on A's side (auto), D has nothing → skipped
-  assert.ok(!ent(h, u1), 'u1 died to the second rockfall');
-  assert.ok(!ent(h, d1), 'd1 died to the second rockfall');
-  assert.equal(ent(h, u2)!.damage, 3, 'u2 caught only the third rockfall');
-  assert.ok(h.state.players[D]!.bin.includes('Meteor Shower'), 'spell → bin');
+  assert.ok(!ent(h, u1), 'u1 died to the second Meteor Shower');
+  assert.ok(!ent(h, d1), 'd1 died to the second Meteor Shower');
+  // the original: only u2 remains on A's side (auto), D has nothing → no pick
+  resolveTop(h);
+  assert.equal(h.state.stack.length, 0);
+  assert.equal(ent(h, u2)!.damage, 3, 'u2 caught only the third');
+  assert.equal(h.state.players[D]!.bin.filter(c => c === 'Meteor Shower').length, 1,
+    'one card → bin: the copies have no card (CR 710.8c)');
+  finishBattle(h);
+});
+
+test('Meteor Shower: a copy is not played, so it never copies itself again (CR 701.5)', () => {
+  const h = new Harness(1730);
+  toDeployment(h);
+  const A = h.state.initiative, D = 1 - A;
+  const atk = spawnToken(h, A, 1, 1);
+  giveResources(h, D, 'earth', 4);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Meteor Shower') });
+  let guard = 40;
+  let most = 0;
+  while ((h.state.stack.length || h.state.decision) && guard-- > 0) {
+    most = Math.max(most, h.state.stack.length);
+    if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+    else pass(h);
+  }
+  assert.equal(most, 3, 'never more than three Meteor Showers on the stack');
+  assert.equal(h.events.filter(e => e.type === 'spellPlayed' && e.data?.['card'] === 'Meteor Shower').length, 1,
+    'one play');
+  assert.equal(h.events.filter(e => e.type === 'triggered' && e.data?.['card'] === 'Meteor Shower').length, 1,
+    'one "copy me twice" trigger — the copies set off nothing');
   finishBattle(h);
 });
 

@@ -1655,7 +1655,7 @@
   "factions": [
    "earth"
   ],
-  "cost": "e",
+  "cost": "ee",
   "mana": 4,
   "power": 2,
   "toughness": 2,
@@ -1666,7 +1666,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Rockfall 3 three times. {i}(To rockfall 3: Each player chooses one of their units. I deal 3 damage to each of the chosen units.)",
+  "text": "When you play me, copy me twice.{/n}Rockfall 3 {i}(Each player chooses one of their units. I deal 3 damage to each of the chosen units.)",
   "image": "Meteor-Shower.jpg"
  },
  "Mirage Scuttler": {

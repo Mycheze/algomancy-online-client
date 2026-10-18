@@ -1335,7 +1335,7 @@
     {"num":"801.12","key":"keywords.actions.rockfall","since":"First generation (draft)"},
     {"num":"801.12a","key":"keywords.actions.rockfall.chooses","since":"First generation (draft)"},
     {"num":"801.12b","key":"keywords.actions.rockfall.living-unit","since":"First generation (draft)"},
-    {"num":"801.12c","key":"keywords.actions.rockfall.repeated","since":"First generation (draft)"},
+    {"num":"801.12c","key":"keywords.actions.rockfall.repeated","since":"First generation (draft)","removed":"No card prints \"Rockfall N, X times\": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell","removedIn":"First generation (draft)","replacedBy":"effects.copies.spells"},
     {"num":"801.13","key":"keywords.actions.exchange","since":"First generation (draft)"},
     {"num":"801.13a","key":"keywords.actions.exchange.unit-for-bin","since":"First generation (draft)"},
     {"num":"801.14","key":"keywords.actions.prophesy","since":"First generation (draft)"},

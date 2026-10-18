@@ -10,7 +10,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import {
-  ent, finishBattle, give, giveResources, pass, spawn, toDeployment, toNextBattle, unitsOf, withE,
+  ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle, unitsOf, withE,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -190,19 +190,242 @@ test('RAQ Meteor Shower: rockfall chooses rather than targets, so Boon of Protec
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Curio Drifter');
   spawn(h, D, 'Curio Drifter');
-  giveResources(h, D, 'earth', 4);                           // Meteor Shower e/4
+  giveResources(h, D, 'earth', 4);                           // Meteor Shower ee/4
   giveResources(h, A, 'wood', 2);                            // Boon of Protection gg/1
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Meteor Shower') });
-  const item = h.state.stack.find(i => i.card === 'Meteor Shower')!;
+  const item = h.state.stack.find(i => i.card === 'Meteor Shower' && i.kind === 'spell')!;
   assert.deepEqual(item.parts.flatMap(p => p.targets), [], 'no targets were declared on the stack');
   const boon = give(h, A, 'Boon of Protection');
   if (h.state.priority !== A) pass(h);
   assert.equal(h.state.priority, A, 'A holds priority over the Meteor Shower');
   assert.ok(!h.legal(A).some(a => a.type === 'playCard' && a.handIndex === boon),
     'Boon of Protection is not offered: a choosing effect targets none of the units in the region');
+  finishBattle(h);
+});
+
+/* The thread was written about the "When you play me, copy me twice." face,
+ * which the 2026-10-13 card faces restore (an intermediate printing read
+ * "Rockfall 3 three times." and the claims below were parked as outdated). */
+
+/** D plays Meteor Shower in A's attack window; `setup` runs in deployment.
+ * Stops with the spell and its trigger on the stack, nothing resolved. */
+function meteorShower(seed: number, setup?: (h: Harness, A: Seat, D: Seat) => void):
+  { h: Harness; A: Seat; D: Seat } {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Curio Drifter');
+  giveResources(h, D, 'earth', 4);                           // Meteor Shower ee/4
+  setup?.(h, A, D);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  if (h.state.priority !== D) pass(h);
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Meteor Shower') });
+  return { h, A, D };
+}
+const showers = (h: Harness) => h.state.stack.filter(i => i.card === 'Meteor Shower' && i.kind !== 'triggered');
+/** pass until the top item has left the stack (or a question is asked) */
+function resolveTop(h: Harness): void {
+  const top = h.state.stack.at(-1)?.id;
+  for (let k = 0; k < 8 && h.state.stack.some(i => i.id === top) && !h.state.decision; k++) pass(h);
+}
+/** play a card from `seat`'s hand once they hold priority */
+function respond(h: Harness, seat: Seat, card: string): void {
+  if (h.state.priority !== seat) pass(h);
+  assert.equal(h.state.priority, seat, `${seat} holds priority`);
+  h.do({ type: 'playCard', seat, handIndex: give(h, seat, card) });
+}
+
+test('RAQ Meteor Shower copies: "copy me twice" is a triggered ability, first on the stack — Containment Protocol stops the copies', () => {
+  // "When you play Meteor Shower first thing on the stack is Triggered Ability
+  // 'When you play me, copy me twice'. This part is not an Spell Effect … but
+  // as Triggered Ability it's affected by Crevice Lurker or Containment Protocol."
+  const { h, A } = meteorShower(39613, (h, A) => giveResources(h, A, 'metal', 3));   // Containment Protocol mm/3
+  assert.deepEqual(h.state.stack.map(i => i.kind), ['spell', 'triggered'],
+    'the trigger sits ABOVE the spell');
+  respond(h, A, 'Containment Protocol');                     // "Negate all activated and triggered effects."
+  resolveTop(h);                                             // the Protocol resolves
+  assert.ok(!h.state.stack.some(i => i.kind === 'triggered'), 'the trigger was negated');
+  assert.equal(showers(h).length, 1, 'no copies: only the one Meteor Shower is left to fall');
+  finishBattle(h);
+});
+
+test('RAQ Meteor Shower copies: three separate spell effects — Dreadwave Devourer negates one copy alone', () => {
+  // "there will be 2 more copies of Meteor Shower and those are 3 separate
+  // spell effects (single one can be negated by Dreadwave Devourer …)"
+  const { h, A } = meteorShower(39614, (h, A) => giveResources(h, A, 'water', 6));   // Dreadwave bb/6
+  resolveTop(h);                                             // the trigger resolves
+  assert.equal(showers(h).length, 3, 'three Meteor Showers on the stack');
+  const copy = h.state.stack.at(-1)!;
+  assert.ok(copy.copy, 'the top one is a copy');
+  respond(h, A, 'Dreadwave Devourer');
+  pick(h, { stack: copy.id });                               // "Negate target spell effect."
+  resolveTop(h);                                             // the Devourer's spell half resolves
+  while (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+  assert.ok(!h.state.stack.some(i => i.id === copy.id), 'that copy is gone');
+  assert.equal(showers(h).length, 2, 'the other two Meteor Showers are still there');
+  finishBattle(h);
+});
+
+test('RAQ Meteor Shower copies: Flame Shield negating all three makes three Fireball 1', () => {
+  // "… and Flame Shield will create three Fireball 1 when it negates all three of them"
+  // — the copies are NONTOKEN spells (CR 108.4a), so each one counts.
+  const { h, A } = meteorShower(39615, (h, A) => giveResources(h, A, 'fire', 4));    // Flame Shield rr/4
+  resolveTop(h);
+  assert.equal(showers(h).length, 3);
+  const fireballs = () => h.state.stack.filter(i => i.card === 'Fireball').length
+    + Object.values(h.state.entities).filter(u => u.card === 'Fireball' && u.controller === A && !u.absent).length;
+  const before = fireballs();
+  respond(h, A, 'Flame Shield');
+  resolveTop(h);
+  assert.equal(showers(h).length, 0, 'all three Meteor Showers negated');
+  assert.equal(fireballs() - before, 3, 'one Fireball 1 for each of the three');
+  finishBattle(h);
+});
+
+test('RAQ Meteor Shower copies: triggers resolve between the three — a Mirage Scuttler chosen each time ends +11/+11 with 9 damage', () => {
+  // "Since those are 3 separate effects, any check for triggers will happen
+  // in-between resolving each Rockfall 3. (Eg. 0/2 Mirrage Scuttler with +2/+2
+  // counters can be choosen for all 3x Rockfall 3 and if his effects resolve
+  // after each Meteor, he will end up as 0/2 with +11/+11 and 9 damage on him)"
+  let sc = -1;
+  const { h, D } = meteorShower(39616, (h, _A, D) => {
+    sc = spawn(h, D, 'Mirage Scuttler');                     // 0/2, in the defender's (the battle's) region
+    withE(h, e => e.addCounters(e.entity(sc)!, 2));          // +2/+2
+  });
+  for (let k = 0; k < 40 && (h.state.stack.length || h.state.decision); k++) {
+    const d = h.state.decision;
+    if (d) {
+      const i = d.options.findIndex(o => o.value === sc);
+      h.do({ type: 'decide', seat: d.seat, choice: i < 0 ? 0 : i });
+    } else pass(h);
+  }
+  const u = ent(h, sc)!;
+  assert.ok(u, 'the Scuttler survived all three');
+  assert.equal(u.counters, 11, '+2 to start, then +3 after EACH Meteor Shower');
+  assert.equal(u.damage, 9, 'three times 3');
+  assert.equal(h.events.filter(e => e.type === 'triggered' && e.data?.['unit'] === sc).length, 3,
+    'the Scuttler triggered once per Meteor Shower, each resolving before the next fell');
+  void D;
+  finishBattle(h);
+});
+
+test('RAQ Crevice Lurker: it taxes Meteor Shower\'s "When you play me" trigger', () => {
+  // _passer: "It DOES affect Meteor Shower 'When you play me' part, since this
+  // is Triggered Ability."
+  const { h, D } = meteorShower(39617, (h, _A, D) => {
+    spawn(h, D, 'Crevice Lurker');
+    giveResources(h, D, 'earth', 1);                         // the [one] for the tax
+  });
+  assert.equal(h.state.decision?.kind, 'payOrDecline', 'the trigger asks for the tax');
+  assert.equal(h.state.decision?.seat, D, 'its controller is asked');
+  const i = h.state.decision!.options.findIndex(o => o.value === false);
+  h.do({ type: 'decide', seat: D, choice: i < 0 ? h.state.decision!.options.length - 1 : i });
+  assert.ok(!h.state.stack.some(i => i.kind === 'triggered'), 'not paid: it never triggered');
+  assert.equal(showers(h).length, 1, 'and there are no copies');
+  finishBattle(h);
+});
+
+test('RAQ Download: copies of Meteor Shower on the stack are not tokens', () => {
+  // _passer: "5. Copies of Meteor Shower 'on the stack' ❌"
+  const { h, A } = meteorShower(39618, (h, A) => giveResources(h, A, 'metal', 2));   // Download mm/1
+  resolveTop(h);
+  assert.equal(h.state.stack.filter(i => i.copy).length, 2, 'the two copies are on the stack');
+  if (h.state.priority !== A) pass(h);
+  const dl = give(h, A, 'Download');
+  assert.ok(!h.legal(A).some(a => a.type === 'playCard' && a.handIndex === dl),
+    'Download has nothing to take: a copy of a spell is not a token (CR 108.4a)');
+  finishBattle(h);
+});
+
+/* ── one card, two copies: only the card reaches a zone ──────────────────
+ * Owner, 2026-10-18: after a Meteor Shower and its two copies leave the stack —
+ * resolved, or negated, whichever goes first — the controller's bin holds
+ * exactly ONE Meteor Shower, and the copies are found in no zone at all. A
+ * copy has no card (CR 704.2d): off the stack it ceases to exist, like paper
+ * that was never printed. */
+
+/** every Meteor Shower CARD in every zone of the game, by zone (the stack's
+ * copies excluded: they are not cards). The deal has real Meteor Showers in the
+ * deck, so a test compares against `moved`, never against absolute counts. */
+function meteorCards(h: Harness): Record<string, number> {
+  const n = (xs: readonly string[] | undefined) => (xs ?? []).filter(c => c === 'Meteor Shower').length;
+  const s = h.state;
+  const out: Record<string, number> = {};
+  const add = (k: string, v: number) => { if (v) out[k] = (out[k] ?? 0) + v; };
+  s.players.forEach((p, seat) => {
+    add(`bin${seat}`, n(p.bin));
+    add(`hand${seat}`, n(p.hand));
+    add(`cache${seat}`, n((p.cache ?? []).map(c => c.card)));
+    add(`erased${seat}`, n(p.erased));
+  });
+  add('deck', n(s.sharedDeck) + (s.decks ?? []).reduce((a, d) => a + n(d), 0));
+  add('recycle', n(s.sharedRecycled) + (s.recycled ?? []).reduce((a, d) => a + n(d), 0));
+  add('play', Object.values(s.entities).filter(e => e.card === 'Meteor Shower').length);
+  add('stack', s.stack.filter(i => i.card === 'Meteor Shower' && i.kind === 'spell' && !i.copy).length);
+  return out;
+}
+/** `before` with the played card moved from the stack to `seat`'s bin, and
+ * nothing else changed */
+function moved(before: Record<string, number>, seat: Seat): Record<string, number> {
+  const out = { ...before };
+  if (!--out['stack']!) delete out['stack'];
+  out[`bin${seat}`] = (out[`bin${seat}`] ?? 0) + 1;
+  return out;
+}
+/** resolve everything, answering any question with its first option */
+function drain(h: Harness): void {
+  for (let k = 0; k < 60 && (h.state.stack.length || h.state.decision); k++) {
+    if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+    else pass(h);
+  }
+}
+
+test('Meteor Shower in the bin: all three resolve — ONE card in the bin, the copies nowhere', () => {
+  const { h, D } = meteorShower(39619);
+  const before = meteorCards(h);
+  assert.equal(before['stack'], 1, 'the played card is on the stack');
+  drain(h);
+  assert.deepEqual(meteorCards(h), moved(before, D), 'the one card went to its controller\'s bin, and nothing else appeared anywhere');
+  finishBattle(h);
+});
+
+test('Meteor Shower in the bin: the copies negated — ONE card in the bin, the copies nowhere', () => {
+  // Dreadwave Devourer negates the top copy, a second Devourer the other one
+  const { h, A, D } = meteorShower(39620, (h, A) => giveResources(h, A, 'water', 12));
+  const before = meteorCards(h);
+  resolveTop(h);                                             // the trigger: two copies
+  for (const copy of h.state.stack.filter(i => i.copy).reverse()) {
+    respond(h, A, 'Dreadwave Devourer');
+    pick(h, { stack: copy.id });
+    resolveTop(h);
+    while (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+    assert.ok(!h.state.stack.some(i => i.id === copy.id), 'that copy was negated');
+  }
+  assert.equal(h.state.stack.filter(i => i.copy).length, 0, 'both copies are gone');
+  assert.deepEqual(meteorCards(h), before, 'the negated copies went to no zone: only the original, still on the stack');
+  drain(h);
+  assert.deepEqual(meteorCards(h), moved(before, D));
+  finishBattle(h);
+});
+
+test('Meteor Shower in the bin: the original negated under its copies — ONE card in the bin, the copies nowhere', () => {
+  const { h, A, D } = meteorShower(39621, (h, A) => giveResources(h, A, 'water', 6));
+  const before = meteorCards(h);
+  resolveTop(h);                                             // the trigger: two copies above the original
+  const original = h.state.stack.find(i => i.card === 'Meteor Shower' && i.kind === 'spell' && !i.copy)!;
+  respond(h, A, 'Dreadwave Devourer');
+  pick(h, { stack: original.id });
+  resolveTop(h);
+  while (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+  assert.ok(!h.state.stack.some(i => i.id === original.id), 'the original was negated');
+  assert.equal(h.state.stack.filter(i => i.copy && i.card === 'Meteor Shower').length, 2, 'its two copies are still waiting');
+  assert.deepEqual(meteorCards(h), moved(before, D), 'the negated original is the one card, in the bin');
+  drain(h);
+  assert.deepEqual(meteorCards(h), moved(before, D), 'and the copies, resolved, added nothing');
   finishBattle(h);
 });
 

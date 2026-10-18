@@ -300,7 +300,10 @@ test('cr:concepts.damage.one-effect.copies — the three Meteor Shower rockfalls
   pass(h);
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Meteor Shower') });
-  pass(h); pass(h);
+  // "When you play me, copy me twice": the trigger, then the two copies and the
+  // original — three Meteor Showers, three resolutions, three sources (CR 112.8a)
+  let guard = 20;
+  while (h.state.stack.length && !h.state.decision && guard-- > 0) pass(h);
   const hits = h.events.slice(mark).filter(ev => ev.type === 'damage' && ev.data?.['unit'] === d);
   assert.equal(hits.length, 3, 'three damage events on the same unit, not coalesced into one');
   assert.deepEqual(hits.map(x => x.data?.['n']), [3, 3, 3], 'each rockfall deals its own 3 to the unit');

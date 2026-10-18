@@ -1996,7 +1996,7 @@
         },
         {
           "ref": "card: Meteor Shower",
-          "quote": "(To rockfall 3: Each player chooses one of their units. I deal 3 damage to each of the chosen units.)"
+          "quote": "(Each player chooses one of their units. I deal 3 damage to each of the chosen units.)"
         }
       ],
       "designer": [],
@@ -2086,70 +2086,7 @@
     "basis": "designer",
     "scope": "game",
     "confidence": "high",
-    "notes": "\"Living\" matters for a repeated rockfall: a unit killed by an earlier rockfall cannot be chosen by a later one.",
-    "sourceHashes": {
-      "RAQ 1353899470156206152#4": "d5427bf9e0aaf457b7dcf397581cb20f332ef855d05381becc46e40f79ba1097"
-    }
-  },
-  {
-    "key": "keywords.actions.rockfall.repeated",
-    "parent": "keywords.actions.rockfall",
-    "order": 3,
-    "text": "\"Rockfall N, X times\" is X rockfalls carried out one after another. Each player chooses again for each of them, and each rockfall is a separate source of damage. Abilities that trigger during one of the rockfalls wait until the whole effect has resolved: none is put on the stack between rockfalls.",
-    "examples": [
-      {
-        "text": "Meteor Shower rockfalls 3 three times: each player picks each time, and the damage stacks up.",
-        "test": "17-earth-b.test.ts::Meteor Shower: rockfall 3 three times — each player picks, damage stacks up"
-      }
-    ],
-    "see": [
-      "112"
-    ],
-    "sources": {
-      "printed": [
-        {
-          "ref": "card: Meteor Shower",
-          "quote": "Rockfall 3 three times."
-        }
-      ],
-      "designer": [
-        {
-          "ref": "RAQ 1353899470156206152#4",
-          "quote": "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
-        }
-      ],
-      "ours": [],
-      "owner": [
-        {
-          "quote": "Meteor Shower making several Rockfalls: *\"Each copy of Rockfall is a separate",
-          "adopted": "2026-08-22",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "three batches for the same reason.",
-          "adopted": "2026-08-22",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "An ability that triggers during one of those rockfalls is not put on the stack before the next rockfall.",
-          "adopted": "2026-10-11",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "It waits until the whole effect has resolved, like any ability that triggers while an effect resolves.",
-          "adopted": "2026-10-11",
-          "from": "register@72de434"
-        }
-      ],
-      "engine": [],
-      "tests": [
-        "17-earth-b.test.ts"
-      ]
-    },
-    "basis": "mixed",
-    "scope": "game",
-    "confidence": "high",
-    "notes": "The owner ruling of 2026-08-22 (“ALL of one effect's damage is…”) (not in the U18 pack) quotes Caleb 2025-03-20: each rockfall is a separate source. Whether abilities triggered by one rockfall resolve before the next is open: D-U18-4. This rule does not say. REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies). REVIEW COMMENT 2026-10-11 (owner answer to D-U18-4): reading B, the owner ruling of 2026-10-11 (“Abilities that trigger during \"Rockfall N…”). The RAQ claim that triggers resolve between rockfalls is marked outdated (it described three copies).",
+    "notes": "\"Living\" matters when rockfalls follow one another (Meteor Shower and its two copies): a unit killed by an earlier rockfall cannot be chosen by a later one.",
     "sourceHashes": {
       "RAQ 1353899470156206152#4": "d5427bf9e0aaf457b7dcf397581cb20f332ef855d05381becc46e40f79ba1097"
     }

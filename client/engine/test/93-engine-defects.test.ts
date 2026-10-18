@@ -150,20 +150,26 @@ test('a fully prevented damage batch reports only the prevention, never emptines
   assert.equal(g.entity(theirs.id)!.damage, 0, 'no damage was marked');
 });
 
-test('Meteor Shower with no unit anywhere to hit announces each empty rockfall', () => {
+test('Meteor Shower with no unit anywhere to hit announces each empty rockfall — one per Meteor Shower', () => {
   // A REAL CARRIER that was never patched card-side, driven through its own
-  // spellEffect: three rockfalls, no unit in the region, three empty batches.
-  // This is the whole point of fixing it in the engine — no card had to know.
+  // spellEffect: no unit in the region, an empty batch. This is the whole
+  // point of fixing it in the engine — no card had to know.
+  //
+  // The 2026-10-13 face is "When you play me, copy me twice. Rockfall 3": each
+  // Meteor Shower — the original and each copy — is ONE rockfall, so one
+  // resolution of the spell effect is one empty batch and one announcement.
+  // (The older printing, "Rockfall 3 three times.", was three batches in one
+  // resolution; the three Meteor Showers now announce one each.)
   const { g, A } = emptyBoard(9304);
   assert.equal(g.unitsIn(g.homeRegion(A)).length, 0, 'the board really is empty');
   const evs = resolve(getCard('Meteor Shower').spellEffect!, g,
     { controller: A, sourceName: 'Meteor Shower' });
   const empties = evs.filter(e => e.data?.['empty'] === true);
-  assert.equal(empties.length, 3,
-    'Meteor Shower is three separate rockfalls (CR 801.12c: one resolution of one effect, one '
-    + 'batch), so an empty board must produce three announcements, not one and not none');
+  assert.equal(empties.length, 1,
+    'one Meteor Shower is one rockfall (CR 112.8: one resolution of one effect, one batch), so an '
+    + 'empty board must produce exactly one announcement, not none');
   assert.ok(empties.every(e => e.data?.['source'] === 'Meteor Shower'),
-    'each one names the carrier');
+    'it names the carrier');
 });
 
 // ════════════════════════════════════════════════════════════════════════

@@ -3141,19 +3141,24 @@
     "key": "concepts.targets.not-target",
     "textHash": "bb504a3fe751d867",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "cards Meteor Shower rockfall ctx.choose",
+        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Meteor Shower spellEffect",
         "agrees": true,
-        "note": ""
+        "note": "Rockfall is a chooseUnit at resolution per seat; the spellEffect declares no `targets` spec, so nothing is declared on the stack."
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-wood-a.ts:Boon of Protection",
+        "agrees": true,
+        "note": "Boon's target is restricted to a stack effect that aimsAtAlly; an effect with no targets never qualifies, so Boon is not offered."
       }
     ],
     "tests_run": [
       {
-        "file": "396-raq-timing.test.ts",
-        "pattern": "RAQ Meteor Shower: rockfall chooses rather than targets",
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Meteor Shower: rockfall chooses",
         "passed": true,
         "asserts_claim": true
       }
@@ -3163,18 +3168,25 @@
       {
         "ref": "RAQ 1353899470156206152#3",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R67",
-        "supports": "yes",
-        "note": ""
+        "note": "Claim index 3 of the [Solved] Meteor Shower thread, status covered, source _passer write-up; both quotes verbatim. The record states the general choose-vs-target principle the write-up applies to Rockfall; the thread's wording ('choosing effect rather than targeting ... things like Boon of Protection') carries the general reading."
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "\"text\": \"Rockfall 3 three times. {i}(To rockfall 3: Each player chooses one of their units. I deal 3 damage to each of the chosen units.)\","
+        "file": "client/ledgers/raq.ts",
+        "text": "Rockfall is 'choosing' effect rather than 'targeting', so it cannot be negated by things like Boon of Protection. It also means that no targets have to be declared when effects goes on stack"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
+        "text": "const u = chooseUnit(g, ctx, `rf:${seat}`, seat,"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-wood-a.ts",
+        "text": "restrict: (g, t, ctx) => 'stack' in t && aimsAtAlly(g, t.stack, ctx.ally),"
+      },
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "assert.deepEqual(item.parts.flatMap(p => p.targets), [], 'no targets were declared on the stack');"
       }
     ],
     "basis_ok": true,

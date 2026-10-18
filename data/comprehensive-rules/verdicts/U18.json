@@ -1787,19 +1787,30 @@
     "key": "keywords.actions.rockfall.living-unit",
     "textHash": "fcd940cd213f58ca",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "rockfall helper",
+        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Meteor Shower",
         "agrees": true,
-        "note": "each player picks among their living units in region; empty side announced and skipped"
+        "note": "for each present seat, chooseUnit over g.unitsOf(seat, region) (live, non-absent units); a seat with none adds no pick"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/helpers.ts:chooseUnit",
+        "agrees": true,
+        "note": "no decline option; null only when there are no candidates"
       }
     ],
     "tests_run": [
       {
-        "file": "93-engine-defects.test.ts",
-        "pattern": "Meteor Shower with no unit anywhere to hit announces each empty rockfall",
+        "file": "client/engine/test/93-engine-defects.test.ts",
+        "pattern": "Meteor Shower with no unit anywhere",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "pattern": "Meteor Shower: when you play me",
         "passed": true,
         "asserts_claim": true
       }
@@ -1809,96 +1820,21 @@
       {
         "ref": "RAQ 1353899470156206152#4",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved], status covered"
       }
     ],
     "quote_spans": [
-      {
-        "file": "client/engine/test/17-earth-b.test.ts",
-        "text": "  // rockfall 3: only u2 remains on A's side (auto), D has nothing → skipped"
-      }
-    ],
-    "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
-  },
-  {
-    "key": "keywords.actions.rockfall.repeated",
-    "textHash": "536ca7c43ba52956",
-    "verdict": "confirmed",
-    "round": 4,
-    "verifier": "U18-r4",
-    "engine": [
-      {
-        "loc": "client/engine/src (Meteor Shower / rockfall resolution)",
-        "agrees": true,
-        "note": "three rockfalls in one resolution, a fresh choice each, a damage event each; triggers wait for the end of the spell"
-      }
-    ],
-    "tests_run": [
-      {
-        "file": "client/engine/test/17-earth-b.test.ts",
-        "pattern": "Meteor Shower: rockfall 3 three times",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
-        "pattern": "cr:concepts.damage.one-effect.copies",
-        "passed": true,
-        "asserts_claim": true
-      }
-    ],
-    "probes": [
-      {
-        "file": "client/engine/test/zz-probe-U18-1.test.ts",
-        "test": "probe U18-1: Meteor Shower — a Mirage Scuttler host triggers once per rockfall, and every trigger resolves only after the third rockfall",
-        "passed": true,
-        "demonstrates": "yes: three damage events, three Scuttler triggers; none is pushed to the stack or resolved before the third rockfall; 9 counters land after the spell"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "card: Meteor Shower",
-        "supports": "yes",
-        "note": "\"Rockfall 3 three times.\" — one spell."
-      },
-      {
-        "ref": "RAQ 1353899470156206152#4",
-        "supports": "yes",
-        "note": "_passer, status covered (not outdated): \"They resolve one by one and you always must choose alive unit\"."
-      },
-      {
-        "ref": "R80",
-        "supports": "yes",
-        "note": "each rockfall is a separate batch/source of damage."
-      },
-      {
-        "ref": "R349",
-        "supports": "yes",
-        "note": "owner, current: triggers during one rockfall wait until the whole effect has resolved."
-      }
-    ],
-    "quote_spans": [
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "Rockfall 3 three times."
-      },
       {
         "file": "client/ledgers/raq.ts",
-        "text": "They resolve one by one and you always must choose alive unit (or none if you don"
+        "text": "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "An ability that triggers during one of those rockfalls is not put on the stack before the next rockfall."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "It waits until the whole effect has resolved, like any ability that triggers while an effect resolves."
+        "file": "client/engine/src/cards/sets/helpers.ts",
+        "text": "if (!candidates.length) return null;"
       },
       {
         "file": "client/engine/test/17-earth-b.test.ts",
-        "text": "pick(h, u1);                                        // u1: 6 ≥ 4 dies; d1: 6 ≥ 5 dies"
+        "text": "// the original: only u2 remains on A's side (auto), D has nothing → no pick"
       }
     ],
     "basis_ok": true,

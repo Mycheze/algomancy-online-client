@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-18', kind: 'fix', text: "Meteor Shower now plays as its current card: it costs two Earth, and when you play it, it copies itself twice, so three separate Meteor Showers fall one after another." },
   { date: '2026-10-17', kind: 'new', text: "Beta: if the game gets something wrong, propose a fix from the table menu. When your opponent agrees you can set a life total, draw a missed card, move a card, or rewind a few actions." },
   { date: '2026-10-17', kind: 'change', text: "Units and spell tokens you send to counterattack now have to go: there is no \"Don't attack\" in a counterattack, and a lone unit forms by itself. If every attacker is gone before blocks, nothing can block, but you can still counterattack." },
   { date: '2026-10-17', kind: 'fix', text: "An Ambush is no longer treated as a spell: Cosmic Reversal, Dreadwave Devourer and other spell-only effects leave it alone, and Nothyr can now negate one." },

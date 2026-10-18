@@ -190,7 +190,8 @@ test('the build is deterministic', async () => {
 });
 
 test('a removed rule still renders as a marked tombstone, so its comments have somewhere to show', async () => {
-  // the committed ledger has no tombstone yet: remove one leaf rule in a copy
+  // remove one more leaf rule in a copy (the committed ledger's own tombstones,
+  // 801.12c since 2026-10-18, stay in the removed map beside it)
   // the leaf must be named by nothing else that renders: no record, discrepancy or finding
   const named = ['rules', 'discrepancies', 'findings'].flatMap(d => readdirSync(join(CR_DIR, d)).map(f => readFileSync(join(CR_DIR, d, f), 'utf8'))).join('\n');
   const uses = (key: string): number => named.split(new RegExp(`(?<![\\w.-])${key.replace(/\./g, '\\.')}(?![\\w-]|\\.[a-z0-9])`)).length - 1;
@@ -209,7 +210,8 @@ test('a removed rule still renders as a marked tombstone, so its comments have s
     const r = await buildReview({ paths: { rulesDir, ledger }, ex: EX });
     const num = R.keys[leaf.key]!;
     assert.equal(r.born, 0);
-    assert.deepEqual(r.removed, { [leaf.key]: num });
+    const committed = Object.fromEntries(INPUTS.ledger.entries.filter(e => e.removed).map(e => [e.key, e.num]));
+    assert.deepEqual(r.removed, { ...committed, [leaf.key]: num });
     assert.ok(r.targets.includes(`rule:${leaf.key}`));
     const sec = r.parts.find(p => p.html.includes(`id="r${num}"`))!;
     assert.match(sec.html, new RegExp(`<article class="rule [^"]* tomb" id="r${num.replace(/\./g, '\\.')}" data-crt="rule:${leaf.key.replace(/\./g, '\\.')}">`));

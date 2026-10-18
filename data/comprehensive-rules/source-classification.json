@@ -366,7 +366,7 @@
     {"keyword":"Fight","rule":"801","card":"Fight","quote":"fight. {i}(They deal damage to each other equal to their power.)","source":"cards[] (printed.json text)"},
     {"keyword":"Fight","rule":"801","card":"Eminence of the Barrens","quote":"fight another target unit. {i}(We deal damage to each other equal to our power.)","source":"cards[] (printed.json text)"},
     {"keyword":"Rockfall","rule":"801","card":"A Fast Pile of Rocks","quote":"Rockfall 4. {i}(Each player chooses one of their units. I deal 4 damage to each of the chosen units.)","source":"cards[] (printed.json text)"},
-    {"keyword":"Rockfall","rule":"801","card":"Meteor Shower","quote":"(To rockfall 3: Each player chooses one of their units. I deal 3 damage to each of the chosen units.)","source":"cards[] (printed.json text)"},
+    {"keyword":"Rockfall","rule":"801","card":"Meteor Shower","quote":"Rockfall 3 {i}(Each player chooses one of their units. I deal 3 damage to each of the chosen units.)","source":"cards[] (printed.json text)"},
     {"keyword":"Flying","rule":"802.2","card":"Air Plant","quote":"(Only flying units can block flying units.)","source":"cards[] (printed.json text)"},
     {"keyword":"Flying","rule":"802.2","card":"Greed Angel","quote":"(Only flying units can block flying units.)","source":"cards[] (printed.json text)"},
     {"keyword":"Flying","rule":"802.2","card":"Auric Ascendant","quote":"(Only flying units can block flying units.)","source":"cards[] (printed.json text)"},

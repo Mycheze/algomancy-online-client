@@ -1156,7 +1156,7 @@ order.
 
 > *Example: Meteor Shower's rockfall chooses rather than targets, so Boon of Protection has nothing to negate.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353899470156206152#3; RAQ 1353899470156206152#3 · Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Meteor Shower: rockfall chooses rather than targets · Key: concepts.targets.not-target</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353899470156206152#3; RAQ 1353899470156206152#3 · Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Meteor Shower: rockfall chooses rather than targets · Key: concepts.targets.not-target</sub>
 
 <a id="r110.2a"></a>**110.2a** Such a choice cannot be redirected by an effect that changes targets, and it does not trigger "when I become targeted".
 
@@ -8220,6 +8220,8 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: A Fast Pile of Rocks; card: Meteor Shower · Tests: 182-correctness-sample.test.ts · Example test: 182-correctness-sample.test.ts::A Fast Pile of Rocks: on MY death each player picks one of THEIR OWN units for exactly 4 · Key: keywords.actions.rockfall</sub>
 
+<sub>Discrepancies: D-U18-4 (discrepancies.md)</sub>
+
 <a id="r801.12a"></a>**801.12a** Rockfall chooses; it does not target. No targets are declared when it goes on the stack, and an effect that stops targeting cannot stop it. See rule 110.
 
 > *Example: Boon of Protection has nothing to negate when a Meteor Shower falls on its unit.*
@@ -8228,15 +8230,9 @@ order.
 
 <a id="r801.12b"></a>**801.12b** Each player must choose a living unit of theirs in the region. A player with no unit there chooses none, and takes no part in that rockfall. See rule 601.1b.
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353899470156206152#4 · Tests: 93-engine-defects.test.ts · Demonstrated by test: 93-engine-defects.test.ts::Meteor Shower with no unit anywhere to hit announces each empty rockfall · Key: keywords.actions.rockfall.living-unit</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1353899470156206152#4 · Tests: 93-engine-defects.test.ts · Demonstrated by test: 93-engine-defects.test.ts::Meteor Shower with no unit anywhere to hit announces each empty rockfall · Key: keywords.actions.rockfall.living-unit</sub>
 
-<a id="r801.12c"></a>**801.12c** "Rockfall N, X times" is X rockfalls carried out one after another. Each player chooses again for each of them, and each rockfall is a separate source of damage. Abilities that trigger during one of the rockfalls wait until the whole effect has resolved: none is put on the stack between rockfalls. See rule 112.
-
-> *Example: Meteor Shower rockfalls 3 three times: each player picks each time, and the damage stacks up.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Printed: card: Meteor Shower · Designer: RAQ 1353899470156206152#4 · Owner ruling, adopted 2026-08-22, 2026-10-11 (quoted from the retired ruling register) · Tests: 17-earth-b.test.ts · Example test: 17-earth-b.test.ts::Meteor Shower: rockfall 3 three times — each player picks, damage stacks up · Key: keywords.actions.rockfall.repeated</sub>
-
-<sub>Discrepancies: D-U18-4 (discrepancies.md)</sub>
+<a id="r801.12c"></a>**801.12c** [Removed: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell] Replaced by 710.8.
 
 <a id="r801.13"></a>**801.13.** "Exchange" is printed in four senses, each read from its card: exchanging a unit in play for a unit card in a bin (Hooba-Mon, Necromorph), exchanging control of two units (Organic Exchange), exchanging control of a unit for a spell another player played (Hexbane Shiitake), and exchanging the base stats of two units (Body Swap). See rules 711, 106.8.
 
@@ -10284,7 +10280,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1816 numbered rules.
+1815 numbered rules.
 
 | basis | rules |
 |---|---|
@@ -10292,13 +10288,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | Designer | 206 |
 | Owner call | 690 |
 | Engine only | 42 |
-| Mixed | 417 |
+| Mixed | 416 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1803 |
+| confirmed | 1802 |
 | partial | 11 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -10895,3 +10891,4 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 ### First generation (draft)
 
 - New: 1816 rules and 99 sections.
+- Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)

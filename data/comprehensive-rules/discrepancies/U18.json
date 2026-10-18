@@ -42,9 +42,9 @@
   {
     "id": "D-U18-4",
     "kind": "d-raq-open",
-    "rule": "keywords.actions.rockfall.repeated",
+    "rule": "keywords.actions.rockfall",
     "tier": 4,
-    "summary": "Do abilities triggered by one rockfall resolve before the next rockfall of the same effect? The designer's write-up said they do, when Meteor Shower made three copies of itself. The card now prints one spell (\"Rockfall 3 three times\"), the RAQ register marks the claim outdated, and the engine lets the triggers wait until the whole spell has resolved.",
+    "summary": "Do abilities triggered by one rockfall resolve before the next rockfall of the same Meteor Shower? The designer's write-up said they do, when Meteor Shower made two copies of itself. An older printing read \"Rockfall 3 three times\" (one spell), and the owner answered for that printing on 2026-10-11 (reading B: the triggers wait). On 2026-10-18 the owner confirmed the current card is \"When you play me, copy me twice.\", the printing the write-up describes.",
     "sides": [
       {
         "source": "RAQ 1353899470156206152#2",
@@ -52,7 +52,7 @@
       },
       {
         "source": "card: Meteor Shower",
-        "quote": "Rockfall 3 three times."
+        "quote": "When you play me, copy me twice."
       },
       {
         "source": "RAQ 1353899470156206152#4",
@@ -63,7 +63,7 @@
         "quote": "three batches for the same reason."
       }
     ],
-    "resolution": "Answered by the owner on 2026-10-11, reading B (owner ruling of 2026-10-11, “Abilities that trigger during \"Rockfall N…”): Meteor Shower is one spell now, so abilities that trigger during its rockfalls wait until it has resolved. keywords.actions.rockfall.repeated states it. The engine already does B."
+    "resolution": "Moot since 2026-10-18, when the owner confirmed Meteor Shower's current card prints \"When you play me, copy me twice.\": the original and its two copies are three spells, each resolving on its own (rule effects.copies.spells), and the designer's write-up applies as written: triggers are checked between them. The owner's 2026-10-11 answer was about the older one-spell \"Rockfall 3 three times\" printing; the rule that stated it (801.12c, \"Rockfall N, X times\") was removed, because no card prints that any more. The engine resolves the three separately."
   },
   {
     "id": "D-U18-6",

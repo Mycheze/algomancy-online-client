@@ -125,24 +125,62 @@ card('Metamorphic Luminary', {
   graftEffect: { bounded: false, effect: createCrystal1 },
 });
 
-// "Rockfall 3 three times. {i}(To rockfall 3: Each player chooses one of
-// their units. I deal 3 damage to each of the chosen units.)" — e/4 {Battle}
+// "When you play me, copy me twice. Rockfall 3 (Each player chooses one of
+// their units. I deal 3 damage to each of the chosen units.)" — ee/4 {Battle}
 // Cosmic Rock Spell. "Each player" = the region's present seats (CR 601.4d);
-// each player picks their own unit. Rockfalls are sequential: each one plans
-// all picks first, then commits the damage, so deaths from an earlier
-// rockfall shrink the later candidate pools (CR 801.12c: live state at resolution).
+// each player picks their own unit (CR 801.12, chosen at resolution, not
+// targeted — CR 801.12a), and the picks are planned before the damage is
+// committed as ONE batch (CR 112.8).
+//
+// THE 2026-10-13 FACES PUT THE COPIES BACK. The printing this engine was
+// built against read "Rockfall 3 three times." — one spell, three rockfalls in
+// one resolution. The current face is the one the RAQ thread "[Solved] Meteor
+// Shower. How it works." (_passer) was written about, and every line of it
+// applies again:
+//  · "When you play me, copy me twice" is a TRIGGERED ABILITY, the first thing
+//    on the stack, above the spell — not part of the spell effect. It is
+//    dispatched by E.fireOwnPlayTrigger (the spell is a stack item, not a
+//    body anything could hear a play from) and queues like any trigger, so
+//    Crevice Lurker taxes it and an ability negator can stop it.
+//  · when it resolves there are THREE Meteor Showers — the original and two
+//    copies (E.pushSpellCopy, CR 710.8: real stack items above the original,
+//    not tokens, not played) — three separate spell effects: one can be
+//    negated alone, and each resolves, and is answered, on its own. So a
+//    trigger set off by one rockfall (Mirage Scuttler surviving it) goes on
+//    the stack and resolves BEFORE the next Meteor Shower falls.
+//  · a copy is not played (CR 701.5), so it does not copy itself again.
+// If the spell has already left the stack when the trigger resolves (negated
+// in response), there is nothing to copy — the Earthbound Replicator
+// precedent ("already left the stack — no copy").
+const copyMeTwice: EffectDef = {
+  run: (g, ctx) => {
+    const itemId = ctx.event?.data?.['item'] as number | undefined;
+    const it = g.playedItem(ctx.event);
+    if (!it || it.id !== itemId || it.copy || it.card !== 'Meteor Shower'
+      || !g.s.stack.some(i => i.id === it.id)) {
+      g.ev('info', 'Meteor Shower: the spell has already left the stack — nothing to copy.');
+      return;
+    }
+    g.ev('info', `Meteor Shower: ${g.pname(it.controller)} copies it twice — `
+      + 'the copies go on the stack above it.');
+    for (let n = 0; n < 2; n++) g.pushSpellCopy(it, { controller: it.controller });
+  },
+};
 card('Meteor Shower', {
+  abilities: [{
+    type: 'triggered', events: ['spellPlayed'], self: true,
+    label: 'copy me twice',
+    effect: copyMeTwice,
+  }],
   spellEffect: {
     run: (g, ctx) => {
-      for (let i = 0; i < 3; i++) {
-        const picks: Entity[] = [];
-        for (const seat of presentSeats(g, ctx.region)) {
-          const u = chooseUnit(g, ctx, `rf${i}:${seat}`, seat,
-            g.unitsOf(seat, ctx.region), `Meteor Shower (rockfall ${i + 1}): choose one of your units`);
-          if (u) picks.push(u);
-        }
-        g.dealEffectDamageAll(ctx, picks.map(u => ({ target: u, n: 3 })));   // CR 112.8: one rockfall, one batch
+      const picks: Entity[] = [];
+      for (const seat of presentSeats(g, ctx.region)) {
+        const u = chooseUnit(g, ctx, `rf:${seat}`, seat,
+          g.unitsOf(seat, ctx.region), 'Meteor Shower (rockfall 3): choose one of your units');
+        if (u) picks.push(u);
       }
+      g.dealEffectDamageAll(ctx, picks.map(u => ({ target: u, n: 3 })));   // CR 112.8: one rockfall, one batch
     },
   },
 });

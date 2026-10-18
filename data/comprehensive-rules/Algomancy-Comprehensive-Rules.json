@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:7cf6207581290035",
+ "generated_from": "sha256:dbd0c3b83de64d10",
  "rules": [
   {
    "num": "100.1",
@@ -28745,7 +28745,9 @@
    "basis": "printed",
    "scope": "game",
    "engineDiffers": false,
-   "discrepancies": [],
+   "discrepancies": [
+    "D-U18-4"
+   ],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -28790,31 +28792,6 @@
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
-   "openQuestion": false,
-   "untested": false,
-   "verdict": "confirmed"
-  },
-  {
-   "num": "801.12c",
-   "key": "keywords.actions.rockfall.repeated",
-   "title": null,
-   "section": "801",
-   "sectionTitle": "Keyword Actions",
-   "chapterTitle": "8. Keywords",
-   "parent": "801.12",
-   "text": "\"Rockfall N, X times\" is X rockfalls carried out one after another. Each player chooses again for each of them, and each rockfall is a separate source of damage. Abilities that trigger during one of the rockfalls wait until the whole effect has resolved: none is put on the stack between rockfalls.",
-   "see": [
-    "112"
-   ],
-   "examples": [
-    "Meteor Shower rockfalls 3 three times: each player picks each time, and the damage stacks up."
-   ],
-   "basis": "mixed",
-   "scope": "game",
-   "engineDiffers": false,
-   "discrepancies": [
-    "D-U18-4"
-   ],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
