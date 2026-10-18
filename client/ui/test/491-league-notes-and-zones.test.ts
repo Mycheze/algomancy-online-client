@@ -6,15 +6,14 @@
  *      newer than the page gets; a time is shown through the caller's
  *      formatter (the viewer's zone), and nothing a player typed is markup
  *   §2 ui/zonetime.ts: a wall time in a named zone → the instant, on both
- *      sides of a daylight-saving change, the skipped hour, a half-hour zone;
- *      and the days of a week in that zone
+ *      sides of a daylight-saving change, the skipped hour, a half-hour zone
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEAGUE_STORE_TS } from '../../engine/scripts/paths.mjs';
 import { noteLine, type LeagueNote } from '../leaguenotes.ts';
-import { daysBetween, zonedEpoch } from '../zonetime.ts';
+import { zonedEpoch } from '../zonetime.ts';
 
 function serverKinds(): string[] {
   const src = readFileSync(LEAGUE_STORE_TS, 'utf8');
@@ -50,7 +49,5 @@ test('§2 a wall time in a named zone, across daylight saving', () => {
   assert.equal(iso(zonedEpoch('2026-03-08', 150, 'America/New_York')), '2026-03-08T07:30:00.000Z',
     'the skipped 02:30 lands an hour later, at 03:30');
   assert.equal(iso(zonedEpoch('2026-10-25', 30, 'Asia/Kolkata')), '2026-10-24T19:00:00.000Z', 'a half-hour zone');
-  assert.deepEqual(daysBetween(Date.parse('2026-10-18T10:00Z'), Date.parse('2026-10-25T06:59Z'), 'America/Los_Angeles'),
-    ['2026-10-18', '2026-10-19', '2026-10-20', '2026-10-21', '2026-10-22', '2026-10-23', '2026-10-24'],
-    'the days of a league week in Los Angeles');
+  assert.equal(iso(zonedEpoch('2026-10-21', 20 * 60 + 45, 'America/New_York')), '2026-10-22T00:45:00.000Z', 'a quarter-hour mark');
 });

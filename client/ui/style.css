@@ -1303,6 +1303,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 /* league news in the bell: unread ones carry the accent edge */
 .inboxlist > .zonelabel + .zonelabel, .inboxlist .zonelabel { margin: 4px 0 0; }
 .leaguenote.unread { border-left: 3px solid var(--accent); }
+.inboxdone { margin: 0; color: var(--glow); font-size: 13px; }
 .reportbox { width: min(92vw, 520px); }
 .reportbox textarea { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
   border-radius: 5px; padding: 8px 10px; font: inherit; resize: vertical; }

@@ -64,6 +64,8 @@ export interface InboxDeps {
   openLeague: (season: string) => void;
   /** …or Play on this match, the way the League page's own button does */
   playLeague: (season: string, match: string) => void;
+  /** the bell heard league news: whatever is showing the league should ask again */
+  leagueChanged: () => void;
 }
 
 // ── state ─────────────────────────────────────────────────────────────
@@ -83,6 +85,10 @@ let announced = new Set<string>();
 let dismissed = new Set<string>();
 /** a refusal from the last invite click, shown in the panel */
 let panelMsg = '';
+/** what the last answer in the bell did ("✓ You're playing …"), until it closes */
+let bellMsg = '';
+/** the login the last poll was made for: a new one polls at once */
+let pollFor: string | null = null;
 /** when the next poll is due (epoch ms), and whether one is out now */
 let dueAt = 0;
 let inFlight = false;
@@ -229,6 +235,7 @@ function listHtml(): string {
   ];
   return `<div class="inboxlist">
     <div class="zonelabel">Notifications</div>
+    ${bellMsg ? `<p class="inboxdone">${bellMsg}</p>` : ''}
     ${rows.length ? rows.join('') : '<p class="hint">Nothing new.</p>'}
   </div>`;
 }
@@ -260,6 +267,9 @@ function schedule(): void {
 }
 
 function tick(): void {
+  // signed in (or out) since the last poll: the bell should say so now, not
+  // at the next scheduled poll eight seconds on
+  if (deps && deps.token() !== pollFor) dueAt = 0;
   if (!inFlight && Date.now() >= dueAt) poll();
 }
 
@@ -271,6 +281,7 @@ function poll(): void {
   schedule();
   // signed out, or on a board: nothing to fetch, but the tick keeps running —
   // signing in and leaving the board both happen without a page load
+  pollFor = deps.token();
   if (!deps.token() || onBoard()) { paint(); return; }
   inFlight = true;
   const room = deps.room();
@@ -289,6 +300,7 @@ function poll(): void {
 function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriends: RoomFriend[],
   nextNotes: LeagueNote[], nextTimes: TimeAsk[]): void {
   const before = JSON.stringify([invites, requests, friends, notes, times, loaded]);
+  const leagueBefore = JSON.stringify([notes.map(n => n.id), times]);
   invites = nextInvites;
   requests = nextRequests;
   friends = nextFriends;
@@ -307,11 +319,24 @@ function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriend
     alertTab(fresh[0]![1]);
   }
   for (const [k] of fresh) announced.add(k);
+  // news that lands while the list is open is news being read
+  if (panelOpen) markRead();
+  // the League page and the home banner show the same matches: a new message
+  // or a new suggestion means what they show has moved on
+  if (loaded && JSON.stringify([notes.map(n => n.id), times]) !== leagueBefore) deps?.leagueChanged();
   loaded = true;
   saveSeen();
   if (JSON.stringify([invites, requests, friends, notes, times, loaded]) === before) return;
   paint();
   paintPanel();
+}
+
+/** every league note on the list is read: here, and on the server */
+function markRead(): void {
+  const upTo = Math.max(0, ...notes.filter(n => !n.read).map(n => n.id));
+  if (!upTo) return;
+  notes = notes.map(n => ({ ...n, read: true }));
+  void post('/api/inbox/read', { upTo }).catch(() => undefined);
 }
 
 /** poll now rather than at the next tick — after a click changed something */
@@ -327,17 +352,13 @@ function post(path: string, body: Record<string, unknown>): Promise<{ ok?: boole
 function onClick(what: string, el: HTMLElement): void {
   const id = el.dataset['id'] ?? '';
   switch (what) {
-    case 'bell': {
+    case 'bell':
       panelOpen = !panelOpen;
+      bellMsg = '';
       // opening the bell reads the league news in it
-      const upTo = Math.max(0, ...notes.filter(n => !n.read).map(n => n.id));
-      if (panelOpen && upTo) {
-        notes = notes.map(n => ({ ...n, read: true }));
-        void post('/api/inbox/read', { upTo }).catch(() => undefined);
-      }
+      if (panelOpen) markRead();
       paint();
       return;
-    }
     case 'league':
       panelOpen = false;
       paint();
@@ -350,9 +371,15 @@ function onClick(what: string, el: HTMLElement): void {
       return;
     case 'time-accept': {
       const match = el.dataset['match'] ?? '';
-      times = times.filter(t => t.match !== match);
+      const t = times.find(x => x.match === match);
+      times = times.filter(x => x.match !== match);
       paint();
-      void post('/api/league/time/accept', { season: el.dataset['season'] ?? '', match }).finally(pollSoon);
+      void post('/api/league/time/accept', { season: el.dataset['season'] ?? '', match }).then(r => {
+        // say what just happened: the card it answered has gone
+        bellMsg = r.ok && t ? `✓ You're playing <b>${esc(t.from)}</b> ${esc(timeText(t.at / 1000))}.`
+          : esc(r.error ?? 'that did not go through');
+        if (r.ok) deps?.leagueChanged();
+      }).catch(() => { bellMsg = 'could not reach the server'; }).finally(() => { paint(); pollSoon(); });
       return;
     }
     case 'hide':

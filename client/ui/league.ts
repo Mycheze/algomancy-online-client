@@ -17,7 +17,7 @@
  */
 import * as acct from './account.ts';
 import { esc } from './util.ts';
-import { dateIn, daysBetween, wallClock, zonedEpoch } from './zonetime.ts';
+import { wallClock, zonedEpoch } from './zonetime.ts';
 
 const GRID_LEN = 168;
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -250,7 +250,7 @@ function howHtml(s: SeasonView): string {
     <li>Each week (Sunday to Saturday) you get ${s.perWeek} opponents, matched on the hours you are both free.</li>
     <li>Sign-up week has no pairings: the League page shows who is free when you are, and up to ${s.perWeek} games against them count.</li>
     <li>Every match is one live draft with random elements and a random first player.</li>
-    <li>Message your opponent on Discord, agree a time, and press Play on the League page.</li>
+    <li>Suggest a time on the League page (your opponent sees it in their own time zone), then both press Play.</li>
     <li>A win is 3 points. A match nobody plays counts for neither player.</li>
     <li>After week ${s.weeks}, the top two play one game for the title.</li>
   </ul>`;
@@ -363,6 +363,17 @@ function load(): void {
     .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
 }
 
+/** Something changed in the league that this page is showing — the bell
+ * heard of it (ui/inbox.ts). Ask again: the page if it is open, the home
+ * banner the next time it draws (and now, if it is the screen). */
+export function refresh(): void {
+  // …but not under a half-picked time: the reload would reset the field.
+  // Suggesting or cancelling reloads anyway.
+  if (open && !timeOpen) load();
+  hintFor = undefined;
+  askHint();
+}
+
 export function openLeague(season?: string): void {
   open = true; want = season ?? null; msg = ''; preview = null; arming = null;
   syncUrl();
@@ -468,7 +479,7 @@ function seasonCardHtml(s: SeasonView): string {
       <span class="dim">(your time)</span>.</p>
     ${s.champion ? `<p>🏆 Champion: <b>${esc(s.champion.name)}</b></p>` : ''}
     <p class="hint">Weeks run Sunday to Saturday. Every match is one live draft with random elements and a random
-      first player. Your opponents are here each week, with their Discord names: message them, agree a time, and press Play.
+      first player. Your opponents are here each week: suggest a time below (or message them on Discord), then both press Play.
       A match nobody plays by the end of its week counts for neither player.</p>
   </div>`;
 }
@@ -567,9 +578,7 @@ function myMatchesHtml(s: SeasonView): string {
         <td>${m.result
           ? (m.won === true ? '✅ you won' : m.won === false ? 'you lost'
             : m.result.outcome === 'double-loss' ? 'double loss' : '<span class="dim">not played</span>')
-          : timeHtml(s, m) + (m.windows.length
-            ? `<div><span class="dim">you're both free:</span> ${m.windows.slice(0, 4).map(windowText).map(esc).join(' · ')}</div>`
-            : '<div class="dim">no shared hours — suggest a time anyway, or arrange one on Discord</div>')}</td>
+          : timeHtml(s, m) + (timeOpen === m.id ? '' : freeLineHtml(m))}</td>
       </tr>`).join('')}</tbody></table>`).join('')}
     <p class="hint">Times are in ${esc(viewTz())}. Play opens your match room; your opponent joins from their own
       League page. Nothing is dealt until you are both there, and the elements are drawn at random.</p>
@@ -580,8 +589,33 @@ type MyMatch = NonNullable<SeasonView['me']>['matches'][number];
 
 /** a suggestion must leave this long to answer it (the server says the same) */
 const LEAD_MS = 10 * 60_000;
-/** the chips: the first hours of your shared windows still to come */
+/** the chips: one per shared window still to come — so, as a rule, one a day */
 const CHIP_MAX = 6;
+/** the picker's step: times are on the quarter hour (owner, 2026-10-18) */
+const STEP_MIN = 15;
+
+/** `YYYY-MM-DDTHH:MM` for a datetime-local field: the wall clock in `tz` */
+function wallValue(ms: number, tz: string): string {
+  const w = wallClock(ms, tz);
+  const p = (n: number): string => String(n).padStart(2, '0');
+  return `${w.y}-${p(w.mo)}-${p(w.d)}T${p(w.h)}:${p(w.mi)}`;
+}
+
+/** a datetime-local value, read as wall time in `tz` and put on the quarter hour; NaN if it is not one */
+function fromWallValue(v: string, tz: string): number {
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/.exec(v);
+  if (!m) return Number.NaN;
+  const mins = Math.round((Number(m[2]) * 60 + Number(m[3])) / STEP_MIN) * STEP_MIN;
+  return zonedEpoch(m[1]!, mins, tz);
+}
+
+/** the shared hours still to come — a window already over is no use to anybody */
+function freeLineHtml(m: MyMatch): string {
+  const ahead = m.windows.filter(w => w.start + w.hours * 3_600_000 > Date.now());
+  return ahead.length
+    ? `<div><span class="dim">you're both free:</span> ${ahead.slice(0, 4).map(windowText).map(esc).join(' · ')}</div>`
+    : `<div class="dim">no shared hours left this week — suggest a time anyway, or arrange one on Discord</div>`;
+}
 
 /** where a match's time stands, and the controls to move it on */
 function timeHtml(s: SeasonView, m: MyMatch): string {
@@ -606,30 +640,27 @@ function timeFormHtml(s: SeasonView, m: MyMatch): string {
   const now = Date.now();
   const end = deadlineOf(s, m);
   const tz = viewTz();
+  // one chip per window: its first whole hour still far enough ahead
   const chips: number[] = [];
   for (const w of m.windows) {
-    for (let h = 0; h < w.hours && chips.length < CHIP_MAX; h++) {
+    if (chips.length >= CHIP_MAX) break;
+    for (let h = 0; h < w.hours; h++) {
       const at = w.start + h * 3_600_000;
-      if (at >= now + LEAD_MS && at < end) chips.push(at);
+      if (at >= now + LEAD_MS && at < end) { chips.push(at); break; }
     }
   }
-  // the custom picker starts on the current suggestion, else this evening at 7
-  const start = m.time?.at ?? null;
-  const pickDay = start ? dateIn(start, tz) : dateIn(now, tz);
-  const pickMin = start ? (w => w.h * 60 + w.mi)(wallClock(start, tz)) : 19 * 60;
-  const days = daysBetween(now, end - 1, tz);
-  const dayLabel = (d: string): string => fmt(zonedEpoch(d, 12 * 60, tz), { weekday: 'short', day: 'numeric', month: 'short' });
-  // a clock label, not an instant: formatted in UTC on purpose (fmt() would
-  // shift it into the viewer's zone)
-  const minLabel = (mins: number): string =>
-    new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }).format(Date.UTC(2026, 0, 5, 0, mins));
+  // a standard date-and-time field (owner, 2026-10-18), stepping by the
+  // quarter hour. It has no zone of its own: its value is read as wall time
+  // in the LEAGUE zone, which the label says — not the browser's.
+  const earliest = Math.ceil((now + LEAD_MS) / (STEP_MIN * 60_000)) * STEP_MIN * 60_000;
+  const start = m.time?.at && m.time.at > earliest ? m.time.at : chips[0] ?? earliest;
   return `<div class="lgtimeform">
     ${chips.length ? `<div class="lgtimechips"><span class="dim">you're both free:</span>
       ${chips.map(at => `<button data-btn="lg-time" data-season="${esc(s.id)}" data-match="${esc(m.id)}" data-at="${at}">${esc(when(at))}</button>`).join('')}</div>` : ''}
     <div class="lgtimepick"><span class="dim">or</span>
-      <select id="lgt-day">${days.map(d => `<option value="${d}"${d === pickDay ? ' selected' : ''}>${esc(dayLabel(d))}</option>`).join('')}</select>
-      <select id="lgt-min">${Array.from({ length: 48 }, (_, i) => i * 30).map(mins =>
-        `<option value="${mins}"${mins === pickMin ? ' selected' : ''}>${esc(minLabel(mins))}</option>`).join('')}</select>
+      <input type="datetime-local" id="lgt-at" step="${STEP_MIN * 60}" value="${wallValue(start, tz)}"
+        min="${wallValue(earliest, tz)}" max="${wallValue(end - STEP_MIN * 60_000, tz)}">
+      <span class="dim">${esc(tz)} time</span>
       <button class="primary" data-btn="lg-time-custom" data-season="${esc(s.id)}" data-match="${esc(m.id)}">Suggest</button>
       <button data-btn="lg-time-close">Cancel</button>
     </div>
@@ -780,7 +811,7 @@ export function postText(s: SeasonView, origin: string): string {
     const week = s.matches.filter(m => m.week === s.phase);
     return [
       `🏅 **${s.name} — week ${s.phase} of ${s.weeks}**`,
-      `Play before ${stamp(at(s.phase + 1))}. Message your opponent, agree a time, and press Play on the League page.`,
+      `Play before ${stamp(at(s.phase + 1))}. Suggest a time to your opponent on the League page, then both press Play.`,
       ``,
       ...week.map(m => `• ${who(m.a)} vs ${who(m.b)}`),
       ...(s.phase > 1 || s.standings.some(r => r.w + r.l) ? ['', '**Standings**', table(10)] : []),
@@ -973,8 +1004,8 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'lg-time-custom': {
       const season = btn.dataset['season'] ?? s?.id ?? '';
       const match = btn.dataset['match'] ?? '';
-      const at = b === 'lg-time' ? Number(btn.dataset['at'])
-        : zonedEpoch(val('lgt-day'), Number(val('lgt-min')), viewTz());
+      const at = b === 'lg-time' ? Number(btn.dataset['at']) : fromWallValue(val('lgt-at'), viewTz());
+      if (!Number.isFinite(at)) { msg = 'pick a day and a time first'; paint(); return true; }
       timeOpen = null;
       void act('/api/league/time', { season, match, at }, `Suggested ${when(at)}. They'll see it in their own time zone.`);
       return true;

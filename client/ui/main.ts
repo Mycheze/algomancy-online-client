@@ -11971,6 +11971,7 @@ installInbox({
     lg.openLeague(season || undefined);
   },
   playLeague: lg.playMatch,
+  leagueChanged: lg.refresh,
 });
 // BL-46: the agreed-fix dialog and the bar the other seat answers on — a layer
 // of its own beside #app, like the report form (ui/amend.ts)

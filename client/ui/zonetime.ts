@@ -50,22 +50,3 @@ export function zonedEpoch(date: string, minutes: number, tz: string): number {
   const w = wallClock(second, tz);
   return w.h * 60 + w.mi === minutes % 1440 ? second : Math.max(first, second);
 }
-
-/** YYYY-MM-DD of instant `ms` in `tz` */
-export function dateIn(ms: number, tz: string): string {
-  const w = wallClock(ms, tz);
-  return `${w.y}-${String(w.mo).padStart(2, '0')}-${String(w.d).padStart(2, '0')}`;
-}
-
-/** every calendar day in `tz` from the one `from` falls in to the one `to` falls in */
-export function daysBetween(from: number, to: number, tz: string): string[] {
-  const out: string[] = [];
-  // step by 12 hours: a day is never shorter than 23, so none is skipped
-  for (let t = from; t <= to; t += 12 * 3_600_000) {
-    const d = dateIn(t, tz);
-    if (out[out.length - 1] !== d) out.push(d);
-  }
-  const last = dateIn(to, tz);
-  if (out[out.length - 1] !== last) out.push(last);
-  return out;
-}
