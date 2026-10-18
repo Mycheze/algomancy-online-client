@@ -4081,11 +4081,12 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   // (rot damages you at the start of deployment and never decays; debt eats
   // mana at the end of your next resource step). They live next to life, and
   // ONLY when non-zero, so a base-set game's identity row looks unchanged.
-  // Both are optional fields on PlayerState — always read through E.
+  // Both are optional fields on PlayerState — always read through E. Plain
+  // words, no pictograph (report #221; test/494).
   const rot = e.rot(p), debt = e.debt(p);
   const counters =
-    (rot ? `<span class="pcount rot" title="${rot} damage at the start of every deployment. Rot never decreases on its own.">☠ rot ${rot}</span>` : '') +
-    (debt ? `<span class="pcount debt" title="pay 1 mana per debt (${debt}) at the end of your next resource step; what you cannot pay carries over.">⛓ debt ${debt}</span>` : '');
+    (rot ? `<span class="pcount rot" title="${rot} damage at the start of every deployment. Rot never decreases on its own.">rot ${rot}</span>` : '') +
+    (debt ? `<span class="pcount debt" title="pay 1 mana per debt (${debt}) at the end of your next resource step; what you cannot pay carries over.">debt ${debt}</span>` : '');
 
   return {
     acting, focus,
