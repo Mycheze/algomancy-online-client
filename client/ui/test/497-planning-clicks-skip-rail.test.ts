@@ -9,7 +9,8 @@
  * counts draft/draw/recycle). When you're attacking/playing with cards, it's
  * fine to show them."
  *
- * So in the planning phase (CR 501.2) the regions board asks the classic
+ * So in the planning phase (CR 501.2) up to its haste step — whose moves are
+ * plays, and a play still shows its card — the regions board asks the classic
  * board's question — did the click move anything (main.ts clickSig)? — and a
  * move keeps the rail. Outside planning nothing changed. Touch is not special-
  * cased: a tap only reads (test/384), so it moves nothing and fills the rail.
@@ -22,7 +23,7 @@ import assert from 'node:assert/strict';
 import { client } from './ui-driver.ts';
 import { Harness } from '../../engine/src/harness.ts';
 import { legalActions } from '../../engine/src/apply.ts';
-import { giveResources, toDeployment } from '../../engine/test/util.ts';
+import { give, giveResources, toDeployment } from '../../engine/test/util.ts';
 import type { GameState, Seat } from '../../engine/src/types.ts';
 
 const ui = await client();
@@ -132,6 +133,27 @@ test('deployment: a click that PLAYS a card still puts it in the rail', () => {
   click({ act: 'hand', p: me, i: play.handIndex });
   assert.deepEqual(ui.actions(), [play], 'the click played the card');
   assert.equal(rail(), s.players[me]!.hand[play.handIndex], 'the played card is in the rail, as before');
+});
+
+test('the haste step: a click that PLAYS a Haste card still puts it in the rail', () => {
+  // the haste step is part of planning (CR 501.2), but a move there plays a
+  // card — the owner's "when you're playing with cards, it's fine to show them"
+  const h = new Harness(49707);
+  giveResources(h, me, 'fire', 6);
+  const i = give(h, me, 'Molten Upheaval');
+  h.do({ type: 'donePlanning', seat: 0 });
+  h.do({ type: 'donePlanning', seat: 1 });
+  const s = h.state;
+  assert.ok(s.phase === 'planning' && s.hasteDone && !s.hasteDone[me], 'the haste step is running');
+  const play = legalActions(s, me).find(a => a.type === 'playCard' && a.handIndex === i);
+  assert.ok(play, 'the fixture: Molten Upheaval is playable in the haste step');
+  const p = primed(s);
+  assert.notEqual(p, 'Molten Upheaval');
+  ui.update(s, [play]);
+  ui.sent();
+  click({ act: 'hand', p: me, i });
+  assert.deepEqual(ui.actions(), [play], 'the click played the card');
+  assert.equal(rail(), 'Molten Upheaval', 'the played Haste card is in the rail');
 });
 
 test('touch: a tap in planning reads — it fills the rail and sends nothing', () => {

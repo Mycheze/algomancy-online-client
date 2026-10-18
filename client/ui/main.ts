@@ -9612,14 +9612,17 @@ document.addEventListener('click', e => {
   // for a click to have to hold it against: a card click puts that card in
   // the rail, a move included (owner, 2026-09-23: "only show the latest
   // clicked card"). No pin, no badge, no timer. EXCEPT in the planning phase
-  // (CR 501.2: the draw, draft, resource and haste steps), where the moves
-  // are picks — a bottom card, a draft card, a recycle — and the card you
-  // picked is not one you want to read (report #223, owner 2026-10-18: "only
-  // in planning"): there a move keeps the rail, as on the classic board.
-  // The phase is read at the click, before the move can change it.
+  // up to its haste step (CR 501.2: the draw, draft and resource steps),
+  // where the moves are picks — a bottom card, a draft card, a recycle — and
+  // the card you picked is not one you want to read (report #223, owner
+  // 2026-10-18: "only in planning"): there a move keeps the rail, as on the
+  // classic board. The haste step is left out because a move there PLAYS a
+  // card, and the owner's other half was "when you're attacking/playing with
+  // cards, it's fine to show them". `hasteDone` is non-null exactly while the
+  // haste step runs. Read at the click, before the move can change it.
   const before = clickSig();
   if (zoomOn()) {
-    const planning = h.state.phase === 'planning';
+    const planning = h.state.phase === 'planning' && !h.state.hasteDone;
     setTimeout(() => {
       if (planning && clickSig() !== before) return;
       focusSub = sub; focusKey = key; paintFocus(sub, true);

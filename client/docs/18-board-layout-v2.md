@@ -178,9 +178,10 @@ already draws it. There is no fourth rank.
   board clips. After a repaint it re-finds the card under the cursor with no
   animation. Mouse only; a finger taps, and the tap fills the rail.
 - **The rail holds the last CLICKED card** — any card click, a move included
-  except in the planning phase (draw, draft, resource and haste steps: there a
-  click that was a move — a bottom pick, a draft pick, a recycle — leaves the
-  rail alone; report #223, owner 2026-10-18, `test/497`) —
+  except in the planning phase before its haste step (draw, draft and resource
+  steps: there a click that was a move — a bottom pick, a draft pick, a
+  recycle — leaves the rail alone; a haste-step play still fills it, it is
+  playing a card; report #223, owner 2026-10-18, `test/497`) —
   and no longer follows the hover; no pin, no badge. The long-hover text box
   is off (the zoomed scan is what it was for). The rail is 250px (was 290).
 - All of it rides the ▦ regions preference (`zoomOn()` = `layoutV2()`); the
