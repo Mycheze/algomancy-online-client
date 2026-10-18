@@ -9611,14 +9611,23 @@ document.addEventListener('click', e => {
   if (sub.name === DORMANT_FACE && sub.eid === undefined) return;
   const key = focusKeyOf(t);
   // with the zoom, hovering no longer drives the rail, so there is nothing
-  // for a click to have to hold it against: EVERY card click puts that card
-  // in the rail, a move included (owner, 2026-09-23: "only show the latest
-  // clicked card"). No pin, no badge, no timer.
+  // for a click to have to hold it against: a card click puts that card in
+  // the rail, a move included (owner, 2026-09-23: "only show the latest
+  // clicked card"). No pin, no badge, no timer. EXCEPT in the planning phase
+  // (CR 501.2: the draw, draft, resource and haste steps), where the moves
+  // are picks — a bottom card, a draft card, a recycle — and the card you
+  // picked is not one you want to read (report #223, owner 2026-10-18: "only
+  // in planning"): there a move keeps the rail, as on the classic board.
+  // The phase is read at the click, before the move can change it.
+  const before = clickSig();
   if (zoomOn()) {
-    setTimeout(() => { focusSub = sub; focusKey = key; paintFocus(sub, true); }, 0);
+    const planning = h.state.phase === 'planning';
+    setTimeout(() => {
+      if (planning && clickSig() !== before) return;
+      focusSub = sub; focusKey = key; paintFocus(sub, true);
+    }, 0);
     return;
   }
-  const before = clickSig();
   setTimeout(() => { if (clickSig() === before) pinFocus(sub, key); }, 0);
 }, { capture: true });
 
