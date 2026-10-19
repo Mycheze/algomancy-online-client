@@ -39,10 +39,20 @@ export interface LessonDeal {
   startingLife: [number, number];
   /** who holds initiative on turn 1; absent = the seeded roll, as in every game */
   initiative?: Seat;
+  /** Each seat's card step. 'lesson' (the default) draws that seat's
+   * `drawPerTurn`; 'constructed' plays the REAL constructed draw phase instead
+   * (draw 4, put 2 on the bottom — E.startConstructedDraw), which is what a
+   * Weekly Challenge's player gets beside a dummy that draws nothing
+   * (challenge.ts). A 'constructed' seat's `drawPerTurn` is not read. Absent —
+   * as in every Learn to Play deal — is ['lesson', 'lesson'], and the sanitized
+   * deal then carries no key at all, so those games replay unchanged. */
+  cardStep?: [LessonCardStep, LessonCardStep];
 }
 
+export type LessonCardStep = 'lesson' | 'constructed';
+
 /** The part of the deal play reads after the deal itself, carried on GameState. */
-export type LessonRules = Pick<LessonDeal, 'drawPerTurn' | 'shardsPerTurn' | 'firstShardTurn' | 'shardState'>;
+export type LessonRules = Pick<LessonDeal, 'drawPerTurn' | 'shardsPerTurn' | 'firstShardTurn' | 'shardState' | 'cardStep'>;
 
 const BOUNDS = {
   openingHand: [0, 15], drawPerTurn: [0, 5], shardsPerTurn: [0, 5],
@@ -71,6 +81,9 @@ export function sanitizeLessonDeal(raw: unknown): LessonDeal | undefined {
   const r = raw as Record<string, unknown>;
   const d = LESSON_DEFAULTS;
   const st = Array.isArray(r['stacked']) ? r['stacked'] : [];
+  const cs = Array.isArray(r['cardStep']) ? r['cardStep'] : [];
+  const cardStep: [LessonCardStep, LessonCardStep] = [
+    cs[0] === 'constructed' ? 'constructed' : 'lesson', cs[1] === 'constructed' ? 'constructed' : 'lesson'];
   return {
     openingHand: pair(r['openingHand'], BOUNDS.openingHand, d.openingHand),
     drawPerTurn: pair(r['drawPerTurn'], BOUNDS.drawPerTurn, d.drawPerTurn),
@@ -81,6 +94,8 @@ export function sanitizeLessonDeal(raw: unknown): LessonDeal | undefined {
     prismites: pair(r['prismites'], BOUNDS.prismites, d.prismites),
     startingLife: pair(r['startingLife'], BOUNDS.startingLife, d.startingLife),
     ...(r['initiative'] === 0 || r['initiative'] === 1 ? { initiative: r['initiative'] as Seat } : {}),
+    // only when some seat leaves the default, so a lesson deal's state is byte-identical
+    ...(cardStep.includes('constructed') ? { cardStep } : {}),
   };
 }
 

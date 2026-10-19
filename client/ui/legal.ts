@@ -144,6 +144,7 @@ export const STORED_FILES: readonly StoredLine[] = [
   { covers: ['reportMarksFile'], what: 'Whether the site\'s owner has read a bug report and thought it was real or not, which report it was about, which admin account said so and when. It is a note about a REPORT, not about you, and it holds nothing you wrote — the report itself is in the file above. Nothing here is shown to anybody but an admin.' },
   { covers: ['leagueFile'], what: 'The league: each season, who signed up and when, which weeks they chose to sit out, the weekly pairings with the times each pair shares, and every league result, with any dispute of one (who disputed it and what they wrote, shown only to the organizers). It also holds the messages waiting for the Discord bot to post — pairings, results and the like — and whether each one was delivered.' },
   { covers: ['crCommentsFile'], what: 'If you comment on the rules review page: what you wrote, the passage you highlighted and which rule it was in, your account name and id with any trust mark, and when. Edits, resolutions and deletions are added as new lines rather than changing old ones, so a deleted comment disappears from the page but its text stays in the server\'s file. Comments are shown, under your account name, to anyone who opens the review page.' },
+  { covers: ['challengesDir'], what: 'If you submit a weekly challenge run: your account name and id, your deck in its order, every move of the run, the score the server worked out, and when you sent it. While the week is open the leaderboard shows only your name and scores, and only you can open the run; once the week closes your deck and run are public, so anyone can watch it or try your deck. Each closed week\'s winner and top ten are kept for good. Playing without submitting records nothing.' },
 ];
 
 /**
@@ -165,6 +166,9 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoLearn'], what: 'your Learn to Play game and which lessons you have read, so you can pick up where you left off' },
   { covers: ['algoQueueMode', 'algoQueueRanked'], what: 'the format and the ranked/open choice you last used in the matchmaking queue, so it comes back the way you left it' },
   { covers: ['algoLeagueBanner'], what: 'whether you folded the league banner on the home page' },
+  { covers: ['algoChallengeDecks'], what: 'the deck you are building for each weekly challenge, in its order' },
+  { covers: ['algoChallengeRun'], what: 'the challenge run you are playing, so a reload carries on where you were' },
+  { covers: ['algoChallengeDone'], what: 'finished challenge runs not yet on a leaderboard (played signed out, or not yet sent), up to ten, each dropped once the server takes it' },
   { covers: ['algoInboxSeen'], what: 'which game invites this tab has already shown you, so a closed one does not pop up again (cleared when you close the tab)' },
   { covers: ['algoUpdatesSeen'], what: 'how many entries of the Recent updates list you have seen, so the new ones can be marked' },
   { covers: ['algoReveals'], what: 'the cards revealed to you in your current game, so Past reveals still has them after a reload' },

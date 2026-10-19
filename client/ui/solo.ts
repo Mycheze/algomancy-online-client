@@ -75,6 +75,22 @@ export interface SoloHooks {
   onChange?: (server: SoloServer) => void;
   /** the bot was refused or looped — a bug worth surfacing, never a hang */
   onBotStuck?: (why: string) => void;
+
+  /* ── a weekly challenge runs in this room too (docs/21). Every one of these
+   * is optional and Learn to Play passes none, so its room is exactly the room
+   * it always was. The deal is already pluggable: it is the SoloDeal. */
+
+  /** STRICT: every move the bot's seat makes is its policy's. It answers its
+   * own forced steps (rather than the room taking them), and a move the engine
+   * refuses waits for the learner instead of falling back to another — a
+   * challenge's dummy, whose every action the server replays against
+   * `dummyMove` and refuses if it differs. */
+  strictBot?: boolean;
+  /** the log is about to be replayed from the deal (load, undo, rewind):
+   * forget anything folded over the old one */
+  onReset?: (server: SoloServer) => void;
+  /** every action applied to the game, either seat, in log order */
+  onApplied?: (before: GameState, action: Action, after: GameState, events: readonly EngineEvent[]) => void;
 }
 
 export class SoloServer {
@@ -126,6 +142,7 @@ export class SoloServer {
    * rewind keeps a prefix, which shows exactly what it showed before);
    * without it — a save loaded from storage — every action is measured. */
   private rebuild(actions: Action[], by: ActedBy[], seen?: readonly Seen[]): void {
+    this.hooks.onReset?.(this);
     const d = this.deal;
     this.h = new Harness(d.seed, d.names, 'constructed', undefined, d.decks, undefined, d.lesson);
     this.by = [];
@@ -151,6 +168,7 @@ export class SoloServer {
     const before = this.h.state;
     // the closing action's resolutions are the playback's tail (E.frames)
     const evs = this.h.do(a, holding ? { frames: true } : {});   // throws IllegalAction, state untouched
+    this.hooks.onApplied?.(before, a, this.h.state, evs);
     this.by.push(who);
     this.fresh.push(...evs);
     const now = hiddenSegment(this.h.state);
@@ -175,6 +193,7 @@ export class SoloServer {
   /** a forced step nobody has told us not to take for its seat */
   private forced(): Action | null {
     const f = forcedAction(this.h.state);
+    if (f && f.seat === BOT && this.hooks.strictBot) return null;   // the policy's to answer
     return f && !(f.seat === LEARNER && this.fullControl) ? f : null;
   }
 
@@ -203,6 +222,9 @@ export class SoloServer {
       const a = this.policy.choose(this.h.state, BOT, legal);
       if (!a) return moves;
       if (this.tryBot(a)) { moves++; continue; }
+      // a strict bot's refused move waits: the learner has a question open
+      // that it may not disturb, and the next tick asks again
+      if (this.hooks.strictBot) return moves;
       // ⚠ NEVER LEAVE THE GAME WITH NOBODY TO MOVE. The bot moves only inside
       // a learner's tick, so a refused bot move with nothing else tried is a
       // board the learner waits on forever. Report it, then fall back: the

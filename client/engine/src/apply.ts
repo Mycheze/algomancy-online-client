@@ -209,7 +209,11 @@ export function createGame(
     ...(seatDecks ? { decks: seatDecks, bottomDone: null } : {}),
     ...(singleCard ? { singleCard: true as const } : {}),
     ...(draftDeal ? { draftDeal: { packSize: draftDeal.packSize, draftDraw: draftDeal.draftDraw } } : {}),
-    ...(lesson ? { lesson: { drawPerTurn: lesson.drawPerTurn, shardsPerTurn: lesson.shardsPerTurn, firstShardTurn: lesson.firstShardTurn, shardState: lesson.shardState } } : {}),
+    ...(lesson ? { lesson: {
+      drawPerTurn: lesson.drawPerTurn, shardsPerTurn: lesson.shardsPerTurn, firstShardTurn: lesson.firstShardTurn, shardState: lesson.shardState,
+      // absent unless a seat plays the real constructed card step (a Weekly Challenge)
+      ...(lesson.cardStep ? { cardStep: lesson.cardStep } : {}),
+    } } : {}),
     players: names.map((name, seat) => ({
       seat, name, life: lesson?.startingLife[seat] ?? draftDeal?.startingLife ?? 30, hand: [], bin: [],
       // starting Prismites are dealt face-down (Manual: "they start dormant");
@@ -239,7 +243,12 @@ export function createGame(
     for (const seat of e.dealOrder()) e.draw(seat, draftDeal?.openingHand ?? 6, true);
     e.dealPacks();
   } else if (lesson) {
-    e.ev('info', 'Learn to Play: a lesson game.');
+    // the opening hand is the deal's, per seat, whatever the card step; a seat
+    // on the constructed card step is dealt the constructed 4 by its deal
+    // (challenge.ts) and gets turn 1's draw-4/bottom-2 from startTurn
+    // a challenge deal (a seat on the constructed card step) says nothing:
+    // its progress meter says it's a challenge, as a duel's chip does
+    if (!lesson.cardStep?.includes('constructed')) e.ev('info', 'Learn to Play: a lesson game.');
     for (const seat of [0, 1] as Seat[]) e.draw(seat, lesson.openingHand[seat]!, true);
   } else if (mode === 'constructed') {
     // opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)

@@ -76,3 +76,13 @@ export const leagueFile = (): string => process.env['ALGO_LEAGUE_FILE'] ?? join(
  * carries the author's account id; the page is never sent it.
  */
 export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE'] ?? join(VAR_DIR, 'cr-comments.jsonl');
+
+/**
+ * Weekly challenges (docs/21-weekly-challenges.md, challenge-store.ts): a
+ * directory of two files. `runs.jsonl` is every run anybody submitted —
+ * account id and name, the ordered deck, the whole action log, the score the
+ * server worked out — append-only, one line each, a score stamped once and
+ * never recomputed. `weeks.json` is the frozen result of each closed week
+ * (winner and top ten per category), rewritten atomically.
+ */
+export const challengesDir = (): string => process.env['ALGO_CHALLENGES_DIR'] ?? join(VAR_DIR, 'challenges');

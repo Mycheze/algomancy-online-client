@@ -54,6 +54,7 @@
 import type { Action, CardName, Element, EngineEvent, GameMode, GameState, Seat } from '../engine/src/types.ts';
 import { apply, createGame, hiddenSegment, IllegalAction } from '../engine/src/apply.ts';
 import type { DraftDeal } from '../engine/src/draftdeal.ts';
+import type { LessonDeal } from '../engine/src/lessondeal.ts';
 import { redactLog, spectatorView, viewFor } from '../server/view.ts';
 import { FakeSocket } from './fakesocket.ts';
 
@@ -69,6 +70,8 @@ export interface ReplayFile {
   scenario?: string;
   custom?: { deal?: unknown } | null;
   winner?: number | null;
+  /** a lesson deal (CR D8.1) — a weekly challenge's run is dealt with one */
+  lesson?: LessonDeal;
 }
 
 type SegKey = ReturnType<typeof hiddenSegment>;
@@ -141,7 +144,7 @@ export class ReplayServer {
       ? { state: structuredClone(dealt.state), events: dealt.events }
       : createGame(
         file.seed, this.names, file.mode ?? 'shared', file.els,
-        decksOf(file), file.custom?.deal as DraftDeal | undefined,
+        decksOf(file), file.custom?.deal as DraftDeal | undefined, file.lesson,
       );
     this.state = r.state;
     this.events = [...r.events];

@@ -65,6 +65,9 @@ export interface ReplayMeta {
   partedAt: number | null;
   refusedAt: number | null;
   question?: QuestionPanel;
+  /** where × goes: the page the replay was opened from (a weekly challenge's
+   * board); absent = home */
+  exitTo?: string;
 }
 
 /** the speeds offered, in actions per second */
@@ -281,13 +284,14 @@ function onButton(what: string, el: HTMLElement): void {
 
 /** Leave the replay. `stop()` lifts the motion suppression on the way out. */
 export function closeReplay(): void {
+  const to = meta?.exitTo ?? '';
   stop();
   server = null;
   meta = null;
   detail = false;
   qOpen = false;
   paint();
-  location.search = '';
+  location.search = to;
 }
 
 /* ── install ──────────────────────────────────────────────────────────── */

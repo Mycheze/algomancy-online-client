@@ -78,6 +78,9 @@ import { crReviewRoutes } from './api-crreview.ts';
 import { botRoutes } from './api-bot.ts';
 import { linkRoutes } from './api-link.ts';
 import { leagueRoutes } from './api-league.ts';
+import { challengeRoutes } from './api-challenge.ts';
+import { sweepChallenges } from './challenge-store.ts';
+import { challengeNow } from './challenges.ts';
 import { recordPlayed as leagueRecordPlayed, tick as leagueTick } from './league-store.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
@@ -438,6 +441,11 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   if (await leagueRoutes(req, res, path, url, {
     botAllowed: botAllowed(req), openRoom: openLeagueRoom,
   })) return;
+
+  // weekly challenges (docs/21-weekly-challenges.md): the calendar, the
+  // boards, and run submission — every submitted run is replayed in a worker
+  // thread, never here (api-challenge.ts, challenge-worker.ts)
+  if (await challengeRoutes(req, res, path, url)) return;
 
   // home screen asks here for an unused room code. The room itself is only
   // created when the first player joins it over WS — but the code is RESERVED
@@ -3086,7 +3094,20 @@ function sweepFixes(): void {
     if (room.fixRun && !room.proposal && now - room.fixRun.last > FIX_RUN_IDLE_MS) flushFixRun(room);
   }
 }
-const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepLeague(); }, EXPIRY_TICK_MS);
+/* Weekly challenges: freeze each week that has closed (winner and top ten per
+ * category) into var/challenges/weeks.json. Checked every half minute like the
+ * league — a week closes on a Sunday morning and nobody is waiting on the
+ * second. Catches up on every week missed while the server was down, and does
+ * nothing on almost every call (challenge-store.ts sweepChallenges). */
+const CHALLENGE_TICK_MS = 30_000;
+let challengeTickAt = 0;
+function sweepChallengeWeeks(): void {
+  const t = Date.now();
+  if (t - challengeTickAt < CHALLENGE_TICK_MS) return;
+  challengeTickAt = t;
+  try { sweepChallenges(challengeNow()); } catch (err) { console.error('[challenges] sweep failed:', err); }
+}
+const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepLeague(); sweepChallengeWeeks(); }, EXPIRY_TICK_MS);
 expiryTimer.unref();
 
 loadAccounts();

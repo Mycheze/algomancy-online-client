@@ -88,8 +88,15 @@ export function spawnServer(env: Record<string, string> = {}): Promise<ServerHan
       cwd: join(HERE, '..'),
       // ALGO_LEAGUE_FILE defaults to a throwaway: the league's tick moves a
       // live season on by itself, so a test server must never load the real
-      // one — even from a script run by hand, outside suite.test.ts
-      env: { ...process.env, ALGO_LEAGUE_FILE: join(tmpdir(), `algo-league-${process.pid}-${Math.random().toString(36).slice(2)}.json`), ...env, PORT: '0' },
+      // one — even from a script run by hand, outside suite.test.ts. The
+      // weekly challenges' sweep likewise WRITES var/challenges/weeks.json
+      // whenever a week has closed, so it gets a throwaway directory too.
+      env: {
+        ...process.env,
+        ALGO_LEAGUE_FILE: join(tmpdir(), `algo-league-${process.pid}-${Math.random().toString(36).slice(2)}.json`),
+        ALGO_CHALLENGES_DIR: join(tmpdir(), `algo-challenges-${process.pid}-${Math.random().toString(36).slice(2)}`),
+        ...env, PORT: '0',
+      },
       stdio: ['ignore', 'pipe', 'pipe'],
     }) as ServerProc;
 

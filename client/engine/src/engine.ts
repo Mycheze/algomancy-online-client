@@ -13964,7 +13964,12 @@ export class E {
       // and its Shard income — the Tutorial Bot's whole economy — pays here.
       const lesson = this.s.lesson;
       if (lesson) {
-        if (!this.replaceCardStep(p.seat)) this.draw(p.seat, lesson.drawPerTurn[p.seat]!);
+        // a seat on the constructed card step (lessondeal.ts `cardStep`) draws
+        // nothing here: it takes the real draw phase at the foot of this method,
+        // and that is where its Worldbender is consulted — not here as well
+        if (lesson.cardStep?.[p.seat] !== 'constructed' && !this.replaceCardStep(p.seat)) {
+          this.draw(p.seat, lesson.drawPerTurn[p.seat]!);
+        }
         const n = this.s.turn >= lesson.firstShardTurn ? lesson.shardsPerTurn[p.seat]! : 0;
         for (let i = 0; i < n; i++) p.resources.push({ kind: 'shard', state: lesson.shardState });
         if (n > 0) {
@@ -13990,6 +13995,12 @@ export class E {
     this.refreshProphecies();   // CR 803.7: "N Turns Pass" ticks here
     if (this.s.mode === 'draft') this.startDraftStep();
     if (this.s.mode === 'constructed' && !this.s.lesson && !this.s.singleCard) this.startConstructedDraw();
+    // CR D8.1: a lesson deal may put a seat on the real constructed card step
+    // (a Weekly Challenge's player); the other seat keeps its lesson draw above
+    const step = this.s.lesson?.cardStep;
+    if (this.s.mode === 'constructed' && step?.includes('constructed')) {
+      this.startConstructedDraw(step.map(c => c === 'constructed'));
+    }
   }
 
   /** Constructed draw phase (Manual "Constructed"): everyone draws 4, then
@@ -14002,9 +14013,14 @@ export class E {
    * you draw 2 for turn + 1 for Worldbender and lose 3 life". Constructed has
    * no separate turn draw, so BOTH of those cards come out of the card's own
    * hook; the engine's job here is only to not run the normal step. */
-  startConstructedDraw(): void {
+  startConstructedDraw(
+    /** which seats take this step (absent = every seat); a seat left out is
+     * done before it starts — a lesson seat whose card step is its own draw */
+    takes?: readonly boolean[],
+  ): void {
     const replaced = this.s.players.map(() => false);
     for (const seat of this.dealOrder()) {
+      if (takes && !takes[seat]) { replaced[seat] = true; continue; }
       if (this.replaceCardStep(seat)) { replaced[seat] = true; continue; }
       this.draw(seat, 4);
     }

@@ -216,6 +216,9 @@ function runScript(file: string): Promise<{ code: number; out: string }> {
         // …and the rules review page's comment journal, which a test server
         // would otherwise append to under the real one's feet
         ALGO_CR_COMMENTS_FILE: join(scratch, 'cr-comments.jsonl'),
+        // …and the weekly challenges, whose sweep freezes a closed week into
+        // var/challenges/weeks.json on its own clock
+        ALGO_CHALLENGES_DIR: join(scratch, 'challenges'),
         // ⚠ AND NOTHING THE OPERATOR'S SHELL EXPORTED. On the deploy box the
         // shell may carry the real bot token and — worse — ALGO_BOT_PUSH_URL,
         // which would have test-queue.ts's fabricated joins and matches

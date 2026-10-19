@@ -57,6 +57,8 @@ export interface DeckBridge {
   add: (name: string) => void;
   remove: (name: string) => void;
   toMaybe: (name: string) => void;
+  /** this deck has no maybeboard (a weekly challenge's): no » button */
+  noMaybe?: true;
   /** everything the deck strip paints: the count, whether it is legal yet, and
    * the two numbers you actually build against — the curve and the element
    * spread. All of it from ui/deckstats.ts's `analyzeDeck`, so the browser
@@ -292,7 +294,7 @@ function tileButtons(r: CardRow): string {
   return `<span class="dkbtns">
     ${n ? `<button data-btn="cards-less" data-card="${esc(r.name)}" title="cut one">−</button>` : ''}
     <button data-btn="cards-add" data-card="${esc(r.name)}" title="add a copy">+</button>
-    <button data-btn="cards-maybe" data-card="${esc(r.name)}" title="add to the maybeboard">»</button>
+    ${!bridge.noMaybe ? `<button data-btn="cards-maybe" data-card="${esc(r.name)}" title="add to the maybeboard">»</button>` : ''}
   </span>`;
 }
 

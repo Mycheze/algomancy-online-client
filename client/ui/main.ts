@@ -151,6 +151,10 @@ import { installLegal } from './legal.ts';
 // client can set makes it appear over a real game.
 import * as scn from './scenario.ts';
 import * as learn from './learn.ts';
+// docs/21 — the weekly challenge: its page, and the run (a SoloServer like learn's)
+import * as chal from './challenge.ts';
+import * as chrun from './challengerun.ts';
+import { DUMMY_DECK, challengeDeal, type ChallengeDef } from '../engine/src/challenge.ts';
 import { closeLesson, installLessonLayer, lessonTick } from './lessonlayer.ts';
 import { installLearnMenu } from './learnmenu.ts';
 import { GAME_LESSONS } from './lessons.ts';
@@ -7245,7 +7249,9 @@ function shareBannerHtml(): string {
 function draftSeat(): Seat | null {
   const s = h.state;
   if (s.mode !== 'draft' || s.phase !== 'planning' || !s.draftDone) return null;
-  if (NET) return s.draftDone[NET.seat] ? null : NET.seat;
+  // a spectator or a replay has no seat to answer for (it saw the dialog of
+  // the seat it watches, over the replay's controls)
+  if (NET) return NET.spectating || s.draftDone[NET.seat] ? null : NET.seat;
   const pending = s.draftDone.findIndex(d => !d);
   return pending === -1 ? null : (pending as Seat);
 }
@@ -7348,7 +7354,7 @@ function draftPanelHtml(): string {
 function bottomSeat(): Seat | null {
   const s = h.state;
   if (s.mode !== 'constructed' || s.phase !== 'planning' || !s.bottomDone) return null;
-  if (NET) return s.bottomDone[NET.seat] ? null : NET.seat;
+  if (NET) return NET.spectating || s.bottomDone[NET.seat] ? null : NET.seat;   // as draftSeat
   const pending = s.bottomDone.findIndex(d => !d);
   return pending === -1 ? null : (pending as Seat);
 }
@@ -7606,6 +7612,8 @@ function renderNow(): boolean {
       ? `<span class="init spectating">👁 spectating ${esc(NET.room)}</span>`
       : learn.currentSolo()
         ? `<span class="init">📘 Learn to Play · <button data-learn="menu" class="linkish">lessons</button></span>`
+      : chrun.currentRun()
+        ? `<span class="init">🧩 ${esc(chrun.currentRun()!.def.title)}</span>`
       : `<span class="init">room ${esc(NET.room)}${
         NET.watchers ? ` · <span class="watchcount" title="watching — they see both hands">👁 ${NET.watchers} watching</span>` : ''}</span>`)
     + '<span class="liveslot" id="presenceslot"></span>'
@@ -7639,6 +7647,7 @@ function renderNow(): boolean {
           ${ui.passMode ? `<button class="passallchip" data-btn="passallstop"
             title="${esc(PASS_MODE_WHY[ui.passMode])} Click to stop.">${esc(PASS_MODE_CHIP[ui.passMode])}… ✕ stop</button>` : ''}
         </div>
+        ${chrun.currentRun() ? chrun.meterHtml(chrun.currentRun()!) : ''}
         <div class="liveslot" id="shareslot"></div>
       </div>
       ${boardHtml(topSeat, botSeat)}
@@ -9071,6 +9080,8 @@ function renderHome(): void {
   if (meta.screen()) { meta.renderScreen(); return; }
   // …and the league page (docs/20-league.md), which is where a `?league` link lands
   if (lg.screen()) { lg.renderScreen(); return; }
+  // …and the weekly challenge (docs/21), below the card browser it builds with
+  if (chal.screen()) { chal.renderScreen(); return; }
   // BL-16: …and the admin dashboard, which owns the page outright when open
   if (admin.screen()) { admin.renderScreen(); return; }
   // BL-01: …and the matchmaking queue
@@ -9097,6 +9108,7 @@ function renderHome(): void {
         <button class="homedecks" data-btn="cards-openpage">🔍 Cards</button>
         <button class="homedecks" data-btn="meta-openpage">🏆 Metagame</button>
         ${lg.navButtonHtml()}
+        ${chal.navButtonHtml()}
       </div>
     </div>
 
@@ -9153,6 +9165,7 @@ function renderHome(): void {
           </div>
         </div>
       </div>
+      ${chal.homeCardHtml()}
     </div>
 
     <p class="homefoot">To play a friend, start a game and invite them, or send them the code.</p>
@@ -10897,7 +10910,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // the room and the seat, which is what makes an in-game report replayable
   // CR D8.1: a Learn to Play game has no room on the server to replay, so its
   // report is filed as a page report rather than against a room code that is not one
-  reportopen: () => { openReport(learn.currentSolo() ? {} : { room: NET?.room, seat: NET?.seat ?? null }); return 'no-repaint'; },
+  reportopen: () => { openReport(learn.currentSolo() || chrun.currentRun() ? {} : { room: NET?.room, seat: NET?.seat ?? null }); return 'no-repaint'; },
   menuitem: btn => { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); },
   menuclose: () => { ui.menu = null; },
   // the rail's copy of the card menu (railMenuHtml) — same entries, no cursor
@@ -10915,6 +10928,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // address bar, so every page must be reachable by a button). The profile
   // offers both; the home header offers the league while one is visible.
   if (btn.dataset['btn'] === 'nav-league') { acct.leaveScreen(); lg.openLeague(); return; }
+  if (btn.dataset['btn'] === 'nav-challenge') { acct.leaveScreen(); chal.openChallenge(); return; }
   if (btn.dataset['btn'] === 'nav-admin') { acct.leaveScreen(); admin.openAdmin(); return; }
   if (btn.dataset['btn'] === 'nav-crreview') { acct.leaveScreen(); crr.openReview(); return; }
   // the rules review page owns everything prefixed cr-
@@ -10930,6 +10944,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // and the metagame page everything prefixed meta-
   if (meta.handleButton(btn)) return;
   if (lg.handleButton(btn)) return;
+  if (chal.handleButton(btn)) return;
   // CR D8.2: and the single card picker everything prefixed sc- (home + waiting room)
   if (sc.handleButton(btn)) { if (NET) render(); else renderHome(); return; }
   // and the admin dashboard everything prefixed admin-
@@ -12038,7 +12053,8 @@ const params = new URLSearchParams(location.search);
 // push repaints the board. A fake DOM cannot see it (nothing resolves there);
 // a real browser shows it every time.
 const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('demo')
-  || params.get('learn') === 'play' || !!params.get('replay') || !!params.get('question');
+  || params.get('learn') === 'play' || !!params.get('replay') || !!params.get('question')
+  || params.get('challenge') === 'play' || params.get('challenge') === 'watch';
 // accounts: fetch the profile behind the stored token, and give the module a
 // way to repaint. In a game the repaint is a no-op — a profile push arriving
 // mid-game must never paint the home screen over the board.
@@ -12047,6 +12063,7 @@ dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 lg.initLeague({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+chal.initChallenge({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-16: the operator dashboard, at ?admin=1. Nothing links to it and every
 // route it calls 404s to a non-admin, so this costs a signed-out browser one
 // refused fetch and nothing else.
@@ -12186,6 +12203,8 @@ installLessonLayer({
     }
   },
 });
+// docs/21 — a weekly challenge run's meter and end panel: a layer beside #app
+installChallengeLayerHere();
 // a background tab's title flashes when the game wants you (ui/tabalert.ts)
 installTabAlert();
 if (params.has('room') && params.get('room')!.trim()) {
@@ -12216,6 +12235,47 @@ if (params.has('room') && params.get('room')!.trim()) {
   NET = new NetBackend('LEARN', 0);
   h = NET;
   renderConnecting();
+} else if (params.get('challenge') === 'play') {
+  // docs/21 — a weekly challenge run: the Learn to Play room with the
+  // challenge's deal and the dummy. No saved run (a stale link): the page.
+  const run = chrun.startRun(params.get('id'), { onBotStuck: why => showToast(`the dummy got stuck: ${why}`) });
+  if (!run) {
+    location.search = '?challenge';
+  } else {
+    openSocket = () => run.server.socket() as unknown as WebSocket;
+    NET = new NetBackend('CHALLENGE', 0);
+    h = NET;
+    renderConnecting();
+  }
+} else if (params.get('challenge') === 'watch') {
+  // docs/21 — watch a closed week's run: the BL-38 replay viewer, dealt the
+  // challenge's game. The run names its challenge; the calendar has its deal.
+  const runId = params.get('run') ?? '';
+  renderConnecting();
+  void (async () => {
+    try {
+      const [run, cal] = await Promise.all([
+        fetch(`/api/challenge/run/${encodeURIComponent(runId)}`, { headers: acct.authHeaders(false) }).then(r => r.json()),
+        fetch('/api/challenge', { headers: acct.authHeaders(false) }).then(r => r.json()),
+      ]) as [{ challengeId?: string; name?: string; deck?: CardName[]; actions?: Action[] },
+        { current?: ChallengeDef | null; past?: ChallengeDef[] }];
+      const def = [...(cal.current ? [cal.current] : []), ...(cal.past ?? [])].find(c => c.id === run.challengeId);
+      if (!def || !run.deck || !run.actions) throw new Error('no such run');
+      const rs = new ReplayServer({
+        seed: def.seed, mode: 'constructed', names: [run.name ?? 'Player', 'Dummy'], actions: run.actions,
+        decks: [run.deck, [...DUMMY_DECK]], lesson: challengeDeal(def),
+      }, 0, true);
+      liveSession = false;
+      openSocket = () => rs.socket() as unknown as WebSocket;
+      NET = new NetBackend(def.title, 0, undefined, undefined, undefined, true);
+      h = NET;
+      openReplay(rs, { code: def.title, verdict: 'as-recorded', forked: false, partedAt: null, refusedAt: null,
+        exitTo: `?challenge=1&board=${encodeURIComponent(def.id)}` });
+    } catch {
+      uiError = 'that run cannot be watched';
+      render();
+    }
+  })();
 } else if (params.get('replay')) {
   /* BL-38 — WATCH A FINISHED GAME BACK.
    *
@@ -12349,3 +12409,18 @@ installSandbox({
   room: () => (NET ? NET.room : null),
   act,
 });
+
+/** docs/21: the challenge run's layer, and what its buttons do. Rewind and
+ * retry stay on the board; give up and the end panel go to the page. */
+function installChallengeLayerHere(): void {
+  chrun.installChallengeLayer({
+    home: () => { location.href = location.pathname; },
+    page: () => { location.search = '?challenge'; },
+    signIn: () => { location.search = '?challenge=1&signin=1'; },
+    rewind: run => { if (NET?.state) run.server.rewindToTurn(NET.state.turn); },
+    retry: run => {
+      chrun.freshRun(run.def, run.deck);
+      location.search = `?challenge=play&id=${encodeURIComponent(run.def.id)}`;
+    },
+  });
+}
