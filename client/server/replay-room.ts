@@ -6,6 +6,9 @@
  *   node replay-room.ts games/SMVJ.json --as-recorded          # + the DELTA
  *   node replay-room.ts games/SMVJ.json --as-recorded --at <sha>
  *   node replay-room.ts games/SMVJ.json --json    # one line, for a corpus sweep
+ *   node replay-room.ts games/SMVJ.json --branch  # every agreed fix's cut, rebuilt (CT-326)
+ *   node replay-room.ts games/SMVJ.json --report <ts> [actionIndex] [--issues <file>]
+ *                                                  # the board a report row was filed on
  *
  * Exit codes, so a sweep can classify without parsing prose: 0 faithful,
  * 2 diverged, 3 inconsistent, 4 PERMANENTLY unreplayable (excluded, not
@@ -98,7 +101,11 @@ import { copyFileSync, existsSync, mkdtempSync, readFileSync as readFile, rmSync
 import { execFileSync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import type { Action, CardName, Element, EngineEvent, GameMode, Seat } from '../engine/src/types.ts';
-import { apply, checkDeck, checkSingleDeck, createGame, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import { apply, checkDeck, checkSingleDeck, createGame, forcedAction, hiddenSegment, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
+import type { GameState } from '../engine/src/types.ts';
+import { describe as describeAction, itemText } from './rewind-cuts.ts';
+import type { IssueRow } from './report-fields.ts';
+import { issuesFile } from './statepaths.ts';
 // CR D8.4 — a scenario room's board is part of its DEAL, not of its log. This
 // file is the second of the four deal sites scenarios.ts's header lists, and
 // it is the one that matters most: without this import the divergence
@@ -1150,6 +1157,271 @@ export function unreplayableLines(file: string, raw: RoomFile, reason: string): 
   };
 }
 
+/* ══ CT-326 — A REWOUND BRANCH, REBUILT ═══════════════════════════════
+ *
+ * An agreed rewind CUTS the log (rooms.ts rewindRoom), so everything above
+ * replays the game that went on, and a report filed on the board a rewind
+ * took back names an `actionIndex` that is not in the final log at all. What
+ * was cut survives only in `amendments[k].removed`. The 2026-10-21 round had
+ * 36 rewinds, and the triage of each was done by a hand-written script; this is
+ * that script (agent D's d-branch.mjs + d-rewinds.mjs), ported.
+ *
+ * The walk, last fix to first: the log a fix was proposed on is the log after
+ * it, cut to its `at`, plus what it `removed` (a rewind) — or that log cut to
+ * its `at` (an edit, whose amend action landed there).
+ *
+ * Each fix is printed with the board at its cut, the cut actions named with
+ * their cards and what they did, what was played instead, and four triage
+ * flags: (a) a fizzle or "no legal target" inside the cut — the shape of a
+ * real engine fault; (b) the redo repeats the cut choices — nothing was
+ * mis-clicked; (c) a reason with content beyond "oops"; (d) a plain report
+ * filed in the same room around the same run.
+ */
+
+/** the log each agreed fix was proposed on, by fix index */
+export function preFixLogs(raw: RoomFile): Action[][] {
+  const fixes: Amendment[] = Array.isArray(raw.amendments) ? raw.amendments : [];
+  const out: Action[][] = new Array(fixes.length);
+  let cur = raw.actions;
+  for (let k = fixes.length - 1; k >= 0; k--) {
+    const f = fixes[k]!;
+    cur = f.kind === 'rewind' ? cur.slice(0, f.at).concat(f.removed ?? []) : cur.slice(0, f.at);
+    out[k] = cur;
+  }
+  return out;
+}
+
+function startState(raw: RoomFile): GameState {
+  const names = raw.names ?? ['Player 1', 'Player 2'];
+  const mode = raw.mode ?? 'shared';
+  return dealScenario(raw.seed, names, mode, trioOf(raw, mode), decksOf(raw, mode), raw.scenario, dealOf(raw, mode)).state;
+}
+
+/** the boards before each action of `log` (and after the last), up to `n` */
+function boards(raw: RoomFile, log: readonly Action[], n = log.length): GameState[] {
+  let s = startState(raw);
+  const out = [s];
+  for (let i = 0; i < n; i++) {
+    try { s = apply(s, log[i]!).state; } catch (err) { if (!(err instanceof IllegalAction)) throw err; }
+    out.push(s);
+  }
+  return out;
+}
+
+/** where a board is, in one line */
+export function boardLine(s: GameState): string {
+  const seg = hiddenSegment(s);
+  let w = `turn ${s.turn} ${s.phase}${seg ? `/${seg}` : ''}`;
+  if (s.phase === 'battle' && s.battle) w += ` (${s.battle.step}${s.battle.round === 2 ? ', counterattack' : ''})`;
+  if (s.decision) w += ` · ${s.players[s.decision.seat]?.name ?? `seat ${s.decision.seat}`} is asked: ${String(s.decision.prompt).slice(0, 80)}`;
+  if (s.stack?.length) w += ` · stack: ${s.stack.map(x => (x as { card?: string }).card ?? '?').join(', ')}`;
+  return w;
+}
+
+/** a reason that says nothing beyond "I want it back" */
+const FILLER = /^(o+p+s*\d*|op+s?\d*|opop|misclick(ed)?|mis-?click(ed)?|my bad|sorry|mistake|undo|(just )?going back|go back|test(ing)?)\b/i;
+export function noteHasContent(reason: string): boolean {
+  const t = reason.trim();
+  const words = t.match(/[a-z']{2,}/gi) ?? [];
+  return words.length >= 2 && !FILLER.test(t);
+}
+const FIZZLE = /fizzl|no legal target|not a legal target/i;
+/** flag (a): an event that says a play lost its target(s) */
+export function isFizzle(e: EngineEvent): boolean {
+  return e.type === 'fizzled' || FIZZLE.test(e.msg ?? '');
+}
+
+export interface BranchFix {
+  k: number;
+  fix: Amendment;
+  /** the log it was proposed on, and the board at its cut */
+  pre: number;
+  board: string;
+  /** the cut, named, with what each did (a rewind; an edit cuts nothing) */
+  cut: { i: number; text: string; events: string; refused?: string }[];
+  /** what was played from the cut on instead, named (empty: the next fix came first) */
+  redo: string[];
+  /** this fix continues the one before it — no game action between them */
+  continues: boolean;
+  flags: { fizzle: string[]; repeats: number | null; content: boolean; plain: IssueRow[] };
+}
+
+/** every agreed fix, its branch rebuilt; `issues` (the report journal, any
+ * room) feeds flag (d) */
+export function branchFixes(raw: RoomFile, issues: readonly IssueRow[] = [], code = ''): BranchFix[] {
+  const fixes: Amendment[] = Array.isArray(raw.amendments) ? raw.amendments : [];
+  const names = raw.names ?? ['Player 1', 'Player 2'];
+  const pre = preFixLogs(raw);
+  const out: BranchFix[] = [];
+  for (let k = 0; k < fixes.length; k++) {
+    const f = fixes[k]!;
+    const log = pre[k]!;
+    const cutAt = f.kind === 'rewind' ? f.at : log.length;
+    const bs = boards(raw, log, cutAt);
+    let s = bs[cutAt]!;
+    const cut: BranchFix['cut'] = [];
+    const fizzle: string[] = [];
+    for (const [j, a] of (f.kind === 'rewind' ? f.removed ?? [] : []).entries()) {
+      const i = f.at + j;
+      const it = describeAction(a, s, i, false);
+      const text = `[${i}] ${itemText(it, 'record', names)}`;
+      try {
+        const r = apply(s, a);
+        const msgs = r.events.map(e => e.msg).filter(Boolean).join(' | ');
+        if (r.events.some(isFizzle)) fizzle.push(`${text}: ${msgs.slice(0, 200)}`);
+        cut.push({ i, text, events: msgs.slice(0, 300) });
+        s = r.state;
+      } catch (err) {
+        if (!(err instanceof IllegalAction)) throw err;
+        cut.push({ i, text, events: '', refused: err.message });
+        break;
+      }
+    }
+    // what came next on the branch that went on
+    const next = k + 1 < fixes.length ? pre[k + 1]! : raw.actions;
+    const from = f.kind === 'rewind' ? f.at : f.at + 1;
+    const removed = f.kind === 'rewind' ? f.removed ?? [] : [];
+    const redo: string[] = [];
+    {
+      const nb = boards(raw, next, Math.min(next.length, from + Math.max(4, removed.length + 2)));
+      for (let i = from; i < nb.length - 1; i++) redo.push(`[${i}] ${itemText(describeAction(next[i]!, nb[i]!, i, false), 'record', names)}`);
+    }
+    let repeats: number | null = null;
+    if (removed.length && next.length > from) {
+      repeats = 0;
+      while (repeats < removed.length && JSON.stringify(removed[repeats]) === JSON.stringify(next[f.at + repeats])) repeats++;
+    }
+    // continues the fix before: nothing but forced steps between the board it left and this one's
+    let continues = false;
+    if (k > 0) {
+      const p = fixes[k - 1]!;
+      const after = p.kind === 'rewind' ? p.at : p.at + 1;
+      if (log.length >= after) {
+        const lb = boards(raw, log);
+        continues = true;
+        for (let i = after; i < log.length; i++) {
+          const fa = forcedAction(lb[i]!);
+          if (fa === null || JSON.stringify(fa) !== JSON.stringify(log[i])) { continues = false; break; }
+        }
+      }
+    }
+    out.push({
+      k, fix: f, pre: log.length, board: boardLine(bs[cutAt]!), cut, redo, continues,
+      flags: { fizzle, repeats, content: noteHasContent(f.reason), plain: [] },
+    });
+  }
+  // (d) a plain report in the same room, from a minute before a run to five after it
+  const room = code || '';
+  for (let k = 0; k < out.length; k++) {
+    if (out[k]!.continues) continue;
+    let m = k;
+    while (m + 1 < out.length && out[m + 1]!.continues) m++;
+    const lo = Date.parse(out[k]!.fix.when) - 60_000, hi = Date.parse(out[m]!.fix.when) + 5 * 60_000;
+    out[k]!.flags.plain = issues.filter(r => r.room === room && !r.fix && Date.parse(r.ts) >= lo && Date.parse(r.ts) <= hi);
+  }
+  return out;
+}
+
+function fixLines(b: BranchFix, names: readonly string[]): string[] {
+  const f = b.fix;
+  const who = `${names[f.seat] ?? `seat ${f.seat}`} proposed, ${names[f.by] ?? `seat ${f.by}`} agreed, ${f.when}`;
+  const L: string[] = [];
+  L.push(`── fix ${b.k}${b.continues ? ' (continues the fix before — same run)' : ''}: ${f.kind} — ${who}`);
+  L.push(`   what: ${f.what}`);
+  L.push(`   what went wrong: ${f.reason}`);
+  if (f.kind === 'edit') {
+    L.push(`   edit at [${f.at}] on a log of ${b.pre}, on: ${b.board}`);
+    L.push(`   ${JSON.stringify(f.edit)}`);
+  } else {
+    L.push(`   proposed on a log of ${b.pre}; the cut at ${f.at}, on: ${b.board}`);
+    L.push(`   taken back (${(f.removed ?? []).length}):`);
+    for (const c of b.cut) L.push(`     ${c.text}${c.refused ? `  ⛔ REFUSED on rebuild: ${c.refused}` : c.events ? `  → ${c.events}` : ''}`);
+    L.push(`   played instead: ${b.redo.length ? b.redo.join(' ; ') : '(nothing: the next fix came first)'}`);
+  }
+  const fl: string[] = [];
+  if (b.flags.fizzle.length) fl.push(`(a) a fizzle / no legal target inside the cut: ${b.flags.fizzle.join(' || ')}`);
+  if (b.flags.repeats !== null && b.flags.repeats === (f.removed ?? []).length) fl.push(`(b) the redo repeats every cut choice (${b.flags.repeats}/${b.flags.repeats})`);
+  else if (b.flags.repeats) fl.push(`    (the redo repeats the first ${b.flags.repeats} of ${(f.removed ?? []).length})`);
+  if (b.flags.content) fl.push(`(c) the reason says something: "${f.reason}"`);
+  for (const r of b.flags.plain) fl.push(`(d) a plain report in the same run, ${r.ts} @${r.actionIndex}: "${r.note.slice(0, 160)}"`);
+  L.push(fl.length ? `   triage: ${fl.join('\n           ')}` : '   triage: none of (a)–(d)');
+  return L;
+}
+
+/** `--branch`: every fix */
+export function branchLines(file: string, raw: RoomFile, issues: readonly IssueRow[] = []): string[] {
+  const code = basename(file).replace(/\.json$/, '');
+  const names = raw.names ?? ['Player 1', 'Player 2'];
+  const all = branchFixes(raw, issues, code);
+  if (!all.length) return [`${code}: no agreed fixes — nothing was cut`];
+  return [`${code}: ${all.length} agreed fix(es), final log ${raw.actions.length}`, ...all.flatMap(b => ['', ...fixLines(b, names)])];
+}
+
+/**
+ * `--report <ts>`: the board a report row was filed on, on the branch it was
+ * filed on — and, for a row an agreed fix filed, the fixes of its run.
+ *
+ * Which fix a fix row belongs to: `fix.amendment` (rows since 2026-10-21), or
+ * else the last fix agreed at or before the row's time whose words match
+ * (each older row was filed a moment after its own fix).
+ */
+export function reportBranchLines(file: string, raw: RoomFile, row: Pick<IssueRow, 'ts' | 'actionIndex' | 'note'> & Partial<IssueRow>, issues: readonly IssueRow[] = []): string[] {
+  const code = basename(file).replace(/\.json$/, '');
+  const names = raw.names ?? ['Player 1', 'Player 2'];
+  const fixes: Amendment[] = Array.isArray(raw.amendments) ? raw.amendments : [];
+  const pre = preFixLogs(raw);
+  const n = row.actionIndex ?? 0;
+  let k: number | null = null;
+  if (row.fix) {
+    if (typeof row.fix.amendment === 'number' && fixes[row.fix.amendment]) k = row.fix.amendment;
+    else {
+      for (let j = fixes.length - 1; j >= 0; j--) {
+        if (fixes[j]!.when <= row.ts && fixes[j]!.what === row.fix.what) { k = j; break; }
+      }
+    }
+  }
+  let log: Action[];
+  let where: string;
+  if (k !== null) {
+    log = pre[k]!;
+    where = `the log fix ${k} was proposed on (${log.length} actions)`;
+  } else {
+    const j = fixes.findIndex(f => f.when > row.ts);
+    log = j < 0 ? raw.actions : pre[j]!;
+    where = j < 0 ? `the final log (${log.length} actions)` : `the branch fix ${j} cut (${log.length} actions before it)`;
+  }
+  const L = [`${code} report ${row.ts} @${n}: "${(row.note ?? '').slice(0, 200)}"`];
+  if (n > log.length) {
+    L.push(`  ⛔ action ${n} is past the end of ${where} — this row does not belong to this file`);
+    return L;
+  }
+  const bs = boards(raw, log, n);
+  L.push(`  on ${where}`);
+  L.push(`  board at ${n}: ${boardLine(bs[n]!)}`);
+  L.push(`  same as the final log there? ${JSON.stringify(raw.actions.slice(0, n)) === JSON.stringify(log.slice(0, n)) ? 'yes' : 'NO — this board was rewound away; only this rebuild shows it'}`);
+  const last = [];
+  for (let i = Math.max(0, n - 4); i < n; i++) last.push(`[${i}] ${itemText(describeAction(log[i]!, bs[i]!, i, false), 'record', names)}`);
+  L.push(`  last actions: ${last.join(' ; ') || '(none)'}`);
+  if (k !== null) {
+    const all = branchFixes(raw, issues, code);
+    const runN = typeof row.fix?.run === 'number' ? row.fix.run : null;
+    let m = k;
+    if (runN !== null) m = k + runN - 1;
+    else while (m + 1 < all.length && all[m + 1]!.continues) m++;
+    for (let j = k; j <= m && j < all.length; j++) L.push('', ...fixLines(all[j]!, names));
+  }
+  return L;
+}
+
+/** the report journal, for --report and flag (d): `--issues <file>`, else the server's */
+function readIssues(path: string | undefined): IssueRow[] {
+  const p = path ?? issuesFile();
+  if (!existsSync(p)) return [];
+  return readFile(p, 'utf8').split('\n').filter(l => l.trim()).flatMap(l => {
+    try { return [JSON.parse(l) as IssueRow]; } catch { return []; }
+  });
+}
+
 /** exit codes, named — a corpus sweep classifies on these */
 export const EXIT = {
   faithful: 0, usage: 1, diverged: 2, inconsistent: 3, unreplayable: 4, staleCopy: 5,
@@ -1158,7 +1430,7 @@ export const EXIT = {
 if (CLI) {
   const file = process.argv[2];
   if (!file) {
-    console.error('usage: node replay-room.ts games/<CODE>.json [--log] [--as-recorded [--at <sha>]] [--json]');
+    console.error('usage: node replay-room.ts games/<CODE>.json [--log] [--as-recorded [--at <sha>]] [--json] | --branch | --report <ts> [actionIndex] [--issues <file>]');
     process.exit(EXIT.usage);
   }
   const raw = JSON.parse(readFileSync(file, 'utf8')) as RoomFile;
@@ -1179,6 +1451,31 @@ if (CLI) {
       console.log(`  ${source.verdict === 'same' ? '✓' : '·'} source: ${source.note}`);
     }
     process.exit(r.exit);
+  }
+
+  // CT-326: a rewound branch, rebuilt — instead of the replay report
+  const flag = (name: string): string | undefined => {
+    const i = process.argv.indexOf(name);
+    return i >= 0 ? process.argv[i + 1] : undefined;
+  };
+  if (process.argv.includes('--branch') || process.argv.includes('--report')) {
+    const issues = readIssues(flag('--issues'));
+    if (process.argv.includes('--branch')) {
+      for (const line of branchLines(file, raw, issues)) console.log(line);
+    } else {
+      const ts = flag('--report');
+      const ri = process.argv.indexOf('--report');
+      const idx = process.argv[ri + 2];
+      const code = basename(file).replace(/\.json$/, '');
+      const found = issues.find(r => r.ts === ts && r.room === code);
+      const row = found ?? (idx !== undefined && /^\d+$/.test(idx) ? { ts: ts!, actionIndex: Number(idx), note: '(not in the journal read)' } : null);
+      if (!ts || !row) {
+        console.error(`--report needs a row's ts, found in the journal (${flag('--issues') ?? issuesFile()}), or the ts and its actionIndex`);
+        process.exit(EXIT.usage);
+      }
+      for (const line of reportBranchLines(file, raw, row, issues)) console.log(line);
+    }
+    process.exit(EXIT.faithful);
   }
 
   const an = analyze(raw);
