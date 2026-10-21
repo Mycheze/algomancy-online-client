@@ -1232,6 +1232,12 @@ export interface StackItem {
   lastKnown?: LastKnown;
 }
 
+/** CR 110.10a: the part index a Virus item's HOST answers to in the target-slot
+ * questions (`targetSlots`, `slotCandidates`, `canFillSlot`, `setSlotTarget`).
+ * A Virus item carries no parts — its one target is `hostId` / `hostStack` —
+ * so the host is slot (HOST_SLOT, 0). */
+export const HOST_SLOT = -1;
+
 // ── decisions (docs/04 decision-point model) ──────────────────────────
 
 export type DecisionKind =

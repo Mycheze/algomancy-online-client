@@ -15,6 +15,7 @@
 import type {
   CardName, EffectPart, EngineEvent, Entity, EntityId, Seat, StackItem, TargetRef,
 } from '../../types.ts';
+import { HOST_SLOT } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { getCard, type EffectCtx, type EffectDef, type XPreviewRow } from '../dsl.ts';
 
@@ -382,23 +383,50 @@ export function rechooseTargets(
 ): { slots: number; picks: [number, number, TargetRef][] } {
   const picks: [number, number, TargetRef][] = [];
   let slots = 0;
-  item.parts.forEach((part, pi) => {
-    if (part.spent || !part.targets.length) return;
-    const work = part.targets.slice();
-    for (let ti = 0; ti < work.length; ti++) {
-      const cands = g.slotCandidates(item, pi, ti, work, controller);
-      if (!cands.length) continue;
-      slots++;
-      const pick = ask(pi, ti, work[ti]!, cands);
-      if (pick === null || pick === undefined) continue;
-      const key = JSON.stringify(pick);
-      if (key === JSON.stringify(work[ti])) continue;                 // kept — not a change
-      if (!cands.some(c => JSON.stringify(c) === key)) continue;      // never offered: refused
-      work[ti] = pick;
-      picks.push([pi, ti, pick]);
+  // CR 110.10a (CT-322): the slots are `E.targetSlots` — every live part's
+  // declared targets AND a Virus item's host, which carries no part. This
+  // walked `item.parts` alone, so no Virus being applied could be redirected.
+  const works = new Map<number, TargetRef[]>();
+  for (const slot of g.targetSlots(item)) {
+    const { pi, ti } = slot;
+    let work: TargetRef[] | undefined;
+    if (pi !== HOST_SLOT) {
+      work = works.get(pi);
+      if (!work) { work = item.parts[pi]!.targets.slice(); works.set(pi, work); }
     }
-  });
+    const cur = work ? work[ti]! : slot.ref;
+    const cands = g.slotCandidates(item, pi, ti, work, controller);
+    if (!cands.length) continue;
+    slots++;
+    const pick = ask(pi, ti, cur, cands);
+    if (pick === null || pick === undefined) continue;
+    const key = JSON.stringify(pick);
+    if (key === JSON.stringify(cur)) continue;                        // kept — not a change
+    if (!cands.some(c => JSON.stringify(c) === key)) continue;        // never offered: refused
+    if (work) work[ti] = pick;
+    picks.push([pi, ti, pick]);
+  }
   return { slots, picks };
+}
+
+/**
+ * CT-306: can ANY of `item`'s targets actually be changed right now — is there
+ * a slot (`E.targetSlots`, a Virus's host included) with a legal candidate
+ * other than what it already holds? CR 110.9a: a kept target is not a change.
+ *
+ * Asked BEFORE a change-the-targets card puts any question to anyone.
+ * Gravitational Correction asked the targeted effect's controller to pay [x]
+ * "to keep its targets" first and found out afterwards that there were none
+ * (RCUY #235–237: aimed at Surly Stalker's targetless trigger) — the victim
+ * was asked to pay for nothing. Exactly `rechooseTargets`' first question: if
+ * no slot has another candidate against the targets as they stand, the walk
+ * can write nothing, so nothing is lost by not asking.
+ */
+export function hasChangeableTarget(g: E, item: StackItem, controller?: Seat): boolean {
+  return g.targetSlots(item).some(({ pi, ti, ref }) => {
+    const key = JSON.stringify(ref);
+    return g.slotCandidates(item, pi, ti, undefined, controller).some(c => JSON.stringify(c) !== key);
+  });
 }
 
 /**
@@ -414,6 +442,8 @@ export function commitRetargets(
   let n = 0;
   const byPart = new Map<number, [number, TargetRef][]>();
   for (const [pi, ti, ref] of picks) {
+    // CR 110.10a: a Virus's host is its one target — no sibling to collide with
+    if (pi === HOST_SLOT) { g.setSlotTarget(item, pi, ti, ref); n++; continue; }
     const list = byPart.get(pi) ?? [];
     list.push([ti, ref]);
     byPart.set(pi, list);
@@ -428,7 +458,7 @@ export function commitRetargets(
       g.ev('info', `${who}: one thing cannot be two of ${item.label}'s targets — those targets stay as they were.`);
       continue;
     }
-    for (const [ti, ref] of list) part.targets[ti] = ref;
+    for (const [ti, ref] of list) g.setSlotTarget(item, pi, ti, ref);
     n += list.length;
   }
   return n;

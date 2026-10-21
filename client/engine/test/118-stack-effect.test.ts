@@ -189,9 +189,8 @@ test('CR 700.1: an effect that walks the targeted item\'s parts survives a unit\
   h.do({ type: 'decide', seat: h.state.decision!.seat, choice: 0 });   // X = 0
   pick(h, { stack: monke });
   pass(h); pass(h);
-  // the item's controller declines the (zero) ransom, so the retarget runs
-  const dec = h.state.decision!;
-  h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => o.value === false) });
+  // CT-306: nothing to change, so nobody is asked to pay the (zero) ransom
+  assert.equal(h.state.decision, null, 'no payOrDecline over a unit with no targets');
 
   assert.ok(h.log.some(l => l.includes('Monke has no target to change')),
     'a unit item has no parts and no declared targets — the walk is a clean no-op, not a crash');

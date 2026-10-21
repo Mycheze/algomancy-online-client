@@ -71,7 +71,7 @@
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import { card, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { rechooseTargets, commitRetargets } from './helpers.ts';
+import { rechooseTargets, commitRetargets, hasChangeableTarget } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */
@@ -545,6 +545,14 @@ card('Gravitational Correction', {
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
       if (!item) {
         g.ev('info', 'Gravitational Correction: the targeted effect has already left the stack.');
+        return;
+      }
+      // CT-306 (RCUY #235–237): nothing to change, nothing to pay for. The
+      // payment was asked FIRST and the slot check came after it, so a
+      // Correction aimed at a targetless trigger (Surly Stalker's) asked its
+      // controller to pay [x] to keep targets it never had.
+      if (!hasChangeableTarget(g, item)) {
+        g.ev('info', `Gravitational Correction: ${item.label} has no target to change — nothing happens.`);
         return;
       }
       const x = ctx.x ?? 0;

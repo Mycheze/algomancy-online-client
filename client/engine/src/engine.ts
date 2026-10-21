@@ -31,6 +31,7 @@ import {
 } from './cards/dsl.ts';
 import { doneTargetsLabel } from './cards/dsl.ts';   // report #206: the stop option's label
 import { rngShuffle } from './rng.ts';
+import { HOST_SLOT } from './types.ts';
 
 /** CR 710.1: a whole-identity copy — "become a copy of target unit" contributes
  * every facet, which is what makes it a face REPLACEMENT rather than a grant. */
@@ -8151,6 +8152,7 @@ export class E {
     item: StackItem, pi: number, ti: number,
     targets?: readonly TargetRef[], controller: Seat = item.controller,
   ): TargetRef[] {
+    if (pi === HOST_SLOT) return ti === 0 ? this.virusHostCandidates(item) : [];
     const part = item.parts[pi];
     if (!part) return [];
     // card code calls this in a loop over an arbitrary stack item, so an
@@ -8166,6 +8168,77 @@ export class E {
       others.map(t => this.resolveTargetRef(t)).filter((t): t is ResolvedTarget => t !== null),
       item.event,   // CR 110.9: a redirect must judge the slot the same way the collector did
     ).filter(c => !taken.has(JSON.stringify(c)));
+  }
+
+  /**
+   * CR 110.10a, 723.3 (CT-322): the hosts a Virus being applied could be
+   * REDIRECTED to right now. "A Virus being applied is an effect on the stack
+   * that targets its host. It can be redirected" — Caleb, rules-questions:
+   * "You can redirect a virus, it is a targeted effect".
+   *
+   * The Virus item carries no parts (apply.ts builds it with `parts: []`), so
+   * the target-slot readers used to see no slot at all and every
+   * change-the-targets card did nothing to it. Its host is the slot
+   * (HOST_SLOT, 0), and its legal occupants are what `doAugment` accepts for
+   * the same shape (CR 110.9: a new target is chosen as the first one was):
+   *  · a unit host (`hostId`) — any unit in the Virus's region, either side
+   *    (CR 723.2), the same `unitsIn` walk `pushBattleAugments` offers;
+   *  · a spell host (`hostStack`) — another spell, spell unit or spell token
+   *    on the stack in the region (CR 723.4a, 723.4e: `isSpellEffect`, the
+   *    same three kinds as apply.ts's STACK_VIRUS_HOSTS).
+   * The current host is included while it is still legal: it is not a
+   * sibling of itself (as `slotCandidates`).
+   */
+  virusHostCandidates(item: StackItem): TargetRef[] {
+    if (item.kind !== 'virus') return [];
+    if (item.hostStack !== undefined) {
+      return this.s.stack
+        .filter(it => it.id !== item.id && it.region === item.region && isSpellEffect(it.kind))
+        .map(it => ({ stack: it.id }));
+    }
+    if (item.hostId === undefined) return [];
+    return this.unitsIn(item.region).map(u => ({ unit: u.id }));
+  }
+
+  /**
+   * CR 110.9, 110.10a: every target slot of `item` a change-the-targets effect
+   * can reach — each declared target of a live (unspent) part, and a Virus
+   * item's host as (HOST_SLOT, 0). The ONE walk Enigmatic Warder and
+   * `rechooseTargets` (Divine Intervention, Gravitational Correction, Hexbane
+   * Shiitake, Download) share, so a slot one of them can see the others can.
+   */
+  targetSlots(item: StackItem): { pi: number; ti: number; ref: TargetRef }[] {
+    const out: { pi: number; ti: number; ref: TargetRef }[] = [];
+    item.parts.forEach((part, pi) => {
+      if (part.spent) return;
+      part.targets.forEach((ref, ti) => out.push({ pi, ti, ref }));
+    });
+    if (item.kind === 'virus') {
+      if (item.hostId !== undefined) out.push({ pi: HOST_SLOT, ti: 0, ref: { unit: item.hostId } });
+      else if (item.hostStack !== undefined) out.push({ pi: HOST_SLOT, ti: 0, ref: { stack: item.hostStack } });
+    }
+    return out;
+  }
+
+  /**
+   * Write one changed target onto `item` — a part slot, or a Virus's host
+   * (CR 110.10a). The caller has already asked `slotCandidates`. A Virus's
+   * label names its host ("X (Virus augment on Y)"), so it is rebuilt to name
+   * the new one: the stack display and the log would otherwise keep pointing
+   * at the old host.
+   */
+  setSlotTarget(item: StackItem, pi: number, ti: number, ref: TargetRef): void {
+    if (pi !== HOST_SLOT) { item.parts[pi]!.targets[ti] = ref; return; }
+    const prefix = `${item.card} (Virus augment on `;
+    if ('unit' in ref && item.hostId !== undefined) {
+      item.hostId = ref.unit;
+      const host = this.entity(ref.unit);
+      if (host && item.label.startsWith(prefix)) item.label = `${prefix}${host.card})`;
+    } else if ('stack' in ref && item.hostStack !== undefined) {
+      item.hostStack = ref.stack;
+      const host = this.s.stack.find(it => it.id === ref.stack);
+      if (host && item.label.startsWith(prefix)) item.label = `${prefix}${host.label})`;
+    }
   }
 
   /**

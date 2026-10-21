@@ -348,14 +348,13 @@ card('Enigmatic Warder', {
         // itself into Fight's "target ALLY" slot while belonging to the other
         // player, where "ally" means ally of the SPELL's controller. It also
         // may not duplicate a sibling slot ("another target unit", CR 704.5).
-        const slots: [number, number][] = [];
-        item.parts.forEach((p, pi) => {
-          if (p.spent) return;
-          p.targets.forEach((cur, ti) => {
-            if (JSON.stringify(cur) === JSON.stringify({ unit: me.id })) return;   // already me
-            if (g.canFillSlot(item, pi, ti, { unit: me.id })) slots.push([pi, ti]);
-          });
-        });
+        // CR 110.10a (CT-322): the slots are `E.targetSlots`, so a Virus being
+        // applied offers its HOST — this walked `item.parts` alone, a Virus
+        // item has none, and a Warder aimed at one did nothing at all.
+        const mine = JSON.stringify({ unit: me.id });
+        const slots = g.targetSlots(item).filter(({ pi, ti, ref }) =>
+          JSON.stringify(ref) !== mine                                     // already me
+          && g.canFillSlot(item, pi, ti, { unit: me.id }));
         if (!slots.length) {
           g.ev('info', `Enigmatic Warder: no target of ${item.label} may legally be changed to ${me.card}.`);
           return;
@@ -363,11 +362,12 @@ card('Enigmatic Warder', {
         const si = slots.length === 1 ? 0 : ctx.choose('slot', {
           kind: 'electricPath', seat: ctx.controller,
           prompt: 'Enigmatic Warder: which target changes to me?',
-          options: slots.map(([pi, ti], i) => ({ label: g.targetLabel(item.parts[pi]!.targets[ti]!), value: i })),
+          options: slots.map(({ ref }, i) => ({ label: g.targetLabel(ref), value: i })),
         }) as number;
         const slot = slots[si] ?? slots[0]!;
-        item.parts[slot[0]]!.targets[slot[1]] = { unit: me.id };
-        g.ev('info', `Enigmatic Warder: a target of ${item.label} is now ${me.card}.`);
+        const was = item.label;   // a Virus's label names its host, and is rebuilt
+        g.setSlotTarget(item, slot.pi, slot.ti, { unit: me.id });
+        g.ev('info', `Enigmatic Warder: a target of ${was} is now ${me.card}.`);
       },
     },
   }],

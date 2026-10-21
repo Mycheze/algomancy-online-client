@@ -56,7 +56,7 @@
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, isOwnArrival } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, hasChangeableTarget, isOwnArrival } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -183,6 +183,12 @@ card('Divine Intervention', {
       const item = g.s.stack.find(i => i.id === (t as { stack: number }).stack);
       if (!item) {
         g.ev('info', 'Divine Intervention: the targeted effect has already left the stack.');
+        return;
+      }
+      // CT-306: with no target that can change, the "may" asks about nothing
+      // — Gravitational Correction's shape, said the same way.
+      if (!hasChangeableTarget(g, item)) {
+        g.ev('info', `Divine Intervention: ${item.label} has no target to change — nothing happens.`);
         return;
       }
       const may = ctx.choose('may', {
