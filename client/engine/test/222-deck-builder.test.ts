@@ -233,12 +233,9 @@ test('§4b a card with no scan still stacks, because the ghost and the front are
 /* ══ §5 the grey belongs to the drawer ══════════════════════════════════ */
 
 const decksSrc = read('decks.ts');
-// the grey lives where the shopping does: the card drawer (ui/deckdrawer.ts)
-// since the deck table, 2026-10-21 — the deck's own cards are never greyed
-const drawerSrc = read('deckdrawer.ts');
-const tileFn = drawerSrc.slice(drawerSrc.indexOf('function tileHtml('), drawerSrc.indexOf('function chipsHtml('));
+const tileFn = decksSrc.slice(decksSrc.indexOf('function tile('), decksSrc.indexOf('function groupedTiles('));
 
-test('§5a the cap withholds the plus, and greys only where you are shopping', () => {
+test('§5a the cap withholds the plus everywhere, and greys only where you are shopping', () => {
   // ⚠ BL-34 ASKED FOR BOTH SIGNALS AND THE OWNER HAS SINCE SPLIT THEM. The
   // requirement — "you already have two of this, and the page said so before
   // you added a third" — is unchanged and is still carried by the withheld +
@@ -246,16 +243,15 @@ test('§5a the cap withholds the plus, and greys only where you are shopping', (
   // sentence about shopping: in the drawer it answers the question you are
   // asking, and in the deck it colours a whole deck of two-ofs grey for no
   // reason. Measured: 15 of 15 tiles.
-  assert.ok(tileFn.length > 100, 'the drawer tile moved — this test needs updating');
-  assert.match(tileFn, /const atCap = h\.capGrey && n >= 2;/,
-    'the cap itself is unchanged: two copies, on a host that has one');
-  const grey = /const (\w+) = atCap;/.exec(tileFn);
-  assert.ok(grey, 'the greying must be its own flag');
+  assert.ok(tileFn.length > 100, 'tile() moved — this test needs updating');
+  assert.match(tileFn, /const atCap = where !== 'maybe' && n >= 2;/,
+    'the cap itself is unchanged: two copies, anywhere you can add one');
+  const grey = /const (\w+) = atCap && where === 'add';/.exec(tileFn);
+  assert.ok(grey, 'the greying must be a SEPARATE flag, true only in the add drawer');
   assert.match(tileFn, new RegExp(`\\$\\{${grey![1]!} \\? ' atcap' : ''\\}`),
     'and it must be what writes the atcap class');
-  const table = read('decktable.ts');
-  assert.doesNotMatch(table, /atcap/, 'the deck table must never grey a card: a deck of two-ofs is a deck');
-  assert.doesNotMatch(decksSrc, /atcap/, 'nor may the deck page');
+  assert.doesNotMatch(tileFn, /\$\{atCap \? ' atcap' : ''\}/,
+    'the cap flag must not write the grey class again');
 });
 
 test('§5b the grey is a dimming, not a disabling', () => {
@@ -288,33 +284,33 @@ test('§6a a repaint puts the scroll and the caret back where they were', () => 
   assert.match(paintFn, /wire\(was\)/, 'and handed to the wiring that puts it back');
   const wireFn = decksSrc.slice(decksSrc.indexOf('function wire('), decksSrc.indexOf('export function renderScreen'));
   assert.match(wireFn, /alight\(was\)/, 'wire() must land the page back where it was');
+});
+
+test('§6b the search box is not re-focused on every repaint', () => {
+  // ⚠ RESTORING THE SCROLL ALONE DOES NOT FIX IT. `wire()` ended with a bare
+  // `box.focus()`, and focusing an input scrolls it into view — so the
+  // viewport was dragged to the search box after every single edit, and the
+  // caret was stamped to the end of whatever had been typed. Opening the
+  // drawer SHOULD claim the caret; nothing else may.
+  const wireFn = decksSrc.slice(decksSrc.indexOf('function wire('), decksSrc.indexOf('export function renderScreen'));
+  assert.doesNotMatch(wireFn, /^\s*box\?\.focus\(\);/m, 'the unconditional focus came back');
+  assert.match(wireFn, /if \(focusSearch && box\)/, 'the focus is claimed once, by an explicit flag');
+  assert.match(wireFn, /focusSearch = false;/, 'and the flag is consumed, not left standing');
+  assert.match(decksSrc, /case 'deck-adding':\n\s*adding = true; focusSearch = true;/,
+    'and it is the click that OPENS the drawer that sets it');
   assert.match(decksSrc, /focus\(\{ preventScroll: true \}\)/,
     'restoring a focus must not undo the scroll that was just restored');
 });
 
-test('§6b no box is re-focused on every repaint; the drawer claims its caret once', () => {
-  // ⚠ RESTORING THE SCROLL ALONE DID NOT FIX IT. `wire()` ended with a bare
-  // `box.focus()`, and focusing an input scrolls it into view — so the
-  // viewport was dragged to the search box after every single edit. The
-  // search box is the drawer's now, and the drawer focuses it in exactly one
-  // place: when it OPENS (and not on a tablet, where it would raise the
-  // keyboard over the table).
-  const wireFn = decksSrc.slice(decksSrc.indexOf('function wire('), decksSrc.indexOf('export function renderScreen'));
-  assert.doesNotMatch(wireFn, /^\s*box\?\.focus\(\);/m, 'the unconditional focus came back');
-  assert.match(wireFn, /if \(focusDesc && desc\)/, 'the editor claims the caret once, by an explicit flag');
-  const openFn = drawerSrc.slice(drawerSrc.indexOf('export function openDrawer('), drawerSrc.indexOf('export function closeDrawer('));
-  assert.match(openFn, /if \(!was\) \{[^}]*focusSearch\(\)/, 'the drawer takes the caret only on the paint that opens it');
-  assert.equal((drawerSrc.match(/(?<!function )focusSearch\(\);/g) ?? []).length, 1, 'and nowhere else');
-  assert.match(drawerSrc, /if \(touchSeen\(\)\) return;/, 'never on a finger');
-});
-
-test('§6c the drawer is not inside #app, so nothing it is reading can move', () => {
-  // The old inline drawer sat UNDER a deck grid that grew with every add, so
-  // its results slid 136px under the cursor and an `anchorTop` held them
-  // still. The drawer is a layer beside #app now: the deck page's paint cannot
-  // reach it, and the anchor is retired with the fault.
-  assert.doesNotMatch(decksSrc, /function anchorTop\(/, 'the anchor came back — is the drawer inside #app again?');
-  assert.doesNotMatch(decksSrc, /dk-results|dk-search/, 'the deck page must not paint the drawer’s results');
-  assert.match(drawerSrc, /document\.body\.appendChild\(layer\)/, 'the drawer hangs beside #app');
-  assert.doesNotMatch(drawerSrc, /\$app|getElementById\('app'\)\.innerHTML/, 'and never writes the page');
+test('§6c what the drawer is reading is held still, not the document', () => {
+  // Adding a card grows the DECK GRID, which is ABOVE the drawer, so holding
+  // scrollTop still slides the results down under the cursor — measured at
+  // 136px, a full row, which is exactly far enough to make the next click land
+  // on a different card.
+  assert.match(decksSrc, /function anchorTop\(\)/, 'there must be an anchor to hold still');
+  const anchor = decksSrc.slice(decksSrc.indexOf('function anchorTop('), decksSrc.indexOf('function perch('));
+  assert.match(anchor, /getElementById\('dk-results'\)/, 'and it is the drawer, the thing being read');
+  const alight = decksSrc.slice(decksSrc.indexOf('function alight('), decksSrc.indexOf('let focusSearch'));
+  assert.match(alight, /p\.scroll \+ \(/, 'the scroll is CORRECTED by how far the anchor moved');
+  assert.match(alight, /now - p\.anchor/, 'by exactly that far');
 });

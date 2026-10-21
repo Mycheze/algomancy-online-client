@@ -63,10 +63,8 @@ export async function deckRoutes(
       // whole point: the visibility toggle must not have to re-send 30 cards
       ...('visibility' in b ? { visibility: b['visibility'] } : {}),
       ...('description' in b ? { description: b['description'] } : {}),
-      // the deck table's arrangement — never the deck, and clamped to it
+      // the tabletop's arrangement — never the deck, and clamped to it
       ...('piles' in b ? { piles: b['piles'] } : {}),
-      ...('sortMoves' in b ? { sortMoves: b['sortMoves'] } : {}),
-      ...('view' in b ? { view: b['view'] } : {}),
     });
     if (!r.ok) return json(res, r), true;
     answer({ id: r.deck.id, ...(r.note ? { note: r.note } : {}) });

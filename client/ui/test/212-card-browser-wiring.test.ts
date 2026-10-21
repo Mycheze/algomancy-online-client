@@ -41,29 +41,20 @@ const code = (f: string): string => read(f)
   .replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 test('the deck drawer and the browser share one predicate', () => {
-  // the drawer is ui/deckdrawer.ts since the deck table (2026-10-21): a layer
-  // beside #app, no longer markup inside the deck page
-  const drawer = read('deckdrawer.ts');
+  const decks = read('decks.ts');
   const cards = read('cards.ts');
-  assert.match(drawer, /from '\.\/cardsearch\.ts'/, 'the drawer must use the shared parser');
+  assert.match(decks, /from '\.\/cardsearch\.ts'/, 'the drawer must use the shared parser');
   assert.match(cards, /from '\.\/cardsearch\.ts'/, 'so must the browser');
-  for (const f of ['deckdrawer.ts', 'decks.ts']) {
-    const src = read(f);
-    // the private filter this replaced, in the shape it had
-    assert.doesNotMatch(src, /let searchEl\b/, `${f} grew its own element filter again`);
-    assert.doesNotMatch(src, /let searchKind\b/, `${f} grew its own kind filter again`);
-    assert.doesNotMatch(src, /name\.toLowerCase\(\)\.includes\(q\)/, `${f} grew its own substring matcher again`);
-  }
+  // the private filter this replaced, in the shape it had
+  assert.doesNotMatch(decks, /let searchEl\b/, 'the drawer grew its own element filter again');
+  assert.doesNotMatch(decks, /let searchKind\b/, 'the drawer grew its own kind filter again');
+  assert.doesNotMatch(decks, /name\.toLowerCase\(\)\.includes\(q\)/, 'the drawer grew its own substring matcher again');
 });
 
 test('the drawer offers only what is deck-legal, and says the whole pool is elsewhere', () => {
-  const drawer = read('deckdrawer.ts');
-  assert.match(drawer, /allRows\(\)\.filter\(r => r\.playable\)/, 'the drawer pool must be the legal subset');
-  // a layer's own attribute (never data-btn — see 537), answered by the host's
-  // full-browser hand-off, which is decks.ts's deck-browse route
-  assert.match(drawer, /data-dd="browse"/, 'the drawer must offer the full browser');
-  assert.match(read('decks.ts'), /fullBrowser: query => toBrowser\(query\)/,
-    'and the deck page answers it with the same hand-off as its own button');
+  const decks = read('decks.ts');
+  assert.match(decks, /allRows\(\)\.filter\(r => r\.playable\)/, 'the drawer pool must be the legal subset');
+  assert.match(decks, /data-btn="deck-browse"/, 'the drawer must offer the full browser');
   // and the claim that makes that honest: the browser really does have more
   assert.ok(allRows().length > allRows().filter(r => r.playable).length);
 });

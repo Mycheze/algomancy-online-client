@@ -127,53 +127,47 @@ test('both pages pin the SAME panel — neither has one of its own', () => {
   assert.match(read('cardpanel.ts'), /<section class="cbdetail">/, 'the one panel lives here');
 });
 
-test('the deck page’s cards can be read without opening the art in another tab', () => {
-  // since the deck table (2026-10-21) the deck's cards are ui/decktable.ts's
-  // and the pool's are ui/deckdrawer.ts's; both are the same readable tile
-  const table = code('decktable.ts');
-  const tile = table.slice(table.indexOf('function cardTile('), table.indexOf('function keyOf('));
-  assert.ok(tile.length > 100, 'cardTile() moved — this test needs updating');
+test('the deck page’s tiles can be read without opening the art in another tab', () => {
+  const decks = code('decks.ts');
+  const tile = decks.slice(decks.indexOf('function tile('), decks.indexOf('function groupedTiles('));
+  assert.ok(tile.length > 100, 'tile() moved — this test needs updating');
   assert.match(tile, /data-prev="\$\{esc\(name\)\}"/,
     'the hover box is data-prev, and it is the whole feature');
-  assert.match(tile, /btn\(h, 'sel'\)/, 'and a click picks the card up, which pins the panel');
-  const drawer = code('deckdrawer.ts');
-  const dtile = drawer.slice(drawer.indexOf('function tileHtml('), drawer.indexOf('function chipsHtml('));
-  assert.ok(dtile.length > 100, 'tileHtml() moved — this test needs updating');
-  assert.match(dtile, /data-prev="\$\{esc\(name\)\}"/, 'the drawer’s scans read the same way');
+  assert.match(tile, /data-btn="deck-focus"/, 'and the tile pins the panel');
   // the two the browser dropped for the owner's stated reasons, which apply
   // to the identical grid here: a native tooltip that competes with the hover
   // box, and a banner across the printed text
-  for (const [f, src] of [['decktable.ts', tile], ['deckdrawer.ts', dtile]] as const) {
-    assert.doesNotMatch(src, /\btitle="\$\{esc\(name\)\}/, `${f}: the competing native tooltip came back`);
-    assert.doesNotMatch(src, /class="dkname"/, `${f}: the name banner came back over the card text`);
-  }
-  // and the panel the selection pins is the shared one
-  assert.match(code('decks.ts'), /dt\.selected\(tableHost\(\)\)/, 'the picked-up card is the one pinned');
+  assert.doesNotMatch(tile, /\btitle="\$\{esc\(name\)\}/, 'the competing native tooltip came back');
+  assert.doesNotMatch(tile, /class="dkname"/, 'the name banner came back over the card text');
 });
 
-test('at two copies nothing OFFERS a third, and a cut is still allowed', () => {
-  // the drawer: its + is behind the cap
-  const drawer = code('deckdrawer.ts');
-  const dtile = drawer.slice(drawer.indexOf('function tileHtml('), drawer.indexOf('function chipsHtml('));
-  assert.match(dtile, /atCap/, 'the cap must be marked on the drawer’s tile');
-  for (const add of [...dtile.matchAll(/data-dd="add"/g)]) {
-    const before = dtile.slice(0, add.index);
-    assert.match(before.slice(-80), /atCap \? '' :/, 'the drawer’s + is offered without checking the cap');
+test('at two copies the tile stops OFFERING a third, and still allows a cut', () => {
+  const decks = code('decks.ts');
+  const tile = decks.slice(decks.indexOf('function tile('), decks.indexOf('function groupedTiles('));
+  assert.match(tile, /atCap/, 'the cap must be marked on the tile');
+  // every + is behind the cap...
+  for (const add of tile.matchAll(/data-btn="(deck-add|deck-more)"/g)) {
+    const before = tile.slice(0, tile.indexOf(add[0]));
+    assert.match(before.slice(-120), /atCap \? '' :/,
+      `${add[1]} is offered without checking the cap`);
   }
-  // the table's selection bar: + behind the cap, − never
-  const table = code('decktable.ts');
-  const bar = table.slice(table.indexOf('function selBarHtml('), table.indexOf('function zonesHtml('));
-  assert.match(bar, /const canMore = fromMaybe \|\| h\.cap === undefined \|\| count\(h\.cards\(\), c\.name\) < h\.cap;/,
-    'the + stops at the host’s cap (constructed: 2), and only there');
-  assert.match(bar, /\$\{canMore \? `<button \$\{btn\(h, 'more'\)\}/, 'and the + is what it withholds');
-  const less = bar.slice(0, bar.indexOf("btn(h, 'less')"));
-  assert.doesNotMatch(less.slice(-60), /canMore \? /, 'the cap must not withhold the cut');
-  assert.match(read('decks.ts'), /cap: 2,/, 'the constructed host names the cap');
-  // ⚠ BL-34's REQUIREMENT SURVIVES; ITS MECHANISM DID NOT. The badge at two is
-  // gone (*"actually show two of those cards, just stacked"*) and the STACK is
-  // what says you already have two; the number comes back only over the cap.
-  const tile = table.slice(table.indexOf('function cardTile('), table.indexOf('function keyOf('));
+  // ...and no − is
+  assert.match(tile, /data-btn="deck-less"/, 'cutting a copy must still be offered');
+  const less = tile.slice(0, tile.indexOf('data-btn="deck-less"'));
+  assert.doesNotMatch(less.slice(-80), /atCap \? '' :/, 'the cap must not disable cutting');
+  // ⚠ BL-34's REQUIREMENT SURVIVES; ITS MECHANISM DID NOT. The rule here was
+  // "the count is what makes the grey legible, and hiding it in the drawer is
+  // what made a third copy easy to add without noticing", and a ×n badge from
+  // two up was how that was met. The owner has since ruled the other way on
+  // the mechanism — *"instead of showing a x2 for cards with 2 copies,
+  // actually show two of those cards, just stacked"* — so the badge at two is
+  // gone and the STACK is what says you already have two.
+  //
+  // The requirement is unchanged and is still asserted, by all three of the
+  // signals that now carry it: the copies are drawn, the tile greys at the
+  // cap, and the + is withheld (both checked above).
   assert.match(tile, /stackLayers\(n\)/, 'two copies must be DRAWN as two cards');
+  assert.doesNotMatch(tile, /n < 2 \? '' :/, 'the old unconditional ×n badge is gone');
   assert.match(tile, /needsCountBadge\(n\)/,
     'and the NUMBER still comes back over the cap, where "too many of these" is exactly what '
     + 'must not be left to counting overlapping corners by eye');

@@ -496,22 +496,22 @@ try {
   eq((renamed['decks'] as any[]).find(d => d.id === newId).cards.length, 30,
     'and a name-only patch keeps the cards');
 
-  console.log('\n[server: the deck table arrangement]');
+  console.log('\n[server: the tabletop arrangement]');
   {
-    // piles, sortMoves and view ride /api/decks/update like any other field,
-    // and are clamped to the deck: a pile card the deck lacks never lands
+    // piles ride /api/decks/update like any other field, and are clamped to
+    // the deck: a pile card the deck lacks never lands
     const top = fire[0]!;
     const piles = [
-      { id: 'p1', name: 'Early', cards: fire.slice(0, 10) },
-      { id: 'p2', name: 'Late', cards: [...fire.slice(10), 'Not A Real Card'] },
+      { id: 'p1', name: 'Early', cards: fire.slice(0, 10), named: true },
+      { id: 'p2', name: 'Late', cards: [...fire.slice(10), 'Not A Real Card'], auto: 'cost:3' },
     ];
-    const sortMoves = { type: { [top]: { row: 'spells', col: '9' } } };
-    const arranged = await call('/api/decks/update', { id: newId, piles, sortMoves, view: 'freeform' }, token);
+    // the v1 records are not read: sent, they are never stored
+    const arranged = await call('/api/decks/update',
+      { id: newId, piles, sortMoves: { type: { [top]: { row: 'spells', col: '9' } } }, view: 'freeform' }, token);
     const d = (arranged['decks'] as any[]).find(x => x.id === newId);
-    ok(JSON.stringify(d.piles) === JSON.stringify([piles[0], { id: 'p2', name: 'Late', cards: fire.slice(10) }]),
+    ok(JSON.stringify(d.piles) === JSON.stringify([piles[0], { id: 'p2', name: 'Late', cards: fire.slice(10), auto: 'cost:3' }]),
       'piles round-trip, minus the card the deck does not hold');
-    eq(JSON.stringify(d.sortMoves), JSON.stringify(sortMoves), 'Sorted moves round-trip');
-    eq(d.view, 'freeform', 'and the view');
+    ok(!('sortMoves' in d) && !('view' in d), 'sortMoves and view are gone: sent, never stored');
     eq(d.cards.length, 30, 'and the deck itself is untouched');
     const listed = (await call('/api/decks', undefined, token))['decks'] as any[];
     ok(JSON.stringify(listed.find(x => x.id === newId).piles) === JSON.stringify(d.piles), 'a plain re-read carries them');
@@ -522,9 +522,9 @@ try {
       .find(x => x.id === newId);
     eq(after.piles.flatMap((p: any) => p.cards).length, cut.length, '`cards` alone re-clamps the piles');
     ok(!after.piles.some((p: any) => p.cards.includes(top)), 'no pile keeps the cut card');
-    ok(!after.sortMoves, 'and the cut card\'s move went with it');
-    eq(after.view, 'freeform', 'the view is left alone');
-    await call('/api/decks/update', { id: newId, cards: fire, view: 'sorted' }, token);
+    const cleared = ((await call('/api/decks/update', { id: newId, cards: fire, piles: null }, token))['decks'] as any[])
+      .find(x => x.id === newId);
+    ok(!('piles' in cleared), '`piles: null` clears them');
   }
 
   const imported = await call('/api/decks/import',
@@ -573,12 +573,11 @@ try {
     console.log('\n[server: taking a copy]');
     // Bena's own arrangement of a public deck: never shown, never copied
     await call('/api/decks/update', {
-      id: burn.id, piles: [{ id: 'p1', name: 'private plan', cards: burn.cards }], view: 'freeform',
-      sortMoves: { flat: { [burn.cards[0]]: { row: 'all', col: '9' } } },
+      id: burn.id, piles: [{ id: 'p1', name: 'private plan', cards: burn.cards }],
     }, token);
     const pub = await call(`/api/deck/shared?id=${burn.id}`);
-    ok(pub['ok'] && !('piles' in pub['deck']) && !('sortMoves' in pub['deck']) && !('view' in pub['deck']),
-      'the share link carries no piles, moves or view');
+    ok(pub['ok'] && !('piles' in pub['deck']) && !JSON.stringify(pub['deck']).includes('private plan'),
+      'the share link carries no piles');
     const noAuth = await call('/api/decks/take', { id: burn.id });
     eq(noAuth['_status'], 401, 'taking a copy needs a login — it writes to a collection');
 
@@ -589,8 +588,7 @@ try {
     const gained = (took['decks'] as any[]).find(d => d.id === took['id']);
     eq(gained.copiedFrom, burn.id, 'stamped with its parent');
     ok(!gained.visibility || gained.visibility === 'private', 'and private');
-    ok(!('piles' in gained) && !('sortMoves' in gained) && !('view' in gained),
-      'and WITHOUT the owner\'s piles, moves or view');
+    ok(!('piles' in gained), 'and WITHOUT the owner\'s piles');
 
     const stealPrivate = await call('/api/decks/take', { id: priv['id'] }, theirToken);
     ok(!stealPrivate['ok'], 'a PRIVATE deck cannot be taken, id or no id');

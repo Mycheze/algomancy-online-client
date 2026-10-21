@@ -102,10 +102,11 @@ function bucketOf(f: CardFacts | null, grouping: DeckGrouping): { key: string; l
 /**
  * The section one card files under: its key, label and sort.
  *
- * Exported for ui/deckarrange.ts, and for one reason: the deck table's Sorted
- * view remembers a moved card by its ROW KEY, so the key it stores has to be
- * the key this module buckets by. A second bucketing written over there would
- * be the two-projections drift the header above warns about.
+ * Exported for ui/deckarrange.ts, and for one reason: a tabletop pile made by
+ * Re-sort remembers its BUCKET KEY, and reconcile sends a newcomer to the pile
+ * of its bucket, so the key it compares has to be the key this module buckets
+ * by. A second bucketing written over there would be the two-projections drift
+ * the header above warns about.
  */
 export function sectionOf(f: CardFacts | null, grouping: DeckGrouping): { key: string; label: string; sort: number } {
   return bucketOf(f, grouping);
@@ -160,24 +161,3 @@ export function stackLayers(n: number, cap = 3): number[] {
 
 /** does this tile still need a number on it? */
 export const needsCountBadge = (n: number, cap = 2): boolean => n > cap;
-
-/**
- * A section's entries split into COST COLUMNS — the deck table's Sorted view
- * is rows × cost, so a column is one mana value: '0'…'n', then 'X', then
- * 'unknown', in `byCost` order (an X card after every number, a card this build
- * does not script last). Inside a column the order is `byCost` again, which
- * there means by name.
- *
- * Only the columns that hold something; the table fills the range between
- * them itself, so every row draws the same columns and the grid lines up.
- */
-export function costColumns(sec: DeckSection): { col: string; entries: DeckEntry[] }[] {
-  const cols: { col: string; entries: DeckEntry[] }[] = [];
-  for (const e of [...sec.entries].sort(byCost)) {
-    const col = !e.facts ? 'unknown' : e.facts.isX ? 'X' : String(e.facts.mana);
-    const last = cols[cols.length - 1];
-    if (last && last.col === col) last.entries.push(e);
-    else cols.push({ col, entries: [e] });
-  }
-  return cols;
-}
