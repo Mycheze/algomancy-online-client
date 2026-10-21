@@ -98,8 +98,41 @@ export interface CollectionDeck {
    * that merely happen to hold the same cards.
    */
   copiedFrom?: string;
+  /**
+   * THE DECK TABLE'S ARRANGEMENT (2026-10-21) — where the cards sit, never
+   * which cards there are. Both records are arrangement ONLY: neither may add,
+   * remove or count a card, and both are clamped to `cards` on every write
+   * (sanitizeSortMoves / sanitizePiles below). The client's mirror and the
+   * layout opinions are ui/deckarrange.ts.
+   *
+   * `sortMoves`: the Sorted view's remembered exceptions — per row split, the
+   * cell a name was dragged to. ABSENT = pure auto-sort.
+   */
+  sortMoves?: SortMoves;
+  /** Freeform's named piles, in order. ABSENT = no Freeform layout yet. */
+  piles?: DeckPile[];
+  /** the view the deck opens in; absent = 'sorted' */
+  view?: 'sorted' | 'freeform';
   createdAt: string;
   updatedAt: string;
+}
+
+/** one Sorted tweak: the cell a name was moved to, under one row split.
+ * `row` is a ui/decklayout.ts section key ('units', 'fire/wood', 'all'…),
+ * `col` a cost key ('0'…'n', 'X', 'unknown'). */
+export interface SortCell { row: string; col: string }
+export type RowSplit = 'type' | 'element' | 'flat';
+export type SortMoves = Partial<Record<RowSplit, Record<CardName, SortCell>>>;
+
+/** one Freeform pile: one entry per COPY, so a name may be split across piles */
+export interface DeckPile {
+  /** client-made, ≤ 16 chars [A-Za-z0-9_-] */
+  id: string;
+  /** ≤ 40 chars, trimmed; empty → "Pile" */
+  name: string;
+  cards: CardName[];
+  /** the Sorted row key it was seeded from ('units', 'spells'), if any */
+  auto?: string;
 }
 
 /** @see CollectionDeck.visibility */
@@ -146,6 +179,16 @@ const MAX_NAME = 60;
 
 const POOL = new Set<string>(DECK_LIST);
 
+/* The arrangement's caps. Thirty piles is more than anybody sorts thirty cards
+ * into; a 300-card deck (MAX_CARDS) has at most 300 names to move. */
+export const MAX_PILES = 30;
+const MAX_PILE_NAME = 40;
+const MAX_MOVES = MAX_CARDS;
+const ROW_SPLITS: readonly RowSplit[] = ['type', 'element', 'flat'];
+const PILE_ID = /^[A-Za-z0-9_-]{1,16}$/;
+/** a row or column key: short, and from a closed alphabet (see sanitizeSortMoves) */
+const CELL_KEY = /^[A-Za-z0-9/_:-]{1,24}$/;
+
 /** deck-rule problems (30 minimum, max 2 copies) as human-readable lines */
 export function deckProblems(cards: CardName[]): string[] {
   const c = checkDeck(cards);
@@ -166,6 +209,118 @@ function sanitize(raw: unknown): { cards: CardName[]; dropped: string[] } {
     else if (name) dropped.push(name);
   }
   return { cards, dropped };
+}
+
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === 'object' && !Array.isArray(v);
+
+/**
+ * The Sorted moves a client sent, kept only where they still name a card of
+ * THIS deck. Undefined means "no moves", which is what the field's absence
+ * means too.
+ *
+ *  · only the three split keys; each split at most MAX_MOVES entries;
+ *  · a name is canonicalised and must be in the pool AND in `cards` — a move
+ *    never outlives its card;
+ *  · `row` and `col` are short strings from CELL_KEY's alphabet.
+ *
+ * ⚠ NO SEMANTIC CHECK, on purpose. Whether "spellUnits" is a row, or "7" a
+ * column this deck draws, is ui/decklayout.ts's knowledge, and the server
+ * shares no layout code with the client (the same reason sanitizePiles does
+ * not fill). The client drops a meaningless move on read (deckarrange.ts
+ * normaliseMoves); all the server promises is that the record is small, well
+ * formed and about this deck's cards.
+ */
+export function sanitizeSortMoves(raw: unknown, cards: readonly CardName[]): SortMoves | undefined {
+  if (!isRecord(raw)) return undefined;
+  const inDeck = new Set(cards);
+  const out: SortMoves = {};
+  for (const split of ROW_SPLITS) {
+    const m = raw[split];
+    if (!isRecord(m)) continue;
+    const kept: Record<CardName, SortCell> = {};
+    for (const [rawName, cell] of Object.entries(m).slice(0, MAX_MOVES)) {
+      const name = canonicalCardName(rawName);
+      if (!POOL.has(name) || !inDeck.has(name) || name in kept || !isRecord(cell)) continue;
+      const { row, col } = cell;
+      if (typeof row !== 'string' || typeof col !== 'string') continue;
+      if (!CELL_KEY.test(row) || !CELL_KEY.test(col)) continue;
+      kept[name] = { row, col };
+    }
+    if (Object.keys(kept).length) out[split] = kept;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
+/**
+ * The Freeform piles a client sent, clamped to THIS deck. Undefined means
+ * "no piles" (not an array, or an empty one).
+ *
+ *  · at most MAX_PILES; a name trimmed to 40 (empty → "Pile"); an id that is
+ *    malformed or a duplicate is replaced with a fresh one;
+ *  · every card canonicalised and in the pool, or dropped SILENTLY — a pile
+ *    never holds a card the deck lacks, so nothing is lost to report;
+ *  · per name, the copies across all piles are at most the copies in `cards`:
+ *    the surplus comes out of the LAST pile holding it.
+ *  · empty piles are kept — somebody made it to fill later.
+ *
+ * ⚠ A DEFICIT IS NOT FILLED. Where a copy that is in the deck but in no pile
+ * should go is a layout opinion (ui/deckarrange.ts reconcilePiles), and the
+ * client reconciles every time it reads. Filling here would be a second,
+ * different answer to the same question.
+ */
+export function sanitizePiles(raw: unknown, cards: readonly CardName[]): DeckPile[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const piles: DeckPile[] = [];
+  const ids = new Set<string>();
+  for (const item of raw.slice(0, MAX_PILES)) {
+    if (!isRecord(item)) continue;
+    const list = Array.isArray(item['cards']) ? item['cards'] : [];
+    const pileCards: CardName[] = [];
+    for (const c of list.slice(0, MAX_CARDS)) {
+      // a name that is not a card goes in the clamp below: `cards` holds pool
+      // cards only, so a card the deck lacks and a non-card are the same case
+      pileCards.push(canonicalCardName(String(c ?? '')));
+    }
+    let id = typeof item['id'] === 'string' ? item['id'] : '';
+    if (!PILE_ID.test(id) || ids.has(id)) {
+      let n = 1;
+      while (ids.has(`s${n}`) || raw.some(o => isRecord(o) && o['id'] === `s${n}`)) n++;
+      id = `s${n}`;
+    }
+    ids.add(id);
+    const auto = item['auto'];
+    piles.push({
+      id,
+      name: String(item['name'] ?? '').trim().slice(0, MAX_PILE_NAME) || 'Pile',
+      cards: pileCards,
+      ...(typeof auto === 'string' && CELL_KEY.test(auto) ? { auto } : {}),
+    });
+  }
+  // the clamp: what the piles hold beyond the deck comes off the END
+  const left = new Map<string, number>();
+  for (const c of cards) left.set(c, (left.get(c) ?? 0) + 1);
+  const keep = new Map<string, number>();
+  for (const p of piles) for (const c of p.cards) keep.set(c, (keep.get(c) ?? 0) + 1);
+  for (const [name, n] of keep) keep.set(name, Math.min(n, left.get(name) ?? 0));
+  for (const p of piles) {
+    p.cards = p.cards.filter(c => {
+      const k = keep.get(c) ?? 0;
+      if (k <= 0) return false;
+      keep.set(c, k - 1);
+      return true;
+    });
+  }
+  return piles.length ? piles : undefined;
+}
+
+/** `view` as stored: anything but 'freeform' is 'sorted' */
+const viewOf = (raw: unknown): 'sorted' | 'freeform' => (raw === 'freeform' ? 'freeform' : 'sorted');
+
+/** set or clear an optional field, so an absent record is ABSENT, never `undefined`-valued */
+function setArrangement(deck: CollectionDeck, piles: DeckPile[] | undefined, moves: SortMoves | undefined): void {
+  if (piles) deck.piles = piles; else delete deck.piles;
+  if (moves) deck.sortMoves = moves; else delete deck.sortMoves;
 }
 
 /** The card a deck wears in the list when nobody has chosen one: its most
@@ -238,6 +393,15 @@ function canonicalizeDeck(d: CollectionDeck): void {
   if (Array.isArray(d.cards)) d.cards = canon(d.cards);
   if (Array.isArray(d.maybe)) d.maybe = canon(d.maybe);
   if (typeof d.cover === 'string') d.cover = canonicalCardName(d.cover);
+  // the arrangement names cards too, and must spell them the way `cards` now does
+  if (Array.isArray(d.piles)) for (const p of d.piles) if (Array.isArray(p.cards)) p.cards = canon(p.cards);
+  if (d.sortMoves && typeof d.sortMoves === 'object') {
+    for (const split of ROW_SPLITS) {
+      const m = d.sortMoves[split];
+      if (!m || !Object.keys(m).some(n => canonicalCardName(n) !== n)) continue;
+      d.sortMoves[split] = Object.fromEntries(Object.entries(m).map(([n, c]) => [canonicalCardName(n), c]));
+    }
+  }
 }
 
 export const deckById = (account: Account, id: string): CollectionDeck | undefined =>
@@ -377,6 +541,7 @@ export function updateDeck(
   patch: {
     name?: unknown; cards?: unknown; maybe?: unknown; cover?: unknown;
     visibility?: unknown; description?: unknown;
+    piles?: unknown; sortMoves?: unknown; view?: unknown;
   },
 ): EditResult {
   const deck = deckById(account, id);
@@ -408,6 +573,17 @@ export function updateDeck(
     // is the one place that decision belongs.
     deck.description = String(patch.description ?? '').slice(0, MAX_DESCRIPTION);
   }
+  // The arrangement. Each record is replaced only when SENT, and clamped to the
+  // deck as it now stands either way: `cards` sent alone (an older client,
+  // another device cutting a card) re-clamps what is stored, so no pile ever
+  // holds a phantom copy and no move outlives its card. An old client never
+  // sends `piles`, so it cannot wipe them.
+  if (patch.piles !== undefined || patch.sortMoves !== undefined || patch.cards !== undefined) {
+    setArrangement(deck,
+      sanitizePiles(patch.piles !== undefined ? patch.piles : deck.piles, deck.cards),
+      sanitizeSortMoves(patch.sortMoves !== undefined ? patch.sortMoves : deck.sortMoves, deck.cards));
+  }
+  if (patch.view !== undefined) deck.view = viewOf(patch.view);
   deck.updatedAt = new Date().toISOString();
   saveAccounts();
   return { ok: true, deck, ...(note ? { note } : {}) };
@@ -453,6 +629,14 @@ export function duplicateDeck(account: Account, id: string, src?: CollectionDeck
     r.deck.cover = from.cover;
     r.deck.copiedFrom = from.id;
     if (from.description) r.deck.description = from.description;
+    // ⚠ THE ARRANGEMENT IS COPIED FROM YOUR OWN DECK ONLY. Somebody else's
+    // piles and moves are their private way of looking at the list — the
+    // public view never shows them (publicdecks.ts lists its fields), so a
+    // copy taken from it must not smuggle them across either.
+    if (!src) {
+      setArrangement(r.deck, sanitizePiles(from.piles, r.deck.cards), sanitizeSortMoves(from.sortMoves, r.deck.cards));
+      if (from.view) r.deck.view = viewOf(from.view);
+    }
     saveAccounts();
   }
   return r;
