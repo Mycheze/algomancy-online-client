@@ -134,7 +134,7 @@ function testTitles(rel: string, src: string): { title: string; todo: boolean }[
   return out;
 }
 
-const needsNote: LedgerEntry['status'][] = ['live', 'partial', 'by-design', 'wontfix'];
+const needsNote: LedgerEntry['status'][] = ['live', 'partial', 'by-design', 'wontfix', 'agreed-fix'];
 
 // The row type is the writer's (server/report-fields.ts), re-exported by the
 // ledger: `kind`/`severity` are optional there because every row written
@@ -285,6 +285,26 @@ test('anything not fixed explains itself, and a by-design divergence cites its s
     + 'ruling that justifies it');
 });
 
+test('CT-327 an agreed-fix row is a fix the players filed, and says what was taken back', () => {
+  // `agreed-fix` closes a row WITHOUT a guard, so it has to stay narrow: it is
+  // only for rows an accepted in-game fix (BL-46) filed, and only when the cut
+  // or edit was a misclick or take-back. A report a player typed by hand is
+  // never one, whatever it says. The note carries the reading (what the cut
+  // took back, why that is no defect); a bare "oops" is not a reading.
+  const rows = snapshotRows();
+  const problems: string[] = [];
+  for (const e of LEDGER.filter(x => x.status === 'agreed-fix')) {
+    const row = rows[e.id];
+    if (!row?.fix) problems.push(`#${e.id} (${e.room}) is agreed-fix but its snapshot row carries no fix`);
+    if ((e.note ?? '').trim().length < 60) {
+      problems.push(`#${e.id} (${e.room}): the note must say what was taken back and why it is no defect`);
+    }
+  }
+  assert.deepEqual(problems, [],
+    'agreed-fix is for rows an accepted fix filed, read and found to hide no defect:\n  '
+    + problems.join('\n  '));
+});
+
 test('the ledger reports honestly on how much is still open', () => {
   // Not a threshold — a visible tally, so the open count is impossible to lose
   // track of and shows up in every test run.
@@ -292,7 +312,8 @@ test('the ledger reports honestly on how much is still open', () => {
   const open = by('live') + by('partial');
   assert.ok(open <= LEDGER.length, 'sanity');
   console.log(`    playtest ledger: ${by('fixed')} fixed · ${by('live')} live · `
-    + `${by('partial')} partial · ${by('by-design')} by-design · ${by('wontfix')} wontfix`);
+    + `${by('partial')} partial · ${by('by-design')} by-design · ${by('wontfix')} wontfix · `
+    + `${by('agreed-fix')} agreed-fix`);
 
   // And the one fact about the SNAPSHOT that this machine can actually state.
   //

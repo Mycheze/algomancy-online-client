@@ -215,7 +215,10 @@ export interface AdminReportRow extends IssueRow {
    *  `npm run reports`, which is the normal state for a fresh report. */
   ledgerId: number | null;
   /** what the LEDGER says, out of the running build. null = no entry yet,
-   *  which for a new report is the normal state and not an error. */
+   *  which for a new report is the normal state and not an error.
+   *  'agreed-fix' (CT-327) is a row an accepted in-game fix filed whose cut
+   *  was a take-back with no defect: closed, guardless, and NOT open work —
+   *  the page draws it as "agreed fix", apart from `fixed`. */
   status: ReportStatus | null;
   /** the tests the ledger names as keeping it fixed */
   guards: string[];

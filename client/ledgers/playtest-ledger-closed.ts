@@ -121,9 +121,17 @@ export const CLOSED: LedgerEntry[] = [
     id: 11, room: 'BRDM', date: '2026-08-20',
     report: 'Eldritch Dreamtender needs to be sacrificed for its ability to go on the stack, but '
       + "it's still visually in play while resolving its trigger",
-    status: 'fixed',
-    guards: ['26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is paid on the way to the stack',
+    status: 'by-design',
+    guards: ['26-metal-a.test.ts::Eldritch Dreamtender: the trigger waits on the stack with the Dreamtender in play',
       '32-cast-costs.test.ts::Immolate: the sacrifice is chosen and paid AT CAST'],
+    note:
+      'Closed as fixed on 2026-08-22 by making the sacrifice a cast cost paid on the way to the stack, as asked. '
+      + 'REVERSED 2026-10-21 (report #259, CT-264): the card prints "sacrifice me. If you do" as effect prose with no '
+      + '[cost] bracket, so under CR 111.8 the Dreamtender stays in play while its trigger waits and is sacrificed as '
+      + 'it resolves. Caleb on this card (rules-questions 1363535826436493614): "if the opponent kills him with the '
+      + 'trigger on the stack for example, you wouldn\'t be able to sacrifice him/discard a card from them"; the '
+      + 'owner accepted that ruling. What this report asked for is now deliberately not what happens. Immolate, a '
+      + 'printed [cost], still pays at cast.',
   },
   {
     id: 12, room: 'BRDM', date: '2026-08-20',
@@ -4416,5 +4424,342 @@ export const CLOSED: LedgerEntry[] = [
       "496-past-reveals.test.ts::it opens every reveal, newest first: who, from what, and exactly the cards shown",
     ],
     note: "Real by design: the strip expired after about four seconds (Celestial Purge glimpsing 3 at [173]). Owner: close on dismiss or when a new thing takes that space, plus past reveals in the right-click menu. The strip now sits in the board grid (it covered the hand dock), and Past reveals lists every reveal this seat was sent. Mutation-checked: a 5 s expiry turns 495 red 6/7.",
+  },
+
+  // ── report round 2026-10-21: ZKKX RCUY SPVA JJSE VMZP XSAP KEEM RTPE CWEU NWBE YNKA WEKJ MQBZ ──
+  {
+    id: 225, room: "ZKKX", date: "2026-10-18",
+    report: "Djentleman, seat 0, agreed fix at action 18: take back the last 3 actions (back to the start of turn 1, deployment). \"couldn't deploy\"",
+    status: 'fixed',
+    guards: [
+      "519-idle-done-confirm.test.ts::Done with a play on offer and none made sends nothing and asks",
+      "519-idle-done-confirm.test.ts::deployment: a play that was refused or undone does not count as acting",
+      "519-idle-done-confirm.test.ts::deployment: the cache question and the idle one are one bar, and the cache one wins",
+    ],
+    note: "Not an engine fault: the rewind took back Yagamino's Recyclable Sentinel and both Dones [15-17]. Djentleman had pressed Done deploying with Bloomcaster and Spewing Mushroom castable and ringed in hand, and Enter presses Done too. Owner, 2026-10-21: \"if the player takes no actions, but *could have*, best to have a confirmation.\" Done in deployment now asks first when a play is on offer and none was made (CT-319).",
+  },
+  {
+    id: 226, room: "ZKKX", date: "2026-10-18",
+    report: "Yagamino, seat 1, agreed fix at action 307: take back the last 1 action (turn 8, blocks). \"just going back\"",
+    status: 'agreed-fix',
+    note: "Took back Djentleman's block declaration [306]: the first step of a walk back so Yagamino could cast Squish in the attack window instead of passing (#228). The block itself was legal and recorded correctly. No defect.",
+  },
+  {
+    id: 227, room: "ZKKX", date: "2026-10-18",
+    report: "Djentleman, seat 0, agreed fix at action 306: take back the last 1 action. \"bbb\"",
+    status: 'agreed-fix',
+    note: "Took back Djentleman's own pass [305] in the attack window, the second step of the same walk back (#226, #228). A pass taken back; no defect.",
+  },
+  {
+    id: 228, room: "ZKKX", date: "2026-10-18",
+    report: "Djentleman, seat 0, agreed fix at action 306: take back the last 2 actions. \"bbb\"",
+    status: 'agreed-fix',
+    note: "Took back both passes of the attack window [304-305]; Yagamino then cast Squish instead of passing. A pass meant to respond, taken back by agreement; no defect.",
+  },
+  {
+    id: 229, room: "ZKKX", date: "2026-10-18",
+    report: "Djentleman, seat 0, agreed fix at action 310: take back the last 1 action. \"aegaweg\"",
+    status: 'agreed-fix',
+    note: "Took back Yagamino's pass [309] with Squish, Earnest Defender and Omniwield Evoker on the stack, on the way back to Djentleman's own activation (#230). No defect.",
+  },
+  {
+    id: 230, room: "ZKKX", date: "2026-10-18",
+    report: "Djentleman, seat 0, agreed fix at action 309: take back the last 1 action. \"esgegse\"",
+    status: 'agreed-fix',
+    note: "Took back Djentleman's own Borrower of Forms activation [308]; both players then passed. An activation he did not want; no defect.",
+  },
+  {
+    id: 232, room: "RCUY", date: "2026-10-18",
+    report: "LordZZX (judge), seat 0, action 110: \"Shoreline Specter isn't currently a may. It requires targetting an ally.\"",
+    status: 'fixed',
+    guards: [
+      "512-may-target-decline.test.ts::CT-309 Shoreline Specter declined at the target step: no recall and no life loss",
+      "512-may-target-decline.test.ts::CT-309 Shoreline Specter given a target recalls it and drains with no further prompt",
+      "512-may-target-decline.test.ts::CT-309 the may-target class is derived from printed text and every member declines at the target step",
+    ],
+    note: "The engine forced the target and offered the \"may\" only at resolution, which #233 then accepted. Owner, 2026-10-21: \"decline/target should be the options. Same for all similarly worded things.\" A printed \"you may ... target\" trigger now offers No targets at the first target question, and asks no second may when it resolves (CT-309; Shoreline Specter, Mindspore Fiend, Apex Prime, Chombot and the rest of the class derived from printed text).",
+  },
+  {
+    id: 233, room: "RCUY", date: "2026-10-18",
+    report: "LordZZX (judge), seat 0, action 113: \"Nevermind, you must target and then you can decline, no issue.\"",
+    status: 'by-design',
+    guards: [
+      "512-may-target-decline.test.ts::CT-309 no may-target trigger asks a second may when it resolves",
+    ],
+    note: "The author's retraction of #232. Superseded rather than wrong: the owner ruling of 2026-10-21 (\"decline/target should be the options\") settled the shape the other way, and #232 is fixed under it: the decline is offered at the target step. Guarded with #232.",
+  },
+  {
+    id: 234, room: "RCUY", date: "2026-10-19",
+    report: "Tomzy, seat 1, action 182: \"I did not have priority after attacking here, when I should have\"",
+    status: 'fixed',
+    guards: [
+      "518-trigger-keeps-window-priority.test.ts::report 234 RCUY at 180: Tomzy has the initiative, attacks with Rousing Spirit, and receives priority first",
+      "518-trigger-keeps-window-priority.test.ts::CR 605.1a every on-attack trigger card: after the initiative player attacks, the initiative player has priority",
+      "518-trigger-keeps-window-priority.test.ts::CR 703.3c a trigger queued by a resolution: the new window still opens with the initiative player",
+    ],
+    note: "Real. Tomzy had the initiative and attacked with Rousing Spirit [180]; its trigger was pushed and pushItem handed priority to the opponent of the trigger's controller, so LordZZX got it first. CR 605.1a: the initiative player receives priority first in the attack window, and on-attack triggers go on the stack before it opens. A trigger now leaves priority where the window put it; a play still passes it (Annex D2.9). Same fix for the block, after-combat and damage windows (CT-318).",
+  },
+  {
+    id: 235, room: "RCUY", date: "2026-10-19",
+    report: "Tomzy, seat 1, action 213 (gamebreaking): \"The surly stalker effect doesn't target, so this shouldn't be working\"",
+    status: 'fixed',
+    guards: [
+      "529-noop-retarget-confirm.test.ts::the targetless effect asks first, the targeted one does not",
+      "529-noop-retarget-confirm.test.ts::CT-307 the client asks before sending a targetless pick, and Continue sends that pick",
+      "511-retarget-nothing-to-change.test.ts::at a targetless trigger raises no payOrDecline and says there is nothing to change",
+    ],
+    note: "Owner, 2026-10-21, on the question this raised (Gravitational Correction, X = 2, cast at Surly Stalker's targetless trigger): it is castable, with a stop. Under CR 110.9a it changes nothing there. Two fixes: the client now asks \"This effect has no targets, so Gravitational Correction will do nothing. Continue?\" before sending such a pick (CT-307), and the controller of the targeted effect is no longer asked to pay for a change that cannot happen (CT-306; it was asked before the target check). Class derived from printed text: Gravitational Correction, Divine Intervention, Enigmatic Warder.",
+  },
+  {
+    id: 236, room: "RCUY", date: "2026-10-19",
+    report: "LordZZX (judge), seat 0, agreed fix at action 213: take back the last 1 action. \"Bug allows targetting gravitational correction\"",
+    status: 'fixed',
+    guards: [
+      "529-noop-retarget-confirm.test.ts::the targetless effect asks first, the targeted one does not",
+      "529-noop-retarget-confirm.test.ts::CT-307 the client asks before sending a targetless pick, and Continue sends that pick",
+      "511-retarget-nothing-to-change.test.ts::at a targetless trigger raises no payOrDecline and says there is nothing to change",
+    ],
+    note: "Same question as #235: took back the pass [212] that would have resolved Gravitational Correction at Surly Stalker's targetless trigger. Owner, 2026-10-21, on the question this raised (Gravitational Correction, X = 2, cast at Surly Stalker's targetless trigger): it is castable, with a stop. Under CR 110.9a it changes nothing there. Two fixes: the client now asks \"This effect has no targets, so Gravitational Correction will do nothing. Continue?\" before sending such a pick (CT-307), and the controller of the targeted effect is no longer asked to pay for a change that cannot happen (CT-306; it was asked before the target check). Class derived from printed text: Gravitational Correction, Divine Intervention, Enigmatic Warder.",
+  },
+  {
+    id: 237, room: "RCUY", date: "2026-10-19",
+    report: "LordZZX (judge), seat 0, agreed fix at action 212: take back the last 3 actions (back to the start of this step). \"Bug allows targetting Surly Stalker with Gravitational Correction\"",
+    status: 'fixed',
+    guards: [
+      "529-noop-retarget-confirm.test.ts::the targetless effect asks first, the targeted one does not",
+      "529-noop-retarget-confirm.test.ts::CT-307 the client asks before sending a targetless pick, and Continue sends that pick",
+      "511-retarget-nothing-to-change.test.ts::at a targetless trigger raises no payOrDecline and says there is nothing to change",
+    ],
+    note: "Same question as #235: took back the Gravitational Correction cast, its X = 2 and its pick of Surly Stalker's trigger [209-211]. Owner, 2026-10-21, on the question this raised (Gravitational Correction, X = 2, cast at Surly Stalker's targetless trigger): it is castable, with a stop. Under CR 110.9a it changes nothing there. Two fixes: the client now asks \"This effect has no targets, so Gravitational Correction will do nothing. Continue?\" before sending such a pick (CT-307), and the controller of the targeted effect is no longer asked to pay for a change that cannot happen (CT-306; it was asked before the target check). Class derived from printed text: Gravitational Correction, Divine Intervention, Enigmatic Warder.",
+  },
+  {
+    id: 238, room: "SPVA", date: "2026-10-19",
+    report: "Karanda (judge), seat 0, agreed EDIT at action 360: take Karanda's Tidal Menace off the board, to their hand. \"Tidal Reversion needs to target on of my units as well.\"",
+    status: 'fixed',
+    guards: [
+      "510-inline-play-targets.test.ts::CT-308: Tidal Reversion under Tides takes one unit of each player",
+      "510-inline-play-targets.test.ts::a Tides play asks and declares what a hand play does",
+      "510-inline-play-targets.test.ts::Tides offers a targeted spell exactly when it could be played from hand",
+    ],
+    note: "Real, and wide. Tides of the Cosmos played Tidal Reversion with ONE target: a free play mid-resolution asked a single pick off the first slot, so every multi-slot spell, per-slot kind, up-to stop and X count was wrong (16 spells measured). Caleb, RAQ 1410252965276684418: \"You can't play it if one player doesn't have a valid target\" (CR 110.7). A free play (Tides, Hooba-Pon, Insidious Invitation) now asks and declares every target as a play from hand does, and is offered only when every required target can be filled (CT-308).",
+  },
+  {
+    id: 239, room: "SPVA", date: "2026-10-19",
+    report: "LordZZX (judge), seat 1, agreed fix at action 369: take back the last 1 action. \"Misclick Abyssal\"",
+    status: 'agreed-fix',
+    note: "Took back Karanda's pass [368] after LordZZX played Abyssal Evocation from his bin, on the way back to that play (#240). A misclick by his own account; no defect.",
+  },
+  {
+    id: 240, room: "SPVA", date: "2026-10-19",
+    report: "LordZZX (judge), seat 1, agreed fix at action 368: take back the last 2 actions. \"Misclick\"",
+    status: 'agreed-fix',
+    note: "Took back Karanda's pass and LordZZX's Abyssal Evocation from the bin [366-367]; he played Luminous Arc instead. The wrong card played; no defect.",
+  },
+  {
+    id: 241, room: "JJSE", date: "2026-10-20",
+    report: "Tomzy, seat 1, agreed fix at action 90: take back the last 1 action. \"wrong target\"",
+    status: 'agreed-fix',
+    note: "Took back Soul Siphon's player target, Karanda [89], and chose himself. A misclick on correctly labelled choices: the screen showed X = 7 on his own life and X = 0 on Karanda's. No engine defect. The board hint said \"click a highlighted card\" while the targets were players; it now says \"target\" (CT-310, 513-pick-hint-says-target).",
+  },
+  {
+    id: 242, room: "JJSE", date: "2026-10-20",
+    report: "Tomzy, seat 1, agreed fix at action 126: take back the last 1 action. \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back Fireball's target pick, Molten Riftbreaker [125], with Reclaimer of Secrets on the stack: the first of three steps back from a spell-token Fireball cast at the wrong moment (#243, #244). No defect.",
+  },
+  {
+    id: 243, room: "JJSE", date: "2026-10-20",
+    report: "Tomzy, seat 1, agreed fix at action 125: take back the last 1 action. \"oops2\"",
+    status: 'agreed-fix',
+    note: "Took back the Fireball spell-token cast itself [124]; Tomzy passed, let Karanda's Reclaimer of Secrets resolve, and cast Fireball after. Timing changed by agreement; no defect.",
+  },
+  {
+    id: 244, room: "JJSE", date: "2026-10-20",
+    report: "Tomzy, seat 1, agreed fix at action 129: take back the last 2 actions. \"oops3\"",
+    status: 'agreed-fix',
+    note: "Took back the second Fireball cast and its target, Karanda [127-128]; Tomzy passed instead. A spell he chose not to cast; no defect.",
+  },
+  {
+    id: 245, room: "VMZP", date: "2026-10-20",
+    report: "invi, seat 1, agreed fix at action 33: take back the last 1 action (back to the start of this step). \"misclick\"",
+    status: 'agreed-fix',
+    note: "Took back Woodland Warding [32] with Spewing Mushroom on the stack; invi played Bioremediation instead. The wrong card from hand; no defect.",
+  },
+  {
+    id: 246, room: "XSAP", date: "2026-10-20",
+    report: "invi, seat 1, agreed fix at action 76: take back the last 2 actions (back to the start of turn 3, the haste step). \"woot\"",
+    status: 'fixed',
+    guards: [
+      "519-idle-done-confirm.test.ts::Done with a play on offer and none made sends nothing and asks",
+      "519-idle-done-confirm.test.ts::Enter on Done asks too, and a second Enter does not get through",
+    ],
+    note: "Took back both haste-step Dones [74-75]: invi had pressed Done with The Everywhere (Haste) playable, then played it. Not an engine fault; one of three haste Dones over a legal haste play (#250, #256). Owner, 2026-10-21: \"if the player takes no actions, but *could have*, best to have a confirmation.\" The haste step's Done now asks first (CT-324).",
+  },
+  {
+    id: 247, room: "XSAP", date: "2026-10-20",
+    report: "Karanda (judge), seat 0, agreed fix at action 309: take back the last 1 action. \"oops\"",
+    status: 'fixed',
+    guards: [
+      "523-rewind-options-name-their-cut.test.ts::§2 inside a hidden step no option cuts what the asking seat has not seen, and nothing counts the log",
+    ],
+    note: "Karanda's fix took back invi's Maw of Despair from the cache [308], inside deployment: a hidden step, so the rewind cut the opponent's hidden action, and a run of these (#248) told her how many there were. Inside a hidden step a rewind now cuts only the asking seat's own actions, the step's start says it takes the other seat's too with no count, and no wording counts logged actions (CT-325).",
+  },
+  {
+    id: 248, room: "XSAP", date: "2026-10-20",
+    report: "Karanda (judge), seat 0, agreed fix at action 308: back to the start of this step (turn 6, deployment) (10 logged actions). \"oops\"",
+    status: 'fixed',
+    guards: [
+      "523-rewind-options-name-their-cut.test.ts::§2 inside a hidden step no option cuts what the asking seat has not seen, and nothing counts the log",
+    ],
+    note: "Back to the start of deployment [298-307]: ten actions, six of them invi's hidden ones (two Prismatic Observers, their activations and picks), and \"(10 logged actions)\" told Karanda the count of his hidden step. Fixed with #247 (CT-325).",
+  },
+  {
+    id: 249, room: "XSAP", date: "2026-10-20",
+    report: "invi, seat 1, agreed fix at action 324: take back the last 1 action (back to the start of turn 7, battle (declare)). \"jn,\"",
+    status: 'agreed-fix',
+    note: "Took back invi's empty attack declaration [323]: the first step back to the haste step, where the haste Done was the real problem (#250, fixed). The cut itself was a legal declaration; no defect.",
+  },
+  {
+    id: 250, room: "XSAP", date: "2026-10-20",
+    report: "invi, seat 1, agreed fix at action 323: take back the last 2 actions (back to the start of turn 7, the haste step). \"asd\"",
+    status: 'fixed',
+    guards: [
+      "519-idle-done-confirm.test.ts::Done with a play on offer and none made sends nothing and asks",
+      "519-idle-done-confirm.test.ts::Enter on Done asks too, and a second Enter does not get through",
+    ],
+    note: "Took back both haste-step Dones [321-322]; invi then played The Everywhere. A haste Done over a legal haste play, as #246. Fixed with #246 (CT-324).",
+  },
+  {
+    id: 251, room: "KEEM", date: "2026-10-20",
+    report: "Karanda (judge), seat 1, agreed fix at action 165: take back the last 1 action. \"Thought tokeds were trashed\"",
+    status: 'by-design',
+    note: "Not a bug. Karanda sacrificed and burned Unit Tokens expecting Splort (\"another card is trashed\") to fire. A token is never trashed, because only a card can be trashed (CR 108.2e; CR 405.4, 801.2d); this is the owner's reversed ruling of 2026-09-28. She rewound and aimed Sacrificial Burst at Arcane Concentrator, and Splort fired [173].",
+  },
+  {
+    id: 252, room: "KEEM", date: "2026-10-20",
+    report: "Karanda (judge), seat 1, agreed fix at action 164: take back the last 1 action. \"Opps\"",
+    status: 'agreed-fix',
+    note: "Took back Debeli's pass [163] with Sacrificial Burst on the stack: one of three steps back one action at a time after #251 (tokens are not trashed). No defect. The dialog offered the whole cut at once but named nothing; it now names each option's cut and preselects nothing (CT-323, 523 §1 and §3).",
+  },
+  {
+    id: 253, room: "KEEM", date: "2026-10-20",
+    report: "Karanda (judge), seat 1, agreed fix at action 163: take back the last 1 action. \"opp\"",
+    status: 'agreed-fix',
+    note: "Took back Sacrificial Burst's additional-cost sacrifice, Karanda's Unit Token [162]: one of three steps back one action at a time after #251 (tokens are not trashed). No defect. The dialog offered the whole cut at once but named nothing; it now names each option's cut and preselects nothing (CT-323, 523 §1 and §3).",
+  },
+  {
+    id: 254, room: "KEEM", date: "2026-10-20",
+    report: "Karanda (judge), seat 1, agreed fix at action 162: take back the last 1 action. \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back Sacrificial Burst's target, Debeli's Unit Token [161]; she aimed it at Arcane Concentrator instead: one of three steps back one action at a time after #251 (tokens are not trashed). No defect. The dialog offered the whole cut at once but named nothing; it now names each option's cut and preselects nothing (CT-323, 523 §1 and §3).",
+  },
+  {
+    id: 255, room: "RTPE", date: "2026-10-20",
+    report: "invi, seat 1, agreed fix at action 42: take back the last 5 actions (back to the start of this step). \"asd\"",
+    status: 'fixed',
+    guards: [
+      "523-rewind-options-name-their-cut.test.ts::§2 inside a hidden step no option cuts what the asking seat has not seen, and nothing counts the log",
+    ],
+    note: "invi's rewind to the start of deployment took back Karanda's Angel of Anguish and her Done [40-41] with his own Lilbot activation [37-39]: the opponent's hidden actions, cut and counted. Fixed with #247 (CT-325).",
+  },
+  {
+    id: 256, room: "RTPE", date: "2026-10-20",
+    report: "invi, seat 1, agreed fix at action 523: take back the last 4 actions (back to the start of turn 12, the haste step). \"asd\"",
+    status: 'fixed',
+    guards: [
+      "519-idle-done-confirm.test.ts::Done with a play on offer and none made sends nothing and asks",
+      "519-idle-done-confirm.test.ts::Enter on Done asks too, and a second Enter does not get through",
+    ],
+    note: "Took back both haste-step Dones and both namings [519-522]; invi played Seer of Empty Spaces, then named again. A haste Done over a legal haste play, as #246; fixed with it (CT-324). Seen on the way: The Everywhere let invi name The Everywhere [521] (CT-329, an owner question).",
+  },
+  {
+    id: 257, room: "CWEU", date: "2026-10-20",
+    report: "Karanda (judge), seat 0, agreed fix at action 400: take back the last 1 action. \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back invi's pass [399] that resolved Void Mandible over Waxen Witness, on the way back to Karanda's own pass (#258). The defect she met here is #259's, filed and fixed there; this cut hid none.",
+  },
+  {
+    id: 258, room: "CWEU", date: "2026-10-20",
+    report: "Karanda (judge), seat 0, agreed fix at action 399: take back the last 1 action. \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back Karanda's own pass [398] with Waxen Witness and Void Mandible on the stack; she played Cosmic Reversal in response. A pass meant to respond; no defect (Void Mandible is #259).",
+  },
+  {
+    id: 259, room: "CWEU", date: "2026-10-20",
+    report: "Karanda (judge), seat 0, action 399: \"void mandible should not sacrifice until its effect resolves\"",
+    status: 'fixed',
+    guards: [
+      "515-trigger-sacrifice-me.test.ts::killed in response, its trigger does nothing",
+      "515-trigger-sacrifice-me.test.ts::the trigger waits on the stack with its source still in play",
+      "515-trigger-sacrifice-me.test.ts::§1 no triggered effect carries a castCost unless its printed text marks a cost",
+    ],
+    note: "Real; already CT-264. Void Mandible, Eldritch Dreamtender and Cthyrian Rector print \"sacrifice me. If you do, ...\" as effect prose with no [cost] bracket; the engine paid it as a cast cost on the way to the stack, per the owner's 2026-08-22 ruling. CR 111.8, and Caleb on the Dreamtender (rules-questions 1363535826436493614): \"if the opponent kills him with the trigger on the stack for example, you wouldn't be able to sacrifice him/discard a card from them\". The owner accepted that on 2026-10-21. The sacrifice is now made as the trigger resolves, and a source gone by then does nothing.",
+  },
+  {
+    id: 260, room: "CWEU", date: "2026-10-20",
+    report: "Karanda (judge), seat 0, agreed fix at action 399: take back the last 1 action. \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back Karanda's Cosmic Reversal [398], played in #258's branch; both players passed and played on. A spell taken back; no defect beyond #259's.",
+  },
+  {
+    id: 261, room: "NWBE", date: "2026-10-21",
+    report: "Karanda (judge), seat 0, agreed fix at action 76: take back the last 1 action. \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back Karanda's own pass [75] with Malformed Monstrosity (a Virus) on the stack; she played Boon of Protection in response. A pass meant to respond; no defect.",
+  },
+  {
+    id: 262, room: "YNKA", date: "2026-10-21",
+    report: "Karanda (judge), seat 0, agreed fix at action 238: take back the last 3 actions. \"oops\"",
+    status: 'fixed',
+    guards: [
+      "522-virus-host-redirect.test.ts::moves a battle Virus being applied onto another unit in the region, and it lands there",
+      "522-virus-host-redirect.test.ts::CT-322 a Virus host slot offers exactly the units in the battle region, either side",
+    ],
+    note: "Real, under an \"oops\" (found by replaying the cut). Karanda's Enigmatic Warder aimed to redirect Rampart Guardian, a Virus being applied, and nothing happened; she took back the three passes [235-237] and then the pick (#263) and chose it again. A battle Virus carries its one target as its host, not as a target part, so Warder, Gravitational Correction and Divine Intervention were offered it and changed nothing. CR 110.10a; Caleb: \"You can redirect a virus, it is a targeted effect\". Fixed (CT-322).",
+  },
+  {
+    id: 263, room: "YNKA", date: "2026-10-21",
+    report: "Karanda (judge), seat 0, agreed fix at action 235: take back the last 2 actions. \"oops\"",
+    status: 'fixed',
+    guards: [
+      "522-virus-host-redirect.test.ts::moves a battle Virus being applied onto another unit in the region, and it lands there",
+      "522-virus-host-redirect.test.ts::CT-322 a Virus host slot offers exactly the units in the battle region, either side",
+    ],
+    note: "Took back Enigmatic Warder's pick of Rampart Guardian (a Virus being applied) and the pass after it [233-234]: the second step of #262. Fixed with #262 (CT-322).",
+  },
+  {
+    id: 264, room: "WEKJ", date: "2026-10-21",
+    report: "Karanda (judge), seat 0, agreed fix at action 151: take back the last 2 actions. \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back two passes [149-150] with Fight on the stack, on the way back to #265. No defect.",
+  },
+  {
+    id: 265, room: "WEKJ", date: "2026-10-21",
+    report: "Karanda (judge), seat 0, agreed fix at action 149: take back the last 2 actions. \"oop\"",
+    status: 'agreed-fix',
+    note: "Took back two passes [147-148] with Fight and Rebalance on the stack; both players passed again, the same play. A look back; no defect.",
+  },
+  {
+    id: 266, room: "WEKJ", date: "2026-10-21",
+    report: "Karanda (judge), seat 0, agreed fix at action 205: take back the last 1 action (2 logged actions). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back StubTailDstroyer's pass [203] and the forced attack declaration that followed it [204], on the way back to Karanda's own pass (#267). No defect.",
+  },
+  {
+    id: 267, room: "WEKJ", date: "2026-10-21",
+    report: "Karanda (judge), seat 0, agreed fix at action 205: take back the last 2 actions (3 logged actions). \"opop\"",
+    status: 'agreed-fix',
+    note: "Took back Karanda's own pass [202] and what followed; she cast a Crystal spell token instead. A pass meant to respond; no defect.",
+  },
+  {
+    id: 268, room: "MQBZ", date: "2026-10-21",
+    report: "Karanda (judge), seat 0, action 209 (gamebreaking): \"Tides of the Cosmos did not shuffle to give me a full 8 cards to choose from\"",
+    status: 'fixed',
+    guards: [
+      "514-deck-reads-reach-the-mark.test.ts::Tides of the Cosmos off a one-card deck with ten recycled reveals eight (report 268)",
+      "514-deck-reads-reach-the-mark.test.ts::Big Glimpse Card off a one-card deck with ten recycled reveals seven (report 268)",
+      "526-card-code-never-reads-the-deck.test.ts::CR 408.2b no card code reads a deck or a recycle pile directly",
+    ],
+    note: "Real. Deck 1, recycle pile 18: Tides revealed one card. Tides and Big Glimpse Card sliced the deck themselves and never reached the mark. Owner, 2026-10-21: \"The recycled cards are meant to be a part of your deck still ... So ANYTHING that uses the deck should be able to trigger the reshuffle\" (CR 408.2b). Card code now reads the deck only through revealTop / takeTop, which reshuffle the pile in first; a source sweep fails on any direct read (CT-312).",
   },
 ];

@@ -238,7 +238,10 @@ function accountsHtml(): string {
 function statusChip(r: ReportRow): string {
   if (!r.status) return '<span class="stchip none" title="no ledger entry yet">untriaged</span>';
   const t = r.guards.length ? `${r.guards.length} guard(s): ${r.guards.join(' · ')}` : (r.ledgerNote ?? '');
-  return `<span class="stchip ${esc(r.status)}" title="${esc(t)}">${esc(r.status)}</span>`;
+  // agreed-fix (CT-327): a row an accepted in-game fix filed, read and found
+  // to be a take-back with no defect — the note says what was taken back
+  const label = r.status === 'agreed-fix' ? 'agreed fix' : r.status;
+  return `<span class="stchip ${esc(r.status)}" title="${esc(t)}">${esc(label)}</span>`;
 }
 
 function reportsHtml(): string {

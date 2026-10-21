@@ -50,9 +50,22 @@
  *                because this is us telling the owner he was wrong and that
  *                needs a source.
  *   'wontfix'  — acknowledged, not being done. `note` says why.
+ *   'agreed-fix' — (CT-327, 2026-10-21) a row filed by an AGREED FIX (BL-46,
+ *                the in-game "propose a fix" both players accept) whose cut or
+ *                edit was a player's misclick or take-back, with no defect
+ *                behind it. Every accepted fix files a report row (owner,
+ *                2026-10-16), so most of these are "oops". `note` MUST say
+ *                what was taken back and why that is no defect; the row's
+ *                snapshot line must carry `fix` (70-playtest-ledger checks
+ *                both). An agreed-fix row whose "What went wrong" names a real
+ *                defect gets a normal status instead (`fixed`, `live`, …), and
+ *                so does one that turned out to be hiding one (YNKA #262's
+ *                "oops" was a Warder that could not redirect a Virus).
+ *                `server/rewind-cuts.ts` and `replay-room.ts --report` rebuild
+ *                the board a fix row was filed on, which is how to tell.
  */
 
-export type ReportStatus = 'fixed' | 'live' | 'partial' | 'by-design' | 'wontfix';
+export type ReportStatus = 'fixed' | 'live' | 'partial' | 'by-design' | 'wontfix' | 'agreed-fix';
 
 /**
  * One row of issues.jsonl, as the reader sees it. The shape is the WRITER's
@@ -119,6 +132,29 @@ const OPEN: LedgerEntry[] = [
       + 'some form of draft-then-build. ⚠ WHAT THEY MEANT IS NOT SETTLED — "constructed '
       + 'draft" could be drafting a pool and building from it (BL-05 as written) or bringing '
       + 'a constructed deck into a draft pod, which is a different game. Ask before building.',
+  },
+  {
+    id: 231, room: 'ZKKX', date: '2026-10-18',
+    report: 'Yagamino, seat 1, action 443 (feature): "It would be a nice feature to be able to concede the win to the '
+      + 'opponent after a match, for instance, if you ended up winning due to a bug. In our case, the creatures '
+      + 'shouldn\'t have had \"piercing\", because of Transmogrifant."',
+    status: 'partial',
+    guards: [
+      '520-dispute-game.test.ts::§1 a dispute files a report row and marks the room; the result stands',
+      '521-dispute-button.test.ts::§1 the button sits beside Rematch where the game can be disputed, and nowhere else',
+      '57-ui-cardtext.test.ts::CT-328: under Transmogrifant a later Piercing shows live, the printed Flying struck',
+    ],
+    note:
+      'Three parts. (1) The FEATURE is done: owner, 2026-10-21, "Maybe just a \'dispute game\' button right on the '
+      + 'final screen, by \'rematch\'". Either player of a finished two-player game can dispute it once, with a note; '
+      + 'it files a report, tags the game and flags a league match for the organizer, and changes no result (BL-48). '
+      + '(2) The card panel struck Piercing out on Djentleman\'s units while it applied, which likely fed the report: '
+      + 'the panel now strikes by timestamp, as the engine does (CT-328). (3) OPEN, the rule: Piercing from Pernicious '
+      + 'Photosynthesis [407] predates Transmogrifant covering those units, which happened only when Rebalance gave '
+      + 'Yagamino\'s Bonesculptor (with Transmogrifant on it) to Djentleman [423]. The engine dates the strip from when '
+      + 'the mod was applied (CR 113.2), so the later grant survives; the other reading dates it from when it began to '
+      + 'apply to each unit (CR 712.2). No ruling covers a control change. The owner is posting the question to the '
+      + 'community, with the staged board ?question=transmogrifant-control-change. Game-deciding here. CT-313.',
   },
 ];
 
