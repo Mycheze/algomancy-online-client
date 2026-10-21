@@ -96,7 +96,7 @@ function badge(name: string): string {
 function tileHtml(name: string): string {
   const h = host!;
   return `<div class="dktile ddtile${name === pinned ? ' ddon' : ''}"
-      data-dd="pin" data-card="${esc(name)}" data-tt-src="binder|${esc(name)}">
+      data-dd="pin" data-card="${esc(name)}" data-tt-src="binder|${esc(name)}" data-zoom>
     ${scanHtml(name, 'dkart')}
     ${badge(name)}
     <span class="dkbtns">

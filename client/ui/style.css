@@ -2864,6 +2864,8 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
 #draglayer > .dragghost.ttpile { background: rgba(23, 37, 32, .92); }
 #draglayer > .dragghost.ttpile .ttfan { width: auto; }
 #draglayer > .dragghost.ttpile .ttcard { width: 100%; height: auto; }
+/* a card held up to read (ui/presszoom.ts): the scan alone, on the zoom layer */
+#cardzoom > .presszoom > img { display: block; width: 100%; height: auto; }
 .ttmaybe { flex: none; width: calc(var(--cw) + 30px); overflow-y: auto; overscroll-behavior: contain;
   padding: 14px 10px 40px; background: #141f1b; border-left: 1px solid var(--line); touch-action: pan-y; }
 .ttmaybepile { min-height: 100%; }

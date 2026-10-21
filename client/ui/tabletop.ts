@@ -51,6 +51,7 @@ import {
 import {
   cardHeight, cardWidth, fanHeight, insertIndexAt, noImgDrag, pileHtml, previewShift, stripIndexAt, stripOf, type PileCard,
 } from './piletable.ts';
+import { installPressZoom } from './presszoom.ts';
 import { PEEK_MS } from './touch.ts';
 import { esc } from './util.ts';
 
@@ -829,6 +830,8 @@ let listening = false;
 function ensureListeners(): void {
   if (listening || typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
   listening = true;
+  // press and hold a card (or press the wheel on it) to read it big
+  installPressZoom();
   // the pointer that pressed decides what the click means (a mouse pins, a
   // finger picks up) — noted before the click is dispatched
   document.addEventListener('pointerdown', e => { lastPointer = e.pointerType || 'mouse'; }, { capture: true, passive: true });

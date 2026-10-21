@@ -228,6 +228,12 @@ function show(card: HTMLElement | null, animate: boolean, at?: { x: number; y: n
   const view = { w: innerWidth, h: innerHeight };
   const box = at ? peekBox(r, view, at, extraH) : zoomBox(r, view, ZOOM_W, extraH);
   if (!box) { drop(); return; }
+  put(card, copy, r, box, animate);
+}
+
+/** hang `copy` on the layer at `box`, grown out of `r` (the source's face) */
+function put(card: HTMLElement, copy: HTMLElement, r: Rect, box: Rect, animate: boolean): void {
+  const view = { w: innerWidth, h: innerHeight };
   const host = ensureLayer();
   Object.assign(copy.style, {
     position: 'fixed', left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`,
@@ -290,8 +296,8 @@ export function zoomHold(on: boolean): void {
   if (on === wantHold) return;
   wantHold = on;
   // a peek (or a tap's read, #201) is held by the finger, not by a menu: a
-  // menu closing under it must not let it go
-  if (peeking) return;
+  // menu closing under it must not let it go — nor a press zoom (below)
+  if (peeking || pressing) return;
   held = on && !!layer?.firstChild;
   if (!on) zoomCheck();
 }
@@ -354,6 +360,7 @@ export function zoomAfterPaint(): void {
 export function zoomPeek(el: Element | null, at: { x: number; y: number }): boolean {
   const c = el?.closest?.(CARDISH) as HTMLElement | null;
   if (!c || !c.querySelector('img') || c.closest('#cardzoom')) return false;
+  pressing = null;
   held = false;
   drop();
   show(c, true, at);
@@ -370,6 +377,73 @@ export function zoomPeeking(): boolean { return peeking !== null; }
 export function zoomPeekEnd(): void {
   if (!peeking) return;
   peeking = null;
+  held = false;
+  drop();
+}
+
+/*
+ * THE PRESS ZOOM (the tabletop deck builder, owner 2026-10-21): *"Clicking and
+ * holding (or using the mouse wheel to click down) should enlarge and zoom in
+ * on cards. Like normal hovering does in game. It's a little hard to read
+ * cards from here."*
+ *
+ * The same layer and the same grow-out-of-the-card copy as the hover zoom, on
+ * any element that carries `data-zoom` and has its scan `<img>` inside — a
+ * pile's card, a Maybe card, a binder tile, a challenge strip card. The copy
+ * is the SCAN alone (a tile's badges and buttons, a picked card's outline are
+ * not the card), drawn at the peek's width: it is a read asked for on
+ * purpose, and up only while held. HELD like the peek, so the hover zoom's
+ * mouseover, its pointer-follow and a repaint underneath leave it alone; the
+ * gesture that opens and closes it is ui/presszoom.ts, and ui/drag.ts lets it
+ * go the moment a press becomes a drag.
+ */
+
+/** the card a press zoom may show: the `data-zoom` element under `el` that
+ * has a scan to magnify (a card name with no art has none) */
+export function pressTarget(el: Element | null): HTMLElement | null {
+  const c = el?.closest?.('[data-zoom]') as HTMLElement | null;
+  if (!c || c.closest('#cardzoom, #draglayer') || !c.querySelector('img')) return null;
+  return c;
+}
+
+/** the card a press zoom is showing, or null */
+let pressing: HTMLElement | null = null;
+
+/**
+ * Show the press zoom for the card at `el`: centred on the card for a mouse,
+ * clear of the finger at `at` for a touch (peekBox). True when a copy went up.
+ */
+export function zoomPress(el: Element | null, at?: { x: number; y: number }, animate = true): boolean {
+  const c = pressTarget(el);
+  if (!c) return false;
+  if (c === pressing && layer?.firstChild) return true;
+  const img = c.querySelector('img')!;
+  const r = img.getBoundingClientRect();
+  const face = inertCopy(img);
+  face.removeAttribute('class');
+  face.removeAttribute('loading');
+  const copy = document.createElement('div');
+  copy.className = 'zoomcopy presszoom';
+  copy.appendChild(face);
+  const view = { w: innerWidth, h: innerHeight };
+  const box = at ? peekBox(r, view, at) : zoomBox(r, view, PEEK_W);
+  peeking = null;
+  held = false;
+  drop();
+  if (!box) { pressing = null; return false; }
+  put(c, copy, r, box, animate);
+  pressing = c;
+  held = true;
+  return true;
+}
+
+/** is a press zoom up right now? */
+export function zoomPressing(): boolean { return pressing !== null && !!layer?.firstChild; }
+
+/** the press let go, or became a drag: the press zoom goes */
+export function zoomPressEnd(): void {
+  if (!pressing) return;
+  pressing = null;
   held = false;
   drop();
 }

@@ -171,7 +171,7 @@ export function pileHtml(p: PileView): string {
     <div class="ttfan" style="height:${fanHeight(n, p.S, p.ch)}px">${p.cards.map((c, k) =>
       `<div class="ttcard${k === p.front ? ' ttfront' : ''}${k === p.picked ? ' ttpicked' : ''}${
         p.cover && c.name === p.cover ? ' iscover' : ''}" style="--k:${k};top:${k * p.S}px"
-        data-btn="tt-card" data-tt-src="${esc(c.src)}" data-tt-i="${k}" data-card="${esc(c.name)}">${
+        data-btn="tt-card" data-tt-src="${esc(c.src)}" data-tt-i="${k}" data-card="${esc(c.name)}" data-zoom>${
         scanHtml(c.name, 'ttart')}${p.over?.has(c.name) ? `<span class="ttcapn">×${p.over.get(c.name)}</span>` : ''}</div>`).join('')}</div>
   </section>`;
 }
