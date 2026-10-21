@@ -28,6 +28,9 @@
  *      link go through the same helper. They diverged once — one had the
  *      execCommand fallback the plain-http deploy needs and the other did not
  *      — and the duplication is what allowed it.
+ *   5. THE TABLETOP IS A BUTTON AWAY (2026-10-21). "Build on the table" opens
+ *      ui/tabletop.ts on top of this page; this page must not paint over it,
+ *      and its save must carry the piles the table arranged.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -214,4 +217,20 @@ test('the metagame page never decides for itself who may be seen', () => {
   const meta = code('meta.ts');
   assert.doesNotMatch(meta, /visibility === 'private'/,
     'the client must not be the thing deciding what is private');
+});
+
+test('the tabletop is one button away, and the page under it neither paints over it nor loses its piles', () => {
+  // the deck page offers the table by a BUTTON (the installed web app has no
+  // address bar), beside ▶ and ⚙ — and nothing else of the table
+  const dk = code('decks.ts');
+  assert.match(dk, /<div class="deckacts">[\s\S]*?data-btn="deck-settings"[\s\S]*?data-btn="deck-tabletop"[\s\S]*?<\/div>/,
+    'the button sits in the action column');
+  assert.match(dk, /case 'deck-tabletop':[\s\S]*?flushSave\(\);[\s\S]*?tt\.openTabletop\(/, 'it flushes, then opens the table');
+  // the table sits on top of this still-`open` page and every drop is edit() → paint()
+  assert.match(dk, /function paint\(\): void \{[\s\S]{0,200}?if \(cb\.screen\(\)\) return;\s*if \(tt\.screen\(\)\) return;/,
+    'paint must step aside while the table is up, as it does for the browser');
+  // the arrangement rides the same debounced save as everything else
+  assert.match(dk, /function flushSave\(\)[\s\S]*?piles: deck\.piles \?\? null,[\s\S]*?\}\)\.then/, 'the save sends the piles');
+  // and the host's commit is the file's one funnel
+  assert.match(dk, /commit: next => \{[\s\S]*?edit\(d => \{/, 'the table edits through edit()');
 });
