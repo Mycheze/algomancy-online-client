@@ -693,9 +693,9 @@ const OPEN: TodoEntry[] = [
     id: 247, area: "engine", severity: "minor",
     title: "OWNER DECISION: the resource, haste and deployment steps are simultaneous and hidden; print has the initiative side go first",
     detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules turn.planning.order and turn.deploy.order state print: the initiative player takes the resource and haste steps first and the non-initiative player after (Manual p.27 legend, Rulebook 2023 p.5), and the initiative team deploys first (Manual p.38). The engine runs all three as hidden simultaneous segments, a deliberate house rule (CR 500.2a, D1.4; types.ts calls deployment simultaneous). Measured: the non-initiative seat activated a resource, finished the step and played a haste card before the initiative seat acted, and is offered playCard in deployment before the initiative player is done. Waits on D-U08-1 and D-U09-1.",
-    evidence: "Findings F-U08-1 (dup F-U09-3). apply.ts: \"export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {\" and \"if (e.deploying(seat)) return legalDeployActions(e, seat);\". types.ts: \"/** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):\". digital-rules.md: \"false: the haste step is a **hidden simultaneous segment** — nobody sees the\". Measured by verifier and tester probes (not committed).",
+    evidence: "Findings F-U08-1 (dup F-U09-3). engine.ts (apply.ts until 2026-10-21): \"export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {\" and \"if (e.deploying(seat)) return legalDeployActions(e, seat);\". types.ts: \"/** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):\". digital-rules.md: \"false: the haste step is a **hidden simultaneous segment** — nobody sees the\". Measured by verifier and tester probes (not committed).",
     fix: "Ask the owner whether the house rule stands. If it does, record it as a digital convention (Annex D) and close this as wontfix. If print wins, sequence the segments by initiative.",
-    proof: () => still('engine/src/apply.ts', 'export function hiddenSegment('),
+    proof: () => still('engine/src/engine.ts', 'export function hiddenSegment('),   // moved from apply.ts 2026-10-21 (timestamps in simultaneous steps)
     status: 'open',
   },
   {

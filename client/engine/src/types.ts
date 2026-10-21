@@ -207,6 +207,13 @@ export interface Entity {
    * state saved before grants carried a time, which reads as "oldest": stripped, as before. */
   tempAttrsAt?: Stamp[];
   /**
+   * CR 113.2: the entity's timestamp, when it arrived inside a hidden
+   * simultaneous step (the haste step, deployment): those arrivals are ordered
+   * by initiative, not by the clock (`E.stampOf`). Absent everywhere else, where
+   * the timestamp is `[id, ∞]`. Never cleared: it is when the entity arrived.
+   */
+  stampAt?: Stamp;
+  /**
    * CR 803.8d {Unstable}, as an until-regroup STAMP rather than a derivation.
    *
    * A modded card is Unstable because it has mods (CR 803.8e) — that is derived and
@@ -2006,6 +2013,14 @@ export interface GameState {
    * (a strip, a temporary grant). Never an entity id, so stamping moves no
    * id a saved game's actions refer to. Absent = 0. */
   layerTick?: number;
+  /**
+   * CR 113.2: the hidden simultaneous step the timestamp clock is in, opened
+   * by the first stamp taken in it (`E.stampSegment`). Every stamp taken in it
+   * has major `base` (the clock when it opened) and a minor above `t0` that puts
+   * the initiative player's stamps before the other player's, whatever order
+   * they were made in; `hi` is the highest minor handed out. Absent outside one.
+   */
+  stampSeg?: { key: string; base: number; t0: number; hi: number; int: Seat };
   mode: GameMode;
   /** the elements in this game (draft: the trio) — resources outside this
    * list cannot be created and the UI never offers them */

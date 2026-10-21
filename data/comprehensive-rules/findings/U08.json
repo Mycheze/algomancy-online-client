@@ -14,7 +14,7 @@
         "quote": "**The question.** A turn has three HIDDEN SIMULTANEOUS SEGMENTS — the resource"
       },
       {
-        "file": "client/engine/src/apply.ts",
+        "file": "client/engine/src/engine.ts",
         "quote": "export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {"
       }
     ],

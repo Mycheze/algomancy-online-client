@@ -179,6 +179,19 @@ interface ReplacementPick { label: string; card: CardName; unit: EntityId; pick:
 
 export function other(seat: Seat): Seat { return 1 - seat; }
 
+/** Which hidden simultaneous segment is this state in, if any?
+ *
+ * THE definition (apply.ts re-exports it), and server/rooms.ts `segmentKey` is a
+ * thin wrapper over it (its doc block is the long-form ruling). Two copies of
+ * this predicate is exactly the drift BL-19 is this repo's standing example of:
+ * CR D2.1b's decision gate turns on it, and so does the timestamp clock
+ * (CR 113.2, `E.stampSegment`). */
+export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {
+  if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
+  if (s.phase === 'deploy') return 'deploy';
+  return null;
+}
+
 /** Manual p.17: each player may flip up to TWO dormant resources face-up per
  * turn. One constant, three coupled readers: the starting allowance
  * (createGame), the per-turn refresh (startTurn) and the activation gate's
@@ -2069,13 +2082,60 @@ export class E {
   static older(a: Stamp, b: Stamp): boolean {
     return a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]);
   }
-  /** an entity's arrival: the clock read its id (see `Stamp`) */
+  /** an entity's arrival BY THE CLOCK: the clock read its id (see `Stamp`).
+   * The timestamp itself is `stampOf`, which differs inside a hidden step. */
   static entityStamp(id: EntityId): Stamp { return [id, Infinity]; }
-  /** a one-shot timestamp for NOW, taking no entity id */
-  stampNow(): Stamp {
+  /** CR 113.2: an entity's timestamp — its clock arrival, or, for one
+   * that arrived inside a hidden simultaneous step, its initiative-ordered stamp */
+  stampOf(id: EntityId): Stamp { return this.s.entities[id]?.stampAt ?? E.entityStamp(id); }
+  /** a one-shot timestamp for NOW, taking no entity id. `seat`: whose play it
+   * is part of, which orders it inside a hidden simultaneous step (CR 113.2) */
+  stampNow(seat: Seat): Stamp {
+    const seg = this.stampSegment();
     this.s.layerTick = (this.s.layerTick ?? 0) + 1;
+    if (seg) return this.segmentStamp(seg, seat, this.s.nextId, this.s.layerTick - seg.t0);
     return [this.s.nextId, this.s.layerTick];
   }
+
+  // ── CR 113.2: TIMESTAMPS IN A HIDDEN SIMULTANEOUS STEP ──────────────────────
+  //
+  // Owner, 2026-10-21: "Yes, deployment is stamped accourding to INT/NIT order.
+  // "Real time" doesn't matter in simultanous phases". The clock (`nextId`)
+  // reads real click order across the two seats, so inside a hidden step every
+  // stamp is re-based: major = the clock when the step opened, minor = the
+  // initiative player's stamps first, then the other player's, each seat's in
+  // its own clock order. Before the step and after it nothing changes.
+  //
+  //   minor = t0 + 1 + (NIT ? SEG_SEAT : 0) + (clock − base)·SEG_MAJOR + sub
+  //
+  // `sub` is a one-shot stamp's tick since the step opened (≥ 1), or
+  // SEG_MAJOR − 1 for an entity: the same order `[id, ∞]` vs `[nextId, tick]`
+  // gives outside a step. Only finite numbers are stored, so they survive JSON.
+
+  /** the hidden step the clock is in now, opened by its first stamp; closing
+   * the previous one first */
+  private stampSegment(): NonNullable<GameState['stampSeg']> | null {
+    const seg = hiddenSegment(this.s);
+    const key = seg && `${this.s.turn}:${seg}`;
+    const cur = this.s.stampSeg;
+    if (cur && cur.key !== key) {
+      // a stamp after the step at the same clock reading must still be later
+      // than everything stamped in it
+      if (this.s.nextId === cur.base) this.s.layerTick = Math.max(this.s.layerTick ?? 0, cur.hi);
+      delete this.s.stampSeg;
+    }
+    if (!key) return null;
+    const tick = this.s.layerTick ?? 0;
+    return this.s.stampSeg ??= { key, base: this.s.nextId, t0: tick, hi: tick, int: this.s.initiative };
+  }
+  private segmentStamp(seg: NonNullable<GameState['stampSeg']>, seat: Seat, clock: number, sub: number): Stamp {
+    const minor = seg.t0 + 1 + (seat === seg.int ? 0 : E.SEG_SEAT) + (clock - seg.base) * E.SEG_MAJOR + sub;
+    if (minor > seg.hi) seg.hi = minor;
+    return [seg.base, minor];
+  }
+  /** room for 2^16 sub-stamps per clock reading, and 2^20 readings per seat per step */
+  private static readonly SEG_MAJOR = 2 ** 16;
+  private static readonly SEG_SEAT = 2 ** 36;
   /** every stripper of one half of `e`, as the timestamp it applied at: the
    * one-shot stamp on the entity and every continuous stripper radiating onto
    * it (a static applies from when the entity CARRYING it arrived, as in
@@ -2086,7 +2146,7 @@ export class E {
     if (half === 'attrs' && sup?.attrs) out.push(sup.attrsAt ?? E.LATEST);
     if (half === 'abilities' && sup?.abilities) out.push(sup.abilitiesAt ?? E.LATEST);
     for (const st of statics ?? this.staticsFor(e)) {
-      if (half === 'attrs' ? st.mod.suppressAttrs : st.mod.suppressAbilities) out.push(E.entityStamp(st.srcId));
+      if (half === 'attrs' ? st.mod.suppressAttrs : st.mod.suppressAbilities) out.push(this.stampOf(st.srcId));
     }
     return out;
   }
@@ -2096,14 +2156,14 @@ export class E {
   }
   /** when the text `holder` carries arrived on `anchor`: its printed text
    * (holder IS the anchor), or the augment mod that donated it */
-  static textStamp(holder: Entity, anchor: Entity): Stamp {
-    return holder.id === anchor.id ? E.PRINTED : E.entityStamp(holder.id);
+  textStamp(holder: Entity, anchor: Entity): Stamp {
+    return holder.id === anchor.id ? E.PRINTED : this.stampOf(holder.id);
   }
   /** CR 712.2, the FULL question for a radiator: is the text `holder` carries on
    * `anchor` stripped right now? */
   textStripped(holder: Entity, anchor: Entity): boolean {
     const strips = this.strippersOf(anchor, 'abilities');
-    return strips.length > 0 && E.strippedBy(E.textStamp(holder, anchor), strips);
+    return strips.length > 0 && E.strippedBy(this.textStamp(holder, anchor), strips);
   }
   /** CR 712.2: is ability text that arrived on `e` at `at` stripped right now?
    * `E.PRINTED` for its own text, a grant's `at` for granted text (the trigger
@@ -2119,7 +2179,7 @@ export class E {
   textStrippedShallow(holder: Entity, anchor: Entity): boolean {
     const sup = anchor.suppressed;
     if (!sup?.abilities) return false;
-    return E.older(E.textStamp(holder, anchor), sup.abilitiesAt ?? E.LATEST);
+    return E.older(this.textStamp(holder, anchor), sup.abilitiesAt ?? E.LATEST);
   }
 
   // ── CR 712.1a, 712.5: WHICH CONTINUOUS STRIPS APPLY, AND WHAT THEY SILENCE ──────
@@ -2171,7 +2231,7 @@ export class E {
       for (const { def } of blocks[i]!) {
         for (const mod of def.statics ?? []) {
           if (!mod.suppressAbilities) continue;
-          (cand ??= []).push({ holderId: holder.id, anchor, mod, at: E.entityStamp(holder.id), text: E.textStamp(holder, anchor) });
+          (cand ??= []).push({ holderId: holder.id, anchor, mod, at: this.stampOf(holder.id), text: this.textStamp(holder, anchor) });
         }
       }
     });
@@ -2204,7 +2264,7 @@ export class E {
     active: readonly { holderId: EntityId; anchor: Entity; mod: import('./cards/dsl.ts').StaticMod; at: Stamp }[],
   ): boolean {
     if (!active.length) return false;
-    const t = E.textStamp(holder, anchor);
+    const t = this.textStamp(holder, anchor);
     return active.some(x => x.holderId !== holder.id && E.older(t, x.at) && x.mod.affects(this, x.anchor, anchor));
   }
 
@@ -2351,11 +2411,11 @@ export class E {
     if (keep(E.PRINTED)) for (const a of this.faceDef(e).attrs) set.add(a);
     (e.tempAttrs ?? []).forEach((a, i) => { if (keep(e.tempAttrsAt?.[i] ?? E.PRINTED)) set.add(a); });
     for (const { srcId, mod } of statics) {
-      if (mod.attrs?.length && keep(E.entityStamp(srcId))) for (const a of mod.attrs) set.add(a);
+      if (mod.attrs?.length && keep(this.stampOf(srcId))) for (const a of mod.attrs) set.add(a);
     }
     for (const id of e.mods) {
       const m = this.entity(id);
-      if (m && m.appliedAs === 'augment' && keep(E.entityStamp(m.id))) {
+      if (m && m.appliedAs === 'augment' && keep(this.stampOf(m.id))) {
         for (const a of this.card(m.card).augmentAttrs) set.add(a);
       }
     }
@@ -3911,10 +3971,12 @@ export class E {
 
   // ── units, tokens, damage, death ────────────────────────────────────
   private newEntity(partial: Omit<Entity, 'id' | 'damage' | 'counters' | 'tempPower' | 'tempToughness' | 'mods' | 'budgets'>): Entity {
+    const seg = this.stampSegment();                          // CR 113.2: before the clock moves
     const e: Entity = {
       id: this.s.nextId++, damage: 0, counters: 0, tempPower: 0, tempToughness: 0,
       mods: [], budgets: {}, spawnedTurn: this.s.turn, ...partial,
     };
+    if (seg) e.stampAt = this.segmentStamp(seg, e.controller, e.id, E.SEG_MAJOR - 1);
     this.s.entities[e.id] = e;
     return e;
   }
@@ -4393,7 +4455,7 @@ export class E {
   /** grant an attribute until regroup (cleared with temp stats, CR 506.2 step 3) */
   addTempAttr(target: Entity, attr: import('./types.ts').Attr): void {
     (target.tempAttrs ??= []).push(attr);
-    (target.tempAttrsAt ??= []).push(this.stampNow());   // CR 712.2: index for index
+    (target.tempAttrsAt ??= []).push(this.stampNow(target.controller));   // CR 712.2: index for index
     this.ev('statChanged', `${target.card} gains {${attr}} until regroup.`, { unit: target.id, attr });
   }
 
@@ -4410,7 +4472,7 @@ export class E {
     const sup = (target.suppressed ??= {});
     // CR 113.3: a strip is a timestamp. It takes what is there NOW; a later strip
     // only moves the time forward, and takes everything an earlier one did.
-    const at = this.stampNow();
+    const at = this.stampNow(target.controller);
     if (what.attrs) { sup.attrs = by; sup.attrsAt = at; }
     if (what.abilities) { sup.abilities = by; sup.abilitiesAt = at; }
     const lost = [what.attrs ? 'attributes' : '', what.abilities ? 'abilities' : '']
@@ -4433,7 +4495,7 @@ export class E {
    * in play, so fireEvent's scan never reaches it except through this grant.
    */
   grantText(target: Entity, g: import('./types.ts').GrantedText): void {
-    (target.granted ??= []).push({ ...g, at: this.stampNow() });   // CR 712.2
+    (target.granted ??= []).push({ ...g, at: this.stampNow(target.controller) });   // CR 712.2
     this.ev('statChanged', `${target.card} gains "${g.text}" until regroup (${g.from}).`,
       { unit: target.id, granted: g.text });
   }
@@ -12127,7 +12189,7 @@ export class E {
       }
       for (const modId of u.mods) {
         const mod = this.entity(modId);
-        if (mod && mod.appliedAs === 'augment' && kept(E.entityStamp(mod.id))) {
+        if (mod && mod.appliedAs === 'augment' && kept(this.stampOf(mod.id))) {
           // CR 720.6d: the mod's OWN id rides along, so its donated text can say
           // "my other Augments" and mean every augment on this host except
           // this one entity — a second copy of the same card included.

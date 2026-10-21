@@ -9,7 +9,7 @@ import type {
   Action, ActivateVia, AmendEdit, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
   EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem,
 } from './types.ts';
-import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest, type CostOpts } from './engine.ts';
+import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, hiddenSegment, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
   affinityPips, ambushEffect, canonicalCardName, costAmount, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, requiresTargets, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
@@ -289,17 +289,10 @@ export function createGame(
  * whether a play suspends depends on the card, its targets and the board.
  */
 
-/** Which hidden simultaneous segment is this state in, if any?
- *
- * THE definition, and server/rooms.ts `segmentKey` is a thin wrapper over it
- * (its doc block is the long-form ruling). Two copies of this predicate is
- * exactly the drift BL-19 is this repo's standing example of, and CR D2.1b needs
- * it in the engine because the engine's own gate now turns on it. */
-export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {
-  if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
-  if (s.phase === 'deploy') return 'deploy';
-  return null;
-}
+/** Which hidden simultaneous segment is this state in, if any? Defined in
+ * engine.ts (the timestamp clock reads it too, CR 113.2) and re-exported here,
+ * where every caller has always imported it from. */
+export { hiddenSegment };
 
 /**
  * CR D2.1 — does the open decision (if any) stop `seat` from acting?
@@ -1526,8 +1519,8 @@ const ORDINALS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seven
  */
 /** CR 113.2: when the activated text `via` addresses arrived on its unit — an
  * augment mod's at the mod's arrival, everything else printed (the oldest) */
-function viaStamp(via?: ActivateVia): import('./types.ts').Stamp {
-  return via && typeof via === 'object' && 'mod' in via ? E.entityStamp(via.mod) : E.PRINTED;
+function viaStamp(e: E, via?: ActivateVia): import('./types.ts').Stamp {
+  return via && typeof via === 'object' && 'mod' in via ? e.stampOf(via.mod) : E.PRINTED;
 }
 
 function activationSource(e: E, u: Entity, via?: ActivateVia):
@@ -1668,10 +1661,10 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   // CR 712.1a, 712.2: stripped text has no activated abilities to activate — and a
   // stripper takes only text that arrived before it (a mod attached after
   // Suppression Field still works)
-  e.need(!E.strippedBy(viaStamp(via), e.strippersOf(u, 'abilities')), 'that unit has lost its abilities');
+  e.need(!E.strippedBy(viaStamp(e, via), e.strippersOf(u, 'abilities')), 'that unit has lost its abilities');
   // CR 712.4: the offer above skips a NARROWLY suppressed ability, so the accept
   // has to as well or `legalActions lied` fires the moment a card names one.
-  e.need(!e.abilityIsSuppressed(u, ability!, viaStamp(via)), 'that ability has been switched off');
+  e.need(!e.abilityIsSuppressed(u, ability!, viaStamp(e, via)), 'that ability has been switched off');
   let region: number;
   let then: 'push' | 'resolve';
   if (e.s.phase === 'battle') {
@@ -4083,8 +4076,8 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (ab.timing !== undefined && ab.timing !== (battle ? 'battle' : 'deploy')) return;
         if (!canPayAbilityCost(e, seat, ab.cost, u, region, budgetCard)) return;
         if (ab.bounded && (u.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
-        if (strips.length && E.strippedBy(viaStamp(via), strips)) return;      // CR 712.2
-        if (e.abilityIsSuppressed(u, ab, viaStamp(via))) return;                 // CR 712.4
+        if (strips.length && E.strippedBy(viaStamp(e, via), strips)) return;      // CR 712.2
+        if (e.abilityIsSuppressed(u, ab, viaStamp(e, via))) return;                 // CR 712.4
         if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // CR 705.3a
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });
