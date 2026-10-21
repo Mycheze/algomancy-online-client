@@ -207,7 +207,7 @@ export interface Entity {
    * state saved before grants carried a time, which reads as "oldest": stripped, as before. */
   tempAttrsAt?: Stamp[];
   /**
-   * CR 113.2: the entity's timestamp, when it arrived inside a hidden
+   * CR 113.2b: the entity's timestamp, when it arrived inside a hidden
    * simultaneous step (the haste step, deployment): those arrivals are ordered
    * by initiative, not by the clock (`E.stampOf`). Absent everywhere else, where
    * the timestamp is `[id, ∞]`. Never cleared: it is when the entity arrived.
@@ -2014,7 +2014,7 @@ export interface GameState {
    * id a saved game's actions refer to. Absent = 0. */
   layerTick?: number;
   /**
-   * CR 113.2: the hidden simultaneous step the timestamp clock is in, opened
+   * CR 113.2b: the hidden simultaneous step the timestamp clock is in, opened
    * by the first stamp taken in it (`E.stampSegment`). Every stamp taken in it
    * has major `base` (the clock when it opened) and a minor above `t0` that puts
    * the initiative player's stamps before the other player's, whatever order

@@ -275,6 +275,8 @@
     {"num":"113","key":"concepts.timestamps","kind":"section","since":"First generation (draft)"},
     {"num":"113.1","key":"concepts.timestamps.order","since":"First generation (draft)"},
     {"num":"113.2","key":"concepts.timestamps.when","since":"First generation (draft)"},
+    {"num":"113.2a","key":"concepts.timestamps.when.control-change","since":"First generation (draft)"},
+    {"num":"113.2b","key":"concepts.timestamps.when.simultaneous-steps","since":"First generation (draft)"},
     {"num":"113.3","key":"concepts.timestamps.removal","since":"First generation (draft)"},
     {"num":"113.3a","key":"concepts.timestamps.removal.entering","since":"First generation (draft)"},
     {"num":"113.3b","key":"concepts.timestamps.removal.stays-taken","since":"First generation (draft)"},

@@ -290,7 +290,7 @@ export function createGame(
  */
 
 /** Which hidden simultaneous segment is this state in, if any? Defined in
- * engine.ts (the timestamp clock reads it too, CR 113.2) and re-exported here,
+ * engine.ts (the timestamp clock reads it too, CR 113.2b) and re-exported here,
  * where every caller has always imported it from. */
 export { hiddenSegment };
 

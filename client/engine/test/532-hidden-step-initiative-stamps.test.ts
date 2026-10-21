@@ -1,7 +1,7 @@
 /**
  * 532 — in a hidden simultaneous step, the initiative player's plays are
  * timestamped before the other player's, whatever order they were clicked in
- * (CR 113.2).
+ * (CR 113.2b).
  *
  * Owner, 2026-10-21: "Yes, deployment is stamped accourding to INT/NIT order.
  * "Real time" doesn't matter in simultanous phases". The question came from

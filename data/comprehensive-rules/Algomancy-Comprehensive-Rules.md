@@ -1799,6 +1799,20 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Designer: RAQ 1355845893219287132#1 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 415-cr-costs-life-timestamps.test.ts · Example test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.timestamps.when — a static dates from its card, a mod from when it was applied, a resolved spell from its resolution, and printed text is older than all · Key: concepts.timestamps.when</sub>
 
+<a id="r113.2a"></a>**113.2a** A change of control does not change an effect's timestamp. When a card, or the unit a mod is on, changes control, its effects keep the timestamps they already had, including when they now apply to other units. See rule 113.3.
+
+> *Example: Transmogrifant ("[Augment] Your other units gain +2/+2 and lose all attributes and abilities.") is on Player B's The Bonesculptor. Later, Pernicious Photosynthesis gives Player A's units Piercing until regroup. Then Rebalance gives Player A The Bonesculptor, so Transmogrifant now covers Player A's other units: they lose what they print and keep the Piercing, because Transmogrifant's effect is still older than it.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1355845893219287132#1 · Owner call · adopted 2026-10-21 · Tests: 531-control-change-keeps-timestamp.test.ts · Example test: 531-control-change-keeps-timestamp.test.ts::§1 report #231: Rebalance gives away the host of Transmogrifant; the earlier strip takes the printed attributes and the later Piercing stays · Key: concepts.timestamps.when.control-change</sub>
+
+<a id="r113.2b"></a>**113.2b** In a step both players take at the same time, the haste step and deployment, the initiative player's plays are timestamped before the other player's. This client stamps them so whatever order the two players made them in, and keeps each player's own plays in the order that player made them. *(Digital client)* See rules 507.3, 507.3a.
+
+> *Example: In one deployment the non-initiative player casts Pernicious Photosynthesis first and the initiative player then augments Transmogrifant onto The Bonesculptor. Transmogrifant is the older. When Rebalance later gives the non-initiative player The Bonesculptor, their units keep the Piercing.*
+
+> *Example: With the same plays in the same order and the initiative the other way round, Pernicious Photosynthesis is the older, and the units lose the Piercing.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 7 tests (3 probes it wrote), all passed; 1 gate test file · Printed: Rulebook 2023 p.5 · Owner call · adopted 2026-10-21 · Tests: 532-hidden-step-initiative-stamps.test.ts · Example tests: 532-hidden-step-initiative-stamps.test.ts::§1 the NIT player clicks first, and the Transmogrifant of the INT player is still the older: the Piercing stays, 532-hidden-step-initiative-stamps.test.ts::§2 the same clicks with the initiative flipped: the Piercing goes · Key: concepts.timestamps.when.simultaneous-steps</sub>
+
 <a id="r113.3"></a>**113.3.** An effect that removes attributes or abilities removes those the object has when the effect applies. An attribute or ability the object gains afterwards is not removed. See rule 712.
 
 > *Example: a Powerful virus attached after Suppression Field resolved makes the suppressed unit Powerful.*
@@ -10298,7 +10312,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1815 numbered rules.
+1817 numbered rules.
 
 | basis | rules |
 |---|---|
@@ -10306,13 +10320,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | Designer | 206 |
 | Owner call | 688 |
 | Engine only | 42 |
-| Mixed | 419 |
+| Mixed | 421 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1800 |
+| confirmed | 1802 |
 | partial | 13 |
 | contradicted | 0 |
 | unsupported | 0 |
@@ -10910,5 +10924,5 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1816 rules and 99 sections.
+- New: 1818 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)

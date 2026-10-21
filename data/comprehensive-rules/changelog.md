@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1816 rules and 99 sections.
+- New: 1818 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -265,6 +265,8 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 112.15 `concepts.player-counters`
   - 113.1 `concepts.timestamps.order`
   - 113.2 `concepts.timestamps.when`
+  - 113.2a `concepts.timestamps.when.control-change`
+  - 113.2b `concepts.timestamps.when.simultaneous-steps`
   - 113.3 `concepts.timestamps.removal`
   - 113.3a `concepts.timestamps.removal.entering`
   - 113.3b `concepts.timestamps.removal.stays-taken`

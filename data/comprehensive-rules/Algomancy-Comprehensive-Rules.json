@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:b1c3ea72bfac85fd",
+ "generated_from": "sha256:d24161df88753e30",
  "rules": [
   {
    "num": "100.1",
@@ -5869,6 +5869,54 @@
    "see": [],
    "examples": [
     "an attribute granted to a unit while Suppression Field is still on the stack is lost when the spell resolves; one granted after it resolves is kept."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "113.2a",
+   "key": "concepts.timestamps.when.control-change",
+   "title": null,
+   "section": "113",
+   "sectionTitle": "Timestamps",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "113.2",
+   "text": "A change of control does not change an effect's timestamp. When a card, or the unit a mod is on, changes control, its effects keep the timestamps they already had, including when they now apply to other units.",
+   "see": [
+    "113.3"
+   ],
+   "examples": [
+    "Transmogrifant (\"[Augment] Your other units gain +2/+2 and lose all attributes and abilities.\") is on Player B's The Bonesculptor. Later, Pernicious Photosynthesis gives Player A's units Piercing until regroup. Then Rebalance gives Player A The Bonesculptor, so Transmogrifant now covers Player A's other units: they lose what they print and keep the Piercing, because Transmogrifant's effect is still older than it."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "113.2b",
+   "key": "concepts.timestamps.when.simultaneous-steps",
+   "title": null,
+   "section": "113",
+   "sectionTitle": "Timestamps",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "113.2",
+   "text": "In a step both players take at the same time, the haste step and deployment, the initiative player's plays are timestamped before the other player's. This client stamps them so whatever order the two players made them in, and keeps each player's own plays in the order that player made them.",
+   "see": [
+    "507.3",
+    "507.3a"
+   ],
+   "examples": [
+    "In one deployment the non-initiative player casts Pernicious Photosynthesis first and the initiative player then augments Transmogrifant onto The Bonesculptor. Transmogrifant is the older. When Rebalance later gives the non-initiative player The Bonesculptor, their units keep the Piercing.",
+    "With the same plays in the same order and the initiative the other way round, Pernicious Photosynthesis is the older, and the units lose the Piercing."
    ],
    "basis": "mixed",
    "scope": "game",

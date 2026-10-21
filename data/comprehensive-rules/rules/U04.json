@@ -2971,6 +2971,116 @@
     }
   },
   {
+    "key": "concepts.timestamps.when.control-change",
+    "parent": "concepts.timestamps.when",
+    "order": 1,
+    "text": "A change of control does not change an effect's timestamp. When a card, or the unit a mod is on, changes control, its effects keep the timestamps they already had, including when they now apply to other units.",
+    "examples": [
+      {
+        "text": "Transmogrifant (\"[Augment] Your other units gain +2/+2 and lose all attributes and abilities.\") is on Player B's The Bonesculptor. Later, Pernicious Photosynthesis gives Player A's units Piercing until regroup. Then Rebalance gives Player A The Bonesculptor, so Transmogrifant now covers Player A's other units: they lose what they print and keep the Piercing, because Transmogrifant's effect is still older than it.",
+        "test": "531-control-change-keeps-timestamp.test.ts::§1 report #231: Rebalance gives away the host of Transmogrifant; the earlier strip takes the printed attributes and the later Piercing stays"
+      }
+    ],
+    "see": [
+      "concepts.timestamps.removal"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355845893219287132#1",
+          "quote": "if any unit in play later gains Attribute or Ability, then timestamps takes precedence and this new Attribute/Ability is NOT affected by Monke or Transmogrifant"
+        }
+      ],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "We could ask a question \"Does Rebalance cause Transmog to refresh his timestamp?\" but I think going with MtG rules the answer is \"no, it keeps its old timestamp\"",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21, relaying rules-questions (_passer)"
+        },
+        {
+          "quote": "It depends on the timestamp of the effect / unit. This timestamp should not change with change of control.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21, relaying rules-questions (nyarlathotep8457, a player; supporting)"
+        },
+        {
+          "quote": "Even if player A \"gains\" a Transmogrifant the timestamp of its static ability is older than the piercing -> the units first loose their regular attributes and then gain piercing",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21, relaying rules-questions (nyarlathotep8457, a player; supporting)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "531-control-change-keeps-timestamp.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Report #231 (ZKKX), CT-313. The owner posted the question (staged board ?question=transmogrifant-control-change) and relayed the answers from Caleb's Discord, rules-questions, on 2026-10-21. _passer answered (\"no, it keeps its old timestamp\"); nyarlathotep8457, a player, agreed. The messages postdate the export (last message 2026-10-04), so they are cited as the owner's relay, not as RQ rows (rq:index refuses any author but calebgannon). The designer quote states the principle the example rests on: a later gain is not affected by Transmogrifant.",
+    "sourceHashes": {
+      "RAQ 1355845893219287132#1": "7528702d7112fbf2f7cc098512249783dc7f48aa85eb4e7499c2d3e8205a32e7"
+    }
+  },
+  {
+    "key": "concepts.timestamps.when.simultaneous-steps",
+    "parent": "concepts.timestamps.when",
+    "order": 2,
+    "text": "In a step both players take at the same time, the haste step and deployment, the initiative player's plays are timestamped before the other player's. This client stamps them so whatever order the two players made them in, and keeps each player's own plays in the order that player made them.",
+    "digitalClause": "This client stamps them so whatever order the two players made them in, and keeps each player's own plays in the order that player made them.",
+    "examples": [
+      {
+        "text": "In one deployment the non-initiative player casts Pernicious Photosynthesis first and the initiative player then augments Transmogrifant onto The Bonesculptor. Transmogrifant is the older. When Rebalance later gives the non-initiative player The Bonesculptor, their units keep the Piercing.",
+        "test": "532-hidden-step-initiative-stamps.test.ts::§1 the NIT player clicks first, and the Transmogrifant of the INT player is still the older: the Piercing stays"
+      },
+      {
+        "text": "With the same plays in the same order and the initiative the other way round, Pernicious Photosynthesis is the older, and the units lose the Piercing.",
+        "test": "532-hidden-step-initiative-stamps.test.ts::§2 the same clicks with the initiative flipped: the Piercing goes"
+      }
+    ],
+    "see": [
+      "turn.deploy.order",
+      "turn.deploy.order.simultaneous"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "plays first while the non-intiative gets to wait"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Yes, deployment is stamped accourding to INT/NIT order. \"Real time\" doesn't matter in simultanous phases",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
+        },
+        {
+          "quote": "I think going with timestamp and IT/NIT order during Deployment is correct way.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21, relaying rules-questions (_passer)"
+        },
+        {
+          "quote": "If INT/NIT where flipped then the scenario would leave B with pierce-less units.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21, relaying rules-questions (nyarlathotep8457, a player; supporting)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "532-hidden-step-initiative-stamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "Owner ruling 2026-10-21, answering the INT/NIT half of the report #231 thread (_passer and nyarlathotep8457 raised it). Printed play has the initiative player deploy first (rule turn.deploy.order), so at a table the initiative player's plays are the earlier anyway; this client runs the step simultaneously (turn.deploy.order.simultaneous), hence the digital clause. The client's simultaneous steps are the resource step, the haste step and deployment; the resource step makes no timestamped effect (its actions allocate no entity and grant nothing), so the rule names the other two.",
+    "sourceHashes": {}
+  },
+  {
     "key": "concepts.timestamps.removal",
     "parent": "113",
     "order": 3,

@@ -185,7 +185,7 @@ export function other(seat: Seat): Seat { return 1 - seat; }
  * thin wrapper over it (its doc block is the long-form ruling). Two copies of
  * this predicate is exactly the drift BL-19 is this repo's standing example of:
  * CR D2.1b's decision gate turns on it, and so does the timestamp clock
- * (CR 113.2, `E.stampSegment`). */
+ * (CR 113.2b, `E.stampSegment`). */
 export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {
   if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';
   if (s.phase === 'deploy') return 'deploy';
@@ -2085,11 +2085,11 @@ export class E {
   /** an entity's arrival BY THE CLOCK: the clock read its id (see `Stamp`).
    * The timestamp itself is `stampOf`, which differs inside a hidden step. */
   static entityStamp(id: EntityId): Stamp { return [id, Infinity]; }
-  /** CR 113.2: an entity's timestamp — its clock arrival, or, for one
+  /** CR 113.2, 113.2b: an entity's timestamp — its clock arrival, or, for one
    * that arrived inside a hidden simultaneous step, its initiative-ordered stamp */
   stampOf(id: EntityId): Stamp { return this.s.entities[id]?.stampAt ?? E.entityStamp(id); }
   /** a one-shot timestamp for NOW, taking no entity id. `seat`: whose play it
-   * is part of, which orders it inside a hidden simultaneous step (CR 113.2) */
+   * is part of, which orders it inside a hidden simultaneous step (CR 113.2b) */
   stampNow(seat: Seat): Stamp {
     const seg = this.stampSegment();
     this.s.layerTick = (this.s.layerTick ?? 0) + 1;
@@ -2097,7 +2097,7 @@ export class E {
     return [this.s.nextId, this.s.layerTick];
   }
 
-  // ── CR 113.2: TIMESTAMPS IN A HIDDEN SIMULTANEOUS STEP ──────────────────────
+  // ── CR 113.2b: TIMESTAMPS IN A HIDDEN SIMULTANEOUS STEP ──────────────────────
   //
   // Owner, 2026-10-21: "Yes, deployment is stamped accourding to INT/NIT order.
   // "Real time" doesn't matter in simultanous phases". The clock (`nextId`)
@@ -3971,7 +3971,7 @@ export class E {
 
   // ── units, tokens, damage, death ────────────────────────────────────
   private newEntity(partial: Omit<Entity, 'id' | 'damage' | 'counters' | 'tempPower' | 'tempToughness' | 'mods' | 'budgets'>): Entity {
-    const seg = this.stampSegment();                          // CR 113.2: before the clock moves
+    const seg = this.stampSegment();                          // CR 113.2b: before the clock moves
     const e: Entity = {
       id: this.s.nextId++, damage: 0, counters: 0, tempPower: 0, tempToughness: 0,
       mods: [], budgets: {}, spawnedTurn: this.s.turn, ...partial,

@@ -3619,5 +3619,154 @@
     "basis_ok": true,
     "problem": "No test or probe pins the definition directly; supported by the R328 encoding and the removal/order tests.",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "concepts.timestamps.when.control-change",
+    "textHash": "ea14a248da7cdbac",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U04-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.giveControl",
+        "agrees": true,
+        "note": "changes controller on the unit and its mods, keeps the entity ids"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.stampOf",
+        "agrees": true,
+        "note": "a stamp is the entity's id/stampAt, which control never touches"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/531-control-change-keeps-timestamp.test.ts",
+        "pattern": "§1 report",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/531-control-change-keeps-timestamp.test.ts",
+        "pattern": "§2 the timestamp of the strip is the same",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355845893219287132#1",
+        "supports": "yes",
+        "note": "verbatim in the claim's _passer source (status covered): a later-gained attribute is not affected by Transmogrifant; supports the example's outcome (Piercing kept)"
+      },
+      {
+        "ref": "owner chat 2026-10-21, relaying rules-questions (_passer)",
+        "supports": "yes",
+        "note": "'no, it keeps its old timestamp' for Rebalance on Transmogrifant's host"
+      },
+      {
+        "ref": "owner chat 2026-10-21, relaying rules-questions (nyarlathotep8457)",
+        "supports": "yes",
+        "note": "player, supporting only"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "if any unit in play later gains Attribute or Ability, then timestamps takes precedence and this new Attribute/Ability is NOT affected by Monke or Transmogrifant"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.timestamps.when.simultaneous-steps",
+    "textHash": "017d84a9d64f85b0",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U04-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.stampNow / E.stampSegment / E.segmentStamp / hiddenSegment",
+        "agrees": true,
+        "note": "inside the haste step or deployment every stamp is re-based: INT seat's first, then NIT's, each seat's in its own clock order"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/532-hidden-step-initiative-stamps.test.ts",
+        "pattern": "§1 the NIT player clicks first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/532-hidden-step-initiative-stamps.test.ts",
+        "pattern": "§2 the same clicks with the initiative flipped",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/532-hidden-step-initiative-stamps.test.ts",
+        "pattern": "§3 the Transmogrifant of the NIT player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/532-hidden-step-initiative-stamps.test.ts",
+        "pattern": "§4 the haste step orders its arrivals by initiative",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe stamps: INT, NIT, INT, NIT spawns in deployment -> INT ones older, each seat in own order",
+        "passed": true,
+        "demonstrates": "yes: interleaved clicks; each seat's own arrivals keep their click order and every INT arrival is older than every NIT arrival"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe behaviour: NIT seat, Transmogrifant then Photosynthesis -> Piercing kept; reversed -> lost",
+        "passed": true,
+        "demonstrates": "yes: one player's own two plays, with an opposing play between, keep that player's order (both directions)"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe behaviour: INT seat, same",
+        "passed": true,
+        "demonstrates": "yes: same for the initiative seat"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "partial",
+        "note": "verbatim ('must make all of their plays first while the non-intiative gets to wait'); it is about the initiative team acting first in the mana and main phases, so it supports INT-before-NIT as a principle; the stamping in simultaneous steps rests on the owner calls"
+      },
+      {
+        "ref": "owner chat 2026-10-21 ('Yes, deployment is stamped accourding to INT/NIT order...')",
+        "supports": "yes",
+        "note": "owner's own call; 'simultanous phases' covers the haste step as well as deployment"
+      },
+      {
+        "ref": "owner chat 2026-10-21, relaying rules-questions (_passer)",
+        "supports": "yes",
+        "note": "_passer: timestamp and IT/NIT order during Deployment"
+      },
+      {
+        "ref": "owner chat 2026-10-21, relaying rules-questions (nyarlathotep8457)",
+        "supports": "yes",
+        "note": "a player, supporting only; matches example 2"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "plays first while the non-intiative gets to wait"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   }
 ]
