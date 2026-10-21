@@ -23,8 +23,8 @@
 import type { Action, CardName, EngineEvent, GameState } from '../engine/src/types.ts';
 import { legalActions } from '../engine/src/apply.ts';
 import {
-  CATEGORIES, DUMMY_DECK, challengeDeal, dummyMove, foldRun, newRun, progress, progressLabel, scoreRun,
-  type Category, type ChallengeDef, type RunAcc, type RunScore,
+  DUMMY_DECK, challengeDeal, dummyMove, foldRun, newRun, progress, progressLabel, scoreRun,
+  type ChallengeDef, type RunAcc, type RunScore,
 } from '../engine/src/challenge.ts';
 import type { BotPolicy } from './bot.ts';
 import { SoloServer, type ActedBy, type SoloDeal } from './solo.ts';
@@ -38,11 +38,8 @@ const DONE_KEY = 'algoChallengeDone';
 
 export interface RunRecord { v: 1; def: ChallengeDef; deck: CardName[]; actions: Action[]; by: ActedBy[] }
 export interface DoneRun { challengeId: string; title: string; deck: CardName[]; actions: Action[]; score: RunScore; at: number }
-export interface SubmitReply { ok: boolean; error?: string; runId?: string; score?: RunScore; improved?: Category[]; rank?: Partial<Record<Category, number>> }
-
-export const CATEGORY_LABEL: Record<Category, string> = {
-  skill: 'Skill', unique: 'Unique', extra: 'Extra', elements: 'Elements', turns: 'Turns',
-};
+/** `improved`: a new best for this player; `rank`: their place on the leaderboard */
+export interface SubmitReply { ok: boolean; error?: string; runId?: string; score?: RunScore; improved?: boolean; rank?: number }
 
 // ── storage ──────────────────────────────────────────────────────────
 
@@ -155,7 +152,7 @@ export class ChallengeRun {
       onApplied: (before: GameState, a: Action, after: GameState, evs: readonly EngineEvent[]) => {
         this.acc = foldRun(this.acc, before, a, after, [...evs]);
         this.n++;
-        if (this.metAt === null && progress(this.acc).met) { this.metAt = this.n; this.metScore = scoreRun(this.acc); }
+        if (this.metAt === null && progress(this.acc).met) { this.metAt = this.n; this.metScore = scoreRun(this.acc, this.def.par); }
       },
       onChange: () => this.changed(),
       ...(opts.onBotStuck ? { onBotStuck: opts.onBotStuck } : {}),
@@ -165,7 +162,7 @@ export class ChallengeRun {
 
   get state(): GameState { return this.server.state; }
   progress(): { value: number; target: number; met: boolean } { return progress(this.acc); }
-  score(): RunScore { return this.metScore ?? scoreRun(this.acc); }
+  score(): RunScore { return this.metScore ?? scoreRun(this.acc, this.def.par); }
   /** the dummy died before the goal: the game is over and the run failed */
   get failed(): boolean { return this.metAt === null && this.state.phase === 'gameover'; }
   /** the log to upload: both seats, cut at the action that met the goal */
@@ -231,24 +228,22 @@ let hooks: { home: () => void; page: () => void; signIn: () => void; retry: (run
 export const statCell = (label: string, value: string | number): string =>
   `<div class="statcell"><div class="statval">${esc(String(value))}</div><div class="statlab">${esc(label)}</div></div>`;
 
+/** Skill, then what it is made of — extra copies only when there are any */
 export function scoreHtml(s: RunScore): string {
-  return `<div class="statgrid chscore">${(['skill', ...CATEGORIES.filter(c => c !== 'skill')] as Category[]).map(c =>
-    statCell(CATEGORY_LABEL[c], s[c])).join('')}</div>`;
+  return `<div class="statgrid chscore">${statCell('Skill', s.skill)}${statCell('Cards', s.cards)}${
+    s.extra ? statCell('Extra copies', s.extra) : ''}${statCell('Elements', s.elements)}${statCell('Turns', s.turns)}</div>`;
 }
 
 function submitHtml(run: ChallengeRun): string {
   const st = run.submit;
   switch (st.s) {
-    case 'guest': return `<p>Sign in to put this run on the board. It is kept here until you do.</p>
+    case 'guest': return `<p>Sign in to put this run on the leaderboard. It is kept here until you do.</p>
       <button class="primary" data-chal="signin">Sign in</button>`;
     case 'sending': return '<p class="dim">Submitting…</p>';
     case 'error': return `<p class="chproblem">${esc(st.error)}</p><button data-chal="resend">Try again</button>`;
     case 'done': {
       const r = st.reply;
-      const imp = r.improved ?? [];
-      const ranks = CATEGORIES.filter(c => (r.rank?.[c] ?? 0) > 0).map(c => `${CATEGORY_LABEL[c]} #${r.rank![c]}`);
-      return `<p>${imp.length ? `New best: ${imp.map(c => CATEGORY_LABEL[c]).join(', ')}.` : 'On the board. No new best.'}</p>
-        ${ranks.length ? `<p class="dim">${esc(ranks.join(' · '))}</p>` : ''}`;
+      return `<p>${r.improved ? 'New best.' : 'On the leaderboard. No new best.'}${r.rank ? ` Rank #${r.rank}.` : ''}</p>`;
     }
     default: return '';
   }

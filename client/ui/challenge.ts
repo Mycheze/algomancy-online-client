@@ -8,7 +8,7 @@
  * address bar, so a page reachable only by URL is a page he cannot reach.
  *
  * Everything shown is the server's answer (server/api-challenge.ts): the
- * week, its par, the boards, the caller's bests. The two things this page
+ * week, its par, the leaderboards, the caller's best. The two things this page
  * owns are the BUILDER (ui/challengebuild.ts, an ordered deck kept per
  * challenge in this browser) and the hand-off to a run (ui/challengerun.ts,
  * which main.ts opens at `?challenge=play`).
@@ -18,7 +18,7 @@
  * boot: a game or replay link makes no request it has no use for.
  */
 import type { CardName } from '../engine/src/types.ts';
-import { CATEGORIES, goalText, type Category, type ChallengeDef, type RunScore } from '../engine/src/challenge.ts';
+import { goalText, type ChallengeDef, type RunScore } from '../engine/src/challenge.ts';
 import * as acct from './account.ts';
 import * as cb from './cards.ts';
 import * as dk from './decks.ts';
@@ -26,20 +26,21 @@ import {
   blockCut, blockDown, blockLess, blockMore, blockUp, bridgeFor, builderHtml, loadDraft, moveBlock, saveDraft,
 } from './challengebuild.ts';
 import {
-  CATEGORY_LABEL, canSubmit, statCell, doneRuns, forgetDone, freshRun, submitRun, type DoneRun, type SubmitReply,
+  canSubmit, doneRuns, forgetDone, freshRun, scoreHtml, submitRun, type DoneRun, type SubmitReply,
 } from './challengerun.ts';
 import { chosenDeck, esc } from './util.ts';
 
 // ── the server's shapes (server/api-challenge.ts, server/challenge-store.ts) ──
 
-export type ChallengeView = ChallengeDef & { opens: number; closes: number; closed: boolean; entrants: number; par?: RunScore };
+export type ChallengeView = ChallengeDef & { opens: number; closes: number; closed: boolean; entrants: number };
 export interface BoardRow { rank: number; name: string; score: RunScore; at: number; runId?: string; deck?: CardName[] }
-export interface BoardReply { id: string; by: Category; closed: boolean; rows: BoardRow[]; winner?: BoardRow }
+export interface BoardReply { id: string; closed: boolean; rows: BoardRow[]; winner?: BoardRow }
 export interface ChallengeReply {
   now: number;
   current: ChallengeView | null;
   past: ChallengeView[];
-  mine?: Record<string, Partial<Record<Category, RunScore>>>;
+  /** the caller's best run per challenge */
+  mine?: Record<string, RunScore>;
 }
 
 // ── module state ──────────────────────────────────────────────────────
@@ -57,10 +58,8 @@ let msg = '';
 /** the home card's copy, and the token it was asked with */
 let hint: ChallengeReply | null = null;
 let hintFor: string | null | undefined;
-/** boards, by `${id}:${category}` */
+/** leaderboards, by challenge id */
 const boards = new Map<string, BoardReply | 'loading' | 'error'>();
-/** the category each challenge's board shows */
-const tab = new Map<string, Category>();
 /** the past week whose board is unfolded */
 let pastOpen: string | null = null;
 /** the builder: which challenge it builds for, and its list */
@@ -111,9 +110,9 @@ function load(): void {
       if (building && !viewOf(building)) building = null;
       if (building && !list.length) list = loadDraft(building);
       if (pastOpen && !r.past.some(c => c.id === pastOpen)) pastOpen = null;
-      if (pastOpen && !boards.has(`${pastOpen}:${tabOf(pastOpen)}`)) loadBoard(pastOpen, tabOf(pastOpen));
+      if (pastOpen && !boards.has(pastOpen)) loadBoard(pastOpen);
       const cur = r.current;
-      if (cur && !boards.has(`${cur.id}:${tabOf(cur.id)}`)) loadBoard(cur.id, tabOf(cur.id));
+      if (cur && !boards.has(cur.id)) loadBoard(cur.id);
       sendKept();
       paint();
     })
@@ -137,15 +136,12 @@ function askHint(): void {
     .catch(() => { /* no server, no card */ });
 }
 
-const tabOf = (id: string): Category => tab.get(id) ?? 'skill';
-
-function loadBoard(id: string, by: Category): void {
-  const key = `${id}:${by}`;
-  boards.set(key, 'loading');
-  fetch(`/api/challenge/${encodeURIComponent(id)}/board?by=${by}`)
+function loadBoard(id: string): void {
+  boards.set(id, 'loading');
+  fetch(`/api/challenge/${encodeURIComponent(id)}/board`)
     .then(r => r.json() as Promise<BoardReply>)
-    .then(r => { boards.set(key, r && Array.isArray(r.rows) ? r : 'error'); paint(); })
-    .catch(() => { boards.set(key, 'error'); paint(); });
+    .then(r => { boards.set(id, r && Array.isArray(r.rows) ? r : 'error'); paint(); })
+    .catch(() => { boards.set(id, 'error'); paint(); });
 }
 
 /** Runs finished in this browser and not on a board yet: send them once
@@ -159,7 +155,7 @@ function sendKept(): void {
       sending.set(d.at, r);
       if (r.ok) {
         forgetDone(d.at);
-        boards.delete(`${d.challengeId}:${tabOf(d.challengeId)}`);
+        boards.delete(d.challengeId);
         load();
       } else paint();
     });
@@ -207,8 +203,13 @@ export function timeLeft(closes: number, now = Date.now() + skew): string {
   return d ? `${d}d ${h % 24}h left` : h ? `${h}h ${m % 60}m left` : `${Math.max(1, m)}m left`;
 }
 
+const plural = (n: number, one: string): string => `${n} ${one}${n === 1 ? '' : 's'}`;
+
+/** "12 cards (2 extra)", the extra copies only when there are any */
+const cardsText = (s: RunScore): string => `${plural(s.cards, 'card')}${s.extra ? ` (${s.extra} extra)` : ''}`;
+
 const scoreLine = (s: RunScore): string =>
-  `Skill ${s.skill} · ${s.cards} card${s.cards === 1 ? '' : 's'} · ${s.elements} element${s.elements === 1 ? '' : 's'} · ${s.turns} turn${s.turns === 1 ? '' : 's'}`;
+  `Skill ${s.skill} · ${cardsText(s)} · ${plural(s.elements, 'element')} · ${plural(s.turns, 'turn')}`;
 
 // ── the home page ─────────────────────────────────────────────────────
 
@@ -224,7 +225,7 @@ export function homeCardHtml(): string {
   askHint();
   const c = hint?.current;
   if (!c) return '';
-  const best = hint?.mine?.[c.id]?.skill;
+  const best = hint?.mine?.[c.id];
   return `<div class="homecard chhome">
     <h2>This week's challenge</h2>
     <p class="cardsub"><b>${esc(goalText(c.goal))}</b></p>
@@ -236,13 +237,9 @@ export function homeCardHtml(): string {
 
 // ── the page ──────────────────────────────────────────────────────────
 
-function bestsHtml(id: string): string {
+function bestHtml(id: string): string {
   const m = data?.mine?.[id];
-  if (!m || !Object.keys(m).length) return '';
-  return `<h4>Your bests</h4><div class="statgrid">${CATEGORIES.map(c => {
-    const s = m[c];
-    return statCell(CATEGORY_LABEL[c], s ? s[c] : '–');
-  }).join('')}</div>`;
+  return m ? `<h4>Your best</h4>${scoreHtml(m)}` : '';
 }
 
 function weekCardHtml(c: ChallengeView): string {
@@ -251,33 +248,29 @@ function weekCardHtml(c: ChallengeView): string {
     <p class="chgoal">${esc(goalText(c.goal))}</p>
     ${c.blurb ? `<p>${esc(c.blurb)}</p>` : ''}
     <p class="dim">${esc(timeLeft(c.closes))} · ${c.entrants} entrant${c.entrants === 1 ? '' : 's'}</p>
-    ${c.par ? `<p class="dim">Par: ${esc(scoreLine(c.par))}</p>` : ''}
-    ${bestsHtml(c.id)}
+    <p class="dim" title="Skill = par ÷ (cards × elements × turns) × 100. This week's par is ${c.par}.">Higher Skill is better. Par scores 100.</p>
+    ${bestHtml(c.id)}
     ${building === c.id ? '' : `<p><button class="primary" data-btn="ch-build" data-id="${esc(c.id)}">Build a deck</button></p>`}
   </div>`;
 }
 
 function boardHtml(c: ChallengeView, past = false): string {
-  const by = tabOf(c.id);
-  const b = boards.get(`${c.id}:${by}`);
-  const tabs = `<div class="cbtools chtabs">${CATEGORIES.map(k =>
-    `<button class="${k === by ? 'on' : ''}" data-btn="ch-tab" data-id="${esc(c.id)}" data-cat="${k}">${CATEGORY_LABEL[k]}</button>`).join('')}</div>`;
+  const b = boards.get(c.id);
   let body: string;
   if (!b || b === 'loading') body = '<p class="dim">Loading…</p>';
-  else if (b === 'error') body = '<p class="dim">Could not load the board.</p>';
+  else if (b === 'error') body = '<p class="dim">Could not load the leaderboard.</p>';
   else if (!b.rows.length) body = '<p class="dim">No runs yet.</p>';
   else {
-    const others = CATEGORIES.filter(k => k !== by && k !== 'skill');
     body = `${b.closed && b.winner ? `<p>Winner: <b>${esc(b.winner.name)}</b>, Skill ${b.winner.score.skill}</p>` : ''}
-      <table class="accttable chboard"><thead><tr><th>#</th><th>player</th><th>${CATEGORY_LABEL[by]}</th>${
-        by === 'skill' ? '' : '<th>Skill</th>'}${others.map(k => `<th>${CATEGORY_LABEL[k]}</th>`).join('')}${b.closed ? '<th></th>' : ''}</tr></thead>
-      <tbody>${b.rows.map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}</td><td><b>${r.score[by]}</b></td>${
-        by === 'skill' ? '' : `<td>${r.score.skill}</td>`}${others.map(k => `<td>${r.score[k]}</td>`).join('')}${
+      <table class="accttable chboard"><thead><tr><th>#</th><th>player</th><th>Skill</th><th>Cards</th><th>Elements</th><th>Turns</th>${
+        b.closed ? '<th></th>' : ''}</tr></thead>
+      <tbody>${b.rows.map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}</td><td><b>${r.score.skill}</b></td><td>${r.score.cards}${
+        r.score.extra ? ` <span class="dim">(${r.score.extra} extra)</span>` : ''}</td><td>${r.score.elements}</td><td>${r.score.turns}</td>${
         b.closed ? `<td class="chrowbtns">${r.deck ? `<button data-btn="ch-try" data-id="${esc(c.id)}" data-run="${esc(r.runId ?? '')}" title="load this deck into the builder">Try this deck</button>` : ''}${
           r.runId ? `<button data-btn="ch-watch" data-run="${esc(r.runId)}">Watch</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table>`;
   }
-  const head = past ? `${esc(c.title)} <span class="dim">· week of ${esc(c.week)}</span>` : 'Board';
-  return `<div class="acctcard${b && b !== 'loading' && b !== 'error' && b.closed ? ' wide' : ''} chboardcard"><h3>${head}</h3>${tabs}${body}</div>`;
+  const head = past ? `${esc(c.title)} <span class="dim">· week of ${esc(c.week)}</span>` : 'Leaderboard';
+  return `<div class="acctcard${b && b !== 'loading' && b !== 'error' && b.closed ? ' wide' : ''} chboardcard"><h3>${head}</h3>${body}</div>`;
 }
 
 function pastHtml(d: ChallengeReply): string {
@@ -286,7 +279,7 @@ function pastHtml(d: ChallengeReply): string {
     <table class="accttable chpast"><tbody>${d.past.map(c => `<tr>
       <td>${esc(c.week)}</td><td><b>${esc(c.title)}</b> <span class="dim">${esc(goalText(c.goal))}</span></td>
       <td class="dim">${c.entrants} entrant${c.entrants === 1 ? '' : 's'}</td>
-      <td class="chrowbtns"><button class="${pastOpen === c.id ? 'on' : ''}" data-btn="ch-past" data-id="${esc(c.id)}">Board</button>
+      <td class="chrowbtns"><button class="${pastOpen === c.id ? 'on' : ''}" data-btn="ch-past" data-id="${esc(c.id)}">Leaderboard</button>
         <button data-btn="ch-build" data-id="${esc(c.id)}">Build</button></td></tr>`).join('')}</tbody></table>
   </div>${pastOpen ? ((): string => { const c = d.past.find(x => x.id === pastOpen); return c ? boardHtml(c, true) : ''; })() : ''}`;
 }
@@ -332,7 +325,7 @@ function paint(): void {
     <div class="acctbody">
       ${keptHtml()}
       ${b ? `${b.id !== cur?.id ? `<div class="acctcard wide"><h3>${esc(b.title)}</h3><p class="chgoal">${esc(goalText(b.goal))}</p>${
-        b.closed ? '<p class="dim">This week is closed. A run still goes on its board.</p>' : ''}</div>` : ''}
+        b.closed ? '<p class="dim">This week is closed. A run still goes on its leaderboard.</p>' : ''}</div>` : ''}
         ${builderHtml({ def: b, list, decks: importable(), importing, undo: undo?.id === b.id ? undo.what : null })}` : ''}
       ${data && !cur ? '<div class="acctcard"><h3>No challenge this week</h3><p>Check back on Sunday.</p></div>' : ''}
       ${cur ? weekCardHtml(cur) : ''}
@@ -372,7 +365,7 @@ function setList(next: string[], replacing?: string): void {
 function play(id: string): void {
   const def = viewOf(id);
   if (!def) return;
-  freshRun({ id: def.id, week: def.week, title: def.title, blurb: def.blurb, goal: def.goal, seed: def.seed }, list);
+  freshRun({ id: def.id, week: def.week, title: def.title, blurb: def.blurb, goal: def.goal, seed: def.seed, par: def.par }, list);
   location.search = `?challenge=play&id=${encodeURIComponent(id)}`;
 }
 
@@ -388,21 +381,13 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'ch-home-play': openChallenge(id || hint?.current?.id); return true;
     case 'ch-close': close(); return true;
     case 'ch-build': building = id; list = loadDraft(id); syncUrl(); paint(); return true;
-    case 'ch-tab': {
-      const cat = btn.dataset['cat'] as Category;
-      if (!CATEGORIES.includes(cat)) return true;
-      tab.set(id, cat);
-      if (!boards.has(`${id}:${cat}`)) loadBoard(id, cat);
-      paint();
-      return true;
-    }
     case 'ch-past':
       pastOpen = pastOpen === id ? null : id;
-      if (pastOpen && !boards.has(`${id}:${tabOf(id)}`)) loadBoard(id, tabOf(id));
+      if (pastOpen && !boards.has(id)) loadBoard(id);
       paint();
       return true;
     case 'ch-try': {
-      const bd = boards.get(`${id}:${tabOf(id)}`);
+      const bd = boards.get(id);
       const row = bd && typeof bd === 'object' ? bd.rows.find(r => r.runId === btn.dataset['run']) : null;
       if (!row?.deck) return true;
       if (building !== id) { building = id; list = loadDraft(id); }

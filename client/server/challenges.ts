@@ -12,9 +12,15 @@
  * boundary would move an hour twice a year.
  *
  * ⚠ A ROW IS A PROMISE ONCE ITS WEEK OPENS. Its goal and seed are what every
- * run on its board was verified against; changing either afterwards turns
- * every stamped score into a claim about a different puzzle. Add rows at the
- * end; fix a row only before its week opens. `calendarProblems` (test 500)
+ * run on its board was verified against, and its par is what every stamped
+ * Skill was divided by; changing any of them afterwards turns every stamped
+ * score into a claim about a different puzzle. Add rows at the end; fix a row
+ * only before its week opens.
+ *
+ * `par` is the row's reference run's raw score (challenge-runs/<id>.json —
+ * cards × max(1, elements) × turns), so that run scores Skill 100. It is
+ * written here by hand, not read off the file: the file can be re-solved, the
+ * number on the board cannot move. Test 506 holds the two equal. `calendarProblems` (test 500)
  * checks the shape, not the history — git is the history.
  */
 import { dirname, join } from 'node:path';
@@ -28,7 +34,7 @@ export const OPEN_HOUR_UTC = 7;
 
 /** `client/server/challenge-runs/<id>.json` — each row's reference run,
  * `{challengeId, deck, actions}`. Committed source, not runtime state; its
- * score is the row's `par`. */
+ * raw score is the row's `par` (test 506). */
 export const REFERENCE_RUNS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'challenge-runs');
 
 export const CHALLENGES: ChallengeDef[] = [
@@ -36,31 +42,31 @@ export const CHALLENGES: ChallengeDef[] = [
     id: '2026-10-25-crowd', week: '2026-10-25', title: 'Full House',
     blurb: 'Fill your side of the table: have 60 units in play at the same time.',
     goal: { kind: 'unitsInPlay', n: 60 },
-    seed: 20261025,
+    seed: 20261025, par: 90,
   },
   {
     id: '2026-11-01-tokens', week: '2026-11-01', title: 'Token Gesture',
     blurb: 'Create 100 spell tokens over the course of one game.',
     goal: { kind: 'spellTokens', n: 100 },
-    seed: 20261101,
+    seed: 20261101, par: 104,
   },
   {
     id: '2026-11-08-giant', week: '2026-11-08', title: 'Something Big',
     blurb: 'Build a single unit that is at least 60/60.',
     goal: { kind: 'unitSize', p: 60, t: 60 },
-    seed: 20261108,
+    seed: 20261108, par: 100,
   },
   {
     id: '2026-11-15-counters', week: '2026-11-15', title: 'Counting Up',
     blurb: 'Put 100 +1/+1 counters on your units over the course of one game.',
     goal: { kind: 'counters', n: 100 },
-    seed: 20261115,
+    seed: 20261115, par: 81,
   },
   {
     id: '2026-11-22-parade', week: '2026-11-22', title: 'The Parade',
     blurb: 'Play 100 unit cards in one game.',
     goal: { kind: 'unitsPlayed', n: 100 },
-    seed: 20261122,
+    seed: 20261122, par: 286,
   },
 ];
 
@@ -109,7 +115,7 @@ export function pastChallenges(now: number, rows: readonly ChallengeDef[] = CHAL
 
 /** Every way the calendar is malformed, as sentences; [] when it is sound:
  * each `week` a real Sunday, strictly increasing (so no two windows overlap),
- * ids unique and URL-safe, a title and blurb, a whole-number seed. */
+ * ids unique and URL-safe, a title and blurb, a whole-number seed and par. */
 export function calendarProblems(rows: readonly ChallengeDef[] = CHALLENGES): string[] {
   const out: string[] = [];
   const ids = new Set<string>();
@@ -128,6 +134,7 @@ export function calendarProblems(rows: readonly ChallengeDef[] = CHALLENGES): st
     if (!c.title.trim() || c.title.length > 40) out.push(`${at}: title must be 1–40 characters`);
     if (!c.blurb.trim() || c.blurb.length > 160) out.push(`${at}: blurb must be 1–160 characters`);
     if (!Number.isSafeInteger(c.seed)) out.push(`${at}: seed must be a whole number`);
+    if (!Number.isSafeInteger(c.par) || c.par < 1) out.push(`${at}: par must be a whole number, 1 or more`);
   }
   return out;
 }

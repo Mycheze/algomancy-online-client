@@ -19,7 +19,7 @@ import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { apply, createGame } from '../src/apply.ts';
 import {
-  CATEGORIES, DUMMY, DUMMY_DECK, PLAYER, better, challengeDeal, foldRun, goalText, newChallengeGame, newRun,
+  DUMMY, DUMMY_DECK, PLAYER, better, challengeDeal, foldRun, goalText, newChallengeGame, newRun,
   progress, progressLabel, scoreRun, settleDummy, verifyRun, type ChallengeDef, type Goal, type RunAcc, type RunScore,
 } from '../src/challenge.ts';
 import type { Action, CardName, Element, ResourceKind } from '../src/types.ts';
@@ -30,7 +30,7 @@ const SPORE = 'Noxious Sporefiend';       // g — recycled for resources here
 const ANCIENT = 'Crumbling Ancient';      // e, 3/8
 const SYNERGIST = 'Powerforge Synergist'; // m, 0/0: "I spawn with two +1/+1 counters."
 
-const def = (seed: number, goal: Goal): ChallengeDef => ({ id: `t${seed}`, week: '2026-10-25', title: 'Test', blurb: '', goal, seed });
+const def = (seed: number, goal: Goal): ChallengeDef => ({ id: `t${seed}`, week: '2026-10-25', title: 'Test', blurb: '', goal, seed, par: 90 });
 
 interface Plan {
   /** recycle these, in order, each once, for the element named */
@@ -177,7 +177,8 @@ test('§5 unitsPlayed: every unit card played counts', () => {
  * of deployment and they are played again — the 10th play is turn 4's last.
  *   used: Species 1, Sprite 3 (played 9 times), Sporefiend 3 (recycled)
  *   unique 3, extra (3−2)+(3−2) = 2, cards 5, elements water/wood/fire = 3
- *   turns 4 → skill 5 × 3 × 4 = 60. The fillers were drawn and bottomed: free.
+ *   turns 4 → raw 5 × 3 × 4 = 60, and against par 90 Skill 90 ÷ 60 × 100 = 150.
+ * The fillers were drawn and bottomed: free.
  */
 const FILL = ANCIENT;
 const EXAMPLE: CardName[] = [SPECIES, SPRITE, SPRITE, SPRITE, SPORE, SPORE, FILL, FILL, SPORE,
@@ -193,7 +194,7 @@ test('§6 the score: extra copies count, a replayed copy counts once, drawn card
   const plays = h.actions.filter(a => a.type === 'playCard').length;
   assert.equal(plays, 10, 'Species once, the three Sprites three times each');
   assert.deepEqual(acc.used, { [SPECIES]: 1, [SPRITE]: 3, [SPORE]: 3 });
-  assert.deepEqual(scoreRun(acc), { unique: 3, extra: 2, cards: 5, elements: 3, turns: 4, skill: 60 });
+  assert.deepEqual(scoreRun(acc, exampleDef.par), { unique: 3, extra: 2, cards: 5, elements: 3, turns: 4, raw: 60, skill: 150 });
 });
 
 test('§7 verifyRun accepts the recorded log and drops what follows the goal', () => {
@@ -203,7 +204,7 @@ test('§7 verifyRun accepts the recorded log and drops what follows the goal', (
   const r = verifyRun(exampleDef, EXAMPLE, JSON.parse(JSON.stringify(h.actions)));
   assert.ok(r.ok, JSON.stringify(r));
   assert.equal(r.actions.length, metAt + 1, 'truncated at the action that met the goal');
-  assert.deepEqual(r.score, { unique: 3, extra: 2, cards: 5, elements: 3, turns: 4, skill: 60 });
+  assert.deepEqual(r.score, { unique: 3, extra: 2, cards: 5, elements: 3, turns: 4, raw: 60, skill: 150 });
   assert.ok(h.actions.some(a => a.seat === DUMMY), 'the log carries the dummy moves too');
 });
 
@@ -263,12 +264,10 @@ test('§11 verifyRun refuses an agreed fix in the log, which the engine itself w
   assert.equal(!r.ok && r.at, 0);
 });
 
-test('§12 better: lower wins, a tie breaks on skill, a full tie is no win', () => {
-  const s = (o: Partial<RunScore>): RunScore => ({ unique: 5, extra: 0, cards: 5, elements: 2, turns: 4, skill: 40, ...o });
-  assert.deepEqual(CATEGORIES, ['skill', 'unique', 'extra', 'elements', 'turns']);
-  assert.equal(better(s({ skill: 30 }), s({}), 'skill'), true);
-  assert.equal(better(s({}), s({}), 'skill'), false);
-  assert.equal(better(s({ turns: 3, skill: 50 }), s({}), 'turns'), true, 'fewer turns wins turns whatever the skill');
-  assert.equal(better(s({ skill: 35 }), s({ skill: 40 }), 'unique'), true, 'equal unique: the lower skill');
-  assert.equal(better(s({ skill: 45 }), s({ skill: 40 }), 'unique'), false);
+test('§12 better: the lower raw wins, whatever it is made of; a tie is no win', () => {
+  const s = (o: Partial<RunScore>): RunScore => ({ unique: 5, extra: 0, cards: 5, elements: 2, turns: 4, raw: 40, skill: 225, ...o });
+  assert.equal(better(s({ raw: 30 }), s({})), true);
+  assert.equal(better(s({}), s({})), false, 'a tie is not a win');
+  assert.equal(better(s({ cards: 10, elements: 1, raw: 40 }), s({})), false, 'one element or fewer cards: the same raw is the same rank');
+  assert.equal(better(s({ turns: 3, raw: 50 }), s({})), false, 'fewer turns do not win on their own');
 });

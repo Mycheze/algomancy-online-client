@@ -439,7 +439,7 @@ function renderProfile(): void {
       </div>
       <div class="accthbtns">
         <button data-btn="nav-league" title="the league: sign up, your matches, the standings">🏅 League</button>
-        <button data-btn="nav-challenge" title="this week's solo puzzle and its board">🧩 Challenge</button>
+        <button data-btn="nav-challenge" title="this week's solo puzzle and its leaderboard">🧩 Challenge</button>
         ${me.admin ? '<button data-btn="nav-admin" title="the operator dashboard">🛠 Admin</button>' : ''}
         ${me.badge?.owner || me.badge?.judge ? '<button data-btn="nav-crreview" title="the comprehensive rules, open for review and comments">📜 Rules review</button>' : ''}
         <button data-btn="acct-refresh" title="reload from the server">↻</button>

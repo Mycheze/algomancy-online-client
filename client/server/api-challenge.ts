@@ -3,8 +3,8 @@
  * the replay challenge-worker.ts (the engine's verifyRun, off the main loop).
  *
  *   GET  /api/challenge                     anyone: this week, the closed weeks,
- *                                           and the caller's own bests
- *   GET  /api/challenge/<id>/board?by=<cat> anyone: one board; decks and run ids
+ *                                           and the caller's own best
+ *   GET  /api/challenge/<id>/board          anyone: the leaderboard; decks and run ids
  *                                           only once the week has closed
  *   GET  /api/challenge/run/<runId>         a closed week's run: anyone; an open
  *                                           week's: its owner only (404 otherwise —
@@ -23,18 +23,16 @@
  * public view shows it.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { existsSync, readFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
-import { join } from 'node:path';
-import { CATEGORIES, type Category, type ChallengeDef, type RunScore } from '../engine/src/challenge.ts';
+import type { ChallengeDef } from '../engine/src/challenge.ts';
 import { accountById, accountForToken } from './accounts.ts';
 import { json, rateLimited, readBody, tokenOf } from './api-util.ts';
 import {
-  CHALLENGES, REFERENCE_RUNS_DIR, challengeById, challengeNow, currentChallenge, hasOpened, isClosed, pastChallenges,
+  CHALLENGES, challengeById, challengeNow, currentChallenge, hasOpened, isClosed, pastChallenges,
   weekWindow,
 } from './challenges.ts';
 import {
-  appendRun, bestsOf, board, compareRuns, duplicateRun, entrants, mine, ranksOf, runById, runHash, runMeta,
+  appendRun, bestOf, board, compareRuns, duplicateRun, entrants, mine, rankOf, runById, runHash, runMeta,
 } from './challenge-store.ts';
 import { verifyInWorker } from './challenge-worker.ts';
 import { engineVersion } from './engine-version.ts';
@@ -53,45 +51,16 @@ export interface ChallengeCtx {
   now?: () => number;
   /** the calendar; defaults to CHALLENGES (tests pass their own) */
   rows?: readonly ChallengeDef[];
-  /** where the reference runs are; defaults to REFERENCE_RUNS_DIR (tests pass their own) */
-  refsDir?: string;
 }
 
+/** a row as the page sees it; its `par` is the row's own committed number */
 export type ChallengeView = ChallengeDef & {
-  opens: number; closes: number; closed: boolean; entrants: number; par?: RunScore;
+  opens: number; closes: number; closed: boolean; entrants: number;
 };
 
-// ── par: each row's reference run, verified once, in the worker ───────
-
-const parCache = new Map<string, RunScore | null | 'pending'>();
-
-/** The reference run's score, if there is a reference run and it has been
- * checked. The first ask starts the check (in the worker) and answers
- * without it; the answer is kept for the life of the process. */
-export function parFor(def: ChallengeDef, refsDir = REFERENCE_RUNS_DIR): RunScore | undefined {
-  const hit = parCache.get(def.id);
-  if (hit === 'pending' || hit === null) return undefined;
-  if (hit) return hit;
-  const file = join(refsDir, `${def.id}.json`);
-  if (!existsSync(file)) return undefined;   // not cached: a file added later is picked up without a restart
-  parCache.set(def.id, 'pending');
-  let raw: { challengeId?: unknown; deck?: unknown; actions?: unknown };
-  try { raw = JSON.parse(readFileSync(file, 'utf8')) as typeof raw; }
-  catch (err) { console.error(`[challenges] reference run ${def.id} is not JSON:`, err); parCache.set(def.id, null); return undefined; }
-  void verifyInWorker({ def, deck: raw.deck, actions: raw.actions, maxActions: MAX_ACTIONS }).then(r => {
-    if (r.ok) parCache.set(def.id, r.score);
-    else { console.error(`[challenges] reference run ${def.id} does not verify: ${r.error}`); parCache.set(def.id, null); }
-  });
-  return undefined;
-}
-
-/** Tests: forget every par (so a test can watch one get computed). */
-export function resetParCache(): void { parCache.clear(); }
-
-function view(def: ChallengeDef, now: number, refsDir?: string): ChallengeView {
+function view(def: ChallengeDef, now: number): ChallengeView {
   const { opens, closes } = weekWindow(def);
-  const par = parFor(def, refsDir);
-  return { ...def, opens, closes, closed: isClosed(def, now), entrants: entrants(def.id), ...(par ? { par } : {}) };
+  return { ...def, opens, closes, closed: isClosed(def, now), entrants: entrants(def.id) };
 }
 
 // ── the routes ────────────────────────────────────────────────────────
@@ -121,7 +90,7 @@ function notFound(res: ServerResponse, what = 'not found'): true {
 }
 
 export async function challengeRoutes(
-  req: IncomingMessage, res: ServerResponse, path: string, url: URL, ctx: ChallengeCtx = {},
+  req: IncomingMessage, res: ServerResponse, path: string, _url: URL, ctx: ChallengeCtx = {},
 ): Promise<boolean> {
   if (path !== '/api/challenge' && !path.startsWith('/api/challenge/')) return false;
   const now = (ctx.now ?? challengeNow)();
@@ -137,8 +106,8 @@ export async function challengeRoutes(
     const cur = currentChallenge(now, rows);
     const out: Record<string, unknown> = {
       now,
-      current: cur ? view(cur, now, ctx.refsDir) : null,
-      past: pastChallenges(now, rows).map(d => view(d, now, ctx.refsDir)),
+      current: cur ? view(cur, now) : null,
+      past: pastChallenges(now, rows).map(d => view(d, now)),
     };
     if (me) {
       // only rows that have opened: nothing about a future week, even empty
@@ -153,9 +122,7 @@ export async function challengeRoutes(
   if (req.method === 'GET' && boardMatch) {
     const def = opened(boardMatch[1]!);
     if (!def) return notFound(res, 'no such challenge');
-    const by = url.searchParams.get('by');
-    const cat: Category = (CATEGORIES as readonly string[]).includes(by ?? '') ? by as Category : 'skill';
-    sendBig(req, res, board(def, cat, now));
+    sendBig(req, res, board(def, now));
     return true;
   }
 
@@ -220,7 +187,7 @@ async function submit(req: IncomingMessage, res: ServerResponse, now: number, ro
       json(res, { ok: false, error: r.error, ...(r.at !== undefined ? { at: r.at } : {}) }, 422);
       return true;
     }
-    const before = bestsOf(def.id, me.id);
+    const before = bestOf(def.id, me.id);
     const hash = runHash(r.deck, r.actions);
     // the same run sent twice (a retried submit, a double click) is one run
     const dup = duplicateRun(def.id, me.id, hash);
@@ -240,12 +207,8 @@ async function submit(req: IncomingMessage, res: ServerResponse, now: number, ro
         return true;
       }
     }
-    const mineNow = { score: r.score, at, runId };
-    const improved = dup ? [] : CATEGORIES.filter(c => {
-      const prev = before[c];
-      return !prev || compareRuns(mineNow, prev, c) < 0;
-    });
-    json(res, { ok: true, runId, score: r.score, improved, rank: ranksOf(def.id, me.id) });
+    const improved = !dup && (!before || compareRuns({ score: r.score, at, runId }, before) < 0);
+    json(res, { ok: true, runId, score: r.score, improved, rank: rankOf(def.id, me.id) });
     return true;
   } finally {
     inFlight.delete(me.id);

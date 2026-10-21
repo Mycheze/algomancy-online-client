@@ -16,7 +16,7 @@ import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 import { getCard } from '../../engine/src/cards/dsl.ts';
 import { newChallengeGame, type ChallengeDef } from '../../engine/src/challenge.ts';
 
-const DEF: ChallengeDef = { id: 'w508', week: '2026-10-11', title: 'Watched', blurb: '', goal: { kind: 'unitsPlayed', n: 1 }, seed: 50800 };
+const DEF: ChallengeDef = { id: 'w508', week: '2026-10-11', title: 'Watched', blurb: '', goal: { kind: 'unitsPlayed', n: 1 }, seed: 50800, par: 1 };
 const UNIT = DECK_LIST.find(n => getCard(n).kind === 'unit')!;
 const DECK = Array.from({ length: 12 }, () => UNIT);
 // the deal's own head: the dummy finishing its planning — the board then

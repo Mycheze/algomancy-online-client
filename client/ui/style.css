@@ -4991,7 +4991,7 @@ html.touch .crdoc .crshare { opacity: .7; padding: 4px 6px; }
 .chpage .dim { color: var(--dim); }
 .chpage .chgoal { font-size: 15px; font-weight: 700; color: var(--text); }
 .chproblem { color: var(--danger); margin: 8px 0 0; }
-.chtabs button.on, .chpast button.on { border-color: var(--accent); color: var(--accent); }
+.chpast button.on { border-color: var(--accent); color: var(--accent); }
 .chboardcard { overflow-x: auto; }
 .chrowbtns { white-space: nowrap; text-align: right; }
 .chrowbtns button { margin-left: 4px; }

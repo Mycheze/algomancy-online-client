@@ -14,7 +14,13 @@ owner 2026-10-19.
   so a run is a deterministic puzzle.
 - **Reveal:** while a week is open the board shows names and numbers only. Decks and runs open
   when it closes.
-- **Winner:** the lowest Algomancer Skill wins the week (ties go to the earlier run). One trophy.
+- **Winner:** the best Algomancer Skill wins the week (ties go to the earlier run). One trophy.
+
+**Changed 2026-10-21 (owner).** Skill used to be the bare product, lower better, with a board
+per metric. Two runs (8·2·5 → "80", 6·2·5 → "60") read as the better run scoring lower. Now:
+- **Skill is par ÷ raw × 100, HIGHER is better.** The week's reference run scores exactly 100.
+- **One leaderboard, ranked by Skill only.** Fewer cards and fewer elements are both valid
+  routes to a good Skill; neither is "strictly better", so no metric gets a board of its own.
 
 ## Scoring
 
@@ -22,10 +28,19 @@ owner 2026-10-19.
 unique   = distinct card names among the copies used
 extra    = Σ over names max(0, copiesUsed(name) − 2)
 cards    = unique + extra
-elements = |∪ factions of the cards used|      (Skill uses max(1, elements))
+elements = |∪ factions of the cards used|      (raw uses max(1, elements))
 turns    = state.turn when the goal is met
-Skill    = cards × max(1, elements) × turns    — lower is better
+raw      = cards × max(1, elements) × turns    — the run's exact cost
+Skill    = par ÷ raw × 100, rounded half up    — HIGHER is better (skillOf)
 ```
+
+- **Par** is the row's `par` in `server/challenges.ts`: the **raw** of its reference run, so
+  that run scores Skill 100. It is a committed number, not read off the reference file at
+  request time — a row is a promise once its week opens, and every stamped Skill was divided
+  by it. Test 506 holds it equal to what the reference run scores.
+- Example: par 10·1·9 = 90. A 6·2·5 run (raw 60) shows Skill 150; an 8·2·5 run (raw 80)
+  shows 113 (112.5 rounded half up). Test 539.
+- Rounding in integers: `floor((200·par + raw) / (2·raw))`. A raw of 0 is read as 1.
 
 **What counts as "used":**
 - A copy counts as used when one of the **player's own actions** takes it out of their hand:
@@ -35,10 +50,12 @@ Skill    = cards × max(1, elements) × turns    — lower is better
 - Cards that were only drawn, or never left the deck, cost nothing.
 - Spell tokens are not cards.
 
-**Leaderboard categories:** `skill`, `unique`, `extra`, `elements`, `turns`.
-- In every category lower is better.
-- Ties break on skill, then on the earlier run.
-- A player's entry in a category is their best run *for that category*.
+**The leaderboard:** one per challenge.
+- Ranked by the stamped `raw` ascending — the same order as Skill descending, but exact, so
+  two runs that round to the same Skill still order. Ties go to the earlier run.
+- A player's entry is their best run.
+- Each row shows Skill and its breakdown: cards (with the extra copies when there are any),
+  elements, turns.
 
 ## The game a challenge deals
 
@@ -68,7 +85,7 @@ export type Goal =
   | { kind: 'unitsPlayed'; n: number };  // seat 0 has played ≥ n unit cards (cumulative)
 
 export interface ChallengeDef { id: string; week: string /* YYYY-MM-DD, a Sunday */; title: string;
-  blurb: string; goal: Goal; seed: number }
+  blurb: string; goal: Goal; seed: number; par: number /* the reference run's raw */ }
 
 export const PLAYER: Seat;            // 0
 export const DUMMY: Seat;             // 1
@@ -87,24 +104,23 @@ export function goalText(goal: Goal): string;      // "Have 40 units in play at 
 export function progressLabel(goal: Goal): string; // "Units in play"
 
 export interface RunScore { unique: number; extra: number; cards: number; elements: number;
-  turns: number; skill: number }
-export function scoreRun(acc: RunAcc): RunScore;
-
-export type Category = 'skill' | 'unique' | 'extra' | 'elements' | 'turns';
-export const CATEGORIES: Category[];
-export function better(a: RunScore, b: RunScore, by: Category): boolean; // a strictly beats b
+  turns: number; raw: number; skill: number }
+export function skillOf(par: number, raw: number): number;    // par ÷ raw × 100, rounded half up
+export function scoreRun(acc: RunAcc, par: number): RunScore;
+export function better(a: RunScore, b: RunScore): boolean;    // a strictly beats b: a.raw < b.raw
 
 /** Replay a whole uploaded run: the full action log as the harness recorded it, both seats.
  * Every dummy action must equal dummyMove; every player action must be legal. Stops at the
  * first action that meets the goal; trailing actions are ignored. */
 export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown, opts?: { maxActions?: number }):
-  { ok: true; score: RunScore; actions: Action[] /* truncated at the goal */ }
+  { ok: true; score: RunScore /* against def.par */; actions: Action[] /* truncated at the goal */ }
   | { ok: false; error: string; at?: number };
 ```
 
 ### `client/server/challenges.ts` (the calendar: committed data)
 
-- `CHALLENGES: ChallengeDef[]`, one row per week, Sundays strictly increasing.
+- `CHALLENGES: ChallengeDef[]`, one row per week, Sundays strictly increasing, each with its
+  committed `par`.
 - A week opens Sunday 07:00 UTC and closes the next Sunday 07:00 UTC.
 - `weekWindow(def) → {opens, closes}` (ms).
 - `currentChallenge(now)` returns the row whose window holds now, or null.
@@ -116,14 +132,14 @@ export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown, op
 
 | route | who | returns |
 |---|---|---|
-| `GET /api/challenge` | anyone | `{ now, current: ChallengeView \| null, past: ChallengeView[], mine?: Record<id, Partial<Record<Category, RunScore>>> }` |
-| `GET /api/challenge/<id>/board?by=<cat>` | anyone | `{ id, by, closed, rows: BoardRow[], winner?: BoardRow }` |
+| `GET /api/challenge` | anyone | `{ now, current: ChallengeView \| null, past: ChallengeView[], mine?: Record<id, RunScore> }` (`mine`: the caller's best per challenge) |
+| `GET /api/challenge/<id>/board` | anyone | `{ id, closed, rows: BoardRow[], winner?: BoardRow }` — the one leaderboard |
 | `GET /api/challenge/run/<runId>` | anyone if the week is closed; otherwise the run's owner only | `{ runId, challengeId, name, deck, actions, score, at }` |
-| `POST /api/challenge/run` | signed in | body `{ challengeId, deck, actions }` → `{ ok: true, runId, score, improved: Category[], rank: Record<Category, number> }` or `{ ok: false, error }` |
+| `POST /api/challenge/run` | signed in | body `{ challengeId, deck, actions }` → `{ ok: true, runId, score, improved: boolean, rank: number }` or `{ ok: false, error }` |
 
 ```ts
 ChallengeView = ChallengeDef & { opens: number; closes: number; closed: boolean;
-  entrants: number; par?: RunScore }
+  entrants: number }                    // par: the row's committed number
 BoardRow = { rank: number; name: string; score: RunScore; at: number;
   runId?: string; deck?: CardName[] }   // runId and deck only when closed
 ```
@@ -139,8 +155,9 @@ BoardRow = { rank: number; name: string; score: RunScore; at: number;
 
 **Storage** (`var/challenges/`, path getter in `server/statepaths.ts`):
 - `runs.jsonl` is append-only: `{runId, challengeId, user, name, at, deck, actions, score,
-  engine}`. A score is stamped once and never recomputed.
-- `weeks.json` holds the frozen results per closed week: `{closedAt, winner, top: Record<Category, BoardRow[]>}`.
+  engine}`. A score is stamped once and never recomputed; it carries `raw` (what the board
+  ranks by) and `skill` (what it shows), so the board never needs the par again.
+- `weeks.json` (`version: 2`) holds the frozen results per closed week: `{closedAt, frozenAt, winner, top: BoardRow[]}`, the top ten.
   - `sweepChallenges()` (on main.ts's expiry tick, throttled) freezes each newly closed week.
   - It catches up on weeks missed while the server was down and is idempotent.
 
@@ -148,15 +165,17 @@ BoardRow = { rank: number; name: string; score: RunScore; at: number;
 
 - **Page:** the `?challenge` screen and a `nav-challenge` button. Every page has a button,
   because the owner uses the installed web app with no URL bar.
-  - This week: goal, time left, par, my bests, the board with category tabs.
-  - Past weeks: their boards, and once closed each deck with Watch and Try this deck.
+  - This week: goal, time left, one line "Higher Skill is better. Par scores 100." (the
+    formula and the par number in its tooltip), my best, the Leaderboard.
+  - Past weeks: their leaderboards, and once closed each deck with Watch and Try this deck.
 - **Builder:** card search over the constructed pool and an **ordered** list (position 1 =
   top, with ↑↓ and drag). Import from a saved deck. Show what is drawn in the opening hand.
   The draft is kept per challenge in localStorage, with try/catch.
 - **Play:** a `SoloServer` with `challengeDeal` and `dummyMove` for seat 1.
   - A progress meter layer: "Units in play 37 / 40 · turn 6 · cards 5".
   - Rewind and undo as in Learn to Play.
-  - When the goal is met: a complete panel with the score and the categories improved, then
+  - When the goal is met: a complete panel with the Skill and its breakdown, whether it is a
+    new best and the rank, then
     submit (signed in) or a sign-in prompt (guest; the run is kept and submitted after login).
   - "Export run" downloads `{challengeId, deck, actions}` as JSON.
 - **Home:** a "This week's challenge" card with the goal, time left, my best and Play.
@@ -165,4 +184,6 @@ BoardRow = { rank: number; name: string; score: RunScore; at: number;
 
 - Every calendar row has `client/server/challenge-runs/<id>.json`, shaped `{challengeId, deck, actions}`.
 - Test 506 replays each one through `verifyRun` and requires `ok`.
-- It proves the goal is achievable at its `n`, guards against drift, and its score is the row's `par`.
+- It proves the goal is achievable at its `n`, guards against drift, and requires its `raw` to
+  equal the row's committed `par` (so it scores Skill 100).
+- Pars: crowd 90, tokens 104, giant 100, counters 81, parade 286.

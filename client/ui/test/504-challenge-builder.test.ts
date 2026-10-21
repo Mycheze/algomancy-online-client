@@ -33,7 +33,7 @@ g['localStorage'] = {
 
 const B = await import('../challengebuild.ts');
 
-const DEF: ChallengeDef = { id: 'b1', week: '2026-10-18', title: 'Builder', blurb: '', goal: { kind: 'unitsPlayed', n: 3 }, seed: 50400 };
+const DEF: ChallengeDef = { id: 'b1', week: '2026-10-18', title: 'Builder', blurb: '', goal: { kind: 'unitsPlayed', n: 3 }, seed: 50400, par: 3 };
 const units = DECK_LIST.filter(n => getCard(n).kind === 'unit').slice(0, 12);
 const [A, Bn, C, D] = units as [string, string, string, string];
 

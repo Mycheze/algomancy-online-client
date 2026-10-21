@@ -8,7 +8,8 @@
  *      when there is no current week or no server
  *   §2 every page has a button: the header offers nav-challenge, and Play on
  *      the home card opens the page with the builder for this week
- *   §3 the page: goal, time left, par, my bests, the board with its five tabs
+ *   §3 the page: goal, time left, the par line (higher is better, par = 100),
+ *      my best, ONE leaderboard by Skill with the breakdown and no tabs
  *   §4 a closed week: its board names it; Try this deck loads the deck into
  *      that week's builder (one Undo away from the draft it replaced); Watch
  *      goes to the run
@@ -30,9 +31,9 @@ const NOW = Date.UTC(2026, 9, 20, 12);
 const DAY = 86_400_000;
 const units = DECK_LIST.filter(n => getCard(n).kind === 'unit').slice(0, 6);
 const def = (id: string, week: string, n: number): ChallengeDef =>
-  ({ id, week, title: `Week ${id}`, blurb: 'A short puzzle.', goal: { kind: 'unitsInPlay', n }, seed: 50300 + n });
-const score = (skill: number): RunScore => ({ unique: 2, extra: 1, cards: 3, elements: 2, turns: 4, skill });
-const CUR = { ...def('cur', '2026-10-18', 40), opens: NOW - 2 * DAY, closes: NOW + 4 * DAY + 3.5 * 3_600_000, closed: false, entrants: 7, par: score(24) };
+  ({ id, week, title: `Week ${id}`, blurb: 'A short puzzle.', goal: { kind: 'unitsInPlay', n }, seed: 50300 + n, par: 24 });
+const score = (skill: number): RunScore => ({ unique: 2, extra: 1, cards: 3, elements: 2, turns: 4, raw: 24, skill });
+const CUR = { ...def('cur', '2026-10-18', 40), opens: NOW - 2 * DAY, closes: NOW + 4 * DAY + 3.5 * 3_600_000, closed: false, entrants: 7 };
 const OLD = { ...def('old', '2026-10-11', 12), opens: NOW - 9 * DAY, closes: NOW - 2 * DAY, closed: true, entrants: 3 };
 const OLD_DECK = [units[0]!, units[1]!, units[1]!];
 
@@ -61,17 +62,17 @@ async function rig(opts: { current?: unknown; down?: boolean; token?: string; se
   g['fetch'] = async (url: string, init?: { method?: string; body?: string }) => {
     calls.push({ method: init?.method ?? 'GET', url, body: init?.body ? JSON.parse(init.body) as Record<string, unknown> : null });
     if (opts.down) throw new Error('offline');
-    if (url === '/api/challenge/run') return { status: 200, json: async () => opts.submit ?? { ok: true, runId: 'r9', score: score(9), improved: ['skill'], rank: { skill: 1 } } };
-    const b = /^\/api\/challenge\/([^/]+)\/board\?by=(\w+)/.exec(url);
+    if (url === '/api/challenge/run') return { status: 200, json: async () => opts.submit ?? { ok: true, runId: 'r9', score: score(9), improved: true, rank: 1 } };
+    const b = /^\/api\/challenge\/([^/]+)\/board$/.exec(url);
     if (b) {
       const closed = b[1] === 'old';
-      return { status: 200, json: async () => ({ id: b[1], by: b[2], closed, rows: [
+      return { status: 200, json: async () => ({ id: b[1], closed, rows: [
         { rank: 1, name: 'Ann', score: score(12), at: NOW - DAY, ...(closed ? { runId: 'run-ann-1', deck: OLD_DECK } : {}) },
         { rank: 2, name: 'Bo', score: score(30), at: NOW - DAY, ...(closed ? { runId: 'run-bo-22', deck: [units[2]!] } : {}) },
       ], ...(closed ? { winner: { rank: 1, name: 'Ann', score: score(12), at: NOW - DAY } } : {}) }) };
     }
     return { status: 200, json: async () => ({ now: NOW, current: opts.current === undefined ? CUR : opts.current, past: [OLD],
-      ...(opts.token ? { mine: { cur: { skill: score(18), turns: score(20) } } } : {}) }) };
+      ...(opts.token ? { mine: { cur: score(18) } } : {}) }) };
   };
   const ch = await import(`../challenge.ts?fresh=${++fresh}`) as typeof import('../challenge.ts');
   const app = { innerHTML: '', classList: { remove() {} } };
@@ -130,26 +131,28 @@ test('§2 the header button and the home card both lead to the page', async () =
   assert.equal(r.ch.screen(), null, 'Back leaves');
 });
 
-test('§3 the page: goal, time left, par, my bests, the board and its tabs', async () => {
+test('§3 the page: goal, time left, the par line, my best, one leaderboard', async () => {
   const r = await rig({ token: 'tok', search: '?challenge' });
   await settle();
   const html = r.app.innerHTML;
   assert.match(html, /Weekly challenge/);
   assert.match(html, new RegExp(goalText(CUR.goal)));
   assert.match(html, /4d 3h left · 7 entrants/);
-  assert.match(html, /Par: Skill 24/);
-  assert.match(html, /Your bests/);
-  for (const t of ['skill', 'unique', 'extra', 'elements', 'turns']) assert.match(html, new RegExp(`data-btn="ch-tab" data-id="cur" data-cat="${t}"`));
-  assert.match(html, /<td>Ann<\/td>/, 'the board is drawn');
+  assert.match(html, /Higher Skill is better\. Par scores 100\./, 'one line says which way Skill goes');
+  assert.match(html, /This week's par is 24/, 'the par number is in its tooltip');
+  assert.match(html, /<h4>Your best<\/h4>.*<div class="statval">18<\/div><div class="statlab">Skill<\/div>/s);
+  assert.match(html, /<h3>Leaderboard<\/h3>/);
+  assert.doesNotMatch(html, /ch-tab|data-cat=/, 'no category tabs');
+  assert.match(html, /<th>Skill<\/th><th>Cards<\/th><th>Elements<\/th><th>Turns<\/th>/);
+  assert.match(html, /<td>Ann<\/td><td><b>12<\/b><\/td><td>3 <span class="dim">\(1 extra\)<\/span><\/td><td>2<\/td><td>4<\/td>/,
+    'a row: Skill, then cards (with the extra copies), elements and turns');
   assert.doesNotMatch(html, /data-btn="ch-try" data-id="cur"/, 'an open week shows no decks');
-  r.ch.handleButton(button(html, { btn: 'ch-tab', id: 'cur', cat: 'turns' }));
-  await settle();
-  assert.ok(r.calls.some(c => c.url === '/api/challenge/cur/board?by=turns'), 'a tab asks for its board');
-  assert.match(r.app.innerHTML, /class="on" data-btn="ch-tab" data-id="cur" data-cat="turns"/);
+  assert.ok(r.calls.some(c => c.url === '/api/challenge/cur/board'), 'the one board, no category asked');
 });
 
 test('§4 a closed week: Try this deck loads it into the builder, Watch goes to the run', async () => {
   const r = await rig({ search: '?challenge' });
+  assert.match(r.app.innerHTML, /data-btn="ch-past" data-id="old">Leaderboard<\/button>/, 'a past week opens its leaderboard');
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-past', id: 'old' }));
   await settle();
   const html = r.app.innerHTML;
@@ -173,6 +176,7 @@ test('§5 a kept run is submitted once signed in, and dropped when taken', async
   const kept = { challengeId: 'cur', title: 'Week cur', deck: [units[0]!], actions: [{ type: 'donePlanning', seat: 1 }], score: score(5), at: 123 };
   const guest = await rig({ search: '?challenge', kept: [kept] });
   assert.match(guest.app.innerHTML, /Finished runs/);
+  assert.match(guest.app.innerHTML, /Skill 5 · 3 cards \(1 extra\) · 2 elements · 4 turns/, 'the kept run shows its Skill');
   assert.match(guest.app.innerHTML, /data-btn="ch-signin"/, 'signed out: the way to sign in');
   assert.ok(!guest.calls.some(c => c.method === 'POST'), 'nothing sent without an account');
 
@@ -215,6 +219,6 @@ test('§6 the builder edits in place and keeps a draft per challenge', async () 
   assert.equal(r.loc.search, '?challenge=play&id=cur', 'Play goes to the run');
   const run = JSON.parse(r.store.get('algoChallengeRun')!) as { def: ChallengeDef; deck: string[]; actions: unknown[] };
   assert.deepEqual(run.deck, [units[0], units[2], units[2]]);
-  assert.deepEqual(run.def, def('cur', '2026-10-18', 40), 'the challenge itself, no page furniture');
+  assert.deepEqual(run.def, def('cur', '2026-10-18', 40), 'the challenge itself (its par too), no page furniture');
   assert.deepEqual(run.actions, []);
 });

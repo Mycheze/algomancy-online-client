@@ -44,6 +44,11 @@ export interface ChallengeDef {
   blurb: string;
   goal: Goal;
   seed: number;
+  /** the reference run's `raw` (cards × max(1, elements) × turns), so that run
+   * scores Skill 100. A committed number, never recomputed: a row is a promise
+   * once its week opens (server/challenges.ts), and test 506 holds it equal to
+   * what the reference run scores. */
+  par: number;
 }
 
 export const PLAYER: Seat = 0;
@@ -448,10 +453,22 @@ export function progressLabel(goal: Goal): string {
 
 // ── the score ─────────────────────────────────────────────────────────
 
-export interface RunScore { unique: number; extra: number; cards: number; elements: number; turns: number; skill: number }
+/** `raw` = cards × max(1, elements) × turns, the run's exact cost (lower is
+ * cheaper); `skill` = the shown number, par ÷ raw × 100 rounded half up —
+ * HIGHER is better, and the row's reference run scores exactly 100. Both are
+ * stamped by the server when it verifies a run and never recomputed. Boards
+ * rank by `raw` (exact, so two runs never tie on a rounding). */
+export interface RunScore { unique: number; extra: number; cards: number; elements: number; turns: number; raw: number; skill: number }
 
-/** cards × max(1, elements) × turns — lower is better (the spec's Scoring) */
-export function scoreRun(acc: RunAcc): RunScore {
+/** par ÷ raw × 100, rounded half up, in integers (no float can land a half on
+ * the wrong side) */
+export function skillOf(par: number, raw: number): number {
+  const r = Math.max(1, raw);
+  return Math.floor((200 * par + r) / (2 * r));
+}
+
+/** the spec's Scoring: what the run used, its raw cost, and its Skill against `par` */
+export function scoreRun(acc: RunAcc, par: number): RunScore {
   const names = Object.keys(acc.used).filter(n => (acc.used[n] ?? 0) > 0);
   const unique = names.length;
   const extra = names.reduce((s, n) => s + Math.max(0, acc.used[n]! - 2), 0);
@@ -460,19 +477,13 @@ export function scoreRun(acc: RunAcc): RunScore {
   for (const n of names) for (const f of getCard(n).factions ?? []) els.add(f);
   const elements = els.size;
   const turns = acc.metTurn ?? acc.turn;
-  return { unique, extra, cards, elements, turns, skill: cards * Math.max(1, elements) * turns };
+  const raw = cards * Math.max(1, elements) * turns;
+  return { unique, extra, cards, elements, turns, raw, skill: skillOf(par, raw) };
 }
 
-export type Category = 'skill' | 'unique' | 'extra' | 'elements' | 'turns';
-export const CATEGORIES: Category[] = ['skill', 'unique', 'extra', 'elements', 'turns'];
-
-/** `a` strictly beats `b` in `by`: lower wins, and a tie breaks on skill. A
- * tie on both is not a win — the earlier run keeps it, which only the caller
- * knows. */
-export function better(a: RunScore, b: RunScore, by: Category): boolean {
-  if (a[by] !== b[by]) return a[by] < b[by];
-  return by !== 'skill' && a.skill < b.skill;
-}
+/** `a` strictly beats `b`: the lower raw (= the higher Skill). A tie is not a
+ * win — the earlier run keeps it, which only the caller knows. */
+export const better = (a: RunScore, b: RunScore): boolean => a.raw < b.raw;
 
 // ── verification ──────────────────────────────────────────────────────
 
@@ -551,7 +562,7 @@ export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown, op
     if (state.phase === 'gameover') {
       return { ok: false, error: `action ${i}: the game ended before the goal was met`, at: i };
     }
-    if (acc.met) return { ok: true, score: scoreRun(acc), actions: (actions as Action[]).slice(0, i + 1) };
+    if (acc.met) return { ok: true, score: scoreRun(acc, def.par), actions: (actions as Action[]).slice(0, i + 1) };
   }
   return { ok: false, error: 'the run never meets the goal' };
 }

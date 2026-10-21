@@ -8,7 +8,7 @@
  *   §3 reaching the goal raises the complete panel: the score, Export, Retry,
  *      and (signed out) the sign-in prompt with the run kept in this browser
  *   §4 signed in, the run is POSTed as {challengeId, deck, actions} and the
- *      reply's new bests and ranks are shown
+ *      reply's new best and leaderboard rank are shown
  *   §5 a saved run resumes to the same game; undo takes the goal back
  *   §6 Learn to Play's room is the room it was: no hook, no change (a
  *      refused bot move still falls back); only a STRICT room waits
@@ -23,7 +23,7 @@ import { getCard } from '../../engine/src/cards/dsl.ts';
 import type { Action, GameState } from '../../engine/src/types.ts';
 import type { ChallengeDef } from '../../engine/src/challenge.ts';
 
-const DEF: ChallengeDef = { id: 'c505', week: '2026-10-18', title: 'Tiny', blurb: '', goal: { kind: 'unitsPlayed', n: 1 }, seed: 50500 };
+const DEF: ChallengeDef = { id: 'c505', week: '2026-10-18', title: 'Tiny', blurb: '', goal: { kind: 'unitsPlayed', n: 1 }, seed: 50500, par: 3 };
 const SPARK = DECK_LIST.find(n => { const c = getCard(n); return c.kind === 'unit' && c.mana === 1 && c.timing === 'deploy' && (c.factions ?? []).join() === 'fire' && c.cost.length <= 1; })!;
 const DECK = Array.from({ length: 12 }, () => SPARK);
 
@@ -31,7 +31,7 @@ const g = globalThis as Record<string, unknown>;
 g['__UI_DRIVER_SEARCH'] = `?challenge=play&id=${DEF.id}`;
 g['__UI_DRIVER_STORE'] = { algoChallengeRun: JSON.stringify({ v: 1, def: DEF, deck: DECK, actions: [], by: [] }) };
 g['__UI_DRIVER_FETCH'] = async (url: string) => {
-  if (url === '/api/challenge/run') return { status: 200, json: async () => ({ ok: true, runId: 'r1', score: {}, improved: ['skill', 'turns'], rank: { skill: 2, unique: 1, extra: 1, elements: 3, turns: 1 } }) };
+  if (url === '/api/challenge/run') return { status: 200, json: async () => ({ ok: true, runId: 'r1', score: {}, improved: true, rank: 2 }) };
   return new Promise(() => {});
 };
 const { home } = await import('./ui-driver.ts');
@@ -92,9 +92,11 @@ test('§3 the goal raises the complete panel; signed out, the run is kept', () =
   const run = chrun.currentRun()!;
   const html = ui.html();
   assert.match(html, /Goal met/);
-  for (const k of ['Skill', 'Unique', 'Extra', 'Elements', 'Turns']) {
+  for (const k of ['Skill', 'Cards', 'Elements', 'Turns']) {
     assert.match(html, new RegExp(`<div class="statval">${run.done!.score[k.toLowerCase() as 'skill']}</div><div class="statlab">${k}</div>`), `${k} as a stat cell`);
   }
+  assert.equal(run.done!.score.skill, 300, 'par 3 over a 1 · 1 · 1 run: higher than par is better than par');
+  assert.doesNotMatch(html, /Extra copies/, 'no extra copies, no cell for them');
   assert.match(html, /data-chal="export"/);
   assert.match(html, /data-chal="retry"/);
   assert.match(html, /data-chal="signin"/, 'a guest is asked to sign in');
@@ -123,8 +125,7 @@ test('§4 signed in, the run is posted and the reply shown', async () => {
     assert.deepEqual(post.body, { challengeId: DEF.id, deck: DECK, actions: run.actions() });
     assert.equal(run.submit.s, 'done');
     const html = chrun.layerHtml(run);
-    assert.match(html, /New best: Skill, Turns/);
-    assert.match(html, /Skill #2/);
+    assert.match(html, /New best\. Rank #2\./);
   } finally {
     localStorage.removeItem('algoToken');
     g['fetch'] = was;

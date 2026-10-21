@@ -3,11 +3,11 @@
  * Plays a challenge with a scripted greedy policy for the player and the
  * real `dummyMove` (via `settleDummy`) for the dummy, then proves the log
  * with `verifyRun`. What it writes is `challenge-runs/<id>.json`, the row's
- * reference run, whose score is the row's par (test 506 pins it). Run by
+ * reference run, whose raw score is the row's par (test 506 pins it). Run by
  * hand; nothing on a request path imports it.
  *
  *   node server/challenge-solve.ts <id>                 every policy for the row's goal kind; prints each score
- *   node server/challenge-solve.ts <id> --write         …and writes the best (lowest Skill) as challenge-runs/<id>.json
+ *   node server/challenge-solve.ts <id> --write         …and writes the best (lowest raw) as challenge-runs/<id>.json
  *        [--policy NAME] [--n N] [--turns T] [--trace]  one policy / another n (never written) / a turn cap / every move
  *   node server/challenge-solve.ts --measure [--kind K] [--policy NAME] [--turns 12] [--ns 20,40,100]
  *        each policy with the goal out of reach: its best progress by turn 8 / 12 / 20,
@@ -502,7 +502,7 @@ function foldLog(def: ChallengeDef, deck: CardName[], actions: Action[]): RunAcc
   return acc;
 }
 
-/** the Skill a recorded log would score against goal `goal` (the policy did not look at n) */
+/** the score a recorded log would earn against goal `goal` (the policy did not look at n) */
 export function scoreAt(def: ChallengeDef, deck: CardName[], actions: Action[], goal: Goal): RunScore | null {
   let state = createGame(def.seed, ['Challenger', 'Dummy'], 'constructed', undefined, [deck, [...DUMMY_DECK]], undefined, challengeDeal(def)).state;
   let acc = newRun(goal, deck);
@@ -510,7 +510,7 @@ export function scoreAt(def: ChallengeDef, deck: CardName[], actions: Action[], 
     const r = apply(state, a);
     acc = foldRun(acc, state, a, r.state, r.events);
     state = r.state;
-    if (acc.met) return scoreRun(acc);
+    if (acc.met) return scoreRun(acc, def.par);
   }
   return null;
 }
@@ -540,7 +540,7 @@ function main(): void {
         const ns = (opt('--ns') ?? '').split(',').filter(Boolean).map(Number);
         for (const n of ns) {
           const sc = scoreAt(def, pol.deck, r.actions, withN(def.goal, n));
-          console.log(`   n=${n}: ${sc ? `turn ${sc.turns}, cards ${sc.cards} (${sc.unique}+${sc.extra}), elements ${sc.elements}, skill ${sc.skill}` : 'not reached'}`);
+          console.log(`   n=${n}: ${sc ? `turn ${sc.turns}, cards ${sc.cards} (${sc.unique}+${sc.extra}), elements ${sc.elements}, raw ${sc.raw}` : 'not reached'}`);
         }
       }
     }
@@ -561,13 +561,13 @@ function main(): void {
     const ms = Date.now() - t0;
     if (!v.ok) { console.log(`${pol.name}: met but verifyRun refuses: ${v.error}`); continue; }
     console.log(`${pol.name}: ${JSON.stringify(v.score)} — ${v.actions.length} actions, verify ${ms} ms`);
-    if (!best || v.score.skill < best.score.skill) best = { pol, actions: v.actions, score: v.score };
+    if (!best || v.score.raw < best.score.raw) best = { pol, actions: v.actions, score: v.score };
   }
   if (best && argv.includes('--write') && !opt('--n')) {
     mkdirSync(REFERENCE_RUNS_DIR, { recursive: true });
     const file = join(REFERENCE_RUNS_DIR, `${def.id}.json`);
     writeFileSync(file, JSON.stringify({ challengeId: def.id, deck: best.pol.deck, actions: best.actions }) + '\n');
-    console.log(`wrote ${file} (${best.pol.name}, skill ${best.score.skill})`);
+    console.log(`wrote ${file} (${best.pol.name}, raw ${best.score.raw}: the row's par in challenges.ts must be ${best.score.raw})`);
   }
 }
 

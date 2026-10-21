@@ -3094,8 +3094,8 @@ function sweepFixes(): void {
     if (room.fixRun && !room.proposal && now - room.fixRun.last > FIX_RUN_IDLE_MS) flushFixRun(room);
   }
 }
-/* Weekly challenges: freeze each week that has closed (winner and top ten per
- * category) into var/challenges/weeks.json. Checked every half minute like the
+/* Weekly challenges: freeze each week that has closed (winner and top ten)
+ * into var/challenges/weeks.json. Checked every half minute like the
  * league — a week closes on a Sunday morning and nobody is waiting on the
  * second. Catches up on every week missed while the server was down, and does
  * nothing on almost every call (challenge-store.ts sweepChallenges). */

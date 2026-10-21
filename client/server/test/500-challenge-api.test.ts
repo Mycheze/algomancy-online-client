@@ -9,18 +9,19 @@
  * §2 ⭐ a run needs a named account: no session 401, a guest 403
  * §3 an unknown or not-yet-open challenge, and the caps, refused before any replay
  * §4 ⭐ a tampered run is refused by the replay
- * §5 ⭐ a valid run is accepted, scored by the server and ranked; the same run
+ * §5 ⭐ a valid run is accepted, scored by the server and ranked on the one
+ *    leaderboard (by Skill, higher first); the same run
  *    twice is one run; one verification in flight per account
  * §6 ⭐ while the week is open: names and numbers only; a run is its owner's
  * §7 ⭐ once it closes: decks, run ids and runs are public, and the winner is frozen
  * §8 ⭐ a run sent to the closed week is ranked but cannot move the frozen winner
- * §9 the caller's own bests, and par from a reference run (computed in the worker)
+ * §9 the caller's own best, and par as the row commits it
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Action, CardName } from '../../engine/src/types.ts';
@@ -35,13 +36,11 @@ import { stopChallengeWorker } from '../challenge-worker.ts';
 import { weekWindow } from '../challenges.ts';
 
 const root = mkdtempSync(join(tmpdir(), 'challenge-api-'));
-const REFS = join(root, 'refs');
-mkdirSync(REFS);
 const restoreAccounts = useAccountsFile(join(root, 'accounts.json'));
 const restoreDir = useChallengeDir(join(root, 'challenges'));
 
-const W1: ChallengeDef = { id: 'api-w1', week: '2026-10-25', title: 'One', blurb: 'Play two units.', goal: { kind: 'unitsPlayed', n: 2 }, seed: 7 };
-const W2: ChallengeDef = { id: 'api-w2', week: '2026-11-01', title: 'Two', blurb: 'Play two units.', goal: { kind: 'unitsPlayed', n: 2 }, seed: 8 };
+const W1: ChallengeDef = { id: 'api-w1', week: '2026-10-25', title: 'One', blurb: 'Play two units.', goal: { kind: 'unitsPlayed', n: 2 }, seed: 7, par: 100 };
+const W2: ChallengeDef = { id: 'api-w2', week: '2026-11-01', title: 'Two', blurb: 'Play two units.', goal: { kind: 'unitsPlayed', n: 2 }, seed: 8, par: 100 };
 const ROWS = [W1, W2];
 const w1 = weekWindow(W1);
 const setNow = (ms: number): void => { process.env['ALGO_CHALLENGE_NOW'] = new Date(ms).toISOString(); };
@@ -49,7 +48,7 @@ setNow(w1.opens + 3_600_000);
 
 const server: Server = createServer((req, res) => {
   const url = new URL(req.url ?? '/', 'http://x');
-  challengeRoutes(req, res, url.pathname, url, { rows: ROWS, refsDir: REFS }).then(handled => {
+  challengeRoutes(req, res, url.pathname, url, { rows: ROWS }).then(handled => {
     if (!handled) { res.writeHead(404); res.end(); }
   }, err => { res.writeHead(500); res.end(String(err)); });
 });
@@ -121,8 +120,9 @@ const scoreOf = (r: { deck: CardName[]; actions: Action[] }, def = W1): RunScore
 };
 const SA = scoreOf(RUN_A), SB = scoreOf(RUN_B);
 
-test('challenge api §0 the two scripted runs score differently, Alice lower', () => {
-  assert.ok(SA.skill < SB.skill, `Alice ${JSON.stringify(SA)} vs Bob ${JSON.stringify(SB)}`);
+test('challenge api §0 the two scripted runs score differently, Alice cheaper and so higher', () => {
+  assert.ok(SA.raw < SB.raw, `Alice ${JSON.stringify(SA)} vs Bob ${JSON.stringify(SB)}`);
+  assert.ok(SA.skill > SB.skill, 'the cheaper run shows the higher Skill');
 });
 
 test('challenge api §1 the calendar view shows the open week and nothing of a future one', async () => {
@@ -195,13 +195,13 @@ test('challenge api §5 a valid run is accepted, scored by the server and ranked
   assert.equal(a.status, 200, a.raw);
   assert.equal(a.body['ok'], true);
   assert.deepEqual(a.body['score'], SA, 'the server scored it itself');
-  assert.deepEqual(a.body['improved'], ['skill', 'unique', 'extra', 'elements', 'turns'], 'a first run improves every category');
-  assert.deepEqual(a.body['rank'], { skill: 1, unique: 1, extra: 1, elements: 1, turns: 1 });
+  assert.equal(a.body['improved'], true, 'a first run is a new best');
+  assert.equal(a.body['rank'], 1);
   aliceRun = String(a.body['runId']);
 
   const again = await call('POST', '/api/challenge/run', ALICE.token, { challengeId: W1.id, ...RUN_A });
   assert.equal(again.body['runId'], aliceRun, 'the same run sent twice is one run');
-  assert.deepEqual(again.body['improved'], []);
+  assert.equal(again.body['improved'], false);
 
   // two at once from one account: one is checked, the other told to wait
   const both = await Promise.all([
@@ -211,10 +211,10 @@ test('challenge api §5 a valid run is accepted, scored by the server and ranked
   const st = both.map(x => x.status).sort();
   assert.deepEqual(st, [200, 429], `one verification in flight per account (got ${st.join(', ')})`);
   const b = both.find(x => x.status === 200)!;
-  assert.deepEqual(b.body['rank'], { skill: 2, unique: SB.unique < SA.unique ? 1 : 2, extra: SB.extra < SA.extra ? 1 : 2, elements: 2, turns: SB.turns < SA.turns ? 1 : 2 });
+  assert.equal(b.body['rank'], 2, 'one board: the costlier run is second, whatever it is made of');
   bobRun = String(b.body['runId']);
 
-  const board = await call('GET', `/api/challenge/${W1.id}/board?by=skill`);
+  const board = await call('GET', `/api/challenge/${W1.id}/board`);
   const rows = board.body['rows'] as { rank: number; name: string; score: RunScore }[];
   assert.deepEqual(rows.map(r => [r.rank, r.name, r.score.skill]), [[1, 'Alice', SA.skill], [2, 'Bob', SB.skill]]);
   assert.equal(board.raw.includes(ALICE.id) || board.raw.includes(BOB.id), false, 'no account id on a board');
@@ -224,7 +224,8 @@ test('challenge api §5 a valid run is accepted, scored by the server and ranked
 test('challenge api §6 while the week is open: names and numbers only, a run is its owner', async () => {
   const board = await call('GET', `/api/challenge/${W1.id}/board?by=turns`);
   assert.equal(board.body['closed'], false);
-  assert.equal(board.body['by'], 'turns');
+  assert.equal('by' in board.body, false, 'there is one board: a category asked for is ignored');
+  assert.deepEqual((board.body['rows'] as { name: string }[]).map(r => r.name), ['Alice', 'Bob']);
   assert.equal('winner' in board.body, false);
   for (const row of board.body['rows'] as Record<string, unknown>[]) {
     assert.equal('deck' in row, false, 'no deck before the close');
@@ -243,7 +244,6 @@ test('challenge api §7 once the week closes, decks and runs are public and the 
   setNow(w1.closes + 60_000);
   const board = await call('GET', `/api/challenge/${W1.id}/board`);
   assert.equal(board.body['closed'], true);
-  assert.equal(board.body['by'], 'skill', 'skill is the default board');
   const rows = board.body['rows'] as Record<string, unknown>[];
   assert.deepEqual(rows[0]?.['deck'], RUN_A.deck, 'decks open at the close');
   assert.equal(rows[0]?.['runId'], aliceRun);
@@ -261,28 +261,22 @@ test('challenge api §8 a run sent to the closed week is ranked but cannot move 
   // Carol finds a cheaper line than Alice after the close: fewer recycles still meet the goal
   const better = playRun(W1, 1);
   const sc = scoreOf(better);
-  assert.ok(sc.skill < SA.skill, `Carol ${sc.skill} should beat Alice ${SA.skill}`);
+  assert.ok(sc.raw < SA.raw, `Carol ${sc.raw} should beat Alice ${SA.raw}`);
   const r = await call('POST', '/api/challenge/run', CAROL.token, { challengeId: W1.id, ...better });
   assert.equal(r.status, 200, r.raw);
-  assert.equal((r.body['rank'] as Record<string, number>)['skill'], 1, 'ranked first on the live board');
+  assert.equal(r.body['rank'], 1, 'ranked first on the live board');
   const board = await call('GET', `/api/challenge/${W1.id}/board`);
   assert.equal((board.body['rows'] as Record<string, unknown>[])[0]?.['name'], 'Carol');
   assert.equal((board.body['winner'] as Record<string, unknown>)['name'], 'Alice', 'the frozen winner stands');
 });
 
-test('challenge api §9 my bests, and par from the reference run', async () => {
-  const mine = (await call('GET', '/api/challenge', ALICE.token)).body['mine'] as Record<string, Record<string, RunScore>>;
+test('challenge api §9 my best, and par as the row commits it', async () => {
+  const mine = (await call('GET', '/api/challenge', ALICE.token)).body['mine'] as Record<string, RunScore>;
   assert.deepEqual(Object.keys(mine), ['api-w1']);
-  assert.deepEqual(mine['api-w1']?.['skill'], SA);
+  assert.deepEqual(mine['api-w1'], SA, 'one best per challenge');
   assert.equal((await call('GET', '/api/challenge', CAROL.token)).body['mine'] !== undefined, true);
-
-  writeFileSync(join(REFS, `${W1.id}.json`), JSON.stringify({ challengeId: W1.id, ...RUN_B }));
-  const first = (await call('GET', '/api/challenge')).body['past'] as Record<string, unknown>[];
-  assert.equal(first[0]?.['par'], undefined, 'the first ask starts the check and does not wait for it');
-  let par: unknown;
-  for (let i = 0; i < 100 && par === undefined; i++) {
-    await new Promise(r => setTimeout(r, 50));
-    par = ((await call('GET', '/api/challenge')).body['past'] as Record<string, unknown>[])[0]?.['par'];
-  }
-  assert.deepEqual(par, SB, 'par is the reference run score, verified in the worker');
+  const cal = await call('GET', '/api/challenge');
+  assert.equal((cal.body['past'] as Record<string, unknown>[])[0]?.['par'], W1.par, 'par is the committed number, on the first ask');
+  assert.equal((cal.body['current'] as Record<string, unknown>)['par'], W2.par);
+  assert.equal(SA.skill, Math.floor((200 * W1.par + SA.raw) / (2 * SA.raw)), 'the stamped Skill is par ÷ raw × 100');
 });

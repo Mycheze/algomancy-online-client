@@ -25,7 +25,7 @@ import type { Action, CardName } from '../src/types.ts';
 import type { Harness } from '../src/harness.ts';
 
 const def = (seed: number): ChallengeDef => ({
-  id: `t${seed}`, week: '2026-10-25', title: 'Test', blurb: '', goal: { kind: 'unitsInPlay', n: 40 }, seed,
+  id: `t${seed}`, week: '2026-10-25', title: 'Test', blurb: '', goal: { kind: 'unitsInPlay', n: 40 }, seed, par: 100,
 });
 /** forty distinct deck cards, in registration order — a deck whose order is visible */
 const DECK: CardName[] = DECK_LIST.slice(0, 40);

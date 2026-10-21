@@ -18,7 +18,7 @@
  * exactly as to the main one, so `new Worker(new URL(import.meta.url))` loads
  * this .ts file and its .ts imports directly. No loader, no build step.
  *
- * The worker is lazy: nothing starts it until the first run (or par) needs
+ * The worker is lazy: nothing starts it until the first run needs
  * verifying, so a server nobody submits to never pays for a second engine. It
  * is `unref`'d whenever it is idle so it never holds a process open.
  */
