@@ -24,7 +24,7 @@
  * the form CARD-TODO #49 says it closes in ("the remainder are clauses no
  * fixture can reach, named individually rather than counted").
  *
- * 36 claims over 35 cards, down from 52 at the end of CARD-TODO #49 stage 4 and from 218 over
+ * 34 claims over 33 cards, down from 52 at the end of CARD-TODO #49 stage 4 and from 218 over
  * the whole gated heap when the ticket was filed.
  *
  * ⚠ THOSE TWO NUMBERS ARE RE-DERIVED, NOT MAINTAINED. They said "38 claims
@@ -153,13 +153,8 @@ export const UNREACHED: Record<string, string> = {
   Skybreaker:
     'BOARD — "Erase me: negate all SPELL EFFECTS", activated at a window where the stack holds no '
     + 'spell. The erase half of the same line IS observed.',
-  'Void Mandible':
-    'BOARD — "sacrifice me. If you do, negate that effect." The negate IS observed; the sacrifice '
-    + 'is a MOD leaving play, which is not a `died` and not a `trashed`, so nothing in '
-    + 'EVIDENCE.sacrifice can name it.',
-  'Cthyrian Rector':
-    'BOARD — same shape: the recall half is observed (`leftBin`), the self-sacrifice is a mod '
-    + 'leaving play and emits neither `died` nor `trashed`.',
+  // Void Mandible and Cthyrian Rector left 2026-10-21: their "sacrifice me" is
+  // made as the trigger resolves now (CT-264), and the drill observes it.
   'Pestilent Mycelion':
     'BOARD — "whenever one or more -1/-1 counters are put on a unit, each opponent loses 1 life". '
     + 'The trigger fires and resolves; the life loss is region-scoped to the opponents present.',
@@ -278,10 +273,8 @@ export interface Witness {
 }
 
 export const WITNESSED: Readonly<Record<string, Witness>> = {
-  'Cthyrian Rector': { scenario: 'cthyrian-rector-sacrifice', engine: '7864bb8', on: '2026-08-27' },
   'Nothyr': { scenario: 'nothyr-negates-a-trigger', engine: 'ca91df7', on: '2026-08-26' },
   'Skybreaker': { scenario: 'skybreaker-negates-spells', engine: '7864bb8', on: '2026-08-27' },
-  'Void Mandible': { scenario: 'void-mandible-negates', engine: '7864bb8', on: '2026-08-27' },
   // Cinder Scuttler's witness note went with its UNREACHED entry above —
   // a witness for a card the drill now reaches is a note about nothing (187).
   'Automaton of Abundance': { scenario: 'automaton-augmented-batch', engine: '7864bb8', on: '2026-08-27' },

@@ -109,9 +109,12 @@ Gated promises — the hard 316 — across the last four rounds:
 | 27 | 278 / 316 | 38  | +14  | a whole round, eighteen agents |
 | 29 | 279 / 316 | 37  | +1   | nothing aimed at it — the erased-pile fix moved one in passing |
 
-The remaining **36 claims across 35 cards** are named individually in
+The remaining **34 claims across 33 cards** are named individually in
 `84-card-semantics`'s `UNREACHED` with the precondition each lacks:
-**BOARD 25 · CHOICE 5 · VOCAB 2 · EXTRACT 2 · REGION 1.**
+**BOARD 23 · CHOICE 5 · VOCAB 2 · EXTRACT 2 · REGION 1.**
+
+> **BOARD went 25 → 23 on 2026-10-21:** Void Mandible and Cthyrian Rector now
+> sacrifice themselves as their trigger resolves (CT-264), and the drill sees it.
 
 > ⚠ **VOCAB went 3 → 2 on 2026-08-30, and not because anybody wrote a
 > scenario.** The after-combat trigger ruling (now CR 608.9b) gave combat-damage triggers a real resolution window, so

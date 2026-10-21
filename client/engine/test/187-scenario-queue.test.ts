@@ -48,8 +48,12 @@ test('the UNREACHED ledger is imported whole — 35 cards, not a scrape of 32', 
   // it a window and the card is now observed delivering.
   // ⚠ EXPECT MORE OF THESE: every entry written while combat triggers were
   // unobservable is suspect for the same reason (CT-147).
-  assert.equal(UNREACHED_CARDS.length, 35,
-    `the UNREACHED ledger now has ${UNREACHED_CARDS.length} cards, not 35. If that is a real `
+  // 35 -> 33 on 2026-10-21: VOID MANDIBLE AND CTHYRIAN RECTOR LEFT. Their
+  // "sacrifice me" was a cast cost paid on the way to the stack, a mod leaving
+  // play that no evidence could name; it is made as the trigger resolves now
+  // (CT-264, CR 111.8) and the drill observes it delivering.
+  assert.equal(UNREACHED_CARDS.length, 33,
+    `the UNREACHED ledger now has ${UNREACHED_CARDS.length} cards, not 33. If that is a real `
     + 'change (a card was reached, or a new one went unreached) update this number AND re-read '
     + 'the queue — every entry here is a card only a human can set up. If it is NOT a real '
     + 'change, something is reading the ledger wrongly again.');
@@ -79,8 +83,9 @@ test('the witness record and the queue agree on who has been watched', () => {
   const witnessed = Object.keys(WITNESSED);
   // 21 -> 20 on 2026-08-30: Cinder Scuttler's witness note went with its
   // UNREACHED entry. A witness for a card the drill now reaches is a note about
-  // nothing, which is exactly what the loop below says.
-  assert.equal(witnessed.length, 20,
+  // nothing, which is exactly what the loop below says. 20 -> 18 on 2026-10-21:
+  // Void Mandible's and Cthyrian Rector's went with theirs, for the same reason.
+  assert.equal(witnessed.length, 18,
     'the witness record changed — update this count in the same commit');
   for (const card of witnessed) {
     assert.ok(UNREACHED_CARDS.includes(card),
