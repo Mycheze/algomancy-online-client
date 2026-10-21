@@ -56,7 +56,22 @@ function stalkerTrigger(seed: number, changer: string): { h: Harness; A: Seat; D
   return { h, A, D, trig: trig.id, ...(source ? { source } : {}) };
 }
 
-for (const [k, changer] of CHANGERS.entries()) {
+/** F-U03-6: a "change a target of target effect TO ME" card (Enigmatic Warder)
+ * may target only an effect it could be a legal target of — Caleb, RQ
+ * 1403796597896253511: "you can change any spell where warder could be a legal
+ * target". It never reaches the targetless trigger; 530 pins the rest. */
+const toMe = (n: string): boolean => /\bchange a target of target effect to me\b/i.test(getCard(n).text ?? '');
+
+for (const [k, changer] of CHANGERS.filter(toMe).entries()) {
+  test(`CT-306 ${changer} cannot be aimed at a targetless trigger at all`, () => {
+    const { h, D, source } = stalkerTrigger(51150 + k, changer);
+    assert.ok(source !== undefined, `${changer} is a unit with the ability`);
+    assert.ok(!legalActions(h.state, D).some(a => a.type === 'activateAbility' && a.entityId === source),
+      `${changer} is not offered: it could not be a target of a trigger with no targets`);
+  });
+}
+
+for (const [k, changer] of CHANGERS.filter(n => !toMe(n)).entries()) {
   test(`CT-306 ${changer} at a targetless trigger raises no payOrDecline and says there is nothing to change`, () => {
     const { h, D, trig, source } = stalkerTrigger(51100 + k, changer);
     const c = getCard(changer);

@@ -101,7 +101,23 @@ function board(seed: number, changer: string) {
 
 /* ══ §2 ═══════════════════════════════════════════════════════════════ */
 
-for (const [k, changer] of CHANGERS.entries()) {
+/** F-U03-6: "change a target of target effect TO ME" (Enigmatic Warder) may
+ * target only an effect it could be a legal target of — Caleb, RQ
+ * 1403796597896253511 — so the targetless trigger is not on its menu at all;
+ * engine/test/530 pins it. The owner's call above is for the others. */
+const toMe = (n: string): boolean => /\bchange a target of target effect to me\b/i.test(getCard(n).text ?? '');
+
+for (const [k, changer] of CHANGERS.filter(toMe).entries()) {
+  test(`CT-307 ${changer}: the targetless effect is not on the menu, the targeted one goes straight through`, () => {
+    const { h, trig, inv } = board(52920 + k, changer);
+    const opts: DecisionOption[] = h.state.decision!.options;
+    assert.equal(trig, -1, 'it could not be a target of a trigger with no targets');
+    assert.ok(inv >= 0, 'the effect it could be a target of is offered');
+    assert.equal(opts[inv]!.confirm, undefined);
+  });
+}
+
+for (const [k, changer] of CHANGERS.filter(n => !toMe(n)).entries()) {
   test(`CT-307 ${changer}: the targetless effect asks first, the targeted one does not`, () => {
     const { h, trig, inv } = board(52900 + k, changer);
     const opts: DecisionOption[] = h.state.decision!.options;

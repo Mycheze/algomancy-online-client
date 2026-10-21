@@ -339,6 +339,33 @@ function warderSlots(g: E, item: StackItem, meId: EntityId): ReturnType<E['targe
     JSON.stringify(ref) !== mine                                     // already me
     && g.canFillSlot(item, pi, ti, { unit: meId }));
 }
+// F-U03-6: WHICH effects I may target at all. Caleb, rules-questions
+// (RQ 1403796597896253511), asked whether Warder may be aimed at an effect
+// with no target: "Yeah you can change any spell where warder could be a
+// legal target." So the effect must have a target slot I could legally hold
+// RIGHT NOW (`E.canFillSlot` over `E.targetSlots`, a battle Virus's host
+// included) — a targetless trigger, a player or effect slot, Fight's "target
+// ally" for the other side, Throw off a Cliff's "4 or more defense" are not
+// targets of mine. A `restrict`, so the offer (legalActions), the gate
+// (abilityUnusable) and the menu all read it. The designer ruled on Warder
+// itself, so the owner's 2026-10-21 "castable at a targetless effect" call
+// (CT-307) is for Gravitational Correction and Divine Intervention only.
+// A slot that already holds me counts — I could be its legal target — and
+// changing it to me is no change, which the CT-307 stop still says.
+//
+// ⚠ RE-ENTRY. Judging another Warder activation's slot asks for ITS
+// candidates, which runs this restrict over the stack again — two Warders
+// aimed at each other recursed without end (75's whole-pool sweep). The
+// nested answer cannot matter: a Warder slot's candidates are stack effects,
+// never the unit `canFillSlot` is asking about, so a nested call says no.
+let judgingWarder = false;
+function warderCouldTarget(g: E, item: StackItem, meId: EntityId): boolean {
+  if (judgingWarder) return false;
+  judgingWarder = true;
+  try {
+    return g.targetSlots(item).some(({ pi, ti }) => g.canFillSlot(item, pi, ti, { unit: meId }));
+  } finally { judgingWarder = false; }
+}
 card('Enigmatic Warder', {
   augmentText: [{
     type: 'activated', cost: { mana: 2 },
@@ -346,7 +373,14 @@ card('Enigmatic Warder', {
     effect: {
       targets: {
         what: 'stackEffect', prompt: 'Enigmatic Warder: change a target of target effect to me',
-        // CT-307: the stop before aiming at an effect with nothing I can take
+        // F-U03-6: only an effect with a target I could legally be (see above)
+        restrict: (g, t, ctx) => {
+          if (!('stack' in t) || ctx.sourceId === undefined) return false;
+          const item = g.s.stack.find(i => i.id === t.stack);
+          return !!item && warderCouldTarget(g, item, ctx.sourceId);
+        },
+        // CT-307: the stop before aiming at an effect whose one slot I could
+        // fill already holds me — the restrict lets it through, the run changes nothing
         pickConfirm: noChangeConfirm('Enigmatic Warder',
           (g, item, me) => me === undefined || warderSlots(g, item, me).length > 0),
       },

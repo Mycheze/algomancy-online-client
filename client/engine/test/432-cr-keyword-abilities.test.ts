@@ -148,11 +148,15 @@ test('cr:keywords.abilities.ambush.target — a redirect (Enigmatic Warder) cann
   const amb = h.state.stack.find(i => i.kind === 'ambush')!;
   assert.ok(amb, 'the Ambush is on the stack');
   passUntil(h, A);
-  h.do({ type: 'activateAbility', seat: A, entityId: warder, abilityIndex: 0, via: 'augment' });
-  pick(h, { stack: amb.id });
+  // F-U03-6: Warder may target only an effect it could be a legal target of
+  // (Caleb, RQ 1403796597896253511), and it is no ally of D's — so the try is
+  // refused at the activation, before any [two] is paid
+  assert.equal(h.state.priority, A, 'non-vacuity: A holds priority with the Ambush on the stack');
+  assert.ok(!h.legal(A).some(a => a.type === 'activateAbility' && a.entityId === warder),
+    'the Warder ability is not offered against the Ambush');
+  assert.throws(() => h.do({ type: 'activateAbility', seat: A, entityId: warder, abilityIndex: 0, via: 'augment' }),
+    IllegalAction, 'and the try is refused');
   drain(h);
-  const wlog = h.log.filter(l => l.includes('Enigmatic Warder'));
-  assert.ok(wlog.length > 0, 'non-vacuity: the Warder ability was activated and resolved: ' + wlog.join(' / '));
   assert.ok(ent(h, warder), 'the Warder was NOT recalled by the Ambush');
   assert.equal(ent(h, warder)!.controller, A);
   assert.ok(h.state.players[D]!.hand.includes('Bubb'), 'the Ambush still recalled its own ally');
