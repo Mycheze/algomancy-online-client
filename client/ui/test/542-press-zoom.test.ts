@@ -220,9 +220,13 @@ test('§2 one zoom, held; drag.ts lets it go; the tabletop installs it; the whee
     'drag.ts lets the zoom go as the first thing a drag does');
   assert.match(pz, /if \(!e\.isPrimary \|\| io\.dragging\(\)\) return;/, 'never opens under a drag');
   assert.match(pz, /if \(mouse && e\.button === 1\) \{\s*e\.preventDefault\(\);/);
-  assert.match(pz, /e\.button === 1 && pressTarget\(e\.target as Element \| null\)\) e\.preventDefault\(\);/,
-    'mousedown / mouseup / auxclick: the middle button cancelled on a card, nowhere else');
+  assert.match(pz, /e\.button === 1 && \(Date\.now\(\) < onCard \|\| pressTarget\(e\.target as Element \| null\)\)\) e\.preventDefault\(\);/,
+    'mousedown / mouseup / auxclick: the middle button cancelled for a press on a card, nowhere else');
   assert.match(pz, /\['mousedown', 'mouseup', 'auxclick'\]/);
+  assert.match(pz, /onCard = pressTarget\(e\.target as Element \| null\) \? Infinity : 0;/,
+    'a middle press off the cards keeps every default (the release can land anywhere; the press decides)');
+  assert.match(pz, /addEventListener\('paste', e => \{ if \(Date\.now\(\) < onCard\) e\.preventDefault\(\); \}/,
+    'X11 primary paste: Chrome fires it at the page on the release even with the press cancelled');
   assert.match(code('tabletop.ts'), /function ensureListeners\(\): void \{[\s\S]*?installPressZoom\(\);/);
   assert.match(pz, /mouse \? HOLD_MS : PEEK_MS/, 'a finger\'s zoom rides the same beat as the lift');
   assert.match(code('tabletop.ts'), /holdMs: PEEK_MS,/, 'which is the tabletop\'s drag hold');

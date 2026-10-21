@@ -2830,7 +2830,7 @@ input.ttpilename { flex: 1; width: 0; background: var(--panel2); border-color: v
 /* a card rested on with the mouse comes to the front to be read — after a
    moment, so a pointer travelling down the pile does not lift every card it
    passes (once lifted, a card covers the strips below it) */
-html:not(.dragging):not(.touch) .ttcard:hover { z-index: 500; transition: transform .09s, z-index 0s .3s; }
+html:not(.dragging):not(.touch):not(.zoompress) .ttcard:hover { z-index: 500; transition: transform .09s, z-index 0s .3s; }
 .ttcard.ttfront { z-index: 400; box-shadow: 0 6px 16px rgba(0, 0, 0, .6); }
 .ttcard.draglift { z-index: 450; transform: scale(1.04); box-shadow: 0 10px 22px rgba(0, 0, 0, .65); }
 .ttcard.ttpicked { z-index: 450; outline: 3px solid var(--accent); outline-offset: -1px; }
@@ -2864,7 +2864,9 @@ html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: b
 #draglayer > .dragghost.ttpile { background: rgba(23, 37, 32, .92); }
 #draglayer > .dragghost.ttpile .ttfan { width: auto; }
 #draglayer > .dragghost.ttpile .ttcard { width: 100%; height: auto; }
-/* a card held up to read (ui/presszoom.ts): the scan alone, on the zoom layer */
+/* a card held up to read (ui/presszoom.ts): the scan alone, on the zoom layer.
+   While it is up (html.zoompress) hovering raises nothing, so the wheel held
+   down reads a pile strip by strip and not the raised card's whole face */
 #cardzoom > .presszoom > img { display: block; width: 100%; height: auto; }
 .ttmaybe { flex: none; width: calc(var(--cw) + 30px); overflow-y: auto; overscroll-behavior: contain;
   padding: 14px 10px 40px; background: #141f1b; border-left: 1px solid var(--line); touch-action: pan-y; }

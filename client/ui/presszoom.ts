@@ -134,9 +134,13 @@ export function installPressZoom(): void {
   const g = pressGesture({
     target: pressTarget,
     under: (x, y) => document.elementFromPoint(x, y),
-    show: (el, at, animate) => zoomPress(el, at, animate),
+    show: (el, at, animate) => {
+      const up = zoomPress(el, at, animate);
+      document.documentElement.classList.toggle('zoompress', up);
+      return up;
+    },
     showing: zoomPressing,
-    end: zoomPressEnd,
+    end: () => { zoomPressEnd(); document.documentElement.classList.remove('zoompress'); },
     swallow: () => swallowNextClick(),
     dragging: () => document.documentElement.classList.contains('dragging'),
     later: (fn, ms) => setTimeout(fn, ms),
@@ -149,11 +153,21 @@ export function installPressZoom(): void {
   document.addEventListener('pointercancel', () => g.cancel(), { capture: true, passive: true });
   if (typeof addEventListener === 'function') addEventListener('blur', () => g.cancel());
   document.addEventListener('visibilitychange', () => g.cancel());
-  // the middle button's own effects, on a card only: Firefox's autoscroll
-  // starts on the mousedown, X11's paste comes with the release and its
-  // auxclick — each is cancelled where it starts
+  // the middle button's own effects, for a press that began on a card only:
+  // Firefox's autoscroll starts on the mousedown; X11's primary-selection
+  // paste comes with the release (Chrome fires a `paste` at the page even
+  // with the press cancelled), and so does an auxclick — and the release may
+  // land off the card, so the press is what counts, until just after it ends
+  let onCard = 0;
+  document.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button === 1) onCard = pressTarget(e.target as Element | null) ? Infinity : 0;
+  }, { capture: true, passive: true });
+  document.addEventListener('pointerup', e => {
+    if (e.pointerType === 'mouse' && e.button === 1 && onCard) onCard = Date.now() + 400;
+  }, { capture: true, passive: true });
   const middle = (e: MouseEvent): void => {
-    if (e.button === 1 && pressTarget(e.target as Element | null)) e.preventDefault();
+    if (e.button === 1 && (Date.now() < onCard || pressTarget(e.target as Element | null))) e.preventDefault();
   };
   for (const t of ['mousedown', 'mouseup', 'auxclick'] as const) document.addEventListener(t, middle, { capture: true });
+  document.addEventListener('paste', e => { if (Date.now() < onCard) e.preventDefault(); }, { capture: true });
 }
