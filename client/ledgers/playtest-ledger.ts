@@ -133,29 +133,6 @@ const OPEN: LedgerEntry[] = [
       + 'draft" could be drafting a pool and building from it (BL-05 as written) or bringing '
       + 'a constructed deck into a draft pod, which is a different game. Ask before building.',
   },
-  {
-    id: 231, room: 'ZKKX', date: '2026-10-18',
-    report: 'Yagamino, seat 1, action 443 (feature): "It would be a nice feature to be able to concede the win to the '
-      + 'opponent after a match, for instance, if you ended up winning due to a bug. In our case, the creatures '
-      + 'shouldn\'t have had \"piercing\", because of Transmogrifant."',
-    status: 'partial',
-    guards: [
-      '520-dispute-game.test.ts::§1 a dispute files a report row and marks the room; the result stands',
-      '521-dispute-button.test.ts::§1 the button sits beside Rematch where the game can be disputed, and nowhere else',
-      '57-ui-cardtext.test.ts::CT-328: under Transmogrifant a later Piercing shows live, the printed Flying struck',
-    ],
-    note:
-      'Three parts. (1) The FEATURE is done: owner, 2026-10-21, "Maybe just a \'dispute game\' button right on the '
-      + 'final screen, by \'rematch\'". Either player of a finished two-player game can dispute it once, with a note; '
-      + 'it files a report, tags the game and flags a league match for the organizer, and changes no result (BL-48). '
-      + '(2) The card panel struck Piercing out on Djentleman\'s units while it applied, which likely fed the report: '
-      + 'the panel now strikes by timestamp, as the engine does (CT-328). (3) OPEN, the rule: Piercing from Pernicious '
-      + 'Photosynthesis [407] predates Transmogrifant covering those units, which happened only when Rebalance gave '
-      + 'Yagamino\'s Bonesculptor (with Transmogrifant on it) to Djentleman [423]. The engine dates the strip from when '
-      + 'the mod was applied (CR 113.2), so the later grant survives; the other reading dates it from when it began to '
-      + 'apply to each unit (CR 712.2). No ruling covers a control change. The owner is posting the question to the '
-      + 'community, with the staged board ?question=transmogrifant-control-change. Game-deciding here. CT-313.',
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

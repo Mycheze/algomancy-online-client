@@ -4469,6 +4469,29 @@ export const CLOSED: LedgerEntry[] = [
     note: "Took back Djentleman's own Borrower of Forms activation [308]; both players then passed. An activation he did not want; no defect.",
   },
   {
+    id: 231, room: 'ZKKX', date: '2026-10-18',
+    report: 'Yagamino, seat 1, action 443 (feature): "It would be a nice feature to be able to concede the win to the '
+      + 'opponent after a match, for instance, if you ended up winning due to a bug. In our case, the creatures '
+      + 'shouldn\'t have had \"piercing\", because of Transmogrifant."',
+    status: 'fixed',
+    guards: [
+      '520-dispute-game.test.ts::§1 a dispute files a report row and marks the room; the result stands',
+      '521-dispute-button.test.ts::§1 the button sits beside Rematch where the game can be disputed, and nowhere else',
+      '57-ui-cardtext.test.ts::CT-328: under Transmogrifant a later Piercing shows live, the printed Flying struck',
+      '531-control-change-keeps-timestamp.test.ts::§1 report #231: Rebalance gives away the host of Transmogrifant',
+    ],
+    note:
+      'Three parts, all resolved. (1) The FEATURE is done: owner, 2026-10-21, "Maybe just a \'dispute game\' button right on the '
+      + 'final screen, by \'rematch\'". Either player of a finished two-player game can dispute it once, with a note; '
+      + 'it files a report, tags the game and flags a league match for the organizer, and changes no result (BL-48). '
+      + '(2) The card panel struck Piercing out on Djentleman\'s units while it applied, which likely fed the report: '
+      + 'the panel now strikes by timestamp, as the engine does (CT-328). (3) The rule is ANSWERED and the engine was '
+      + 'already right: Piercing from Pernicious Photosynthesis [407] was granted after Transmogrifant was applied, and '
+      + 'Rebalance giving Yagamino\'s Bonesculptor to Djentleman [423] does not refresh Transmogrifant\'s timestamp. '
+      + '_passer in rules-questions, relayed by the owner 2026-10-21: "no, it keeps its old timestamp" (CR 113.2a). So '
+      + 'the units lost their printed attributes and kept the Piercing, as they did in the game. CT-313 closed as by design.',
+  },
+  {
     id: 232, room: "RCUY", date: "2026-10-18",
     report: "LordZZX (judge), seat 0, action 110: \"Shoreline Specter isn't currently a may. It requires targetting an ally.\"",
     status: 'fixed',

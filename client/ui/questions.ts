@@ -127,7 +127,8 @@ export const QUESTIONS: RulesQuestion[] = [
           + 'what the unit has when the strip applies."',
       },
     ],
-    client: 'This client keeps the Piercing ("Piercing stays"): the Robot pierces past Restitution.',
+    client: 'Answered (Passer, 2026-10-21): Rebalance does not refresh Transmogrifant\'s timestamp, so the Piercing '
+      + 'stays. This client keeps the Piercing: the Robot pierces past Restitution.',
     opensAt: 'Before the switch',
     cards: ['Transmogrifant', 'The Bonesculptor', 'Pernicious Photosynthesis', 'Rebalance', 'Restitution', 'Bubb', 'Robot'],
     initiative: B,

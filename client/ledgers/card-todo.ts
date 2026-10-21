@@ -695,7 +695,7 @@ const OPEN: TodoEntry[] = [
     detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules turn.planning.order and turn.deploy.order state print: the initiative player takes the resource and haste steps first and the non-initiative player after (Manual p.27 legend, Rulebook 2023 p.5), and the initiative team deploys first (Manual p.38). The engine runs all three as hidden simultaneous segments, a deliberate house rule (CR 500.2a, D1.4; types.ts calls deployment simultaneous). Measured: the non-initiative seat activated a resource, finished the step and played a haste card before the initiative seat acted, and is offered playCard in deployment before the initiative player is done. Waits on D-U08-1 and D-U09-1.",
     evidence: "Findings F-U08-1 (dup F-U09-3). engine.ts (apply.ts until 2026-10-21): \"export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {\" and \"if (e.deploying(seat)) return legalDeployActions(e, seat);\". types.ts: \"/** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):\". digital-rules.md: \"false: the haste step is a **hidden simultaneous segment** — nobody sees the\". Measured by verifier and tester probes (not committed).",
     fix: "Ask the owner whether the house rule stands. If it does, record it as a digital convention (Annex D) and close this as wontfix. If print wins, sequence the segments by initiative.",
-    proof: () => still('engine/src/engine.ts', 'export function hiddenSegment('),   // moved from apply.ts 2026-10-21 (timestamps in simultaneous steps)
+    proof: () => still('engine/src/engine.ts', 'export function hiddenSegment('),   // moved from apply.ts 2026-10-21 (CR 113.2b)
     status: 'open',
   },
   {
@@ -933,17 +933,6 @@ const OPEN: TodoEntry[] = [
     status: 'open',
   },
   {
-    id: 313, area: "engine", severity: "major", reportId: 231,
-    cards: ["Transmogrifant", "Pernicious Photosynthesis", "Rebalance", "The Everywhere", "Monke"],
-    title: "Transmogrifant's strip dates from when it was applied, so a unit it covers later (control change, region move) keeps attributes granted in between",
-    detail: "Report #231 (ZKKX): Pernicious Photosynthesis gave Djentleman's units Piercing [407]; Rebalance then gave Yagamino's Bonesculptor, with Transmogrifant on it, to Djentleman [423], so Transmogrifant covered those units only from then. The engine strips by the stripper's stamp (CR 113.2, \"a mod's has the time it was applied\"), so the Piercing survived and decided the game. The other reading: the strip takes what the unit has when it begins to apply to that unit (CR 712.2). _passer (RAQ 1355845893219287132): \"later gains ... NOT affected\"; Caleb on Suppression Field: \"removes attributes from the time it was played\"; on Monke moving region: \"the units in the new zone will be blanked\". No ruling covers a control change.",
-    evidence: "Agent B, report round 2026-10-21; b-walk.ts on ZKKX. The owner is posting the question to the community; staged board ?question=transmogrifant-control-change.",
-    fix: "If the answer is reading 2: a per-(stripper, unit) scope-entry stamp, set when a unit first falls under a continuous strip (control change, region entry for The Everywhere and Monke), and strippersOf compares grants against it. About 80-120 lines; test 516 is reserved. If reading 1: close as by-design with the answer as source.",
-    proof: null,
-    verify: "Open ?question=transmogrifant-control-change and step to the Rebalance.",
-    status: 'open',
-  },
-  {
     id: 329, area: "card", severity: "minor",
     cards: ["The Everywhere"],
     title: "The Everywhere can name \"The Everywhere\": it strips itself of abilities and still radiates the strip",
@@ -1055,6 +1044,17 @@ const OPEN: TodoEntry[] = [
     fix: "Redraft both records against rooms.ts rewindOptions / main.ts fix runs, re-verify with an isolated verifier, cr:render.",
     proof: null,
     verify: "cr:check shows both records confirmed; 409 green.",
+    status: 'open',
+  },
+  {
+    id: 341, area: "engine", severity: "minor",
+    cards: ["Aberrant Statweaver", "Body Swap", "Borrower of Forms"],
+    title: "the base-stat layer and the copy layer still order a hidden step's effects by click order, not initiative",
+    detail: "CR 113.2b (owner, 2026-10-21: \"deployment is stamped accourding to INT/NIT order. 'Real time' doesn't matter in simultanous phases\"). The strip layer reads E.stampOf / stampNow, which order a hidden step by initiative. Layer 2 does not: baseWith sorts base-setters by the raw clock (a static's srcId, setBase's baseSetSeq = nextId++), and the copy layer sorts CopyRef.seq the same way. Two base-setters or two copies from DIFFERENT seats in one deployment on the same unit therefore resolve by click order. In deployment each seat reaches only its own units (CR 507.1b), so this needs a later control change to matter.",
+    evidence: "The answer agent, report round 2026-10-21, implementing CR 113.2b (engine.ts stampSegment).",
+    fix: "Give baseSet and CopyRef a Stamp beside their seq (set from stampNow / the entity's stampOf in a hidden step) and sort layer 2 and the copy layer with E.older; add a fixture for the new field in 266.",
+    proof: () => still('engine/src/engine.ts', 'seq: srcId,'),
+    verify: "grep \"seq: srcId,\" in client/engine/src/engine.ts (baseWith).",
     status: 'open',
   },
 ];

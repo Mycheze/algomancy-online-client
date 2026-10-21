@@ -11408,6 +11408,22 @@ export const CLOSED: TodoEntry[] = [
     status: 'done',
   },
   {
+    id: 313, area: "engine", severity: "major", reportId: 231,
+    cards: ["Transmogrifant", "Pernicious Photosynthesis", "Rebalance", "The Everywhere", "Monke"],
+    title: "Transmogrifant's strip dates from when it was applied, so a unit it covers later (control change, region move) keeps attributes granted in between",
+    detail: "Report #231 (ZKKX): Pernicious Photosynthesis gave Djentleman's units Piercing [407]; Rebalance then gave Yagamino's Bonesculptor, with Transmogrifant on it, to Djentleman [423], so Transmogrifant covered those units only from then. The engine strips by the stripper's stamp (CR 113.2, \"a mod's has the time it was applied\"), so the Piercing survived and decided the game. The other reading: the strip takes what the unit has when it begins to apply to that unit (CR 712.2). _passer (RAQ 1355845893219287132): \"later gains ... NOT affected\"; Caleb on Suppression Field: \"removes attributes from the time it was played\"; on Monke moving region: \"the units in the new zone will be blanked\". No ruling covers a control change.",
+    evidence: "Agent B, report round 2026-10-21; b-walk.ts on ZKKX. The owner is posting the question to the community; staged board ?question=transmogrifant-control-change.",
+    fix: "If the answer is reading 2: a per-(stripper, unit) scope-entry stamp, set when a unit first falls under a continuous strip (control change, region entry for The Everywhere and Monke), and strippersOf compares grants against it. About 80-120 lines; test 516 is reserved. If reading 1: close as by-design with the answer as source.",
+    proof: null,
+    verify: "Open ?question=transmogrifant-control-change and step to the Rebalance.",
+    guards: [
+      "531-control-change-keeps-timestamp.test.ts::§1 report #231: Rebalance gives away the host of Transmogrifant",
+      "531-control-change-keeps-timestamp.test.ts::§2 the timestamp of the strip is the same before and after the control change",
+    ],
+    closed: "BY DESIGN 2026-10-21, no engine change: reading 1. _passer in rules-questions, relayed by the owner: \"Does Rebalance cause Transmog to refresh his timestamp?\" ... \"no, it keeps its old timestamp\"; nyarlathotep8457 agreed. A change of control does not change an effect's timestamp (CR 113.2a), so the later Piercing stays and the printed attributes go, as the engine already did. 516 was never used; the guard is 531. The INT/NIT half of the same thread became CR 113.2b (owner, 2026-10-21).",
+    status: 'done',
+  },
+  {
     id: 318, area: "engine", severity: "major", reportId: 234,
     cards: ["Rousing Spirit"],
     title: "a trigger put on the stack as a window opens hands priority to the other player, not the initiative player",
