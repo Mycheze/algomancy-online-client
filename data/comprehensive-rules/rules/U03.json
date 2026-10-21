@@ -3169,7 +3169,7 @@
     "key": "concepts.targets.change",
     "parent": "110",
     "order": 9,
-    "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect. An effect with no target that can be changed is still a legal \"target effect\" for it, and the change then does nothing. The client asks the player to confirm before such an effect is chosen.",
+    "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect. Enigmatic Warder's ability (\"Change a target of target effect to me\") may target only an effect that Enigmatic Warder could be a legal target of. Any other effect that changes targets may target an effect with no target that can be changed, and the change then does nothing. The client asks the player to confirm before choosing a target effect whose targets the change cannot alter.",
     "examples": [
       {
         "text": "Enigmatic Warder cannot take Throw off a Cliff, which needs a unit with 4 or more defense.",
@@ -3178,6 +3178,14 @@
       {
         "text": "Enigmatic Warder cannot move itself into a target already held by the same effect's other target.",
         "test": "349-retarget-distinct-slots.test.ts::CT-189 canFillSlot, the Enigmatic Warder gate, refuses a sibling ref on every multi-target part"
+      },
+      {
+        "text": "Enigmatic Warder's ability cannot be activated with only Surly Stalker's trigger, which has no targets, on the stack.",
+        "test": "530-warder-legal-target.test.ts::F-U03-6 Enigmatic Warder is not offered against a targetless trigger"
+      },
+      {
+        "text": "With an opponent's Fester, Throw off a Cliff, \"target ally\" trigger and Invigorate on the stack, Enigmatic Warder may target only the Invigorate, whose \"target unit\" it could be.",
+        "test": "530-warder-legal-target.test.ts::F-U03-6 Enigmatic Warder is offered against a single-target unit spell it could be the target of, and only that"
       },
       {
         "text": "Gravitational Correction may be aimed at Surly Stalker's trigger, which has no targets; the client first asks \"This effect has no targets, so Gravitational Correction will do nothing. Continue?\", and Continue sends the choice.",
@@ -3197,6 +3205,10 @@
         {
           "ref": "RAQ 1355466429788328066#6",
           "quote": "But you couldn't make Enigmatic Warder being targeted twice."
+        },
+        {
+          "ref": "RQ 1403796597896253511",
+          "quote": "Yeah you can change any spell where warder could be a legal target"
         }
       ],
       "ours": [],
@@ -3238,18 +3250,20 @@
         "349-retarget-distinct-slots.test.ts",
         "49-playtest-round6.test.ts",
         "511-retarget-nothing-to-change.test.ts",
-        "529-noop-retarget-confirm.test.ts"
+        "529-noop-retarget-confirm.test.ts",
+        "530-warder-legal-target.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-09-30 (“A retarget fills each slot legally…”) rules distinctness per part only; whether two parts of one graft composite may share a target is undecided: D-U03-8. CT-307 (2026-10-21): the owner ruled a change-the-targets card castable at an effect with no target to change, with a confirm in the client. He had both readings in front of him on the question board, including Caleb's Enigmatic Warder line (RQ 1403796597896253511, \"you can change any spell where warder could be a legal target\") and _passer's \"you CANNOT CHANGE this effects target with GC\"; the verifier should check whether Caleb's line is read as a castability limit.",
+    "notes": "The owner ruling of 2026-09-30 (“A retarget fills each slot legally…”) rules distinctness per part only; whether two parts of one graft composite may share a target is undecided: D-U03-8. CT-307 (2026-10-21): the owner ruled a change-the-targets card castable at an effect with no target to change, with a confirm in the client. He had both readings in front of him on the question board, including Caleb's Enigmatic Warder line (RQ 1403796597896253511, \"you can change any spell where warder could be a legal target\") and _passer's \"you CANNOT CHANGE this effects target with GC\"; the verifier read Caleb's line as a limit for Warder (F-U03-6). 2026-10-21 redraft: Caleb ruled on Warder itself, so he outranks the owner's general call for Warder only; Warder's sentence cites him, Gravitational Correction and Divine Intervention keep the owner's call. Context: Caleb was answering debeli8280's question about a trigger with TWO targets (\"or is it 'it doesnt ave one target, you cant activate it'\"); his criterion (\"where warder could be a legal target\") is read as the general test. A target that already holds Warder counts (Warder could be its legal target); changing it is no change (concepts.targets.change.kept), and the client's confirm says so (530 section 4).",
     "sourceHashes": {
       "RAQ 1355466429788328066#3": "af505b5d2f160d80fc2690ed8d9245032334d52b897e37febf17596283b46c19",
-      "RAQ 1355466429788328066#6": "86796adf4482534b1161915c5d8c3136684bd48c7177be4b376d5ad3660b95ae"
+      "RAQ 1355466429788328066#6": "86796adf4482534b1161915c5d8c3136684bd48c7177be4b376d5ad3660b95ae",
+      "RQ 1403796597896253511": "f2398ebe5c8848ae1b1a1e59c0a3d908bb9469b31a30c893e7a21f8e9beda7c0"
     },
-    "digitalClause": "The client asks the player to confirm before such an effect is chosen."
+    "digitalClause": "The client asks the player to confirm before choosing a target effect whose targets the change cannot alter."
   },
   {
     "key": "concepts.targets.change.kept",

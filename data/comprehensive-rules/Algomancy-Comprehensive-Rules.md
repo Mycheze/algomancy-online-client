@@ -1294,15 +1294,19 @@ order.
 
 <sub>Discrepancies: D-U03-3 (discrepancies.md)</sub>
 
-<a id="r110.9"></a>**110.9.** An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect. An effect with no target that can be changed is still a legal "target effect" for it, and the change then does nothing. The client asks the player to confirm before such an effect is chosen. *(Digital client)* See rule 110.6.
+<a id="r110.9"></a>**110.9.** An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect. Enigmatic Warder's ability ("Change a target of target effect to me") may target only an effect that Enigmatic Warder could be a legal target of. Any other effect that changes targets may target an effect with no target that can be changed, and the change then does nothing. The client asks the player to confirm before choosing a target effect whose targets the change cannot alter. *(Digital client)* See rule 110.6.
 
 > *Example: Enigmatic Warder cannot take Throw off a Cliff, which needs a unit with 4 or more defense.*
 
 > *Example: Enigmatic Warder cannot move itself into a target already held by the same effect's other target.*
 
+> *Example: Enigmatic Warder's ability cannot be activated with only Surly Stalker's trigger, which has no targets, on the stack.*
+
+> *Example: With an opponent's Fester, Throw off a Cliff, "target ally" trigger and Invigorate on the stack, Enigmatic Warder may target only the Invigorate, whose "target unit" it could be.*
+
 > *Example: Gravitational Correction may be aimed at Surly Stalker's trigger, which has no targets; the client first asks "This effect has no targets, so Gravitational Correction will do nothing. Continue?", and Continue sends the choice.*
 
-<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 4 tests, all passed; 5 gate test files · Designer: RAQ 1355466429788328066#3; RAQ 1355466429788328066#6 · Owner call · adopted 2026-10-21; Owner ruling, adopted 2026-08-19, 2026-09-30 (quoted from the retired ruling register) · Tests: 390-raq-stack.test.ts, 349-retarget-distinct-slots.test.ts, 49-playtest-round6.test.ts, 511-retarget-nothing-to-change.test.ts, 529-noop-retarget-confirm.test.ts · Example tests: 390-raq-stack.test.ts::RAQ valid targets: Enigmatic Warder cannot take Throw off a Cliff, 349-retarget-distinct-slots.test.ts::CT-189 canFillSlot, the Enigmatic Warder gate, refuses a sibling ref on every multi-target part, 529-noop-retarget-confirm.test.ts::CT-307 the client asks before sending a targetless pick, and Continue sends that pick · Key: concepts.targets.change</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 10 tests, all passed; 6 gate test files · Designer: RAQ 1355466429788328066#3; RAQ 1355466429788328066#6; RQ 1403796597896253511 · Owner call · adopted 2026-10-21; Owner ruling, adopted 2026-08-19, 2026-09-30 (quoted from the retired ruling register) · Tests: 390-raq-stack.test.ts, 349-retarget-distinct-slots.test.ts, 49-playtest-round6.test.ts, 511-retarget-nothing-to-change.test.ts, 529-noop-retarget-confirm.test.ts, 530-warder-legal-target.test.ts · Example tests: 390-raq-stack.test.ts::RAQ valid targets: Enigmatic Warder cannot take Throw off a Cliff, 349-retarget-distinct-slots.test.ts::CT-189 canFillSlot, the Enigmatic Warder gate, refuses a sibling ref on every multi-target part, 530-warder-legal-target.test.ts::F-U03-6 Enigmatic Warder is not offered against a targetless trigger, 530-warder-legal-target.test.ts::F-U03-6 Enigmatic Warder is offered against a single-target unit spell it could be the target of, and only that, 529-noop-retarget-confirm.test.ts::CT-307 the client asks before sending a targetless pick, and Continue sends that pick · Key: concepts.targets.change</sub>
 
 <a id="r110.9a"></a>**110.9a** A target that is kept when targets are changed is not a change, and it is not judged again then.
 
@@ -10308,8 +10312,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1799 |
-| partial | 14 |
+| confirmed | 1800 |
+| partial | 13 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
@@ -10441,7 +10445,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - <a id="F-U03-5"></a>**F-U03-5** A deployment graft onto Mohruung is attached before Mohruung's trigger resolves (CT-242). Rule 110.11.
   The designer: grafting onto Mohruung, "he will trigger first". The engine fires the targeted event, attaches the graft at once, and only then resolves the queued trigger: the round-2 verifier's probe logs "Flame Juggle grafts onto Mohruung" before "Resolving Mohruung: create a Crystal 2". The RAQ guard (393 point 5) asserts only that a Crystal is made, not the order. Pending D-U03-13. (Measured by a verifier probe; the probe files are not committed.)
 - <a id="F-U03-6"></a>**F-U03-6** Enigmatic Warder can be activated at an effect it could never be a legal target of. Rule 110.9.
-  Caleb (1403796597896253511): 'you can change any spell where warder could be a legal target'. The engine lets Warder's [two] ability aim at any stack effect, including a targetless trigger (511 'CT-306 Enigmatic Warder at a targetless trigger') or an effect whose every slot Warder cannot fill; it then pays [two] for nothing after a confirm. Under Caleb's criterion those effects should not be offered to Warder at all. Gravitational Correction / Divine Intervention are covered by the owner call and are not part of this.
+  Caleb (1403796597896253511): 'you can change any spell where warder could be a legal target'. The engine lets Warder's [two] ability aim at any stack effect, including a targetless trigger (511 'CT-306 Enigmatic Warder at a targetless trigger') or an effect whose every slot Warder cannot fill; it then pays [two] for nothing after a confirm. Under Caleb's criterion those effects should not be offered to Warder at all. Gravitational Correction / Divine Intervention are covered by the owner call and are not part of this. Re-checked: fixed on 2026-10-21: Enigmatic Warder's ability now targets only an effect with a target Warder could legally be (Caleb, RQ 1403796597896253511); 530 shows a targetless trigger and effects it cannot fill are not offered, while Gravitational Correction and Divine Intervention still are.
 - <a id="F-U04-2"></a><a id="F-U04-3"></a><a id="F-U04-4"></a>**F-U04-2** An Ambush ignores imposed and "cards" cost modifiers (Arbiter of Armistice, Vengeance), though it is a card played (CT-243). Rules 111.10c, 111.10e. Also found as F-U04-3, F-U04-4.
   The owner ruling of 2026-08-24 (“a spell token is a token…”) counts an Ambush as a card being played, and Arbiter of Armistice ("Cards played during battle gain [Pay 2 life]") and Vengeance ("Cards your opponents play during battle gain '[Sacrifice a unit]'") print the noun "Cards". Measured by the round-1 verifier: an Ambush played under Arbiter of Armistice pays no life, while a spell card in the same spot is billed 2 life; doAmbush pays only the Ambush line's mana and never consults the card-play cost layer. The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) records the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)
 - <a id="F-U04-5"></a>**F-U04-5** "sacrifice me. If you do" triggers sacrifice their source as the ability goes on the stack; print makes it part of the effect (CT-264). Rule 111.8.

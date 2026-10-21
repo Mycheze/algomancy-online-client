@@ -2437,20 +2437,25 @@
   },
   {
     "key": "concepts.targets.change",
-    "textHash": "e96d2660bb78b8bf",
-    "verdict": "partial",
+    "textHash": "8d48b90107bd7613",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-earth-a.ts:Enigmatic Warder (pickConfirm noChangeConfirm; run logs and does nothing when warderSlots is empty)",
+        "loc": "client/engine/src/engine.ts:slotCandidates / canFillSlot",
         "agrees": true,
-        "note": "engine does what the record says, for Warder too: Warder may be aimed at a targetless effect or one it cannot legally fill"
+        "note": "A new target is judged by the slot's own spec, source, X and event, and a ref already in a sibling slot of the same part is excluded."
       },
       {
-        "loc": "client/engine/src/engine.ts:canFillSlot",
+        "loc": "client/engine/src/cards/sets/batch-earth-a.ts:Enigmatic Warder (restrict: warderCouldTarget)",
         "agrees": true,
-        "note": "own-spec restriction + no sibling ref of the same part"
+        "note": "Warder may target only an effect with a slot it could legally fill."
+      },
+      {
+        "loc": "client/engine/src/cards/sets/helpers.ts:noChangeConfirm",
+        "agrees": true,
+        "note": "Options for an effect whose targets cannot be changed carry a display-only confirm ('This effect has no targets, so X will do nothing. Continue?' / 'None of this effect's targets can be changed...')."
       }
     ],
     "tests_run": [
@@ -2467,14 +2472,50 @@
         "asserts_claim": true
       },
       {
-        "file": "client/ui/test/529-noop-retarget-confirm.test.ts",
-        "pattern": "CT-307",
+        "file": "client/engine/test/349-retarget-distinct-slots.test.ts",
+        "pattern": "CT-189",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/530-warder-legal-target.test.ts",
+        "pattern": "F-U03-6 Enigmatic Warder is not offered against a targetless trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/530-warder-legal-target.test.ts",
+        "pattern": "F-U03-6 Enigmatic Warder is offered against a single-target unit spell it could be the target of, and only that",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/530-warder-legal-target.test.ts",
+        "pattern": "F-U03-6",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/511-retarget-nothing-to-change.test.ts",
         "pattern": "CT-306",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/529-noop-retarget-confirm.test.ts",
+        "pattern": "CT-307 the client asks before sending a targetless pick, and Continue sends that pick",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/529-noop-retarget-confirm.test.ts",
+        "pattern": "CT-307",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/49-playtest-round6.test.ts",
+        "pattern": "Enigmatic Warder cannot redirect an ENEMY into an ally slot",
         "passed": true,
         "asserts_claim": true
       }
@@ -2484,37 +2525,32 @@
       {
         "ref": "RAQ 1355466429788328066#3",
         "supports": "yes",
-        "note": "verbatim; supports sentence 1 (own restriction)"
+        "note": "Verbatim in claim 3's source; [Solved] _passer write-up, status covered. Warder cannot become an illegal target (restriction of the slot)."
       },
       {
         "ref": "RAQ 1355466429788328066#6",
         "supports": "yes",
-        "note": "verbatim; supports sentence 1 (no doubling into a sibling slot)"
+        "note": "Verbatim in claim 6's source (Twin Flame); one object cannot be two targets of the same effect."
       },
       {
-        "ref": "owner register@72de434 (R58 fragments)",
+        "ref": "RQ 1403796597896253511",
         "supports": "yes",
-        "note": "sentence 1"
+        "note": "author calebgannon; replies to 'can i use my warden ability on it?' (the 'it' is not visible in the snapshot) with a general statement of the condition: Warder may change a spell where it could be a legal target."
+      },
+      {
+        "ref": "owner register@72de434 (four fragments)",
+        "supports": "yes",
+        "note": "Slot's own spec, never a ref in a sibling slot of the same part, per part, changing a target may never create an illegal one - consistent with the designer sources; nothing outranks them."
       },
       {
         "ref": "owner chat 2026-10-21 'yes [they may be cast], since it just says target effect'",
-        "supports": "partial",
-        "note": "supports sentence 2 for cast spells (Gravitational Correction, Divine Intervention). It does not speak for Enigmatic Warder, an activated ability, and the designer does"
-      },
-      {
-        "ref": "designer passage 1 (calebgannon 1403796597896253511, 2025-08-09, given in the brief)",
-        "supports": "no",
-        "note": "\"Yeah you can change any spell where warder could be a legal target\" -- Caleb's criterion for using Enigmatic Warder is that Warder could be a legal target of that spell. The record's sentence 2 makes ANY target-changing effect legal against an effect with no target it can change, which for Warder includes a targetless effect and one Warder cannot legally fill (Throw off a Cliff). Designer outranks owner there"
-      },
-      {
-        "ref": "designer passage 2 (2025-08-27, given in the brief)",
-        "supports": "n/a",
-        "note": "the 'you CANNOT CHANGE this effects target with GC' remark is _passer's (not authority in the flat channel); Caleb's 'No*' answers whether the Megadeath effect can go on the stack at all, and leaves the GC question open -- so for GC the owner call stands"
-      },
-      {
-        "ref": "owner chat 2026-10-21 stop/reminder",
         "supports": "yes",
-        "note": "sentence 3; demonstrated by 529"
+        "note": "Supports sentence 3 for the other change-the-targets cards (Gravitational Correction: 'Change the targets of target effect unless its controller pays [x].'); no printed or designer source says otherwise for them."
+      },
+      {
+        "ref": "owner chat 2026-10-21 'add a stop/reminder...'",
+        "supports": "yes",
+        "note": "Supports sentence 4 (the client confirm)."
       }
     ],
     "quote_spans": [
@@ -2527,16 +2563,20 @@
         "text": "But you couldn't make Enigmatic Warder being targeted twice."
       },
       {
-        "file": "client/ui/test/529-noop-retarget-confirm.test.ts",
-        "text": "This effect has no targets, so ${changer} will do nothing. Continue?"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Yeah you can change any spell where warder could be a legal target"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-earth-a.ts",
-        "text": "pickConfirm: noChangeConfirm('Enigmatic Warder',"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Change the targets of target effect unless its controller pays [x]."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] [two]: Change a target of target effect to me."
       }
     ],
     "basis_ok": true,
-    "problem": "Sentences 1 and 3 hold (sources verbatim, tests pass). Sentence 2 is stated for every effect that changes targets, but its only source is the owner's 2026-10-21 call about casting Gravitational Correction-type spells. For Enigmatic Warder the designer gave the criterion himself (calebgannon 1403796597896253511: \"you can change any spell where warder could be a legal target\"), which does not allow Warder to be aimed at an effect where it cannot be a legal target (a targetless trigger, or Throw off a Cliff). Sentence 2 must be narrowed to the 'change the targets of target effect' spells (or Warder carved out), or it overreaches past a designer ruling."
+    "problem": ""
   },
   {
     "key": "concepts.targets.change.kept",

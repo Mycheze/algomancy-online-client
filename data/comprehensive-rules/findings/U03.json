@@ -102,6 +102,7 @@
         "quote": "const CHANGERS = allCardNames().filter(n => /\\bchange (?:a|the) targets? of target effect\\b/i.test(getCard(n).text ?? ''));"
       }
     ],
-    "rule": "concepts.targets.change"
+    "rule": "concepts.targets.change",
+    "closed": "fixed on 2026-10-21: Enigmatic Warder's ability now targets only an effect with a target Warder could legally be (Caleb, RQ 1403796597896253511); 530 shows a targetless trigger and effects it cannot fill are not offered, while Gravitational Correction and Divine Intervention still are."
   }
 ]

@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:9a6945bd009b86ef",
+ "generated_from": "sha256:b1c3ea72bfac85fd",
  "rules": [
   {
    "num": "100.1",
@@ -4143,13 +4143,15 @@
    "sectionTitle": "Targets",
    "chapterTitle": "1. Game Concepts",
    "parent": "110",
-   "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect. An effect with no target that can be changed is still a legal \"target effect\" for it, and the change then does nothing. The client asks the player to confirm before such an effect is chosen.",
+   "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect. Enigmatic Warder's ability (\"Change a target of target effect to me\") may target only an effect that Enigmatic Warder could be a legal target of. Any other effect that changes targets may target an effect with no target that can be changed, and the change then does nothing. The client asks the player to confirm before choosing a target effect whose targets the change cannot alter.",
    "see": [
     "110.6"
    ],
    "examples": [
     "Enigmatic Warder cannot take Throw off a Cliff, which needs a unit with 4 or more defense.",
     "Enigmatic Warder cannot move itself into a target already held by the same effect's other target.",
+    "Enigmatic Warder's ability cannot be activated with only Surly Stalker's trigger, which has no targets, on the stack.",
+    "With an opponent's Fester, Throw off a Cliff, \"target ally\" trigger and Invigorate on the stack, Enigmatic Warder may target only the Invigorate, whose \"target unit\" it could be.",
     "Gravitational Correction may be aimed at Surly Stalker's trigger, which has no targets; the client first asks \"This effect has no targets, so Gravitational Correction will do nothing. Continue?\", and Continue sends the choice."
    ],
    "basis": "mixed",
@@ -4158,7 +4160,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "partial"
+   "verdict": "confirmed"
   },
   {
    "num": "110.9a",
