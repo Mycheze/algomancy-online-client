@@ -351,8 +351,9 @@ test('CR 706.3a: a trigger fired OUTSIDE the damage step reaches the stack and I
   // Half one of the owner's "all triggers are respondable", and it is true.
   // A takes non-combat damage on its attacking Eminence from D's Flame of
   // History; the resulting trigger is pushed with `pushItem`, which resets
-  // `passes` to 0 and hands priority to whoever did NOT act — so D is looking
-  // at the trigger on the stack with a live window to answer it.
+  // `passes` to 0. The window after the Flame resolves is a new one and opens
+  // with the initiative player (CR 703.3c, 703.3a — report #234); once A
+  // passes, D is looking at the trigger with a live window to answer it.
   const h = new Harness(9420);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -372,7 +373,9 @@ test('CR 706.3a: a trigger fired OUTSIDE the damage step reaches the stack and I
   assert.ok(item, 'the trigger is ON THE STACK');
   assert.equal(item!.kind, 'triggered', 'as a triggered item');
   assert.equal(h.state.passes, 0, 'the push reset the pass count');
-  assert.equal(h.state.priority, D, 'and handed priority to the seat that did not control it');
+  assert.equal(h.state.priority, A, 'the new window opens with the initiative player (CR 703.3c)');
+  pass(h);
+  assert.equal(h.state.priority, D, 'and passes to the seat that did not control it');
   // and the window is REAL: hand D another castable card and it is offered
   giveResources(h, D, 'fire', 3);
   const idx = give(h, D, 'Flame of History');
@@ -444,9 +447,11 @@ test('CR 608.9b: the SAME trigger fired by COMBAT DAMAGE also reaches the stack,
   assert.equal(h.state.battle!.step, 'afterWindow',
     'and the window it is sitting in is the AFTER-COMBAT one, not a sub-step');
   assert.equal(h.state.passes, 0, 'the push reset the pass count');
+  assert.equal(h.state.priority, A,
+    'the after-combat window opens with the initiative player (CR 703.3a, report #234)');
+  pass(h);
   assert.equal(h.state.priority, D,
-    'priority is with the seat that does NOT control it — a window, rather than a refused '
-    + 'spell');
+    'and then the seat that does NOT control it — a window, rather than a refused spell');
   // and the window is REAL, measured the way §2 measures it: a castable card
   // in the other seat's hand is offered.
   giveResources(h, D, 'fire', 3);

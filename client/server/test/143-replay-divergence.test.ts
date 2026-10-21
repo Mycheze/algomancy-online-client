@@ -196,7 +196,9 @@ test('a scalar answer to an orderTriggers question is refused as UNANSWERABLE, n
   assert.equal(err.unanswerable, true,
     'flagged `unanswerable`: not "wrong now" but "no reply of this shape can ever '
     + 'be accepted", which is what lets a replay name it as the whole finding');
-  assert.match(err.message, /ordering expects an array of 2 indices, got 0/,
+  // the count is the question's own (the fuzz walk that finds this log
+  // re-rolls whenever a legal action changes — CT-318 moved it from 2 to 3)
+  assert.match(err.message, new RegExp(`ordering expects an array of ${dec.options.length} indices, got 0`),
     'and it says what it wanted and what it got, so the log can be diagnosed '
     + 'without a debugger');
   assert.match(err.message, /permutation/);

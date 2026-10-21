@@ -104,8 +104,13 @@ test('CR 608.3b the boundary is a real priority window: the other seat can respo
   assert.equal(h.state.battle!.step, 'damageWindow');
   assert.ok(h.state.stack.some(it => /Adversary of the Deep/.test(it.label)),
     'the trigger is a real stack item at the boundary');
+  // CR 703.3a (report #234): the boundary is a priority window like any other,
+  // so it opens with the initiative player (A attacked with the initiative and
+  // controls the trigger), and the other seat answers once A passes
+  assert.equal(h.state.priority, A, 'the boundary window opens with the initiative player');
+  pass(h);
   assert.equal(h.state.priority, D,
-    "priority sits with the seat that does not control it — 'allowing for responses and "
+    "then priority sits with the seat that does not control it — 'allowing for responses and "
     + "priority and everything'");
   assert.notEqual(h.state.passes, undefined);
   finishBattle(h);

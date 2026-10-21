@@ -1150,6 +1150,7 @@ test('CR 704.4: a negated trigger is GONE from the stack, not sitting on it grey
   assert.equal(shouldAutoYield(h.state, A, yielded), h.state.priority === A,
     'a live trigger on top is exactly what auto-yield is for');
 
+  pass(h);                                               // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
   pass(h); pass(h);                                      // the Protocol resolves
 

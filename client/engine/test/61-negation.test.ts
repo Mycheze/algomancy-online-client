@@ -47,6 +47,7 @@ test('CR 704.4: a mass negate empties the stack of its victims AT ONCE — no ex
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: heralds.map(u => [u]) });
   assert.equal(h.state.stack.length, 4, 'four attack triggers');
+  pass(h);                                                  // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Godray') });
   pick(h, { player: A });
   assert.equal(h.state.stack.length, 5, 'four triggers + one spell');

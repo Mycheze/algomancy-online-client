@@ -25,7 +25,11 @@ test('CR 109.3a: trigger conditions check at event time; amounts compute at reso
   // trigger fired at attack time; D's hand is 2 now. D responds with an Arc:
   // the hand count must be read at RESOLUTION, after the response.
   assert.equal(h.state.stack.length, 1, 'Tidewraith trigger on the stack');
-  assert.equal(h.state.priority, D, 'D responds to the stacked trigger first');
+  // CR 605.1a (report #234): the attack window is the initiative player's
+  // first, trigger or no trigger; A passes and D responds
+  assert.equal(h.state.priority, A, 'A, the initiative player, acts first in the attack window');
+  pass(h);
+  assert.equal(h.state.priority, D, 'then D may respond to the stacked trigger');
   h.do({ type: 'playCard', seat: D, handIndex: 0 });
   pick(h, { unit: tide });                     // Arc the 0/6 for 6 — kills it!
   pass(h); pass(h);                            // resolve Arc: Tidewraith dies

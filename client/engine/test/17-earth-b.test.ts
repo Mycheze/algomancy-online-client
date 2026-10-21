@@ -561,6 +561,7 @@ test('Return to Nature: negates everything on the stack and erases all mods in t
   const binD = h.state.players[D]!.bin.length;
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[ml]] });   // Luminary trigger → stack
+  pass(h);                                            // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Return to Nature') });
   pass(h); pass(h);                                   // Return to Nature resolves first
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated trigger left the stack with it');

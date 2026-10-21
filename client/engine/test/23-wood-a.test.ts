@@ -664,7 +664,11 @@ test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effe
   h.do({ type: 'declareAttack', seat: A, columns: [[herald]] });
   const trig = h.state.stack[0]!;
   assert.equal(trig.kind, 'triggered', 'an attack trigger, not a spell, is on the stack');
-  assert.equal(h.state.priority, D, 'the defender responds first');
+  // CR 605.1a (report #234): the attacker with the initiative acts first in
+  // the attack window, trigger or no trigger; the defender answers after
+  assert.equal(h.state.priority, A, 'the initiative player acts first');
+  pass(h);
+  assert.equal(h.state.priority, D, 'then the defender may respond');
   // the spell-only negate cannot see it…
   giveResources(h, D, 'water', 6);
   const dd = give(h, D, 'Dreadwave Devourer');

@@ -78,8 +78,8 @@ export const BATCH_F: Record<string, Scenario> = {
         // the grafted Fight: Chombot (option 0) fights their Bubb (option 2)
         { type: 'decide', seat: YOU, choice: 0 },
         { type: 'decide', seat: YOU, choice: 2 },
-        // the opponent lets it sit; the window is yours
-        { type: 'passPriority', seat: OPPONENT },
+        // the attack window is yours first (CR 605.1a): you hold the initiative,
+        // and your own attack trigger does not hand it to the opponent (CT-318)
       ];
     },
     phase: 'battle',

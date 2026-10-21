@@ -275,6 +275,7 @@ test('Nothyr: "Discard me" in battle → its trash trigger negates a nonspell ef
   h.do({ type: 'declareAttack', seat: A, columns: [[kraken]] });
   pick(h, { unit: dTok });                              // the kraken trigger takes its target
   const krakenItem = h.state.stack[0]!.id;
+  pass(h);                                              // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Nothyr'), mode: 'discardMe' });
   assert.ok(h.state.players[D]!.bin.includes('Nothyr'), 'the cost discarded it — a trash (CR 801.3)');
   assert.equal(h.q.openMana(D), 0, 'and the [2] was paid');

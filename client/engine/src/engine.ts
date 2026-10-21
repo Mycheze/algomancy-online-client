@@ -8432,8 +8432,30 @@ export class E {
     if (!inBattle) this.ev('stackFlash', '', { item: structuredClone(item) });
     this.ev('stackPushed', inBattle ? `${item.label} → stack.` : '',
       { id: item.id, controller: item.controller });
-    // whoever did NOT act responds first; a fresh window starts from initiative
     this.s.passes = 0;
+    /**
+     * CR 703.3a, 605.1a, 604.3c; Annex D2.9 — WHO RESPONDS FIRST DEPENDS ON WHY THE ITEM IS HERE.
+     *
+     * A PLAY or ACTIVATION (anything but a trigger) is a player acting with
+     * priority, and D2.9 hands priority to the opponent: whoever did NOT act
+     * responds first.
+     *
+     * A TRIGGER is not anybody acting. It goes on the stack as a window opens
+     * (CR 604.3c: on-attack triggers "are put on the stack before the attack
+     * window opens, so players can respond to them in that window"), after a
+     * resolution (CR 703.3c: a new window), or inside a player's action — and
+     * in each case priority is already where that event put it:
+     * `openPriority` and `finishResolutionTail` give it to the initiative
+     * player (CR 703.3a), and a play has already given it to the opponent.
+     * So a trigger leaves it alone.
+     *
+     * ⚠ Report #234 (RCUY@180): this line used to flip priority for EVERY
+     * push, so Rousing Spirit's attack trigger handed the attack window to
+     * the defender before the attacker had acted in it. Keyed on the item's
+     * kind, not on a flag, because a target-suspended trigger is pushed later
+     * from doDecide and must behave exactly as if it had not suspended.
+     */
+    if (item.kind === 'triggered') return;
     if (this.s.priority !== null) this.s.priority = other(item.controller);
   }
 
@@ -10806,16 +10828,23 @@ export class E {
     }
   }
 
-  /** post-resolution: settle, then restart the window from the initiative
-   * player — unless settle() pushed new triggered items (pushItem already
-   * handed priority to the responder) */
+  /** post-resolution: restart the window from the initiative player (CR
+   * 703.3c: "all players then receive priority in order again, which is a new
+   * priority window"; CR 703.3a: initiative first) — whether or not settle()
+   * put new triggers on the stack (report #234: it used to hand the window to
+   * whoever did not control the newest trigger). Set BEFORE settle as well,
+   * so a trigger that suspends there for its targets and is pushed later from
+   * doDecide finds the new window already open. */
   finishResolutionTail(): void {
-    const lenBase = this.s.stack.length;
+    const restart = (): void => {
+      if (this.s.phase === 'battle' && this.s.priority !== null) {
+        this.s.priority = this.s.initiative;
+        this.s.passes = 0;
+      }
+    };
+    restart();
     this.settle();
-    if (this.s.phase === 'battle' && this.s.priority !== null && this.s.stack.length === lenBase) {
-      this.s.priority = this.s.initiative;
-      this.s.passes = 0;
-    }
+    restart();
   }
 
   /**

@@ -199,7 +199,11 @@ test('CR 608.9b: the other seat holds priority over a combat-damage trigger and 
   assert.equal(mine.kind, 'triggered');
   assert.equal(mine.controller, A, 'which the ATTACKER controls');
   assert.equal(h.state.passes, 0, 'the push reset the pass count');
-  assert.equal(h.state.priority, D, 'and priority sits with the seat that controls neither');
+  // CR 703.3a (report #234): the boundary window opens with the initiative
+  // player, who controls the trigger; D answers once A passes
+  assert.equal(h.state.priority, A, 'the boundary window opens with the initiative player');
+  pass(h);
+  assert.equal(h.state.priority, D, 'and then priority sits with the seat that does not control it');
   const idx = give(h, D, 'Flame of History');
   assert.ok(legalActions(h.state, D).some(
     a => a.type === 'playCard' && (a as { handIndex: number }).handIndex === idx),

@@ -419,6 +419,7 @@ test('the trigger goes on the stack, targets at cast (CR 110.1a), and can be NEG
   assert.equal(item.kind, 'triggered');
   assert.match(item.label, /Alluring/);
 
+  pass(h);                                                    // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Dematerialize') });
   pick(h, { stack: item.id });
   pass(h); pass(h);                                           // resolve Dematerialize

@@ -54,8 +54,9 @@ function graftComposite(seed: number): { h: Harness; A: Seat; D: Seat; mush: Ent
 test('CR 722.4f: a graft composite that loses its ONLY target fizzles whole — no Poison from the untargeted grafts', () => {
   const { h, A, D, mush } = graftComposite(7101);
   // D deletes the Mushroom out from under its own trigger. The trigger now
-  // holds exactly one declared target and that target is gone. (Pushing the
-  // trigger handed priority straight to D, so D may answer it now.)
+  // holds exactly one declared target and that target is gone. (The attack
+  // window is A's first — CR 605.1a — so A passes and D answers.)
+  pass(h);
   const li = give(h, D, 'Leaping Lillik');
   h.do({ type: 'playCard', seat: D, handIndex: li });
   pick(h, { unit: mush });

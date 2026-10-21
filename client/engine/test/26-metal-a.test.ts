@@ -797,6 +797,7 @@ test('Containment Protocol: negates all triggered and activated effects on the s
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[kraken]] });
   pick(h, { unit: dTok });                                  // the kraken trigger targets the token
+  pass(h);                                                  // CR 605.1a: A acts first, and passes
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Containment Protocol') });
   pass(h); pass(h);                                         // resolve the Protocol first
   assert.ok(h.log.some(l => l.includes('is negated')), 'the triggered effect was negated');

@@ -661,7 +661,7 @@
         "test": "297-damage-substeps-are-steps.test.ts::CR 802.5b the report"
       },
       {
-        "text": "At the boundary, the stack holds Adversary of the Deep's trigger and priority is with the player who does not control it.",
+        "text": "At the boundary, the stack holds Adversary of the Deep's trigger. Its controller has the initiative and receives priority first; the other player may respond once they pass.",
         "test": "297-damage-substeps-are-steps.test.ts::CR 608.3b the boundary is a real priority window"
       }
     ],
