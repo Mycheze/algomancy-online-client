@@ -2933,6 +2933,12 @@ html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
    k−1 by z-index (the piles' rule, turned sideways); the gap preview slides
    the cards along. The bracket over the first cards is the Turn-1 hand as
    the engine deals it. The strip's height never changes during a drop. */
+/* the tabletop is a fixed page: the footer's floor under every off-board page
+   (legal.ts, min-height 100dvh − 128px, injected after this sheet and two
+   ids strong) must not stretch it past its own bottom — under 900px that
+   bottom is the binder sheet's top, and the floor pushed the strip (and the
+   table's foot) under the sheet */
+#app > .ttpage { min-height: 0 !important; }
 .ttsummary .ttchnote { margin: 3px 0 0; font-size: 12px; }
 .ttdeck { flex: none; padding: 6px 12px 4px; background: #141f1b; border-top: 1px solid var(--line); }
 .ttdeckhead { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; min-height: 32px; font-size: 13px; }
@@ -2955,9 +2961,18 @@ html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
 .ttstripnums > span { position: absolute; top: 0; padding-left: 4px; color: var(--dim); font-size: 11px;
   font-variant-numeric: tabular-nums; pointer-events: none; }
 .ttstripempty { position: absolute; left: 18px; top: 45%; pointer-events: none; }
+/* the Report button and the bell sit above the strip, never over its cards
+   (the strip is a card's height and ~90px of head, bracket and numbers) */
+html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell { bottom: 285px; }
+html.touch.binderup:has(.ttdeck) .reportfab, html.touch.binderup:has(.ttdeck) .inboxbell { bottom: 252px; }
+@media (max-width: 1366px) {
+  html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell { bottom: 252px; }
+}
 @media (max-width: 900px) {
   .ttdeck { padding: 4px 8px 2px; }
   .ttsummary .ttchnote { display: none; }
+  html.binderup:has(.ttdeck) .reportfab, html.binderup:has(.ttdeck) .inboxbell,
+  html.touch.binderup:has(.ttdeck) .reportfab, html.touch.binderup:has(.ttdeck) .inboxbell { bottom: calc(var(--ddh) + 252px); }
 }
 
 /* ── the curve ── */

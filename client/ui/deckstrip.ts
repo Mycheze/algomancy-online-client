@@ -22,6 +22,9 @@
  * end; a strip card dropped on the scratch table leaves the deck, one dropped
  * on the binder is cut.
  *
+ * Press and hold a strip card (or press the wheel on it) to read it big, as
+ * on every tabletop card (`data-zoom`, ui/presszoom.ts).
+ *
  * Pure: no DOM, no state.
  */
 import { scanHtml } from './piletable.ts';
@@ -64,7 +67,7 @@ export function challengeStripHtml(v: StripView): string {
   const W = stripWidth(n, Sx, v.cw);
   const cards = v.list.map((name, k) =>
     `<div class="ttcard${k === v.front ? ' ttfront' : ''}${k === v.picked ? ' ttpicked' : ''}" style="--k:${k};left:${k * Sx}px;top:0"
-      data-btn="tt-card" data-tt-src="${esc(`strip|${k}|${name}`)}" data-tt-i="${k}" data-card="${esc(name)}">${scanHtml(name, 'ttart')}</div>`).join('');
+      data-btn="tt-card" data-tt-src="${esc(`strip|${k}|${name}`)}" data-tt-i="${k}" data-card="${esc(name)}" data-zoom>${scanHtml(name, 'ttart')}</div>`).join('');
   const nums = v.list.map((_, k) => `<span style="left:${k * Sx}px">${k + 1}</span>`).join('');
   const hand = v.hand && n ? Math.min(v.hand, n) : 0;
   const bracket = hand
