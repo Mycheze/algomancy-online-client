@@ -22,6 +22,12 @@
  * written here by hand, not read off the file: the file can be re-solved, the
  * number on the board cannot move. Test 506 holds the two equal. `calendarProblems` (test 500)
  * checks the shape, not the history — git is the history.
+ *
+ * An id is a name, not a date. The calendar went live on Wednesday 2026-10-21
+ * and the owner wanted the first puzzle playable that day, so every row was
+ * moved a week earlier before any had opened (Full House: the week of
+ * 10-18, closing Sunday 10-25). The ids, seeds, pars and reference runs kept
+ * their original names; a new row may name its id after its own week.
  */
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,31 +45,31 @@ export const REFERENCE_RUNS_DIR = join(dirname(fileURLToPath(import.meta.url)), 
 
 export const CHALLENGES: ChallengeDef[] = [
   {
-    id: '2026-10-25-crowd', week: '2026-10-25', title: 'Full House',
+    id: '2026-10-25-crowd', week: '2026-10-18', title: 'Full House',
     blurb: 'Fill your side of the table: have 60 units in play at the same time.',
     goal: { kind: 'unitsInPlay', n: 60 },
     seed: 20261025, par: 90,
   },
   {
-    id: '2026-11-01-tokens', week: '2026-11-01', title: 'Token Gesture',
+    id: '2026-11-01-tokens', week: '2026-10-25', title: 'Token Gesture',
     blurb: 'Create 100 spell tokens over the course of one game.',
     goal: { kind: 'spellTokens', n: 100 },
     seed: 20261101, par: 104,
   },
   {
-    id: '2026-11-08-giant', week: '2026-11-08', title: 'Something Big',
+    id: '2026-11-08-giant', week: '2026-11-01', title: 'Something Big',
     blurb: 'Build a single unit that is at least 60/60.',
     goal: { kind: 'unitSize', p: 60, t: 60 },
     seed: 20261108, par: 100,
   },
   {
-    id: '2026-11-15-counters', week: '2026-11-15', title: 'Counting Up',
+    id: '2026-11-15-counters', week: '2026-11-08', title: 'Counting Up',
     blurb: 'Put 100 +1/+1 counters on your units over the course of one game.',
     goal: { kind: 'counters', n: 100 },
     seed: 20261115, par: 81,
   },
   {
-    id: '2026-11-22-parade', week: '2026-11-22', title: 'The Parade',
+    id: '2026-11-22-parade', week: '2026-11-15', title: 'The Parade',
     blurb: 'Play 100 unit cards in one game.',
     goal: { kind: 'unitsPlayed', n: 100 },
     seed: 20261122, par: 286,
