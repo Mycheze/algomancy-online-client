@@ -160,3 +160,24 @@ export function stackLayers(n: number, cap = 3): number[] {
 
 /** does this tile still need a number on it? */
 export const needsCountBadge = (n: number, cap = 2): boolean => n > cap;
+
+/**
+ * A section's entries split into COST COLUMNS — the deck table's Sorted view
+ * is rows × cost, so a column is one mana value: '0'…'n', then 'X', then
+ * 'unknown', in `byCost` order (an X card after every number, a card this build
+ * does not script last). Inside a column the order is `byCost` again, which
+ * there means by name.
+ *
+ * Only the columns that hold something; the table fills the range between
+ * them itself, so every row draws the same columns and the grid lines up.
+ */
+export function costColumns(sec: DeckSection): { col: string; entries: DeckEntry[] }[] {
+  const cols: { col: string; entries: DeckEntry[] }[] = [];
+  for (const e of [...sec.entries].sort(byCost)) {
+    const col = !e.facts ? 'unknown' : e.facts.isX ? 'X' : String(e.facts.mana);
+    const last = cols[cols.length - 1];
+    if (last && last.col === col) last.entries.push(e);
+    else cols.push({ col, entries: [e] });
+  }
+  return cols;
+}
