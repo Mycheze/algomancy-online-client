@@ -10014,11 +10014,37 @@ export class E {
    * minimum at the X it was cast for. At resolution a part with none declared
    * runs only when this is 0: an "up to" spec, or `min: 'X'` cast at X = 0
    * (Torrential Reclamation's sacrifice still happens, CR 107.2b). */
-  private requiredTargetsOf(item: StackItem, part: EffectPart, spec: TargetSpec): number {
+  requiredTargetsOf(item: StackItem, part: EffectPart, spec: TargetSpec): number {
     return targetMinimum(spec, spec.count === 'X' ? (part.costPaid?.x ?? item.x ?? 0) : (spec.count ?? 1));
   }
 
-  private collectPartTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+  /**
+   * CR 702.3c, 110.7 (CT-308, report #238) — the cast window's target collector,
+   * asked through a RESOLVING effect's chooser instead of the cast window's
+   * suspension. A card played in the middle of another effect's resolution
+   * (Tides of the Cosmos, Hooba-Pon, Insidious Invitation) declares its targets
+   * HERE, slot by slot, by the very loop a play from hand runs: every slot of a
+   * multi-target spec ("For each player, recall target unit that player
+   * controls"), each slot's own kind and restriction (Fight's ally, Necromorph's
+   * bin card), the "up to" / "any number" stop, and an X-sized count at the X
+   * the play was declared with. It used to ask ONE pick off slot 0 and stop, so
+   * Tidal Reversion under Tides took one target of two. Same shape as
+   * `collectInlineCastCosts`: only the asking differs.
+   */
+  collectInlineTargets(item: StackItem, ask: InlineCostAsk): void {
+    this.collectPartTargets(item, 'push', [], ask);
+  }
+
+  /** CR 702.3c: record one answer to a target slot — a target, or the "no more
+   * targets" stop (#206). The cast window's doDecide and the inline asker both
+   * land here, so the two can never read an answer differently. */
+  applyTargetAnswer(part: EffectPart, val: unknown): void {
+    if (typeof val === 'object' && val !== null && 'doneTargets' in val) part.targetsDone = true;
+    else part.targets.push(val as TargetRef);
+  }
+
+  private collectPartTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[],
+    ask?: InlineCostAsk): void {
     for (let pi = 0; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
@@ -10106,15 +10132,17 @@ export class E {
           options.push({ label: doneTargetsLabel(part.targets.length), value: { doneTargets: true } });   // #206
         }
         const base = def.targets.slotPrompts?.[n] ?? def.targets.prompt;
-        this.suspend(
-          { type: 'cast', item, partIndex: pi, targetIndex: n, then, moreItems },
-          {
-            seat: item.controller, kind: 'targets',
-            prompt: max > 1 && !def.targets.slotPrompts?.[n]
-              ? `${base} (target ${n + 1} of up to ${max})` : base,
-            options: options as { label: string; value: TargetRef }[],
-          },
-        );
+        const dec: Omit<Decision, 'id'> = {
+          seat: item.controller, kind: 'targets',
+          prompt: max > 1 && !def.targets.slotPrompts?.[n]
+            ? `${base} (target ${n + 1} of up to ${max})` : base,
+          options: options as { label: string; value: TargetRef }[],
+        };
+        // CR 702.3c: without `ask` this is the cast window's suspension, exactly
+        // as before; with it (a mid-resolution play, `collectInlineTargets`) the
+        // resolving effect's chooser answers and the loop goes on to the next slot.
+        if (!ask) this.suspend({ type: 'cast', item, partIndex: pi, targetIndex: n, then, moreItems }, dec);
+        this.applyTargetAnswer(part, ask(pi, n, dec));
       }
     }
   }

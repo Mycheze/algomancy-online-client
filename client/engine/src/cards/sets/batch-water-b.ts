@@ -50,7 +50,7 @@ import { selfOf, isEnt, manaOf, chooseUnit, perSeatRows, lifeLostIn, doubleStats
 // `playInline` lives in batch-water-a (Hooba-Pon and Insidious Invitation need
 // it too). index.ts imports that module first, so importing it here cannot
 // disturb registration order — see the note on `playInline` itself.
-import { inlineCostPayable, inlineModes, inlinePlayGoesToStack, playInline, type InlineMode } from './batch-water-a.ts';
+import { inlineCostPayable, inlineModes, inlinePlayGoesToStack, inlineTargetsFillable, playInline, type InlineMode } from './batch-water-a.ts';
 // CR 709.7: "double a stat" is one shared solver — Burgeon and Surly Stalker print
 // the same verb and must give the same answer under {Tough}/{Balanced}.
 
@@ -615,11 +615,15 @@ card('Tiderunner Initiate', { playsIntoFormation: true });
  *    Tides." A card whose bracketed cost cannot be paid right now — before
  *    either pick is on the stack, so the other revealed card is never a payer
  *    — is not offered. (Paid as it is played, through `playInline`.)
+ *  · CR 110.7 (CT-308, report #238) — Caleb, on this very card and Tidal
+ *    Reversion: "You can't play it if one player doesn't have a valid target".
+ *    A card whose REQUIRED targets cannot all be filled is not offered — the
+ *    gate a play from hand passes (`castable`), at the X = 0 a free play has.
  */
 const tidesCanPlay = (g: E, name: string, region: number, seat: Seat): boolean => {
   const c = getCard(name);
   if (c.mana === 'X' && (c.xMin ?? 0) > 0) return false;
-  return inlineCostPayable(g, seat, name, region, false);
+  return inlineCostPayable(g, seat, name, region, false) && inlineTargetsFillable(g, seat, name, region);
 };
 
 card('Tides of the Cosmos', {

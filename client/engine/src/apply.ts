@@ -7,7 +7,7 @@
  */
 import type {
   Action, ActivateVia, AmendEdit, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
-  EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
+  EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem,
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
@@ -2910,10 +2910,10 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
       // reaches no stack and no ability gate; the answers land on
       // StackItem.asYouPlay and E.applyAsYouPlay pays for the accepted ones.
       e.applyAsYouPlay(sus.item, val, sus.partIndex);
-    } else if (typeof val === 'object' && val !== null && 'doneTargets' in val) {
-      sus.item.parts[sus.partIndex]!.targetsDone = true;
     } else {
-      sus.item.parts[sus.partIndex]!.targets.push(val as TargetRef);
+      // CR 702.3c: a target slot (or the stop) — the one reader the inline
+      // collector shares, `E.applyTargetAnswer`
+      e.applyTargetAnswer(sus.item.parts[sus.partIndex]!, val);
     }
     let chain = sus.moreItems;
     e.collectTargets(sus.item, sus.then, chain);   // may suspend again

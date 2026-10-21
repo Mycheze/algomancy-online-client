@@ -35,7 +35,7 @@
  */
 import type { EffectPart, Entity, FormationSpot, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E, InlineCostAsk } from '../../engine.ts';
-import { ambushEffect, card, getCard, isGraftMultiplier, isSpellEffect, specForSlot, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
+import { ambushEffect, card, getCard, isGraftMultiplier, isSpellEffect, requiresTargets, specForSlot, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
 import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -199,6 +199,42 @@ export const inlineCostPayable = (g: E, seat: Seat, name: string, region: number
   return !cost || g.canPayCastCost(seat, cost, region, inHand ? 1 : 0);
 };
 
+/**
+ * CR 110.7 (CT-308, report #238) — can every REQUIRED target of `name` be filled
+ * right now, with distinct targets? The gate a mid-resolution play shares with
+ * an ordinary cast (`castable`'s `requiredSlotsFillable`), so a card that
+ * could not be played from hand for want of a target is never offered.
+ * Caleb, on Tidal Reversion under Tides of the Cosmos (RAQ thread
+ * 1410252965276684418): *"You can't play it if one player doesn't have a
+ * valid target, but it will still resolve if one of the selected targets is
+ * removed."*
+ *
+ * Judged at X = 0, the only X a mid-resolution play is ever declared with:
+ * nothing here sizes X from mana (CR 107.4a — Tides plays an X card at X = 0),
+ * and a VARIABLE cost's X ("[Sacrifice X units]") only sizes an "up to X"
+ * spec, which requires nothing.
+ */
+export const inlineTargetsFillable = (g: E, seat: Seat, name: string, region: number): boolean => {
+  const t = getCard(name).spellEffect?.targets;
+  return !t || !requiresTargets(t) || g.requiredSlotsFillable(t, region, seat, undefined, [0]);
+};
+
+/**
+ * CR 702.3c (CT-308) — how a mid-resolution play asks one target slot: the
+ * resolving effect's `ctx.choose`, keyed per part and per slot, fed the cast
+ * window's own decision (`E.collectInlineTargets`).
+ *
+ * ONE carve-out, for saved games: a question with exactly ONE option is a
+ * forced move and is answered without asking. The inline path always
+ * answered its lone candidate itself; asking now would put a decision into
+ * every recorded game whose free play had a single legal target, and the
+ * next recorded action would be refused against it. It never hides a choice:
+ * an "up to" slot, or any slot once its minimum is met, carries the "no more
+ * targets" stop and so has two options.
+ */
+const inlineTargetAsk = (ctx: EffectCtx, key: string): InlineCostAsk => (pi, slot, d) =>
+  d.options.length === 1 ? d.options[0]!.value : ctx.choose(`${key}:t${pi}.${slot}`, { ...d, kind: 'targets' });
+
 /** CR 701.2c: the alternative ways a card can be played mid-resolution */
 export type InlineMode = 'virus' | 'ambush' | 'prophecy';
 
@@ -336,18 +372,14 @@ const pushInlinePlay = (
     ctx.choose(`${key}:${which}${pi}.${step}`, { ...d, kind: 'targets' });
   g.collectInlineCastCosts(item, 'variable', ask('xcost'));
   if (eff?.targets && part) {
-    // CR 702.3c: declared as the card is played, like every other target. An empty
-    // candidate list is NOT special-cased into an early bin here — the item is
-    // pushed with no target and `resolveItem`'s CR 704.6 branch fizzles it and
-    // discharges its card, which is the same destination the caller used to
-    // hand-roll plus a real 'fizzled' event for the reader.
-    const cands = g.targetCandidates(eff.targets, ctx.region, undefined, seat);
-    if (cands.length) {
-      part.targets = [(cands.length === 1 ? cands[0]! : ctx.choose(`${key}:t`, {
-        kind: 'electricPath', seat, prompt: eff.targets.prompt,
-        options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
-      })) as TargetRef];
-    }
+    // CR 702.3c: declared as the card is played, like every other target — by the
+    // cast window's own collector (CT-308), so every slot, kind and count a
+    // play from hand asks is asked here too. An empty candidate list is NOT
+    // special-cased into an early bin — the item is pushed with no target and
+    // `resolveItem`'s CR 704.6 branch fizzles it and discharges its card, which
+    // is the same destination the caller used to hand-roll plus a real
+    // 'fizzled' event for the reader.
+    g.collectInlineTargets(item, inlineTargetAsk(ctx, key));
   }
   if (eff && part) {
     // CR 702.5: the modal half, declared before the item is respondable — which is
@@ -416,17 +448,20 @@ export const playInline = (
     let targets: ResolvedTarget[] = [];
     let refs: TargetRef[] = [];
     if (eff.targets) {
-      const cands = g.targetCandidates(eff.targets, ctx.region, undefined, seat);
-      if (!cands.length) fizzled = true;
-      else {
-        const ref = (cands.length === 1 ? cands[0]! : ctx.choose(`${key}:t`, {
-          kind: 'electricPath', seat, prompt: eff.targets.prompt,
-          options: cands.map(c => ({ label: g.targetLabel(c), value: c })),
-        })) as TargetRef;
-        const r = g.resolveTargetRef(ref);
-        if (r) { targets = [r]; refs = [ref]; }
-        else fizzled = true;
-      }
+      // CR 702.3c (CT-308): the cast window's collector, through this resolution's
+      // chooser — the same one the push path above uses. A throwaway item
+      // carries the declaration (nothing here reaches the stack); it never
+      // takes an id. CR 704.6: a part that declared nothing although it
+      // required something does not run, exactly as at `resolveParts`.
+      const part: EffectPart = { effectKey: `spell:${name}`, targets: [] };
+      const item: StackItem = {
+        id: -1, kind: def.kind, card: name, label: name,
+        controller: seat, region: ctx.region, negated: false, parts: [part],
+      };
+      g.collectInlineTargets(item, inlineTargetAsk(ctx, key));
+      refs = part.targets;
+      targets = refs.map(r => g.resolveTargetRef(r)).filter((r): r is ResolvedTarget => r !== null);
+      if (refs.length ? !targets.length : g.requiredTargetsOf(item, part, eff.targets) > 0) fizzled = true;
     }
     if (!fizzled) {
       // CR 702.5: a modal card played inline has no cast window to declare its half
@@ -986,7 +1021,9 @@ card('Hooba-Pon', {
         const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
         hand.forEach((name, i) => {
           // CR 702.4e: the additional [cost] too, or the play would skip it
-          if (isUnitCard(name) && g.canPayCard(seat, name) && inlineCostPayable(g, seat, name, ctx.region, true)) {
+          // CR 110.7 (CT-308): and its required targets, or the play could not be made
+          if (isUnitCard(name) && g.canPayCard(seat, name) && inlineCostPayable(g, seat, name, ctx.region, true)
+            && inlineTargetsFillable(g, seat, name, ctx.region)) {
             options.push({ label: name, value: i, card: name });
           }
         });
@@ -1056,7 +1093,9 @@ const insidiousInvite: EffectDef = {
       const options: { label: string; value: number; card?: string }[] = [{ label: 'decline', value: -1 }];
       hand.forEach((name, i) => {
         // CR 702.4e: the additional [cost] too, or the play would skip it
-        if (isUnitCard(name) && g.canPayCard(seat, name) && inlineCostPayable(g, seat, name, ctx.region, true)) {
+        // CR 110.7 (CT-308): and its required targets, or the play could not be made
+        if (isUnitCard(name) && g.canPayCard(seat, name) && inlineCostPayable(g, seat, name, ctx.region, true)
+          && inlineTargetsFillable(g, seat, name, ctx.region)) {
           options.push({ label: name, value: i, card: name });
         }
       });

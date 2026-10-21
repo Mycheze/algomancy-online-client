@@ -3063,6 +3063,10 @@
       {
         "text": "Tilling the Graves (\"Recall two target units in your bin\") cannot be played while its caster's bin holds fewer than two units.",
         "test": "478-required-targets-at-cast.test.ts::Tilling the Graves is not offered with"
+      },
+      {
+        "text": "Tidal Reversion (\"For each player, recall target unit that player controls\") played for free by Tides of the Cosmos takes one unit of each player, and Tides does not offer it while either player has no unit there.",
+        "test": "510-inline-play-targets.test.ts::CT-308: Tidal Reversion under Tides takes one unit of each player"
       }
     ],
     "see": [
@@ -3105,7 +3109,8 @@
         "401-raq-fix-stack.test.ts",
         "452-abduct-x-gate.test.ts",
         "478-required-targets-at-cast.test.ts",
-        "477-target-minimum-sweep.test.ts"
+        "477-target-minimum-sweep.test.ts",
+        "510-inline-play-targets.test.ts"
       ]
     },
     "basis": "mixed",
