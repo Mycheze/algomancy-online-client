@@ -230,6 +230,9 @@ test('CR D2.1: ending the free seat\'s deployment goes through, from the button 
   const { state } = askedSeat0();
   ui.show(structuredClone(state));
   ui.click({ btn: 'donedeploy', p: 1 });
+  // round 2026-10-21 (519): seat 1 has played nothing and still could, so the
+  // first click asks; the bar's own confirm is the way through
+  ui.click({ btn: 'deployconfirm' });
   assert.equal(ui.state().deployDone?.[1], true, 'seat 1 really is done deploying');
   assert.equal(ui.state().decision?.seat, 0, 'and seat 0 is still being asked');
 });

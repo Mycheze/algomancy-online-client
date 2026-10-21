@@ -663,8 +663,8 @@ const REACH: Record<string, Evidence> = {
   },
   doneHaste: {
     via: 'wiring', anchor: 'the "done" button in the haste step (CR 504.5a)',
-    why: 'the haste step only appears when someone holds a payable {Haste} card',
-    needs: [/^  donehaste: btn =>/m, /act\(\{ type: 'doneHaste', seat: Number\(btn\.dataset\['p'\]\) \}\)/],
+    why: 'the haste step only appears when someone holds a payable {Haste} card; with a confirm bar when you end it having played nothing you could have (519)',
+    needs: [/^  donehaste: btn =>/m, /act\(\{ type: 'doneHaste', seat \}\)/, /data-btn="\$\{c\.confirm\}"/],
   },
   draftCommit: {
     via: 'wiring', anchor: 'the draft panel: build the merge, then Commit',
@@ -920,7 +920,7 @@ const REACH: Record<string, Evidence> = {
   // ── deployment ────────────────────────────────────────────────────────
   doneDeploying: {
     via: 'wiring', anchor: 'the "done deploying" button',
-    why: 'with a confirm bar naming the cached cards you would be walking away from',
+    why: 'with a confirm bar naming the cached cards you would be walking away from, or saying you have played nothing yet and still can (519)',
     needs: [/act\(\{ type: 'doneDeploying', seat \}\)/, /data-btn="donedeploy"/],
   },
 

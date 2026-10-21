@@ -167,9 +167,9 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['doneplan', 'doneplanconfirm', 'doneplancancel'],
       },
       {
-        text: 'The haste step: play any haste cards, then done. If you have nothing playable the client readies you through the step by itself — '
-          + 'unless bluff haste is on (see Settings).',
-        btns: ['donehaste'],
+        text: 'The haste step: play any haste cards, then done. Done with a haste play still unmade asks “Done anyway”. '
+          + 'If you have nothing playable the client readies you through the step by itself — unless bluff haste is on (see Settings).',
+        btns: ['donehaste', 'hasteconfirm', 'hastecancel'],
       },
     ],
   },
@@ -268,7 +268,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
       { text: 'Both players deploy at the same time and nothing is shown to the other until both are done. The bar says “Waiting” while your opponent finishes.' },
       { text: 'Play cards, apply mods from hand or bin, activate abilities, and prophecy cards into your cache — all as in the section above.' },
       {
-        text: 'Press done deploying (Enter). If cards in your cache could still be played it names them and asks “End deployment anyway”.',
+        text: 'Press done deploying (Enter). If you have played nothing yet and still could, or cards in your cache could still be played, '
+          + 'it asks “End deployment anyway”.',
         btns: ['donedeploy', 'deployconfirm', 'deploycancel'],
       },
       {

@@ -1176,6 +1176,16 @@ interface UiState {
    * RIGHT NOW — easy to forget a zone you are not used to watching. Holds the
    * seat being asked. */
   confirmDeploy: Seat | null;
+  /** the owner, 2026-10-21: "if the player takes no actions, but *could
+   * have*, best to have a confirmation." The haste step's half of that: the
+   * seat being asked before its doneHaste goes out. (Deployment's half rides
+   * on `confirmDeploy`, which already asked the cache's question.) */
+  confirmHaste: Seat | null;
+  /** per seat, the last PLAY this screen sent: the step it was sent in and the
+   * state's actionCount it was sent against. "Has acted this step" is that
+   * mark, in this step, on a state that has moved past it — so a refused play
+   * or an undo back past it reads as not having acted. */
+  acted: ({ step: string; count: number } | null)[];
   /** playtest: an irreversible activation (a "Sacrifice me:" cost) with NO
    * target decision to walk you back — held until confirmed. */
   confirmAct: { seat: Seat; entityId: EntityId; abilityIndex: number;
@@ -1237,7 +1247,7 @@ const freshUi = (): UiState => ({
   prefillFor: '', confirmDone: null, confirmPass: null, confirmTarget: null, boardPick: null,
   confirmRide: null, rideAnswered: false, homeEls: savedEls(),
   homeFixedTrio: false,
-  confirmDeploy: null, confirmAct: null,
+  confirmDeploy: null, confirmHaste: null, acted: [null, null], confirmAct: null,
   bottomPick: [], bottomFor: '', blockLine: null, blockLeft: 0,
   blockRefusal: null, blockSent: false,
 });
@@ -2172,9 +2182,49 @@ function act(a: Action): void {
   // either refused ("you do not have priority") or, worse, applied to a
   // window that is no longer the one the player was looking at.
   if (ui.sentFor === h.state.actionCount) return;
+  if (isPlay(a)) ui.acted[a.seat] = { step: stepKey(), count: h.state.actionCount };
   NET.do(a);
   uiError = '';
 }
+
+/** Everything a seat sends that is not a PLAY: ending a step, passing,
+ * answering a question somebody else's card asked, conceding, the sandbox's
+ * own levers. What is left — a card, a mod, a prophecy, an ability, a
+ * resource — is "doing something" for the idle-Done confirm below. */
+const NOT_A_PLAY: ReadonlySet<Action['type']> = new Set<Action['type']>([
+  'doneDeploying', 'doneHaste', 'donePlanning', 'passPriority', 'decide', 'concede',
+  'sandboxAdvance', 'sandboxLife', 'sandboxResources', 'sandboxSpawn',
+]);
+const isPlay = (a: Action): boolean => !NOT_A_PLAY.has(a.type);
+
+/** the step a play belongs to: deployment, the haste step and the resource
+ * step are each once a turn */
+function stepKey(): string {
+  const s = h.state;
+  return `${s.turn}:${s.phase}:${s.phase === 'planning' && s.hasteDone ? 'haste' : ''}`;
+}
+
+/**
+ * The owner, 2026-10-21: *"if the player takes no actions, but \*could have\*,
+ * best to have a confirmation."* (ZKKX #225: Done deploying with two castable
+ * cards ringed in hand; XSAP #246/#250, RTPE #256: the haste step's Done
+ * pressed three times out of three over a legal haste play.)
+ *
+ * "Could have" is the legal list itself — any play the engine offers this seat
+ * besides the Done — never a hand-kept list of cards. "Has not acted" is this
+ * screen's own mark (`ui.acted`), so a page reloaded mid-step asks once more
+ * than it strictly needs to, and never once less.
+ */
+function idleWithPlays(seat: Seat): boolean {
+  const m = ui.acted[seat];
+  if (m && m.step === stepKey() && h.state.actionCount > m.count) return false;
+  return legalFor(seat).some(isPlay);
+}
+
+/** Done deploying needs a second click: a playable cached card (which the bar
+ * names), or no play made yet while one is on offer */
+const deployNeedsConfirm = (seat: Seat): boolean =>
+  playableCached(seat).length > 0 || idleWithPlays(seat);
 
 // ── #4: always-cancelable casting ─────────────────────────────────────
 /** The pending decision belongs to a PRE-COMMIT cast chain of the viewer's
@@ -5607,11 +5657,17 @@ const CONFIRM_BARS = {
   done:   { cancel: 'doneplancancel', back: 'Go back <span class="kh">(esc)</span>', confirm: 'doneplanconfirm', go: 'Really done <span class="kh">(enter)</span>' },
   pass:   { cancel: 'passcancel',     back: 'Go back',       confirm: 'passconfirm',     go: 'Pass anyway <span class="kh">(space)</span>' },
   deploy: { cancel: 'deploycancel',   back: 'Go back',       confirm: 'deployconfirm',   go: 'End deployment anyway' },
+  // the owner, 2026-10-21: neither of these two advertises Enter, and neither
+  // is in ENTER_BTNS — the reports were Enter pressed by reflex, so a second
+  // Enter must not be the way through
+  haste:  { cancel: 'hastecancel',    back: 'Go back',       confirm: 'hasteconfirm',    go: 'Done anyway' },
   // CR D2.8/BL-30. "No" is deliberately not "cancel": nothing has been sent, the
   // question is still open, and going back drops you straight into the same
   // target pick. Taking the whole cast back is Escape's job and always was.
   ally:   { cancel: 'allycancel',      back: 'No, pick again', confirm: 'allyconfirm',    go: 'Yes, target my own' },
 } as const;
+/** the idle-Done question (deployment and the haste step) — one game sentence */
+const IDLE_DONE_ASK = 'you have not played anything yet, and you still can.';
 /** one armed-confirm bar; `attrs` rides on the confirm button (doneplanconfirm
  * carries the seat it is answering for), `cls` on the bar (the act bar's nudge) */
 function confirmBarHtml(kind: keyof typeof CONFIRM_BARS, seat: Seat, question: string, err: string, attrs = '', cls = ''): string {
@@ -5871,8 +5927,11 @@ function decisionBarHtml(dec: Decision, err: string): string {
   // the bar from the start (owner, 2026-09-30: needing to click the host
   // first to see the choices was a needless click)
   const isScan = (i: number): boolean => subs[i]?.at === 'card' || subs[i]?.at === 'mod';
+  // CT-310 (JJSE, Soul Siphon): a life total is not a card — when any of the
+  // lit things is a player, the word that covers all of them is "target"
   const boardHint = subs.some(isBoard)
-    ? ` <span class="pickhint">— ${pointerCanHover() ? 'click' : 'tap'} a highlighted card</span>` : '';
+    ? ` <span class="pickhint">— ${pointerCanHover() ? 'click' : 'tap'} a highlighted ${
+      subs.some(x => x?.at === 'player') ? 'target' : 'card'}</span>` : '';
   const chooser = boardPickHtml(dec, who, err);
   if (chooser) return chooser;
   const cardRow = (btn: string, skip?: (i: number) => boolean): string => {
@@ -6255,6 +6314,9 @@ function phaseBarHtml(err: string): string {
       ? `<span style="color:var(--dim)">${esc(s.players[p]!.name)} ${done[p] ? 'ready ✓' : '…'}</span>`
       : `<button data-btn="${btn}" data-p="${p}" title="hotkey: enter">${esc(s.players[p]!.name)}: ${label} <span class="kh">(enter)</span></button>`).join(' ');
   if (s.phase === 'planning' && s.hasteDone) {
+    if (ui.confirmHaste !== null) {
+      return confirmBarHtml('haste', ui.confirmHaste, IDLE_DONE_ASK, err);
+    }
     return `<div class="promptbar"><span class="who">Haste step</span>
       <span class="remind">Cards with haste resolve at once.</span> ${doneRow(s.hasteDone, 'donehaste', 'done')}${err}</div>`;
   }
@@ -6403,6 +6465,9 @@ function phaseBarHtml(err: string): string {
     // count them, and make "end anyway" the deliberate second click.
     if (ui.confirmDeploy !== null) {
       const names = playableCached(ui.confirmDeploy);
+      // one bar, never two: the cache's question names the cards and so says
+      // more; the idle one is asked only when the cache has nothing to say
+      if (!names.length) return confirmBarHtml('deploy', ui.confirmDeploy, IDLE_DONE_ASK, err);
       return confirmBarHtml('deploy', ui.confirmDeploy, `you can still play <b>${names.length}</b> card${names.length === 1 ? '' : 's'} from your cache —
         <span class="cachenames">${names.map(n => `<span data-prev="${esc(n)}">${esc(n)}</span>`).join(', ')}</span>`, err);
     }
@@ -7686,8 +7751,12 @@ function gcStaleUi(): void {
   // the two playtest confirms go stale the same way — the phase moved on, the
   // cache emptied, or the ability stopped being legal while the bar was up
   if (ui.confirmDeploy !== null
-    && (h.state.phase !== 'deploy' || playableCached(ui.confirmDeploy).length === 0)) {
+    && (h.state.phase !== 'deploy' || !deployNeedsConfirm(ui.confirmDeploy))) {
     ui.confirmDeploy = null;
+  }
+  if (ui.confirmHaste !== null && (h.state.phase !== 'planning' || !h.state.hasteDone
+    || h.state.hasteDone[ui.confirmHaste] || !idleWithPlays(ui.confirmHaste))) {
+    ui.confirmHaste = null;
   }
   if (ui.confirmAct && !legalFor(ui.confirmAct.seat).some(a => a.type === 'activateAbility'
     && a.entityId === ui.confirmAct!.entityId && a.abilityIndex === ui.confirmAct!.abilityIndex)) {
@@ -9569,7 +9638,7 @@ function pinFocus(sub: FocusSubject, key: string): void {
  * including them would make every click look like it had done something. */
 const CLICK_STATE_KEYS = ['carrying', 'columns', 'send', 'spellTokens', 'modding', 'menu',
   'orderPicked', 'draftPack', 'bottomPick', 'confirmDone', 'confirmPass', 'confirmDeploy',
-  'confirmAct', 'confirmRide', 'confirmTarget', 'counterCount', 'assignCount', 'numberCount'] as const;
+  'confirmHaste', 'confirmAct', 'confirmRide', 'confirmTarget', 'counterCount', 'assignCount', 'numberCount'] as const;
 
 /** everything a click may move, as one string */
 function clickSig(): string {
@@ -10420,7 +10489,17 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     act({ type: 'donePlanning', seat: Number(btn.dataset['p']) });
   },
   doneplancancel: () => { ui.confirmDone = null; },
-  donehaste: btn => { act({ type: 'doneHaste', seat: Number(btn.dataset['p']) }); },
+  donehaste: btn => {
+    const seat = Number(btn.dataset['p']) as Seat;
+    if (idleWithPlays(seat)) ui.confirmHaste = seat;
+    else act({ type: 'doneHaste', seat });
+  },
+  hastecancel: () => { ui.confirmHaste = null; },
+  hasteconfirm: () => {
+    const seat = ui.confirmHaste;
+    ui.confirmHaste = null;
+    if (seat !== null) act({ type: 'doneHaste', seat });
+  },
   pass: () => passClick('pass'),
   // CR D2.2: the owner's three buttons. `passall` keeps its handle because a
   // saved keybinding, a report and the ledger all name it.
@@ -10483,7 +10562,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     // playtest: don't let a paid-for prophecy or a glimpsed card die in the
     // cache because deployment is the one step you click through fast.
     const seat = Number(btn.dataset['p']) as Seat;
-    if (playableCached(seat).length) ui.confirmDeploy = seat;
+    if (deployNeedsConfirm(seat)) ui.confirmDeploy = seat;
     else act({ type: 'doneDeploying', seat });
   },
   deploycancel: () => { ui.confirmDeploy = null; },
@@ -11643,6 +11722,7 @@ document.addEventListener('keydown', e => {
     if (ui.confirmTarget !== null) { ui.confirmTarget = null; render(); return; }
     if (ui.confirmPass !== null) { ui.confirmPass = null; render(); return; }
     if (ui.confirmDeploy !== null) { ui.confirmDeploy = null; render(); return; }
+    if (ui.confirmHaste !== null) { ui.confirmHaste = null; render(); return; }
     if (ui.confirmAct) { ui.confirmAct = null; render(); return; }
     if (ui.modding) { ui.modding = null; render(); return; }
     // BL-47: Escape is "↺ Start over" on a trigger order being built

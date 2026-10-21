@@ -262,6 +262,36 @@ const runTimers = (): void => {
   for (const fn of due) fn();
 };
 
+/**
+ * OPT-IN `document.querySelector`, for bare `[data-x="v"]` selector lists only
+ * (round 2026-10-21, the idle-Done confirm). Enter presses whichever button of
+ * main.ts's ENTER_BTNS is on the page, and finds it with querySelector — which
+ * this page answers null, so no test could press Enter on a Done button.
+ *
+ * ⚠ OFF unless a test turns it on (`ui.queries(true)`): every test before it
+ * was written against a page whose querySelector finds nothing, and Space and
+ * Enter would start doing things underneath them. Anything that is not a list
+ * of bare data-attribute selectors still answers null.
+ */
+let QUERIES: (() => string) | null = null;
+function queryAttr(sel: string, html: string): Record<string, unknown> | null {
+  const parts = sel.split(',').map(x => /^\[(data-[a-zA-Z-]+)="([^"]*)"\]$/.exec(x.trim()));
+  if (!parts.length || parts.some(p => !p)) return null;
+  const found = tags(html).find(({ tag }) => {
+    const { attrs } = attrsOf(tag);
+    return parts.some(p => attrs[p![1]!] === p![2]);
+  });
+  if (!found) return null;
+  const el = elementAt(html, found);
+  el['disabled'] = /\sdisabled(?=[\s>=/])/.test(found.tag);
+  el['click'] = (): void => {
+    const ev = { target: el, currentTarget: el, clientX: 10, clientY: 10,
+      preventDefault: () => {}, stopPropagation: () => {}, button: 0 };
+    for (const fn of LISTENERS.get('click') ?? []) fn(ev);
+  };
+  return el;
+}
+
 const g = globalThis as unknown as Record<string, unknown>;
 g.document = {
   // CT-180: derived from the page — see `onPage`
@@ -272,7 +302,7 @@ g.document = {
     if (TYPED.has(id)) return fieldEl(id);
     return onPage(id) ? byId(id) : null;
   },
-  querySelector: () => null, querySelectorAll: () => [],
+  querySelector: (sel: string) => (QUERIES ? queryAttr(sel, QUERIES()) : null), querySelectorAll: () => [],
   // an element a module builds and may hang beside #app: when it is a
   // registered layer, painting it drops the typing boxes like the app root
   createElement: () => {
@@ -694,6 +724,8 @@ export interface Client {
   /** T6: a keydown ON the typing box (not on the document) — for the chords
    * a box handles itself, like Ctrl+Enter to send. */
   keyIn(id: string, k: string, opts?: KeyOpts): string;
+  /** turn the opt-in `document.querySelector` on or off (see QUERIES) */
+  queries(on: boolean): void;
 }
 
 /** does `sel` — a comma-separated list of bare `[data-*]` attribute selectors,
@@ -1057,6 +1089,7 @@ export async function client(): Promise<Client> {
     html: paint,
     raw: () => String(APP['innerHTML']),
     renders: () => RENDERS,
+    queries: on => { QUERIES = on ? paint : null; },
     join: (state, seat, legal = []) => deliver({
       t: 'joined', seat, view: state, log: [], legal, peers: [true, true], names: ['Ann', 'Bo'],
     }),
