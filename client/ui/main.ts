@@ -123,6 +123,12 @@ import { dragActive, installDrag, type DragPlan } from './drag.ts';
 // socket seam Learn to Play uses, plus its own transport bar beside #app
 import { ReplayServer } from './replayserver.ts';
 import { installReplayBar, openReplay, replayActive, type ReplayMeta } from './replaybar.ts';
+// the rules question board: a staged position, walked by the replay viewer
+import { questionById, questionUrl, stageQuestion } from './questions.ts';
+/** true on a rules question's board (`?question=`), whose NetBackend room is
+ *  this name — a staged board nobody is playing */
+const QUESTION_ROOM = 'QUESTION';
+const asQuestion = (): boolean => replayActive() && NET?.room === QUESTION_ROOM;
 import { FakeSocket } from './fakesocket.ts';
 import { Harness } from '../engine/src/harness.ts';
 import * as dk from './decks.ts';
@@ -6225,7 +6231,9 @@ function promptHtml(): string {
     const won = s.players[s.winner!]!.name;
     // net games get the full post-game screen; this bar is what is behind it
     // once you dismiss it to look at the board, so it has a way back
-    if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat ? 'You win! 🎉' : `${esc(won)} wins.`}</span>
+    // a rules question is nobody's game: its board is seen from seat 0, but
+    // "You win!" would be said to whoever opened the link
+    if (NET) return `<div class="promptbar"><span class="who">${s.winner === NET.seat && !asQuestion() ? 'You win! 🎉' : `${esc(won)} wins.`}</span>
       ${postGame ? '<button data-btn="pg-reopen">Post-game summary</button>' : ''}</div>`;
     return `<div class="promptbar"><span class="who">${esc(won)} wins!</span>
       <button data-btn="restart">New game</button></div>`;
@@ -7590,7 +7598,7 @@ function renderNow(): boolean {
       // see both hands", a presence dot, a live opponent. None of it is true of
       // a finished game being read back, and all of it would be read as true.
       // (The owner, 2026-09-28: few words — the ▶ and 👁 say the rest.)
-      ? `<span class="init spectating">▶ replay ${esc(NET.room)}</span>`
+      ? `<span class="init spectating">${asQuestion() ? '❓ rules question' : `▶ replay ${esc(NET.room)}`}</span>`
       : NET.spectating
       ? `<span class="init spectating">👁 spectating ${esc(NET.room)}</span>`
       : learn.currentSolo()
@@ -12027,7 +12035,7 @@ const params = new URLSearchParams(location.search);
 // push repaints the board. A fake DOM cannot see it (nothing resolves there);
 // a real browser shows it every time.
 const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.has('demo')
-  || params.get('learn') === 'play' || !!params.get('replay');
+  || params.get('learn') === 'play' || !!params.get('replay') || !!params.get('question');
 // accounts: fetch the profile behind the stored token, and give the module a
 // way to repaint. In a game the repaint is a no-op — a profile push arriving
 // mid-game must never paint the home screen over the board.
@@ -12268,6 +12276,39 @@ if (params.has('room') && params.get('room')!.trim()) {
     const at = Number(params.get('at'));
     if (Number.isFinite(at) && at > 0) rs.seek(at);
   })();
+} else if (params.get('question')) {
+  /* THE RULES QUESTION BOARD — `?question=<id>` (ui/questions.ts).
+   *
+   * A staged board, walked by the replay viewer: the same read-only spectator
+   * board, transport and card zoom, with the question above the transport.
+   * Nothing is fetched, so it needs no account and no server room — the link
+   * is the whole of it. It opens on the question's chosen moment, both hands
+   * showing: a question is about the board, not about a seat.
+   */
+  const q = questionById(params.get('question'));
+  if (!q) {
+    // the join screen's error, with its way home — never a board for nothing
+    uiError = 'There is no rules question at that link. It may have been renamed or answered.';
+    renderConnecting();
+  } else {
+    const staged = stageQuestion(q);
+    const rs = new ReplayServer(staged.file, 0, true, staged.dealt);
+    liveSession = false;
+    openSocket = () => rs.socket() as unknown as WebSocket;
+    NET = new NetBackend(QUESTION_ROOM, 0, undefined, undefined, undefined, true);
+    h = NET;
+    renderConnecting();
+    openReplay(rs, {
+      code: 'Rules question', verdict: 'staged', forked: false, partedAt: null, refusedAt: null,
+      question: {
+        id: q.id, title: q.title, asked: q.asked, readings: q.readings, client: q.client,
+        cards: q.cards.map(n => ({ name: n, html: iconizeText(getCard(n).text ?? '') })),
+        marks: staged.marks,
+        link: questionUrl(location.origin, q.id),
+      },
+    });
+    rs.seek(staged.opens);
+  }
 } else if (params.has('demo')) {
   demoBattle();
   render();

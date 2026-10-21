@@ -73,6 +73,9 @@ export interface ReplayFile {
 
 type SegKey = ReturnType<typeof hiddenSegment>;
 
+/** a board to start a walk from, in `createGame`'s shape */
+export interface Dealt { state: GameState; events: EngineEvent[] }
+
 /** Everything needed to resume the walk from action `at` without starting over. */
 interface Checkpoint {
   at: number;
@@ -118,16 +121,28 @@ export class ReplayServer {
   /** the first action the engine refused, if the walk has reached one */
   private refusedAt: number | null = null;
 
-  constructor(file: ReplayFile, seat: Seat, omniscient: boolean) {
+  /** the board before action 0 when it is not a plain deal — see `dealt` */
+  private readonly dealt: Dealt | undefined;
+
+  /**
+   * `dealt`: the board to start from INSTEAD of dealing `file.seed`. A rules
+   * question (ui/questions.ts) is a staged board — a deal mutated before the
+   * first action, the scenario tester's move — and this is the one door it
+   * comes in by. It is cloned, never kept: the caller's copy stays theirs.
+   */
+  constructor(file: ReplayFile, seat: Seat, omniscient: boolean, dealt?: Dealt) {
     if (file.scenario) throw new Error('a scenario room cannot be replayed in the browser');
     this.file = file;
     this.names = file.names ?? ['Player 1', 'Player 2'];
     this.seat = seat;
     this.omniscient = omniscient;
-    const r = createGame(
-      file.seed, this.names, file.mode ?? 'shared', file.els,
-      decksOf(file), file.custom?.deal as DraftDeal | undefined,
-    );
+    this.dealt = dealt;
+    const r = dealt
+      ? { state: structuredClone(dealt.state), events: dealt.events }
+      : createGame(
+        file.seed, this.names, file.mode ?? 'shared', file.els,
+        decksOf(file), file.custom?.deal as DraftDeal | undefined,
+      );
     this.state = r.state;
     this.events = [...r.events];
     this.eventSeat = r.events.map(() => 0 as Seat);   // the deal belongs to nobody
@@ -149,7 +164,7 @@ export class ReplayServer {
    * scrub. */
   turnMarks(): number[] {
     if (this.marks) return this.marks;
-    const probe = new ReplayServer(this.file, this.seat, true);
+    const probe = new ReplayServer(this.file, this.seat, true, this.dealt);
     const out: number[] = [];
     for (let i = 0; i < this.total; i++) { probe.seek(i + 1); out.push(probe.turn); }
     this.marks = out;

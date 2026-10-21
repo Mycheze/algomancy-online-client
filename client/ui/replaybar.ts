@@ -37,8 +37,25 @@
  */
 import type { ReplayServer } from './replayserver.ts';
 import { suppressMotion } from './anim.ts';
+import { copyText } from './util.ts';
 
-export type ReplayVerdict = 'as-recorded' | 'reconstruction' | 'unverified' | 'unreplayable';
+/** `staged` is not a recorded game at all: a rules question's hand-built
+ * board, played forward with legal actions (ui/questions.ts). */
+export type ReplayVerdict = 'as-recorded' | 'reconstruction' | 'unverified' | 'unreplayable' | 'staged';
+
+/** What the bar shows above the transport for a rules question (ui/questions.ts). */
+export interface QuestionPanel {
+  id: string;
+  title: string;
+  asked: string;
+  readings: { name: string; text: string }[];
+  client: string;
+  /** each card's name and its printed text, already iconized HTML */
+  cards: { name: string; html: string }[];
+  marks: { label: string; note: string; at: number }[];
+  /** the absolute link the copy button copies */
+  link: string;
+}
 
 export interface ReplayMeta {
   code: string;
@@ -47,6 +64,7 @@ export interface ReplayMeta {
   forked: boolean;
   partedAt: number | null;
   refusedAt: number | null;
+  question?: QuestionPanel;
 }
 
 /** the speeds offered, in actions per second */
@@ -63,6 +81,8 @@ let speed = DEFAULT_SPEED;
 let playing = false;
 let timer: ReturnType<typeof setTimeout> | null = null;
 let detail = false;
+/** a question's full text, readings and card texts showing */
+let qOpen = false;
 
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -74,6 +94,7 @@ export function replayActive(): boolean { return server !== null; }
 /* ── the chip ─────────────────────────────────────────────────────────── */
 
 function chip(m: ReplayMeta): { cls: string; text: string; sticky: boolean } {
+  if (m.verdict === 'staged') return { cls: 'good', text: 'staged position', sticky: false };
   if (m.verdict === 'unreplayable') {
     return { cls: 'bad', text: 'cannot be replayed', sticky: true };
   }
@@ -88,6 +109,11 @@ function chip(m: ReplayMeta): { cls: string; text: string; sticky: boolean } {
 }
 
 function detailText(m: ReplayMeta): string {
+  if (m.verdict === 'staged') {
+    return 'This is not a recorded game. It is a position built for a rules question: a board set up by '
+      + 'hand, then played forward with legal actions in this client. What you see is how this client '
+      + 'plays it today, which is what the question asks about.';
+  }
   if (m.verdict === 'unreplayable') {
     return `This game never recorded enough to be replayed by anything: ${esc(m.reason ?? 'no reason given')}. `
       + 'It is listed rather than hidden so that it is not simply missing.';
@@ -135,8 +161,8 @@ function paint(): void {
   // each layer's innerHTML and nothing else. Anything a test has to be able to
   // see — and "this is no longer the recorded game" is the first such thing —
   // goes INSIDE. The class stays for the tint.
-  layer.className = `replaybar${past ? ' parted' : ''}`;
-  layer.innerHTML = `
+  layer.className = `replaybar${past ? ' parted' : ''}${m.question ? ' asking' : ''}`;
+  layer.innerHTML = `${m.question ? questionHtml(m.question, at) : ''}
     <div class="replayhead">
       <span class="replayroom">${esc(m.code)}</span>
       <span class="replaywhere">action ${at} / ${total}${total ? ` · turn ${s.turn}` : ''}</span>
@@ -165,6 +191,37 @@ function paint(): void {
         </select> /sec
       </label>
     </div>`;
+}
+
+/* ── a rules question ─────────────────────────────────────────────────── */
+
+/**
+ * The question above the transport. Closed, it is what the board needs beside
+ * it: the title, a button per named moment (the one on screen lit, its note
+ * under the row) and the copy-link button — a fixed height, which style.css
+ * reserves under the board so nothing on the table is covered. Opened, it adds
+ * the question in full, the readings and the printed text of every card,
+ * scrolling inside the bar over the table for as long as it is open.
+ */
+function questionHtml(q: QuestionPanel, at: number): string {
+  const here = q.marks.find(k => k.at === at);
+  const moments = q.marks.map((k, i) =>
+    `<button class="rqmoment${k.at === at ? ' on' : ''}" data-replay="moment" data-at="${k.at}"
+      title="${esc(k.note)}">${i + 1}. ${esc(k.label)}</button>`).join('');
+  const more = qOpen ? `<div class="rqmore">
+      <p class="rqasked">${esc(q.asked)}</p>
+      <div class="rqreadings">${q.readings.map(r => `<p><b>${esc(r.name)}.</b> ${esc(r.text)}</p>`).join('')}</div>
+      <p class="rqclient">${esc(q.client)}</p>
+      <div class="rqcards">${q.cards.map(c => `<p><b>${esc(c.name)}</b>: ${c.html}</p>`).join('')}</div>
+    </div>` : '';
+  return `<div class="rqbox"><div class="rqtop"><b class="rqtitle" title="${esc(q.title)}">${esc(q.title)}</b>
+      <button class="rqopen${qOpen ? ' on' : ''}" data-replay="question">${qOpen ? 'Close the question' : 'The question, readings and cards'}</button>
+      <input class="rqlink" data-replay-link readonly value="${esc(q.link)}" aria-label="link to this question">
+      <button class="rqcopy" data-replay="copylink">Copy link</button></div>
+    ${more}
+    <div class="rqmoments">${moments}</div>
+    <p class="rqnote">${here ? esc(here.note) : 'Between two moments: step with the arrows, or pick a moment.'}</p>
+  </div>`;
 }
 
 /* ── the transport ────────────────────────────────────────────────────── */
@@ -203,6 +260,14 @@ function onButton(what: string, el: HTMLElement): void {
       break;
     case 'eye': s.omniscient = !s.omniscient; s.push(); break;
     case 'detail': detail = !detail; break;
+    case 'moment': stop(); s.seek(Number(el.dataset['at'])); break;
+    case 'question': qOpen = !qOpen; break;
+    case 'copylink': {
+      // no repaint: it would throw away the selection the copy reads from
+      const box = layer?.querySelector('[data-replay-link]') as HTMLInputElement | null;
+      copyText(meta?.question?.link ?? '', box, el, 'Copied \u2713');
+      return;
+    }
     case 'close': closeReplay(); return;
     case 'scrub': {
       stop();
@@ -220,6 +285,7 @@ export function closeReplay(): void {
   server = null;
   meta = null;
   detail = false;
+  qOpen = false;
   paint();
   location.search = '';
 }

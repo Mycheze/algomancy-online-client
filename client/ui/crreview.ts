@@ -42,6 +42,7 @@ import { isComposerOpen, isSheetOpen, openComposer, pickFor, resetCrLayer, setCr
 import type { CrCompose } from './crlayer.ts';
 import { mountSearch, resetSearch, setCrSearchHost } from './crsearch.ts';
 import type { CrComment, CrCommentsReply, CrOp, CrOpReply, CrPart, CrReviewDoc, CrTarget, CrYou } from './crtypes.ts';
+import { QUESTIONS, questionUrl } from './questions.ts';
 
 /** a root comment, its replies, and where it lives today */
 interface Thread {
@@ -102,6 +103,8 @@ let commentsLoading = false;
 let msg = '';
 
 let dlOpen = false;
+/** the rules questions list under the toolbar (ui/questions.ts) */
+let questionsOpen = false;
 let tocOpen = false;
 let showResolved = false;
 let filter: Filter = 'open';
@@ -626,6 +629,19 @@ function downloadsHtml(): string {
   return `<div class="crdl">${rows.join('')}<div class="crnote">A section or chapter saved as .html is a page of its own: its links to other sections do not work there.</div></div>`;
 }
 
+/**
+ * The rules question board's way in (ui/questions.ts). Each question is a
+ * staged board anyone can open from its link, no account needed; this list is
+ * where an owner or judge finds them and copies the link to post. Opening one
+ * is a navigation, the way every other page here is left.
+ */
+function questionsHtml(): string {
+  if (!questionsOpen) return '';
+  const rows = QUESTIONS.map(q => `<div class="crqrow"><a href="/?question=${encodeURIComponent(q.id)}">${esc(q.title)}</a>
+    <button class="crlink" data-btn="cr-qcopy" data-id="${esc(q.id)}">Copy link</button></div>`);
+  return `<div class="crdl">${rows.join('')}<div class="crnote">Each opens a staged board in the client, read-only and anonymised. Anyone with the link can open it.</div></div>`;
+}
+
 /** the admin's raw journal: fetched with the token, then saved as a file */
 async function saveJournal(): Promise<void> {
   try {
@@ -673,8 +689,10 @@ function paint(): void {
       <span class="crwho" id="crwho">${whoHtml()}</span>
       <button data-btn="cr-showdone" title="resolved threads are folded to one line">${showResolved ? 'Fold resolved' : 'Show resolved'}</button>
       <button data-btn="cr-refresh" title="check for new comments">↻</button>
+      <button data-btn="cr-questions" class="${questionsOpen ? 'on' : ''}" title="staged boards for open rules questions, each with a link to share">❓ Questions</button>
       <button data-btn="cr-dl" class="${dlOpen ? 'on' : ''}">⬇ Download</button>
     </div>
+    <div id="crqslot">${questionsHtml()}</div>
     <div id="crdlslot">${downloadsHtml()}</div>
     <div class="crmsg" id="crmsg">${msg ? esc(msg) : ''}</div>
     <div class="crbody tab-${tab}">${body}</div>
@@ -832,7 +850,11 @@ function addShareButtons(col: Element): void {
 const shareUrl = (at: string): string => `${location.origin}/?crreview=1&at=${encodeURIComponent(at)}`;
 
 async function copyLink(at: string): Promise<void> {
-  const url = shareUrl(at);
+  await copyUrl(shareUrl(at));
+}
+
+/** copy any absolute link, saying so in the toast either way */
+async function copyUrl(url: string): Promise<void> {
   let ok = false;
   try {
     if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(url); ok = true; }
@@ -1033,6 +1055,14 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     }
     case 'cr-dljsonl': void saveJournal(); return true;
+    case 'cr-questions': {
+      questionsOpen = !questionsOpen;
+      const slot = document.getElementById('crqslot');
+      if (slot) slot.innerHTML = questionsHtml();
+      btn.classList.toggle('on', questionsOpen);
+      return true;
+    }
+    case 'cr-qcopy': void copyUrl(questionUrl(location.origin, id)); return true;
     case 'cr-copylink': void copyLink(btn.dataset['at'] ?? ''); return true;
     case 'cr-signin': resetCrLayer(); acct.signInThenReturn(); return true;
     case 'cr-filter': {

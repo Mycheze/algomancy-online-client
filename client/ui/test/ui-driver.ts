@@ -1048,9 +1048,11 @@ export interface ReplayClient {
 }
 
 export function replay(): ReplayClient {
-  assert.ok(SEARCH.includes('replay='),
+  // a rules question (`?question=<id>`, ui/questions.ts) is the same viewer
+  // over a staged board, so it is driven by the same client
+  assert.ok(SEARCH.includes('replay=') || SEARCH.includes('question='),
     'replay() is the replay client — set globalThis.__UI_DRIVER_SEARCH = \'?replay=CODE\' '
-    + 'before importing test/ui-driver.ts');
+    + '(or \'?question=<id>\') before importing test/ui-driver.ts');
   const paint = (): string => spliceLive(String(APP['innerHTML'])) + layersHtml();   // CR D5.5a
   return {
     html: paint,

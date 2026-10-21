@@ -3726,6 +3726,40 @@ body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
   .replaytransport { flex-wrap: wrap; }
 }
 
+/* The rules question board (ui/questions.ts): the question rides in the
+   replay bar, above the transport. Closed, the bar is a fixed height (title,
+   moments, one note line) over the hand dock, so nothing on the table is
+   covered; opened, the full text scrolls inside the bar over the table, which
+   is one deliberate click and reversible. */
+.rqbox { margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.rqtop { display: flex; align-items: center; gap: 8px; }
+.rqtitle { color: var(--accent); font-size: 14px; flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rqopen, .rqcopy { font-size: 12px; padding: 3px 10px; white-space: nowrap; }
+.rqopen.on { border-color: var(--accent); color: var(--accent); }
+.rqlink { width: 150px; background: var(--panel2); color: var(--dim); border: 1px solid var(--line);
+  border-radius: 5px; padding: 3px 6px; font-size: 12px; }
+.rqmoments { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.rqmoment { font-size: 12px; padding: 3px 10px; }
+.rqmoment.on { border-color: var(--glow); color: var(--glow); background: #1d2b1a; }
+.rqnote { margin: 6px 0 0; font-size: 12px; color: var(--dim); line-height: 1.35; min-height: 2.7em; }
+.rqmore { max-height: 40vh; overflow-y: auto; margin-top: 6px; font-size: 12.5px; line-height: 1.4;
+  padding: 8px 10px; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; }
+.rqmore p { margin: 0 0 6px; }
+.rqasked { font-size: 13px; }
+.rqclient { color: var(--glow); }
+.rqcards { border-top: 1px solid var(--line); padding-top: 6px; }
+/* …and a question's bar sits over the hand dock rather than above it: the
+   hands on a staged board are whatever the deal drew, not the question, and
+   the table needs the height. The board's usual replay reserve then covers it. */
+body:has(#app.netmode) .replaybar.asking { bottom: 12px; }
+/* the way in: the rules review toolbar's ❓ Questions list (ui/crreview.ts) */
+.crqrow { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+@media (max-width: 720px) {
+  .rqlink { display: none; }
+  .rqtop { flex-wrap: wrap; }
+}
+
 /* BL-38: the ▶ that opens a game in the replay viewer. On the game-history
    table, the deck detail rows and the admin games tab — the three places a
    saved game is already listed by code. */
