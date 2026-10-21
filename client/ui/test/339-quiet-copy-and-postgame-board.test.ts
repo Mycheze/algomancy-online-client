@@ -129,7 +129,8 @@ test('339 §4 the rail says the room, not who you are', () => {
   const tag = (html.match(/<span class="init">room UIDRIVER[\s\S]*?<\/span>/) ?? [''])[0];
   assert.doesNotMatch(tag, /you are/i, `the tag: ${tag}`);
   assert.doesNotMatch(html, new RegExp(`you are ${h.state.players[0]!.name}`), 'nor anywhere on the board');
-  assert.match(MAIN, /`<span class="init spectating">▶ replay \$\{esc\(NET\.room\)\}<\/span>`/);
+  // a replay says its room; a rules question (?question=) says that instead
+  assert.match(MAIN, /<span class="init spectating">\$\{asQuestion\(\) \? '❓ rules question' : `▶ replay \$\{esc\(NET\.room\)\}`\}<\/span>/);
   assert.match(MAIN, /`<span class="init spectating">👁 spectating \$\{esc\(NET\.room\)\}<\/span>`/);
   assert.doesNotMatch(MAIN, /SPECTATING\. You are watching this|a finished game\. Nothing here is clickable/);
 });
