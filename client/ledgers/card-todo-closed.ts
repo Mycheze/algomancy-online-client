@@ -11548,4 +11548,20 @@ export const CLOSED: TodoEntry[] = [
     closed: "FIXED 2026-10-21 (77ae53f).",
     status: 'done',
   },
+  {
+    id: 338, area: "card", severity: "minor",
+    cards: ["Enigmatic Warder", "Gravitational Correction", "Divine Intervention"],
+    title: "Caleb's Enigmatic Warder line may make a change-the-targets card unplayable at an effect with no target it could take",
+    detail: "Caleb, rules-questions 1403796597896253511, on Enigmatic Warder: \"Yeah you can change any spell where warder could be a legal target.\" Read as a castability limit, a change-the-targets card could be played only at an effect that has a target it could change, which outranks the owner's 2026-10-21 call (CT-307: castable at a targetless effect, with a stop). The CR U03 notes record it.",
+    evidence: "The rulings agent, report round 2026-10-21.",
+    fix: "Caleb's line is about Warder, so it binds Warder only: Warder's target spec takes a restrict (E.canFillSlot over E.targetSlots, the Virus host included). Gravitational Correction and Divine Intervention keep the owner's castable-with-a-stop ruling.",
+    proof: null,
+    guards: [
+      "530-warder-legal-target.test.ts::F-U03-6 Enigmatic Warder is not offered against a targetless trigger",
+      "530-warder-legal-target.test.ts::F-U03-6 Enigmatic Warder is not offered against effects whose every target it cannot legally be",
+    ],
+    closed: "FIXED 2026-10-21 (677da00): the CR verifier refused the owner's call for Warder (designer outranks); CR 110.9 cites Caleb, F-U03-6 closed.",
+    verify: "Read the quoted message beside CT-307's ruling.",
+    status: 'done',
+  },
 ];

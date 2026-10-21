@@ -48,7 +48,7 @@ export const UPDATES: readonly Update[] = [
   { date: '2026-10-21', kind: 'fix', text: "A card played for free in the middle of an effect, as with Tides of the Cosmos, now asks for every target it needs, just as from hand. Tidal Reversion takes one unit of each player." },
   { date: '2026-10-21', kind: 'fix', text: "When the player with the initiative attacks or blocks and that sets off one of their own abilities, they now get to act first." },
   { date: '2026-10-21', kind: 'change', text: "Void Mandible, Eldritch Dreamtender and Cthyrian Rector are now sacrificed as their ability resolves, not when it goes on the stack. Kill one in response and its ability does nothing." },
-  { date: '2026-10-21', kind: 'fix', text: "Enigmatic Warder, Gravitational Correction and Divine Intervention can now redirect a Virus being applied. Aiming one at an effect with no targets asks you first, and nobody is asked to pay for it." },
+  { date: '2026-10-21', kind: 'fix', text: "Enigmatic Warder, Gravitational Correction and Divine Intervention can now redirect a Virus being applied. Aimed at an effect with no targets, the two spells ask first; Warder only aims where it could be a target." },
   { date: '2026-10-21', kind: 'change', text: "Abilities that say you may target something now offer No targets at the first choice, instead of making you pick a target and decline later." },
   { date: '2026-10-21', kind: 'new', text: "Pressing Done in deployment or the haste step now asks first if you have not played anything but could have." },
   { date: '2026-10-21', kind: 'new', text: "Finished games have a Dispute game button next to Rematch, for when a bug decided the result. It files a report and tags the game; in a league, the organizer sees it." },
