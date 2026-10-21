@@ -10,8 +10,8 @@
  * under the pointer, and what the drop does. main.ts is one provider and builds
  * every plan out of the functions the CLICKS call — one intent, two routes, the
  * same rule as cardMenuItems serving both the right-click and the rail — so a
- * drag can never do anything a click could not. The deck table
- * (ui/decktable.ts, 2026-10-21) is the other, under the same rule: its drops
+ * drag can never do anything a click could not. The tabletop deck builder
+ * (ui/tabletop.ts, 2026-10-21) is the other, under the same rule: its drops
  * are `place()`, the function its taps call.
  *
  * The gesture:
@@ -30,20 +30,25 @@
  * under the pointer. main.ts's render() asks `dragActive()` and defers the
  * paint to the end of the gesture (`ended`). The state still lands; the drop
  * is re-validated against it by the click route it calls. Off the board the
- * same holds for every painter a drag can meet (the deck page, the challenge
- * builder, the card drawer) — the queue poll repaints the deck page too.
+ * same holds for every painter a drag can meet (the tabletop, its binder) —
+ * the queue poll repaints the page under it too.
  */
 import { inertCopy } from './zoom.ts';
 import { swallowNextClick } from './touch.ts';
 
 export interface DragPlan {
-  /** every element that takes a drop, lit while the drag lasts */
-  targets: Element[];
+  /** every element that takes a drop, lit while the drag lasts. The tabletop
+   * passes none: there, the only thing lit is the zone under the card */
+  targets?: Element[];
   /** the drop zone for the element under the pointer (a target, or a wider
    * area that means one), or null for "not here" */
   zoneAt(el: Element | null): Element | null;
   /** drop onto `zone` with the pointer at x,y — false puts the card back */
   drop(zone: Element, x: number, y: number): boolean;
+  /** the pointer moved (or the box under it scrolled): `zone` is what zoneAt
+   * answered, null when the card is over nothing or the drag is over — the
+   * plan's live preview (the tabletop opens a gap where the card will land) */
+  over?(zone: Element | null, x: number, y: number): void;
 }
 
 export interface DragProvider {
@@ -62,10 +67,15 @@ export interface DragProvider {
   refind?(src: HTMLElement): HTMLElement | null;
   /** a finger (not a mouse) must rest this long without moving before the
    * press can lift: a page that SCROLLS under the finger needs the hold, or
-   * every swipe would pick a card up (the deck table; the board does not) */
+   * every swipe would pick a card up (the tabletop; the board does not) */
   holdMs?: number;
-  /** scroll the page when the card is carried to the top or bottom edge */
+  /** scroll when the card is carried to an edge: the window's, and the edge
+   * of every scrolling box under the pointer (the tabletop's table pane, the
+   * binder's grid, a sideways deck strip) */
   edgeScroll?: boolean;
+  /** a MOUSE press lifts the card at once (`draglift`), before the slop — the
+   * card comes up under the pointer the moment it is pressed */
+  pressLift?: boolean;
 }
 /** the game's provider, as main.ts has always written it */
 export type DragDeps = DragProvider;
@@ -159,7 +169,7 @@ function begin(p: Press, x: number, y: number): boolean {
   ensureLayer().replaceChildren(ghost);
   live = { plan, prov: deps, src: p.src, id: p.id, ghost, home, dx: p.x - home.left, dy: p.y - home.top, zone: null };
   p.src.classList.add('dragsrc');
-  for (const t of plan.targets) t.classList.add('droptarget');
+  for (const t of plan.targets ?? []) t.classList.add('droptarget');
   document.documentElement.classList.add('dragging');
   try { document.documentElement.setPointerCapture(p.id); } catch { /* the pointer is already gone */ }
   deps.started();
@@ -174,7 +184,8 @@ function finish(landed: boolean): void {
   live = null;
   l.zone?.classList.remove('dropover');
   l.src.classList.remove('dragsrc');
-  for (const t of l.plan.targets) t.classList.remove('droptarget');
+  for (const t of l.plan.targets ?? []) t.classList.remove('droptarget');
+  try { l.plan.over?.(null, 0, 0); } catch { /* a preview never stops the drag ending */ }
   document.documentElement.classList.remove('dragging');
   try { document.documentElement.releasePointerCapture(l.id); } catch { /* released already */ }
   const g = l.ghost;
@@ -193,15 +204,73 @@ function dropPress(): void {
   press = null;
 }
 
-/** the page's edge, while a card is carried there: scroll towards it */
-function edgeScroll(y: number): void {
-  const band = 48;
-  const step = y < band ? -(band - y) / 3 : y > innerHeight - band ? (y - (innerHeight - band)) / 3 : 0;
-  if (step) window.scrollBy(0, step);
+/** how close to an edge the card must be carried before the box scrolls */
+const BAND = 48;
+/** the step for a point `d` px inside an edge band (0 outside it) */
+const stepIn = (d: number): number => (d < BAND ? Math.ceil((BAND - Math.max(d, 0)) / 3) : 0);
+
+/** every box under the point that scrolls on this axis, nearest first */
+function scrollers(x: number, y: number): HTMLElement[] {
+  const out: HTMLElement[] = [];
+  let el = document.elementFromPoint(x, y) as HTMLElement | null;
+  while (el && el !== document.body && el !== document.documentElement) {
+    if (el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1) {
+      const cs = getComputedStyle(el);
+      if (/(auto|scroll)/.test(cs.overflowY + cs.overflowX)) out.push(el);
+    }
+    el = el.parentElement;
+  }
+  return out;
+}
+
+/** One step of the edge scroll at x,y: the window's own edge, then each
+ * scrolling box's. True when anything moved. */
+function edgeStep(x: number, y: number): boolean {
+  let moved = false;
+  const dy = stepIn(y) ? -stepIn(y) : stepIn(innerHeight - y);
+  if (dy) { const was = scrollY; window.scrollBy(0, dy); moved ||= scrollY !== was; }
+  for (const box of scrollers(x, y)) {
+    const r = box.getBoundingClientRect();
+    const vy = stepIn(y - r.top) ? -stepIn(y - r.top) : stepIn(r.bottom - y);
+    const vx = stepIn(x - r.left) ? -stepIn(x - r.left) : stepIn(r.right - x);
+    const top = box.scrollTop, left = box.scrollLeft;
+    if (vy && box.scrollHeight > box.clientHeight + 1) box.scrollTop = top + vy;
+    if (vx && box.scrollWidth > box.clientWidth + 1) box.scrollLeft = left + vx;
+    moved ||= box.scrollTop !== top || box.scrollLeft !== left;
+  }
+  return moved;
+}
+
+/** the last pointer position of the carried card */
+let at = { x: 0, y: 0 };
+let scrolling = false;
+/**
+ * Keep scrolling while the card is HELD at an edge, not only while it moves:
+ * one animation frame at a time, only while a card is in the air and only
+ * while something actually scrolled. A frame, never a timeout — a headless
+ * suite stubs the frame and would wait for ever on a timeout that re-arms.
+ */
+function edgeLoop(): void {
+  if (scrolling || typeof requestAnimationFrame !== 'function') return;
+  scrolling = true;
+  const tick = (): void => {
+    const l = live;
+    if (!l || !l.prov.edgeScroll || !edgeStep(at.x, at.y)) { scrolling = false; return; }
+    // what is under the card changed with the scroll
+    hover(l, at.x, at.y);
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+/** the zone under the pointer, and the plan's preview of a drop there */
+function hover(l: Live, x: number, y: number): void {
+  setZone(l, l.plan.zoneAt(document.elementFromPoint(x, y)));
+  l.plan.over?.(l.zone, x, y);
 }
 
 /**
- * A second provider beside the game's: the deck table (ui/decktable.ts)
+ * A second provider beside the game's: the tabletop (ui/tabletop.ts)
  * registers one at import. The document listeners stay ONE set, installed by
  * installDrag — a provider is a row in a list, never another listener — and a
  * press remembers which provider took it.
@@ -216,6 +285,17 @@ export function installDrag(game: DragProvider): void {
   if (!providers.includes(game)) providers.unshift(game);
   if (installed) return;
   installed = true;
+  // ⚠ THE BROWSER'S OWN DRAG MUST NEVER START ON A SOURCE. Firefox ignores
+  // `-webkit-user-drag`, so pressing a card scan and moving began a native
+  // image drag; by spec that CANCELS the pointer, the press was abandoned, and
+  // the click that followed ran the tap route instead — "it was all click and
+  // click again to drop" (owner, 2026-10-21, deck table v1). Cancelled here, in
+  // capture, for whatever any provider would pick up and for any drag that
+  // starts while a press or a carry is on.
+  document.addEventListener('dragstart', e => {
+    const t = e.target as Element | null;
+    if (press || live || (t && providers.some(p => p.sourceOf(t)))) e.preventDefault();
+  }, true);
   document.addEventListener('pointerdown', e => {
     dropPress();
     if (live || !e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
@@ -224,6 +304,7 @@ export function installDrag(game: DragProvider): void {
       if (!src) continue;
       press = { src, key: keyOf(src), id: e.pointerId, x: e.clientX, y: e.clientY, type: e.pointerType,
         prov, at: Date.now(), held: false };
+      if (prov.pressLift && e.pointerType === 'mouse') src.classList.add('draglift');
       if (prov.holdMs && e.pointerType !== 'mouse') {
         const p = press;
         holdTimer = setTimeout(() => {
@@ -242,9 +323,9 @@ export function installDrag(game: DragProvider): void {
     if (live) {
       if (e.pointerId !== live.id) return;
       place(live, e.clientX, e.clientY, e.pointerType);
-      if (live.prov.edgeScroll) edgeScroll(e.clientY);
-      const under = document.elementFromPoint(e.clientX, e.clientY);
-      setZone(live, live.plan.zoneAt(under));
+      at = { x: e.clientX, y: e.clientY };
+      hover(live, e.clientX, e.clientY);
+      if (live.prov.edgeScroll) edgeLoop();
       return;
     }
     if (!press || e.pointerId !== press.id) return;
@@ -262,13 +343,13 @@ export function installDrag(game: DragProvider): void {
     p.src.classList.remove('draglift');
     press = null;
     if (begin(p, e.clientX, e.clientY)) {
-      const under = document.elementFromPoint(e.clientX, e.clientY);
-      setZone(live!, live!.plan.zoneAt(under));
+      at = { x: e.clientX, y: e.clientY };
+      hover(live!, e.clientX, e.clientY);
     }
   }, { passive: true });
 
-  // ⚠ A FINGER THAT HAS LIFTED A CARD MUST NOT ALSO SCROLL THE PAGE. The deck
-  // table's cards are `touch-action: pan-y` so a swipe still scrolls; once the
+  // ⚠ A FINGER THAT HAS LIFTED A CARD MUST NOT ALSO SCROLL THE PAGE. The
+  // tabletop's cards are `touch-action: pan-y` so a swipe still scrolls; once the
   // hold is up, the next touchmove is cancelled here, which is what keeps the
   // browser from claiming the gesture as a pan (and cancelling the pointer).
   // Non-passive on purpose; it returns at once unless a card is held.
