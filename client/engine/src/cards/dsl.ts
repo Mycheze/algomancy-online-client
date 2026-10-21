@@ -755,7 +755,12 @@ export type CastCost =
   /**
    * "[Sacrifice X units]" (Malevolent Machinations) — `n` units, or 'X'.
    *
-   * `from: 'self'` is "sacrifice **me**" (Eldritch Dreamtender), resolved
+   * `from: 'self'` is a BRACKETED "[Sacrifice me]" — a printed cost. No card
+   * in the pool declares it today: the three "When …,
+   * sacrifice me. If you do, …" cards (Eldritch Dreamtender, Cthyrian Rector,
+   * Void Mandible) print the sacrifice as effect prose, so CR 111.8 makes it a
+   * step of the effect, made at resolution (`sacrificeMeOnResolve`), not this
+   * (CT-264; 515 guards it). Resolved
    * through `item.sourceId` exactly as `removeCounters`' own `from: 'self'`
    * is. It carries NO choice — there is nothing to pick — so it is charged
    * outright in the cast window with no decision and no suspension, which is

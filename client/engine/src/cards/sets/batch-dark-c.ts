@@ -142,7 +142,7 @@ import type { Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, eventBinSlot, notSelfBinCard, type EffectDef } from '../dsl.ts';
 import { transformsInto } from '../registry.ts';
-import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
+import { selfOf, isEnt, manaOf, isUnitCard, sacrificeMeOnResolve } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -264,28 +264,29 @@ card('Collect Remains', {
 // "Another card" is free: the trash-side dispatch only reaches units IN PLAY,
 // and a card being trashed is by definition not one.
 //
-// Owner ruling (2026-08-22; CR 111.8 now makes it part of the effect, engine differs, F-U04-5): "sacrifice me. If you do, …" is a CAST COST — the same
-// printed shape, and the same ruling, as Eldritch Dreamtender. The sacrifice
-// used to be a g.destroy() at resolution; it is now paid on the way to the
-// stack, which is also what makes the "nothing to sacrifice" guard unnecessary
-// (an unpayable cost skips the part outright).
+// CR 111.8: "sacrifice me. If you do, …" is a step of the EFFECT, made as the
+// trigger resolves — the same printed shape as Eldritch Dreamtender, with no
+// [cost] bracket. The Rector stays in play while the trigger waits; if it is
+// gone by resolution, "If you do" fails and nothing is recalled. This reverses
+// the owner ruling of 2026-08-22 that made it a cast cost; the owner accepted
+// Caleb's reading on 2026-10-21 (report #259, CT-264).
 card('Cthyrian Rector', {
   augmentText: [{
     type: 'triggered', events: ['trashed'],
     label: 'sacrifice me — recall the trashed card from your bin',
     when: (_g, self, ev) => ev.data?.['seat'] === self.controller,
     effect: {
-      castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },
       run: (g, ctx) => {
+        if (!sacrificeMeOnResolve(g, ctx, 'Cthyrian Rector')) return;   // CR 111.8: "If you do"
         // CR 405.6: "THAT card" — the copy the trash event was about, resolved
         // from the event's own `binNth` stamp (the (name, nth) bin
         // identity) by `eventBinSlot`. This used to be a name search of the
         // bin, which answers "the last copy of that name in the bin right
         // now": a different question, and a different card once the trashed
         // copy has been swept out (a token, or — in the engine — an {Unstable} death; CR 801.2h never bins that card, CT-246). What the search found then was an INNOCENT older copy, which
-        // this card recalled to hand having already paid its sacrifice. A miss
+        // this card recalled to hand having already made its sacrifice. A miss
         // is "gone" — never "take the other one".
-        const slot = eventBinSlot(g, ctx.event);              // "if you do"
+        const slot = eventBinSlot(g, ctx.event);
         if (!slot) return;
         // `when` pins the trashed seat to the controller, so slot.seat is
         // "your bin" and the recall lands in the same player's hand.

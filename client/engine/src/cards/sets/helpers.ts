@@ -24,6 +24,26 @@ import { getCard, type EffectCtx, type EffectDef, type XPreviewRow } from '../ds
 export const selfOf = (g: E, ctx: EffectCtx): Entity | undefined =>
   ctx.sourceId !== undefined ? g.entity(ctx.sourceId) : undefined;
 
+/**
+ * CR 111.8: "When …, sacrifice me. If you do, …" — the sacrifice is a step of
+ * the EFFECT, made as the ability resolves (Eldritch Dreamtender, Cthyrian
+ * Rector, Void Mandible). The ability went on the stack with its source still
+ * in play and players could answer it; if the source has left play by now, or
+ * is no longer its controller's to sacrifice, there is nothing to sacrifice
+ * and "If you do" fails. Returns whether the sacrifice was made — the rider
+ * runs only on `true`. Mandatory: there is no decline. The test is the one the
+ * cast-cost payer's `selfSacrifice` makes (a unit, present, yours).
+ */
+export const sacrificeMeOnResolve = (g: E, ctx: EffectCtx, card: string): boolean => {
+  const u = selfOf(g, ctx);
+  if (!u || u.kind !== 'unit' || u.absent || u.controller !== ctx.controller) {
+    g.ev('info', `${card}: there is nothing left to sacrifice — nothing happens.`);
+    return false;
+  }
+  g.destroy(u, 'is sacrificed');
+  return true;
+};
+
 /** Is this resolved target (or event datum) an entity? Only entities carry an
  * `id` — a player / stack / cached / bin target does not. */
 export const isEnt = (t: unknown): t is Entity =>

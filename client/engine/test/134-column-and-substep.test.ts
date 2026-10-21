@@ -194,7 +194,7 @@ test('CR 608.9a — Eldritch Dreamtender: a 0-power anchor in a POWERED column s
   attackWith(h, A, D, dt, ally, 'together');
 
   assert.equal(h.state.players[D]!.life, life0 - 1);
-  assert.equal(ent(h, dt), undefined, 'engine (F-U04-5; CR 111.8 makes it part of the effect): the sacrifice is a cast cost, paid on the way to the stack');
+  assert.equal(ent(h, dt), undefined, 'it fired, and its trigger sacrificed it as it resolved (CR 111.8)');
   assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'));
   finishBattle(h);
 });

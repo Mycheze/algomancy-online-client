@@ -1203,9 +1203,8 @@ test('Eldritch Dreamtender: connects → sacrifices itself to discard from that 
   pass(h); pass(h);                                         // combat: 1 to D → the trigger
   assert.equal(h.state.players[D]!.life, 29);
   // CR 608.9b: the connect trigger is stacked in the after-combat window instead of
-  // resolving inside the damage step. The engine's cast-cost reading of the sacrifice (CR 111.8 differs, F-U04-5) is untouched — the sacrifice
-  // is still paid on the way to the stack, the discard is still chosen at
-  // resolution — and every assertion below is the one that was here.
+  // resolving inside the damage step. CR 111.8: the sacrifice is a step of the
+  // effect, made as the trigger resolves, and the discard is chosen then too.
   pass(h); pass(h);                                         // after-combat: it resolves
   assert.equal(h.state.decision!.seat, A, 'the attacker picks the discard');
   assert.equal(h.state.decision!.options.length, dHand.length, 'the whole hand is shown');
@@ -1232,18 +1231,16 @@ test('Eldritch Dreamtender: connects → sacrifices itself to discard from that 
   finishBattle(h);
 });
 
-test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
-  + 'not at resolution', () => {
-  // The report: "Technically, Eldritch Dreamtender needs to be sacrificed for
-  // its ability to go on the stack, but it's still visually in play while
-  // resolving its trigger." It used to be a `g.destroy(self, …)` inside
-  // effect.run — at resolution, after a whole priority window with the unit
-  // still on the board.
-  //
-  // The owner's ruling (Bena, 2026-08-22) makes it a real cast cost (CR 111.8 differs, F-U04-5):
-  // `{ kind: 'sacrificeUnits', from: 'self', n: 1 }`. CR 706.2, 702.5 already settle
-  // bracketed costs in the cast window for triggered items too, so the payment
-  // now lands BEFORE the trigger is a thing anyone can answer.
+test('Eldritch Dreamtender: the trigger waits on the stack with the Dreamtender in play, '
+  + 'and it is sacrificed as the trigger resolves (CR 111.8)', () => {
+  // Report #259 (CWEU) and CT-264. "sacrifice me. If you do, …" is printed as
+  // effect prose, with no [cost] bracket and no colon, so CR 111.8 makes the
+  // sacrifice part of the effect. Caleb on this card (2025-04-20): "if the
+  // opponent kills him with the trigger on the stack for example, you
+  // wouldn't be able to sacrifice him/discard a card from them." This test
+  // used to assert the opposite (the owner ruling of 2026-08-22, a cast cost
+  // paid on the way to the stack), which the owner reversed on 2026-10-21.
+  // The killed-in-response half is in 515-trigger-sacrifice-me.
   const h = new Harness(2618);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -1253,41 +1250,30 @@ test('Eldritch Dreamtender: the sacrifice is paid on the way to the stack, '
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);                                         // combat damage → trigger
-  // Stacking after combat (CR 608.9b) moved the window, not the ordering: the trigger is stacked after
-  // combat, and the sacrifice is paid as it goes ON the stack there — so the
-  // Dreamtender is in the bin before the first priority window, one pass
-  // before anyone could answer the trigger, which is exactly the engine's reading; CR 111.8 differs (F-U04-5).
-  assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');
-  assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'), 'and it is in the bin');
+  assert.ok(h.state.stack.some(i => i.sourceId === dt), 'the trigger is on the stack');
+  assert.ok(ent(h, dt), 'and the Dreamtender is still in play while it waits');
+  assert.ok(!h.state.players[A]!.bin.includes('Eldritch Dreamtender'), 'not in the bin yet');
   pass(h); pass(h);                                         // after-combat: it resolves
-  assert.equal(h.state.decision!.seat, A, 'only now is the discard chosen');
-  // the log order is the proof: the payment lands between the trigger being
-  // QUEUED and the trigger RESOLVING — i.e. in the cast window, which is where
-  // a bracketed cost belongs (CR 111.2, 702.5)
-  //
-  // Read through `logFor(h, A)` and not `h.log` (CT-84). Both lines are
-  // PUBLIC and this test is about ordering, not secrecy — but the Dreamtender
-  // also prints "look at that player's hand", and 174-secrecy-is-seat-aware
+  assert.equal(h.state.decision!.seat, A, 'the discard is chosen as it resolves');
+  pick(h, 0);
+  assert.ok(!ent(h, dt), 'sacrificed as the trigger resolved');
+  // the log order is the proof: the sacrifice lands AFTER the trigger starts
+  // resolving. Read through `logFor(h, A)` and not `h.log` (CT-84): the
+  // Dreamtender prints "look at that player's hand", and 174-secrecy-is-seat-aware
   // will not let an assertion name a private-look card while reading the
-  // seatless firehose. The rule is deliberately blunt there: `logFor` costs
-  // nothing, says which seat, and an exemption would have to be argued in
-  // prose (CT-83). Ordering is preserved by redaction, which only ever drops
-  // or rewrites lines — it never reorders them.
-  const iPay = logFor(h, A).findIndex(l => l.includes('sacrifices Eldritch Dreamtender'));
+  // seatless firehose.
   const iRes = logFor(h, A).findIndex(l => l.includes('Eldritch Dreamtender: sacrifice me')
     && l.startsWith('Resolving '));
-  assert.ok(iPay !== -1, 'the sacrifice is logged as a cost payment');
-  assert.ok(iRes !== -1 && iPay < iRes, 'and it is paid BEFORE the effect resolves');
-  pick(h, 0);
+  const iSac = logFor(h, A).findIndex(l => l.includes('Eldritch Dreamtender is sacrificed'));
+  assert.ok(iRes !== -1, 'the trigger resolved');
+  assert.ok(iSac !== -1 && iRes < iSac, 'and the sacrifice is logged after it began resolving');
   finishBattle(h);
 });
 
 test('Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (CR 111.8)', () => {
-  // The other deliberate consequence of the ruling: the printed "sacrifice me.
-  // If you do, …" loses its if-you-do. A choice-free cost on a spell/trigger's
-  // OWN effect is charged outright — the decline option only exists for an
-  // optional grafted rider. The dead-source half of that reading (an unpayable cost
-  // skips the part) is pinned on the primitive in test/32-cast-costs.
+  // The card prints no "may": the sacrifice is made as the trigger resolves,
+  // with no decline. (Its if-you-do half — the Dreamtender killed in response
+  // — is in 515-trigger-sacrifice-me.)
   const h = new Harness(2619);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -1301,8 +1287,8 @@ test('Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever of
   // the only decision raised is the discard — never "pay the cost?"
   assert.ok(!h.state.decision!.options.some(o => /Don't pay|Decline/.test(o.label)),
     'no way to keep the Dreamtender and still look at the hand');
-  assert.ok(!ent(h, dt), 'it is already gone');
   pick(h, 0);
+  assert.ok(!ent(h, dt), 'and it is gone once the trigger has resolved');
   finishBattle(h);
 });
 

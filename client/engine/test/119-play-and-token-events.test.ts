@@ -146,7 +146,7 @@ test('Void Mandible: a {Battle} UNIT is a card played — sacrifice, then negate
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Monke') });
   assert.equal(h.state.stack.length, 2, 'Monke + the Mandible trigger above it');
   pass(h); pass(h);                                           // the trigger resolves first
-  assert.ok(!ent(h, vm), 'the Mandible sacrificed itself — the cast cost (the owner ruling the engine follows; CR 111.8 differs, F-U04-5)');
+  assert.ok(!ent(h, vm), 'the Mandible sacrificed itself as the trigger resolved (CR 111.8)');
   assert.equal(h.state.stack.length, 0, 'CR 704.4: the negated Monke left the stack at once');
   assert.ok(!h.state.players[D]!.hand.includes('Monke'), 'it was played, not returned');
   assert.deepEqual(h.state.players[D]!.bin.filter(c => c === 'Monke'), ['Monke'],

@@ -109,7 +109,7 @@
 import type { EngineEvent, Entity, EntityId, EventType, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, eventBinSlot, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, sacrificeMeOnResolve } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -1026,40 +1026,28 @@ card('Download', {
 // damage sub-step and goes on the stack after it (CR 608.9). ⚠ column-connect read off
 // the aggregated combat lifeLost event (Amphivore's approximation).
 //
-// Bena's ruling, 2026-08-22, which the engine follows although CR 111.8 makes the
-// sacrifice part of the effect (F-U04-5): "sacrifice me" is a CAST COST. The report
-// was "Technically, Eldritch Dreamtender needs to be sacrificed for its ability
-// to go on the stack, but it's still visually in play while resolving its
-// trigger" — and it is right. The sacrifice used to be a g.destroy() inside
-// effect.run, at RESOLUTION, so the unit sat on the board through a whole
-// priority window first.
+// CR 111.8: "sacrifice me. If you do, …" is a step of the EFFECT, made as the
+// trigger resolves — the card prints it as effect prose after the trigger
+// condition, with no [cost] bracket and no colon. So the trigger goes on the
+// stack with the Dreamtender still in play, players may answer it, and if the
+// Dreamtender is gone by resolution "If you do" fails and no hand is looked
+// at. Caleb on this card (2025-04-20): "if the opponent kills him with the
+// trigger on the stack for example, you wouldn't be able to sacrifice him/
+// discard a card from them." The sacrifice stays mandatory (no "may").
 //
-// Both halves are in place now. CR 111.2, 702.5 settle bracketed costs in the cast
-// window for spells, activated AND triggered items alike (buildTriggerItem ->
-// collectTargets -> collectCastCosts), and that ruling added the one cost this card
-// needed: `sacrificeUnits` with `from: 'self'`, resolved through item.sourceId
-// exactly as `removeCounters`' own `from: 'self'` is.
-//
-// ⚠ The consequences are understood and INTENDED, not side effects: the
-// sacrifice is now mandatory (no "if you do" to decline), unrespondable (a
-// choice-free cost is charged with no decision and no suspension), and the
-// whole trigger is skipped when the source is already dead by settle time
-// (an unpayable cost sets part.spent). That is what "sacrificed for its
-// ability to go on the stack" means. The printed line is effect prose with an
-// if-you-do rider rather than a printed [cost]; the ruling reads it as a cost
-// anyway.
+// This reverses the owner ruling of 2026-08-22, which made "sacrifice me" a
+// CAST COST paid on the way to the stack (after the report "it's still
+// visually in play while resolving its trigger"); the owner accepted Caleb's
+// reading on 2026-10-21 (report #259, CT-264). Still being in play while the
+// trigger waits is the rule, not a display bug.
 card('Eldritch Dreamtender', {
   augmentText: [{
     type: 'triggered', events: ['combatFaceDamage'],   // CR 608.8a
     label: "sacrifice me — look at that player's hand and discard a card",
     when: (g, self, ev) => myColumnConnected(g, self, ev),
     effect: {
-      // The 2026-08-22 ruling: paid on the way to the stack, not here. By the time run() is
-      // called the Dreamtender is already in its owner's bin — so there is no
-      // selfOf() to read, and there deliberately is no "if you do" check
-      // either: an unpaid cost means this run() never happens at all.
-      castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },
       run: (g, ctx) => {
+        if (!sacrificeMeOnResolve(g, ctx, 'Eldritch Dreamtender')) return;   // CR 111.8: "If you do"
         const who = ctx.event?.data?.['seat'] as Seat | undefined;
         if (who === undefined) return;
         const hand = g.player(who).hand;

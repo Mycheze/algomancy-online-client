@@ -845,16 +845,15 @@ test('a seat with a decision pending against the OTHER seat has no legal action'
  *     layer (CR 712.1) exists; batch-metal-b.ts calls `g.suppress(t, 'Formless', { attrs: true })`
  *     and test/59-base-stats.test.ts covers it.
  *   · the empty-column collapse — CLOSED. CR 602.5, test/64-formation-collapse.test.ts.
- *   · Eldritch Dreamtender's sacrifice timing — CLOSED. The owner, 2026-08-22:
- *     "sacrifice me" is a CAST COST, paid on the way to the stack, not at
- *     resolution. `sacrificeUnits` gained `from: 'self'` (resolved through
- *     item.sourceId, the `removeCounters` precedent) and the card carries it.
- *     Real tests, no longer todos: test/26-metal-a.test.ts for the card,
- *     test/32-cast-costs.test.ts for the primitive. (CR 111.8 now reads the
- *     sacrifice as part of the effect, not a cost; the engine differs, F-U04-5.)
+ *   · Eldritch Dreamtender's sacrifice timing — CLOSED, and since REVERSED.
+ *     The owner ruled on 2026-08-22 that "sacrifice me" was a CAST COST, paid
+ *     on the way to the stack. On 2026-10-21 the owner accepted Caleb's reading
+ *     instead (CR 111.8, CT-264): the sacrifice is a step of the effect, made
+ *     as the trigger resolves, and a Dreamtender killed in response does
+ *     nothing. test/26-metal-a.test.ts and 515-trigger-sacrifice-me pin it.
  *
  * ALL FOUR round-7 deferrals are now closed, and so is the fifth question that
- * outlived them: that owner ruling settled WHETHER the sacrifice is a cost, and another (owner,
+ * outlived them: the sacrifice-timing question (settled as above), and another (owner,
  * 2026-08-23; now CR 608.9a) settled WHICH combat damage sub-step the trigger fires in —
  * **the sub-step its own column strikes in.** The `{ todo: true }` that used to
  * sit here, and the card-ledger entry that named it, are replaced by the real
@@ -963,9 +962,8 @@ function dreamtenderTriggers(h: Harness): number {
  *      is sacrificed in its own'
  *
  * It still survives the Swift sub-step. It is no longer sacrificed IN ITS OWN
- * sub-step — CR 608.9c holds the trigger to the after-combat window and the
- * sacrifice, which the engine takes as a cast cost (CR 111.8 differs, F-U04-5), is paid on the way to the stack
- * there. */
+ * sub-step — CR 608.9c holds the trigger to the after-combat window, and the
+ * sacrifice is a step of its effect (CR 111.8), made as it resolves there. */
 test('a Dreamtender in a NORMAL column hears only its OWN column damage, and pays after combat', () => {
   const h = new Harness(5290);
   toDeployment(h);
@@ -996,10 +994,9 @@ test('a Dreamtender in a NORMAL column hears only its OWN column damage, and pay
   assert.equal(dreamtenderTriggers(h), 1,
     'ONE announcement: the normal sub-step, its own. With the sub-step gating gone the Swift '
     + 'sub-step\'s aggregated lifeLost fires it as well and this reads 2');
-  assert.equal(ent(h, dt), undefined,
-    'and it has left the board — the engine takes the sacrifice as a cast cost (CR 111.8 differs, F-U04-5), paid on the way to the '
-    + 'after-combat stack rather than inside the sub-step');
-  assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'));
+  assert.ok(ent(h, dt),
+    'and it is still on the board while its trigger waits on the after-combat stack — the sacrifice '
+    + 'is part of the effect (CR 111.8), made when the trigger resolves, not inside the sub-step');
   // CR 608.9c, POSITIVE CONTROL: the trigger is really ON THE STACK and really
   // resolves there. Every board assertion above would also hold on a board
   // where the trigger had been swallowed on the way out of the damage step.
@@ -1009,6 +1006,8 @@ test('a Dreamtender in a NORMAL column hears only its OWN column damage, and pay
   resolveAfterCombat(h);
   assert.equal(h.state.players[D]!.hand.length, hand0 - 1,
     'and when it resolves it does what it prints: a card leaves the opponent\'s hand');
+  assert.equal(ent(h, dt), undefined, 'and it sacrificed itself as it resolved');
+  assert.ok(h.state.players[A]!.bin.includes('Eldritch Dreamtender'));
   finishBattle(h);
 });
 
@@ -1064,7 +1063,11 @@ test('CR 608.9a: a Dreamtender in a {Sluggish} column waits out BOTH earlier sub
   assert.equal(dreamtenderTriggers(h), 1,
     'ONE announcement out of THREE aggregated lifeLost events — the sharpest form of the '
     + 'measurement, and the only one of these three numbers the after-combat hold left able to fail');
-  assert.equal(ent(h, dt), undefined);
+  // CR 111.8: the sacrifice is part of the effect, so the Dreamtender is still
+  // in play while its trigger waits after combat, and gone once it resolves.
+  assert.ok(ent(h, dt), 'still in play while its trigger waits');
+  resolveAfterCombat(h);
+  assert.equal(ent(h, dt), undefined, 'sacrificed as its trigger resolved');
   finishBattle(h);
 });
 

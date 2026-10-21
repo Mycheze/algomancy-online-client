@@ -281,21 +281,21 @@ test('forcedAction: NOT forced with two sent units, nor in round 1 with one unit
   assert.deepEqual(h.state.battle!.columns, [[d1, d2]], 'any shape that holds them all is legal');
 });
 
-/* ── "[Sacrifice me]" — a self-scoped sacrifice cast cost (CR 111.8 differs, F-U04-5) ──
- *
- * (Bena's ruling 2026-08-22, from the game-BRDM report about Eldritch
- * Dreamtender: "Technically, Eldritch Dreamtender needs to be sacrificed for
- * its ability to go on the stack, but it's still visually in play while
- * resolving its trigger.")
+/* ── "[Sacrifice me]" — a self-scoped sacrifice cast cost (the primitive) ──
  *
  * `CastCost` could say "sacrifice a unit" but not "sacrifice ME" —
  * castCostOptions offered every unit you control in the region, so the payer
- * could sacrifice something else entirely. `sacrificeUnits` now takes
+ * could sacrifice something else entirely. `sacrificeUnits` takes
  * `from: 'self'`, resolved through `item.sourceId`, exactly as `removeCounters`
  * already resolves its own `from: 'self'`.
  *
- * The card-level behaviour is pinned on the Dreamtender in test/26-metal-a;
- * these two pin the PRIMITIVE, where the source's life and death can be
+ * It is the shape of a BRACKETED "[Sacrifice me]" — a printed cost. It was
+ * built for the owner ruling of 2026-08-22 that read Eldritch Dreamtender's
+ * "sacrifice me. If you do, …" as one; that ruling was reversed on 2026-10-21
+ * (CR 111.8, Caleb: the sacrifice is part of the effect — CT-264), and no card
+ * declares it today. 515-trigger-sacrifice-me guards that no triggered effect
+ * carries a castCost its printed text does not mark. These two pin the
+ * PRIMITIVE, on a synthetic card, where the source's life and death can be
  * controlled exactly.
  */
 
@@ -336,7 +336,7 @@ test('[Sacrifice me] is charged with NO decision — that is what makes it unres
 
 test('a source that is already dead makes the cost UNPAYABLE, so the part is skipped', () => {
   // Deliberately NOT `unitsOf(seat, region).length >= 1`: another live unit
-  // standing there must not stand in for the source. The part is then skipped (CR 111.8 has the same outcome),
+  // standing there must not stand in for the source. The part is then skipped,
   // which is the right answer for a trigger whose source died between firing
   // and settling.
   const h = new Harness(3231);

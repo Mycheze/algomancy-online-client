@@ -198,7 +198,7 @@ test('Void Mandible: a play with no stack item (CR 301.9 asPlay) negates nothing
 
   assert.ok(h.log.some(l => l.includes('Void Mandible: Shard Sprite was played with no effect on the stack')),
     'CR 706.13: the raised unit put no effect on the stack, so there is nothing to negate');
-  assert.ok(!ent(h, host), 'the sacrifice is still paid — "sacrifice me. If you do, …" (CR 111.8; the engine differs on timing, F-U04-5)');
+  assert.ok(!ent(h, host), 'the sacrifice is still made — "sacrifice me. If you do, …" makes the negate conditional on it, not the other way round (CR 111.8)');
   const survivor = h.state.stack.find(i => i.id === bystander);
   assert.ok(survivor && !survivor.negated,
     'and the unrelated same-named item on the stack is UNTOUCHED — the old scan negated it');

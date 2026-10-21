@@ -94,7 +94,7 @@
 import type { EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { CARD_PLAY_KINDS, card, getCard, isGraftMultiplier, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, sacrificeMeOnResolve } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -679,9 +679,9 @@ card('Tithe Enforcer', {});
 //      this card negated THAT. Absent `item` now means "this play put no
 //      effect on the stack" and nothing is negated.
 //
-// ⚠ (c) LEAVES A DIVERGENCE, deliberately: the sacrifice is still paid on a
+// ⚠ (c) LEAVES A DIVERGENCE, deliberately: the sacrifice is still made on a
 // play that has no item to negate, because "sacrifice me. If you do, negate
-// that effect" (CR 111.8) makes the cost mandatory and the negate conditional on
+// that effect" (CR 111.8) makes the sacrifice mandatory and the negate conditional on
 // it, not the other way round. Under CR 701.4 that play WOULD be on the stack and
 // the sacrifice would buy something; the `asPlay` path predates the mid-resolution stack rule and still
 // spawns in place. That is an engine approximation, not a rule, and it is
@@ -697,22 +697,25 @@ card('Tithe Enforcer', {});
 // construction; the `token !== true` guard below is kept as belt-and-braces
 // so a future payload change cannot quietly widen the card.
 //
-// Owner ruling (2026-08-22), which the engine follows although CR 111.8 makes the
-// sacrifice part of the effect (F-U04-5): "sacrifice me. If you do, …" is a CAST COST — the same
-// printed shape, and the same ruling, as Eldritch Dreamtender, and the printed
-// "(This is not optional.)" says out loud what the cost reading already gives.
-// It used to be a g.destroy() at resolution. Paid on the way to the stack now,
-// so the carrier is gone before anyone can answer the negate; a carrier that is
-// ALREADY gone makes the cost unpayable and the whole trigger is skipped,
-// which is what the old "the carrier is gone" branch said in longhand.
+// CR 111.8: "sacrifice me. If you do, …" is a step of the EFFECT, not a cost —
+// the same printed shape as Eldritch Dreamtender and Cthyrian Rector, with no
+// [cost] bracket and no colon. The trigger goes on the stack with the carrier
+// still in play, players may answer it, and the carrier is sacrificed as the
+// trigger resolves; a carrier that has left play by then means "If you do"
+// fails and nothing is negated (Caleb on the Dreamtender, 2025-04-20: "if the
+// opponent kills him with the trigger on the stack for example, you wouldn't
+// be able to sacrifice him"). "(This is not optional.)": there is no decline.
+// This reverses the owner ruling of 2026-08-22, which had made it a cast cost
+// paid on the way to the stack; the owner accepted Caleb's reading on
+// 2026-10-21 (report #259, CT-264).
 card('Void Mandible', {
   augmentText: [{
     type: 'triggered', events: ['cardPlayed'],
     label: 'sacrifice me to negate a nontoken card played during battle',
     when: (g, _self, ev) => g.s.phase === 'battle' && ev.data?.['token'] !== true,
     effect: {
-      castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },
       run: (g, ctx) => {
+        if (!sacrificeMeOnResolve(g, ctx, 'Void Mandible')) return;   // CR 111.8: "If you do"
         const name = ctx.event?.data?.['card'] as string | undefined;
         const seat = ctx.event?.data?.['seat'] as Seat | undefined;
         const itemId = ctx.event?.data?.['item'] as number | undefined;

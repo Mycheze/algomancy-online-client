@@ -412,9 +412,12 @@ async function main(): Promise<void> {
       eq(optionLabels(c), ['Luminous Arc'],
         '   the "[Discard a card]" cost has EXACTLY ONE option — the setup cannot be misclicked');
       await decide(c, 'Luminous Arc');
+      eq(units(c, 0), ['Towering Colossus'],
+        '   CR 111.8: the trigger waits on the stack with the host still in play');
+      await pass(c);
       eq(units(c, 0), [],
-        '   THE CLAUSE: the HOST was sacrificed — the 10/15 is off the board');
-      await pass(c); await pass(c);
+        '   THE CLAUSE: the HOST was sacrificed as the trigger resolved — the 10/15 is off the board');
+      await pass(c);
       eq(hand(c), ['Luminous Arc'], '   THE CLAUSE: the trashed card is back IN YOUR HAND');
       eq(lives(c), [30, 25], '   and Darkblast still resolved for 5 at the opponent');
       c.ws.close();
@@ -527,9 +530,12 @@ async function main(): Promise<void> {
       eq((c.view.stack as any[]).map(i => i.card), ['Luminous Arc'],
         '   Arc #1 is still standing underneath it');
       await play(c, 'Luminous Arc'); await decide(c, 'Bubb');
+      eq(units(c, 0), ['Rook', 'Towering Colossus'],
+        '   CR 111.8: the trigger waits on the stack with the host still in play');
+      await pass(c);
       eq(units(c, 0), ['Rook'],
-        '   THE CLAUSE (a): the host was sacrificed the instant the card was played — not optional');
-      await pass(c); await pass(c);
+        '   THE CLAUSE (a): the host was sacrificed as the trigger resolved — not optional');
+      await pass(c);
       eq(units(c, 1), ['Bubb'],
         '   THE CLAUSE (b) / CR 706.13: the NEWER Arc was the one negated — Bubb lives, Ambling Mountaintop died');
       eq(entOf(c, 'Bubb').damage ?? 0, 0, '   and Bubb took no damage at all');

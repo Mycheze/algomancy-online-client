@@ -509,7 +509,7 @@ test('CR 701.4 the deferral gate: only a live battle priority window defers a mi
  * ⚠ AND TEACHING IT IS NOT FREE, which is why this was not built. The CT-79 fix ruled
  * that a 'cardPlayed' with no `item` means "this play put no effect on the
  * stack — there is nothing to negate". Firing one from the in-place path
- * therefore makes Void Mandible pay its printed sacrifice cost for a negate
+ * therefore makes Void Mandible make its printed sacrifice for a negate
  * that cannot land. That is a card interaction nobody has ruled on, invented
  * on a path no card reaches, which is the same trade the agent that fixed the played-from zone declined
  * ("changes which cards trigger on plays nobody ruled on this round"). It
@@ -586,7 +586,7 @@ test('§6b CT-143 tripwire: every playInline caller is battle-only, which is wha
     + 'only run inside a battle priority window, so `inlinePlayGoesToStack` is always true '
     + 'and the in-place branch (which fires no cardPlayed) is dead. Answer the question for '
     + 'the new caller: can it resolve outside a window? If it can, the in-place branch is '
-    + 'live and CT-143 needs deciding — including whether Void Mandible should pay its '
+    + 'live and CT-143 needs deciding — including whether Void Mandible should make its '
     + 'sacrifice for a negate that cannot land (CR 706.13).');
 
   // …and the property itself, mechanically, for the two that are spells

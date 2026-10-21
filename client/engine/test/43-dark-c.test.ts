@@ -192,12 +192,13 @@ test('Cthyrian Rector: Virus-donated, "me" is the HOST and "you" is the host\'s 
 // Unstable card is in a bin only for the trigger window. The answer is NOT new
 // and is not invented here: the TOKEN path has faced exactly this since tokens were ruled to really enter zones (CR 410.5),
 // and the Rector already reads `bin.lastIndexOf(name)` and says so when the
-// card is gone. So the sacrifice is paid (it is a CAST COST in the engine — F-U04-5; CR 111.8 makes it part of the effect — settled
-// on the way to the stack, before any bin lookup happens) and the recall
-// finds nothing. Deliberate: the alternative is either refunding a cost after
-// the fact, which the engine has no mechanism for and its cast-cost reading (F-U04-5) exists to avoid, or
-// recalling out of the ERASED PILE, which must never become reachable — that
-// pile is how a card leaves the game permanently (CR 407.1b).
+// card is gone. So the sacrifice is made (CR 111.8: a step of the effect, made
+// as the trigger resolves, and before the bin lookup — "sacrifice me. If you
+// do, recall that card") and the recall finds nothing. The sacrifice is not
+// conditional on the recall; the recall is conditional on the sacrifice. The
+// other way out would be recalling out of the ERASED PILE, which must never
+// become reachable — that pile is how a card leaves the game permanently
+// (CR 407.1b).
 test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death trashes, the Rector pays, and finds nothing — the erased pile stays unreachable', () => {
   const h = new Harness(4390);
   toDeployment(h);
@@ -209,7 +210,7 @@ test('engine hazard (CT-246; CR 801.2h: no trash): an Unstable death trashes, th
     e.destroy(e.entity(victim)!, 'dies');
   });
   assert.ok(trashedCards(h).includes('Good Whale'), 'engine (CT-246; CR 801.2h says not): the Unstable death IS a trash');
-  assert.ok(!ent(h, rector), 'so the Rector triggered and paid its sacrifice');
+  assert.ok(!ent(h, rector), 'so the Rector triggered and made its sacrifice');
   assert.ok(bin(h, P).includes('Cthyrian Rector'), 'which put the Rector itself in the bin');
   assert.ok(!hand(h, P).includes('Good Whale'), 'but there was nothing left to recall');
   assert.ok(!bin(h, P).includes('Good Whale'), 'the sweep had already taken it out of the bin');
@@ -244,7 +245,7 @@ test('CR 405.6: the Rector does NOT recall an innocent older copy when the trash
     e.entity(victim)!.unstable = true;                     // CR 803.8c stamp → engine route (CT-246; CR 801.2h differs): bin, trash, sweep
     e.destroy(e.entity(victim)!, 'dies');
   });
-  assert.ok(!ent(h, rector), 'the Rector triggered and paid its sacrifice (a cast cost in the engine; CR 111.8 differs, F-U04-5)');
+  assert.ok(!ent(h, rector), 'the Rector triggered and made its sacrifice as the trigger resolved (CR 111.8)');
   assert.deepEqual(hand(h, P).filter(c => c === 'Good Whale'), [],
     'and recalled NOTHING — the copy it saw trashed is in the erased pile, out of the game');
   assert.deepEqual(bin(h, P).filter(c => c === 'Good Whale'), ['Good Whale'],

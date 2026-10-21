@@ -595,11 +595,11 @@
     "examples": [
       {
         "text": "Eldritch Dreamtender's column deals combat damage to an opponent. Its ability goes on the stack with Dreamtender still in play; Dreamtender is sacrificed when the ability resolves, and only then is the opponent's hand looked at and a card discarded.",
-        "test": null
+        "test": "26-metal-a.test.ts::Eldritch Dreamtender: the trigger waits on the stack with the Dreamtender in play, and it is sacrificed as the trigger resolves (CR 111.8)"
       },
       {
         "text": "Dreamtender is destroyed in response to its ability. When the ability resolves, nothing is sacrificed, so no hand is looked at and nothing is discarded.",
-        "test": null
+        "test": "515-trigger-sacrifice-me.test.ts::§2 Eldritch Dreamtender: a real response — the opponent kills it with the trigger on the stack"
       },
       {
         "text": null,
@@ -622,22 +622,25 @@
           "quote": "sacrifice me. If you do, negate that effect. {i}(This is not optional.)"
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1363535826436493614",
+          "quote": "if the opponent kills him with the trigger on the stack for example, you wouldn't be able to sacrifice him/discard a card from them"
+        }
+      ],
       "ours": [],
       "owner": [],
       "engine": [],
       "tests": [
-        "26-metal-a.test.ts"
+        "26-metal-a.test.ts",
+        "515-trigger-sacrifice-me.test.ts"
       ]
     },
     "basis": "printed",
     "scope": "game",
-    "confidence": "medium",
-    "notes": "POLISH (2026-10-10), D-U04-2. Printed text read literally: the three cards print \"sacrifice me. If you do, …\" as effect prose, with no [cost] bracket, after a \"When …\" trigger condition, so the sacrifice is a step of the effect. The owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) (owner, tier 3) reads the prose as a bracketed cost paid on the way to the stack and says itself that \"the printed line is effect prose with an if-you-do rider\"; print outranks it. \"Not optional\": the cards print no \"may\", and Void Mandible prints \"(This is not optional.)\". Maelstrom Charger is a different shape (\"As you play a nonunit spell, you may sacrifice me\"), settled by its RAQ write-up: the child rule. The engine follows the owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) (pays the sacrifice as the ability is stacked; 26-metal-a asserts it): F-U04-5.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U04-5"
-    ]
+    "confidence": "high",
+    "notes": "POLISH (2026-10-10), D-U04-2; engine aligned 2026-10-21 (CT-264, report #259). Printed text read literally: the three cards print \"sacrifice me. If you do, …\" as effect prose, with no [cost] bracket, after a \"When …\" trigger condition, so the sacrifice is a step of the effect. The designer says so of Eldritch Dreamtender (RQ 1363535826436493614, 2025-04-20): the opponent may kill it with the trigger on the stack, and then it cannot be sacrificed and nothing is discarded. The owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) read the prose as a bracketed cost paid on the way to the stack; print and the designer outrank it, and the owner accepted the designer's reading on 2026-10-21. \"Not optional\": the cards print no \"may\", and Void Mandible prints \"(This is not optional.)\". Maelstrom Charger is a different shape (\"As you play a nonunit spell, you may sacrifice me\"), settled by its RAQ write-up: the child rule. The engine makes the sacrifice as the ability resolves since 2026-10-21; 515-trigger-sacrifice-me drives all three cards (source in play while the trigger waits, killed in response does nothing, normal case sacrifices then applies).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me.optional",

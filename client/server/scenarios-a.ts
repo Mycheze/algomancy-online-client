@@ -409,7 +409,7 @@ export const BATCH_A: Record<string, Scenario> = {
       + '2. Play Void Mandible onto YOUR OWN Towering Colossus, then pass so it attaches.\n'
       + '   (Applying a mod is not playing a card, so nothing triggers yet.)\n'
       + '3. Now play the second Luminous Arc at their BUBB. Void Mandible fires at once — it is\n'
-      + '   not optional — and sacrifices your Towering Colossus to pay for itself.\n'
+      + '   not optional — and when it resolves it sacrifices your Towering Colossus.\n'
       + '4. Pass until the stack is empty.\n'
       + 'EXPECTED: BUBB SURVIVES and AMBLING MOUNTAINTOP DIES. "That effect" is the card you\n'
       + 'just played — the second Arc — not the one that was already sitting on the stack.\n'
