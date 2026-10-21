@@ -625,7 +625,9 @@ const tidesCanPlay = (g: E, name: string, region: number, seat: Seat): boolean =
 card('Tides of the Cosmos', {
   spellEffect: {
     run: (g, ctx) => {
-      const top = g.deckOf(ctx.controller).slice(0, 8);
+      // CR 408.2b (report #268): eight off a short deck reach the mark, and the
+      // recycle pile is shuffled in under what is left — `revealTop` does it
+      const top = g.revealTop(ctx.controller, 8);
       if (!top.length) {
         g.ev('info', 'Tides of the Cosmos: the deck is empty — nothing is revealed.');
         return;
@@ -664,7 +666,7 @@ card('Tides of the Cosmos', {
         budget -= manaOf(top[pick]!);
       }
       // commit: remove the revealed cards, play the picks, recycle the rest
-      g.deckOf(ctx.controller).splice(0, top.length);
+      g.takeTop(ctx.controller, top.length);
       for (const i of picks) {
         const name = top[i]!;
         g.ev('info', `Tides of the Cosmos: ${g.pname(ctx.controller)} plays ${name} for free.`);

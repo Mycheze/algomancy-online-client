@@ -2444,8 +2444,10 @@ export class E {
    *
    * Called at the top of every read of the deck, and it is the ONLY thing
    * that moves a card out of the pile. Nothing else needs to know the pile
-   * exists: `draw`, `mill`, `cacheTopOfDeck` and `glimpse` each ask for cards
-   * and get them.
+   * exists: `draw`, `mill`, `cacheTopOfDeck`, `glimpse` and the card-facing
+   * `revealTop` / `takeTop` each ask for cards and get them. (Owner,
+   * 2026-10-21: ANYTHING that uses the deck can reach the mark — card code
+   * never reads `deckOf` itself; 526-card-code-never-reads-the-deck guards that.)
    *
    * Deliberately per-card rather than per-request: a "draw 2" off a one-card
    * deck takes that card, refills, and takes the second from the shuffled
@@ -2488,6 +2490,38 @@ export class E {
   private takeFromDeck(seat: Seat): CardName | undefined {
     this.refillFromRecycled(seat);
     return this.deckOf(seat).shift();
+  }
+  /**
+   * CR 408.2b — THE ONE WAY CARD CODE LOOKS AT A DECK: the top `n` cards of
+   * `seat`'s deck, as a copy, in deck order. Fewer only when the deck AND the
+   * recycle pile together hold fewer.
+   *
+   * The owner, 2026-10-21: *"The recycled cards are meant to be a part of your
+   * deck still … So ANYTHING that uses the deck should be able to trigger the
+   * reshuffle."* So a reveal wider than what is left above the mark reshuffles
+   * the pile in first, exactly as `glimpse` does (report #268: Tides of the
+   * Cosmos read `deckOf(…).slice(0, 8)` directly and revealed ONE card off a
+   * one-card deck with eighteen recycled behind it).
+   *
+   * Safe before a suspend: the only mutation is that reshuffle, and it is
+   * idempotent on re-entry (see `refillFromRecycled`'s `need`), so a part that
+   * reveals, asks, and re-enters from scratch reads the same cards again.
+   */
+  revealTop(seat: Seat, n: number): CardName[] {
+    if (n <= 0) return [];
+    this.refillFromRecycled(seat, n);
+    return this.deckOf(seat).slice(0, n);
+  }
+  /**
+   * `revealTop`'s commit: REMOVE the top `n` cards of `seat`'s deck and return
+   * them (the caller then puts each where its card says — the cache, play, the
+   * recycle pile). Reaches past the mark the same way, so it takes what
+   * `revealTop(seat, n)` showed.
+   */
+  takeTop(seat: Seat, n: number): CardName[] {
+    if (n <= 0) return [];
+    this.refillFromRecycled(seat, n);
+    return this.deckOf(seat).splice(0, n);
   }
   /**
    * BL-46 — an agreed fix's "draw N": the top `n` cards of `seat`'s deck into
@@ -3414,13 +3448,11 @@ export class E {
    */
   glimpse(seat: Seat, n: number): CardName[] {
     if (n <= 0) return [];
-    // CR 408.2b: a glimpse that reaches the mark reshuffles and keeps reading. Done
-    // HERE, before the reveal, because everything below must stay
-    // mutation-free until the "cache one" decision has been answered — see
-    // refillFromRecycled's `need`.
-    this.refillFromRecycled(seat, n);
-    const deck = this.deckOf(seat);
-    const revealed = deck.slice(0, Math.min(n, deck.length));
+    // CR 408.2b: a glimpse that reaches the mark reshuffles and keeps reading.
+    // `revealTop` does that BEFORE the reveal, because everything below must
+    // stay mutation-free until the "cache one" decision has been answered —
+    // see refillFromRecycled's `need`.
+    const revealed = this.revealTop(seat, n);
     if (!revealed.length) {
       this.ev('glimpsed', `${this.pname(seat)} glimpses ${n} — the deck is empty.`, { seat, n: 0 });
       return [];
@@ -3445,7 +3477,7 @@ export class E {
           `Glimpse ${revealed.length}: no decision window — the top card is cached by default.`);
       }
     }
-    deck.splice(0, revealed.length);
+    this.takeTop(seat, revealed.length);
     // recycle the rest FIRST, so the deck is already settled when the 'cached'
     // event fires and its listeners look at the zones
     revealed.forEach((name, i) => { if (i !== keep) this.recycleToBottom(seat, name); });

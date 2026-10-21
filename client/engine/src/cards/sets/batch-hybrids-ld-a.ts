@@ -270,8 +270,10 @@ card('Big Glimpse Card', {
           + 'there is nobody to split the piles, so nothing is revealed.');
         return;
       }
-      const deck = g.deckOf(ctx.controller);
-      const revealed = deck.slice(0, 7);
+      // CR 408.2b (report #268): seven off a short deck reach the mark and
+      // reshuffle the recycle pile in — after the CR 601.4d check above, so an
+      // effect that does not exist here shuffles nothing either
+      const revealed = g.revealTop(ctx.controller, 7);
       if (!revealed.length) { g.ev('info', 'Big Glimpse Card: the deck is empty.'); return; }
       // CT-302 / report #219: a typed public reveal (same log line). The
       // OPPONENT is the chooser — the split below shows them the seven as
@@ -312,7 +314,7 @@ card('Big Glimpse Card', {
       const keep = which === 'a' ? a : b;
       const recycled = which === 'a' ? b : a;
       // commit
-      deck.splice(0, revealed.length);
+      g.takeTop(ctx.controller, revealed.length);
       for (const n of keep) g.cacheCard(ctx.controller, n, 'deck', { playable: true });
       for (const n of recycled) g.recycleToBottom(ctx.controller, n);
       g.ev('info',
