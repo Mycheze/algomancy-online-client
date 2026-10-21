@@ -43,6 +43,7 @@ import { engineVersion } from './engine-version.ts';
 // replay-probe.ts may import nothing but the engine, because it is executed
 // inside checkouts of arbitrary past commits. Importing FROM it is free.
 import { digest, signature } from './replay-probe.ts';
+import { capital, cutParts, cutText, describe, type CutItem, type CutPlan } from './rewind-cuts.ts';
 import { canonicalRef, zoneDelta } from './zonedelta.ts';
 // CR D4.3e: what an action showed each seat of the hidden cards (the undo floor)
 import { lastSeen, NOTHING_SEEN, SEEN_REFUSAL, seenBy, type Seen } from './seen.ts';
@@ -1330,7 +1331,39 @@ export interface Room {
   /** BL-46: per seat, until when a proposal is refused after a DECLINE (ms
    * since the epoch; 0 = none). Soft, like `proposal`. */
   fixCooldown: [number, number];
+  /**
+   * BL-46 — the agreed fixes not yet FILED as a bug report (see FixRun).
+   * PERSISTED, so a restart between a fix and the move after it still files
+   * the row (main.ts flushes every restored run at boot).
+   */
+  fixRun: FixRun | null;
 }
+
+/**
+ * BL-46 — a RUN of agreed fixes: consecutive fixes with no game action
+ * between them. The 2026-10-21 round filed 36 rewind rows, 15 of them only
+ * because players stepped back one fix at a time; a run is one complaint, so
+ * it files ONE report row, when it ends (main.ts flushFixRun: the next action
+ * that lands, the end of the game, an idle sweep, a restart).
+ *
+ * Why not file at once and amend the row: report ids are LINE INDEXES of an
+ * append-only journal. A row is written once and never touched, so the row
+ * waits until the run is over instead.
+ */
+export interface FixRun {
+  /** index in `amendments` of the run's first fix */
+  from: number;
+  /** the log length the FIRST fix was proposed at — the row's `actionIndex` */
+  at: number;
+  /** the log length after the latest fix (forced steps drained): a fix
+   * proposed on exactly this log continues the run */
+  len: number;
+  /** ms since the epoch of the latest fix — the idle sweep's clock */
+  last: number;
+}
+
+/** how long a run of fixes waits for a move before it is filed anyway */
+export const FIX_RUN_IDLE_MS = 10 * 60_000;
 
 /** see Room.league */
 export interface RoomLeague { season: string; match: string }
@@ -2401,7 +2434,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ...(single && mode === 'constructed' ? { single: true as const } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
-    amendments: [], proposal: null, fixCooldown: [0, 0],   // BL-46: nothing fixed yet
+    amendments: [], proposal: null, fixCooldown: [0, 0], fixRun: null,   // BL-46: nothing fixed yet
     disputes: [],   // BL-48: nobody has disputed it
     state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [], lost: [], drifted: [],
     frozen: null,
@@ -2746,6 +2779,7 @@ function resetSegment(room: Room): void {
   room.proposal = null;
   // BL-48: …and so is a dispute of its result
   room.disputes = [];
+  room.fixRun = null;
   // and so is the version ledger, for exactly the same reason — the old
   // stamps index an action log that no longer exists, and a `from` pointing
   // into a discarded log is worse than no stamp at all. The re-deal happens on
@@ -3206,8 +3240,15 @@ export interface Proposal {
   edit?: AmendEdit;
   /** 'rewind': the log length it goes back to */
   to?: number;
-  /** the fix in one sentence */
+  /** the fix in one sentence, every action named — the RECORD's wording (the
+   * game file and the bug report; no player reads it) */
   what: string;
+  /** CT-323/325 — a rewind as each seat reads it ("your Fireball", "their
+   * pass"; a hidden-step action of the other seat never named or counted).
+   * Absent for an edit, which reads the same to both. */
+  whats?: [string, string];
+  /** …and as the public log line reads it, which both seats see */
+  pub?: string;
   reason: string;
   /** `actions.length` when it was made — an answer to a different board is refused */
   at: number;
@@ -3222,29 +3263,43 @@ export interface ProposalView {
   left: number;
 }
 
-/** one rewind on offer */
-export interface RewindOption { to: number; label: string }
+/** one rewind on offer, as the asking seat reads it: where it goes back to,
+ * and what it takes back (null: nothing worth naming) */
+export interface RewindOption { to: number; label: string; takes: string | null }
 
 let proposalSeq = 0;
 
-/** a file's fixes back off disk — drop what is not one; an `at` past the log
- * cannot index anything and is dropped with it */
-function sanitizeAmendments(raw: unknown, actions: number): Amendment[] {
+/** a file's fixes back off disk — drop what is not one.
+ *
+ * NOT bounded by the log's length any more (it was, `at <= actions`): a later
+ * rewind that goes back further than an earlier fix leaves that fix's `at`
+ * past the end of the log, legitimately — stepping back one fix at a time
+ * does exactly that. The bound dropped those fixes on every restart, which
+ * lost their record and shifted every later fix's index (the 2026-10-21
+ * round's runs; replay-room.ts --branch walks this list last to first and
+ * needs all of it). */
+function sanitizeAmendments(raw: unknown, _actions: number): Amendment[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter((a): a is Amendment => !!a && typeof a === 'object'
     && (a.kind === 'edit' || a.kind === 'rewind')
-    && Number.isInteger(a.at) && a.at >= 0 && a.at <= actions
+    && Number.isInteger(a.at) && a.at >= 0
     && (a.seat === 0 || a.seat === 1) && (a.by === 0 || a.by === 1)
     && typeof a.what === 'string' && typeof a.reason === 'string');
 }
 
 /** The log index below which one seat's undo may not reach: the length the
  * last agreed REWIND left (-1 when none). An agreed edit is guarded by
- * measurement instead — see undoForSeat. */
+ * measurement instead — see undoForSeat.
+ *
+ * The LAST rewind's, not the largest: a later rewind that went back further
+ * cut the earlier one's board away, and the largest `at` then lay past the
+ * end of the log and refused every undo until the log grew back past it. */
 export function amendFloor(room: Room): number {
-  let floor = -1;
-  for (const a of room.amendments) if (a.kind === 'rewind') floor = Math.max(floor, a.at);
-  return floor;
+  for (let k = room.amendments.length - 1; k >= 0; k--) {
+    const a = room.amendments[k]!;
+    if (a.kind === 'rewind') return a.at;
+  }
+  return -1;
 }
 
 /** Why this ROOM takes no fixes at all — or null when it does. Asked before
@@ -3276,7 +3331,9 @@ export function fixInfo(room: Room, seat: Seat, now = Date.now()): { proposal?: 
   const p = room.proposal;
   const cool = room.fixCooldown[seatSlot(seat)] - now;
   return {
-    ...(p ? { proposal: { id: p.id, seat: p.seat, kind: p.kind, what: p.what, reason: p.reason, left: Math.max(0, p.expires - now) } } : {}),
+    // CT-325: each seat reads the fix in its own words — never the record's,
+    // which names the other seat's hidden actions
+    ...(p ? { proposal: { id: p.id, seat: p.seat, kind: p.kind, what: p.whats?.[seatSlot(seat)] ?? p.what, reason: p.reason, left: Math.max(0, p.expires - now) } } : {}),
     ...(cool > 0 ? { cooldown: cool } : {}),
   };
 }
@@ -3317,15 +3374,31 @@ function tailStates(room: Room): { lo: number; states: GameState[] } {
 }
 
 /**
- * What a rewind may go back to, right now: up to five non-forced actions, the
- * start of this step, and the start of the step before (the owner: "up to 5
- * actions" or "restart this step").
+ * What a rewind may go back to, right now, as `seat` would propose it: the
+ * points just before each of the last five non-forced actions, just before
+ * the asking seat's own last action, the start of this step, and the start of
+ * the step before (the owner: "up to 5 actions" or "restart this step").
  *
  * NON-FORCED, because a forced step (an empty board "attacking", main.ts
  * drainForced) re-applies itself the moment the board owes it: a rewind
  * that cut just after one would land, and immediately take it again.
+ *
+ * CT-323: every option NAMES what it takes back ("back to before your
+ * Fireball — takes back your Fireball and their pass"). The bare count
+ * ("take back the last 1 action") read across both seats, and in 9 runs of
+ * the 2026-10-21 round "the last 1" took back only the opponent's reply.
+ *
+ * CT-325 — INSIDE A HIDDEN STEP the other seat's actions there are unseen, so:
+ *   · a cut INSIDE the step is offered only where it takes back nothing but
+ *     the asking seat's own actions (XSAP #247 took back the opponent's
+ *     hidden Maw of Despair, RTPE #255 the reverse);
+ *   · the start of the step (and the step before) may take the other seat's
+ *     hidden actions too — both seats have seen that board — and says so in
+ *     words that carry no count, whether or not they did anything;
+ *   · nothing anywhere counts the log ("(10 logged actions)" told the other
+ *     seat how many hidden actions the proposer had taken).
  */
-export function rewindOptions(room: Room): RewindOption[] {
+export function rewindPlans(room: Room, seat: Seat): CutPlan[] {
   if (fixesRefusal(room) !== null || !room.actions.length) return [];
   const { lo, states } = tailStates(room);
   const len = room.actions.length;
@@ -3334,23 +3407,57 @@ export function rewindOptions(room: Room): RewindOption[] {
     const f = forcedAction(at(i));
     return f !== null && JSON.stringify(f) === JSON.stringify(room.actions[i]);
   };
-  const out: RewindOption[] = [];
-  const offer = (to: number, label: string, alsoStart?: string): void => {
-    if (to >= len) return;
-    const same = out.find(o => o.to === to);
-    // the start of a step that is also "the last N actions": one option, and
-    // its label says both, so "restart this step" is always findable
-    if (same) { if (alsoStart) same.label += ` (back to the start of ${alsoStart})`; return; }
-    // a cut whose every later action was forced lands right back here
-    let real = false;
-    for (let i = to; i < len; i++) if (!forced(i)) { real = true; break; }
-    if (real) out.push({ to, label });
+  // the hidden step the board is in now, if any, and its first action: every
+  // action from `openStart` on was taken inside it
+  const segNow = hiddenSegment(at(len));
+  let openStart = len;
+  if (segNow !== null) {
+    const turn = at(len).turn;
+    while (openStart > lo && hiddenSegment(at(openStart - 1)) === segNow && at(openStart - 1).turn === turn) openStart--;
+  }
+  const item: CutItem[] = [];
+  for (let i = lo; i < len; i++) item.push(describe(room.actions[i]!, at(i), i, i >= openStart));
+  const it = (i: number): CutItem => item[i - lo]!;
+  const items = (to: number): CutItem[] => {
+    const out: CutItem[] = [];
+    for (let i = to; i < len; i++) if (!forced(i)) out.push(it(i));
+    return out;
   };
+  /** something in the cut this seat can see and did not merely re-trigger */
+  const real = (xs: CutItem[]): boolean => xs.some(x => !(x.hidden && x.seat !== seat));
+  /** a cut inside the open hidden step takes back only this seat's own actions */
+  const ownOnly = (to: number): boolean => {
+    if (segNow === null) return true;
+    if (to <= openStart) return false;   // that is the start of the step's own option
+    for (let i = to; i < len; i++) if (it(i).hidden && it(i).seat !== seat) return false;
+    return true;
+  };
+  const plans: CutPlan[] = [];
+  const offer = (p: CutPlan): void => {
+    if (p.to >= len || p.to < lo) return;
+    const same = plans.find(o => o.to === p.to);
+    // the start of a step that is also "before X": one option, and its label
+    // says both, so "restart this step" is always findable
+    if (same) {
+      if (p.kind !== 'before' && same.kind === 'before') same.alsoStart = p.kind === 'start' ? 'this step' : p.step;
+      return;
+    }
+    if (real(p.items)) plans.push(p);
+  };
+  const before = (to: number, lastOwn = false): CutPlan =>
+    ({ to, kind: 'before', ...(lastOwn ? { lastOwn } : {}), items: items(to), hiddenStep: segNow !== null, seat });
+  // "back to before your last action" — first-class, however far back it is
+  for (let i = len - 1; i >= lo; i--) {
+    const a = room.actions[i]!;
+    if (a.seat !== seat || a.type === 'amend' || forced(i)) continue;
+    if (ownOnly(i)) offer(before(i, true));
+    break;
+  }
   let n = 0;
   for (let i = len - 1; i >= lo && n < FIX_REWIND_MAX; i--) {
-    if (forced(i)) continue;
+    if (forced(i) || !ownOnly(i)) continue;
     n++;
-    offer(i, `Take back the last ${n} action${n === 1 ? '' : 's'}`);
+    offer(before(i));
   }
   // the start of a step: the earliest index whose board is still in it
   const startOf = (end: number): number => {
@@ -3359,13 +3466,21 @@ export function rewindOptions(room: Room): RewindOption[] {
     while (j > lo && stepKey(at(j - 1)) === key) j--;
     return j;
   };
-  const here = startOf(len);
-  offer(here, `Back to the start of this step (${stepLabel(at(len))})`, `this step`);
+  const here = segNow !== null ? openStart : startOf(len);
+  offer({ to: here, kind: 'start', step: stepLabel(at(len)), items: items(here), hiddenStep: segNow !== null, seat });
   if (here > lo) {
     const prev = startOf(here - 1);
-    offer(prev, `Back to the start of the step before (${stepLabel(at(here - 1))})`, stepLabel(at(here - 1)));
+    offer({ to: prev, kind: 'prev', step: stepLabel(at(here - 1)), items: items(prev), hiddenStep: segNow !== null, seat });
   }
-  return out;
+  return plans.sort((x, y) => y.to - x.to);
+}
+
+/** the rewinds on offer to `seat`, in that seat's words */
+export function rewindOptions(room: Room, seat: Seat): RewindOption[] {
+  return rewindPlans(room, seat).map(p => {
+    const { head, takes } = cutParts(p, seat, room.names);
+    return { to: p.to, label: capital(head), takes };
+  });
 }
 
 /** the edit as a client sent it, rebuilt from known fields only — or null */
@@ -3415,9 +3530,14 @@ export function proposeFix(room: Room, seat: Seat, req: { edit?: unknown; rewind
   let p: Omit<Proposal, 'id' | 'expires' | 'at' | 'seat' | 'reason'>;
   if (req.rewind !== undefined) {
     const to = req.rewind;
-    const opt = rewindOptions(room).find(o => o.to === to);
-    if (!opt) return { ok: false, why: 'that rewind is not on offer any more — open the fix again' };
-    p = { kind: 'rewind', to: opt.to, what: `${opt.label.charAt(0).toLowerCase()}${opt.label.slice(1)} (${room.actions.length - opt.to} logged action${room.actions.length - opt.to === 1 ? '' : 's'})` };
+    const plan = rewindPlans(room, seat).find(o => o.to === to);
+    if (!plan) return { ok: false, why: 'that rewind is not on offer any more — open the fix again' };
+    // CT-325: no count of the log in any of them, and each seat its own words
+    p = {
+      kind: 'rewind', to: plan.to, what: cutText(plan, 'record', room.names),
+      whats: [cutText(plan, 0, room.names), cutText(plan, 1, room.names)],
+      pub: cutText(plan, 'public', room.names),
+    };
   } else {
     const edit = sanitizeEdit(req.edit);
     if (!edit) return { ok: false, why: 'that is not a fix this version knows' };
@@ -3539,6 +3659,44 @@ function sanitizeDisputes(raw: unknown): Dispute[] {
     out.push({ seat: x.seat, at: x.at, note: x.note, actionIndex: x.actionIndex! });
   }
   return out;
+}
+
+/** Is a fix accepted NOW part of the open run — no game action since the
+ * last one? Asked before the fix is carried out. */
+export function fixRunContinues(room: Room): boolean {
+  const r = room.fixRun;
+  return !!r && room.actions.length === r.len && r.from < room.amendments.length;
+}
+
+/** After a fix is carried out (its amendment pushed, forced steps drained):
+ * extend the open run, or start one. `at` is the proposal's log length. */
+export function noteFixRun(room: Room, continues: boolean, at: number, now = Date.now()): void {
+  if (continues && room.fixRun) {
+    room.fixRun.len = room.actions.length;
+    room.fixRun.last = now;
+  } else {
+    room.fixRun = { from: room.amendments.length - 1, at, len: room.actions.length, last: now };
+  }
+  persist(room);
+}
+
+/** End the open run: clear it and hand back what to file (null: none). */
+export function takeFixRun(room: Room): { from: number; at: number; fixes: Amendment[] } | null {
+  const r = room.fixRun;
+  if (!r) return null;
+  room.fixRun = null;
+  persist(room);
+  const fixes = room.amendments.slice(r.from);
+  return fixes.length ? { from: r.from, at: r.at, fixes } : null;
+}
+
+/** a file's unfiled run back off disk — dropped unless it indexes a fix */
+function sanitizeFixRun(raw: unknown, amendments: unknown): FixRun | null {
+  const r = raw as Record<string, unknown> | null;
+  if (!r || typeof r !== 'object' || !Array.isArray(amendments)) return null;
+  const int = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0;
+  if (!int(r['from']) || !int(r['at']) || !int(r['len']) || !int(r['last']) || r['from'] >= amendments.length) return null;
+  return { from: r['from'], at: r['at'], len: r['len'], last: r['last'] };
 }
 
 /**
@@ -4125,6 +4283,8 @@ function persist(room: Room): void {
       ...(room.amendments.length ? { amendments: room.amendments } : {}),
       // BL-48: who disputed the result. Additive: written only when somebody did.
       ...(room.disputes.length ? { disputes: room.disputes } : {}),
+      // …and the run of them not yet filed as a report (see FixRun)
+      ...(room.fixRun ? { fixRun: room.fixRun } : {}),
       // every restore that could not faithfully rebuild this game. Without
       // it the file goes on claiming to be a straight-through record of a
       // game it no longer describes (additive field)
@@ -4209,6 +4369,8 @@ export function restoreRooms(now = Date.now()): void {
         amendments?: unknown;
         /** BL-48: who disputed the result */
         disputes?: unknown;
+        /** BL-46: the run of them not yet filed */
+        fixRun?: unknown;
       };
       // 2026-10-04: a CLOSED game is over for good — never back in the map
       if (raw.closed) { closedCount++; continue; }
@@ -4313,6 +4475,8 @@ export function restoreRooms(now = Date.now()): void {
         amendments: sanitizeAmendments(raw.amendments, actions.length), proposal: null, fixCooldown: [0, 0],
         // BL-48: and so does a dispute
         disputes: sanitizeDisputes(raw.disputes),
+        // …and so does a run of fixes not yet filed — main.ts files it at boot
+        fixRun: sanitizeFixRun(raw.fixRun, raw.amendments),
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
         // CR D8.5: the concession stamp survives the restart with the result

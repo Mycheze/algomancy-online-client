@@ -162,7 +162,7 @@ test('§3 a rewind cuts the log and every claim about the cut actions', () => {
   const room = game('FX3', 48520);
   const before = [...room.actions];
   const sigs = [...room.sigs];
-  const opts = R.rewindOptions(room);
+  const opts = R.rewindOptions(room, 0);
   assert.ok(opts.length >= 2, `rewinds are on offer (${opts.map(o => o.label).join(' | ')})`);
   const pick = opts.find(o => /the start of/.test(o.label)) ?? opts.at(-1)!;
   // the soft state a rewind must not carry onto the rebuilt board
@@ -206,18 +206,18 @@ test('§4 rewind options: never a cut at a forced step, at most five actions, an
   drive(R, room, r => battleWindow(r) && r.actions.length > 50 && forcedAt(r).slice(-4).some(Boolean));
   const forced = forcedAt(room);
   assert.ok(forced.slice(-4).some(Boolean), 'fixture: a forced step among the last four actions');
-  const opts = R.rewindOptions(room);
+  const opts = R.rewindOptions(room, 0);
   for (const o of opts) {
     assert.equal(forced[o.to], false, `"${o.label}" cuts at a forced step (index ${o.to}) — it would re-apply itself at once`);
     assert.ok(o.to < room.actions.length);
   }
-  const steps = opts.filter(o => o.label.startsWith('Take back'));
+  const steps = opts.filter(o => o.label.startsWith('Back to before') && !/last action/.test(o.label));
   assert.ok(steps.length >= 1 && steps.length <= 5, `between one and five action rewinds (${steps.length})`);
   assert.equal(new Set(opts.map(o => o.to)).size, opts.length, 'no two options land on the same board');
   // the owner's other shape, "restart this step": offered at the first battle
   // window of a fresh game, merged into "the last N" where the two coincide
   const fresh1 = game('FX4B', 48531);
-  const o2 = R.rewindOptions(fresh1);
+  const o2 = R.rewindOptions(fresh1, 0);
   assert.ok(o2.some(o => /the start of/.test(o.label)), `the start of a step is offered (${o2.map(o => o.label).join(' | ')})`);
 });
 
@@ -271,14 +271,16 @@ test('§5 edits and rewinds both work in a hidden step; some rooms take no fixes
   assert.equal(R.editTiming(room), null, 'owner, 2026-10-16: edits are allowed in the hidden steps too');
   assert.deepEqual(R.proposeFix(room, 0, { edit: { kind: 'drawCards', target: 0, n: 1 }, reason: 'draw missed' }), { ok: true });
   assert.ok(R.answerFix(room, 0, 'cancel', room.proposal!.id).ok);
-  const opts = R.rewindOptions(room);
+  // CT-325: the seat whose hidden action it was — the other seat is offered
+  // no cut of an action it has not seen (523 guards that side)
+  const opts = R.rewindOptions(room, 0);
   assert.ok(opts.length, 'a rewind is on offer in the hidden step');
-  assert.deepEqual(R.proposeFix(room, 1, { rewind: opts[0]!.to, reason: 'they misclicked' }), { ok: true }, 'owner: "a rewind any time"');
+  assert.deepEqual(R.proposeFix(room, 0, { rewind: opts[0]!.to, reason: 'I misclicked' }), { ok: true }, 'owner: "a rewind any time"');
   // the opponent gone: nobody to agree
   const gone = R.createRoom('FX5D', 48543, [...NAMES], 'shared');
   gone.sockets = [{} as never, null];
   tick(R, gone, R.legalInRoom(gone, 0).find(a => a.type === 'recycleForResource')!);
-  assert.match((R.proposeFix(gone, 0, { rewind: R.rewindOptions(gone)[0]!.to, reason: 'x x x' }) as { why: string }).why, /not here to agree/);
+  assert.match((R.proposeFix(gone, 0, { rewind: R.rewindOptions(gone, 0)[0]!.to, reason: 'x x x' }) as { why: string }).why, /not here to agree/);
   // test mode and a scenario: two people agreeing is the whole of the safety
   const sandbox = R.createRoom('FX5E', 48544, [...NAMES], 'shared', undefined, undefined, 'sandbox');
   assert.match(R.fixesRefusal(sandbox)!, /test mode/);
@@ -295,7 +297,7 @@ test('§6 a fixed game survives a restart and replays FAITHFUL, sigs and all', a
   const ans = R.answerFix(room, other(P), 'accept', room.proposal!.id);
   acceptEdit(room, ans.ok ? ans.proposal : null!, other(P));
   drive(R, room, r => r.actions.length >= room.amendments[0]!.at + 6);
-  const opt = R.rewindOptions(room)[0]!;
+  const opt = R.rewindOptions(room, other(P))[0]!;
   assert.deepEqual(R.proposeFix(room, other(P), { rewind: opt.to, reason: 'a misclick' }), { ok: true });
   const ans2 = R.answerFix(room, P, 'accept', room.proposal!.id);
   assert.ok(ans2.ok && R.rewindRoom(room, ans2.proposal, P).ok);

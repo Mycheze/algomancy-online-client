@@ -35,8 +35,9 @@ export interface ProposalView {
 }
 /** what every push of a room that takes fixes carries (server/rooms.ts fixInfo) */
 export interface FixInfo { proposal?: ProposalView; cooldown?: number }
-/** a rewind on offer (server/rooms.ts RewindOption) */
-export interface RewindOption { to: number; label: string }
+/** a rewind on offer (server/rooms.ts RewindOption): where it goes back to,
+ * and what it takes back, both in this seat's words (CT-323) */
+export interface RewindOption { to: number; label: string; takes?: string | null }
 
 /** what the dialog may preselect when it is opened from a card's menu */
 export type FixPreset =
@@ -52,6 +53,9 @@ export interface AmendCtx {
   openChanged(open: boolean): void;
   /** the proposal appeared or went — main.ts re-plans its auto-pass */
   proposalChanged(): void;
+  /** CT-323: this seat's own play is still being aimed (a pre-commit cast) —
+   * Escape takes that back alone, no fix needed (#243, #254) */
+  castPending?(): boolean;
 }
 
 type Kind = 'life' | 'drawCards' | 'move' | 'unit' | 'rewind';
@@ -60,7 +64,7 @@ const KINDS: readonly [Kind, string, string][] = [
   ['drawCards', 'Draw', 'either player draws cards'],
   ['move', 'Move a card', 'one of your cards between hand, bin, cache and the deck'],
   ['unit', 'Unit off the board', 'take a unit off the board, quietly'],
-  ['rewind', 'Rewind', 'take back up to five actions, or go back to the start of a step'],
+  ['rewind', 'Rewind', 'go back to before a recent action, or to the start of a step'],
 ];
 const DESTS: readonly [AmendDest, string][] = [
   ['hand', 'your hand'], ['bin', 'your bin'], ['cache', 'your cache'],
@@ -182,14 +186,18 @@ function fieldsHtml(): string {
       <span>to</span><select data-amendfield="unitTo">${UNIT_DESTS.map(([d, l]) => option(d, l, unitTo)).join('')}</select></div>
       <div class="hint">Nothing triggers: it does not die and is not recalled. A token is simply gone.</div>`;
   }
-  // rewind
+  // rewind — CT-323: each option names what it takes back, and NOTHING is
+  // picked for you: the preselected "last 1" was how 15 of the round's 36
+  // rewinds came to be filed one step at a time
   if (rewinds === null) return `<div class="hint">${optionsWhy ? esc(optionsWhy) : 'Looking at the log…'}</div>`;
   if (!rewinds.length) return '<div class="hint">There is nothing to rewind.</div>';
-  if (rewindTo === null || !rewinds.some(r => r.to === rewindTo)) rewindTo = rewinds[0]!.to;
-  return `<div class="reportchoices amendrewinds" role="radiogroup">${rewinds.map(r =>
+  if (rewindTo !== null && !rewinds.some(r => r.to === rewindTo)) rewindTo = null;
+  const aiming = ctx?.castPending?.() ?? false;
+  return `${aiming ? '<div class="hint amendaim">Still aiming your own play? Close this and press Esc — that takes the play back, no fix needed.</div>' : ''}
+    <div class="reportchoices amendrewinds" role="radiogroup">${rewinds.map(r =>
     `<button type="button" role="radio" aria-checked="${r.to === rewindTo}" class="${r.to === rewindTo ? 'on' : ''}"
-      data-amend="rewindto" data-to="${r.to}">${esc(r.label)}</button>`).join('')}</div>
-    <div class="hint">Both players' actions are taken back, cards already seen included.</div>`;
+      data-amend="rewindto" data-to="${r.to}">${esc(r.label)}${r.takes ? `<span class="amendtakes">takes back ${esc(r.takes)}</span>` : ''}</button>`).join('')}</div>
+    <div class="hint">Pick how far back. Everything after that point is taken back, cards already seen included.</div>`;
 }
 
 /** the edit the form describes, or null when it is not complete */
@@ -312,6 +320,7 @@ export function openFix(preset?: FixPreset): void {
   if (preset?.kind === 'move') { kind = 'move'; moveCard = `${preset.from}:${preset.index}`; }
   else if (preset?.kind === 'unit') { kind = 'unit'; unitId = String(preset.id); }
   rewinds = null; editWhy = null; optionsWhy = null; error = ''; busy = false;
+  rewindTo = null;   // CT-323: never a rewind the player did not pick
   setOpen(true);
   ctx.send({ op: 'options' });
   paint();
@@ -399,6 +408,7 @@ export function setFixesOn(on: boolean): void {
 export function setFixOptions(m: { rewinds?: RewindOption[]; editWhy?: string | null; why?: string }): void {
   if (m.why) { optionsWhy = m.why; rewinds = []; editWhy = m.why; }
   else { rewinds = m.rewinds ?? []; editWhy = m.editWhy ?? null; }
+  rewindTo = null;
   if (editWhy && kind !== 'rewind') kind = 'rewind';
   paint();
 }

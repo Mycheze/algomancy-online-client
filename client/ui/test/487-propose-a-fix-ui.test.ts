@@ -182,6 +182,7 @@ test('§6 in a hidden step every fix is live, from the table menu; only an open 
   }
   assert.match(html, /no edits while a decision is pending/, 'and the dialog says why');
   ui.type('amend-reason', 'he misclicked');
+  ui.click({ amend: 'rewindto', to: '1' });   // CT-323: nothing is picked for you (523)
   ui.click({ amend: 'send' });
   assert.deepEqual(fixSent(), [{ t: 'amend', op: 'propose', reason: 'he misclicked', rewind: 1 }]);
   ui.push({ t: 'amenderr', msg: 'that rewind is not on offer any more' });

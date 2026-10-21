@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { artVersions } from './art-versions.ts';
 import type { Action, CardName, Seat } from '../engine/src/types.ts';
+import type { Amendment } from './types.ts';
 // `legalActions` was imported here and never called — the seat-legality
 // question goes through rooms.ts's `legalForSeat`. Removed; `noUnusedLocals`
 // on server/tsconfig.json now catches the next one.
@@ -50,7 +51,7 @@ import {
   notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
   closedNotice, codeTaken, sweepIdleRooms,
   answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
-  rewindOptions, rewindRoom, type Proposal,
+  rewindOptions, rewindRoom, type Proposal, fixRunContinues, noteFixRun, takeFixRun, FIX_RUN_IDLE_MS,
   disputedSeats, disputesRefusal,
 } from './rooms.ts';
 import { fileDispute } from './dispute.ts';
@@ -1371,11 +1372,15 @@ function landAction(room: Room, seat: Seat, action: Action): void {
   // BL-46: an action that lands ends a proposed fix (applyToRoom clears it);
   // both seats are told once the action is in
   const hadProposal = !!room.proposal;
+  const was = room.actions.length;
   try {
     landActionInner(room, seat, action);
   } finally {
     if (hadProposal && !room.proposal) broadcastFix(room, 'moved');
   }
+  // …and a game action that LANDED ends a run of agreed fixes, which files
+  // its one report now (an agreed edit is part of the run, not the end of it)
+  if (action.type !== 'amend' && room.actions.length !== was) flushFixRun(room);
 }
 function landActionInner(room: Room, seat: Seat, action: Action): void {
   // a seat that acts is plainly not watching a playback any more
@@ -1669,6 +1674,8 @@ function pushView(room: Room, seat: Seat): void {
  * sync over var/games/ — see history.ts.
  */
 function recordFinishedGame(room: Room): void {
+  // BL-46: a game that ends ends its run of agreed fixes too
+  flushFixRun(room);
   // CR D8.4: a scenario room is a test fixture, not a game — see history.ts's
   // matching guard in syncGamesDir(). Folding one into somebody's win/loss
   // record would let the instrument quietly rewrite the numbers it exists to
@@ -1832,6 +1839,10 @@ function broadcastFix(room: Room, how: 'proposed' | 'declined' | 'cancelled' | '
  * "what went wrong" (owner, 2026-10-16), and the room records the fix.
  */
 function carryOutFix(room: Room, p: Proposal, by: Seat): void {
+  // a fix on the very log the last one left continues its run; anything else
+  // files the run before it and starts a new one
+  const continues = fixRunContinues(room);
+  if (!continues) flushFixRun(room);
   if (p.kind === 'edit') {
     const at = room.actions.length;
     landAction(room, p.seat, { type: 'amend', seat: p.seat, by, edit: p.edit! });
@@ -1847,9 +1858,11 @@ function carryOutFix(room: Room, p: Proposal, by: Seat): void {
     const forced: import('../engine/src/types.ts').EngineEvent[] = [];
     drainForced(room, forced);
     // the public line, in both logs (the edit's own engine event is its line)
+    // CT-325: in the PUBLIC wording — both seats read this line, and the
+    // record's names the other seat's hidden actions
     room.events.push({
       type: 'note',
-      msg: `🛠 Agreed fix: ${p.what} — proposed by ${room.names[p.seat]}, agreed by ${room.names[by]}.`,
+      msg: `🛠 Agreed fix: ${p.pub ?? p.what} — proposed by ${room.names[p.seat]}, agreed by ${room.names[by]}.`,
       data: { amend: 'rewind', seat: p.seat, by },
     } as unknown as import('../engine/src/types.ts').EngineEvent);
     // a WHOLE fresh view, as on a join: the log lost lines, and each client
@@ -1864,28 +1877,48 @@ function carryOutFix(room: Room, p: Proposal, by: Seat): void {
   }
   console.log(`[fix] ${room.code}: seat ${by} agreed to seat ${p.seat}'s fix: ${p.what}`);
   broadcastFix(room, 'applied');
-  void fileFixReport(room, p, by);
+  noteFixRun(room, continues, p.at);
 }
 
-/** the bug report every accepted fix files (owner, 2026-10-16) — the same
- * journal and row shape as the in-game 📝 Report, recognisable by `fix` */
-async function fileFixReport(room: Room, p: Proposal, by: Seat): Promise<void> {
+/**
+ * The bug report every accepted fix files (owner, 2026-10-16) — the same
+ * journal and row shape as the in-game 📝 Report, recognisable by `fix`.
+ *
+ * ONE ROW PER RUN of fixes (rooms.ts FixRun): filed when the run ends, so a
+ * player stepping back three times files one report, not three. The journal
+ * is append-only and a row's line index is its report id, so a row is never
+ * rewritten — it waits for the run to end instead. Every fix's own words and
+ * reason are in it, in order.
+ */
+function flushFixRun(room: Room): void {
+  const run = takeFixRun(room);
+  if (run) void fileFixReport(room, run);
+}
+
+async function fileFixReport(room: Room, run: { from: number; at: number; fixes: Amendment[] }): Promise<void> {
+  const first = run.fixes[0]!;
+  const line = (f: Amendment): string => `${f.what}. What went wrong: ${f.reason}`;
   const entry: IssueRow = {
     ts: new Date().toISOString(),
     room: room.code,
-    seat: p.seat,
-    note: `[Agreed fix] ${p.what}. What went wrong: ${p.reason}`.slice(0, 4000),
-    // the moment it was proposed at — the broken board a replay should stop on
-    actionIndex: p.at,
+    seat: first.seat,
+    note: [`[Agreed fix] ${line(first)}`, ...run.fixes.slice(1).map(f => `[and then] ${line(f)}`)].join('\n').slice(0, 4000),
+    // the moment the first was proposed at — the broken board a replay should
+    // stop on (a rewind's board is no longer in the final log: replay-room.ts
+    // --report rebuilds it from the game file's `amendments`)
+    actionIndex: run.at,
     kind: 'bug',
     severity: null,
-    by: reportedBy(accountById(room.users[p.seat])),
+    by: reportedBy(accountById(room.users[first.seat])),
     page: 'game',
-    fix: { kind: p.kind, what: p.what, agreedBy: by },
+    fix: {
+      kind: first.kind, what: first.what, agreedBy: first.by, amendment: run.from,
+      ...(run.fixes.length > 1 ? { run: run.fixes.length } : {}),
+    },
   };
   try {
     await appendFile(ISSUES_FILE, JSON.stringify(entry) + '\n');
-    console.log(`[report] ${room.code} seat ${p.seat} @action ${p.at} by ${reporterLabel(entry.by)} [fix]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
+    console.log(`[report] ${room.code} seat ${first.seat} @action ${run.at} by ${reporterLabel(entry.by)} [fix ×${run.fixes.length}]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
   } catch (err) {
     console.error(`[fix] could not file the report for ${room.code}:`, err);
   }
@@ -2682,7 +2715,7 @@ wss.on('connection', ws => {
         const no = fixesRefusal(room);
         return send(ws, {
           t: 'amendopts',
-          ...(no !== null ? { why: no } : { rewinds: rewindOptions(room), editWhy: editTiming(room) }),
+          ...(no !== null ? { why: no } : { rewinds: rewindOptions(room, conn.seat), editWhy: editTiming(room) }),
         });
       }
       if (m.op === 'propose') {
@@ -3046,8 +3079,11 @@ function sweepLeague(): void {
 /** BL-46: a proposed fix lapses after FIX_PROPOSAL_MS (owner, 2026-10-16),
  * and the clocks it stopped run again */
 function sweepFixes(): void {
+  const now = Date.now();
   for (const room of allRooms()) {
     if (proposalExpired(room)) broadcastFix(room, 'expired');
+    // a run of fixes nobody has moved after in a while is filed anyway
+    if (room.fixRun && !room.proposal && now - room.fixRun.last > FIX_RUN_IDLE_MS) flushFixRun(room);
   }
 }
 const expiryTimer = setInterval(() => { sweepExpiry(); sweepPassAll(); sweepWatchHold(); sweepFixes(); sweepQueue(); sweepFinished(); sweepIdle(); sweepLeague(); }, EXPIRY_TICK_MS);
@@ -3055,6 +3091,8 @@ expiryTimer.unref();
 
 loadAccounts();
 restoreRooms();
+// BL-46: a run of agreed fixes the last process did not get to file
+for (const room of allRooms()) if (room.fixRun) flushFixRun(room);
 // Every saved game becomes a match-history row and feeds the players' stats,
 // finished or not — most of ours end when somebody has to go, and those games
 // still happened. Cheap after the first pass: a game whose file has not been

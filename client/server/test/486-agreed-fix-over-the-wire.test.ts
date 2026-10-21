@@ -15,12 +15,14 @@
  *   §4b fixes inside the hidden planning and deploy steps reach the other
  *      seat at once
  *   §5 the fixed game survives a restart of the server and replays FAITHFUL
+ *   §6 two fixes with no move between them file ONE report, and a restart
+ *      before the next move still files it
  *
  * Seeds: the server picks its own.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Action, Seat } from '../../engine/src/types.ts';
@@ -84,6 +86,9 @@ class Client {
 }
 
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
+/** the report rows the agreed fixes of this room filed */
+const fixRows = (): any[] => (existsSync(ENV.ALGO_ISSUES_FILE) ? readFileSync(ENV.ALGO_ISSUES_FILE, 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)) : [])
+  .filter(r => r.room === ROOM && r.fix);
 async function quiesce(a: Client, b: Client, quietMs = 150, maxMs = 4000): Promise<void> {
   const deadline = Date.now() + maxMs;
   for (;;) {
@@ -195,8 +200,18 @@ test('§2 propose then accept: the edit lands for both, the clocks stop meanwhil
   const applied = [...prop.msgs].reverse().find(m => m.t === 'amend')!;
   assert.equal(applied.fix.proposal, undefined, 'nothing is waiting any more');
   assert.ok(applied.clock.running.some(Boolean), 'and the clocks run again');
+  // one report per RUN of fixes (rooms.ts FixRun): filed when the next game
+  // action lands, not before — a second fix now would join this one
   await sleep(300);
-  const rows = readFileSync(ENV.ALGO_ISSUES_FILE, 'utf8').trim().split('\n').map(l => JSON.parse(l));
+  assert.equal(fixRows().length, 0, 'not filed while the run may still continue');
+  const mover = seatClient(prop.view.priority as Seat);
+  const pass = mover.legal.find(x => x.type === 'passPriority');
+  assert.ok(pass, 'fixture: the seat with priority may pass');
+  mover.send({ t: 'action', action: pass });
+  await quiesce(a, b);
+  await sleep(300);
+  const rows = fixRows();
+  assert.equal(rows.length, 1, 'the move after it filed the run, once');
   const row = rows.at(-1);
   assert.equal(row.room, ROOM);
   assert.equal(row.kind, 'bug');
@@ -239,7 +254,7 @@ test('§4 a rewind: both seats get a fresh view, and the file archives what was 
   const ja = await a.next(m => m.t === 'joined' && m.rewound === true, markA);
   const jb = await b.next(m => m.t === 'joined' && m.rewound === true, markB);
   assert.ok(ja.view.actionCount <= before && jb.view.actionCount === ja.view.actionCount, 'both are on the rewound board');
-  assert.ok(ja.log!.some(l => /Agreed fix: take back/.test(l)), 'the log says so');
+  assert.ok(ja.log!.some(l => /Agreed fix: back to /.test(l)), 'the log says so');
   await sleep(300);
   const file = JSON.parse(readFileSync(join(ENV.ALGO_GAMES_DIR, `${ROOM}.json`), 'utf8'));
   assert.equal(file.actions.length, pick.to, 'the log was cut there');
@@ -290,4 +305,41 @@ test('§5 the fixed game survives a restart of the server and replays FAITHFUL',
   assert.deepEqual(an.refusals, []);
   assert.deepEqual(an.sigs, raw.sigs, 'every recorded fingerprint matches');
   assert.match(reportLines(`${ROOM}.json`, raw, an).lines.join('\n'), /FAITHFUL/);
+});
+
+test('§6 two fixes in a row file one report, and a restart in between does not lose it', async () => {
+  await driveToBattle(a, b);
+  await quiesce(a, b);
+  const filed = fixRows().length;
+  const P = a.view.priority as Seat;
+  const prop = seatClient(P), opp = seatClient(P === 0 ? 1 : 0);
+  for (const why of ['I passed by mistake', 'and one more back']) {
+    const opts = await prop.ask({ t: 'amend', op: 'options' }, m => m.t === 'amendopts');
+    assert.ok(opts.rewinds && opts.rewinds.length, `rewinds are on offer (${why})`);
+    const up = await prop.ask({ t: 'amend', op: 'propose', rewind: opts.rewinds!.at(-1)!.to, reason: why }, m => m.t === 'amend' && m.how === 'proposed');
+    const mark = prop.msgs.length;
+    opp.send({ t: 'amend', op: 'accept', id: up.fix.proposal.id });
+    await prop.next(m => m.t === 'amend' && m.how === 'applied', mark);
+    await quiesce(a, b);
+  }
+  await sleep(300);
+  assert.equal(fixRows().length, filed, 'nothing filed while the run may continue');
+  // the restart: the run was persisted with the room, and boot files it
+  a.ws.close(); b.ws.close();
+  await server.stop();
+  server = await spawnServer(ENV);
+  a = new Client(server.port); b = new Client(server.port);
+  await a.open(); await b.open();
+  await sleep(300);
+  const rows = fixRows();
+  assert.equal(rows.length, filed + 1, 'ONE row for the two fixes');
+  const row = rows.at(-1);
+  assert.equal(row.fix.run, 2, 'it says it holds two');
+  assert.equal(row.fix.kind, 'rewind');
+  assert.match(row.note, /^\[Agreed fix\] back to .*What went wrong: I passed by mistake\n\[and then\] back to .*What went wrong: and one more back$/,
+    'each fix in its own words, in order');
+  assert.doesNotMatch(row.note, /logged/, 'and no count of the log');
+  const file = JSON.parse(readFileSync(join(ENV.ALGO_GAMES_DIR, `${ROOM}.json`), 'utf8'));
+  assert.equal(file.fixRun, undefined, 'the filed run is gone from the game file');
+  assert.equal(file.amendments[row.fix.amendment].reason, 'I passed by mistake', 'the row points at its first fix in the file');
 });

@@ -1359,6 +1359,7 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 .amendrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .amendrewinds { flex-direction: column; }
 .amendrewinds button { text-align: left; }
+.amendrewinds .amendtakes { display: block; color: var(--dim); font-size: 0.85em; margin-top: 2px; }
 .betatag { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim);
   border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; vertical-align: middle; }
 .amendbar { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 66;

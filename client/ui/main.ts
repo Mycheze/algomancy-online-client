@@ -12099,6 +12099,7 @@ amend.installAmend({
   view: () => (NET && inGame && NET.joined && !NET.waiting ? { state: h.state, seat: NET.seat, names: NET.names } : null),
   openChanged: reportOpenChanged,
   proposalChanged: () => { if (autoPassTimer !== null) { cancelAutoPass(); ui.autoAt = -1; } },
+  castPending: () => cancelableCast(),
 });
 // the rules review page's selection chip, comment composer and sheet (ui/crlayer.ts)
 installCrLayer();

@@ -120,8 +120,15 @@ export interface IssueRow {
    * PROPOSER's, and `actionIndex` is the log length the fix was proposed at
    * — the broken moment, which is what a replay wants to stop on. Absent on
    * every row the form filed.
+   *
+   * Since 2026-10-21 ONE row per RUN of fixes (no game action between them —
+   * server/rooms.ts FixRun), filed when the run ends: the top-level fields are
+   * the run's FIRST fix, `run` how many it holds (absent: one), and the note
+   * one line per fix. `amendment` is the index of the first in the game
+   * file's `amendments` — what `replay-room.ts --report` rebuilds the board
+   * from (absent on older rows, which it matches by time instead).
    */
-  fix?: { kind: 'edit' | 'rewind'; what: string; agreedBy: number };
+  fix?: { kind: 'edit' | 'rewind'; what: string; agreedBy: number; amendment?: number; run?: number };
   /**
    * BL-48 — this row was filed by the post-game DISPUTE button, not by the
    * report form. The note is the player's required "what went wrong";
