@@ -15,8 +15,9 @@
  *      goes to the run
  *   §5 a run kept in this browser is submitted once there is a named account,
  *      and dropped when the server takes it
- *   §6 the builder's buttons edit the list in place and keep it per challenge;
- *      Import and Clear are one inline Undo away
+ *   §6 the builder is a summary that keeps a draft per challenge: Import and
+ *      Clear are one inline Undo away, Play takes the list; the order is
+ *      built on the tabletop ("Build on the table"), which 540 drives
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -126,7 +127,7 @@ test('§2 the header button and the home card both lead to the page', async () =
   await settle();
   assert.equal(r.ch.screen(), 'challenge');
   assert.match(r.app.innerHTML, /Your deck/, 'Play opens the builder for this week');
-  assert.match(r.app.innerHTML, /data-btn="ch-browse"/);
+  assert.match(r.app.innerHTML, /data-btn="ch-tabletop"[^>]*>Build on the table</, 'and its way to the table');
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-close' }));
   assert.equal(r.ch.screen(), null, 'Back leaves');
 });
@@ -193,28 +194,24 @@ test('§5 a kept run is submitted once signed in, and dropped when taken', async
   assert.ok(refused.store.get('algoChallengeDone'), 'a refused run is kept');
 });
 
-test('§6 the builder edits in place and keeps a draft per challenge', async () => {
+test('§6 the builder keeps a draft per challenge; Import and Clear are one Undo away', async () => {
   const r = await rig({ search: '?challenge=cur' });
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-import' }));
   // no collection: the deck chosen on the home page is offered
-  r.store.set('algoDeck', JSON.stringify({ name: 'Chosen', author: 'me', cards: [units[0], units[1], units[2]] }));
+  r.store.set('algoDeck', JSON.stringify({ name: 'Chosen', author: 'me', cards: [units[0], units[2], units[2]] }));
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-import' }));
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-import' }));
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-importdeck', id: '__chosen' }));
-  assert.deepEqual([...r.ch.builderList()], [units[0], units[1], units[2]]);
-  assert.match(r.app.innerHTML, /Imported Chosen\. <button data-btn="ch-undo">/);
-  r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-down', b: '0' }));
-  assert.deepEqual([...r.ch.builderList()], [units[1], units[0], units[2]]);
-  assert.doesNotMatch(r.app.innerHTML, /data-btn="ch-undo"/, 'an ordinary edit ends the undo');
-  r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-more', b: '2' }));
-  r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-cut', b: '0' }));
   assert.deepEqual([...r.ch.builderList()], [units[0], units[2], units[2]]);
-  assert.match(r.app.innerHTML, /class="chpos">2–3</, 'the two copies are one row');
+  assert.match(r.app.innerHTML, /Imported Chosen\. <button data-btn="ch-undo">/);
+  assert.match(r.app.innerHTML, /class="chpos">2–3</, 'the two copies are one row of the summary');
+  assert.doesNotMatch(r.app.innerHTML, /data-btn="ch-(?:up|down|more|less|cut|browse)"|draggable="true"/, 'the order is built on the table, not here');
   assert.deepEqual(JSON.parse(r.store.get('algoChallengeDecks')!)['cur'], [units[0], units[2], units[2]]);
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-clear' }));
   assert.deepEqual([...r.ch.builderList()], []);
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-undo' }));
   assert.deepEqual([...r.ch.builderList()], [units[0], units[2], units[2]], 'Clear is one Undo away');
+  assert.doesNotMatch(r.app.innerHTML, /data-btn="ch-undo"/, 'one step only');
   r.ch.handleButton(button(r.app.innerHTML, { btn: 'ch-play' }));
   assert.equal(r.loc.search, '?challenge=play&id=cur', 'Play goes to the run');
   const run = JSON.parse(r.store.get('algoChallengeRun')!) as { def: ChallengeDef; deck: string[]; actions: unknown[] };

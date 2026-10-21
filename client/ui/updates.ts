@@ -44,7 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
-  { date: '2026-10-21', kind: 'new', text: "Build on the table: a new deck builder page with your cards in piles. Drag cards in from a binder of every card, between piles or back out, and name or re-sort piles. On a tablet, hold a card to lift it, or tap it and tap where it goes." },
+  { date: '2026-10-21', kind: 'new', text: "Build on the table: a deck builder page with your cards in piles, and a challenge deck as a row in deal order. Drag cards from a binder of every card, around or back out. On a tablet, hold a card to lift it, or tap it, then where it goes." },
   { date: '2026-10-21', kind: 'new', text: "Weekly challenges: a new puzzle every Sunday. Build a deck in the exact order you want it dealt, reach the goal with as few cards, elements and turns as you can, and climb the leaderboard. Last week's decks open when the week ends." },
   { date: '2026-10-21', kind: 'fix', text: "Watching a game or a replay no longer shows the player's draw-phase prompt over the replay controls." },
   { date: '2026-10-21', kind: 'fix', text: "Tides of the Cosmos and Big Glimpse Card now shuffle your recycled cards in when the deck is short, so you see the full number of cards. Anything that reaches the bottom of your deck does the same." },

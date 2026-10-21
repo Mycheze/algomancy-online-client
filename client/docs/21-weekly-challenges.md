@@ -168,9 +168,27 @@ BoardRow = { rank: number; name: string; score: RunScore; at: number;
   - This week: goal, time left, one line "Higher Skill is better. Par scores 100." (the
     formula and the par number in its tooltip), my best, the Leaderboard.
   - Past weeks: their leaderboards, and once closed each deck with Watch and Try this deck.
-- **Builder:** card search over the constructed pool and an **ordered** list (position 1 =
-  top, with ↑↓ and drag). Import from a saved deck. Show what is drawn in the opening hand.
-  The draft is kept per challenge in localStorage, with try/catch.
+- **Builder:** the challenge page shows the deck as a summary (its rows numbered by position,
+  the Turn-1 hand, Import from a saved deck, Clear, one Undo, Play) and a **Build on the table**
+  button (`ch-tabletop`). The order is built on the tabletop page (`ui/tabletop.ts`, host kind
+  `challenge`, `?table=ch:<id>` on a reload):
+  - a **scratch table** on top: piles of cards being considered, **not** in the deck, kept in
+    this browser only (`algoChallengeTables`); the page says so in one line;
+  - the **deck strip** below (`ui/deckstrip.ts`): one card per copy, left to right = top to
+    bottom, a position under every card. The Turn-1 hand is bracketed, and the bracket is the
+    engine's answer — the hand of a game dealt by `newChallengeGame` (`openingHand`), never
+    re-derived;
+  - the binder of every card down the right. Drag binder → strip to insert a card at the gap
+    you let go in (its `+` adds at the bottom); strip → strip to reorder; scratch ↔ strip to move
+    a card into or out of the deck; strip → binder to cut. Every drag has a tap route: tap a card
+    to pick it up, then tap the card it goes before, the strip past the last card (the bottom),
+    a pile, or the bar's New pile / Cut.
+  - Drops go through the tabletop's one door (`place()`); the strip's cards belong to its one drag
+    provider, so Firefox's own image drag is cancelled for them like every table card.
+  The draft is kept per challenge in localStorage (`algoChallengeDecks`), with try/catch, and
+  so is the scratch table. Verified with real input in Firefox (WebDriver BiDi) and Chrome (CDP
+  mouse, and touch emulation at 1024×768): every strip drop lands where it was let go and is
+  drawn in front, and Play deals exactly the bracketed hand.
 - **Play:** a `SoloServer` with `challengeDeal` and `dummyMove` for seat 1.
   - A progress meter layer: "Units in play 37 / 40 · turn 6 · cards 5".
   - Rewind and undo as in Learn to Play.

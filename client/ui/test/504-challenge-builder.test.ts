@@ -3,15 +3,18 @@
  * A challenge deck is dealt exactly as arranged, position 1 on top, so every
  * claim here is about ORDER:
  *
- *   §1 consecutive copies are ONE row; every edit moves or counts a whole
- *      row, and two identical rows that meet become one
+ *   §1 consecutive copies are ONE row of the summary ("1–4"), and two
+ *      identical rows that meet are one; the browser's add goes to the
+ *      bottom and its cut takes the lowest copy
  *   §2 the opening hand is the engine's (a dealt game read back), and it is
  *      the top of the list
  *   §3 the verdict is checkChallengeDeck's, word for word
  *   §4 the draft survives a reload, per challenge, and a storage that throws
  *      costs the save, never the builder
- *   §5 every row can be moved and counted by a tap (↑↓, − n +), not drag
- *      alone, and is numbered by its deck positions ("1–4")
+ *   §5 the builder card is a summary — rows numbered by deck position, the
+ *      Turn-1 hand, Import / Clear / Undo / Play — and the way to the table
+ *      ("Build on the table"), where the order is built (540); no row is
+ *      moved or counted here, and nothing is HTML5-dragged
  *   §6 the card browser builds this list: add goes to the bottom, cut takes
  *      the lowest copy, and there is no maybeboard
  */
@@ -37,28 +40,17 @@ const DEF: ChallengeDef = { id: 'b1', week: '2026-10-18', title: 'Builder', blur
 const units = DECK_LIST.filter(n => getCard(n).kind === 'unit').slice(0, 12);
 const [A, Bn, C, D] = units as [string, string, string, string];
 
-test('§1 consecutive copies are one row, and every edit moves a whole row', () => {
+test('§1 consecutive copies are one row, and the browser adds at the bottom and cuts the lowest copy', () => {
   const l = [A, A, A, Bn, C, C, D];
   assert.deepEqual(B.blocks(l), [{ name: A, start: 0, n: 3 }, { name: Bn, start: 3, n: 1 }, { name: C, start: 4, n: 2 }, { name: D, start: 6, n: 1 }]);
   assert.equal(B.blocks(Array(40).fill(A)).length, 1, 'a 40-copy deck is one row');
-  assert.deepEqual(B.blockUp(l, 2), [A, A, A, C, C, Bn, D], 'the whole block moves');
-  assert.deepEqual(B.blockDown(l, 0), [Bn, A, A, A, C, C, D]);
-  assert.deepEqual(B.blockUp(l, 0), l, 'the top row has nowhere higher to go');
-  assert.deepEqual(B.blockDown(l, 3), l, 'the bottom row has nowhere lower to go');
-  assert.deepEqual(B.moveBlock(l, 3, 0), [D, A, A, A, Bn, C, C], 'a drag from the bottom to the top');
-  assert.deepEqual(B.blockMore(l, 1), [A, A, A, Bn, Bn, C, C, D], 'one more copy in that row');
-  assert.deepEqual(B.blockLess(l, 0), [A, A, Bn, C, C, D], 'one fewer');
-  assert.deepEqual(B.blockLess(l, 1), [A, A, A, C, C, D], 'the last copy takes the row with it');
-  assert.deepEqual(B.blockCut(l, 2), [A, A, A, Bn, D], 'the whole row out');
   // two identical rows that meet are one row
-  const split = [A, Bn, A];
-  assert.equal(B.blocks(split).length, 3);
-  assert.deepEqual(B.blocks(B.blockDown(split, 0)), [{ name: Bn, start: 0, n: 1 }, { name: A, start: 1, n: 2 }], 'moving next to an identical row merges them');
-  assert.deepEqual(B.blocks(B.blockCut(split, 1)), [{ name: A, start: 0, n: 2 }], 'so does cutting what was between them');
+  assert.equal(B.blocks([A, Bn, A]).length, 3);
+  assert.deepEqual(B.blocks([Bn, A, A]), [{ name: Bn, start: 0, n: 1 }, { name: A, start: 1, n: 2 }], 'adjacent copies merge');
   assert.deepEqual(B.addCard([A, A], A), [A, A, A], 'a searched card goes to the bottom (onto a matching last row)');
   assert.deepEqual(B.addCard([A], Bn), [A, Bn]);
   assert.deepEqual(B.cutOne([A, Bn, A, C, A], A), [A, Bn, A, C], 'a cut from the browser takes the lowest copy');
-  assert.deepEqual(l, [A, A, A, Bn, C, C, D], 'no edit changes the list it was given');
+  assert.deepEqual(l, [A, A, A, Bn, C, C, D], 'nothing changes the list it was given');
   assert.deepEqual(B.counts([A, Bn, A, A]), [{ name: A, n: 3 }, { name: Bn, n: 1 }]);
   assert.deepEqual(B.costIfAllUsed([A, A, A, A, Bn, Bn, Bn, C]), { unique: 3, extra: 3 }, 'copies past the second are extra');
 });
@@ -73,7 +65,7 @@ test('§2 the opening hand is the top of the list, as the engine deals it', () =
   assert.deepEqual([...hand].sort(), list.slice(0, hand.length).sort(), 'the hand is the top of the deck');
   // move the bottom card to the top and it is in the hand
   const last = list[list.length - 1]!;
-  const moved = B.moveBlock(list, B.blocks(list).length - 1, 0);
+  const moved = [last, ...list.slice(0, -1)];
   assert.ok(B.openingHand(DEF, moved)!.includes(last));
   assert.equal(B.openingHand(DEF, []), null, 'nothing to deal');
 });
@@ -107,21 +99,17 @@ test('§4 the draft survives a reload per challenge, and a throwing storage cost
   } finally { storageThrows = false; }
 });
 
-test('§5 every row moves and counts by a tap, numbered by position, and Play waits for a legal deck', () => {
+test('§5 the builder card is a summary, numbered by position, with the way to the table; Play waits for a legal deck', () => {
   const list = [A, A, A, A, Bn, C];
   const html = B.builderHtml({ def: DEF, list, decks: [], importing: false });
   const rows = [...html.matchAll(/class="chpos">([^<]+)</g)].map(m => m[1]);
   assert.deepEqual(rows, ['1–4', '5', '6'], 'one row per run of copies, numbered by deck position');
-  assert.match(html, /class="chn">4</, 'the row carries its own count');
-  assert.doesNotMatch(html, /×4/, 'no deck-wide total dressed as a row count');
-  for (let b = 0; b < 3; b++) {
-    for (const k of ['ch-up', 'ch-down', 'ch-more', 'ch-less', 'ch-cut']) {
-      assert.match(html, new RegExp(`data-btn="${k}" data-b="${b}"`), `row ${b + 1} has its ${k} button`);
-    }
-  }
-  assert.match(html, /data-btn="ch-up" data-b="0"[^>]*disabled/, 'the top row cannot go up');
-  assert.match(html, /data-btn="ch-down" data-b="2"[^>]*disabled/, 'the bottom row cannot go down');
+  assert.match(html, /data-btn="ch-tabletop">Build on the table</, 'the order is built on the table');
+  assert.doesNotMatch(html, /data-btn="ch-(?:up|down|more|less|cut|browse)"/, 'no row is moved or counted here');
+  assert.doesNotMatch(html, /draggable="true"|data-chblock/, 'and nothing is HTML5-dragged');
   assert.match(html, /Turn 1 hand \(you bottom 2\)/, 'the hand says what it is');
+  const hand = B.openingHand(DEF, list)!;
+  assert.equal((html.match(/class="chhandcard"/g) ?? []).length, hand.length, 'and is the dealt hand');
   assert.doesNotMatch(html, /data-btn="ch-play" disabled/);
   assert.doesNotMatch(html, /data-btn="ch-undo"/);
   assert.match(B.builderHtml({ def: DEF, list, decks: [], importing: false, undo: 'Cleared.' }), /Cleared\. <button data-btn="ch-undo">Undo<\/button>/);
@@ -130,6 +118,7 @@ test('§5 every row moves and counts by a tap, numbered by position, and Play wa
   assert.match(bad, /class="chproblem"/);
   const imp = B.builderHtml({ def: DEF, list, decks: [{ id: 'd1', name: 'Mine', cards: [A] }], importing: true });
   assert.match(imp, /data-btn="ch-importdeck" data-id="d1"/);
+  assert.doesNotMatch(B.builderHtml({ def: DEF, list: [], decks: [], importing: false }), /<ol class="chlist">/, 'an empty deck has no rows');
 });
 
 test('§6 the card browser builds the list through its bridge', () => {
