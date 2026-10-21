@@ -731,9 +731,10 @@ function ensureListeners(): void {
     const box = e.target as HTMLInputElement | null;
     if (e.key === 'Enter' && box?.dataset?.['dtRename']) { box.blur(); return; }
     // Escape puts the card down — after the drawer has had it (its listener
-    // is ahead of this one, and says when it took the key)
+    // is the window's capture, ahead of this document one, and says when it
+    // took the key). The table's own keys, in capture like any layer's.
     if (e.key !== 'Escape' || drawerTookKey(e) || !active || !selected(active)) return;
     sel = null;
     active.repaint();
-  });
+  }, { capture: true });
 }
