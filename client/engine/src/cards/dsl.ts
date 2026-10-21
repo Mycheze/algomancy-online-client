@@ -333,7 +333,8 @@ export interface TargetSpec {
    * only where the card prints "up to" or "any number" (or, on a triggered
    * ability, "you may … target" — declining the whole may); the owner,
    * 2026-10-16: *"Unless a card says 'up to', it must have targets in order to
-   * be cast."* test/477 sweeps the registry against the printed text.
+   * be cast."* test/477 sweeps the registry against the printed text. A
+   * triggered "you may … target" is `may`, not `min: 0` (CT-309).
    *
    * `'X'` (CR 110.7, CT-303): EVERY slot is required — the counted X plus the
    * `extraSlots`. "Recall X target nontoken allies" at X = 3 needs three
@@ -405,6 +406,43 @@ export interface TargetSpec {
   /** the targets are all treated alike (Twin Flame: "2 damage to each of up
    * to two target units") — the caption keeps its plain list. See `roles`. */
   symmetric?: true;
+  /**
+   * CT-309 — "YOU MAY … TARGET": the decline is offered AT THE TARGET STEP. The
+   * owner, 2026-10-21: *"decline/target should be the options. Same for all
+   * similarly worded things. You get the option to target something OR can
+   * decline and it doesn't happen."*
+   *
+   * So a triggered ability or graft rider whose printed "you may" governs its
+   * target ("you may recall target ally", "you may pay [2] to recall another
+   * target unit from your bin") offers "No targets" before its FIRST target, and
+   * declining it is declining the whole ability. Once a target is picked the
+   * spec's `min` holds as usual (Chombot's two targets are both or neither), and
+   * picking IS saying yes: the effect asks no second "may" when it resolves.
+   * A declined (or unofferable) bounded ability does not spend its use (CR 109.9b).
+   *
+   * Distinct from `min: 0`, which is "up to": that one lets the chooser stop
+   * after any number of picks. test/512 derives the class from the printed
+   * text and holds every member to this flag.
+   */
+  may?: true;
+  /**
+   * CT-307 — a DISPLAY-ONLY question asked before a candidate is sent: return
+   * the sentence when picking `t` is legal but makes this effect do nothing,
+   * otherwise `undefined`. It becomes the option's `confirm` (with
+   * `confirmWhy: 'noop'`), never a narrowing: the candidate stays on the menu.
+   * The owner, 2026-10-21, on a change-the-targets card aimed at an effect with
+   * no targets: *"yes [they may be cast], since it just says 'target effect',
+   * but I think we should add a stop/reminder that 'hey, this effect has no
+   * targets, so this card will have no effect. Do you want to continue?'"*
+   */
+  pickConfirm?: (g: E, t: ResolvedTarget, ctx: TargetCtx) => string | undefined;
+}
+
+/** CT-309: the minimum number of targets before the stop is offered at slot `n`
+ * (`required` is `targetMinimum`'s answer): a "you may … target" spec offers
+ * it before the first pick. */
+export function stopMinimum(spec: TargetSpec, required: number, n: number): number {
+  return spec.may && n === 0 ? 0 : required;
 }
 
 /** CR 110.4c: the context a TargetSpec.restrict is judged in — whose effect this is,

@@ -509,12 +509,12 @@ card('Hooba-Mon', {
     effect: {
       // CR 110.1a: "target unit in your bin with cost 3 or less" is a DECLARED
       // target, chosen as the trigger goes on the stack ('binCard' plus
-      // its restriction seam, CR 110.3a) rather than mid-resolution. min 0 is the "you
-      // may": declining is choosing nothing. A SPELL UNIT counts as a unit for
+      // its restriction seam, CR 110.3a) rather than mid-resolution. `may` is the "you
+      // may" (CT-309): declining is choosing nothing. A SPELL UNIT counts as a unit for
       // bin purposes (it spawns its body) — the convention every other bin
       // search in the expansion uses.
       targets: {
-        what: 'binCard', min: 0,
+        what: 'binCard', may: true,
         prompt: 'Hooba-Mon: exchange me for target unit in your bin with cost 3 or less',
         restrict: (_g, t) => 'binCard' in t
           && isUnitCard(t.binCard.card) && manaOf(t.binCard.card) <= 3,
@@ -524,7 +524,7 @@ card('Hooba-Mon', {
         if (!self) return;
         const t = ctx.targets[0];
         if (!t || !('binCard' in t) || t.binCard.index === -1) {
-          // the "you may" is min 0, so an empty menu and a decline both land
+          // the "you may" is `may`, so an empty menu and a decline both land
           // here — only the first of those is worth explaining ("why did
           // nothing happen?"), so it is checked rather than assumed
           if (!g.player(ctx.controller).bin.some(n => isUnitCard(n) && manaOf(n) <= 3)) {

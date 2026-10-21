@@ -125,9 +125,11 @@ card('Ravenous Fireslinger', {
 
 // "When I die, you may pay [two] to recall target spell in your bin." — rr/2
 // 4/1. CR 110.1a: "target spell in your bin" is a declared target, chosen as the
-// trigger goes on the stack (min 0 for the "you may"); the [two] stays a
-// resolution-time pay-or-decline — it is optional mana, not a cost of using
-// the ability. Its own card is already in the bin when the trigger resolves
+// trigger goes on the stack, and "No targets" there declines the "you may"
+// (CT-309, `may`); the [two] stays a resolution-time pay-or-decline — it is
+// optional mana, not a cost of using the ability (CR 111.9: the designer,
+// "Xenopod goes on the stack without a payment decision; the [1] is asked as
+// it resolves", the same "you may pay [N] to" template). Its own card is already in the bin when the trigger resolves
 // (destroy bins before firing 'died') but it is a unit, so it is never a
 // legal target.
 card('Reclaimer of Secrets', {
@@ -136,7 +138,7 @@ card('Reclaimer of Secrets', {
     label: 'you may pay [two] to recall a spell from your bin',
     effect: {
       targets: {
-        what: 'binCard', min: 0,
+        what: 'binCard', may: true,
         prompt: 'Reclaimer of Secrets: pay [two] to recall target spell in your bin',
         restrict: (_g, t) => 'binCard' in t && isSpellCard(t.binCard.card),
       },
@@ -202,7 +204,7 @@ card('Rousing Spirit', {
     label: 'put a unit with cost 2 or less from your bin into the slot behind me',
     effect: {
       targets: {
-        what: 'binCard', min: 0,
+        what: 'binCard', may: true,
         prompt: 'Rousing Spirit: put target unit with cost 2 or less from your bin behind me',
         restrict: (_g, t) => 'binCard' in t && isCheapUnit(t.binCard.card),
       },

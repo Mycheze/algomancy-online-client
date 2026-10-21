@@ -334,9 +334,8 @@ test('Shoreline Specter: after combat, may recall target ally → each opponent 
   pass(h); pass(h);                                        // combat (D takes 10) + afterCombat trigger
   assert.equal(h.state.decision!.kind, 'targets', 'trigger asks for its ally target');
   pick(h, { unit: wh });
-  pass(h); pass(h);                                        // resolve → the "may" decision
-  assert.equal(h.state.decision!.kind, 'payOrDecline');
-  decide(h, (_, v) => v === true);
+  pass(h); pass(h);                                        // resolve: the target was the yes (CT-309)
+  assert.notEqual(h.state.decision?.kind, 'payOrDecline', 'no second "may" at resolution');
   assert.ok(!ent(h, wh) && h.state.players[A]!.hand.includes('Good Whale'), 'ally recalled');
   assert.equal(h.state.players[D]!.life, 30 - 10 - 2, 'combat 10 + Specter 2');
   finishBattle(h);

@@ -183,11 +183,11 @@ const opponentsIn = (g: E, region: number, me: Seat): Seat[] =>
 // mods, so nothing ever rides along on the trash firing itself.
 const blightwalkerRecall: EffectDef = {
   // CR 110.1a: "another target unit from your bin" — a declared target, chosen as
-  // the trigger goes on the stack. min 0 carries the "you may": declining is
-  // simply choosing nothing. The [2] stays a resolution-time pay-or-decline —
-  // it is optional mana, not a bracketed cost.
+  // the trigger goes on the stack. `may` carries the "you may" (CT-309):
+  // declining is simply choosing nothing. The [2] stays a resolution-time
+  // pay-or-decline — it is optional mana, not a bracketed cost (CR 111.9).
   targets: {
-    what: 'binCard', min: 0,
+    what: 'binCard', may: true,
     prompt: 'Blightwalker: pay [2] to recall another target unit from your bin',
     restrict: (g, t, ctx) => 'binCard' in t && isUnitCard(t.binCard.card) && notSelfBinCard(g, t, ctx),
   },

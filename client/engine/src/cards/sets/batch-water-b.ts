@@ -278,27 +278,24 @@ card('Seabed Shellcaster', {
 
 // "[Augment] After combat, you may recall target ally. If you do, each
 // opponent loses 2 life." — bb/2 3/2 Spirit Unit. Text-box [Augment]. The
-// target is declared when the trigger goes on the stack; the "may" is a
-// mid-resolution decline (CR 704.1a pattern). "Each opponent" region-scoped (CR 601.4d).
+// "you may" is answered at the target step (CT-309, the owner 2026-10-21:
+// "You get the option to target something OR can decline and it doesn't
+// happen"): no target is the decline, and a target is the yes — nothing more
+// is asked at resolution. "Each opponent" region-scoped (CR 601.4d).
 card('Shoreline Specter', {
   augmentText: [{
     type: 'triggered', events: ['afterCombat'],
     label: 'you may recall target ally — each opponent loses 2 life',
     effect: {
-      targets: { what: 'allyUnit', prompt: 'Shoreline Specter: recall target ally? (each opponent then loses 2 life)' },
+      targets: { what: 'allyUnit', may: true, prompt: 'Shoreline Specter: you may recall target ally (each opponent then loses 2 life)' },
       run: (g, ctx) => {
+        if (!ctx.targets.length) { g.ev('info', 'Shoreline Specter: declined — no recall, no life loss.'); return; }
         const t = ctx.targets[0];
         if (!isEnt(t) || !g.entity(t.id)) {
           g.ev('info', 'Shoreline Specter: the target ally is gone — nothing is recalled.');
           return;
         }
         const u = g.entity(t.id)!;
-        const yes = ctx.choose('doIt', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Shoreline Specter: recall ${u.card}? (each opponent loses 2 life)`,
-          options: [{ label: `Recall ${u.card}`, value: true }, { label: 'Decline', value: false }],
-        });
-        if (!yes) { g.ev('info', 'Shoreline Specter: declined — no recall, no life loss.'); return; }
         const opponents = presentSeats(g, ctx.region).filter(s => s !== ctx.controller);
         g.recall(u);
         // CR D7.3/CT-81(b): the recall above always speaks, so no silence sweep

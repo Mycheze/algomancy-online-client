@@ -276,6 +276,34 @@ test('Transmogrifant: the projection line keeps the half no other row states', (
     'and the banner is where that fact is stated');
 });
 
+test('CT-328: under Transmogrifant a later Piercing shows live, the printed Flying struck', () => {
+  // Report #231's board: the Robot's "Piercing until regroup" arrived after
+  // the strip, so it pierces (CR 712.2: a stripper takes only what is older),
+  // and the panel crossed it out because `attrLines` struck EVERY attribute
+  // while anything stripped. The panel now asks the engine (E.ownAttrs).
+  const h = new Harness(5716);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const sky = spawn(h, A, 'Ephemeral Skywalker');            // prints {Flying}
+  spawn(h, A, 'Transmogrifant');                             // strips my other units
+  const e = q(h);
+  e.addTempAttr(ent(h, sky)!, 'Piercing');                   // granted AFTER the strip
+  e.attachMod(ent(h, sky)!, 'Refuse Reclaimer', A, 'augment');   // donated text, also after
+  e.settle();
+  const g = q(h);
+  const u = ent(h, sky)!;
+  // the premise, from the engine: Piercing kept, Flying gone, the layer still stripped
+  assert.ok(g.ownAttrs(u).has('Piercing') && !g.ownAttrs(u).has('Flying'), 'the engine keeps the later Piercing only');
+  assert.equal(g.suppressionOf(u).attrs, true, 'and the unit is still under Transmogrifant');
+  const rows = attrLines(g, u);
+  assert.equal(rows.find(r => r.attr === 'Piercing')?.active, true, 'the later Piercing shows live');
+  assert.equal(rows.find(r => r.attr === 'Flying')?.active, false, 'the printed Flying shows struck');
+  // abilities, the same rule: the mod's donated text arrived after the strip
+  const box = entityTextBox(g, u);
+  assert.equal(box.lines.find(l => l.origin === 'augment' && l.from === 'Refuse Reclaimer')?.active, true,
+    'a mod attached after the strip keeps its text');
+});
+
 test('an augment-donated static is blamed on the MOD, not on the unit wearing it', () => {
   const h = new Harness(5711);
   toDeployment(h);

@@ -1624,19 +1624,13 @@ test('Shoreline Specter: AFTER COMBAT, an ALLY (never an enemy) is recalled and 
   assert.ok(vals.some(v => v.includes(String(friend))), 'an ally is targetable');
   assert.ok(!vals.some(v => v.includes(String(foe))), '"target ALLY" — an enemy unit is not');
   ok('Shoreline Specter', 'target: allies only');
+  // "you MAY recall" — CT-309 (the owner, 2026-10-21): the decline is on the
+  // TARGET menu, beside the allies, and picking a target is the yes.
+  assert.ok(offer!.options.some(o => !!o.value && typeof o.value === 'object' && 'doneTargets' in o.value),
+    `declining is on the target menu; saw [${offer!.options.map(o => o.label)}]`);
+  ok('Shoreline Specter', 'timing: the recall is optional ("you may")');
   const lifeBefore = h.state.players[D]!.life;
   h.do({ type: 'decide', seat: A, choice: vals.findIndex(v => v.includes(String(friend))) });
-
-  // "you MAY recall" — the confirmation is a separate question, asked after
-  // the target is named and the trigger has resolved off the stack.
-  guard = 20;
-  while (!h.state.decision && guard-- > 0) pass(h);
-  const mayQ = h.state.decision!;
-  assert.equal(mayQ.kind, 'payOrDecline', 'the "may" is asked, not assumed');
-  assert.ok(mayQ.options.some(o => /^decline$/i.test(String(o.label))),
-    `declining is on the menu; saw [${mayQ.options.map(o => o.label)}]`);
-  ok('Shoreline Specter', 'timing: the recall is optional ("you may")');
-  h.do({ type: 'decide', seat: A, choice: mayQ.options.findIndex(o => o.value === true) });
   guard = 40;
   while ((h.state.stack.length || (h.state.decision && !/Shoreline/.test(h.state.decision.prompt))) && guard-- > 0) {
     if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
@@ -1854,9 +1848,10 @@ test('Shoreline Specter: DECLINE the recall and the 2-life drain does not happen
     const dec = h.state.decision;
     if (dec && /Shoreline Specter/.test(dec.prompt)) {
       if (lifeBefore < 0) lifeBefore = h.state.players[D]!.life;
-      const no = dec.options.findIndex(o => o.value === false);
-      if (no >= 0) { h.do({ type: 'decide', seat: dec.seat, choice: no }); declined = true; continue; }
-      h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => JSON.stringify(o.value).includes(String(friend))) });
+      // CT-309: the decline is the target menu's "No targets"
+      const no = dec.options.findIndex(o => !!o.value && typeof o.value === 'object' && 'doneTargets' in o.value);
+      assert.ok(no >= 0, 'the target menu offers the decline');
+      h.do({ type: 'decide', seat: dec.seat, choice: no }); declined = true;
       continue;
     }
     if (dec) { h.do({ type: 'decide', seat: dec.seat, choice: dec.kind === 'orderTriggers' ? dec.options.map((_, i) => i) as never : 0 }); continue; }

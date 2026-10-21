@@ -56,7 +56,7 @@
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, getCard, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, hasChangeableTarget, isOwnArrival } from './helpers.ts';
+import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, hasChangeableTarget, isOwnArrival, noChangeConfirm } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -173,7 +173,10 @@ card('Debt Blep', {
 // part boundary on suspension).
 card('Divine Intervention', {
   spellEffect: {
-    targets: { what: 'stackEffect', prompt: 'Divine Intervention: change the targets of target effect' },
+    targets: {
+      what: 'stackEffect', prompt: 'Divine Intervention: change the targets of target effect',
+      pickConfirm: noChangeConfirm('Divine Intervention', (g, item) => hasChangeableTarget(g, item)),   // CT-307
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) {

@@ -527,10 +527,10 @@ card('Life Plant', {
 // later "becomes a base 4/4" instead of being overwritten by it.
 //
 // Still region-scoped ("your units" — CR 601.1b, the Flowstone Arcanite reading),
-// still one payOrDecline asked before anything is mutated, and still
+// the "you may" answered at the target step (CT-309: no target is the decline,
+// a target is the yes — nothing more is asked at resolution), and still
 // idempotent across attacking and then blocking in the same battle (the face
 // is a replacement, and `E.isCopyOf` skips the re-stamp so the log stays quiet).
-const APEX_COPY_KEY = 'apexCopy';
 card('Apex Prime', {
   augmentText: [{
     type: 'triggered', events: ['attacked', 'blocked'], self: true,
@@ -539,8 +539,9 @@ card('Apex Prime', {
     // is the HOLDER's controller — the host's, when this is donated.
     when: (g, self) => g.player(self.controller).life % 2 === 1,
     effect: {
-      targets: { what: 'unit', prompt: 'Apex Prime: all of your units become a copy of target unit until regroup' },
+      targets: { what: 'unit', may: true, prompt: 'Apex Prime: you may have all of your units become a copy of target unit until regroup' },
       run: (g, ctx) => {
+        if (!ctx.targets.length) { g.ev('info', 'Apex Prime: the copy is declined.'); return; }
         const t = ctx.targets[0];
         if (!isEnt(t) || !g.entity(t.id)) {
           g.ev('info', 'Apex Prime: the target is gone — nothing is copied.');
@@ -550,20 +551,9 @@ card('Apex Prime', {
         // CR 601.1b: "your units" is region-scoped, the Flowstone Arcanite reading
         const mine = g.unitsOf(ctx.controller, ctx.region);
         if (!mine.length) { g.ev('info', 'Apex Prime: you have no units here.'); return; }
-        // "you MAY" — one payOrDecline, asked before anything is mutated
-        // (plan-then-commit: the part is replayed from the top on suspension)
-        // CR 710.4: the prompt names the FACE — a Borrower already wearing a Good
+        // CR 710.4: the copy is of the FACE — a Borrower already wearing a Good
         // Whale is copied AS a Good Whale (a copy of a copy chains via the face)
         const face = g.nameOf(src);
-        const yes = ctx.choose(APEX_COPY_KEY, {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: `Apex Prime: have your ${mine.length} unit(s) become a copy of ${face} until regroup?`,
-          options: [
-            { label: `Copy ${face}`, value: true, card: face },
-            { label: 'Decline', value: false },
-          ],
-        }) as boolean;
-        if (!yes) { g.ev('info', 'Apex Prime: the copy is declined.'); return; }
         g.ev('info', `Apex Prime: ${mine.length} unit(s) become a copy of ${face} until regroup.`);
         for (const u of g.unitsOf(ctx.controller, ctx.region)) {
           if (!g.entity(u.id)) continue;             // a copied 0-defense body is lethal
@@ -914,15 +904,18 @@ card('Mindburn', {
 // distinct targets picked at cast (count/min 2 — the Reconfigure precedent):
 // the first loses counters, the second gains them. Counters are ONE signed net
 // int (+1/+1 and -1/-1 cancel pairwise, Manual), so "up to two counters" moves
-// up to two OF THE SIGN THE SOURCE HAS; "you may" and "up to" together are one
-// mid-resolution choice (CR 704.1a). Bounded cause + bounded graft ([Switch1], CR 722.5).
+// up to two OF THE SIGN THE SOURCE HAS. The "you may" is answered at the target
+// step (CT-309: "No targets" before the first pick declines the whole ability;
+// once one is picked both are required); "up to two" stays the one
+// mid-resolution choice, how many. Bounded cause + bounded graft ([Switch1], CR 722.5).
 const moveCounters: EffectDef = {
   targets: {
-    what: 'unit', count: 2, min: 2,
+    what: 'unit', count: 2, min: 2, may: true,
     roles: 'up to two counters from {0} onto {1}',
     prompt: 'Chombot: move up to two counters — first the unit to take them from, then the unit to put them on',
   },
   run: (g, ctx) => {
+    if (!ctx.targets.length) { g.ev('info', 'Chombot: declined — no counters move.'); return; }
     if (ctx.targets.length < 2) { g.ev('info', 'Chombot: a target is gone — no effect.'); return; }
     const [from, to] = [ctx.targets[0], ctx.targets[1]];
     if (!isEnt(from) || !isEnt(to)) return;

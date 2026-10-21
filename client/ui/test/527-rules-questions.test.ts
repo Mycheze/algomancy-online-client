@@ -15,8 +15,8 @@
  *       #231's fix would be CT-313), those sentences go stale in public. So the
  *       facts they state are asserted against the engine at each moment, and a
  *       red here means: update the question's `client` line and notes.
- *   §4  the same, for the two smaller questions (targetless retargeting, and
- *       "you may … target").
+ *   §4  (retired 2026-10-21: the owner answered the two smaller questions,
+ *       targetless retargeting and "you may … target"; their boards are gone)
  *   §5  every card a question lists is a real card, and every id is a safe,
  *       unique link.
  */
@@ -51,7 +51,7 @@ const byCard = (g: E, s: GameState, card: string) => {
 };
 
 test('§1 every question deals, every step is legal, and its moments are in order', () => {
-  assert.ok(QUESTIONS.length >= 3, `positive control: ${QUESTIONS.length} questions`);
+  assert.ok(QUESTIONS.length >= 1, `positive control: ${QUESTIONS.length} questions`);
   for (const q of QUESTIONS) {
     const st = stageQuestion(q);
     assert.ok(st.file.actions.length > 0, `${q.id}: no steps`);
@@ -136,32 +136,6 @@ test('§3 report #231: the board says what the caption says, at every moment', (
     assert.equal(s.players[1]!.life, 17 - 9 - 30, 'Bubb\'s 9 unblocked and the Robot\'s 30 pierced');
     assert.equal(s.players[0]!.life, 9);
     assert.equal(s.winner, 0);
-  }
-});
-
-test('§4 the targetless retarget and the "you may … target" boards say what their captions say', () => {
-  {
-    const id = 'retarget-a-targetless-effect';
-    assert.match(questionById(id)!.client, /lets Gravitational Correction be cast/);
-    const { s } = at(id, 'The trigger');
-    assert.equal(s.stack.length, 1);
-    assert.equal(s.stack[0]!.card, 'Surly Stalker');
-    assert.ok(s.stack[0]!.parts!.every(p => (p.targets ?? []).length === 0), 'the trigger is supposed to have no targets');
-    const cast = at(id, 'Cast at it').s;
-    const top = cast.stack[cast.stack.length - 1]!;
-    assert.equal(top.card, 'Gravitational Correction', 'THE CAPTION IS STALE: the client no longer lets it be cast at the trigger');
-    assert.match(JSON.stringify(top.parts), new RegExp(`"stack":${s.stack[0]!.id}\\b`), 'it does not target the trigger');
-  }
-  {
-    const id = 'may-trigger-target-first';
-    assert.match(questionById(id)!.client, /target first/);
-    const ask = at(id, 'The trigger').s.decision;
-    assert.equal(ask?.kind, 'targets', 'the trigger is supposed to ask for its target first');
-    assert.ok(ask!.options.every(o => typeof o.value === 'object'),
-      'THE CAPTION IS STALE: the target step now offers a way to decline');
-    const res = at(id, 'On resolution').s.decision;
-    assert.equal(res?.kind, 'payOrDecline');
-    assert.ok(res!.options.some(o => o.value === false), 'the "may" is supposed to be asked on resolution');
   }
 });
 

@@ -23,7 +23,7 @@ import type {
 import {
   affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
   isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, requiresTargets, slotRestrict, slotWhat, specForSlot,
-  targetMinimum, zoneTriggersFor,
+  stopMinimum, targetMinimum, zoneTriggersFor,
   type AsYouPlayOption,
   type Ability, type CardBehavior,
   type CardDef, type CastCost, type CostMod, type EffectCtx, type EffectDef,
@@ -2104,6 +2104,14 @@ export class E {
   textStripped(holder: Entity, anchor: Entity): boolean {
     const strips = this.strippersOf(anchor, 'abilities');
     return strips.length > 0 && E.strippedBy(E.textStamp(holder, anchor), strips);
+  }
+  /** CR 712.2: is ability text that arrived on `e` at `at` stripped right now?
+   * `E.PRINTED` for its own text, a grant's `at` for granted text (the trigger
+   * dispatch's own `kept` test, asked from outside). CT-328: the card panel
+   * strikes a line by this, so it cannot disagree with what fires. */
+  abilityTextStripped(e: Entity, at: Stamp = E.PRINTED): boolean {
+    const strips = this.strippersOf(e, 'abilities');
+    return strips.length > 0 && E.strippedBy(at, strips);
   }
   /** The ONE-SHOT half of the radiator question: the entity stamp a spell left
    * (Suppression Field). Reads no statics, so it is safe under any latch. The
@@ -10110,6 +10118,9 @@ export class E {
    * runs only when this is 0: an "up to" spec, or `min: 'X'` cast at X = 0
    * (Torrential Reclamation's sacrifice still happens, CR 107.2b). */
   requiredTargetsOf(item: StackItem, part: EffectPart, spec: TargetSpec): number {
+    // CT-309: a "you may … target" declined at the target step (or with nothing
+    // to offer) still runs, with no targets, and says it did nothing
+    if (spec.may && !part.targets.length) return 0;
     return targetMinimum(spec, spec.count === 'X' ? (part.costPaid?.x ?? item.x ?? 0) : (spec.count ?? 1));
   }
 
@@ -10153,7 +10164,7 @@ export class E {
         ? (part.costPaid?.x ?? item.x ?? 0)
         : (def.targets.count ?? 1);
       const max = counted + (def.targets.extraSlots ?? 0);
-      const min = targetMinimum(def.targets, counted);   // CR 110.7 (min 'X' = all X)
+      const required = targetMinimum(def.targets, counted);   // CR 110.7 (min 'X' = all X)
       if (max <= 0) { part.targetsDone = true; continue; }
       while (!part.targetsDone && part.targets.length < max) {
         const n = part.targets.length;
@@ -10173,7 +10184,8 @@ export class E {
           // (`targetsDone` is also the idempotence guard: collectTargets
           // re-runs from the top after every answered decision.)
           part.targetsDone = true;
-          if (n === 0 && min > 0) {
+          // a "you may … target" (CT-309) runs with nothing declared and says so itself
+          if (n === 0 && required > 0 && !def.targets.may) {
             this.ev('info', `${item.label}: there is no legal target for that — it does nothing.`);
           }
           break;
@@ -10216,13 +10228,25 @@ export class E {
           && already.length > 0 && already.every(isAlly);
         // `card` gives the UI a scan to render for targets that are not on the
         // board — a card in a bin or a cache has no entity to look at
-        const options: DecisionOption[] = cands.map(c => ({
-          label: this.targetLabel(c), value: c as TargetRef, ...this.targetCardOf(c),
-          ...(askAlly && refIsAlly(c)
-            ? { confirm: `${item.label} can target an enemy, and every target you have picked `
-                + 'is one of your own units. Did you mean to?' }
-            : {}),
-        }));
+        // CT-307: the spec's own "this pick does nothing" question, display-only
+        // like the ally one (the owner: "a stop/reminder")
+        const noop = (c: TargetRef): string | undefined => {
+          const pc = slot.pickConfirm;
+          const r = pc ? this.resolveTargetRef(c) : null;
+          return pc && r ? pc(this, r, { ally: item.controller, region: item.region, sourceId: item.sourceId }) : undefined;
+        };
+        const options: DecisionOption[] = cands.map(c => {
+          const ask = noop(c);
+          return {
+            label: this.targetLabel(c), value: c as TargetRef, ...this.targetCardOf(c),
+            ...(askAlly && refIsAlly(c)
+              ? { confirm: `${item.label} can target an enemy, and every target you have picked `
+                  + 'is one of your own units. Did you mean to?' }
+              : ask ? { confirm: ask, confirmWhy: 'noop' as const } : {}),
+          };
+        });
+        // CT-309: a "you may … target" offers the stop before the first pick
+        const min = stopMinimum(def.targets, required, n);
         if (part.targets.length >= min) {
           options.push({ label: doneTargetsLabel(part.targets.length), value: { doneTargets: true } });   // #206
         }
@@ -11130,6 +11154,9 @@ export class E {
       // never had a target — but "up to one" (min 0) still runs, with an empty
       // ctx.targets, so its unconditional half happens
       if (def.targets && !part.targets.length && this.requiredTargetsOf(item, part, def.targets) > 0) continue;
+      // CT-309, CR 109.9b: a "you may … target" declined at the target step, or
+      // one that could not be offered, has not spent a bounded use
+      if (def.targets?.may && !part.targets.length) part.refunded = true;
       const ctx: EffectCtx = {
         controller: item.controller,
         sourceName: item.card ?? item.label,

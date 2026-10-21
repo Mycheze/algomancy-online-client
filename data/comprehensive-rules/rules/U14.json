@@ -2167,7 +2167,7 @@
     "key": "effects.casting.targets-required",
     "parent": "702",
     "order": 8,
-    "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. Every target is required unless the card says \"up to\" or \"any number\". A triggered ability's targets are required in the same way: if a legal target exists, it must take one, even one of its controller's own units. A triggered ability that says \"you may\" may instead be declined as a whole.",
+    "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. Every target is required unless the card says \"up to\" or \"any number\". A triggered ability's targets are required in the same way: if a legal target exists, it must take one, even one of its controller's own units. A triggered ability whose \"you may\" governs its target (\"you may recall target ally\") offers the decline at the time its targets are chosen: its controller chooses a target or declines, and a declined ability does nothing. Once it has one target, every other target it needs is required. Choosing a target is choosing to use it, so no second \"you may\" is asked as it resolves; a payment its text asks for is still asked then (see rule concepts.costs.resolution-payments).",
     "examples": [
       {
         "text": "Fight cannot be played unless the region holds an ally and another unit.",
@@ -2182,8 +2182,16 @@
         "test": "477-target-minimum-sweep.test.ts::a must-target trigger with only the controllers own units as targets picks one of them"
       },
       {
-        "text": "Shoreline Specter (\"After combat, you may recall target ally. If you do, each opponent loses 2 life.\") may decline the recall, and then no opponent loses life.",
-        "test": "182-correctness-sample.test.ts::Shoreline Specter: DECLINE the recall and the 2-life drain does not happen"
+        "text": "Shoreline Specter (\"After combat, you may recall target ally. If you do, each opponent loses 2 life.\") offers the decline beside its allies as its trigger goes on the stack. Declined, nothing is recalled and no opponent loses life.",
+        "test": "512-may-target-decline.test.ts::CT-309 Shoreline Specter declined at the target step: no recall and no life loss"
+      },
+      {
+        "text": "Shoreline Specter given a target recalls that ally and each opponent loses 2 life, with no further question as it resolves.",
+        "test": "512-may-target-decline.test.ts::CT-309 Shoreline Specter given a target recalls it and drains with no further prompt"
+      },
+      {
+        "text": "Chombot (\"You may move up to two counters from target unit onto another target unit\") may be declined before its first target; once one is chosen, the second is required.",
+        "test": "512-may-target-decline.test.ts::CT-309 Chombot: once one target is picked both are required, and a decline does not spend the use"
       }
     ],
     "see": [
@@ -2226,6 +2234,11 @@
           "quote": "If a trigger doesn't have the \"up to\" caviat, it MUST have targets (unless there are no legal ones), which might result in damanging your own units if you trigger something during deployment",
           "adopted": "2026-10-16",
           "from": "report round 2026-10-16 b, CT-305 (in session)"
+        },
+        {
+          "quote": "decline/target should be the options. Same for all similarly worded things. You get the option to target something OR can decline and it doesn't happen.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
         }
       ],
       "engine": [],
@@ -2234,13 +2247,14 @@
         "401-raq-fix-stack.test.ts",
         "477-target-minimum-sweep.test.ts",
         "478-required-targets-at-cast.test.ts",
-        "182-correctness-sample.test.ts"
+        "182-correctness-sample.test.ts",
+        "512-may-target-decline.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "CT-299/CT-305 (2026-10-16): the owner — a target without \"up to\" is required, and a trigger must take a legal target, even its controller's own unit. The \"you may\" decline is the printed text read literally (Shoreline Specter); 477 lets a trigger that prints \"may\" stop short, and lists those cards for the owner.",
+    "notes": "CT-299/CT-305 (2026-10-16): the owner — a target without \"up to\" is required, and a trigger must take a legal target, even its controller's own unit. The \"you may\" decline is the printed text read literally (Shoreline Specter); 477 lets a trigger that prints \"may\" stop short, and lists those cards for the owner. CT-309 (2026-10-21): the owner settled WHEN the \"you may\" of a targeted trigger is answered — at the target step, for every \"you may … target\" trigger and graft rider (512 derives the class from printed text). The payment of a printed \"you may pay [N] to …\" (Reclaimer of Secrets, Blightwalker) stays a resolution-time question by the designer's Xenopod answer (concepts.costs.resolution-payments).",
     "sourceHashes": {
       "RAQ 1410252965276684418#0": "ba1407e8e0f304aa35e09368684382ac118a561eaf5895d4c5b21ff2d1bc14d3",
       "RAQ 1410252965276684418#1": "e360e6a86909cef31daa2244e8da43a0e668b372e706c45aba749e3728522bea",

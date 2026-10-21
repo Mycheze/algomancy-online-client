@@ -98,7 +98,8 @@ card('Might of the Grove', {
 // If you do, draw a card." — g/1 1/1 Alien Fungus Unit. NOT self: the
 // afterCombat event carries no source unit (Deathglow Strider precedent) —
 // region scoping keeps it to the battle I'm in. The ally is the cast-time
-// target; "you may" is a mid-resolution decline (CR 704.1a). ⚠ header note: the
+// target; "you may" is answered at the target step (CT-309: no target is the
+// decline, a target is the yes — nothing more is asked). ⚠ header note: the
 // opponent is the other present seat (CR 601.4d) — none present → no-op, no draw.
 //
 // CT-38: the handover is E.giveControl, so the unit's MODS change
@@ -118,20 +119,15 @@ card('Might of the Grove', {
 // opponent is a present seat here by construction, so giveControl's exclusivity
 // branch does not fire) and regroup still sends it to its NEW controller's home.
 const mindsporeGive: EffectDef = {
-  targets: { what: 'allyUnit', prompt: 'Mindspore Fiend: you may give an opponent control of target ally (if you do, draw a card)' },
+  targets: { what: 'allyUnit', may: true, prompt: 'Mindspore Fiend: you may give an opponent control of target ally (if you do, draw a card)' },
   run: (g, ctx) => {
+    if (!ctx.targets.length) { g.ev('info', 'Mindspore Fiend: declined — no control change, no draw.'); return; }
     const t = ctx.targets[0];
     if (!isEnt(t) || !g.entity(t.id)) return;
     const u = g.entity(t.id)!;
     if (u.controller !== ctx.controller) { g.ev('info', `Mindspore Fiend: ${u.card} is no longer an ally — no effect.`); return; }
     const opp = presentSeats(g, ctx.region).find(s => s !== ctx.controller);
     if (opp === undefined) { g.ev('info', 'Mindspore Fiend: no opponent is present — no effect.'); return; }
-    const gives = ctx.choose('give', {
-      kind: 'payOrDecline', seat: ctx.controller,
-      prompt: `Mindspore Fiend: give ${g.pname(opp)} control of ${u.card} and draw a card?`,
-      options: [{ label: 'Give control — draw a card', value: true }, { label: 'Decline', value: false }],
-    });
-    if (gives !== true) { g.ev('info', 'Mindspore Fiend: declined — no control change, no draw.'); return; }
     if (g.giveControl(u, opp)) g.draw(ctx.controller, 1);   // "If you do, draw a card."
   },
 };

@@ -101,7 +101,6 @@ test('Apex Prime: on an odd life total, all of your units copy the target\'s bas
   h.do({ type: 'declareAttack', seat: A, columns: [[ap, tok]] });
   pick(h, { unit: siren });                                   // CR 110.1a: the target is declared at cast
   pass(h); pass(h);                                           // resolve the trigger
-  pick(h, true);                                              // "you MAY"
   assert.deepEqual(effStats(h, ap), [2, 2], 'base stats copied (CR 206.5 E.setBase) — even onto Apex Prime itself');
   assert.deepEqual(effStats(h, tok), [2, 2]);
   assert.ok(ownAttrs(h, ap).has('Poisonous'), 'attributes copied (E.addTempAttr over ownAttrs)');
@@ -125,7 +124,6 @@ test('Apex Prime: the copied "when I die" text really fires on the copy (CR 109.
   h.do({ type: 'declareAttack', seat: A, columns: [[ap, tok]] });
   pick(h, { unit: cap });
   pass(h); pass(h);
-  pick(h, true);
   assert.deepEqual(effStats(h, tok), [4, 2], 'the token has the Deathcap\'s base stats');
   // the whole point: the copy is not cosmetic — the granted text is live
   whiteBox(h, e => e.destroy(e.entity(tok)!, 'dies'));
@@ -166,7 +164,6 @@ function apexCopy(h: Harness, A: Seat, apexId: number, targetId: number, extra: 
   h.do({ type: 'declareAttack', seat: A, columns: [[apexId, ...extra]] });
   pick(h, { unit: targetId });                                // CR 110.1a: declared at cast
   pass(h); pass(h);                                           // resolve the trigger
-  pick(h, true);                                              // "you MAY"
 }
 
 test('CR 201.5: a copy carries the NAME, and the PHYSICAL card is untouched', () => {

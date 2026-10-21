@@ -645,14 +645,17 @@ export function graftComposition(e: E, u: Entity): { head: string; parts: { text
  * are the single most-missed thing on the board.
  */
 export function attrLines(e: E, u: Entity): AttrLine[] {
-  const sup = e.suppressionOf(u);
   const out: AttrLine[] = [];
   const put = (attr: string, origin: AttrOrigin, from: CardName | null, active: boolean) => {
     const seen = out.find(a => a.attr === attr);
     if (seen) { if (active && !seen.active) { seen.active = true; seen.origin = origin; seen.from = from; } return; }
     out.push({ attr, origin, from, active });
   };
-  const live = sup.attrs ? new Set<string>() : e.ownAttrs(u);
+  // CT-328: the ENGINE's answer, not "everything is off while anything strips".
+  // A stripper takes only what arrived before it (CR 712.2), so an attribute
+  // granted after it — the #231 Robot's "Piercing until regroup" — is live,
+  // and ownAttrs already says so by timestamp.
+  const live = e.ownAttrs(u);
   // CR 709.4a: "printed" means the card this entity currently IS
   const def = defOf(e.nameOf(u));
   for (const a of def?.attrs ?? []) put(a, 'printed', null, live.has(a));
@@ -669,9 +672,11 @@ export function attrLines(e: E, u: Entity): AttrLine[] {
   for (const p of e.projections(u)) {
     for (const a of p.attrs) put(a, 'static', p.from, live.has(a));
   }
-  // shared vertically within a formation column — real, and easy to miss
+  // shared vertically within a formation column — real, and easy to miss.
+  // CT-328: E.effAttrs shares a mate's (own, unstripped) attributes with a
+  // stripped unit too, so the panel does not gate them on this unit's strip.
   const col = e.columnOf(u.id);
-  if (col && !sup.attrs) {
+  if (col) {
     for (const id of col) {
       if (id === u.id) continue;
       const mate = e.entity(id);
@@ -950,7 +955,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
     lines.push({
       // the augment icon is already on this line's tag
       text: dropOriginMarker(text), from: m.card, origin: 'augment',
-      active: !silenced,
+      // CT-328: a mod attached after the strip keeps its text (CR 712.2)
+      active: !e.textStripped(m, u),
     });
   }
 
@@ -958,7 +964,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   for (const g of u.granted ?? []) {
     lines.push({
       text: g.text, from: g.from, origin: 'granted',
-      active: !silenced,
+      // CT-328: text granted after the strip still works (CR 712.2)
+      active: !e.abilityTextStripped(u, g.at),
     });
   }
 

@@ -99,7 +99,7 @@ const makeRobot = (g: E, seat: Seat, x: number, region: number): Entity =>
 // their sign: you move what was actually there, drawback and all.
 //
 // CR 110.1a: "another target unit" is a DECLARED target, chosen as the trigger goes
-// on the stack; `min: 0` carries the printed "you may". "Another" needs no
+// on the stack; `may` carries the printed "you may" (CT-309). "Another" needs no
 // restriction — the unit that died is already gone, so it cannot be offered.
 card('Flux Constructor', {
   augmentText: [{
@@ -109,13 +109,13 @@ card('Flux Constructor', {
       && ((ev.data?.['counters'] as number | undefined) ?? 0) !== 0,
     effect: {
       targets: {
-        what: 'unit', min: 0,
+        what: 'unit', may: true,
         prompt: 'Flux Constructor: put those counters onto another target unit',
       },
       run: (g, ctx) => {
         const n = (ctx.event?.data?.['counters'] as number | undefined) ?? 0;
         const t = ctx.targets[0];
-        // `min: 0` — declining is the ordinary answer, and test/65 is
+        // `may` (CT-309) — declining is the ordinary answer, and test/65 is
         // right that it has to be said out loud rather than returned in silence.
         if (!n || !isEnt(t)) {
           g.ev('info', 'Flux Constructor: no unit was chosen — the counters go nowhere.');
@@ -582,7 +582,7 @@ card('Powerforge Synergist', {
     // then the HOST, and a host sitting on a net -3 has counters to move.
     when: (_g, self) => self.counters !== 0,
     effect: {
-      targets: { what: 'unit', min: 0, prompt: 'Powerforge Synergist: move my counters onto target unit (or decline)' },
+      targets: { what: 'unit', may: true, prompt: 'Powerforge Synergist: move my counters onto target unit (or decline)' },
       run: (g, ctx) => {
         const n = (ctx.event?.data?.['counters'] as number | undefined) ?? 0;
         const t = ctx.targets[0];

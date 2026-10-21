@@ -17,7 +17,7 @@ import type {
 } from '../../types.ts';
 import { HOST_SLOT } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { getCard, type EffectCtx, type EffectDef, type XPreviewRow } from '../dsl.ts';
+import { getCard, type EffectCtx, type EffectDef, type ResolvedTarget, type TargetCtx, type XPreviewRow } from '../dsl.ts';
 
 /** The unit an effect is anchored on, IF it is still in play: triggered and
  * activated abilities carry their source's id; spells have none. */
@@ -447,6 +447,29 @@ export function hasChangeableTarget(g: E, item: StackItem, controller?: Seat): b
     const key = JSON.stringify(ref);
     return g.slotCandidates(item, pi, ti, undefined, controller).some(c => JSON.stringify(c) !== key);
   });
+}
+
+/**
+ * CT-307 — the stop before a change-the-targets card is aimed at an effect it
+ * cannot change. The owner, 2026-10-21: castable, "since it just says 'target
+ * effect'", but with "a stop/reminder that 'hey, this effect has no targets,
+ * so this card will have no effect. Do you want to continue?'". A
+ * `TargetSpec.pickConfirm`: display-only, the candidate stays on the menu.
+ * `canChange` is the card's own no-op test (`hasChangeableTarget` for
+ * Gravitational Correction and Divine Intervention, the slots it may fill for
+ * Enigmatic Warder), the very predicate its `run` bails out on.
+ */
+export function noChangeConfirm(
+  name: string, canChange: (g: E, item: StackItem, sourceId?: EntityId) => boolean,
+): (g: E, t: ResolvedTarget, ctx: TargetCtx) => string | undefined {
+  return (g, t, ctx) => {
+    if (!('stack' in t)) return undefined;
+    const item = g.s.stack.find(i => i.id === t.stack);
+    if (!item || canChange(g, item, ctx.sourceId)) return undefined;
+    return g.targetSlots(item).length
+      ? `None of this effect's targets can be changed, so ${name} will do nothing. Continue?`
+      : `This effect has no targets, so ${name} will do nothing. Continue?`;
+  };
 }
 
 /**

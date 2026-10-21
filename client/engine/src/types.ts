@@ -1334,6 +1334,11 @@ export interface DecisionOption {
    * "yes" resolves it exactly as it would have resolved without this field.
    */
   confirm?: string;
+  /** CT-307: what the `confirm` is about, when it is not BL-30's misclick
+   * guess. 'noop' — the pick is legal and the effect will do nothing with it
+   * (a change-the-targets card aimed at an effect with nothing to change). The
+   * client words its buttons by it; absent means the BL-30 ally question. */
+  confirmWhy?: 'noop';
   /** HOW MANY objects this one option stands for. Only set where the menu
    * deliberately collapses indistinguishable copies into a single row — today
    * that is the bin (CR 405.6: a bin holds bare card names, so `{erase: name}`

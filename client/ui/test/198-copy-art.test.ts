@@ -204,7 +204,6 @@ test('CR D6.8: Apex Prime redraws EVERY unit it copied onto, in one resolution',
   h.do({ type: 'declareAttack', seat: A, columns: [[ap, t1], [t2]] });   // CR 603.1: 2 per column
   pick(h, { unit: whale });                                  // CR 702.3c: declared at cast
   pass(h); pass(h);
-  pick(h, true);                                             // "you MAY"
 
   const e = new E(h.state);
   for (const id of [ap, t1, t2]) {

@@ -649,14 +649,14 @@ card('Aethercap Siphoner', {
     when: (g, self, ev) => ev.data?.seat === self.controller && ev.data?.token !== true,
     effect: {
       targets: {
-        what: 'unit', min: 0,
+        what: 'unit', may: true,
         prompt: 'Aethercap Siphoner: move a counter from me onto another target unit',
         restrict: notSelf,
       },
       run: (g, ctx) => {
         const self = selfOf(g, ctx);
         // each of these three is a reachable decline, and test/65 is
-        // right that a decline has to SAY so — `min: 0` means "no target" is
+        // right that a decline has to SAY so — `may` means "no target" is
         // the ordinary answer, not an error.
         if (!self || self.counters === 0) {
           g.ev('info', 'Aethercap Siphoner: no counter to move (or my body is gone) — nothing moves.');

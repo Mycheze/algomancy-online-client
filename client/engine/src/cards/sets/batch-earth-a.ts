@@ -43,10 +43,10 @@
  *    would drop the bonus for wood/metal/light/dark. CR 106.7c; registry.ts
  *    still excludes it from DECK_LIST (a resource face, not a deck card).
  */
-import type { Attr, Entity, EntityId, Seat } from '../../types.ts';
+import type { Attr, Entity, EntityId, Seat, StackItem } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, notSelf, type EffectCtx, type EffectDef } from '../dsl.ts';
-import { selfOf, isEnt, chooseUnit } from './helpers.ts';
+import { selfOf, isEnt, chooseUnit, noChangeConfirm } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -324,12 +324,32 @@ card('Eminence of the Barrens', {
 // when played normally (via: 'augment') and donated to hosts (via: { mod }).
 // Targets an effect on the stack; at resolution one of its declared targets
 // (caster's pick when several) becomes me — the ability's carrier.
+//
+// CR 110.9, 110.4c: only slots I could LEGALLY occupy. Changing a target may not
+// create an illegal one — the playtest bug was this Warder dropping itself into
+// Fight's "target ALLY" slot while belonging to the other player, where "ally"
+// means ally of the SPELL's controller. It also may not duplicate a sibling
+// slot ("another target unit", CR 704.5). CR 110.10a (CT-322): the slots are
+// `E.targetSlots`, so a Virus being applied offers its HOST — this walked
+// `item.parts` alone, a Virus item has none, and a Warder aimed at one did
+// nothing at all. Shared by the run and the CT-307 stop at the target pick.
+function warderSlots(g: E, item: StackItem, meId: EntityId): ReturnType<E['targetSlots']> {
+  const mine = JSON.stringify({ unit: meId });
+  return g.targetSlots(item).filter(({ pi, ti, ref }) =>
+    JSON.stringify(ref) !== mine                                     // already me
+    && g.canFillSlot(item, pi, ti, { unit: meId }));
+}
 card('Enigmatic Warder', {
   augmentText: [{
     type: 'activated', cost: { mana: 2 },
     label: '[two]: change a target of target effect to me',
     effect: {
-      targets: { what: 'stackEffect', prompt: 'Enigmatic Warder: change a target of target effect to me' },
+      targets: {
+        what: 'stackEffect', prompt: 'Enigmatic Warder: change a target of target effect to me',
+        // CT-307: the stop before aiming at an effect with nothing I can take
+        pickConfirm: noChangeConfirm('Enigmatic Warder',
+          (g, item, me) => me === undefined || warderSlots(g, item, me).length > 0),
+      },
       run: (g, ctx) => {
         const t = ctx.targets[0];
         if (!t || !('stack' in (t as object))) {
@@ -343,18 +363,7 @@ card('Enigmatic Warder', {
         }
         const me = selfOf(g, ctx);
         if (!me) { g.ev('info', 'Enigmatic Warder: the carrier is gone — nothing to retarget to.'); return; }
-        // CR 110.9, 110.4c: only slots I could LEGALLY occupy. Changing a target may not
-        // create an illegal one — the playtest bug was this Warder dropping
-        // itself into Fight's "target ALLY" slot while belonging to the other
-        // player, where "ally" means ally of the SPELL's controller. It also
-        // may not duplicate a sibling slot ("another target unit", CR 704.5).
-        // CR 110.10a (CT-322): the slots are `E.targetSlots`, so a Virus being
-        // applied offers its HOST — this walked `item.parts` alone, a Virus
-        // item has none, and a Warder aimed at one did nothing at all.
-        const mine = JSON.stringify({ unit: me.id });
-        const slots = g.targetSlots(item).filter(({ pi, ti, ref }) =>
-          JSON.stringify(ref) !== mine                                     // already me
-          && g.canFillSlot(item, pi, ti, { unit: me.id }));
+        const slots = warderSlots(g, item, me.id);   // CR 110.9, 110.4c (see above)
         if (!slots.length) {
           g.ev('info', `Enigmatic Warder: no target of ${item.label} may legally be changed to ${me.card}.`);
           return;

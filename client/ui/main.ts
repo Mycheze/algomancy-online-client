@@ -5688,6 +5688,10 @@ const CONFIRM_BARS = {
   // question is still open, and going back drops you straight into the same
   // target pick. Taking the whole cast back is Escape's job and always was.
   ally:   { cancel: 'allycancel',      back: 'No, pick again', confirm: 'allyconfirm',    go: 'Yes, target my own' },
+  // CT-307 (the owner, 2026-10-21): a change-the-targets card aimed at an effect
+  // it cannot change — "this card will have no effect. Do you want to
+  // continue?". The same open question as `ally`, so the same two handlers.
+  noop:   { cancel: 'allycancel',      back: 'Go back',        confirm: 'allyconfirm',    go: 'Continue' },
 } as const;
 /** the idle-Done question (deployment and the haste step) — one game sentence */
 const IDLE_DONE_ASK = 'you have not played anything yet, and you still can.';
@@ -6045,8 +6049,8 @@ function decisionBarHtml(dec: Decision, err: string): string {
     // about — same bar, so the board underneath is untouched and the target
     // highlights are still there to look at while you answer.
     if (ui.confirmTarget !== null) {
-      const ask = dec.options[ui.confirmTarget]?.confirm;
-      if (ask) return confirmBarHtml('ally', dec.seat, esc(ask), err);
+      const o = dec.options[ui.confirmTarget];
+      if (o?.confirm) return confirmBarHtml(o.confirmWhy === 'noop' ? 'noop' : 'ally', dec.seat, esc(o.confirm), err);
     }
     // CT-181: an imposed cost says what it is (ui/boardpick.ts imposedCost)
     const asked = imposedCost(dec, h.state)?.prompt ?? dec.prompt;

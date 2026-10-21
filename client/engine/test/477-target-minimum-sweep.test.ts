@@ -53,6 +53,7 @@ function specs(): Row[] {
 
 /** does the spec let the chooser stop short of its slots? */
 function allowsFewer(spec: TargetSpec): boolean {
+  if (spec.may) return true;   // CT-309: a "you may … target" may be declined at the target step
   if (spec.min === 'X') return false;
   const min = spec.min ?? 1;
   if (spec.count === 'X') return true;   // any fixed min is below some X

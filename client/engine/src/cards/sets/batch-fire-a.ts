@@ -71,7 +71,7 @@
  */
 import type { EntityId, Seat, TargetRef } from '../../types.ts';
 import { card, getCard, isSpellEffect, type EffectDef } from '../dsl.ts';
-import { rechooseTargets, commitRetargets, hasChangeableTarget } from './helpers.ts';
+import { rechooseTargets, commitRetargets, hasChangeableTarget, noChangeConfirm } from './helpers.ts';
 
 /** a card that is a SPELL for bin purposes — a spell unit is one too (playing
  * it from the bin casts the spell and then spawns the body). */
@@ -535,7 +535,10 @@ card('Ghord', {
 // candidates. All choices happen before any mutation.
 card('Gravitational Correction', {
   spellEffect: {
-    targets: { what: 'stackEffect', prompt: 'Gravitational Correction: change the targets of target effect' },
+    targets: {
+      what: 'stackEffect', prompt: 'Gravitational Correction: change the targets of target effect',
+      pickConfirm: noChangeConfirm('Gravitational Correction', (g, item) => hasChangeableTarget(g, item)),   // CT-307
+    },
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('stack' in (t as object))) {

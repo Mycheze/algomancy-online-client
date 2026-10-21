@@ -86,8 +86,7 @@ test('Mindspore Fiend: after combat, may give an opponent control of target ally
   // combat → afterCombat: the trigger goes on the stack and asks for its target
   pick(h, { unit: gift });
   const handD = h.state.players[D]!.hand.length;
-  pass(h); pass(h);                                   // resolve → pay-or-decline
-  pick(h, true);                                      // give control
+  pass(h); pass(h);                                   // resolve: the target was the yes (CT-309)
   assert.equal(ent(h, gift)!.controller, A, 'the opponent gained control of the ally');
   assert.equal(h.state.players[D]!.hand.length, handD + 1, '"if you do, draw a card"');
   finishBattle(h);
@@ -501,8 +500,7 @@ test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, i
   pass(h); pass(h);                                   // combat → afterCombat trigger
   const mark = h.events.length;
   pick(h, { unit: gift });                            // the cast-time target
-  pass(h); pass(h);                                   // resolve → pay-or-decline
-  pick(h, true);                                      // give control
+  pass(h); pass(h);                                   // resolve: the target was the yes (CT-309)
 
   // (1) THE MODS. This is the whole of CT-38's "major": the raw assignment
   //     handed over a unit whose augments still answered to the old seat.
@@ -581,7 +579,6 @@ test('an UNMODDED control change behaves exactly as it did before the control-ch
   const mark = h.events.length;
   pick(h, { unit: gift });
   pass(h); pass(h);
-  pick(h, true);
   assert.equal(ent(h, gift)!.controller, A, 'control changed');
   assert.equal(ent(h, gift)!.owner, D, 'owner never changes');
   assert.deepEqual(ent(h, gift)!.mods, [], 'there were no mods to carry');

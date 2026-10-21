@@ -3169,7 +3169,7 @@
     "key": "concepts.targets.change",
     "parent": "110",
     "order": 9,
-    "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect.",
+    "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect. An effect with no target that can be changed is still a legal \"target effect\" for it, and the change then does nothing. The client asks the player to confirm before such an effect is chosen.",
     "examples": [
       {
         "text": "Enigmatic Warder cannot take Throw off a Cliff, which needs a unit with 4 or more defense.",
@@ -3178,6 +3178,10 @@
       {
         "text": "Enigmatic Warder cannot move itself into a target already held by the same effect's other target.",
         "test": "349-retarget-distinct-slots.test.ts::CT-189 canFillSlot, the Enigmatic Warder gate, refuses a sibling ref on every multi-target part"
+      },
+      {
+        "text": "Gravitational Correction may be aimed at Surly Stalker's trigger, which has no targets; the client first asks \"This effect has no targets, so Gravitational Correction will do nothing. Continue?\", and Continue sends the choice.",
+        "test": "529-noop-retarget-confirm.test.ts::CT-307 the client asks before sending a targetless pick, and Continue sends that pick"
       }
     ],
     "see": [
@@ -3216,23 +3220,36 @@
           "quote": "share a target. The rule above is per part.",
           "adopted": "2026-09-30",
           "from": "register@72de434"
+        },
+        {
+          "quote": "yes [they may be cast], since it just says 'target effect'",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
+        },
+        {
+          "quote": "add a stop/reminder that 'hey, this effect has no targets, so this card will have no effect. Do you want to continue?'",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
         }
       ],
       "engine": [],
       "tests": [
         "390-raq-stack.test.ts",
         "349-retarget-distinct-slots.test.ts",
-        "49-playtest-round6.test.ts"
+        "49-playtest-round6.test.ts",
+        "511-retarget-nothing-to-change.test.ts",
+        "529-noop-retarget-confirm.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-09-30 (“A retarget fills each slot legally…”) rules distinctness per part only; whether two parts of one graft composite may share a target is undecided: D-U03-8.",
+    "notes": "The owner ruling of 2026-09-30 (“A retarget fills each slot legally…”) rules distinctness per part only; whether two parts of one graft composite may share a target is undecided: D-U03-8. CT-307 (2026-10-21): the owner ruled a change-the-targets card castable at an effect with no target to change, with a confirm in the client. He had both readings in front of him on the question board, including Caleb's Enigmatic Warder line (RQ 1403796597896253511, \"you can change any spell where warder could be a legal target\") and _passer's \"you CANNOT CHANGE this effects target with GC\"; the verifier should check whether Caleb's line is read as a castability limit.",
     "sourceHashes": {
       "RAQ 1355466429788328066#3": "af505b5d2f160d80fc2690ed8d9245032334d52b897e37febf17596283b46c19",
       "RAQ 1355466429788328066#6": "86796adf4482534b1161915c5d8c3136684bd48c7177be4b376d5ad3660b95ae"
-    }
+    },
+    "digitalClause": "The client asks the player to confirm before such an effect is chosen."
   },
   {
     "key": "concepts.targets.change.kept",
