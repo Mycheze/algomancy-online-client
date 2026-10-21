@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:9f4afc08a76daa7e",
+ "generated_from": "sha256:9a6945bd009b86ef",
  "rules": [
   {
    "num": "100.1",
@@ -4099,7 +4099,8 @@
     "Fight cannot be played unless its region holds an ally and another unit.",
     "Rebalance, which targets nothing, can be played with no unit of its controller's.",
     "Abduct (\"Gain control of target unit with cost [x] or less …\") against a lone cost-1 attacker can be played when its caster can pay an X of 1 or more. X = 0 is not offered, since at 0 there is no unit to take.",
-    "Tilling the Graves (\"Recall two target units in your bin\") cannot be played while its caster's bin holds fewer than two units."
+    "Tilling the Graves (\"Recall two target units in your bin\") cannot be played while its caster's bin holds fewer than two units.",
+    "Tidal Reversion (\"For each player, recall target unit that player controls\") played for free by Tides of the Cosmos takes one unit of each player, and Tides does not offer it while either player has no unit there."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -4142,21 +4143,22 @@
    "sectionTitle": "Targets",
    "chapterTitle": "1. Game Concepts",
    "parent": "110",
-   "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect.",
+   "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect. An effect with no target that can be changed is still a legal \"target effect\" for it, and the change then does nothing. The client asks the player to confirm before such an effect is chosen.",
    "see": [
     "110.6"
    ],
    "examples": [
     "Enigmatic Warder cannot take Throw off a Cliff, which needs a unit with 4 or more defense.",
-    "Enigmatic Warder cannot move itself into a target already held by the same effect's other target."
+    "Enigmatic Warder cannot move itself into a target already held by the same effect's other target.",
+    "Gravitational Correction may be aimed at Surly Stalker's trigger, which has no targets; the client first asks \"This effect has no targets, so Gravitational Correction will do nothing. Continue?\", and Continue sends the choice."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "partial"
   },
   {
    "num": "110.9a",
@@ -4692,9 +4694,9 @@
     "Eldritch Dreamtender's column deals combat damage to an opponent. Its ability goes on the stack with Dreamtender still in play; Dreamtender is sacrificed when the ability resolves, and only then is the opponent's hand looked at and a card discarded.",
     "Dreamtender is destroyed in response to its ability. When the ability resolves, nothing is sacrificed, so no hand is looked at and nothing is discarded."
    ],
-   "basis": "printed",
+   "basis": "mixed",
    "scope": "game",
-   "engineDiffers": true,
+   "engineDiffers": false,
    "discrepancies": [
     "D-U04-2",
     "D-U04-8"
@@ -10794,7 +10796,7 @@
    "sectionTitle": "Recycling",
    "chapterTitle": "4. Zones",
    "parent": "408",
-   "text": "A deck has a mark where it originally ended. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.",
+   "text": "A deck has a mark where it originally ended. The recycle pile lies under the deck, past the mark, and is still part of the deck. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.",
    "see": [],
    "examples": [],
    "basis": "owner",
@@ -10815,7 +10817,7 @@
    "sectionTitle": "Recycling",
    "chapterTitle": "4. Zones",
    "parent": "408.2",
-   "text": "Every card put on the bottom of the deck goes past the mark, whatever put it there: recycling for a resource, the constructed put-back, the cards a glimpse did not cache, and recycled packs alike.",
+   "text": "Every card put on the bottom of the deck goes past the mark, whatever put it there: recycling for a resource, the constructed put-back, the cards a glimpse did not cache, and recycled packs alike. Likewise, anything that uses the deck can reach the mark: drawing, milling, caching or revealing the top cards, a glimpse, and dealing a pack alike.",
    "see": [],
    "examples": [],
    "basis": "owner",
@@ -10834,7 +10836,7 @@
    "sectionTitle": "Recycling",
    "chapterTitle": "4. Zones",
    "parent": "408.2",
-   "text": "When the deck runs out and more cards are needed, the recycle pile is shuffled and becomes the new deck, with a new mark and an empty recycle pile.",
+   "text": "When anything that uses the deck reaches the mark, whatever the reason, the recycle pile is shuffled and put above the mark, under the cards still left in the deck; the mark goes back to the very bottom, with an empty recycle pile behind it. An effect that reveals more cards than are above the mark reshuffles when it reaches the mark and keeps revealing until it has its full number.",
    "see": [
     "401.4"
    ],
@@ -17550,7 +17552,7 @@
    ],
    "examples": [
     "Bripp (4 power) and Bloated Manablub (2 power) attack in normal columns, and Adversary of the Deep (2/2, Sluggish; 'Whenever a player loses life, put that many +1/+1 counters on me') attacks in a third column. None are blocked. The normal sub-step deals 6; the step stops, Adversary's trigger resolves with priority, and Adversary strikes in the Sluggish sub-step for 8.",
-    "At the boundary, the stack holds Adversary of the Deep's trigger and priority is with the player who does not control it."
+    "At the boundary, the stack holds Adversary of the Deep's trigger. Its controller has the initiative and receives priority first; the other player may respond once they pass."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -20391,7 +20393,7 @@
    "sectionTitle": "Casting Spells",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "702",
-   "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. Every target is required unless the card says \"up to\" or \"any number\". A triggered ability's targets are required in the same way: if a legal target exists, it must take one, even one of its controller's own units. A triggered ability that says \"you may\" may instead be declined as a whole.",
+   "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. Every target is required unless the card says \"up to\" or \"any number\". A triggered ability's targets are required in the same way: if a legal target exists, it must take one, even one of its controller's own units. A triggered ability whose \"you may\" governs its target (\"you may recall target ally\") offers the decline at the time its targets are chosen: its controller chooses a target or declines, and a declined ability does nothing. Once it has one target, every other target it needs is required. Choosing a target is choosing to use it, so no second \"you may\" is asked as it resolves; a payment its text asks for is still asked then (see rule 111.9).",
    "see": [
     "110"
    ],
@@ -20399,7 +20401,9 @@
     "Fight cannot be played unless the region holds an ally and another unit.",
     "Tidal Reversion cannot be played while one player has no unit to recall.",
     "Unstable Singularity (\"When I die, Delete target unit.\") dies in deployment with only its controller's other unit on the board: its trigger must target that unit, with no option to choose none, and deletes it.",
-    "Shoreline Specter (\"After combat, you may recall target ally. If you do, each opponent loses 2 life.\") may decline the recall, and then no opponent loses life."
+    "Shoreline Specter (\"After combat, you may recall target ally. If you do, each opponent loses 2 life.\") offers the decline beside its allies as its trigger goes on the stack. Declined, nothing is recalled and no opponent loses life.",
+    "Shoreline Specter given a target recalls that ally and each opponent loses 2 life, with no further question as it resolves.",
+    "Chombot (\"You may move up to two counters from target unit onto another target unit\") may be declined before its first target; once one is chosen, the second is required."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -38486,7 +38490,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "partial"
   },
   {
    "num": "D4.5e",
@@ -38507,7 +38511,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "partial"
   },
   {
    "num": "D4.5f",

@@ -87,5 +87,21 @@
       }
     ],
     "ct": "CT-242"
+  },
+  {
+    "id": "F-U03-6",
+    "title": "Enigmatic Warder can be activated at an effect it could never be a legal target of",
+    "summary": "Caleb (1403796597896253511): 'you can change any spell where warder could be a legal target'. The engine lets Warder's [two] ability aim at any stack effect, including a targetless trigger (511 'CT-306 Enigmatic Warder at a targetless trigger') or an effect whose every slot Warder cannot fill; it then pays [two] for nothing after a confirm. Under Caleb's criterion those effects should not be offered to Warder at all. Gravitational Correction / Divine Intervention are covered by the owner call and are not part of this.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-a.ts",
+        "quote": "g.ev('info', `Enigmatic Warder: no target of ${item.label} may legally be changed to ${me.card}.`);"
+      },
+      {
+        "file": "client/engine/test/511-retarget-nothing-to-change.test.ts",
+        "quote": "const CHANGERS = allCardNames().filter(n => /\\bchange (?:a|the) targets? of target effect\\b/i.test(getCard(n).text ?? ''));"
+      }
+    ],
+    "rule": "concepts.targets.change"
   }
 ]

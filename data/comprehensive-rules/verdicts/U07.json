@@ -4345,21 +4345,21 @@
   },
   {
     "key": "zones.recycle.mark",
-    "textHash": "a01577a822aa34ca",
+    "textHash": "df32dc97bb33b811",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:recycleToBottom",
+        "loc": "client/engine/src/engine.ts:recycleToBottom",
         "agrees": true,
-        "note": "pushes onto the recycle pile, never onto the live deck"
+        "note": "pushes onto recycleOf(seat), never onto the live deck"
       }
     ],
     "tests_run": [
       {
-        "file": "300-recycle-mark.test.ts",
-        "pattern": "R296 §1",
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "pattern": "CR 408.2 a recycled card stays behind the mark",
         "passed": true,
         "asserts_claim": true
       }
@@ -4367,20 +4367,33 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R296",
+        "ref": "owner register@72de434 2026-09-16 (two fragments)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner chat 2026-10-21 'The recycled cards are meant to be a part of your deck still.'",
+        "supports": "yes",
+        "note": "verbatim in 514's header"
+      },
+      {
+        "ref": "owner chat 2026-10-21 'In paper, they're put literally under your deck...'",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+        "file": "client/engine/test/514-deck-reads-reach-the-mark.test.ts",
+        "text": "The recycled cards are meant to be a part of your deck still."
+      },
+      {
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "text": "'the recycled copy is still behind the mark'"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.recycle.mark.order",
@@ -4463,27 +4476,44 @@
   },
   {
     "key": "zones.recycle.mark.reshuffle",
-    "textHash": "1f64487baf3abcdb",
+    "textHash": "5cd62282730278d4",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:refillFromRecycled",
+        "loc": "client/engine/src/engine.ts:refillFromRecycled",
         "agrees": true,
-        "note": "deck short -> pile shuffled under it, pile emptied, reshuffle announced"
+        "note": "the shuffled pile is pushed UNDER what is left of the deck; the pile is emptied"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:revealTop/takeTop",
+        "agrees": true,
+        "note": "a wide reveal refills with need = n"
       }
     ],
     "tests_run": [
       {
-        "file": "300-recycle-mark.test.ts",
-        "pattern": "R296 §2",
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "pattern": "CR 408.2b when the deck runs out the pile is shuffled in",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "300-recycle-mark.test.ts",
-        "pattern": "R296 §6b",
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "pattern": "CR 408.2b a glimpse WIDER than the deck",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/514-deck-reads-reach-the-mark.test.ts",
+        "pattern": "CR 408.2b revealTop wider than the deck",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/514-deck-reads-reach-the-mark.test.ts",
+        "pattern": "Tides of the Cosmos off a one-card deck",
         "passed": true,
         "asserts_claim": true
       }
@@ -4491,59 +4521,121 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R296",
+        "ref": "owner register@72de434 2026-09-16 (two fragments)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner chat 2026-10-21 'When you hit that reminder, for whatever reason...'",
+        "supports": "yes",
+        "note": "also quoted verbatim in 514's header"
+      },
+      {
+        "ref": "owner chat 2026-10-21 'So ANYTHING that uses the deck...'",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "becomes the new deck, behind a fresh mark and an empty pile."
+        "file": "client/engine/src/engine.ts",
+        "text": "deck.push(...this.shuffle(pile.splice(0, n)));"
+      },
+      {
+        "file": "client/engine/test/514-deck-reads-reach-the-mark.test.ts",
+        "text": "So ANYTHING that uses the deck should be able to trigger"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.recycle.mark.scope",
-    "textHash": "6f626a9849fd38d1",
+    "textHash": "78709f2c13e7d609",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:recycleToBottom",
+        "loc": "client/engine/src/engine.ts:recycleToBottom",
         "agrees": true,
-        "note": "the only writer to the bottom; no caller pushes onto a live deck"
+        "note": "the single writer: resource recycle, constructed put-back (apply.ts doBottomCards), glimpse leftovers, recycled packs (startDraftStep)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dealPacks",
+        "agrees": true,
+        "note": "refillFromRecycled(seat, packSize()) before dealing"
       }
     ],
     "tests_run": [
       {
-        "file": "300-recycle-mark.test.ts",
-        "pattern": "R296 §6 every reader of the deck reshuffles at the mark",
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "pattern": "CR 408.2a every reader of the deck reshuffles at the mark",
         "passed": true,
-        "asserts_claim": "yes for its own claim; it illustrates the readers, not the writers the rule is about"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/514-deck-reads-reach-the-mark.test.ts",
+        "pattern": "CR 408.2b revealTop wider than the deck",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/526-card-code-never-reads-the-deck.test.ts",
+        "pattern": "CR 408.2b no card code reads a deck",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "nothing moves until the 2 cards go back",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "\"nobody drafts it again\" (turn 3) is true",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U07-1.test.ts",
+        "test": "probe U07-1: dealing packs off a short shared deck reshuffles the pile in and deals full packs",
+        "passed": true,
+        "demonstrates": "yes: dealing a pack is a deck reader that reaches the mark (3 left + 30 recycled -> two full packs, pile emptied, reshuffle announced); no existing test showed it"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R296",
+        "ref": "owner register@72de434 2026-09-16 'Scope: everything that hits the bottom.'",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 2026-09-16 'every caller of E.recycleToBottom...'",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner chat 2026-10-21 'So ANYTHING that uses the deck...'",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**Scope: everything that hits the bottom.** Asked whether the mark covered only"
+        "file": "client/engine/src/engine.ts",
+        "text": "this.refillFromRecycled(seat, this.packSize());"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "recycleToBottom(seat: Seat, name: CardName): void {"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.recycle.mark.whose",

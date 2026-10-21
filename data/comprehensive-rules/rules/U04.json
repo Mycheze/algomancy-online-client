@@ -636,11 +636,13 @@
         "515-trigger-sacrifice-me.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
     "notes": "POLISH (2026-10-10), D-U04-2; engine aligned 2026-10-21 (CT-264, report #259). Printed text read literally: the three cards print \"sacrifice me. If you do, …\" as effect prose, with no [cost] bracket, after a \"When …\" trigger condition, so the sacrifice is a step of the effect. The designer says so of Eldritch Dreamtender (RQ 1363535826436493614, 2025-04-20): the opponent may kill it with the trigger on the stack, and then it cannot be sacrificed and nothing is discarded. The owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) read the prose as a bracketed cost paid on the way to the stack; print and the designer outrank it, and the owner accepted the designer's reading on 2026-10-21. \"Not optional\": the cards print no \"may\", and Void Mandible prints \"(This is not optional.)\". Maelstrom Charger is a different shape (\"As you play a nonunit spell, you may sacrifice me\"), settled by its RAQ write-up: the child rule. The engine makes the sacrifice as the ability resolves since 2026-10-21; 515-trigger-sacrifice-me drives all three cards (source in play while the trigger waits, killed in response does nothing, normal case sacrifices then applies).",
-    "sourceHashes": {}
+    "sourceHashes": {
+      "RQ 1363535826436493614": "58033915083c0583ec37e480a41f52f4551efe2a9ca7ecb31bffa509d2c7ae59"
+    }
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me.optional",

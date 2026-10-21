@@ -2437,15 +2437,20 @@
   },
   {
     "key": "concepts.targets.change",
-    "textHash": "dc0a89debd52b2dc",
-    "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U03-r2",
+    "textHash": "e96d2660bb78b8bf",
+    "verdict": "partial",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.slotCandidates",
+        "loc": "client/engine/src/cards/sets/batch-earth-a.ts:Enigmatic Warder (pickConfirm noChangeConfirm; run logs and does nothing when warderSlots is empty)",
         "agrees": true,
-        "note": "specForSlot + the part's other targets as chosen + sibling refs filtered; canFillSlot and rechooseTargets use it"
+        "note": "engine does what the record says, for Warder too: Warder may be aimed at a targetless effect or one it cannot legally fill"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:canFillSlot",
+        "agrees": true,
+        "note": "own-spec restriction + no sibling ref of the same part"
       }
     ],
     "tests_run": [
@@ -2460,6 +2465,18 @@
         "pattern": "CT-189 canFillSlot, the Enigmatic Warder gate, refuses a sibling ref on every multi-target part",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/529-noop-retarget-confirm.test.ts",
+        "pattern": "CT-307",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/511-retarget-nothing-to-change.test.ts",
+        "pattern": "CT-306",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -2467,22 +2484,37 @@
       {
         "ref": "RAQ 1355466429788328066#3",
         "supports": "yes",
-        "note": ""
+        "note": "verbatim; supports sentence 1 (own restriction)"
       },
       {
         "ref": "RAQ 1355466429788328066#6",
         "supports": "yes",
-        "note": ""
+        "note": "verbatim; supports sentence 1 (no doubling into a sibling slot)"
       },
       {
-        "ref": "R307",
+        "ref": "owner register@72de434 (R58 fragments)",
         "supports": "yes",
-        "note": ""
+        "note": "sentence 1"
       },
       {
-        "ref": "R58",
+        "ref": "owner chat 2026-10-21 'yes [they may be cast], since it just says target effect'",
+        "supports": "partial",
+        "note": "supports sentence 2 for cast spells (Gravitational Correction, Divine Intervention). It does not speak for Enigmatic Warder, an activated ability, and the designer does"
+      },
+      {
+        "ref": "designer passage 1 (calebgannon 1403796597896253511, 2025-08-09, given in the brief)",
+        "supports": "no",
+        "note": "\"Yeah you can change any spell where warder could be a legal target\" -- Caleb's criterion for using Enigmatic Warder is that Warder could be a legal target of that spell. The record's sentence 2 makes ANY target-changing effect legal against an effect with no target it can change, which for Warder includes a targetless effect and one Warder cannot legally fill (Throw off a Cliff). Designer outranks owner there"
+      },
+      {
+        "ref": "designer passage 2 (2025-08-27, given in the brief)",
+        "supports": "n/a",
+        "note": "the 'you CANNOT CHANGE this effects target with GC' remark is _passer's (not authority in the flat channel); Caleb's 'No*' answers whether the Megadeath effect can go on the stack at all, and leaves the GC question open -- so for GC the owner call stands"
+      },
+      {
+        "ref": "owner chat 2026-10-21 stop/reminder",
         "supports": "yes",
-        "note": ""
+        "note": "sentence 3; demonstrated by 529"
       }
     ],
     "quote_spans": [
@@ -2491,12 +2523,20 @@
         "text": "Enigmatic Warder (1/2) can't redirect Throw off a Cliff ('4 or more defense') to himself as he is not valid target for it."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- and **never a ref already in a sibling slot of the same part**. That"
+        "file": "client/ledgers/raq.ts",
+        "text": "But you couldn't make Enigmatic Warder being targeted twice."
+      },
+      {
+        "file": "client/ui/test/529-noop-retarget-confirm.test.ts",
+        "text": "This effect has no targets, so ${changer} will do nothing. Continue?"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-a.ts",
+        "text": "pickConfirm: noChangeConfirm('Enigmatic Warder',"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Sentences 1 and 3 hold (sources verbatim, tests pass). Sentence 2 is stated for every effect that changes targets, but its only source is the owner's 2026-10-21 call about casting Gravitational Correction-type spells. For Enigmatic Warder the designer gave the criterion himself (calebgannon 1403796597896253511: \"you can change any spell where warder could be a legal target\"), which does not allow Warder to be aimed at an effect where it cannot be a legal target (a targetless trigger, or Throw off a Cliff). Sentence 2 must be narrowed to the 'change the targets of target effect' spells (or Warder carved out), or it overreaches past a designer ruling."
   },
   {
     "key": "concepts.targets.change.kept",
@@ -3533,65 +3573,62 @@
   },
   {
     "key": "concepts.targets.required",
-    "textHash": "b1f0812748b2bd91",
+    "textHash": "80ffeb6a40d4cfbd",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:canCast (requiresTargets && requiredSlotsFillable gate)",
+        "loc": "client/engine/src/engine.ts:requiredSlotsFillable (CR 110.7 cast/activation gate)",
         "agrees": true,
-        "note": "cast gate refuses a play whose required slots cannot all be filled"
+        "note": ""
       },
       {
-        "loc": "client/engine/src/engine.ts:requiredSlotsFillable",
+        "loc": "client/engine/src/cards/dsl.ts:targetMinimum",
         "agrees": true,
-        "note": "backtracking search over every required slot, excluding refs already taken (distinct), at some declarable X"
-      },
-      {
-        "loc": "client/engine/src/cards/dsl.ts:requiresTargets/targetMinimum",
-        "agrees": true,
-        "note": "min defaults to 1 per slot; only min 0 specs (up to / any number) may go on the stack at nothing"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Tilling the Graves",
-        "agrees": true,
-        "note": "count 2, min 2"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:requiredSlotsFillable (scope note)",
-        "agrees": true,
-        "note": "'different from the others' rests on Fight's '2 units' ruling and the engine's distinct-slot collector; no cited source states distinctness in general. The engine also lets a triggered 'you may ... target' ability (Reclaimer of Secrets, Rousing Spirit, Blightwalker) take zero targets; that declines the whole optional effect, so it does not contradict this rule about played cards."
+        "note": "min 0 only for up to / any number (Penance) specs"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
+        "file": "client/engine/test/390-raq-stack.test.ts",
         "pattern": "RAQ target requirements: Fight cannot be played",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "396-raq-timing.test.ts",
+        "file": "client/engine/test/396-raq-timing.test.ts",
         "pattern": "Rebalance is playable with no unit",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "452-abduct-x-gate.test.ts",
+        "file": "client/engine/test/452-abduct-x-gate.test.ts",
         "pattern": "Abduct is castable against a cost-1 attacker",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "478-required-targets-at-cast.test.ts",
-        "pattern": "Tilling the Graves",
+        "file": "client/engine/test/478-required-targets-at-cast.test.ts",
+        "pattern": "Tilling the Graves is not offered with",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "477-target-minimum-sweep.test.ts",
-        "pattern": "",
+        "file": "client/engine/test/510-inline-play-targets.test.ts",
+        "pattern": "CT-308: Tidal Reversion under Tides takes one unit of each player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/477-target-minimum-sweep.test.ts",
+        "pattern": "every target spec that may stop short",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/401-raq-fix-stack.test.ts",
+        "pattern": "CR 110.7 sweep",
         "passed": true,
         "asserts_claim": true
       }
@@ -3601,27 +3638,27 @@
       {
         "ref": "RAQ 1410252965276684418#1",
         "supports": "yes",
-        "note": "[Solved] thread, _passer; Fight needs ally + another unit in the region; supports simultaneous, distinct required targets (status covered)"
+        "note": "_passer [Solved] write-up, status covered; quote verbatim"
       },
       {
         "ref": "RAQ 1454169054402314362#1",
         "supports": "yes",
-        "note": "calebgannon's own words; Rebalance targets nothing so no requirement"
+        "note": "calebgannon, Rebalance targets nothing; quote verbatim"
       },
       {
-        "ref": "owner register@72de434",
+        "ref": "owner register@72de434 (2026-10-09)",
         "supports": "yes",
-        "note": "truncated quote, says every required target"
+        "note": "fragment; consistent with the designer sources"
       },
       {
-        "ref": "owner CT-305 2026-10-16",
+        "ref": "owner CT-305 2026-10-16 'Unless a card says \"up to\"...'",
         "supports": "yes",
-        "note": "unless 'up to', targets required"
+        "note": "'any number' is not in this quote but is the literal printed reading of Penance and is what 477 sweeps"
       },
       {
-        "ref": "owner CT-299 2026-10-16",
+        "ref": "owner CT-299 2026-10-16 Tilling the Graves",
         "supports": "yes",
-        "note": "Tilling the Graves needs both targets"
+        "note": ""
       }
     ],
     "quote_spans": [
@@ -3634,32 +3671,8 @@
         "text": "it doesn't target anything so there are no requirements for you having a unit"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "if (eff.targets && requiresTargets(eff.targets)"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "requiredSlotsFillable(spec: TargetSpec, region: number, ally: Seat, sourceId?: EntityId,"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": ".filter(c => !taken.has(JSON.stringify(c)));"
-      },
-      {
-        "file": "client/engine/src/cards/dsl.ts",
-        "text": "return spec.min === 'X' || (spec.min ?? 1) > 0;"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "text": "what: 'binCard', count: 2, min: 2,"
-      },
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "\"text\": \"Recall two target units in your bin, then discard a card.\","
-      },
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "\"text\": \"Each player gives an opponent control of one of their units.\","
+        "file": "client/engine/test/510-inline-play-targets.test.ts",
+        "text": "'with one side empty it is not offered'"
       }
     ],
     "basis_ok": true,

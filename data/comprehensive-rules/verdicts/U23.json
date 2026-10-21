@@ -4595,59 +4595,81 @@
   {
     "key": "annexd.undo.agreed-fix.proposal",
     "textHash": "5e9bee6a797b5efc",
-    "verdict": "confirmed",
+    "verdict": "partial",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/server/rooms.ts:proposeFix",
         "agrees": true,
-        "note": "reason required (>= 3 chars); expires = now + FIX_PROPOSAL_MS (60s); cooldown checked"
+        "note": "reason required (<3 chars refused, 'say what went wrong'); expires = now + FIX_PROPOSAL_MS (60_000); refused while the decline cooldown runs"
       },
       {
         "loc": "client/server/rooms.ts:answerFix",
         "agrees": true,
-        "note": "accept/decline only by the other seat, cancel only by the proposer; decline sets a 15s cooldown"
+        "note": "only the other seat accepts/declines, only the proposer cancels; a decline sets fixCooldown = now + FIX_COOLDOWN_MS (15_000); a cancel sets none"
       },
       {
         "loc": "client/server/rooms.ts:applyToRoom",
         "agrees": true,
-        "note": "any action that lands clears room.proposal"
+        "note": "any action that lands sets room.proposal = null"
       },
       {
-        "loc": "client/server/main.ts:carryOutFix / fileFixReport",
-        "agrees": true,
-        "note": "an accepted fix files a 'bug' report whose note carries the reason"
+        "loc": "client/server/main.ts:carryOutFix / flushFixRun / fileFixReport",
+        "agrees": false,
+        "note": "the report is NOT filed when a fix lands: consecutive fixes form a run (rooms.ts FixRun) filed as ONE report row when the run ends — the next game action, the end of the game, a 10-minute idle sweep or a restart"
       }
     ],
     "tests_run": [
       {
-        "file": "485-agreed-fix-rooms.test.ts",
-        "pattern": "§5 a proposal stops both clocks, lapses after a minute, and ends on any action",
+        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
+        "pattern": "§5 a proposal stops both clocks",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "485-agreed-fix-rooms.test.ts",
-        "pattern": "§5 a decline cools the proposer down; a withdraw does not",
+        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
+        "pattern": "§5 a decline cools the proposer down",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "486-agreed-fix-over-the-wire.test.ts",
+        "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
         "pattern": "§2 propose then accept",
         "passed": true,
-        "asserts_claim": true
+        "asserts_claim": false
       },
       {
-        "file": "487-propose-a-fix-ui.test.ts",
-        "pattern": "§4 the other seat agrees or declines on a bar",
+        "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
+        "pattern": "§6 two fixes in a row file one report",
+        "passed": true,
+        "asserts_claim": false
+      },
+      {
+        "file": "client/ui/test/487-propose-a-fix-ui.test.ts",
+        "pattern": "§4 the other seat agrees or declines",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [],
-    "source_checks": [],
+    "source_checks": [
+      {
+        "ref": "485-agreed-fix-rooms.test.ts",
+        "supports": "yes",
+        "note": "reason required, 60 s lapse, ends on any action, decline cooldown, withdraw has none"
+      },
+      {
+        "ref": "486-agreed-fix-over-the-wire.test.ts",
+        "supports": "partial",
+        "note": "§2 asserts the report is NOT filed when the fix lands, only when the next game action lands; §6: two fixes in a row file one row"
+      },
+      {
+        "ref": "487-propose-a-fix-ui.test.ts",
+        "supports": "yes",
+        "note": "the other seat agrees/declines by id"
+      }
+    ],
     "quote_spans": [
       {
         "file": "client/server/rooms.ts",
@@ -4662,16 +4684,16 @@
         "text": "if (reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };"
       },
       {
-        "file": "client/server/rooms.ts",
-        "text": "if (op === 'decline') room.fixCooldown[seatSlot(p.seat)] = now + FIX_COOLDOWN_MS;"
+        "file": "client/server/main.ts",
+        "text": " * ONE ROW PER RUN of fixes (rooms.ts FixRun): filed when the run ends, so a"
       },
       {
-        "file": "client/server/main.ts",
-        "text": "note: `[Agreed fix] ${p.what}. What went wrong: ${p.reason}`.slice(0, 4000),"
+        "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
+        "text": "assert.equal(fixRows().length, 0, 'not filed while the run may still continue');"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "All but the last sentence hold (reason required, 60 s lapse, ends when any action lands, proposer may cancel, only the other seat accepts, 15 s cooldown after a decline only). The last sentence is out of date: the reason is not filed when a fix lands. Since the fix-run change, back-to-back fixes with no game action between them form a run that is filed as ONE bug report (every fix's reason in order) when the run ends: the next game action, the game ending, a 10-minute idle sweep or a server restart (main.ts flushFixRun; 486 §2 asserts nothing is filed until the next move, §6 that two fixes file one row)."
   },
   {
     "key": "annexd.undo.agreed-fix.quiet",
@@ -4743,37 +4765,37 @@
   {
     "key": "annexd.undo.agreed-fix.rewind",
     "textHash": "9d515598e8a8f68b",
-    "verdict": "confirmed",
+    "verdict": "partial",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/server/rooms.ts:rewindOptions",
-        "agrees": true,
-        "note": "the last FIX_REWIND_MAX non-forced actions (a forced one is skipped: neither counted nor a cut), the start of this step, the start of the step before. Wording note: 'counting only actions the player took' means actions taken by a player as opposed to forced ones — the count includes BOTH seats' actions (probe U23-1f: the counted tail held seats [1,1,0,1,0,1,0]), not only the proposer's; 'a player' would read less ambiguously"
+        "loc": "client/server/rooms.ts:rewindPlans",
+        "agrees": false,
+        "note": "offers cuts before each of the last FIX_REWIND_MAX (5) non-forced actions, the start of this step and the start of the step before — AND, first-class, 'back to before your last action' however far back it is (CT-323), which can be more than five actions back; inside a hidden step it also offers no in-step cut that would take back the other seat's hidden action, and drops a cut that takes back nothing this seat can see"
       },
       {
         "loc": "client/server/rooms.ts:rewindRoom",
         "agrees": true,
-        "note": "the log is truncated and the room rebuilt from the prefix"
+        "note": "truncates the log to p.to and rebuilds; sigs/cardLog/soft state cut; the removed actions are archived on the amendment for the record only"
       }
     ],
     "tests_run": [
       {
-        "file": "485-agreed-fix-rooms.test.ts",
+        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
         "pattern": "§4 rewind options",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "485-agreed-fix-rooms.test.ts",
+        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
         "pattern": "§3 a rewind cuts the log",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "486-agreed-fix-over-the-wire.test.ts",
-        "pattern": "§4 a rewind",
+        "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
+        "pattern": "§4 a rewind: both seats get a fresh view",
         "passed": true,
         "asserts_claim": true
       }
@@ -4781,42 +4803,39 @@
     "probes": [
       {
         "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "probe U23-1f: rewind options — at most five non-forced actions, the start of this step and of the step before",
+        "test": "probe U23-1: the \"before your last action\" option can reach past five actions",
         "passed": true,
-        "demonstrates": "yes: five 'Take back' options skipping a forced index; the step before offered (merged), and after one more action the start of this step"
+        "demonstrates": "no (record): seed 48591 at log length 66, seat 0 is offered six cuts; the sixth, 'Back to before your done with haste (your last action)', takes back 6 non-forced actions — beyond the record's 'up to five of the last actions', and none of its other two shapes (it is not a step start)"
       }
     ],
     "source_checks": [
       {
-        "ref": "owner 2026-10-16 'Rewinding a whole step or two seems fine to me. Either say \"up to 5 actions\" or \"restart this step\"'",
-        "supports": "yes",
-        "note": ""
+        "ref": "owner: \"Rewinding a whole step or two seems fine to me. Either say \\\"up to 5 actions\\\" or \\\"restart this step\\\"\" (2026-10-16)",
+        "supports": "partial",
+        "note": "supports five actions / this step / the step before; the engine now also offers the proposer's own last action at any depth, which the record's exhaustive 'one of' list omits"
+      },
+      {
+        "ref": "485-agreed-fix-rooms.test.ts",
+        "supports": "partial",
+        "note": "§4 itself excludes the 'last action' option from its at-most-five count (`!/last action/.test(o.label)`)"
       }
     ],
     "quote_spans": [
       {
         "file": "client/server/rooms.ts",
+        "text": "// \"back to before your last action\" — first-class, however far back it is"
+      },
+      {
+        "file": "client/server/rooms.ts",
         "text": "export const FIX_REWIND_MAX = 5;"
       },
       {
-        "file": "client/server/rooms.ts",
-        "text": "for (let i = len - 1; i >= lo && n < FIX_REWIND_MAX; i--) {"
-      },
-      {
-        "file": "client/server/rooms.ts",
-        "text": "if (forced(i)) continue;"
-      },
-      {
-        "file": "client/server/rooms.ts",
-        "text": "offer(prev, `Back to the start of the step before (${stepLabel(at(here - 1))})`, stepLabel(at(here - 1)));"
-      },
-      {
-        "file": "client/server/rooms.ts",
-        "text": "room.actions = restore.slice(0, to);"
+        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
+        "text": "const steps = opts.filter(o => o.label.startsWith('Back to before') && !/last action/.test(o.label));"
       }
     ],
-    "basis_ok": true,
-    "problem": ""
+    "basis_ok": false,
+    "problem": "The list of rewind points is no longer complete. Besides the last five non-forced actions, the start of this step and the start of the step before, the server always offers 'back to before your last action' (CT-323), however far back it is. The probe shows that option at six non-forced actions back. Inside a hidden step it also refuses any in-step cut that would take back the other seat's hidden actions (CT-325), which the record does not mention. The removal sentence holds (§3: the log is truncated and the board is exactly the prefix replayed). Basis: the rule depends on the server's behaviour as well as the owner's quote, so 'owner' alone understates it ('mixed')."
   },
   {
     "key": "annexd.undo.agreed-fix.timing",
@@ -5245,58 +5264,66 @@
       {
         "loc": "client/server/rooms.ts:segmentFloor",
         "agrees": true,
-        "note": "the leading run of decide actions answering a start-of-step question is below the floor; start-of-step payments land inside the barrier action, before segStartIndex"
+        "note": "the walk stops at segStartIndex, and past the leading run of decides that answer a start-of-step trigger; debt payment and start-of-deploy damage are inside the barrier action, below segStartIndex"
       },
       {
         "loc": "client/server/rooms.ts:undoForSeat",
         "agrees": true,
-        "note": "walk skips amend actions; i < amendFloor refused; outside a segment a last amend is refused"
+        "note": "the walk passes over amend actions (never taken back), the non-segment path refuses when the last action is an amend, i < amendFloor refuses with FIX_UNDO_REFUSAL"
       },
       {
-        "loc": "client/server/rooms.ts:rewindOptions",
+        "loc": "client/server/rooms.ts:amendFloor",
         "agrees": true,
-        "note": "no amendFloor check: a later rewind may cut past an earlier one"
+        "note": "the last rewind's `at` is a hard floor for one seat's undo"
+      },
+      {
+        "loc": "client/server/rooms.ts:referenceKey (case 'amend') / undoActionAt",
+        "agrees": true,
+        "note": "an earlier action is spliced through an edit only if the edit's meaning is unchanged; otherwise 'taking that back would change an agreed fix'"
       }
     ],
     "tests_run": [
       {
-        "file": "434-cr-digital-1.test.ts",
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
         "pattern": "cr:annexd.undo.hidden-step.floor",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "485-agreed-fix-rooms.test.ts",
+        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
         "pattern": "§2 the per-seat undo cannot walk back past an agreed fix",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "485-agreed-fix-rooms.test.ts",
+        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
         "pattern": "§7 in the step, an undo passes a fix only when the fix would mean the same",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "client/server/test/zz-probe-U23-3.test.ts",
-        "test": "probe U23-3: past an agreed rewind the per-seat undo stops, but another agreed rewind may go further back",
-        "passed": true,
-        "demonstrates": "yes: after an agreed rewind both seats' lone undo is refused, and a second agreed rewind to an earlier point is offered and lands"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "basis engine",
+        "ref": "434-cr-digital-1.test.ts",
         "supports": "yes",
-        "note": "code + executed tests and a probe; no other source needed"
+        "note": "the Wraith start-of-deployment trigger answer is refused as the start of the phase"
+      },
+      {
+        "ref": "485-agreed-fix-rooms.test.ts",
+        "supports": "yes",
+        "note": "§2: after an agreed rewind, seat 0 cannot undo its recycle alone (control without the fix can); §7: the recycle under a hand-index move is refused, the other seat's unrelated recycle is allowed, the amend is never taken back"
+      },
+      {
+        "ref": "suite.test.ts",
+        "supports": "partial",
+        "note": "only client/server/e2e/suite.test.ts exists; not needed, the other two tests carry the claim"
       }
     ],
     "quote_spans": [
       {
         "file": "client/server/rooms.ts",
-        "text": "while (i < room.actions.length && room.actions[i]!.type === 'decide') i++;"
+        "text": "if (i < fixFloor) return { ok: false, why: FIX_UNDO_REFUSAL };"
       },
       {
         "file": "client/server/rooms.ts",
@@ -5304,15 +5331,11 @@
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "if (i < fixFloor) return { ok: false, why: FIX_UNDO_REFUSAL };"
-      },
-      {
-        "file": "client/server/rooms.ts",
         "text": "if (room.actions.length - 1 < fixFloor || last.type === 'amend') return { ok: false, why: FIX_UNDO_REFUSAL };"
       },
       {
-        "file": "client/server/rooms.ts",
-        "text": "for (const a of room.amendments) if (a.kind === 'rewind') floor = Math.max(floor, a.at);"
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "text": "assert.deepEqual(R.undoForSeat(room, 0), { ok: false, why: 'that is the start of the phase — its triggers cannot be taken back' },"
       }
     ],
     "basis_ok": true,

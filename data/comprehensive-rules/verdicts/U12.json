@@ -1870,71 +1870,112 @@
   },
   {
     "key": "combat.damage.split.boundary-window",
-    "textHash": "ddd480542a62f570",
+    "textHash": "cc91920b003facc5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:pumpCombatDamage",
         "agrees": true,
-        "note": "checkDeaths runs before the window; window opens after a scheduled sub-step with a later one scheduled"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:advanceBattleStep",
-        "agrees": true,
-        "note": "resumes pendingSub only after two passes with an empty stack"
+        "note": "struckNow && moreLater opens 'damageWindow'; checkDeaths() (deaths + promotion) runs before; damageSubs fixed at step open"
       }
     ],
     "tests_run": [
       {
-        "file": "297-damage-substeps-are-steps.test.ts",
-        "pattern": "R295 §1 the report",
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "pattern": "CR 802.5b the report",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "297-damage-substeps-are-steps.test.ts",
-        "pattern": "R295 §2 the boundary is a real priority window",
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "pattern": "CR 608.3b the boundary is a real priority window",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "pattern": "CR 608.3c an EMPTY sub-step opens no window",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "pattern": "CR 608.3d damageSubs is fixed when the step opens",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+        "pattern": "CR 608.9c: in a SPLIT damage step a death trigger resolves at the boundary",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
+        "pattern": "CR 608.3e STILL STANDS",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/05-rulings.test.ts",
+        "pattern": "CR 608.3e: formation recalc between damage sub-steps is immediate",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "Flowstone Arcanite",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U12-1.test.ts",
+        "test": "probe U12-1: a dead Deadly front blocker no longer lends Deadly to the back blocker at the boundary",
+        "passed": true,
+        "demonstrates": "yes: the 'lost shared attributes' clause -- a column-mate killed in the Swift sub-step no longer shares {Deadly} when the window opens (no existing test showed this)"
+      }
+    ],
     "source_checks": [
       {
         "ref": "RAQ 1540678747953569832#2",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved], verbatim; new stacks resolved before the next sub-step"
       },
       {
         "ref": "RAQ 1363298910528864318#0",
         "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved], verbatim"
       },
       {
-        "ref": "R295",
+        "ref": "owner register@72de434 2026-09-16 (two fragments)",
         "supports": "yes",
-        "note": ""
+        "note": "resolution with priority at the boundary; promotion already done (the same words are in 05-rulings's comment)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.checkDeaths();   // deaths + promotion between sub-steps, no priority (R3)"
+        "file": "client/ledgers/raq.ts",
+        "text": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "There *may* be additional opportunity windows between swift-regular-sluggish"
+      },
+      {
+        "file": "client/engine/test/05-rulings.test.ts",
+        "text": "the promotion has already happened when the"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "const next = b.pendingSub ?? 'after';"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "state-based and still immediate — the promotion has already happened when the"
+        "text": "this.checkDeaths();   // deaths + promotion between sub-steps, no priority (CR 608.3e)"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": "Minor: no cited source names 'lost shared attributes'. The owner fragment covers promotion/state-based immediacy, and the probe shows the engine does it (column-shared attributes are derived live). Basis 'mixed' covers it."
   },
   {
     "key": "combat.damage.split.empty-substep",

@@ -1559,30 +1559,15 @@
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me",
-    "textHash": "c34fe6bce50c6538",
+    "textHash": "fc3d54fb030d1bf9",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Eldritch Dreamtender",
-        "agrees": false,
-        "note": "castCost {kind:'sacrificeUnits', from:'self', n:1}: sacrificed in the cast window as the trigger goes on the stack (R73), not on resolution. The flagged divergence (engineDiffers) is real."
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-dark-c.ts:Cthyrian Rector",
-        "agrees": false,
-        "note": "Same castCost from:'self' — same divergence."
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-light-c.ts:Void Mandible",
-        "agrees": false,
-        "note": "Same castCost from:'self' — same divergence."
-      },
-      {
-        "loc": "client/engine/src/engine.ts:canPayCastCost/chargeCastCost (from:'self')",
-        "agrees": "partly",
-        "note": "Mandatory (no decline), which matches the rule; and a source already dead before stacking skips the part, but a source killed in response cannot happen because there is no window before payment."
+        "loc": "client/engine/src/cards/sets (Eldritch Dreamtender, Cthyrian Rector, Void Mandible: no castCost; sacrifice in run)",
+        "agrees": true,
+        "note": ""
       }
     ],
     "tests_run": [
@@ -1590,7 +1575,13 @@
         "file": "client/engine/test/26-metal-a.test.ts",
         "pattern": "Eldritch Dreamtender",
         "passed": true,
-        "asserts_claim": "yes for example 3 ('the sacrifice is MANDATORY — no decline is ever offered' asserts no Decline option). 'the sacrifice is paid on the way to the stack, not at resolution' passes and CONFIRMS the divergence: it asserts the Dreamtender is in the bin before the first priority window."
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/515-trigger-sacrifice-me.test.ts",
+        "pattern": "§",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1598,55 +1589,40 @@
       {
         "ref": "card: Eldritch Dreamtender",
         "supports": "yes",
-        "note": "Printed effect prose 'sacrifice me. If you do, …' — no colon cost; the literal reading is a sacrifice on resolution."
+        "note": "verbatim; the sacrifice is in the effect text, not a colon cost"
       },
       {
         "ref": "card: Cthyrian Rector",
         "supports": "yes",
-        "note": "Same shape."
+        "note": "verbatim"
       },
       {
         "ref": "card: Void Mandible",
         "supports": "yes",
-        "note": "Same shape, plus '(This is not optional.)' for the mandatory clause."
+        "note": "verbatim; '(This is not optional.)'"
       },
       {
-        "ref": "calebgannon, rules-questions 1363535826436493614 (2025-04-20) — NOT CITED",
+        "ref": "RQ 1363535826436493614",
         "supports": "yes",
-        "note": "The designer, on Eldritch Dreamtender: if the opponent kills it with the trigger on the stack you cannot sacrifice it and nothing is discarded. This is the strongest source for the rule; it is in data/rulings/generated_rulings.jsonl and should be added as a designer ref."
-      },
-      {
-        "ref": "R73 (current, owner call) — NOT CITED",
-        "supports": "no",
-        "note": "R73 rules the opposite (a cast cost paid on the way to the stack). It is outranked by the designer and printed text, but the rule should name it as the ruling it overrides."
-      },
-      {
-        "ref": "26-metal-a.test.ts",
-        "supports": "partly",
-        "note": "Supports only the mandatory clause; its other Dreamtender tests assert the engine's divergent cost timing."
+        "note": "author calebgannon; replies to matiw51's 'if you do means you don't have to sac him?'; supports sacrifice at resolution and nothing if killed in response"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rulings/generated_rulings.jsonl",
-        "text": "So if the opponent kills it while the trigger is on the stack, for example, you wouldn't be able to sacrifice it, and so wouldn't discard a card from them."
+        "file": "client/engine/src/cards/printed.json",
+        "text": "sacrifice me. If you do, look at that player's hand and discard a card from it."
       },
       {
-        "file": "client/engine/src/cards/sets/batch-metal-a.ts",
-        "text": "castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "sacrifice me. If you do, negate that effect. {i}(This is not optional.)"
       },
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "text": "assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "## R73 — \"Sacrifice me\" is a CAST COST, paid on the way to the stack"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "if the opponent kills him with the trigger on the stack for example, you wouldn't be able to sacrifice him/discard a card from them"
       }
     ],
-    "basis_ok": true,
-    "problem": "The ruling is right and the divergence is real. The citations are incomplete: add the designer's 2025-04-20 answer on Eldritch Dreamtender (calebgannon, rules-questions msg 1363535826436493614 and the follow-up 1363536741386162508), which states the rule's response case directly. Also name R73 as the current owner ruling this overrides. Examples 1 and 2 are illustrative; the engine cannot reproduce them (no window exists before the sacrifice).",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "basis_ok": false,
+    "problem": "Text, examples and tests all hold. Only the label is off: the record cites printed cards AND a designer message (RQ 1363535826436493614), so basis should be 'mixed', not 'printed'."
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me.optional",

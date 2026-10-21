@@ -1285,60 +1285,73 @@
   },
   {
     "key": "effects.casting.targets-required",
-    "textHash": "b56ef2c60db88b6f",
+    "textHash": "e8c2ac101b041915",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:castable",
+        "loc": "client/engine/src/engine.ts:requiredSlotsFillable",
         "agrees": true,
         "note": ""
       },
       {
-        "loc": "client/engine/src/engine.ts:E.requiredSlotsFillable",
+        "loc": "client/engine/src/cards/dsl.ts:TargetSpec.may (decline at the target step)",
         "agrees": true,
-        "note": "every required slot, distinct"
-      },
-      {
-        "loc": "client/engine/src/cards/dsl.ts:TargetSpec.min / requiresTargets",
-        "agrees": true,
-        "note": "trigger without up to has min >= 1; 'you may' trigger excused (477)"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
-        "pattern": "RAQ target requirements: Fight cannot be played without an ally and another unit in the region",
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ target requirements: Fight cannot be played",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "390-raq-stack.test.ts",
-        "pattern": "RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall",
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ target requirements: Tidal Reversion is not playable",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "477-target-minimum-sweep.test.ts",
-        "pattern": "a must-target trigger with only the controllers own units as targets picks one of them",
+        "file": "client/engine/test/477-target-minimum-sweep.test.ts",
+        "pattern": "a must-target trigger with only the controllers own units",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "477-target-minimum-sweep.test.ts",
-        "pattern": "every target spec that may stop short of its slots prints up to, any number, or a trigger may",
+        "file": "client/engine/test/512-may-target-decline.test.ts",
+        "pattern": "CT-309 Shoreline Specter declined at the target step",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "182-correctness-sample.test.ts",
-        "pattern": "Shoreline Specter: DECLINE the recall and the 2-life drain does not happen",
+        "file": "client/engine/test/512-may-target-decline.test.ts",
+        "pattern": "CT-309 Shoreline Specter given a target",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "478-required-targets-at-cast.test.ts",
+        "file": "client/engine/test/512-may-target-decline.test.ts",
+        "pattern": "CT-309 Chombot: once one target is picked both are required",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/512-may-target-decline.test.ts",
+        "pattern": "CT-309 no may-target trigger asks a second may",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "pattern": "Blightwalker: trashed from hand",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/478-required-targets-at-cast.test.ts",
         "pattern": "Tilling the Graves",
         "passed": true,
         "asserts_claim": true
@@ -1349,50 +1362,59 @@
       {
         "ref": "card: Shoreline Specter",
         "supports": "yes",
-        "note": "printed: '[Augment] After combat, you may recall target ally. If you do, each opponent loses 2 life.'"
+        "note": "verbatim"
       },
       {
         "ref": "RAQ 1410252965276684418#0",
         "supports": "yes",
-        "note": "_passer, Resurrect"
+        "note": "verbatim, _passer [Solved]"
       },
       {
         "ref": "RAQ 1410252965276684418#1",
         "supports": "yes",
-        "note": "_passer, Fight"
+        "note": "verbatim"
       },
       {
         "ref": "RAQ 1410252965276684418#3",
         "supports": "yes",
-        "note": "Caleb, Tidal Reversion"
+        "note": "calebgannon, verbatim"
       },
       {
-        "ref": "owner register@72de434 (2026-10-09)",
+        "ref": "owner register@72de434 / CT-305 2026-10-16 (three quotes)",
         "supports": "yes",
-        "note": ""
+        "note": "required targets; triggers must take one even of your own units"
       },
       {
-        "ref": "owner CT-305 2026-10-16 (x2)",
+        "ref": "owner chat 2026-10-21 'decline/target should be the options...'",
         "supports": "yes",
-        "note": "triggers without up to MUST target, even own units"
+        "note": "verbatim in 512's header"
+      },
+      {
+        "ref": "designer passages 1-2 (brief)",
+        "supports": "n/a",
+        "note": "Caleb's 'No*' (a targetless graft effect cannot go on the stack) agrees with the required-target rule"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "if (eff.targets && requiresTargets(eff.targets)\n    && !e.requiredSlotsFillable(eff.targets, region, seat, undefined, castXChoices(e, c, region, seat, reserve, fixedX))) {"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)\n        .filter(c => !taken.has(JSON.stringify(c)));"
+        "file": "client/ledgers/raq.ts",
+        "text": "You cannot play Resurrect if there aren't any 2 mana units in your bin."
       },
       {
         "file": "client/ledgers/raq.ts",
-        "text": "calebgannon (screenshot, 2025-03-16): \\\"You can't play it if one player doesn't have a valid target\\\""
+        "text": "You can't play it if one player doesn't have a valid target"
       },
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "After combat, you may recall target ally."
+        "file": "client/engine/test/512-may-target-decline.test.ts",
+        "text": "decline/target should be the options. Same for all similarly worded"
+      },
+      {
+        "file": "client/engine/test/477-target-minimum-sweep.test.ts",
+        "text": "the own unit is the only option, with no \"No targets\" beside it"
+      },
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "text": "the [2] is still paid at resolution."
       }
     ],
     "basis_ok": true,

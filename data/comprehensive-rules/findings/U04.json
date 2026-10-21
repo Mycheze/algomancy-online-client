@@ -90,15 +90,16 @@
     "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"When …, sacrifice me. If you do, …\" as effect prose with no [cost] bracket, so the sacrifice happens as the ability resolves: players can respond while the unit is still in play, and if it is gone by then the \"If you do\" part does nothing. The owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) (owner) reads the prose as a cast cost, and the engine follows the owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”): 26-metal-a asserts the sacrifice is paid on the way to the stack. Print outranks the owner ruling of 2026-08-22 (“\"Sacrifice me\" is a CAST COST…”) (D-U04-2). Suspected from the ruling and the test title; not re-measured against the engine in this pass.",
     "evidence": [
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "quote": "assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "printed line is effect prose with an if-you-do rider rather than a printed"
+      },
+      {
+        "file": "client/engine/test/515-trigger-sacrifice-me.test.ts",
+        "quote": "test('§2 Eldritch Dreamtender: a real response — the opponent kills it with the trigger on the stack', () => {"
       }
     ],
-    "ct": "CT-264"
+    "ct": "CT-264",
+    "closed": "fixed on 2026-10-21 (report #259, CT-264): the three \"sacrifice me. If you do\" triggers go on the stack with their source in play and sacrifice it as they resolve; killed in response, nothing happens. 515 drives all three cards; RQ 1363535826436493614 is the designer saying so."
   },
   {
     "id": "F-U04-6",
@@ -110,14 +111,11 @@
         "quote": "So if the opponent kills it while the trigger is on the stack, for example, you wouldn't be able to sacrifice it, and so wouldn't discard a card from them."
       },
       {
-        "file": "client/engine/src/cards/sets/batch-metal-a.ts",
-        "quote": "castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },"
-      },
-      {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "quote": "assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');"
+        "file": "client/engine/test/515-trigger-sacrifice-me.test.ts",
+        "quote": "test('§2 Eldritch Dreamtender: a real response — the opponent kills it with the trigger on the stack', () => {"
       }
     ],
-    "rule": "concepts.costs.trigger-sacrifice-me"
+    "rule": "concepts.costs.trigger-sacrifice-me",
+    "closed": "fixed on 2026-10-21 with F-U04-5 (report #259, CT-264): 515 shows the sacrifice made as the trigger resolves, and nothing done when the source was killed in response."
   }
 ]
