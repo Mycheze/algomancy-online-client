@@ -12071,6 +12071,7 @@ dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 tt.initTabletop({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // a reload on `?table=<deck id>` comes back to the table (docs/19)
 tt.registerTableResolver('deck', dk.tabletopHostFor);
+tt.registerTableResolver('challenge', chal.tabletopHostFor);
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 lg.initLeague({ app: $app, rerender: () => { if (!inGame) renderHome(); } });

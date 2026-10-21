@@ -13,6 +13,14 @@
  * challenge in this browser) and the hand-off to a run (ui/challengerun.ts,
  * which main.ts opens at `?challenge=play`).
  *
+ * The builder here is a summary — the deck's rows, its Turn-1 hand, Import,
+ * Clear, Undo and Play — and a "Build on the table" button. The deck is built
+ * on the tabletop (ui/tabletop.ts), which this page hosts as kind
+ * `challenge`: a scratch table of piles on top (cards being considered, kept
+ * in this browser, NOT in the deck) and the deck itself as a strip below,
+ * left to right = top to bottom (ui/deckstrip.ts). The table sits on top of
+ * this page, which stays `open` under it, so Back is a repaint of it.
+ *
  * The home page's card and the header button are drawn from one fetch of
  * GET /api/challenge, asked the first time the home page draws and never at
  * boot: a game or replay link makes no request it has no use for.
@@ -21,10 +29,14 @@ import type { CardName } from '../engine/src/types.ts';
 import { goalText, type ChallengeDef, type RunScore } from '../engine/src/challenge.ts';
 import * as acct from './account.ts';
 import * as cb from './cards.ts';
+import { deckStripHtml } from './cardpanel.ts';
 import * as dk from './decks.ts';
 import {
-  blockCut, blockDown, blockLess, blockMore, blockUp, bridgeFor, builderHtml, loadDraft, moveBlock, saveDraft,
+  bridgeFor, builderHtml, deckProblem, loadDraft, loadScratch, openingHand, saveDraft, saveScratch, summaryOf,
 } from './challengebuild.ts';
+import { challengeStripHtml } from './deckstrip.ts';
+import { cardHeight, cardWidth } from './piletable.ts';
+import * as tt from './tabletop.ts';
 import {
   canSubmit, doneRuns, forgetDone, freshRun, scoreHtml, submitRun, type DoneRun, type SubmitReply,
 } from './challengerun.ts';
@@ -71,6 +83,8 @@ let importing = false;
 let undo: { id: string; list: string[]; what: string } | null = null;
 /** a kept run's upload, by its `at` */
 const sending = new Map<number, 'sending' | SubmitReply>();
+/** a `?table=ch:<id>` reload waiting for the challenges to load */
+let tableWanted: string | null = null;
 
 export const screen = (): 'challenge' | null => (open ? 'challenge' : null);
 
@@ -114,6 +128,11 @@ function load(): void {
       const cur = r.current;
       if (cur && !boards.has(cur.id)) loadBoard(cur.id);
       sendKept();
+      // a reload on the table: it opens now that its challenge is known (or
+      // the table gives up on it, and this page shows)
+      const want = tableWanted;
+      tableWanted = null;
+      if (want) { const h = tabletopHostFor(want); if (h) { tt.openTabletop(h); return; } rerenderHost(); return; }
       paint();
     })
     .catch(() => { loading = false; msg = 'could not reach the server'; paint(); });
@@ -311,6 +330,9 @@ function importable(): { id: string; name: string; cards: string[] }[] {
 
 function paint(): void {
   if (!$app || !open) return;
+  // the tabletop is up over this page: a commit there must not paint this
+  // page over it (and it never paints under a drag that way either)
+  if (tt.screen()) return;
   $app.classList.remove('board');
   const cur = data?.current ?? null;
   const b = building ? viewOf(building) : null;
@@ -333,25 +355,6 @@ function paint(): void {
       ${data ? pastHtml(data) : ''}
     </div>
   </div>`;
-  wireDrag();
-}
-
-/** a mouse can also drag a row; a finger has the ↑↓ buttons */
-let dragFrom: number | null = null;
-function wireDrag(): void {
-  if (typeof document.querySelectorAll !== 'function') return;
-  for (const row of Array.from(document.querySelectorAll<HTMLElement>('.chrow'))) {
-    const at = Number(row.dataset['chblock']);
-    row.addEventListener('dragstart', e => { dragFrom = at; e.dataTransfer?.setData('text/plain', String(at)); });
-    row.addEventListener('dragover', e => { if (dragFrom !== null) e.preventDefault(); });
-    row.addEventListener('drop', e => {
-      e.preventDefault();
-      if (dragFrom === null || dragFrom === at) { dragFrom = null; return; }
-      setList(moveBlock(list, dragFrom, at));
-      dragFrom = null;
-    });
-    row.addEventListener('dragend', () => { dragFrom = null; });
-  }
 }
 
 function setList(next: string[], replacing?: string): void {
@@ -374,7 +377,6 @@ function play(id: string): void {
 export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
   if (!b.startsWith('ch-')) return false;
-  const i = Number(btn.dataset['b']);
   const id = btn.dataset['id'] ?? '';
   if (b !== 'ch-import' && b !== 'ch-importdeck') importing = false;
   switch (b) {
@@ -398,11 +400,6 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'ch-watch':
       location.search = `?challenge=watch&run=${encodeURIComponent(btn.dataset['run'] ?? '')}`;
       return true;
-    case 'ch-up': setList(blockUp(list, i)); return true;
-    case 'ch-down': setList(blockDown(list, i)); return true;
-    case 'ch-more': setList(blockMore(list, i)); return true;
-    case 'ch-less': setList(blockLess(list, i)); return true;
-    case 'ch-cut': setList(blockCut(list, i)); return true;
     case 'ch-clear': setList([], 'Cleared.'); return true;
     case 'ch-undo':
       if (undo && undo.id === building) { const back = undo.list; setList(back); }
@@ -414,16 +411,9 @@ export function handleButton(btn: HTMLElement): boolean {
       if (d) setList([...d.cards], `Imported ${d.name}.`); else paint();
       return true;
     }
-    case 'ch-browse': {
-      const def = building ? viewOf(building) : null;
-      if (!def) return true;
-      cb.useDeck(bridgeFor({
-        title: def.title, list: () => list,
-        set: l => { list = l; if (building) saveDraft(building, list); },
-        back: () => { cb.useDeck(null); paint(); },
-      }));
-      cb.openBrowser();
-      rerenderHost();
+    case 'ch-tabletop': {
+      const h = building ? tabletopHostFor(building) : null;
+      if (h) tt.openTabletop(h);
       return true;
     }
     case 'ch-play': if (building) play(building); return true;
@@ -454,3 +444,85 @@ export function renderScreen(): void {
 
 /** test seam: the builder's list as it stands */
 export const builderList = (): readonly string[] => list;
+
+// ── the tabletop (ui/tabletop.ts): the challenge host ──────────────────
+
+/** the card width and height the table draws at — the tabletop's own rule
+ * (ui/piletable.ts), so the strip's cards are the piles' cards */
+function cardSize(): { cw: number; ch: number } {
+  const touch = typeof document !== 'undefined' && !!document.documentElement?.classList?.contains?.('touch');
+  const cw = cardWidth({ touch, width: typeof innerWidth === 'number' ? innerWidth : 1200 });
+  return { cw, ch: cardHeight(cw) };
+}
+
+/**
+ * The table for challenge `id`'s builder: the strip is the draft deck (every
+ * edit through setList, so it is saved and ends the Undo like any other), the
+ * piles are the scratch table (this browser only, never the deck).
+ */
+function tableHost(id: string): tt.TableHost {
+  const def = (): ChallengeView | null => viewOf(id);
+  const self: tt.TableHost = {
+    kind: 'challenge',
+    key: `ch:${id}`,
+    title: () => def()?.title ?? 'this challenge',
+    backLabel: 'Back to the challenge',
+    cards: () => (building === id ? list : loadDraft(id)),
+    piles: () => loadScratch(id),
+    strip: () => {
+      const d = def();
+      return `${deckStripHtml(d?.title ?? 'this challenge', summaryOf(self.cards()), { lead: 'Challenge' })}
+        <p class="ttchnote dim">${d ? `${esc(goalText(d.goal))} · ` : ''}Cards on the table are not in the deck. The table is saved in this browser only.</p>`;
+    },
+    below: () => {
+      const l = self.cards();
+      const d = def();
+      const problem = deckProblem(l);
+      const hand = d && !problem ? openingHand(d, l) : null;
+      const c = tt.selected(self);
+      return challengeStripHtml({
+        list: l, hand: hand ? hand.length : null, problem, ...cardSize(),
+        front: tt.frontIn('strip'), picked: c?.from === 'strip' ? c.index : undefined,
+      });
+    },
+    commit: next => {
+      if (building !== id) return;
+      if ('piles' in next) saveScratch(id, next.piles ?? null);
+      if (next.cards) setList(next.cards);
+      tt.tabletopChanged();
+    },
+    // the table has already left the screen, so this paints the page
+    close: () => { open = true; building = id; syncUrl(); paint(); },
+    fullBrowser: query => {
+      const d = def();
+      if (!d) return;
+      cb.useDeck(bridgeFor({
+        title: d.title, list: () => list,
+        set: l => { if (building === id) setList(l); },
+        // back to the table (it is still up under the browser)
+        back: () => { cb.useDeck(null); rerenderHost(); },
+      }));
+      cb.openBrowser(query);
+    },
+  };
+  return self;
+}
+
+/**
+ * The tabletop for challenge `id`, with this page opened under it (so Back
+ * lands on that challenge's builder) — or null: not known yet (the page is
+ * loading, and opens the table itself when the answer lands) or no such
+ * challenge. main.ts registers this for a reload on `?table=ch:<id>`.
+ */
+export function tabletopHostFor(id: string): tt.TableHost | null {
+  if (!open) { open = true; building = id; list = loadDraft(id); syncUrl(); }
+  if (!data) {
+    tableWanted = id;
+    if (!loading) load();
+    return null;
+  }
+  if (!viewOf(id)) return null;
+  if (building !== id) { building = id; list = loadDraft(id); syncUrl(); }
+  importing = false;
+  return tableHost(id);
+}

@@ -1,39 +1,45 @@
 /* WEEKLY CHALLENGES — THE ORDERED DECK (docs/21-weekly-challenges.md § Browser).
  *
  * A challenge deck is dealt exactly as arranged, position 1 on top, so the
- * builder is a LIST, not a pile: every edit says where a card goes. The edits
- * here are pure (a new array each time) and the page (ui/challenge.ts) owns
- * the one copy that is on screen.
+ * deck is a LIST, not a pile. It is built on the tabletop (ui/tabletop.ts,
+ * "Build on the table"): a scratch table of piles on top and the deck as a
+ * strip below it, left to right = top to bottom (ui/deckstrip.ts). The page
+ * (ui/challenge.ts) owns the one copy of the list that is on screen, and
+ * shows a summary of it.
  *
  * What it deliberately does not do:
  *   · decide what is drawn. The opening hand is the engine's answer — a game
  *     dealt by `newChallengeGame` and read back — never a re-derivation of
  *     the constructed card step here.
  *   · decide what is legal. `checkChallengeDeck` says, word for word.
- *   · search cards. The card browser (ui/cards.ts) does, in deckbuilding mode,
- *     through the bridge `bridgeFor` lends it.
+ *   · search cards. The tabletop's binder does, and the card browser
+ *     (ui/cards.ts) behind its "All cards…", through the bridge `bridgeFor`.
  *
- * Drafts are kept per challenge in this browser. Storage can be missing or
- * throw (a private window, a full quota): every read and write is wrapped, and
- * a builder that cannot save still builds.
+ * Kept per challenge in this browser, never on the server: the draft deck
+ * and the scratch table's piles (cards being considered, NOT in the deck).
+ * Storage can be missing or throw (a private window, a full quota): every
+ * read and write is wrapped, and a builder that cannot save still builds.
  */
 import type { CardName } from '../engine/src/types.ts';
 import { checkChallengeDeck, newChallengeGame, type ChallengeDef } from '../engine/src/challenge.ts';
-import { analyzeDeck } from './deckstats.ts';
 import type { DeckBridge } from './cards.ts';
+import type { DeckSummary } from './cardpanel.ts';
+import type { DeckPile } from './deckarrange.ts';
+import { analyzeDeck } from './deckstats.ts';
 import { esc } from './util.ts';
 
 // ── the edits ────────────────────────────────────────────────────────
 //
-// The list is the deck, card by card (index 0 on top). The builder shows it
-// as BLOCKS: consecutive copies of one card are one row with a count, so a
-// 40-copy deck is one row and "×4" can only ever mean the four in that row.
-// Every edit works on a block and returns the flat list again; two identical
-// blocks that end up next to each other are, by construction, one block.
+// The list is the deck, card by card (index 0 on top). Where a card goes in
+// it is said on the tabletop (ui/tabletop.ts): the deck is a strip there
+// (ui/deckstrip.ts), and a drop or a tap names the exact position, through
+// the table's one door, `place()`. What is left here is what the card
+// browser and the summary need.
 
 export interface Block { name: string; start: number; n: number }
 
-/** the runs of consecutive copies, top first */
+/** the runs of consecutive copies, top first: the summary's rows, so a
+ * 40-copy deck reads as one row "1–40" */
 export function blocks(list: readonly string[]): Block[] {
   const out: Block[] = [];
   list.forEach((name, i) => {
@@ -44,34 +50,6 @@ export function blocks(list: readonly string[]): Block[] {
   return out;
 }
 
-const flatten = (bs: readonly Block[]): string[] => bs.flatMap(b => Array.from({ length: b.n }, () => b.name));
-
-/** Move block `from` to sit where block `to` is now (above it when moving
- * up, below it when moving down) — a drag, or ↑↓ with `to` one away. */
-export function moveBlock(list: readonly string[], from: number, to: number): string[] {
-  const bs = blocks(list);
-  if (from < 0 || from >= bs.length || to < 0 || to >= bs.length || from === to) return [...list];
-  const [b] = bs.splice(from, 1);
-  bs.splice(to, 0, b!);
-  return flatten(bs);
-}
-export const blockUp = (list: readonly string[], b: number): string[] => moveBlock(list, b, b - 1);
-export const blockDown = (list: readonly string[], b: number): string[] => moveBlock(list, b, b + 1);
-/** one more copy in this block */
-export function blockMore(list: readonly string[], b: number): string[] {
-  const bl = blocks(list)[b];
-  return bl ? [...list.slice(0, bl.start + bl.n), bl.name, ...list.slice(bl.start + bl.n)] : [...list];
-}
-/** one copy fewer in this block (the last copy takes the row with it) */
-export function blockLess(list: readonly string[], b: number): string[] {
-  const bl = blocks(list)[b];
-  return bl ? [...list.slice(0, bl.start + bl.n - 1), ...list.slice(bl.start + bl.n)] : [...list];
-}
-/** the whole block out */
-export function blockCut(list: readonly string[], b: number): string[] {
-  const bl = blocks(list)[b];
-  return bl ? [...list.slice(0, bl.start), ...list.slice(bl.start + bl.n)] : [...list];
-}
 /** a card from the search goes to the BOTTOM: what is on top was put there on
  * purpose (onto the last block, if it is the same card) */
 export const addCard = (list: readonly string[], name: string): string[] => [...list, name];
@@ -134,7 +112,57 @@ export function saveDraft(id: string, list: readonly string[]): void {
   try { localStorage.setItem(DECKS_KEY, JSON.stringify(all)); } catch { /* private window: this visit only */ }
 }
 
+// ── the scratch table ─────────────────────────────────────────────────
+
+/** every challenge's scratch table (the tabletop's piles), by challenge id */
+const TABLES_KEY = 'algoChallengeTables';
+
+function allTables(): Record<string, unknown> {
+  try {
+    const raw = localStorage.getItem(TABLES_KEY);
+    const v = raw ? JSON.parse(raw) as unknown : null;
+    return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {};
+  } catch { return {}; }
+}
+
+/** a stored pile, or null when it is not one (a hand-edited or older store) */
+function pileOf(v: unknown): DeckPile | null {
+  if (!v || typeof v !== 'object') return null;
+  const p = v as Record<string, unknown>;
+  if (typeof p['id'] !== 'string' || typeof p['name'] !== 'string' || !Array.isArray(p['cards'])) return null;
+  return {
+    id: p['id'], name: p['name'], cards: p['cards'].filter((x): x is string => typeof x === 'string'),
+    ...(typeof p['auto'] === 'string' ? { auto: p['auto'] } : {}),
+    ...(p['named'] === true ? { named: true } : {}),
+  };
+}
+
+/** this challenge's scratch piles, or null for none yet */
+export function loadScratch(id: string): DeckPile[] | null {
+  const t = allTables()[id];
+  if (!Array.isArray(t)) return null;
+  return t.map(pileOf).filter((p): p is DeckPile => !!p);
+}
+
+/** keep the scratch piles (null or none: forget them) */
+export function saveScratch(id: string, piles: readonly DeckPile[] | null): void {
+  const all = allTables();
+  if (piles && piles.length) all[id] = piles; else delete all[id];
+  try { localStorage.setItem(TABLES_KEY, JSON.stringify(all)); } catch { /* private window: this visit only */ }
+}
+
 // ── the card browser's bridge ─────────────────────────────────────────
+
+/** the deck bar's numbers (count, verdict, curve, elements) for this list —
+ * the card browser's and the tabletop's top bar */
+export function summaryOf(l: readonly string[]): DeckSummary {
+  const a = analyzeDeck(l);
+  const p = deckProblem(l);
+  return {
+    total: l.length, legal: !p, problems: p ? [p] : [],
+    curve: a.curve.map(c => ({ mana: c.mana, total: c.total })), elements: a.elements,
+  };
+}
 
 /** What the card browser needs to build this list: add goes to the bottom,
  * cut takes the lowest copy. No maybeboard. */
@@ -148,15 +176,7 @@ export function bridgeFor(o: { title: string; list: () => readonly string[]; set
     remove: name => o.set(cutOne(o.list(), name)),
     toMaybe: () => {},
     noMaybe: true,
-    summary: () => {
-      const l = o.list();
-      const a = analyzeDeck(l);
-      const p = deckProblem(l);
-      return {
-        total: l.length, legal: !p, problems: p ? [p] : [],
-        curve: a.curve.map(c => ({ mana: c.mana, total: c.total })), elements: a.elements,
-      };
-    },
+    summary: () => summaryOf(o.list()),
     back: o.back,
   };
 }
@@ -174,33 +194,23 @@ export interface BuilderView {
   undo?: string | null;
 }
 
-/** The builder card. Every control is a button (a finger has no drag); the
- * rows also drag, for a mouse (ui/challenge.ts wires that after the paint). */
+/** The builder card on the challenge page: what the deck is, and the way to
+ * the table where it is built. Read-only rows — the order is changed on the
+ * table, where a card goes exactly where it is put down. */
 export function builderHtml(v: BuilderView): string {
   const { list } = v;
   const problem = deckProblem(list);
   const hand = problem ? null : openingHand(v.def, list);
   const cost = costIfAllUsed(list);
-  const bs = blocks(list);
-  const rows = bs.map((bl, b) => `<li class="chrow" draggable="true" data-chblock="${b}">
+  const rows = blocks(list).map(bl => `<li class="chrow">
       <span class="chpos">${bl.n > 1 ? `${bl.start + 1}–${bl.start + bl.n}` : bl.start + 1}</span>
       <span class="chname" data-prev="${esc(bl.name)}">${esc(bl.name)}</span>
-      <span class="chstep">
-        <button data-btn="ch-less" data-b="${b}" title="one copy fewer">−</button>
-        <span class="chn">${bl.n}</span>
-        <button data-btn="ch-more" data-b="${b}" title="one more copy">+</button>
-      </span>
-      <span class="chbtns">
-        <button data-btn="ch-up" data-b="${b}" title="move up" ${b === 0 ? 'disabled' : ''}>↑</button>
-        <button data-btn="ch-down" data-b="${b}" title="move down" ${b === bs.length - 1 ? 'disabled' : ''}>↓</button>
-        <button data-btn="ch-cut" data-b="${b}" title="remove this row">✕</button>
-      </span>
     </li>`).join('');
   return `<div class="acctcard wide chbuild">
     <h3>Your deck</h3>
     <p class="hint">Dealt in this order, 1 on top.</p>
     <div class="cbtools">
-      <button data-btn="ch-browse">Add cards</button>
+      <button class="primary" data-btn="ch-tabletop">Build on the table</button>
       <button data-btn="ch-import" aria-expanded="${v.importing}">Import a deck</button>
       ${list.length ? '<button data-btn="ch-clear">Clear</button>' : ''}
       ${v.undo ? `<span class="chundo">${esc(v.undo)} <button data-btn="ch-undo">Undo</button></span>` : ''}
@@ -213,7 +223,7 @@ export function builderHtml(v: BuilderView): string {
     ${problem ? `<p class="chproblem">${esc(problem)}</p>` : ''}
     ${hand ? `<div class="chhand"><span class="dim">Turn 1 hand (you bottom 2)</span>${hand.map(c =>
       `<span class="chhandcard" data-prev="${esc(c)}">${esc(c)}</span>`).join('')}</div>` : ''}
-    <ol class="chlist">${rows}</ol>
+    ${rows ? `<ol class="chlist">${rows}</ol>` : ''}
     <div class="chplayrow">
       <button class="cta primary" data-btn="ch-play" ${problem ? 'disabled' : ''}>Play</button>
     </div>

@@ -2923,6 +2923,39 @@ html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
 }
 .dkresultcount { color: var(--dim); font-size: 11px; margin-bottom: 6px; }
 
+/* ── TABLETOP: DECK STRIP (ui/deckstrip.ts, a weekly challenge's deck) ──
+   Under the scratch table: the deck in deal order, left to right = top to
+   bottom, one card per copy. Card k sits at left = k·Sx and paints over card
+   k−1 by z-index (the piles' rule, turned sideways); the gap preview slides
+   the cards along. The bracket over the first cards is the Turn-1 hand as
+   the engine deals it. The strip's height never changes during a drop. */
+.ttsummary .ttchnote { margin: 3px 0 0; font-size: 12px; }
+.ttdeck { flex: none; padding: 6px 12px 4px; background: #141f1b; border-top: 1px solid var(--line); }
+.ttdeckhead { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; min-height: 32px; font-size: 13px; }
+.ttdeckhead .chproblem { margin: 0; }
+.ttdeckhead .ttplay { margin-left: auto; padding: 6px 22px; font-weight: 700; }
+.ttdeckhead .ttplay.primary { border-color: var(--accent); color: var(--accent); }
+.ttstripbox { overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; touch-action: pan-x;
+  scrollbar-color: #3a4553 transparent; scrollbar-width: thin; }
+.ttstripzone { position: relative; box-sizing: border-box; min-width: 100%; width: max-content;
+  padding: 10px var(--cw) 2px 4px; border-radius: 10px; transition: background .12s; }
+.ttpage .ttstripzone.dropover { background: rgba(255, 255, 255, .06); }
+.ttbracket { box-sizing: border-box; height: 14px; margin-bottom: 3px; border: 2px solid var(--accent);
+  border-bottom: 0; border-radius: 7px 7px 0 0; }
+.ttbracket > span { display: inline-block; transform: translateY(-9px); margin-left: 8px; padding: 0 5px;
+  background: #141f1b; color: var(--accent); font-size: 11px; line-height: 14px; white-space: nowrap; }
+.ttbracket.ttnohand { border-color: transparent; }
+.ttstripzone .ttfan { transition: none; }
+.ttstripzone .ttcard { touch-action: pan-x; }
+.ttstripnums { position: relative; height: 15px; margin-top: 2px; }
+.ttstripnums > span { position: absolute; top: 0; padding-left: 4px; color: var(--dim); font-size: 11px;
+  font-variant-numeric: tabular-nums; pointer-events: none; }
+.ttstripempty { position: absolute; left: 18px; top: 45%; pointer-events: none; }
+@media (max-width: 900px) {
+  .ttdeck { padding: 4px 8px 2px; }
+  .ttsummary .ttchnote { display: none; }
+}
+
 /* ── the curve ── */
 .dkcurve { display: flex; flex-direction: column; gap: 3px; }
 .dkcurverow { display: grid; grid-template-columns: 22px minmax(0, 1fr) 28px; gap: 8px; align-items: center; }
@@ -5159,16 +5192,15 @@ html.touch .crdoc .crshare { opacity: .7; padding: 4px 6px; }
 .chrowbtns { white-space: nowrap; text-align: right; }
 .chrowbtns button { margin-left: 4px; }
 .chkeptrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 4px 0; }
-/* the builder: an ordered list, position 1 on top; buttons for a finger, drag for a mouse */
+/* the builder's summary: the ordered list, position 1 on top, read-only (it is
+   built on the tabletop; its deck strip is the TABLETOP: DECK STRIP block) */
 .chimport { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .chhand { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; margin-top: 10px; font-size: 12px; }
 .chhandcard { padding: 2px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel2); }
 .chlist { list-style: none; margin: 10px 0 0; padding: 0; max-height: 60vh; overflow-y: auto; }
-.chrow { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-bottom: 1px dotted var(--line); cursor: grab; }
+.chrow { display: flex; align-items: center; gap: 8px; padding: 3px 4px; border-bottom: 1px dotted var(--line); }
 .chrow .chpos { flex: 0 0 2.4em; text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
 .chrow .chname { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chrow .chbtns { flex: 0 0 auto; display: flex; gap: 4px; }
-.chrow .chbtns button { min-width: 32px; padding: 4px 6px; }
 .chplayrow { margin-top: 12px; display: flex; justify-content: flex-end; }
 .chplayrow .cta { padding: 10px 22px; font-weight: 700; }
 .chplayrow .cta.primary { border-color: var(--accent); color: var(--accent); }

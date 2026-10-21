@@ -167,6 +167,7 @@ export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoQueueMode', 'algoQueueRanked'], what: 'the format and the ranked/open choice you last used in the matchmaking queue, so it comes back the way you left it' },
   { covers: ['algoLeagueBanner'], what: 'whether you folded the league banner on the home page' },
   { covers: ['algoChallengeDecks'], what: 'the deck you are building for each weekly challenge, in its order' },
+  { covers: ['algoChallengeTables'], what: 'the cards you set out on the table beside each weekly challenge deck, which are not in the deck' },
   { covers: ['algoChallengeRun'], what: 'the challenge run you are playing, so a reload carries on where you were' },
   { covers: ['algoChallengeDone'], what: 'finished challenge runs not yet on a leaderboard (played signed out, or not yet sent), up to ten, each dropped once the server takes it' },
   { covers: ['algoInboxSeen'], what: 'which game invites this tab has already shown you, so a closed one does not pop up again (cleared when you close the tab)' },
