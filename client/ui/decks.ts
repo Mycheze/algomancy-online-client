@@ -24,18 +24,26 @@
  * Art is the point of the page — "I want to see my decks visually and make
  * cuts" — so the card grid is real card scans, and the deck list wears the
  * cover card you picked.
+ *
+ * THE CARDS ARE ON A TABLE (2026-10-21). The grid, its +/−/» buttons, the
+ * inline add drawer and the Maybe tab are gone: the cards are ui/decktable.ts
+ * (Sorted with your moves, or Freeform piles, plus Maybe and Cut zones), and
+ * the pool is ui/deckdrawer.ts, a layer beside #app. This file builds the
+ * TableHost and the DrawerHost, and every edit either of them makes still
+ * comes through `edit()` — the host's `commit` is a call of it.
  */
 import { getCard } from '../engine/src/cards/dsl.ts';
 import * as cb from './cards.ts';
-import { allRows, rowFor } from './cardindex.ts';
+import { rowFor } from './cardindex.ts';
 import { cardPanelHtml, deckStripHtml, similarQuery } from './cardpanel.ts';
 import { cardLinker, clipDescription } from './cardlinks.ts';
 import { mdToHtml } from './markdown.ts';
-import { chipState, nextChipState, search as runSearch, withChip } from './cardsearch.ts';
 import * as acct from './account.ts';
-import { GROUPINGS, deckSections, needsCountBadge, stackLayers } from './decklayout.ts';
-import type { DeckGrouping } from './decklayout.ts';
 import { txtIcon } from './cardtext.ts';
+import * as dt from './decktable.ts';
+import { closeDrawer, drawerChanged, drawerOpen, openDrawer, type DrawerHost } from './deckdrawer.ts';
+import type { DeckPile, SortMoves } from './deckarrange.ts';
+import { dragActive } from './drag.ts';
 import {
   ELEMENTS, analyzeDeck, cardFacts, deckElements, deckListText,
   type CardFacts, type DeckAnalysis,
@@ -65,6 +73,12 @@ export interface DeckView {
   /** the deck this was copied from, if any — the server folds a record over
    * the whole lineage, which is what makes the metagame list mean anything */
   copiedFrom?: string;
+  /** the deck table's arrangement (ui/deckarrange.ts) — NEVER what is in the
+   * deck. Absent = none yet: Sorted is pure auto-sort, Freeform seeds itself */
+  sortMoves?: SortMoves;
+  piles?: DeckPile[];
+  /** the view the deck opens in; absent = Sorted */
+  view?: 'sorted' | 'freeform';
   createdAt: string;
   updatedAt: string;
   /** the server's own legality read — this page recomputes it locally instead
@@ -84,7 +98,8 @@ const art = (name: string): string => {
   return artUrl(name.replace(/ /g, '-') + '.jpg');
 };
 
-type Tab = 'cards' | 'mana' | 'maybe' | 'games';
+/* the Maybe tab is retired (owner, 2026-10-21): Maybe is a zone on the table */
+type Tab = 'cards' | 'mana' | 'games';
 
 let $app: HTMLElement | null = null;
 let rerenderHost: () => void = () => {};
@@ -93,17 +108,6 @@ let decks: DeckView[] | null = null;
 let loading = false;
 let openId: string | null = null;
 let tab: Tab = 'cards';
-/** how the card grid is grouped — ui/decklayout.ts owns the vocabulary and the
- * bucketing, because the shared deck page shows the same deck and the two must
- * not come to disagree about what a section is. Default 'type' (units, then
- * spells), which is the split the owner asked for by name. */
-let group: DeckGrouping = 'type';
-/** the add-cards drawer. `search` is a QUERY, in the language of
- * ui/cardsearch.ts — the chips below it write into this same string rather
- * than holding filter state of their own, which is why they can never
- * disagree with what is typed. See ui/cards.ts's header. */
-let adding = false;
-let search = '';
 /** the status line under the header */
 let msg = '';
 /** the delete button asks once — a 30-card deck is an hour of somebody's day */
@@ -164,9 +168,14 @@ let syntaxOpen = false;
 let descDraft: string | null = null;
 /** claim the caret for the description box on the NEXT paint only — see wire() */
 let focusDesc = false;
-/** the pinned card, or null. The same panel the browser pins (ui/cardpanel.ts)
- * — clicking a tile anywhere on this page puts the card in it. */
+/** the card a description link pinned, or null. A card on the table pins the
+ * same panel by being picked up (ui/decktable.ts `selected`); this is the one
+ * for a card named in the prose, which may not be in the deck at all. */
 let focus: string | null = null;
+/** a paint asked for while a card was in the air (see paint) */
+let paintPending = false;
+/** the drawer was open when the full browser took over: it comes back with the page */
+let drawerBack = false;
 
 export const screen = (): 'decks' | null => (open ? 'decks' : null);
 
@@ -265,6 +274,8 @@ function flushSave(): void {
     // publishing a setting that never reached the server — and the local copy
     // is the truth while a save is pending, so it would have looked like it had.
     visibility: deck.visibility ?? 'private', description: deck.description ?? '',
+    // the table's arrangement, the same way — null clears it on the server
+    piles: deck.piles ?? null, sortMoves: deck.sortMoves ?? null, view: deck.view ?? 'sorted',
   }).then(r => {
     inflight--;
     if (!r.ok) { msg = r.error ?? 'could not save that change'; paint(); return; }
@@ -330,165 +341,31 @@ function recordLine(r: DeckRecord): string {
 }
 
 /**
- * One card tile: art, how many, and the controls that change that. `where`
- * decides which way the move arrow points.
- *
- * WHAT IT GAINED FROM THE BROWSER (BL-34). ui/cards.ts's tile lost its name
- * banner and its native `title`, and gained `data-prev`, when the owner first
- * read the shipped browse page; this tile is the same grid and got none of it,
- * so the deck page was the one place in the client where you could not read a
- * card without opening its art in another tab. The three changes are the same
- * three, for the same three reasons:
- *
- *  - NO NAME BANNER. It sits across the bottom of the scan and covers the
- *    printed text: *"The name banner is blocking the card text from being
- *    read. Better to just remove it."*
- *  - NO `title`. The native tooltip and the client's own hover box both fired:
- *    *"There are two hover texts that are competing. The one that shows the
- *    text (not just the card name) is more useful."*
- *  - `data-prev`, which IS that one. main.ts's document-level `mouseover`
- *    closes on `[data-prev]` and is not game-scoped, so the whole hover box
- *    works here for the cost of the attribute.
- *
- * And the whole tile is `deck-focus`, so a click pins the same panel the
- * browser pins. The add/cut buttons still work: main.ts's delegation asks
- * `closest('[data-btn]')` and they are nearer than the tile.
- *
- * THE COPY CAP IS AN AFFORDANCE, NOT A GATE. At two copies the tile stops
- * offering `+`. It does not refuse anything: `−` still works, a deck that
- * already holds three (an import, say) still shows `×3` in red, and it still
- * saves. server/collection.ts is explicit that a saved deck may be illegal
- * while you build — the rule bites when the deck is brought to a game.
- *
- * ⚠ THE GREY IS THE DRAWER'S, NOT THE DECK'S. `atCap` and the greying used to
- * be the same flag, so a deck of two-ofs — which is what a constructed deck
- * IS — rendered entirely in greyscale. Measured on a 30-card deck: 15 tiles,
- * 15 greyed. The owner read it as breakage: *"the cards are weirdly greyed
- * out, for some reason."* The grey answers "nothing more to take here", which
- * is a sentence about SHOPPING, so it belongs where you are shopping. In the
- * deck's own grid the copies are already drawn and the `+` is already gone;
- * greying it too says nothing and costs the whole deck its colour.
- *
- * The cap itself is unchanged, and so is what BL-34 asked for: at two copies
- * no `+` is offered anywhere, in the deck or in the drawer.
- */
-function tile(name: string, n: number, where: 'deck' | 'maybe' | 'add', cover: string | null): string {
-  const overCap = n > 2;
-  const atCap = where !== 'maybe' && n >= 2;
-  /** the grey — only where "you already have the most of this" is news */
-  const shopping = atCap && where === 'add';
-  // COPIES ARE DRAWN, NOT COUNTED (ui/decklayout.ts): two copies is two cards,
-  // stacked. The badge comes back only OVER the cap, where "too many of this"
-  // is exactly the thing that must not be left to counting corners by eye.
-  // `--d` hands the stack DEPTH to the CSS, which derives the whole geometry
-  // from it — see the .dkstack block in ui/style.css.
-  const layers = stackLayers(n);
-  return `<div class="dktile${layers.length ? ' dkstack' : ''}${name === cover ? ' iscover' : ''}${
-      overCap ? ' overcap' : ''}${shopping ? ' atcap' : ''}"
-      ${layers.length ? `style="--d:${layers.length}"` : ''}
-      data-prev="${esc(name)}" data-btn="deck-focus" data-card="${esc(name)}"
-      ${n > 1 ? `aria-label="${esc(name)} ×${n}"` : ''}>
-    ${layers.map(i => `<span class="dkghostwrap" style="--i:${i}" aria-hidden="true"><img
-      class="dkart" src="${esc(art(name))}" alt="" loading="lazy"
-      onerror="this.style.visibility='hidden'"></span>`).join('')}
-    <img class="dkart" src="${esc(art(name))}" alt="${esc(name)}" loading="lazy"
-      onerror="this.style.visibility='hidden'">
-    ${/* no cost badge here: the scan prints its own cost in this exact corner,
-        and the two on top of each other made both unreadable */ ''}
-    ${needsCountBadge(n) ? `<span class="dkn bad">×${n}</span>` : ''}
-    <span class="dkbtns">
-      ${where === 'add'
-        ? `${atCap ? '' : `<button data-btn="deck-add" data-card="${esc(name)}" title="add a copy to the deck">+</button>`}
-           <button data-btn="deck-add-maybe" data-card="${esc(name)}" title="add to the maybeboard">»</button>`
-        : where === 'deck'
-          ? `<button data-btn="deck-less" data-card="${esc(name)}" title="cut one">−</button>
-             ${atCap ? '' : `<button data-btn="deck-more" data-card="${esc(name)}" title="another copy">+</button>`}
-             <button data-btn="deck-to-maybe" data-card="${esc(name)}" title="move one to the maybeboard">»</button>`
-          : `<button data-btn="deck-maybe-less" data-card="${esc(name)}" title="drop one">−</button>
-             <button data-btn="deck-maybe-more" data-card="${esc(name)}" title="another copy">+</button>
-             <button data-btn="deck-from-maybe" data-card="${esc(name)}" title="move one into the deck">«</button>`}
-    </span>
-  </div>`;
-}
-
-/** the deck's cards, bucketed the way the toolbar says */
-function groupedTiles(a: DeckAnalysis, cover: string | null, where: 'deck' | 'maybe'): string {
-  if (!a.copies.length) {
-    return `<div class="hint">${where === 'deck'
-      ? 'Nothing in here yet — add cards below.'
-      : 'Nothing on the maybeboard yet.'}</div>`;
-  }
-  // ui/decklayout.ts: the same sections, in the same order, with the same
-  // cost sort inside them, as the shared deck page draws. This used to be an
-  // inline bucketing here and NOTHING on the shared page, which is the whole
-  // of what was reported.
-  return deckSections(a, group).map(sec => `<div class="dkgroup">
-      <div class="dkgrouphead">${esc(sec.label)} <span class="dim">${sec.cards} card${
-    sec.cards === 1 ? '' : 's'}</span></div>
-      <div class="dkgrid">${sec.entries
-    .map(e => tile(e.name, e.n, where, cover)).join('')}</div>
-    </div>`).join('');
-}
-
-// ── the add-cards drawer ──────────────────────────────────────────────
-
-/**
- * The pool, filtered by the drawer's query.
- *
- * This used to be a private predicate: a substring over name/text/type, one
- * element chip and a unit/spell toggle. It is now the same parser and the same
- * rows the card browser runs (ui/cardsearch.ts over ui/cardindex.ts), because
- * two filters over one pool is two answers to "what is a fire spell" and the
- * drawer's answer was the one nobody could extend.
- *
- * The pool is narrowed to what is DECK-LEGAL before the query sees it, so
- * `class:token` here honestly returns nothing rather than offering you a
- * Fireball as a two-of. The full 537 live one button away, in the browser.
- *
- * Still capped, and the cap is still SAID — a silently truncated list reads as
- * "that is all there is".
- */
-const SEARCH_CAP = 60;
-
-const deckPool = (): ReturnType<typeof allRows> => allRows().filter(r => r.playable);
-
-function searchResults(): { names: string[]; total: number } {
-  const hits = runSearch(search, {
-    pool: deckPool(),
-    ctx: { copies: countIn, maybe: countInMaybe },
-  }).rows.map(r => r.name);
-  return { names: hits.slice(0, SEARCH_CAP), total: hits.length };
-}
-
-/**
- * The pinned card, beside the grid rather than under it.
+ * The pinned card, beside the table.
  *
  * The same panel the card browser pins — one implementation in
- * ui/cardpanel.ts, because two would drift the way the two filters did. Its
- * buttons are this page's, though: "add a copy" is the thing you want from a
- * card you are looking at while building, and it obeys the same cap the tiles
- * do, so the panel cannot put in a third copy the tile has stopped offering.
+ * ui/cardpanel.ts, because two would drift the way the two filters did. It
+ * shows the card picked up on the table, or one a description link pinned.
+ * The picked-up card's buttons are the table's selection bar; the panel adds
+ * only what the bar has not got — and, for a card named in the prose that the
+ * deck does not hold, "add a copy", under the same cap the drawer keeps.
  */
 function focusHtml(): string {
-  if (!focus) return '';
-  const n = countIn(focus);
-  const playable = !!rowFor(focus)?.playable;
-  /* ⚠ NO "use this art" HERE, AND NONE ON THE TILES EITHER. It was a ★ in the
-     corner of all thirty tiles; it then moved here; the owner wanted neither
-     (2026-09-20: *"The card art changer I actually DON'T want in the right
-     hand panel. I want it only in the deck settings"*). Picking the deck's
-     face is a once-per-deck decision and it lives with the other once-per-deck
-     decisions, behind the ⚙ — where it gets a picker that shows every card at
-     once instead of asking you to hunt for one and pin it. This panel is for
-     the card you are thinking about, and every button on it changes the LIST. */
-  return cardPanelHtml(focus, {
+  const picked = dt.selected(tableHost());
+  const name = picked && 'name' in picked ? picked.name : focus;
+  if (!name) return '';
+  const n = countIn(name);
+  const playable = !!rowFor(name)?.playable;
+  /* ⚠ NO "use this art" HERE (owner, 2026-09-20: *"The card art changer I
+     actually DON'T want in the right hand panel. I want it only in the deck
+     settings"*). Picking the deck's face is a once-per-deck decision and it
+     lives behind the ⚙ with the others. */
+  return cardPanelHtml(name, {
     close: 'deck-unfocus',
-    actions: `${playable && n < 2
-      ? `<button class="primary" data-btn="deck-add" data-card="${esc(focus)}">add a copy</button>`
+    actions: `${!picked && playable && n < 2
+      ? `<button class="primary" data-btn="deck-table" data-dt="add" data-card="${esc(name)}">add a copy</button>`
       : ''}
-      ${n ? `<button data-btn="deck-less" data-card="${esc(focus)}">cut one</button>` : ''}
-      <button data-btn="deck-add-maybe" data-card="${esc(focus)}">to the maybeboard</button>
-      <button data-btn="deck-browse-card" data-card="${esc(focus)}" title="find cards like this one in the browser">find similar</button>`,
+      <button data-btn="deck-browse-card" data-card="${esc(name)}">find similar</button>`,
   });
 }
 
@@ -501,41 +378,66 @@ function countInMaybe(name: string): number {
   return current()?.maybe.filter(c => c === name).length ?? 0;
 }
 
-function addDrawerHtml(): string {
-  if (!adding) {
-    return `<div class="dkaddrow">
-      <button class="dkadd" data-btn="deck-adding">+ Add cards</button>
-      <button class="dkbrowse" data-btn="deck-browse" title="the full card browser, with the whole filter syntax">🔍 Browse all cards</button>
-    </div>`;
-  }
-  const { names, total } = searchResults();
-  const chip = (key: string, value: string, label: string, extra = ''): string => {
-    const state = chipState(search, key, value);
-    return `<button class="${extra}${state === 'on' ? ' on' : state === 'off' ? ' off' : ''}"
-      data-btn="deck-chip" data-key="${esc(key)}" data-value="${esc(value)}"
-      title="${state === 'on' ? 'click again to exclude' : state === 'off' ? 'click again to clear' : 'include'}"
-      >${label}</button>`;
+/**
+ * THE TABLE'S HOST — the open deck, lent to ui/decktable.ts.
+ *
+ * `commit` is `edit()`: the file's one funnel into `scheduleSave()`, so the
+ * table, like the card browser's bridge, can only reach the deck the way a
+ * button here does. The arrangement is read back NORMALISED (moves for cards
+ * that left are dropped, piles are reconciled by the table on every paint),
+ * because the server clamps a stale record but never fills one.
+ */
+function tableHost(): dt.TableHost {
+  return {
+    key: `deck:${openId ?? ''}`,
+    btnPrefix: 'deck-',
+    views: ['sorted', 'freeform'],
+    view: () => (current()?.view === 'freeform' ? 'freeform' : 'sorted'),
+    setView: v => edit(d => { d.view = v === 'freeform' ? 'freeform' : 'sorted'; }),
+    cards: () => current()?.cards ?? [],
+    maybe: () => current()?.maybe ?? [],
+    piles: () => current()?.piles ?? null,
+    sortMoves: () => current()?.sortMoves,
+    cover: () => current()?.cover ?? null,
+    cap: 2,
+    strip: () => { const d = current(); return d ? deckStripHtml(d.name, analyzeDeck(d.cards)) : ''; },
+    commit: next => {
+      edit(d => {
+        if (next.cards) d.cards = next.cards;
+        if (next.maybe) d.maybe = next.maybe;
+        if ('piles' in next) d.piles = next.piles;
+        if ('sortMoves' in next) d.sortMoves = next.sortMoves;
+        if (next.view === 'sorted' || next.view === 'freeform') d.view = next.view;
+      });
+      // the drawer's ×n, its grey and `in:deck` follow the deck
+      drawerChanged();
+    },
+    repaint: paint,
+    dragEnded: () => { if (paintPending) paint(); },
+    drawer: drawerHost,
   };
-  return `<section class="dkdrawer">
-    <div class="dkdrawerhead">
-      <input id="dk-search" class="dksearch" spellcheck="false"
-        placeholder="search the pool — name, type, text, or a filter like  mana:2 -kw:virus"
-        value="${esc(search)}">
-      <button data-btn="deck-browse" title="the full browser, with the facet rail and the syntax help">🔍 browse</button>
-      <button data-btn="deck-adding-close">done</button>
-    </div>
-    <div class="dkfilters">
-      ${ELEMENTS.map(el => chip('el', el, `${elIcon(el)}${el}`, `elchip ${el}`)).join('')}
-      <span class="dkfilterspacer"></span>
-      ${chip('kind', 'unit', 'units', 'dkkind')}
-      ${chip('kind', 'spell', 'spells', 'dkkind')}
-      ${chip('in', 'deck', 'in the deck', 'dkkind')}
-      ${search ? '<button data-btn="deck-filter-clear">clear</button>' : ''}
-    </div>
-    <div class="dkresultcount">${total} card${total === 1 ? '' : 's'}${
-      total > names.length ? ` — showing the first ${names.length}, narrow the search or open the browser to see the rest` : ''}</div>
-    <div id="dk-results" class="dkgrid">${names.map(n => tile(n, countIn(n), 'add', null)).join('')}</div>
-  </section>`;
+}
+
+/** the drawer's host: a copy in is a `place()` on the table, like a drop */
+function drawerHost(): DrawerHost {
+  return {
+    title: () => current()?.name ?? 'this deck',
+    copies: countIn,
+    maybe: countInMaybe,
+    capGrey: true,
+    add: name => { dt.place(tableHost(), { name, from: { at: 'drawer' } }, dt.defaultPlace(tableHost())); },
+    toMaybe: name => { dt.place(tableHost(), { name, from: { at: 'drawer' } }, { at: 'maybe' }); },
+    fullBrowser: query => toBrowser(query),
+  };
+}
+
+/** hand the full browser this deck and step aside (see `deck-browse`) */
+function toBrowser(query: string): void {
+  drawerBack = drawerOpen();
+  closeDrawer();
+  flushSave();
+  cb.useDeck(bridgeToOpenDeck());
+  cb.openBrowser(query);
 }
 
 // ── the mana / curve tab ──────────────────────────────────────────────
@@ -1041,7 +943,6 @@ function exportLayer(d: DeckView): string {
 
 function detailHtml(d: DeckView): string {
   const a = analyzeDeck(d.cards);
-  const maybe = analyzeDeck(d.maybe);
   const chosen = chosenDeck();
   const isChosen = chosen?.id === d.id;
   const trouble = [...a.problems, ...(a.unknown.length
@@ -1050,7 +951,6 @@ function detailHtml(d: DeckView): string {
   const tabs = ([
     ['cards', `cards <span class="acctcount">${a.total}</span>`],
     ['mana', 'curve &amp; affinity'],
-    ['maybe', `maybeboard <span class="acctcount">${d.maybe.length}</span>`],
     ['games', `games <span class="acctcount">${d.record.games}</span>`],
   ] as [Tab, string][]).map(([t, label]) =>
     `<button class="accttab ${tab === t ? 'on' : ''}" data-btn="deck-tab" data-tab="${t}">${label}</button>`).join('');
@@ -1095,34 +995,13 @@ function detailHtml(d: DeckView): string {
     </div>
     <div class="accttabs">${tabs}</div>
     <div class="acctbody deckbody">${
-      tab === 'cards' ? `<section class="acctcard wide">
-          ${deckStripHtml(d.name, a)}
+      tab === 'cards' ? `<section class="acctcard wide dktablecard">
           <div class="dkwork">
-           <div class="dkworkmain">
-            <div class="dktoolbar">
-              <span class="zonelabel">group by</span>
-              ${GROUPINGS.map(g =>
-                `<button class="dkkind${group === g.id ? ' on' : ''}" data-btn="deck-group"
-                  data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
-              <span class="dkfilterspacer"></span>
-              <span class="hint">click a card to pin it · » sends it to the maybeboard</span>
-            </div>
-            ${groupedTiles(a, d.cover, 'deck')}
-            ${addDrawerHtml()}
-           </div>
+           <div class="dkworkmain">${dt.tableHtml(tableHost())}</div>
            ${focusHtml()}
           </div>
         </section>`
       : tab === 'mana' ? deckStatsHtml(a)
-      : tab === 'maybe' ? `<section class="acctcard wide">
-          <h3>Maybeboard <span class="acctcount">${d.maybe.length}</span></h3>
-          <div class="hint">Not a sideboard — a shelf for cards you might use. Nothing here is
-            shuffled into a game, and no deck rules apply.</div>
-          <div class="dkwork">
-            <div class="dkworkmain">${groupedTiles(maybe, null, 'maybe')}</div>
-            ${focusHtml()}
-          </div>
-        </section>`
       : gamesTab(d)}</div>`
     + settingsLayer(d)
     + descLayer(d)
@@ -1149,7 +1028,9 @@ function detailHtml(d: DeckView): string {
  * re-taking focus on every repaint for the rest of the session, dragging the
  * viewport to the search box each time and stamping the caret to the end of
  * whatever was typed. So the focus is claimed ONCE, by the click that opens the
- * drawer (`focusSearch`), and otherwise restored to wherever it already was.
+ * editor (`focusDesc`), and otherwise restored to wherever it already was.
+ * (The card search that box belonged to is now the drawer, a layer outside
+ * #app — ui/deckdrawer.ts — whose caret no repaint here can reach.)
  *
  * Nothing is restored on the paint that OPENS the page: there is no deck page
  * in the document yet to have been anywhere, and inheriting the home screen's
@@ -1160,26 +1041,13 @@ interface Perch {
   /** the id of the focused field, and the caret in it — both or neither */
   focus: string | null;
   sel: [number, number] | null;
-  /** where the add drawer began, in DOCUMENT coordinates — see anchorTop */
-  anchor: number | null;
 }
 
-/**
- * ⚠ AND THE SCROLL ALONE IS NOT ENOUGH WHEN THE DRAWER IS OPEN. Adding a card
- * grows the DECK GRID, which sits ABOVE the drawer, so holding `scrollTop`
- * still slides the results down under the cursor — measured at 136px, a full
- * row, which is exactly far enough to make the next click land on the wrong
- * card. So when the drawer is on screen it is the drawer, not the document,
- * that is held still: the scroll is corrected by however far `#dk-results`
- * moved. One anchor, chosen because it is the thing being read; everywhere else
- * the plain scroll is right, because what changed size is below you.
- */
-function anchorTop(): number | null {
-  const el = document.getElementById('dk-results');
-  if (!el) return null;
-  return el.getBoundingClientRect().top + (document.scrollingElement?.scrollTop ?? 0);
-}
-
+/* ⚠ THE DRAWER'S ANCHOR IS RETIRED. Adding a card used to grow the deck grid
+   ABOVE the inline drawer, sliding its results 136px under the cursor, so the
+   drawer — not the document — was held still. The drawer is now a layer beside
+   #app (ui/deckdrawer.ts): the table growing cannot move it, so the plain
+   scroll is right again everywhere. */
 function perch(): Perch | null {
   const doc = document.scrollingElement;
   if (!doc || !document.querySelector('.deckpage')) return null;
@@ -1188,7 +1056,7 @@ function perch(): Perch | null {
   const sel = id && typeof el?.selectionStart === 'number' && typeof el.selectionEnd === 'number'
     ? [el.selectionStart, el.selectionEnd] as [number, number]
     : null;
-  return { scroll: doc.scrollTop, focus: id, sel, anchor: anchorTop() };
+  return { scroll: doc.scrollTop, focus: id, sel };
 }
 
 function alight(p: Perch | null): void {
@@ -1200,12 +1068,8 @@ function alight(p: Perch | null): void {
     el?.focus({ preventScroll: true });
     if (el && p.sel) { el.selectionStart = p.sel[0]; el.selectionEnd = p.sel[1]; }
   }
-  const now = anchorTop();
-  doc.scrollTop = p.scroll + (p.anchor !== null && now !== null ? now - p.anchor : 0);
+  doc.scrollTop = p.scroll;
 }
-
-/** set by the click that opens the add drawer; consumed by the next `wire()` */
-let focusSearch = false;
 
 function paint(): void {
   if (!$app) return;
@@ -1218,6 +1082,13 @@ function paint(): void {
   // screen this repo shipped in BL-14 started exactly this way; see
   // test/189-collection-loading.test.ts.)
   if (cb.screen()) return;
+  // ⚠ AND NOT UNDER A CARD IN THE AIR. The queue poll repaints this page
+  // (renderHome → renderScreen) on its own clock, and a repaint mid-drag pulls
+  // the source and every target out from under the pointer — the trap
+  // main.ts's render() already defers for. The table's drag provider paints
+  // this when the card lands (`dragEnded`).
+  if (dragActive()) { paintPending = true; return; }
+  paintPending = false;
   const was = perch();
   $app.classList.remove('board');
   if (!acct.token()) {
@@ -1299,33 +1170,10 @@ function wire(was: Perch | null): void {
   const desc = document.getElementById('dk-desc') as HTMLTextAreaElement | null;
   desc?.addEventListener('input', () => { descDraft = desc.value; });
 
-  const box = document.getElementById('dk-search') as HTMLInputElement | null;
-  box?.addEventListener('input', () => {
-    search = box.value;
-    const out = document.getElementById('dk-results');
-    const count = document.querySelector('.dkresultcount');
-    if (!out) return;
-    const { names, total } = searchResults();
-    out.innerHTML = names.map(n => tile(n, countIn(n), 'add', null)).join('');
-    if (count) {
-      count.textContent = `${total} card${total === 1 ? '' : 's'}` +
-        (total > names.length ? ` — showing the first ${names.length}, narrow the search to see the rest` : '');
-    }
-  });
-
-  // OPENING the drawer claims the caret — that is the whole point of the
-  // button. Every LATER repaint must not: see the Perch header. Focusing here
-  // deliberately scrolls the drawer into view, which is what you asked for.
-  if (focusSearch && box) {
-    focusSearch = false;
-    box.focus();
-    box.selectionStart = box.selectionEnd = box.value.length;
-    return;
-  }
-  // …and the same for the description editor: the click that opened it claims
-  // the caret, and NO later repaint does — a re-focus on every paint is the
-  // 537px jump the Perch header is about, with the added cost here that it
-  // would drag the caret to the end of the text mid-sentence.
+  // The description editor: the click that opened it claims the caret, and NO
+  // later repaint does — a re-focus on every paint is the 537px jump the Perch
+  // header is about, with the added cost here that it would drag the caret to
+  // the end of the text mid-sentence.
   if (focusDesc && desc) {
     focusDesc = false;
     desc.focus();
@@ -1394,7 +1242,11 @@ function bridgeToOpenDeck(): cb.DeckBridge {
     // rather than `renderScreen()` so it does not re-enter the collection
     // loader (test/189: a `then()` on the already-loaded path repainted the
     // home screen 2,696 times)
-    back: () => { cb.useDeck(null); paint(); },
+    back: () => {
+      cb.useDeck(null);
+      paint();
+      if (drawerBack) { drawerBack = false; openDrawer(drawerHost()); }
+    },
   };
 }
 
@@ -1420,7 +1272,9 @@ export function handleButton(btn: HTMLElement): boolean {
       // leaving the page must not outrun the debounce — the next thing the
       // user does may be starting a game, which navigates this module away
       flushSave();
-      open = false; adding = false; importing = false; confirmDelete = null;
+      open = false; importing = false; confirmDelete = null;
+      closeDrawer();
+      dt.clearSelection();
       rerenderHost();
       return true;
 
@@ -1433,9 +1287,12 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'deck-open':
       flushSave();
       openId = btn.dataset['id'] ?? null;
-      tab = 'cards'; confirmDelete = null; adding = false; exporting = null; msg = '';
+      tab = 'cards'; confirmDelete = null; exporting = null; msg = '';
       focus = null;
+      dt.clearSelection();
       paint();
+      // the drawer stays open across decks; its counts are the new deck's
+      drawerChanged();
       return true;
 
     case 'deck-tab':
@@ -1443,20 +1300,21 @@ export function handleButton(btn: HTMLElement): boolean {
       paint();
       return true;
 
-    case 'deck-group':
-      group = (btn.dataset['group'] ?? 'type') as DeckGrouping;
-      paint();
-      return true;
+    // the table's own buttons: selection, places, views (ui/decktable.ts)
+    case 'deck-table':
+      focus = null;
+      return dt.tableClick(tableHost(), btn);
 
     // ── making decks ──
     case 'deck-new':
       void post('/api/decks/create', { name: 'New deck', cards: [] }).then(r => {
         if (!r.ok) { msg = r.error ?? 'could not make a deck'; paint(); return; }
         adopt(r);
-        openId = r.id ?? openId; tab = 'cards'; adding = true; msg = '';
-        // a brand new deck is empty, so the caret belongs in the search box
-        focusSearch = true;
+        openId = r.id ?? openId; tab = 'cards'; msg = '';
+        dt.clearSelection();
         paint();
+        // a brand new deck is empty, so the drawer opens on it
+        openDrawer(drawerHost());
       }).catch(() => { msg = 'could not reach the server'; paint(); });
       return true;
 
@@ -1527,23 +1385,7 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     }
 
-    // ── editing the list ──
-    case 'deck-more':
-      edit(d => { d.cards = [...d.cards, card]; }); return true;
-    case 'deck-less':
-      edit(d => { d.cards = removeOne(d.cards, card); }); return true;
-    case 'deck-add':
-      edit(d => { d.cards = [...d.cards, card]; }); return true;
-    case 'deck-add-maybe':
-      edit(d => { d.maybe = [...d.maybe, card]; }); return true;
-    case 'deck-to-maybe':
-      edit(d => { d.cards = removeOne(d.cards, card); d.maybe = [...d.maybe, card]; }); return true;
-    case 'deck-from-maybe':
-      edit(d => { d.maybe = removeOne(d.maybe, card); d.cards = [...d.cards, card]; }); return true;
-    case 'deck-maybe-more':
-      edit(d => { d.maybe = [...d.maybe, card]; }); return true;
-    case 'deck-maybe-less':
-      edit(d => { d.maybe = removeOne(d.maybe, card); }); return true;
+    // ── editing the list: the table's (deck-table, above) ──
     case 'deck-cover':
       edit(d => { d.cover = card; }); return true;
     case 'deck-stop':
@@ -1576,19 +1418,12 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     }
 
+    // "+ Add cards" — the drawer, beside the table (it is also the table's own
+    // toolbar button; this name is what the tutorial and older links press)
     case 'deck-adding':
-      adding = true; focusSearch = true; paint(); return true;
-    case 'deck-adding-close':
-      adding = false; paint(); return true;
-    case 'deck-chip': {
-      const key = btn.dataset['key'] ?? '';
-      const value = btn.dataset['value'] ?? '';
-      search = withChip(search, key, value, nextChipState(chipState(search, key, value)));
-      paint();
+      if (tab !== 'cards') { tab = 'cards'; paint(); }
+      openDrawer(drawerHost());
       return true;
-    }
-    case 'deck-filter-clear':
-      search = ''; paint(); return true;
 
     // ── the ⚙, and what the deck says about itself ──
     case 'deck-settings':
@@ -1652,24 +1487,22 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     case 'deck-unfocus':
       focus = null;
+      dt.clearSelection();
       paint();
       return true;
     case 'deck-browse-card':
       // "find similar" means the same thing it means in the browser, and is
       // answered by the browser: hand it a query rather than growing a second
       // similarity notion here.
-      flushSave();
-      cb.useDeck(bridgeToOpenDeck());
-      cb.openBrowser(similarQuery(card));
+      toBrowser(similarQuery(card));
       return true;
 
     case 'deck-browse':
-      // hand the browser this deck and step aside. The deck page stays `open`,
-      // so `back()` is just a repaint — and every edit the browser makes still
-      // goes through edit()/scheduleSave() below, never round the side.
-      flushSave();
-      cb.useDeck(bridgeToOpenDeck());
-      cb.openBrowser(search);
+      // hand the browser this deck and step aside (toBrowser). The deck page
+      // stays `open`, so `back()` is just a repaint — and every edit the
+      // browser makes still goes through edit()/scheduleSave(), never round
+      // the side. The drawer's own "Full browser" is this same hand-off.
+      toBrowser('');
       return true;
   }
   return false;

@@ -6,11 +6,13 @@
  * the pointer is over a page element that did not opt in.
  *
  * THIS MODULE KNOWS NOTHING ABOUT THE GAME. It turns a press-move-release on a
- * source into three calls on a plan main.ts hands it: what glows, what is
- * under the pointer, and what the drop does. main.ts builds every plan out of
- * the functions the CLICKS call — one intent, two routes, the same rule as
- * cardMenuItems serving both the right-click and the rail — so a drag can
- * never do anything a click could not.
+ * source into three calls on a plan a PROVIDER hands it: what glows, what is
+ * under the pointer, and what the drop does. main.ts is one provider and builds
+ * every plan out of the functions the CLICKS call — one intent, two routes, the
+ * same rule as cardMenuItems serving both the right-click and the rail — so a
+ * drag can never do anything a click could not. The deck table
+ * (ui/decktable.ts, 2026-10-21) is the other, under the same rule: its drops
+ * are `place()`, the function its taps call.
  *
  * The gesture:
  *  - a press on a source that moves less than the slop is a click, and the
@@ -23,11 +25,13 @@
  *    pointer or the page hiding does the same. The click the release would
  *    produce is swallowed (ui/touch.ts).
  *
- * ⚠ THE BOARD MUST NOT BE REPAINTED UNDER A DRAG. render() rebuilds #app on
+ * ⚠ THE PAGE MUST NOT BE REPAINTED UNDER A DRAG. render() rebuilds #app on
  * every server push, which would pull the source and every target out from
  * under the pointer. main.ts's render() asks `dragActive()` and defers the
  * paint to the end of the gesture (`ended`). The state still lands; the drop
- * is re-validated against it by the click route it calls.
+ * is re-validated against it by the click route it calls. Off the board the
+ * same holds for every painter a drag can meet (the deck page, the challenge
+ * builder, the card drawer) — the queue poll repaints the deck page too.
  */
 import { inertCopy } from './zoom.ts';
 import { swallowNextClick } from './touch.ts';
@@ -42,9 +46,10 @@ export interface DragPlan {
   drop(zone: Element, x: number, y: number): boolean;
 }
 
-export interface DragDeps {
+export interface DragProvider {
   /** the drag source a press on `el` would pick up, before any legality —
-   * cheap, called on every pointerdown */
+   * cheap, called on every pointerdown. The FIRST provider to answer owns the
+   * press, so two providers must never claim the same element. */
   sourceOf(el: Element): HTMLElement | null;
   /** the plan for dragging `src`, asked once the slop is crossed */
   plan(src: HTMLElement): DragPlan | null;
@@ -52,13 +57,30 @@ export interface DragDeps {
   started(): void;
   /** it let go (dropped or not): paint whatever was deferred */
   ended(): void;
+  /** the source again after a repaint replaced it (default: the same
+   * data-act and indices under #app — see keyOf) */
+  refind?(src: HTMLElement): HTMLElement | null;
+  /** a finger (not a mouse) must rest this long without moving before the
+   * press can lift: a page that SCROLLS under the finger needs the hold, or
+   * every swipe would pick a card up (the deck table; the board does not) */
+  holdMs?: number;
+  /** scroll the page when the card is carried to the top or bottom edge */
+  edgeScroll?: boolean;
 }
+/** the game's provider, as main.ts has always written it */
+export type DragDeps = DragProvider;
 
 /** how far a press must travel to be a drag and not a click */
 const SLOP_MOUSE = 6;
 const SLOP_TOUCH = 10;
 
-interface Press { src: HTMLElement; key: string; id: number; x: number; y: number; type: string }
+interface Press {
+  src: HTMLElement; key: string; id: number; x: number; y: number; type: string;
+  /** who owns this press */
+  prov: DragProvider;
+  /** when it went down, and whether a finger has held still long enough to lift */
+  at: number; held: boolean;
+}
 
 /** the source again after a repaint: the same data-act and indices (a push
  * can land between the press and the slop being crossed, and every paint
@@ -68,6 +90,7 @@ function keyOf(el: HTMLElement): string {
 }
 interface Live {
   plan: DragPlan;
+  prov: DragProvider;
   src: HTMLElement;
   id: number;
   ghost: HTMLElement;
@@ -80,6 +103,10 @@ interface Live {
 let press: Press | null = null;
 let live: Live | null = null;
 let layer: HTMLElement | null = null;
+/** every provider, the game's first; asked in order on a pointerdown */
+const providers: DragProvider[] = [];
+/** the hold's one-shot cue (a class and a buzz) — booked per press, never re-armed */
+let holdTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** is a card being dragged right now? (render() defers its paint while so) */
 export function dragActive(): boolean { return live !== null; }
@@ -111,12 +138,15 @@ function setZone(l: Live, zone: Element | null): void {
   l.zone = zone;
 }
 
-function begin(p: Press, deps: DragDeps, x: number, y: number): boolean {
+function begin(p: Press, x: number, y: number): boolean {
   if (!p.src.isConnected) {
-    const again = p.key ? document.querySelector<HTMLElement>(`#app ${p.key}`) : null;
+    const again = p.prov.refind
+      ? p.prov.refind(p.src)
+      : p.key ? document.querySelector<HTMLElement>(`#app ${p.key}`) : null;
     if (!again) return false;
     p.src = again;
   }
+  const deps = p.prov;
   const plan = deps.plan(p.src);
   if (!plan) return false;
   const home = p.src.getBoundingClientRect();
@@ -127,7 +157,7 @@ function begin(p: Press, deps: DragDeps, x: number, y: number): boolean {
     transformOrigin: '50% 50%',
   });
   ensureLayer().replaceChildren(ghost);
-  live = { plan, src: p.src, id: p.id, ghost, home, dx: p.x - home.left, dy: p.y - home.top, zone: null };
+  live = { plan, prov: deps, src: p.src, id: p.id, ghost, home, dx: p.x - home.left, dy: p.y - home.top, zone: null };
   p.src.classList.add('dragsrc');
   for (const t of plan.targets) t.classList.add('droptarget');
   document.documentElement.classList.add('dragging');
@@ -138,7 +168,7 @@ function begin(p: Press, deps: DragDeps, x: number, y: number): boolean {
 }
 
 /** take the drag down; `landed` = the drop was taken, so no flight home */
-function finish(deps: DragDeps, landed: boolean): void {
+function finish(landed: boolean): void {
   const l = live;
   if (!l) return;
   live = null;
@@ -156,37 +186,104 @@ function finish(deps: DragDeps, landed: boolean): void {
   }
 }
 
-export function installDrag(deps: DragDeps): void {
+/** let a press go: its hold cue, if one was booked or shown */
+function dropPress(): void {
+  if (holdTimer !== null) { clearTimeout(holdTimer); holdTimer = null; }
+  press?.src.classList.remove('draglift');
+  press = null;
+}
+
+/** the page's edge, while a card is carried there: scroll towards it */
+function edgeScroll(y: number): void {
+  const band = 48;
+  const step = y < band ? -(band - y) / 3 : y > innerHeight - band ? (y - (innerHeight - band)) / 3 : 0;
+  if (step) window.scrollBy(0, step);
+}
+
+/**
+ * A second provider beside the game's: the deck table (ui/decktable.ts)
+ * registers one at import. The document listeners stay ONE set, installed by
+ * installDrag — a provider is a row in a list, never another listener — and a
+ * press remembers which provider took it.
+ */
+export function addDragProvider(p: DragProvider): void {
+  if (!providers.includes(p)) providers.push(p);
+}
+
+let installed = false;
+
+export function installDrag(game: DragProvider): void {
+  if (!providers.includes(game)) providers.unshift(game);
+  if (installed) return;
+  installed = true;
   document.addEventListener('pointerdown', e => {
-    press = null;
+    dropPress();
     if (live || !e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
-    const src = deps.sourceOf(e.target as Element);
-    if (src) press = { src, key: keyOf(src), id: e.pointerId, x: e.clientX, y: e.clientY, type: e.pointerType };
+    for (const prov of providers) {
+      const src = prov.sourceOf(e.target as Element);
+      if (!src) continue;
+      press = { src, key: keyOf(src), id: e.pointerId, x: e.clientX, y: e.clientY, type: e.pointerType,
+        prov, at: Date.now(), held: false };
+      if (prov.holdMs && e.pointerType !== 'mouse') {
+        const p = press;
+        holdTimer = setTimeout(() => {
+          holdTimer = null;
+          if (press !== p) return;
+          p.held = true;
+          p.src.classList.add('draglift');
+          navigator.vibrate?.(8);
+        }, prov.holdMs);
+      }
+      return;
+    }
   }, { passive: true });
 
   document.addEventListener('pointermove', e => {
     if (live) {
       if (e.pointerId !== live.id) return;
       place(live, e.clientX, e.clientY, e.pointerType);
+      if (live.prov.edgeScroll) edgeScroll(e.clientY);
       const under = document.elementFromPoint(e.clientX, e.clientY);
       setZone(live, live.plan.zoneAt(under));
       return;
     }
     if (!press || e.pointerId !== press.id) return;
     const slop = press.type === 'mouse' ? SLOP_MOUSE : SLOP_TOUCH;
-    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) < slop) return;
+    const far = Math.hypot(e.clientX - press.x, e.clientY - press.y) >= slop;
+    // THE HOLD (a finger on a page that scrolls): moving before it is up is a
+    // swipe, and the press is let go so the browser keeps its scroll
+    if (press.prov.holdMs && press.type !== 'mouse' && !press.held) {
+      if (Date.now() - press.at < press.prov.holdMs) { if (far) dropPress(); return; }
+      press.held = true;
+    }
+    if (!far) return;
     const p = press;
+    if (holdTimer !== null) { clearTimeout(holdTimer); holdTimer = null; }
+    p.src.classList.remove('draglift');
     press = null;
-    if (begin(p, deps, e.clientX, e.clientY)) {
+    if (begin(p, e.clientX, e.clientY)) {
       const under = document.elementFromPoint(e.clientX, e.clientY);
       setZone(live!, live!.plan.zoneAt(under));
     }
   }, { passive: true });
 
+  // ⚠ A FINGER THAT HAS LIFTED A CARD MUST NOT ALSO SCROLL THE PAGE. The deck
+  // table's cards are `touch-action: pan-y` so a swipe still scrolls; once the
+  // hold is up, the next touchmove is cancelled here, which is what keeps the
+  // browser from claiming the gesture as a pan (and cancelling the pointer).
+  // Non-passive on purpose; it returns at once unless a card is held.
+  document.addEventListener('touchmove', e => {
+    if (live || press?.held) e.preventDefault();
+  }, { passive: false });
+  // a long press is Android's context menu and iOS's callout: not while held
+  window.addEventListener('contextmenu', e => {
+    if (live || press?.held) { e.preventDefault(); e.stopPropagation(); }
+  }, { capture: true });
+
   document.addEventListener('pointerup', e => {
-    press = null;
     const l = live;
-    if (!l || e.pointerId !== l.id) return;
+    if (!l || e.pointerId !== l.id) { dropPress(); return; }
+    dropPress();
     swallowNextClick();
     const zone = l.plan.zoneAt(document.elementFromPoint(e.clientX, e.clientY));
     // the drag state goes BEFORE the drop runs: the drop repaints, and a
@@ -195,18 +292,19 @@ export function installDrag(deps: DragDeps): void {
     let landed = false;
     try { landed = !!zone && l.plan.drop(zone, e.clientX, e.clientY); } finally {
       live = l;
-      finish(deps, landed);
-      deps.ended();
+      finish(landed);
+      l.prov.ended();
     }
   });
 
   const abandon = (): void => {
-    press = null;
-    if (!live) return;
-    finish(deps, false);
-    deps.ended();
+    dropPress();
+    const l = live;
+    if (!l) return;
+    finish(false);
+    l.prov.ended();
   };
-  document.addEventListener('pointercancel', e => { if (live && e.pointerId === live.id) abandon(); else press = null; });
+  document.addEventListener('pointercancel', e => { if (live && e.pointerId === live.id) abandon(); else dropPress(); });
   window.addEventListener('blur', abandon);
   document.addEventListener('visibilitychange', abandon);
   // Escape puts the card back — ahead of main.ts's own Escape ladder, which

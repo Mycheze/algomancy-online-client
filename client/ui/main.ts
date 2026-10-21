@@ -146,6 +146,7 @@ import * as pg from './postgame.ts';
 import * as ps from './pickset.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
+import { installDeckDrawer } from './deckdrawer.ts';
 // CR D8.4 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
@@ -12093,6 +12094,9 @@ installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
 installReport(reportOpenChanged);
+// the deck builders' card drawer: a layer beside #app that stays open while
+// the table under it repaints (ui/deckdrawer.ts)
+installDeckDrawer();
 // the bell, the invite popup and the waiting room's friends panel — a layer
 // beside #app on every page that is not a board (ui/inbox.ts)
 installInbox({

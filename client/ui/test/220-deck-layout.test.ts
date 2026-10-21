@@ -183,7 +183,11 @@ test('§3d the NUMBER comes back over the legal cap, and only there', () => {
 
 /* ══ §4 one layout, both surfaces ════════════════════════════════════════ */
 
+// the BUILDER's cards are the deck table's since 2026-10-21 (ui/decktable.ts,
+// its arrangement in ui/deckarrange.ts); decks.ts still owns the stats panel
 const decksSrc = readFileSync(join(UI, 'decks.ts'), 'utf8');
+const tableSrc = readFileSync(join(UI, 'decktable.ts'), 'utf8');
+const arrangeSrc = readFileSync(join(UI, 'deckarrange.ts'), 'utf8');
 const metaSrc = readFileSync(join(UI, 'meta.ts'), 'utf8');
 
 test('§4a both pages group through the shared module', () => {
@@ -191,29 +195,39 @@ test('§4a both pages group through the shared module', () => {
   // with a local `const` walked straight through a `/deckSections\(/` check —
   // the symbol was there, it just was not the shared one. So the assertion is
   // that the name is bound BY the import from decklayout.ts.
-  for (const [name, src] of [['decks.ts', decksSrc], ['meta.ts', metaSrc]] as const) {
-    const imports = [...src.matchAll(/import \{([^}]*)\} from '\.\/decklayout\.ts';/g)]
-      .flatMap(m => m[1]!.split(',').map(x => x.trim()));
-    assert.ok(imports.includes('deckSections'),
-      `${name} must import deckSections from ui/decklayout.ts — got [${imports.join(', ')}]`);
-    assert.equal(/const deckSections\b|function deckSections\b/.test(src), false,
-      `${name} defines its own deckSections, which is the second projection this file exists to stop`);
-    assert.match(src, /deckSections\(/, `${name} must actually call it`);
+  const importsOf = (src: string, from: string): string[] =>
+    [...src.matchAll(new RegExp(`import \\{([^}]*)\\} from '\\./${from.replace('.', '\\.')}';`, 'g'))]
+      .flatMap(m => m[1]!.split(',').map(x => x.trim().replace(/^type /, '')));
+  // the shared page: deckSections itself
+  assert.ok(importsOf(metaSrc, 'decklayout.ts').includes('deckSections'),
+    `meta.ts must import deckSections from ui/decklayout.ts — got [${importsOf(metaSrc, 'decklayout.ts').join(', ')}]`);
+  assert.match(metaSrc, /deckSections\(/, 'meta.ts must actually call it');
+  // the builder: the Sorted grid, whose rows are decklayout's own buckets
+  // (sectionOf) and whose columns are its cost cut — 534 pins card for card
+  // that sortedGrid with no moves IS deckSections × costColumns
+  assert.ok(importsOf(tableSrc, 'deckarrange.ts').includes('sortedGrid'),
+    'decktable.ts must draw Sorted through ui/deckarrange.ts sortedGrid');
+  assert.match(tableSrc, /sortedGrid\(/, 'and actually call it');
+  assert.ok(importsOf(arrangeSrc, 'decklayout.ts').includes('sectionOf'),
+    'and deckarrange.ts must bucket through decklayout.ts, not a table of its own');
+  for (const [name, src] of [['decktable.ts', tableSrc], ['deckarrange.ts', arrangeSrc], ['meta.ts', metaSrc]] as const) {
+    assert.equal(/const deckSections\b|function deckSections\b|function bucketOf\b/.test(src), false,
+      `${name} defines its own bucketing, which is the second projection this file exists to stop`);
   }
 });
 
-test('§4b neither page kept a bucketing of its own', () => {
+test('§4b no page kept a bucketing of its own', () => {
   // the specific regression: `ui/decks.ts` used to build a `buckets` Map
   // inline, and copying that into meta.ts — rather than lifting it — is the
   // obvious way to answer this report and the way that produces two answers.
-  for (const [name, src] of [['decks.ts', decksSrc], ['meta.ts', metaSrc]] as const) {
+  for (const [name, src] of [['decks.ts', decksSrc], ['decktable.ts', tableSrc], ['meta.ts', metaSrc]] as const) {
     assert.equal(/const buckets = new Map/.test(src), false,
       `${name} still has its own bucketing`);
   }
 });
 
 test('§4c both pages draw copies rather than counting them', () => {
-  for (const [name, src] of [['decks.ts', decksSrc], ['meta.ts', metaSrc]] as const) {
+  for (const [name, src] of [['decktable.ts', tableSrc], ['meta.ts', metaSrc]] as const) {
     assert.match(src, /stackLayers\(/, `${name} must draw the copies`);
     assert.match(src, /needsCountBadge\(/, `${name} must use the one cap rule`);
     // the old unconditional badge, in either page's spelling

@@ -65,6 +65,30 @@ an upward drag is the page's); cards on the regions board are
 `touch-action: none` (that board never scrolls). **The classic board scrolls,
 so a finger drags only hand cards there** — it is not the default board.
 
+## The deck table (2026-10-21)
+
+The deck builders' cards are on a table (`ui/decktable.ts`) and the pool is a
+drawer beside it (`ui/deckdrawer.ts`, a bottom sheet under 900px). Both are
+dragged with the same controller: `ui/drag.ts` keeps a **list of providers**
+(main.ts's game plans are the first, the deck table registers the second with
+`addDragProvider`), one set of document listeners, and a press remembers which
+provider took it. **Every drop is `place()`**, the function the taps call:
+tap a card to pick it up (its panel pins, a bar offers − + Maybe Cut, and Put
+back on a moved one), tap a lit spot to put it down; Escape or a tap on bare
+table puts it down. The drawer's + is `place()` too, and adds one copy.
+
+The deck page **scrolls**, so a finger has to **hold a card still for 380ms
+(`PEEK_MS`) to lift it**; a swipe before that scrolls as before. Table and
+drawer cards are `touch-action: pan-y`; once the hold is up drag.ts cancels the
+next `touchmove`, which is what stops the browser taking the gesture as a pan.
+A mouse drags on the slop, as on the board. Every painter a drag can meet —
+the deck page, the drawer — defers while `dragActive()` and paints when the
+card lands (the queue poll repaints the deck page on its own clock).
+
+The drawer is a layer beside `#app`, with its own `data-dd` clicks and Escape
+(report.ts is the model), so the table's repaints never touch its caret, query
+or scroll. A tap on a drawer card pins it (a tap only reads, #201); its + adds.
+
 ## Small screens
 
 - **Under 900px the rail is a drawer** (style.css "NARROW"): the ☰ tab at the
@@ -108,11 +132,20 @@ drop point; drag-to-play plays; a unit dragged to the front slot, the back
 slot, back to the field; a press under the slop is still a click; the drawer
 opens, its buttons work, the scrim closes it without acting; a live draft room
 (two browser contexts) drags a card from hand to pack, mouse and touch.
+The deck table (2026-10-21), at 1440×900 (mouse), 1180×820 and 760×1000
+(emulated touch): drawer → table / Maybe / Cut, a Sorted column move and Put
+back, Put all back and Undo, a Freeform pile made, renamed and filled, a swipe
+that scrolls instead of lifting, the bottom sheet's half/full toggle, and all
+of it still there after a reload; one `#app` write per action.
 
 ## Not done yet
 
 - A **fanned** zone on touch still fans to 14px slivers; the peek reads any of
   them, but a "spread the fan" popover for tapping one is not built.
-- **Drag to target** a spell or ability (owner's second tier), and the deck
-  builder, are not dragged yet.
+- **Drag to target** a spell or ability (owner's second tier) is not built.
+- The deck table's hold-to-lift was verified with CDP touch emulation (a held
+  finger lifts, a swipe scrolls, the drop lands), **not on a real iPad**:
+  Safari's pan claim is the one thing emulation cannot prove. If it fails
+  there, the fallback is an "Arrange" toggle that makes the cards
+  `touch-action: none` while it is on.
 - iPad **portrait** and folded phones were not tuned.
