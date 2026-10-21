@@ -100,6 +100,18 @@ function bucketOf(f: CardFacts | null, grouping: DeckGrouping): { key: string; l
 }
 
 /**
+ * The section one card files under: its key, label and sort.
+ *
+ * Exported for ui/deckarrange.ts, and for one reason: the deck table's Sorted
+ * view remembers a moved card by its ROW KEY, so the key it stores has to be
+ * the key this module buckets by. A second bucketing written over there would
+ * be the two-projections drift the header above warns about.
+ */
+export function sectionOf(f: CardFacts | null, grouping: DeckGrouping): { key: string; label: string; sort: number } {
+  return bucketOf(f, grouping);
+}
+
+/**
  * The deck, in sections, in the order they should be drawn.
  *
  * Empty sections do not appear — a deck with no spell units has no "Spell
