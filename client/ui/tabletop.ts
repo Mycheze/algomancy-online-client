@@ -341,6 +341,10 @@ export function selected(h: TableHost): Carry | null {
   return sel && sel.key === h.key ? sel.carry : null;
 }
 
+/** the card just dropped in `zone`, by index, to be drawn in front — for the
+ * markup a host draws itself (the challenge's deck strip, `below()`) */
+export const frontIn = (zone: string): number | undefined => (front?.zone === zone ? front.index : undefined);
+
 /** the selection is still there? (a cut, or another device, can take it away) */
 function validSelection(h: TableHost, piles: DeckPile[]): void {
   const c = selected(h);
