@@ -65,29 +65,41 @@ an upward drag is the page's); cards on the regions board are
 `touch-action: none` (that board never scrolls). **The classic board scrolls,
 so a finger drags only hand cards there** — it is not the default board.
 
-## The deck table (2026-10-21)
+## The tabletop deck builder (2026-10-21)
 
-The deck builders' cards are on a table (`ui/decktable.ts`) and the pool is a
-drawer beside it (`ui/deckdrawer.ts`, a bottom sheet under 900px). Both are
-dragged with the same controller: `ui/drag.ts` keeps a **list of providers**
-(main.ts's game plans are the first, the deck table registers the second with
-`addDragProvider`), one set of document listeners, and a press remembers which
-provider took it. **Every drop is `place()`**, the function the taps call:
-tap a card to pick it up (its panel pins, a bar offers − + Maybe Cut, and Put
-back on a moved one), tap a lit spot to put it down; Escape or a tap on bare
-table puts it down. The drawer's + is `place()` too, and adds one copy.
+"Build on the table" on the deck page opens a page of its own (`ui/tabletop.ts`,
+`?table=<deck id>`, Back returns): the deck lies on a felt as **piles** in a
+wrapping row (`ui/piletable.ts`), Maybe is a pile at the right edge, and a
+**binder** of every card is docked on the right (`ui/binder.ts`, a bottom sheet
+under 900px). A deck nobody arranged opens as piles by cost; Re-sort lays it out
+by cost, type or element, with one Undo. The piles are saved with the deck.
 
-The deck page **scrolls**, so a finger has to **hold a card still for 380ms
-(`PEEK_MS`) to lift it**; a swipe before that scrolls as before. Table and
-drawer cards are `touch-action: pan-y`; once the hold is up drag.ts cancels the
-next `touchmove`, which is what stops the browser taking the gesture as a pan.
-A mouse drags on the slop, as on the board. Every painter a drag can meet —
-the deck page, the drawer — defers while `dragActive()` and paints when the
-card lands (the queue poll repaints the deck page on its own clock).
-
-The drawer is a layer beside `#app`, with its own `data-dd` clicks and Escape
-(report.ts is the model), so the table's repaints never touch its caret, query
-or scroll. A tap on a drawer card pins it (a tap only reads, #201); its + adds.
+- **A pile is absolutely placed cards**: card k at `top = k·S`, z-index k, so the
+  pointer finds the copy under it and every copy can be grabbed. No negative
+  margins — v1's cascade drew a card dropped mid-pile under the ones after it.
+- **The drop lands where it is released.** Over a pile, a gap opens at the index
+  the release would take (`insertIndexAt`, the same function the drop uses), the
+  carried card's own place closes up, and the dropped card is drawn in front
+  until the next pickup. Only the zone under the card is tinted; nothing else
+  lights (plans pass no `targets`). A gutter between piles, or the bare felt,
+  makes a new pile there. The binder means "take it out".
+- **A pile's header drags the whole pile.** A click on its name renames it.
+- **Firefox**: ignores `-webkit-user-drag`, so pressing a card scan started a
+  native image drag, which cancels the pointer — the v1 bug ("all click and
+  click again"). `drag.ts` now cancels `dragstart` for anything a provider would
+  pick up, and every scan the table and binder draw is `draggable="false"`.
+- **Mouse**: a press lifts the card at once (`pressLift`), the slop starts the
+  drag, a click pins the card in the binder to read. Resting on a card for a
+  moment brings it to the front.
+- **Finger**: hold 380ms (`PEEK_MS`) to lift, because the table scrolls (a swipe
+  before that scrolls). **The tap route** is the fallback: tap a card to pick it
+  up (it shows in the binder; a bar offers Cut, Maybe, New pile), then tap a
+  pile (its end) or a card (before it); the grip ⠿ picks a pile up (◀ ▶). The
+  pointer that pressed decides, never the device. **Every drop and every tap is
+  `place()`**, the one function that commits.
+- `edgeScroll` scrolls the box under the card (the table pane, Maybe, the
+  binder, a sideways strip) as well as the window, one animation frame at a
+  time while the card is held at an edge.
 
 ## Small screens
 
@@ -132,20 +144,20 @@ drop point; drag-to-play plays; a unit dragged to the front slot, the back
 slot, back to the field; a press under the slop is still a click; the drawer
 opens, its buttons work, the scrim closes it without acting; a live draft room
 (two browser contexts) drags a card from hand to pack, mouse and touch.
-The deck table (2026-10-21), at 1440×900 (mouse), 1180×820 and 760×1000
-(emulated touch): drawer → table / Maybe / Cut, a Sorted column move and Put
-back, Put all back and Undo, a Freeform pile made, renamed and filled, a swipe
-that scrolls instead of lifting, the bottom sheet's half/full toggle, and all
-of it still there after a reload; one `#app` write per action.
+The tabletop (2026-10-21) with real input in **Firefox 158** (WebDriver BiDi
+`input.performActions`) and **Chrome** (CDP), 1440×900, 1180×820 and 820×1000:
+binder → pile at a chosen index, binder → bare table, pile → pile, within a
+pile, pile → binder, pile → Maybe, a pile by its header, Re-sort + Undo, a
+rename, a reload; for each drop no un-cancelled `dragstart` and no
+`pointercancel`, the ghost mid-drag, the card's DOM index = the computed index,
+and `elementFromPoint` at the dropped card = that card. Touch (CDP emulation,
+1024×768): hold-drag, the tap route, Cut, the binder's +, a swipe that scrolls.
 
 ## Not done yet
 
 - A **fanned** zone on touch still fans to 14px slivers; the peek reads any of
   them, but a "spread the fan" popover for tapping one is not built.
 - **Drag to target** a spell or ability (owner's second tier) is not built.
-- The deck table's hold-to-lift was verified with CDP touch emulation (a held
-  finger lifts, a swipe scrolls, the drop lands), **not on a real iPad**:
-  Safari's pan claim is the one thing emulation cannot prove. If it fails
-  there, the fallback is an "Arrange" toggle that makes the cards
-  `touch-action: none` while it is on.
+- The tabletop's hold-to-lift was proved in Chrome touch emulation, **not on a
+  real iPad**; the tap route is complete in case Safari claims the pan.
 - iPad **portrait** and folded phones were not tuned.

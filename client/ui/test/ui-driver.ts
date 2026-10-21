@@ -1066,7 +1066,14 @@ export function replay(): ReplayClient {
 /** #191: the HOME SCREEN client — what main.ts paints when the page is opened
  * with no room in the URL. Set `globalThis.__UI_DRIVER_SEARCH = ''` before
  * importing this module; the shape is the replay client's. */
-export function home(): ReplayClient {
+/** the home screen's client: the replay client's, plus a finger (the
+ * tabletop deck builder reads the pointer that pressed) */
+export interface HomeClient extends ReplayClient {
+  pointer(type: string, want: Pick, init?: Record<string, unknown>): string;
+  tap(want: Pick): string;
+}
+
+export function home(): HomeClient {
   assert.ok(!SEARCH.includes('room=') && !SEARCH.includes('replay='),
     'home() is the home-screen client — set globalThis.__UI_DRIVER_SEARCH = \'\' '
     + 'before importing test/ui-driver.ts');
@@ -1077,6 +1084,15 @@ export function home(): ReplayClient {
     click: want => dispatch('click', want, paint),
     key: (k, opts = false) => press(k, paint, opts),
     tick: runTimers,
+    // the tabletop deck builder (ui/tabletop.ts) is a home-screen page, and a
+    // finger's tap there means something a mouse click does not
+    pointer: (type, want, init = {}) => dispatch(type, want, paint, init),
+    tap: want => {
+      const finger = { pointerType: 'touch', pointerId: 1, isPrimary: true };
+      dispatch('pointerdown', want, paint, finger);
+      dispatch('pointerup', want, paint, finger);
+      return dispatch('click', want, paint, finger);
+    },
   };
 }
 

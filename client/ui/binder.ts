@@ -1,55 +1,52 @@
-/* THE CARD DRAWER — the pool, beside the deck table, open while you build.
+/* THE BINDER — every card, docked down the right of the tabletop.
  *
- * Owner, 2026-10-21: *"a sorta drag and drop style of deck building where the
- * cards feel like they're physically on a table, you can open the browser in a
- * modal"*. So the search that used to sit INSIDE the deck page, under a grid
- * that grew every time you added a card, is a drawer down the right-hand side
- * (a bottom sheet under 900px). You drag a card out of it onto the table, or
- * press its +, and either way exactly ONE copy goes in (owner, Q2).
+ * Owner, 2026-10-21: a "table top deck builder simulator" page, with a side
+ * BINDER of all cards — drag a card out of it onto the table to add a copy,
+ * drag one from the table back into it to take that copy out. Search, the
+ * filter chips and a grid of scans; each tile says how many are in the deck.
+ * Under 900px it is a bottom sheet whose search bar always shows.
  *
  * ⚠ A LAYER BESIDE #app, NOT MARKUP INSIDE IT (ui/report.ts is the model).
- * The table repaints #app wholesale on every edit and the queue poll repaints
- * it besides; a drawer inside it would lose its caret, its query and its
- * scroll on each of those, which is what `anchorTop` and the 537px / 136px
- * jump fixes in ui/decks.ts existed to patch. Out here they survive by
- * construction: nothing outside this file writes this element.
+ * The tabletop repaints #app wholesale on every drop and the queue poll
+ * repaints it besides; a binder inside it would lose its caret, its query and
+ * its scroll on each of those. Out here they survive by construction: nothing
+ * outside this file writes this element.
  *
  * So, the layer rules:
  *   · its own attributes, `data-dd`, never the board's button attribute —
  *     main.ts sends every one of those to handleButton, whose fallbacks can
  *     paint a board over the page;
  *   · its own capture-phase click listener, which claims the clicks inside it,
- *     and its own Escape, ahead of the page's;
- *   · no scrim on a wide screen (the table stays usable beside it); the bottom
- *     sheet's scrim, at full height only, is `ddscrim`;
+ *     and its own Escape (it unpins the pinned card; the page has no Escape of
+ *     its own to close — it is a page, not a dialog);
+ *   · no scrim on a wide screen; the bottom sheet's, at full height only, is
+ *     `ddscrim`;
  *   · no fetch, ever — the pool is ui/cardindex.ts, already in the bundle;
  *   · no timers at all.
  *
- * It serves two hosts (the constructed builder, ui/decks.ts, and the
- * challenge builder) through `DrawerHost`. The host owns the deck; this file
- * owns the search. A drag out of the drawer is ui/decktable.ts's (the tiles
- * are its drag sources), and so is a drop INTO it, which means "cut".
+ * The tabletop owns the deck and this file owns the search. A drag out of the
+ * binder is ui/tabletop.ts's (the tiles are its drag sources, `data-tt-src`),
+ * and so is a drop INTO it (the panel is its drop zone meaning "remove").
  */
-import { allRows, rowFor } from './cardindex.ts';
-import { artHtml, similarQuery } from './cardpanel.ts';
+import { allRows } from './cardindex.ts';
+import { similarQuery } from './cardpanel.ts';
 import { chipState, nextChipState, search as runSearch, withChip } from './cardsearch.ts';
 import { ELEMENTS } from './deckstats.ts';
 import { dragActive } from './drag.ts';
+import { noImgDrag, scanHtml } from './piletable.ts';
 import { touchSeen } from './touch.ts';
 import { elIcon, esc } from './util.ts';
 
-export interface DrawerHost {
-  /** the deck's name, for the drawer's heading */
-  title(): string;
-  /** copies in the deck: the ×n badge, `in:`/`copies:`, and the cap's grey */
+export interface BinderHost {
+  /** copies in the deck: the ×n badge, and `in:`/`copies:` in a query */
   copies(name: string): number;
   /** copies on the maybeboard — absent = the host has none (the challenge) */
   maybe?(name: string): number;
-  /** grey a card at two copies (constructed, BL-34); false where there is no cap */
-  capGrey: boolean;
-  /** one copy into the deck — the host sends it to decktable's place() */
+  /** the copy cap (constructed 2): a badge over it is red. Absent = no cap */
+  cap?: number;
+  /** one copy onto the table — the tabletop sends it through its place() */
   add(name: string): void;
-  /** one copy onto the maybeboard */
+  /** one copy onto the Maybe pile */
   toMaybe?(name: string): void;
   /** the full card browser, with this query (or a card's "find similar") */
   fullBrowser(query: string): void;
@@ -57,27 +54,25 @@ export interface DrawerHost {
 
 /** results are paged, as ui/cards.ts pages its grid */
 const PAGE = 120;
+/** the page the binder belongs to: #app's root class while it is up */
+const PAGE_CLASS = 'ttpage';
 
 let layer: HTMLElement | null = null;
-let host: DrawerHost | null = null;
+let host: BinderHost | null = null;
 /** the search, in ui/cardsearch.ts's language — the chips write into it */
 let query = '';
 let shown = PAGE;
-/** the card pinned in the drawer's own panel */
+/** the card pinned in the binder's own panel */
 let pinned: string | null = null;
 /** the bottom sheet's height (narrow only) */
 let full = false;
-/** #app's page class when the drawer opened — leaving that page closes it */
-let page: string | null = null;
 /** a paint asked for while a card was in the air */
 let pending = false;
-/** the key event this layer took, so the table's own Escape can stand aside */
+/** the key event this layer took, so the page's own Escape can stand aside */
 let tookKey: Event | null = null;
 
-export const drawerOpen = (): boolean => host !== null;
-
-/** did the drawer take this key? (ui/decktable.ts's Escape asks) */
-export const drawerTookKey = (e: Event): boolean => e === tookKey;
+/** did the binder take this key? (ui/tabletop.ts's Escape asks) */
+export const binderTookKey = (e: Event): boolean => e === tookKey;
 
 /** the pool, narrowed to what a deck may hold, then the query */
 function results(): { names: string[]; total: number } {
@@ -89,23 +84,24 @@ function results(): { names: string[]; total: number } {
   return { names: hits.slice(0, shown), total: hits.length };
 }
 
-/** a scan in the drawer: drag it out, or + it in. The grey is the cap's, and
- * it is news only HERE, where you are shopping (BL-34; 222 §5) */
+/** the ×n a tile and the pinned card carry: copies in the deck, red over the cap */
+function badge(name: string): string {
+  const n = host!.copies(name);
+  if (!n) return '';
+  const over = host!.cap !== undefined && n > host!.cap;
+  return `<span class="dkn ${over ? 'bad' : 'ddin'}">×${n}</span>`;
+}
+
+/** a scan in the binder: drag it out, or + it in */
 function tileHtml(name: string): string {
   const h = host!;
-  const n = h.copies(name);
-  /** the cap withholds the + … */
-  const atCap = h.capGrey && n >= 2;
-  /** …and greys the scan, here and only here */
-  const shopping = atCap;
-  const r = rowFor(name);
-  return `<div class="dktile ddtile${shopping ? ' atcap' : ''}${n > 2 ? ' overcap' : ''}${name === pinned ? ' ddon' : ''}"
-      data-prev="${esc(name)}" data-dd="pin" data-card="${esc(name)}" data-dt-src="drawer|${esc(name)}">
-    ${r ? artHtml(r, 'dkart') : `<div class="dkart cbnoart">${esc(name)}</div>`}
-    ${n ? `<span class="dkn${n > 2 ? ' bad' : ' ddin'}">×${n}</span>` : ''}
+  return `<div class="dktile ddtile${name === pinned ? ' ddon' : ''}"
+      data-dd="pin" data-card="${esc(name)}" data-tt-src="binder|${esc(name)}">
+    ${scanHtml(name, 'dkart')}
+    ${badge(name)}
     <span class="dkbtns">
-      ${atCap ? '' : `<button data-dd="add" data-card="${esc(name)}" aria-label="add a copy">+</button>`}
-      ${h.toMaybe ? `<button data-dd="maybe" data-card="${esc(name)}" aria-label="to the maybeboard">»</button>` : ''}
+      <button data-dd="add" data-card="${esc(name)}" aria-label="add a copy">+</button>
+      ${h.toMaybe ? `<button data-dd="maybe" data-card="${esc(name)}" aria-label="to Maybe">»</button>` : ''}
     </span>
   </div>`;
 }
@@ -126,15 +122,13 @@ function chipsHtml(): string {
 function pinHtml(): string {
   const h = host!;
   if (!pinned) return '';
-  const r = rowFor(pinned);
   const n = h.copies(pinned);
-  const atCap = h.capGrey && n >= 2;
   return `<div class="ddpinbox">
-    ${r ? artHtml(r, 'ddpinart') : ''}
+    ${scanHtml(pinned, 'ddpinart')}
     <div class="ddpinside">
       <b>${esc(pinned)}</b>
       ${n ? `<span class="dim">${n} in the deck</span>` : ''}
-      ${atCap ? '' : `<button class="primary" data-dd="add" data-card="${esc(pinned)}">+ Add</button>`}
+      <button class="primary" data-dd="add" data-card="${esc(pinned)}">+ Add</button>
       ${h.toMaybe ? `<button data-dd="maybe" data-card="${esc(pinned)}">» Maybe</button>` : ''}
       <button data-dd="similar" data-card="${esc(pinned)}">Find similar</button>
       <button class="dkicon" data-dd="unpin" aria-label="close">✕</button>
@@ -144,7 +138,7 @@ function pinHtml(): string {
 
 function countHtml(total: number): string {
   return `${total} card${total === 1 ? '' : 's'}
-    <button class="cblink" data-dd="browse">Full browser</button>`;
+    <button class="cblink" data-dd="browse">All cards…</button>`;
 }
 
 function resultsHtml(r: { names: string[]; total: number }): string {
@@ -153,16 +147,16 @@ function resultsHtml(r: { names: string[]; total: number }): string {
       ? `<button class="ddmore" data-dd="more">Show more (${r.total - r.names.length})</button>` : '');
 }
 
-/** the whole drawer — built when it opens, and when its skeleton is gone */
-function drawerHtml(): string {
+/** the whole binder — built when it opens, and when its skeleton is gone */
+function binderHtml(): string {
   const r = results();
   return `<div class="ddscrim" data-dd="half"></div>
-  <aside class="ddpanel${full ? ' full' : ''}" data-dt-zone="drawer" aria-label="Add cards">
+  <aside class="ddpanel${full ? ' full' : ''}" data-tt-zone="binder" aria-label="Card binder">
+    <div class="ddremove" aria-hidden="true">Drop to remove</div>
     <div class="ddhead">
       <button class="ddgrab" data-dd="size" aria-label="${full ? 'smaller' : 'taller'}">${full ? '▾' : '▴'}</button>
       <input id="dd-search" class="ddsearch" spellcheck="false" autocomplete="off"
-        placeholder="Search cards — name, text, mana:2…" value="${esc(query)}">
-      <button class="dkicon" data-dd="close" aria-label="close">✕</button>
+        placeholder="Search cards" value="${esc(query)}">
     </div>
     <div class="ddchips" id="dd-chips">${chipsHtml()}</div>
     <div class="ddcount" id="dd-count">${countHtml(r.total)}</div>
@@ -171,15 +165,14 @@ function drawerHtml(): string {
   </aside>`;
 }
 
-/** a part of the drawer, by id — null when the skeleton is not in the document */
+/** a part of the binder, by id — null when the skeleton is not in the document */
 const part = (id: string): HTMLElement | null =>
   (layer && typeof layer.querySelector === 'function' ? layer.querySelector<HTMLElement>(`#${id}`) : null);
 
 /**
  * Repaint what changed, never the search box: the caret and what is typed
  * survive every repaint because the box is never rebuilt. If the skeleton is
- * not there (the first paint, or a page that has none), the whole layer is
- * written once.
+ * not there (the first paint), the whole layer is written once.
  */
 function paint(which: 'all' | 'results' = 'all'): void {
   if (!layer) return;
@@ -187,29 +180,29 @@ function paint(which: 'all' | 'results' = 'all'): void {
   pending = false;
   if (!host) {
     layer.innerHTML = '';
-    document.documentElement.classList.remove('drawerup', 'ddfull');
+    document.documentElement.classList.remove('binderup', 'ddfull');
     return;
   }
-  document.documentElement.classList.add('drawerup');
+  document.documentElement.classList.add('binderup');
   document.documentElement.classList.toggle('ddfull', full);
   const box = part('dd-results');
-  if (!box) { layer.innerHTML = drawerHtml(); return; }
+  if (!box) { layer.innerHTML = noImgDrag(binderHtml()); return; }
   const r = results();
   const count = part('dd-count');
-  if (count) count.innerHTML = countHtml(r.total);
-  box.innerHTML = resultsHtml(r);
+  if (count) count.innerHTML = noImgDrag(countHtml(r.total));
+  box.innerHTML = noImgDrag(resultsHtml(r));
   if (which === 'results') return;
   const chips = part('dd-chips');
-  if (chips) chips.innerHTML = chipsHtml();
+  if (chips) chips.innerHTML = noImgDrag(chipsHtml());
   const pin = part('dd-pin');
-  if (pin) pin.innerHTML = pinHtml();
+  if (pin) pin.innerHTML = noImgDrag(pinHtml());
   layer.querySelector('.ddpanel')?.classList.toggle('full', full);
-  const grab = part('dd-search')?.parentElement?.querySelector('.ddgrab');
+  const grab = layer.querySelector('.ddgrab');
   if (grab) grab.textContent = full ? '▾' : '▴';
 }
 
 /** claim the caret — on a mouse only: on a tablet it would raise the keyboard
- * over the table every time the drawer opened */
+ * over the table every time the page opened */
 function focusSearch(): void {
   if (touchSeen()) return;
   const box = part('dd-search') as HTMLInputElement | null;
@@ -218,37 +211,38 @@ function focusSearch(): void {
   box.selectionStart = box.selectionEnd = box.value.length;
 }
 
-/** #app's root page class (deckpage, chpage…) */
-function pageNow(): string | null {
-  const root = document.getElementById('app')?.firstElementChild;
-  return root?.classList?.[0] ?? null;
+/** is #app showing the tabletop? */
+function onTabletop(): boolean {
+  return !!document.getElementById('app')?.firstElementChild?.classList?.contains(PAGE_CLASS);
 }
 
-/** Open the drawer for this host (or switch it to another host). */
-export function openDrawer(h: DrawerHost): void {
+/** Dock the binder for this host (the tabletop, on every paint: a no-op
+ * repaint of the counts when it is already up). */
+export function openBinder(h: BinderHost): void {
   const was = host;
   host = h;
-  page = pageNow();
-  shown = PAGE;
-  if (!was) { if (layer) layer.innerHTML = ''; paint(); focusSearch(); }
+  if (!was) { shown = PAGE; if (layer) layer.innerHTML = ''; paint(); focusSearch(); }
   else paint();
 }
 
-export function closeDrawer(): void {
+export function closeBinder(): void {
   if (!host) return;
   host = null;
   pinned = null;
+  full = false;
   if (layer) layer.innerHTML = '';
   paint();
 }
 
-/** the host committed an edit: the counts, the cap's grey and `in:` move */
-export function drawerChanged(): void {
-  if (host) paint();
+/** pin a card in the binder's panel (a click on a table card) */
+export function pinCard(name: string): void {
+  if (!host) return;
+  pinned = name;
+  paint();
 }
 
-/** a drag let go: paint what it held back (ui/decktable.ts's `ended`) */
-export function flushDrawer(): void {
+/** a drag let go: paint what it held back (ui/tabletop.ts's `ended`) */
+export function flushBinder(): void {
   if (pending) paint();
 }
 
@@ -257,7 +251,6 @@ function onButton(what: string, el: HTMLElement): void {
   if (!h) return;
   const card = el.dataset['card'] ?? '';
   switch (what) {
-    case 'close': closeDrawer(); return;
     case 'size': full = !full; paint(); return;
     case 'half': full = false; paint(); return;
     case 'add': if (card) h.add(card); return;
@@ -290,13 +283,13 @@ function rebuildSearch(): void {
 let installed = false;
 
 /** Mount the layer beside #app (main.ts, at boot, beside installReport). */
-export function installDeckDrawer(): void {
+export function installBinder(): void {
   if (installed) return;
   const app = document.getElementById('app');
   if (!app || !document.body || typeof document.body.appendChild !== 'function') return;
   installed = true;
   layer = document.createElement('div');
-  layer.id = 'decklayer';
+  layer.id = 'binderlayer';
   document.body.appendChild(layer);
 
   // our own clicks, claimed in capture before main.ts's delegator sees them
@@ -318,23 +311,23 @@ export function installDeckDrawer(): void {
     shown = PAGE;
     paint('results');
     const chips = part('dd-chips');
-    if (chips) chips.innerHTML = chipsHtml();
+    if (chips) chips.innerHTML = noImgDrag(chipsHtml());
   });
 
-  // Escape: the pinned card, then the drawer — before the page's own Escape
+  // Escape: the pinned card, then the full-height sheet — ahead of the page
   window.addEventListener('keydown', e => {
-    if (!host || e.key !== 'Escape') return;
+    if (!host || e.key !== 'Escape' || (!pinned && !full)) return;
     tookKey = e;
     e.stopPropagation();
-    if (pinned) { pinned = null; paint(); return; }
-    closeDrawer();
+    if (pinned) pinned = null; else full = false;
+    paint();
   }, { capture: true });
 
-  // the drawer belongs to the page it was opened on: when #app is repainted
-  // into another page (the card browser, the lobby, a game), it goes
+  // the binder belongs to the tabletop: when #app is repainted into another
+  // page (Back, the full card browser, a game), it goes
   if (typeof MutationObserver === 'function') {
     new MutationObserver(() => {
-      if (host && page && pageNow() !== page) closeDrawer();
+      if (host && !onTabletop()) closeBinder();
     }).observe(app, { childList: true });
   }
 }

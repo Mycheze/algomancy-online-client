@@ -2753,117 +2753,136 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .dkbtns button:hover { background: var(--accent); color: #12151a; }
 
 .dkadd { margin-top: 6px; }
+.dkdrawer { margin-top: 10px; border: 1px solid var(--accent); border-radius: 8px; padding: 8px;
+  background: var(--panel2); }
+.dkdrawerhead { display: flex; gap: 6px; margin-bottom: 6px; }
 .dksearch { flex: 1; }
 .dkfilters { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
 
-/* ── THE DECK TABLE (ui/decktable.ts, 2026-10-21) ──────────────────────
-   Owner: "the cards feel like they're physically on a table". Real scans on
-   a felt, in a vertical cascade per cell (each card shows its top strip, the
-   last one whole), dragged by mouse or by a held finger, every drag with a
-   tap route: tap a card, then tap a lit spot.
+/* ── THE TABLETOP (ui/tabletop.ts + ui/piletable.ts, 2026-10-21) ─────────
+   A page of its own: a felt with the deck on it as piles in a wrapping row,
+   the binder docked on the right. Owner: drag and drop must feel natural.
 
-   THE CASCADE IS ONE NUMBER. A scan is 63:88, so its height is 1.397× its
-   width; a vertical margin percentage is of the containing block's WIDTH,
-   which here is the card's own width. So `-108%` leaves 0.317 of a width —
-   the top 23% of the card, its cost and its name — showing above the next
-   one. A stacked tile (--d ghosts) is inset by --d × --dkstep, so it keeps
-   that much more. */
-.dktablecard { padding: 8px; }
-.dtable { --felt: #17222b; position: relative; }
-.dthead { position: sticky; top: 0; z-index: 6; background: var(--panel); padding: 4px 0 6px;
-  display: flex; flex-direction: column; gap: 6px; }
-.dthead .cbdeckbar { position: static; margin: 0; }
-.dttools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.dtseg { display: inline-flex; gap: 2px; }
-.dtaddbtn { padding: 5px 12px; }
-.dthidelbl { display: none; }
-html.drawerup .dtaddlbl { display: none; }
-html.drawerup .dthidelbl { display: inline; }
-.dtselbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 4px 6px 4px 10px;
-  border: 1px solid var(--glow); border-radius: 8px; background: #1a2620; }
-.dtselbar b { margin-right: 4px; }
-.dtselbar .dkicon { width: 30px; height: 30px; margin-left: auto; }
-.dtzones { display: flex; gap: 8px; align-items: stretch; }
-.dtmaybe { flex: 1; min-width: 0; min-height: 62px; display: flex; align-items: center; gap: 10px;
-  border: 1px dashed var(--line); border-radius: 8px; padding: 4px 10px; overflow: hidden; }
-.dtzonelabel { color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; flex: none; }
-.dtfan { display: flex; min-width: 0; padding: 2px 0; }
-.dtfan > .dtcard { width: 40px; flex: none; }
-.dtfan > .dtcard + .dtcard { margin-left: -12px; }
-.dtcut { width: 92px; flex: none; display: flex; align-items: center; justify-content: center; gap: 6px;
-  border: 1px dashed color-mix(in srgb, var(--danger) 60%, transparent); border-radius: 8px;
-  color: var(--danger); font-size: 12px; cursor: pointer; }
-.dtbody { margin-top: 6px; border-radius: 10px; padding: 12px;
-  background: radial-gradient(ellipse at 50% -10%, #223241, var(--felt) 70%);
-  box-shadow: inset 0 2px 14px rgba(0, 0, 0, .55); min-height: 180px; }
-.dtempty { color: var(--dim); text-align: center; padding: 50px 10px; }
-.dtcard { cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none;
-  -webkit-touch-callout: none; box-shadow: 0 2px 6px rgba(0, 0, 0, .55); }
-.dtcard img, .ddtile img { -webkit-user-drag: none; -webkit-touch-callout: none; }
-.dtcard.dtsel { outline: 3px solid var(--glow); outline-offset: -2px; }
-.dtcard.draglift { transform: scale(1.05); box-shadow: 0 8px 18px rgba(0, 0, 0, .6); transition: transform .12s; }
-.dtmoved { position: absolute; top: 3px; right: 3px; z-index: 4; font-size: 11px; line-height: 1;
-  padding: 2px 4px; border-radius: 6px; background: var(--accent); color: #12151a; font-weight: 700; }
-.dtsorted { display: flex; flex-direction: column; gap: 10px; overflow-x: auto; }
-.dtcols, .dtcells { display: grid; grid-template-columns: repeat(var(--cols), minmax(56px, 112px)); gap: 6px; }
-.dtcolhead { text-align: center; }
-.dtcolhead .txticon { width: 20px; height: 20px; }
-.dtrowhead { color: var(--accent); text-transform: uppercase; letter-spacing: .06em; font-size: 11px;
-  border-bottom: 1px solid rgba(255, 255, 255, .07); padding-bottom: 3px; margin-bottom: 4px; }
-.dtcell { min-height: 54px; border-radius: 6px; padding: 2px; }
-.dtcell.empty { border: 1px dashed rgba(255, 255, 255, .06); }
-.dtcascade { display: flex; flex-direction: column; }
-.dtcascade > .dtcard:not(:last-child) { margin-bottom: calc(-108% + var(--d) * 18%); }
-.dtholding .dttarget { outline: 2px dashed color-mix(in srgb, var(--glow) 70%, transparent);
-  outline-offset: 1px; cursor: pointer; }
-.dtholding .dtcell.dttarget { background: rgba(111, 195, 111, .05); }
-.dtslot { aspect-ratio: 63 / 44; margin-top: 4px; border-radius: 6px;
-  border: 2px dashed color-mix(in srgb, var(--glow) 55%, transparent); cursor: pointer; }
-.dtpiles { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
-.dtpile { width: 124px; flex: none; border: 1px solid rgba(255, 255, 255, .08); border-radius: 8px;
-  padding: 4px 5px 8px; background: rgba(0, 0, 0, .15); min-height: 120px; }
-.dtpilehead { display: flex; align-items: center; gap: 3px; margin-bottom: 4px; }
-.dtpilename { flex: 1; min-width: 0; background: transparent; color: var(--text); font-weight: 700;
-  font-size: 12px; border: 1px solid transparent; border-radius: 4px; padding: 2px 4px; }
-.dtpilename:hover { border-color: var(--line); }
-.dtpilename:focus { border-color: var(--accent); outline: none; background: var(--panel2); }
-.dtpiledel { padding: 0 5px; font-size: 11px; border: none; background: none; color: var(--dim); }
-.dtpiledel:hover { color: var(--danger); }
-.dtnewpile { width: 124px; min-height: 120px; flex: none; border: 1px dashed var(--line); border-radius: 8px;
-  background: none; color: var(--dim); }
-/* Stacked (the challenge builder): blocks in draw order, the opening hand in a
-   band. A shell this round — the challenge builder fills it in below. */
-.dtstacked { display: flex; flex-direction: column; gap: 10px; }
-.dtblocks { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
-.dtblock { width: 92px; flex: none; }
-.dtpos { text-align: center; color: var(--dim); font-size: 11px; margin-top: 2px; font-variant-numeric: tabular-nums; }
-.dtband { border-radius: 8px; padding: 6px; background: rgba(214, 170, 76, .08);
-  border: 1px solid rgba(214, 170, 76, .35); }
-.dtbandlabel { color: var(--accent); font-size: 11px; margin-bottom: 4px; }
-.dtgap { width: 30px; min-height: 120px; border-radius: 6px; border: 1px dashed rgba(255, 255, 255, .08); }
+   A PILE IS ABSOLUTELY PLACED CARDS. Card k sits at top = k·S inside the
+   fan and paints over card k−1 by z-index = k — the pointer finds the copy
+   under it by the browser's own hit-testing, and no card is ever pulled up
+   over the one before it by a negative margin (that was v1's paint-order
+   bug: a card dropped mid-pile showed only a sliver). The card just dropped
+   is drawn in front (.ttfront) until the next pickup.
 
-/* the deck list folds to its covers while the drawer is open, so the table
-   keeps its width; the pinned card goes over the drawer on a smaller screen */
-@media (min-width: 901px) {
-  html.drawerup .deckmain { grid-template-columns: 62px minmax(0, 1fr); }
-  html.drawerup .decklist .deckrow { grid-template-columns: 46px; padding: 4px; }
-  html.drawerup .decklist .deckrowbody, html.drawerup .decklist .deckflag,
-  html.drawerup .decklist .deckmakebtns, html.drawerup .decklist .deckimportbox,
-  html.drawerup .decklist > .hint { display: none; }
-  html.drawerup .dkwork:has(.cbdetail) { grid-template-columns: minmax(0, 1fr) 280px; }
+   ONLY THE PILE UNDER THE CARD LIGHTS: a soft tint, never an outline; the
+   gap that opens in it is the preview. The one dashed thing is a new pile's
+   place, while the card is over it. */
+:root { --bdw: 340px; --ddh: 46vh; --felt: #172520; }
+html.touch { --bdw: 300px; }
+.ttpage { position: fixed; top: 0; left: 0; bottom: 0; right: var(--bdw); z-index: 1;
+  display: flex; flex-direction: column; background: var(--bg); --cw: 132px; --ch: 183px; }
+.ttloading { padding: 40px; }
+.tttop { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px;
+  background: var(--panel); border-bottom: 1px solid var(--line); }
+.ttback { flex: none; }
+.ttsummary { flex: 1; min-width: 0; }
+.ttsummary .cbdeckbar { position: static; margin: 0; padding: 0; border: 0; background: none; }
+.tttools { display: flex; align-items: center; gap: 6px; flex: none; }
+.ttresort { position: relative; }
+.ttresort > summary { list-style: none; cursor: pointer; padding: 5px 10px; border: 1px solid var(--line);
+  border-radius: 6px; background: var(--panel2); user-select: none; }
+.ttresort > summary::-webkit-details-marker { display: none; }
+.ttmenu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; display: flex; flex-direction: column;
+  gap: 2px; min-width: 130px; padding: 4px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; box-shadow: 0 10px 24px rgba(0, 0, 0, .5); }
+.ttmenu button { text-align: left; }
+.ttselbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px 12px;
+  background: var(--panel2); border-bottom: 1px solid var(--line); }
+.ttselbar .dkicon { width: 32px; height: 32px; margin-left: auto; }
+.ttbody { flex: 1; min-height: 0; display: flex; }
+/* the page's own scroll boxes, in the page's colours (Firefox drew them white) */
+.tttable, .ttmaybe, .ttbody, .ddresults { scrollbar-color: #3a4553 transparent; scrollbar-width: thin; }
+.tttable { flex: 1; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: 14px 10px 60px;
+  background: radial-gradient(ellipse at 50% 0%, #1e3029 0%, var(--felt) 70%); touch-action: pan-y; }
+.ttrow { display: flex; flex-wrap: wrap; align-items: stretch; row-gap: 18px; }
+.ttpile { width: var(--cw); flex: none; display: flex; flex-direction: column; padding: 4px;
+  border-radius: 10px; transition: background .12s; }
+.ttpilehead { display: flex; align-items: center; gap: 3px; height: 24px; margin-bottom: 4px; cursor: grab;
+  touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.ttgrip { color: var(--dim); font-size: 12px; cursor: grab; padding: 0 1px; }
+.ttpilename, .ttpilelabel { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-weight: 700; font-size: 13px; color: var(--text); padding: 1px 3px; border: 1px solid transparent; border-radius: 4px; }
+span.ttpilename { cursor: text; }
+span.ttpilename:hover { border-color: var(--line); }
+input.ttpilename { flex: 1; width: 0; background: var(--panel2); border-color: var(--accent); outline: none; font-family: inherit; }
+.ttpilecount { margin-left: auto; color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ttpiledel { padding: 0 5px; font-size: 11px; border: none; background: none; color: var(--dim); }
+.ttpiledel:hover { color: var(--danger); }
+.ttovercap { flex: none; color: #fff; background: var(--danger); border-radius: 8px; padding: 0 5px;
+  font-size: 11px; font-weight: 700; line-height: 16px; }
+.ttcapn { position: absolute; top: 2px; right: 22%; z-index: 1; color: #fff; background: var(--danger);
+  border-radius: 7px; padding: 0 4px; font-size: 10px; font-weight: 700; line-height: 14px; pointer-events: none; }
+.ttfan { position: relative; flex: none; width: var(--cw); transition: height .09s; }
+.ttcard { position: absolute; left: 0; width: var(--cw); height: var(--ch); z-index: var(--k);
+  border-radius: 6px; cursor: grab; box-shadow: 0 1px 4px rgba(0, 0, 0, .55);
+  touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  transition: transform .09s ease-out, opacity .09s; }
+.ttcard > .ttart { width: 100%; height: 100%; display: block; border-radius: 6px; object-fit: cover;
+  -webkit-user-drag: none; -webkit-touch-callout: none; }
+.ttcard > .cbnoart { display: flex; align-items: flex-start; padding: 6px; background: var(--panel2);
+  font-size: 12px; border: 1px solid var(--line); }
+/* a card rested on with the mouse comes to the front to be read — after a
+   moment, so a pointer travelling down the pile does not lift every card it
+   passes (once lifted, a card covers the strips below it) */
+html:not(.dragging):not(.touch) .ttcard:hover { z-index: 500; transition: transform .09s, z-index 0s .3s; }
+.ttcard.ttfront { z-index: 400; box-shadow: 0 6px 16px rgba(0, 0, 0, .6); }
+.ttcard.draglift { z-index: 450; transform: scale(1.04); box-shadow: 0 10px 22px rgba(0, 0, 0, .65); }
+.ttcard.ttpicked { z-index: 450; outline: 3px solid var(--accent); outline-offset: -1px; }
+.ttcard.iscover::after { content: '★'; position: absolute; top: 3px; right: 5px; color: var(--accent);
+  font-size: 12px; text-shadow: 0 1px 2px #000; }
+.ttcard.ttgone { opacity: 0; }
+.ttgutter { position: relative; width: 18px; flex: none; }
+.ttend { flex: 1 0 calc(var(--cw) + 24px); min-height: calc(var(--ch) + 32px); padding: 32px 4px 4px 20px;
+  border-radius: 10px; display: flex; align-items: flex-start; }
+/* the tint, the gap, the new pile's place: the only things a drag lights */
+.ttpage .dropover { outline: none; box-shadow: none; }
+.ttpage .ttpile.dropover { background: rgba(255, 255, 255, .07); }
+/* a gutter never widens under the pointer (the row would jump): it shows
+   where the new pile goes as a dashed upright, the end of the row as a
+   dashed card */
+.ttpage .ttgutter.dropover::before { content: ''; position: absolute; left: 6px; top: 30px; width: 0;
+  height: var(--ch); border-left: 3px dashed rgba(255, 255, 255, .45); }
+html.ttcarrypile .ttpage .ttgutter.dropover::before { border-left: 3px solid var(--accent); }
+html:not(.ttcarrypile) .ttpage .ttend.dropover::before { content: ''; display: block; width: var(--cw); height: var(--ch);
+  border: 2px dashed rgba(255, 255, 255, .32); border-radius: 8px; background: rgba(255, 255, 255, .03); }
+.ttpage .ttpile.ttbefore { box-shadow: -3px 0 0 0 var(--accent); }
+.ttpage .ttpile.ttafter { box-shadow: 3px 0 0 0 var(--accent); }
+.ttpile.dragsrc { opacity: .3; }
+.ttpile.ttpicked { outline: 2px solid var(--accent); }
+/* the card or pile in the air: lifted, no outline, and never a transition
+   (the ghost moves by transform; one would trail the pointer) */
+#draglayer > .dragghost.ttcard, #draglayer > .dragghost.ttpile, #draglayer > .dragghost.ddtile {
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .65); transition: none; height: auto; }
+#draglayer > .dragghost.ddtile .dkbtns, #draglayer > .dragghost.ddtile .dkn { display: none; }
+#draglayer > .dragghost.ttcard > .ttart { height: auto; }
+#draglayer > .dragghost.ttpile { background: rgba(23, 37, 32, .92); }
+#draglayer > .dragghost.ttpile .ttfan { width: auto; }
+#draglayer > .dragghost.ttpile .ttcard { width: 100%; height: auto; }
+.ttmaybe { flex: none; width: calc(var(--cw) + 30px); overflow-y: auto; overscroll-behavior: contain;
+  padding: 14px 10px 40px; background: #141f1b; border-left: 1px solid var(--line); touch-action: pan-y; }
+.ttmaybepile { min-height: 100%; }
+.ttmaybepile .ttpilelabel { color: var(--dim); text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+html.binderup .reportfab { right: calc(var(--bdw) + 18px); }
+html.binderup .inboxbell { right: calc(var(--bdw) + 124px); }
+@media (max-width: 900px) {
+  .ttpage { right: 0; bottom: var(--ddh); }
+  .ttbody { display: block; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+  .tttable { overflow: visible; }
+  .ttmaybe { width: auto; overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
+  .ttsummary .cbminicurve, .ttsummary .cbdeckels { display: none; }
+  html.binderup .reportfab, html.binderup .inboxbell { bottom: calc(var(--ddh) + 12px); }
+  html.binderup .reportfab { right: 18px; }
+  html.binderup .inboxbell { right: 124px; }
 }
-@media (max-width: 1300px) and (min-width: 901px) {
-  html.drawerup .dkwork:has(.cbdetail) { grid-template-columns: minmax(0, 1fr); }
-  html.drawerup .dkwork .cbdetail { position: fixed; top: 8px; right: 8px; bottom: 8px; z-index: 60;
-    width: min(340px, 92vw); max-height: none; box-shadow: -12px 0 32px rgba(0, 0, 0, .55); }
-}
 
-/* ── THE CARD DRAWER (ui/deckdrawer.ts): a layer beside #app ── */
-:root { --ddw: 380px; --ddh: 46vh; }
-html.drawerup .deckpage { padding-right: calc(var(--ddw) + 12px); }
-html.drawerup .reportfab { right: calc(var(--ddw) + 18px); }
-html.drawerup .inboxbell { right: calc(var(--ddw) + 124px); }
-#decklayer .ddpanel { position: fixed; top: 0; right: 0; bottom: 0; width: var(--ddw); z-index: 50;
+/* ── THE BINDER (ui/binder.ts): every card, a layer docked beside #app ── */
+#binderlayer .ddpanel { position: fixed; top: 0; right: 0; bottom: 0; width: var(--bdw); z-index: 50;
   display: flex; flex-direction: column; gap: 6px; padding: 10px; background: var(--panel);
   border-left: 1px solid var(--line); box-shadow: -10px 0 30px rgba(0, 0, 0, .45); }
 .ddhead { display: flex; gap: 6px; align-items: center; }
@@ -2873,9 +2892,10 @@ html.drawerup .inboxbell { right: calc(var(--ddw) + 124px); }
 .ddchips button { padding: 3px 7px; font-size: 12px; }
 .ddchips .ddel .elicon { margin: 0; }
 .ddcount { color: var(--dim); font-size: 11px; display: flex; align-items: center; gap: 10px; }
-.ddresults { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
-.ddgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(98px, 1fr)); gap: 6px; }
+.ddresults { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px; touch-action: pan-y; }
+.ddgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .ddtile { cursor: grab; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.ddtile img { -webkit-user-drag: none; -webkit-touch-callout: none; }
 .ddtile .dkbtns { opacity: 0; transition: opacity .12s; }
 .ddtile:hover .dkbtns, html.touch .ddtile .dkbtns { opacity: 1; }
 .ddtile.ddon { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -2887,19 +2907,21 @@ html.drawerup .inboxbell { right: calc(var(--ddw) + 124px); }
 .ddpinside { display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1; align-items: flex-start; }
 .ddpinside .dkicon { width: 28px; height: 28px; margin-top: auto; }
 .ddscrim { display: none; }
+/* a table card carried over the binder: it means "take it out" */
+.ddremove { display: none; margin: -10px -10px 0; padding: 7px 10px; text-align: center; font-size: 13px;
+  color: #f1c9c9; background: rgba(217, 84, 84, .22); }
+#binderlayer .ddpanel.dropover { outline: none; box-shadow: -10px 0 30px rgba(0, 0, 0, .45), inset 0 0 0 999px rgba(217, 84, 84, .07); }
+#binderlayer .ddpanel.dropover .ddremove { display: block; }
 @media (max-width: 900px) {
-  #decklayer .ddpanel { top: auto; left: 0; width: auto; height: var(--ddh); border-left: 0;
+  #binderlayer .ddpanel { top: auto; left: 0; width: auto; height: var(--ddh); border-left: 0;
     border-top: 1px solid var(--line); border-radius: 12px 12px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, .5); }
-  #decklayer .ddpanel.full { height: 88vh; }
+  #binderlayer .ddpanel.full { height: 88vh; }
   .ddgrab { display: inline-flex; padding: 4px 10px; }
-  html.drawerup .deckpage { padding-right: 12px; padding-bottom: calc(var(--ddh) + 16px); }
-  html.drawerup .reportfab, html.drawerup .inboxbell { bottom: calc(var(--ddh) + 12px); }
-  html.drawerup .reportfab { right: 18px; }
-  html.drawerup .inboxbell { right: 124px; }
+  .ddgrid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
   html.ddfull .ddscrim { display: block; position: fixed; inset: 0; z-index: 49; background: rgba(0, 0, 0, .45); }
   .ddpinart { width: 96px; }
-  .dthead { position: static; }
 }
+.dkresultcount { color: var(--dim); font-size: 11px; margin-bottom: 6px; }
 
 /* ── the curve ── */
 .dkcurve { display: flex; flex-direction: column; gap: 3px; }

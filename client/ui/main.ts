@@ -146,7 +146,8 @@ import * as pg from './postgame.ts';
 import * as ps from './pickset.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
-import { installDeckDrawer } from './deckdrawer.ts';
+import { installBinder } from './binder.ts';
+import * as tt from './tabletop.ts';
 // CR D8.4 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
@@ -9076,6 +9077,10 @@ function renderHome(): void {
   // …and the card browser, which is checked FIRST because it can be opened
   // from ON TOP of the deck page (deckbuilding mode leaves that page open)
   if (cb.screen()) { cb.renderScreen(); return; }
+  // …then the tabletop deck builder, which sits on top of the deck page or
+  // the challenge page that opened it (both stay open under it, so Back is a
+  // repaint of that page) — below the card browser its binder can open
+  if (tt.screen()) { tt.renderScreen(); return; }
   if (dk.screen()) { dk.renderScreen(); return; }
   // …and the metagame list / a shared deck, which is where a `?deck=` link lands
   if (meta.screen()) { meta.renderScreen(); return; }
@@ -10940,6 +10945,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // and the deck collection everything prefixed deck- (NB: the older picker
   // buttons below are `deckimporturl`/`deckjoin`, with no hyphen)
   if (dk.handleButton(btn)) return;
+  // and the tabletop deck builder everything prefixed tt-
+  if (tt.handleButton(btn)) return;
   // and the card browser everything prefixed cards-
   if (cb.handleButton(btn)) return;
   // and the metagame page everything prefixed meta-
@@ -12061,6 +12068,9 @@ const inGame = (params.has('room') && !!params.get('room')!.trim()) || params.ha
 // mid-game must never paint the home screen over the board.
 acct.initAccounts({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 dk.initDecks({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+tt.initTabletop({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+// a reload on `?table=<deck id>` comes back to the table (docs/19)
+tt.registerTableResolver('deck', dk.tabletopHostFor);
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 lg.initLeague({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
@@ -12094,9 +12104,9 @@ installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
 installReport(reportOpenChanged);
-// the deck builders' card drawer: a layer beside #app that stays open while
-// the table under it repaints (ui/deckdrawer.ts)
-installDeckDrawer();
+// the tabletop's card binder: a layer beside #app that stays docked while
+// the table under it repaints (ui/binder.ts)
+installBinder();
 // the bell, the invite popup and the waiting room's friends panel — a layer
 // beside #app on every page that is not a board (ui/inbox.ts)
 installInbox({
