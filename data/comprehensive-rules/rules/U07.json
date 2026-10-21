@@ -2953,7 +2953,7 @@
     "key": "zones.recycle.mark",
     "parent": "408",
     "order": 2,
-    "text": "A deck has a mark where it originally ended. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.",
+    "text": "A deck has a mark where it originally ended. The recycle pile lies under the deck, past the mark, and is still part of the deck. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.",
     "examples": [
       {
         "text": null,
@@ -2975,6 +2975,16 @@
           "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck.",
           "adopted": "2026-09-16",
           "from": "register@72de434"
+        },
+        {
+          "quote": "The recycled cards are meant to be a part of your deck still.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
+        },
+        {
+          "quote": "In paper, they're put literally under your deck, but with a \"reminder\" card below the last \"initial\" card.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
         }
       ],
       "engine": [],
@@ -2992,7 +3002,7 @@
     "key": "zones.recycle.mark.scope",
     "parent": "zones.recycle.mark",
     "order": 1,
-    "text": "Every card put on the bottom of the deck goes past the mark, whatever put it there: recycling for a resource, the constructed put-back, the cards a glimpse did not cache, and recycled packs alike.",
+    "text": "Every card put on the bottom of the deck goes past the mark, whatever put it there: recycling for a resource, the constructed put-back, the cards a glimpse did not cache, and recycled packs alike. Likewise, anything that uses the deck can reach the mark: drawing, milling, caching or revealing the top cards, a glimpse, and dealing a pack alike.",
     "examples": [
       {
         "text": null,
@@ -3014,11 +3024,17 @@
           "quote": "every caller of `E.recycleToBottom`: recycling from hand for a resource, the",
           "adopted": "2026-09-16",
           "from": "register@72de434"
+        },
+        {
+          "quote": "So ANYTHING that uses the deck should be able to trigger the reshuffle.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
         }
       ],
       "engine": [],
       "tests": [
-        "300-recycle-mark.test.ts"
+        "300-recycle-mark.test.ts",
+        "526-card-code-never-reads-the-deck.test.ts"
       ]
     },
     "basis": "owner",
@@ -3031,7 +3047,7 @@
     "key": "zones.recycle.mark.reshuffle",
     "parent": "zones.recycle.mark",
     "order": 2,
-    "text": "When the deck runs out and more cards are needed, the recycle pile is shuffled and becomes the new deck, with a new mark and an empty recycle pile.",
+    "text": "When anything that uses the deck reaches the mark, whatever the reason, the recycle pile is shuffled and put above the mark, under the cards still left in the deck; the mark goes back to the very bottom, with an empty recycle pile behind it. An effect that reveals more cards than are above the mark reshuffles when it reaches the mark and keeps revealing until it has its full number.",
     "examples": [
       {
         "text": null,
@@ -3059,11 +3075,22 @@
           "quote": "becomes the new deck, behind a fresh mark and an empty pile.",
           "adopted": "2026-09-16",
           "from": "register@72de434"
+        },
+        {
+          "quote": "When you hit that reminder, for whatever reason, you shuffle the recycled pile and put the reminder back on the very bottom.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
+        },
+        {
+          "quote": "So ANYTHING that uses the deck should be able to trigger the reshuffle.",
+          "adopted": "2026-10-21",
+          "from": "owner chat 2026-10-21"
         }
       ],
       "engine": [],
       "tests": [
-        "300-recycle-mark.test.ts"
+        "300-recycle-mark.test.ts",
+        "514-deck-reads-reach-the-mark.test.ts"
       ]
     },
     "basis": "owner",
