@@ -263,7 +263,7 @@ You start with two **Prismites** (the P cards by your life total). They (like al
         body: c => `Most cards need affinity, and affinity comes from **elemental resources**. To make one, click a card in your hand (or drag it onto the table) and **Recycle** it for an element — the card goes under your deck and a dormant ${El(c)} resource appears. You may recycle as many cards as you like, but you can still only activate two resources a turn.
 
 Every card you recycle is a card you will not play, so choose one you need least.`,
-        callout: 'If your deck runs out of cards, all your recycled cards are shuffled together to become your deck. The order you recycle cards in is irrelevant — they\'ll all be mixed together before you see any of them.',
+        callout: 'When a draw or a look reaches your recycled cards, they are all shuffled in first. The order you recycle cards in is irrelevant — they\'ll all be mixed together before you see any of them.',
         quotes: [{ text: 'During this step, any resource can be created from outside the game by recycling a card from hand (putting it on the bottom of the deck).', source: 'Manual, p. 18' }],
         figure: c => {
           const card = example(c, r => r.kind === 'unit');
@@ -731,7 +731,7 @@ After three turns the packs are put on the bottom of the deck and fresh packs of
       title: 'Constructed',
       body: `**Before the game** you build a deck of **at least 30 cards**, with **no more than 2 copies** of any card. Build and save decks from *My decks* on the home screen.
 
-**Every turn,** instead of drawing 2 and drafting, you **draw 4, then put 2 of them on the bottom** of your deck. You always see more cards than you keep, so you choose what fits your plan this turn — and the two you put back are recycled, shuffled back in when your deck runs out.
+**Every turn,** instead of drawing 2 and drafting, you **draw 4, then put 2 of them on the bottom** of your deck. You always see more cards than you keep, so you choose what fits your plan this turn — and the two you put back are recycled, shuffled back in when you reach them.
 
 **To play one:** pick a saved deck and press *New constructed game* on the home screen.`,
       quotes: [

@@ -474,8 +474,8 @@ const MECHANIC_RULES: GlossEntry[] = [
   // old text said the card was "gone for the rest of the game", which is the
   // one thing recycling never does.
   {
-    term: 'Recycle', short: 'Put it at the bottom of the deck. If the deck runs out, recycled cards are shuffled into a new deck.', alt: ['recycled', 'recycles'], cites: ['zones.recycle.mark.scope', 'keywords.actions.recycle', 'Rulebook'],
-    text: 'Put a card past the MARK at the bottom of its owner’s deck — into the recycle pile, not back into the part of the deck anyone is drawing from. During planning you may recycle a card from your hand to gain a dormant resource of an element — one of THIS game’s elements, which in a draft is its trio, not all seven. When the deck runs out, the recycled cards are shuffled together and become the new deck, so nothing recycled comes back in a knowable order and nothing is out of the game. Everyone can see how many cards are in the pile; nobody may look at them. Glimpse recycles the cards it did not cache the same way.',
+    term: 'Recycle', short: 'Put it at the bottom of the deck. When anything reaches them, recycled cards are shuffled in.', alt: ['recycled', 'recycles'], cites: ['zones.recycle.mark.scope', 'keywords.actions.recycle', 'Rulebook'],
+    text: 'Put a card past the MARK at the bottom of its owner’s deck — into the recycle pile, not back into the part of the deck anyone is drawing from. During planning you may recycle a card from your hand to gain a dormant resource of an element — one of THIS game’s elements, which in a draft is its trio, not all seven. The pile is still part of the deck: when a draw, a reveal or a look reaches the mark, the recycled cards are shuffled in under what is left, so nothing recycled comes back in a knowable order and nothing is out of the game. Everyone can see how many cards are in the pile; nobody may look at them. Glimpse recycles the cards it did not cache the same way.',
   },
   // CT-80: "whenever you activate" was one caller short. The Prismite ruling (now CR 106.8c) reversed
   // the exchange ruling on the owner's own reading of the card ("create a non-prismite

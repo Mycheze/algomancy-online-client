@@ -3918,11 +3918,10 @@ function deckTitle(s: GameState, seat: Seat): string {
   const pile = recycledLeft(s, seat);
   const shared = s.mode !== 'constructed' ? ' (shared)' : '';
   return esc(pile
-    ? `${deckLeft(s, seat)} left in the deck${shared}, and ${pile} recycled card(s) waiting `
-      + 'behind the mark. When the deck runs out they are shuffled together into a new deck. '
-      + 'Nobody may look at either.'
+    ? `${deckLeft(s, seat)} left in the deck${shared}, and ${pile} recycled card(s) behind `
+      + 'the mark. When anything reaches the mark they are shuffled in. Nobody may look at either.'
     : `${deckLeft(s, seat)} left in the deck${shared}. Recycled cards wait behind the mark and `
-      + 'are shuffled back in when it runs out.');
+      + 'are shuffled in when anything reaches it.');
 }
 
 /** CR 608.3b: what the sub-step after this boundary window will be, in words. */
