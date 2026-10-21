@@ -377,6 +377,21 @@ export interface LeagueMatch {
   pingAt?: string;
   /** the time they mean to play, suggested or agreed */
   time?: MatchTime;
+  /** BL-48: a player disputed the game that settled this match, from the
+   * post-game screen. A flag for the organizer, whose override decides;
+   * the result is not touched. One per player. */
+  disputes?: MatchDispute[];
+}
+
+/** BL-48: one player's dispute of the game that settled a match */
+export interface MatchDispute {
+  /** the player's user id */
+  by: string;
+  /** the room the disputed game was played in */
+  code: string;
+  at: string;
+  /** what went wrong, in their words (shortened) */
+  note: string;
 }
 
 export interface StandingRow {

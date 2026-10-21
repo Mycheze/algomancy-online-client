@@ -122,4 +122,12 @@ export interface IssueRow {
    * every row the form filed.
    */
   fix?: { kind: 'edit' | 'rewind'; what: string; agreedBy: number };
+  /**
+   * BL-48 — this row was filed by the post-game DISPUTE button, not by the
+   * report form. The note is the player's required "what went wrong";
+   * `actionIndex` is the final board. `winner` is the result as it stood (it
+   * is not changed by a dispute); `league` the league match it was flagged on,
+   * when there is one. Absent on every other row.
+   */
+  dispute?: { winner: number | null; league?: string };
 }

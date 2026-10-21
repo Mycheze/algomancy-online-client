@@ -436,6 +436,13 @@ export interface RecordedGame {
    * tag. Absent on every game nobody fixed.
    */
   amended?: number;
+  /**
+   * BL-48 — the seats that DISPUTED this result from the post-game screen
+   * (rooms.ts `Room.disputes`). A tag and nothing more: the result, ratings
+   * and stats stand until a person changes them. Absent on every game nobody
+   * disputed.
+   */
+  disputed?: Seat[];
 }
 
 export const emptyProfile = (): Profile => ({
@@ -1260,6 +1267,8 @@ export interface MatchRow {
   single?: [CardName, CardName];
   /** BL-46: present only for a game that took agreed fixes — how many */
   amended?: number;
+  /** BL-48: present only for a disputed game — by you, by them, or both */
+  disputed?: { mine: boolean; theirs: boolean };
 }
 
 /**
@@ -1322,8 +1331,28 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
         ...(g.custom ? { custom: rulesSummary(g.custom) } : {}),
         ...(g.single ? { single: [g.single[seat], g.single[seat === 0 ? 1 : 0]] as [CardName, CardName] } : {}),
         ...(g.amended ? { amended: g.amended } : {}),
+        ...(g.disputed?.length
+          ? { disputed: { mine: g.disputed.includes(seat), theirs: g.disputed.includes(seat === 0 ? 1 : 0) } }
+          : {}),
       };
     });
+}
+
+/**
+ * BL-48 — tag a recorded game as disputed by `seat`, in place. The room's file
+ * carries the same fact (history.ts reads it back on a re-import), so this is
+ * only what makes the match history say so before the next sync. Returns false
+ * when the game is not in the history (nobody was signed in).
+ */
+export function markGameDisputed(code: string, seat: Seat): boolean {
+  const g = store.history.find(x => x.code === code);
+  if (!g) return false;
+  const seats = new Set<Seat>(g.disputed ?? []);
+  seats.add(seat);
+  g.disputed = [...seats].sort();
+  historyRev++;
+  persist();
+  return true;
 }
 
 export interface LeaderRow {

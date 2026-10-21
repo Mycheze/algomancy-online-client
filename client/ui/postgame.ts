@@ -69,6 +69,13 @@ export interface GameOver {
    *   normal    turn 3+: an ordinary result
    */
   concession?: { seat: 0 | 1; turn: number; weight: 'walkover' | 'early' | 'normal' };
+  /**
+   * BL-48 — this game can be disputed from here (a game between two players;
+   * absent on a scenario or test-mode room), and which seats already have.
+   * A dispute files a report and tags the game; the result stands.
+   */
+  disputable?: true;
+  disputed?: [boolean, boolean];
 }
 
 /**
@@ -223,6 +230,25 @@ function rematchHtml(o: GameOver): string {
   return `<button class="primary" data-btn="pg-rematch">Request rematch</button>`;
 }
 
+/**
+ * BL-48 — "Dispute game", beside Rematch (the owner, 2026-10-21: "a 'dispute
+ * game' button right on the final screen, by 'rematch'"). Once per player;
+ * after that it says so and does nothing.
+ */
+function disputeHtml(o: GameOver): string {
+  if (!o.disputable) return '';
+  return o.disputed?.[o.seat]
+    ? '<button disabled>Disputed</button>'
+    : '<button data-btn="pg-dispute">Dispute game</button>';
+}
+
+/** BL-48: the other player disputed this result — say so, once */
+function disputedNote(o: GameOver): string {
+  const opp = (o.seat === 0 ? 1 : 0) as 0 | 1;
+  return o.disputable && o.disputed?.[opp]
+    ? `<div class="pgnote">${esc(o.names[opp] ?? 'Your opponent')} disputed this result.</div>` : '';
+}
+
 /** The game's elements: the trio, or "yours vs theirs" in any other game. */
 export function elementsLine(o: Pick<GameOver, 'seat' | 'els' | 'sides'>): string {
   const sides = o.sides ? [o.sides[o.seat], o.sides[o.seat === 0 ? 1 : 0]] as const : undefined;
@@ -262,10 +288,12 @@ export function postGameHtml(o: GameOver): string {
       ? (o.concession?.weight === 'walkover' ? 'In your match history, marked as not counted.' : 'Recorded to your profile.')
       : 'Not recorded — nobody was signed in.'}</div>
 
+    ${disputedNote(o)}
     ${guestClaimHtml()}
 
     <div class="pgbtns">
       ${rematchHtml(o)}
+      ${disputeHtml(o)}
       <button data-btn="pg-home">Return to home</button>
       <button data-btn="pg-queue">Join matchmaking queue</button>
     </div>
@@ -280,6 +308,8 @@ export interface PostGameActions {
   rerender: () => void;
   /** hide the overlay without leaving the room */
   dismiss: () => void;
+  /** BL-48: open the dispute form (ui/report.ts) */
+  dispute: () => void;
 }
 
 export function handlePostGameButton(btn: HTMLElement, a: PostGameActions): boolean {
@@ -294,6 +324,7 @@ export function handlePostGameButton(btn: HTMLElement, a: PostGameActions): bool
     case 'pg-goto-rematch': goToRematch(btn.dataset['room'] ?? '', a.over); return true;
     case 'pg-home': location.href = location.pathname; return true;
     case 'pg-close': a.dismiss(); return true;
+    case 'pg-dispute': if (a.over.disputable && !a.over.disputed?.[a.over.seat]) a.dispute(); return true;
   }
   return false;
 }

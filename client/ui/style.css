@@ -1868,6 +1868,8 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   color: var(--dim); border: 1px solid var(--line); cursor: help; vertical-align: middle; }
 .constag.early { color: var(--accent); border-color: var(--accent); }
 .constag.fixed { color: var(--text); }   /* BL-46: counted, and tagged */
+.constag.disputed { color: var(--text); }   /* BL-48: the result stands, and is tagged */
+.lgdispute { font-size: 0.85em; color: var(--accent); margin-top: 2px; }   /* BL-48: the organizer's flag */
 .accttable.games .weight-walkover td { color: var(--dim); }
 .accttable.games .weight-walkover .resultcell { color: var(--dim); font-weight: 500; }
 

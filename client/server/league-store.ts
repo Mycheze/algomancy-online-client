@@ -824,6 +824,28 @@ export function recordPlayed(matchId: string, winnerUserId: string, code: string
   return false;
 }
 
+/**
+ * BL-48 — a player disputed a league game from the post-game screen. Flags the
+ * match for the organizer (a line on the match and one in the season log);
+ * the result stands until the organizer overrides it. Only the game that
+ * SETTLED the match is flagged — a later game in the same room is a friendly
+ * and moved nothing. False when there is nothing to flag.
+ */
+export function flagDispute(matchId: string, userId: string, code: string, noteText: string, now: number): boolean {
+  for (const s of db().seasons) {
+    const m = s.matches.find(x => x.id === matchId);
+    if (!m) continue;
+    if (userId !== m.a && userId !== m.b) return false;
+    if (m.result?.code && m.result.code !== code) return false;
+    const text = noteText.trim().slice(0, 300);
+    m.disputes = [...(m.disputes ?? []).filter(d => d.by !== userId), { by: userId, code, at: iso(now), note: text }];
+    note(s, `${m.id}: ${nameOf(userId)} disputed the result (${code}): ${text.slice(0, 80)}`, now);
+    persist(now);
+    return true;
+  }
+  return false;
+}
+
 function resultMessages(s: Season, m: LeagueMatch, now: number): void {
   const out = m.result?.outcome;
   if (out !== 'a' && out !== 'b') return;
@@ -888,6 +910,9 @@ export function seasonView(s: Season, viewer: Account | undefined, opts: { admin
     matches: s.matches.map(m => ({
       id: m.id, week: m.week, final: m.final === true, a: person(m.a), b: person(m.b),
       result: m.result ?? null, room: m.room ?? null,
+      // BL-48: a dispute is the organizer's to read, not the whole season's
+      ...(opts.admin && m.disputes?.length
+        ? { disputes: m.disputes.map(d => ({ name: nameOf(d.by), code: d.code, at: d.at, note: d.note })) } : {}),
     })),
     champion: s.champion ? person(s.champion) : null,
     me: viewer ? {

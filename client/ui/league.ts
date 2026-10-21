@@ -37,7 +37,11 @@ interface SeasonView {
   auto: boolean; hold: boolean; hidden: boolean;
   entrants: (Person & { joinedPhase: number; withdrawn: boolean; skips: number[] })[];
   standings: { id: string; name: string; w: number; l: number; unplayed: number; points: number; omw: number; rank: number }[];
-  matches: { id: string; week: number; final: boolean; a: Person; b: Person; result: Result | null; room: string | null }[];
+  matches: {
+    id: string; week: number; final: boolean; a: Person; b: Person; result: Result | null; room: string | null;
+    /** BL-48: organizers only — a player disputed the game that settled it */
+    disputes?: { name: string; code: string; at: string; note: string }[];
+  }[];
   champion: Person | null;
   me: null | {
     entered: boolean; withdrawn: boolean; skips: number[]; joinProblem: string | null;
@@ -710,13 +714,20 @@ function allMatchesHtml(s: SeasonView): string {
   return `<div class="acctcard ${org ? 'wide' : 'lgspan2'}"><h3>Matches</h3>
     ${weeks.map(k => `<h4>${weekName(s, k)}</h4>
       <table class="accttable"><tbody>${s.matches.filter(m => m.week === k).map(m => `<tr>
-        <td>${esc(m.a.name)} vs ${esc(m.b.name)}</td><td>${resultText(m)}</td>
+        <td>${esc(m.a.name)} vs ${esc(m.b.name)}</td><td>${resultText(m)}${disputesHtml(m)}</td>
         ${org ? `<td class="lgorg"><select id="lg-ov-${esc(m.id)}">
           <option value="">set…</option><option value="a">${esc(m.a.name)} won</option><option value="b">${esc(m.b.name)} won</option>
           <option value="unplayed">not played</option><option value="double-loss">double loss</option><option value="clear">reopen</option>
         </select><button data-btn="lg-override" data-match="${esc(m.id)}">set</button></td>` : ''}
       </tr>`).join('')}</tbody></table>`).join('')}
   </div>`;
+}
+
+/** BL-48 — the organizer's line under a disputed match: who, and what they
+ * said. The result is untouched; the override beside it is the remedy. */
+function disputesHtml(m: SeasonView['matches'][number]): string {
+  return (m.disputes ?? []).map(d =>
+    `<div class="lgdispute">Disputed by <b>${esc(d.name)}</b> (${esc(d.code)}): ${esc(d.note)}</div>`).join('');
 }
 
 // ── the organizer ─────────────────────────────────────────────────────

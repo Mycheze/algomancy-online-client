@@ -57,6 +57,16 @@ const REPORT_PROMPT: Record<ReportKind, string> = {
 export interface ReportCtx { room?: string; seat?: number | null }
 
 /**
+ * BL-48 — the same form, opened by the post-game screen's "Dispute game".
+ * No kind or severity to pick (a dispute is "the outcome was wrong"), and the
+ * note is required. It goes over the game's socket, not /api/report: the
+ * server knows the seat from the connection and fills in the room and the
+ * final board itself. `send` returns false when the socket is not open; the
+ * server's answer comes back through disputeAnswered().
+ */
+export interface DisputeCtx { send: (note: string) => boolean }
+
+/**
  * The page a report is being filed from, read off the markup `#app` holds:
  * every screen module paints one root `<div class="…">` and the LAST class on
  * it is the screen's own name (`joinscreen home acctscreen` → account,
@@ -81,6 +91,10 @@ let kind: ReportKind | null = null;
 let severity: ReportSeverity | null = null;
 let error = '';
 let ctx: ReportCtx = {};
+/** BL-48: set while the form is a dispute */
+let dispute: DisputeCtx | null = null;
+/** the dispute's own note — a half-typed bug report is not a dispute */
+let disputeDraft = '';
 let toast: string | null = null;
 let toastTimer = 0;
 let layer: HTMLElement | null = null;
@@ -107,8 +121,14 @@ function setOpen(v: boolean): void {
   onOpenChange?.(v);
 }
 
-/** can this be sent? A kind, a severity where the kind takes one, a note. */
-const complete = (): boolean => !!kind && (!severityApplies(kind) || !!severity) && !!draft.trim();
+/** can this be sent? A kind, a severity where the kind takes one, a note.
+ * A dispute: the note alone. */
+const complete = (): boolean => dispute
+  ? !!disputeDraft.trim()
+  : !!kind && (!severityApplies(kind) || !!severity) && !!draft.trim();
+/** the note being typed, whichever form is up */
+const noteText = (): string => (dispute ? disputeDraft : draft);
+const setNote = (v: string): void => { if (dispute) disputeDraft = v; else draft = v; };
 
 /** the app root, if this document has one */
 const appEl = (): HTMLElement | null => document.getElementById('app');
@@ -131,7 +151,23 @@ function choicesHtml(what: 'kind' | 'severity', options: readonly [string, strin
       data-report="${what}" data-${what}="${v}" title="${esc(why)}" ${busy ? 'disabled' : ''}>${esc(label)}</button>`).join('')}</div>`;
 }
 
+/** BL-48: the dispute form — one box, required */
+function disputeDialogHtml(): string {
+  return `<div class="reportscrim" id="reportscrim"><div class="overlaybox reportbox" role="dialog" aria-label="Dispute game">
+    <h3>Dispute game</h3>
+    <div class="hint">Filed with the final board. The result stands until someone reviews it. ${filedAs()}</div>
+    <textarea id="report-note" rows="4" placeholder="What went wrong?" ${busy ? 'disabled' : ''}></textarea>
+    <div class="judgerow">
+      <button data-report="close">Cancel <span class="kh">(esc)</span></button>
+      <span class="reporthint">Ctrl+Enter sends</span>
+      <button class="primary" data-report="send" ${busy || !complete() ? 'disabled' : ''}>${busy ? 'sending…' : 'Send dispute'}</button>
+    </div>
+    ${error ? `<div class="reporterror">${esc(error)}</div>` : ''}
+  </div></div>`;
+}
+
 function dialogHtml(): string {
+  if (dispute) return disputeDialogHtml();
   const where = ctx.room
     ? 'Filed with this exact moment of the game, so a bug can be replayed.'
     : 'Filed with the page you are on.';
@@ -167,10 +203,10 @@ function paint(): void {
     + (toast ? `<div class="toast">${esc(toast)}</div>` : '');
   const box = document.getElementById('report-note') as HTMLTextAreaElement | null;
   if (!box) return;
-  box.value = draft;
+  box.value = noteText();
   if (!busy) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
   box.addEventListener('input', () => {
-    draft = box.value;
+    setNote(box.value);
     const send = layer?.querySelector('[data-report="send"]') as HTMLButtonElement | null;
     if (send) send.disabled = busy || !complete();
   });
@@ -192,20 +228,58 @@ function showToast(msg: string): void {
  * nothing — the page is read at send time. */
 export function openReport(where: ReportCtx = {}): void {
   ctx = where;
+  dispute = null;
   setOpen(true);
   error = '';
+  paint();
+}
+
+/** BL-48: open the form as a dispute of the game that just ended */
+export function openDispute(d: DisputeCtx): void {
+  ctx = {};
+  dispute = d;
+  setOpen(true);
+  error = '';
+  paint();
+}
+
+/** BL-48: the server's answer to a dispute — main.ts calls this on the
+ * socket's `dispute` (ok) or `disputeerr` (refused, with why) */
+export function disputeAnswered(ok: boolean, why = ''): void {
+  if (!dispute || !busy) return;
+  busy = false;
+  if (ok) {
+    sentAt = Date.now();
+    setOpen(false);
+    disputeDraft = '';
+    dispute = null;
+    showToast('dispute sent — thanks');
+  } else {
+    error = why || 'the dispute was not accepted';
+  }
   paint();
 }
 
 /** Cancel keeps the choices the way it keeps the draft — an accidental Escape
  * must not eat a paragraph. A SENT report starts the next one blank. */
 export function closeReport(): void {
+  // BL-48: a dispute still waiting for its answer is let go — if it was filed,
+  // the post-game screen's own push says so
+  if (dispute) busy = false;
   setOpen(false);
   paint();
 }
 
 function send(): void {
   if (busy || !complete()) return;
+  if (dispute) {
+    // answered by disputeAnswered(), when the server has filed it
+    error = '';
+    if (!dispute.send(disputeDraft.trim())) error = 'not connected to the game — try again in a moment';
+    else busy = true;
+    paint();
+    return;
+  }
   const note = draft.trim();
   const k = kind;
   const sev = severityApplies(k) ? severity : null;

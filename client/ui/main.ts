@@ -114,7 +114,7 @@ import type {
   GameState, Phase, ResourceKind, Seat, StackItem, TargetRef,
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
-import { installReport, isReportOpen, openReport, reportJustSent } from './report.ts';
+import { disputeAnswered, installReport, isReportOpen, openDispute, openReport, reportJustSent } from './report.ts';
 import { installInbox, roomFriendsHtml } from './inbox.ts';
 import * as amend from './amend.ts';
 import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
@@ -259,6 +259,8 @@ interface NetMsg {
   rewound?: true;
   /** BL-46: the answer to the fix dialog's `options` */
   rewinds?: amend.RewindOption[]; editWhy?: string | null; why?: string;
+  /** BL-48: a `dispute` message — which seats have disputed this game */
+  disputed?: [boolean, boolean];
 }
 
 /** Remote backend: sends intents over WS, renders from server-pushed redacted views.
@@ -627,6 +629,12 @@ class NetBackend implements Backend {
   rematch(msg: Record<string, unknown>): void {
     this.ws.send(JSON.stringify({ t: 'rematch', ...msg }));
   }
+  /** BL-48: dispute the game that just ended — false when the socket is not open */
+  dispute(note: string): boolean {
+    if (this.ws.readyState !== WebSocket.OPEN) return false;
+    this.ws.send(JSON.stringify({ t: 'dispute', note }));
+    return true;
+  }
   /** BL-46: propose, answer or withdraw an agreed fix (ui/amend.ts) */
   amend(msg: Record<string, unknown>): void {
     if (this.ws.readyState !== WebSocket.OPEN) return;
@@ -652,6 +660,15 @@ class NetBackend implements Backend {
       }
       return;
     }
+    // BL-48: a dispute was filed (by either seat) or refused (ours)
+    if (m.t === 'dispute') {
+      const mine = !!postGame && !postGame.disputed?.[postGame.seat] && !!m.disputed?.[postGame.seat];
+      if (postGame && m.disputed) postGame = { ...postGame, disputed: m.disputed };
+      if (mine) disputeAnswered(true);
+      render();
+      return;
+    }
+    if (m.t === 'disputeerr') { disputeAnswered(false, m.msg ?? ''); return; }
     // accounts: the profile that rides along with a join (a game's end pushes
     // its profile + unlocks on the 'gameover' payload instead)
     if (m.t === 'me') { if (m.me) acct.applyMe(m.me); return; }
@@ -10912,6 +10929,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
     send: msg => NET!.rematch(msg),
     rerender: render,
     dismiss: () => { postGameHidden = true; render(); },
+    dispute: () => openDispute({ send: note => NET?.dispute(note) ?? false }),
   })) return;
   // and the scenario runner everything prefixed scn- (CR D8.4)
   if (NET && scn.handleButton(btn, { room: NET.room, seat: NET.seat, rerender: render })) return;

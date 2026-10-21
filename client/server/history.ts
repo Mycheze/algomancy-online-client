@@ -26,6 +26,19 @@ import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
 import { concessionWeight, sanitizeConcession, type Concession } from './concession.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/customrules.ts';
+import type { Seat } from '../engine/src/types.ts';
+
+/** BL-48: the seats a saved room's `disputes` name, sorted, each once —
+ * undefined when the file has no list at all (a re-import keeps the row's) */
+function disputedSeatsOf(raw: unknown): Seat[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const seats = new Set<Seat>();
+  for (const d of raw) {
+    const seat = (d as { seat?: unknown } | null)?.seat;
+    if (seat === 0 || seat === 1) seats.add(seat);
+  }
+  return [...seats].sort();
+}
 
 /** The saved-room fields we care about, beyond what stats.ts already reads. */
 interface SavedRoom extends GameRecord {
@@ -47,6 +60,8 @@ interface SavedRoom extends GameRecord {
   single?: boolean;
   /** BL-46: the agreed fixes (rooms.ts) — only their count is read, as the tag */
   amendments?: unknown[];
+  /** BL-48: who disputed the result (rooms.ts) — only the seats are read, as the tag */
+  disputes?: unknown[];
   // `winner`, the result stamped at the time, comes from GameRecord — it is
   // what keeps an old game's outcome readable after the rules have moved
 }
@@ -141,6 +156,12 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // BL-46: a game that took agreed fixes is TAGGED and nothing more — the
     // owner, 2026-10-16: it counts for everything. No fold reads this field.
     ...(Array.isArray(raw.amendments) && raw.amendments.length ? { amended: raw.amendments.length } : {}),
+    // BL-48: a disputed game is TAGGED and nothing more — the result stands
+    // until a person changes it. Same "best source first" as the concession.
+    ...((): { disputed?: Seat[] } => {
+      const seats = disputedSeatsOf(raw.disputes) ?? previous?.disputed;
+      return seats?.length ? { disputed: seats } : {};
+    })(),
   };
   const isNew = stashHistory(game);
   return { code, game, isNew };
@@ -173,6 +194,8 @@ export function recordLiveGame(room: {
   single?: true;
   /** BL-46: the agreed fixes, for the "fixed" tag */
   amendments?: unknown[];
+  /** BL-48: the disputes, for the "disputed" tag */
+  disputes?: unknown[];
 }): ImportedRow {
   const row = importGame(
     {
@@ -200,6 +223,8 @@ export function recordLiveGame(room: {
       ...(room.single ? { single: true } : {}),
       // BL-46: the tag, so a live-recorded fixed game carries it at once
       ...(room.amendments?.length ? { amendments: room.amendments } : {}),
+      // BL-48: and the disputes, in case one lands before the record does
+      ...(room.disputes?.length ? { disputes: room.disputes } : {}),
     } as SavedRoom,
     room.code,
     new Date().toISOString(),

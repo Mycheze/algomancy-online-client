@@ -33,7 +33,7 @@ import type { HeldFrame, SegmentClose } from './view.ts';
 // without importing this module (and `ws` with it). Re-exported here because
 // this is still where they are WRITTEN, and the old import path is the one
 // every reader knows.
-import type { Amendment, Fork, LostAction, RoomClosed, VersionStamp } from './types.ts';
+import type { Amendment, Dispute, Fork, LostAction, RoomClosed, VersionStamp } from './types.ts';
 export type { Amendment, Fork, LostAction, VersionStamp } from './types.ts';
 import { engineVersion } from './engine-version.ts';
 // BL-38 — the per-action board fingerprint written into every saved game.
@@ -1313,6 +1313,12 @@ export interface Room {
    */
   amendments: Amendment[];
   /**
+   * BL-48 — who disputed this game's result from the post-game screen, and
+   * why (see `Dispute` in types.ts). At most one per seat. PERSISTED: it is
+   * what the history's "disputed" tag is read from. It changes nothing else.
+   */
+  disputes: Dispute[];
+  /**
    * BL-46 — the fix waiting for the other seat's answer, if any. Soft state
    * shaped like `rematch`: never an action, never logged, NOT persisted (a
    * restart is a reconnect, and a proposal does not deserve to outlive one).
@@ -2396,6 +2402,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
     amendments: [], proposal: null, fixCooldown: [0, 0],   // BL-46: nothing fixed yet
+    disputes: [],   // BL-48: nobody has disputed it
     state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [], lost: [], drifted: [],
     frozen: null,
     // stamped a line below, by resetSegment(), which is where EVERY
@@ -2737,6 +2744,8 @@ function resetSegment(room: Room): void {
   // BL-46: an agreed fix is a claim about the discarded log too
   room.amendments = [];
   room.proposal = null;
+  // BL-48: …and so is a dispute of its result
+  room.disputes = [];
   // and so is the version ledger, for exactly the same reason — the old
   // stamps index an action log that no longer exists, and a `from` pointing
   // into a discarded log is worse than no stamp at all. The re-deal happens on
@@ -3471,6 +3480,67 @@ export function recordAmendment(room: Room, entry: Amendment): void {
   persist(room);
 }
 
+/* ── BL-48: DISPUTE A FINISHED GAME ─────────────────────────────────────
+ *
+ * Report #231: "concede the win to the opponent after a match — for instance,
+ * if you ended up winning due to a bug." The owner, 2026-10-21: "Maybe just a
+ * 'dispute game' button right on the final screen, by 'rematch'". A dispute
+ * files a report and tags the game; it changes no result, rating or stat
+ * (main.ts / dispute.ts carry it out). */
+
+/** the longest "what went wrong" a dispute keeps */
+export const DISPUTE_NOTE_MAX = 1000;
+
+/** Why this ROOM takes no disputes at all — or null when it does. What the
+ * post-game screen's button is drawn from: a game between two players. */
+export function disputesRefusal(room: Room): string | null {
+  // a scenario (the tester, Learn-style scripts) and test mode have no
+  // opponent whose result could be wrong
+  if (room.state.sandbox || room.scenario) return 'only a game between two players can be disputed';
+  return null;
+}
+
+/** Why `seat` may not dispute this game right now — null when it may. */
+export function disputeRefusal(room: Room, seat: Seat | null): string | null {
+  if (seat !== 0 && seat !== 1) return 'only a player in this game can dispute it';
+  const no = disputesRefusal(room);
+  if (no) return no;
+  if (roomWaiting(room) || decidedWinner(room) === null) return 'the game is not over';
+  if (room.disputes.some(d => d.seat === seat)) return 'you have already disputed this game';
+  return null;
+}
+
+/** which seats have disputed, as the post-game screen reads it */
+export const disputedSeats = (room: Room): [boolean, boolean] =>
+  [room.disputes.some(d => d.seat === 0), room.disputes.some(d => d.seat === 1)];
+
+/** Record one seat's dispute and save it with the room. The caller has asked
+ * disputeRefusal; this asks again, so nothing can record a second one. */
+export function recordDispute(room: Room, seat: Seat | null, note: string, now = Date.now()): Dispute | string {
+  const no = disputeRefusal(room, seat);
+  if (no !== null || seat === null) return no ?? 'only a player in this game can dispute it';
+  const text = note.trim().slice(0, DISPUTE_NOTE_MAX);
+  if (!text) return 'say what went wrong';
+  const d: Dispute = { seat, at: new Date(now).toISOString(), note: text, actionIndex: room.actions.length };
+  room.disputes.push(d);
+  persist(room);
+  return d;
+}
+
+/** a file's disputes back off disk — drop what is not one, and a second per seat */
+function sanitizeDisputes(raw: unknown): Dispute[] {
+  if (!Array.isArray(raw)) return [];
+  const out: Dispute[] = [];
+  for (const d of raw) {
+    if (!d || typeof d !== 'object') continue;
+    const x = d as Partial<Dispute>;
+    if ((x.seat !== 0 && x.seat !== 1) || out.some(o => o.seat === x.seat)) continue;
+    if (typeof x.note !== 'string' || typeof x.at !== 'string' || !Number.isInteger(x.actionIndex)) continue;
+    out.push({ seat: x.seat, at: x.at, note: x.note, actionIndex: x.actionIndex! });
+  }
+  return out;
+}
+
 /**
  * Carry out an agreed REWIND: truncate the log to `p.to` and rebuild — the
  * Learn to Play shape, server-side. Returns the record, or a refusal (the room
@@ -4053,6 +4123,8 @@ function persist(room: Room): void {
       // BL-46: the agreed fixes — the "fixed" tag's source and a rewind's
       // archive. Additive: written only when there is one.
       ...(room.amendments.length ? { amendments: room.amendments } : {}),
+      // BL-48: who disputed the result. Additive: written only when somebody did.
+      ...(room.disputes.length ? { disputes: room.disputes } : {}),
       // every restore that could not faithfully rebuild this game. Without
       // it the file goes on claiming to be a straight-through record of a
       // game it no longer describes (additive field)
@@ -4135,6 +4207,8 @@ export function restoreRooms(now = Date.now()): void {
         closed?: unknown;
         /** BL-46: the agreed fixes */
         amendments?: unknown;
+        /** BL-48: who disputed the result */
+        disputes?: unknown;
       };
       // 2026-10-04: a CLOSED game is over for good — never back in the map
       if (raw.closed) { closedCount++; continue; }
@@ -4237,6 +4311,8 @@ export function restoreRooms(now = Date.now()): void {
         rematch: [false, false], rematchRoom: null,
         // BL-46: the record survives the restart; a proposal does not
         amendments: sanitizeAmendments(raw.amendments, actions.length), proposal: null, fixCooldown: [0, 0],
+        // BL-48: and so does a dispute
+        disputes: sanitizeDisputes(raw.disputes),
         // the replay may not reach the ending this game actually had
         winner: state.winner ?? savedWinner,
         // CR D8.5: the concession stamp survives the restart with the result

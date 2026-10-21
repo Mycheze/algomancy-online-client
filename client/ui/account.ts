@@ -88,6 +88,8 @@ export interface MatchRow {
   single?: [string, string];
   /** BL-46: the game took agreed fixes — how many (the row is tagged, still counted) */
   amended?: number;
+  /** BL-48: somebody disputed the result — the row is tagged, the result stands */
+  disputed?: { mine: boolean; theirs: boolean };
 }
 
 export interface Me {
@@ -790,6 +792,15 @@ export function fixedTag(g: MatchRow): string {
   return `<span class="constag fixed" title="the players agreed to fix the board ${g.amended === 1 ? 'once' : `${g.amended} times`} during this game">fixed</span>`;
 }
 
+/** BL-48 — the label a row carries when a player disputed the result. The
+ * result stands until someone reviews it; the tag says who disputed it. */
+export function disputedTag(g: MatchRow): string {
+  const d = g.disputed;
+  if (!d || (!d.mine && !d.theirs)) return '';
+  const who = d.mine && d.theirs ? 'both of you' : d.mine ? 'you' : 'your opponent';
+  return `<span class="constag disputed" title="${who} disputed this result">disputed</span>`;
+}
+
 /** BL-43 — the label a custom-rules row carries: kept in the history, counted toward nothing. */
 export function customTag(g: MatchRow): string {
   // CR D8.2e: a single card duel is tagged the same way, for the same reason
@@ -817,7 +828,7 @@ export function gameElementsHtml(els: readonly string[], sides?: readonly [reado
 /** The match-history table body, one row per game. Pure: takes the rows. */
 export function historyRowsHtml(history: MatchRow[]): string {
   return history.map(g => `<tr class="res-${g.result}${g.concession && g.concession.weight !== 'normal' ? ` weight-${g.concession.weight}` : ''}">
-      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}${fixedTag(g)}</td>
+      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}${fixedTag(g)}${disputedTag(g)}</td>
       <td>${esc(g.opponent)}</td>
       <td>${esc(modeName(g.mode))}</td>
       <td>${gameElementsHtml(g.els, g.sides)}</td>

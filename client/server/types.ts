@@ -150,3 +150,28 @@ export interface Amendment {
   /** 'rewind': the actions taken back, in log order — `removed[0]` was index `at` */
   removed?: Action[];
 }
+
+/**
+ * BL-48 — a player DISPUTED this game's result from the post-game screen.
+ *
+ * Report #231 (2026-10-21): the loser of a league game wanted to be able to
+ * concede the win "if you ended up winning due to a bug". The owner: "Maybe
+ * just a 'dispute game' button right on the final screen, by 'rematch'".
+ *
+ * A dispute CHANGES NOTHING: not the result, not a rating, not a stat. It
+ * files a report, tags the game (match history, admin list) and, for a league
+ * match, puts a line in front of the organizer, whose result override already
+ * exists. Changing the outcome stays a person's decision.
+ *
+ * One per seat per game. Persisted with the room (additive: absent on every
+ * game nobody disputed); NOT copied to a rematch.
+ */
+export interface Dispute {
+  seat: Seat;
+  /** when it was filed (ISO) */
+  at: string;
+  /** what went wrong, in the player's words (required) */
+  note: string;
+  /** the log length when it was filed — the final board */
+  actionIndex: number;
+}

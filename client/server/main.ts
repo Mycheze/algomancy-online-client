@@ -51,7 +51,9 @@ import {
   closedNotice, codeTaken, sweepIdleRooms,
   answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
   rewindOptions, rewindRoom, type Proposal,
+  disputedSeats, disputesRefusal,
 } from './rooms.ts';
+import { fileDispute } from './dispute.ts';
 // CR D8.4a — the scenario tester (docs/14). Everything about it is gated on
 // ALGO_TESTER_TOKEN below; with no token set none of these routes exists.
 import {
@@ -1768,6 +1770,9 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     ...(extra.account ? { me: privateView(extra.account, isOnline) } : {}),
     // a single card duel names both cards — the table has shown them by now
     ...(singleCards(room) ? { single: singleCards(room)! } : {}),
+    // BL-48: a game between two players can be disputed from this screen —
+    // and who already has. Absent on a scenario or sandbox room's payload.
+    ...(disputesRefusal(room) === null ? { disputable: true, disputed: disputedSeats(room) } : {}),
   });
 }
 
@@ -1983,7 +1988,9 @@ wss.on('connection', ws => {
        *  sanitizePassAll; `mode` above is its 'all' | 'stack') */
       at?: unknown; phase?: unknown; items?: unknown; opts?: unknown;
       /** CT-182: a join made while this seat's report dialog is open */
-      hold?: unknown };
+      hold?: unknown;
+      /** BL-48: a dispute's "what went wrong" */
+      note?: unknown };
     try { msg = JSON.parse(String(raw)); } catch { return send(ws, { t: 'error', msg: 'bad JSON' }); }
     // ⚠ `JSON.parse("null")` SUCCEEDS. So do `[]`, `1` and `"x"`. The very next
     // line reads `msg.t`, and on null that throws inside a 'message' listener,
@@ -2390,6 +2397,24 @@ wss.on('connection', ws => {
         console.log(`[ws] ${room.code}: rematch → ${next.code} (${next.mode})`);
       }
       broadcastRematch(room);
+      return;
+    }
+
+    // ── BL-48: post-game, "this result is wrong" ──
+    // A seat only: a spectator's socket has no entry in `conns`, so it is
+    // refused by construction (dispute.ts asks rooms.ts disputeRefusal for
+    // the rest — over, a game between two players, once per seat).
+    if (msg.t === 'dispute') {
+      const conn = conns.get(ws);
+      const room = conn?.room ?? watching.get(ws) ?? null;
+      if (!room) return send(ws, { t: 'disputeerr', msg: 'only a player in this game can dispute it' });
+      void fileDispute(room, conn?.room === room ? conn.seat : null, msg.note).then(r => {
+        if (!r.ok) return send(ws, { t: 'disputeerr', msg: r.error });
+        forEachSeat(s => sendToSeat(room, s, { t: 'dispute', disputed: r.disputed }));
+      }).catch(err => {
+        console.error(`[dispute] ${room.code}:`, err);
+        send(ws, { t: 'disputeerr', msg: 'the dispute could not be filed' });
+      });
       return;
     }
 

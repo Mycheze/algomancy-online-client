@@ -320,6 +320,8 @@ export interface AdminGameRow {
   custom: boolean;
   /** BL-46: how many agreed fixes the game took (0 = none) — a tag, it counts */
   amended: number;
+  /** BL-48: how many players disputed the result (0 = none) — a tag, it stands */
+  disputed: number;
 }
 
 /**
@@ -375,6 +377,7 @@ export function gameRows(): AdminGameRow[] {
       rated: g.rated === true,
       custom: !!g.custom,
       amended: g.amended ?? 0,
+      disputed: g.disputed?.length ?? 0,
     }))
     .sort((x, y) => (x.playedAt < y.playedAt ? 1 : -1));
 }
