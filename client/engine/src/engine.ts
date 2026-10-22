@@ -1306,20 +1306,50 @@ export class E {
     // X spells: X is chosen and paid at cast (CR 107.2a); castability needs only the
     // smallest legal X to be affordable (xMin, e.g. "X can't be zero" → 1)
     if (this.openMana(seat) < this.manaToPlay(seat, name, opts)) return false;
-    // CR 111.10d: an unpayable LIFE tax makes the card uncastable exactly as
-    // unpayable mana does — CR 111.6b's rule, so 2 life is unpayable at 2 life.
-    if (!this.canPayLife(seat, this.lifeToPlay(seat, name, opts))) return false;
-    // CR 111.10: an imposed "[Sacrifice a unit]" gates castability the same way —
-    // no unit to sacrifice, no play. The cost itself is chosen and paid in
-    // the cast window (playAtTiming → collectItemCosts); this is only the gate,
-    // which is what keeps the refusal atomic: nothing is ever half-paid.
-    const sacs = this.unitsToPlay(seat, name, opts);
-    if (sacs > 0 && this.unitsOf(seat, opts.region ?? this.actionRegion(seat)).length < sacs) return false;
+    if (!this.canPayImposedPlayCosts(seat, name, opts)) return false;
     for (const [el, n] of Object.entries(affinityPips(c.cost))) {
       if (this.affinity(seat, el) < n) return false;
     }
     return true;
   }
+  /**
+   * CR 111.10d: can `seat` pay the IMPOSED additional costs of playing `name` —
+   * the costs a CostMod gives the card on top of whatever its own cost line
+   * is? Two channels today, and this is every one the layer has: LIFE
+   * (`lifeToPlay`, Arbiter of Armistice) and SACRIFICE (`unitsToPlay`,
+   * Vengeance). The mana channel (`delta`) is not here because it is not an
+   * additional cost: it changes the card's own mana, and a route with a cost
+   * line of its own prices that separately.
+   *
+   * One predicate for every route that plays a card, so they cannot drift:
+   * `canPayCard` (the hand), `canPayManaOnly` (a glimpsed cache entry) and the
+   * Ambush (CR 111.10e — an Ambush is a card played, so it pays the imposed
+   * costs beside its own Ambush line; CT-243).
+   *
+   * An unpayable life tax makes the play illegal exactly as unpayable mana
+   * does — CR 111.6b's rule, so 2 life is unpayable at 2 life. An imposed
+   * "[Sacrifice a unit]" gates the same way: no unit to sacrifice, no play.
+   * The sacrifice itself is chosen and paid in the cast window
+   * (`pendingCosts` → collectItemCosts); this is only the gate, which is what
+   * keeps the refusal atomic: nothing is ever half-paid.
+   */
+  canPayImposedPlayCosts(seat: Seat, name: CardName, opts: CostOpts = {}): boolean {
+    if (!this.canPayLife(seat, this.lifeToPlay(seat, name, opts))) return false;
+    const sacs = this.unitsToPlay(seat, name, opts);
+    return sacs === 0 || this.unitsOf(seat, opts.region ?? this.actionRegion(seat)).length >= sacs;
+  }
+
+  /** CR 111.10d: charge the imposed LIFE cost of playing `name` — before the card
+   * reaches the stack, so it cannot be responded to and negating the card
+   * does not refund it. `payCard` and the Ambush (CT-243) both charge it here. */
+  payPlayLife(seat: Seat, name: CardName, opts: CostOpts = {}): void {
+    const life = this.lifeToPlay(seat, name, opts);
+    if (life > 0) {
+      this.ev('info', `${this.pname(seat)} pays ${life} life to play ${name}.`);
+      this.loseLife(seat, life, `${name} (added cost)`);
+    }
+  }
+
   payMana(seat: Seat, mana: number): void {
     let need = mana;
     const rs = this.player(seat).resources;
@@ -1357,13 +1387,7 @@ export class E {
       : this.manaToPlay(seat, name, opts);
     this.payMana(seat, mana);
     // CR 111.10d: the life half of the bill, charged in the same breath as the mana
-    // — before the card reaches the stack, so it cannot be responded to and
-    // negating the card does not refund it.
-    const life = this.lifeToPlay(seat, name, opts);
-    if (life > 0) {
-      this.ev('info', `${this.pname(seat)} pays ${life} life to play ${name}.`);
-      this.loseLife(seat, life, `${name} (added cost)`);
-    }
+    this.payPlayLife(seat, name, opts);
   }
 
   // ── LAYER 0: the COPY layer (CR 709.4a) ──────────────────────────────────
@@ -4090,12 +4114,9 @@ export class E {
    * payCard: the check and the charge have to be the same sum. */
   canPayManaOnly(seat: Seat, name: CardName, opts: CostOpts = {}): boolean {
     if (this.openMana(seat) < this.manaToPlay(seat, name, opts)) return false;
-    if (!this.canPayLife(seat, this.lifeToPlay(seat, name, opts))) return false;
-    // CR 111.10: the imposed-sacrifice gate is part of the bill too — a glimpse
-    // release with no unit to sacrifice must not be offered either.
-    const sacs = this.unitsToPlay(seat, name, opts);
-    const region = opts.region ?? this.actionRegion(seat);
-    return sacs === 0 || this.unitsOf(seat, region).length >= sacs;
+    // CR 111.10: the imposed life and sacrifice gates are part of the bill too —
+    // a glimpse release that cannot pay them must not be offered either.
+    return this.canPayImposedPlayCosts(seat, name, opts);
   }
 
   /** `viewer` looks at `owner`'s hand (Bripp etc.): snapshot it so the client

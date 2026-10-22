@@ -844,12 +844,29 @@ function canPayAmbush(e: E, seat: Seat, c: CardDef): boolean {
 /** CR 803.6i: the Ambush line's bill out of a SOURCE — the hand pays it in
  * full (`canPayAmbush`), a glimpsed cache entry pays its mana ignoring the
  * pips, a fulfilled prophecy pays nothing. Shared by `doAmbush` and the offer
- * (`pushSourcePlays`), so the two cannot disagree about a price. */
-function ambushAffordable(e: E, seat: Seat, c: CardDef, price: SourcePrice): boolean {
+ * (`pushSourcePlays`), so the two cannot disagree about a price.
+ *
+ * CR 111.10e (CT-243, owner 2026-10-22): an Ambush is a card played, so it
+ * also owes the IMPOSED additional costs a hand cast owes ("Cards played
+ * during battle gain [Pay 2 life]", Arbiter of Armistice; Vengeance's
+ * "[Sacrifice a unit]"), gated by the SAME predicate `canPayCard` asks,
+ * against the battle region the Ambush is played into. A free release
+ * skips the gate exactly as `sourceAffordable` does for a hand-mode play. */
+function ambushAffordable(e: E, seat: Seat, c: CardDef, price: SourcePrice, region: number): boolean {
   if (!c.ambush) return false;
   if (price.free) return true;
+  if (!e.canPayImposedPlayCosts(seat, c.name, { region })) return false;
   if (price.ignoreAffinity) return e.openMana(seat) >= c.ambush.mana;
   return canPayAmbush(e, seat, c);
+}
+
+/** CR 111.10: the imposed "[Sacrifice a unit]" additional cost (Vengeance) as the
+ * cast window's pendingCosts atom — counted at the moment of playing, against
+ * the region the card is played into. One builder for every play route that
+ * owes it: a hand-mode play (`playAtTiming`'s mkItem) and an Ambush (CT-243). */
+function imposedSacrifice(e: E, seat: Seat, name: CardName, region: number): Pick<StackItem, 'pendingCosts'> {
+  const sacs = e.unitsToPlay(seat, name, { region });
+  return sacs > 0 ? { pendingCosts: [{ kind: 'playSacrifice', n: sacs }] } : {};
 }
 
 function baseItem(e: E, c: CardDef, seat: Seat, region: number,
@@ -915,15 +932,11 @@ function playAtTiming(
    * play's other costs (canPayCard already gated the play on the count).
    * Deliberately HERE and not in baseItem: a spell token never reaches this
    * function (its cast is priced in `doCastSpellToken`, CR 702.7a), and Vengeance
-   * prints "Cards", which a token is not (CR 304.2); an Ambush pays its own
-   * printed cost line, and the engine keeps it outside the play-tax layer too, though CR 111.10e
-   * taxes it as a card played (engine differs, CT-243). */
-  const mkItem = (region: number): StackItem => {
-    const item = baseItem(e, c, seat, region, from, unstable, fixedX);
-    const sacs = e.unitsToPlay(seat, c.name, { region });
-    if (sacs > 0) item.pendingCosts = [{ kind: 'playSacrifice', n: sacs }];
-    return item;
-  };
+   * prints "Cards", which a token is not (CR 304.2). An Ambush is a card played
+   * (CR 111.10e), so `doAmbush` attaches the same atom through the same
+   * builder (CT-243). */
+  const mkItem = (region: number): StackItem =>
+    ({ ...baseItem(e, c, seat, region, from, unstable, fixedX), ...imposedSacrifice(e, seat, c.name, region) });
   if (e.s.phase === 'planning') {
     // haste step (CR 504.2, 504.3): only haste cards, resolving immediately
     e.need(e.s.hasteDone !== null && !e.s.hasteDone[seat], 'not your haste step');
@@ -1303,13 +1316,16 @@ function doAmbush(e: E, seat: Seat, from: 'hand' | 'cache', index: number, c: Ca
   e.need(c.ambush, 'that card has no Ambush mode');
   e.need(e.s.phase === 'battle', 'Ambush is played during battle');
   e.need(e.s.priority === seat, 'you do not have priority');
-  e.need(ambushAffordable(e, seat, c, price), 'cannot pay the ambush cost');
   const region = e.s.battle!.region;
+  e.need(ambushAffordable(e, seat, c, price, region), 'cannot pay the ambush cost');
   const item: StackItem = {
     id: e.s.nextId++, kind: 'ambush', card: c.name,
     label: `${c.name} (Ambush)`, controller: seat, region,
     negated: false, parts: [{ effectKey: `ambush:${c.name}`, targets: [] }],
     from,   // CR 410.6: an Ambush is the card being played, out of the zone it is in
+    // CR 111.10e (CT-243): an imposed "[Sacrifice a unit]" rides into the cast
+    // window exactly as it does for a hand cast
+    ...imposedSacrifice(e, seat, c.name, region),
   };
   // ASK THE SPEC THE EFFECT WILL ACTUALLY USE. This used to hand-build
   // `{ what: 'allyUnit', prompt: '' }`, which agrees with `ambushEffect()`'s
@@ -1325,6 +1341,10 @@ function doAmbush(e: E, seat: Seat, from: 'hand' | 'cache', index: number, c: Ca
       { seat, card: c.name });
   } else {
     e.payMana(seat, c.ambush!.mana);
+    // CR 111.10e, 111.10d (CT-243): the imposed LIFE cost, charged with the Ambush
+    // mana and through the same payer `payCard` uses. A free release pays
+    // neither, as a free hand-mode release from the cache pays neither.
+    e.payPlayLife(seat, c.name, { region });
     if (price.ignoreAffinity) {
       e.ev('info', `${c.name} ambushes out of ${e.pname(seat)}'s cache, ignoring affinity.`,
         { seat, card: c.name });
@@ -4047,7 +4067,7 @@ function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache
   }
   // battle
   if (c.timing === 'battle' && playable) out.push(act());
-  if (c.ambush && ambushAffordable(e, seat, c, src.price)          // as above
+  if (c.ambush && ambushAffordable(e, seat, c, src.price, region)  // as above
     && e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
       region, undefined, seat).length > 0) {
     out.push(act({ mode: 'ambush' }));

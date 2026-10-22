@@ -187,9 +187,10 @@ test('cr:concepts.costs.modifiers.noun — Arbiter of Armistice ("Cards played")
   finishBattle(h);
 });
 
-/* The probe for the next two: measured on the engine, which plays an Ambush
- * outside the imposed-cost layer, so a "cards played" tax never reaches it. */
-function ambushPaysNoArbiterLife(): void {
+/* The probe for the next two. They pinned the engine playing an Ambush outside
+ * the imposed-cost layer ("engine differs"); the owner ruled on 2026-10-22 that
+ * an Ambush DOES pay a "cards played" tax (CT-243), so they now assert it. */
+function ambushPaysArbiterLife(): void {
   const h = new Harness(40401);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -202,13 +203,13 @@ function ambushPaysNoArbiterLife(): void {
   const life = h.state.players[D]!.life;
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Lurking Slimebeast'), mode: 'ambush' });
   pick(h, { unit: raider });
-  assert.equal(h.state.players[D]!.life, life, 'the Ambush paid no life');
+  assert.equal(h.state.players[D]!.life, life - 2, 'the Ambush paid the 2 life, as the spell card would');
   finishBattle(h);
 }
 
-test('cr:concepts.costs.modifiers.imposed.ambush — engine differs: an Ambush played under Arbiter of Armistice pays no life, while a spell card there owes 2', ambushPaysNoArbiterLife);
+test('cr:concepts.costs.modifiers.imposed.ambush — an Ambush played under Arbiter of Armistice pays the 2 life a spell card there owes (CT-243)', ambushPaysArbiterLife);
 
-test('cr:concepts.costs.modifiers.noun — engine differs: a card played as an Ambush escapes the Arbiter of Armistice "cards played" tax', ambushPaysNoArbiterLife);
+test('cr:concepts.costs.modifiers.noun — a card played as an Ambush pays the Arbiter of Armistice "cards played" tax (CT-243)', ambushPaysArbiterLife);
 
 /* ── life ───────────────────────────────────────────────────────────────── */
 
