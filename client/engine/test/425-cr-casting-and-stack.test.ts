@@ -453,6 +453,8 @@ test('cr:effects.playing.put-into-play — a unit Wake the Dead plays counts as 
     const i = dec.options.findIndex(o => o.card === 'Curio Drifter' || /Curio/.test(o.label));
     h.do({ type: 'decide', seat: dec.seat, choice: i >= 0 ? i : dec.options.length - 1 });
   }
+  // CT-245 (CR 701.4): the play waits on the stack until the window passes
+  while (h.state.stack.length && !h.state.decision && h.state.priority !== null) pass(h);
   assert.ok(unitsOf(h, A).some(u => u.card === 'Curio Drifter'), 'the unit is in play');
   assert.deepEqual(playedCards(h, m0), ['Curio Drifter'], 'it was played');
 });
