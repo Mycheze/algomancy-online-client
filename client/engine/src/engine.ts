@@ -10494,13 +10494,17 @@ export class E {
     delete this.s.entities[u.id];
     this.removeFromFormation(u.id);
     // CR 410.4b: the host AND its mods reach the public erased pile, under the
-    // host's OWNER — the same seat and the same one-event shape `destroy`
-    // uses for an Unstable death, so the two erase routes read alike.
+    // host's CONTROLLER (CR 400.4: zones follow control — the seat `destroy`'s
+    // Unstable sweep, `eraseMod`, `recall` and `cacheUnit` all use; a mod's
+    // controller is its host's, CR 720.6a, so one seat serves the whole line).
+    // CT-229: this read `u.owner`, the one erase route left behind by the zones
+    // ruling, so a stolen unit Banishment erased went to its owner's pile. No
+    // caller passes a destination: no card that reaches here prints one.
     this.ev('erased',
       `${u.card}${mods.length ? ` and its ${mods.length} mod(s)` : ''} is ERASED `
       + `(no bin, no death)${why ? ` ${why}` : '.'}`,
       {
-        unit: u.id, card: u.card, seat: u.owner, region: u.region,
+        unit: u.id, card: u.card, seat: u.controller, region: u.region,
         cards: [u.card, ...mods.map(m => m.card)],
       });
     // CR 801.6a: …and it despawns. CR 714.9's fact bundle rides the event, because the

@@ -149,3 +149,29 @@ test('CR 720.9: the erased pile files a stolen mod under the THIEF', () => {
   assert.deepEqual(seen.map(x => x.seat), seen.map(() => thief),
     'the erased pile files the mod under the player who CONTROLLED it (CR 720.9), not its owner');
 });
+
+test('CR 400.4 / CT-229: a stolen unit erased from play goes to the THIEF erased pile, with its mods', () => {
+  // E.eraseFromPlay is the route Banishment, Celestial Purge and every
+  // erase-as-a-cost take. It used to name the OWNER while bin, hand, cache,
+  // eraseMod and the Unstable sweep named the controller — the one seam the
+  // zones ruling said there would not be.
+  const h = new Harness(24607);
+  toDeployment(h);
+  const owner = h.state.deployPlayer!;
+  const thief = (1 - owner) as Seat;
+  const id = spawn(h, owner, VANILLA);
+  withE(h, e => {
+    e.attachMod(ent(h, id)!, 'Ignis Sprite', owner, 'augment');
+    assert.equal(e.giveControl(ent(h, id)!, thief), true, 'giveControl refused — no theft');
+  });
+  const u = ent(h, id)!;
+  assert.equal(u.owner, owner);
+  assert.equal(u.controller, thief, 'owner and controller must DIFFER, or nothing is tested');
+  const pile = (s: Seat): string[] => [...(h.state.players[s]!.erased ?? [])];
+  const before = { owner: pile(owner), thief: pile(thief) };
+  withE(h, e => { e.eraseFromPlay(ent(h, id)!, 'probe'); });
+  assert.equal(ent(h, id), undefined, 'the unit left play');
+  assert.deepEqual(pile(thief).slice(before.thief.length), [VANILLA, 'Ignis Sprite'],
+    'the erased pile of the player who CONTROLLED it gets the host and its mod (CR 400.4)');
+  assert.deepEqual(pile(owner), before.owner, 'and its owner pile gets nothing');
+});
