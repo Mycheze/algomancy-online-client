@@ -1090,6 +1090,14 @@ export interface StackItem {
    */
   unstable?: boolean;
   /**
+   * CR 102.5a (CT-245): the card's OWNER, present only when it is not the
+   * controller — a card an effect plays out of another player's zone (Wake the
+   * Dead's "any bin"). The body it resolves into is spawned with this owner
+   * (and dies to its CONTROLLER's bin, CR 400.4). Optional and additive: an
+   * item without it is owned by its controller, which every older item was.
+   */
+  owner?: Seat;
+  /**
    * CR 710.8 — this item is a COPY of a spell (Earthbound Replicator, Maelstrom
    * Charger), not the spell itself. It is a real stack item: respondable,
    * negatable, targetable as an effect.
@@ -2230,6 +2238,17 @@ export interface GameState {
    * game replays differently for it (nothing that was legal became illegal).
    */
   hastePlaysUsed?: number[];
+  /**
+   * CR 707.10 (CT-255): the GRANTORS spent this deployment by a play out of a
+   * bin under a `PlayPermission.playFromBinAtDeploy` — one entry per play, the
+   * id of the holder (the unit, or the mod whose [Augment] box donates it) whose
+   * printed "one unit" paid for it (The Bonesculptor's "each deployment",
+   * Gridxlan's "during deployment"). A play is not an ability activation, so
+   * `Entity.budgets` never sees it; the sibling of `hastePlaysUsed`, keyed per
+   * grantor because two grantors can permit different cards. Cleared by
+   * `startDeployment`. Additive/optional — an older state reads as empty.
+   */
+  deployBinPlayGrants?: EntityId[];
   /**
    * CR 111.10k: mana off the NEXT card each seat plays this PHASE — Deferral Drone's
    * "[once] Gain 4 debt: The next card you play this phase costs [3] less".

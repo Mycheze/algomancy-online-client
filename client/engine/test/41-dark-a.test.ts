@@ -469,6 +469,9 @@ test('Wake the Dead: plays up to two units out of ANY bin, total cost 8 or less'
   assert.equal(h.state.decision!.seat, A);
   pick(h, `${A}:0`);                                    // the cost-6 whale from my own bin
   pick(h, `${D}:0`);                                    // 2 left of the budget: the cost-1 drifter
+  // CT-245 (CR 701.4): both are PLAYED, so they wait on the stack until the window passes
+  assert.equal(h.state.stack.length, 2, 'two plays on the stack');
+  while (h.state.stack.length && !h.state.decision) pass(h);
   const mine = unitsOf(h, A);
   assert.ok(mine.some(u => u.card === 'Good Whale'), 'the whale is in play');
   assert.ok(mine.some(u => u.card === 'Curio Drifter'), 'so is the unit taken from the opponent\'s bin');
@@ -490,6 +493,7 @@ test('Wake the Dead: the [8] budget is shared — a second pick over budget is n
   pass(h); pass(h);
   pick(h, `${A}:0`);                                    // 2 of the budget left
   assert.equal(h.state.decision, null, 'nothing else fits — no second choice is offered');
+  while (h.state.stack.length && !h.state.decision) pass(h);   // CT-245: the play resolves
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Good Whale').length, 1, 'only one whale came back');
   assert.equal(h.state.players[A]!.bin.filter(c => c === 'Good Whale').length, 1, 'the other stays binned');
   finishBattle(h);

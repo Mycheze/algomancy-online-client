@@ -561,10 +561,11 @@ test('every activation-gated promise is delivered when the drill pays and activa
   // that activated NOTHING would leave `actTypes` empty, `met` false and the
   // list full, so this half guards the opposite blindness: an attribution that
   // silently fell back to the loose whole-run evidence and passed everything.
-  // 12, not 13: thirteen cards declare an activated ability of their own, but
-  // The Bonesculptor's ("You may play one unit with no abilities from your bin
-  // each deployment") prints no countable promise, so it carries no claims and
-  // never reaches `observations` at all.
+  // 12: twelve cards declare an activated ability of their own. (Thirteen did
+  // until CT-255: The Bonesculptor's "You may play one unit with no abilities
+  // from your bin each deployment" was one, and is a standing permission now,
+  // CR 707.10. It never reached `observations` anyway — it printed no
+  // countable promise.)
   const activatedCards = [...observations].filter(([, o]) => o.activated).map(([n]) => n);
   assert.ok(activatedCards.length >= 12,
     `the drill activated an ability on only ${activatedCards.length} cards — it was 12 when `

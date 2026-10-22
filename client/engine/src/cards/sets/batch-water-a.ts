@@ -185,6 +185,14 @@ export type InlinePlayOpts = {
    * The caller offers a mode only when `inlineModes` lists it.
    */
   mode?: InlineMode;
+  /**
+   * CR 102.5a (CT-245): the card's OWNER, when the seat playing it is somebody
+   * else — Wake the Dead plays out of "any bin", and a card raised out of the
+   * opponent's bin is borrowed, not naturalised (CARD-TODO #17). Absent = the
+   * player owns it. Carried onto the stack item (`StackItem.owner`) and from
+   * there onto the body.
+   */
+  owner?: Seat;
 };
 
 /**
@@ -327,26 +335,30 @@ export const inlinePlayGoesToStack = (g: E): boolean =>
   g.s.phase === 'battle' && g.s.priority !== null && !g.s.battle?.damageStep;
 
 /**
- * CR 702.3's push path: declare the play, then put it on the stack.
+ * CR 702.1, 702.3 — DECLARE a card played by an effect: build its item and settle
+ * everything the play has to settle before anybody may see it — X and the
+ * other variable costs (CR 702.3a), its targets (CR 702.3c), its mode (CR 702.5),
+ * the formation spot it is played into (CR 702.3e) and the fixed bracketed
+ * costs (CR 702.4e). ONE function for BOTH branches of `playInline` (CT-332):
+ * the in-place branch used to hand-roll its own declaration and skipped the
+ * bracketed costs entirely, so a "[Sacrifice a unit]" spell played where
+ * nobody could respond was played free of the sacrifice.
  *
  * Everything asked here is asked with `ctx.choose`, so it rides the OUTER
- * resolution's suspension exactly as the in-place path's questions always did
- * — no nested `'cast'` suspension, which `GameState.decision`'s single slot
- * could not hold anyway. That is also what keeps CR 702.3's rule true for a
- * mid-resolution play: X, mode, target and formation spot are all fixed before
- * the opponent sees the item, so nobody responds to an undeclared spell.
+ * resolution's suspension — no nested `'cast'` suspension, which
+ * `GameState.decision`'s single slot could not hold anyway. That is also what
+ * keeps CR 702.3's rule true for a mid-resolution play: X, mode, target and
+ * formation spot are all fixed before the opponent sees the item, so nobody
+ * responds to an undeclared spell.
  *
- * NOT hand-rolled past the choke point: `E.commitItem` fires 'spellPlayed' and
- * CR 108.1a's 'cardPlayed', bumps the two `spellsPlayed:` ledgers, dispatches
- * 'targeted' and pushes. The in-place path fires a hand-rolled 'spellPlayed'
- * and none of the rest, which is a second divergence this closes on the way
- * past — a mid-resolution play is a play, and Void Mandible's "when a card is
- * played" could never see one.
+ * `withSpot`: the push branch declares the formation spot with the play; the
+ * in-place branch leaves it to the caller's `E.placeInFormation` after the
+ * spawn, as it always did — nobody can respond in between, so the two are the
+ * same moment at the table.
  */
-const pushInlinePlay = (
-  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts,
-): InlinePlay => {
-  if (opts.mode) return playInlineMode(g, ctx, name, key, seat, opts.mode, opts.from);
+const declareInlinePlay = (
+  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts, withSpot: boolean,
+): StackItem => {
   const def = getCard(name);
   const eff = def.spellEffect;
   const parts: EffectPart[] = eff ? [{ effectKey: `spell:${name}`, targets: [] }] : [];
@@ -357,6 +369,9 @@ const pushInlinePlay = (
     id: -1, kind: def.kind, card: name, label: name,
     controller: seat, region: ctx.region, negated: false, parts,
     ...(opts.unstable ? { unstable: true } : {}),
+    // CR 102.5a (CT-245): a card played out of SOMEBODY ELSE's zone (Wake the
+    // Dead's "any bin") stays its owner's card; the body it becomes says so.
+    ...(opts.owner !== undefined && opts.owner !== seat ? { owner: opts.owner } : {}),
     // CR 701.4a: the zone this play came out of, exactly where `doPlayCard` and
     // `doPlayCached` put it. `commitItem` copies it onto 'spellPlayed' and
     // 'cardPlayed'; `resolveItem` / `afterParts` hand it to `spawnUnit`, which
@@ -375,21 +390,18 @@ const pushInlinePlay = (
     // CR 702.3c: declared as the card is played, like every other target — by the
     // cast window's own collector (CT-308), so every slot, kind and count a
     // play from hand asks is asked here too. An empty candidate list is NOT
-    // special-cased into an early bin — the item is pushed with no target and
-    // `resolveItem`'s CR 704.6 branch fizzles it and discharges its card, which
-    // is the same destination the caller used to hand-roll plus a real
-    // 'fizzled' event for the reader.
+    // special-cased into an early bin — on the push branch the item is pushed
+    // with no target and `resolveItem`'s CR 704.6 branch fizzles it.
     g.collectInlineTargets(item, inlineTargetAsk(ctx, key));
   }
   if (eff && part) {
     // CR 702.5: the modal half, declared before the item is respondable — which is
-    // what collectModes does for a card played from a hand, and what the
-    // in-place path could only approximate.
+    // what collectModes does for a card played from a hand.
     const mode = inlineMode(g, ctx, eff, `${key}:mode`, { card: name, targets: part.targets });
     if (mode !== undefined) part.mode = mode;
   }
   let spot: FormationSpot | undefined;
-  if (opts.intoFormation && (def.kind === 'unit' || def.kind === 'spellUnit')) {
+  if (withSpot && opts.intoFormation && (def.kind === 'unit' || def.kind === 'spellUnit')) {
     const slots = g.formationSlots(seat);
     if (slots.length) {
       // BL-24: kind 'formationSlot', never 'electricPath' — an electricPath's
@@ -407,93 +419,112 @@ const pushInlinePlay = (
   }
   if (spot) item.formationSpot = spot;
   g.collectInlineCastCosts(item, 'fixed', ask('cost'));
+  // CR 112.14c (CT-332): the printed "[Gain N debt]" line (Hyper Beam) is a cost
+  // of the PLAY, which `playAtTiming` pays beside the mana — so a free play,
+  // which waives the mana and nothing else, still pays it. It is not a
+  // `castCost`, which is why neither branch ever saw it.
+  if (def.gainDebt) {
+    g.ev('info', `${g.pname(seat)} gains ${def.gainDebt} debt — the [cost] of ${name}.`, { seat, card: name });
+    g.gainDebt(seat, def.gainDebt);
+  }
   // The id is taken LAST, after every question: `ctx.choose` throws, the suspension rewinds
   // `nextId` to the part boundary and the part replays from the top, so an id
   // spent before a question is spent again on every attempt.
   item.id = g.s.nextId++;
-  g.commitItem(item, 'push');
+  return item;
+};
+
+/**
+ * CR 702.3's push path: declare the play, then put it on the stack.
+ *
+ * NOT hand-rolled past the choke point: `E.commitItem` fires 'spellPlayed' and
+ * CR 108.1a's 'cardPlayed', bumps the two `spellsPlayed:` ledgers, dispatches
+ * 'targeted' and pushes.
+ */
+const pushInlinePlay = (
+  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts,
+): InlinePlay => {
+  if (opts.mode) return playInlineMode(g, ctx, name, key, seat, opts.mode, opts.from);
+  g.commitItem(declareInlinePlay(g, ctx, name, key, seat, opts, true), 'push');
   return { outcome: 'stacked' };
+};
+
+/**
+ * CR 701.4, 108.1a — the IN-PLACE branch: a card played by an effect where nobody
+ * can respond (outside a battle priority window — see `inlinePlayGoesToStack`).
+ *
+ * CT-143 asked whether this branch should exist at all. It should, and for the
+ * reason every no-stack play from a hand exists: CR 701.4 puts a mid-resolution
+ * play on the stack DURING BATTLE, and outside a window there is nobody to
+ * hand priority to and nothing to drain a pushed item. What it must not be is
+ * a LESSER play. So it is the same play as the push branch in everything but
+ * the last step — the same declaration (`declareInlinePlay`, CT-332) and the
+ * same announcement (`commitItem(…, 'announce')`: 'targeted', the spell
+ * ledgers, 'spellPlayed' with its CR 706.13 item and `offStack` snapshot, and
+ * CR 108.1a's 'cardPlayed' — which this branch never fired, so the wide
+ * watchers were deaf to it) — and then it resolves where it stands, through
+ * the outer resolution's chooser, exactly as `commitItem(…, 'resolve')`
+ * resolves a haste-step play.
+ *
+ * ⚠ No card reaches this today: every caller of `playInline` can only run
+ * inside a battle priority window (169 §6b is the census). 556 drives it
+ * directly.
+ */
+const playInlineInPlace = (
+  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts,
+): InlinePlay => {
+  const def = getCard(name);
+  const item = declareInlinePlay(g, ctx, name, key, seat, opts, false);
+  g.commitItem(item, 'announce');
+  // CR 102.5a: the body is its owner's card whoever plays it (Wake the Dead's "any bin")
+  const owner = item.owner ?? seat;
+  if (def.kind === 'unit') {
+    // CR 701.4a: the zone goes on the spawn too — Proph and Stalwart Sentinel
+    // listen there for a unit. CR 111.10k rides along: `spawnUnit` spends the
+    // Deferral Drone charge exactly when `opts.from !== undefined`.
+    return { outcome: 'unit', unit: g.spawnUnit(seat, name, ctx.region, { from: opts.from, owner }) };
+  }
+  const eff = def.spellEffect;
+  const part = item.parts[0];
+  let eraseSelf = false;
+  if (eff && part) {
+    const targets = part.targets.map(r => g.resolveTargetRef(r)).filter((r): r is ResolvedTarget => r !== null);
+    // CR 704.6: a part that declared nothing although it required something does
+    // not run, exactly as at `resolveParts`
+    // (silent here, as it always was: each caller says what a fizzle meant for it)
+    if (eff.targets && (part.targets.length ? !targets.length : g.requiredTargetsOf(item, part, eff.targets) > 0)) {
+      return { outcome: 'fizzled' };
+    }
+    eff.run(g, {
+      controller: seat, sourceName: name, region: ctx.region,
+      targets, event: null,
+      ...(part.mode !== undefined ? { mode: part.mode } : {}),
+      // CR 702.6b: a variable cast cost defines X, as at `resolveParts`
+      ...(part.costPaid?.x !== undefined ? { x: part.costPaid.x } : {}),
+      ...(part.costPaid ? { costPaid: part.costPaid } : {}),
+      // CR 406.4a: an in-place run has no stack item to flag — but "Erase me."
+      // is a printed sentence (Collect Remains, Suspend, Temporal Rift).
+      // Record it; the caller honours it.
+      eraseSelf: () => { eraseSelf = true; },
+      choose: (k, d) => ctx.choose(`${key}:${k}`, d),
+    });
+  }
+  if (def.kind === 'spellUnit') {
+    // CR 701.4a: the body carries the zone too — the same shape `afterParts` uses
+    // for an ordinary spell-unit cast. It does NOT double-count: the play was
+    // announced on 'spellPlayed' above, and both readers drop a 'spawned'
+    // whose card is not kind 'unit'.
+    return { outcome: 'ok', unit: g.spawnUnit(seat, name, ctx.region, { from: opts.from, owner }), eraseSelf };
+  }
+  return { outcome: 'ok', eraseSelf };
 };
 
 export const playInline = (
   g: E, ctx: EffectCtx, name: string, key: string, seat: Seat = ctx.controller,
   opts: InlinePlayOpts,
-): InlinePlay => {
-  if (inlinePlayGoesToStack(g)) return pushInlinePlay(g, ctx, name, key, seat, opts);
-  const def = getCard(name);
-  if (def.kind === 'unit') {
-    // CR 701.4a: a plain unit play is announced on ONE event — its own 'spawned' —
-    // so the zone goes on the spawn. Proph and Stalwart Sentinel both listen
-    // there for a unit (they route a spell unit to 'spellPlayed' instead, by a
-    // `getCard(name).kind` check, so nothing is counted twice).
-    //
-    // ⚠ CR 111.10k rides along, deliberately: `spawnUnit` spends the Deferral Drone
-    // charge exactly when `opts.from !== undefined`, because "a unit that came
-    // from a ZONE was PLAYED". A mid-resolution play IS a play (the owner's
-    // ruling opening this note), so it burns the charge like any other. It did
-    // not before, which was the same blank marker read a second way.
-    return { outcome: 'unit', unit: g.spawnUnit(seat, name, ctx.region, { from: opts.from }) };
-  }
-  const ev = g.ev('spellPlayed',
-    `${g.pname(seat)} plays ${name} (via ${ctx.sourceName}).`,
-    // CR 701.4a: `from` on the hand-rolled event, the same field `commitItem` puts
-    // on the real one. Without it Proph and Stalwart Sentinel read a blank and
-    // fired for NOBODY — neither "from hand" nor "from elsewhere".
-    { seat, card: name, token: false, region: ctx.region, from: opts.from });
-  g.fireEvent('spellPlayed', ev);
-  const eff = def.spellEffect;
-  let fizzled = false;
-  let eraseSelf = false;
-  if (eff) {
-    let targets: ResolvedTarget[] = [];
-    let refs: TargetRef[] = [];
-    if (eff.targets) {
-      // CR 702.3c (CT-308): the cast window's collector, through this resolution's
-      // chooser — the same one the push path above uses. A throwaway item
-      // carries the declaration (nothing here reaches the stack); it never
-      // takes an id. CR 704.6: a part that declared nothing although it
-      // required something does not run, exactly as at `resolveParts`.
-      const part: EffectPart = { effectKey: `spell:${name}`, targets: [] };
-      const item: StackItem = {
-        id: -1, kind: def.kind, card: name, label: name,
-        controller: seat, region: ctx.region, negated: false, parts: [part],
-      };
-      g.collectInlineTargets(item, inlineTargetAsk(ctx, key));
-      refs = part.targets;
-      targets = refs.map(r => g.resolveTargetRef(r)).filter((r): r is ResolvedTarget => r !== null);
-      if (refs.length ? !targets.length : g.requiredTargetsOf(item, part, eff.targets) > 0) fizzled = true;
-    }
-    if (!fizzled) {
-      // CR 702.5: a modal card played inline has no cast window to declare its half
-      // in — it never reaches the stack — so it is asked here, through
-      // ctx.choose, exactly as it was before the mode moved. See inlineMode.
-      const mode = inlineMode(g, ctx, eff, `${key}:mode`, { card: name, targets: refs });
-      eff.run(g, {
-        controller: seat, sourceName: name, region: ctx.region,
-        targets, event: null, mode,
-        // CR 406.4a: an inline run has no stack item to flag — but "Erase me."
-        // is a printed sentence (Collect Remains, Suspend, Temporal Rift) and
-        // swallowing it left those spells BINNED and recurrable when they were
-        // played for free. Record it; the caller honours it. This used to be
-        // `() => {}` with the comment "an inline mod run has no stack item to
-        // erase", which described the mechanism and mistook it for the answer.
-        eraseSelf: () => { eraseSelf = true; },
-        choose: (k, d) => ctx.choose(`${key}:${k}`, d),
-      });
-    }
-  }
-  if (fizzled) return { outcome: 'fizzled' };
-  if (def.kind === 'spellUnit') {
-    // CR 701.4a: the body carries the zone too — the same shape `afterParts` uses
-    // for an ordinary spell-unit cast (`...(item.from ? { from: item.from }`).
-    // It does NOT double-count: the play was already announced on
-    // 'spellPlayed' above, and both readers drop a 'spawned' whose card is not
-    // kind 'unit'. What it DOES buy is CR 111.10k's charge spend, in the one place
-    // the in-place path has for it.
-    return { outcome: 'ok', unit: g.spawnUnit(seat, name, ctx.region, { from: opts.from }), eraseSelf };
-  }
-  return { outcome: 'ok', eraseSelf };
-};
+): InlinePlay => inlinePlayGoesToStack(g)
+  ? pushInlinePlay(g, ctx, name, key, seat, opts)
+  : playInlineInPlace(g, ctx, name, key, seat, opts);
 
 /** Glimpse N for a seat (CR 801.9) — reveal the top N, cache exactly ONE of the
  * glimpser's choice and recycle the rest to the bottom of the deck; until end

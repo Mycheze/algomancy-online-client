@@ -25,7 +25,7 @@
  *
  *   hand   playCard in deployment (the stack, then resolution);
  *   cache  playCached after cacheTopOfDeck (CR 403.3b);
- *   bin    Wake the Dead, "Play up to two units in any bin" (the `asPlay` spawn);
+ *   bin    Wake the Dead, "Play up to two units in any bin" (CR 701.4 push, CT-245);
  *   deck   Tides of the Cosmos, "You may play them now, for free" (CR 701.4 push).
  *
  * The check is on the trigger LOG, not on a side effect, so it reads every card
@@ -37,7 +37,7 @@
  * asserted: the population has a floor, every route must have driven a floor
  * of cards, the known listeners must be in the population, and the detector is
  * calibrated on a firing it must see (a Sentinel already in play hearing the
- * second unit Wake the Dead plays).
+ * other unit Wake the Dead plays arrive).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -228,10 +228,11 @@ test('CR 701.1e reach: the coverage, as a diagnostic', t => {
 });
 
 test('CR 701.1e calibration: the detector sees a Stalwart Sentinel hear a unit played after it', () => {
-  // Wake the Dead plays the Sentinel FIRST and a second unit after it. The
-  // second play is heard (the Sentinel is in play by then): 2 counters, and
-  // the trigger line this sweep looks for is logged. The first play, its own,
-  // must not be.
+  // Wake the Dead plays the Drifter and then the Sentinel. Both are PLAYED onto
+  // the stack (CR 701.4, CT-245), so the Sentinel — played last — resolves
+  // FIRST and is in play when the Drifter arrives from the bin: that arrival is
+  // heard, 2 counters, and the trigger line this sweep looks for is logged.
+  // The Sentinel's own arrival must not be.
   const h = new Harness(44471, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -244,7 +245,7 @@ test('CR 701.1e calibration: the detector sees a Stalwart Sentinel hear a unit p
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
   let k = 0;
   settle(h, labels => {
-    const want = k++ === 0 ? 'Stalwart Sentinel [' : 'Curio Drifter [';
+    const want = k++ === 0 ? 'Curio Drifter [' : 'Stalwart Sentinel [';
     const i = labels.findIndex(l => l.startsWith(want));
     return i >= 0 ? i : null;
   });

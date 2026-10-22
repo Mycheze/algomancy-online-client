@@ -422,48 +422,49 @@ test('Dragnol: declining pays nothing, and an OPPONENT\'s spell never offers', (
 });
 
 // ── Gridxlan ─────────────────────────────────────────────────────────────
+//
+// CR 707.10: a standing permission since the CT-255 fix was applied to it —
+// each playable unit in the bin is its own `playFromBin` offer in deployment
+// (559 is its guard). These are the old activated-ability tests, kept on the
+// new action shape.
+
+/** the bin cards a deployment bin-play permission offers `P` right now */
+const binOffer = (h: Harness, P: Seat): string[] => legalActions(h.state, P)
+  .flatMap(a => a.type === 'playFromBin' ? [h.state.players[P]!.bin[a.binIndex]!] : []);
 
 test('Gridxlan: with an EMPTY hand, play a unit out of your bin during deployment', () => {
   const h = new Harness(4612);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const grid = spawn(h, P, 'Gridxlan');
+  spawn(h, P, 'Gridxlan');
   h.state.players[P]!.hand.length = 0;
   h.state.players[P]!.bin.push('LDC Five', 'LDC Grunt');   // [5] is unaffordable below
   giveResources(h, P, 'earth', 2);                         // 2 open mana
-  h.do({ type: 'activateAbility', seat: P, entityId: grid, abilityIndex: 0, via: 'augment' });
-  const dec = h.state.decision!;
-  assert.deepEqual(dec.options.map(o => o.label), ['LDC Grunt', 'Decline'],
-    'only affordable UNIT cards are offered');
-  pick(h, 1);                                              // bin index 1 = LDC Grunt
+  assert.deepEqual(binOffer(h, P), ['LDC Grunt'], 'only affordable UNIT cards are offered');
+  h.do({ type: 'playFromBin', seat: P, binIndex: 1 });     // bin index 1 = LDC Grunt
   assert.ok(unitsOf(h, P).some(u => u.card === 'LDC Grunt'), 'it is in play');
   assert.deepEqual(h.state.players[P]!.bin, ['LDC Five'], 'and it left the bin');
   assert.equal(h.q.openMana(P), 2, 'LDC Grunt is a [0] — its own cost is what is paid');
 });
 
 test('CR 705.3a: Gridxlan with a non-empty hand is not offered, and does not burn its [once]', () => {
-  // this used to activate, print "your hand is not empty", do nothing, and
-  // SPEND the once-per-turn budget — so emptying your hand afterwards was too
-  // late. "If your hand is empty" is an activation condition (CR 111.7b).
+  // "If your hand is empty" is a condition of the permission: while it is false
+  // nothing is offered and nothing is spent, so emptying the hand afterwards
+  // still lets the play happen.
   const h = new Harness(4613);
   toDeployment(h);
   const P = h.state.deployPlayer!;
-  const grid = spawn(h, P, 'Gridxlan');
+  spawn(h, P, 'Gridxlan');
   h.state.players[P]!.hand.length = 0;
   give(h, P, 'LDC Grunt');                                 // hand is NOT empty
   h.state.players[P]!.bin.push('LDC Grunt');
-  const offered = (): boolean => legalActions(h.state, P).some(a =>
-    a.type === 'activateAbility' && a.entityId === grid);
-  assert.ok(!offered(), 'not offered while the hand has a card in it');
-  assert.throws(() => h.do({ type: 'activateAbility', seat: P, entityId: grid, abilityIndex: 0, via: 'augment' }),
+  assert.deepEqual(binOffer(h, P), [], 'not offered while the hand has a card in it');
+  assert.throws(() => h.do({ type: 'playFromBin', seat: P, binIndex: 0 }),
     (err: unknown) => err instanceof IllegalAction);
   assert.deepEqual(h.state.players[P]!.bin, ['LDC Grunt'], 'nothing left the bin');
-  // and because nothing was activated, the [once] is intact: emptying the hand
-  // now makes it usable
   h.state.players[P]!.hand.length = 0;
-  assert.ok(offered(), 'the budget was never spent');
-  h.do({ type: 'activateAbility', seat: P, entityId: grid, abilityIndex: 0, via: 'augment' });
-  pick(h, 0);
+  assert.deepEqual(binOffer(h, P), ['LDC Grunt'], 'the budget was never spent');
+  h.do({ type: 'playFromBin', seat: P, binIndex: 0 });
   assert.ok(unitsOf(h, P).some(u => u.card === 'LDC Grunt'), 'it plays from the bin');
 });
 
@@ -474,9 +475,9 @@ test('Gridxlan with an empty hand but nothing playable in the bin is not offered
   const grid = spawn(h, P, 'Gridxlan');
   h.state.players[P]!.hand.length = 0;
   h.state.players[P]!.bin.length = 0;                      // empty hand, empty bin
-  assert.ok(!legalActions(h.state, P).some(a =>
-    a.type === 'activateAbility' && a.entityId === grid),
-    'an ability with nothing to do is not offered (CR 705.3a)');
+  assert.deepEqual(binOffer(h, P), [], 'an empty bin offers nothing');
+  assert.ok(!legalActions(h.state, P).some(a => a.type === 'activateAbility' && a.entityId === grid),
+    'and there is no ability to activate at all (CR 707.10)');
 });
 
 // ── Haunting Memories ────────────────────────────────────────────────────

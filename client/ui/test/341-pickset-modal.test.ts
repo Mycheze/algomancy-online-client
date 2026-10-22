@@ -27,7 +27,7 @@ import { client } from './ui-driver.ts';
 import { optionPingId } from '../inspect.ts';
 import type { Action, Decision, GameState, Seat } from '../../engine/src/types.ts';
 import {
-  give, giveResources, pass, spawn, toDeployment, toNextBattle, unitsOf,
+  give, giveResources, pass, spawn, toDeployment, toNextBattle,
 } from '../../engine/test/util.ts';
 
 const ui = await client();
@@ -155,8 +155,9 @@ test('Confirm sends the first pick then finds the second in the rebuilt question
   assert.deepEqual(two, [{ type: 'decide', seat: A, choice: want }], 'the second answer is found by value');
   h.do(two[0]!);
   assert.equal(h.state.decision, null, 'both questions answered');
-  const mine = unitsOf(h, A).map(u => u.card);
-  assert.ok(mine.includes('Good Whale') && mine.includes('Bumblecrab'), `both are in play (${mine.join(', ')})`);
+  // CT-245 (CR 701.4): both are PLAYED, so they wait on the stack, not yet in play
+  const played = h.state.stack.map(i => i.card);
+  assert.ok(played.includes('Good Whale') && played.includes('Bumblecrab'), `both were played (${played.join(', ')})`);
   push(h, A);
   assert.deepEqual(decides(), [], 'and nothing more is sent');
 });

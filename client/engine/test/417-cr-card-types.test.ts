@@ -190,9 +190,13 @@ test('cr:types.spell-units.not-played — Exhume puts a Jelly from the bin into 
     'Bloomcaster ("whenever you play a unit") made no 1/1: the Jelly was put into play, not played');
 });
 
-/* The probe for the next three: measured on the engine, where Wake the Dead
- * spawns a spell unit body straight from the bin and skips its spell part. */
-function wakeTheDeadSkipsTheSpell(): void {
+/* The next three, one fixture: CT-245 made Wake the Dead's plays real (CR 701.4),
+ * so a spell unit it plays from a bin is played AS A SPELL — its target is
+ * declared as it is played, it waits on the stack, its spell part resolves,
+ * and only then does the body arrive (RAQ, Hooba-Pon: "Yes, the spell part
+ * happens and if it resolves, the unit will spawn into formation."). These
+ * three were "engine differs" probes asserting the opposite until then. */
+function wakeTheDeadCastsTheSpell(): void {
   const h = new Harness(60621);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -207,22 +211,24 @@ function wakeTheDeadSkipsTheSpell(): void {
   pass(h); pass(h);
   pick(h, `${A}:0`);
   if (h.state.decision && h.state.decision.options.some(o => o.value === 'done')) pick(h, 'done');
-  const askedTarget = !!h.state.decision;
+  assert.ok(h.state.decision, 'a target is asked for the -2/-2 as the Jelly is played');
+  pick(h, { unit: victim });
+  assert.ok(h.state.stack.some(i => i.card === 'Jelly' && i.kind === 'spellUnit'), 'the Jelly is on the stack as a spell unit');
+  assert.ok(!unitsOf(h, A).some(u => u.card === 'Jelly'), 'with no body yet');
   drain(h);
   const evs = h.events.slice(mark);
-  assert.ok(unitsOf(h, A).some(u => u.card === 'Jelly'), 'the Jelly body is in play');
-  assert.ok(evs.some(e => e.type === 'cardPlayed' && e.data?.['card'] === 'Jelly'), 'it is heard as a played card');
-  assert.equal(askedTarget, false, 'no target was asked for the -2/-2');
-  assert.ok(!evs.some(e => e.type === 'spellPlayed' && e.data?.['card'] === 'Jelly'), 'no spellPlayed event: not played as a spell');
-  assert.deepEqual(effStats(h, victim), [7, 5], 'the spell part did not happen');
+  assert.ok(evs.some(e => e.type === 'spellPlayed' && e.data?.['card'] === 'Jelly'), 'played as a spell: spellPlayed fired');
+  assert.ok(evs.some(e => e.type === 'cardPlayed' && e.data?.['card'] === 'Jelly'), 'and heard as a played card');
+  assert.deepEqual(effStats(h, victim), [5, 3], 'the spell part happened');
+  assert.ok(unitsOf(h, A).some(u => u.card === 'Jelly'), 'and then the Jelly body arrived');
   finishBattle(h);
 }
 
-test('cr:types.spell-units.played-by-effect — engine differs: a Jelly that Wake the Dead plays from a bin arrives with no spell part and no spellPlayed event', wakeTheDeadSkipsTheSpell);
+test('cr:types.spell-units.played-by-effect — a Jelly that Wake the Dead plays from a bin casts its spell, and the body arrives only after it resolves', wakeTheDeadCastsTheSpell);
 
-test('cr:types.spell-units.is-a-spell — engine differs: a Jelly that Wake the Dead plays from a bin is not played as a spell', wakeTheDeadSkipsTheSpell);
+test('cr:types.spell-units.is-a-spell — a Jelly that Wake the Dead plays from a bin is played as a spell', wakeTheDeadCastsTheSpell);
 
-test('cr:types.spell-units.is-a-unit — engine differs: a Jelly that Wake the Dead plays as a unit gets no spell part', wakeTheDeadSkipsTheSpell);
+test('cr:types.spell-units.is-a-unit — a Jelly that Wake the Dead plays gets its spell part and then its unit body', wakeTheDeadCastsTheSpell);
 
 /* ---------- tokens ---------- */
 

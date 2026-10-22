@@ -99,17 +99,25 @@ test('cr:effects.triggered.if-you-do — Eminence of the Barrens under an enemy 
   finishBattle(h);
 });
 
-test('cr:effects.static.permission — engine differs: The Bonesculptor bin permission is offered as an activateAbility action, and activating it asks a payOrDecline choice', () => {
+test('cr:effects.static.permission — The Bonesculptor bin permission is offered as a playFromBin action, not an activated ability, and using it puts nothing of its own on the stack', () => {
+  // CT-255: this was the "engine differs" probe — the permission was offered as
+  // an activateAbility and its choice asked while the activated item resolved.
   const h = new Harness(91502);
   toDeployment(h);
   const p = h.state.deployPlayer! as Seat;
   const bs = spawn(h, p, 'The Bonesculptor');
-  h.state.players[p]!.bin.push('Unit Token');
-  giveResources(h, p, 'earth', 3);
-  const acts = legalActions(h.state, p).filter(a => a.type === 'activateAbility' && (a as { entityId: number }).entityId === bs);
-  assert.equal(acts.length, 1, 'the permission is offered as an activateAbility action');
-  h.do(acts[0]! as never);
-  assert.equal(h.state.decision?.kind, 'payOrDecline', 'its choice is asked while the activated item resolves');
+  h.state.players[p]!.bin.push('Curio Drifter');
+  giveResources(h, p, 'water', 1);
+  const legal = legalActions(h.state, p);
+  assert.ok(!legal.some(a => a.type === 'activateAbility' && (a as { entityId: number }).entityId === bs),
+    'no activated ability is offered');
+  const play = legal.find(a => a.type === 'playFromBin');
+  assert.ok(play, 'the permission is offered as a play from the bin');
+  const mark = h.events.length;
+  h.do(play);
+  assert.equal(h.state.decision, null, 'nothing is asked');
+  assert.ok(!h.events.slice(mark).some(e => e.type === 'resolved' && /Bonesculptor/.test(e.msg)),
+    'and no Bonesculptor item resolved');
 });
 
 test('cr:effects.replacement.once.one-applies — engine differs: two Oorblaks both redirect one 10-point Piercing hit, so the defender loses 2 and both Oorblaks die', () => {

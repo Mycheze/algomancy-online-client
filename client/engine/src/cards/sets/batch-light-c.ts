@@ -673,20 +673,14 @@ card('Tithe Enforcer', {});
 //      copy. The guard stays as an ASSERTION of what the id must be, exactly
 //      as the other two keep it.
 //  (c) the one no ticket named: the OTHER `cardPlayed` emitter, the `asPlay`
-//      spawn (CR 301.9 — Wake the Dead, The Bonesculptor), has no stack item at
-//      all. Wake the Dead is a {Battle} spell, so a unit it raises out of a
-//      bin could share a name with an unrelated item standing on the stack and
-//      this card negated THAT. Absent `item` now means "this play put no
-//      effect on the stack" and nothing is negated.
+//      spawn (CR 301.9 — Wake the Dead, The Bonesculptor), had no stack item
+//      at all, and this card negated a same-named bystander. Absent `item`
+//      means "this play put no effect on the stack" and nothing is negated.
 //
-// ⚠ (c) LEAVES A DIVERGENCE, deliberately: the sacrifice is still made on a
-// play that has no item to negate, because "sacrifice me. If you do, negate
-// that effect" (CR 111.8) makes the sacrifice mandatory and the negate conditional on
-// it, not the other way round. Under CR 701.4 that play WOULD be on the stack and
-// the sacrifice would buy something; the `asPlay` path predates the mid-resolution stack rule and still
-// spawns in place. That is an engine approximation, not a rule, and it is
-// named at `spawnUnit`'s `playEv` rather than papered over with a `when` guard
-// that would quietly rewrite when this card triggers.
+// (c) IS NOW UNREACHABLE FROM THE POOL. CT-245 put Wake the Dead's plays on the
+// stack (CR 701.4) and CT-255 made The Bonesculptor's permission an ordinary
+// bin play, so every play event carries its item and the `asPlay` spawn is
+// gone. The guard below stays as the reading of a play event without one.
 //
 // CR 108.1a: it hears 'cardPlayed', not 'spellPlayed'. The printed noun is CARD,
 // and "everything is a card, including units" (owner, 2026-08-24) — so a
@@ -723,9 +717,9 @@ card('Void Mandible', {
           g.ev('info', 'Void Mandible: the event names no card — nothing is negated.');
           return;
         }
-        // (c) above: the play never built a stack item — an `asPlay` spawn.
-        // There is no effect standing there, so there is nothing to negate;
-        // the old (card, controller) scan would have found somebody else's.
+        // (c) above: a play event naming no stack item. There is no effect
+        // standing there, so there is nothing to negate; a (card, controller)
+        // scan would find somebody else's.
         if (itemId === undefined) {
           g.ev('info', `Void Mandible: ${name} was played with no effect on the stack — nothing is negated.`);
           return;

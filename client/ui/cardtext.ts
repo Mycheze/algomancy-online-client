@@ -566,15 +566,17 @@ function attrTextLines(name: CardName, active: boolean): TextLine[] {
  *
  * So the marker is DERIVED from the printed clause the spent budget belongs
  * to, at every emit site, and never typed as a list of cards. The pool today:
- * 88 cards have a bounded ability, 64 print `[Switch1]`, 22 print `[once]`,
+ * 87 cards have a bounded ability, 64 print `[Switch1]`, 23 print `[once]`,
  * ZERO print both, and no card has two bounded abilities — so a per-clause
  * read is exact. `test/228-spent-marker.test.ts` re-derives all four numbers
  * and fails the moment one of those invariants stops holding.
  *
- * Two cards spell the budget in PROSE and print no marker at all (The
- * Bonesculptor "each deployment", Gridxlan "during deployment"). They fall
- * back to `[Once]`, which is the earlier ruling's answer kept exactly where its argument
- * still holds: with nothing printed to follow, the note names the budget.
+ * A card that spells its budget in PROSE and prints no marker falls back to
+ * `[Once]` — the earlier ruling's answer, kept exactly where its argument still
+ * holds: with nothing printed to follow, the note names the budget. No card
+ * reaches it today: the two that did (The Bonesculptor "each deployment",
+ * Gridxlan "during deployment") became standing play permissions rather than
+ * bounded abilities (CR 707.10, CT-255).
  *
  * ⚠ Still the note line only. `[Switch1]` is a real token in printed card text
  * (118 cards print one) and always rendered as the graft symbol there.

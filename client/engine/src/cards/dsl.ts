@@ -1708,7 +1708,8 @@ export interface PlayCtx {
   /** the region the play happens in (CR 101.6) */
   region: number;
   /** CR 504.7a: how many grant-funded haste-step plays `seat` has ALREADY made this
-   * turn. The printed budget is per-card prose ("Each turn, you may play a
+   * turn — or, asked of `playFromBinAtDeploy` (CR 707.10), how many bin plays
+   * under that permission it has made this deployment. The printed budget is per-card prose ("Each turn, you may play a
    * unit…"), so the card spends it, not the engine: Dispatch Courier returns
    * an allowance of 1 and the engine compares the sum of allowances with this.
    * A grantor with no budget in its text simply ignores the field. */
@@ -1756,6 +1757,19 @@ export interface PlayPermission {
    * for an unbudgeted grant. The engine sums every grantor's answer and
    * compares the total with `ctx.usedThisTurn`. */
   playAtHaste?: (g: E, self: Entity, ctx: PlayCtx) => number;
+  /**
+   * CR 707.10 (CT-255): how many cards may `ctx.seat` play out of their OWN BIN
+   * during DEPLOYMENT under this permission ("You may play one unit with no
+   * abilities from your bin each deployment" — The Bonesculptor)? 0 for no, a
+   * count for a printed budget. Summed over every grantor exactly as
+   * `playAtHaste` is (two Bonesculptors, two plays) and compared with the bin
+   * plays already made this deployment (`ctx.usedThisTurn`).
+   *
+   * A STANDING PERMISSION, not an ability: using it is an ordinary `playFromBin`
+   * action through `playAtTiming`, so nothing about the permission ever
+   * reaches the stack — only the card it lets you play does, like any play.
+   */
+  playFromBinAtDeploy?: (g: E, self: Entity, ctx: PlayCtx) => number;
 }
 
 /**

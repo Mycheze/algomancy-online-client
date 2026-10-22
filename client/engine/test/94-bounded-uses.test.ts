@@ -335,7 +335,9 @@ test('every bounded run that asks for its use back is an offer the player can re
   // Read off the CARDS, not off a file list, so a seventh carrier added next
   // month is measured too.
   const suspects: string[] = [];
-  for (const name of ['Afflicting Anima', 'Murkdrop Distiller', 'The Bonesculptor',
+  // (The Bonesculptor left this list with CT-255: its permission is not an
+  // ability any more, so it has no bounded run to hand a use back from.)
+  for (const name of ['Afflicting Anima', 'Murkdrop Distiller',
                       'Hexbane Shiitake', 'Immolate', 'Linked Extinction',
                       'Structural Collapse', 'Auric Ascendant', 'Slag Spewer', 'Graxxlid']) {
     const def = getCard(name);

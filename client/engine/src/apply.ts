@@ -1205,6 +1205,30 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
   // Stalker) — no grant needed, and printed timing then does the gating
   // through playAtTiming (a {Battle} card still needs battle, exactly as it
   // would from the cache, CR 403.3d).
+  // CR 707.10 (CT-255): a STANDING deployment permission granted by a unit in play
+  // ("You may play one unit with no abilities from your bin each deployment" —
+  // The Bonesculptor). Not an ability: nothing about it reaches the stack, so it
+  // cannot be answered or negated; only the unit it lets you play goes on the
+  // (deployment) stack, as any play does (CR 507.5).
+  const viaDeploy = !viaGrant && !c.playsFromBin
+    && e.mayPlayFromBinAtDeploy({ seat, card: c, from: 'bin', region: e.homeRegion(seat) });
+  if (viaDeploy) {
+    e.need(e.canPayCard(seat, name), 'cannot pay for that');
+    // "each deployment" says WHEN, so the window is deployment whatever the card's
+    // printed timing — the permission widens it, as a CR 803.2b grant widens the
+    // haste step (the activated-ability model this replaced offered the same set)
+    playAtTiming(e, seat, c, 'deploy',
+      () => { e.removeFromBin(seat, binIndex, 'played'); },   // CR 405.7
+      () => {
+        // which grantor pays is chosen against the bin as it now is (this card
+        // already taken): the cards still waiting for a grant
+        e.chargeDeployBinPlay({ seat, card: c, from: 'bin', region: e.homeRegion(seat) });
+        e.payCard(seat, name);
+        e.ev('info', `${name} is played from ${e.pname(seat)}'s bin.`, { seat, card: name });
+      },
+      'bin');
+    return;
+  }
   e.need(viaGrant || !!c.playsFromBin, 'you have no permission to play cards from your bin');
   e.need(e.canPayCard(seat, name), 'cannot pay for that');
   playAtTiming(e, seat, c, c.timing,
@@ -3824,6 +3848,7 @@ function legalDeployActions(e: E, seat: Seat): Action[] {
   pushPlays(e, seat, 'cache', 'deploy', region, out);
   // CR 507.2: mods may come from the cache as well as hand and bin
   pushMods(e, seat, region, out);
+  pushDeployBinPlays(e, seat, region, out);   // CR 707.10 (CT-255)
   for (const t of e.tokensOf(seat, region)) {
     if (timingAllowsDeploy(getCard(t.card)) && canPaySpellToken(e, seat, t, region)) {   // CR 702.7a
       out.push({ type: 'castSpellToken', seat, entityId: t.id });
@@ -3917,6 +3942,23 @@ function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache
   if (hand && c.discardMe && canPayDiscardMe(e, seat, c)) {
     out.push(act({ mode: 'discardMe' }));
   }
+}
+
+/**
+ * CR 707.10 (CT-255): every bin play a standing DEPLOYMENT permission offers
+ * `seat` (The Bonesculptor, Gridxlan). Routed through the same `E.mayPlayFromBinAtDeploy`
+ * `doPlayFromBin` enforces, with the same payment and `castable` gates — the
+ * fuzzer's "legalActions lied" check holds the two to one answer.
+ */
+function pushDeployBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
+  e.player(seat).bin.forEach((name, i) => {
+    const c = getCard(name);
+    if (c.playsFromBin) return;   // its own permission, at its own printed timing (CR 405.9)
+    if (!e.mayPlayFromBinAtDeploy({ seat, card: c, from: 'bin', region })) return;
+    if (!e.canPayCard(seat, name)) return;
+    if (!castable(e, c, region, seat, 'bin')) return;
+    out.push({ type: 'playFromBin', seat, binIndex: i });
+  });
 }
 
 /**

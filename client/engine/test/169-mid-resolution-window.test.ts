@@ -476,46 +476,26 @@ test('CR 701.4 the deferral gate: only a live battle priority window defers a mi
 /* ═══ §6 CT-143 — THE WIDE PLAY EVENT AND A MID-RESOLUTION PLAY ═══════════
  *
  * CT-143: *"a card played mid-resolution in place fires no cardPlayed at all,
- * so the wide watchers are deaf to it"*, verified as *"play a unit out of a bin
- * during battle with a Void Mandible up; it cannot answer."*
+ * so the wide watchers are deaf to it"*.
  *
- * ⚠ MEASURED, AND THE REPORTED DEFECT IS NOT REACHABLE. The entry was written
- * from the CODE — `playInline`'s in-place branch really does fire a hand-rolled
- * 'spellPlayed' and no 'cardPlayed' — and not from the reachable behaviour,
- * which the mid-resolution stack fix had already fixed. Every play a card in this pool can make
- * mid-resolution goes down the PUSH path, through `E.commitItem`, which fires
- * CR 108.1a's 'cardPlayed' with CR 706.13's `item` id like any other play.
- *
- * The measurement, over every test file that can reach `playInline` (i.e. every
- * one naming one of its three callers): **41 calls, 38 down the stack path.**
- * The three in-place hits are all `241-played-from-zone.test.ts`'s synthetic
- * "zone test rig" driving the function directly in the deploy phase. No card.
- *
- * WHY: all three callers can only run inside a battle priority window, which is
- * exactly `inlinePlayGoesToStack`'s predicate —
+ * Every play a card in this pool makes mid-resolution goes down the PUSH path,
+ * through `E.commitItem`, which fires CR 108.1a's 'cardPlayed' with CR 706.13's
+ * `item` id like any other play — because every caller of `playInline` can
+ * only run inside a battle priority window, which is exactly
+ * `inlinePlayGoesToStack`'s predicate:
  *   · Hooba-Pon           `events: ['attacked', 'blocked']`, both battle-only
  *   · Insidious Invitation printed timing 'battle'
  *   · Tides of the Cosmos  printed timing 'battle'
+ *   · Wake the Dead        printed timing 'battle' (a caller since CT-245)
  *
- * SO THE TWO HALVES THE ENTRY CONFLATES SEPARATE CLEANLY, and the answer to
- * "is `cardPlayed` separable from item-hood?" is yes but moot:
- *   · **KNOWING** — Bloomcaster ("whenever you play a unit, create a 1/1")
- *     reads `seat`/`card`/`token` and never the stack. §6a drives it.
- *   · **RESPONDING** — Void Mandible needs an item to negate. It has one:
- *     the push path pushes a real item, and §1's Hooba-Pon test above already
- *     answers a mid-resolution play with Dematerialize.
- * Neither needs the in-place path taught anything, because no card gets there.
- *
- * ⚠ AND TEACHING IT IS NOT FREE, which is why this was not built. The CT-79 fix ruled
- * that a 'cardPlayed' with no `item` means "this play put no effect on the
- * stack — there is nothing to negate". Firing one from the in-place path
- * therefore makes Void Mandible make its printed sacrifice for a negate
- * that cannot land. That is a card interaction nobody has ruled on, invented
- * on a path no card reaches, which is the same trade the agent that fixed the played-from zone declined
- * ("changes which cards trigger on plays nobody ruled on this round"). It
- * should be decided WITH the fourth caller, when there is a real card to rule
- * about. §6b is the tripwire for that day; §6c pins the residue so the silence
- * cannot be changed by accident either.
+ * The in-place branch is SETTLED rather than parked now (CT-143, CT-332): it
+ * declares the play through the same function as the push branch and
+ * announces it through `commitItem(…, 'announce')`, so it fires 'cardPlayed'
+ * too, and pays its bracketed costs. The item id it carries names an item
+ * that never reaches the stack — the answer a haste-step play from hand has
+ * always given — so Void Mandible finds nothing standing there to negate.
+ * §6a drives a real watcher on the push path; §6b is the census that says
+ * when a caller could reach the in-place branch; §6c (and 556) drive it.
  *
  * Seeds 16910-16912.
  */
@@ -559,7 +539,7 @@ test('§6a CT-143: a mid-resolution play IS heard by the wide watchers — Bloom
     + 'assertion CT-143\'s verify line predicts will fail');
 });
 
-test('§6b CT-143 tripwire: every playInline caller is battle-only, which is what makes the in-place path unreachable', () => {
+test('§6b CT-143 tripwire: every playInline caller is battle-only, which is what keeps the in-place path unreachable', () => {
   // Derived from SOURCE. The whole measured refusal rests on "no card can
   // reach the in-place branch"; a FOURTH caller is the day that stops being
   // true, and this is what says so.
@@ -580,17 +560,18 @@ test('§6b CT-143 tripwire: every playInline caller is battle-only, which is wha
   const ALIAS: Record<string, string> = {
     insidiousInvite: 'Insidious Invitation', tidesOfTheCosmos: 'Tides of the Cosmos',
   };
+  // CT-245 made Wake the Dead the fourth caller ("Play up to two units in any
+  // bin … now"): a {Battle} spell, so it answers the question below the same way.
   assert.deepEqual([...callers.keys()].map(k => ALIAS[k] ?? k).sort(),
-    ['Hooba-Pon', 'Insidious Invitation', 'Tides of the Cosmos'],
-    'a new caller of playInline. CT-143 is parked on a MEASUREMENT — that every caller can '
-    + 'only run inside a battle priority window, so `inlinePlayGoesToStack` is always true '
-    + 'and the in-place branch (which fires no cardPlayed) is dead. Answer the question for '
-    + 'the new caller: can it resolve outside a window? If it can, the in-place branch is '
-    + 'live and CT-143 needs deciding — including whether Void Mandible should make its '
-    + 'sacrifice for a negate that cannot land (CR 706.13).');
+    ['Hooba-Pon', 'Insidious Invitation', 'Tides of the Cosmos', 'Wake the Dead'],
+    'a new caller of playInline. Every caller so far can only run inside a battle priority '
+    + 'window, so `inlinePlayGoesToStack` is always true for them and the in-place branch is '
+    + 'reached by no card (556 drives it directly; since CT-143 it is a whole play, firing '
+    + 'cardPlayed). Answer the question for the new caller: can it resolve outside a window? '
+    + 'If it can, its plays resolve where they stand — check that is what its card means.');
 
-  // …and the property itself, mechanically, for the two that are spells
-  for (const name of ['Insidious Invitation', 'Tides of the Cosmos']) {
+  // …and the property itself, mechanically, for the ones that are spells
+  for (const name of ['Insidious Invitation', 'Tides of the Cosmos', 'Wake the Dead']) {
     assert.equal(getCard(name).timing, 'battle',
       `${name} plays a card mid-resolution and is only castable in battle — if its printed `
       + 'timing widened, it could resolve outside a priority window');
@@ -603,14 +584,15 @@ test('§6b CT-143 tripwire: every playInline caller is battle-only, which is wha
     + 'reach the in-place branch');
 });
 
-test('§6c CT-143 residue, pinned: the in-place path announces a play WITHOUT the wide event', () => {
-  // ⚠ THIS TEST DOES NOT SAY THE SILENCE IS RIGHT. It says the silence is
-  // WHAT THE CODE DOES, measured, so that CT-143 is a falsifiable entry rather
-  // than a rumour — and so that changing it is a decision somebody makes on
-  // purpose rather than a side effect. If you are here because this failed:
-  // you have just taught the in-place path to fire 'cardPlayed'. Go and settle
-  // CT-143 (and the CT-79 reading "no item means nothing to negate", which decides what
-  // Void Mandible does with it) instead of editing this assertion.
+test('§6c CR 108.1a / CT-143 settled: the in-place path announces a play WITH the wide event', () => {
+  // This used to pin the residue — the in-place branch fired a hand-rolled
+  // 'spellPlayed' and no 'cardPlayed'. CT-143 is settled now (556 is its guard):
+  // both branches declare the play through one function and announce it
+  // through `commitItem(…, 'announce')`, so every play is heard. The item id it
+  // carries names an item that never reaches the stack — the same answer a
+  // haste-step play from hand (`commitItem(…, 'resolve')`) has always given,
+  // and Void Mandible reads it the same way: there is nothing standing there
+  // to negate.
   const h = new Harness(16912);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -625,7 +607,6 @@ test('§6c CT-143 residue, pinned: the in-place path announces a play WITHOUT th
   });
   const fired = h.events.slice(before).map(e => e.type);
   assert.ok(fired.includes('spawned'), 'the body arrived, so a play really did happen here');
-  assert.ok(!fired.includes('cardPlayed'),
-    'CT-143\'s residue: CR 108.1a\'s wide event does not fire on the in-place path. Unreachable '
-    + 'from the pool today (§6b), which is why it is parked and not patched');
+  assert.ok(fired.includes('cardPlayed'), 'and CR 108.1a\'s wide event announced it');
+  assert.ok(fired.indexOf('cardPlayed') < fired.indexOf('spawned'), 'the play, then the arrival');
 });

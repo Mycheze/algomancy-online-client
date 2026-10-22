@@ -30,10 +30,9 @@
  *    and fires its spawn triggers, with no stack step and no play event —
  *    which is exactly right, because putting a card into play is not playing
  *    it. The play/put-into-play ruling (CR 301.9) split "PLAY … NOW, FOR FREE" (Wake the Dead) back off it: that
- *    card prints the other verb, so its units spawn `asPlay` and fire
- *    'cardPlayed' (CR 108.1a) from 'bin' (CR 410.6). What they still do NOT get is a stack item
- *    of their own — no response window, nothing to negate — which is the
- *    standing `playInline` approximation for a card played mid-resolution.
+ *    card prints the other verb, so its units are PLAYED, through `playInline`
+ *    (CT-245): each one is a real play out of 'bin' (CR 410.6), on the stack
+ *    and answerable (CR 701.4), and a spell unit casts its spell first.
  *    Wake the Dead reaches into ANY bin, and it is NO LONGER an approximation
  *    that a unit raised out of the opponent's bin becomes the caster's card:
  *    CARD-TODO #17 gave spawnUnit an `owner` option (defaulting to the seat it
@@ -79,6 +78,10 @@ import type { CardName, Entity, EntityId, Seat } from '../../types.ts';
 import type { E } from '../../engine.ts';
 import { card, isSpellEffect, unitRestrict, type EffectCtx, type EffectDef } from '../dsl.ts';
 import { selfOf, isEnt, manaOf, isUnitCard } from './helpers.ts';
+// CT-245: Wake the Dead plays through the shared mid-resolution play. batch-water-a
+// is imported by index.ts BEFORE this file, so importing it here moves no
+// registration (= deck) order.
+import { inlineCostPayable, inlineTargetsFillable, playInline } from './batch-water-a.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
 
@@ -699,11 +702,22 @@ card('Tilling the Graves', {
 // "Play up to two units in any bin with total cost [8] or less now, for
 // free." — ddd/8 {Battle} Occult Spell. ANY bin: both players'. "Up to two"
 // with a running budget — the second pick is offered only from what still
-// fits under 8 minus the first. ⚠ header: "play … now" resolves inside this
-// spell's own resolution — the units arrive with no stack item of their own,
-// so nobody may respond to them and nothing can negate one. CR 301.9 makes them a
-// real PLAY in every other respect (see below); the missing response window is
-// the standing `playInline` approximation, not this card's.
+// fits under 8 minus the first.
+//
+// CT-245 — "PLAY … NOW" IS A PLAY, AND A PLAY GOES ON THE STACK. CR 301.9 makes
+// these real plays and CR 701.4 puts a card played mid-resolution on the stack,
+// where it can be answered. They used to arrive through `spawnUnit(asPlay)`
+// inside this spell's own resolution: no item, nothing to respond to or
+// negate, and a SPELL UNIT (Jelly) came in as a bare body — no target asked,
+// no spell part, no 'spellPlayed'. The designer, on a spell unit played by an
+// effect (RAQ, Hooba-Pon): *"Yes, the spell part happens and if it resolves,
+// the unit will spawn into formation."* Each pick now goes through
+// `playInline`, the one road every other card that plays a card mid-resolution
+// takes: its target, mode and bracketed costs are declared as it is played,
+// it waits on the stack until this resolution is over, and a spell unit's body
+// arrives only if its spell resolves. A card that could not be played from a
+// hand for want of a target or an unpayable [cost] is not offered (CR 110.7,
+// 702.4e), as Tides of the Cosmos does.
 //
 // CARD-TODO #17, fixed 2026-08-23: a unit taken out of the OPPONENT's bin is
 // BORROWED, not naturalised. `spawnUnit` now takes an owner (defaulting to the
@@ -725,6 +739,10 @@ card('Wake the Dead', {
         for (const p of g.seatsHere(ctx.region).map(s => ({ seat: s }))) {
           g.player(p.seat).bin.forEach((name, i) => {
             if (!isUnitCard(name) || manaOf(name) > budget) return;
+            // CR 702.4e, 110.7 (CT-245): playable at all — its [cost] payable and its
+            // required targets fillable, the gates a play from hand passes
+            if (!inlineCostPayable(g, seat, name, ctx.region, false)
+              || !inlineTargetsFillable(g, seat, name, ctx.region)) return;
             if (chosen.some(c => c.seat === p.seat && c.idx === i)) return;
             opts.push({ label: `${name} [${manaOf(name)}] (${g.pname(p.seat)}'s bin)`, value: `${p.seat}:${i}`, card: name });
           });
@@ -758,21 +776,26 @@ card('Wake the Dead', {
       // CR 701.3: the printed verb is "PLAY", not "put into play", and the two are
       // a real distinction in this pool — Exhume, Resurrect, Rousing Spirit and
       // Lurking Dread all print "put into play" and are rightly plain spawns.
-      // `asPlay` fires 'cardPlayed' (CR 108.1a) for each unit immediately before it
-      // arrives, and `from: 'bin'` is the other half of the same fact (CR 410.6), so
-      // "whenever you play a unit" (Bloomcaster) and "when you play a card from
-      // anywhere other than your hand" (Stalwart Sentinel, Proph) both hear it
-      // — each exactly once, because the spawn-watchers read 'spawned' and
-      // Bloomcaster reads 'cardPlayed'.
+      // CR 701.4 (CT-245): each pick is PLAYED, through the same `playInline`
+      // Tides of the Cosmos uses — in a battle window it goes on the stack with
+      // its target, mode and [cost] declared, and the engine owns it from there
+      // (its resolution, its CR 704.6 fizzle, where its card goes). `from: 'bin'`
+      // is the zone (CR 410.6), so "whenever you play a unit" (Bloomcaster) and
+      // "when you play a card from anywhere other than your hand" (Stalwart
+      // Sentinel, Proph) hear it as the play it is.
       //
-      // "FOR FREE" is untouched: nothing is paid here and nothing is added.
-      // Being a play is about what the game HEARS, not about what it costs.
-      // `seat` on the play event is the CASTER (the one doing the playing),
-      // never the bin's owner — a borrowed card is still played by you.
-      for (const c of chosen) {
-        g.spawnUnit(ctx.controller, c.name, ctx.region,
-          { owner: c.seat, from: 'bin', asPlay: true });
-      }
+      // "FOR FREE" is untouched: no mana is paid here. A bracketed [cost] is not
+      // mana, and is paid as the card is played.
+      // `seat` on the play is the CASTER (the one doing the playing), never the
+      // bin's owner — a borrowed card is still played by you; `owner` keeps
+      // whose card it is (CARD-TODO #17).
+      chosen.forEach((c, k) => {
+        const r = playInline(g, ctx, c.name, `wakePlay${k}`, seat, { from: 'bin', owner: c.seat });
+        // the in-place branch only (no battle window — unreachable for a {Battle}
+        // spell): a spell unit whose spell part fizzled has no body, and its card
+        // goes to a bin like any fizzled spell unit's (CR 400.4: its controller's)
+        if (r.outcome === 'fizzled') g.toBin(seat, c.name, 'stack');
+      });
     },
   },
 });

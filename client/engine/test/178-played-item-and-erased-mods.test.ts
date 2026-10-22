@@ -153,9 +153,16 @@ test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy 
   finishBattle(h);
 });
 
-// ── (c) a play that put NO item on the stack negates nothing ─────────────
+// ── (c) a unit an EFFECT plays is negated by id, not a same-named bystander ──
+//
+// This used to be "a play with no stack item negates nothing": Wake the Dead
+// raised its units through `spawnUnit({ asPlay: true })`, a play that built no
+// item, and the Mandible sacrificed itself for a negate that could not land.
+// CT-245 made those plays real (CR 701.4): the raised unit goes on the stack,
+// and the Mandible's "negate that effect" now has an item to name — the RAISED
+// one, by id (CR 706.13), never the same-named unit already standing there.
 
-test('Void Mandible: a play with no stack item (CR 301.9 asPlay) negates nothing — not a same-named bystander', () => {
+test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negated by id (CR 706.13) — not a same-named bystander', () => {
   const h = new Harness(17802);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -170,13 +177,11 @@ test('Void Mandible: a play with no stack item (CR 301.9 asPlay) negates nothing
   h.do({ type: 'declareAttack', seat: D, columns: [[atk]] });
 
   // A {Battle} unit of D's, on the stack, sharing its name with the card in
-  // the bin. This is the bystander the old (card, controller) scan reached.
+  // the bin. This is the bystander a (card, controller) scan would reach.
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Shard Sprite') });
   const bystander = h.state.stack.find(i => i.card === 'Shard Sprite')!.id;
 
-  // Wake the Dead, played in response to D's own unit. Its raised units arrive
-  // through `spawnUnit({ asPlay: true })` (CR 301.9) — a real play that builds NO
-  // stack item, which is the whole point of this test.
+  // Wake the Dead, played in response to D's own unit.
   if (h.state.priority !== D) pass(h);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Wake the Dead') });
 
@@ -192,16 +197,17 @@ test('Void Mandible: a play with no stack item (CR 301.9 asPlay) negates nothing
     const i = dec.options.findIndex(o => o.label.includes('Shard Sprite'));
     pick(h, dec.options[i === -1 ? dec.options.length - 1 : i]!.value);   // Shard Sprite, then Done
   }
+  const raised = h.state.stack.find(i => i.card === 'Shard Sprite' && i.id !== bystander);
+  assert.ok(raised, 'CR 701.4: the raised unit is ON THE STACK, as its own item');
   assert.ok(h.state.stack.some(i => i.kind === 'triggered' && i.card === 'Void Mandible'),
-    'the raise really IS a play (CR 301.9) — the Mandible heard it and its trigger is on the stack');
+    'the raise IS a play (CR 301.9) — the Mandible heard it and its trigger is on the stack');
   pass(h); pass(h);                                     // the Mandible trigger resolves
 
-  assert.ok(h.log.some(l => l.includes('Void Mandible: Shard Sprite was played with no effect on the stack')),
-    'CR 706.13: the raised unit put no effect on the stack, so there is nothing to negate');
-  assert.ok(!ent(h, host), 'the sacrifice is still made — "sacrifice me. If you do, …" makes the negate conditional on it, not the other way round (CR 111.8)');
+  assert.ok(!ent(h, host), 'the Mandible is sacrificed ("sacrifice me. If you do, …", CR 111.8)');
+  assert.ok(!h.state.stack.some(i => i.id === raised.id), 'and the RAISED unit — the play it heard — is negated');
   const survivor = h.state.stack.find(i => i.id === bystander);
   assert.ok(survivor && !survivor.negated,
-    'and the unrelated same-named item on the stack is UNTOUCHED — the old scan negated it');
+    'and the unrelated same-named item on the stack is UNTOUCHED');
   finishBattle(h);
 });
 
