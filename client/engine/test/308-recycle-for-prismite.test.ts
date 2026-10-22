@@ -93,11 +93,21 @@ test('a recycled Shard is mana only: no affinity, no Shard of its own, no exchan
   assert.throws(() => h.do({ type: 'exchangePrismite', seat: P, index: start, element: 'fire' }), IllegalAction);
 });
 
-test('CR 106.8d what stays illegal: exchanging a Prismite into a Prismite or a Shard', () => {
+test('CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite', () => {
+  // The printed Prismite: "Erase me: Create a non-prismite resource, then
+  // activate it". A Shard is a non-prismite resource.
   const h = new Harness(30804);
   h.do({ type: 'activateResource', seat: 0, index: 0 });
   assert.throws(() => h.do({ type: 'exchangePrismite', seat: 0, index: 0, element: 'prismite' }), IllegalAction,
-    'an exchange still has to name an element');
-  assert.throws(() => h.do({ type: 'exchangePrismite', seat: 0, index: 0, element: 'shard' }), IllegalAction,
-    'and a Shard is not an element either');
+    'a Prismite is the one resource an exchange cannot make');
+  const kinds = legalActions(h.state, 0)
+    .filter(a => a.type === 'exchangePrismite' && a.index === 0)
+    .map(a => (a as { element: string }).element);
+  assert.deepEqual(kinds, [...h.state.elements, 'shard'],
+    'every element of the game, then a Shard, appended so each element keeps its index');
+  const before = h.state.players[0]!.resources.length;
+  h.do({ type: 'exchangePrismite', seat: 0, index: 0, element: 'shard' });
+  assert.deepEqual(h.state.players[0]!.resources[0], { kind: 'shard', state: 'open' },
+    'the Prismite became a Shard, in its place and in its state');
+  assert.equal(h.state.players[0]!.resources.length, before, 'and no affinity Shard came with it');
 });

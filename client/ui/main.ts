@@ -11018,13 +11018,16 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
       const plan = prismiteClickPlan(s, p, opts, expanded);
       if (plan.kind === 'none') return;
       if (plan.kind === 'auto') { act(plan.action); return; }
+      // CR 106.8d: a Shard has no element, so no icon (only the seven do)
+      const isShard = (a: Action): boolean => a.type === 'exchangePrismite' && a.element === 'shard';
       const items: MenuItem[] = plan.actions.map(a => ({
-        label: a.type === 'activateResource' ? 'Activate' : `Exchange → ${(a as { element: string }).element}`,
-        icon: a.type === 'exchangePrismite' ? (a as { element: string }).element : undefined,
+        label: a.type === 'activateResource' ? 'Activate'
+          : isShard(a) ? 'Exchange → Shard' : `Exchange → ${(a as { element: string }).element}`,
+        icon: a.type === 'exchangePrismite' && !isShard(a) ? (a as { element: string }).element : undefined,
         go: () => { act(a); render(); },
       }));
-      if (plan.hidden) items.push({
-        label: `more elements… (${plan.hidden})`,
+      if (plan.more) items.push({
+        label: plan.hidden ? `more elements… (${plan.hidden})` : 'more…',
         go: () => { openRes(true); render(); },
       });
       ui.menu = { x: e.clientX, y: e.clientY, items };

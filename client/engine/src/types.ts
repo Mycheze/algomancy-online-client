@@ -1795,7 +1795,8 @@ export type ActivateVia =
 export type Action =
   | { type: 'recycleForResource'; seat: Seat; handIndex: number; element: ResourceKind }
   | { type: 'activateResource'; seat: Seat; index: number }
-  /** planning: swap an ACTIVE Prismite for a resource of any element (CR 106.8a) */
+  /** planning: swap an ACTIVE Prismite for a resource of any element, or a
+   * Shard (CR 106.8a, 106.8d) — never another Prismite */
   | { type: 'exchangePrismite'; seat: Seat; index: number; element: ResourceKind }
   | { type: 'donePlanning'; seat: Seat }
   /** draft step (mode 'draft'): commit the hand↔pack merge. packIndices are

@@ -2504,14 +2504,19 @@ export function prismiteClickPlan(
   opts: readonly Action[],
   expanded = false,
 ): { kind: 'none' } | { kind: 'auto'; action: Action }
-  | { kind: 'menu'; actions: Action[]; hidden: number } {
+  | { kind: 'menu'; actions: Action[]; hidden: number; more: boolean } {
   if (opts.length === 0) return { kind: 'none' };
   // ⚠ legality, not display — see above
   if (opts.length === 1) return { kind: 'auto', action: opts[0]! };
-  const offered = opts.flatMap(a => a.type === 'exchangePrismite' ? [a.element] : []);
+  // CR 106.8d / CT-237: an exchange into a Shard is legal too. It sits behind
+  // the expander, as the recycle menu's Shard does (CR D6.14b: "legal, almost
+  // never wanted"), and is not counted as an element there.
+  const offered = opts.flatMap(a => a.type === 'exchangePrismite' && a.element !== 'shard' ? [a.element] : []);
+  const shard = opts.some(a => a.type === 'exchangePrismite' && a.element === 'shard');
   const { show, hidden } = resourceMenuElements(s, seat, offered, expanded);
-  const actions = opts.filter(a => a.type !== 'exchangePrismite' || show.includes(a.element));
-  return { kind: 'menu', actions, hidden: hidden.length };
+  const actions = opts.filter(a => a.type !== 'exchangePrismite'
+    || (a.element === 'shard' ? expanded : show.includes(a.element)));
+  return { kind: 'menu', actions, hidden: hidden.length, more: !expanded && (hidden.length > 0 || shard) };
 }
 
 // ═══ CR D7.2e — the SHARED quantity stepper ═══════════════════════════════════

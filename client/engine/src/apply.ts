@@ -657,14 +657,17 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
-  e.need((e.s.elements as string[]).includes(element), 'not an element of this game');
+  // CR 106.8d / CT-237: the printed Prismite reads "Create a NON-PRISMITE
+  // resource" — an element of the game, or a Shard; never another Prismite
+  e.need(element === 'shard' || (e.s.elements as string[]).includes(element),
+    'a Prismite becomes an element of this game or a Shard');
   const r = e.player(seat).resources[index];
   e.need(r && r.kind === 'prismite', 'not a prismite');
   // only ACTIVE (face-up) prismites can be exchanged (Manual p.18) — the
   // new resource keeps the prismite's state (expended stays expended)
   e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');
   r.kind = element;
-  e.ev('resourceActivated', `${e.pname(seat)} exchanges a Prismite for a ${element} resource.`, { seat, kind: element });
+  e.ev('resourceActivated', `${e.pname(seat)} exchanges a Prismite for a ${element === 'shard' ? 'Shard' : `${element} resource`}.`, { seat, kind: element });
   // CR 106.8c — THE AFFINITY SHARD IS OWED. This is the reversal of the earlier exchange ruling, and the
   // card's own text is the argument (owner, playtest report #92):
   //
@@ -3676,6 +3679,9 @@ function legalPlanningActions(e: E, seat: Seat): Action[] {
   e.player(seat).resources.forEach((r, i) => {
     if (r.kind === 'prismite' && r.state !== 'dormant') {
       for (const el of s.elements) out.push({ type: 'exchangePrismite', seat, index: i, element: el });
+      // CR 106.8d / CT-237: and a Shard, a non-prismite resource — appended, so
+      // every element option keeps the index it has always had
+      out.push({ type: 'exchangePrismite', seat, index: i, element: 'shard' });
     }
   });
   out.push({ type: 'donePlanning', seat });
