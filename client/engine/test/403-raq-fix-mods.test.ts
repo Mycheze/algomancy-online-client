@@ -231,22 +231,33 @@ test('CR 720.7e: a Borrower that copied a modded unit dies to the bin; a mod put
   finishBattle(h);
 });
 
-// ── CR 720.10b / CT-213: the old host keeps its mark too ───────────────────────
+// ── CR 720.10b / CT-213: a moved mod stays spent; CR 109.9k: its use is its own ──
 
-test('CR 720.10b: a moved mod carries its spent augment budget; the mark is copied, so nothing is refreshed anywhere', () => {
+test('CR 720.10b: a moved mod carries its spent augment budget, and a second Graxxlid left behind keeps its own use', () => {
+  // Until report 269 the [Augment] use was kept on the HOST and copied here,
+  // so the old host stayed marked and a second Graxxlid on it was spent too.
+  // The use is the MOD's now (CR 109.9k): it moves with the mod and is nobody
+  // else's.
   const h = new Harness(40309);
   toDeployment(h);
   const A = h.state.deployPlayer!;
-  let a = -1, b = -1, grax = -1;
+  let a = -1, b = -1, grax = -1, stay = -1;
   whiteBox(h, e => {
     a = e.spawnUnit(A, 'Bubb', e.homeRegion(A)).id;
     b = e.spawnUnit(A, 'Good Whale', e.homeRegion(A)).id;
     grax = e.attachMod(e.s.entities[a]!, 'Graxxlid', A, 'augment').id;
-    e.s.entities[a]!.budgets['augment:Graxxlid#0'] = 1;       // the [once] already used this turn
+    stay = e.attachMod(e.s.entities[a]!, 'Graxxlid', A, 'augment').id;
+    assert.ok(e.composeParts(e.s.entities[a]!, 0, 'augment', 'Graxxlid', grax), 'the [once] is used this turn');
     e.moveMod(e.s.entities[grax]!, e.s.entities[b]!);
   });
-  assert.equal(ent(h, b)!.budgets['augment:Graxxlid#0'], 1, 'spent on the new host');
-  assert.equal(ent(h, a)!.budgets['augment:Graxxlid#0'], 1, 'and still spent on the old one');
+  assert.equal(ent(h, grax)!.budgets['augment:Graxxlid#0'], 1, 'spent on the mod, which is on the new host');
+  whiteBox(h, e => {
+    assert.equal(e.composeParts(e.s.entities[b]!, 0, 'augment', 'Graxxlid', grax), null,
+      'and it cannot be used again from there');
+    assert.ok(e.composeParts(e.s.entities[a]!, 0, 'augment', 'Graxxlid', stay),
+      'the Graxxlid left on the old host still has its use');
+  });
+  assert.equal(ent(h, a)!.budgets['augment:Graxxlid#0'], undefined, 'and the old host holds no mod\'s use');
 });
 
 /** the engine class, for the white-box reads above */

@@ -162,9 +162,9 @@ test('CR D6.10b: an augment-donated bounded ability takes the marker of the dono
   const host = spawn(h, A, 'Synaptic Energizer');
   assert.equal(budgetMarker(ownClause('Synaptic Energizer')), '[Switch1]',
     'the host prints the marker this note must NOT use');
-  e.attachMod(ent(h, host)!, 'Debt Blep', A, 'augment');
+  const blep = e.attachMod(ent(h, host)!, 'Debt Blep', A, 'augment');
   e.settle();
-  e.composeParts(ent(h, host)!, 0, 'augment', 'Debt Blep');
+  e.composeParts(ent(h, host)!, 0, 'augment', 'Debt Blep', blep.id);   // the use is the mod's (CR 109.9k)
 
   const note = spentNote(e, ent(h, host)!);
   assert.ok(note.startsWith('[Once]'), `the DONOR prints [once]: ${note}`);

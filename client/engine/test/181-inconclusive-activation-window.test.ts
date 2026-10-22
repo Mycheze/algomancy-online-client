@@ -61,11 +61,18 @@ import { EVIDENCE, STATE_EVIDENCE } from '../../ledgers/claims.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-/** the augment run that historically produced the accident. Slag Spewer prints
- *  "[Augment][once] [one], Erase one of my mods: I deal 2 damage to any
- *  target." — its ability is offered on the HOST, so the drill activates twice
- *  (two mods), and the second activation is the one left on the stack. */
-const CARD = 'Slag Spewer';
+/** the CT-87 control's run. Slag Spewer ("[Augment][once] [one], Erase one of
+ *  my mods: I deal 2 damage to any target.") produced the accident and was the
+ *  control until report 269 gave each of its mods its own [once] (CR 109.9k):
+ *  the drill then pressed eleven activations instead of four, and no clip in
+ *  1..200 on any of twelve seeds left another card's event inside the span.
+ *  Throwing Boulder ("[Augment] Sacrifice me: I deal 3 damage to any target")
+ *  reaches the same span — Protective Adaptations resolving after the drill
+ *  stopped watching — prints no pump, and has no [once] for a budget change to
+ *  move. Slag Spewer stays the CT-92 control below, which wants a run that
+ *  activates many times. */
+const CARD = 'Throwing Boulder';
+const REPEAT_CARD = 'Slag Spewer';
 const OPTS = { augment: true, press: true } as const;
 
 /**
@@ -73,7 +80,7 @@ const OPTS = { augment: true, press: true } as const;
  * card's event inside the unclosed span.
  *
  * ⚠ DERIVED, NOT TYPED. The clipping step depends on how many actions the
- * engine takes to get Slag Spewer onto a host and its ability onto the stack,
+ * engine takes to get the card onto a host and its ability onto the stack,
  * and that number moves whenever anything upstream changes. A hardcoded 47
  * would rot into a vacuous pass the first time somebody added a step — the
  * exact shape of the four `fixed` reports in §5 whose guards could never have
@@ -169,26 +176,27 @@ test('CT-87: the borrowed evidence was SCORING evidence, not harmless noise', ()
     "the pre-fix window scored a `pump` claim off another card's +1/+1 — if this is false the "
     + "control has stopped reproducing CT-86's mechanism");
   assert.equal(scored(after.activateTypes), false,
-    `${CARD} prints no pump ("[Augment][once] [one], Erase one of my mods: I deal 2 damage to `
-    + 'any target"), and the only `statChanged` in this run is Protective Adaptations giving '
+    `${CARD} prints no pump ("[Augment] Sacrifice me: I deal 3 damage to any target"), `
+    + 'and the only `statChanged` in this run is Protective Adaptations giving '
     + 'the host +1/+1 after the drill stopped watching. Scoring one here means the CT-87 window '
     + 'is crediting events it never saw attributed.');
 
-  // ⚠ AND THE STATE CHANNEL, WHICH IS THE HALF THAT DOES NOT FLIP HERE.
-  // `STATE_EVIDENCE.pump === 'stats'`, and the CLOSED window already contains
-  // "unit stats/attributes changed" for an honest reason of its own (Slag
-  // Spewer's 2 damage kills a body). So the state channel cannot show a flip on
-  // this card — what it can show is that the refused span is scoring-grade on
-  // its own, which is the property that matters for any OTHER card whose closed
-  // window happens to be empty. Said out loud rather than hidden behind a
-  // green, because "the control passed" must not be read as more than it is.
+  // AND THE STATE CHANNEL FLIPS TOO. `STATE_EVIDENCE.pump === 'stats'`. With
+  // Slag Spewer this half could only be shown by containment: its own 2
+  // damage killed a body, so the CLOSED window always carried "unit
+  // stats/attributes changed" for an honest reason. Throwing Boulder's closed
+  // window carries no stats delta, so the old window scored the state channel
+  // off the refused span alone and the new one does not.
   assert.equal(STATE_EVIDENCE.pump, 'stats');
-  assert.ok(after.actInconclusiveTailChanged.some(c => c.includes('stats')),
+  const scoredState = (changed: string[]) => changed.some(c => c.includes('stats'));
+  assert.ok(scoredState(after.actInconclusiveTailChanged),
     'the refused span carries a stats delta of its own, so it is scoring-grade evidence and not '
     + 'merely bookkeeping');
-  assert.ok(after.activateChanged.some(c => c.includes('stats')),
-    'and the CLOSED window carries one too, for its own reason — this control demonstrates the '
-    + 'state-channel bound by containment, not by a flip');
+  assert.equal(scoredState(before.activateChanged), true,
+    'the pre-fix window scored the state channel off the refused span');
+  assert.equal(scoredState(after.activateChanged), false,
+    `${CARD}'s closed window carries no stats delta of its own, so scoring one here means the `
+    + 'state-delta half of the CT-87 window is open again');
 });
 
 test('CT-87: the inconclusive flag can also say NO — measured in the other direction', () => {
@@ -247,15 +255,16 @@ test('CT-87: the pre-fix behaviour is reachable ONLY from this control', () => {
 // ════════════════════════════════════════════════════════════════════════
 
 test('CT-92 POSITIVE CONTROL: the refusal counter fires when a window really is left open', () => {
-  // Slag Spewer under {augment, press} genuinely activates several times — it
-  // is the same run CT-87's control uses, chosen for the same reason.
-  const normal = drillCard(CARD, 900_000, { ...OPTS });
-  const held = drillCard(CARD, 900_000, { ...OPTS, neverCloseActWindowForControl: true });
+  // Slag Spewer under {augment, press} genuinely activates several times (each
+  // of its mods has its own [once], CR 109.9k). It was CT-87's control too
+  // until report 269 moved that one to Throwing Boulder.
+  const normal = drillCard(REPEAT_CARD, 900_000, { ...OPTS });
+  const held = drillCard(REPEAT_CARD, 900_000, { ...OPTS, neverCloseActWindowForControl: true });
 
   // 1. THE NORMAL RUN IS THE THING THE POOL-WIDE ZERO IS ABOUT: several
   //    activations taken, not one refused.
   assert.ok(normal.activated.length > 1,
-    `the control needs a run that activates more than once; ${CARD} took `
+    `the control needs a run that activates more than once; ${REPEAT_CARD} took `
     + `${normal.activated.length}. Pick another card with a repeatable activated `
     + 'ability rather than deleting this test.');
   assert.equal(normal.actRefusedSecond, 0,

@@ -4785,4 +4785,16 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "Real. Deck 1, recycle pile 18: Tides revealed one card. Tides and Big Glimpse Card sliced the deck themselves and never reached the mark. Owner, 2026-10-21: \"The recycled cards are meant to be a part of your deck still ... So ANYTHING that uses the deck should be able to trigger the reshuffle\" (CR 408.2b). Card code now reads the deck only through revealTop / takeTop, which reshuffle the pile in first; a source sweep fails on any direct read (CT-312).",
   },
+  {
+    id: 269, room: "", date: "2026-10-22",
+    report: "mycheze (owner, judge), from the main page (bug, gamebreaking): \"Shouldn't BOTH of Jollyglops triggers go onto the stack here? It has two of the same ability that are each \\\"Once\\\", but I see no reason why only one should work.\"",
+    status: 'fixed',
+    guards: [
+      "543-augment-uses-per-mod.test.ts::CR 109.9k: a Jollyglop augmented with a Jollyglop triggers twice when it is dealt damage (report 269)",
+      "543-augment-uses-per-mod.test.ts::CR 109.9k: two Jollyglop augments on one host each fire once",
+      "543-augment-uses-per-mod.test.ts::CR 109.9k: two Debt Blep augments offer two activations, and spending one leaves the other",
+      "403-raq-fix-mods.test.ts::CR 720.10b: a moved mod carries its spent augment budget",
+    ],
+    note: "Real. A bounded [Augment] ability kept its use on the HOST, keyed by card name (augment:Jollyglop#0), so a second copy of the same text on one unit found it spent: a Jollyglop wearing a Jollyglop made 2 tokens off 2 damage, not 4. CR 109.9k: each mod has its own use (grafts already kept theirs on the mod). A mod's [Augment] use now lives on the mod (EffectPart.budgetOn), triggered and activated alike; moving the mod carries it (CR 720.10b) with no host copy. A copy's copied boxes and Ancient One's borrowed text still key by name (CT-342).",
+  },
 ];

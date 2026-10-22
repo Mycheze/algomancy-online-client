@@ -42,6 +42,8 @@ const FULL_FACETS: readonly CopyFacet[] =
 const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'triggered', 'behavior'];
 /** `copiedAugments`' answer for the (almost universal) uncopied unit */
 const NO_CARDS: readonly CardName[] = Object.freeze([]);
+/** `sameTrigger`'s view of a part: which mod holds its use is not what it does */
+const sansBudgetOn = ({ budgetOn: _held, ...p }: EffectPart): Omit<EffectPart, 'budgetOn'> => p;
 
 /**
  * CR 710.7: every channel the `behavior` facet carries — the whole of what a card
@@ -11487,7 +11489,8 @@ export class E {
     }
     const holder = part.fromMod !== undefined
       ? this.entity(part.fromMod)
-      : (item.sourceId !== undefined ? this.entity(item.sourceId) : undefined);
+      : part.budgetOn !== undefined ? this.entity(part.budgetOn)
+        : (item.sourceId !== undefined ? this.entity(item.sourceId) : undefined);
     if (!holder) return;                       // the carrier is gone: nothing to refund onto
     const key = part.fromMod !== undefined ? 'graft' : part.effectKey;
     if ((holder.budgets[key] ?? 0) <= 0) return;   // not bounded, or already back
@@ -11901,15 +11904,15 @@ export class E {
    *  · CONTROLLER. It follows the new host, exactly as `attachMod` sets it, so
    *    a mod moved onto an enemy now radiates for the enemy — which is the
    *    whole point of Rotbeast's printed line.
-   *  · BOUNDED BUDGETS (CR 109.9e) RIDE ALONG. A graft's budget lives on the mod
-   *    entity itself, which is the same one. But an AUGMENT ability's [once]
-   *    (Graxxlid's negate, activated or triggered off the mod's augment text)
-   *    is written on the HOST, under `augment:<card>#<n>` — so those marks
-   *    are copied onto the new host here. CR 720.10b / CT-213, the RAQ
-   *    ("Reconfigure vs Once per Turn Abilities"): "Since Graxxlid was
-   *    already Activated this turn, you CANNOT use his Ability again." Copied,
-   *    not moved (CR 109.9e): the engine keys the budget per card name on a host, so a second same-name mod left behind stays spent too — CR 109.9k gives each mod its own use (engine differs, no ticket yet). `from` names the old host
-   *    when the caller has already taken it out of play (Reconfigure).
+   *  · BOUNDED BUDGETS (CR 109.9e) RIDE ALONG, because every use a mod has is
+   *    kept on the mod entity itself, which is the same one: a graft's under
+   *    'graft', an [Augment] ability's (Graxxlid's negate, activated or
+   *    triggered off the mod's augment text) under `augment:<card>#<n>`
+   *    (CR 109.9k). CR 720.10b / CT-213, the RAQ ("Reconfigure vs Once per Turn
+   *    Abilities"): "Since Graxxlid was already Activated this turn, you
+   *    CANNOT use his Ability again." Nothing is copied between hosts: until
+   *    report 269 the [Augment] use was kept on the host and copied here,
+   *    which also left a second same-name mod on the old host spent.
    *
    * NOT an `attachMod`: no 'modApplied' event fires, because moving is not
    * applying (CR 720.10c's spirit) — nothing that watches for a mod being applied
@@ -11920,7 +11923,7 @@ export class E {
    * Returns false and does nothing if this is not a move at all — not a mod,
    * already on that host, or onto itself.
    */
-  moveMod(mod: Entity, newHost: Entity, from?: Entity): boolean {
+  moveMod(mod: Entity, newHost: Entity): boolean {
     if (mod.kind !== 'mod') return false;
     if (mod.id === newHost.id || mod.modOf === newHost.id) return false;
     const old = mod.modOf !== undefined ? this.entity(mod.modOf) : undefined;
@@ -11928,13 +11931,8 @@ export class E {
       const i = old.mods.indexOf(mod.id);
       if (i !== -1) old.mods.splice(i, 1);
     }
-    const spentOn = old ?? from;
-    if (spentOn) {
-      const prefix = `augment:${mod.card}#`;
-      for (const [k, v] of Object.entries(spentOn.budgets)) {
-        if (k.startsWith(prefix) && (v ?? 0) > 0) newHost.budgets[k] = v;
-      }
-    }
+    // CR 720.10b: a spent [once] stays spent — it is on the MOD (CR 109.9k),
+    // and the mod is the same entity on its new host
     mod.modOf = newHost.id;
     mod.region = newHost.region;
     mod.controller = newHost.controller;
@@ -12033,7 +12031,8 @@ export class E {
 
   /** Compose the parts of a firing ability: base effect + graft-mod effects,
    * top-to-bottom (Manual p.33). Bounded pieces consume per-card budgets (CR 803.4). */
-  composeParts(source: Entity, abilityIndex: number, abilityKeyPrefix: 'ability' | 'augment', viaCard?: CardName): EffectPart[] | null {
+  composeParts(source: Entity, abilityIndex: number, abilityKeyPrefix: 'ability' | 'augment', viaCard?: CardName,
+    fromAugment?: EntityId): EffectPart[] | null {
     // CR 710.1: with no `viaCard` the ability is the source's OWN, which
     // means the card it currently IS — the face, not the physical card.
     const cardName = viaCard ?? this.faceName(source);
@@ -12042,7 +12041,12 @@ export class E {
     const ability = list?.[abilityIndex];
     if (!ability) return null;
     const budgetKey = `${abilityKeyPrefix}:${cardName}#${abilityIndex}`;
-    const budgetHolder = source;   // per card = per entity instance (CR 803.4)
+    // per card = per entity instance (CR 803.4); and text an augment MOD
+    // donates is that mod's, so the mod holds its use (CR 109.9k, report 269:
+    // two Jollyglops' text on one unit shared one use when the host held it)
+    const augmentMod = abilityKeyPrefix === 'augment' && fromAugment !== undefined
+      ? this.entity(fromAugment) : undefined;
+    const budgetHolder = augmentMod ?? source;
     if (ability.bounded) {
       // CR 109.9m / CARD-TODO #21: a ZONE-dispatched firing (CR 400.5) arrives on a
       // throwaway stand-in (id -1) whose `budgets` dies with the call, so its
@@ -12070,6 +12074,7 @@ export class E {
     }
     const base: EffectPart = {
       effectKey: `${abilityKeyPrefix}:${cardName}#${abilityIndex}`, targets: [],
+      ...(ability.bounded && augmentMod ? { budgetOn: augmentMod.id } : {}),
     };
     const parts: EffectPart[] = [base];
     // grafted effects join only a graft cause, and only from graft-applied mods
@@ -12256,7 +12261,7 @@ export class E {
     ability: TriggeredAbility, prefix: 'ability' | 'augment', ev: EngineEvent,
     logMsg: string, logData: Record<string, unknown>, selfModId?: EntityId): boolean {
     if (ability.when && !ability.when(this, host, ev)) return false;
-    const parts = this.composeParts(host, abilityIndex, prefix, cardName);
+    const parts = this.composeParts(host, abilityIndex, prefix, cardName, selfModId);
     if (!parts) return false;
     this.s.triggerQueue.push({
       sourceId: host.id, sourceCard: cardName, controller: host.controller,
@@ -12378,13 +12383,16 @@ export class E {
   /** Two queued triggers are interchangeable for ordering purposes: same card,
    * same ability, same label AND same composed parts (a graftCause composite
    * whose bounded graft was already spent differs in parts and still asks).
+   * `budgetOn` is left out of the comparison: it says which mod holds the
+   * use (CR 109.9k), not what the trigger does, so two Jollyglops' text on
+   * one unit is still one meaningless order.
    * Deliberately NOT keyed on the source entity — two token copies queuing the
    * same trigger read identically in the ordering UI (options are labels), so
    * asking would be a blind, meaningless choice. Event snapshots may differ
    * (each firing resolves its own event); the multiset of outcomes is the same. */
   private sameTrigger(a: import('./types.ts').PendingTrigger, b: import('./types.ts').PendingTrigger): boolean {
     return a.sourceCard === b.sourceCard && a.abilityIndex === b.abilityIndex
-      && a.label === b.label && JSON.stringify(a.parts) === JSON.stringify(b.parts);
+      && a.label === b.label && JSON.stringify(a.parts.map(sansBudgetOn)) === JSON.stringify(b.parts.map(sansBudgetOn));
   }
 
   /** Drain the trigger queue. In battle AND in deployment (CR 706.3c), triggers
@@ -12575,12 +12583,13 @@ export class E {
    * for a trigger that is now NOT happening (declined or unpayable at the
    * pay gate). refundPart's bookkeeping keyed off the PendingTrigger instead
    * of a StackItem — a mod-donated part's budget lives on the mod under
-   * 'graft', everything else on the source under the part's own effectKey. A
+   * 'graft', a mod-donated [Augment] use on that mod (`budgetOn`, CR 109.9k)
+   * and everything else on the source, both under the part's own effectKey. A
    * zone trigger's stand-in source was never in s.entities, so there is
    * nothing to refund onto and this is correctly a no-op for it. */
   private refundTriggerBudgets(t: PendingTrigger): void {
     for (const part of t.parts) {
-      const holder = part.fromMod !== undefined ? this.entity(part.fromMod) : this.entity(t.sourceId);
+      const holder = this.entity(part.fromMod ?? part.budgetOn ?? t.sourceId);
       if (!holder) continue;
       const key = part.fromMod !== undefined ? 'graft' : part.effectKey;
       if ((holder.budgets[key] ?? 0) <= 0) continue;

@@ -363,7 +363,7 @@ card('Reconfigure', {
       // `anchored()`, {Unstable} is derived from `mods.length` so it lands on
       // `b` by itself, and each mod's bounded budgets ride along because the
       // ENTITY is the same one.
-      for (const m of movedMods) g.moveMod(m, b, a);
+      for (const m of movedMods) g.moveMod(m, b);
       if (movedMods.length) g.ev('info', `Reconfigure: ${movedMods.length} mod(s) move along with ${a.card}.`);
       // CR 721.5a / CT-214: the card prints "Augment target unit AND ALL OF ITS
       // MODS onto another target unit", so each mod that rides along is

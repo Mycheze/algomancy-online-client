@@ -1056,6 +1056,16 @@ const OPEN: TodoEntry[] = [
     proof: () => still('engine/src/engine.ts', 'seq: srcId,'),
     verify: "grep \"seq: srcId,\" in client/engine/src/engine.ts (baseWith).",
     status: 'open',
+  },  {
+    id: 342, area: "engine", severity: "minor",
+    cards: ["Borrower of Forms", "Apex Prime", "Ancient One"],
+    title: "a copy's copied [Augment] boxes and Ancient One's borrowed text still share one [once] per card name",
+    detail: "CR 109.9k gives each mod its own use, and since report 269 a real augment mod keeps its use on itself. Two places have no mod entity to hold it: a COPY of a unit with two same-name augments (copiedAugments keys augment:<card>#<n> on the copy, and the activated offer lists a copied name once), and Ancient One borrowing a neighbour's triggered text (ao:<prefix>:<card>#<n> on the Ancient One). Each still gives two copies of one bounded box one use between them.",
+    evidence: "Report round 2026-10-22, fixing report 269 (apply.ts pushActivatedOptions, batch-metal-a.ts Ancient One scan).",
+    fix: "Key a copied box by its index in CopyRef.mods and a borrowed one by the neighbour's mod id, and offer each copied box as its own activation (a new ActivateVia shape replays old logs unchanged only if the old one keeps meaning the first copy).",
+    proof: () => still('engine/src/apply.ts', 'a copied box has no mod entity to hold it, CT-342'),
+    verify: "grep \"CT-342\" in client/engine/src/apply.ts.",
+    status: 'open',
   },
 ];
 

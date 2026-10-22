@@ -1151,13 +1151,13 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
           from: m.card, origin: 'note', active: false, why: 'bounded to once per turn',
         });
       }
-      // a bounded ability DONATED by an augment mod is budget-keyed by the
-      // mod's card name, on the HOST's budgets (engine.ts composeParts:
-      // `augment:<mod card>#<i>`, budgetHolder = the unit it fires from)
+      // a bounded ability DONATED by an augment mod keeps its use on the MOD,
+      // keyed by the mod's card name (engine.ts composeParts:
+      // `augment:<mod card>#<i>`, CR 109.9k — each mod has its own use)
       if (m.appliedAs === 'augment') {
         (defOf(m.card)?.augmentText ?? []).forEach((ab, i) => {
           if (!ab.bounded) return;
-          if (!(u.budgets[`augment:${m.card}#${i}`] ?? 0)) return;
+          if (!(m.budgets[`augment:${m.card}#${i}`] ?? 0)) return;
           lines.push({
             text: `${budgetMarker(augmentClause(m.card))} ${m.card}'s ability — already used this turn.`,
             from: m.card, origin: 'note', active: false, why: 'bounded to once per turn',

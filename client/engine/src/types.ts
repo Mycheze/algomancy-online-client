@@ -798,6 +798,10 @@ export interface EffectPart {
   targetsDone?: boolean;
   /** the mod entity this part came from (bounded budget bookkeeping, CR 109.9k) */
   fromMod?: EntityId;
+  /** CR 109.9k: the augment MOD whose [Augment] text this base part is, when
+   * that text is bounded. Its use is kept on the mod under the part's own
+   * effectKey, so two copies of one [Augment] on a host have a use each. */
+  budgetOn?: EntityId;
   /** skip at resolution (bounded graft effect already used this turn, or a
    * cast-time [cost] on a Modular graft part that was unpayable — CR 724.4c) */
   spent?: boolean;

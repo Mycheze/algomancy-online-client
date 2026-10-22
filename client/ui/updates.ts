@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-22', kind: 'fix', text: "Two copies of the same once-per-turn ability on one unit now each work once a turn. A Jollyglop wearing another Jollyglop makes units from both when it is dealt damage." },
   { date: '2026-10-21', kind: 'new', text: "Build on the table: a deck builder page with your cards in piles, and a challenge deck as a row in deal order. Drag cards from a binder of every card, around or back out. On a tablet, hold a card to lift it, or tap it, then where it goes." },
   { date: '2026-10-21', kind: 'new', text: "Weekly challenges: a new puzzle every Sunday. Build a deck in the exact order you want it dealt, reach the goal with as few cards, elements and turns as you can, and climb the leaderboard. Last week's decks open when the week ends." },
   { date: '2026-10-21', kind: 'fix', text: "Watching a game or a replay no longer shows the player's draw-phase prompt over the replay controls." },
