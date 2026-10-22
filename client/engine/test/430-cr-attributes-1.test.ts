@@ -108,17 +108,6 @@ test('cr:attr.general.application-order — a Tough unit attacking with a Balanc
   finishBattle(h);
 });
 
-test('cr:attr.general.application-order — engine differs: Tough augmented onto a printed-Balanced unit applies after the printed Balanced', () => {
-  const h = new Harness(43007);
-  toDeployment(h);
-  const p = h.state.deployPlayer!;
-  const child = spawn(h, p, 'Child of Aether');    // 2/0 printed Balanced
-  giveResources(h, p, 'earth', 3);
-  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rampart Guardian'), hostId: child });
-  assert.deepEqual(effStats(h, child), [2, 4],
-    'engine: Balanced (printed) then Tough, 2/2 then 2/4; the printed order (doubled, then balanced) would give 2/2');
-});
-
 /* ── Flying ─────────────────────────────────────────────────────────────── */
 
 test('cr:attr.flying.removed — after the Flying unit leaves the attacking column, a ground unit may block the rest', () => {

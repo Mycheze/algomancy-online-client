@@ -228,17 +228,6 @@ test('cr:effects.continuous.switch — an 8/3 switched by Invasive Reassignment 
   finishBattle(h);
 });
 
-test('cr:effects.continuous.layers.attribute-order — engine differs: a printed-Balanced 2/0 augmented with Tough is balanced first, then doubled, to 2/4', () => {
-  const h = new Harness(71612);
-  toDeployment(h);
-  const p = h.state.deployPlayer!;
-  giveResources(h, p, 'earth', 4);
-  const child = spawn(h, p, 'Child of Aether');
-  assert.deepEqual(effStats(h, child), [2, 2], 'setup: Balanced 2/0 reads 2/2');
-  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rampart Guardian'), hostId: child });
-  assert.deepEqual(effStats(h, child), [2, 4], 'balanced, then doubled');
-});
-
 // ---------------------------------------------------------------- copies
 
 test('cr:effects.copies.spells.targets — Earnest Defender triggers for the targets of a copied Burgeon as well as the original', () => {

@@ -2060,8 +2060,9 @@ export class E {
       this.destroy(u, 'dies');
     }
   }
-  /** CR 709.4b, 709.4c, 802.1j: the stat-layer attrs, in layer-4 application order — own
-   * printed (type-line order), then augment mods (stack order), then
+  /** CR 709.4b, 709.4c, 802.1j: the stat-layer attrs, in layer-4 application order — augment
+   * mods (attachment order; CT-257, what is augmented onto a unit comes before
+   * what it prints), then own printed (type-line order) and applied grants, then
    * column-shared (column order); first occurrence wins, an attribute is
    * either present or not. {Inverted} rides the same walk because it is
    * granted by exactly the same channels ({Inverted} is printed on Its Dark
@@ -2098,7 +2099,27 @@ export class E {
           && !out.includes(a)) out.push(a);
       }
     };
-    take(this.ownAttrs(e));
+    /*
+     * CR 709.4b (CT-257) — what is AUGMENTED ONTO a unit applies before what it
+     * prints. Manual p.42: if "Tough" is augmented onto a "Balanced" unit, "it
+     * will have its defense doubled, then its stats balanced"; the owner,
+     * 2026-10-22, ruled that clause governs. So the augment mods' type-line
+     * attributes come first — a copy's copied augments, then the unit's own
+     * mods in the order they were attached — and then the rest of the unit's
+     * own set in its usual order: printed (type-line order), then what was
+     * APPLIED to it (until-regroup grants, statics), which is the Manual's
+     * other clause ("applied to" a Balanced unit: balanced, then doubled).
+     * Column-shared attributes still come last, front to back. Membership is
+     * `ownAttrs`' (strips included); only the ORDER is decided here.
+     */
+    const own = this.ownAttrs(e);
+    const augmented: string[] = [...this.copiedAugments(e, 'attrs')];
+    for (const id of e.mods) {
+      const m = this.entity(id);
+      if (m && m.appliedAs === 'augment') augmented.push(m.card);
+    }
+    for (const card of augmented) take(this.card(card).augmentAttrs.filter(a => own.has(a)));
+    take(own);
     const col = this.columnOf(e.id);
     if (col) {
       for (const id of col) {
