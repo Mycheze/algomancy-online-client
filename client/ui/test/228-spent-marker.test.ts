@@ -187,7 +187,7 @@ test('CR D6.10b: a card whose OWN augment box is spent reads that box, not its t
 // ── 3. the whole pool, spent for real, one card at a time ────────────
 
 test('CR D6.10b: every card in the pool with a bounded ability gets the marker it prints', () => {
-  // 89 cards, each spawned and each budget reserved through E.composeParts —
+  // 88 cards, each spawned and each budget reserved through E.composeParts —
   // the engine's own reservation, so the budget KEY is never something this
   // test knows how to spell. The expectation comes back through iconizeText,
   // a different channel from the regex under test.
@@ -214,8 +214,8 @@ test('CR D6.10b: every card in the pool with a bounded ability gets the marker i
   }
 
   assert.deepEqual(wrong, [], 'every note wears the marker its own clause shows');
-  assert.equal(covered, 89,
-    `the pool has 89 cards with a bounded ability and all 89 were spent here (got ${covered})`);
+  assert.equal(covered, 88,
+    `the pool has 88 cards with a bounded ability and all 88 were spent here (got ${covered})`);
   // and BOTH markers are genuinely in use — a regression that collapses the
   // two back to one constant passes every card-by-card check above by
   // agreeing with itself, and is caught only here
@@ -225,9 +225,12 @@ test('CR D6.10b: every card in the pool with a bounded ability gets the marker i
   // text gained `[once]` in an upstream errata. THE COUNTS ARE PINNED ON
   // PURPOSE and were right to fail here — a card entering or leaving the
   // bounded pool is exactly the event this census exists to announce.
-  assert.deepEqual(tally, { '[Switch1]': 64, '[Once]': 25 },
-    'the split today: 64 print [Switch1], 23 print [once], and 2 spell their '
-    + 'budget in prose and fall back to [Once]');
+  // 89 -> 88 and [Once] 25 -> 24 on 2026-10-22: The Bonesculptor left the pool —
+  // its "each deployment" permission is a standing play option now, not a
+  // bounded activated ability (CT-255, CR 707.10).
+  assert.deepEqual(tally, { '[Switch1]': 64, '[Once]': 24 },
+    'the split today: 64 print [Switch1], 23 print [once], and 1 spells its '
+    + 'budget in prose and falls back to [Once]');
 });
 
 // ── 4. the invariants that make a per-CLAUSE read exact ──────────────
@@ -262,15 +265,16 @@ test('CR D6.10b: no card prints both markers, and none has two bounded abilities
   assert.deepEqual(odd, [], 'bounded graft donors are exactly the ones printing [Switch1]');
 });
 
-test('CR D6.10b: the fallback is [Once], and only two cards in the pool reach it', () => {
-  // The Bonesculptor ("each deployment") and Gridxlan ("during deployment")
-  // spell their budget in prose. CR D6.10b's [Once] is kept for exactly these: with
-  // nothing printed to follow, the note names the budget.
+test('CR D6.10b: the fallback is [Once], and only one card in the pool reaches it', () => {
+  // Gridxlan ("during deployment") spells its budget in prose. CR D6.10b's [Once]
+  // is kept for exactly this: with nothing printed to follow, the note names the
+  // budget. (The Bonesculptor, "each deployment", was the second until CT-255
+  // made its permission a play option rather than a bounded ability.)
   const prose = boundedPool()
     .map(b => b.name)
     .filter(n => !/\[switch1\]|\[once\]/i.test(getCard(n).text ?? ''));
-  assert.deepEqual(prose.sort(), ['Gridxlan', 'The Bonesculptor'],
-    'the two cards with a budget and no printed marker');
+  assert.deepEqual(prose.sort(), ['Gridxlan'],
+    'the one card with a budget and no printed marker');
   assert.equal(budgetMarker('You may play one unit from your bin each deployment.'), '[Once]',
     'an unmarked clause falls back to the budget symbol');
   assert.equal(budgetMarker(''), '[Once]', 'and so does an empty one');

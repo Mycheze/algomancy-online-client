@@ -4014,7 +4014,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace; asPlay?: boolean } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
     /**
      * CR 708.3: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -4116,63 +4116,18 @@ export class E {
     // BEFORE the spawn event exists, so no listener and no player ever sees it
     // standing anywhere else. See takeSpot.
     const placed = opts.spot ? this.takeSpot(u, seat, opts.spot) : null;
-    /**
-     * CR 701.3 — PLAY vs PUT INTO PLAY. Four cards in the pool print "put into
-     * play" (Exhume, Resurrect, Rousing Spirit, Lurking Dread) and two print
-     * "**play**": Wake the Dead ("Play up to two units in any bin … now, for
-     * free") and The Bonesculptor ("You may play one unit with no abilities
-     * from your bin each deployment"). All six called this method and were
-     * therefore indistinguishable — no play event of any kind, so the
-     * `'cardPlayed'` event (CR 108.1a) never fired and every "whenever you play a card / a unit"
-     * watcher in the pool was deaf to the two that really were plays.
-     *
-     * `asPlay` is that one printed word, and it is deliberately a flag on the
-     * SPAWN rather than a stack item: an effect that plays a card
-     * mid-resolution has no cast window to build one in, which is the standing
-     * approximation `playInline` (batch-water-a) already carries — the played
-     * card arrives inside the playing effect's resolution and nobody may
-     * respond to it or negate it. It rides WITH `opts.from`, never instead of
-     * it: a play always comes out of a zone, and the `from` on the 'spawned'
-     * event below (CR 410.6) is the other half of the same fact — the half Stalwart
-     * Sentinel and Proph read for "a card played from anywhere other than your
-     * hand". Each watcher therefore hears the play exactly once, on whichever
-     * of the two events it listens to.
-     *
-     * The event is BUILT here, above the spawn line, and DISPATCHED below it,
-     * immediately before the spawn dispatch: the play precedes the arrival —
-     * the order `commitItem` puts them in for every ordinary play — but no
-     * listener may run against a body that is still being dressed (CR 303.11's
-     * `wearing`, CR 602.7's placement). Signal-only (`msg: ''`), the
-     * convention; the spawn line already announces it.
-     *
-     * ⚠ NEVER on a token: `token: false` is a fact here, not a default. A
-     * created token is not a card (CR 304.2, 304.15) and no caller passes both.
-     *
-     * ⚠ CR 706.13 / CT-79 — NO `item` FIELD, AND THAT IS THE FACT IT REPORTS.
-     * `commitItem` puts the played item's id on its `cardPlayed`; here there
-     * is no `StackItem` to name, because this play IS the spawn (CR 301.9's
-     * printed "play", not a cast). A listener that wants "the effect that was
-     * just played" must therefore read `data.item === undefined` as "this play
-     * put no effect on the stack" and do nothing to the stack — NOT fall back
-     * to a (card, controller) scan, which is exactly the bug CT-79 closed:
-     * Wake the Dead is a {Battle} spell, so a unit raised here can share a
-     * name with an unrelated item standing on the stack, and Void Mandible
-     * used to negate that one.
-     *
-     * ⚠ THE DIVERGENCE THIS LEAVES STANDING (F-U14-3, reported not fixed): under
-     * CR 701.4 a card played mid-resolution goes on the stack and is
-     * respondable and negatable. This path predates that and still spawns in
-     * place, so a unit played out of a bin during battle cannot be answered at
-     * all. Making it an item is a much larger change than CT-79 (a spawn is
-     * not a cast; there is no cast window to declare it in) and it is filed
-     * rather than guessed at.
+    /*
+     * CR 701.3 — PLAY vs PUT INTO PLAY. This method PUTS a card into play (Exhume,
+     * Resurrect, Rousing Spirit, Lurking Dread all print "put into play"), or
+     * spawns the body of a play that has already been announced: a stack item
+     * resolving (`resolveItem`, `afterParts`) or `playInline`'s in-place branch,
+     * whose 'cardPlayed' `commitItem` fired. It fires no play event of its own.
+     * It used to, behind an `asPlay` flag, for the two cards that print "play"
+     * and spawned in place — Wake the Dead and The Bonesculptor. Both are real
+     * plays through the ordinary road now (CT-245: `playInline`; CT-255: a
+     * `playFromBin` under a standing permission), so the flag had no caller and
+     * is gone.
      */
-    const playEv = opts.asPlay
-      ? this.ev('cardPlayed', '', {
-        seat, card: name, token: false, region,
-        ...(opts.from ? { from: opts.from } : {}),
-      })
-      : null;
     // CR 410.6, 301.9: `from` is set only when this spawn IS a card being PLAYED out of a
     // zone (resolveItem for a unit / spell unit card). A unit created by an
     // effect carries no zone, which is what keeps "when you play a card from
@@ -4224,10 +4179,6 @@ export class E {
     // bookkeeping trigger used to read it — the spend is engine-side now so a
     // dead Drone cannot leave a paid-for charge unspendable.
     if (opts.from !== undefined) this.spendNextPlayDiscount(seat);
-    // CR 301.9: the play, then the arrival — see the `playEv` block above.
-    // CR 701.1e: the body is already standing here, but this is ITS OWN play, and a
-    // card being played never hears its own play — so it is not a listener.
-    if (playEv) this.fireEvent('cardPlayed', playEv, undefined, u.id);
     this.fireEvent('spawned', ev);
     // CR 707.5a: …and the placement, after the arrival it is part of. On the body
     // itself it is signal-only (`msg: ''`) — the spawn line already says it;
@@ -8103,6 +8054,13 @@ export class E {
   hastePlayAllowance(ctx: import('./cards/dsl.ts').PlayCtx): number {
     if (ctx.card.timing === 'haste') return 0;   // needs no grant (see 2 above)
     if (ctx.card.timing === 'battle') return 0;  // RAQ: a battle card stays one
+    return this.sumPlayPermissions(ctx, (p, anchor) => p.playAtHaste?.(this, anchor, ctx) ?? 0);
+  }
+
+  /** CR 803.2b, 707.10: the radiation walk every `PlayPermission` shares — every
+   * grantor live in `ctx.region` (CR 101.6, 712.1a), summed. */
+  private sumPlayPermissions(ctx: import('./cards/dsl.ts').PlayCtx,
+    read: (p: import('./cards/dsl.ts').PlayPermission, anchor: Entity) => number): number {
     if (this.inPlayPermissions) return 0;
     this.inPlayPermissions = true;
     try {
@@ -8113,13 +8071,32 @@ export class E {
         && a.region === ctx.region
         && live(h, a))) {                                      // CR 712.1a, as staticsFor
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
-          for (const p of def.playPermissions ?? []) {
-            total += p.playAtHaste?.(this, anchor, ctx) ?? 0;
-          }
+          for (const p of def.playPermissions ?? []) total += read(p, anchor);
         }
       }
       return total;
     } finally { this.inPlayPermissions = false; }
+  }
+
+  /**
+   * CR 707.10 (CT-255): may `ctx.seat` play `ctx.card` out of their own bin in this
+   * DEPLOYMENT under a standing permission ("You may play one unit with no
+   * abilities from your bin each deployment" — The Bonesculptor)? Deployment
+   * only, the seat's own deployment, and allowance left: every grantor's
+   * `playFromBinAtDeploy` summed, against `deployBinPlaysUsed`. The offer
+   * (`legalDeployActions`) and the refusal (`doPlayFromBin`) both ask THIS.
+   */
+  mayPlayFromBinAtDeploy(ctx: Omit<import('./cards/dsl.ts').PlayCtx, 'usedThisTurn'>): boolean {
+    if (this.s.phase !== 'deploy' || !this.deploying(ctx.seat) || ctx.from !== 'bin') return false;
+    const used = this.s.deployBinPlaysUsed?.[ctx.seat] ?? 0;
+    const full = { ...ctx, usedThisTurn: used };
+    return this.sumPlayPermissions(full, (p, anchor) => p.playFromBinAtDeploy?.(this, anchor, full) ?? 0) > used;
+  }
+
+  /** CR 707.10: charge one such bin play to `seat` (zeroed by `startDeployment`). */
+  chargeDeployBinPlay(seat: Seat): void {
+    const tally = (this.s.deployBinPlaysUsed ??= this.s.players.map(() => 0));
+    tally[seat] = (tally[seat] ?? 0) + 1;
   }
 
   /** CR 504.7a: the boolean the three gates actually ask — is there allowance left
@@ -10739,8 +10716,8 @@ export class E {
         //    play), so the id can name an item that is never on the stack.
         //    A resolution-time lookup finds nothing, which is correct: there
         //    is no effect standing there to answer.
-        // The OTHER `cardPlayed` emitter (the `asPlay` spawn in `spawnUnit`)
-        // omits this field entirely — see the comment there.
+        // (There used to be a second `cardPlayed` emitter with no item — the
+        // `asPlay` spawn in `spawnUnit`. CT-245 and CT-255 retired it.)
         item: item.id,
       });
       this.fireEvent('cardPlayed', ev);
@@ -12157,9 +12134,10 @@ export class E {
    * so it never hears its own play, under any wording and out of any zone.
    * Every ordinary play fires its play events at commit, while the card is on
    * the stack, so they never needed this; the `asPlay` spawn (Wake the Dead,
-   * The Bonesculptor) is the one play whose body exists before its
-   * 'cardPlayed' goes out, and without this Bloomcaster made a 1/1 for itself
-   * and Void Mandible sacrificed itself to its own arrival (444).
+   * The Bonesculptor) was the one play whose body existed before its
+   * 'cardPlayed' went out, and without this Bloomcaster made a 1/1 for itself
+   * and Void Mandible sacrificed itself to its own arrival (444). That spawn is
+   * retired (CT-245, CT-255); the parameter stays as the rule's guard.
    */
   fireEvent(type: EventType, ev: EngineEvent, dyingUnit?: Entity, beingPlayed?: EntityId): void {
     const region = (ev.data?.region as number | undefined) ?? (ev.data?.unit !== undefined ? this.entity(ev.data.unit as EntityId)?.region : undefined);
@@ -14534,6 +14512,8 @@ export class E {
     this.s.deployPlayer = this.initiative;
     // report #86: nobody has acted in THIS deployment yet (see types.ts)
     this.s.deployActed = this.s.players.map(() => false);
+    // CR 707.10 (CT-255): "each deployment" — the bin-play permission's budget opens
+    this.s.deployBinPlaysUsed = this.s.players.map(() => 0);
     this.ev('phase', 'Deployment: both players deploy at the same time — moves are revealed when everyone is done.');
     this.s.deployStarting = true;   // CR 507.4: step 2 is owed
     this.rotDamage();   // CR 507.4: start of deployment, before anyone may deploy

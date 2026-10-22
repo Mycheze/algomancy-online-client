@@ -412,13 +412,6 @@ const NO_LAYER: Record<string, string> = {
     + 'was "chosen at resolution" and that `xMin` was a cast-cost field this ability could not '
     + 'use, with the floor enforced by a hand-rolled `for (let x = 1; x <= open; x++)` option '
     + 'list. That option list is gone. Verified in batch-metal-b.ts.',
-  'The Bonesculptor':
-    '"You may play one unit with no abilities from your bin each deployment." — a standing '
-    + 'permission modelled as a free bounded activated ability, documented as an approximation in '
-    + 'batch-earth-c.ts\'s header and filed as PLAY-VS-PUT-INTO-PLAY in '
-    + 'docs/16-divergence-inventory.md §2b. ⚠ The shape has the cost this whole file is about: an '
-    + 'activated ability reaches the stack, so Containment Protocol ("negate all activated and '
-    + 'triggered effects") can negate a permission that should simply be true.',
 };
 
 /**
@@ -434,10 +427,6 @@ const STACK_ANYWAY: Record<string, string> = {
     + 'neighbour\'s triggered ability, and a projected trigger fires and is responded to exactly '
     + 'like the original. The card comment says so at the declaration: "\'triggered\' is '
     + 'deliberately excluded [from projects] — the when() below already delivers it".',
-  'The Bonesculptor':
-    'see NO_LAYER — the permission is modelled as an activated ability, which is the divergence '
-    + 'filed as PLAY-VS-PUT-INTO-PLAY. Listed in both places because it fails both halves of the '
-    + 'rule for one reason.',
 };
 
 // ── the assertions ──────────────────────────────────────────────────────

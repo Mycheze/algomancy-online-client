@@ -97,22 +97,23 @@ function toNextDeploymentAs(h: Harness, init: Seat): void {
 }
 
 // ── The Bonesculptor: "You may play one unit with no abilities from your
-//    bin each deployment." — a deployment-timed activated ability must be
-//    offered to its OWNER whichever seat deployPlayer marks. ──────────────
+//    bin each deployment." — a deployment permission (CR 707.10, CT-255: a
+//    `playFromBin` offer, not an activated ability) must be offered to its
+//    OWNER whichever seat deployPlayer marks. ─────────────────────────────
 for (const [owner, init] of COMBOS) {
   test(`The Bonesculptor seat-matrix: the bin play works for its owner (owner=${owner}, deployPlayer=${init})`, () => {
     const h = new Harness(9200 + owner * 2 + init);
     h.state.initiative = init;                  // deployPlayer derives from initiative
     toDeployment(h);
     assert.equal(h.state.deployPlayer, init, 'the combination under test holds');
-    const bone = spawn(h, owner, 'The Bonesculptor');
+    spawn(h, owner, 'The Bonesculptor');
     bin(h, owner).push('Curio Drifter');        // a vanilla unit ({Evasive} is an attr)
     giveResources(h, owner, 'water', 1);        // Curio Drifter: b/1
-    assert.ok(legalActions(h.state, owner).some(a =>
-      a.type === 'activateAbility' && a.entityId === bone),
+    const play = legalActions(h.state, owner).find(a =>
+      a.type === 'playFromBin' && bin(h, owner)[a.binIndex] === 'Curio Drifter');
+    assert.ok(play,
       'offered to the OWNER seat — E.deploying() reads per-seat deployDone, not deployPlayer');
-    h.do({ type: 'activateAbility', seat: owner, entityId: bone, abilityIndex: 0 });
-    pickBy(h, o => o.label === 'Curio Drifter');
+    h.do(play);
     assert.ok(unitsOf(h, owner).some(u => u.card === 'Curio Drifter'), 'played out of the bin');
     assert.ok(!bin(h, owner).includes('Curio Drifter'), 'and it left the bin');
   });

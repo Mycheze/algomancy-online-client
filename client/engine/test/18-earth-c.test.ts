@@ -19,14 +19,6 @@ import {
   spawn, toDeployment, toNextBattle, unitsOf,
 } from './util.ts';
 
-/** answer a mid-resolution (payOrDecline/electricPath) decision by label match */
-function decide(h: Harness, match: (label: string, value: unknown) => boolean): void {
-  const dec = h.state.decision!;
-  const idx = dec.options.findIndex(o => match(o.label, o.value));
-  assert.notEqual(idx, -1, `no option matching in [${dec.options.map(o => o.label)}]`);
-  h.do({ type: 'decide', seat: dec.seat, choice: idx });
-}
-
 test('Roving Quillback: after the blocking step, 1 damage per blocked column to each opponent (CR 608.4c sticky blocks, CR 601.4d)', () => {
   const h = new Harness(1800);
   toDeployment(h);
@@ -254,25 +246,26 @@ test('The Bonesculptor: play one ability-free unit from your bin each deployment
   const h = new Harness(1810);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  const bone = spawn(h, p, 'The Bonesculptor');
+  spawn(h, p, 'The Bonesculptor');
   // bin: an eligible vanilla (Curio Drifter — {Evasive} is an attr, not an
   // ability), an affordable unit WITH abilities, and a spell
   h.state.players[p]!.bin.push('Curio Drifter', 'Ignis Sprite', 'Channeled Boon');
   giveResources(h, p, 'water', 1);                      // Curio Drifter: b / 1
   giveResources(h, p, 'fire', 2);                       // Ignis Sprite affordable — still excluded
-  h.do({ type: 'activateAbility', seat: p, entityId: bone, abilityIndex: 0 });
-  const labels = h.state.decision!.options.map(o => o.label);
-  assert.ok(labels.includes('Curio Drifter'), 'the vanilla unit is offered');
-  assert.ok(!labels.includes('Ignis Sprite'), 'a unit with abilities is not');
-  assert.ok(!labels.includes('Channeled Boon'), 'a spell is not');
-  decide(h, l => l === 'Curio Drifter');
+  // CR 707.10 (CT-255): a standing permission, offered as a play from the bin
+  const offer = (): string[] => legalActions(h.state, p)
+    .flatMap(a => a.type === 'playFromBin' ? [h.state.players[p]!.bin[a.binIndex]!] : []);
+  assert.deepEqual(offer(), ['Curio Drifter'], 'the vanilla unit is offered; a unit with abilities and a spell are not');
+  h.do({ type: 'playFromBin', seat: p, binIndex: 0 });
   assert.ok(unitsOf(h, p).some(u => u.card === 'Curio Drifter'), 'the unit was played into the region');
   assert.deepEqual(h.state.players[p]!.bin, ['Ignis Sprite', 'Channeled Boon'], 'it left the bin');
   assert.ok(h.state.players[p]!.resources.some(r => r.kind === 'water' && r.state === 'expended'),
     'its cost was paid');
-  // once per deployment: the bounded budget blocks a second activation (CR 109.9)
-  assert.throws(() => h.do({ type: 'activateAbility', seat: p, entityId: bone, abilityIndex: 0 }),
-    /already used this turn/);
+  // once per deployment
+  h.state.players[p]!.bin.push('Curio Drifter');
+  giveResources(h, p, 'water', 1);
+  assert.deepEqual(offer(), [], 'a second play this deployment is not offered');
+  assert.throws(() => h.do({ type: 'playFromBin', seat: p, binIndex: 2 }), /no permission/);
 });
 
 test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not offered (CR 110.3a)', () => {

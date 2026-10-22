@@ -25,6 +25,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
+import { legalActions } from '../src/apply.ts';
+import type { Seat } from '../src/types.ts';
 import {
   effStats, ent, give, giveResources, pick, spawn, toDeployment, unitsOf,
   withE,
@@ -34,6 +36,14 @@ import {
  * suspension (26-metal-a's helper, verbatim in behaviour). */
 
 // ── The Bonesculptor: "a unit with no abilities" ─────────────────────────
+//
+// CT-255 (CR 707.10): the permission is a standing play option now — each
+// eligible card is offered as its own `playFromBin` in deployment — so "what is
+// offered" is read off legalActions rather than off an activation's menu.
+
+/** the bin cards The Bonesculptor's permission offers `p` right now */
+const binOffer = (h: Harness, p: Seat): string[] =>
+  legalActions(h.state, p).flatMap(a => a.type === 'playFromBin' ? [h.state.players[p]!.bin[a.binIndex]!] : []);
 
 test('The Bonesculptor: a statics-only [Augment] card is NOT "a unit with no abilities"', () => {
   const h = new Harness(11301);
@@ -46,8 +56,8 @@ test('The Bonesculptor: a statics-only [Augment] card is NOT "a unit with no abi
   h.state.players[p]!.bin.push('Curio Drifter', 'Sandstone Defender');
   giveResources(h, p, 'water', 1);                  // Curio Drifter: b/1
   giveResources(h, p, 'earth', 2);                  // Sandstone Defender: e/2 — affordable
-  h.do({ type: 'activateAbility', seat: p, entityId: bone, abilityIndex: 0 });
-  const labels = h.state.decision!.options.map(o => o.label);
+  void bone;
+  const labels = binOffer(h, p);
   assert.ok(labels.includes('Curio Drifter'), 'the genuinely ability-free unit is still offered');
   assert.ok(!labels.includes('Sandstone Defender'),
     '"[Augment] Your other units gain +0/+2" is an ability — CR 712.1a: a static IS an ability');
@@ -68,26 +78,23 @@ test('The Bonesculptor: cost-modifier, permission and replacement text all count
   giveResources(h, p, 'water', 1);
   giveResources(h, p, 'earth', 3);                  // Tranquility ee/3
   giveResources(h, p, 'metal', 5);                  // Courier mm/2, Automaton mm/5, Monke m/1
-  h.do({ type: 'activateAbility', seat: p, entityId: bone, abilityIndex: 0 });
-  const labels = h.state.decision!.options.map(o => o.label);
-  assert.deepEqual(labels.filter(l => l !== 'Decline'), ['Curio Drifter'],
+  void bone;
+  assert.deepEqual(binOffer(h, p), ['Curio Drifter'],
     'every card with a text box is refused, whichever channel carries it');
 });
 
-test('The Bonesculptor: the resolution re-check refuses a text-bearing card too', () => {
+test('The Bonesculptor: the apply gate refuses a text-bearing card too', () => {
   const h = new Harness(11303);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  const bone = spawn(h, p, 'The Bonesculptor');
+  spawn(h, p, 'The Bonesculptor');
   h.state.players[p]!.bin.push('Curio Drifter', 'Towering Colossus');
   giveResources(h, p, 'water', 1);
   giveResources(h, p, 'earth', 5);                  // Towering Colossus: ee/5 — affordable
-  h.do({ type: 'activateAbility', seat: p, entityId: bone, abilityIndex: 0 });
-  // the menu never offers it; index 1 is the Colossus in the bin, and the
-  // resolution guard has to refuse it independently of the menu
-  const labels = h.state.decision!.options.map(o => o.label);
-  assert.ok(!labels.includes('Towering Colossus'), 'a 10/15 statics card is not ability-free');
-  pick(h, -1);                                       // decline — the budget is refunded (CR 109.9b)
+  // the offer never lists it, and `doPlayFromBin` has to refuse it independently
+  // of the offer (the fuzzer's "legalActions lied" check holds the two together)
+  assert.ok(!binOffer(h, p).includes('Towering Colossus'), 'a 10/15 statics card is not ability-free');
+  assert.throws(() => h.do({ type: 'playFromBin', seat: p, binIndex: 1 }), /no permission/);
   assert.ok(!unitsOf(h, p).some(u => u.card === 'Towering Colossus'), 'nothing came out of the bin');
   assert.ok(h.state.players[p]!.bin.includes('Towering Colossus'), 'it is still there');
 });

@@ -143,6 +143,10 @@ const BEHAVIOR_KEYS = [
   // played-from-your-bin line (Trench Stalker) are whole-card behaviour with
   // no abilities and no live spellEffect run, so the sweep has to see them.
   'binPlayPermissions', 'playsFromBin',
+  // CR 707.10 (CT-255): a standing PLAY permission granted by a unit in play
+  // (The Bonesculptor's "You may play one unit with no abilities from your bin
+  // each deployment") — not an ability, so it has none and no spellEffect.
+  'playPermissions',
   'replaceRotDamage', 'replaceCombatDamageToPlayer', 'xPreview', 'xPreviewRows',
   // a preview is presentation, not behaviour — but a card carrying ONLY one
   // would otherwise read as a bare definition, same as the two above

@@ -2239,6 +2239,15 @@ export interface GameState {
    */
   hastePlaysUsed?: number[];
   /**
+   * CR 707.10 (CT-255): cards each seat has played out of its bin THIS DEPLOYMENT
+   * under a `PlayPermission.playFromBinAtDeploy` (The Bonesculptor's "You may
+   * play one unit with no abilities from your bin each deployment"). The
+   * sibling of `hastePlaysUsed`, for the same reason: a play is not an ability
+   * activation, so `Entity.budgets` never sees it. Zeroed by `startDeployment`.
+   * Additive/optional — an older state reads as 0.
+   */
+  deployBinPlaysUsed?: number[];
+  /**
    * CR 111.10k: mana off the NEXT card each seat plays this PHASE — Deferral Drone's
    * "[once] Gain 4 debt: The next card you play this phase costs [3] less".
    *

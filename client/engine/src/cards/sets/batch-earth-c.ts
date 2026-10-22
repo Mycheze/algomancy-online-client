@@ -39,19 +39,10 @@
  *    later +1/+1 counters cancel it pairwise'. Playtest VEAV rejected exactly
  *    that; it is a real StaticMod on the anchor now, so it is continuous,
  *    never on the stack, and leaves with the virus.
- *  - The Bonesculptor: "play one unit ... from your bin each deployment" is
- *    modelled as a free bounded activated ability (deploy plays resolve
- *    immediately, so the shapes match); the full cost of the played unit is
- *    still paid. (A later fix retired the sentence that used to sit here — "activating
- *    it outside deployment (or with no eligible card) wastes the once-per-turn
- *    budget". Both halves are ACTIVATION gates now: `timing: 'deploy'` and
- *    `usableWhen: bonesculptorPicks(...).length > 0`; and the two paths that
- *    can still reach an empty offer call `ctx.refundBudget?.()` (CR 109.9b).)
- *    CR 301.9: the played unit really is PLAYED now — it fires 'cardPlayed' (CR 108.1a)
- *    from 'bin' (CR 410.6) — where it used to be
- *    put into play in silence while the log line above it said "plays". What
- *    it still lacks is a stack item of its own (nothing may respond to it),
- *    the standing `playInline` approximation for a mid-resolution play.
+ *  - (The Bonesculptor's entry is GONE. It read "modelled as a free bounded
+ *    activated ability (deploy plays resolve immediately, so the shapes
+ *    match)". CT-255 made it what CR 707.10 says it is, a standing permission:
+ *    a `playPermissions` grant offering `playFromBin` in deployment. See the card.)
  *  - (Throwing Boulder's entry is GONE. It read "the sacrifice and the 'only
  *    if I have an adjacent ally' precondition are checked/paid at RESOLUTION
  *    (the Immolate precedent — there is no activation-precondition hook)".
@@ -423,55 +414,23 @@ const abilityFree = (n: string): boolean => {
     return Array.isArray(v) ? v.length > 0 : !!v;
   });
 };
-const bonesculptorPicks = (g: E, seat: Seat): { label: string; value: number; card: string }[] => {
-  const bin = g.player(seat).bin;
-  return bin
-    .map((n, i) => ({ label: n, value: i, card: n }))
-    .filter(o => abilityFree(bin[o.value]!) && g.canPayCard(seat, bin[o.value]!));
-};
+// CR 707.10 (CT-255) — A STANDING PERMISSION, NOT AN ABILITY. "You may play one
+// unit with no abilities from your bin each deployment" is a fact about what its
+// controller may do, and using it puts nothing on the stack: it cannot be
+// responded to, and Containment Protocol ("negate all activated and triggered
+// effects") has nothing to negate. It used to be built as a free bounded
+// ACTIVATED ability whose resolution asked which unit, so the permission
+// itself was an item. Now it is a `playPermissions` grant: each ability-free
+// unit in the controller's bin is offered as an ordinary `playFromBin` action
+// in deployment (`legalDeployActions`), paid in full ("you still pay" — the
+// card says play, not put into play), played onto the deployment stack like
+// any card (CR 507.5), and bounded once per deployment per Bonesculptor
+// (`deployBinPlaysUsed`). It is a real PLAY (CR 301.9): `commitItem` fires
+// 'cardPlayed' (CR 108.1a) with its item, and 'spawned' carries `from: 'bin'`.
 card('The Bonesculptor', {
-  abilities: [{
-    type: 'activated', cost: {}, bounded: true, timing: 'deploy',
-    label: 'play a unit with no abilities from your bin (each deployment)',
-    usableWhen: (g, _self, seat) => bonesculptorPicks(g, seat).length > 0,
-    effect: {
-      run: (g, ctx) => {
-        const bin = g.player(ctx.controller).bin;
-        const opts = bonesculptorPicks(g, ctx.controller);
-        if (!opts.length) {
-          ctx.refundBudget?.();   // CR 109.9b: no offer could be made, so the use is not spent
-          g.ev('info', 'The Bonesculptor: no playable ability-free unit in your bin.');
-          return;
-        }
-        const pick = ctx.choose('pick', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'The Bonesculptor: play a unit with no abilities from your bin',
-          options: [...opts, { label: 'Decline', value: -1 }],
-        }) as number;
-        if (pick < 0) {
-          ctx.refundBudget?.();   // CR 109.9b: declining a "you may" never spends it
-          g.ev('info', 'The Bonesculptor: no unit is played from the bin.');
-          return;
-        }
-        const name = bin[pick];
-        if (name === undefined || !abilityFree(name) || !g.canPayCard(ctx.controller, name)) return;
-        g.removeFromBin(ctx.controller, pick, 'played');   // CR 405.7
-        g.payCard(ctx.controller, name);
-        g.ev('info', `The Bonesculptor: ${g.pname(ctx.controller)} plays ${name} from the bin.`);
-        // CR 701.3: the printed verb is "PLAY", and the log line directly above has
-        // said so all along while the engine put the unit into play in silence.
-        // The two are a real distinction in this pool — Exhume, Resurrect,
-        // Rousing Spirit and Lurking Dread print "put into play" and are rightly
-        // plain spawns. `asPlay` fires 'cardPlayed' (CR 108.1a) immediately before
-        // the body arrives; `from: 'bin'` is the other half of the same fact (CR 410.6).
-        // So "whenever you play a unit" (Bloomcaster) and "when you play a card
-        // from anywhere other than your hand" (Stalwart Sentinel, Proph) hear
-        // it, each exactly once — and note the cost really was paid one line up,
-        // which is what the card's own "(You still pay the cost.)" siblings mean
-        // and what makes calling this a play honest rather than generous.
-        g.spawnUnit(ctx.controller, name, ctx.region, { from: 'bin', asPlay: true });
-      },
-    },
+  playPermissions: [{
+    playFromBinAtDeploy: (_g, self, ctx) =>
+      ctx.seat === self.controller && ctx.from === 'bin' && abilityFree(ctx.card.name) ? 1 : 0,
   }],
 });
 

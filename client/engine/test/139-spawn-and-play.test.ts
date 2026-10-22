@@ -15,7 +15,9 @@
  *     the Dead and The Bonesculptor. All six were the same call, so CR 108.1a's
  *     'cardPlayed' never fired for the two that really were plays and every
  *     "whenever you play a card / a unit" watcher was deaf to them.
- *     `spawnUnit`'s `asPlay` (with CR 410.6's `from`) is that printed word.
+ *     `spawnUnit`'s `asPlay` (with CR 410.6's `from`) was that printed word, until
+ *     both became ordinary plays: Wake the Dead through `playInline` (CT-245)
+ *     and The Bonesculptor as a `playFromBin` permission (CT-255).
  *
  * Seeds 13901-13999. Each test names its card; each has a positive control
  * next to its negative so a silently dead watcher cannot fake a pass.
@@ -251,9 +253,9 @@ test('The Bonesculptor: the unit it plays from your bin is PLAYED — Bloomcaste
 
   h.state.players[p]!.bin.push('Curio Drifter');
   giveResources(h, p, 'water', 1);                      // Curio Drifter is b/1 — "you still pay the cost"
-  h.do({ type: 'activateAbility', seat: p, entityId: bone, abilityIndex: 0 });
-  const dec = h.state.decision!;
-  h.do({ type: 'decide', seat: dec.seat, choice: dec.options.findIndex(o => o.label === 'Curio Drifter') });
+  // CR 707.10 (CT-255): the permission is a play from the bin, not an activation
+  void bone;
+  h.do({ type: 'playFromBin', seat: p, binIndex: h.state.players[p]!.bin.indexOf('Curio Drifter') });
   drainTriggers(h);
 
   assert.equal(unitsOf(h, p).filter(u => u.card === 'Unit Token').length, 1,

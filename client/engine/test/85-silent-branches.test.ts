@@ -422,15 +422,11 @@ test('Murkdrop Distiller triggered on a card that is not in the bin announces th
   assertSpoke(evs, 'Murkdrop Distiller whose trashed card is not in the bin');
 });
 
-test('The Bonesculptor that declines to play a unit from the bin announces that', () => {
-  const { g, h, A } = board(8567);
-  giveResources(h, A, 'earth', 6);
-  g.player(A).bin.push('Tidal Menace');
-  const evs = resolve(abilityOf('The Bonesculptor'), g,
-    { controller: A, sourceName: 'The Bonesculptor' }, { pick: -1 });
-  assertSpoke(evs, 'The Bonesculptor with the bin play declined');
-  assert.ok(g.player(A).bin.includes('Tidal Menace'), 'and the unit stayed in the bin');
-});
+// THE BONESCULPTOR USED TO BE HERE ("declines to play a unit from the bin
+// announces that"). CT-255 (CR 707.10) made its permission a standing play
+// option rather than an activated ability with a decline branch: an unused
+// permission is simply an action nobody took, and there is no effect left to
+// run silently. 558-bonesculptor-permission covers what replaced it.
 
 // COSMIC CONSPIRATOR USED TO BE HERE, and the replacement layer took it out of this file's
 // class rather than out of coverage. It is no longer an EFFECT at all: "if you
@@ -587,7 +583,9 @@ test('every card fixed here is one the whole-pool drill also watches', () => {
     // (NO_OPPONENT's three moved to 158 with the rest of their family — CR D7.3)
     'Abduct', 'Divine Intervention', 'Organic Exchange', 'Siphon Life',
     'Tides of the Cosmos', 'Perpetual Construct', 'Afflicting Anima', 'Swarmling',
-    'Dragnol', 'Spore of Regenesis', 'Murkdrop Distiller', 'The Bonesculptor',
+    'Dragnol', 'Spore of Regenesis', 'Murkdrop Distiller',
+    // (The Bonesculptor was here until its permission stopped being an ability,
+    // CT-255 / CR 707.10 — it carries no EffectDef now, by construction.)
     // (Cosmic Conspirator was here until it became a replacement (CR 708.3) —
     // see the note above. It carries no EffectDef now, by construction, so the
     // drill cannot and should not watch it.)
