@@ -272,7 +272,11 @@ test('Combustible Bogwalker: CR 111.6 — with no payment available the activati
   const h = new Harness(4534);
   toDeployment(h);
   const p = h.state.deployPlayer!;
-  const bog = spawn(h, p, 'Combustible Bogwalker');   // its ONLY unit — "another"
+  // CR 111.2 / CT-281: the line prints "a nontoken unit", not "another", so a
+  // nontoken Bogwalker can always pay with itself (564). A TOKEN one alone
+  // with an empty hand has nothing that pays.
+  let bog = -1;
+  whiteBox(h, e => { bog = e.spawnUnit(p, 'Combustible Bogwalker', e.homeRegion(p), { token: true }).id; });
   h.state.players[p]!.bin.push('Brough');
   emptyHand(h, p);
   assert.throws(

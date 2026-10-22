@@ -1214,10 +1214,15 @@ export interface AbilityCost {
    */
   sacrificeNontoken?: true;
   /** "Discard a card OR sacrifice a nontoken unit:" — N payments, each of
-   * which may be either a hand card or another NONTOKEN unit you control.
+   * which may be either a hand card or a NONTOKEN unit you control — the
+   * ability's own source included (CR 111.2 / CT-281: Combustible Bogwalker
+   * prints no "another"), unless `another` is set.
    * The one either/or shape the pool actually prints (Pallid Gorger,
    * Combustible Bogwalker, Lilbot); a general cost algebra is not worth it. */
   discardOrSacrifice?: number;
+  /** CR 111.2: the `discardOrSacrifice` line says "sacrifice ANOTHER nontoken
+   * unit" (Lilbot) — the source may not pay for itself. */
+  another?: true;
 }
 
 export interface ActivatedAbility {

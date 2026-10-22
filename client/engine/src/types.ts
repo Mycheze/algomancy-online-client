@@ -1054,6 +1054,11 @@ export interface StackItem {
     /** CR 111.2 (`AbilityCost.sacrificeNontoken`): "another NONTOKEN unit" —
      * narrows which units this atom may name, and what payability asks about. */
     nontoken?: true;
+    /** CR 111.2 / CT-281: a 'discardOrSacrifice' atom whose printed line has no
+     * "another" (`AbilityCost.another` unset) — the source may be sacrificed
+     * to pay. Absent (every atom saved before it existed) = the source is
+     * left out, as it always was. */
+    orSource?: true;
   }[];
   /** CR 111.7: the choice-free half of an activation cost (mana, life, debt,
    * sacrifice-self), carried on the item so it can be charged AFTER the

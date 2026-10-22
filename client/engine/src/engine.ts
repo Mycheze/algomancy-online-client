@@ -9645,13 +9645,16 @@ export class E {
   }
 
   /** CR 111.2: the units one choice-bearing activation-cost atom may name.
-   * The source is never one of them ("another"), and a `discardOrSacrifice`
+   * The source is not one of them ("another") — except for a `discardOrSacrifice`
+   * atom marked `orSource`, whose printed line says "a nontoken unit" with no
+   * "another" (CT-281, Combustible Bogwalker). A `discardOrSacrifice`
    * or a `nontoken`-flagged atom may not name a token. The ONE reading the
    * option list, the payability gate and `payItemCost`'s validation share. */
   private itemCostSacrifices(item: StackItem, atom: NonNullable<StackItem['pendingCosts']>[number]): Entity[] {
     const nontokenOnly = atom.kind === 'discardOrSacrifice' || atom.nontoken === true;
+    const sourceMayPay = atom.kind === 'discardOrSacrifice' && atom.orSource === true;
     return this.unitsOf(item.controller, item.region)
-      .filter(u => u.id !== item.sourceId && (!nontokenOnly || !u.token));
+      .filter(u => (sourceMayPay || u.id !== item.sourceId) && (!nontokenOnly || !u.token));
   }
 
   /** CR 111.6: can this ONE choice-bearing atom still be paid, right now? */
@@ -9782,7 +9785,7 @@ export class E {
           prompt: `${item.label}: ${
             atom.kind === 'discard' ? 'discard a card'
               : atom.kind === 'sacrificeOther' || atom.kind === 'playSacrifice' ? 'sacrifice a unit'
-                : 'discard a card or sacrifice a nontoken unit'
+                : `discard a card or sacrifice ${atom.orSource ? 'a' : 'another'} nontoken unit`
           } (${atom.kind === 'playSacrifice' ? 'additional cost' : 'activation cost'}${atom.n > 1 ? `, ${atom.n} left` : ''})`,
           options,
         },

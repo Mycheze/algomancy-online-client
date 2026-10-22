@@ -450,7 +450,7 @@ test('a sacrifice-another cost never offers the source itself', () => {
   assert.deepEqual(effStats(h, u), [3, 6]);
 });
 
-test('an either/or cost offers both pools and excludes tokens and the source', () => {
+test('an either/or cost offers both pools and excludes tokens, but not the source when it prints no another (CT-281)', () => {
   const h = sterile(4724);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -461,8 +461,9 @@ test('an either/or cost offers both pools and excludes tokens and the source', (
   whiteBox(h, e => { e.spawnUnit(P, 'T47 Grunt', e.homeRegion(P), { token: true }); });
   h.do({ type: 'activateAbility', seat: P, entityId: u, abilityIndex: 0 });
   const labels = h.state.decision!.options.map(o => o.label);
-  assert.deepEqual(labels.sort(), ['Discard T47 Chaff', 'Sacrifice T47 Grunt'],
-    'one hand card and one NONTOKEN other unit — the token and the source are excluded');
+  assert.deepEqual(labels.sort(), ['Discard T47 Chaff', 'Sacrifice T47 Either Pump', 'Sacrifice T47 Grunt'],
+    'one hand card and both NONTOKEN units — the token is excluded; the source is not, because '
+    + '"sacrifice a nontoken unit" says no "another" (CR 111.2)');
   h.do({ type: 'decide', seat: P, choice: labels.indexOf('Sacrifice T47 Grunt') });
   assert.ok(!ent(h, ally));
   assert.deepEqual(effStats(h, u), [3, 6]);

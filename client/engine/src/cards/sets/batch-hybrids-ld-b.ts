@@ -484,8 +484,10 @@ card('Murkstalker', {
 // CR 111.6, 705.3: the either/or line is a real ACTIVATION cost
 // (`discardOrSacrifice: 1`) — it GATES the activation and is chosen and paid
 // in the cast window, before the item reaches the stack. Both modes TRASH the
-// paid card (CR 801.2a), which is the point in a dark-element deck. The engine's
-// sacrifice pool excludes tokens and the ability's own source.
+// paid card (CR 801.2a), which is the point in a dark-element deck. The
+// sacrifice pool excludes tokens but NOT the ability's own source: the line
+// prints "a nontoken unit", not "another" (CR 111.2 / CT-281), so a Bogwalker
+// alone with an empty hand may sacrifice itself to pay.
 //
 // CR 110.7: the target is REQUIRED — with no unit in your bin the ability cannot
 // be activated at all, so the cost is never paid for nothing (the owner,

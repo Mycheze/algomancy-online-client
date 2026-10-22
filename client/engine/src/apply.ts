@@ -1600,7 +1600,8 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
       .filter(o => o.id !== u.id && (!cost.sacrificeNontoken || !o.token))   // CR 111.2
       .length < cost.sacrificeOther) return false;
   if (cost.discardOrSacrifice !== undefined) {
-    const sacs = e.unitsOf(seat, region).filter(o => o.id !== u.id && !o.token).length;
+    // CR 111.2 / CT-281: "a nontoken unit" includes the source; "another" does not
+    const sacs = e.unitsOf(seat, region).filter(o => (!cost.another || o.id !== u.id) && !o.token).length;
     if (e.player(seat).hand.length + sacs < cost.discardOrSacrifice) return false;
   }
   return true;
@@ -1750,7 +1751,12 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
       ...(cost.sacrificeNontoken ? { nontoken: true as const } : {}),   // CR 111.2
     });
   }
-  if (cost.discardOrSacrifice) pending.push({ kind: 'discardOrSacrifice', n: cost.discardOrSacrifice });
+  if (cost.discardOrSacrifice) {
+    pending.push({
+      kind: 'discardOrSacrifice', n: cost.discardOrSacrifice,
+      ...(cost.another ? {} : { orSource: true as const }),   // CR 111.2 / CT-281
+    });
+  }
   if (pending.length) item.pendingCosts = pending;
   e.castChain([item], then);
   e.settle();
