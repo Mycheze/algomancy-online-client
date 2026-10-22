@@ -549,14 +549,14 @@ card('Counter Thief', {
 // — it GATES the activation (with an empty hand and no other nontoken unit the
 // ability is neither offered nor accepted, and the [once] budget is not spent)
 // and is chosen and paid in the cast window, before the item reaches the
-// stack. "Another" is the engine's own rule: the ability's source is excluded
-// from the sacrifice pool, and so are tokens.
+// stack. "Another" is printed, and is the `another` flag (CR 111.2 / CT-281):
+// the ability's source is excluded from the sacrifice pool, and so are tokens.
 // Glimpse 2 = CR 801.9 (reveal two, cache ONE of your choice — playable this turn —
 // and recycle the other to the bottom of the deck); E.glimpse() raises the
 // choose-one decision itself.
 card('Lilbot', {
   augmentText: [{
-    type: 'activated', cost: { discardOrSacrifice: 1 }, bounded: true,   // [once]
+    type: 'activated', cost: { discardOrSacrifice: 1, another: true }, bounded: true,   // [once]
     label: 'discard a card or sacrifice another nontoken unit: Glimpse 2',
     effect: {
       run: (g, ctx) => { g.glimpse(ctx.controller, 2); },

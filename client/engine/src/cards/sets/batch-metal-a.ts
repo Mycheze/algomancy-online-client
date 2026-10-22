@@ -293,17 +293,26 @@ card('Ancient One', {
           if (n.controller !== self.controller) continue;
           // CR 710.4: a neighbour that is itself a COPY donates the face it wears
           const face = g.nameOf(n);
-          const sources: { cardName: string; prefix: 'ability' | 'augment' }[] = [
-            { cardName: face, prefix: 'ability' },
-            { cardName: face, prefix: 'augment' },
+          // CR 109.9k, 710.7 / CT-342: `use` tells two sources of one text
+          // apart, so each borrowed box has its own [once] on the Ancient One:
+          // a neighbour's own text by the neighbour, its mod by the mod's id, a
+          // neighbouring copy's copied box by the neighbour and the box's
+          // number. The owner, 2026-10-22: two Jollyglop neighbours give TWO
+          // uses — "each neighbour's copy of the ability is separate, the same
+          // as two mods each having their own use".
+          const sources: { cardName: string; prefix: 'ability' | 'augment'; use: string }[] = [
+            { cardName: face, prefix: 'ability', use: `@n${n.id}` },
+            { cardName: face, prefix: 'augment', use: `@n${n.id}` },
           ];
           for (const modId of n.mods) {
             const m = g.entity(modId);
-            if (m && m.appliedAs === 'augment') sources.push({ cardName: m.card, prefix: 'augment' });
+            if (m && m.appliedAs === 'augment') sources.push({ cardName: m.card, prefix: 'augment', use: `@m${m.id}` });
           }
           // CR 710.2a: and the augments a neighbouring COPY copied
-          for (const c of g.copiedAugments(n, 'triggered')) sources.push({ cardName: c, prefix: 'augment' });
-          for (const { cardName, prefix } of sources) {
+          for (const { card: c, nth } of g.copiedAugmentBoxes(n, 'triggered')) {
+            sources.push({ cardName: c, prefix: 'augment', use: `@c${n.id}.${nth}` });
+          }
+          for (const { cardName, prefix, use } of sources) {
             if (cardName === 'Ancient One') continue;   // no recursive mimicry
             const def = getCard(cardName);
             const list = prefix === 'ability' ? def.abilities : def.augmentText;
@@ -311,7 +320,7 @@ card('Ancient One', {
               if (ab.type !== 'triggered' || !ab.events.includes(ev.type)) return;
               if (ab.self && src !== self.id) return;       // "when I ...": I = the Ancient One
               if (ab.when && !ab.when(g, self, ev)) return; // conditions read me as "I" (CR 109.3a: now)
-              const key = `ao:${prefix}:${cardName}#${idx}`;
+              const key = `ao:${prefix}:${cardName}#${idx}${use}`;
               if (ab.bounded) {
                 if ((self.budgets[key] ?? 0) > 0) return;
                 self.budgets[key] = 1;
@@ -320,7 +329,8 @@ card('Ancient One', {
                 sourceId: self.id, sourceCard: cardName, controller: self.controller,
                 abilityIndex: idx,
                 label: `${self.card} (as ${cardName}): ${ab.label}`,
-                parts: [{ effectKey: `${prefix}:${cardName}#${idx}`, targets: [] }],
+                // budgetKey: a declined borrowed [once] hands back THIS key (CR 109.9b)
+                parts: [{ effectKey: `${prefix}:${cardName}#${idx}`, targets: [], ...(ab.bounded ? { budgetKey: key } : {}) }],
                 event: { type: ev.type, msg: ev.msg, ...(ev.data ? { data: ev.data } : {}) },
               });
               g.s.triggerOrderedSeats = [];
@@ -614,6 +624,7 @@ card('Borrower of Forms', {
       ctx.spawnWearing?.({
         copy: g.prepareCopy(t, {
           from: 'Borrower of Forms', until: 'permanent', printedStats: [p, dt],
+          seat: ctx.controller,   // CR 113.2b: the caster's play stamps the face
         }),
         counters: t.counters,
         tempPower: t.tempPower,

@@ -1579,14 +1579,16 @@ test('a mono element deck still gets a prismite MENU rather than a silent auto e
   const opts = legalActions(h.state, 0).filter(a =>
     (a.type === 'activateResource' && a.index === 0) ||
     (a.type === 'exchangePrismite' && a.index === 0));
-  assert.equal(opts.length, 7, 'seven exchanges and no activate — the shape that bites');
+  assert.equal(opts.length, 8,
+    'seven exchanges into an element, one into a Shard (CR 106.8d, CT-237), and no activate — the shape that bites');
 
   const plan = prismiteClickPlan(h.state, 0, opts);
   assert.equal(plan.kind, 'menu', 'a menu, NOT an auto-fire: the count is over legal actions');
   assert.ok(plan.kind === 'menu');
   assert.deepEqual(plan.actions.map(a => (a as { element: string }).element), ['light'],
     'it still leads with the deck element');
-  assert.equal(plan.hidden, 6, 'and says how many are behind the expander');
+  assert.equal(plan.hidden, 6, 'and says how many ELEMENTS are behind the expander');
+  assert.equal(plan.more, true, 'the expander is drawn, and the Shard is behind it too');
   assert.equal(plan.actions.length + 1, 2,
     'so the player is shown a real choice, never one option masquerading as none');
 
@@ -1595,6 +1597,7 @@ test('a mono element deck still gets a prismite MENU rather than a silent auto e
   assert.ok(opened.kind === 'menu');
   assert.deepEqual(opened.actions, opts, 'expanded is the engine list verbatim');
   assert.equal(opened.hidden, 0);
+  assert.equal(opened.more, false, 'and has nothing left to expand');
 
   // and the auto-fire it is allowed to keep: exactly one LEGAL action
   const one = prismiteClickPlan(h.state, 0, [opts[3]!]);

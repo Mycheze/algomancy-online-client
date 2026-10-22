@@ -39,7 +39,8 @@ export function activationKeys(legal: readonly Action[]): string[] {
         : aa.via === 'augment' ? 'aug'
           // CR 710.7: a projected face is its own identity — two neighbours'
           // abilities at the same index are two different options
-          : 'face' in aa.via ? `face:${aa.via.face}:${aa.via.text ?? 'ability'}`
+          // CT-342: and a copy's k-th copied box of one name is its own option
+          : 'face' in aa.via ? `face:${aa.via.face}:${aa.via.text ?? 'ability'}${aa.via.copy ? `:${aa.via.copy}` : ''}`
             : `mod${aa.via.mod}`;
       return `${aa.entityId}:${aa.abilityIndex}:${via}`;
     });

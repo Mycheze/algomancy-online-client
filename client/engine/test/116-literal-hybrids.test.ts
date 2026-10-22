@@ -86,10 +86,11 @@ test('Brough: "Everything is balanced" reaches a SPELL TOKEN, not just units', (
   assert.equal(ent(h, fb)!.kind, 'spellToken', 'a non-unit entity standing in the region');
   assert.ok(ownAttrs(h, fb).has('Balanced'),
     'the Fireball token wears {Balanced} — "everything" is not "every unit"');
-  // ⚠ HONEST: the grant is literal, the arithmetic does not move. Every spell
-  // token in the pool prints 3/3 and max(3,3) is 3, so this is deliberately
-  // asserted as UNCHANGED rather than dressed up as a stat fix.
-  assert.deepEqual(effStats(h, fb), [3, 3], 'a printed 3/3 balances to 3/3 — a no-op, by design');
+  // ⚠ HONEST: the grant is literal, the arithmetic does not move. A spell
+  // token prints no stats (CR 206.2 / CT-244: the transcription's 3/3 is
+  // zeroed at extraction) and max(0,0) is 0, so this is deliberately asserted
+  // as UNCHANGED rather than dressed up as a stat fix.
+  assert.deepEqual(effStats(h, fb), [0, 0], 'no printed stats balance to none — a no-op, by design');
 });
 
 test('Brough: "Everything" is unowned — the ENEMY\'s units are balanced too', () => {

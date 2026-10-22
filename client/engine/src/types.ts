@@ -375,6 +375,11 @@ export interface Entity {
    * before the field, which reads as "oldest" and so loses to a live static.
    */
   baseSetSeq?: number;
+  /** CR 113.2, 113.2b / CT-341: `baseSet`'s layer timestamp (E.stampNow, taken
+   * as `baseSetSeq` is), which orders a hidden step by initiative rather than
+   * by click. Layer 2 sorts by it; absent (a state saved before it) it reads
+   * as `[baseSetSeq, ∞]`, the clock order it always had. */
+  baseSetAt?: Stamp;
   /** the game turn this entity ARRIVED in play (GameState.turn at spawn time).
    * Additive/optional so states serialized before it still load — read it
    * through E.spawnedTurn(u), which answers undefined for an entity that
@@ -536,6 +541,11 @@ export interface CopyRef {
   /** the card that caused the copy, for the log and the text box */
   from: CardName;
   seq: number;
+  /** CR 113.2, 113.2b / CT-341: the face's layer timestamp (E.stampNow, taken
+   * as `seq` is), which orders a hidden step by initiative rather than by
+   * click. The copy layer sorts by it; absent (a state saved before it) it
+   * reads as `[seq, ∞]`, the clock order it always had. */
+  at?: Stamp;
   /**
    * LAYER 1 OVERRIDE — this face's "printed" numbers, when they are not the
    * copied card's printed numbers.
@@ -802,6 +812,11 @@ export interface EffectPart {
    * that text is bounded. Its use is kept on the mod under the part's own
    * effectKey, so two copies of one [Augment] on a host have a use each. */
   budgetOn?: EntityId;
+  /** CR 109.9k / CT-342: the budget key this part's use is kept under when it
+   * is NOT `effectKey` — a copy's second copied box of one name
+   * (`augment:<card>#<n>@<k>`, `graft:<card>@<k>`), an Ancient One's borrowed
+   * text (`ao:…`). Refunds read it; `sameTrigger` ignores it. */
+  budgetKey?: string;
   /** skip at resolution (bounded graft effect already used this turn, or a
    * cast-time [cost] on a Modular graft part that was unpayable — CR 724.4c) */
   spent?: boolean;
@@ -1049,6 +1064,11 @@ export interface StackItem {
     /** CR 111.2 (`AbilityCost.sacrificeNontoken`): "another NONTOKEN unit" —
      * narrows which units this atom may name, and what payability asks about. */
     nontoken?: true;
+    /** CR 111.2 / CT-281: a 'discardOrSacrifice' atom whose printed line has no
+     * "another" (`AbilityCost.another` unset) — the source may be sacrificed
+     * to pay. Absent (every atom saved before it existed) = the source is
+     * left out, as it always was. */
+    orSource?: true;
   }[];
   /** CR 111.7: the choice-free half of an activation cost (mana, life, debt,
    * sacrifice-self), carried on the item so it can be charged AFTER the
@@ -1764,6 +1784,15 @@ export interface EngineEvent {
  *                            also names an augment mod a COPY copied (Borrower
  *                            of Forms) — no entity exists to put in `{ mod }`,
  *                            so the mod's card name is the address.
+ *   { face, text?, copy: k } CR 109.9k, 710.2d, 710.7 / CT-342: the k-th
+ *                            (k >= 1) box of that name and text the unit has —
+ *                            a second Ancient One neighbour's, a second
+ *                            augment on one neighbour, a second augment a copy
+ *                            copied. Each box has its own [once]
+ *                            (`<prefix>:<card>#<n>@<k>`, see
+ *                            `E.activatedBoxes`); without `copy` the address
+ *                            means box 0, exactly as before the field
+ *                            existed.
  *
  * ⚠ ADDITIVE, and it has to stay that way: the first three arms are byte for
  * byte what they always were, so an action log recorded before the `{ face }`
@@ -1779,7 +1808,7 @@ export interface EngineEvent {
 export type ActivateVia =
   | 'augment'
   | { mod: EntityId }
-  | { face: CardName; text?: 'ability' | 'augment' };
+  | { face: CardName; text?: 'ability' | 'augment'; copy?: number };
 
 /**
  * CR 703.2a / CT-253 — KEEP PRIORITY, AS A PROPERTY OF THE ACTION.
@@ -1811,7 +1840,8 @@ export type Action = ActionBody & HoldPriorityAsk;
 type ActionBody =
   | { type: 'recycleForResource'; seat: Seat; handIndex: number; element: ResourceKind }
   | { type: 'activateResource'; seat: Seat; index: number }
-  /** planning: swap an ACTIVE Prismite for a resource of any element (CR 106.8a) */
+  /** planning: swap an ACTIVE Prismite for a resource of any element, or a
+   * Shard (CR 106.8a, 106.8d) — never another Prismite */
   | { type: 'exchangePrismite'; seat: Seat; index: number; element: ResourceKind }
   | { type: 'donePlanning'; seat: Seat }
   /** draft step (mode 'draft'): commit the hand↔pack merge. packIndices are

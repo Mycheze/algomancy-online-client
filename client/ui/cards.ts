@@ -30,6 +30,7 @@ import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { artHtml, cardPanelHtml, costHtml, deckStripHtml, similarQuery } from './cardpanel.ts';
 import type { CardRow, Release } from './cardindex.ts';
 import { allRows, facetValues, RELEASE_LABEL, rowFor } from './cardindex.ts';
+import { printsStats } from '../engine/src/cards/dsl.ts';   // CR 206.2
 import {
   FLAGS, KEYS, SORTS, VIEWS, chipState, nextChipState, search,
   withChip, withDisplay, type SearchResult,
@@ -347,7 +348,7 @@ function rowHtml(r: CardRow, at = -1): string {
         omitting the cell let CSS grid slide the rules text up into the 44px
         stats column, where every spell's text was clipped to "Gain c..." —
         which looked like a text bug and was a layout one. */ ''
-    }<span class="cbpt">${r.kind === 'spell' ? '' : `${r.power}/${r.toughness}`}</span>
+    }<span class="cbpt">${printsStats(r.kind) ? `${r.power}/${r.toughness}` : ''}</span>
     <span class="cbrowtext">${oneLine(r.text)}</span>
     ${n ? `<span class="dkn">×${n}</span>` : ''}
     ${tileButtons(r)}

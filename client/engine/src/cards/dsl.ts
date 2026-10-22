@@ -18,6 +18,13 @@ import type {
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
 
+/** CR 206.2 / CT-244: stats mark a unit, so a card prints power and toughness
+ * only when it is a unit or a spell unit. A spell and a spell token print
+ * none (the extractor zeroes them), and no surface may show or compare them. */
+export function printsStats(kind: Printed['kind']): boolean {
+  return kind === 'unit' || kind === 'spellUnit';
+}
+
 export interface Printed {
   name: string;
   /** element factions ("fire"; two for hybrids; [] / absent for synthetics) */
@@ -1214,10 +1221,15 @@ export interface AbilityCost {
    */
   sacrificeNontoken?: true;
   /** "Discard a card OR sacrifice a nontoken unit:" — N payments, each of
-   * which may be either a hand card or another NONTOKEN unit you control.
+   * which may be either a hand card or a NONTOKEN unit you control — the
+   * ability's own source included (CR 111.2 / CT-281: Combustible Bogwalker
+   * prints no "another"), unless `another` is set.
    * The one either/or shape the pool actually prints (Pallid Gorger,
    * Combustible Bogwalker, Lilbot); a general cost algebra is not worth it. */
   discardOrSacrifice?: number;
+  /** CR 111.2: the `discardOrSacrifice` line says "sacrifice ANOTHER nontoken
+   * unit" (Lilbot) — the source may not pay for itself. */
+  another?: true;
 }
 
 export interface ActivatedAbility {

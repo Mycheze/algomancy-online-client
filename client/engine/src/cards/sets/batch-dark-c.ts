@@ -623,14 +623,17 @@ card('Necromorph', {
 // 'augment') and on a host when donated (via { mod }), where "I" is the host
 // and the host's controller pays. CR 111.6, 705.3: the either/or line is a real ACTIVATION
 // cost (`discardOrSacrifice: 1`) — it gates the activation and is chosen and
-// paid in the cast window, before the item reaches the stack. "Another" is
-// implicit: the engine excludes the ability's own source from the sacrifice
-// pool, so the Gorger can no longer eat itself and then fail to grow.
+// paid in the cast window, before the item reaches the stack.
+// No "another" is printed, so the source may pay (CR 111.2 / CT-281, the owner's
+// steer: printed text beats an engine default, take the permissive reading).
+// The Gorger may sacrifice ITSELF — it then gains nothing, since it is gone —
+// and, donated, its host may sacrifice itself the same way. It used to be
+// left out of its own pool, so that it could not eat itself and fail to grow.
 // Discarding is a trash (CR 801.3), which is the point of pairing this with the
 // batch's trash-matters cards.
 card('Pallid Gorger', {
   augmentText: [{
-    type: 'activated', cost: { discardOrSacrifice: 1 },
+    type: 'activated', cost: { discardOrSacrifice: 1 },   // no "another" printed
     label: 'discard a card or sacrifice a nontoken unit: I gain +2/+2 until regroup',
     effect: {
       run: (g, ctx) => {

@@ -43,7 +43,10 @@ const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'trigger
 /** `copiedAugments`' answer for the (almost universal) uncopied unit */
 const NO_CARDS: readonly CardName[] = Object.freeze([]);
 /** `sameTrigger`'s view of a part: which mod holds its use is not what it does */
-const sansBudgetOn = ({ budgetOn: _held, ...p }: EffectPart): Omit<EffectPart, 'budgetOn'> => p;
+const sansBudgetOn = ({ budgetOn: _held, budgetKey: _key, ...p }: EffectPart): Omit<EffectPart, 'budgetOn' | 'budgetKey'> => p;
+/** CR 109.9k / CT-342: the budget key of the `nth` same-name box — box 0 keeps
+ * the plain key it always had, so a state saved mid-turn reads the same */
+export const nthUseKey = (key: string, nth?: number): string => (nth ? `${key}@${nth}` : key);
 
 /**
  * CR 710.7: every channel the `behavior` facet carries — the whole of what a card
@@ -1380,8 +1383,9 @@ export class E {
    * of THAT. A `setBase` therefore wins over a copy in BOTH orders — it is a
    * layer-2 rewrite of whatever layer 1 currently says.
    *
-   * Last-wins by `seq` among the stored copies that carry the `name` facet,
-   * the same rule and the same `nextId` clock `baseSet`/`baseSetSeq` uses.
+   * Last-wins by timestamp among the stored copies that carry the `name` facet,
+   * the same rule `baseSet` uses: `CopyRef.at` (CR 113.2b — a hidden step by
+   * initiative, CT-341), or `[seq, ∞]` on a face saved before it.
    *
    * Cheap and recursion-free ON PURPOSE: it reads `e.copies` and nothing else,
    * so it can be called from inside the `facesOf` walk, from inside statics,
@@ -1395,10 +1399,13 @@ export class E {
     let best: CopyRef | undefined;
     for (const c of e.copies ?? []) {
       if (!c.facets.includes('name')) continue;
-      if (!best || c.seq >= best.seq) best = c;
+      if (!best || !E.older(E.copyStamp(c), E.copyStamp(best))) best = c;
     }
     return best;
   }
+  /** CR 113.2 / CT-341: a face's layer timestamp — the stamp it was given, or the
+   * clock tick it took on a state saved before faces carried one */
+  static copyStamp(c: CopyRef): Stamp { return c.at ?? [c.seq, Infinity]; }
 
   /**
    * The card NAME this entity answers to (see `nameOf`, which is this) — and
@@ -1420,8 +1427,8 @@ export class E {
    * The copy carries each one's `[Augment]` box and nothing else (CR 721.1: an
    * augment radiates only its box), as text of the COPY — no mod entity is
    * cloned (CR 710.2a), so the box reads from the copy, keys its `[once]`
-   * budgets on the copy (`augment:<card>#<n>`, the same key a real mod on
-   * this host uses), and is stamped PRINTED (CR 712.7, 113.2): it is part of the card
+   * budgets on the copy (`augment:<card>#<n>`, and `…@<k>` for the k-th box of
+   * one name — `copiedAugmentBoxes`, CR 710.2d), and is stamped PRINTED (CR 712.7, 113.2): it is part of the card
    * text the copy became, so any stripper strips it.
    *
    * THE one enumerator. Every channel that walks a real augment mod's box —
@@ -1437,6 +1444,66 @@ export class E {
     const out: CardName[] = [];
     for (const m of id.mods) if (m.appliedAs === 'augment') out.push(m.card);
     return out;
+  }
+  /**
+   * CR 109.9k, 710.2d / CT-342 — `copiedAugments` with each box's USE NUMBER,
+   * for the two channels that spend a [once]: the activated offer/accept and
+   * the triggered scan. "Exactly as if a real mod of that card were on it"
+   * (CR 710.2d), and two real mods have a use each, so two copied boxes of one
+   * name do too — and so does a copied box whose name is the copy's own face
+   * (a copy of a Jollyglop wearing a Jollyglop), whose face text holds box 0.
+   *
+   * `nth` counts the earlier boxes of that name on this unit for `facet`, the
+   * face's own [Augment] text first. Box 0 keeps `augment:<card>#<n>` and the
+   * address `{ face, text: 'augment' }` it always had; box k (k >= 1) keeps
+   * `augment:<card>#<n>@<k>` (`nthUseKey`) and is addressed with `copy: k`.
+   */
+  /**
+   * CR 109.9k, 710.2d, 710.7 / CT-342 — EVERY ACTIVATED BOX a unit has, one per
+   * SOURCE, each with its own [once]. The owner, 2026-10-22, on Ancient One:
+   * "each neighbour's copy of the ability is separate, the same as two mods
+   * each having their own use".
+   *
+   * In order: the identity face's own `abilities` and `augmentText` (`own`);
+   * then each PROJECTED source (Ancient One: every adjacent ally's face, every
+   * augment on it, every box a neighbouring copy copied — a name once per
+   * source, not deduped); then the augments a copy copied. `nth` counts the
+   * earlier boxes of the same (card, text) on this unit. Box 0 is addressed
+   * as it always was (undefined / 'augment' for the unit's own text,
+   * `{ face }` / `{ face, text: 'augment' }` otherwise) and keeps the plain
+   * budget key; box k (k >= 1) adds `copy: k` and keeps `…@<k>` (`nthUseKey`).
+   * `pushActivatedOptions` (the offer) and `activationSource` (the accept)
+   * both read this, so the two cannot disagree.
+   */
+  activatedBoxes(u: Entity): { card: CardName; text: 'ability' | 'augment'; nth: number; own: boolean }[] {
+    const out: { card: CardName; text: 'ability' | 'augment'; nth: number; own: boolean }[] = [];
+    const next = new Map<string, number>();
+    const add = (card: CardName, text: 'ability' | 'augment', own: boolean): void => {
+      const k = `${text}:${card}`;
+      const nth = next.get(k) ?? 0;
+      next.set(k, nth + 1);
+      out.push({ card, text, nth, own });
+    };
+    const idCopy = this.identityCopy(u);
+    const idFace = idCopy?.card ?? u.card;
+    if (!idCopy || idCopy.facets.includes('activated')) { add(idFace, 'ability', true); add(idFace, 'augment', true); }
+    for (const name of this.projectedFaces(u, 'activated', true)) {
+      if (name === idFace) continue;
+      add(name, 'ability', false); add(name, 'augment', false);
+    }
+    for (const card of this.copiedAugments(u, 'activated')) add(card, 'augment', false);
+    return out;
+  }
+  copiedAugmentBoxes(e: Entity, facet: CopyFacet): { card: CardName; nth: number }[] {
+    const cards = this.copiedAugments(e, facet);
+    if (!cards.length) return [];
+    const faces = this.facesWith(e, facet);
+    const next = new Map<CardName, number>();
+    return cards.map(card => {
+      const nth = next.get(card) ?? (faces.includes(card) ? 1 : 0);
+      next.set(card, nth + 1);
+      return { card, nth };
+    });
   }
   /**
    * CR 710.1a / CT-219 — the COST of a unit in play: its FACE's printed mana (an X
@@ -1518,7 +1585,7 @@ export class E {
    * latch a nested query answers "identity face only", which is the same
    * shallow answer dp/dt already gets.
    */
-  private projectedFaces(e: Entity, facet: CopyFacet): CardName[] {
+  private projectedFaces(e: Entity, facet: CopyFacet, everyCopy = false): CardName[] {
     if (facet === 'name' || facet === 'stats') return [];   // never projected
     if (this.inFaces) return [];
     const out: CardName[] = [];
@@ -1536,7 +1603,9 @@ export class E {
           if (!facets.includes(facet)) continue;
           for (const name of pr.faces(this, anchor)) {
             if (name === mine) continue;                     // no recursive mimicry
-            if (!out.includes(name)) out.push(name);
+            // `everyCopy`: one entry per SOURCE (two Jollyglop neighbours are
+            // two), for the [once] bookkeeping of E.activatedBoxes (CT-342)
+            if (everyCopy || !out.includes(name)) out.push(name);
           }
         }
       }
@@ -1557,8 +1626,10 @@ export class E {
     facets?: CopyFacet[];
     /** override layer 1 — Borrower of Forms only, see CopyRef.printedStats */
     printedStats?: [number, number];
+    /** CR 113.2b: whose play it is (default: the target's controller) */
+    seat?: Seat;
   }): CopyRef {
-    return this.wearCopy(target, this.prepareCopy(src, opts));
+    return this.wearCopy(target, this.prepareCopy(src, { ...opts, seat: opts.seat ?? target.controller }));
   }
 
   /**
@@ -1573,6 +1644,9 @@ export class E {
     until: 'regroup' | 'permanent';
     facets?: CopyFacet[];
     printedStats?: [number, number];
+    /** CR 113.2b: whose play the copy is part of, which orders it inside a
+     * hidden step. Defaults to `src`'s controller. */
+    seat?: Seat;
   }): CopyRef {
     const name = this.faceName(src);                        // copy of a copy chains via the FACE
     // CR 710.2a: the copy carries its source's mods — their names and how each
@@ -1591,6 +1665,9 @@ export class E {
       facets: opts.facets ?? [...FULL_FACETS],
       until: opts.until,
       from: opts.from,
+      // CR 113.2b / CT-341: the layer stamp, taken BEFORE the tick `seq` consumes,
+      // so outside a hidden step `at` orders exactly as `seq` always did
+      at: this.stampNow(opts.seat ?? src.controller),
       seq: this.s.nextId++,
       ...(opts.printedStats ? { printedStats: opts.printedStats } : {}),
       ...(mods.length ? { mods, modText } : {}),
@@ -1603,7 +1680,18 @@ export class E {
     const name = ref.card;
     const list = (target.copies ??= []);
     if (ref.facets.includes('name')) {
-      // one identity face at a time: an older whole-face copy is replaced
+      // one identity face at a time: an OLDER whole-face copy is replaced. By
+      // timestamp, not by arrival (CR 113.2b / CT-341): inside a hidden step a
+      // face clicked later can still be the older one, and then it is the
+      // face already worn that stands. Outside a hidden step the incoming
+      // face is always the newest, so this is the replacement it always was.
+      const ours = E.copyStamp(ref);
+      const newer = list.find(c => c.facets.includes('name') && E.older(ours, E.copyStamp(c)));
+      if (newer) {
+        this.ev('info', `${target.card} stays a copy of ${newer.card}: that copy is the later one (CR 113.2b).`,
+          { unit: target.id, copy: newer.card });
+        return ref;
+      }
       for (let i = list.length - 1; i >= 0; i--) {
         if (list[i]!.facets.includes('name')) list.splice(i, 1);
       }
@@ -1768,9 +1856,10 @@ export class E {
    * They resolve LAST-WINS, never by summing: each one replaces the number,
    * so two of them on one unit leave it on the later one's value and two
    * copies of the SAME one leave it exactly where one copy would. Timestamps
-   * come from the shared nextId clock — the stamp's `baseSetSeq`, and for a
-   * static the id of the entity carrying the text (so a Statweaver played
-   * after a Formless overrides it, and before it does not).
+   * are CR 113.2 layer stamps — the stamp's `baseSetAt`, and for a static the
+   * stamp of the entity carrying the text, `stampOf` (so a Statweaver played
+   * after a Formless overrides it, and before it does not). Inside a hidden
+   * step both are ordered by initiative, not by click (CR 113.2b, CT-341).
    *
    * Layer 3 (counters, temp deltas, +X/+X statics) then applies ON TOP.
    *
@@ -1787,18 +1876,21 @@ export class E {
     // layers 0-1: what the card this entity currently IS prints (CR 709.4a)
     let [p, t] = this.printedStats(e);
     // layer 2: collect the rewrites, then apply them in timestamp order
-    let rewrites: { seq: number; p?: number; t?: number }[] | undefined;
+    let rewrites: { at: Stamp; p?: number; t?: number }[] | undefined;
     for (const { holder, srcId, mod } of statics) {
       if (mod.baseP === undefined && mod.baseT === undefined) continue;
       (rewrites ??= []).push({
-        seq: srcId,
+        at: this.stampOf(srcId),
         p: typeof mod.baseP === 'function' ? mod.baseP(this, holder, e) : mod.baseP,
         t: typeof mod.baseT === 'function' ? mod.baseT(this, holder, e) : mod.baseT,
       });
     }
-    if (e.baseSet) (rewrites ??= []).push({ seq: e.baseSetSeq ?? 0, p: e.baseSet[0], t: e.baseSet[1] });
+    if (e.baseSet) {
+      (rewrites ??= []).push({ at: e.baseSetAt ?? [e.baseSetSeq ?? 0, Infinity], p: e.baseSet[0], t: e.baseSet[1] });
+    }
     if (rewrites) {
-      if (rewrites.length > 1) rewrites.sort((a, b) => a.seq - b.seq);
+      // stable: two rewrites with one stamp (one source's two statics) keep their order
+      if (rewrites.length > 1) rewrites.sort((a, b) => (E.older(a.at, b.at) ? -1 : E.older(b.at, a.at) ? 1 : 0));
       for (const r of rewrites) {
         if (r.p !== undefined) p = r.p;
         if (r.t !== undefined) t = r.t;
@@ -4494,8 +4586,13 @@ export class E {
    * it last-wins against the CONTINUOUS base-setters (Aberrant Statweaver's
    * "your units are base 3/3"), which live on StaticMod instead.
    */
-  setBase(target: Entity, p: number, t: number): void {
+  setBase(target: Entity, p: number, t: number, seat: Seat = target.controller): void {
     target.baseSet = [p, t];
+    // CR 113.2b / CT-341: the layer stamp, taken BEFORE the tick baseSetSeq
+    // consumes — outside a hidden step it orders exactly as baseSetSeq did;
+    // inside one, by initiative. `seat`: whose play it is (in a hidden step a
+    // seat reaches only its own units, CR 507.1b, so the target's controller)
+    target.baseSetAt = this.stampNow(seat);
     target.baseSetSeq = this.s.nextId++;
     this.ev('statChanged', `${target.card}'s base becomes ${p}/${t} until regroup.`,
       { unit: target.id, baseP: p, baseT: t });
@@ -9753,13 +9850,16 @@ export class E {
   }
 
   /** CR 111.2: the units one choice-bearing activation-cost atom may name.
-   * The source is never one of them ("another"), and a `discardOrSacrifice`
+   * The source is not one of them ("another") — except for a `discardOrSacrifice`
+   * atom marked `orSource`, whose printed line says "a nontoken unit" with no
+   * "another" (CT-281, Combustible Bogwalker). A `discardOrSacrifice`
    * or a `nontoken`-flagged atom may not name a token. The ONE reading the
    * option list, the payability gate and `payItemCost`'s validation share. */
   private itemCostSacrifices(item: StackItem, atom: NonNullable<StackItem['pendingCosts']>[number]): Entity[] {
     const nontokenOnly = atom.kind === 'discardOrSacrifice' || atom.nontoken === true;
+    const sourceMayPay = atom.kind === 'discardOrSacrifice' && atom.orSource === true;
     return this.unitsOf(item.controller, item.region)
-      .filter(u => u.id !== item.sourceId && (!nontokenOnly || !u.token));
+      .filter(u => (sourceMayPay || u.id !== item.sourceId) && (!nontokenOnly || !u.token));
   }
 
   /** CR 111.6: can this ONE choice-bearing atom still be paid, right now? */
@@ -9890,7 +9990,7 @@ export class E {
           prompt: `${item.label}: ${
             atom.kind === 'discard' ? 'discard a card'
               : atom.kind === 'sacrificeOther' || atom.kind === 'playSacrifice' ? 'sacrifice a unit'
-                : 'discard a card or sacrifice a nontoken unit'
+                : `discard a card or sacrifice ${atom.orSource ? 'a' : 'another'} nontoken unit`
           } (${atom.kind === 'playSacrifice' ? 'additional cost' : 'activation cost'}${atom.n > 1 ? `, ${atom.n} left` : ''})`,
           options,
         },
@@ -11641,7 +11741,7 @@ export class E {
       : part.budgetOn !== undefined ? this.entity(part.budgetOn)
         : (item.sourceId !== undefined ? this.entity(item.sourceId) : undefined);
     if (!holder) return;                       // the carrier is gone: nothing to refund onto
-    const key = part.fromMod !== undefined ? 'graft' : part.effectKey;
+    const key = part.fromMod !== undefined ? 'graft' : (part.budgetKey ?? part.effectKey);
     if ((holder.budgets[key] ?? 0) <= 0) return;   // not bounded, or already back
     delete holder.budgets[key];
     this.ev('info',
@@ -12183,7 +12283,7 @@ export class E {
   /** Compose the parts of a firing ability: base effect + graft-mod effects,
    * top-to-bottom (Manual p.33). Bounded pieces consume per-card budgets (CR 803.4). */
   composeParts(source: Entity, abilityIndex: number, abilityKeyPrefix: 'ability' | 'augment', viaCard?: CardName,
-    fromAugment?: EntityId): EffectPart[] | null {
+    fromAugment?: EntityId, copyNth?: number): EffectPart[] | null {
     // CR 710.1: with no `viaCard` the ability is the source's OWN, which
     // means the card it currently IS — the face, not the physical card.
     const cardName = viaCard ?? this.faceName(source);
@@ -12191,7 +12291,9 @@ export class E {
     const list = abilityKeyPrefix === 'ability' ? def.abilities : def.augmentText;
     const ability = list?.[abilityIndex];
     if (!ability) return null;
-    const budgetKey = `${abilityKeyPrefix}:${cardName}#${abilityIndex}`;
+    // CR 109.9k, 710.2d / CT-342: a copy's k-th copied box of one name keeps
+    // its own use on the copy (E.copiedAugmentBoxes)
+    const budgetKey = nthUseKey(`${abilityKeyPrefix}:${cardName}#${abilityIndex}`, copyNth);
     // per card = per entity instance (CR 803.4); and text an augment MOD
     // donates is that mod's, so the mod holds its use (CR 109.9k, report 269:
     // two Jollyglops' text on one unit shared one use when the host held it)
@@ -12226,6 +12328,7 @@ export class E {
     const base: EffectPart = {
       effectKey: `${abilityKeyPrefix}:${cardName}#${abilityIndex}`, targets: [],
       ...(ability.bounded && augmentMod ? { budgetOn: augmentMod.id } : {}),
+      ...(ability.bounded && copyNth ? { budgetKey } : {}),
     };
     const parts: EffectPart[] = [base];
     // grafted effects join only a graft cause, and only from graft-applied mods
@@ -12237,16 +12340,22 @@ export class E {
       // later goes "only 'underneath' original copied grafts". A copied graft
       // has no entity, so a bounded one keeps its budget on the copy itself,
       // under its part key (which is what refundPart hands back).
+      // CR 109.9k / CT-342: two copied grafts of one name are two uses, as
+      // two real ones are — the k-th keeps `graft:<card>@<k>` (`nthUseKey`)
+      const seenGraft = new Map<CardName, number>();
       for (const cm of this.identityCopy(source)?.mods ?? []) {
         if (cm.appliedAs !== 'graft') continue;
         const g = this.card(cm.card).graftEffect;
         if (!g) continue;
+        const nth = seenGraft.get(cm.card) ?? 0;
+        seenGraft.set(cm.card, nth + 1);
         const key = `graft:${cm.card}`;
+        const useKey = nthUseKey(key, nth);
         if (g.bounded) {
-          if ((source.budgets[key] ?? 0) > 0) continue;
-          source.budgets[key] = 1;
+          if ((source.budgets[useKey] ?? 0) > 0) continue;
+          source.budgets[useKey] = 1;
         }
-        grafts.push({ effectKey: key, targets: [] });
+        grafts.push({ effectKey: key, targets: [], ...(g.bounded && nth ? { budgetKey: useKey } : {}) });
       }
       for (const modId of source.mods) {
         const mod = this.entity(modId);
@@ -12340,9 +12449,10 @@ export class E {
         queued = this.collectTriggersFrom(u, face, 'augment', type, ev, src) || queued;
       }
       // CR 710.2a: the [Augment] text of the mods a copy copied — the copy's own
-      // text (no mod entity, so no `selfModId`), stamped as printed
-      if (kept(E.PRINTED)) for (const card of this.copiedAugments(u, 'triggered')) {
-        queued = this.collectTriggersFrom(u, card, 'augment', type, ev, src) || queued;
+      // text (no mod entity, so no `selfModId`), stamped as printed; each box
+      // with its own use (CR 710.2d / CT-342)
+      if (kept(E.PRINTED)) for (const { card, nth } of this.copiedAugmentBoxes(u, 'triggered')) {
+        queued = this.collectTriggersFrom(u, card, 'augment', type, ev, src, undefined, nth) || queued;
       }
       for (const modId of u.mods) {
         const mod = this.entity(modId);
@@ -12411,9 +12521,9 @@ export class E {
    */
   private queueTrigger(host: Entity, cardName: CardName, abilityIndex: number,
     ability: TriggeredAbility, prefix: 'ability' | 'augment', ev: EngineEvent,
-    logMsg: string, logData: Record<string, unknown>, selfModId?: EntityId): boolean {
+    logMsg: string, logData: Record<string, unknown>, selfModId?: EntityId, copyNth?: number): boolean {
     if (ability.when && !ability.when(this, host, ev)) return false;
-    const parts = this.composeParts(host, abilityIndex, prefix, cardName, selfModId);
+    const parts = this.composeParts(host, abilityIndex, prefix, cardName, selfModId, copyNth);
     if (!parts) return false;
     this.s.triggerQueue.push({
       sourceId: host.id, sourceCard: cardName, controller: host.controller,
@@ -12464,7 +12574,8 @@ export class E {
     return queued;
   }
 
-  private collectTriggersFrom(host: Entity, cardName: CardName, prefix: 'ability' | 'augment', type: EventType, ev: EngineEvent, eventSource?: EntityId, selfModId?: EntityId): boolean {
+  private collectTriggersFrom(host: Entity, cardName: CardName, prefix: 'ability' | 'augment', type: EventType, ev: EngineEvent, eventSource?: EntityId, selfModId?: EntityId,
+    copyNth?: number): boolean {
     const def = this.card(cardName);
     const list = prefix === 'ability' ? def.abilities : def.augmentText;
     if (!list) return false;
@@ -12527,7 +12638,7 @@ export class E {
       narrow ??= this.staticsFor(host).filter(st => st.mod.suppressAbility);
       if (narrow.some(st => st.mod.suppressAbility!(this, st.holder, host, ability))) return;
       queued = this.queueTrigger(host, cardName, idx, ability, prefix, ev,
-        `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id }, selfModId) || queued;
+        `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id }, selfModId, copyNth) || queued;
     });
     return queued;
   }
@@ -12743,7 +12854,7 @@ export class E {
     for (const part of t.parts) {
       const holder = this.entity(part.fromMod ?? part.budgetOn ?? t.sourceId);
       if (!holder) continue;
-      const key = part.fromMod !== undefined ? 'graft' : part.effectKey;
+      const key = part.fromMod !== undefined ? 'graft' : (part.budgetKey ?? part.effectKey);
       if ((holder.budgets[key] ?? 0) <= 0) continue;
       delete holder.budgets[key];
     }
@@ -14628,6 +14739,7 @@ export class E {
       e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs; delete e.tempAttrsAt;
       delete e.baseSet;      // layer 2 is an until-regroup rewrite too
       delete e.baseSetSeq;
+      delete e.baseSetAt;
       delete e.suppressed;   // CR 506.2d: so is a switched-off attribute/ability layer
       delete e.unstable;     // CR 803.8d: "they gain unstable UNTIL REGROUP" — this is that
       delete e.damageShield; // CR 506.2d: "UNTIL REGROUP, prevent all damage …" — and this

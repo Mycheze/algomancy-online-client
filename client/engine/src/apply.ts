@@ -9,7 +9,7 @@ import type {
   Action, ActivateVia, AmendEdit, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
   EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem,
 } from './types.ts';
-import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, hiddenSegment, other, type ChainRest, type CostOpts } from './engine.ts';
+import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, hiddenSegment, nthUseKey, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
   affinityPips, ambushEffect, canonicalCardName, costAmount, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, requiresTargets, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
@@ -693,14 +693,17 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
-  e.need((e.s.elements as string[]).includes(element), 'not an element of this game');
+  // CR 106.8d / CT-237: the printed Prismite reads "Create a NON-PRISMITE
+  // resource" — an element of the game, or a Shard; never another Prismite
+  e.need(element === 'shard' || (e.s.elements as string[]).includes(element),
+    'a Prismite becomes an element of this game or a Shard');
   const r = e.player(seat).resources[index];
   e.need(r && r.kind === 'prismite', 'not a prismite');
   // only ACTIVE (face-up) prismites can be exchanged (Manual p.18) — the
   // new resource keeps the prismite's state (expended stays expended)
   e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');
   r.kind = element;
-  e.ev('resourceActivated', `${e.pname(seat)} exchanges a Prismite for a ${element} resource.`, { seat, kind: element });
+  e.ev('resourceActivated', `${e.pname(seat)} exchanges a Prismite for a ${element === 'shard' ? 'Shard' : `${element} resource`}.`, { seat, kind: element });
   // CR 106.8c — THE AFFINITY SHARD IS OWED. This is the reversal of the earlier exchange ruling, and the
   // card's own text is the argument (owner, playtest report #92):
   //
@@ -1591,6 +1594,12 @@ function viaMod(via?: ActivateVia): EntityId | undefined {
   return via && typeof via === 'object' && 'mod' in via ? via.mod : undefined;
 }
 
+/** CR 109.9k, 710.2d / CT-342: which same-name copied box `via` addresses —
+ * 0 (the old, field-less address) unless it names a later one */
+function viaCopy(via?: ActivateVia): number {
+  return via && typeof via === 'object' && 'face' in via ? via.copy ?? 0 : 0;
+}
+
 /** CR 113.2: when the activated text `via` addresses arrived on its unit — an
  * augment mod's at the mod's arrival, everything else printed (the oldest) */
 function viaStamp(e: E, via?: ActivateVia): import('./types.ts').Stamp {
@@ -1598,7 +1607,7 @@ function viaStamp(e: E, via?: ActivateVia): import('./types.ts').Stamp {
 }
 
 function activationSource(e: E, u: Entity, via?: ActivateVia):
-  { list: ReturnType<typeof getCard>['abilities']; prefix: 'ability' | 'augment'; viaCard?: CardName } {
+  { list: ReturnType<typeof getCard>['abilities']; prefix: 'ability' | 'augment'; viaCard?: CardName; copyNth?: number } {
   if (via === undefined || via === 'augment') {
     // the unit's OWN text — off the identity face, which is the copied card
     // when it is wearing one (Apex Prime, Borrower of Forms)
@@ -1611,6 +1620,19 @@ function activationSource(e: E, u: Entity, via?: ActivateVia):
       : { list: getCard(face).augmentText, prefix: 'augment', viaCard: face };
   }
   if ('face' in via) {
+    if (via.copy !== undefined) {
+      // CR 109.9k, 710.2d, 710.7 / CT-342: the k-th box of that name and text —
+      // a second neighbour's, a second copied mod's — with its own use, exactly
+      // what E.activatedBoxes numbered for the offer
+      const text = via.text ?? 'ability';
+      e.need(Number.isInteger(via.copy) && via.copy >= 1
+        && e.activatedBoxes(u).some(b => !b.own && b.card === via.face && b.text === text && b.nth === via.copy),
+      'that unit does not have that ability');
+      const def = getCard(via.face);
+      return text === 'augment'
+        ? { list: def.augmentText, prefix: 'augment', viaCard: via.face, copyNth: via.copy }
+        : { list: def.abilities, prefix: 'ability', viaCard: via.face, copyNth: via.copy };
+    }
     // CR 710.2a: a copy's copied augment mod is addressed as `{ face, text: 'augment' }`
     // too — its [Augment] text is the copy's own, keyed on the mod's card
     e.need(e.facesWith(u, 'activated').includes(via.face)
@@ -1646,7 +1668,8 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
       .filter(o => o.id !== u.id && (!cost.sacrificeNontoken || !o.token))   // CR 111.2
       .length < cost.sacrificeOther) return false;
   if (cost.discardOrSacrifice !== undefined) {
-    const sacs = e.unitsOf(seat, region).filter(o => o.id !== u.id && !o.token).length;
+    // CR 111.2 / CT-281: "a nontoken unit" includes the source; "another" does not
+    const sacs = e.unitsOf(seat, region).filter(o => (!cost.another || o.id !== u.id) && !o.token).length;
     if (e.player(seat).hand.length + sacs < cost.discardOrSacrifice) return false;
   }
   return true;
@@ -1729,7 +1752,7 @@ function graftCostUnpayable(e: E, seat: Seat, ab: { graftCause?: boolean }, u: E
 function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: ActivateVia): void {
   const u = e.entity(entityId);
   e.need(u && u.kind === 'unit' && u.controller === seat && !u.absent, 'not your unit');
-  const { list, prefix, viaCard } = activationSource(e, u, via);
+  const { list, prefix, viaCard, copyNth } = activationSource(e, u, via);
   const ability = list?.[abilityIndex];
   e.need(ability && ability.type === 'activated', 'no such activated ability');
   // CR 712.1a, 712.2: stripped text has no activated abilities to activate — and a
@@ -1764,7 +1787,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
     (cost.mana ?? 0) + e.abilityTax(seat, viaCard ?? e.faceName(u), region, 'activate').total);
   e.need(!graftGate, graftGate ?? '');
   // compose BEFORE paying costs: a spent bounded cause makes this illegal
-  const parts = e.composeParts(u, abilityIndex, prefix, viaCard, viaMod(via));
+  const parts = e.composeParts(u, abilityIndex, prefix, viaCard, viaMod(via), copyNth);
   e.need(parts, 'that ability was already used this turn');
   // CR 705.3a: …and only then, whether the effect has anything to spend itself on
   const unusable = abilityUnusable(e, seat, ability, u, region, viaCard ?? e.faceName(u));
@@ -1796,7 +1819,12 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
       ...(cost.sacrificeNontoken ? { nontoken: true as const } : {}),   // CR 111.2
     });
   }
-  if (cost.discardOrSacrifice) pending.push({ kind: 'discardOrSacrifice', n: cost.discardOrSacrifice });
+  if (cost.discardOrSacrifice) {
+    pending.push({
+      kind: 'discardOrSacrifice', n: cost.discardOrSacrifice,
+      ...(cost.another ? {} : { orSource: true as const }),   // CR 111.2 / CT-281
+    });
+  }
   if (pending.length) item.pendingCosts = pending;
   e.castChain([item], then);
   e.settle();
@@ -3716,6 +3744,9 @@ function legalPlanningActions(e: E, seat: Seat): Action[] {
   e.player(seat).resources.forEach((r, i) => {
     if (r.kind === 'prismite' && r.state !== 'dormant') {
       for (const el of s.elements) out.push({ type: 'exchangePrismite', seat, index: i, element: el });
+      // CR 106.8d / CT-237: and a Shard, a non-prismite resource — appended, so
+      // every element option keeps the index it has always had
+      out.push({ type: 'exchangePrismite', seat, index: i, element: 'shard' });
     }
   });
   out.push({ type: 'donePlanning', seat });
@@ -4169,7 +4200,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (!canPayAbilityCost(e, seat, ab.cost, u, region, budgetCard)) return;
         // CR 109.9k: a mod's [Augment] use is kept on the mod (E.composeParts)
         const holder = (viaMod(via) !== undefined ? e.entity(viaMod(via)!) : undefined) ?? u;
-        if (ab.bounded && (holder.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
+        if (ab.bounded && (holder.budgets[nthUseKey(`${prefix}:${budgetCard}#${i}`, viaCopy(via))] ?? 0) > 0) return;
         if (strips.length && E.strippedBy(viaStamp(e, via), strips)) return;      // CR 712.2
         if (e.abilityIsSuppressed(u, ab, viaStamp(e, via))) return;                 // CR 712.4
         if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // CR 705.3a
@@ -4188,23 +4219,24 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
     // the same list from the same call, and the two MUST agree action for
     // action: the fuzzer's "legalActions lied" invariant is the guard, and
     // this class of split has already been caught here once.
-    const idFace = e.faceName(u);
-    const faces = e.facesWith(u, 'activated');
-    for (const face of faces) {
-      const own = face === idFace;
-      offer(getCard(face).abilities, 'ability', face, own ? undefined : { face });
+    //
+    // CR 109.9k, 710.2d, 710.7 / CT-342: and ONE ACTIVATION PER SOURCE, each with
+    // its own [once] — two Jollyglop neighbours of an Ancient One are two
+    // (the owner, 2026-10-22: "each neighbour's copy of the ability is
+    // separate, the same as two mods each having their own use"), and so are
+    // two augments a copy copied. E.activatedBoxes numbers them: box 0 keeps the
+    // address it always had (`{ face }` / `{ face, text: 'augment' }`, which
+    // for a copy's copied mod is the mod's card name), box k adds `copy: k`.
+    for (const b of e.activatedBoxes(u)) {
+      const def = getCard(b.card);
+      const list = b.text === 'ability' ? def.abilities : def.augmentText;
+      const via: ActivateVia | undefined = b.own
+        ? (b.text === 'ability' ? undefined : 'augment')
+        : b.text === 'ability'
+          ? (b.nth ? { face: b.card, copy: b.nth } : { face: b.card })
+          : (b.nth ? { face: b.card, text: 'augment', copy: b.nth } : { face: b.card, text: 'augment' });
       // a card's own [Augment] text is active when played normally (Manual Q&A)
-      offer(getCard(face).augmentText, 'augment', face,
-        own ? 'augment' : { face, text: 'augment' });
-    }
-    // CR 710.2a: the [Augment] text of the mods a copy copied, addressed by the
-    // mod's card name. Once per name — two copied Graxxlids share one budget on this host, although two REAL ones have a use each (CR 109.9k: a copied box has no mod entity to hold it, CT-342) — and never a name a
-    // face above already offered, which would be the same action twice.
-    const copied = e.copiedAugments(u, 'activated');
-    for (let i = 0; i < copied.length; i++) {
-      const card = copied[i]!;
-      if (faces.includes(card) || copied.indexOf(card) !== i) continue;
-      offer(getCard(card).augmentText, 'augment', card, { face: card, text: 'augment' });
+      offer(list, b.text, b.card, via);
     }
     // activated abilities donated by augment mods (controller of the unit controls its mods)
     for (const modId of u.mods) {
