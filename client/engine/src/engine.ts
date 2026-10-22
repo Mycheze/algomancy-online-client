@@ -2450,11 +2450,20 @@ export class E {
     for (const col of Object.values(b.blocks)) if (col.includes(id)) return col;
     return null;
   }
+  /**
+   * CR 712.8a: the attributes a column SHARES — every combat attribute any of
+   * its units has. CR 802.26h (CT-261): {Modular} is not one of them. It says
+   * how a card is PLAYED, not how it fights (the owner: "Modular is also
+   * special"), so a unit that has it keeps it and its column-mates do not get
+   * it. `effAttrs` adds a unit's own unshared attributes back for that unit.
+   * (Unstable and Burst never reach this set at all — 298 §5.)
+   */
+  static readonly UNSHARED_ATTRS: ReadonlySet<string> = new Set(['Modular']);
   colAttrs(ids: EntityId[]): Set<string> {
     const set = new Set<string>();
     for (const id of ids) {
       const u = this.entity(id);
-      if (u) for (const a of this.ownAttrs(u)) set.add(a);
+      if (u) for (const a of this.ownAttrs(u)) if (!E.UNSHARED_ATTRS.has(a)) set.add(a);
     }
     return set;
   }
@@ -2482,7 +2491,10 @@ export class E {
   /** combat attributes are shared vertically within a column */
   effAttrs(e: Entity): Set<string> {
     const col = this.columnOf(e.id);
-    return col ? this.colAttrs(col) : this.ownAttrs(e);
+    if (!col) return this.ownAttrs(e);
+    const set = this.colAttrs(col);
+    for (const a of this.ownAttrs(e)) if (E.UNSHARED_ATTRS.has(a)) set.add(a);
+    return set;
   }
 
   // ── zones ───────────────────────────────────────────────────────────

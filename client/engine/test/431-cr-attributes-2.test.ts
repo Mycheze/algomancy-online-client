@@ -676,19 +676,3 @@ test('cr:attr.pure.not-targeting — a target-unit damage spell (Arc Lightning) 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   assert.ok(offered(h).includes(JSON.stringify({ unit: jau })), `menu: ${offered(h)}`);
 });
-
-/* ── Modular ────────────────────────────────────────────────────────── */
-
-test('cr:attr.modular.not-shared — engine differs: a unit given Modular in an attacking column shares Modular with its column-mate', () => {
-  const h = new Harness(93006);
-  toDeployment(h);
-  const A = h.state.initiative as Seat;
-  const m = tok(h, A, 1, 1), mate = tok(h, A, 1, 1);
-  grant(h, m, 'Modular');
-  toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[m, mate]] });
-  const g = new E(h.state);
-  assert.ok(!g.ownAttrs(g.entity(mate)!).has('Modular'));
-  // the rule: Modular is not shared; the engine shares it (latent: no unit prints Modular)
-  assert.ok(g.effAttrs(g.entity(mate)!).has('Modular'), 'engine: the column-mate reads Modular');
-});
