@@ -6116,17 +6116,13 @@ export class E {
   //                  units' controllers gain a rot."   (printed reminder)
   //   {Reaping}     "When a reaping source kills one or more units, draw a
   //                  card. It loses reaping until regroup."   (printed reminder)
-  //                 (⚠ THIS COMMENT USED TO SAY IT WAS **NOT** PRINTED — "none
-  //                  of the four {Reaping} cards carries a reminder at all.
-  //                  `ui/glossary.ts` is the repo's own statement of it, and it
-  //                  is what R184 read." That was false, and the Reaping ruling built the
-  //                  attribute from the repository's paraphrase of itself
-  //                  because of it. Every printer carries the sentence above;
-  //                  it is missing from the oracle transcription because
-  //                  {Reaping} is a TYPE-LINE ATTRIBUTE and that file's `text`
-  //                  field holds ability text (owner, 2026-08-30); see CR 802.21.
-  //                  "one or more units" takes "a card" — one draw, not one
-  //                  per body, which is what this site paid until the reminder was read.)
+  //                 (Every printer carries it; it is missing from the oracle
+  //                  transcription because {Reaping} is a TYPE-LINE ATTRIBUTE
+  //                  and that file's `text` field holds ability text (owner,
+  //                  2026-08-30); see CR 802.21. "one or more units" takes "a
+  //                  card" — one draw, not one per body. The second sentence is
+  //                  not built: no unit can carry {Reaping} in this pool, and a
+  //                  spell resolves once — 263 §4 is the tripwire, CT-173.)
   //
   // Contrast the DAMAGE-scoped riders one word away — {Blessed} "DAMAGE dealt
   // by a blessed source…", {Resonant} "when it DAMAGES a unit…", {Deadly}
