@@ -603,14 +603,15 @@ test('§6b CT-143 tripwire: every playInline caller is battle-only, which is wha
     + 'reach the in-place branch');
 });
 
-test('§6c CT-143 residue, pinned: the in-place path announces a play WITHOUT the wide event', () => {
-  // ⚠ THIS TEST DOES NOT SAY THE SILENCE IS RIGHT. It says the silence is
-  // WHAT THE CODE DOES, measured, so that CT-143 is a falsifiable entry rather
-  // than a rumour — and so that changing it is a decision somebody makes on
-  // purpose rather than a side effect. If you are here because this failed:
-  // you have just taught the in-place path to fire 'cardPlayed'. Go and settle
-  // CT-143 (and the CT-79 reading "no item means nothing to negate", which decides what
-  // Void Mandible does with it) instead of editing this assertion.
+test('§6c CR 108.1a / CT-143 settled: the in-place path announces a play WITH the wide event', () => {
+  // This used to pin the residue — the in-place branch fired a hand-rolled
+  // 'spellPlayed' and no 'cardPlayed'. CT-143 is settled now (556 is its guard):
+  // both branches declare the play through one function and announce it
+  // through `commitItem(…, 'announce')`, so every play is heard. The item id it
+  // carries names an item that never reaches the stack — the same answer a
+  // haste-step play from hand (`commitItem(…, 'resolve')`) has always given,
+  // and Void Mandible reads it the same way: there is nothing standing there
+  // to negate.
   const h = new Harness(16912);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -625,7 +626,6 @@ test('§6c CT-143 residue, pinned: the in-place path announces a play WITHOUT th
   });
   const fired = h.events.slice(before).map(e => e.type);
   assert.ok(fired.includes('spawned'), 'the body arrived, so a play really did happen here');
-  assert.ok(!fired.includes('cardPlayed'),
-    'CT-143\'s residue: CR 108.1a\'s wide event does not fire on the in-place path. Unreachable '
-    + 'from the pool today (§6b), which is why it is parked and not patched');
+  assert.ok(fired.includes('cardPlayed'), 'and CR 108.1a\'s wide event announced it');
+  assert.ok(fired.indexOf('cardPlayed') < fired.indexOf('spawned'), 'the play, then the arrival');
 });

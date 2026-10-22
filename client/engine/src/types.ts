@@ -1090,6 +1090,14 @@ export interface StackItem {
    */
   unstable?: boolean;
   /**
+   * CR 102.5a (CT-245): the card's OWNER, present only when it is not the
+   * controller — a card an effect plays out of another player's zone (Wake the
+   * Dead's "any bin"). The body it resolves into is spawned with this owner
+   * (and dies to its CONTROLLER's bin, CR 400.4). Optional and additive: an
+   * item without it is owned by its controller, which every older item was.
+   */
+  owner?: Seat;
+  /**
    * CR 710.8 — this item is a COPY of a spell (Earthbound Replicator, Maelstrom
    * Charger), not the spell itself. It is a real stack item: respondable,
    * negatable, targetable as an effect.

@@ -326,7 +326,10 @@ test('CR 701.4a: the in-place path stamps the zone on the body own spawn event',
   });
   drain(h);
   assert.ok(unitsOf(h, A).some(u => u.card === 'Curio Drifter'), 'the body arrived');
-  assert.deepEqual(playZones(h, 'Curio Drifter'), [{ type: 'spawned', from: 'hand' }],
+  // CT-143: the in-place play announces itself on CR 108.1a's wide 'cardPlayed' too
+  // (it fired none before), and both events carry the zone
+  assert.deepEqual(playZones(h, 'Curio Drifter'),
+    [{ type: 'cardPlayed', from: 'hand' }, { type: 'spawned', from: 'hand' }],
     'the spawn carried the zone — the event Proph and the Sentinel read for a unit');
   assert.equal(draws(h, A), drew, 'Proph did NOT draw on a hand play');
   assert.equal(ent(h, sentinel)!.counters, 0, 'nor did the Sentinel grow');
@@ -337,7 +340,8 @@ test('CR 701.4a: the in-place path stamps the zone on the body own spawn event',
     playInline(e, inlineCtx(e, A) as never, 'Tidal Menace', 'k2', A, { from: 'deck' });
   });
   drain(h);
-  assert.deepEqual(playZones(h, 'Tidal Menace'), [{ type: 'spawned', from: 'deck' }],
+  assert.deepEqual(playZones(h, 'Tidal Menace'),
+    [{ type: 'cardPlayed', from: 'deck' }, { type: 'spawned', from: 'deck' }],
     'and the fifth zone survives the in-place path too');
   assert.ok(ent(h, proph), 'Proph is still there');
   assert.equal(draws(h, A), drew + 1, 'Proph drew');

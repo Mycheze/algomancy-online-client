@@ -10587,8 +10587,19 @@ export class E {
 
   /** `moreItems` is the rest of the cast chain this item heads (castChain);
    * when `then` is 'resolve' it rides on any mid-resolution suspension the
-   * item raises, so the chain is not lost if the player has to be asked. */
-  commitItem(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[] = []): void {
+   * item raises, so the chain is not lost if the player has to be asked.
+   *
+   * CR 701.4, 108.1a (CT-143): `'announce'` is the third answer, and it has one
+   * caller — `playInline`'s in-place branch (batch-water-a), a card played by
+   * an effect where nobody can respond. Everything a play IS happens here
+   * exactly as it does for `'resolve'` (the 'targeted' dispatch, the two
+   * spell ledgers, 'spellPlayed' with its `offStack` snapshot, the Deferral
+   * Drone spend, the card's own play trigger, CR 108.1a's 'cardPlayed'), and
+   * then this returns: the CALLER resolves the item, inside the resolution
+   * that played it, through that resolution's own chooser. It must not
+   * resolve here — a nested `resolveItem` would raise its questions on a
+   * second suspension, and `GameState.decision` has one slot. */
+  commitItem(item: StackItem, then: 'push' | 'resolve' | 'announce', moreItems: StackItem[] = []): void {
     // CR 722.6a: a graft composite withheld at cost time never reaches the stack
     if (item.withheld) return;
     this.dispatchTargeted(item);
@@ -10673,7 +10684,8 @@ export class E {
           // lines down, and for the same reason: this is the only instant the
           // item is complete. `E.playedItem` is the one reader; nothing may
           // mutate this copy.
-          ...(then === 'resolve' ? { offStack: structuredClone(item) } : {}),
+          // ('announce' is a no-stack play too — playInline's in-place branch.)
+          ...(then !== 'push' ? { offStack: structuredClone(item) } : {}),
         });
       // CR 111.10k: playing a spell burns the Deferral Drone charge — but the Drone
       // prints "the next CARD you play", and a spell token is not a card
@@ -10733,6 +10745,7 @@ export class E {
       });
       this.fireEvent('cardPlayed', ev);
     }
+    if (then === 'announce') return;   // CT-143: the caller resolves it — see above
     if (then === 'push') {
       this.pushItem(item);
       // CR 710.8: the as-you-play copies go on AFTER the original, so they sit
@@ -10950,6 +10963,7 @@ export class E {
       this.spawnUnit(item.controller, item.card!, item.region, {
         ...(item.from ? { from: item.from } : {}),
         ...(item.formationSpot ? { spot: item.formationSpot } : {}),
+        ...(item.owner !== undefined ? { owner: item.owner } : {}),   // CR 102.5a (CT-245)
       });
       return;
     }
@@ -11718,7 +11732,9 @@ export class E {
       // still the caster's bin it dies to. `owner` is passed unconditionally
       // because it is exactly `seat` in every other case.
       const u = this.spawnUnit(item.spawnUnder ?? item.controller, item.card!, item.region, {
-        owner: item.controller,
+        // CR 102.5a (CT-245): …or the card's own owner, when an effect played it
+        // out of somebody else's zone (Wake the Dead's "any bin").
+        owner: item.owner ?? item.controller,
         ...(item.from ? { from: item.from } : {}),
         // CR 303.11: …and WEARING what its own text made it, if its own text made
         // it anything (Borrower of Forms). Same shape, same place, same
