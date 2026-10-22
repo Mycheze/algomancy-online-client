@@ -585,23 +585,29 @@ card('Return to Nature', {
         (e.kind === 'unit' || e.kind === 'spellToken') && e.region === ctx.region
         && !e.absent && e.mods.length > 0);
       for (const u of modded) {
-        // CR 407.2, 407.1, 407.1a: an erase must reach the PUBLIC ERASED PILE, and each card
-        // reaches its OWN owner's pile — a mod's owner is the player who
-        // applied it, not the unit's controller. This used to be a bare
-        // `delete` plus an 'info' line, so a nontoken mod card left the game
-        // and neither player could see where it went. `E.ev('erased', …)` is
-        // the only thing that files the pile (E.ev reads `seat` + `cards`),
-        // which is the same line disposeToBin emits for a token mod.
+        // CR 407.2, 407.1, 407.1a: an erase must reach the PUBLIC ERASED PILE.
+        // CR 720.9: each mod card goes to the pile of the mod's CONTROLLER —
+        // zones follow control (CR 400.4), and a mod's controller is its
+        // host's (CR 720.6a), so a mod on a stolen host goes to the thief.
+        // CT-258: this grouped by `m.owner`, the one mod-erase route the zones
+        // ruling left behind. This used to be a bare `delete` plus an 'info'
+        // line, so a nontoken mod card left the game and neither player could
+        // see where it went. `E.ev('erased', …)` is the only thing that files
+        // the pile (E.ev reads `seat` + `cards`).
+        // CR 720.9a / CT-259: a TOKEN mod is not filed — a token is not a card,
+        // and the pile is a list of cards. It is still erased below, exactly
+        // as `E.eraseMod` erases one without filing it.
         const mods = u.mods.map(id => g.entity(id)).filter((m): m is Entity => !!m);
-        const byOwner = new Map<Seat, CardName[]>();
+        const byController = new Map<Seat, CardName[]>();
         for (const m of mods) {
-          const list = byOwner.get(m.owner) ?? [];
+          if (m.token) continue;
+          const list = byController.get(m.controller) ?? [];
           list.push(m.card);
-          byOwner.set(m.owner, list);
+          byController.set(m.controller, list);
         }
-        for (const [owner, cards] of byOwner) {
+        for (const [seat, cards] of byController) {
           g.ev('erased', `${cards.join(', ')} — erased from ${u.card} by Return to Nature.`,
-            { seat: owner, cards });
+            { seat, cards });
         }
         const n = u.mods.length;
         // CR 720.9 / CT-86: through `E.eraseMod`, the choke point. This site is the
@@ -610,11 +616,12 @@ card('Return to Nature', {
         // against — but it hand-rolled the delete like the other four. Nothing
         // it emits changed. `u.mods = []` stays as the belt for an id whose
         // entity was already gone, which eraseMod declines to touch.
-        // CR 720.9 (the engine files by owner, CT-258) — `alreadyFiled`: the grouped `erased` line above IS the pile
-        // entry, one per owner. eraseMod files the pile itself now, so without
-        // this every card would be listed twice. This site also files TOKEN
-        // mods (matching disposeToBin), which eraseMod deliberately does not —
-        // another reason it keeps its own line rather than delegating.
+        // CR 720.9 — `alreadyFiled`: the grouped `erased` line above IS the pile
+        // entry, one per controller (one in practice: every mod on a host has
+        // the host's controller). eraseMod files the pile itself, one line per
+        // mod, so without this every card would be listed twice. The grouped
+        // line is kept because it reads as one event, which it is; it files
+        // exactly what eraseMod would — nontoken mods, under the controller.
         for (const m of mods) g.eraseMod(m, { alreadyFiled: true });
         g.ev('info', `Return to Nature erases ${n} mod(s) from ${u.card}.`);
         u.mods = [];

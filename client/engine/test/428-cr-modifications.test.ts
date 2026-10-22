@@ -188,7 +188,7 @@ test('cr:effects.mods.erase-off-host — a host kept alive only by a +2/+2 mod d
   finishBattle(h);
 });
 
-test('cr:effects.mods.erase-off-host — engine differs: Return to Nature files a mod on a stolen host under its owner, not its controller', () => {
+test('cr:effects.mods.erase-off-host — Return to Nature files a mod on a stolen host under its controller, not its owner (CT-258)', () => {
   const { h, A, D, region } = battleWindow(71757);
   const owner = A, thief = D;
   let host = -1;
@@ -207,7 +207,7 @@ test('cr:effects.mods.erase-off-host — engine differs: Return to Nature files 
     && (ev.data?.['cards'] as string[] | undefined)?.includes('Ignis Sprite'));
   assert.equal(ent(h, host)?.mods.length ?? 0, 0, 'the mod was erased');
   assert.equal(erasedEv.length, 1, 'the mod was filed once');
-  assert.equal(erasedEv[0]!.data!['seat'], owner, 'filed under the owner (the ruling says controller)');
+  assert.equal(erasedEv[0]!.data!['seat'], thief, 'filed under the controller, the thief (CR 720.9)');
   finishBattle(h);
 });
 
@@ -230,7 +230,7 @@ test('cr:effects.mods.erase-off-host.token — a Wraith token mod erased off a l
   finishBattle(h);
 });
 
-test('cr:effects.mods.erase-off-host.token — engine differs: Return to Nature files a Wraith token mod it erases on the erased pile', () => {
+test('cr:effects.mods.erase-off-host.token — Return to Nature does not file a Wraith token mod it erases on the erased pile (CT-259)', () => {
   const { h, D, region } = battleWindow(71758);
   let h2 = -1;
   withE(h, e => {
@@ -242,7 +242,7 @@ test('cr:effects.mods.erase-off-host.token — engine differs: Return to Nature 
   assert.equal(ent(h, h2)?.mods.length ?? 0, 0, 'the Wraith mod was erased');
   const filed = h.events.slice(mark).filter(ev => ev.type === 'erased'
     && (ev.data?.['cards'] as string[] | undefined)?.includes('Wraith'));
-  assert.equal(filed.length, 1, 'Return to Nature filed the token mod on the erased pile');
+  assert.equal(filed.length, 0, 'a token mod is not filed (CR 720.9a)');
   finishBattle(h);
 });
 

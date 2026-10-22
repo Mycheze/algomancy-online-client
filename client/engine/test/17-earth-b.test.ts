@@ -724,12 +724,15 @@ test('printed {Unstable} census: the flag mirrors the type line over the whole p
 // emits it (Finality, Necromantic Rebuke, Spore of Regenesis, and
 // disposeToBin's own token-mod line).
 //
-// The half that makes this worth a test rather than a one-liner: a mod's
-// OWNER is whoever applied it, not the unit's controller — so a host wearing
-// one mod from each player must file one card on EACH player's pile. Grouping
-// by the unit's controller would put both on one pile and read as correct on
-// any single-owner board.
-test('Return to Nature: each erased mod reaches its OWN owner\'s erased pile', () => {
+// The half that makes this worth a test rather than a one-liner: WHICH pile.
+// CR 720.9: the mod's CONTROLLER's, and a mod's controller is its host's
+// (CR 720.6a) — zones follow control (CR 400.4). This test used to assert the
+// mod OWNER's pile (one card on each player's pile for a host wearing one mod
+// from each), which was the law before the zones ruling (CT-258). So the host
+// here is STOLEN through giveControl: one mod its owner applied and one the
+// thief applied must both reach the THIEF's pile, and grouping by the mod's
+// owner — or by the host's owner — would split them or put them on P's.
+test('CR 720.9 / CT-258: Return to Nature files each erased mod on its CONTROLLER erased pile, a stolen host included', () => {
   const h = new Harness(4242);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -737,21 +740,46 @@ test('Return to Nature: each erased mod reaches its OWN owner\'s erased pile', (
   const hostId = spawn(h, P, 'Tidal Menace');
   const e = new E(h.state);
   const host = e.entity(hostId)!;
-  e.attachMod(host, 'Nothyr', P, 'augment');            // mine
-  e.attachMod(host, 'Chitin Shredder', O, 'graft');     // theirs
+  e.attachMod(host, 'Nothyr', P, 'augment');            // the host owner's
+  e.attachMod(host, 'Chitin Shredder', O, 'graft');     // the thief's
+  assert.equal(e.giveControl(host, O), true, 'setup: the theft must happen');
+  const mods = host.mods.map(id => e.entity(id)!);
+  assert.deepEqual(mods.map(m => m.owner), [P, O], 'setup: one mod owned by each player');
+  assert.deepEqual(mods.map(m => m.controller), [O, O], 'setup: both controlled by the thief');
   const beforeP = (h.state.players[P]!.erased ?? []).length;
   const beforeO = (h.state.players[O]!.erased ?? []).length;
 
+  getCard('Return to Nature').spellEffect!.run(e, {
+    controller: P, sourceName: 'Return to Nature', region: e.entity(hostId)!.region,
+    targets: [], x: undefined, event: null,
+    choose: () => { throw new Error('Return to Nature asked a question'); },
+  } as unknown as EffectCtx);
+
+  assert.deepEqual((h.state.players[O]!.erased ?? []).slice(beforeO), ['Nothyr', 'Chitin Shredder'],
+    'both mods reach the pile of the player who controls them — the thief');
+  assert.deepEqual((h.state.players[P]!.erased ?? []).slice(beforeP), [],
+    'and nothing reaches the pile of the host owner, though P owns Nothyr');
+  assert.deepEqual(e.entity(hostId)?.mods ?? [], [], 'and the mods really are gone');
+});
+
+test('CR 720.9a / CT-259: Return to Nature does not file a TOKEN mod on the erased pile', () => {
+  const h = new Harness(4243);
+  toDeployment(h);
+  const P = h.state.deployPlayer!;
+  const hostId = spawn(h, P, 'Tidal Menace');
+  const e = new E(h.state);
+  const host = e.entity(hostId)!;
+  e.augmentWraith(host, P);
+  e.attachMod(host, 'Nothyr', P, 'augment');
+  const mods = host.mods.map(id => e.entity(id)!);
+  assert.deepEqual(mods.map(m => m.token === true), [true, false], 'setup: one token mod, one card mod');
+  const before = (h.state.players[P]!.erased ?? []).length;
   getCard('Return to Nature').spellEffect!.run(e, {
     controller: P, sourceName: 'Return to Nature', region: host.region,
     targets: [], x: undefined, event: null,
     choose: () => { throw new Error('Return to Nature asked a question'); },
   } as unknown as EffectCtx);
-
-  assert.deepEqual((h.state.players[P]!.erased ?? []).slice(beforeP), ['Nothyr'],
-    "the mod P applied must reach P's erased pile");
-  assert.deepEqual((h.state.players[O]!.erased ?? []).slice(beforeO), ['Chitin Shredder'],
-    "the mod O applied must reach O's pile — grouping by the HOST's controller would "
-    + 'put both cards on one pile, which reads as correct on a single-owner board');
-  assert.deepEqual(e.entity(hostId)?.mods ?? [], [], 'and the mods really are gone');
+  assert.deepEqual(e.entity(hostId)?.mods ?? [], [], 'both mods are erased');
+  assert.deepEqual((h.state.players[P]!.erased ?? []).slice(before), ['Nothyr'],
+    'only the card mod is filed: a token is not a card (CR 720.9a)');
 });

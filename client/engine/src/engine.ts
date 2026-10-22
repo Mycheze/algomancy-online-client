@@ -12431,7 +12431,8 @@ export class E {
     //    rather than widened here.)
     //  · `alreadyFiled` is for the ONE caller that files the pile itself and
     //    files it BETTER: Return to Nature groups every mod it erases into a
-    //    single `erased` line per owner, which reads as one event because it
+    //    single `erased` line per controller (and skips token mods, as this does),
+    //    which reads as one event because it
     //    is one. Per-mod lines underneath would be the same cards twice.
     if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {
       // CR 720.9: `mod.controller`, was `mod.owner`. The erased pile is a

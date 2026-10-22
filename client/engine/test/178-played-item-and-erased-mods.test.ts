@@ -36,7 +36,7 @@ import { fileURLToPath } from 'node:url';
 import { Harness } from '../src/harness.ts';
 import type { EntityId, Seat } from '../src/types.ts';
 import {
-  ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle,
+  ent, finishBattle, give, giveResources, pass, pick, spawn, toDeployment, toNextBattle, withE,
 } from './util.ts';
 
 /** the ids of the stack items that are copies / originals of a given card */
@@ -338,6 +338,13 @@ test('CR 720.9 Return to Nature: the site that already got CR 407.2 right still 
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
 
+  // CR 720.9 / CT-258: the pile is the mod's CONTROLLER's (CR 400.4, 720.6a). This
+  // asserted the mod OWNER's pile on a board where owner and controller were
+  // the same seat, so it could not tell the two apart. A steals the host first.
+  withE(h, e => { assert.equal(e.giveControl(ent(h, host)!, A), true, 'setup: the theft must happen'); });
+  assert.equal(ent(h, modId)!.owner, D, 'setup: D still owns the mod');
+  assert.equal(ent(h, modId)!.controller, A, 'setup: A controls it with the host');
+
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Return to Nature') });
   pass(h); pass(h);
 
@@ -345,8 +352,9 @@ test('CR 720.9 Return to Nature: the site that already got CR 407.2 right still 
   assert.ok(ent(h, host), 'off a host that survives');
   assert.ok(erasedEvents(h).includes('A Pile of Runes'),
     'CR 407.2: this site emits the real "erased" event — it is the template E.eraseMod was written against');
-  assert.deepEqual(erasedPile(h, D), ['A Pile of Runes'],
-    "and the pile is the MOD OWNER's, not the host controller's");
+  assert.deepEqual(erasedPile(h, A), ['A Pile of Runes'],
+    'and the pile is the mod CONTROLLER (the thief), not its owner');
+  assert.deepEqual(erasedPile(h, D), [], 'the owner pile gets nothing');
   finishBattle(h);
 });
 
