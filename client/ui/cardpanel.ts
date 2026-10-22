@@ -23,6 +23,7 @@ import { GLOSSARY, glossaryHits } from './glossary.ts';
 import { meaningOf } from './cardsynonyms.ts';
 import type { CardRow } from './cardindex.ts';
 import { rowFor } from './cardindex.ts';
+import { printsStats } from '../engine/src/cards/dsl.ts';   // CR 206.2
 import { esc, elIcon } from './util.ts';
 
 import { artUrl as scanUrl } from './assets.ts';
@@ -177,7 +178,7 @@ export function cardPanelHtml(name: string, opts: PanelOpts): string {
     ${artHtml(r, 'cbdetailart')}
     <h2>${esc(r.name)}</h2>
     <div class="cbdetailcost">${costHtml(r)}</div>
-    <div class="cbdetailtype">${iconizeText(r.type)}${r.kind === 'spell' ? '' : ` · ${r.power}/${r.toughness}`}</div>
+    <div class="cbdetailtype">${iconizeText(r.type)}${printsStats(r.kind) ? ` · ${r.power}/${r.toughness}` : ''}</div>
     <div class="cbdetailtext">${lines.map(t => `<p>${iconizeText(t)}</p>`).join('')}</div>
     ${glossaryFor(r, { inBox: [...(box ? attrReminders(r.name).map(a => a.attr) : []), ...stated] })}
     <dl class="cbfacts">

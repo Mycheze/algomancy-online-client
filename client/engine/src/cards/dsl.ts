@@ -18,6 +18,13 @@ import type {
 import type { E } from '../engine.ts';
 import printedJson from './printed.json' with { type: 'json' };
 
+/** CR 206.2 / CT-244: stats mark a unit, so a card prints power and toughness
+ * only when it is a unit or a spell unit. A spell and a spell token print
+ * none (the extractor zeroes them), and no surface may show or compare them. */
+export function printsStats(kind: Printed['kind']): boolean {
+  return kind === 'unit' || kind === 'spellUnit';
+}
+
 export interface Printed {
   name: string;
   /** element factions ("fire"; two for hybrids; [] / absent for synthetics) */

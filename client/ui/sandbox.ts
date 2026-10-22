@@ -37,7 +37,7 @@
  * screen's "On your own" row the moment that row appears, so test mode is
  * started from the home screen without renderHome() knowing this file exists.
  */
-import { allCardNames } from '../engine/src/cards/dsl.ts';
+import { allCardNames, printsStats } from '../engine/src/cards/dsl.ts';
 import type { Action, GameState, ResourceKind, Seat } from '../engine/src/types.ts';
 import { search as runSearch } from './cardsearch.ts';
 import type { CardRow } from './cardindex.ts';
@@ -139,7 +139,7 @@ function matches(): { rows: CardRow[]; total: number } {
 /** the one-line "2 · 1/3 · fire" summary under a card name in the results */
 function cardLine(r: CardRow): string {
   const cost = r.isX ? 'X' : String(r.mana);
-  const body = r.kind === 'spell' ? 'spell' : `${r.power}/${r.toughness}`;
+  const body = printsStats(r.kind) ? `${r.power}/${r.toughness}` : 'spell';   // CR 206.2
   return `${cost} · ${body}${r.factions.length ? ` · ${r.factions.join('/')}` : ''}`;
 }
 

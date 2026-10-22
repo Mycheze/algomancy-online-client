@@ -39,7 +39,7 @@
 import type { CardRow, Release } from './cardindex.ts';
 import { allRows } from './cardindex.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
-import { ELEMENT_OF_PIP } from '../engine/src/cards/dsl.ts';
+import { ELEMENT_OF_PIP, printsStats } from '../engine/src/cards/dsl.ts';
 import { KEYWORD_MEANING } from './cardsynonyms.ts';
 
 /* ── keys ──────────────────────────────────────────────────────────────
@@ -611,8 +611,8 @@ function termMatch(term: Term, r: CardRow, ctx: Ctx): boolean {
     case 'pt': {
       // CR 206.2 / CT-244: stats mark a unit; a spell prints none, so it is in
       // no stat comparison at all (as an X card is in no mana one) — its
-      // extracted 0/0 must not make it match `pow<=2`
-      if (r.kind === 'spell') return false;
+      // extracted 0/0 must not make it match `pow<=2`. A spell token neither.
+      if (!printsStats(r.kind)) return false;
       const n = num(value);
       return n === null ? false : cmp(op, numberField(key, r), n);
     }

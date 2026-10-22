@@ -54,7 +54,7 @@
  * a graft's cause from its effect) and is never touched, which is also why the
  * composed graft line keeps all of its own.
  */
-import { getCard, graftCauseIndex, ELEMENT_OF_PIP } from '../engine/src/cards/dsl.ts';
+import { getCard, graftCauseIndex, ELEMENT_OF_PIP, printsStats } from '../engine/src/cards/dsl.ts';
 import { GLOSSARY } from './glossary.ts';
 import { esc } from './util.ts';
 import type { CardDef } from '../engine/src/cards/dsl.ts';
@@ -1205,7 +1205,8 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   const predicted = predictionOf(u, e.s.turn);
   if (predicted !== undefined) state.push(`Predicted life: ${predicted}`);
 
-  const stats = u.kind === 'mod' ? null : statBreakdown(e, u);
+  // CR 206.2: a mod has no body, and a spell token prints no stats (CT-244)
+  const stats = u.kind === 'mod' || u.kind === 'spellToken' ? null : statBreakdown(e, u);
   return {
     name: face,
     typeLine: def?.type ?? '',
@@ -1241,7 +1242,9 @@ export function printedTextBox(name: CardName): CardTextBox {
   // it — and The Foretold's whole text box IS its banner, so without this the
   // browser and the inspector both drew "no rules text" for it.
   const text = printedBoxText(name);
-  const spell = !def || def.kind !== 'unit';
+  // CR 206.2: a spell UNIT prints stats too (Jelly 2/1 in hand) — only a spell
+  // and a spell token have none (dsl.ts printsStats)
+  const spell = !def || !printsStats(def.kind);
   return {
     name,
     typeLine: def?.type ?? '',
