@@ -432,7 +432,9 @@ test('cr:concepts.targets.not-target.distribution — Channel Through distribute
   finishBattle(h);
 });
 
-test('cr:concepts.targets.region.global — a stack item and the cards in either bin are offered from every region, while a unit is offered only in its own', () => {
+test('cr:concepts.targets.region.global — a stack item and the cards in a bin are offered only in a region where they are: the item on its own region stack, a bin where its player is present (CT-234)', () => {
+  // CR 601.2a, 101.6, 110.5a (owner, 2026-10-11): each region has its own stack,
+  // and a player's bin is reached only where that player is present.
   const h = new Harness(41407);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -451,17 +453,23 @@ test('cr:concepts.targets.region.global — a stack item and the cards in either
   let other = -1;
   withE(h, e => { other = e.homeRegion(A); });
   assert.notEqual(other, battle, 'setup: a second region with no battle in it');
-  const ask = (what: string, region: number): string[] => {
+  const ask = (what: string, region: number, ally: Seat = D): string[] => {
     let out: string[] = [];
-    withE(h, e => { out = e.targetCandidates({ what } as never, region, undefined, D).map(r => JSON.stringify(r)); });
+    withE(h, e => { out = e.targetCandidates({ what } as never, region, undefined, ally).map(r => JSON.stringify(r)); });
     return out;
   };
-  for (const r of [battle, other]) {
-    assert.ok(ask('stackEffect', r).includes(JSON.stringify({ stack: item.id })), `the stack item, from region ${r}`);
-    const bins = ask('anyBinCard', r).join(' ');
-    assert.match(bins, /Twin Flame/, `a card in one bin, from region ${r}: ${bins}`);
-    assert.match(bins, /Overbloom/, `and in the other, from region ${r}: ${bins}`);
-  }
+  // the battle region: both players are present, and the item is on its stack
+  assert.ok(ask('stackEffect', battle).includes(JSON.stringify({ stack: item.id })), 'the stack item, from its own region');
+  const here = ask('anyBinCard', battle).join(' ');
+  assert.match(here, /Twin Flame/, `both bins from the battle region: ${here}`);
+  assert.match(here, /Overbloom/, `both bins from the battle region: ${here}`);
+  // the other region: its stack is empty, and only its owner A is present there
+  assert.ok(!ask('stackEffect', other).includes(JSON.stringify({ stack: item.id })),
+    'the battle stack item is not on the other region stack');
+  const there = ask('anyBinCard', other, A).join(' ');
+  assert.match(there, /Twin Flame/, `A is present at home, so A's bin: ${there}`);
+  assert.doesNotMatch(there, /Overbloom/, `D is not present there, so not D's bin: ${there}`);
+  assert.equal(ask('binCard', other, D).length, 0, 'nor is D own bin reached for D there');
   assert.ok(ask('unit', battle).includes(JSON.stringify({ unit: foe })), 'control: the unit, from its own region');
   assert.ok(!ask('unit', other).includes(JSON.stringify({ unit: foe })), 'but not from the other');
   finishBattle(h);

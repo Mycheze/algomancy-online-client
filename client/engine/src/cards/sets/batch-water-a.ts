@@ -716,9 +716,10 @@ card('Cosmic Reversal', {
       // removeFromStack() is the bare primitive — the item leaves the
       // stack and the CALLER says where its card goes. This used to rebuild
       // g.s.stack from a `keep` array because that primitive did not exist.
-      const considered = g.s.stack.length;
+      const here = g.stackIn(ctx.region);   // CT-234 (CR 601.2a): this region's stack
+      const considered = here.length;
       let recalled = 0;
-      for (const it of [...g.s.stack]) {
+      for (const it of here) {
         if (!isSpellEffect(it.kind)) continue;   // CR 700.1a
         const item = g.removeFromStack(it.id);
         if (!item) continue;

@@ -3134,7 +3134,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   // straight past this if the item still owes another choice, which is exactly
   // how it stays marked across a chain of mid-resolution decisions).
   e.endResolving(null);
-  e.finishResolutionTail();
+  e.finishResolutionTail(sus.item);
   // castChain's loop, resumed: the item that suspended was `chain[0]` of some
   // cast; commitItem's own tail (endResolving + settle) has its counterpart
   // just above, and the items behind it are cast exactly as the loop would

@@ -346,7 +346,7 @@ card('Entropic Entity', {
 card('Finality', {
   spellEffect: {
     run: (g, ctx) => {
-      const hits = [...g.s.stack];   // CR 704.4: everything still here is un-negated
+      const hits = g.stackIn(ctx.region);   // CR 704.4: everything still here is un-negated; CT-234: this region's
       for (const i of hits) g.negate(i.id);
       if (!hits.length) g.ev('info', 'Finality: no other effects to negate.');
       // CR 601.4c: "all cards in bins" is all bins IN THIS REGION

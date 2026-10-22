@@ -150,7 +150,7 @@ card('Calming Force', {
   spellEffect: {
     run: (g, ctx) => {
       let n = 0;
-      for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
+      for (const it of g.stackIn(ctx.region)) {   // CR 704.4: a copy; CT-234: this region's stack
         g.negate(it.id);
         n++;
       }

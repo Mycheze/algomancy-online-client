@@ -339,7 +339,7 @@ card('Interdiction Rift', {
       if (!t || !('player' in (t as object))) return;
       const who = (t as { player: Seat }).player;
       if (who === ctx.controller) { g.ev('info', 'Interdiction Rift: you are not an opponent — no effect.'); return; }
-      const theirs = g.s.stack.filter(i => i.controller === who);
+      const theirs = g.stackIn(ctx.region).filter(i => i.controller === who);   // CT-234
       if (!theirs.length) { g.ev('info', `Interdiction Rift: ${g.pname(who)} controls no effect — nothing to negate.`); return; }
       const id = theirs.length === 1 ? theirs[0]!.id : ctx.choose('rift', {
         kind: 'payOrDecline', seat: who,

@@ -190,9 +190,9 @@ card('Skybreaker', {
     type: 'activated', cost: { eraseSelf: true },
     label: 'Erase me: negate all spell effects',
     effect: {
-      run: (g) => {
+      run: (g, ctx) => {
         let negated = 0;
-        for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
+        for (const it of g.stackIn(ctx.region)) {   // CR 704.4: a copy; CT-234: this region's stack
           if (isSpellEffect(it.kind)) {
             g.negate(it.id);
             negated++;

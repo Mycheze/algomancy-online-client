@@ -297,7 +297,7 @@ card('Suppression Field', {
         g.ev('info', `Suppression Field ERASES ${n} mod(s) on ${t.card}.`);
         t.mods = [];
       }
-      for (const item of [...g.s.stack]) {   // CR 704.4: negate() splices
+      for (const item of g.stackIn(ctx.region)) {   // CR 704.4: a copy; CT-234: this region's stack
         if (item.sourceId === t.id) g.negate(item.id);
       }
       g.checkDeaths();                             // mod statics may have kept it alive

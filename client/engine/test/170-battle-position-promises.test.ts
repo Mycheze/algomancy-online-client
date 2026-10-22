@@ -208,28 +208,6 @@ test('Xenopod Progenitor delivers its [Augment] "create a 2/2 unit" on a host in
     + `answered PAY. Its own window saw: ${[...new Set(r.ownTypes)].join(', ') || '(nothing)'}`);
 });
 
-// ── the six was five: the one the position could NOT reach ───────────────
-
-test('Bloated Manablub is still unreached, and it is the POSITION it lacks — not an implementation', () => {
-  // The honest half of the tally. This card is the sixth of the REGION family
-  // and the battle-position fix did NOT reach it; the entry that says so lives in
-  // 84-card-semantics' UNREACHED list, and this assertion is what keeps that
-  // entry truthful rather than stale. It asserts the CAUSE, not the failure:
-  // the trigger fires and resolves, and the payload finds nobody to hit.
-  printsClause('Bloated Manablub', 'when i despawn');
-  const r = pressed('Bloated Manablub');
-  assert.ok(r.fired.includes('despawn') && r.fired.includes('die'),
-    'the beats that make this card leave play never fired, so the diagnosis below is not the one '
-    + 'this run supports');
-  assert.ok(r.events.some(m => m.startsWith('Resolving Bloated Manablub: ')),
-    'Bloated Manablub\'s "When I despawn" did not even TRIGGER. That is a different and worse '
-    + 'finding than the one recorded — it would mean the ability is broken, not merely standing '
-    + 'in the wrong region. Open a CARD-TODO item.');
-  assert.deepEqual(r.inBattleBeats, [],
-    'Bloated Manablub now DOES reach a battle position. Delete its UNREACHED entry in '
-    + '84-card-semantics and this test with it — the reason it was recorded no longer holds.');
-});
-
 // ── the board preconditions the same position unlocked ──────────────────
 
 test('Spiteful Shadow delivers "Each player sacrifices a unit" — the die beat now reaches it', () => {

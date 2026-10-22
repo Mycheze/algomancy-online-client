@@ -7694,9 +7694,9 @@ export class E {
     const out: TargetRef[] = [];
     this.pushUnitTargets(out, spec, region, ally);
     this.pushPlayerTargets(out, spec, region, ally);
-    this.pushStackTargets(out, spec, excludeStackId);
+    this.pushStackTargets(out, spec, region, excludeStackId);
     this.pushCachedCardTargets(out, spec, region);
-    this.pushBinCardTargets(out, spec, ally);
+    this.pushBinCardTargets(out, spec, region, ally);
     this.pushFormationTargets(out, spec, region);
     return out;
   }
@@ -7792,6 +7792,35 @@ export class E {
    * replay-safe, and an order that depends on `presentSeats`' internal
    * mutation history is not.
    */
+  /**
+   * CR 601.2a, 101.6 (CT-234) — THE STACK OF ONE REGION. Each region has its own
+   * stack, owned by nobody and shared by the players present in it (owner,
+   * 2026-10-11). The engine keeps one array, `s.stack`, and every item carries
+   * the region it was put on the stack in (`StackItem.region`), so a region's
+   * stack is that array filtered, in the same bottom-to-top order. A COPY: a
+   * negate-all may splice `s.stack` while it walks this.
+   */
+  stackIn(region: number): StackItem[] {
+    return this.s.stack.filter(it => it.region === region);
+  }
+
+  /**
+   * CR 703.7 (CT-234; owner 2026-10-22) — is this battle-phase item on the stack
+   * of a region where only ONE player is present? Such a stack "drains on its
+   * own — like a deployment stack: it resolves in order without a priority
+   * window, since nobody else is there to respond". settle() resolves it, top
+   * down; the battle's priority window never sees it, and its push and its
+   * resolution leave that window's priority and passes alone.
+   *
+   * ⚠ A non-battle region where BOTH players are present (round 2: the region
+   * the round-1 battle was fought in, still occupied until regroup) is not
+   * covered by the ruling; its items stay in the battle's window, as every item
+   * was before. See the CT-234 report.
+   */
+  soloStacked(item: StackItem): boolean {
+    return this.s.phase === 'battle' && this.seatsHere(item.region).length < 2;
+  }
+
   seatsHere(region: number): Seat[] {
     const present = this.s.regions[region]?.presentSeats ?? [];
     return [this.initiative, this.nit].filter(s => present.includes(s));
@@ -7832,9 +7861,13 @@ export class E {
     }
   }
 
-  private pushStackTargets(out: TargetRef[], spec: TargetSpec, excludeStackId: number | undefined): void {
+  private pushStackTargets(out: TargetRef[], spec: TargetSpec, region: number, excludeStackId: number | undefined): void {
     if (spec.what === 'stackSpell' || spec.what === 'stackEffect') {
-      for (const it of this.s.stack) {
+      // CR 601.2a, 101.6 (CT-234; owner 2026-10-11): each region has its own stack,
+      // and an effect reaches only the stack of the region it resolves in.
+      // This walked the whole array, so a Frosted Denial in one region could aim
+      // at an item on another region's stack.
+      for (const it of this.stackIn(region)) {
         if (it.id === excludeStackId) continue;   // CR 704.4: a negated item is not here to skip
         // CR 700.1a: "spell effect" is `isSpellEffect` — never a hand-copied kind
         // list. An Ambush is NOT one (report #218): a plain "target effect"
@@ -7875,17 +7908,23 @@ export class E {
     }
   }
 
-  private pushBinCardTargets(out: TargetRef[], spec: TargetSpec, ally: Seat | undefined): void {
+  private pushBinCardTargets(out: TargetRef[], spec: TargetSpec, region: number, ally: Seat | undefined): void {
+    // CR 403.6's presence test, for a bin (CT-234; owner 2026-10-11): a player's
+    // bin is tied to that player and is reached only in a region where that
+    // player is PRESENT — in deployment each seat is alone in its own region, so
+    // only your own bin; in battle both seats are in the battle region.
+    const here = this.seatsHere(region);
     // CR 110.3a: a card in YOUR OWN bin ("recall target unit in your bin",
     // "put target unit with cost 2 or less from your bin into play"). Every
     // printed one reaches only the caster's bin, so this does too; a card the
     // restriction wants to reach in an opponent's bin would need `restrict`
     // to say so and this to widen. Duplicates collapse: the bin holds names,
     // and naming a card there IS the reference (BinRef).
-    if (spec.what === 'binCard' && ally !== undefined) out.push(...this.binRefs(ally));
-    // "target card in A bin" (Collect Remains) — the zone is unowned, so both
+    if (spec.what === 'binCard' && ally !== undefined && here.includes(ally)) out.push(...this.binRefs(ally));
+    // "target card in A bin" (Collect Remains) — the zone is unowned, so every
+    // bin whose player is here, in seat order as before (the option order)
     if (spec.what === 'anyBinCard') {
-      for (const p of this.s.players) out.push(...this.binRefs(p.seat));
+      for (const p of this.s.players) if (here.includes(p.seat)) out.push(...this.binRefs(p.seat));
     }
   }
 
@@ -8510,12 +8549,17 @@ export class E {
      *
      * Same discriminator as `beginResolving`, and for the same reason.
      */
-    const inBattle = this.s.phase === 'battle';
+    // CT-234: a solo-region stack has no window either (CR 703.7), so it is
+    // pushed exactly as a deployment item is, and the battle window's priority
+    // and passes are not touched
+    const solo = this.soloStacked(item);
+    const inBattle = this.s.phase === 'battle' && !solo;
     // snapshotted before resolution can spend a part, exactly as the no-stack
     // branch in `commitItem` does it, and for the same reason
     if (!inBattle) this.ev('stackFlash', '', { item: structuredClone(item) });
     this.ev('stackPushed', inBattle ? `${item.label} → stack.` : '',
       { id: item.id, controller: item.controller });
+    if (solo) return;
     this.s.passes = 0;
     /**
      * CR 703.3a, 605.1a, 604.3c; Annex D2.9 — WHO RESPONDS FIRST DEPENDS ON WHY THE ITEM IS HERE.
@@ -10802,7 +10846,11 @@ export class E {
   }
 
   resolveTop(): void {
-    this.resolveStackAt(this.s.stack.length - 1);
+    // CT-234: in battle, the top of the WINDOW's stack — a solo-region item
+    // (CR 703.7) is never in the window and settle() drains it on its own
+    let i = this.s.stack.length - 1;
+    if (this.s.phase === 'battle') while (i > 0 && this.soloStacked(this.s.stack[i]!)) i--;
+    this.resolveStackAt(i);
   }
 
   /**
@@ -10821,7 +10869,7 @@ export class E {
     const outer = this.beginResolving(item);
     this.resolveItem(item);
     this.endResolving(outer);
-    this.finishResolutionTail();
+    this.finishResolutionTail(item);
   }
 
   /**
@@ -10978,9 +11026,12 @@ export class E {
    * whoever did not control the newest trigger). Set BEFORE settle as well,
    * so a trigger that suspends there for its targets and is pushed later from
    * doDecide finds the new window already open. */
-  finishResolutionTail(): void {
+  finishResolutionTail(item?: StackItem): void {
+    // CT-234: a solo-region item (CR 703.7) resolved outside the window, so the
+    // window is not restarted for it
+    const windowed = !item || !this.soloStacked(item);
     const restart = (): void => {
-      if (this.s.phase === 'battle' && this.s.priority !== null) {
+      if (windowed && this.s.phase === 'battle' && this.s.priority !== null) {
         this.s.priority = this.s.initiative;
         this.s.passes = 0;
       }
@@ -12811,6 +12862,14 @@ export class E {
           this.resolveTop();
           return;
         }
+        // CR 703.7 (CT-234; owner 2026-10-22): a battle-phase stack in a region
+        // where only one player is present drains here, top down, like a
+        // deployment stack — no priority window, nobody else to respond
+        if (this.s.phase === 'battle' && !this.s.decision) {
+          for (let i = this.s.stack.length - 1; i >= 0; i--) {
+            if (this.soloStacked(this.s.stack[i]!)) { this.resolveStackAt(i); return; }
+          }
+        }
         // resuming a suspended combat-damage pump used to live HERE,
         // reachable only with the queue already empty. It now lives in the
         // CR 608.9b hold above, which is reached whether the queue is empty or
@@ -12842,7 +12901,8 @@ export class E {
       this.s.priority = other(seat);
       return;
     }
-    if (this.s.stack.length) {
+    // CT-234: the window's own stack (a solo-region item is never in it)
+    if (this.s.stack.some(it => !this.soloStacked(it))) {
       this.resolveTop();
     } else {
       this.advanceBattleStep();

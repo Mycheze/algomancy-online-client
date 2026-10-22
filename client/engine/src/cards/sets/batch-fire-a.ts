@@ -441,11 +441,13 @@ card('Flame Shield', {
       let fireballs = 0;
       // CR 704.4: negate() splices, so the sweep runs over a COPY — and the count
       // is taken off the copy's own entries, never off the live stack.
-      for (const it of [...g.s.stack]) {
+      // CT-234 (CR 601.2a): the stack of THIS region — each region has its own
+      const here = g.stackIn(ctx.region);
+      for (const it of here) {
         g.negate(it.id);
         if (isSpellEffect(it.kind) && it.kind !== 'spellToken') fireballs++;
       }
-      if (!g.s.stack.length && !fireballs) {
+      if (!here.length && !fireballs) {
         g.ev('info', 'Flame Shield: there is no other effect on the stack — nothing is negated.');
       }
       for (let i = 0; i < fireballs; i++) g.createSpellToken(ctx.controller, 'Fireball', 1, ctx.region);
