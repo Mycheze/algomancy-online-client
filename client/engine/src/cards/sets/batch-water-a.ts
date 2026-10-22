@@ -401,8 +401,16 @@ const declareInlinePlay = (
     if (mode !== undefined) part.mode = mode;
   }
   let spot: FormationSpot | undefined;
-  if (withSpot && opts.intoFormation && (def.kind === 'unit' || def.kind === 'spellUnit')) {
-    const slots = g.formationSlots(seat);
+  // CR 602.6f (CT-250): a source that left play remembering its formation
+  // still names it, even when nobody is left standing in it
+  const remembered = ctx.sourceId !== undefined && g.remembersFormation(ctx.sourceId);
+  // CR 602.6e: "my formation" is the one the SOURCE stands in, which after Organic
+  // Exchange can be the other seat's line (owner, 2026-10-22: "Source's
+  // formation") — the same grid E.placeInFormation reads. With no source the
+  // play joins the player's own formation.
+  const fseat = ctx.sourceId === undefined ? seat : g.formationSeatOf(ctx.sourceId);
+  if (withSpot && opts.intoFormation && fseat !== null && (def.kind === 'unit' || def.kind === 'spellUnit')) {
+    const slots = g.formationSlots(fseat, remembered);
     if (slots.length) {
       // BL-24: kind 'formationSlot', never 'electricPath' — an electricPath's
       // numeric values are entity ids by contract (CR 802.17) and the client pings
@@ -417,7 +425,11 @@ const declareInlinePlay = (
       })) as FormationSpot;
     }
   }
-  if (spot) item.formationSpot = spot;
+  if (spot) {
+    item.formationSpot = spot;
+    if (remembered) item.formationRemembered = true;
+    if (fseat !== null && fseat !== seat) item.formationSeat = fseat;
+  }
   g.collectInlineCastCosts(item, 'fixed', ask('cost'));
   // CR 112.14c (CT-332): the printed "[Gain N debt]" line (Hyper Beam) is a cost
   // of the PLAY, which `playAtTiming` pays beside the mana — so a free play,

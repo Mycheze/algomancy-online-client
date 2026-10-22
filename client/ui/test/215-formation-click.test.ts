@@ -122,11 +122,12 @@ function defenderAsk(seed: number): { h: Harness; A: Seat; D: Seat } {
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2], [a3]] });
   pass(h); pass(h);
-  // ⚠ THE FIXTURE IS THE POINT. Attack column 0 is left UNBLOCKED, so the
-  // defender's grid — `Object.keys(b.blocks)` in key order — is
-  // [column 1, column 2] and its indexes 0 and 1 are the panel's columns 1 and
-  // 2. A fixture that blocked everything would make the compaction the
-  // identity map and this whole file would pass with `attackColumnOf` deleted.
+  // ⚠ THE FIXTURE IS THE POINT. Attack column 0 is left UNBLOCKED. The
+  // defender's grid used to be `Object.keys(b.blocks)` in key order, so its
+  // indexes 0 and 1 were the panel's columns 1 and 2; since CT-249 it has one
+  // column per ATTACK column (CR 606.1f), so an unblocked column 0 is the case
+  // that tells the two readings apart. A fixture that blocked everything
+  // would make them the same and this file would pass with either.
   // Two blocking columns, one unit each, so two slots are offered and the
   // engine actually ASKS rather than auto-picking a lone option.
   h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [host], 2: [mate] } });
@@ -175,28 +176,34 @@ test('§1a the ATTACKING grid: every offered spot points at the column the engin
   done(h);
 });
 
+// ⚠ The title is kept for the CARD-TODO proof that names it; what it pins
+// changed with CT-249: the blocking grid is NOT compacted any more, it is
+// indexed by attack column, and the anchor reads that index straight through.
 test('§1b the BLOCKING grid is COMPACTED, and the anchor un-compacts it', () => {
   const { h, D } = defenderAsk(21501);
   const b = h.state.battle!;
-  assert.equal(b.blocks[0], undefined, 'attack column 0 is unblocked — that is what compacts the grid');
+  assert.equal(b.blocks[0], undefined, 'attack column 0 is unblocked — the case that tells the readings apart');
   const all = new E(h.state).formationSlots(D);
   // CR 607.2: the unblocked attack column also gets a spot that would block it —
-  // it names the ATTACK column directly, so it is not part of the compaction
+  // it names the ATTACK column directly
   assert.deepEqual(all.filter(s => s.spot.kind === 'block').map(s => s.spot), [{ kind: 'block', column: 0 }],
     'one spot in front of the unblocked attacker');
   const slots = all.filter(s => s.spot.kind !== 'block');
   assert.deepEqual(slots.map(s => s.col), [b.blocks[1], b.blocks[2]],
-    'the blocking grid is read in KEY order, so its indexes 0 and 1 are attack columns 1 and 2');
+    'the blocking columns, in attack-column order, and nothing for the unblocked one');
   checkAgainstEngine(h, D, 'defender');
   assert.deepEqual(slots.map(s => spotAnchor(h.state, D, s.spot)),
     [{ kind: 'col', ci: 1 }, { kind: 'col', ci: 2 }],
-    'grid index 0 is drawn at ATTACK column 1 — the panel stacks the two halves of one `ci`, '
-    + 'so drawing it at column 0 would put the drop target under an attacker nobody is blocking');
+    'each is drawn at the ATTACK column it blocks — the panel stacks the two halves of one `ci`, '
+    + 'so drawing one at column 0 would put the drop target under an attacker nobody is blocking');
   // and the same via a `hole`, which is the branch that CANNOT fall back to
-  // searching for a unit: it names a grid index and nothing else
-  assert.deepEqual(spotAnchor(h.state, D, { kind: 'hole', column: 0 }), { kind: 'col', ci: 1 },
-    'a hole in the blocking grid un-compacts the same way');
-  assert.deepEqual(spotAnchor(h.state, D, { kind: 'hole', column: 1 }), { kind: 'col', ci: 2 });
+  // searching for a unit: it names a grid index — CT-249: the attack column —
+  // and nothing else
+  assert.deepEqual(spotAnchor(h.state, D, { kind: 'hole', column: 1 }), { kind: 'col', ci: 1 },
+    'a hole in the blocking grid is drawn at its own attack column');
+  assert.deepEqual(spotAnchor(h.state, D, { kind: 'hole', column: 2 }), { kind: 'col', ci: 2 });
+  assert.equal(spotAnchor(h.state, D, { kind: 'hole', column: 0 }), null,
+    'an unblocked column is not a hole of the blocking grid (CR 606.1f)');
   done(h);
 });
 

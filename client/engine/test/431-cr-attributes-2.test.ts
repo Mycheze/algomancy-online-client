@@ -580,7 +580,10 @@ test('cr:attr.lethal.combat-only — Lethal noncombat damage to a player does no
   assert.equal(h.state.winner ?? null, null, 'nobody has won');
 });
 
-test('cr:attr.lethal.replaced — a Lethal column whose combat damage is all redirected into Oorblak still kills the defending player', () => {
+// CT-296 (owner, 2026-10-22): inverted. A wholly redirected hit dealt the player
+// nothing, so Lethal has nothing to kill with; 562 holds the Piercing and
+// Blightsea Polyp halves.
+test('cr:attr.lethal.replaced — a Lethal column whose combat damage is all redirected into Oorblak does not kill the defending player', () => {
   const h = new Harness(92029);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -592,7 +595,8 @@ test('cr:attr.lethal.replaced — a Lethal column whose combat damage is all red
   h.do({ type: 'declareBlocks', seat: D, blocks: {} });
   pass(h); pass(h);
   assert.equal(ent(h, oo)?.damage, 1, 'Oorblak took the 1');
-  assert.equal(h.state.winner, A, 'the defender is killed though no damage reached them');
+  assert.equal(h.state.winner ?? null, null, 'no damage reached the defender, so Lethal kills nobody');
+  assert.ok(h.state.players[D]!.life > 0, 'the defender is alive');
 });
 
 test('cr:attr.thieving.replaced — a Thieving column whose hit to the defending player Blightsea Polyp turns into 1 rot costs no life, and its controller still draws a card', () => {

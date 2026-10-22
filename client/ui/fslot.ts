@@ -39,9 +39,12 @@ import type { Decision, EntityId, FormationSpot, GameState, Seat } from '../engi
  * a blocking column is keyed to the attacking column it blocks (CR 603.1) and the
  * panel stacks the two halves of one `ci` in one `.col`.
  *
- * ⚠ `ci` is therefore NOT the grid index the engine's `hole` spot carries for
- * a defender. `attackColumnOf` below is the whole of that translation, and it
- * is the one thing in this file a reader is likely to get wrong.
+ * Since CT-249 the engine's defending grid is indexed the same way (one
+ * column per attacking column, empty where unblocked — CR 606.1f), so the
+ * `hole` spot a defender is offered already carries the attack column.
+ * `attackColumnOf` below is where that is read; it used to translate a
+ * compressed index, and it is the one thing in this file a reader is likely
+ * to get wrong.
  */
 export type SpotAnchor =
   | { kind: 'end'; end: 'left' | 'right' }
@@ -89,12 +92,10 @@ function attackColumnOf(s: GameState, gridSeat: Seat, gi: number): number | null
   if (!b) return null;
   // the attacker's grid IS `b.columns`, so its index is already the panel's
   if (gridSeat === b.attacker) return gi < b.columns.length ? gi : null;
-  // the defender's grid is `b.blocks` READ IN KEY ORDER (E.formationGrid), and
-  // the keys are the attack columns being blocked — which is exactly what the
-  // panel indexes by. The compaction is the whole reason this function exists.
-  const keys = Object.keys(b.blocks).map(Number).sort((a, z) => a - z);
-  const ci = keys[gi];
-  return ci === undefined ? null : ci;
+  // the defender's grid is indexed by ATTACK column too (E.formationGrid,
+  // CR 606.1f — an unblocked column is an empty column of it, never
+  // compressed away), and only a blocked column can be a hole in it
+  return b.blocks[gi] !== undefined ? gi : null;
 }
 
 /** the attack column whose half is holding `unit`, on `gridSeat`'s side */

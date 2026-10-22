@@ -4203,7 +4203,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; spotRemembered?: boolean; spotSeat?: Seat; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
     /**
      * CR 708.3: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -4304,7 +4304,7 @@ export class E {
     // CR 602.7: a card PLAYED into an open spot in the formation is put there
     // BEFORE the spawn event exists, so no listener and no player ever sees it
     // standing anywhere else. See takeSpot.
-    const placed = opts.spot ? this.takeSpot(u, seat, opts.spot) : null;
+    const placed = opts.spot ? this.takeSpot(u, opts.spotSeat ?? seat, opts.spot, opts.spotRemembered) : null;
     /*
      * CR 701.3 — PLAY vs PUT INTO PLAY. This method PUTS a card into play (Exhume,
      * Resurrect, Rousing Spirit, Lurking Dread all print "put into play"), or
@@ -4799,7 +4799,8 @@ export class E {
    * all do the same thing to the same player, so their order changes nothing.
    */
   private replaceCombatDamage(seat: Seat, amount: number,
-    info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean }): number {
+    info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean },
+    out?: { reached: number }): number {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceCombatDamageToPlayer')          // CR 710.7: off the FACES
       && a.region === info.region
@@ -4864,6 +4865,9 @@ export class E {
       if (commit(pick, 'redirect')) declined.clear();
       else declined.add(pick);    // not now — but perhaps once another has applied
     }
+    // CR 608.8c, CT-296: what is left after the redirects is the damage that
+    // REACHES the player at all — pass 2 only changes what it is dealt as
+    if (out) out.reached = left;
     // pass 2, damage being dealt to the player — the CR 708.4 chain, in timestamp order
     for (let changed = true; changed && left > 0;) {
       changed = false;
@@ -6238,9 +6242,9 @@ export class E {
   adjacentInFormation(id: EntityId): Entity[] {
     const b = this.s.battle;
     if (!b) return [];
-    // blocking columns are keyed by attacked column index; consecutive keys are
-    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read
-    // as neighbours)
+    // CR 606.1f: the defending grid has one column per attacking column, empty
+    // where unblocked, so two blockers with an unblocked column between them
+    // are not neighbours (formationGrid)
     const grids: EntityId[][][] = [this.formationGrid(b.attacker), this.formationGrid(b.defender)];
     for (const grid of grids) {
       for (let ci = 0; ci < grid.length; ci++) {
@@ -7278,18 +7282,48 @@ export class E {
   /**
    * the formation grid `seat` fights in, `[column][row]`, front row
    * first: the attacking columns as the attacker, the blocking columns as the
-   * defender (ordered by the attacking column each answers). One derivation,
-   * so `formationSlots`, `adjacentSlots` and `adjacentInFormation` cannot
-   * disagree about what the grid is.
+   * defender. One derivation, so `formationSlots`, `adjacentSlots` and
+   * `adjacentInFormation` cannot disagree about what the grid is.
+   *
+   * CR 606.1e/606.1f — the DEFENDING grid is indexed by ATTACKING column: a
+   * blocking column is keyed to the attacking column it faces, and an
+   * unblocked attacking column is an empty column of the defending grid that
+   * keeps its place (CR 602.5d). It used to be the block keys sorted and
+   * compressed, which made two blockers either side of an unblocked column
+   * neighbours (CT-249: Inspiration buffed across the gap). Every column of
+   * this grid that `b.blocks` holds is that very array; an UNBLOCKED one is a
+   * fresh `[]` that belongs to nothing, so a reader that hands a column out
+   * to be written into (`formationSlots`, `adjacentSlots`) must skip it —
+   * `isRealColumn` says which is which.
    */
   private formationGrid(seat: Seat): EntityId[][] {
     const b = this.s.battle;
     if (!b) return [];
     if (seat === b.attacker) return b.columns;
     if (seat === b.defender) {
-      return Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!);
+      const n = Math.max(b.columns.length, ...Object.keys(b.blocks).map(k => Number(k) + 1));
+      return Array.from({ length: n }, (_, ci) => b.blocks[ci] ?? []);
     }
     return [];
+  }
+
+  /** is column `ci` of `seat`'s grid a real column — every attacking column,
+   * and a defending one only where a block was declared (CR 606.1f) */
+  private isRealColumn(seat: Seat, ci: number): boolean {
+    const b = this.s.battle;
+    if (!b) return false;
+    return seat === b.attacker ? ci >= 0 && ci < b.columns.length : b.blocks[ci] !== undefined;
+  }
+
+  /**
+   * CR 602.6f, 714.4 — does `id` name a formation only by REMEMBERING it: it has
+   * left play, and its last-known state stood in a formation of this battle.
+   * Such a formation is joined even when no unit is left standing in it
+   * (CT-250: a lone Hooba-Lin killed under its own attack trigger), which is
+   * the exception CR 602.6k makes for CR 602.6f.
+   */
+  remembersFormation(id: EntityId): boolean {
+    return !this.entity(id) && this.formationSeatOf(id) !== null;
   }
 
   /**
@@ -7300,28 +7334,34 @@ export class E {
    * become a different slot; the descriptor is re-matched against a freshly
    * computed list instead, and simply fails to match when the spot is gone.
    */
-  formationSlots(seat: Seat): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
+  formationSlots(seat: Seat, remembered = false): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
     const b = this.s.battle;
     if (!b) return [];
     const attacker = seat === b.attacker;
     const grid = this.formationGrid(seat);
     const flash = this.flashBlockSlots(seat);
-    if (!grid.some(col => col.some(id => this.entity(id)))) return flash;
+    // CR 602.6k, and its CR 602.6f exception: a formation nobody stands in is
+    // joined only through a source that left play remembering it (`remembered`,
+    // see `remembersFormation`) — then its holes and ends are still there.
+    if (!remembered && !grid.some(col => col.some(id => this.entity(id)))) return flash;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] = [];
     // Only the ATTACKING grid can widen. A blocking column is keyed to an
     // attacking column (CR 602.6c), so a new one has no index to exist at.
-    if (attacker) {
+    // An attacking line with no column left at all (a remembered one that
+    // closed up, CR 602.5) has ONE new column to open, not two that are the
+    // same place — offered once, as the right end.
+    if (attacker && grid.length) {
       out.push({ col: null, end: 'left', label: 'a new column on the left', spot: { kind: 'end', end: 'left' } });
     }
     // The LABEL numbers columns the way the board does: by the attacking
-    // column each one stands opposite. The defender's grid is only its
-    // blocking columns, so its index i is not that number once a block skips
-    // a column or a side-block opens one (CR 606.4) — the bar said "column 3" for
-    // what the board drew as column 5. `spot` keeps the grid index.
-    const keys = attacker ? null : Object.keys(b.blocks).map(Number).sort((a, z) => a - z);
+    // column each one stands opposite — which, since CT-249, is the grid
+    // index on both sides (`formationGrid`). An unblocked column of the
+    // defending grid is not a slot of it: a unit gets in front of an unblocked
+    // attacker only by blocking it (CR 607.2, `flashBlockSlots`).
     grid.forEach((col, i) => {
+      if (!this.isRealColumn(seat, i)) return;
       const alive = col.filter(id => this.entity(id));
-      const n = (keys ? keys[i]! : i) + 1;
+      const n = i + 1;
       if (alive.length === 1) {
         out.push({
           col, label: `column ${n}, behind ${this.entity(alive[0]!)?.card ?? '?'}`,
@@ -7335,7 +7375,8 @@ export class E {
       }
     });
     if (attacker) {
-      out.push({ col: null, end: 'right', label: 'a new column on the right', spot: { kind: 'end', end: 'right' } });
+      out.push({ col: null, end: 'right', label: grid.length ? 'a new column on the right' : 'a new column',
+        spot: { kind: 'end', end: 'right' } });
     }
     return [...out, ...flash];
   }
@@ -7405,12 +7446,12 @@ export class E {
   myFormationSlots(id: EntityId):
   { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
     const seat = this.formationSeatOf(id);
-    return seat === null ? [] : this.formationSlots(seat);
+    return seat === null ? [] : this.formationSlots(seat, this.remembersFormation(id));
   }
 
   /** the live slot `spot` names right now, or null if the board moved and it
    * no longer names one (CR 602.7a — re-derived, never remembered as an index) */
-  private slotForSpot(seat: Seat, spot: FormationSpot): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string } | null {
+  private slotForSpot(seat: Seat, spot: FormationSpot, remembered = false): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string } | null {
     if (spot.kind === 'out') return null;
     const same = (s: FormationSpot): boolean => {
       if (s.kind !== spot.kind) return false;
@@ -7420,7 +7461,7 @@ export class E {
       if (s.kind === 'block' && spot.kind === 'block') return s.column === spot.column;
       return false;
     };
-    return this.formationSlots(seat).find(s => same(s.spot)) ?? null;
+    return this.formationSlots(seat, remembered).find(s => same(s.spot)) ?? null;
   }
 
   /**
@@ -7483,13 +7524,13 @@ export class E {
    * Returns the log line for what happened, which spawnUnit emits under the
    * spawn. Every branch has one: silence here is a conformance failure.
    */
-  private takeSpot(u: Entity, seat: Seat, spot: FormationSpot): string {
+  private takeSpot(u: Entity, seat: Seat, spot: FormationSpot, remembered = false): string {
     const b = this.s.battle;
     if (!b || u.region !== b.region) {
       return `${u.card} is played, but there is no formation here to join — it enters the region.`;
     }
     if (spot.kind === 'out') return `${u.card} is played outside the formation, by choice.`;
-    const slot = this.slotForSpot(seat, spot);
+    const slot = this.slotForSpot(seat, spot, remembered);
     if (!slot) {
       // CR 602.7a: chosen at cast, taken at resolution — and the line moved.
       return `${u.card}: the open spot it was played into is gone — it enters the region, outside the formation.`;
@@ -7541,7 +7582,11 @@ export class E {
     const u = this.entity(id);
     const b = this.s.battle;
     if (!u || !b) return [];
-    const grid = this.formationGrid(u.controller);
+    // CR 602.6e: the grid the unit STANDS in, which after Organic Exchange can be
+    // the other seat's line (owner, 2026-10-22) — not its controller's
+    const seat = this.formationSeatOf(id);
+    if (seat === null) return [];
+    const grid = this.formationGrid(seat);
     let ci = -1, ri = -1;
     for (let i = 0; i < grid.length; i++) {
       const r = grid[i]!.indexOf(id);
@@ -7549,10 +7594,12 @@ export class E {
     }
     if (ci === -1) return [];
     // CR 603.3: only the attacking line can open a column past its end
-    const widens = u.controller === b.attacker && ri === 0;
+    const widens = seat === b.attacker && ri === 0;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; row: number; label: string }[] = [];
     const take = (c: number, r: number, label: string): void => {
-      const col = grid[c];
+      // CR 606.1f: an unblocked column of the defending grid is a gap, not a
+      // slot — the same closed answer as the defending line's edge (CR 603.3b)
+      const col = this.isRealColumn(seat, c) ? grid[c] : undefined;
       if (!col) {                          // past the edge of the line (CR 603.3)
         if (!widens) return;
         const end = c < 0 ? 'left' : 'right';
@@ -7610,7 +7657,10 @@ export class E {
         `${src}: it is not in a formation, so there is no formation of mine for ${u.card} to join.`);
       return false;
     }
-    const slots = this.formationSlots(seat);
+    // CR 602.6f: a source that left play remembering its formation joins it even
+    // when nobody is left standing in it (CT-250)
+    const remembered = opts.sourceId !== undefined && this.remembersFormation(opts.sourceId);
+    const slots = this.formationSlots(seat, remembered);
     if (!slots.length) {
       this.ev('info',
         `${src}: no open position in the formation — ${u.card} stays in the region, outside it.`);
@@ -11199,6 +11249,8 @@ export class E {
         ...(item.from ? { from: item.from } : {}),
         ...(item.formationSpot ? { spot: item.formationSpot } : {}),
         ...(item.owner !== undefined ? { owner: item.owner } : {}),   // CR 102.5a (CT-245)
+        ...(item.formationRemembered ? { spotRemembered: true } : {}),
+        ...(item.formationSeat !== undefined ? { spotSeat: item.formationSeat } : {}),
       });
       return;
     }
@@ -11984,6 +12036,8 @@ export class E {
         // Dormant until now: `playsIntoFormation` is on one card and it is a
         // plain unit, so no item reached here carrying a spot.
         ...(item.formationSpot ? { spot: item.formationSpot } : {}),
+        ...(item.formationRemembered ? { spotRemembered: true } : {}),
+        ...(item.formationSeat !== undefined ? { spotSeat: item.formationSeat } : {}),
       });
       // CR 723.4c: a spell UNIT's card does not leave — it arrives. Its viruses ride
       // it in, as the augment mods they always were, which is also what makes
@@ -13878,7 +13932,6 @@ export class E {
             seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label, pure,
             col: [...atk], dealers: this.dealersIn(atk, collapsed),   // CR 608.9a
           });
-          if (atkAttrs.has('Thieving')) L.thievingDraw[b.attacker] = (L.thievingDraw[b.attacker] ?? 0) + 1;
         }
       }
       // blocker side
@@ -13916,7 +13969,6 @@ export class E {
               seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure,
               col: [...blk], dealers: this.dealersIn(blk, collapsed),   // CR 608.9a
             });
-            if (blkAttrs.has('Thieving')) L.thievingDraw[b.defender] = (L.thievingDraw[b.defender] ?? 0) + 1;
           }
         }
       }
@@ -14170,12 +14222,28 @@ export class E {
      * substitutes, prevention subtracts, and nothing here may merge them.
      */
     const breakdown: FaceDamageHit[][] = this.s.players.map(() => []);
+    // CR 608.8c, CT-296: per hit, how much of it got past the REDIRECTS (Oorblak)
+    // and so was dealt to the player at all, as life or as rot
+    const reached: number[] = [];
     for (const hit of L.playerHits) {
+      const out = { reached: hit.amount };
       const left = this.replaceCombatDamage(hit.seat, hit.amount,
-        { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure });
-      if (hit.amount > 0) {
-        breakdown[hit.seat]!.push({ by: hit.by, dealt: hit.amount, amount: Math.max(0, left),
+        { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure }, out);
+      reached.push(out.reached);
+      // CT-296 (owner, 2026-10-22, "Yes, none of them"): a hit WHOLLY redirected
+      // into a unit dealt the player nothing, so the column did not "deal combat
+      // damage to a player" — no breakdown share (the 'combatFaceDamage' and
+      // combat 'lifeLost' listeners: Vroot and every "when my column deals
+      // combat damage" card) and no {Thieving} draw. What got past the
+      // redirects is what the column dealt the player (CR 608.8c: "the other 6
+      // are dealt to the player"), as life or — Blightsea Polyp, CR 608.8a — as
+      // rot, which is still dealt.
+      if (out.reached > 0) {
+        breakdown[hit.seat]!.push({ by: hit.by, dealt: out.reached, amount: Math.max(0, left),
           col: [...hit.col], units: [...hit.dealers] });
+        // CR 802.20: Thieving draws for a column that dealt combat damage to a
+        // player — counted here, after the redirects, not at assignment
+        if (hit.attrs.has('Thieving')) L.thievingDraw[hit.by] = (L.thievingDraw[hit.by] ?? 0) + 1;
       }
       if (left <= 0) continue;
       playerDmg[hit.seat] = (playerDmg[hit.seat] ?? 0) + left;
@@ -14214,9 +14282,19 @@ export class E {
     // CR 802.24a {Lethal}: "Any combat damage from a lethal unit will kill a player."
     // Last, because a normal-damage kill above already ended the game (and a
     // {Blessed} gain has already been applied).
-    for (const hit of L.playerHits) {
-      if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);
-    }
+    // CT-296 (owner, 2026-10-22): only damage that REACHES the player kills. A hit
+    // WHOLLY redirected into a unit (Oorblak: "that damage is dealt to me
+    // instead") dealt the player nothing — the owner, 2026-10-16: "The column
+    // doesn't even get to deal damage to the player. It gets redirected to the
+    // Oorblak instead." A {Piercing} excess that gets past the redirect does
+    // reach the player, and a hit Blightsea Polyp turns into rot is still
+    // damage dealt to the player (CR 608.8a, Caleb RQ 1298894533718970370), so
+    // both still kill.
+    L.playerHits.forEach((hit, i) => {
+      if (!hit.attrs.has('Lethal')) return;
+      if ((reached[i] ?? 0) > 0) this.killPlayer(hit.seat, `${hit.label} is Lethal`);
+      else this.ev('info', `${hit.label} is Lethal, but none of its damage reached ${this.pname(hit.seat)}.`, { seat: hit.seat });
+    });
   }
 
   /** Thieving: a column that dealt combat damage to a player draws one card (CR 802.20) */
