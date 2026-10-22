@@ -8,7 +8,7 @@
  * in data/comprehensive-rules/rules/U20.json lists this file in its
  * sources.tests, and an example may be bound to the test by its title.
  *
- * The four tests titled "engine differs" are the exception: their rules state
+ * The tests titled "engine differs" are the exception: their rules state
  * the ruling (or the printed text) and carry an engineDiffers mark, and these
  * tests pin the divergence the mark describes. They are deliberately NOT
  * listed in those rules' sources. When one goes red the engine has been
@@ -283,26 +283,6 @@ test('cr:attr.electric.adjacency — during a battle, a unit in no formation has
   const g = new E(h.state);
   assert.ok(g.s.battle);
   assert.deepEqual(g.adjacentInFormation(idle), [], 'the idle unit is in no formation');
-});
-
-test('cr:attr.electric.chooser — engine differs: the Electric path is asked of the controller of the effect even when the source unit is the opponents', () => {
-  const h = new Harness(92008);
-  toDeployment(h);
-  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
-  const a0 = tok(h, A, 1, 1), a1 = tok(h, A, 1, 1);
-  const b0 = tok(h, D, 1, 9);
-  toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[a0], [a1]] });
-  blockStep(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
-  const g0 = new E(h.state);
-  assert.deepEqual(g0.adjacentInFormation(a0).map(u => u.id), [a1], 'the two attackers are adjacent');
-  const { asked } = effect(h, { controller: A, sourceId: b0, attrs: ['Electric'], hits: [{ target: a0, n: 5 }] });
-  const q = asked.find(a => a.kind === 'electricPath');
-  assert.ok(q, 'a jump is offered');
-  assert.equal(new E(h.state).entity(b0)!.controller, D, 'the source is the defenders');
-  // the rule: the source controller (D) chooses; the engine asks the effect controller (A)
-  assert.equal(q.seat, A, 'engine: the path is asked of the effect controller');
 });
 
 test('cr:attr.piercing.redirect — engine differs: with two Oorblaks, 10 Piercing combat damage is redirected a second time, so both die and only 2 reach the player', () => {
@@ -637,7 +617,7 @@ test('cr:attr.thieving.replaced — a Thieving column whose hit to the defending
 
 /* ── Pure ───────────────────────────────────────────────────────────── */
 
-test('cr:attr.pure.stat-attributes — a Tough 0/4 still has 8 defense blocking a 5-power Just a Unit, and survives', () => {
+test('cr:attr.pure.stat-attributes — a Tough 0/4 blocking a 5-power Just a Unit has 4 defense, not 8, and dies', () => {
   const h = new Harness(92024);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -650,11 +630,11 @@ test('cr:attr.pure.stat-attributes — a Tough 0/4 still has 8 defense blocking 
   blockStep(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d] } });
   pass(h); pass(h);
-  assert.ok(ent(h, d), 'the Tough blocker survives 5');
-  assert.equal(ent(h, d)!.damage, 5);
+  // CR 802.25e (CT-260, the owner 2026-10-22: print wins): Tough is an attribute
+  assert.equal(ent(h, d), undefined, 'the Tough blocker is read as a 0/4 in the Pure exchange and dies to 5');
 });
 
-test('cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Unit: both sides are read at printed stats', () => {
+test('cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Unit: Unaware does not apply, so the counters count', () => {
   const h = new Harness(92025);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -666,8 +646,10 @@ test('cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Un
   blockStep(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
   pass(h); pass(h);
-  assert.equal(ent(h, bubb)?.damage, 2, 'Just a Unit hit at its printed power 2, not 6');
-  assert.equal(ent(h, jau), undefined, 'and it died at its printed defense 3 to the 5 of Bubb');
+  // CR 802.25f (CT-260): the exchange is not collapsed to printed stats
+  assert.equal(ent(h, bubb), undefined, 'Just a Unit hit at its live power 6, which kills the 5/6');
+  assert.ok(ent(h, jau), 'and it survived 5 at its live defense 7');
+  assert.equal(ent(h, jau)!.damage, 5);
 });
 
 test('cr:attr.pure.column — a unit attacking in a column with Just a Unit is dealt 1, not 2, by a Powerful effect dealing 1', () => {
@@ -695,20 +677,4 @@ test('cr:attr.pure.not-targeting — a target-unit damage spell (Arc Lightning) 
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   assert.ok(offered(h).includes(JSON.stringify({ unit: jau })), `menu: ${offered(h)}`);
-});
-
-/* ── Modular ────────────────────────────────────────────────────────── */
-
-test('cr:attr.modular.not-shared — engine differs: a unit given Modular in an attacking column shares Modular with its column-mate', () => {
-  const h = new Harness(93006);
-  toDeployment(h);
-  const A = h.state.initiative as Seat;
-  const m = tok(h, A, 1, 1), mate = tok(h, A, 1, 1);
-  grant(h, m, 'Modular');
-  toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[m, mate]] });
-  const g = new E(h.state);
-  assert.ok(!g.ownAttrs(g.entity(mate)!).has('Modular'));
-  // the rule: Modular is not shared; the engine shares it (latent: no unit prints Modular)
-  assert.ok(g.effAttrs(g.entity(mate)!).has('Modular'), 'engine: the column-mate reads Modular');
 });

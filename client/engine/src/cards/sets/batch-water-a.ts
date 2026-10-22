@@ -926,7 +926,8 @@ card('Frosted Denial', {
         g.ev('info', 'Frosted Denial: the targeted effect has already left the stack — no ransom, no negate.');
         return;
       }
-      if (item.controller === ctx.controller) { g.ev('info', 'Frosted Denial: not an enemy effect — no effect.'); return; }
+      // "enemy" is the slot's restriction, judged once as this began to resolve
+      // (CR 704.5a, CT-232) — not tested again here
       const me = ctx.controller;
       const x = ctx.x ?? 0;
       if (x < 1) { g.ev('info', "Frosted Denial: X can't be zero — no effect."); return; }
@@ -1176,10 +1177,12 @@ card('Insidious Invitation', {
 card('Lurking Slimebeast', {});
 
 // "When I attack, [Switch1] Recall up to one target unit with 5 or less
-// defense." — bbb/4 5/3 Kraken Unit. Bounded graft cause (CR 722.5). ⚠ approx:
-// TargetSpec cannot filter by stats or express "up to one" — candidates are
-// all units; the "5 or less defense" gate is enforced at resolution (an
-// over-tough pick is a no-op).
+// defense." — bbb/4 5/3 Kraken Unit. Bounded graft cause (CR 722.5). The
+// "5 or less defense" is the slot's `restrict` (CR 110.3a), judged when the
+// target is chosen and ONCE more as the item begins to resolve (CR 704.5,
+// markIllegalTargets). The run does not test it again: CR 704.5a, an earlier
+// part of the same item (a graft composite growing the unit) cannot switch a
+// later part's target off (CT-232; 554 sweeps the pool for the shape).
 const krakenRecall: EffectDef = {
   // CR 110.3a: "with 5 or less defense" is a targeting restriction.
   targets: {
@@ -1198,9 +1201,7 @@ const krakenRecall: EffectDef = {
       g.ev('info', 'Minor Kraken recalls nothing.');
       return;
     }
-    const [, def] = g.effStats(t);
-    if (def <= 5) g.recall(t);
-    else g.ev('info', `Minor Kraken: ${t.card} has ${def} defense (> 5) — not recalled.`);
+    g.recall(t);
   },
 };
 card('Minor Kraken', {

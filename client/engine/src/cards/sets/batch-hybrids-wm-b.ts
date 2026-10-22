@@ -386,10 +386,8 @@ card('Abduct', {
       const t = ctx.targets[0];
       if (!isEnt(t)) return;
       const u = t as Entity;
-      if (g.costOf(u) > x) {
-        g.ev('info', `Abduct: ${u.card} costs more than ${x} — no effect.`);
-        return;
-      }
+      // CR 704.5a (CT-232): "cost [x] or less" was judged once, as the spell
+      // began to resolve; it is not tested again in the run
       if (u.controller === ctx.controller) {
         g.ev('info', `Abduct: ${u.card} is already yours — nothing happens.`);
         return;   // already yours
@@ -783,13 +781,9 @@ const lurkerRecall: EffectDef = {
       g.ev('info', 'Lumengrove Lurker: no unit is targeted (up to one) — nothing is recalled.');
       return;
     }
-    const u = t as Entity;
-    const n = formationSize(g, ctx.sourceId);
-    if (g.costOf(u) > n) {
-      g.ev('info', `Lumengrove Lurker: ${u.card}'s cost is above ${n} — not recalled.`);
-      return;
-    }
-    g.recall(u);
+    // CR 704.5a (CT-232): "cost ≤ units in my formation" was judged once, as
+    // the item began to resolve; it is not tested again in the run
+    g.recall(t as Entity);
   },
 };
 card('Lumengrove Lurker', {

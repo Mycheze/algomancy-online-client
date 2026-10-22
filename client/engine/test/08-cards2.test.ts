@@ -9,7 +9,7 @@ import { E } from '../src/engine.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, handIdx, pass, pick,
   skipHasteStep, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
-  assignDefault,
+  assignDefault, withE,
 } from './util.ts';
 import type { Seat } from '../src/types.ts';
 
@@ -51,6 +51,32 @@ test('CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→T
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Child of Aether'), hostId: host2 });
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rampart Guardian'), hostId: host2 });
   assert.deepEqual(effStats(h, host2), [3, 6], 'Balanced then Tough: 3/1 → 3/3 → 3/6');
+});
+
+test('CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances: Child of Aether with Rampart Guardian is a 2/2', () => {
+  // Manual p.42: if "Tough" is augmented onto a "Balanced" unit, "it will have
+  // its defense doubled, then its stats balanced" — the owner, 2026-10-22,
+  // ruled this clause governs. The augment's attributes come before the
+  // host's printed ones.
+  const h = new Harness(308);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  giveResources(h, p, 'earth', 3);
+  const child = spawn(h, p, 'Child of Aether');            // 2/0 printed Balanced
+  assert.deepEqual(effStats(h, child), [2, 2], 'setup: Balanced 2/0 reads 2/2');
+  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rampart Guardian'), hostId: child });
+  assert.deepEqual(effStats(h, child), [2, 2], 'doubled (2/0 stays 2/0), then balanced: 2/2');
+});
+
+test('CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles: 2/4', () => {
+  // the Manual's other clause: "applied to" a Balanced unit — a grant, not an
+  // augment, comes after what the unit prints
+  const h = new Harness(309);
+  toDeployment(h);
+  const p = h.state.deployPlayer!;
+  const child = spawn(h, p, 'Child of Aether');
+  withE(h, e => e.addTempAttr(e.entity(child)!, 'Tough'));
+  assert.deepEqual(effStats(h, child), [2, 4], 'balanced (2/2), then doubled (2/4)');
 });
 
 test('Tidepool Terror: Deadly — 1 damage kills the 7/5 it blocks (CR 802.3a)', () => {

@@ -386,15 +386,16 @@ card('Trashling', {});
 
 // "Delete target unit with base power 2 or less." — m/2 {Battle} Occult
 // Technology Spell. BASE power = printed/token stats only (layer 1 — no
-// counters, temps or statics); the gate is enforced at resolution (an
-// over-power pick is a no-op). Delete = destroy without combat (engine verb;
+// counters, temps or statics); the gate is the slot's restriction, judged at
+// cast and once more as the spell begins to resolve (CR 704.5). Delete = destroy without combat (engine verb;
 // nontoken unmodded → owner's bin).
 card('Unmake', {
   spellEffect: {
     // CR 110.3a: "with base power 2 or less" is part of what makes a target LEGAL.
     // It used to offer the whole board and then refuse most of it at
-    // resolution. The resolution check stays — base power can change between
-    // cast and resolution, and CR 704.5, 704.6 govern that, not the candidate list.
+    // resolution. Base power can change between cast and resolution: CR 704.5
+    // judges the restriction again, once, as the spell begins to resolve, and
+    // the run does not test it a third time (CR 704.5a, CT-232).
     targets: {
       what: 'unit', prompt: 'Unmake: delete target unit with base power 2 or less',
       // E.baseStatsOf is layers 1-2, so a REWRITTEN base (Formless, Body
@@ -405,9 +406,9 @@ card('Unmake', {
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      const [bp] = g.baseStatsOf(t);
-      if (bp <= 2) g.destroy(t, 'is deleted');
-      else g.ev('info', `Unmake: ${t.card} has base power ${bp} (> 2) — not deleted.`);
+      // CR 704.5a (CT-232): "base power 2 or less" was judged once, as the spell
+      // began to resolve; it is not tested again in the run
+      g.destroy(t, 'is deleted');
     },
   },
 });

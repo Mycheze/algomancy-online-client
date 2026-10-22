@@ -94,68 +94,6 @@ test('cr:attr.general.pure — Unaware is off in a Pure pairing outside combat: 
   assert.equal(ent(h, ctl), undefined, 'control: the non-Pure 4/5 (printed 2/3) is collapsed by Unaware and dies');
 });
 
-test('cr:attr.general.pure — engine differs: Tough still applies to a unit dealt damage by a Pure source', () => {
-  const h = new Harness(43002);
-  toDeployment(h);
-  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  const src = spawn(h, A, 'Just a Unit');          // Pure source
-  const tgt = spawn(h, D, 'Rampart Guardian');     // 0/4 Tough -> 0/8
-  const evs = dealFrom(h, A, src, tgt, 5);
-  assert.equal(dealtTo(evs, tgt), 5);
-  assert.ok(ent(h, tgt), 'alive: 5 damage against the Tough-doubled 8, so Tough was NOT switched off by the Pure pairing');
-  assert.deepEqual(effStats(h, tgt), [0, 8]);
-});
-
-test('cr:attr.general.pure — engine differs: Balanced still applies to a unit dealt damage by a Pure source', () => {
-  const h = new Harness(43003);
-  toDeployment(h);
-  const A = h.state.deployPlayer!, D = (1 - A) as Seat;
-  const src = spawn(h, A, 'Just a Unit');          // Pure source
-  const tgt = tok(h, D, 4, 1);
-  grant(h, tgt, 'Balanced');                       // 4/1 -> 4/4
-  assert.deepEqual(effStats(h, tgt), [4, 4]);
-  dealFrom(h, A, src, tgt, 3);
-  assert.ok(ent(h, tgt), 'alive with 3 damage: Balanced was read in the Pure pairing (a 4/1 would have died)');
-});
-
-test('cr:attr.general.pure — engine differs: in combat, Tough still doubles a blocker whose exchange holds a Pure attacker', () => {
-  const h = new Harness(43004);
-  toDeployment(h);
-  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
-  const atk = tok(h, A, 5, 20);
-  const guard = spawn(h, D, 'Rampart Guardian');   // 0/4 Tough -> 0/8
-  toNextBattle(h, A);
-  grant(h, atk, 'Pure');
-  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  pass(h); pass(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [guard] } });
-  pass(h); pass(h);
-  strikeAll(h);
-  assert.ok(ent(h, guard), 'the Guardian survives 5: its Tough (0/8) was read in the Pure exchange');
-  assert.equal(ent(h, guard)!.damage, 5);
-  finishBattle(h);
-});
-
-test('cr:attr.general.pure — engine differs: in combat, Unaware still collapses an exchange that holds a Pure attacker', () => {
-  const h = new Harness(43005);
-  toDeployment(h);
-  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
-  const atk = tok(h, A, 3, 3);
-  ent(h, atk)!.counters = 4;                       // live 7/7
-  const bubb = spawn(h, D, 'Bubb');                // 5/6 Unaware
-  toNextBattle(h, A);
-  grant(h, atk, 'Pure');
-  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
-  pass(h); pass(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
-  pass(h); pass(h);
-  strikeAll(h);
-  assert.ok(ent(h, bubb), 'Bubb survives');
-  assert.equal(ent(h, bubb)!.damage, 3, 'the Pure attacker dealt its printed 3: Unaware was NOT switched off by Pure');
-  assert.equal(ent(h, atk), undefined, 'and died against its printed 3 defense');
-  finishBattle(h);
-});
-
 test('cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it is doubled, then balanced: Rampart Guardian is an 8/8', () => {
   const h = new Harness(43006);
   toDeployment(h);
@@ -168,17 +106,6 @@ test('cr:attr.general.application-order — a Tough unit attacking with a Balanc
   pass(h); pass(h);
   h.do({ type: 'declareBlocks', seat: (1 - A) as Seat, blocks: {} });
   finishBattle(h);
-});
-
-test('cr:attr.general.application-order — engine differs: Tough augmented onto a printed-Balanced unit applies after the printed Balanced', () => {
-  const h = new Harness(43007);
-  toDeployment(h);
-  const p = h.state.deployPlayer!;
-  const child = spawn(h, p, 'Child of Aether');    // 2/0 printed Balanced
-  giveResources(h, p, 'earth', 3);
-  h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rampart Guardian'), hostId: child });
-  assert.deepEqual(effStats(h, child), [2, 4],
-    'engine: Balanced (printed) then Tough, 2/2 then 2/4; the printed order (doubled, then balanced) would give 2/2');
 });
 
 /* ── Flying ─────────────────────────────────────────────────────────────── */

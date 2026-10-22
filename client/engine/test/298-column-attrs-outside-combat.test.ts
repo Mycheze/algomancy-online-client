@@ -190,9 +190,11 @@ test('CR 802.15d {Alluring} still originates from the unit that prints it', () =
  * `Entity.unstable` + `faceDef().unstable` + the mods derivation, read through
  * `E.isUnstable`; Burst is `CardDef.burst`. Neither is in `ownAttrs`, so
  * neither can union through `colAttrs` — correct by accident of modelling.
- * Modular IS in `attrs` and is harmless only because the one card that prints
- * it is a spell, which never stands in a column. The column-sharing rule (CR 712.8a) is what would
- * tempt someone to "fix" that inconsistency; this is the guard that stops them.
+ * Modular IS in `attrs`, so it is kept out of the column set explicitly
+ * (`E.UNSHARED_ATTRS`, CT-261): until then it was harmless only because the one
+ * card that prints it is a spell, which never stands in a column. The
+ * column-sharing rule (CR 712.8a) is what would tempt someone to "fix" that
+ * exception away; these are the guards that stop them.
  */
 test('CR 712.8e Unstable and Burst are not in the attribute set, so a column cannot share them', () => {
   for (const name of allCardNames()) {
@@ -219,19 +221,17 @@ test('CR 712.8e a modded (therefore Unstable) unit does not make its column-mate
   finishBattle(h);
 });
 
-test('CR 802.26h {Modular} is an object attribute too, and only a spell prints it', () => {
-  // The owner: "Modular is also special. But doesn't matter yet cause it's a
-  // spell." That is TRUE TODAY and is the whole of why it is safe — so the
-  // guard is on the fact that keeps it safe, not on the behaviour it implies.
-  const carriers = allCardNames().filter(n => {
-    const c = getCard(n) as { attrs?: string[]; augmentAttrs?: string[] };
-    return [...(c.attrs ?? []), ...(c.augmentAttrs ?? [])].includes('Modular');
-  });
-  assert.ok(carriers.length > 0, 'something still prints {Modular} — the subject set is not empty');
-  for (const n of carriers) {
-    assert.notEqual((getCard(n) as { kind?: string }).kind, 'unit',
-      `${n} prints {Modular} and is a UNIT, so it can stand in a column and share an attribute `
-      + 'that describes how a card is PLAYED. Give Modular the Unstable/Burst treatment — out '
-      + 'of attrs, into its own predicate — before shipping it on a unit');
-  }
+test('CR 802.26h / CT-261: {Modular} is an object attribute too, so a unit given it keeps it and its column-mate does not', () => {
+  // No unit prints {Modular} today (Spellbind is a spell), so the unit is
+  // given it by a temp grant — the shape any future donor would take.
+  const { h, f, b } = columnBoard(29806, 'Lithoghul', 'Geode', 'Good Whale');
+  const g = new E(h.state);
+  g.addTempAttr(g.entity(f)!, 'Modular');
+  assert.ok(g.columnOf(f) && g.columnOf(f)!.includes(b), 'setup: the two stand in one column');
+  assert.ok(g.ownAttrs(g.entity(f)!).has('Modular'), 'setup: the front unit has Modular');
+  assert.ok(!g.effAttrs(g.entity(b)!).has('Modular'),
+    'its column-mate does NOT get it — Modular says how a card is played, not how it fights');
+  assert.ok(!g.colAttrs(g.columnOf(f)!).has('Modular'), 'and it is not in the column attribute set');
+  assert.ok(g.effAttrs(g.entity(f)!).has('Modular'), 'the unit that has it still has it, in the column');
+  finishBattle(h);
 });
