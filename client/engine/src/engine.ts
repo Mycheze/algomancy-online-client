@@ -4014,7 +4014,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; spotRemembered?: boolean; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
     /**
      * CR 708.3: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -4115,7 +4115,7 @@ export class E {
     // CR 602.7: a card PLAYED into an open spot in the formation is put there
     // BEFORE the spawn event exists, so no listener and no player ever sees it
     // standing anywhere else. See takeSpot.
-    const placed = opts.spot ? this.takeSpot(u, seat, opts.spot) : null;
+    const placed = opts.spot ? this.takeSpot(u, seat, opts.spot, opts.spotRemembered) : null;
     /*
      * CR 701.3 — PLAY vs PUT INTO PLAY. This method PUTS a card into play (Exhume,
      * Resurrect, Rousing Spirit, Lurking Dread all print "put into play"), or
@@ -7099,6 +7099,17 @@ export class E {
   }
 
   /**
+   * CR 602.6f, 714.4 — does `id` name a formation only by REMEMBERING it: it has
+   * left play, and its last-known state stood in a formation of this battle.
+   * Such a formation is joined even when no unit is left standing in it
+   * (CT-250: a lone Hooba-Lin killed under its own attack trigger), which is
+   * the exception CR 602.6k makes for CR 602.6f.
+   */
+  remembersFormation(id: EntityId): boolean {
+    return !this.entity(id) && this.formationSeatOf(id) !== null;
+  }
+
+  /**
    * `spot` is the same placement expressed as something that SURVIVES the
    * board moving under it — the play-time placement of CR 602.7 is chosen at cast and
    * taken at resolution, and by then a column may have collapsed, widened or
@@ -7106,17 +7117,23 @@ export class E {
    * become a different slot; the descriptor is re-matched against a freshly
    * computed list instead, and simply fails to match when the spot is gone.
    */
-  formationSlots(seat: Seat): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
+  formationSlots(seat: Seat, remembered = false): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
     const b = this.s.battle;
     if (!b) return [];
     const attacker = seat === b.attacker;
     const grid = this.formationGrid(seat);
     const flash = this.flashBlockSlots(seat);
-    if (!grid.some(col => col.some(id => this.entity(id)))) return flash;
+    // CR 602.6k, and its CR 602.6f exception: a formation nobody stands in is
+    // joined only through a source that left play remembering it (`remembered`,
+    // see `remembersFormation`) — then its holes and ends are still there.
+    if (!remembered && !grid.some(col => col.some(id => this.entity(id)))) return flash;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] = [];
     // Only the ATTACKING grid can widen. A blocking column is keyed to an
     // attacking column (CR 602.6c), so a new one has no index to exist at.
-    if (attacker) {
+    // An attacking line with no column left at all (a remembered one that
+    // closed up, CR 602.5) has ONE new column to open, not two that are the
+    // same place — offered once, as the right end.
+    if (attacker && grid.length) {
       out.push({ col: null, end: 'left', label: 'a new column on the left', spot: { kind: 'end', end: 'left' } });
     }
     // The LABEL numbers columns the way the board does: by the attacking
@@ -7141,7 +7158,8 @@ export class E {
       }
     });
     if (attacker) {
-      out.push({ col: null, end: 'right', label: 'a new column on the right', spot: { kind: 'end', end: 'right' } });
+      out.push({ col: null, end: 'right', label: grid.length ? 'a new column on the right' : 'a new column',
+        spot: { kind: 'end', end: 'right' } });
     }
     return [...out, ...flash];
   }
@@ -7211,12 +7229,12 @@ export class E {
   myFormationSlots(id: EntityId):
   { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string; spot: FormationSpot }[] {
     const seat = this.formationSeatOf(id);
-    return seat === null ? [] : this.formationSlots(seat);
+    return seat === null ? [] : this.formationSlots(seat, this.remembersFormation(id));
   }
 
   /** the live slot `spot` names right now, or null if the board moved and it
    * no longer names one (CR 602.7a — re-derived, never remembered as an index) */
-  private slotForSpot(seat: Seat, spot: FormationSpot): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string } | null {
+  private slotForSpot(seat: Seat, spot: FormationSpot, remembered = false): { col: EntityId[] | null; end?: 'left' | 'right'; block?: number; label: string } | null {
     if (spot.kind === 'out') return null;
     const same = (s: FormationSpot): boolean => {
       if (s.kind !== spot.kind) return false;
@@ -7226,7 +7244,7 @@ export class E {
       if (s.kind === 'block' && spot.kind === 'block') return s.column === spot.column;
       return false;
     };
-    return this.formationSlots(seat).find(s => same(s.spot)) ?? null;
+    return this.formationSlots(seat, remembered).find(s => same(s.spot)) ?? null;
   }
 
   /**
@@ -7289,13 +7307,13 @@ export class E {
    * Returns the log line for what happened, which spawnUnit emits under the
    * spawn. Every branch has one: silence here is a conformance failure.
    */
-  private takeSpot(u: Entity, seat: Seat, spot: FormationSpot): string {
+  private takeSpot(u: Entity, seat: Seat, spot: FormationSpot, remembered = false): string {
     const b = this.s.battle;
     if (!b || u.region !== b.region) {
       return `${u.card} is played, but there is no formation here to join — it enters the region.`;
     }
     if (spot.kind === 'out') return `${u.card} is played outside the formation, by choice.`;
-    const slot = this.slotForSpot(seat, spot);
+    const slot = this.slotForSpot(seat, spot, remembered);
     if (!slot) {
       // CR 602.7a: chosen at cast, taken at resolution — and the line moved.
       return `${u.card}: the open spot it was played into is gone — it enters the region, outside the formation.`;
@@ -7418,7 +7436,10 @@ export class E {
         `${src}: it is not in a formation, so there is no formation of mine for ${u.card} to join.`);
       return false;
     }
-    const slots = this.formationSlots(seat);
+    // CR 602.6f: a source that left play remembering its formation joins it even
+    // when nobody is left standing in it (CT-250)
+    const remembered = opts.sourceId !== undefined && this.remembersFormation(opts.sourceId);
+    const slots = this.formationSlots(seat, remembered);
     if (!slots.length) {
       this.ev('info',
         `${src}: no open position in the formation — ${u.card} stays in the region, outside it.`);
@@ -10996,6 +11017,7 @@ export class E {
         ...(item.from ? { from: item.from } : {}),
         ...(item.formationSpot ? { spot: item.formationSpot } : {}),
         ...(item.owner !== undefined ? { owner: item.owner } : {}),   // CR 102.5a (CT-245)
+        ...(item.formationRemembered ? { spotRemembered: true } : {}),
       });
       return;
     }
@@ -11781,6 +11803,7 @@ export class E {
         // Dormant until now: `playsIntoFormation` is on one card and it is a
         // plain unit, so no item reached here carrying a spot.
         ...(item.formationSpot ? { spot: item.formationSpot } : {}),
+        ...(item.formationRemembered ? { spotRemembered: true } : {}),
       });
       // CR 723.4c: a spell UNIT's card does not leave — it arrives. Its viruses ride
       // it in, as the augment mods they always were, which is also what makes

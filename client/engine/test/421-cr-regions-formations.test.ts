@@ -11,8 +11,8 @@
  * ruled law and carry an engineDiffers mark, and such a test pins the
  * divergence the mark describes. When one goes red the engine has been brought
  * in line with the ruling: drop the engineDiffers mark and the test, and bind a
- * real example. (Two of the three this file had — F-U10-3 — went red with
- * CT-249 and now assert the ruled law.)
+ * real example. (The three this file had — F-U10-3 and F-U10-6 — went red with
+ * CT-249 and CT-250 and now assert the ruled law.)
  *
  * If one of these fails, either the engine changed or the rule is wrong.
  * Do not just edit the assertion: find out which, fix the rule text (or file
@@ -565,7 +565,7 @@ test('cr:combat.formations.placement.empty-formation — after blocks every atta
   finishBattle(h);
 });
 
-test('cr:combat.formations.placement.source-gone — engine differs: a lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation it was in', () => {
+test('cr:combat.formations.placement.source-gone — a lone Hooba-Lin killed under its attack trigger still puts its 1/1 into the formation it was in', () => {
   const h = new Harness(73102);
   toDeployment(h);
   const A = h.state.initiative as Seat;
@@ -575,10 +575,10 @@ test('cr:combat.formations.placement.source-gone — engine differs: a lone Hoob
   assert.ok(h.state.stack.some(i => i.card === 'Hooba-Lin'), 'the attack trigger waits');
   kill(h, src);
   pass(h); pass(h);
-  assert.equal(h.state.decision, null, 'no spot is asked for');
+  assert.equal(h.state.decision, null, 'one position (a new column), so no spot is asked for');
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Unit Token').length, 1, 'the 1/1 is made');
   const inLine = h.state.battle!.columns.flat().filter(id => ent(h, id)?.card === 'Unit Token');
-  assert.equal(inLine.length, 0, 'but it is not placed into the formation Hooba-Lin was in');
+  assert.equal(inLine.length, 1, 'and placed into the formation Hooba-Lin was in (CT-250)');
   finishBattle(h);
 });
 

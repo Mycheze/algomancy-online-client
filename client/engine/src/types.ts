@@ -1031,6 +1031,11 @@ export interface StackItem {
    * (nothing is asked). Contrast CR 602.6, where placement is an EFFECT resolving
    * and is chosen then. */
   formationSpot?: FormationSpot;
+  /** CR 602.6f — `formationSpot` names a slot of a formation the play's SOURCE
+   * only remembers (it left play; CT-250, a dead Hooba-Pon), so the spot is
+   * matched against that formation even when nobody is left standing in it.
+   * Optional and additive: absent on every item saved before it existed. */
+  formationRemembered?: true;
   /** CR 705.3: non-mana ACTIVATION costs that carry a CHOICE (which card to
    * discard, which unit to sacrifice), still to be paid. Collected in the cast
    * window — before the item reaches the stack — so nobody may respond between

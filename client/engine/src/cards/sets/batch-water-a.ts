@@ -401,8 +401,11 @@ const declareInlinePlay = (
     if (mode !== undefined) part.mode = mode;
   }
   let spot: FormationSpot | undefined;
+  // CR 602.6f (CT-250): a source that left play remembering its formation
+  // still names it, even when nobody is left standing in it
+  const remembered = ctx.sourceId !== undefined && g.remembersFormation(ctx.sourceId);
   if (withSpot && opts.intoFormation && (def.kind === 'unit' || def.kind === 'spellUnit')) {
-    const slots = g.formationSlots(seat);
+    const slots = g.formationSlots(seat, remembered);
     if (slots.length) {
       // BL-24: kind 'formationSlot', never 'electricPath' — an electricPath's
       // numeric values are entity ids by contract (CR 802.17) and the client pings
@@ -417,7 +420,10 @@ const declareInlinePlay = (
       })) as FormationSpot;
     }
   }
-  if (spot) item.formationSpot = spot;
+  if (spot) {
+    item.formationSpot = spot;
+    if (remembered) item.formationRemembered = true;
+  }
   g.collectInlineCastCosts(item, 'fixed', ask('cost'));
   // CR 112.14c (CT-332): the printed "[Gain N debt]" line (Hyper Beam) is a cost
   // of the PLAY, which `playAtTiming` pays beside the mana — so a free play,
