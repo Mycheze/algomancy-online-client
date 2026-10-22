@@ -7901,8 +7901,11 @@ export class E {
    * two-target spell could never aim at anything else.
    *
    * Returns `out` itself (same array, not a copy) when nothing compels, so
-   * `restrictTargets` can tell the two cases apart by identity. */
-  private compelledTargets(out: TargetRef[], region: number, chosen?: readonly ResolvedTarget[]): TargetRef[] {
+   * `restrictTargets` can tell the two cases apart by identity.
+   *
+   * Public for one other caller: a battle-window Virus's HOST choice (apply.ts
+   * `battleVirusHosts`, CT-331), which is a target choice too (CR 110.10a). */
+  compelledTargets(out: TargetRef[], region: number, chosen?: readonly ResolvedTarget[]): TargetRef[] {
     const gates = this.mustBeTargetedIn(region);
     for (const t of chosen ?? []) if (isEntityTarget(t)) gates.delete(t.id);
     let cands = out;
