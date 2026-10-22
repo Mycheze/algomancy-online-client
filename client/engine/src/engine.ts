@@ -6023,9 +6023,9 @@ export class E {
   adjacentInFormation(id: EntityId): Entity[] {
     const b = this.s.battle;
     if (!b) return [];
-    // blocking columns are keyed by attacked column index; consecutive keys are
-    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read
-    // as neighbours)
+    // CR 606.1f: the defending grid has one column per attacking column, empty
+    // where unblocked, so two blockers with an unblocked column between them
+    // are not neighbours (formationGrid)
     const grids: EntityId[][][] = [this.formationGrid(b.attacker), this.formationGrid(b.defender)];
     for (const grid of grids) {
       for (let ci = 0; ci < grid.length; ci++) {
@@ -7065,18 +7065,37 @@ export class E {
   /**
    * the formation grid `seat` fights in, `[column][row]`, front row
    * first: the attacking columns as the attacker, the blocking columns as the
-   * defender (ordered by the attacking column each answers). One derivation,
-   * so `formationSlots`, `adjacentSlots` and `adjacentInFormation` cannot
-   * disagree about what the grid is.
+   * defender. One derivation, so `formationSlots`, `adjacentSlots` and
+   * `adjacentInFormation` cannot disagree about what the grid is.
+   *
+   * CR 606.1e/606.1f — the DEFENDING grid is indexed by ATTACKING column: a
+   * blocking column is keyed to the attacking column it faces, and an
+   * unblocked attacking column is an empty column of the defending grid that
+   * keeps its place (CR 602.5d). It used to be the block keys sorted and
+   * compressed, which made two blockers either side of an unblocked column
+   * neighbours (CT-249: Inspiration buffed across the gap). Every column of
+   * this grid that `b.blocks` holds is that very array; an UNBLOCKED one is a
+   * fresh `[]` that belongs to nothing, so a reader that hands a column out
+   * to be written into (`formationSlots`, `adjacentSlots`) must skip it —
+   * `isRealColumn` says which is which.
    */
   private formationGrid(seat: Seat): EntityId[][] {
     const b = this.s.battle;
     if (!b) return [];
     if (seat === b.attacker) return b.columns;
     if (seat === b.defender) {
-      return Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!);
+      const n = Math.max(b.columns.length, ...Object.keys(b.blocks).map(k => Number(k) + 1));
+      return Array.from({ length: n }, (_, ci) => b.blocks[ci] ?? []);
     }
     return [];
+  }
+
+  /** is column `ci` of `seat`'s grid a real column — every attacking column,
+   * and a defending one only where a block was declared (CR 606.1f) */
+  private isRealColumn(seat: Seat, ci: number): boolean {
+    const b = this.s.battle;
+    if (!b) return false;
+    return seat === b.attacker ? ci >= 0 && ci < b.columns.length : b.blocks[ci] !== undefined;
   }
 
   /**
@@ -7101,14 +7120,14 @@ export class E {
       out.push({ col: null, end: 'left', label: 'a new column on the left', spot: { kind: 'end', end: 'left' } });
     }
     // The LABEL numbers columns the way the board does: by the attacking
-    // column each one stands opposite. The defender's grid is only its
-    // blocking columns, so its index i is not that number once a block skips
-    // a column or a side-block opens one (CR 606.4) — the bar said "column 3" for
-    // what the board drew as column 5. `spot` keeps the grid index.
-    const keys = attacker ? null : Object.keys(b.blocks).map(Number).sort((a, z) => a - z);
+    // column each one stands opposite — which, since CT-249, is the grid
+    // index on both sides (`formationGrid`). An unblocked column of the
+    // defending grid is not a slot of it: a unit gets in front of an unblocked
+    // attacker only by blocking it (CR 607.2, `flashBlockSlots`).
     grid.forEach((col, i) => {
+      if (!this.isRealColumn(seat, i)) return;
       const alive = col.filter(id => this.entity(id));
-      const n = (keys ? keys[i]! : i) + 1;
+      const n = i + 1;
       if (alive.length === 1) {
         out.push({
           col, label: `column ${n}, behind ${this.entity(alive[0]!)?.card ?? '?'}`,
@@ -7339,7 +7358,9 @@ export class E {
     const widens = u.controller === b.attacker && ri === 0;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; row: number; label: string }[] = [];
     const take = (c: number, r: number, label: string): void => {
-      const col = grid[c];
+      // CR 606.1f: an unblocked column of the defending grid is a gap, not a
+      // slot — the same closed answer as the defending line's edge (CR 603.3b)
+      const col = this.isRealColumn(u.controller, c) ? grid[c] : undefined;
       if (!col) {                          // past the edge of the line (CR 603.3)
         if (!widens) return;
         const end = c < 0 ? 'left' : 'right';

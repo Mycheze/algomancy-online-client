@@ -255,6 +255,9 @@ test('cr:combat.blocks.general.gap-adjacency — an empty middle blocking column
   assert.deepEqual(Object.keys(h.state.battle!.blocks), ['0', '2'], 'the empty middle blocking column keeps its place');
   assert.deepEqual(h.state.battle!.blocks[0], [d0]);
   assert.deepEqual(h.state.battle!.blocks[2], [d2]);
+  // CR 606.1f (CT-249): so the two blockers either side of it are not neighbours
+  assert.deepEqual(new E(h.state).adjacentInFormation(d0), [], 'the first-column blocker has no neighbour');
+  assert.deepEqual(new E(h.state).adjacentInFormation(d2), [], 'nor has the third-column blocker');
   finishBattle(h);
 });
 

@@ -7,11 +7,12 @@
  * in data/comprehensive-rules/rules/U10.json lists this file in its
  * sources.tests, and an example may be bound to the test by its title.
  *
- * The three tests titled "engine differs" are the exception: their rules state
- * the ruled law and carry an engineDiffers mark, and these tests pin the
+ * Tests titled "engine differs" are the exception: their rules state the
+ * ruled law and carry an engineDiffers mark, and such a test pins the
  * divergence the mark describes. When one goes red the engine has been brought
  * in line with the ruling: drop the engineDiffers mark and the test, and bind a
- * real example.
+ * real example. (Two of the three this file had — F-U10-3 — went red with
+ * CT-249 and now assert the ruled law.)
  *
  * If one of these fails, either the engine changed or the rule is wrong.
  * Do not just edit the assertion: find out which, fix the rule text (or file
@@ -652,16 +653,16 @@ function gapBlock(seed: number): { h: Harness; insp: EntityId; other: EntityId }
   return { h, insp, other };
 }
 
-test('cr:combat.columns.adjacency — engine differs: blockers of the first and third columns with the second unblocked are read as neighbours, so Inspiration buffs across the gap', () => {
+test('cr:combat.columns.adjacency — blockers of the first and third columns with the second unblocked are not neighbours, so Inspiration does not buff across the gap', () => {
   const { h, other } = gapBlock(71004);
-  assert.deepEqual(effStats(h, other), [3, 3], 'the 1/1 in the third column got +2/+2');
+  assert.deepEqual(effStats(h, other), [1, 1], 'the 1/1 in the third column gets no +2/+2 (CT-249)');
   finishBattle(h);
 });
 
-test('cr:combat.columns.adjacency.positions — engine differs: the defending grid closes up the unblocked second column, so the third-column blocker is a side neighbour of the first-column blocker', () => {
+test('cr:combat.columns.adjacency.positions — the defending grid keeps the unblocked second column, so the third-column blocker is no side neighbour of the first-column blocker', () => {
   const { h, insp, other } = gapBlock(71008);
-  assert.ok(new E(h.state).adjacentInFormation(insp).map(u => u.id).includes(other),
-    'the third-column blocker is read as adjacent to the first-column blocker');
+  assert.ok(!new E(h.state).adjacentInFormation(insp).map(u => u.id).includes(other),
+    'the third-column blocker is not adjacent to the first-column blocker (CT-249)');
   finishBattle(h);
 });
 
