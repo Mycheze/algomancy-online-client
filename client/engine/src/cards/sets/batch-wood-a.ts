@@ -273,10 +273,8 @@ card('Boon of Protection', {
         g.ev('info', 'Boon of Protection: the targeted effect has already left the stack — nothing is negated.');
         return;
       }
-      if (!aimsAtAlly(g, item.id, ctx.controller)) {
-        g.ev('info', `Boon of Protection: ${item.label} does not target anything allied — no effect.`);
-        return;
-      }
+      // CR 704.5a (CT-232): "targets an allied effect, player or unit" was
+      // judged once, as the spell began to resolve; not tested again here
       g.negate(item.id);
     },
   },

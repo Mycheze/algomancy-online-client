@@ -355,16 +355,17 @@ card('Gzxyclop', {
 
 // "Delete target unit with no stat changes." — d/2 {Battle} Blight Spell.
 // CR 110.3a: "with no stat changes" is part of what makes a target LEGAL, so only
-// unmodified units are offered. The resolution recheck below is the CR 704.5
-// half — a unit that picks up counters, until-regroup changes or somebody's
-// static buff between cast and resolution survives. (The line that used to sit
+// unmodified units are offered. The CR 704.5 half is the engine's, judged once
+// as the spell begins to resolve (markIllegalTargets) — a unit that picks up
+// counters, until-regroup changes or somebody's static buff between cast and
+// resolution survives. The run does not test it again (CR 704.5a, CT-232). (The line that used to sit
 // here, "⚠ header: TargetSpec has no filter", contradicted the spec six lines
 // below it.)
 card('Leave None Pure', {
   spellEffect: {
     // CR 110.3a: "with no stat changes" is a targeting restriction, so only the
-    // unmodified units are ever offered; the resolution check stays for the
-    // ones that change between cast and resolution.
+    // unmodified units are ever offered; CR 704.5 judges it again, once, as
+    // the spell begins to resolve.
     targets: {
       what: 'unit', prompt: 'Leave None Pure: delete target unit with no stat changes',
       restrict: unitRestrict((g, u) => statsUntouched(g, u)),
@@ -372,12 +373,8 @@ card('Leave None Pure', {
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!isEnt(t) || !g.entity(t.id)) return;
-      if (!statsUntouched(g, t)) {
-        const [bp, bt] = printedStats(g, t);
-        const [p, d] = g.effStats(t);
-        g.ev('info', `Leave None Pure: ${t.card} has stat changes (${p}/${d} vs printed ${bp}/${bt}) — it is not deleted.`);
-        return;
-      }
+      // CR 704.5a (CT-232): "with no stat changes" was judged once, as the
+      // spell began to resolve; it is not tested again in the run
       g.destroy(t, 'is deleted');
     },
   },

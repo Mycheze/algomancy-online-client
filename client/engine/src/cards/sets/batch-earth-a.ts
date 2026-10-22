@@ -427,8 +427,9 @@ card('Enigmatic Warder', {
 // "target" could not be responded to at all. Now it is a two-slot spec with
 // per-slot legality: slot 0 an ally of the CASTER, slot 1 any other unit.
 //
-// Both are re-checked at resolution rather than trusted from cast (CR 704.5, 110.4c):
-// Enigmatic Warder can redirect a slot afterwards, and the playtest bug was
+// Both are re-judged as the spell begins to resolve rather than trusted from
+// cast (CR 704.5, 110.4c — markIllegalTargets, once; the run does not test the
+// ally slot again, CR 704.5a / CT-232): Enigmatic Warder can redirect a slot afterwards, and the playtest bug was
 // the OPPONENT's Warder moving itself into the "ally" slot — "ally" means ally
 // of this spell's controller, never of the redirector's.
 const fightEffect: EffectDef = {
@@ -449,10 +450,8 @@ const fightEffect: EffectDef = {
       return;
     }
     if (a.id === b.id) { g.ev('info', 'Fight: "another" — one unit cannot fight itself.'); return; }
-    if (a.controller !== ctx.controller) {
-      g.ev('info', `Fight: ${a.card} is not ${g.pname(ctx.controller)}'s ally any more — no fight.`);
-      return;
-    }
+    // CR 704.5a (CT-232): "target ally" was judged once, as the item began to
+    // resolve (a redirect onto a non-ally is caught there); not tested again
     fight(g, ctx, a, b);
   },
 };
@@ -580,10 +579,8 @@ card('Graxxlid', {
           g.ev('info', 'Graxxlid: the targeted effect has already left the stack — nothing is negated.');
           return;
         }
-        if (!aimsAtUnit(g, item.id, ctx.sourceId)) {
-          g.ev('info', `Graxxlid: ${item.label} does not target me — no effect.`);
-          return;
-        }
+        // CR 704.5a (CT-232): "targeting me" was judged once, as this began to
+        // resolve (a retarget away from me before then is caught there)
         g.negate(item.id);
         g.draw(item.controller, 1);
       },

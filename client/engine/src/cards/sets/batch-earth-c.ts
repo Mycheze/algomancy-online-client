@@ -240,10 +240,8 @@ const squishEffect: EffectDef = {
       return;
     }
     if (a.id === b.id) { g.ev('info', 'Squish: "another" — one unit cannot squish itself.'); return; }
-    if (a.controller !== ctx.controller) {
-      g.ev('info', `Squish: ${a.card} is not ${g.pname(ctx.controller)}'s ally any more — nothing is squished.`);
-      return;
-    }
+    // CR 704.5a (CT-232): "target ally" was judged once, as the item began to
+    // resolve (a redirect onto a non-ally is caught there); not tested again
     // CR 802.9c, 112.6: Squish is an interaction between the two units, so if
     // EITHER is Unaware the ally's defense is read off its printed card. RAQ
     // "[Solved] Squish/Fight/Battle vs Source of damage": "Squish to make
@@ -477,15 +475,16 @@ card('The Bonesculptor', {
 
 // "Delete target unit with 4 or more defense." — e/2, {Battle} Rock Spell.
 // CR 110.3a: "with 4 or more defense" is part of what makes a target LEGAL, so only
-// units at 4+ are ever offered; the resolution check below is the CR 704.5 half,
-// for defense that changes between cast and resolution. (The "⚠ TargetSpec has
+// units at 4+ are ever offered; the CR 704.5 half, for defense that changes
+// between cast and resolution, is judged once as the spell begins to resolve
+// (markIllegalTargets), and the run does not test it again (CR 704.5a, CT-232). (The "⚠ TargetSpec has
 // no filters … any unit is targetable at cast" line that used to sit here was
 // contradicted by the spec five lines below it — and by the header's own
 // retraction.)
 card('Throw off a Cliff', {
   spellEffect: {
     // CR 110.3a: "with 4 or more defense" gates which units are legal targets at
-    // all; the resolution check stays for defense that changes in between.
+    // all; CR 704.5 judges it again, once, as the spell begins to resolve.
     targets: {
       what: 'unit', prompt: 'Throw off a Cliff: delete target unit with 4 or more defense',
       restrict: unitRestrict((g, u) => g.effStats(u)[1] >= 4),
@@ -498,8 +497,9 @@ card('Throw off a Cliff', {
         g.ev('info', 'Throw off a Cliff: the target is gone — nothing is deleted.');
         return;
       }
-      if (g.effStats(u)[1] >= 4) g.destroy(u, 'is deleted');
-      else g.ev('info', `Throw off a Cliff: ${u.card} has less than 4 defense — nothing happens.`);
+      // CR 704.5a (CT-232): "4 or more defense" was judged once, as the spell
+      // began to resolve; it is not tested again in the run
+      g.destroy(u, 'is deleted');
     },
   },
 });

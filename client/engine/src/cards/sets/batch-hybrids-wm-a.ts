@@ -337,10 +337,8 @@ card('Reconfigure', {
         g.ev('info', `Reconfigure: both targets are ${a.card} — it cannot augment onto itself, no effect.`);
         return;
       }
-      if (!isAugment(a.card)) {
-        g.ev('info', `Reconfigure: ${a.card} has no [Augment] — no effect.`);
-        return;
-      }
+      // CR 704.5a (CT-232): "it must have [Augment]" is slot 0's restriction,
+      // judged once as the spell began to resolve; not tested again here
       const movedMods = a.mods.map(id => g.entity(id)).filter((m): m is Entity => !!m);
       // the moved unit leaves play WITHOUT dying/despawning (⚠ header)
       delete g.s.entities[a.id];
