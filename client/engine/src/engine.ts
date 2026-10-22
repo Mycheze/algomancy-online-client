@@ -13674,7 +13674,6 @@ export class E {
             seat: b.defender, amount: toPlayer, by: b.attacker, attrs: atkAttrs, label: src.label, pure,
             col: [...atk], dealers: this.dealersIn(atk, collapsed),   // CR 608.9a
           });
-          if (atkAttrs.has('Thieving')) L.thievingDraw[b.attacker] = (L.thievingDraw[b.attacker] ?? 0) + 1;
         }
       }
       // blocker side
@@ -13712,7 +13711,6 @@ export class E {
               seat: b.attacker, amount: left, by: b.defender, attrs: blkAttrs, label: src.label, pure,
               col: [...blk], dealers: this.dealersIn(blk, collapsed),   // CR 608.9a
             });
-            if (blkAttrs.has('Thieving')) L.thievingDraw[b.defender] = (L.thievingDraw[b.defender] ?? 0) + 1;
           }
         }
       }
@@ -13974,9 +13972,20 @@ export class E {
       const left = this.replaceCombatDamage(hit.seat, hit.amount,
         { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure }, out);
       reached.push(out.reached);
-      if (hit.amount > 0) {
-        breakdown[hit.seat]!.push({ by: hit.by, dealt: hit.amount, amount: Math.max(0, left),
+      // CT-296 (owner, 2026-10-22, "Yes, none of them"): a hit WHOLLY redirected
+      // into a unit dealt the player nothing, so the column did not "deal combat
+      // damage to a player" — no breakdown share (the 'combatFaceDamage' and
+      // combat 'lifeLost' listeners: Vroot and every "when my column deals
+      // combat damage" card) and no {Thieving} draw. What got past the
+      // redirects is what the column dealt the player (CR 608.8c: "the other 6
+      // are dealt to the player"), as life or — Blightsea Polyp, CR 608.8a — as
+      // rot, which is still dealt.
+      if (out.reached > 0) {
+        breakdown[hit.seat]!.push({ by: hit.by, dealt: out.reached, amount: Math.max(0, left),
           col: [...hit.col], units: [...hit.dealers] });
+        // CR 802.20: Thieving draws for a column that dealt combat damage to a
+        // player — counted here, after the redirects, not at assignment
+        if (hit.attrs.has('Thieving')) L.thievingDraw[hit.by] = (L.thievingDraw[hit.by] ?? 0) + 1;
       }
       if (left <= 0) continue;
       playerDmg[hit.seat] = (playerDmg[hit.seat] ?? 0) + left;
