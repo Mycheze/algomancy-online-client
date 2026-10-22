@@ -2192,6 +2192,15 @@ export interface GameState {
    * decision would otherwise strand the game between the haste step and the
    * battle phase. Additive/optional. */
   hasteEnding?: boolean;
+  /** CR 110.11 (CT-242): grafts taken and paid for whose HOST's "when I become
+   * targeted" trigger has not resolved yet. Designer (RAQ Graft 101 point 5):
+   * "if you try to Graft something underneath the Mohruung, he will trigger
+   * first" — so the graft attaches only once the targeted triggers are off the
+   * stack (E.finishPendingGrafts, called from settle()), the way `hasteEnding`
+   * defers the phase flip. Normally empty again within the same action; it
+   * outlives one only while a decision those triggers raised is open.
+   * Additive/optional. */
+  pendingGrafts?: { seat: Seat; host: EntityId; card: CardName; position: number }[];
   /** CR 507.4: the START-OF-DEPLOYMENT opening is in progress — the rot damage
    * (and anything it queued) is still draining, and the 'startOfDeployment'
    * event has NOT fired yet. The event waits for it (E.finishDeployStart,

@@ -126,7 +126,7 @@ test('cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on t
   finishBattle(h);
 });
 
-test('cr:concepts.targets.becomes-targeted — engine differs: a graft onto Mohruung queues the trigger before the graft attaches, but the Crystal is made only after it attaches', () => {
+test('cr:concepts.targets.becomes-targeted — a graft onto Mohruung queues the trigger, the Crystal is made, and only then does the graft attach (CT-242)', () => {
   const h = new Harness(33603);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -135,7 +135,6 @@ test('cr:concepts.targets.becomes-targeted — engine differs: a graft onto Mohr
   giveResources(h, A, 'fire', 2);
   const start = h.log.length;
   h.do({ type: 'graft', seat: A, from: 'hand', index: give(h, A, 'Flame Juggle'), hostId: mohr, position: 0 });
-  assert.equal(ent(h, mohr)!.mods.length, 1, 'the graft is already attached when the action returns');
   drain(h);
   const lines = h.log.slice(start);
   const iTrig = lines.findIndex(l => /^Trigger: Mohruung/.test(l));
@@ -143,7 +142,7 @@ test('cr:concepts.targets.becomes-targeted — engine differs: a graft onto Mohr
   const iCrystal = lines.findIndex(l => /creates a Crystal 2/.test(l));
   assert.ok(tokensOf(h, A).some(t => t.card === 'Crystal'), 'a Crystal was made');
   assert.ok(iTrig >= 0 && iTrig < iAttach, `the trigger is queued before the graft attaches:\n${lines.join('\n')}`);
-  assert.ok(iAttach < iCrystal, `the graft is attached BEFORE the trigger resolves:\n${lines.join('\n')}`);
+  assert.ok(iCrystal >= 0 && iCrystal < iAttach, `the trigger resolves BEFORE the graft attaches:\n${lines.join('\n')}`);
   assert.equal(ent(h, mohr)!.mods.length, 1);
 });
 

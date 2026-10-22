@@ -10926,6 +10926,47 @@ export class E {
     for (let i = this.s.stack.length - 1; i >= 0; i--) {
       if (this.s.stack[i]!.controller === seat) { this.resolveStackAt(i); return; }
     }
+    // their half is drained: a graft of theirs that waited on it lands now (CT-242)
+    this.finishPendingGrafts(seat);
+  }
+
+  /**
+   * CR 110.11 (CT-242) — attach the grafts that waited for their host's "when I
+   * become targeted" triggers. Designer, RAQ Graft 101 point 5: "Applying Graft
+   * is 'targeting' effect, so if you try to Graft something underneath the
+   * Mohruung, he will trigger first". `doGraft` parks a graft here when the
+   * targeting queued anything; settle() calls this once the queue and the stack
+   * are drained (and settleDeploySeat for one seat's half of a deployment), so
+   * the trigger — composed at fire time, without the new graft — resolves, and
+   * only then does the graft attach.
+   *
+   * The card was taken and paid for when it was applied. If its host has left
+   * play meanwhile (a graft under Mohruung that deletes it), there is nothing to
+   * attach to: the card goes to its owner's bin, as a Virus whose host is gone
+   * fizzles to the bin. The insertion point is clamped, in case the host lost a
+   * mod while it waited.
+   */
+  finishPendingGrafts(seat?: Seat): void {
+    const list = this.s.pendingGrafts;
+    if (!list?.length) return;
+    if (this.s.decision && seat === undefined) return;
+    if (this.s.triggerQueue.some(t => seat === undefined || t.controller === seat)) return;
+    if (this.s.stack.some(i => seat === undefined || i.controller === seat)) return;
+    const now = list.filter(g => seat === undefined || g.seat === seat);
+    if (!now.length) return;
+    const rest = list.filter(g => !now.includes(g));
+    if (rest.length) this.s.pendingGrafts = rest; else delete this.s.pendingGrafts;
+    for (const g of now) {
+      const host = this.entity(g.host);
+      if (!host || host.kind !== 'unit' || host.absent) {
+        this.toBin(g.seat, g.card, 'stack');
+        this.ev('info', `${g.card}: its host left play before it could attach — it goes to ${this.pname(g.seat)}'s bin.`,
+          { seat: g.seat, card: g.card });
+        continue;
+      }
+      this.attachMod(host, g.card, g.seat, 'graft', Math.min(g.position, host.mods.length));
+    }
+    this.settle();
   }
 
   /** post-resolution: restart the window from the initiative player (CR
@@ -12773,6 +12814,7 @@ export class E {
         // CR 608.9b hold above, which is reached whether the queue is empty or
         // not — a sub-step suspended by a CR 608.6a election or a CR 111.10g pay
         // question may well have a held batch waiting behind it.
+        this.finishPendingGrafts();   // CR 110.11 (CT-242): the host triggered first
         this.finishDeployStart();   // CR 507.4: resume a suspended rot-damage opening
         this.finishHasteEnd();   // CR 504.6: resume a suspended end-of-haste window
         this.finishTurnEnd();

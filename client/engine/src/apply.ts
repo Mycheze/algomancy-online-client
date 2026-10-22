@@ -2206,8 +2206,17 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
     e.ev('info', `${name} grafts out of ${e.pname(seat)}'s cache, ignoring affinity.`);
   }
   const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
+  const queued = e.s.triggerQueue.length;
   e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)
-  e.attachMod(host, name, seat, 'graft', position);
+  // CR 110.11 (CT-242): "if you try to Graft something underneath the Mohruung,
+  // he will trigger first" — when the targeting triggered anything, the graft
+  // waits until those triggers have resolved (E.finishPendingGrafts). With
+  // nothing triggered it attaches at once, exactly as before.
+  if (e.s.triggerQueue.length > queued) {
+    (e.s.pendingGrafts ??= []).push({ seat, host: host.id, card: name, position });
+  } else {
+    e.attachMod(host, name, seat, 'graft', position);
+  }
   e.settle();
 }
 
