@@ -4605,7 +4605,8 @@ export class E {
    * all do the same thing to the same player, so their order changes nothing.
    */
   private replaceCombatDamage(seat: Seat, amount: number,
-    info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean }): number {
+    info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean },
+    out?: { reached: number }): number {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceCombatDamageToPlayer')          // CR 710.7: off the FACES
       && a.region === info.region
@@ -4670,6 +4671,9 @@ export class E {
       if (commit(pick, 'redirect')) declined.clear();
       else declined.add(pick);    // not now — but perhaps once another has applied
     }
+    // CR 608.8c, CT-296: what is left after the redirects is the damage that
+    // REACHES the player at all — pass 2 only changes what it is dealt as
+    if (out) out.reached = left;
     // pass 2, damage being dealt to the player — the CR 708.4 chain, in timestamp order
     for (let changed = true; changed && left > 0;) {
       changed = false;
@@ -13956,9 +13960,14 @@ export class E {
      * substitutes, prevention subtracts, and nothing here may merge them.
      */
     const breakdown: FaceDamageHit[][] = this.s.players.map(() => []);
+    // CR 608.8c, CT-296: per hit, how much of it got past the REDIRECTS (Oorblak)
+    // and so was dealt to the player at all, as life or as rot
+    const reached: number[] = [];
     for (const hit of L.playerHits) {
+      const out = { reached: hit.amount };
       const left = this.replaceCombatDamage(hit.seat, hit.amount,
-        { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure });
+        { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure }, out);
+      reached.push(out.reached);
       if (hit.amount > 0) {
         breakdown[hit.seat]!.push({ by: hit.by, dealt: hit.amount, amount: Math.max(0, left),
           col: [...hit.col], units: [...hit.dealers] });
@@ -14000,9 +14009,19 @@ export class E {
     // CR 802.24a {Lethal}: "Any combat damage from a lethal unit will kill a player."
     // Last, because a normal-damage kill above already ended the game (and a
     // {Blessed} gain has already been applied).
-    for (const hit of L.playerHits) {
-      if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);
-    }
+    // CT-296 (owner, 2026-10-22): only damage that REACHES the player kills. A hit
+    // WHOLLY redirected into a unit (Oorblak: "that damage is dealt to me
+    // instead") dealt the player nothing — the owner, 2026-10-16: "The column
+    // doesn't even get to deal damage to the player. It gets redirected to the
+    // Oorblak instead." A {Piercing} excess that gets past the redirect does
+    // reach the player, and a hit Blightsea Polyp turns into rot is still
+    // damage dealt to the player (CR 608.8a, Caleb RQ 1298894533718970370), so
+    // both still kill.
+    L.playerHits.forEach((hit, i) => {
+      if (!hit.attrs.has('Lethal')) return;
+      if ((reached[i] ?? 0) > 0) this.killPlayer(hit.seat, `${hit.label} is Lethal`);
+      else this.ev('info', `${hit.label} is Lethal, but none of its damage reached ${this.pname(hit.seat)}.`, { seat: hit.seat });
+    });
   }
 
   /** Thieving: a column that dealt combat damage to a player draws one card (CR 802.20) */

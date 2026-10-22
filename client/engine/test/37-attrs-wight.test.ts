@@ -108,9 +108,17 @@ registerSynthetic(unit('T37 Afflicting Beast', 3, 3, { attrs: ['Afflicting'] }),
 registerSynthetic(unit('T37 Lethal Bug', 1, 1, { attrs: ['Lethal'] }), {});
 
 /** Blightsea Polyp's shape: "[Augment] Columns deal combat damage to players
- * as 1 rot" — the whole card is the replacement hook, one rot per column. */
+ * as 1 rot" — the whole card is the replacement hook, one rot per column.
+ * It acts on damage being DEALT (CR 608.8c's second pass), as the real card
+ * does: CT-296 made that pass the line between "the damage reached the
+ * player" and "it was redirected away", so a synthetic acting in the redirect
+ * pass would no longer be Blightsea Polyp's shape. */
 registerSynthetic(unit('T37 Polyp', 1, 1), {
-  replaceCombatDamageToPlayer: (g, _self, seat) => { g.gainRot(seat, 1); return true; },
+  replaceCombatDamageToPlayer: (g, _self, seat, _amount, info) => {
+    if (info.stage !== 'dealt') return false;
+    g.gainRot(seat, 1);
+    return true;
+  },
 });
 
 // {Modular} — Spellbind's shape: a battle spell you may apply mods to as it is

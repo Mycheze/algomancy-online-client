@@ -661,7 +661,11 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // E.spawnUnit's countersChanged, signal-only on the spawning body, and
   // "<unit> gets n +1/+1 counter(s) (net t)." when a Counter Thief takes them.
   // It carries the unit, so it is not log-only.
-  assert.equal(sites.length, 221,`the engine and apply make ${sites.length} announcements`);
+  // 221 → 222 with CT-296 (owner, 2026-10-22): "<column> is Lethal, but none of
+  // its damage reached <player>." in E.commitPlayerDamage, said when a Lethal
+  // hit was wholly redirected into Oorblak. It carries the seat, so it is not
+  // log-only.
+  assert.equal(sites.length, 222,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
