@@ -617,7 +617,7 @@ test('cr:attr.thieving.replaced — a Thieving column whose hit to the defending
 
 /* ── Pure ───────────────────────────────────────────────────────────── */
 
-test('cr:attr.pure.stat-attributes — a Tough 0/4 still has 8 defense blocking a 5-power Just a Unit, and survives', () => {
+test('cr:attr.pure.stat-attributes — a Tough 0/4 blocking a 5-power Just a Unit has 4 defense, not 8, and dies', () => {
   const h = new Harness(92024);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -630,11 +630,11 @@ test('cr:attr.pure.stat-attributes — a Tough 0/4 still has 8 defense blocking 
   blockStep(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [d] } });
   pass(h); pass(h);
-  assert.ok(ent(h, d), 'the Tough blocker survives 5');
-  assert.equal(ent(h, d)!.damage, 5);
+  // CR 802.25e (CT-260, the owner 2026-10-22: print wins): Tough is an attribute
+  assert.equal(ent(h, d), undefined, 'the Tough blocker is read as a 0/4 in the Pure exchange and dies to 5');
 });
 
-test('cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Unit: both sides are read at printed stats', () => {
+test('cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Unit: Unaware does not apply, so the counters count', () => {
   const h = new Harness(92025);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -646,8 +646,10 @@ test('cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Un
   blockStep(h);
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [bubb] } });
   pass(h); pass(h);
-  assert.equal(ent(h, bubb)?.damage, 2, 'Just a Unit hit at its printed power 2, not 6');
-  assert.equal(ent(h, jau), undefined, 'and it died at its printed defense 3 to the 5 of Bubb');
+  // CR 802.25f (CT-260): the exchange is not collapsed to printed stats
+  assert.equal(ent(h, bubb), undefined, 'Just a Unit hit at its live power 6, which kills the 5/6');
+  assert.ok(ent(h, jau), 'and it survived 5 at its live defense 7');
+  assert.equal(ent(h, jau)!.damage, 5);
 });
 
 test('cr:attr.pure.column — a unit attacking in a column with Just a Unit is dealt 1, not 2, by a Powerful effect dealing 1', () => {

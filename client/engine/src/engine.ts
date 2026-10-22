@@ -1950,6 +1950,59 @@ export class E {
   }
 
   /**
+   * CR 802.25e, 802.25f — {PURE} SWITCHES THE STAT-LAYER ATTRIBUTES OFF TOO (CT-260).
+   *
+   * "Pure cards and cards they are interacting with ignore all other
+   * attributes." {Tough}, {Balanced} and {Inverted} are attributes, and so is
+   * {Unaware}: in a Pure interaction none of them is read, so a Tough 0/4 is a
+   * 0/4, a Balanced 4/1 is a 4/1, and an Unaware participant collapses nobody.
+   * The engine used to keep layers 4-6 on in a Pure pairing ("they are stat
+   * layers"); the owner, 2026-10-22, ruled for the print.
+   *
+   * `pureBlind` is the set of units being read inside a Pure interaction right
+   * now — the units of a Pure combat exchange for the length of the damage
+   * sub-step, the Pure-paired recipients of an effect-damage batch for the
+   * length of the batch — and `statLayerAttrs` answers nothing for them, so
+   * every stat read inside the interaction (lethal arithmetic, column power,
+   * the commit's death read, `unaware`) takes layers 1-3 without a special
+   * case at any site. It is an E-instance field, never state: it exists only
+   * while an interaction is being computed, and `sweepPureDeaths` settles the
+   * deaths that reading implies before it is lifted — the state-based check
+   * after it reads the unit outside any interaction again.
+   */
+  private pureBlind: Set<EntityId> | null = null;
+  /** run `fn` with `ids` read as being in a Pure interaction (nests: unions) */
+  private withPureBlind<T>(ids: Iterable<EntityId>, fn: () => T): T {
+    const prev = this.pureBlind;
+    const next = new Set(prev ?? []);
+    for (const id of ids) next.add(id);
+    if (!next.size) return fn();
+    this.pureBlind = next;
+    try { return fn(); } finally { this.pureBlind = prev; }
+  }
+  /** CR 802.25e: the stats a unit reads in a Pure interaction — layers 1-3 */
+  pureStats(e: Entity): [number, number] {
+    return this.withPureBlind([e.id], () => this.effStats(e));
+  }
+  /** CR 802.25e: does any participant of this interaction make it Pure? */
+  private pureAmong(involved: readonly (Entity | undefined)[]): boolean {
+    return involved.some(e => !!e && this.effAttrs(e).has('Pure'));
+  }
+  /** CR 802.25e, 802.25f: kill what the Pure reading has already killed —
+   * `sweepCollapsedDeaths`'s twin, called while the blind is still on. */
+  private sweepPureDeaths(ids: Iterable<EntityId>): void {
+    for (const id of ids) {
+      const u = this.entity(id);
+      if (!u) continue;
+      const [p, t] = this.effStats(u);
+      if (t > 0 && u.damage < t) continue;
+      this.ev('info',
+        `Pure: ${u.card} is read at ${p}/${t}, without its stat attributes — it dies.`, { unit: id });
+      this.destroy(u, 'dies');
+    }
+  }
+
+  /**
    * CR 802.9c, the PAIRWISE half: the stats a card reads DURING AN INTERACTION.
    *
    * "it looks ONLY at what is the literal printed text on all cards
@@ -1973,11 +2026,15 @@ export class E {
    * edge rather than guessed at.
    */
   interactionStats(u: Entity, involved: readonly (Entity | undefined)[]): [number, number] {
+    // CR 802.25e (CT-260): a Pure participant switches every stat attribute off
+    if (this.pureAmong([u, ...involved])) return this.pureStats(u);
     return this.collapsedBy(u, involved) ? this.printedStats(u) : this.effStats(u);
   }
   /** the test `interactionStats` runs, exposed so a site that reads several
    * numbers off one exchange can ask once instead of per number. */
   collapsedBy(u: Entity, involved: readonly (Entity | undefined)[]): boolean {
+    // CR 802.25f (CT-260): Unaware is an attribute, and a Pure interaction ignores it
+    if (this.pureAmong([u, ...involved])) return false;
     if (this.unaware(u)) return true;
     for (const e of involved) if (e && this.unaware(e)) return true;
     return false;
@@ -2033,6 +2090,8 @@ export class E {
    * attribute with" it. */
   private statLayerAttrs(e: Entity): ('Tough' | 'Balanced' | 'Inverted' | 'Unaware')[] {
     const out: ('Tough' | 'Balanced' | 'Inverted' | 'Unaware')[] = [];
+    // CR 802.25e, 802.25f (CT-260): a unit in a Pure interaction ignores these too
+    if (this.pureBlind?.has(e.id)) return out;
     const take = (attrs: Iterable<string>) => {
       for (const a of attrs) {
         if ((a === 'Tough' || a === 'Balanced' || a === 'Inverted' || a === 'Unaware')
@@ -5442,6 +5501,20 @@ export class E {
    * same batch already assigned included — rather than against a stale board.
    */
   dealEffectDamageAll(ctx: EffectCtx, hits: { target: ResolvedTarget; n: number }[]): void {
+    // CR 802.25e, 802.25f (CT-260): every recipient in a Pure pairing with this
+    // effect is read without its stat attributes for the length of the batch —
+    // all of them when the source is Pure, else the Pure units themselves (an
+    // Electric chain can reach one that was not named)
+    if (!hits.length) { this.dealEffectDamageAllIn(ctx, hits); return; }
+    const src = this.effectSourceAttrs(ctx.sourceId, ctx.sourceName);
+    const srcPure = src.has('Pure') || (ctx.grantedAttrs ?? []).includes('Pure');
+    const named = hits.map(h => h.target).filter((t): t is Entity => 'id' in (t as object));
+    const blind = srcPure ? named.map(u => u.id)
+      : [...named, ...this.unitsIn(ctx.region)].filter(u => this.effAttrs(u).has('Pure')).map(u => u.id);
+    this.withPureBlind(blind, () => this.dealEffectDamageAllIn(ctx, hits));
+  }
+
+  private dealEffectDamageAllIn(ctx: EffectCtx, hits: { target: ResolvedTarget; n: number }[]): void {
     /**
      * CARD-TODO #16 — AN EMPTY BATCH IS THE ONE SILENCE THAT IS ALWAYS A BUG.
      *
@@ -6076,6 +6149,9 @@ export class E {
     // CR 802.9e: settle the deaths the collapsed reading implies before the ordinary
     // state-based sweep, which reads effStats and cannot see them.
     this.sweepCollapsedDeaths(collapsedHit);
+    // CR 802.25e (CT-260): and the deaths the Pure reading implies — the Pure-paired
+    // recipients, read while the blind is still on
+    this.sweepPureDeaths(order.filter(r => r.u && pureWith(r.u)).map(r => r.u!.id));
     this.checkDeaths();
   }
 
@@ -13230,6 +13306,24 @@ export class E {
    * aftermath is the rules' order — each step's comment says why it sits
    * where it does — and the ledger lives for exactly this sub-step. */
   private combatSubStep(sub: DamageSubStep): void {
+    // CR 802.25e, 802.25f (CT-260): every unit of a Pure exchange is read without
+    // its stat attributes for the whole sub-step — the election, the
+    // assignment, the commit and the death sweep
+    this.withPureBlind(this.pureExchangeUnits(this.s.battle!), () => this.combatSubStepRun(sub));
+  }
+
+  /** the units standing in a Pure exchange (CR 802.25b) right now */
+  private pureExchangeUnits(b: BattleState): EntityId[] {
+    const out: EntityId[] = [];
+    b.columns.forEach((col, ci) => {
+      const atk = this.aliveInCol(col);
+      const blk = b.blocks[ci] !== undefined ? this.aliveInCol(b.blocks[ci]!) : [];
+      if (this.pure(atk, blk)) out.push(...atk, ...blk);
+    });
+    return out;
+  }
+
+  private combatSubStepRun(sub: DamageSubStep): void {
     const b = this.s.battle!;
     // CR 608.6h: elective damage splits are asked for FIRST — before the ledger
     // exists, before any event is emitted — so a suspension here leaves
@@ -13251,6 +13345,9 @@ export class E {
       // Robot 7 that just fought as a 0/0 alive. Beside sweepDeadly on purpose:
       // both are "this exchange killed something the ordinary check misses".
       this.sweepCollapsedDeaths(L.collapsed);
+      // CR 802.25e (CT-260): and a Pure exchange settles the deaths its
+      // stat-attribute-blind reading implies, the same way
+      if (this.pureBlind) this.sweepPureDeaths(this.pureBlind);
       this.afflictingAftermath(L);
       this.commitPlayerDamage(b, L);
       this.thievingDraws(L);
@@ -13382,12 +13479,13 @@ export class E {
    * column's — if either side carries {Unaware}, BOTH sides deal and receive
    * at their printed numbers ("it looks ONLY at what is the literal printed
    * text on all cards 'involved'"). It is threaded exactly like `pure`, and
-   * for the same reason: it is a property of the pairing. Note it survives
-   * {Pure} in the engine: the engine switches only the ATTRIBUTE layer off for the exchange and treats this as a stat layer — CR 802.25f says Unaware does not apply in an exchange involving a Pure card (engine differs, CT-260), and
-   * this is a stat layer — an Unaware unit's numbers are its printed numbers
-   * whether or not anyone is reading its attributes. `unaware` is
-   * column-shared, so a vanilla unit standing beside Bubb carries it into the
-   * exchange too. */
+   * for the same reason: it is a property of the pairing. It does NOT survive
+   * {Pure}: CR 802.25f, Unaware is an attribute and does not apply in an
+   * exchange involving a Pure card (CT-260, the owner 2026-10-22: print wins),
+   * so a Pure exchange is never collapsed, and its units are read without
+   * {Tough}/{Balanced}/{Inverted} too (`pureBlind`, for the whole sub-step).
+   * `unaware` is column-shared, so a vanilla unit standing beside Bubb carries
+   * it into a plain exchange. */
   private exchangeAt(b: BattleState, ci: number): {
     atk: EntityId[]; blk: EntityId[]; blockedEver: boolean;
     pure: boolean; collapsed: boolean; atkAttrs: Set<string>; blkAttrs: Set<string>;
@@ -13399,10 +13497,11 @@ export class E {
     // to attributes — both sides', in both directions.
     const pure = this.pure(atk, blk);
     const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);
+    // CR 802.25f (CT-260): Unaware is an attribute, so a Pure exchange never collapses
     const collapsed = [...atk, ...blk].some(id => {
       const u = this.entity(id);
       return !!u && this.unaware(u);
-    });
+    }) && !pure;
     return { atk, blk, blockedEver, pure, collapsed, atkAttrs: attrsOf(atk), blkAttrs: attrsOf(blk) };
   }
 
