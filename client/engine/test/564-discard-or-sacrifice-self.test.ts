@@ -8,8 +8,8 @@
  * payability gate and in the option list, so a Bogwalker alone with an empty
  * hand was never offered its own ability. Lilbot prints "sacrifice ANOTHER
  * nontoken unit" and keeps the exclusion, now by its own `another` flag.
- * Pallid Gorger prints no "another" and keeps it too, deliberately (see its
- * card comment): the engine's reading, not the print's.
+ * Pallid Gorger prints no "another" either, and follows its print the same
+ * way (the owner's steer: printed text beats an engine default).
  *
  * Seeds 56400-56499.
  */
@@ -56,7 +56,13 @@ test('CR 111.2 / CT-281: Lilbot prints another, so alone with an empty hand it i
   assert.equal(offers(h, A, id).length, 1, 'another nontoken unit pays');
 });
 
-test('CR 111.2 / CT-281: Pallid Gorger keeps its deliberate exclusion of itself', () => {
+test('CR 111.2 / CT-281: Pallid Gorger prints no another, so alone with an empty hand it may sacrifice itself', () => {
   const { h, A, id } = setup(56402, 'Pallid Gorger');
-  assert.equal(offers(h, A, id).length, 0, 'the Gorger does not eat itself to grow');
+  assert.equal(offers(h, A, id).length, 1, 'the ability is offered: the Gorger can pay with itself');
+  h.do({ type: 'activateAbility', seat: A, entityId: id, abilityIndex: 0, via: 'augment' });
+  const d = h.state.decision!;
+  const i = d.options.findIndex(o => String(o.label) === 'Sacrifice Pallid Gorger');
+  assert.ok(i >= 0, 'and it is the option');
+  h.do({ type: 'decide', seat: d.seat, choice: i });
+  assert.equal(ent(h, id), undefined, 'it sacrificed itself to pay');
 });

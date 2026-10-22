@@ -624,17 +624,16 @@ card('Necromorph', {
 // and the host's controller pays. CR 111.6, 705.3: the either/or line is a real ACTIVATION
 // cost (`discardOrSacrifice: 1`) — it gates the activation and is chosen and
 // paid in the cast window, before the item reaches the stack.
-// ⚠ "ANOTHER" IS NOT PRINTED HERE, and `another: true` is a DELIBERATE engine
-// reading, kept on purpose when CT-281 let the print decide the source for
-// Combustible Bogwalker (which may now sacrifice itself): the Gorger is not
-// offered itself, so it can never eat itself and then fail to grow (and,
-// donated, a host is never offered itself either). No ruling settles it;
-// drop the flag if the owner reads the print literally.
+// No "another" is printed, so the source may pay (CR 111.2 / CT-281, the owner's
+// steer: printed text beats an engine default, take the permissive reading).
+// The Gorger may sacrifice ITSELF — it then gains nothing, since it is gone —
+// and, donated, its host may sacrifice itself the same way. It used to be
+// left out of its own pool, so that it could not eat itself and fail to grow.
 // Discarding is a trash (CR 801.3), which is the point of pairing this with the
 // batch's trash-matters cards.
 card('Pallid Gorger', {
   augmentText: [{
-    type: 'activated', cost: { discardOrSacrifice: 1, another: true },   // deliberate, see above
+    type: 'activated', cost: { discardOrSacrifice: 1 },   // no "another" printed
     label: 'discard a card or sacrifice a nontoken unit: I gain +2/+2 until regroup',
     effect: {
       run: (g, ctx) => {
