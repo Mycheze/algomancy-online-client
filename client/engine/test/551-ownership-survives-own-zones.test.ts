@@ -20,7 +20,7 @@ import { E } from '../src/engine.ts';
 import { legalActions } from '../src/apply.ts';
 import type { Action, Seat } from '../src/types.ts';
 import { viewFor } from '../../server/view.ts';
-import { ent, giveResources, handIdx, pass, spawn, toDeployment, unitsOf, withE } from './util.ts';
+import { ent, finishBattle, give, giveResources, handIdx, pass, pick, spawn, toDeployment, toNextBattle, unitsOf, withE } from './util.ts';
 
 const CARD = 'Just a Unit';   // a 2-mana {l} unit with no text
 
@@ -102,4 +102,27 @@ test('CR D6.5 / CT-233: the opponent view never shows which hand slot holds a fo
   assert.ok(viewFor(h.state, thief).players[thief]!.foreign?.length, 'the thief own view keeps the record');
   assert.equal(viewFor(h.state, owner).players[thief]!.foreign, undefined,
     'the other seat sees card backs, and no slot record either');
+});
+
+test('CR 102.4 / CT-233: Wake the Dead playing a foreign-owned card out of its own bin keeps the owner', () => {
+  const h = new Harness(55107, ['Ben', 'Rashi']);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  // a card D owns, sitting in A's bin (as a stolen unit that died there would)
+  const bin = h.state.players[A]!.bin;
+  bin.push('Shard Sprite');
+  h.state.players[A]!.foreign = [{ zone: 'bin', at: bin.length - 1, card: 'Shard Sprite', owner: D }];
+  giveResources(h, A, 'dark', 8);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Wake the Dead') });
+  pass(h); pass(h);                                           // Wake the Dead resolves
+  pick(h, `${A}:${h.state.players[A]!.bin.indexOf('Shard Sprite')}`);
+  if (h.state.decision?.options.some(o => o.value === 'done')) pick(h, 'done');
+  for (let i = 0; i < 4 && h.state.stack.length; i++) pass(h);
+  const u = unitsOf(h, A).find(x => x.card === 'Shard Sprite');
+  assert.ok(u, 'the raised card is in play under the caster');
+  assert.equal(u!.owner, D, 'and still owned by the player whose card it is');
+  finishBattle(h);
 });
