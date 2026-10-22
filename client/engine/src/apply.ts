@@ -2149,8 +2149,17 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
       e.ev('info', `${name} augments out of ${e.pname(seat)}'s cache, ignoring affinity.`);
     }
     const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
+    const queued = e.s.triggerQueue.length;
     e.fireEvent('targeted', ev);
-    e.attachMod(host, name, seat, 'augment');
+    // CR 110.11 (D-U03-14, owner 2026-10-22): as for a graft (doGraft) — when the
+    // targeting triggered anything (Mohruung), it RESOLVES first and the augment
+    // attaches after (E.finishPendingMods). A spell-token host keeps the old
+    // path: nothing listens for one, and its line below is said at once.
+    if (!tokenHost && e.s.triggerQueue.length > queued) {
+      (e.s.pendingMods ??= []).push({ seat, host: host.id, card: name, appliedAs: 'augment' });
+    } else {
+      e.attachMod(host, name, seat, 'augment');
+    }
     // CR 721.4a: "you can only do this with attributes" — the same restriction CR 721.4b
     // enforces on the stack, said out loud HERE because this is the moment the
     // player commits the card. A text-only augment (Graxxlid, Skybreaker) is
@@ -2210,10 +2219,10 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
   e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)
   // CR 110.11 (CT-242): "if you try to Graft something underneath the Mohruung,
   // he will trigger first" — when the targeting triggered anything, the graft
-  // waits until those triggers have resolved (E.finishPendingGrafts). With
+  // waits until those triggers have resolved (E.finishPendingMods). With
   // nothing triggered it attaches at once, exactly as before.
   if (e.s.triggerQueue.length > queued) {
-    (e.s.pendingGrafts ??= []).push({ seat, host: host.id, card: name, position });
+    (e.s.pendingMods ??= []).push({ seat, host: host.id, card: name, appliedAs: 'graft', position });
   } else {
     e.attachMod(host, name, seat, 'graft', position);
   }

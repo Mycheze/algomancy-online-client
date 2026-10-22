@@ -10927,12 +10927,13 @@ export class E {
       if (this.s.stack[i]!.controller === seat) { this.resolveStackAt(i); return; }
     }
     // their half is drained: a graft of theirs that waited on it lands now (CT-242)
-    this.finishPendingGrafts(seat);
+    this.finishPendingMods(seat);
   }
 
   /**
-   * CR 110.11 (CT-242) — attach the grafts that waited for their host's "when I
-   * become targeted" triggers. Designer, RAQ Graft 101 point 5: "Applying Graft
+   * CR 110.11 (CT-242, D-U03-14) — attach the deployment mods (grafts, and
+   * augments since the owner's 2026-10-22 answer) that waited for their host's
+   * "when I become targeted" triggers. Designer, RAQ Graft 101 point 5: "Applying Graft
    * is 'targeting' effect, so if you try to Graft something underneath the
    * Mohruung, he will trigger first". `doGraft` parks a graft here when the
    * targeting queued anything; settle() calls this once the queue and the stack
@@ -10946,8 +10947,8 @@ export class E {
    * fizzles to the bin. The insertion point is clamped, in case the host lost a
    * mod while it waited.
    */
-  finishPendingGrafts(seat?: Seat): void {
-    const list = this.s.pendingGrafts;
+  finishPendingMods(seat?: Seat): void {
+    const list = this.s.pendingMods;
     if (!list?.length) return;
     if (this.s.decision && seat === undefined) return;
     if (this.s.triggerQueue.some(t => seat === undefined || t.controller === seat)) return;
@@ -10955,7 +10956,7 @@ export class E {
     const now = list.filter(g => seat === undefined || g.seat === seat);
     if (!now.length) return;
     const rest = list.filter(g => !now.includes(g));
-    if (rest.length) this.s.pendingGrafts = rest; else delete this.s.pendingGrafts;
+    if (rest.length) this.s.pendingMods = rest; else delete this.s.pendingMods;
     for (const g of now) {
       const host = this.entity(g.host);
       if (!host || host.kind !== 'unit' || host.absent) {
@@ -10964,7 +10965,8 @@ export class E {
           { seat: g.seat, card: g.card });
         continue;
       }
-      this.attachMod(host, g.card, g.seat, 'graft', Math.min(g.position, host.mods.length));
+      this.attachMod(host, g.card, g.seat, g.appliedAs,
+        g.appliedAs === 'graft' ? Math.min(g.position ?? host.mods.length, host.mods.length) : undefined);
     }
     this.settle();
   }
@@ -12814,7 +12816,7 @@ export class E {
         // CR 608.9b hold above, which is reached whether the queue is empty or
         // not — a sub-step suspended by a CR 608.6a election or a CR 111.10g pay
         // question may well have a held batch waiting behind it.
-        this.finishPendingGrafts();   // CR 110.11 (CT-242): the host triggered first
+        this.finishPendingMods();   // CR 110.11 (CT-242): the host triggered first
         this.finishDeployStart();   // CR 507.4: resume a suspended rot-damage opening
         this.finishHasteEnd();   // CR 504.6: resume a suspended end-of-haste window
         this.finishTurnEnd();

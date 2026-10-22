@@ -33,7 +33,7 @@
  *    composeParts now materializes the copies as separate parts, each with
  *    its own targets and [cost] — see EffectDef.graftCopies.
  */
-import type { EffectPart, Entity, FormationSpot, Seat, StackItem, TargetRef } from '../../types.ts';
+import type { EffectPart, Entity, EntityId, FormationSpot, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E, InlineCostAsk } from '../../engine.ts';
 import { ambushEffect, card, getCard, isGraftMultiplier, isSpellEffect, requiresTargets, specForSlot, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
 import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } from './helpers.ts';
@@ -252,9 +252,16 @@ export const inlineModes = (g: E, name: string, region: number, seat: Seat): Inl
 };
 
 /** CR 701.2c, 723.2: the units a Virus played mid-resolution may go on — every unit in
- * the battle region, either side (a Virus may augment an enemy) */
-const virusHosts = (g: E, region: number): Entity[] =>
-  g.unitsIn(region).filter(u => u.kind === 'unit' && !u.absent);
+ * the battle region, either side (a Virus may augment an enemy) — narrowed by
+ * CR 110.12 exactly as a Virus from hand is (apply.ts battleVirusHosts, CT-331):
+ * applying a Virus targets its host (CR 110.10a), so a Gatekeeper of Souls in
+ * the battle must be the host if it can be. */
+const virusHosts = (g: E, region: number): Entity[] => {
+  const units = g.unitsIn(region).filter(u => u.kind === 'unit' && !u.absent);
+  const kept = new Set(g.compelledTargets(units.map(u => ({ unit: u.id })), region)
+    .map(r => (r as { unit: EntityId }).unit));
+  return units.filter(u => kept.has(u.id));
+};
 
 /**
  * CR 701.2c: play `name` in an alternative mode, mid-resolution, on the push path.

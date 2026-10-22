@@ -661,7 +661,7 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // E.spawnUnit's countersChanged, signal-only on the spawning body, and
   // "<unit> gets n +1/+1 counter(s) (net t)." when a Counter Thief takes them.
   // It carries the unit, so it is not log-only.
-  // 221 → 222 with CT-242 (E.finishPendingGrafts): "<card>: its host left play
+  // 221 → 222 with CT-242 (E.finishPendingMods): "<card>: its host left play
   // before it could attach — it goes to <player>'s bin." A graft that waited
   // on its host's targeted trigger, whose host that trigger removed. It says
   // where the card went (the bin moves), so it is not an absence either.
