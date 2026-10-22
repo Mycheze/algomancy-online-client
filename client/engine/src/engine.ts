@@ -2093,6 +2093,11 @@ export class E {
     const out: ('Tough' | 'Balanced' | 'Inverted' | 'Unaware')[] = [];
     // CR 802.25e, 802.25f (CT-260): a unit in a Pure interaction ignores these too
     if (this.pureBlind?.has(e.id)) return out;
+    // CR 802.25a: "A Pure card ignores its own other attributes too" — everywhere,
+    // not only in an interaction (the owner, 2026-10-22): a Pure unit is read
+    // without Tough, Balanced, Inverted and Unaware at all times. `effAttrs`, so
+    // a unit standing in a column with a Pure unit is Pure too (CR 802.25k).
+    if (this.effAttrs(e).has('Pure')) return out;
     const take = (attrs: Iterable<string>) => {
       for (const a of attrs) {
         if ((a === 'Tough' || a === 'Balanced' || a === 'Inverted' || a === 'Unaware')

@@ -62,7 +62,7 @@ test('cr:effects.state.lethal — a unit whose marked damage equals its defense 
   assert.ok(ent(h, v), 'damage 2 on a 1/3: alive');
 });
 
-test('cr:effects.state.no-damage-needed.pure — a Pure 1/3 that is Tough and Inverted reads 1/0 and still dies in the state check', () => {
+test('cr:effects.state.no-damage-needed.pure — a Pure 1/3 that is Tough and Inverted ignores both, reads 1/3 and lives through the state check', () => {
   const h = new Harness(71605);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -74,7 +74,10 @@ test('cr:effects.state.no-damage-needed.pure — a Pure 1/3 that is Tough and In
   assert.ok(e.ownAttrs(e.entity(u)!).has('Pure'), 'setup: it is Pure');
   e.settle();
   h.state = e.s;
-  assert.equal(ent(h, u), undefined, 'Pure is no escape: it died');
+  // CR 802.25a (the owner, 2026-10-22): a Pure card ignores its own other
+  // attributes everywhere, not only in an interaction — it was 1/0 and died
+  assert.ok(ent(h, u), 'a Pure unit ignores its own Tough and Inverted: it lives');
+  assert.deepEqual(new E(h.state).effStats(ent(h, u)!), [1, 3], 'and reads its plain 1/3');
 });
 
 test('cr:effects.state.when.mid-resolution — the Pestilent Titan trigger kills a 1/1 before the next unit gets its counter', () => {

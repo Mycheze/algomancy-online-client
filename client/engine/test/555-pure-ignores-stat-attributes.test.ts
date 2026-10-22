@@ -7,8 +7,8 @@
  * "does not apply in an exchange involving a Pure card". The engine kept
  * layers 4-6 on in a Pure pairing ("they are stat layers").
  *
- * Outside an interaction nothing changes: the state-based check still reads a
- * Pure unit's own Tough and Inverted (427, effects.state.no-damage-needed.pure).
+ * Outside an interaction a NON-Pure unit keeps them. A Pure unit ignores its
+ * own everywhere (CR 802.25a, the owner 2026-10-22) — that is 584.
  *
  * Seeds 55500-55599. */
 import { test } from 'node:test';
