@@ -4014,7 +4014,7 @@ export class E {
    * into play under an OPPONENT's control") passes the opponent as `seat` and
    * its owner as `opts.owner`.
    */
-  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; spotRemembered?: boolean; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
+  spawnUnit(seat: Seat, name: CardName, region: number, opts: { token?: boolean; tokenStats?: [number, number]; counters?: number; from?: 'hand' | 'cache' | 'bin' | 'deck' | 'play'; spot?: FormationSpot; spotRemembered?: boolean; spotSeat?: Seat; owner?: Seat; wearing?: SpawnFace } = {}): Entity {
     /**
      * CR 708.3: a UNIT TOKEN is a creation, and a creation is replaceable — before
      * anything exists. `token: true` is what makes this a creation; a plain
@@ -4115,7 +4115,7 @@ export class E {
     // CR 602.7: a card PLAYED into an open spot in the formation is put there
     // BEFORE the spawn event exists, so no listener and no player ever sees it
     // standing anywhere else. See takeSpot.
-    const placed = opts.spot ? this.takeSpot(u, seat, opts.spot, opts.spotRemembered) : null;
+    const placed = opts.spot ? this.takeSpot(u, opts.spotSeat ?? seat, opts.spot, opts.spotRemembered) : null;
     /*
      * CR 701.3 — PLAY vs PUT INTO PLAY. This method PUTS a card into play (Exhume,
      * Resurrect, Rousing Spirit, Lurking Dread all print "put into play"), or
@@ -7369,7 +7369,11 @@ export class E {
     const u = this.entity(id);
     const b = this.s.battle;
     if (!u || !b) return [];
-    const grid = this.formationGrid(u.controller);
+    // CR 602.6e: the grid the unit STANDS in, which after Organic Exchange can be
+    // the other seat's line (owner, 2026-10-22) — not its controller's
+    const seat = this.formationSeatOf(id);
+    if (seat === null) return [];
+    const grid = this.formationGrid(seat);
     let ci = -1, ri = -1;
     for (let i = 0; i < grid.length; i++) {
       const r = grid[i]!.indexOf(id);
@@ -7377,12 +7381,12 @@ export class E {
     }
     if (ci === -1) return [];
     // CR 603.3: only the attacking line can open a column past its end
-    const widens = u.controller === b.attacker && ri === 0;
+    const widens = seat === b.attacker && ri === 0;
     const out: { col: EntityId[] | null; end?: 'left' | 'right'; row: number; label: string }[] = [];
     const take = (c: number, r: number, label: string): void => {
       // CR 606.1f: an unblocked column of the defending grid is a gap, not a
       // slot — the same closed answer as the defending line's edge (CR 603.3b)
-      const col = this.isRealColumn(u.controller, c) ? grid[c] : undefined;
+      const col = this.isRealColumn(seat, c) ? grid[c] : undefined;
       if (!col) {                          // past the edge of the line (CR 603.3)
         if (!widens) return;
         const end = c < 0 ? 'left' : 'right';
@@ -11022,6 +11026,7 @@ export class E {
         ...(item.formationSpot ? { spot: item.formationSpot } : {}),
         ...(item.owner !== undefined ? { owner: item.owner } : {}),   // CR 102.5a (CT-245)
         ...(item.formationRemembered ? { spotRemembered: true } : {}),
+        ...(item.formationSeat !== undefined ? { spotSeat: item.formationSeat } : {}),
       });
       return;
     }
@@ -11808,6 +11813,7 @@ export class E {
         // plain unit, so no item reached here carrying a spot.
         ...(item.formationSpot ? { spot: item.formationSpot } : {}),
         ...(item.formationRemembered ? { spotRemembered: true } : {}),
+        ...(item.formationSeat !== undefined ? { spotSeat: item.formationSeat } : {}),
       });
       // CR 723.4c: a spell UNIT's card does not leave — it arrives. Its viruses ride
       // it in, as the augment mods they always were, which is also what makes
