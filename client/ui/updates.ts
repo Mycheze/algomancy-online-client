@@ -44,6 +44,15 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-22', kind: 'new', text: "In battle you can now keep priority after you act and do something else before your opponent can answer: hold Ctrl as you play, or turn on the new Hold priority button next to Pass. Nobody can hold priority in deployment." },
+  { date: '2026-10-22', kind: 'fix', text: "Wake the Dead now plays its units onto the stack, where they can be answered, and a spell unit casts its spell first. The Bonesculptor and Gridxlan simply let you play a unit from your bin, with nothing on the stack." },
+  { date: '2026-10-22', kind: 'change', text: "Pure now ignores all other attributes, as printed: Tough, Balanced, Inverted and Unaware do not apply on a Pure unit, or on a unit in a fight or damage exchange with one. That includes a hit redirected into Oorblak." },
+  { date: '2026-10-22', kind: 'fix', text: "A Lethal attack that goes entirely into Oorblak no longer kills the player, and a Thieving column draws nothing from it. Damage that gets past Oorblak still counts." },
+  { date: '2026-10-22', kind: 'fix', text: "Gatekeeper of Souls only forces targets during a battle in its own region, and a Virus applied in that battle has to go on it too." },
+  { date: '2026-10-22', kind: 'change', text: "Each region now has its own stack: an effect in one region can no longer answer a spell in the other region, or reach the bin of a player who is not there." },
+  { date: '2026-10-22', kind: 'fix', text: "Blockers on either side of an unblocked column are no longer neighbours. A lone Hooba that dies before its attack trigger resolves still puts its unit into its formation." },
+  { date: '2026-10-22', kind: 'fix', text: "An Ambush now pays costs other cards add to plays, like Arbiter of Armistice's life and Vengeance's sacrifice. A card played for free in the middle of an effect pays its own extra costs and debt too." },
+  { date: '2026-10-22', kind: 'fix', text: "Copies of a unit, and Ancient One, now get a once-a-turn use for each ability they copy or borrow. A Prismite can be exchanged into a Shard, and tokens no longer appear on the erased pile." },
   { date: '2026-10-22', kind: 'fix', text: "Two copies of the same once-per-turn ability on one unit now each work once a turn. A Jollyglop wearing another Jollyglop makes units from both when it is dealt damage." },
   { date: '2026-10-21', kind: 'new', text: "Build on the table: a deck builder page with your cards in piles, and a challenge deck as a row in deal order. Drag cards from a binder of every card, around or back out. On a tablet, hold a card to lift it, or tap it, then where it goes." },
   { date: '2026-10-21', kind: 'new', text: "Weekly challenges: a new puzzle every Sunday. Build a deck in the exact order you want it dealt, reach the goal with as few cards, elements and turns as you can, and climb the leaderboard. Last week's decks open when the week ends." },

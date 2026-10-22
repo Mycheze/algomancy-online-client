@@ -11,8 +11,9 @@ import '../engine/src/cards/registry.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
 import { E } from '../engine/src/engine.ts';
 import { Harness } from '../engine/src/harness.ts';
-import { give, giveResources, spawn, toDeployment, toNextBattle, unitsOf } from '../engine/test/util.ts';
-import { SRC_DIR, ENGINE_SRC, setSrc, runSrc, board, eventsFrom } from './card-todo-helpers.ts';
+import { ent, give, giveResources, pass, spawn, toDeployment, toNextBattle, unitsOf, withE } from '../engine/test/util.ts';
+import type { Attr, EntityId, Seat } from '../engine/src/types.ts';
+import { SRC_DIR, ENGINE_SRC, setSrc, runSrc, board, eventsFrom, text, still, body } from './card-todo-helpers.ts';
 import type { TodoEntry } from './card-todo.ts';
 
 /** CT-254 / CR 701.1e: Bloomcaster played from hand makes a 1/1 for its own play (wrong under CR 701.1e) */
@@ -50,6 +51,64 @@ function sentinelHearsItself(): boolean {
   const sentinel = unitsOf(h, p).find(u => u.card === 'Stalwart Sentinel');
   if (!sentinel) throw new Error('setup: Wake the Dead did not play the Sentinel');
   return sentinel.counters > 0;
+}
+
+// ── the harness probes of the comprehensive-rules findings closed on 2026-10-22
+//    (moved from card-todo.ts with their entries; each is true while the bug is present)
+
+/** a plain p/t unit token, as the verifier probes make them */
+function tok(h: Harness, seat: Seat, p: number, t: number): EntityId {
+  let id = -1;
+  withE(h, g => { id = g.spawnUnit(seat, 'Unit Token', g.homeRegion(seat), { token: true, tokenStats: [p, t] }).id; });
+  return id;
+}
+function toBlocks(h: Harness): void {
+  for (let i = 0; i < 40 && h.state.battle?.step !== 'blocks'; i++) pass(h);
+}
+
+/** CT-226: an Electric effect whose source unit is D's, controlled by A — is the path asked of A? */
+function electricAskedOfEffectController(): boolean {
+  const h = new Harness(92008);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a0 = tok(h, A, 1, 1), a1 = tok(h, A, 1, 1);
+  const b0 = tok(h, D, 1, 9);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a0], [a1]] });
+  toBlocks(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
+  const asked: Seat[] = [];
+  const g = new E(h.state);
+  g.dealEffectDamageAll({
+    controller: A, sourceName: 'Unit Token', sourceId: b0, region: g.homeRegion(A),
+    targets: [], event: null, grantedAttrs: ['Electric' as Attr], eraseSelf: () => {},
+    choose: (_k: unknown, dec: { kind: string; seat: number; options: { value: unknown }[] }) => {
+      if (dec.kind === 'electricPath') asked.push(dec.seat as Seat);
+      return dec.options[0]!.value;
+    },
+  } as never, [{ target: g.entity(a0)!, n: 5 }] as never);
+  return asked.length > 0 && asked[0] === A && g.entity(b0)!.controller === D;
+}
+
+
+/** CT-229: a stolen unit erased from play lands on its OWNER's erased pile */
+function erasedStolenUnitGoesToOwner(): boolean {
+  const h = new Harness(70701);
+  toDeployment(h);
+  const owner = h.state.deployPlayer!;
+  const thief = (1 - owner) as Seat;
+  const id = spawn(h, owner, 'Just a Unit');
+  withE(h, e => { e.giveControl(ent(h, id)!, thief); });
+  if (ent(h, id)!.controller !== thief) throw new Error('setup: the theft did not happen');
+  withE(h, e => { e.eraseFromPlay(ent(h, id)!, 'probe'); });
+  const n = (s: Seat): number => (h.state.players[s]!.erased ?? []).filter(c => c === 'Just a Unit').length;
+  return n(owner) === 1 && n(thief) === 0;
+}
+
+/** CT-244: spells in printed.json that carry a power or a toughness */
+function spellsCarryStats(): boolean {
+  const printed = JSON.parse(text('engine/src/cards/printed.json')) as Record<string, { kind: string; power?: number; toughness?: number }>;
+  return Object.values(printed).some(c => c.kind === 'spell' && (!!c.power || !!c.toughness));
 }
 
 export const CLOSED: TodoEntry[] = [
@@ -11578,6 +11637,650 @@ export const CLOSED: TodoEntry[] = [
     ],
     closed: "FIXED 2026-10-21 (677da00): the CR verifier refused the owner's call for Warder (designer outranks); CR 110.9 cites Caleb, F-U03-6 closed.",
     verify: "Read the quoted message beside CT-307's ruling.",
+    status: 'done',
+  },
+  // ── the engine ticket round of 2026-10-22 ─────────────────────────────
+  {
+    id: 342, area: "engine", severity: "minor",
+    cards: ["Borrower of Forms", "Apex Prime", "Ancient One"],
+    title: "a copy's copied [Augment] boxes and Ancient One's borrowed text still share one [once] per card name",
+    detail: "CR 109.9k gives each mod its own use, and since report 269 a real augment mod keeps its use on itself. Two places have no mod entity to hold it: a COPY of a unit with two same-name augments (copiedAugments keys augment:<card>#<n> on the copy, and the activated offer lists a copied name once), and Ancient One borrowing a neighbour's triggered text (ao:<prefix>:<card>#<n> on the Ancient One). Each still gives two copies of one bounded box one use between them.",
+    evidence: "Report round 2026-10-22, fixing report 269 (apply.ts pushActivatedOptions, batch-metal-a.ts Ancient One scan).",
+    fix: "Key a copied box by its index in CopyRef.mods and a borrowed one by the neighbour's mod id, and offer each copied box as its own activation (a new ActivateVia shape replays old logs unchanged only if the old one keeps meaning the first copy).",
+    proof: () => still('engine/src/apply.ts', 'a copied box has no mod entity to hold it, CT-342'),
+    verify: "grep \"CT-342\" in client/engine/src/apply.ts.",
+    guards: [
+      "563-copied-and-borrowed-uses.test.ts::CR 710.2d / CT-342: a copy of a unit with two Debt Blep augments offers two activations, and spending one leaves the other",
+      "563-copied-and-borrowed-uses.test.ts::CR 710.2d / CT-342: a copy of a unit with two Jollyglop augments triggers twice when it is dealt damage",
+      "563-copied-and-borrowed-uses.test.ts::CR 109.9k / CT-342: two copied Recall grafts on a copy each have one use",
+      "563-copied-and-borrowed-uses.test.ts::CR 710.7 / CT-342: Ancient One next to an ally wearing two Jollyglops borrows two uses",
+      "585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Jollyglops makes two 1/1s per damage from each",
+      "585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Debt Bleps has two activations, the first at the old address",
+    ],
+    closed: "FIXED 2026-10-22 (12aee49, 33b409d). A copied [Augment] box is keyed by its index in the copy's CopyRef.mods and offered as its own activation (the old address still means the first copy, so old logs replay unchanged), and Ancient One keeps one borrowed use per SOURCE: per neighbour mod, and per neighbour for a neighbour's own text. Two copied same-name grafts had the same shared-use defect and were fixed with it. Owner, 2026-10-22, on Ancient One between two same-face neighbours: two uses, \"each neighbour's copy of the ability is separate\".",
+    status: 'done',
+  },
+  {
+    id: 281, area: "card", severity: "minor",
+    cards: ["Combustible Bogwalker"],
+    title: "Combustible Bogwalker's \"Sacrifice a nontoken unit\" cost may not offer the Bogwalker itself",
+    detail: "(Found 2026-10-13 reading the shared either/or cost code.) Combustible Bogwalker prints \"[Augment][once] Sacrifice a nontoken unit or discard a card: Recall target unit in your bin.\" with no \"another\". Its cost is `discardOrSacrifice: 1`, and the shared sacrifice-cost code leaves the ability's own source out of the choices, both in the payability gate and in the option list, so the Bogwalker (or, when it is donated, its host) can never sacrifice itself to pay. Printed text and the permissive steer both say it can. Lilbot, the third card on this cost, prints \"another\" and is right as it is. Pallid Gorger prints no \"another\" either, but its implementation comment records excluding itself as a deliberate reading (it would eat itself and then fail to grow); a fix that reads the printed text must decide the Gorger on purpose rather than by accident.",
+    evidence: "Oracle: \"[Augment][once] Sacrifice a nontoken unit or discard a card: Recall target unit in your bin.\" engine/src/apply.ts (the payability gate): \"const sacs = e.unitsOf(seat, region).filter(o => o.id !== u.id && !o.token).length;\" engine/src/engine.ts itemCostSacrifices: \".filter(u => u.id !== item.sourceId && (!nontokenOnly || !u.token));\" Read in the code, not yet reproduced in a test.",
+    fix: "Give the `discardOrSacrifice` cost an `another` flag (or read it off the printed text) so only cards that print \"another\" exclude their source; set it on Lilbot, and on Pallid Gorger only if its reading is kept. Test: a Bogwalker alone with an empty hand is offered itself.",
+    proof: null,
+    verify: "Bogwalker alone on the board, empty hand: the ability is offered and sacrificing itself pays for it.",
+    guards: [
+      "564-discard-or-sacrifice-self.test.ts::CR 111.2 / CT-281: a Combustible Bogwalker alone with an empty hand is offered itself as the sacrifice",
+      "564-discard-or-sacrifice-self.test.ts::CR 111.2 / CT-281: Lilbot prints another, so alone with an empty hand it is not offered",
+      "564-discard-or-sacrifice-self.test.ts::CR 111.2 / CT-281: Pallid Gorger prints no another, so alone with an empty hand it may sacrifice itself",
+    ],
+    closed: "FIXED 2026-10-22 (6b4ff93, d8162b2). The discardOrSacrifice cost may name its own source unless the card prints \"another\": Lilbot carries the flag; Combustible Bogwalker is offered itself. Pallid Gorger's deliberate self-exclusion was dropped, so it too may sacrifice itself, as printed: the printed text and the owner's permissive steer decide it, not the engine's guess that it would never want to.",
+    status: 'done',
+  },
+  {
+    id: 237, area: "engine", severity: "minor",
+    title: "a Prismite cannot be exchanged into a Shard, though the printed card says \"a non-prismite resource\"",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule concepts.resources.prismite.exchange.element-only. The printed Prismite reads \"Erase me: Create a non-prismite resource, then activate it\", and the Manual says active Prismites \"may be exchanged for other resources\". A Shard is a non-prismite resource. doExchangePrismite accepts only an element of the game, and test 308's title asserts the refusal. No ruling forbids the Shard (CR 106.8d excludes only the Prismite-into-Prismite case). Low impact: a Shard is never better than an element resource.",
+    evidence: "Finding F-U02-3. apply.ts: \"e.need((e.s.elements as string[]).includes(element), 'not an element of this game');\". digital-rules.md: \"Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element.\" 308-recycle-for-prismite.test.ts: \"R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard\".",
+    fix: "Accept a Shard as an exchange target (the action names an element or the shard kind), or get an owner ruling that the Shard is excluded and record it. Retitle 308 either way.",
+    proof: () => still('engine/src/apply.ts', "e.need((e.s.elements as string[]).includes(element), 'not an element of this game');"),
+    guards: [
+      "308-recycle-for-prismite.test.ts::CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite",
+    ],
+    closed: "FIXED 2026-10-22 (0e2a37d). doExchangePrismite accepts the shard kind beside the game's elements; a Prismite into a Prismite stays illegal (CR 106.8d). 308's title is rewritten to the new law. In the client the Shard sits behind the prismite menu's expander.",
+    status: 'done',
+  },
+  {
+    id: 244, area: "engine", severity: "minor",
+    title: "spells carry power and toughness in printed.json that no spell prints (91 of 138)",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule card.stats.units: stats mark a unit (Rulebook 2023 p.3); a spell prints none. The oracle transcription has power and toughness fields on spell rows and the extractor copies them: Arc Lightning 1/3, Interdiction Rift 4/3, Spectrogenesis 4/5. Suspected harmless. The risk is a path that reads a spell's stats (a copy of a spell, an \"everything\" reach onto spells, Unaware reading printed stats, a card-stats or search surface).",
+    evidence: "Finding F-U05-1. printed.json: \"\"name\": \"Arc Lightning\", \"factions\": [ \"fire\" ], \"cost\": \"rr\", \"mana\": 4, \"power\": 1, \"toughness\": 3,\". Oracle: \"\"name\": \"Interdiction Rift\", \"power\": \"4\", \"toughness\": \"3\",\".",
+    fix: "Check that nothing reads a spell's power or toughness, then zero them at extraction (npm run extract), not in the oracle, so nothing can start to.",
+    proof: () => spellsCarryStats(),
+    guards: [
+      "565-spells-print-no-stats.test.ts::CR 206.2 / CT-244: no spell in the engine pool or the catalogue carries power or toughness",
+      "565-spells-print-no-stats.test.ts::CR 206.2 / CT-244: a stat search never finds a spell",
+      "567-stats-only-where-printed.test.ts::CR 206.2 / CT-244: spell tokens carry no stats in the pool or the catalogue",
+      "567-stats-only-where-printed.test.ts::CR 206.2 / CT-244: a spell unit in hand shows its printed stats in the text box",
+    ],
+    closed: "FIXED 2026-10-22 (53b4f80, 39f209a). The extractor zeroes a spell's power and toughness (npm run extract), so printed.json and catalogue.json carry none, and spell tokens none either; the oracle is untouched. The card search keeps spells out of stat comparisons. Follow-up: a spell UNIT prints stats, and its P/T now shows in hand.",
+    status: 'done',
+  },
+  {
+    id: 341, area: "engine", severity: "minor",
+    cards: ["Aberrant Statweaver", "Body Swap", "Borrower of Forms"],
+    title: "the base-stat layer and the copy layer still order a hidden step's effects by click order, not initiative",
+    detail: "CR 113.2b (owner, 2026-10-21: \"deployment is stamped accourding to INT/NIT order. 'Real time' doesn't matter in simultanous phases\"). The strip layer reads E.stampOf / stampNow, which order a hidden step by initiative. Layer 2 does not: baseWith sorts base-setters by the raw clock (a static's srcId, setBase's baseSetSeq = nextId++), and the copy layer sorts CopyRef.seq the same way. Two base-setters or two copies from DIFFERENT seats in one deployment on the same unit therefore resolve by click order. In deployment each seat reaches only its own units (CR 507.1b), so this needs a later control change to matter.",
+    evidence: "The answer agent, report round 2026-10-21, implementing CR 113.2b (engine.ts stampSegment).",
+    fix: "Give baseSet and CopyRef a Stamp beside their seq (set from stampNow / the entity's stampOf in a hidden step) and sort layer 2 and the copy layer with E.older; add a fixture for the new field in 266.",
+    proof: () => still('engine/src/engine.ts', 'seq: srcId,'),
+    verify: "grep \"seq: srcId,\" in client/engine/src/engine.ts (baseWith).",
+    guards: [
+      "566-layer-two-and-copies-by-initiative.test.ts::CR 113.2b / CT-341 §1: the NIT Statweaver, clicked first, is still newer than the INT player base rewrite",
+      "566-layer-two-and-copies-by-initiative.test.ts::CR 113.2b / CT-341 §2: the NIT base rewrite, clicked first, is still newer than the INT Statweaver",
+      "566-layer-two-and-copies-by-initiative.test.ts::CR 113.2b / CT-341 §3: two seats copies on one unit in one deployment resolve by initiative",
+    ],
+    closed: "FIXED 2026-10-22 (969608b). Layer 2 and the copy layer order a hidden step's effects by the stamp (initiative first), as the strip layer already did: Entity.baseSetAt and CopyRef.at carry the Stamp, both optional, so an older state means what it always meant.",
+    status: 'done',
+  },
+  {
+    id: 226, area: "attribute", severity: "major",
+    title: "the Electric path is asked of the effect's controller, not of the Electric source's controller",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule attr.electric.chooser states the ruling: \"The **Electric source's controller** chooses the path.\" dealEffectDamageAll raises the electricPath decision for ctx.controller, the controller of the EFFECT. The two differ when a spell makes an opponent's unit the damage source (Fight, Battle): the spell's caster then steers the opponent's Electric excess. 05-rulings asserts the source's controller only on a board where the two coincide, so the suite never tells them apart. The Piercing split beside it already asks the source unit's controller.",
+    evidence: "Findings F-U20-1 (dup F-U20-5). engine.ts: \"kind: 'electricPath', seat: ctx.controller,\". digital-rules.md: \"The **Electric source's controller** chooses the path.\" 05-rulings.test.ts: \"the Electric SOURCE's controller chooses\" (a board where caster and source controller are the same player). Re-measured 2026-10-10 by the proof below: a D unit as the source of an A effect, and the jump is asked of A.",
+    fix: "Ask the electricPath decision of the source unit's controller when the effect has a source unit (the same seat the Piercing split already uses), and of ctx.controller only when there is none. Add a 05-rulings case where the two differ.",
+    proof: () => electricAskedOfEffectController(),
+    guards: [
+      "552-electric-path-chooser.test.ts::CR 802.17c / CT-226: a Fight that makes the opponents Electric unit the source asks the SOURCE controller for the path, not the caster",
+      "552-electric-path-chooser.test.ts::CR 802.17c / CT-226: the source controller answer steers the excess onto the chosen neighbour",
+    ],
+    closed: "FIXED 2026-10-22 (1b38b2a). The electricPath decision is asked of the source unit's controller when the effect has a source unit (the seat the Piercing split already used), and of the effect's controller only when there is none.",
+    status: 'done',
+  },
+  {
+    id: 227, area: "attribute", severity: "minor",
+    cards: ["Oorblak"],
+    title: "Oorblak's combat-damage redirect ignores Oorblak's OWN {Pure} and doubles damage onto a Pure Vulnerable Oorblak",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule attr.vulnerable.pure: \"A Pure Vulnerable unit, and a Vulnerable unit in an interaction with a Pure card, is not dealt double damage.\" The redirect hook in batch-earth-b prices Vulnerable as (!info.pure && Vulnerable), where info.pure is the attacking COLUMN's purity only. A Pure Vulnerable Oorblak taking a non-Pure column's damage is therefore dealt it doubled (the pilot probe: 3 power redirected, 6 dealt, Oorblak died). Exotic but reachable, since Oorblak can be given Pure or Vulnerable by mods.",
+    evidence: "Finding F-U19-3. batch-earth-b.ts: \"const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;\". digital-rules.md: \"A Pure recipient takes plain damage from anyone.\" The pilot verifier's probe measured it; the probe is not committed. 290-pure-outside-combat has no Pure-recipient case (see CT-241).",
+    fix: "Treat the redirect as an interaction between the column and Oorblak: mult is 1 if the column OR Oorblak is Pure (and pass that purity on to preventUnitDamage). Add a test with a Pure Vulnerable Oorblak under a plain column.",
+    proof: () => still('engine/src/cards/sets/batch-earth-b.ts', "const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;"),
+    guards: [
+      "553-oorblak-pure-redirect.test.ts::CR 802.11e / CT-227: a Pure Vulnerable Oorblak under a plain column is dealt the redirected hit once, not doubled",
+      "553-oorblak-pure-redirect.test.ts::CR 802.11e / CT-227 PREMISE: without Pure the same Vulnerable Oorblak is dealt it doubled and dies",
+      "553-oorblak-pure-redirect.test.ts::CR 802.25i / CT-227: a Pure Oorblak ignores the redirected columns Deadly",
+    ],
+    closed: "FIXED 2026-10-22 (7edb056). Oorblak's redirect is an interaction between the column and Oorblak: it is attribute-blind when the column OR Oorblak is Pure, so no Vulnerable doubling, and (found on the way) no Deadly or Piercing off the column against a Pure Oorblak either.",
+    status: 'done',
+  },
+  {
+    id: 261, area: "attribute", severity: "minor",
+    cards: ["Spellbind"],
+    title: "{Modular} would be shared through a column if a unit ever carried it (latent; no unit can today)",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule attr.modular.not-shared: Modular is not shared with the other units of a column (Caleb's \"Modular is also special\", CR 802.26h). colAttrs unions every own attribute of every unit in the column, Modular included. Harmless only because the one Modular card (Spellbind) is a spell. 298 §5c guards that premise, not the non-sharing.",
+    evidence: "Finding F-U20-3. engine.ts colAttrs: \"if (u) for (const a of this.ownAttrs(u)) set.add(a);\". digital-rules.md: \"statement. {Modular} *is* in `attrs`, and is harmless only because the one card\". The round-1 verifier confirmed colAttrs would union it.",
+    fix: "Leave Modular out of colAttrs (one filter), and turn 298 §5c into a guard of the non-sharing itself.",
+    proof: () => still('engine/src/engine.ts', 'if (u) for (const a of this.ownAttrs(u)) set.add(a);'),
+    guards: [
+      "298-column-attrs-outside-combat.test.ts::CR 802.26h / CT-261: {Modular} is an object attribute too, so a unit given it keeps it and its column-mate does not",
+    ],
+    closed: "FIXED 2026-10-22 (ae32d85). colAttrs leaves Modular out, so it is never shared through a column; 298 now guards the non-sharing itself rather than the premise that only a spell prints it.",
+    status: 'done',
+  },
+  {
+    id: 232, area: "card", severity: "minor",
+    cards: ["Minor Kraken"],
+    title: "Minor Kraken re-checks its own target limit mid-resolution, so an earlier part of the same item can switch it off",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.resolution.recheck.once (CR 704.5a): target legality is judged once, as the item begins to resolve, so an earlier part cannot make a later part's target illegal. markIllegalTargets does judge once, but Minor Kraken re-tests its printed \"5 or less defense\" inside its own run. Measured: a composite whose first part puts 11 +1/+1 counters on a 0/2 and whose second part is the Kraken recall does not recall it (without the counters it does). Throw off a Cliff and Leave None Pure re-test a printed limit in run too; they were not measured.",
+    evidence: "Finding F-U14-9. batch-water-a.ts: \"if (def <= 5) g.recall(t);\". batch-earth-c.ts: \"if (g.effStats(u)[1] >= 4) g.destroy(u, 'is deleted');\". digital-rules.md: \"the same item therefore cannot make a later part's target illegal\". Measured by the U14 tester probe (not committed).",
+    fix: "Drop the in-run re-check where the target spec already carries the restriction (the once-only judgement then covers it), or snapshot the restriction at resolution start. Sweep the cards that re-test a printed restriction inside run.",
+    proof: () => still('engine/src/cards/sets/batch-water-a.ts', 'if (def <= 5) g.recall(t);'),
+    guards: [
+      "554-target-judged-once.test.ts::CR 704.5a / CT-232: Minor Kraken grafted under a part that grows its target past 5 defense still recalls it",
+      "554-target-judged-once.test.ts::CR 704.5 / CT-232 CONTROL: a target already past 5 defense when the item begins to resolve is still refused",
+      "554-target-judged-once.test.ts::CT-232 sweep non-vacuity: it reaches the cards the ticket names and the families beside them",
+      "554-target-judged-once.test.ts::CR 704.5a / CT-232: no effect re-tests its own target restriction in its run",
+    ],
+    closed: "FIXED 2026-10-22 (a590613). The restriction moved into the target spec where it was re-tested in run, so the once-only judgement as the item begins to resolve covers it. The sweep is derived from the registry and found twelve cards, not the three named: Minor Kraken, Throw off a Cliff, Leave None Pure, Unmake, Abduct, Lumengrove Lurker, Reconfigure, Fight, Squish, Frosted Denial, Graxxlid, Boon of Protection.",
+    status: 'done',
+  },
+  {
+    id: 260, area: "attribute", severity: "minor",
+    title: "OWNER DECISION: Tough, Balanced, Inverted and the Unaware collapse stay on against a Pure card; Pure prints \"ignore all other attributes\"",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule attr.general.pure states print: \"Pure cards and cards they are interacting with ignore all other attributes.\" The engine, as the retired register read it, keeps the stat attributes on in a Pure pairing because \"they are stat layers\", and the retired register said the combat Unaware collapse \"survives {Pure}\" while noncombat Pure switches Unaware off. Measured: a Pure source dealing 5 to Rampart Guardian leaves it alive as a Tough 0/8; a Balanced 4/1 dealt 3 by a Pure source survives as a 4/4. Filed because print outranks the R-rulings; waits on D-U19-2.",
+    evidence: "Findings F-U19-1 (dup F-U19-2). printed.json: \"Pure cards and cards they are interacting with ignore all other attributes.\" digital-rules.md: \"{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61).\" and \"The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and\". Measured by verifier probes (not committed).",
+    fix: "Ask the owner. If print wins, switch the stat-layer attributes and the Unaware collapse off in a Pure interaction, in combat and outside it alike.",
+    // the register sentence is retired; the engine's own account of the divergence is what stays true until it is fixed
+    proof: () => still('engine/src/engine.ts', 'the engine switches only the ATTRIBUTE layer off for the exchange'),
+    guards: [
+      "555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian kills it, because its Tough is off in the pairing",
+      "555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Balanced 4/1 dealt 3 by a Pure source dies, because Balanced is off in the pairing",
+      "555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: in combat, Rampart Guardian blocking a 5-power Pure attacker has 4 defense, not 8, and dies",
+      "555-pure-ignores-stat-attributes.test.ts::CR 802.25f / CT-260: in combat, Bubb blocking a Pure 3/3 with four +1/+1 counters collapses nobody",
+    ],
+    closed: "FIXED 2026-10-22 (cc003bc). Owner, 2026-10-22: follow the print, \"ignore all other attributes\". A Pure interaction now switches off Tough, Balanced and Inverted and the Unaware collapse too, in combat and outside it. Beside it, with no ticket: a Pure unit ignores its OWN stat attributes everywhere (CR 802.25a, e94ea76; owner: a Pure Tough Inverted 1/3 lives, 802.25a beats 713.4a), and a Pure source pays no Afflicting or Reaping kill rider (999f461, 64a561e), guarded by 584.",
+    status: 'done',
+  },
+  {
+    id: 257, area: "attribute", severity: "minor",
+    cards: ["Child of Aether", "Rampart Guardian"],
+    title: "OWNER DECISION: Tough augmented onto a printed-Balanced unit is balanced first; the Manual's first clause doubles first",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules effects.continuous.layers.attribute-order and attr.general.application-order. Manual p.42: if \"Tough\" is augmented onto a \"Balanced\" unit, \"it will have its defense doubled, then its stats balanced.\" The engine takes printed attributes before mod attributes (CR 709.4b, engine differs F-U16-4), so it balances first: Child of Aether (2/0 Balanced) with a Rampart Guardian augment reads 2/4 where that clause gives 2/2. The same Manual answer then says \"applied to\" gives balanced-then-doubled, so the print contradicts itself. The old premise that the Manual is silent is wrong for this pair. Waits on D-U16-1 / D-U19-1.",
+    evidence: "Findings F-U16-4 (dups F-U16-6, F-U19-5). Manual: \"“Tough” is augmented onto a “Balanced” unit, or if a\" and \"will have its defense doubled, then its stats balanced.\" digital-rules.md: \"⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;\". Measured by a verifier probe (not committed): 2/4.",
+    fix: "Ask the owner which clause governs. Then order the stat layers accordingly and add a printed-host test.",
+    proof: null,
+    verify: "Augment Child of Aether with Rampart Guardian and read its stats (2/4 today).",
+    guards: [
+      "08-cards2.test.ts::CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances",
+      "08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles",
+    ],
+    closed: "FIXED 2026-10-22 (750fb0b). Owner, 2026-10-22: the Manual p.42's first clause governs. Tough augmented onto a Balanced unit doubles, then balances (Child of Aether with a Rampart Guardian augment is a 2/2); Tough applied by an effect still balances first, then doubles (2/4), the Manual's second clause.",
+    status: 'done',
+  },
+  {
+    id: 332, area: "engine", severity: "minor",
+    cards: ["Tides of the Cosmos", "Hooba-Pon", "Insidious Invitation"],
+    title: "a free play that resolves in place never pays a bracketed additional cost",
+    detail: "playInline has two branches: the stack branch (pushInlinePlay) and the in-place branch for a play made while nothing can respond. CT-308 shared the target loop with both, but the in-place branch still skips the cast window's bracketed additional costs, so a spell with a [cost] played in place is played free of it.",
+    evidence: "The targets agent, report round 2026-10-21, fixing CT-308 (batch-water-a.ts playInline).",
+    fix: "Collect the bracketed costs in the in-place branch the way collectCastCosts does for a cast, or route it through the stack branch; derive the affected spells from the registry.",
+    proof: null,
+    verify: "Tides of the Cosmos playing a spell with a bracketed cost while nothing can respond.",
+    guards: [
+      "556-inline-play-is-a-whole-play.test.ts::CR 702.4e / CT-332: a [Sacrifice a unit] spell played in place pays its sacrifice",
+      "556-inline-play-is-a-whole-play.test.ts::CR 112.14c / CT-332: a [Gain N debt] spell played in place gains the debt",
+      "556-inline-play-is-a-whole-play.test.ts::CR 702.4e / CT-332: Tides of the Cosmos playing Hyper Beam in a battle window gains the debt",
+    ],
+    closed: "FIXED 2026-10-22 with CT-143 (21104f7). A free play in place is a whole play: it pays its bracketed costs, gains its debt and fires cardPlayed. Found on the way: Hyper Beam's [Gain 4 debt] went unpaid on BOTH branches, the stack branch included.",
+    status: 'done',
+  },
+  {
+    id: 143, area: 'engine', severity: 'minor',
+    title: 'a card played mid-resolution in place fires no cardPlayed at all, so the wide watchers are deaf to it',
+    detail:
+      'CR 701.4 says a card played mid-resolution goes on the stack and is respondable. playInline in-'
+      + 'place path predates that and still spawns in place, firing spellPlayed and spawned but no '
+      + 'cardPlayed — so CR 108.1a wide watchers (Void Mandible, Bloomcaster) never hear the play. The retired register '
+      + 'recorded the divergence; the played-from-zone fix threaded the source zone through the same path and left it '
+      + 'standing.',
+    evidence: 'Flagged by the R263 agent, which declined to fix it: "changes which cards trigger on '
+      + 'plays nobody ruled on this round".',
+    fix: 'Making it an item is a much larger change than it looks — a spawn is not a cast and there '
+      + 'is no cast window to declare it in. Read CR 706.13 before starting.',
+    proof: null,
+    verify: 'Play a unit out of a bin during battle with a Void Mandible up; it cannot answer.',
+    progress:
+      '\u26a0 MEASURED AND DELIBERATELY NOT BUILT, ROUND 36. THE REPORTED DEFECT IS NOT '
+      + 'REACHABLE, AND THE VERIFY LINE ABOVE IS FALSE TODAY. This entry was written from the '
+      + 'CODE — playInline\'s in-place branch really does fire a hand-rolled spellPlayed and no '
+      + 'cardPlayed — and not from the reachable behaviour, which the mid-resolution stack fix had already fixed. '
+      + 'MEASURED by instrumenting playInline and running every test file that can reach it '
+      + '(each one naming one of its three callers): 41 calls, 38 down the stack PUSH path, '
+      + 'through E.commitItem, which fires cardPlayed (CR 108.1a) with the play\'s item id (CR 706.13) like any '
+      + 'other play. The only three in-place hits are 241-played-from-zone\'s synthetic "zone '
+      + 'test rig" driving the function directly in the deploy phase. No card reaches it, '
+      + 'because all three callers can only run inside a battle priority window — which is '
+      + 'exactly inlinePlayGoesToStack\'s predicate: Hooba-Pon triggers on [attacked, blocked], '
+      + 'and Insidious Invitation and Tides of the Cosmos both print battle timing.\n\n'
+      + 'THE ENTRY CONFLATES TWO QUESTIONS AND THEY SEPARATE CLEANLY. Is cardPlayed separable '
+      + 'from item-hood? Yes — the engine already has the encoding (no `item` = "this play put no '
+      + 'effect on the stack") — but it is MOOT here. A watcher that only needs to KNOW '
+      + '(Bloomcaster, "whenever you play a unit, create a 1/1") already hears a mid-resolution '
+      + 'play: driven in 169 \u00a76a, where it makes its 1/1. A watcher that needs to RESPOND '
+      + '(Void Mandible) needs an item, and has one: the push path pushes a real item, and '
+      + '169 \u00a71 already answers a mid-resolution Hooba-Pon play with Dematerialize. So the '
+      + 'wide watchers are not deaf and the play IS answerable; making the in-place path an '
+      + 'item — the "much larger change" this entry warns about — buys nothing.\n\n'
+      + '\u26a0 AND THE SMALL CHANGE IS NOT FREE EITHER, which is the reason it was not made. '
+      + 'The engine reads a cardPlayed with no `item` as meaning "there is nothing to negate". Firing '
+      + 'one from the in-place path therefore makes Void Mandible pay its printed sacrifice for '
+      + 'a negate that cannot land — a card interaction nobody has ruled on, invented on a path '
+      + 'no card reaches. That is the same trade the played-from-zone agent declined ("changes which cards '
+      + 'trigger on plays nobody ruled on this round"), and it should be decided WITH the '
+      + 'fourth caller, when there is a real card to rule about.\n\n'
+      + 'THREE GUARDS, and each was re-broken. 169 \u00a76a (behavioural, real cards) reddens '
+      + 'when the in-place path is forced, alongside five of the mid-resolution stack tests. 169 \u00a76b is '
+      + 'THE TRIPWIRE: the playInline call-site census is derived from source and reddens the '
+      + 'day a FOURTH caller appears — with the question it has to answer in the failure '
+      + 'message — plus the mechanical checks that keep the three in a window (printed timing, '
+      + 'trigger events). 169 \u00a76c pins the residue: it asserts the in-place path fires NO '
+      + 'cardPlayed, so the silence cannot be changed by accident either, and it says in the '
+      + 'test that it records what the code does rather than what is right. Severity stays '
+      + 'minor and the entry stays OPEN: the divergence is real, it costs nothing today, and '
+      + '\u00a76b is the day it starts costing something.',
+    guards: [
+      "556-inline-play-is-a-whole-play.test.ts::CR 108.1a / CT-143: the in-place branch fires the wide cardPlayed, for a unit and for a spell",
+    ],
+    closed: "FIXED 2026-10-22 with CT-332 (21104f7, b1db889). The in-place branch of playInline fires the wide cardPlayed for a unit and a spell like any play, so the round-36 residue (169's pin that it fired none) is reversed. The fizzle on that path stays silent, as before.",
+    status: 'done',
+  },
+  {
+    id: 245, area: "card", severity: "major",
+    cards: ["Wake the Dead", "The Bonesculptor"],
+    title: "Wake the Dead and The Bonesculptor \"play\" units by spawning them in place: no stack item, and a spell unit skips its spell",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules types.spell-units.played-by-effect and effects.priority.mid-resolution. CR 301.9 rules Wake the Dead's \"Play up to two units\" is a real play; CR 701.4 rules a card played mid-resolution goes on the stack and is respondable; the designer (Hooba-Pon RAQ) says a played spell unit casts its spell and spawns only if it resolves. Both cards spawn through spawnUnit(asPlay) inside their own resolution, so the unit is in play at once, nobody can answer or negate it, and a spell unit (Jelly) arrives with no target asked, no spell effect and no spellPlayed. The retired rulings recorded it as left open. Not CT-143: that entry is playInline's in-place path, which these cards do not use.",
+    evidence: "Findings F-U06-1 (dups F-U06-3, F-U06-4, F-U14-3, F-U14-6, F-U14-7). batch-dark-a.ts: \"{ owner: c.seat, from: 'bin', asPlay: true });\" and \"// spell's own resolution — the units arrive with no stack item of their own,\". digital-rules.md: \"**A SPELL UNIT raised by Wake the Dead does not cast its spell.**\" raq.ts: \"Yes, the spell part happens and if it resolves, the unit will spawn into formation.\" Measured by verifier probes (not committed): the victim stays 7/5; onStack=false, inPlay=true.",
+    fix: "Route these plays through the real play path (playInline, which already pushes in battle), so a spell unit casts its spell and every play gets an item. Read CR 706.13 and CT-143 first; replays of old games will drift (see the replay-drift memory).",
+    proof: () => still('engine/src/cards/sets/batch-dark-a.ts', "{ owner: c.seat, from: 'bin', asPlay: true });"),
+    guards: [
+      "557-wake-the-dead-plays-on-the-stack.test.ts::CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives",
+      "557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives",
+      "557-wake-the-dead-plays-on-the-stack.test.ts::CR 102.5a / CT-245: a unit Wake the Dead plays out of the opponent bin is still the opponent card",
+    ],
+    closed: "FIXED 2026-10-22 (4fe48c5, 7d431b3). Wake the Dead plays its units through playInline, so each gets its own stack item and can be answered, and a spell unit casts its spell and arrives only if that resolves. StackItem.owner carries the bin's owner, so a unit played out of the opponent's bin is still theirs. The Bonesculptor is CT-255. docs/16 and docs/12 still describe the old behaviour (CT-347).",
+    status: 'done',
+  },
+  {
+    id: 255, area: "card", severity: "minor",
+    cards: ["The Bonesculptor"],
+    title: "The Bonesculptor's bin-play permission is built as an activated ability, so it reaches the stack and can be negated",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.static.permission: \"You may play one unit with no abilities from your bin each deployment\" is a standing fact, not an ability that goes on the stack. CR 707.10 states it, and two retired rulings said so (\"should simply be true\") and both record that the engine builds it as a free bounded activated ability, which Containment Protocol can negate, \"filed rather than fixed\". Measured: it still resolves as an activated item.",
+    evidence: "Findings F-U15-1 (dup F-U15-4). batch-earth-c.ts: \"type: 'activated', cost: {}, bounded: true, timing: 'deploy',\". digital-rules.md: \"deployment\"* is not an effect anyone should be able to answer, but it is built\" and \"should simply be true reaches the stack and Containment Protocol can negate\".",
+    fix: "Model the permission as a play option (a legal playCard from the bin, bounded once per deployment), not an activated ability, so nothing reaches the stack.",
+    proof: () => still('engine/src/cards/sets/batch-earth-c.ts', "type: 'activated', cost: {}, bounded: true, timing: 'deploy',"),
+    guards: [
+      "558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: The Bonesculptor has no activated ability, and its permission is a play from the bin",
+      "558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: using the permission puts no ability on the stack, and the unit is played",
+      "558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: one play each deployment for each Bonesculptor",
+      "559-gridxlan-permission.test.ts::CR 707.10: Gridxlan has no activated ability, and with an empty hand it offers ANY unit in the bin as a play",
+      "559-gridxlan-permission.test.ts::CR 707.10: with a Bonesculptor and a Gridxlan up, a vanilla spends the narrower grant first",
+    ],
+    closed: "FIXED 2026-10-22 (07080bd, acae049). The Bonesculptor's bin play is a standing permission (CR 707.10): a legal playCard from the bin, once per deployment per Bonesculptor, with no activated ability and nothing on the stack. Gridxlan's empty-hand bin play had the same shape and got the same fix; GameState.deployBinPlayGrants keeps a per-grantor budget, and a vanilla spends the narrower grant first.",
+    status: 'done',
+  },
+  {
+    id: 249, area: "engine", severity: "major",
+    cards: ["Inspiration"],
+    title: "blockers either side of an empty blocking column are read as adjacent",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules combat.columns.adjacency and combat.blocks.general.gap-adjacency. adjacentInFormation builds the defender's grid from the block keys, sorted and compressed, so blockers on attacking columns 1 and 3 (column 2 unblocked) are left/right neighbours. The Manual locks formations in position and places side blocks \"for adjacency matters cards\", and a blocking column is keyed to the attacking column it faces, so the unblocked column is a gap. Measured: Inspiration buffs across it. The engine's own comment calls its reading an approximation.",
+    evidence: "Findings F-U10-3 (dups F-U11-3, F-U11-4). engine.ts: \"// treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read\" and \"return Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!);\". Manual: \"columns. Units may even be placed blocking in slots\". Measured by verifier probes (not committed).",
+    fix: "Build the defending grid with one column per attacking column, empty where unblocked, so adjacency reads the real positions. Check formationSlots and the UI grid read the same shape.",
+    proof: () => still('engine/src/engine.ts', 'return Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!);'),
+    guards: [
+      "560-defending-gap-adjacency.test.ts::CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap",
+      "560-defending-gap-adjacency.test.ts::CR 603.2 / CT-249: blockers on NEIGHBOURING attacking columns are still adjacent",
+      "560-defending-gap-adjacency.test.ts::CR 602.6a / CT-249: the defending slots name the attacking column, and an unblocked column is not a hole",
+    ],
+    closed: "FIXED 2026-10-22 (8638c29). The defending grid has one column per attacking column, empty where unblocked, so adjacency reads the real positions and Inspiration no longer buffs across the gap. Left over: a blocker's empty adjacent slots never include the front of a neighbouring unblocked column (CT-346, unreached).",
+    status: 'done',
+  },
+  {
+    id: 250, area: "card", severity: "minor",
+    cards: ["Hooba-Lin"],
+    title: "a lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation it remembers",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule combat.formations.placement.source-gone. The designer's [Solved] answer names Hooba-Lin among the effects that \"will remember they were in formation and will work fine\", with no exception for a lone attacker. When Hooba-Lin attacks alone and is killed with its trigger on the stack, its column collapses, formationSlots finds no living unit in the grid and offers no slot, and the 1/1 is created outside any formation. Applies to every placer that reads a dead source (Hooba-Bot, Hooba-Pon, Hooba-Lin). It may be an unruled edge (D-U10-6).",
+    evidence: "Findings F-U10-6 (dup F-U10-7). digital-rules.md: \"> Hooba-Nan). But there are some which will remember they were in formation and\". engine.ts: \"if (!grid.some(col => col.some(id => this.entity(id)))) return flash;\". Measured by the round-2 verifier probe (not committed).",
+    fix: "When the source has left play, place into its remembered formation even when that formation is now empty (a slot in the remembered column), or get an owner ruling that a lone source is the exception.",
+    proof: null,
+    verify: "Attack with Hooba-Lin alone, kill it with its attack trigger on the stack, and see where the 1/1 lands.",
+    guards: [
+      "561-remembered-empty-formation.test.ts::CR 602.6f / CT-250: a lone Hooba-Pon killed under its attack trigger still plays the paid unit into the formation it remembers",
+      "561-remembered-empty-formation.test.ts::CR 602.6f / CT-250: a lone blocking Hooba-Bot killed under its block trigger puts its Robot into the blocking column it remembers",
+      "561-remembered-empty-formation.test.ts::CR 602.6k / CT-250: the remembered exception is the dead source only",
+      "561-remembered-empty-formation.test.ts::CR 602.6f / CT-250: every placer that reads its source is covered",
+    ],
+    closed: "FIXED 2026-10-22 (b464118). A dead source places into the formation it remembers even when that formation is now empty; a living source with an empty line is still offered nothing. Covers Hooba-Lin, Hooba-Bot, Hooba-God and Hooba-Pon, the placers derived from the card sources.",
+    status: 'done',
+  },
+  {
+    id: 296, area: "engine", severity: "minor",
+    cards: ["Oorblak", "Gublin", "Blightsea Polyp"],
+    title: "a Lethal column whose combat damage is all redirected into Oorblak still kills the defending player",
+    detail: "Lethal: \"Any combat damage from a lethal unit will kill a player.\" Oorblak: \"If combat damage would be dealt to you, that damage is dealt to me instead.\" Today a fully redirected Lethal column still kills (431 \"cr:attr.lethal.replaced\", resolving D-U12-21 on CR 608.8a's \"a replaced combat hit was still dealt\", which rests on Caleb's \"Yes\" of 2024-10-24, RQ 1298894533718970370, to \"Is combat damage still applied after this replacement effect?\", asked about a replacement like Blightsea Polyp's rot). The owner ruled on 2026-10-16 about Oorblak: \"The column doesn't even get to deal damage to the player. It gets redirected to the Oorblak instead.\" That reads as: no damage reached the player, so Lethal does not kill.",
+    evidence: "Found by the comprehensive-rules drafter in report round 2026-10-16 while redrafting 608.8c; the owner chose to save it for the next round.",
+    fix: "Ask the owner to confirm the recommended reading: a column whose combat damage is wholly redirected to a unit (Oorblak) deals none to the player, so Lethal does not kill; Piercing excess that does reach the player kills; Blightsea Polyp's rot is still damage dealt to the player (608.8a), so Lethal still kills there. Then fix the engine, invert 431's test, redraft 608.8a / 802.24c / D-U12-21 and re-verify.",
+    proof: null,
+    verify: "Attack with a Lethal unit into a player who has Oorblak and no blockers: today the player dies.",
+    guards: [
+      "562-lethal-redirected.test.ts::CR 802.24a / CT-296: Gublin wholly redirected into Oorblak deals the player nothing, and the player lives",
+      "562-lethal-redirected.test.ts::CR 608.8c / CT-296: a Piercing Lethal excess that gets past Oorblak reaches the player and kills",
+      "562-lethal-redirected.test.ts::CR 608.8a / CT-296: Blightsea Polyp turns the Lethal hit into rot, which is still damage dealt, so the player is killed",
+      "581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a wholly redirected hit raises no face-damage event and no combat life loss",
+      "581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a partly redirected hit is dealt as what got past Oorblak",
+      "581-redirected-hit-deals-nothing.test.ts::CR 802.20 / CT-296: a Thieving column wholly redirected into Oorblak draws no card",
+    ],
+    closed: "FIXED 2026-10-22 (2cfd6cb, 2d4902b). Owner, 2026-10-22: a Lethal hit wholly redirected into Oorblak \"Doesn't kill\". Follow-on, owner \"Yes, none of them\": a wholly redirected hit dealt no combat damage to a player, so no Thieving draw and no \"when my column deals combat damage to a player\" payout; a partial redirect (a Piercing excess past Oorblak) pays as the amount that got past. Blightsea Polyp's rot is still damage dealt (608.8a), so Lethal kills there. 431's test is inverted.",
+    status: 'done',
+  },
+  {
+    id: 239, area: "card", severity: "major",
+    cards: ["Gatekeeper of Souls"],
+    title: "Gatekeeper of Souls compels targets chosen outside battle, though it prints \"during battle\"",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule concepts.targets.must-be-targeted. Printed: \"When a player selects targets for an effect during battle, I must be targeted if able.\" mustBeTargetedIn gathers the holders by region only and never asks whether a battle is on, so in deployment a player whose own Gatekeeper stands in their home region can aim a unit-targeting effect (Overbloom) only at the Gatekeeper. The card file reasons that region scoping is what \"during battle\" amounts to; deployment happens in the home region too, so it is not.",
+    evidence: "Finding F-U03-2. Oracle: \"When a player selects targets for an effect during battle, I must be targeted if able.\" batch-light-c.ts: \"// like everything else (R12), which is also what \"during battle\" amounts to:\". engine.ts: \"const gates = this.mustBeTargetedIn(region);\"; mustBeTargetedIn reads no battle state. Measured by the round-1 verifier probe (not committed): the compulsion applies in deployment.",
+    fix: "Return no gates from mustBeTargetedIn unless a battle is in progress in that region. Add a deployment case beside the battle one.",
+    proof: () => !/battle/.test(body('engine/src/engine.ts', 'mustBeTargetedIn(region: number): Set<EntityId> {', 'return out;')),
+    guards: [
+      "544-gatekeeper-battle-only.test.ts::CR 110.12 / CT-239: in deployment a Gatekeeper of Souls compels nothing",
+      "544-gatekeeper-battle-only.test.ts::CR 110.12 / CT-239: during battle a Gatekeeper outside the battle region compels nothing",
+    ],
+    closed: "FIXED 2026-10-22 (eff47fd). mustBeTargetedIn returns no gates unless a battle is on in that region, as the card prints \"during battle\".",
+    status: 'done',
+  },
+  {
+    id: 331, area: "engine", severity: "minor",
+    cards: ["Gatekeeper of Souls"],
+    title: "a Virus applied in battle ignores Gatekeeper of Souls' \"must be targeted if able\" when its host is chosen",
+    detail: "Gatekeeper of Souls: \"[Augment] When a player selects targets for an effect during battle, I must be targeted if able.\" CR 110.12. Applying a Virus in battle targets its host (CR 110.10a), but doAugment accepts any unit in the region, so a Virus can be put on another unit with a Gatekeeper standing there.",
+    evidence: "The retarget agent, report round 2026-10-21, reading doAugment while fixing CT-322.",
+    fix: "Run the Virus host choice through the CR 110.12 restriction the target collector already applies (engine.ts, the Gatekeeper filter).",
+    proof: null,
+    verify: "Battle with Gatekeeper of Souls in the region: apply a Virus to another unit.",
+    guards: [
+      "545-virus-gatekeeper.test.ts::CR 110.12 / CT-331: with a Gatekeeper of Souls in the battle, a Virus may be applied only to it",
+      "545-virus-gatekeeper.test.ts::CR 110.12 / CT-331: a Gatekeeper compels a Virus away from a spell on the stack too",
+      "545-virus-gatekeeper.test.ts::CR 110.12 / CT-331: with no Gatekeeper, a Virus still reaches every unit in the battle",
+      "577-tides-virus-gatekeeper.test.ts::CR 110.12 / CT-331: a Virus played by Tides of the Cosmos goes onto the Gatekeeper of Souls in the battle",
+    ],
+    closed: "FIXED 2026-10-22 (7b10c06, d6cfa54). A battle-window Virus host choice runs through the Gatekeeper restriction the target collector applies (CR 110.10a, 110.12), from the hand and when Tides of the Cosmos plays the Virus.",
+    status: 'done',
+  },
+  {
+    id: 252, area: "engine", severity: "minor",
+    title: "a graft trigger whose required target has none is put on the stack and fizzles, instead of never being stacked",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules effects.casting.targets-required.graft-trigger and effects.graft.composite.no-target. Designer (RAQ 1410252965276684418#2): the composite \"can't be put on the stack unless you target such unit in your bin.\" The engine pushes it and lets it fizzle whole under CR 722.4f. The board ends the same (no Poison), but meanwhile the opponent gets a priority window and can tax or negate an item that should never exist.",
+    evidence: "Findings F-U14-1 (dups F-U17-7, F-U17-9). raq.ts: \"can't be put on the stack unless you target such unit in your bin.\" and \"the engine gets there by R86 fizzle rather than by refusing to stack it.\" 390-raq-stack.test.ts: \"// the stack unless you target such unit in your bin.\" Measured by a verifier probe (not committed): one item on attack.",
+    fix: "At trigger time, drop a composite whose required targeted part has no legal candidate instead of pushing it.",
+    proof: null,
+    verify: "Attack with a graft whose trigger needs a unit in your bin while your bin has none; it should never reach the stack.",
+    guards: [
+      "546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack",
+      "546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: the control",
+      "546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: an optional graft target (you may) does not hold the composite back",
+    ],
+    closed: "FIXED 2026-10-22 (c9a084b). At trigger time a graft composite whose required targeted part has no legal candidate is dropped instead of pushed, as the designer answered (\"can't be put on the stack unless you target such unit in your bin\"). An optional target does not hold it back. Whether the same holds for a plain trigger is unruled (D-U14-3, CT-348).",
+    status: 'done',
+  },
+  {
+    id: 242, area: "card", severity: "minor",
+    cards: ["Mohruung", "Flame Juggle"],
+    title: "a graft onto Mohruung attaches before Mohruung's \"becomes targeted\" trigger resolves; the designer says he triggers first",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule concepts.targets.becomes-targeted. Designer: \"Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first\". The engine fires the targeted event, attaches the graft at once, and only then resolves the queued trigger: the probe log reads \"Flame Juggle grafts onto Mohruung\" before \"Resolving Mohruung: create a Crystal 2\". The RAQ guard (393 point 5) asserts only that a Crystal is made, not the order. Pending discrepancy D-U03-13.",
+    evidence: "Finding F-U03-5. raq.ts: \"Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first\". apply.ts: \"e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)\". Measured by the round-2 verifier probe (not committed): the graft is attached when the action returns.",
+    fix: "Let the targeted trigger resolve before the graft attaches (put the graft application behind the trigger, or attach through the stack in deployment). Assert the order in 393.",
+    proof: null,
+    verify: "In deployment graft Flame Juggle onto Mohruung and read the log: the Crystal should be made before the graft attaches.",
+    guards: [
+      "547-graft-after-targeted-trigger.test.ts::CR 110.11 / CT-242: grafting onto Mohruung resolves his trigger before the graft attaches",
+      "547-graft-after-targeted-trigger.test.ts::CR 110.11 / CT-242: a graft that triggers nothing attaches at once",
+      "547-graft-after-targeted-trigger.test.ts::CR 110.11 / CT-242: a graft whose host died to its own trigger goes to the bin",
+      "576-augment-after-targeted-trigger.test.ts::CR 110.11 / D-U03-14: an augment onto Mohruung in deployment",
+    ],
+    closed: "FIXED 2026-10-22 (f1253d9, d6cfa54). Owner, 2026-10-22: Mohruung's trigger \"Resolves first\". A mod onto a unit with a targeted listener waits in GameState.pendingMods until the triggers it raised have resolved (E.finishPendingMods), then attaches; a host that died meanwhile sends the card to the bin. The deployment augment case (D-U03-14) is covered by the same seam.",
+    status: 'done',
+  },
+  {
+    id: 234, area: "engine", severity: "minor",
+    cards: ["Molten Riftbreaker", "Frosted Denial", "Woodland Warding"],
+    title: "The engine lets effects reach the stack and the bins of another region (CR 601.2a: each region has its own stack; a bin and a cache are where their owner is)",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10; answered by the owner on the review page 2026-10-11.) CR rules concepts.golden.regions (101.6), combat.regions.exclusive.no-region-zones (601.2a) and concepts.targets.region.global (110.5a) state print, Caleb and the owner (2026-10-11): each region has its own stack, owned by nobody and shared by the players present in it, and only they can put effects on it or respond to it; a player's bin and cache are tied to that player and can be reached only in a region where that player is present. The engine keeps one stack for battle and offers a stack item and the cards in either bin as targets from every region (414-cr-cards-abilities-targets: \"a stack item and the cards in either bin are offered from every region\"), so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions. Cache targets already agree (CR 403.6, 421 cr test). Measured: an effect resolving in one region negated a spell on the stack in another (verifier probe, F-U01-4).",
+    evidence: "Findings F-U01-2 (dups F-U01-4, F-U01-5). digital-rules.md: \"Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect.\" and \"The STACK is not regional and is deliberately left global; narrowing\". raq.ts: \"Yes everything in the game is region specific.\" Manual: \"Every single effect is specific to the region it takes\". Measured by a verifier probe (not committed). R344 amends it (2026-10-11).",
+    fix: "Not the card's region: the OWNER's presence. (1) Stack: give each stack item the region it was played in, and filter every stack walk (negate-all, Cosmic Reversal's stack half, 'target effect' candidates) to the resolving effect's region; priority in a region goes only to the players present there. CR 703.7's per-seat deployment stacks already are the per-region stacks of deployment. (2) Bins: a bin card is a candidate, and a bin is affected, only when the resolving effect's region holds the bin's owner (the same presence test CR 403.6 already applies to cache targets). (3) Then rewrite the 414 CR test cr:concepts.targets.region.global, which today asserts the old behaviour, and remove engineDiffers F-U01-2 from 101.6, 601.2a and 110.5a. A save-format change if stack items gain a field: needs a format stamp.",
+    proof: null,
+    verify: "With an attack in one region, resolve Molten Riftbreaker in the other region and see whether a spell on the battle region's stack is negated.",
+    guards: [
+      "578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack",
+      "578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: the control",
+      "578-region-stacks-and-bins.test.ts::CR 403.6 / CT-234: in deployment a bin card target reaches only the bin of the player present",
+      "578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: no card file walks the whole stack",
+    ],
+    closed: "FIXED 2026-10-22 (86e24a0). One stack per region: every stack sweep reads E.stackIn(region), and a bin is reached only where its player is present. Owner, 2026-10-22: a one-player region's stack \"drains on its own\" (no window). On the round-1 region still holding items in round 2, the owner: \"Thats literally impossible by the game rules\". Note: in the declare step the defender's region holds only the defender, so triggers there drain with no window.",
+    status: 'done',
+  },
+  {
+    id: 253, area: "engine", severity: "minor",
+    title: "OWNER DECISION: a player cannot keep priority after acting; print lets the actor take further actions first",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.priority.priority.hold states the Manual: a player who acts may keep priority and take further actions before passing. pushItem hands priority to the other seat after every push, so nobody can stack two of their own actions before the opponent may respond. Annex D records this as a digital convention (annexd.auto-pass.no-retain), but no ruling settles it. Measured: after a battle cast, priority is on the other seat.",
+    evidence: "Finding F-U14-2. engine.ts: \"if (this.s.priority !== null) this.s.priority = other(item.controller);\". digital-rules.md: \"responder.** `pushItem` hands priority to `other(controller)`, but\". Measured by the U14 tester probe (not committed): priority = seat 1, caster = 0.",
+    fix: "Ask the owner whether the no-retain convention stands. If it does, write it as a ruling and close this as wontfix. If not, keep priority with the actor after a push and add an explicit pass.",
+    proof: () => still('engine/src/engine.ts', 'if (this.s.priority !== null) this.s.priority = other(item.controller);'),
+    guards: [
+      "568-hold-priority.test.ts::CR 703.2a / CT-253: a cast that asks keeps priority with the caster, across its target pick",
+      "568-hold-priority.test.ts::CR 703.2a / CT-253: the holder stacks a second action before the opponent gets a look",
+      "568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused",
+      "568-hold-priority.test.ts::CR 703.2a / CT-253: every action that pushes its own item in battle can carry the ask, and honours it",
+      "569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: the hold toggle sits beside Pass and a tap turns it on",
+      "569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: holding Ctrl asks too, and letting go stops asking",
+    ],
+    closed: "FIXED 2026-10-22 (307407b, d39fd9b). Owner, 2026-10-22: follow the Manual, a player who acts may keep priority; the UX auto-passes unless held; and \"you CANNOT hold priority during Deployment\". An optional holdPriority ask on the battle actions that push an item leaves priority with the actor; without it nothing changes, so saved games replay as before. The client sends it while Ctrl is held or the new Hold priority toggle beside Pass is on.",
+    status: 'done',
+  },
+  {
+    id: 229, area: "engine", severity: "minor",
+    title: "a stolen unit erased from play is filed on its OWNER's erased pile; every other route files under the controller",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule zones.general.follow-control. The owner's ruling (now CR 400.4): \"All four follow control — one rule, no seam\". E.eraseFromPlay emits its erased event with seat: u.owner, so a stolen unit erased by Banishment, Celestial Purge or as a cost lands on the owner's erased pile. Bin, hand, cache, eraseMod and the Unstable-death sweep all use the controller. 246-zones-follow-control covers only the mod route. Also found by the register stage (F-REG-1).",
+    evidence: "Findings F-U07-7 (dups F-U07-9, F-REG-1). engine.ts: \"unit: u.id, card: u.card, seat: u.owner, region: u.region,\"; the Unstable route beside it: \"const binSeat = opts.binTo ?? u.controller;\". digital-rules.md: \"**(a) All four follow control** — one rule, no\". Re-measured 2026-10-10 by the proof below.",
+    fix: "File the erased-from-play card under u.controller (keep an explicit destination a card prints). Add the erase-from-play case to 246, with a real theft through giveControl.",
+    proof: () => erasedStolenUnitGoesToOwner(),
+    guards: [
+      "246-zones-follow-control.test.ts::CR 400.4 / CT-229: a stolen unit erased from play goes to the THIEF erased pile, with its mods",
+    ],
+    closed: "FIXED 2026-10-22 (ef3b585). E.eraseFromPlay files the card under the controller, like every other route (CR 400.4: all four follow control).",
+    status: 'done',
+  },
+  {
+    id: 258, area: "card", severity: "minor",
+    cards: ["Return to Nature"],
+    title: "Return to Nature files each erased mod under its OWNER, not its controller, so a mod on a stolen host goes to the wrong pile",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.mods.erase-off-host. Zones follow control, so a mod erased off a living host is filed on mod.controller's erased pile, not mod.owner's (CR 720.9) (\"All four follow control\"), and a mod's controller is its host's (CR 720.6a). E.eraseMod files under the controller, but Return to Nature files its own grouped line byOwner and passes alreadyFiled. Measured: a mod owned by D on a host A controls is filed on D's pile. 17-earth-b and 178 assert the owner's pile.",
+    evidence: "Findings F-U17-1 (dups F-U17-5, F-U17-8). batch-earth-b.ts: \"const list = byOwner.get(m.owner) ?? [];\". digital-rules.md: \"| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |\". 17-earth-b.test.ts: \"Return to Nature: each erased mod reaches its OWN owner's erased pile\". Measured by a verifier probe (not committed).",
+    fix: "Group by m.controller (or let eraseMod file), and flip the 17-earth-b and 178 assertions to the controller with a real theft through giveControl.",
+    proof: () => still('engine/src/cards/sets/batch-earth-b.ts', 'const list = byOwner.get(m.owner) ?? [];'),
+    guards: [
+      "17-earth-b.test.ts::CR 720.9 / CT-258: Return to Nature files each erased mod on its CONTROLLER erased pile, a stolen host included",
+      "428-cr-modifications.test.ts::Return to Nature files a mod on a stolen host under its controller, not its owner (CT-258)",
+      "178-played-item-and-erased-mods.test.ts::CR 720.9 Return to Nature: the site that already got CR 407.2 right still files the public pile",
+    ],
+    closed: "FIXED 2026-10-22 (7facd78). Return to Nature groups its erased line by the mod's controller, so a mod on a stolen host goes to the thief's pile; 17-earth-b and 428 were flipped with a real theft through giveControl.",
+    status: 'done',
+  },
+  {
+    id: 259, area: "card", severity: "minor",
+    cards: ["Return to Nature"],
+    title: "Return to Nature files TOKEN mods on the erased pile, though a token mod erased off a living host is not filed",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule effects.mods.erase-off-host.token. The retired register (now CR 720.9a): \"A token mod is not filed. R133: a token is not a card, and R65's pile is a list of cards.\" E.eraseMod honours it (it skips mod.token). Return to Nature files its own grouped erased line for every mod it erases off hosts that stay in play, token mods included, and its comment says so. Measured: a Wraith token mod erased by Return to Nature is recorded on the erased pile.",
+    evidence: "Findings F-U17-4 (dup F-U17-6). digital-rules.md: \"- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a\". batch-earth-b.ts: \"// this every card would be listed twice. This site also files TOKEN\". engine.ts: \"if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {\". Measured by a verifier probe (not committed).",
+    fix: "Skip token mods when Return to Nature builds its grouped erased line (and fix the comment).",
+    proof: () => still('engine/src/cards/sets/batch-earth-b.ts', 'This site also files TOKEN'),
+    guards: [
+      "17-earth-b.test.ts::CR 720.9a / CT-259: Return to Nature does not file a TOKEN mod on the erased pile",
+      "428-cr-modifications.test.ts::Return to Nature does not file a Wraith token mod it erases on the erased pile (CT-259)",
+    ],
+    closed: "FIXED 2026-10-22 (7facd78). Return to Nature skips token mods when it builds its grouped erased line, and its comment is corrected. Followed by the general rule (0417e98, owner 2026-10-22 \"Never file tokens\"): no token, unit or mod, ever goes on an erased pile, guarded by 549.",
+    status: 'done',
+  },
+  {
+    id: 243, area: "engine", severity: "minor",
+    cards: ["Arbiter of Armistice", "Vengeance"],
+    title: "OWNER DECISION: an Ambush escapes imposed \"cards played\" costs (Arbiter of Armistice, Vengeance)",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule concepts.costs.modifiers.imposed.ambush. CR 111.10e counts an Ambush as a card being played, and Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") and Vengeance print the noun \"Cards\". doAmbush pays only the Ambush line's mana and never consults lifeToPlay or unitsToPlay. Measured: an Ambush under Arbiter pays no life, while a spell card in the same spot is billed 2. The retired register recorded the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling.",
+    evidence: "Findings F-U04-2 (dups F-U04-3, F-U04-4). digital-rules.md: \"### (b) 'cardPlayed': a {Battle} unit and an Ambush are cards being played\" and \"printed cost line and today sits outside the R59/R60/R122 play-tax layer\". apply.ts: \"printed cost line and sits outside the R59/R60/R122 play-tax layer alike. */\". Measured by a verifier probe (not committed).",
+    fix: "Ask the owner (the Ambush play-tax question is still open). If print wins: have doAmbush add lifeToPlay and unitsToPlay for the card, as the hand-cast path does.",
+    proof: () => {
+      const b = body('engine/src/apply.ts', 'function doAmbush(', '\nfunction ');
+      return !/payPlayLife/.test(b) || !/imposedSacrifice/.test(b);
+    },
+    guards: [
+      "548-ambush-imposed-costs.test.ts::CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life",
+      "548-ambush-imposed-costs.test.ts::CR 111.10d / CT-243: an Ambush that cannot pay the imposed life is not offered, and apply refuses it",
+      "548-ambush-imposed-costs.test.ts::CR 111.10e / CT-243: an Ambush under an opposing Vengeance owes the sacrifice",
+    ],
+    closed: "FIXED 2026-10-22 (abb4f93). Owner, 2026-10-22: \"Yes, it pays\". doAmbush charges the imposed life through payPlayLife and carries an imposed sacrifice into the cast window through imposedSacrifice, the helpers the hand cast uses; an Ambush that cannot pay is not offered. The proof now reads those two helpers (its old anchor, lifeToPlay/unitsToPlay named inside doAmbush, went stale when the shared helpers took over).",
+    status: 'done',
+  },
+  {
+    id: 263, area: "card", severity: "minor",
+    cards: ["Thought Extraction"],
+    title: "looking at your OWN hand writes nothing in the other player's log, not even that a hand was looked at",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule annexd.reveal.hidden-names.look-at: when an effect lets a player look at a hand, the other players' log says only that the hand was looked at. Four look-at sites skip the public line when the looker owns the hand (if (who !== ctx.controller) g.revealHandTo(...)). Measured: Thought Extraction aimed at the caster's own hand leaves no look line in the other log; aimed at the other player's hand, that player's log says \"looks at\".",
+    evidence: "Finding F-U24-5. batch-dark-b.ts: \"if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);\". Measured by the U24 tester probe (not committed): the other log goes from \"Resolving Thought Extraction:\" straight to the discard.",
+    fix: "Write the public \"looks at a hand\" line for both cases, or narrow the convention to another player's hand. Owner's choice; the rule takes whichever is chosen.",
+    proof: () => still('engine/src/cards/sets/batch-dark-b.ts', 'if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);'),
+    guards: [
+      "550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263: Thought Extraction aimed at the caster own hand tells the opponent a hand was looked at, naming nothing",
+      "550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263 control: aimed at the opponent, the public line still names the hand looked at",
+      "550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263: Hand Peeper on your own hand logs the look and takes no snapshot",
+    ],
+    closed: "FIXED 2026-10-22 (582ab4a, c771159). Owner, 2026-10-22: \"Log both\". Looking at your own hand writes the public line too, naming nothing, at every look-at site.",
+    status: 'done',
+  },
+  {
+    id: 233, area: "engine", severity: "minor",
+    title: "ownership is lost once a stolen card passes through the thief's hand: the replay makes the thief its owner",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule concepts.players.owner. Zones follow control (CR 801.7a), so a stolen unit that is recalled goes to the thief's hand. A hand holds bare card names, so when the thief plays it again the new unit's owner defaults to the playing seat: the engine records the thief as owner. The register: \"its OWNER's, always, forever\" and \"Ownership does not move. Only the destination does.\" Low impact while zones follow control, but the owner field stops meaning what the ruling says (bins and the erased pile have the same bare-name shape).",
+    evidence: "Findings F-U01-1 (dup F-U01-3). engine.ts: \"const owner = opts.owner ?? seat;\". digital-rules.md: \"| whose card is this? | its OWNER's, always, forever |\" and \"**2. Ownership does not move. Only the destination does.**\" Measured by a verifier probe (not committed): owner = thief after the replay.",
+    fix: "Carry the owner with a card in a hand (and bin), or record the original owner when a stolen card enters the thief's zone, and pass it as opts.owner on the replay. A save-format change: needs a format stamp.",
+    proof: null,
+    verify: "Steal a unit, recall it to the thief's hand, let the thief play it again, and read the new unit's owner.",
+    guards: [
+      "551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a stolen card recalled to the thief hand and played again is still its owner card",
+      "551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a stolen card in the thief bin is still its owner card, and the bin keeps it there",
+      "551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a stolen card cached into the thief cache keeps its owner on the entry",
+      "551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a shared zone resets ownership",
+      "551-ownership-survives-own-zones.test.ts::CR D6.5 / CT-233: the opponent view never shows which hand slot holds a foreign-owned card",
+      "551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: Wake the Dead playing a foreign-owned card out of its own bin keeps the owner",
+    ],
+    closed: "FIXED 2026-10-22 (cb17a6b, eadb3bd). Owner, 2026-10-22: \"Reset in shared zones\": the original owner holds while the card is in a player's own hand, bin or cache, and whoever takes it out of a shared pack, deck or recycle pile owns it. PlayerState.foreign is a side table of foreign-owned hand and bin cards kept by the choke points E.takeFromHand and E.removeFromBin; CachedCard.owner and StackItem.owner carry it on; the opponent's view hides which hand slot holds one. Gaps left open: mods (CT-343), the inline-played spell into a bin and bin-to-hand effects (CT-344), the constructed own deck (CT-345).",
+    status: 'done',
+  },
+  {
+    id: 185, area: 'engine', severity: 'minor',
+    title:
+      'the owner\'s full-control answer (CR D2.7a): "nothing will automatically resolve if you\'re holding ctrl" — the '
+      + 'DEPLOYMENT half of full control, which needs a stop on a stack that drains itself',
+    detail:
+      'CT-183 landed full control as a held Ctrl key over the four things that act for you. '
+      + 'One clause of the owner\'s answer is not in it: "Even during deployment, nothing '
+      + 'will automatically resolve if you\'re holding ctrl." The deployment stack (CR 507.5) is what makes '
+      + 'the sentence expressible, and CT-183\'s own note scoped this out until it existed. '
+      + 'It exists now.\n\n'
+      + 'THE OBSTACLE, stated plainly: the deployment stack drains INSIDE `settle()`, in the '
+      + 'engine, and full control is a browser key relayed to the server. The engine has '
+      + 'never heard of it, and the three other automatics are all outside the engine, which '
+      + 'is why they were reachable.',
+    evidence:
+      'ROUND 37, the one clause of questions-round36 Q5 that CT-183 could not reach. R286 '
+      + 'point 5 names it as the case that makes the deployment stack VISIBLE: "A held stop '
+      + 'in deployment is only meaningful if there is a stack to stop on." Today a deployment '
+      + 'play is pushed and drained within the same action, so no client ever sees the item '
+      + 'on the stack at all - `E.pushItem` flashes it precisely because of that.',
+    fix:
+      '⚠ THE ONLY REPLAY-SAFE SHAPE IS AN ACTION, and that is the whole decision. A saved '
+      + 'game is a seed plus an action log; anything that changes what the engine does must '
+      + 'be IN that log or the replay diverges. So: a `holdStack` action carrying the seat '
+      + 'and on/off, stored in GameState, read by `settle()`\'s deployment drain (which then '
+      + 'leaves the seat\'s stack standing), plus a `resolveTop` action and a button for the '
+      + 'player to step it. THREE COSTS THE OWNER SHOULD WEIGH BEFORE THIS IS BUILT: (1) '
+      + 'every Ctrl press in deployment becomes a row in the action log, so send it ONLY in '
+      + 'the deploy phase, where the owner says it is "very rare to matter"; (2) report #86 / '
+      + 'CT-22 stamps any deployment action other than Done as "you did something this '
+      + 'deployment" - this action must be exempted or holding Ctrl silently marks you as '
+      + 'having acted; (3) the client relay stops being a socket message and becomes an '
+      + 'action, which incidentally CLOSES CT-183\'s latency gap (a) for the deployment half, '
+      + 'because an action is ordered in the log.',
+    proof: null,
+    verify:
+      'In deployment, hold Ctrl and play a spell: it sits on your stack and waits for you. '
+      + 'Let go: it resolves. The opponent sees none of it, and their own deployment is '
+      + 'unaffected either way.',
+    closed: "WONTFIX 2026-10-22, the owner: \"the ruling on Deployment stack is that you CANNOT hold priority during Deployment. The stack technically only exists for triggers during deployment, you can't do any 'on the stack' shenanigans.\" So nothing stops on the deployment stack, held Ctrl or not; plays still pass through the player's own deployment stack (owner: \"Plays stay as they are\"). CT-253 refuses the hold ask in deployment for the same reason.",
+    status: 'wontfix',
+  },
+  {
+    id: 246, area: "attribute", severity: "minor",
+    title: "OWNER DECISION: a dying {Unstable} card enters the bin and is trashed before it is erased; print erases it instead",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules zones.bin.unstable and keywords.actions.trash.unstable-death state print: \"If they would enter a bin, erase them instead.\" Caleb: \"Unstable units still die, they just get erased instead of ending up in the bin\". The engine, under an owner ruling of 2026-08-24 that is still in force, deliberately bins the card, trashes it there (firing \"when I am trashed\", the trash watchers and the per-battle count) and then sweeps it to the erased pile. Filed because print and the designer outrank the engine's trash-through-the-bin reading under the authority order; waits on discrepancies D-U07-3 and D-U18-1.",
+    evidence: "Findings F-U07-6 (dups F-U07-10, F-U07-11, F-U18-1, F-U18-3). engine.ts: \"this.noteTrashed(binSeat, u.card, 'play', u);\". Oracle: \"(If they would enter a bin, erase them instead.)\". digital-rules.md: \"**An Unstable card that dies enters a bin, is trashed there, and is only then\". 224-mod-trash.test.ts: \"R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods\".",
+    fix: "Ask the owner. If print wins: erase an Unstable card that would enter a bin without binning or trashing it, and flip the CT-246 guards in 224 and 35.",
+    proof: () => still('engine/src/engine.ts', "this.noteTrashed(binSeat, u.card, 'play', u);"),
+    closed: "WONTFIX (by design) 2026-10-22, the owner: \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying Unstable card dies, is trashed and is erased, which already matches the print and Caleb; the trash is part of the death, not a bin trigger the erase should pre-empt.",
+    status: 'wontfix',
+  },
+  {
+    id: 247, area: "engine", severity: "minor",
+    title: "OWNER DECISION: the resource, haste and deployment steps are simultaneous and hidden; print has the initiative side go first",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rules turn.planning.order and turn.deploy.order state print: the initiative player takes the resource and haste steps first and the non-initiative player after (Manual p.27 legend, Rulebook 2023 p.5), and the initiative team deploys first (Manual p.38). The engine runs all three as hidden simultaneous segments, a deliberate house rule (CR 500.2a, D1.4; types.ts calls deployment simultaneous). Measured: the non-initiative seat activated a resource, finished the step and played a haste card before the initiative seat acted, and is offered playCard in deployment before the initiative player is done. Waits on D-U08-1 and D-U09-1.",
+    evidence: "Findings F-U08-1 (dup F-U09-3). engine.ts (apply.ts until 2026-10-21): \"export function hiddenSegment(s: GameState): 'plan' | 'haste' | 'deploy' | null {\" and \"if (e.deploying(seat)) return legalDeployActions(e, seat);\". types.ts: \"/** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):\". digital-rules.md: \"false: the haste step is a **hidden simultaneous segment** — nobody sees the\". Measured by verifier and tester probes (not committed).",
+    fix: "Ask the owner whether the house rule stands. If it does, record it as a digital convention (Annex D) and close this as wontfix. If print wins, sequence the segments by initiative.",
+    proof: () => still('engine/src/engine.ts', 'export function hiddenSegment('),   // moved from apply.ts 2026-10-21 (CR 113.2b)
+    closed: "WONTFIX 2026-10-22: the owner keeps the simultaneous hidden resource, haste and deployment steps (the house rule), so it stands as a digital convention, not a divergence.",
+    status: 'wontfix',
+  },
+  {
+    id: 248, area: "engine", severity: "minor",
+    title: "planning steps do not sync: a seat that has drafted may start its resource step while the other still drafts",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule turn.planning.order.sync. Print: \"Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step.\" The engine gates the resource step on the acting seat's own draft (and, in constructed, its own recycle of 2), so a seat that has committed its draft may activate, recycle and finish its resource step while the other is still drafting. The hidden plan segment keeps it out of the other seat's view, so the observable effect may be nil.",
+    evidence: "Finding F-U08-4. Rulebook 2023: \"Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step.\" 20-draft.test.ts: \"// committed seat may proceed simultaneously while the opponent drafts\". Measured by a verifier probe in a live draft (not committed).",
+    fix: "Either hold the resource step until every seat has drafted, or ratify the early start as a digital convention (Annex D) and close this.",
+    proof: null,
+    verify: "In a live draft, commit seat 0's pick and try to activate a resource before seat 1 has drafted.",
+    closed: "WONTFIX 2026-10-22: the owner keeps the early start (a seat that has drafted may begin its resource step), so it stands as a digital convention.",
+    status: 'wontfix',
+  },
+  {
+    id: 330, area: "engine", severity: "minor",
+    title: "the recycle reminder: does exposing it reshuffle the pile at once, or only when a card past the mark is needed?",
+    detail: "Owner, 2026-10-21: \"When you hit that reminder, for whatever reason, you shuffle the recycled pile and put the reminder back on the very bottom.\" The engine reshuffles when a card past the mark is needed (revealTop / takeTop, E.refillFromRecycled). Drawing the last initial card exposes the reminder in paper; whether that alone reshuffles changes what is on top of the deck for the next look, and the RNG order of saved games.",
+    evidence: "The deck agent, report round 2026-10-21, fixing CT-312.",
+    fix: "Owner question. If at once: reshuffle when the deck's last initial card leaves it, in one place, and accept replay drift.",
+    proof: null,
+    verify: "Draw the last card before the mark, then look at the deck size and the pile.",
+    closed: "WONTFIX (by design) 2026-10-22, the owner: \"Only when needed\": the recycle pile is reshuffled when a card past the reminder is needed, which is what the engine does.",
+    status: 'wontfix',
+  },
+  {
+    id: 329, area: "card", severity: "minor",
+    cards: ["The Everywhere"],
+    title: "The Everywhere can name \"The Everywhere\": it strips itself of abilities and still radiates the strip",
+    detail: "The Everywhere: \"[Augment] During [Haste] name a card. My last named card loses all abilities. (As long as I am in their region.)\" The name picker lists every name, its own included; invi named The Everywhere with The Everywhere in RTPE [521]. Whether a self-named Everywhere loses the ability that strips it is the self-reference case of CR 712.5, which is silent on one source.",
+    evidence: "Agent B and agent D, report round 2026-10-21: RTPE [521] rebuilt from the rewind in #256.",
+    fix: "Owner question: does naming itself switch the effect off (it loses its own ability), or does the ability keep applying? Then make the engine and CR 712.5 say so.",
+    proof: null,
+    verify: "The Everywhere in the haste step: name The Everywhere and read the board.",
+    guards: [
+      "586-everywhere-names-itself.test.ts::CT-329: The Everywhere that names The Everywhere strips itself and every copy beside it, and the strip keeps applying",
+    ],
+    closed: "DONE (by design) 2026-10-22: the owner ruled that a self-named Everywhere keeps applying its strip, which is what the engine does; 586 pins it.",
     status: 'done',
   },
 ];
