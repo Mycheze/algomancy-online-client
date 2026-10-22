@@ -6112,7 +6112,8 @@ export class E {
     // card", singular. It is absent from the oracle transcription because
     // {Reaping} is a TYPE-LINE ATTRIBUTE and that field carries ability text
     // (owner, 2026-08-30), which is why the attribute was first built without it.
-    if (srcAttrs.has('Reaping') && !this.killWatch?.reaps && killed.length) {
+    // CR 802.25a: a Pure source ignores its own Reaping (killRiders says the same)
+    if (srcAttrs.has('Reaping') && !srcPure && !this.killWatch?.reaps && killed.length) {
       this.reapingDraw(ctx.controller);
     }
     if (srcAttrs.has('Deadly')) {

@@ -91,3 +91,29 @@ test('CR 802.25a: a Pure source that is Afflicting and Reaping pays neither ride
   assert.deepEqual(killedOne(58406, ['Pure', 'Afflicting', 'Reaping']), { rotGained: 0, drew: 0 },
     'a Pure source ignores its own Afflicting and Reaping');
 });
+
+/** an effect-damage batch dealt outside a resolving part, from a source
+ *  carrying `attrs`: how many cards its controller drew */
+function reapedOne(seed: number, attrs: string[]): number {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const src = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, D, 'Unit Token');
+  const g = new E(h.state);
+  const hand = g.s.players[A]!.hand.length;
+  g.dealEffectDamageAll({
+    controller: A, sourceName: 'Unit Token', sourceId: src, region: g.homeRegion(A),
+    targets: [], event: null, grantedAttrs: attrs as Attr[],
+    eraseSelf: () => {},
+    choose: (_k, dec) => { throw new Error(`unexpected ${dec.kind}`); },
+  }, [{ target: g.entity(victim)!, n: 5 }]);
+  g.settle();
+  assert.ok(!g.entity(victim), 'the victim died');
+  return g.s.players[A]!.hand.length - hand;
+}
+
+test('CR 802.25a: a Pure Reaping source draws nothing for a kill dealt outside a resolving part either', () => {
+  assert.equal(reapedOne(58407, ['Reaping']), 1, 'PREMISE: the direct batch pays the Reaping draw');
+  assert.equal(reapedOne(58408, ['Pure', 'Reaping']), 0, 'a Pure source ignores its own Reaping');
+});
