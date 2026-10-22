@@ -1220,8 +1220,10 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
     playAtTiming(e, seat, c, 'deploy',
       () => { e.removeFromBin(seat, binIndex, 'played'); },   // CR 405.7
       () => {
+        // which grantor pays is chosen against the bin as it now is (this card
+        // already taken): the cards still waiting for a grant
+        e.chargeDeployBinPlay({ seat, card: c, from: 'bin', region: e.homeRegion(seat) });
         e.payCard(seat, name);
-        e.chargeDeployBinPlay(seat);
         e.ev('info', `${name} is played from ${e.pname(seat)}'s bin.`, { seat, card: name });
       },
       'bin');
@@ -3944,7 +3946,7 @@ function pushSourcePlays(e: E, seat: Seat, src: Source & { from: 'hand' | 'cache
 
 /**
  * CR 707.10 (CT-255): every bin play a standing DEPLOYMENT permission offers
- * `seat` (The Bonesculptor). Routed through the same `E.mayPlayFromBinAtDeploy`
+ * `seat` (The Bonesculptor, Gridxlan). Routed through the same `E.mayPlayFromBinAtDeploy`
  * `doPlayFromBin` enforces, with the same payment and `castable` gates — the
  * fuzzer's "legalActions lied" check holds the two to one answer.
  */

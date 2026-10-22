@@ -23,7 +23,7 @@
  *   * one live board per marker, spent by the ENGINE and read off the box;
  *   * the same for the graft and augment-donated notes, whose markers come
  *     from the MOD and not from the host;
- *   * a WHOLE-POOL sweep: all 88 cards with a bounded ability, every one of
+ *   * a WHOLE-POOL sweep: all 87 cards with a bounded ability, every one of
  *     them actually spent through `E.composeParts` (the engine's own budget
  *     reservation — never a hand-written key), each note compared against an
  *     expectation derived through a DIFFERENT channel than the one under test;
@@ -187,7 +187,7 @@ test('CR D6.10b: a card whose OWN augment box is spent reads that box, not its t
 // ── 3. the whole pool, spent for real, one card at a time ────────────
 
 test('CR D6.10b: every card in the pool with a bounded ability gets the marker it prints', () => {
-  // 88 cards, each spawned and each budget reserved through E.composeParts —
+  // 87 cards, each spawned and each budget reserved through E.composeParts —
   // the engine's own reservation, so the budget KEY is never something this
   // test knows how to spell. The expectation comes back through iconizeText,
   // a different channel from the regex under test.
@@ -214,8 +214,8 @@ test('CR D6.10b: every card in the pool with a bounded ability gets the marker i
   }
 
   assert.deepEqual(wrong, [], 'every note wears the marker its own clause shows');
-  assert.equal(covered, 88,
-    `the pool has 88 cards with a bounded ability and all 88 were spent here (got ${covered})`);
+  assert.equal(covered, 87,
+    `the pool has 87 cards with a bounded ability and all 87 were spent here (got ${covered})`);
   // and BOTH markers are genuinely in use — a regression that collapses the
   // two back to one constant passes every card-by-card check above by
   // agreeing with itself, and is caught only here
@@ -227,10 +227,11 @@ test('CR D6.10b: every card in the pool with a bounded ability gets the marker i
   // bounded pool is exactly the event this census exists to announce.
   // 89 -> 88 and [Once] 25 -> 24 on 2026-10-22: The Bonesculptor left the pool —
   // its "each deployment" permission is a standing play option now, not a
-  // bounded activated ability (CT-255, CR 707.10).
-  assert.deepEqual(tally, { '[Switch1]': 64, '[Once]': 24 },
-    'the split today: 64 print [Switch1], 23 print [once], and 1 spells its '
-    + 'budget in prose and falls back to [Once]');
+  // bounded activated ability (CT-255, CR 707.10). 88 -> 87 and [Once] 24 -> 23
+  // the same day: Gridxlan, its twin, got the same fix.
+  assert.deepEqual(tally, { '[Switch1]': 64, '[Once]': 23 },
+    'the split today: 64 print [Switch1] and 23 print [once]; no card spells its '
+    + 'budget in prose any more');
 });
 
 // ── 4. the invariants that make a per-CLAUSE read exact ──────────────
@@ -265,16 +266,16 @@ test('CR D6.10b: no card prints both markers, and none has two bounded abilities
   assert.deepEqual(odd, [], 'bounded graft donors are exactly the ones printing [Switch1]');
 });
 
-test('CR D6.10b: the fallback is [Once], and only one card in the pool reaches it', () => {
-  // Gridxlan ("during deployment") spells its budget in prose. CR D6.10b's [Once]
-  // is kept for exactly this: with nothing printed to follow, the note names the
-  // budget. (The Bonesculptor, "each deployment", was the second until CT-255
-  // made its permission a play option rather than a bounded ability.)
+test('CR D6.10b: the fallback is [Once], and no card in the pool reaches it today', () => {
+  // The two cards that spelled their budget in prose (The Bonesculptor "each
+  // deployment", Gridxlan "during deployment") were both bounded ABILITIES until
+  // 2026-10-22, when CR 707.10 made each a standing play permission (CT-255).
+  // CR D6.10b's [Once] is kept for the next one: with nothing printed to follow,
+  // the note names the budget.
   const prose = boundedPool()
     .map(b => b.name)
     .filter(n => !/\[switch1\]|\[once\]/i.test(getCard(n).text ?? ''));
-  assert.deepEqual(prose.sort(), ['Gridxlan'],
-    'the one card with a budget and no printed marker');
+  assert.deepEqual(prose.sort(), [], 'no bounded card is without a printed marker');
   assert.equal(budgetMarker('You may play one unit from your bin each deployment.'), '[Once]',
     'an unmarked clause falls back to the budget symbol');
   assert.equal(budgetMarker(''), '[Once]', 'and so does an empty one');
@@ -284,7 +285,7 @@ test('CR D6.10b: the two halves of a printed card are read separately', () => {
   // `ownClause` is the complement of `augmentClause`. ⚠ SWAPPING THE TWO AT
   // the host emit site is a NO-OP against today's pool — no card has both a
   // bounded `abilities[]` and an `[Augment]` box, so both scopes return the
-  // same marker on all 88 cards and no board-level test can tell them apart.
+  // same marker on all 87 cards and no board-level test can tell them apart.
   // That is not a reason to drop the split; it is a reason for THIS test,
   // which pins the fact the split rests on, so a card that ends the coincidence
   // fails here rather than quietly making the host site a guess again.

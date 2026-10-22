@@ -127,15 +127,15 @@ for (const [owner, init] of COMBOS) {
     h.state.initiative = init;
     toDeployment(h);
     assert.equal(h.state.deployPlayer, init, 'the combination under test holds');
-    const grid = spawn(h, owner, 'Gridxlan');
+    spawn(h, owner, 'Gridxlan');
     hand(h, owner).length = 0;                  // the printed condition — the OWNER's hand
     bin(h, owner).push('Curio Drifter');
     giveResources(h, owner, 'water', 1);
-    assert.ok(legalActions(h.state, owner).some(a =>
-      a.type === 'activateAbility' && a.entityId === grid),
-      'offered to the OWNER seat regardless of deployPlayer');
-    h.do({ type: 'activateAbility', seat: owner, entityId: grid, abilityIndex: 0, via: 'augment' });
-    pickBy(h, o => o.label === 'Curio Drifter');
+    // CR 707.10: a standing permission, offered as a play from the bin
+    const play = legalActions(h.state, owner).find(a =>
+      a.type === 'playFromBin' && bin(h, owner)[a.binIndex] === 'Curio Drifter');
+    assert.ok(play, 'offered to the OWNER seat regardless of deployPlayer');
+    h.do(play);
     assert.ok(unitsOf(h, owner).some(u => u.card === 'Curio Drifter'), 'played out of the bin');
     assert.ok(!bin(h, owner).includes('Curio Drifter'), 'and it left the bin');
   });

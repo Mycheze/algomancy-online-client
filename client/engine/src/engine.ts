@@ -8060,7 +8060,7 @@ export class E {
   /** CR 803.2b, 707.10: the radiation walk every `PlayPermission` shares — every
    * grantor live in `ctx.region` (CR 101.6, 712.1a), summed. */
   private sumPlayPermissions(ctx: import('./cards/dsl.ts').PlayCtx,
-    read: (p: import('./cards/dsl.ts').PlayPermission, anchor: Entity) => number): number {
+    read: (p: import('./cards/dsl.ts').PlayPermission, anchor: Entity, holder: Entity) => number): number {
     if (this.inPlayPermissions) return 0;
     this.inPlayPermissions = true;
     try {
@@ -8071,7 +8071,7 @@ export class E {
         && a.region === ctx.region
         && live(h, a))) {                                      // CR 712.1a, as staticsFor
         for (const { def } of this.behaviorBlocks(holder, anchor)) {
-          for (const p of def.playPermissions ?? []) total += read(p, anchor);
+          for (const p of def.playPermissions ?? []) total += read(p, anchor, holder);
         }
       }
       return total;
@@ -8079,24 +8079,58 @@ export class E {
   }
 
   /**
+   * CR 707.10: every grantor of a DEPLOYMENT bin-play permission that would let
+   * `ctx.seat` play `ctx.card` now, with what it has left this deployment. A
+   * grantor is the HOLDER — the unit, or the mod whose [Augment] box donates the
+   * permission (Gridxlan) — so each card's printed "one unit" is its own budget,
+   * spent by `chargeDeployBinPlay` and recorded in `deployBinPlayGrants`.
+   */
+  private deployBinGrantors(ctx: Omit<import('./cards/dsl.ts').PlayCtx, 'usedThisTurn'>): { holder: EntityId; left: number }[] {
+    const charged = this.s.deployBinPlayGrants ?? [];
+    const out: { holder: EntityId; left: number }[] = [];
+    this.sumPlayPermissions({ ...ctx, usedThisTurn: 0 }, (p, anchor, holder) => {
+      const used = charged.filter(id => id === holder.id).length;
+      const n = (p.playFromBinAtDeploy?.(this, anchor, { ...ctx, usedThisTurn: used }) ?? 0) - used;
+      if (n > 0) out.push({ holder: holder.id, left: n });
+      return 0;
+    });
+    return out;
+  }
+
+  /**
    * CR 707.10 (CT-255): may `ctx.seat` play `ctx.card` out of their own bin in this
    * DEPLOYMENT under a standing permission ("You may play one unit with no
-   * abilities from your bin each deployment" — The Bonesculptor)? Deployment
-   * only, the seat's own deployment, and allowance left: every grantor's
-   * `playFromBinAtDeploy` summed, against `deployBinPlaysUsed`. The offer
+   * abilities from your bin each deployment" — The Bonesculptor; "[Augment] If
+   * your hand is empty, you may play one unit from your bin during deployment" —
+   * Gridxlan)? Deployment only, the seat's own deployment, and some grantor
+   * that permits this card with its budget unspent. The offer
    * (`legalDeployActions`) and the refusal (`doPlayFromBin`) both ask THIS.
    */
   mayPlayFromBinAtDeploy(ctx: Omit<import('./cards/dsl.ts').PlayCtx, 'usedThisTurn'>): boolean {
     if (this.s.phase !== 'deploy' || !this.deploying(ctx.seat) || ctx.from !== 'bin') return false;
-    const used = this.s.deployBinPlaysUsed?.[ctx.seat] ?? 0;
-    const full = { ...ctx, usedThisTurn: used };
-    return this.sumPlayPermissions(full, (p, anchor) => p.playFromBinAtDeploy?.(this, anchor, full) ?? 0) > used;
+    return this.deployBinGrantors(ctx).length > 0;
   }
 
-  /** CR 707.10: charge one such bin play to `seat` (zeroed by `startDeployment`). */
-  chargeDeployBinPlay(seat: Seat): void {
-    const tally = (this.s.deployBinPlaysUsed ??= this.s.players.map(() => 0));
-    tally[seat] = (tally[seat] ?? 0) + 1;
+  /**
+   * CR 707.10: spend ONE grantor's budget on this play (cleared by `startDeployment`).
+   * When several grantors permit the card, the one spent is the one that permits
+   * the FEWEST cards in the bin right now — so a vanilla played with both a
+   * Bonesculptor and a Gridxlan up spends the Bonesculptor's narrower grant and
+   * leaves Gridxlan's "one unit" for a card only it can reach. First in walk
+   * order breaks a tie, which is deterministic.
+   */
+  chargeDeployBinPlay(ctx: Omit<import('./cards/dsl.ts').PlayCtx, 'usedThisTurn'>): void {
+    const grantors = this.deployBinGrantors(ctx);
+    if (!grantors.length) return;
+    const bin = this.player(ctx.seat).bin;
+    const reach = (holder: EntityId): number => bin.filter(name =>
+      this.deployBinGrantors({ ...ctx, card: this.card(name) }).some(g => g.holder === holder)).length;
+    let best = grantors[0]!, bestReach = reach(best.holder);
+    for (const g of grantors.slice(1)) {
+      const r = reach(g.holder);
+      if (r < bestReach) { best = g; bestReach = r; }
+    }
+    (this.s.deployBinPlayGrants ??= []).push(best.holder);
   }
 
   /** CR 504.7a: the boolean the three gates actually ask — is there allowance left
@@ -14512,8 +14546,8 @@ export class E {
     this.s.deployPlayer = this.initiative;
     // report #86: nobody has acted in THIS deployment yet (see types.ts)
     this.s.deployActed = this.s.players.map(() => false);
-    // CR 707.10 (CT-255): "each deployment" — the bin-play permission's budget opens
-    this.s.deployBinPlaysUsed = this.s.players.map(() => 0);
+    // CR 707.10 (CT-255): "each deployment" — every bin-play grant's budget reopens
+    this.s.deployBinPlayGrants = [];
     this.ev('phase', 'Deployment: both players deploy at the same time — moves are revealed when everyone is done.');
     this.s.deployStarting = true;   // CR 507.4: step 2 is owed
     this.rotDamage();   // CR 507.4: start of deployment, before anyone may deploy

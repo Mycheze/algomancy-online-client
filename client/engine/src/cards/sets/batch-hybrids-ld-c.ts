@@ -623,63 +623,35 @@ card('Swarmling', {
 // ─────────────────────── EARTH / DARK (ed) ────────────────────────────
 
 // "[Augment] If your hand is empty, you may play one unit from your bin
-// during deployment." — ed/4 3/4 Structure Unit. ⚠ Modelled as a free bounded
-// activated ability in the [Augment] text box (The Bonesculptor precedent —
-// there is no bin-play action): once per turn, during YOUR deployment, with
-// an EMPTY hand, pick an affordable unit card in your bin; its cost is paid
-// normally and it spawns (spawn triggers fire).
+// during deployment." — ed/4 3/4 Structure Unit.
 //
-// CR 705.3a: all three preconditions are ACTIVATION gates now — `timing: 'deploy'`
-// (the engine's activation-timing field, CR 705.2, which this was re-implementing at resolution) plus
-// `usableWhen` for the printed "if your hand is empty" and for "is there
-// anything in the bin I could actually play". It is `bounded`, so activating
-// it when it could do nothing burnt the once-per-turn budget; the header used
-// to admit exactly that.
-const gridxlanPicks = (g: E, seat: Seat): { label: string; value: number; card: string }[] => {
-  const bin = g.player(seat).bin;
-  return bin
-    .map((name, i) => ({ label: name, value: i, card: name }))
-    // a SPELL UNIT counts as a unit for bin purposes (it spawns its body) —
-    // the convention every other bin search in the set uses
-    .filter(o => isUnitCard(bin[o.value]!) && g.canPayCard(seat, bin[o.value]!));
-};
+// CR 707.10 — A STANDING PERMISSION, NOT AN ABILITY (The Bonesculptor's fix,
+// CT-255, applied to its twin). It used to be a free bounded ACTIVATED ability
+// whose resolution asked which unit: the permission itself reached the stack,
+// and the unit it raised was put into play in silence (a plain `spawnUnit`, no
+// play event, a spell unit's spell skipped) under a log line that said "plays".
+// Now it is a `playPermissions` grant in the [Augment] box — live from a unit
+// in play and donated from an augment mod, where "your" is the HOST's
+// controller (CR 721.1, the Dispatch Courier shape). With its controller's
+// hand empty, every unit card in their bin is an ordinary `playFromBin` in
+// deployment: paid in full, played onto the deployment stack (CR 507.5) — a
+// real PLAY, so a spell unit casts its spell — and bounded to ONE per
+// deployment per Gridxlan (`deployBinPlayGrants`).
+//
+// "ONE UNIT" IS ANY UNIT: unlike The Bonesculptor it prints no "with no
+// abilities", and a SPELL UNIT counts (it is played as a unit, its body arrives
+// — the convention every bin search in the set uses, `isUnitCard`).
 card('Gridxlan', {
-  augmentText: [{
-    type: 'activated', cost: {}, bounded: true, timing: 'deploy',
-    label: 'with an empty hand, play a unit from your bin (during deployment)',
-    usableWhen: (g, _self, seat) =>
-      g.player(seat).hand.length === 0 && gridxlanPicks(g, seat).length > 0,
-    effect: {
-      run: (g, ctx) => {
-        if (g.player(ctx.controller).hand.length > 0) {
-          g.ev('info', 'Gridxlan: your hand is not empty — no effect.');
-          return;
-        }
-        const bin = g.player(ctx.controller).bin;
-        const opts = gridxlanPicks(g, ctx.controller);
-        if (!opts.length) {
-          g.ev('info', 'Gridxlan: no playable unit in your bin.');
-          return;
-        }
-        const pick = ctx.choose('pick', {
-          kind: 'payOrDecline', seat: ctx.controller,
-          prompt: 'Gridxlan: play a unit from your bin',
-          options: [...opts, { label: 'Decline', value: -1 }],
-        }) as number;
-        if (pick < 0) { g.ev('info', 'Gridxlan: declined — nothing is played from the bin.'); return; }
-        const name = bin[pick];
-        if (name === undefined || !isUnitCard(name)
-          || !g.canPayCard(ctx.controller, name)) {
-          g.ev('info', 'Gridxlan: that card can no longer be played — nothing happens.');
-          return;
-        }
-        g.removeFromBin(ctx.controller, pick, 'played');   // CR 405.7
-        g.payCard(ctx.controller, name);
-        g.ev('info', `Gridxlan: ${g.pname(ctx.controller)} plays ${name} from the bin.`);
-        g.spawnUnit(ctx.controller, name, ctx.region);
-      },
-    },
-  }],
+  // the [Augment] text is a hook now, not `augmentText`, so the card has to say
+  // it can still be applied as an augment
+  augmentable: true,
+  augmentBox: {
+    playPermissions: [{
+      playFromBinAtDeploy: (g, self, ctx) =>
+        ctx.seat === self.controller && ctx.from === 'bin' && isUnitCard(ctx.card.name)
+          && g.player(ctx.seat).hand.length === 0 ? 1 : 0,
+    }],
+  },
 });
 
 // "[Augment] Whenever I am dealt damage, each opponent gains a rot." — ed/3
