@@ -122,6 +122,34 @@ export interface CachedCard {
    * a comparison, so no cleanup pass can go missing on replay and the card
    * correctly stays in the cache, inert, afterwards. */
   playableUntilTurn?: number;
+  /** CR 102.4 / CT-233: whose card this is, when that is NOT the cache's own
+   * seat (a stolen unit cached into the thief's cache). Optional/additive:
+   * absent = the cache's seat owns it, which is what every older state means. */
+  owner?: Seat;
+}
+
+/**
+ * CR 102.4 / CT-233 — a card in a player's own HAND or BIN that another player
+ * owns. Owner ruling 2026-10-22: "The original owner holds while the card is
+ * in a player's own hand, bin or cache; once it enters a shared pack, deck or
+ * recycle pile, whoever takes it out owns it."
+ *
+ * A hand and a bin are bare `CardName[]` (read by name by the replay
+ * signature, the zone delta, the views and most of the pool), so ownership is
+ * a SIDE TABLE rather than a new element type: one entry per foreign-owned
+ * card, keyed by its position and checked against the card name there. It is
+ * empty in practically every game (only a theft or a take from another hand
+ * makes one) and absent when empty, so an older state means exactly what it
+ * meant before — every card owned by the seat whose zone it is in. Kept by
+ * `E.takeFromHand` / `E.removeFromBin` (the choke points) and read through
+ * `E.zoneOwner`, never raw. An entry whose name no longer matches its slot
+ * is ignored, so a stray splice can lose an owner but never invent one.
+ */
+export interface ForeignCard {
+  zone: 'hand' | 'bin';
+  at: number;
+  card: CardName;
+  owner: Seat;
 }
 
 export interface PlayerState {
@@ -152,6 +180,9 @@ export interface PlayerState {
    * look at it ("there's currently no way to view erased cards"). Additive
    * and optional like `rot`/`debt`; read it through E.erased(seat). */
   erased?: CardName[];
+  /** CR 102.4 / CT-233: the foreign-owned cards in this player's hand and bin
+   * (see ForeignCard). Additive and optional; read through E.zoneOwner. */
+  foreign?: ForeignCard[];
 }
 
 /**
@@ -1126,6 +1157,9 @@ export interface StackItem {
    * Dead's "any bin"). The body it resolves into is spawned with this owner
    * (and dies to its CONTROLLER's bin, CR 400.4). Optional and additive: an
    * item without it is owned by its controller, which every older item was.
+   * CR 102.4 / CT-233: the same field carries a card played out of a hand,
+   * bin or cache where another player owned it, and a card that goes to a bin
+   * off the stack keeps it there (PlayerState.foreign).
    */
   owner?: Seat;
   /**

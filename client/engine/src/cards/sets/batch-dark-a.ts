@@ -726,7 +726,7 @@ card('Wake the Dead', {
   spellEffect: {
     run: (g, ctx) => {
       const seat = ctx.controller;
-      type Pick = { seat: Seat; idx: number; name: CardName };
+      type Pick = { seat: Seat; idx: number; name: CardName; owner: Seat };
       const chosen: Pick[] = [];
       let budget = 8;
       for (let k = 0; k < 2; k++) {
@@ -759,7 +759,7 @@ card('Wake the Dead', {
         const ps = Number(sStr) as Seat, pi = Number(iStr);
         const name = g.player(ps).bin[pi];
         if (name === undefined) break;
-        chosen.push({ seat: ps, idx: pi, name });
+        chosen.push({ seat: ps, idx: pi, name, owner: g.zoneOwner(ps, 'bin', pi) });   // CR 102.4 / CT-233
         budget -= manaOf(name);
       }
       if (!chosen.length) { g.ev('info', 'Wake the Dead: nothing playable in any bin.'); return; }
@@ -785,13 +785,14 @@ card('Wake the Dead', {
       // mana, and is paid as the card is played.
       // `seat` on the play is the CASTER (the one doing the playing), never the
       // bin's owner — a borrowed card is still played by you; `owner` keeps
-      // whose card it is (CARD-TODO #17).
+      // whose card it is (CARD-TODO #17) — the bin's seat, or the owner a foreign
+      // card kept in that bin (CR 102.4 / CT-233).
       chosen.forEach((c, k) => {
-        const r = playInline(g, ctx, c.name, `wakePlay${k}`, seat, { from: 'bin', owner: c.seat });
+        const r = playInline(g, ctx, c.name, `wakePlay${k}`, seat, { from: 'bin', owner: c.owner });
         // the in-place branch only (no battle window — unreachable for a {Battle}
         // spell): a spell unit whose spell part fizzled has no body, and its card
         // goes to a bin like any fizzled spell unit's (CR 400.4: its controller's)
-        if (r.outcome === 'fizzled') g.toBin(seat, c.name, 'stack');
+        if (r.outcome === 'fizzled') g.toBin(seat, c.name, 'stack', c.owner);
       });
     },
   },

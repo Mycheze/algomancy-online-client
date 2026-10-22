@@ -202,7 +202,7 @@ test('cr:concepts.players.owner.token — a token is owned by the player whose e
   assert.equal(made[1]!.owner, A, 'a token taken by Download is still owned by the player who created it');
 });
 
-test('cr:concepts.players.owner — engine differs: a stolen card recalled to the thief hand and replayed from it comes back owned by the thief', () => {
+test('cr:concepts.players.owner — a stolen card recalled to the thief hand and replayed from it comes back owned by its owner (CT-233)', () => {
   const h = new Harness(80107);
   toDeployment(h);
   const P = h.state.deployPlayer!, O = (1 - P) as Seat;
@@ -216,7 +216,7 @@ test('cr:concepts.players.owner — engine differs: a stolen card recalled to th
   while (h.state.stack.length && h.state.priority !== null) h.do({ type: 'passPriority', seat: h.state.priority! });
   const replayed = Object.values(h.state.entities).find(u => u.card === 'Good Whale' && u.id !== id) as Entity | undefined;
   assert.ok(replayed, 'the whale is back in play');
-  assert.equal(replayed!.owner, P, 'the owner is now the thief: the hand kept only the card name');
+  assert.equal(replayed!.owner, O, 'still its owner card: ownership survives the thief hand (owner, 2026-10-22)');
 });
 
 /* ---------- 103 starting the game ---------- */

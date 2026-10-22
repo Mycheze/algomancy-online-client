@@ -462,16 +462,17 @@ const lurkingDread: EffectDef = {
     }
     // take it out of whichever zone still holds it, then put it into play
     const bi = g.player(seat).bin.lastIndexOf('Lurking Dread');
-    if (bi !== -1) g.removeFromBin(seat, bi, 'revived');   // CR 405.7
+    let owner: Seat = seat;                                // CR 102.4 / CT-233
+    if (bi !== -1) { owner = g.zoneOwner(seat, 'bin', bi); g.removeFromBin(seat, bi, 'revived'); }   // CR 405.7
     else {
       const ci = g.cache(seat).findIndex(cc => cc.card === 'Lurking Dread');
-      if (ci !== -1) g.uncache(seat, ci);
+      if (ci !== -1) owner = g.uncache(seat, ci)?.owner ?? seat;
       else {
         g.ev('info', 'Lurking Dread: it is no longer in a bin or cache — it does not arrive.');
         return;
       }
     }
-    g.spawnUnit(seat, 'Lurking Dread', ctx.region);
+    g.spawnUnit(seat, 'Lurking Dread', ctx.region, { owner });
   },
 };
 card('Lurking Dread', {

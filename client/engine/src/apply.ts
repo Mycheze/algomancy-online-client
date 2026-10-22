@@ -598,6 +598,11 @@ function doDraftCommit(e: E, seat: Seat, packIndices: number[]): void {
   }
   e.s.packs[seat] = packIndices.map(i => pile[i]!);
   p.hand = pile.filter((_, i) => !seen.has(i));
+  // CT-233: a hand card that stays in the hand keeps its owner; one passed in
+  // the pack entered a shared zone, and whoever takes it out owns it
+  const keptAt: number[] = [];
+  for (let i = 0, k = 0; i < pile.length; i++) if (!seen.has(i)) keptAt[i] = k++;
+  e.reindexForeign(seat, 'hand', old => keptAt[old] ?? -1);
   // pack identity bookkeeping (additive): one more merge committed on this pack
   const meta = e.s.packMeta?.[seat];
   if (meta) meta.commits++;
@@ -623,7 +628,12 @@ function doBottomCards(e: E, seat: Seat, handIndices: number[]): void {
     seen.add(i);
   }
   const putBack = handIndices.map(i => p.hand[i]!);
+  const oldLen = p.hand.length;
   p.hand = p.hand.filter((_, i) => !seen.has(i));
+  // CT-233: the deck is a shared zone for ownership — the put-back cards' owner resets
+  const keptAt: number[] = [];
+  for (let i = 0, k = 0; i < oldLen; i++) if (!seen.has(i)) keptAt[i] = k++;
+  e.reindexForeign(seat, 'hand', old => keptAt[old] ?? -1);
   for (const name of putBack) e.recycleToBottom(seat, name);
   e.s.bottomDone![seat] = true;
   e.ev('draw', `${e.pname(seat)} puts ${putBack.length} card${putBack.length === 1 ? '' : 's'} on the bottom of their deck.`, { seat, n: putBack.length });
@@ -641,7 +651,7 @@ function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): 
     'not an element of this game');
   const card = e.player(seat).hand[handIndex];
   e.need(card !== undefined, 'no such card in hand');
-  e.player(seat).hand.splice(handIndex, 1);
+  e.takeFromHand(seat, handIndex);   // CT-233: the choke point; the recycle pile resets ownership
   e.recycleToBottom(seat, card);
   e.player(seat).resources.push({ kind: element, state: 'dormant' });
   e.ev('recycle', `${e.pname(seat)} recycles ${card} for a dormant resource.`, { seat });
@@ -902,7 +912,7 @@ function baseItem(e: E, c: CardDef, seat: Seat, region: number,
  */
 function playAtTiming(
   e: E, seat: Seat, c: CardDef, timing: CardDef['timing'],
-  take: () => void, pay: () => void, from: 'hand' | 'cache' | 'bin',
+  take: () => Seat | void, pay: () => void, from: 'hand' | 'cache' | 'bin',
   unstable = false, fixedX?: number,
   // CR 504.7: this play is funded by ERASING the grantor at `index` in seat's own
   // bin (Writhing Host). Only doPlayCard's haste-step route ever passes it —
@@ -935,8 +945,13 @@ function playAtTiming(
    * prints "Cards", which a token is not (CR 304.2). An Ambush is a card played
    * (CR 111.10e), so `doAmbush` attaches the same atom through the same
    * builder (CT-243). */
+  /** CR 102.4 / CT-233: `take` returns the owner the card had in its zone, and
+   * the item carries it when that is not the player playing it. */
+  let owner: Seat | undefined;
+  const takeCard = (): void => { const o = take(); if (typeof o === 'number' && o !== seat) owner = o; };
   const mkItem = (region: number): StackItem =>
-    ({ ...baseItem(e, c, seat, region, from, unstable, fixedX), ...imposedSacrifice(e, seat, c.name, region) });
+    ({ ...baseItem(e, c, seat, region, from, unstable, fixedX), ...imposedSacrifice(e, seat, c.name, region),
+      ...(owner !== undefined ? { owner } : {}) });
   if (e.s.phase === 'planning') {
     // haste step (CR 504.2, 504.3): only haste cards, resolving immediately
     e.need(e.s.hasteDone !== null && !e.s.hasteDone[seat], 'not your haste step');
@@ -953,7 +968,7 @@ function playAtTiming(
     const granted = timing !== 'haste' && !binErase && e.mayPlayAtHaste({ seat, card: c, from, region });
     e.need(timing === 'haste' || granted || binErase !== undefined, 'only haste cards during the haste step');
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
-    take();
+    takeCard();
     payAll();
     // charged only once the play is known to be legal and paid for — an
     // illegal attempt must not eat the turn's allowance
@@ -982,7 +997,7 @@ function playAtTiming(
     e.need(timing === 'deploy' || timing === 'haste', 'battle cards can only be played during battle');
     const region = e.homeRegion(seat);
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
-    take();
+    takeCard();
     payAll();
     /**
      * CR 507.5: `'push'` — A DEPLOYMENT PLAY GOES ON A STACK, like any other play.
@@ -1021,7 +1036,7 @@ function playAtTiming(
     e.need(timing === 'battle', 'only battle cards can be played now');
     const region = e.s.battle!.region;
     e.need(canCast(region), 'no legal targets or an unpayable [cost]');
-    take();
+    takeCard();
     payAll();
     e.castChain([mkItem(region)], 'push');
     e.settle();
@@ -1098,7 +1113,7 @@ function doPlayFrom(e: E, seat: Seat, from: 'hand' | 'cache', index: number,
   }
   const free = price!.free;
   playAtTiming(e, seat, c, c.timing,   // = E.cachedTiming for a cache entry: printed, always
-    () => { zoneTake(e, seat, from, index); },
+    () => zoneTake(e, seat, from, index),
     () => {
       if (!cc) {
         e.payCard(seat, name);
@@ -1284,7 +1299,11 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
   e.need(viaGrant || !!c.playsFromBin, 'you have no permission to play cards from your bin');
   e.need(e.canPayCard(seat, name), 'cannot pay for that');
   playAtTiming(e, seat, c, c.timing,
-    () => { e.removeFromBin(seat, binIndex, 'played'); },   // CR 405.7
+    () => {
+      const owner = e.zoneOwner(seat, 'bin', binIndex);   // CT-233: before it leaves
+      e.removeFromBin(seat, binIndex, 'played');           // CR 405.7
+      return owner;
+    },
     () => {
       e.payCard(seat, name);
       // "target spell" is singular — spend the grant as the play
@@ -1335,7 +1354,8 @@ function doAmbush(e: E, seat: Seat, from: 'hand' | 'cache', index: number, c: Ca
   // the seam, not the exception to it.
   e.need(e.targetCandidates(specForSlot(ambushEffect(c.name).targets!, 0),
     region, undefined, seat).length > 0, 'no ally to ambush');
-  zoneTake(e, seat, from, index);   // never a bare hand.splice
+  const owner = zoneTake(e, seat, from, index);   // never a bare hand.splice
+  if (owner !== seat) item.owner = owner;          // CR 102.4 / CT-233
   if (price.free) {
     e.ev('info', `${c.name} ambushes out of ${e.pname(seat)}'s cache for FREE — its prophecy is fulfilled.`,
       { seat, card: c.name });
@@ -1862,8 +1882,9 @@ function zonePeek(e: E, seat: Seat, from: ModZone, index: number): CardName | un
   return from === 'cache' ? e.cache(seat)[index]?.card : e.player(seat)[from][index];
 }
 
-function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
-  if (from === 'cache') e.uncache(seat, index);
+function zoneTake(e: E, seat: Seat, from: ModZone, index: number): Seat {
+  // CR 102.4 / CT-233: returns the OWNER the card had in that zone
+  if (from === 'cache') return e.uncache(seat, index)?.owner ?? seat;
   // CR 405.7: a bin exit goes through THE choke point so 'leftBin' fires — the
   // old direct `[from].splice` here bypassed it (CARD-TODO #26). This comment
   // used to add "which no reachable card noticed, because Rotling carries no
@@ -1873,8 +1894,12 @@ function zoneTake(e: E, seat: Seat, from: ModZone, index: number): void {
   // your bin is now the exact reachable case this line exists for — it hears
   // its own exit and offers the pay-[1]. A defensive fix that acquired a real
   // caller within the day.
-  else if (from === 'bin') e.removeFromBin(seat, index, 'modded');
-  else e.player(seat).hand.splice(index, 1);
+  if (from === 'bin') {
+    const owner = e.zoneOwner(seat, 'bin', index);
+    e.removeFromBin(seat, index, 'modded');
+    return owner;
+  }
+  return e.takeFromHand(seat, index)?.owner ?? seat;   // the hand choke point
 }
 
 /** CR 403.3c: what using a card out of a source costs — `free` waives the
@@ -3554,7 +3579,7 @@ function doAmend(e: E, seat: Seat, by: Seat, edit: AmendEdit): void {
       break;
     case 'move': {
       const card = edit.card;
-      if (edit.from === 'hand') e.player(seat).hand.splice(edit.index, 1);
+      if (edit.from === 'hand') e.takeFromHand(seat, edit.index);
       else if (edit.from === 'bin') e.removeFromBin(seat, edit.index, 'an agreed fix', { quiet: true });
       else e.uncache(seat, edit.index);
       if (edit.to === 'hand') e.toHand(seat, card, edit.from, { quiet: true });
@@ -3612,7 +3637,7 @@ export function amendFrozen(frozen: GameState, action: Extract<Action, { type: '
       break;
     case 'move': {
       const p = e.player(seat);
-      if (edit.from === 'hand') { const i = p.hand.indexOf(edit.card); if (i >= 0) p.hand.splice(i, 1); }
+      if (edit.from === 'hand') { const i = p.hand.indexOf(edit.card); if (i >= 0) e.takeFromHand(seat, i); }
       else if (edit.from === 'bin') { const i = p.bin.lastIndexOf(edit.card); if (i >= 0) e.removeFromBin(seat, i, 'an agreed fix', { quiet: true }); }
       else { const i = e.cache(seat).findIndex(c => c.card === edit.card); if (i >= 0) e.uncache(seat, i); }
       if (edit.to === 'hand') e.toHand(seat, edit.card, edit.from, { quiet: true });

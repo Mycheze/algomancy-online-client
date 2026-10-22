@@ -178,10 +178,12 @@ card('Bioremediation', {
         prompt: `Bioremediation: choose a card from ${g.pname(who)}'s hand`,
         options: hand.map((name, i) => ({ label: name, value: i, card: name })),
       }) as number;
-      const [name] = hand.splice(pick, 1);
-      if (name === undefined) { g.ev('info', 'Bioremediation: that card is gone — nothing is taken.'); return; }
-      // CR 402.4: out of one hand and into another — `from: 'hand'`
-      g.toHand(ctx.controller, name, 'hand');
+      const took = g.takeFromHand(who, pick);   // CT-233: the choke point
+      if (!took) { g.ev('info', 'Bioremediation: that card is gone — nothing is taken.'); return; }
+      const name = took.card;
+      // CR 402.4: out of one hand and into another — `from: 'hand'`. CR 102.4 / CT-233:
+      // a hand is not a shared zone, so the card stays its owner's in the taker's hand.
+      g.toHand(ctx.controller, name, 'hand', { owner: took.owner });
       g.ev('info', `Bioremediation: ${g.pname(ctx.controller)} takes ${name}.`);
     },
   },

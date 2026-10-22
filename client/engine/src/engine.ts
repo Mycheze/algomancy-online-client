@@ -17,7 +17,7 @@
 import type {
   Attr, BattleState, BinRef, CachedCard, CachedProphecy, CardName, CopyFacet, CopyRef, DamageSubStep,
   Decision, DecisionOption,
-  EffectPart, EngineEvent, Entity, EntityId, EventType, FormationSpot, GameState, LastKnown, NumericEntry,
+  EffectPart, EngineEvent, Entity, EntityId, EventType, ForeignCard, FormationSpot, GameState, LastKnown, NumericEntry,
   PendingTrigger, Phase, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef, Stamp,
 } from './types.ts';
 import {
@@ -2941,10 +2941,15 @@ export class E {
 
   toHand(seat: Seat, cards: CardName | readonly CardName[],
          from: 'deck' | 'bin' | 'play' | 'stack' | 'cache' | 'hand' | 'sandbox',
-         opts: { unit?: EntityId; token?: boolean; quiet?: boolean } = {}): void {
+         opts: { unit?: EntityId; token?: boolean; quiet?: boolean; owner?: Seat } = {}): void {
     const names: CardName[] = typeof cards === 'string' ? [cards] : [...cards];
     if (!names.length) return;
     this.player(seat).hand.push(...names);
+    // CR 102.4 / CT-233: a card another player owns keeps that owner in this hand
+    if (opts.owner !== undefined && !opts.token) {
+      const len = this.player(seat).hand.length;
+      for (let i = len - names.length; i < len; i++) this.markForeign(seat, 'hand', i, opts.owner);
+    }
     const ev = this.ev('handEntered', '', {
       seat, from, cards: names, card: names[0], n: names.length,
       ...(opts.unit !== undefined ? { unit: opts.unit } : {}),
@@ -3009,8 +3014,10 @@ export class E {
    */
   // BL-46: 'amend' is the third non-trashing entry — an agreed fix PLACES a
   // card where it should have been, and is quiet (owner, 2026-10-16)
-  toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache' | 'sandbox' | 'amend'): void {
+  toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache' | 'sandbox' | 'amend',
+    owner?: Seat): void {
     this.player(seat).bin.push(name);
+    this.markForeign(seat, 'bin', this.player(seat).bin.length - 1, owner);   // CR 102.4 / CT-233
     if (from === 'stack' || from === 'sandbox' || from === 'amend') return;
     this.noteTrashed(seat, name, from);
   }
@@ -3222,11 +3229,11 @@ export class E {
   /** Discard a card from `seat`'s hand — it is trashed (CR 801.3). Returns the
    * card, or undefined when the index is out of range. */
   discardFromHand(seat: Seat, handIndex: number): CardName | undefined {
-    const hand = this.player(seat).hand;
-    if (handIndex < 0 || handIndex >= hand.length) return undefined;
-    const [name] = hand.splice(handIndex, 1);
+    const took = this.takeFromHand(seat, handIndex);             // CT-233: the choke point
+    if (!took) return undefined;
+    const name = took.card;
     this.ev('info', `${this.pname(seat)} discards ${name}.`);
-    this.toBin(seat, name!, 'hand');
+    this.toBin(seat, name, 'hand', took.owner);                  // CR 102.4: still its owner's card
     return name;
   }
 
@@ -3637,10 +3644,12 @@ export class E {
    * permission (CR 801.9e, 801.9i): playable until the end of THIS turn, then inert.
    */
   cacheCard(seat: Seat, name: CardName, from: 'hand' | 'bin' | 'deck' | 'play' | 'effect',
-    opts: { prophecy?: string; playable?: boolean; quiet?: boolean } = {}): CachedCard {
+    opts: { prophecy?: string; playable?: boolean; quiet?: boolean; owner?: Seat } = {}): CachedCard {
     // a stable handle for targeting the entry (Prismatic Observer): cache
     // INDICES shift as cards leave the zone, so a TargetRef cannot use one
     const cc: CachedCard = { card: name, uid: this.s.nextId++ };
+    // CR 102.4 / CT-233: a card another player owns keeps that owner here
+    if (opts.owner !== undefined && opts.owner !== seat) cc.owner = opts.owner;
     if (opts.prophecy !== undefined) cc.prophecy = this.makeProphecy(opts.prophecy, seat);
     if (opts.playable) cc.playableUntilTurn = this.s.turn;
     this.cacheMut(seat).push(cc);
@@ -3656,10 +3665,9 @@ export class E {
    * Foresight's "they cache that card"). Returns the entry, or undefined when
    * the index is out of range. */
   cacheFromHand(seat: Seat, handIndex: number, opts: { prophecy?: string; playable?: boolean } = {}): CachedCard | undefined {
-    const hand = this.player(seat).hand;
-    if (handIndex < 0 || handIndex >= hand.length) return undefined;
-    const [name] = hand.splice(handIndex, 1);
-    return this.cacheCard(seat, name!, 'hand', opts);
+    const took = this.takeFromHand(seat, handIndex);             // CT-233: the choke point
+    if (!took) return undefined;
+    return this.cacheCard(seat, took.card, 'hand', { ...opts, owner: took.owner });
   }
 
   /**
@@ -3680,17 +3688,94 @@ export class E {
     const bin = this.player(seat).bin;
     if (binIndex < 0 || binIndex >= bin.length) return undefined;
     const [name] = bin.splice(binIndex, 1);
+    this.foreignSpliced(seat, 'bin', binIndex, name!);   // CT-233: read zoneOwner BEFORE this call
     const ev = this.ev('leftBin', '', { seat, card: name!, reason });
     if (!opts.quiet) this.fireEvent('leftBin', ev);   // BL-46: an agreed fix is quiet
     return name;
   }
 
+  // ── CR 102.4 / CT-233: whose card it is, in a player's own hand or bin ─────
+  //
+  // Owner ruling 2026-10-22: "The original owner holds while the card is in a
+  // player's own hand, bin or cache; once it enters a shared pack, deck or
+  // recycle pile, whoever takes it out owns it." The hand and bin are bare
+  // names, so a foreign-owned card is a `PlayerState.foreign` entry beside
+  // its slot (see ForeignCard in types.ts). Every hand removal goes through
+  // `takeFromHand` and every bin removal through `removeFromBin`, which keep
+  // the positions right; a card that enters a SHARED zone (deck, recycle,
+  // pack) simply leaves its entry behind, so whoever takes it out owns it.
+
+  /** CT-233: who owns the card at `zone[at]` of `seat`'s — `seat` itself unless
+   * a matching foreign entry says otherwise. */
+  zoneOwner(seat: Seat, zone: 'hand' | 'bin', at: number): Seat {
+    const p = this.player(seat);
+    const card = p[zone][at];
+    if (card === undefined) return seat;
+    const f = p.foreign?.find(x => x.zone === zone && x.at === at && x.card === card);
+    return f ? f.owner : seat;
+  }
+
+  /** CT-233: record that the card just put at `zone[at]` belongs to `owner`
+   * (a no-op when `owner` is the zone's own seat, which is the default). */
+  private markForeign(seat: Seat, zone: 'hand' | 'bin', at: number, owner: Seat | undefined): void {
+    if (owner === undefined || owner === seat) return;
+    const p = this.player(seat);
+    const card = p[zone][at];
+    if (card === undefined) return;
+    const list = (p.foreign ?? []).filter(x => !(x.zone === zone && x.at === at));
+    list.push({ zone, at, card, owner });
+    p.foreign = list;
+  }
+
+  /** CT-233: bookkeeping for a removal of `zone[at]` that has ALREADY been
+   * spliced: drops that slot's entry and closes the gap above it. Returns the
+   * owner the removed card had. */
+  private foreignSpliced(seat: Seat, zone: 'hand' | 'bin', at: number, card: CardName): Seat {
+    const p = this.player(seat);
+    if (!p.foreign) return seat;
+    let owner = seat;
+    const next: ForeignCard[] = [];
+    for (const f of p.foreign) {
+      if (f.zone !== zone) { next.push(f); continue; }
+      if (f.at === at) { if (f.card === card) owner = f.owner; continue; }
+      next.push(f.at > at ? { ...f, at: f.at - 1 } : f);
+    }
+    if (next.length) p.foreign = next; else delete p.foreign;
+    return owner;
+  }
+
+  /** CT-233: a whole-zone rewrite (the draft merge, the bottom-two): `map`
+   * says where each OLD slot went (-1 = it left the zone — for these callers,
+   * into a shared pack or deck, where ownership resets). */
+  reindexForeign(seat: Seat, zone: 'hand' | 'bin', map: (oldAt: number) => number): void {
+    const p = this.player(seat);
+    if (!p.foreign) return;
+    const next: ForeignCard[] = [];
+    for (const f of p.foreign) {
+      if (f.zone !== zone) { next.push(f); continue; }
+      const at = map(f.at);
+      if (at >= 0 && p[zone][at] === f.card) next.push({ ...f, at });
+    }
+    if (next.length) p.foreign = next; else delete p.foreign;
+  }
+
+  /** CT-233: THE hand-removal choke point — take `seat`'s hand card `at` out,
+   * with the owner it had there. Every route out of a hand calls this rather
+   * than splicing, so the positions of the foreign entries stay true. */
+  takeFromHand(seat: Seat, at: number): { card: CardName; owner: Seat } | undefined {
+    const hand = this.player(seat).hand;
+    if (at < 0 || at >= hand.length) return undefined;
+    const [card] = hand.splice(at, 1);
+    return { card: card!, owner: this.foreignSpliced(seat, 'hand', at, card!) };
+  }
+
   /** cache a card out of `seat`'s bin (Delver of the Ephemeral, Murkdrop
    * Distiller). The card LEAVES the bin — it is not copied. */
   cacheFromBin(seat: Seat, binIndex: number, opts: { prophecy?: string; playable?: boolean } = {}): CachedCard | undefined {
+    const owner = this.zoneOwner(seat, 'bin', binIndex);           // CT-233
     const name = this.removeFromBin(seat, binIndex, 'cached');   // CR 405.7
     if (name === undefined) return undefined;
-    return this.cacheCard(seat, name, 'bin', opts);
+    return this.cacheCard(seat, name, 'bin', { ...opts, owner });
   }
 
   /** cache the top `n` cards of `seat`'s deck (Blurf; and the engine half of
@@ -3857,7 +3942,11 @@ export class E {
       // play, and a mod's controller is its host's (attachMod mints it that
       // way, moveMod re-points it, CR 711.1's control change walks `u.mods`). This
       // was `m.owner`; see `disposeToBin`'s `modBin` for the whole argument.
-      if (!m.token) this.player(m.controller).bin.push(m.card);   // CR 410.4c: a token MOD has no card of its own — erased
+      if (!m.token) {   // CR 410.4c: a token MOD has no card of its own — erased
+        const b = this.player(m.controller).bin;
+        b.push(m.card);
+        this.markForeign(m.controller, 'bin', b.length - 1, m.owner);   // CR 102.4 / CT-233
+      }
     }
     this.removeFromFormation(u.id);
     return mods;
@@ -4048,7 +4137,7 @@ export class E {
       (u.token ? ', then erased (token).' : '.'),
       evData);
     this.afterDespawn(u, mods, ev);
-    const cc = this.cacheCard(seat, u.card, 'play', opts);
+    const cc = this.cacheCard(seat, u.card, 'play', { ...opts, ...(u.token ? {} : { owner: u.owner }) });   // CT-233
     // CR 410.5c's sweep, on the cache this time — `cc.uid` names the entry we just
     // made, so a second copy of the same card already sitting there is safe
     if (u.token) this.eraseFromZone(seat, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid, token: true });
@@ -6625,6 +6714,7 @@ export class E {
       const b = this.player(modBin(m)).bin;
       b.push(m.card);
       binnedAt.set(m.id, b.length - 1);
+      this.markForeign(modBin(m), 'bin', b.length - 1, m.owner);   // CR 102.4 / CT-233
     }
     // In the engine EVERYTHING leaving play for a bin enters one — token, Unstable
     // carrier and plain card alike — and every CARD among them is trashed (CR 801.2);
@@ -6634,6 +6724,7 @@ export class E {
     // X", and the erase comes after that again.
     this.player(binSeat).bin.push(u.card);
     const bodyBinIndex = this.player(binSeat).bin.length - 1;
+    this.markForeign(binSeat, 'bin', bodyBinIndex, u.token ? undefined : u.owner);   // CR 102.4 / CT-233
     announce({ binSeat, binIndex: bodyBinIndex, unstable });
     // CR 714.9: the trash fires anchored on the departing entity itself, so its
     // own "when I am trashed" trigger keeps the region it left play in — body
@@ -7030,10 +7121,9 @@ export class E {
       if (i === -1) return;
       this.removeFromBin(seat, i, 'erased');   // CR 405.7: the one bin-removal path
     } else {
-      const hand = this.player(seat).hand;
-      const i = hand.lastIndexOf(name);
+      const i = this.player(seat).hand.lastIndexOf(name);
       if (i === -1) return;
-      hand.splice(i, 1);
+      this.takeFromHand(seat, i);                                // CT-233: the choke point
     }
     // `token`: the sweep of a token that passed through the zone — announced,
     // never filed on the erased pile (see `ev`)
@@ -7793,7 +7883,9 @@ export class E {
     // Both events fire for one recall and they are different facts; the three
     // "a card enters a player's hand" cards read only the second one now, so
     // nothing double-counts.
-    this.toHand(seat, u.card, 'play', { unit: u.id, token: !!u.token });
+    // CR 102.4 / CT-233: ownership does not move — a stolen unit is still its
+    // owner's card in the thief's hand
+    this.toHand(seat, u.card, 'play', { unit: u.id, token: !!u.token, owner: u.owner });
     const ev = this.ev('despawned',
       `${u.card} is ${verb} ${this.pname(seat)}'s hand`
       + (mods.length ? ` (its ${mods.length} mod(s) → bin)` : '')
@@ -7817,7 +7909,11 @@ export class E {
         if (idx !== -1) { slot = { col, idx }; break; }
       }
     }
-    const u = this.spawnUnit(controller, name, region);
+    // CR 102.4 / CT-233: the ambushing card keeps its owner — the resolving
+    // Ambush item carries it when it was played out of a zone it was foreign in
+    const r = this.s.resolving;
+    const owner = r && r.kind === 'ambush' && r.card === name ? r.owner : undefined;
+    const u = this.spawnUnit(controller, name, region, owner !== undefined ? { owner } : {});
     if (slot) slot.col[slot.idx] = u.id;      // take the exact slot…
     this.recall(target);                      // …then the target leaves play
     if (slot) this.ev('info', `${name} takes ${target.card}'s position in the formation.`);
@@ -12157,7 +12253,7 @@ export class E {
         `${item.label} erases itself — it does not go to a bin.`,
         { seat: item.controller, card: item.card });
     } else if (hasCard && item.card) {
-      this.toBin(item.controller, item.card, 'stack');
+      this.toBin(item.controller, item.card, 'stack', item.owner);   // CR 102.4 / CT-233
     }
     this.disposeItemMods(item);   // CR 724.5 {Modular}: its mods are erased with it
   }

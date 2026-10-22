@@ -190,7 +190,8 @@ export type InlinePlayOpts = {
    * else — Wake the Dead plays out of "any bin", and a card raised out of the
    * opponent's bin is borrowed, not naturalised (CARD-TODO #17). Absent = the
    * player owns it. Carried onto the stack item (`StackItem.owner`) and from
-   * there onto the body.
+   * there onto the body. CR 102.4 / CT-233: also a card taken out of a hand
+   * where another player owned it (Hooba-Pon, Insidious Invitation).
    */
   owner?: Seat;
 };
@@ -648,8 +649,8 @@ const brippEffect: EffectDef = {
       g.ev('info', 'Bripp: nothing is recycled.');
       return;
     }
-    const [name] = hand.splice(pick, 1);
-    g.recycleToBottom(who, name!);
+    const name = g.takeFromHand(who, pick)!.card;   // CT-233: the choke point; the deck resets ownership
+    g.recycleToBottom(who, name);
     // CR D6.5b (the secondary leak, same card). This card went out of a HIDDEN
     // hand and onto the HIDDEN bottom of a deck — `viewFor` maps every entry
     // of both zones to HIDDEN_CARD — and nothing Bripp prints says "reveal".
@@ -1090,7 +1091,7 @@ card('Hooba-Pon', {
         }) as number;
         const name = pick >= 0 ? hand[pick] : undefined;
         if (name === undefined) { g.ev('info', 'Hooba-Pon: declined — nothing is played.'); return; }
-        hand.splice(pick, 1);
+        const owner = g.takeFromHand(seat, pick)!.owner;   // CT-233: the choke point
         g.payCard(seat, name);
         // CR 702.3e `intoFormation`: in battle this play goes on the stack, so
         // "into an open position in my formation" is declared WITH the play
@@ -1103,7 +1104,7 @@ card('Hooba-Pon', {
         // code agree. Proph and Stalwart Sentinel therefore stay QUIET on a
         // Hooba-Pon play, which is a fire they were never owed and could not
         // previously decline (the marker was blank, so they read neither).
-        const played = playInline(g, ctx, name, 'hoobaPlay', seat, { intoFormation: true, from: 'hand' });
+        const played = playInline(g, ctx, name, 'hoobaPlay', seat, { intoFormation: true, from: 'hand', owner });
         if (played.unit) {
           g.placeInFormation(played.unit, ctx, { key: 'hoobaPonSlot', source: 'Hooba-Pon', sourceId: src });
         } else if (played.outcome === 'fizzled') {
@@ -1114,7 +1115,7 @@ card('Hooba-Pon', {
           // effect never ran and so cannot have asked to be erased. (The menu
           // is `isUnitCard`-filtered anyway, and none of the three "Erase me."
           // cards is a unit or a spell unit.)
-          g.toBin(seat, name, 'stack');
+          g.toBin(seat, name, 'stack', owner);   // CT-233: still its owner's card
           g.ev('info', `Hooba-Pon: ${name}'s spell part fizzled — no body joins the formation.`);
         }
       },
@@ -1165,16 +1166,16 @@ const insidiousInvite: EffectDef = {
         g.ev('info', `Insidious Invitation: ${g.pname(seat)} declines.`);
         continue;
       }
-      hand.splice(pick, 1);
+      const owner = g.takeFromHand(seat, pick)!.owner;   // CT-233: the choke point
       g.payCard(seat, name);
       // CR 701.4a `from: 'hand'`: "players may play a unit FROM HAND". Same read as
       // Hooba-Pon — and note the zone is the PLAYING SEAT's hand, not the
       // caster's, which is why it is set per seat inside the loop.
-      const played = playInline(g, ctx, name, `invite:${seat}`, seat, { from: 'hand' });
+      const played = playInline(g, ctx, name, `invite:${seat}`, seat, { from: 'hand', owner });
       if (played.outcome === 'fizzled') {
         // CR 406.4b: 'fizzled' means the effect never ran, so `played.eraseSelf`
         // cannot be set here — same confirmation as Hooba-Pon above.
-        g.toBin(seat, name, 'stack');   // a fizzled spell unit: no body, card to bin
+        g.toBin(seat, name, 'stack', owner);   // a fizzled spell unit: no body, card to bin (CT-233: with its owner)
         g.ev('info', `Insidious Invitation: ${name}'s spell part fizzled — no body arrives.`);
       }
     }

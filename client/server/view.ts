@@ -331,6 +331,13 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
     if (p.seat === opp) {
       // opponent hand -> card backs (count preserved for layout)
       p.hand = p.hand.map(() => HIDDEN_CARD);
+      // CR 102.4 / CT-233: a foreign-owned HAND entry names a card and its slot,
+      // which is exactly what the card backs hide. Bin entries are public, as
+      // the bin is.
+      if (p.foreign) {
+        const pub = p.foreign.filter(f => f.zone !== 'hand');
+        if (pub.length) p.foreign = pub; else delete p.foreign;
+      }
       // opponent DORMANT resources are face-down: hide the element. Open and
       // expended resources are public (they have been turned face-up).
       p.resources = p.resources.map(r =>

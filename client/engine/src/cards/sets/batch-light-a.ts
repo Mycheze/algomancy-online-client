@@ -462,7 +462,7 @@ const observerRecall: EffectDef = {
       const i = g.cacheIndexOf(seat, uid);
       const cc = i === -1 ? undefined : g.uncache(seat, i);
       if (cc) {
-        g.toHand(seat, cc.card, 'cache');   // CR 402.4
+        g.toHand(seat, cc.card, 'cache', { owner: cc.owner });   // CR 402.4; CR 102.4 / CT-233: still its owner's
         g.ev('info', `${cc.card} is recalled from ${g.pname(seat)}'s cache to their hand.`);
       }
     }
