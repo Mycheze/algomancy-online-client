@@ -1776,15 +1776,15 @@ export interface EngineEvent {
  *                            also names an augment mod a COPY copied (Borrower
  *                            of Forms) — no entity exists to put in `{ mod }`,
  *                            so the mod's card name is the address.
- *   { face, text: 'augment', copy: k }
- *                            CR 109.9k, 710.2d / CT-342: the k-th (k >= 1) box
- *                            of that name the copy carries. Each box has its
- *                            own [once] (`augment:<card>#<n>@<k>`, see
- *                            `E.copiedAugmentBoxes`); without `copy` the
- *                            address means box 0 — the copy's own face's
- *                            [Augment] text when its face is that card, the
- *                            first copied box otherwise — exactly as before
- *                            the field existed.
+ *   { face, text?, copy: k } CR 109.9k, 710.2d, 710.7 / CT-342: the k-th
+ *                            (k >= 1) box of that name and text the unit has —
+ *                            a second Ancient One neighbour's, a second
+ *                            augment on one neighbour, a second augment a copy
+ *                            copied. Each box has its own [once]
+ *                            (`<prefix>:<card>#<n>@<k>`, see
+ *                            `E.activatedBoxes`); without `copy` the address
+ *                            means box 0, exactly as before the field
+ *                            existed.
  *
  * ⚠ ADDITIVE, and it has to stay that way: the first three arms are byte for
  * byte what they always were, so an action log recorded before the `{ face }`

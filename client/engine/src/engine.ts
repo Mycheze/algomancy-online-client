@@ -1458,6 +1458,42 @@ export class E {
    * address `{ face, text: 'augment' }` it always had; box k (k >= 1) keeps
    * `augment:<card>#<n>@<k>` (`nthUseKey`) and is addressed with `copy: k`.
    */
+  /**
+   * CR 109.9k, 710.2d, 710.7 / CT-342 — EVERY ACTIVATED BOX a unit has, one per
+   * SOURCE, each with its own [once]. The owner, 2026-10-22, on Ancient One:
+   * "each neighbour's copy of the ability is separate, the same as two mods
+   * each having their own use".
+   *
+   * In order: the identity face's own `abilities` and `augmentText` (`own`);
+   * then each PROJECTED source (Ancient One: every adjacent ally's face, every
+   * augment on it, every box a neighbouring copy copied — a name once per
+   * source, not deduped); then the augments a copy copied. `nth` counts the
+   * earlier boxes of the same (card, text) on this unit. Box 0 is addressed
+   * as it always was (undefined / 'augment' for the unit's own text,
+   * `{ face }` / `{ face, text: 'augment' }` otherwise) and keeps the plain
+   * budget key; box k (k >= 1) adds `copy: k` and keeps `…@<k>` (`nthUseKey`).
+   * `pushActivatedOptions` (the offer) and `activationSource` (the accept)
+   * both read this, so the two cannot disagree.
+   */
+  activatedBoxes(u: Entity): { card: CardName; text: 'ability' | 'augment'; nth: number; own: boolean }[] {
+    const out: { card: CardName; text: 'ability' | 'augment'; nth: number; own: boolean }[] = [];
+    const next = new Map<string, number>();
+    const add = (card: CardName, text: 'ability' | 'augment', own: boolean): void => {
+      const k = `${text}:${card}`;
+      const nth = next.get(k) ?? 0;
+      next.set(k, nth + 1);
+      out.push({ card, text, nth, own });
+    };
+    const idCopy = this.identityCopy(u);
+    const idFace = idCopy?.card ?? u.card;
+    if (!idCopy || idCopy.facets.includes('activated')) { add(idFace, 'ability', true); add(idFace, 'augment', true); }
+    for (const name of this.projectedFaces(u, 'activated', true)) {
+      if (name === idFace) continue;
+      add(name, 'ability', false); add(name, 'augment', false);
+    }
+    for (const card of this.copiedAugments(u, 'activated')) add(card, 'augment', false);
+    return out;
+  }
   copiedAugmentBoxes(e: Entity, facet: CopyFacet): { card: CardName; nth: number }[] {
     const cards = this.copiedAugments(e, facet);
     if (!cards.length) return [];
@@ -1549,7 +1585,7 @@ export class E {
    * latch a nested query answers "identity face only", which is the same
    * shallow answer dp/dt already gets.
    */
-  private projectedFaces(e: Entity, facet: CopyFacet): CardName[] {
+  private projectedFaces(e: Entity, facet: CopyFacet, everyCopy = false): CardName[] {
     if (facet === 'name' || facet === 'stats') return [];   // never projected
     if (this.inFaces) return [];
     const out: CardName[] = [];
@@ -1567,7 +1603,9 @@ export class E {
           if (!facets.includes(facet)) continue;
           for (const name of pr.faces(this, anchor)) {
             if (name === mine) continue;                     // no recursive mimicry
-            if (!out.includes(name)) out.push(name);
+            // `everyCopy`: one entry per SOURCE (two Jollyglop neighbours are
+            // two), for the [once] bookkeeping of E.activatedBoxes (CT-342)
+            if (everyCopy || !out.includes(name)) out.push(name);
           }
         }
       }

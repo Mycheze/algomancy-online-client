@@ -1561,12 +1561,17 @@ function activationSource(e: E, u: Entity, via?: ActivateVia):
   }
   if ('face' in via) {
     if (via.copy !== undefined) {
-      // CR 109.9k, 710.2d / CT-342: the k-th copied box of that name, with its
-      // own use — exactly what E.copiedAugmentBoxes numbered for the offer
-      e.need(via.text === 'augment' && Number.isInteger(via.copy) && via.copy >= 1
-        && e.copiedAugmentBoxes(u, 'activated').some(b => b.card === via.face && b.nth === via.copy),
+      // CR 109.9k, 710.2d, 710.7 / CT-342: the k-th box of that name and text —
+      // a second neighbour's, a second copied mod's — with its own use, exactly
+      // what E.activatedBoxes numbered for the offer
+      const text = via.text ?? 'ability';
+      e.need(Number.isInteger(via.copy) && via.copy >= 1
+        && e.activatedBoxes(u).some(b => !b.own && b.card === via.face && b.text === text && b.nth === via.copy),
       'that unit does not have that ability');
-      return { list: getCard(via.face).augmentText, prefix: 'augment', viaCard: via.face, copyNth: via.copy };
+      const def = getCard(via.face);
+      return text === 'augment'
+        ? { list: def.augmentText, prefix: 'augment', viaCard: via.face, copyNth: via.copy }
+        : { list: def.abilities, prefix: 'ability', viaCard: via.face, copyNth: via.copy };
     }
     // CR 710.2a: a copy's copied augment mod is addressed as `{ face, text: 'augment' }`
     // too — its [Augment] text is the copy's own, keyed on the mod's card
@@ -4136,24 +4141,24 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
     // the same list from the same call, and the two MUST agree action for
     // action: the fuzzer's "legalActions lied" invariant is the guard, and
     // this class of split has already been caught here once.
-    const idFace = e.faceName(u);
-    const faces = e.facesWith(u, 'activated');
-    for (const face of faces) {
-      const own = face === idFace;
-      offer(getCard(face).abilities, 'ability', face, own ? undefined : { face });
+    //
+    // CR 109.9k, 710.2d, 710.7 / CT-342: and ONE ACTIVATION PER SOURCE, each with
+    // its own [once] — two Jollyglop neighbours of an Ancient One are two
+    // (the owner, 2026-10-22: "each neighbour's copy of the ability is
+    // separate, the same as two mods each having their own use"), and so are
+    // two augments a copy copied. E.activatedBoxes numbers them: box 0 keeps the
+    // address it always had (`{ face }` / `{ face, text: 'augment' }`, which
+    // for a copy's copied mod is the mod's card name), box k adds `copy: k`.
+    for (const b of e.activatedBoxes(u)) {
+      const def = getCard(b.card);
+      const list = b.text === 'ability' ? def.abilities : def.augmentText;
+      const via: ActivateVia | undefined = b.own
+        ? (b.text === 'ability' ? undefined : 'augment')
+        : b.text === 'ability'
+          ? (b.nth ? { face: b.card, copy: b.nth } : { face: b.card })
+          : (b.nth ? { face: b.card, text: 'augment', copy: b.nth } : { face: b.card, text: 'augment' });
       // a card's own [Augment] text is active when played normally (Manual Q&A)
-      offer(getCard(face).augmentText, 'augment', face,
-        own ? 'augment' : { face, text: 'augment' });
-    }
-    // CR 710.2a: the [Augment] text of the mods a copy copied, addressed by the
-    // mod's card name. One activation per BOX, each with its own use, as two
-    // real Graxxlids have (CR 109.9k, 710.2d; E.copiedAugmentBoxes): box 0 is the
-    // field-less `{ face, text: 'augment' }` it always was, and box k adds
-    // `copy: k`. When a face above is that card, its own text is box 0, so no
-    // copied box repeats an action the face loop already offered.
-    for (const { card, nth } of e.copiedAugmentBoxes(u, 'activated')) {
-      offer(getCard(card).augmentText, 'augment', card,
-        nth === 0 ? { face: card, text: 'augment' } : { face: card, text: 'augment', copy: nth });
+      offer(list, b.text, b.card, via);
     }
     // activated abilities donated by augment mods (controller of the unit controls its mods)
     for (const modId of u.mods) {

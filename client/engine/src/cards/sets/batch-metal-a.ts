@@ -295,13 +295,14 @@ card('Ancient One', {
           const face = g.nameOf(n);
           // CR 109.9k, 710.7 / CT-342: `use` tells two sources of one text
           // apart, so each borrowed box has its own [once] on the Ancient One:
-          // a neighbour's mod by the mod's id, a neighbouring copy's copied box
-          // by the neighbour and the box's number. A neighbour's own face text
-          // keeps the plain key (two same-name neighbours' faces still share
-          // one — the projected-face model's reading, not settled by 109.9k).
+          // a neighbour's own text by the neighbour, its mod by the mod's id, a
+          // neighbouring copy's copied box by the neighbour and the box's
+          // number. The owner, 2026-10-22: two Jollyglop neighbours give TWO
+          // uses — "each neighbour's copy of the ability is separate, the same
+          // as two mods each having their own use".
           const sources: { cardName: string; prefix: 'ability' | 'augment'; use: string }[] = [
-            { cardName: face, prefix: 'ability', use: '' },
-            { cardName: face, prefix: 'augment', use: '' },
+            { cardName: face, prefix: 'ability', use: `@n${n.id}` },
+            { cardName: face, prefix: 'augment', use: `@n${n.id}` },
           ];
           for (const modId of n.mods) {
             const m = g.entity(modId);
