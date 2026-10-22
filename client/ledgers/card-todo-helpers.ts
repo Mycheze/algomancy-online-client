@@ -54,3 +54,24 @@ export function eventsFrom(
   return g.events.length - before;
 }
 
+
+// ── source readers for the comprehensive-rules finding proofs (CT-226 on) ──
+// Moved here from card-todo.ts on 2026-10-22 so a proof keeps working when its
+// entry moves to the closed half.
+
+/** the client tree, which every path below is relative to */
+export const CLIENT_DIR = path.resolve(SRC_DIR, '..', '..');
+export const text = (rel: string): string => fs.readFileSync(path.join(CLIENT_DIR, rel), 'utf8');
+/** is any of `needles` still in client/<rel>? (whitespace-normalised) */
+export function still(rel: string, ...needles: string[]): boolean {
+  const t = text(rel).replace(/\s+/g, ' ');
+  return needles.some(n => t.includes(n.replace(/\s+/g, ' ')));
+}
+/** the source from `start` up to `end`; throws when `start` has moved */
+export function body(rel: string, start: string, end: string): string {
+  const t = text(rel);
+  const i = t.indexOf(start);
+  if (i < 0) throw new Error(`${rel}: "${start}" is gone`);
+  const j = t.indexOf(end, i + start.length);
+  return t.slice(i, j < 0 ? undefined : j);
+}

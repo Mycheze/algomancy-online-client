@@ -24,7 +24,7 @@
  * the form CARD-TODO #49 says it closes in ("the remainder are clauses no
  * fixture can reach, named individually rather than counted").
  *
- * 34 claims over 33 cards, down from 52 at the end of CARD-TODO #49 stage 4 and from 218 over
+ * 33 claims over 32 cards, down from 52 at the end of CARD-TODO #49 stage 4 and from 218 over
  * the whole gated heap when the ticket was filed.
  *
  * ⚠ THOSE TWO NUMBERS ARE RE-DERIVED, NOT MAINTAINED. They said "38 claims
@@ -86,17 +86,10 @@ export const UNREACHED: Record<string, string> = {
   // Galerider Eel, Colony of the Interworld, Rider of the Tides, Xenopod
   // Progenitor and Boreal Wanderer all deliver now, each with a named
   // assertion in 170-battle-position-promises quoting its printed clause.
-  'Bloated Manablub':
-    'REGION — "each opponent loses 3 life" loops over `regions[ctx.region].presentSeats`, and the '
-    + "trigger resolves in the drill's home region where no opponent is present, so the loop runs "
-    + 'zero times. ⚠ It does this SILENTLY; its sibling Boreal Wanderer announces the same no-op. '
-    + '⚠ THE LAST OF THE SIX, and the battle-position round measured exactly why the `inBattle` pin does not reach it: '
-    + 'this card is a 2/2 that the `counters` and `damage` beats leave dead before the declare '
-    + 'step, and the drill\'s "keep the card on the table" respawn puts it back AT HOME, mid-battle '
-    + 'and too late to join the attack. It never stands in a battle at all (`inBattleBeats` is '
-    + 'empty for it), so both beats that make it leave play fire at home. The precondition it '
-    + 'still lacks is a body that survives to the declare step, or a respawn that puts it into the '
-    + 'battle region its seat is already present in.',
+  // The sixth, Bloated Manablub, left on 2026-10-22: the drill observes its
+  // "each opponent loses 3 life" now, after that round's engine work, and 84
+  // demanded the entry go. The family is empty; the heading stays so the
+  // next REGION entry has somewhere to stand.
 
   // ── BOARD: implemented, precondition unbuildable by the drill ────────────
   'Fire Resource':

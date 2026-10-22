@@ -3739,7 +3739,7 @@ export const CLOSED: LedgerEntry[] = [
       '308-recycle-for-prismite.test.ts::CR 106.6a every hand card offers a Prismite, then a Shard, after the elements',
       '308-recycle-for-prismite.test.ts::CR 106.6b a recycled Prismite behaves like a starting one',
       '308-recycle-for-prismite.test.ts::a recycled Shard is mana only',
-      '308-recycle-for-prismite.test.ts::CR 106.8d what stays illegal',
+      '308-recycle-for-prismite.test.ts::CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource',   // retitled 2026-10-22 (CT-237: a Shard is allowed now)
     ],
     note:
       'CR 106.6a. Filed as ux, but it was an engine refusal: `doRecycle` accepted only an element of '
