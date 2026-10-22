@@ -8,7 +8,7 @@
  * in data/comprehensive-rules/rules/U20.json lists this file in its
  * sources.tests, and an example may be bound to the test by its title.
  *
- * The four tests titled "engine differs" are the exception: their rules state
+ * The tests titled "engine differs" are the exception: their rules state
  * the ruling (or the printed text) and carry an engineDiffers mark, and these
  * tests pin the divergence the mark describes. They are deliberately NOT
  * listed in those rules' sources. When one goes red the engine has been
@@ -283,26 +283,6 @@ test('cr:attr.electric.adjacency — during a battle, a unit in no formation has
   const g = new E(h.state);
   assert.ok(g.s.battle);
   assert.deepEqual(g.adjacentInFormation(idle), [], 'the idle unit is in no formation');
-});
-
-test('cr:attr.electric.chooser — engine differs: the Electric path is asked of the controller of the effect even when the source unit is the opponents', () => {
-  const h = new Harness(92008);
-  toDeployment(h);
-  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
-  const a0 = tok(h, A, 1, 1), a1 = tok(h, A, 1, 1);
-  const b0 = tok(h, D, 1, 9);
-  toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[a0], [a1]] });
-  blockStep(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [b0] } });
-  const g0 = new E(h.state);
-  assert.deepEqual(g0.adjacentInFormation(a0).map(u => u.id), [a1], 'the two attackers are adjacent');
-  const { asked } = effect(h, { controller: A, sourceId: b0, attrs: ['Electric'], hits: [{ target: a0, n: 5 }] });
-  const q = asked.find(a => a.kind === 'electricPath');
-  assert.ok(q, 'a jump is offered');
-  assert.equal(new E(h.state).entity(b0)!.controller, D, 'the source is the defenders');
-  // the rule: the source controller (D) chooses; the engine asks the effect controller (A)
-  assert.equal(q.seat, A, 'engine: the path is asked of the effect controller');
 });
 
 test('cr:attr.piercing.redirect — engine differs: with two Oorblaks, 10 Piercing combat damage is redirected a second time, so both die and only 2 reach the player', () => {

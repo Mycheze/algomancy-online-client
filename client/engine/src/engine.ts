@@ -5827,7 +5827,10 @@ export class E {
         // to share `epath:0` and the second reused the first's pick. The first
         // hit keeps the old key, so a game saved mid-question resumes as it was.
         const chosen = ctx.choose(hi === 0 ? `epath:${hop}` : `epath:${hi}:${hop}`, {
-          kind: 'electricPath', seat: ctx.controller,
+          // CR 802.17 / CT-226: "The Electric source's controller chooses the
+          // path" — the DEALING player, the seat the Piercing split above asks
+          // (a Fight or Battle makes an opponent's unit the source, CR 801.11a).
+          kind: 'electricPath', seat: dealerSeat,
           prompt: `${ctx.sourceName}: ${remaining} excess Electric damage — choose the next unit, or keep it on ${victim.card}`,
           options: [
             ...nexts.map(u => ({ label: u.card, value: u.id })),
