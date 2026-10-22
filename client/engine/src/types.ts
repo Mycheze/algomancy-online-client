@@ -1781,7 +1781,34 @@ export type ActivateVia =
   | { mod: EntityId }
   | { face: CardName; text?: 'ability' | 'augment' };
 
-export type Action =
+/**
+ * CR 703.2a / CT-253 — KEEP PRIORITY, AS A PROPERTY OF THE ACTION.
+ *
+ * The Manual (p.30): a player who acts may keep priority and take further
+ * actions before passing. Owner, 2026-10-22: follow the Manual, with the
+ * client passing for you as before unless you ask to hold ("auto-pass, hold
+ * to keep" — Ctrl, or the hold toggle on the battle bar).
+ *
+ * So the ask rides on the action itself. ABSENT (every action logged before
+ * 2026-10-22, and every action sent without the ask): priority goes to the
+ * other seat after a push exactly as it always did, so an old log replays
+ * byte for byte. `true`: the actor's own non-trigger items pushed by this
+ * action keep priority with the actor (`E.pushItem`), who must act again or
+ * pass. A cast that suspends for its targets keeps the ask until it lands
+ * (`GameState.holdPriority`). Accepted only on the action types in
+ * apply.ts's `HOLD_PRIORITY_ACTIONS`, and only in battle: anywhere else it is
+ * refused. The owner, 2026-10-22: "you CANNOT hold priority during
+ * Deployment. The stack technically only exists for triggers during
+ * deployment" (CR 507.5, 703.7).
+ *
+ * NOT in `legalActions`: it is an option every listed action takes, never a
+ * second copy of each one.
+ */
+export interface HoldPriorityAsk { holdPriority?: true }
+
+export type Action = ActionBody & HoldPriorityAsk;
+
+type ActionBody =
   | { type: 'recycleForResource'; seat: Seat; handIndex: number; element: ResourceKind }
   | { type: 'activateResource'; seat: Seat; index: number }
   /** planning: swap an ACTIVE Prismite for a resource of any element (CR 106.8a) */
@@ -2189,6 +2216,12 @@ export interface GameState {
    * well as a window — see `StackItem.spawnWearing`. */
   priority: Seat | null;
   passes: number;
+  /** CR 703.2a / CT-253: the seat whose action in progress asked to keep
+   * priority (`Action.holdPriority`). Set only in battle, and only for the
+   * length of one action — including a cast suspended for its targets, which
+   * is why it is state and not a field of the call. Cleared once the action
+   * has nothing pending. Optional/additive: absent in every older save. */
+  holdPriority?: Seat;
   planningDone: boolean[];
   /** haste step (Manual p.18): non-null while it runs; true = done playing
    * haste cards. Skipped entirely when nobody has a legal haste play. */

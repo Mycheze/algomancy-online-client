@@ -8633,11 +8633,11 @@ export class E {
       { id: item.id, controller: item.controller });
     this.s.passes = 0;
     /**
-     * CR 703.3a, 605.1a, 604.3c; Annex D2.9 — WHO RESPONDS FIRST DEPENDS ON WHY THE ITEM IS HERE.
+     * CR 703.3a, 605.1a, 604.3c, 703.2a — WHO RESPONDS FIRST DEPENDS ON WHY THE ITEM IS HERE.
      *
      * A PLAY or ACTIVATION (anything but a trigger) is a player acting with
-     * priority, and D2.9 hands priority to the opponent: whoever did NOT act
-     * responds first.
+     * priority, and by default priority goes to the opponent: whoever did NOT
+     * act responds first — unless the actor asked to keep it (below).
      *
      * A TRIGGER is not anybody acting. It goes on the stack as a window opens
      * (CR 604.3c: on-attack triggers "are put on the stack before the attack
@@ -8655,7 +8655,15 @@ export class E {
      * from doDecide and must behave exactly as if it had not suspended.
      */
     if (item.kind === 'triggered') return;
-    if (this.s.priority !== null) this.s.priority = other(item.controller);
+    /**
+     * CR 703.2a / CT-253: unless the action that put it here asked to keep
+     * priority (`Action.holdPriority`, carried as `GameState.holdPriority`
+     * across a cast's own suspensions) — then the actor keeps it and must act
+     * again or pass, and the opponent gets their look once they do (CR 703.2b).
+     */
+    if (this.s.priority !== null) {
+      this.s.priority = this.s.holdPriority === item.controller ? item.controller : other(item.controller);
+    }
   }
 
   /**
