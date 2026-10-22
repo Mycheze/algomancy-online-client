@@ -301,9 +301,10 @@ test('BL-18 §3 the switch reaches the SERVER, on the join and on every change',
 /* ══ §4 — hold priority, measured ══════════════════════════════════════ */
 
 test('BL-18 §4 you can respond to your own spell with the first still on the stack', () => {
-  // doneWhen line 3, and ⚠ IT IS NOT WHAT IT LOOKS LIKE. A cast that does not
-  // ask to keep priority hands it to the other seat as soon as the item goes
-  // on the stack (CT-253 added the ask, CR 703.2a — 568/569). What the line
+  // doneWhen line 3, and ⚠ IT IS NOT WHAT IT LOOKS LIKE. Casting does not keep
+  // the window here: `engine.ts` hands priority to the other seat as soon as
+  // an item goes on the stack, so "cast two in a row with nobody looking in
+  // between" is FALSE today and would be an engine change. What the line
   // literally asks for is true — the window does not close, the first spell is
   // still there to respond to — and that is what is pinned here, so the
   // difference is on the record rather than in somebody's head.
@@ -322,8 +323,9 @@ test('BL-18 §4 you can respond to your own spell with the first still on the st
   pick(h, { unit: wall });
   assert.equal(h.state.stack.length, 1, 'the first spell is on the stack');
   assert.equal(h.state.priority, A,
-    'MEASURED: a cast WITHOUT the keep-priority ask hands priority to the OPPONENT. Since CT-253 '
-    + 'the ask (holdPriority, CR 703.2a) keeps it with the caster; 568 and 569 pin that half');
+    'MEASURED, and it is the finding: casting hands priority to the OPPONENT here. If this ever '
+    + 'becomes D, the engine has been given MTGO retain-priority and BL-18 line 3 means something '
+    + 'stronger than this test asserts');
 
   h.do({ type: 'passPriority', seat: A });
   assert.equal(h.state.priority, D, 'the window comes back');

@@ -112,3 +112,39 @@ test('CR 703.2a / CT-253: a pass never carries the ask', () => {
   assert.equal(toggleOn(), false);
   assert.deepEqual(sent, [{ type: 'passPriority', seat: D }], 'a battle pass is just a pass');
 });
+
+test('CR 507.5 / CT-253: in deployment nothing asks to hold — no toggle, and Ctrl adds nothing', () => {
+  // The owner, 2026-10-22: "you CANNOT hold priority during Deployment." The
+  // engine refuses the ask there (568), so the client must never send it.
+  const w = window(56909);
+  ui.join(viewFor(w.s, w.D), w.D, legalActions(w.s, w.D));
+  mouse({ btn: 'holdprio' });
+  ui.click({ btn: 'holdprio' });
+  assert.equal(toggleOn(), true, 'fixture: the toggle is on, from a battle');
+
+  const h = new Harness(56910);
+  toDeployment(h);
+  assert.equal(h.state.phase, 'deploy', 'fixture: deployment');
+  const seat = h.state.initiative;
+  giveResources(h, seat, 'wood', 6);
+  const i = give(h, seat, 'Prickly Protector');
+  ui.key('Control');
+  ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
+  assert.equal(ui.has({ btn: 'holdprio' }), false, 'the deployment bar offers no hold');
+  ui.sent();
+  mouse({ act: 'hand', p: seat, i });
+  ui.click({ act: 'hand', p: seat, i });
+  const sent = ui.actions();
+  ui.key('Control', { up: true });
+  ui.push({ t: 'error', msg: 'released by the test' });
+  const play = sent.find(a => a.type === 'playCard');
+  assert.ok(play, `fixture: the click played the card (sent ${JSON.stringify(sent)})`);
+  assert.equal(play!.holdPriority, undefined, 'toggle on and Ctrl held, and still no ask in deployment');
+
+  // leave the toggle off for whoever runs next
+  const v = window(56911);
+  ui.join(viewFor(v.s, v.D), v.D, legalActions(v.s, v.D));
+  mouse({ btn: 'holdprio' });
+  ui.click({ btn: 'holdprio' });
+  assert.equal(toggleOn(), false);
+});

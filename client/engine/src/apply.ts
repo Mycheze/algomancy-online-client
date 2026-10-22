@@ -413,7 +413,7 @@ export function apply(
     if (!(sig instanceof Suspended) && !(sig instanceof GameEnded)) throw sig;
   }
   // CR 703.2a / CT-253: the ask to keep priority lasts one action — through
-  // its own suspensions, and no further
+  // its own suspensions, and no further (nor past the end of the battle)
   if (e.s.holdPriority !== undefined && (e.s.decision === null || e.s.phase !== 'battle')) delete e.s.holdPriority;
   if (guard !== null && e.s.phase !== 'gameover' && pendingFingerprint(e.s) !== guard) {
     // The draft is discarded by throwing: the caller keeps `state`, so the
@@ -486,7 +486,8 @@ export const HOLD_PRIORITY_ACTIONS: ReadonlySet<Action['type']> = new Set<Action
 ]);
 
 /** `a` with the keep-priority ask added, when its type can carry one (the
- * client's one door for it); anything else comes back unchanged. */
+ * client's one door for it, which sends it in battle only); anything else
+ * comes back unchanged. */
 export function withHoldPriority(a: Action): Action {
   return HOLD_PRIORITY_ACTIONS.has(a.type) ? { ...a, holdPriority: true } : a;
 }
@@ -508,12 +509,16 @@ function dispatch(e: E, action: Action): void {
     e.illegal(`a decision is pending for ${e.pname(e.s.decision!.seat)}`);
   }
   // CR 703.2a / CT-253: the ask to keep priority (types.ts HoldPriorityAsk).
-  // Outside battle nobody holds priority, so it is accepted and does nothing.
+  // BATTLE ONLY, and refused anywhere else rather than ignored, so no client
+  // can log a meaningless one. The owner, 2026-10-22: "you CANNOT hold priority
+  // during Deployment. The stack technically only exists for triggers during
+  // deployment, you can't do any 'on the stack' shenanigans." (CT-185 dropped.)
   if (action.holdPriority !== undefined) {
     if (action.holdPriority !== true || !HOLD_PRIORITY_ACTIONS.has(action.type)) {
       e.illegal('only an action that puts something on the stack can keep priority');
     }
-    if (e.s.phase === 'battle') e.s.holdPriority = action.seat;
+    if (e.s.phase !== 'battle') e.illegal('priority can be kept only in battle');
+    e.s.holdPriority = action.seat;
   }
   // Report #86 / CARD-TODO 22: during deployment, ANY action a seat takes
   // other than hitting Done marks that seat as having acted (owner's ruling:

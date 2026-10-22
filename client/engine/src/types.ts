@@ -1788,8 +1788,10 @@ export type ActivateVia =
  * action keep priority with the actor (`E.pushItem`), who must act again or
  * pass. A cast that suspends for its targets keeps the ask until it lands
  * (`GameState.holdPriority`). Accepted only on the action types in
- * apply.ts's `HOLD_PRIORITY_ACTIONS`; outside battle there is no priority to
- * keep (CR 507.5, 703.7) and the field does nothing.
+ * apply.ts's `HOLD_PRIORITY_ACTIONS`, and only in battle: anywhere else it is
+ * refused. The owner, 2026-10-22: "you CANNOT hold priority during
+ * Deployment. The stack technically only exists for triggers during
+ * deployment" (CR 507.5, 703.7).
  *
  * NOT in `legalActions`: it is an option every listed action takes, never a
  * second copy of each one.

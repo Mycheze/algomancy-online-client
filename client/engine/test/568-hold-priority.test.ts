@@ -134,17 +134,20 @@ test('CR 703.2a / CT-253: the ask is refused on an action that cannot push anyth
     IllegalAction, 'only `true` is an ask');
 });
 
-test('CR 507.5 / CT-253: in deployment the ask changes nothing at all', () => {
-  // nobody holds priority on a deployment stack (CR 507.5, 703.7), so a play
-  // that asks must leave exactly the state a play that does not ask leaves
+test('CR 507.5 / CT-253: in deployment the ask is refused — nobody can hold priority there', () => {
+  // The owner, 2026-10-22: "you CANNOT hold priority during Deployment. The
+  // stack technically only exists for triggers during deployment, you can't do
+  // any 'on the stack' shenanigans." Refused, not ignored, so a client cannot
+  // log a meaningless ask; the same play without it is legal.
   const h = new Harness(56806);
   toDeployment(h);
+  assert.equal(h.state.phase, 'deploy', 'fixture: deployment');
   const A = h.state.initiative;
   giveResources(h, A, 'wood', 6);
   const idx = give(h, A, 'Prickly Protector');
-  const plain = apply(h.state, { type: 'playCard', seat: A, handIndex: idx });
-  const asked = apply(h.state, { type: 'playCard', seat: A, handIndex: idx, holdPriority: true });
-  assert.equal(JSON.stringify(asked.state), JSON.stringify(plain.state), 'identical state either way');
+  assert.throws(() => apply(h.state, { type: 'playCard', seat: A, handIndex: idx, holdPriority: true }),
+    /only in battle/, 'a deployment play that asks is refused');
+  assert.doesNotThrow(() => apply(h.state, { type: 'playCard', seat: A, handIndex: idx }), 'and without it is legal');
 });
 
 test('CR 703.2a / CT-253: withHoldPriority adds the ask only where it can mean something', () => {
@@ -157,7 +160,7 @@ test('CR 703.2a / CT-253: withHoldPriority adds the ask only where it can mean s
  *
  * A dedicated fuzz walk (its own seeds and RNG, so the shared fuzzer's seeded
  * walks are untouched). Every legal action is applied as listed; every one
- * whose type may carry the ask carries it on a coin flip. After each:
+ * whose type may carry the ask carries it on a coin flip, in battle. After each:
  *   · a refused ask would be "legalActions lied" — the field must never turn a
  *     legal action illegal;
  *   · an action that put its actor's own non-trigger item on a battle stack
@@ -181,7 +184,8 @@ test('CR 703.2a / CT-253: every action that pushes its own item in battle can ca
       for (const seat of [0, 1] as Seat[]) legal.push(...legalActions(state, seat));
       if (!legal.length) break;
       let a = legal[Math.floor(rand() * legal.length)]!;
-      const ask = HOLD_PRIORITY_ACTIONS.has(a.type) && rand() < 0.5;
+      // the ask exists in battle only (deployment refuses it — the test above)
+      const ask = state.phase === 'battle' && HOLD_PRIORITY_ACTIONS.has(a.type) && rand() < 0.5;
       if (ask) a = withHoldPriority(a);
       const before: GameState = state;
       let after: GameState;
