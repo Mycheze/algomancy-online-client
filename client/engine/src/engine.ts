@@ -8173,9 +8173,16 @@ export class E {
 
   /** CR 110.12: the units in `region` that must be targeted if able. Radiates like
    * a static — live as a unit in play, donated while an augment mod — and is
-   * silenced by CR 712.1a exactly as an ability is. */
+   * silenced by CR 712.1a exactly as an ability is.
+   *
+   * CT-239: the printed clause is "When a player selects targets for an effect
+   * DURING BATTLE", so it compels only while a battle is on in that region.
+   * Region scope alone is not that: deployment happens in the home region too,
+   * and a Gatekeeper there used to narrow its own controller's Overbloom. */
   mustBeTargetedIn(region: number): Set<EntityId> {
     const out = new Set<EntityId>();
+    const b = this.s.phase === 'battle' ? this.s.battle : null;
+    if (!b || b.region !== region) return out;
     const live = this.radiates();
     for (const { anchor } of this.anchored((h, a) =>
       this.donates(h, a, 'mustBeTargeted')                      // CR 710.7: off the FACES

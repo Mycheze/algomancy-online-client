@@ -31,6 +31,19 @@ type Q = (g: any, u: Entity) => unknown;
 const amount = (u: Entity) => ({ kind: 'counters', region: u.region, amount: 1, unit: u, player: u.controller, combat: false });
 const modCtx = (u: Entity) => ({ seat: u.controller, card: getCard('Nebula Drifter'), from: 'hand', region: u.region });
 /** channel → the queries that read it (modPermissions has two sites) */
+/** CT-239: Gatekeeper of Souls compels only "during battle", so a probe of the
+ * channel puts a battle on in `region` (its declare step, exactly the shape
+ * E.startBattleRound opens) for the length of the query. */
+function duringBattleIn<T>(g: E, region: number, fn: () => T): T {
+  const s = g.s, was = { phase: s.phase, battle: s.battle };
+  s.phase = 'battle';
+  s.battle = {
+    round: 1, attacker: 0, defender: 1, region, step: 'declare',
+    columns: [], blocks: {}, sentAttackers: [], attackerPool: null, happened: false,
+  };
+  try { return fn(); } finally { s.phase = was.phase; s.battle = was.battle; }
+}
+
 const CHANNELS: Record<string, Q[]> = {
   costMods: [(g, u) => g.costModsFor(u.region)],
   effectAttrs: [(g, u) => g.effectAttrsFor({ seat: u.controller, region: u.region, kind: 'spell' })],
@@ -40,7 +53,7 @@ const CHANNELS: Record<string, Q[]> = {
   playPermissions: [(g, u) => g.hastePlayAllowance({ ...modCtx(u), card: getCard('Mirage Walker'), usedThisTurn: 0 })],
   asYouPlay: [(g, u) => g.asYouPlayOffers({ region: u.region, controller: u.controller, kind: 'unit', card: 'Mirage Walker' })],
   projects: [(g, u) => g.projectedFaces(u, 'behavior')],
-  mustBeTargeted: [(g, u) => g.mustBeTargetedIn(u.region)],
+  mustBeTargeted: [(g, u) => duringBattleIn(g, u.region, () => g.mustBeTargetedIn(u.region))],
 };
 const STRIPPERS = new Set(['Monke', 'Transmogrifant', 'The Everywhere']);
 

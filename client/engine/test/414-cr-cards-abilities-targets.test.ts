@@ -259,7 +259,7 @@ test('cr:concepts.targets.must-be-targeted.choice-only — a Gatekeeper of Souls
   finishBattle(h);
 });
 
-test('cr:concepts.targets.must-be-targeted — engine differs: Gatekeeper of Souls compels the target of an Overbloom played in deployment, outside battle', () => {
+test('cr:concepts.targets.must-be-targeted — Gatekeeper of Souls compels nothing outside battle: an Overbloom played in deployment may target the other unit (CT-239)', () => {
   const h = new Harness(30305);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -271,7 +271,7 @@ test('cr:concepts.targets.must-be-targeted — engine differs: Gatekeeper of Sou
   h.do({ type: 'playCard', seat: P, handIndex: idx });
   const vals = h.state.decision!.options.map(o => JSON.stringify(o.value));
   assert.ok(vals.includes(JSON.stringify({ unit: gk })), 'the Gatekeeper is offered');
-  assert.ok(!vals.includes(JSON.stringify({ unit: mine })), `the other unit is not offered: ${vals.join(' ')}`);
+  assert.ok(vals.includes(JSON.stringify({ unit: mine })), `the other unit is offered too: ${vals.join(' ')}`);
 });
 
 // ── tester additions: the rules no verifier probe demonstrated ───────────────
