@@ -141,7 +141,6 @@ const ALLOWED: { file: string; match: string; why: string }[] = [
   { file: 'engine/test/43-dark-c.test.ts', match: "between damage sub-steps (R31)'", why: 'freeze: a quotation of the old assertion message, kept verbatim' },
   { file: 'engine/test/64-formation-collapse.test.ts', match: 'USED TO OPEN "R3 says there is no priority window', why: 'freeze: a quotation (across two lines) of the comment as it used to open, kept verbatim' },
   { file: 'engine/test/90-coverage-census.test.ts', match: 'a per-card budget (R9) for a card that is not in play?"', why: 'freeze: the second line of a quoted design question, kept verbatim' },
-  { file: 'engine/src/engine.ts', match: 'is what R184 read."', why: 'freeze: the closing line of a multi-line quotation of the Reaping reminder, kept verbatim' },
   { file: 'ui/test/156-reaping-and-formation.test.ts', match: 'is what R184 read."', why: 'freeze: the closing line of a multi-line quotation of the Reaping reminder, kept verbatim' },
   { file: 'ui/test/165-token-loss-warning.test.ts', match: 'erased pile (R65) exactly as it', why: 'freeze: the opening line of a multi-line quotation of the token-loss block, kept verbatim' },
   { file: 'ui/test/177-glossary-conformance.test.ts', match: 'AND IT IS WHAT R184 READ."', why: 'freeze: the closing line of a multi-line quotation of the Reaping reminder, kept verbatim' },
