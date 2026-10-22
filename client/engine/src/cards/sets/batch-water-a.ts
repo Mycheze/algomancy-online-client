@@ -491,8 +491,8 @@ const playInlineInPlace = (
     const targets = part.targets.map(r => g.resolveTargetRef(r)).filter((r): r is ResolvedTarget => r !== null);
     // CR 704.6: a part that declared nothing although it required something does
     // not run, exactly as at `resolveParts`
+    // (silent here, as it always was: each caller says what a fizzle meant for it)
     if (eff.targets && (part.targets.length ? !targets.length : g.requiredTargetsOf(item, part, eff.targets) > 0)) {
-      g.ev('fizzled', `${name} fizzles — it has no legal target.`, { id: item.id });
       return { outcome: 'fizzled' };
     }
     eff.run(g, {
