@@ -11,7 +11,7 @@
  * removed on 2026-09-23; the both-seats view it needed survives only in
  * `test/ui-driver.ts`, for CR D2.1. */
 import {
-  createGame, decisionBlocks, legalActions, ALL_ELEMENTS,
+  createGame, decisionBlocks, legalActions, withHoldPriority, ALL_ELEMENTS,
 } from '../engine/src/apply.ts';
 import { getCard } from '../engine/src/cards/dsl.ts';
 import type { XPreviewRow } from '../engine/src/cards/dsl.ts';
@@ -2212,6 +2212,9 @@ function act(a: Action): void {
   // window that is no longer the one the player was looking at.
   if (ui.sentFor === h.state.actionCount) return;
   if (isPlay(a)) ui.acted[a.seat] = { step: stepKey(), count: h.state.actionCount };
+  // CR 703.2a / CT-253: Ctrl held or the hold toggle on — the action asks to
+  // keep priority. Here, at the one door, so no route can send without it.
+  if (holdPriorityOn() && h.state.phase === 'battle') a = withHoldPriority(a);
   NET.do(a);
   uiError = '';
 }
@@ -6487,6 +6490,7 @@ function phaseBarHtml(err: string): string {
     return `<div class="promptbar"><span class="who">${esc(s.players[s.priority!]!.name)}:</span>
       you have priority
       <button class="primary" data-btn="pass">Pass <span class="kh">(space)</span></button>
+      ${holdPriorityButton()}
       ${NET && !fullControlOn() && s.stack.length ? `<button data-btn="passstack" title="pass until the stack has resolved or something changes">Pass through stack</button>` : ''}
       ${NET && !fullControlOn() ? `<button data-btn="passall" title="give up priority until the next phase">Pass all</button>` : ''}
       <span style="color:var(--dim)">(both pass: ${s.stack.length ? 'resolve top of stack' : `move to ${nextBattleStepName()}`})</span>${err}</div>`;
@@ -8740,12 +8744,10 @@ const bluffHasteOn = (): boolean => localStorage.getItem('algoBluffHaste') === '
  * not reachable from this file; see BL-18's own note on why it must be
  * switched off at the DRAIN SITE and never inside the reducer.
  *
- * ⚠ HOLD PRIORITY needs no code, and that is measured rather than assumed:
- * nothing but `passPriority` moves priority away from a seat inside a battle
- * window (engine.ts), so casting a second thing in response to your own first
- * is already legal and already keeps the window. The only thing that ever took
- * it away was this client passing for you — which is exactly what the switch
- * above turns off. 272 §3 asserts it rather than trusting this paragraph.
+ * ⚠ HOLD PRIORITY is CT-253's, not this switch's alone. A push hands priority
+ * to the other seat (engine.ts `pushItem`) unless the action asks to keep it;
+ * while Ctrl is held (or the hold toggle is on) `act()` adds that ask to every
+ * action it sends. See `holdPriorityOn`.
  *
  * ══ CT-183 — ⚠ IT IS A KEY YOU HOLD, AND IT SHIPPED AS A TOGGLE ══════
  *
@@ -8830,6 +8832,25 @@ function setFullControl(on: boolean): void {
   // paint, so the message is on the wire ahead of anything the player does next
   NET?.fullControl(on);
   render();
+}
+
+/**
+ * CR 703.2a / CT-253 — HOLD PRIORITY. The owner, 2026-10-22: "auto-pass, hold
+ * to keep". After you act, priority goes to your opponent as it always has,
+ * unless you hold Ctrl (full control, above) or turn this toggle on — then
+ * every action you send asks to keep priority (`Action.holdPriority`, added
+ * in `act()`), so you can add more before they get a look.
+ *
+ * The toggle is the finger's way in: a tablet has no Ctrl. Not persisted, like
+ * full control — a leftover "on" would quietly change every window you play.
+ */
+let holdToggle = false;
+const holdPriorityOn = (): boolean => holdToggle || fullControlOn();
+/** the bar's toggle; while Ctrl is down it reads on and says why */
+function holdPriorityButton(): string {
+  const on = holdPriorityOn();
+  const why = fullControlOn() && !holdToggle ? ' (Ctrl)' : '';
+  return `<button data-btn="holdprio" class="aptoggle${on ? ' on' : ''}" aria-pressed="${on}" title="On: you keep priority after you act, so you can add more before your opponent responds. Holding Ctrl does the same.">Hold priority: ${on ? 'on' : 'off'}${why}</button>`;
 }
 
 /** (b): letting go is letting go, and so is leaving. */
@@ -10553,6 +10574,8 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   passstack: () => passClick('stack'),
   passall: () => passClick('all'),
   passcancel: () => { ui.confirmPass = null; },
+  // CR 703.2a / CT-253: the hold toggle beside Pass (see holdPriorityButton)
+  holdprio: () => { holdToggle = !holdToggle; },
   // CR D2.8/BL-30 — and neither of these is a rules event: one re-sends the
   // interrupted intent, the other drops the question and leaves the same
   // target pick open, which is what "rechoose targets" means when nothing has

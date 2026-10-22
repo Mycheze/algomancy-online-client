@@ -412,6 +412,9 @@ export function apply(
   } catch (sig) {
     if (!(sig instanceof Suspended) && !(sig instanceof GameEnded)) throw sig;
   }
+  // CR 703.2a / CT-253: the ask to keep priority lasts one action — through
+  // its own suspensions, and no further
+  if (e.s.holdPriority !== undefined && (e.s.decision === null || e.s.phase !== 'battle')) delete e.s.holdPriority;
   if (guard !== null && e.s.phase !== 'gameover' && pendingFingerprint(e.s) !== guard) {
     // The draft is discarded by throwing: the caller keeps `state`, so the
     // clobbered decision never existed. This is the ONLY thing standing
@@ -468,6 +471,26 @@ export function replay(seed: number, actions: Action[], names?: [string, string]
 
 // ── dispatch ──────────────────────────────────────────────────────────
 
+/**
+ * CR 703.2a / CT-253 — the action types that may carry `holdPriority`: every
+ * one that can put the actor's OWN non-trigger item on a battle stack (a play,
+ * a cached or binned play, a spell token, an activation, a mod, and the
+ * `decide` that completes a cast suspended for its targets, X or costs).
+ * 568-hold-priority measures it: across fuzzed games, every action that left
+ * priority with the other seat after pushing its actor's item is one of these.
+ * Anything else carrying the field is refused — it would mean nothing.
+ */
+export const HOLD_PRIORITY_ACTIONS: ReadonlySet<Action['type']> = new Set<Action['type']>([
+  'playCard', 'playCached', 'playFromBin', 'castSpellToken', 'activateAbility',
+  'augment', 'graft', 'decide',
+]);
+
+/** `a` with the keep-priority ask added, when its type can carry one (the
+ * client's one door for it); anything else comes back unchanged. */
+export function withHoldPriority(a: Action): Action {
+  return HOLD_PRIORITY_ACTIONS.has(a.type) ? { ...a, holdPriority: true } : a;
+}
+
 function dispatch(e: E, action: Action): void {
   // CR 507.5a: whose crank turn this is. Set before ANY of the gates below, because
   // a refused action must still leave the field consistent with the draft it
@@ -483,6 +506,14 @@ function dispatch(e: E, action: Action): void {
   // and apply()'s after-gate for what stops you clobbering it.
   if (decisionBlocks(e.s, action.seat) && action.type !== 'decide' && action.type !== 'concede') {
     e.illegal(`a decision is pending for ${e.pname(e.s.decision!.seat)}`);
+  }
+  // CR 703.2a / CT-253: the ask to keep priority (types.ts HoldPriorityAsk).
+  // Outside battle nobody holds priority, so it is accepted and does nothing.
+  if (action.holdPriority !== undefined) {
+    if (action.holdPriority !== true || !HOLD_PRIORITY_ACTIONS.has(action.type)) {
+      e.illegal('only an action that puts something on the stack can keep priority');
+    }
+    if (e.s.phase === 'battle') e.s.holdPriority = action.seat;
   }
   // Report #86 / CARD-TODO 22: during deployment, ANY action a seat takes
   // other than hitting Done marks that seat as having acted (owner's ruling:
