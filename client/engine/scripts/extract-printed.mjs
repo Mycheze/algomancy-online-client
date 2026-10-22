@@ -363,8 +363,14 @@ function printedOf(name, e) {
       ? e.factions : [],
     cost,                                   // affinity pips, e.g. "rr"
     mana: e.total_cost === 'X' ? 'X' : (Number(e.total_cost) || 0),
-    power: Number(e.power) || 0,
-    toughness: Number(e.toughness) || 0,
+    // CR 206.2 / CT-244: stats mark a unit, and a spell prints none. The oracle
+    // transcription carries power/toughness on 91 of 138 spell rows (Arc
+    // Lightning 1/3, Interdiction Rift 4/3) that no card shows, so they are
+    // zeroed HERE, not in the oracle, and nothing downstream can start to read
+    // them. A spell unit is a unit and keeps its stats. (Spell TOKEN rows
+    // carry 3/3 the same way; they are left as transcribed, see CT-244.)
+    power: kind === 'spell' ? 0 : Number(e.power) || 0,
+    toughness: kind === 'spell' ? 0 : Number(e.toughness) || 0,
     type,
     kind,
     timing,

@@ -609,6 +609,10 @@ function termMatch(term: Term, r: CardRow, ctx: Ctx): boolean {
     case 'pow':
     case 'tou':
     case 'pt': {
+      // CR 206.2 / CT-244: stats mark a unit; a spell prints none, so it is in
+      // no stat comparison at all (as an X card is in no mana one) — its
+      // extracted 0/0 must not make it match `pow<=2`
+      if (r.kind === 'spell') return false;
       const n = num(value);
       return n === null ? false : cmp(op, numberField(key, r), n);
     }
