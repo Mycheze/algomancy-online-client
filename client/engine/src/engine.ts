@@ -43,7 +43,10 @@ const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'trigger
 /** `copiedAugments`' answer for the (almost universal) uncopied unit */
 const NO_CARDS: readonly CardName[] = Object.freeze([]);
 /** `sameTrigger`'s view of a part: which mod holds its use is not what it does */
-const sansBudgetOn = ({ budgetOn: _held, ...p }: EffectPart): Omit<EffectPart, 'budgetOn'> => p;
+const sansBudgetOn = ({ budgetOn: _held, budgetKey: _key, ...p }: EffectPart): Omit<EffectPart, 'budgetOn' | 'budgetKey'> => p;
+/** CR 109.9k / CT-342: the budget key of the `nth` same-name box — box 0 keeps
+ * the plain key it always had, so a state saved mid-turn reads the same */
+export const nthUseKey = (key: string, nth?: number): string => (nth ? `${key}@${nth}` : key);
 
 /**
  * CR 710.7: every channel the `behavior` facet carries — the whole of what a card
@@ -1420,8 +1423,8 @@ export class E {
    * The copy carries each one's `[Augment]` box and nothing else (CR 721.1: an
    * augment radiates only its box), as text of the COPY — no mod entity is
    * cloned (CR 710.2a), so the box reads from the copy, keys its `[once]`
-   * budgets on the copy (`augment:<card>#<n>`, the same key a real mod on
-   * this host uses), and is stamped PRINTED (CR 712.7, 113.2): it is part of the card
+   * budgets on the copy (`augment:<card>#<n>`, and `…@<k>` for the k-th box of
+   * one name — `copiedAugmentBoxes`, CR 710.2d), and is stamped PRINTED (CR 712.7, 113.2): it is part of the card
    * text the copy became, so any stripper strips it.
    *
    * THE one enumerator. Every channel that walks a real augment mod's box —
@@ -1437,6 +1440,30 @@ export class E {
     const out: CardName[] = [];
     for (const m of id.mods) if (m.appliedAs === 'augment') out.push(m.card);
     return out;
+  }
+  /**
+   * CR 109.9k, 710.2d / CT-342 — `copiedAugments` with each box's USE NUMBER,
+   * for the two channels that spend a [once]: the activated offer/accept and
+   * the triggered scan. "Exactly as if a real mod of that card were on it"
+   * (CR 710.2d), and two real mods have a use each, so two copied boxes of one
+   * name do too — and so does a copied box whose name is the copy's own face
+   * (a copy of a Jollyglop wearing a Jollyglop), whose face text holds box 0.
+   *
+   * `nth` counts the earlier boxes of that name on this unit for `facet`, the
+   * face's own [Augment] text first. Box 0 keeps `augment:<card>#<n>` and the
+   * address `{ face, text: 'augment' }` it always had; box k (k >= 1) keeps
+   * `augment:<card>#<n>@<k>` (`nthUseKey`) and is addressed with `copy: k`.
+   */
+  copiedAugmentBoxes(e: Entity, facet: CopyFacet): { card: CardName; nth: number }[] {
+    const cards = this.copiedAugments(e, facet);
+    if (!cards.length) return [];
+    const faces = this.facesWith(e, facet);
+    const next = new Map<CardName, number>();
+    return cards.map(card => {
+      const nth = next.get(card) ?? (faces.includes(card) ? 1 : 0);
+      next.set(card, nth + 1);
+      return { card, nth };
+    });
   }
   /**
    * CR 710.1a / CT-219 — the COST of a unit in play: its FACE's printed mana (an X
@@ -11492,7 +11519,7 @@ export class E {
       : part.budgetOn !== undefined ? this.entity(part.budgetOn)
         : (item.sourceId !== undefined ? this.entity(item.sourceId) : undefined);
     if (!holder) return;                       // the carrier is gone: nothing to refund onto
-    const key = part.fromMod !== undefined ? 'graft' : part.effectKey;
+    const key = part.fromMod !== undefined ? 'graft' : (part.budgetKey ?? part.effectKey);
     if ((holder.budgets[key] ?? 0) <= 0) return;   // not bounded, or already back
     delete holder.budgets[key];
     this.ev('info',
@@ -12032,7 +12059,7 @@ export class E {
   /** Compose the parts of a firing ability: base effect + graft-mod effects,
    * top-to-bottom (Manual p.33). Bounded pieces consume per-card budgets (CR 803.4). */
   composeParts(source: Entity, abilityIndex: number, abilityKeyPrefix: 'ability' | 'augment', viaCard?: CardName,
-    fromAugment?: EntityId): EffectPart[] | null {
+    fromAugment?: EntityId, copyNth?: number): EffectPart[] | null {
     // CR 710.1: with no `viaCard` the ability is the source's OWN, which
     // means the card it currently IS — the face, not the physical card.
     const cardName = viaCard ?? this.faceName(source);
@@ -12040,7 +12067,9 @@ export class E {
     const list = abilityKeyPrefix === 'ability' ? def.abilities : def.augmentText;
     const ability = list?.[abilityIndex];
     if (!ability) return null;
-    const budgetKey = `${abilityKeyPrefix}:${cardName}#${abilityIndex}`;
+    // CR 109.9k, 710.2d / CT-342: a copy's k-th copied box of one name keeps
+    // its own use on the copy (E.copiedAugmentBoxes)
+    const budgetKey = nthUseKey(`${abilityKeyPrefix}:${cardName}#${abilityIndex}`, copyNth);
     // per card = per entity instance (CR 803.4); and text an augment MOD
     // donates is that mod's, so the mod holds its use (CR 109.9k, report 269:
     // two Jollyglops' text on one unit shared one use when the host held it)
@@ -12075,6 +12104,7 @@ export class E {
     const base: EffectPart = {
       effectKey: `${abilityKeyPrefix}:${cardName}#${abilityIndex}`, targets: [],
       ...(ability.bounded && augmentMod ? { budgetOn: augmentMod.id } : {}),
+      ...(ability.bounded && copyNth ? { budgetKey } : {}),
     };
     const parts: EffectPart[] = [base];
     // grafted effects join only a graft cause, and only from graft-applied mods
@@ -12086,16 +12116,22 @@ export class E {
       // later goes "only 'underneath' original copied grafts". A copied graft
       // has no entity, so a bounded one keeps its budget on the copy itself,
       // under its part key (which is what refundPart hands back).
+      // CR 109.9k / CT-342: two copied grafts of one name are two uses, as
+      // two real ones are — the k-th keeps `graft:<card>@<k>` (`nthUseKey`)
+      const seenGraft = new Map<CardName, number>();
       for (const cm of this.identityCopy(source)?.mods ?? []) {
         if (cm.appliedAs !== 'graft') continue;
         const g = this.card(cm.card).graftEffect;
         if (!g) continue;
+        const nth = seenGraft.get(cm.card) ?? 0;
+        seenGraft.set(cm.card, nth + 1);
         const key = `graft:${cm.card}`;
+        const useKey = nthUseKey(key, nth);
         if (g.bounded) {
-          if ((source.budgets[key] ?? 0) > 0) continue;
-          source.budgets[key] = 1;
+          if ((source.budgets[useKey] ?? 0) > 0) continue;
+          source.budgets[useKey] = 1;
         }
-        grafts.push({ effectKey: key, targets: [] });
+        grafts.push({ effectKey: key, targets: [], ...(g.bounded && nth ? { budgetKey: useKey } : {}) });
       }
       for (const modId of source.mods) {
         const mod = this.entity(modId);
@@ -12188,9 +12224,10 @@ export class E {
         queued = this.collectTriggersFrom(u, face, 'augment', type, ev, src) || queued;
       }
       // CR 710.2a: the [Augment] text of the mods a copy copied — the copy's own
-      // text (no mod entity, so no `selfModId`), stamped as printed
-      if (kept(E.PRINTED)) for (const card of this.copiedAugments(u, 'triggered')) {
-        queued = this.collectTriggersFrom(u, card, 'augment', type, ev, src) || queued;
+      // text (no mod entity, so no `selfModId`), stamped as printed; each box
+      // with its own use (CR 710.2d / CT-342)
+      if (kept(E.PRINTED)) for (const { card, nth } of this.copiedAugmentBoxes(u, 'triggered')) {
+        queued = this.collectTriggersFrom(u, card, 'augment', type, ev, src, undefined, nth) || queued;
       }
       for (const modId of u.mods) {
         const mod = this.entity(modId);
@@ -12259,9 +12296,9 @@ export class E {
    */
   private queueTrigger(host: Entity, cardName: CardName, abilityIndex: number,
     ability: TriggeredAbility, prefix: 'ability' | 'augment', ev: EngineEvent,
-    logMsg: string, logData: Record<string, unknown>, selfModId?: EntityId): boolean {
+    logMsg: string, logData: Record<string, unknown>, selfModId?: EntityId, copyNth?: number): boolean {
     if (ability.when && !ability.when(this, host, ev)) return false;
-    const parts = this.composeParts(host, abilityIndex, prefix, cardName, selfModId);
+    const parts = this.composeParts(host, abilityIndex, prefix, cardName, selfModId, copyNth);
     if (!parts) return false;
     this.s.triggerQueue.push({
       sourceId: host.id, sourceCard: cardName, controller: host.controller,
@@ -12312,7 +12349,8 @@ export class E {
     return queued;
   }
 
-  private collectTriggersFrom(host: Entity, cardName: CardName, prefix: 'ability' | 'augment', type: EventType, ev: EngineEvent, eventSource?: EntityId, selfModId?: EntityId): boolean {
+  private collectTriggersFrom(host: Entity, cardName: CardName, prefix: 'ability' | 'augment', type: EventType, ev: EngineEvent, eventSource?: EntityId, selfModId?: EntityId,
+    copyNth?: number): boolean {
     const def = this.card(cardName);
     const list = prefix === 'ability' ? def.abilities : def.augmentText;
     if (!list) return false;
@@ -12375,7 +12413,7 @@ export class E {
       narrow ??= this.staticsFor(host).filter(st => st.mod.suppressAbility);
       if (narrow.some(st => st.mod.suppressAbility!(this, st.holder, host, ability))) return;
       queued = this.queueTrigger(host, cardName, idx, ability, prefix, ev,
-        `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id }, selfModId) || queued;
+        `Trigger: ${cardName} — ${ability.label}.`, { unit: host.id }, selfModId, copyNth) || queued;
     });
     return queued;
   }
@@ -12591,7 +12629,7 @@ export class E {
     for (const part of t.parts) {
       const holder = this.entity(part.fromMod ?? part.budgetOn ?? t.sourceId);
       if (!holder) continue;
-      const key = part.fromMod !== undefined ? 'graft' : part.effectKey;
+      const key = part.fromMod !== undefined ? 'graft' : (part.budgetKey ?? part.effectKey);
       if ((holder.budgets[key] ?? 0) <= 0) continue;
       delete holder.budgets[key];
     }

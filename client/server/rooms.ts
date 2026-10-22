@@ -505,7 +505,7 @@ const viaMod = (via: ActivateVia | undefined): EntityId | null =>
 const viaKey = (via: ActivateVia | undefined, sym: (id: EntityId) => string): string =>
   typeof via !== 'object' || via === null ? String(via ?? '-')
     : 'mod' in via ? `mod:${sym(via.mod)}`
-      : `face:${via.face}:${via.text ?? '-'}`;
+      : `face:${via.face}:${via.text ?? '-'}${via.copy ? `:${via.copy}` : ''}`;   // CT-342: a copy's k-th box
 
 function entityRefs(a: Action): EntityId[] {
   switch (a.type) {

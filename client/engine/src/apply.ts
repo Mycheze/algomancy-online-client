@@ -9,7 +9,7 @@ import type {
   Action, ActivateVia, AmendEdit, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
   EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem,
 } from './types.ts';
-import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, hiddenSegment, other, type ChainRest, type CostOpts } from './engine.ts';
+import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, hiddenSegment, nthUseKey, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
   affinityPips, ambushEffect, canonicalCardName, costAmount, effectByKey, getCard, graftCauseIndex, isAugment, isGraftable,
   registerSynthetic, requiresTargets, specForSlot, type AbilityCost, type ActivatedAbility, type CardDef,
@@ -1531,6 +1531,12 @@ function viaMod(via?: ActivateVia): EntityId | undefined {
   return via && typeof via === 'object' && 'mod' in via ? via.mod : undefined;
 }
 
+/** CR 109.9k, 710.2d / CT-342: which same-name copied box `via` addresses —
+ * 0 (the old, field-less address) unless it names a later one */
+function viaCopy(via?: ActivateVia): number {
+  return via && typeof via === 'object' && 'face' in via ? via.copy ?? 0 : 0;
+}
+
 /** CR 113.2: when the activated text `via` addresses arrived on its unit — an
  * augment mod's at the mod's arrival, everything else printed (the oldest) */
 function viaStamp(e: E, via?: ActivateVia): import('./types.ts').Stamp {
@@ -1538,7 +1544,7 @@ function viaStamp(e: E, via?: ActivateVia): import('./types.ts').Stamp {
 }
 
 function activationSource(e: E, u: Entity, via?: ActivateVia):
-  { list: ReturnType<typeof getCard>['abilities']; prefix: 'ability' | 'augment'; viaCard?: CardName } {
+  { list: ReturnType<typeof getCard>['abilities']; prefix: 'ability' | 'augment'; viaCard?: CardName; copyNth?: number } {
   if (via === undefined || via === 'augment') {
     // the unit's OWN text — off the identity face, which is the copied card
     // when it is wearing one (Apex Prime, Borrower of Forms)
@@ -1551,6 +1557,14 @@ function activationSource(e: E, u: Entity, via?: ActivateVia):
       : { list: getCard(face).augmentText, prefix: 'augment', viaCard: face };
   }
   if ('face' in via) {
+    if (via.copy !== undefined) {
+      // CR 109.9k, 710.2d / CT-342: the k-th copied box of that name, with its
+      // own use — exactly what E.copiedAugmentBoxes numbered for the offer
+      e.need(via.text === 'augment' && Number.isInteger(via.copy) && via.copy >= 1
+        && e.copiedAugmentBoxes(u, 'activated').some(b => b.card === via.face && b.nth === via.copy),
+      'that unit does not have that ability');
+      return { list: getCard(via.face).augmentText, prefix: 'augment', viaCard: via.face, copyNth: via.copy };
+    }
     // CR 710.2a: a copy's copied augment mod is addressed as `{ face, text: 'augment' }`
     // too — its [Augment] text is the copy's own, keyed on the mod's card
     e.need(e.facesWith(u, 'activated').includes(via.face)
@@ -1669,7 +1683,7 @@ function graftCostUnpayable(e: E, seat: Seat, ab: { graftCause?: boolean }, u: E
 function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: ActivateVia): void {
   const u = e.entity(entityId);
   e.need(u && u.kind === 'unit' && u.controller === seat && !u.absent, 'not your unit');
-  const { list, prefix, viaCard } = activationSource(e, u, via);
+  const { list, prefix, viaCard, copyNth } = activationSource(e, u, via);
   const ability = list?.[abilityIndex];
   e.need(ability && ability.type === 'activated', 'no such activated ability');
   // CR 712.1a, 712.2: stripped text has no activated abilities to activate — and a
@@ -1704,7 +1718,7 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
     (cost.mana ?? 0) + e.abilityTax(seat, viaCard ?? e.faceName(u), region, 'activate').total);
   e.need(!graftGate, graftGate ?? '');
   // compose BEFORE paying costs: a spent bounded cause makes this illegal
-  const parts = e.composeParts(u, abilityIndex, prefix, viaCard, viaMod(via));
+  const parts = e.composeParts(u, abilityIndex, prefix, viaCard, viaMod(via), copyNth);
   e.need(parts, 'that ability was already used this turn');
   // CR 705.3a: …and only then, whether the effect has anything to spend itself on
   const unusable = abilityUnusable(e, seat, ability, u, region, viaCard ?? e.faceName(u));
@@ -4091,7 +4105,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (!canPayAbilityCost(e, seat, ab.cost, u, region, budgetCard)) return;
         // CR 109.9k: a mod's [Augment] use is kept on the mod (E.composeParts)
         const holder = (viaMod(via) !== undefined ? e.entity(viaMod(via)!) : undefined) ?? u;
-        if (ab.bounded && (holder.budgets[`${prefix}:${budgetCard}#${i}`] ?? 0) > 0) return;
+        if (ab.bounded && (holder.budgets[nthUseKey(`${prefix}:${budgetCard}#${i}`, viaCopy(via))] ?? 0) > 0) return;
         if (strips.length && E.strippedBy(viaStamp(e, via), strips)) return;      // CR 712.2
         if (e.abilityIsSuppressed(u, ab, viaStamp(e, via))) return;                 // CR 712.4
         if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // CR 705.3a
@@ -4120,13 +4134,14 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         own ? 'augment' : { face, text: 'augment' });
     }
     // CR 710.2a: the [Augment] text of the mods a copy copied, addressed by the
-    // mod's card name. Once per name — two copied Graxxlids share one budget on this host, although two REAL ones have a use each (CR 109.9k: a copied box has no mod entity to hold it, CT-342) — and never a name a
-    // face above already offered, which would be the same action twice.
-    const copied = e.copiedAugments(u, 'activated');
-    for (let i = 0; i < copied.length; i++) {
-      const card = copied[i]!;
-      if (faces.includes(card) || copied.indexOf(card) !== i) continue;
-      offer(getCard(card).augmentText, 'augment', card, { face: card, text: 'augment' });
+    // mod's card name. One activation per BOX, each with its own use, as two
+    // real Graxxlids have (CR 109.9k, 710.2d; E.copiedAugmentBoxes): box 0 is the
+    // field-less `{ face, text: 'augment' }` it always was, and box k adds
+    // `copy: k`. When a face above is that card, its own text is box 0, so no
+    // copied box repeats an action the face loop already offered.
+    for (const { card, nth } of e.copiedAugmentBoxes(u, 'activated')) {
+      offer(getCard(card).augmentText, 'augment', card,
+        nth === 0 ? { face: card, text: 'augment' } : { face: card, text: 'augment', copy: nth });
     }
     // activated abilities donated by augment mods (controller of the unit controls its mods)
     for (const modId of u.mods) {

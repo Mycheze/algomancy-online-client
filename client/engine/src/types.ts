@@ -802,6 +802,11 @@ export interface EffectPart {
    * that text is bounded. Its use is kept on the mod under the part's own
    * effectKey, so two copies of one [Augment] on a host have a use each. */
   budgetOn?: EntityId;
+  /** CR 109.9k / CT-342: the budget key this part's use is kept under when it
+   * is NOT `effectKey` — a copy's second copied box of one name
+   * (`augment:<card>#<n>@<k>`, `graft:<card>@<k>`), an Ancient One's borrowed
+   * text (`ao:…`). Refunds read it; `sameTrigger` ignores it. */
+  budgetKey?: string;
   /** skip at resolution (bounded graft effect already used this turn, or a
    * cast-time [cost] on a Modular graft part that was unpayable — CR 724.4c) */
   spent?: boolean;
@@ -1756,6 +1761,15 @@ export interface EngineEvent {
  *                            also names an augment mod a COPY copied (Borrower
  *                            of Forms) — no entity exists to put in `{ mod }`,
  *                            so the mod's card name is the address.
+ *   { face, text: 'augment', copy: k }
+ *                            CR 109.9k, 710.2d / CT-342: the k-th (k >= 1) box
+ *                            of that name the copy carries. Each box has its
+ *                            own [once] (`augment:<card>#<n>@<k>`, see
+ *                            `E.copiedAugmentBoxes`); without `copy` the
+ *                            address means box 0 — the copy's own face's
+ *                            [Augment] text when its face is that card, the
+ *                            first copied box otherwise — exactly as before
+ *                            the field existed.
  *
  * ⚠ ADDITIVE, and it has to stay that way: the first three arms are byte for
  * byte what they always were, so an action log recorded before the `{ face }`
@@ -1771,7 +1785,7 @@ export interface EngineEvent {
 export type ActivateVia =
   | 'augment'
   | { mod: EntityId }
-  | { face: CardName; text?: 'ability' | 'augment' };
+  | { face: CardName; text?: 'ability' | 'augment'; copy?: number };
 
 export type Action =
   | { type: 'recycleForResource'; seat: Seat; handIndex: number; element: ResourceKind }
