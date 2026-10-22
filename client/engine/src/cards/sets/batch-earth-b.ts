@@ -395,18 +395,25 @@ card('Oorblak', {
       // so before Blightsea Polyp, which acts on damage being dealt)
       if (info.stage !== 'redirect') return false;
       if (seat !== self.controller) return false;
-      // CR 802.11e {Pure}: an attribute-blind exchange cannot see this body's
-      // {Vulnerable} either — same guard combat's own commit loop uses.
-      const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;
+      // CR 802.11e, 802.25i {Pure} (CT-227): the redirect is an interaction
+      // between the column and THIS body, so it is attribute-blind if EITHER
+      // side is Pure — the column (`info.pure`) or Oorblak itself. Then this
+      // body's {Vulnerable} is off, and so are the column's attributes against
+      // it ({Deadly}, {Piercing}): "Pure cards and cards they are interacting
+      // with ignore all other attributes". It used to read the column's purity
+      // alone, so a Pure Vulnerable Oorblak was dealt a plain column's hit doubled.
+      const pure = info.pure || g.effAttrs(self).has('Pure');
+      const attrs: Set<string> = pure ? new Set<string>() : info.attrs;
+      const mult = (!pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;
       const [, t] = g.effStats(self);
-      const deadly = info.attrs.has('Deadly');                // CR 802.3a, see the note above
+      const deadly = attrs.has('Deadly');                     // CR 802.3a, see the note above
       const needed = Math.max(0, t - self.damage);            // still to RECEIVE to kill
       // CR 802.16g, 802.16a: a {Deadly} source's lethal share is ONE point.
       const pool = deadly ? 1 : Math.ceil(needed / mult);     // …priced in what the source deals
       // Only {Piercing} leaves the body (CR 608.6d). Everything else is absorbed
       // whole, however far past this toughness it goes — that is the half that
       // already worked and it must keep working.
-      const absorbed = info.attrs.has('Piercing') ? Math.min(amount, pool) : amount;
+      const absorbed = attrs.has('Piercing') ? Math.min(amount, pool) : amount;
       if (absorbed <= 0) return amount;                       // nothing left to soak: decline
       const received = absorbed * mult;
       // the THIRD unit-damage commit (2026-08-24 literal-reading audit).
@@ -430,7 +437,7 @@ card('Oorblak', {
       // sub-step, not the next one that happens to prevent something.
       const through = g.preventUnitDamage(self, received, {
         region: info.region, source: 'combat', combat: true,
-        attrs: info.attrs, pure: info.pure,
+        attrs, pure,
       });
       if (through > 0) {
         self.damage += through;
