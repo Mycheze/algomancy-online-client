@@ -109,7 +109,12 @@ test('no card batch imports a batch that index.ts loads LATER', () => {
 
   // Not a failure, but it is the coupling that produced the failure, so it is
   // held to a known list rather than left to grow.
-  assert.deepEqual(early, ['batch-water-b imports batch-water-a (loaded earlier)'],
+  // CT-245 added the second: Wake the Dead (batch-dark-a) plays through
+  // `playInline`, which lives in batch-water-a beside its other callers.
+  assert.deepEqual(early, [
+    'batch-water-b imports batch-water-a (loaded earlier)',
+    'batch-dark-a imports batch-water-a (loaded earlier)',
+  ],
     'the set of batch-to-batch imports changed. These are safe only because the target loads '
     + 'first, which makes them hostage to the order in index.ts. If you are adding one, prefer '
     + 'helpers.ts; if you are removing one, update this list.\n  ' + early.join('\n  '));

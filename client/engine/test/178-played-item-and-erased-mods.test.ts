@@ -162,7 +162,7 @@ test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy 
 // and the Mandible's "negate that effect" now has an item to name — the RAISED
 // one, by id (CR 706.13), never the same-named unit already standing there.
 
-test('Void Mandible: a unit Wake the Dead plays is negated by id (CR 706.13) — not a same-named bystander', () => {
+test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negated by id (CR 706.13) — not a same-named bystander', () => {
   const h = new Harness(17802);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
