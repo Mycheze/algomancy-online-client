@@ -213,5 +213,6 @@ test('CR 410.4c: a token MOD on a dying card host is erased and not trashed; the
   const t = trashes(h, start);
   assert.deepEqual(t.map(ev => ev.data!['card']), ['Good Whale'],
     'one trash: the CARD host (Unstable by its mod; the engine trashes it, CR 801.2h does not, CT-246); the token mod never (CR 410.4c)');
-  assert.ok(h.state.players[A]!.erased?.includes('Wraith'), 'the token mod reached the erased pile (CR 407.3a)');
+  assert.ok(!(h.state.players[A]!.erased ?? []).includes('Wraith'),
+    'and the token mod is not filed on the erased pile (owner, 2026-10-22: never file tokens)');
 });

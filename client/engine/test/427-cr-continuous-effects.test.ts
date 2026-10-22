@@ -118,11 +118,15 @@ test('cr:effects.state.what — at a safe point a lethally damaged unit dies, a 
   assert.equal(ent(h, whale), undefined, 'the unit that should be dead died');
   assert.equal(ent(h, t), undefined, 'and so did the token');
   assert.deepEqual(h.state.players[p]!.bin, ['Good Whale'], 'the card is in the bin, the token is not');
-  assert.deepEqual(h.state.players[p]!.erased, ['Unit Token'], 'the token ceased to exist');
+  assert.ok(e.events.some(ev => ev.type === 'erased' && ev.data?.['card'] === 'Unit Token' && ev.data?.['from'] === 'bin'),
+    'the token ceased to exist, swept out of the bin');
+  assert.deepEqual(h.state.players[p]!.erased ?? [], [], 'and a token is never filed on the erased pile (owner, 2026-10-22)');
   const t2 = tok(h, p, 1, 1);
   withE(h, g => g.recall(g.entity(t2)!));
   assert.ok(!h.state.players[p]!.hand.includes('Unit Token'), 'a token cannot exist in a hand');
-  assert.deepEqual(h.state.players[p]!.erased, ['Unit Token', 'Unit Token']);
+  assert.ok(h.events.some(ev => ev.type === 'erased' && ev.data?.['card'] === 'Unit Token' && ev.data?.['from'] === 'hand'),
+    'it was swept out of the hand');
+  assert.deepEqual(h.state.players[p]!.erased ?? [], [], 'and filed nowhere');
 });
 
 test('cr:effects.state.together.limits — Cthyrian Culler dying alone does not hear its own trash, and dying beside an ally hears only the ally', () => {

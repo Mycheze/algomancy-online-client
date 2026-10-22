@@ -188,7 +188,7 @@ test('cr:zones.changes.new-object.targets — a target that left play and came b
 
 /* ── the erased pile ────────────────────────────────────────────────────── */
 
-test('cr:zones.erased.tokens — a unit token sent to the cache ceases to exist there and is recorded on the erased pile', () => {
+test('cr:zones.erased.tokens — a unit token sent to the cache ceases to exist there and is NOT recorded on the erased pile', () => {
   const h = new Harness(70709);
   toDeployment(h);
   const A = h.state.initiative;
@@ -197,7 +197,7 @@ test('cr:zones.erased.tokens — a unit token sent to the cache ceases to exist 
     e.cacheUnit(t);
   });
   assert.deepEqual(new E(h.state).cache(A).filter(c => c.card === 'Rune Channeler'), [], 'swept out of the cache');
-  assert.ok(erasedOf(h, A).includes('Rune Channeler'), 'and recorded on the erased pile');
+  assert.ok(!erasedOf(h, A).includes('Rune Channeler'), 'and not recorded on the erased pile (owner, 2026-10-22: never file tokens)');
 });
 
 /* ── the hand ───────────────────────────────────────────────────────────── */

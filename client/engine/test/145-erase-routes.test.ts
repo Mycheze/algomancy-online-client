@@ -335,7 +335,7 @@ test('CR 720.7 (vi): a nontoken mod (Chitin Shredder) erased with its host reach
     'so CR 801.2 has nothing to trash — "erasing never touches a bin, so it is never a trash"');
 });
 
-test('CR 407.3a (vi-token): a token mod (Wraith) erased with its host reaches the erased pile exactly once, and no bin', () => {
+test('CR 407.3a (vi-token): a token mod (Wraith) erased with its host reaches neither the erased pile nor a bin', () => {
   const h = new Harness(14521);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -344,8 +344,9 @@ test('CR 407.3a (vi-token): a token mod (Wraith) erased with its host reaches th
 
   eraseDirect(h, host);
 
-  assert.equal(countIn(erasedOf(h, A), 'Wraith'), 1,
-    'CR 407.3a: a token mod has no card of its own, so the pile is the only record — exactly one');
+  assert.equal(countIn(erasedOf(h, A), 'Wraith'), 0,
+    'a token mod is never filed on the erased pile (owner, 2026-10-22: never file tokens)');
+  assert.equal(countIn(erasedOf(h, A), 'Rune Channeler'), 1, 'while its real host card is');
   assert.equal(countIn(binOf(h, A), 'Wraith'), 0, 'and it never reaches a bin');
   assert.equal(trashesOf(h, 'Wraith').length, 0, 'so it is never trashed (CR 801.2c)');
 });

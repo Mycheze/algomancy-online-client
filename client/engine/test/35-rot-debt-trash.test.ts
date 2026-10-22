@@ -323,7 +323,7 @@ test('a TOKEN dying enters the bin, is NOT trashed, and is then erased', () => {
   assert.equal(died[0]!.data!['to'], 'bin', 'into the bin, for the event window (CR 410.5a)');
   assert.deepEqual(h.state.players[P]!.bin, [],
     'the state-based sweep erased it out of the bin again');
-  assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (CR 407.3)');
+  assert.deepEqual(h.q.erased(P), [], 'and it is not filed on the erased pile (owner, 2026-10-22: never file tokens)');
   // the order the log tells it in: died -> erased, with no trash line between
   const i = (frag: string) => h.log.findIndex(l => l.includes(frag));
   assert.ok(i('Test Grunt dies') !== -1 && i('erased from the bin') > i('Test Grunt dies'),
@@ -347,7 +347,7 @@ test('CR 410.5b: a recalled TOKEN enters the hand, is NOT trashed, and is then e
   assert.equal(trashes(h).length, 0, 'a recall is never a trash — a hand is not a bin');
   assert.deepEqual(h.state.players[P]!.hand.filter(c => c === 'Test Grunt'), [],
     'the sweep took it back out of the hand');
-  assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (CR 407.3)');
+  assert.deepEqual(h.q.erased(P), [], 'and it is not filed on the erased pile (owner, 2026-10-22: never file tokens)');
   const despawn = h.events.filter(ev => ev.type === 'despawned').at(-1)!;
   assert.equal(despawn.data!['to'], 'hand',
     'the event says HAND — this is what "when a card enters a hand" reads (CR 714.9)');
@@ -366,7 +366,7 @@ test('CR 410.5c: a CACHED token visits the cache and is erased out of it (⚠ en
   });
   assert.equal(trashes(h).length, 0, 'caching is not binning');
   assert.deepEqual(h.q.cache(P).map(c => c.card), [], 'the sweep emptied the cache again');
-  assert.deepEqual(h.q.erased(P), ['Test Grunt']);
+  assert.deepEqual(h.q.erased(P), [], 'not filed on the erased pile (owner, 2026-10-22: never file tokens)');
   const cached = h.events.filter(ev => ev.type === 'cached').at(-1)!;
   assert.equal(cached.data!['card'], 'Test Grunt',
     'the cached event fired with the token really sitting in the cache');
@@ -448,8 +448,8 @@ test('CR 410.4c: a TOKEN mod on a dying Unstable carrier is erased, never binned
   assert.deepEqual(trashes(h).map(ev => ev.data!['card']), ['Test Brute'],
     'only the body — a token mod has no card of its own (CR 410.4c)');
   assert.deepEqual(h.state.players[P]!.bin, []);
-  assert.deepEqual(h.q.erased(P), ['Test Brute', 'Test Grunt'],
-    'both still show in the erased pile (CR 407.3a)');
+  assert.deepEqual(h.q.erased(P), ['Test Brute'],
+    'only the card body is filed on the erased pile, never the token mod (owner, 2026-10-22: never file tokens)');
 });
 
 test('CR 801.2b: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)', () => {

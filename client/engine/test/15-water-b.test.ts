@@ -161,7 +161,8 @@ test('Pull Under: a TOKEN victim enters the CASTER bin untrashed (CR 801.2d), th
   assert.equal(sweep[0]!.data?.['from'], 'bin', 'it really did enter that bin (CR 410.5a)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), "the sweep emptied the caster's bin again");
   assert.ok(!h.state.players[D]!.bin.includes('Unit Token'), "and it never touched the owner's");
-  assert.ok(h.q.erased(A).includes('Unit Token'), 'the erased pile records it (CR 407.3)');
+  assert.ok(!h.q.erased(A).includes('Unit Token') && !h.q.erased(D).includes('Unit Token'),
+    'and no erased pile records it: a token is never filed (owner, 2026-10-22)');
   finishBattle(h);
 });
 

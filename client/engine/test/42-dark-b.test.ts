@@ -749,8 +749,8 @@ test('CR 410.4c: a TOKEN mod on an exchanged host is ERASED and never binned (CR
     'a token mod has no card of its own, so no bin entry (CR 410.4c)');
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Wraith').length, 0,
     'and therefore nothing to trash');
-  assert.ok(new E(h.state).erased(A).includes('Wraith'),
-    'it still has to be VISIBLE somewhere — the erased pile (CR 407.3a)');
+  assert.ok(!new E(h.state).erased(A).includes('Wraith'),
+    'and it is not filed on the erased pile either (owner, 2026-10-22: never file tokens)');
 });
 
 // The token ruling (now CR 410.5, 713.5), RULED by Bena on 2026-08-25 — the question the first fix left open:
@@ -787,8 +787,8 @@ test('CR 410.5 (ruled): a TOKEN BODY exchanged out of play bins → is swept, ne
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Unit Token').length, 0,
     'it really was in the bin, but a token is not a card, so it is not trashed (CR 801.2d)');
   assert.ok(!h.state.players[A]!.bin.includes('Unit Token'), 'and then ceased to exist there');
-  assert.ok(new E(h.state).erased(A).includes('Unit Token'),
-    'the sweep files it on the public erased pile (CR 407.3), as a death does');
+  assert.ok(!new E(h.state).erased(A).includes('Unit Token'),
+    'the sweep announces it but does not file it on the erased pile, as a death does not (owner, 2026-10-22: never file tokens)');
   // THE ORDER IS THE RULING. "A normal thing that ceases to exist" is a bin
   // entry first and a removal second, not an absence from the start.
   const order = h.events

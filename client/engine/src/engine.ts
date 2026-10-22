@@ -526,7 +526,14 @@ export class E {
     // erase sites — every one of them already announces itself the same way,
     // with the owning seat and the card name(s), so this is the one place
     // that has to know. `cards` is the bulk form (Finality, Grox).
-    if (type === 'erased' && typeof data?.['seat'] === 'number') {
+    //
+    // NEVER A TOKEN (owner, 2026-10-22: "Never file tokens" — no token, unit or
+    // mod, ever goes on an erased pile; one rule). A token is not a card
+    // (CR 304.2), and the pile is a list of cards. A name cannot tell a token
+    // from a card, so every route that erases a token says so with
+    // `token: true`, and this is the one place that reads it. (The regroup
+    // spell-token sweep says it the older way, by naming no card at all.)
+    if (type === 'erased' && typeof data?.['seat'] === 'number' && data['token'] !== true) {
       const seat = data['seat'] as Seat;
       const names = Array.isArray(data['cards'])
         ? data['cards'] as CardName[]
@@ -2928,7 +2935,8 @@ export class E {
     if (!item.card) return;
     this.toHand(item.controller, item.card, 'stack', { token: true });
     this.eraseFromZone(item.controller, item.card, 'hand',
-      `${who} recalls ${item.label} to ${this.pname(item.controller)}'s hand — a token, so it is erased.`);
+      `${who} recalls ${item.label} to ${this.pname(item.controller)}'s hand — a token, so it is erased.`,
+      { token: true });
   }
 
   toHand(seat: Seat, cards: CardName | readonly CardName[],
@@ -3986,7 +3994,8 @@ export class E {
         // one event about one object at two different seats before, which is
         // exactly what CR 407.3a rules out — a mod behaving differently depending on how
         // its host left play — one field over.
-        { seat: u.controller, cards: tokenMods.map(m => m.card) });
+        // `token: true`: announced, never filed (see `ev`)
+        { seat: u.controller, cards: tokenMods.map(m => m.card), token: true });
     }
     // CR 721.1f: last, exactly as disposeToBin does it — see the comment above.
     for (const m of mods) delete this.s.entities[m.id];
@@ -4042,7 +4051,7 @@ export class E {
     const cc = this.cacheCard(seat, u.card, 'play', opts);
     // CR 410.5c's sweep, on the cache this time — `cc.uid` names the entry we just
     // made, so a second copy of the same card already sitting there is safe
-    if (u.token) this.eraseFromZone(seat, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid });
+    if (u.token) this.eraseFromZone(seat, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid, token: true });
   }
 
   /** Where cache entry `uid` sits in `seat`'s cache right now, or -1 when it
@@ -6672,7 +6681,7 @@ export class E {
     // taking an innocent card out of the game in its place.
     if (unstable && !opts.keepBinned) {
       this.eraseFromZone(binSeat, u.card, 'bin', `${u.card} is erased from the bin — Unstable.`,
-        { index: bodyBinIndex });
+        { index: bodyBinIndex, token: u.token === true });
       // CR 405.6: HIGHEST index first. Two mods of the same card on one carrier land
       // in one bin at consecutive slots, and erasing the lower one first slides
       // the higher one down under the index we recorded for it — after which a
@@ -6688,7 +6697,7 @@ export class E {
       }
     } else if (u.token) {
       this.eraseFromZone(binSeat, u.card, 'bin', `${u.card} is erased from the bin — it is a token.`,
-        { index: bodyBinIndex });
+        { index: bodyBinIndex, token: true });
     }
     // CR 407.1: an erase must reach the public erased pile like every other erase
     // (ev() keeps the pile off 'erased' events). The body and the nontoken mods
@@ -6698,7 +6707,7 @@ export class E {
     const tokenMods = mods.filter(m => m.token);
     if (tokenMods.length) {
       this.ev('erased', `${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,
-        { seat: binSeat, cards: tokenMods.map(m => m.card) });
+        { seat: binSeat, cards: tokenMods.map(m => m.card), token: true });   // never filed (see `ev`)
     }
     for (const m of mods) delete this.s.entities[m.id];
   }
@@ -6996,7 +7005,7 @@ export class E {
    * genuinely have no handle (a white-box erase, a card naming a card).
    */
   eraseFromZone(seat: Seat, name: CardName, zone: 'bin' | 'hand' | 'cache', msg: string,
-    at?: { uid?: number; index?: number }): void {
+    at?: { uid?: number; index?: number; token?: boolean }): void {
     if (zone === 'cache') {
       const i = at?.uid !== undefined ? this.cacheIndexOf(seat, at.uid)
         : this.cache(seat).map(cc => cc.card).lastIndexOf(name);
@@ -7015,7 +7024,9 @@ export class E {
       if (i === -1) return;
       hand.splice(i, 1);
     }
-    this.ev('erased', msg, { seat, card: name, from: zone });
+    // `token`: the sweep of a token that passed through the zone — announced,
+    // never filed on the erased pile (see `ev`)
+    this.ev('erased', msg, { seat, card: name, from: zone, ...(at?.token ? { token: true } : {}) });
   }
 
   private removeFromFormation(id: EntityId): void {
@@ -7779,7 +7790,7 @@ export class E {
       evData);
     this.afterDespawn(u, mods, ev);
     // CR 410.5b's sweep, on the hand this time
-    if (u.token) this.eraseFromZone(seat, u.card, 'hand', `${u.card} is erased from the hand — it is a token.`);
+    if (u.token) this.eraseFromZone(seat, u.card, 'hand', `${u.card} is erased from the hand — it is a token.`, { token: true });
   }
 
   /** Ambush resolution (Manual p.40): recall the target ally, spawn the
@@ -10526,7 +10537,8 @@ export class E {
       + `(no bin, no death)${why ? ` ${why}` : '.'}`,
       {
         unit: u.id, card: u.card, seat: u.controller, region: u.region,
-        cards: [u.card, ...mods.map(m => m.card)],
+        // never a token, host or mod (see `ev`): only the real cards are filed
+        cards: [...(u.token ? [] : [u.card]), ...mods.filter(m => !m.token).map(m => m.card)],
       });
     // CR 801.6a: …and it despawns. CR 714.9's fact bundle rides the event, because the
     // entity is already out of s.entities and a listener has no other way to
@@ -12447,9 +12459,8 @@ export class E {
     //    that is going INTO PLAY, not out of the game, and a pile listing a
     //    card you can see on the table is worse than no pile.
     //  · A TOKEN mod is not filed. CR 304.2: a token is not a card, it has no card
-    //    to show, and CR 720.9a's pile is a list of cards. (`disposeToBin` files
-    //    token mods today; that disagreement predates this and is left alone
-    //    rather than widened here.)
+    //    to show, and CR 720.9a's pile is a list of cards. Owner, 2026-10-22:
+    //    "Never file tokens" — every other erase route now agrees (see `ev`).
     //  · `alreadyFiled` is for the ONE caller that files the pile itself and
     //    files it BETTER: Return to Nature groups every mod it erases into a
     //    single `erased` line per controller (and skips token mods, as this does),

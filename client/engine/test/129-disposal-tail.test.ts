@@ -275,7 +275,8 @@ test('CR 410.7 (iv): a TOKEN body with no mods takes the token sweep — binned,
   assert.equal(trashesOf(h, 'Hooba-Mon').length, 0,
     'a token is not a card, so entering the bin does not trash it (CR 801.2d)');
   assert.ok(!binOf(h, A).includes('Hooba-Mon'), 'and then ceased to exist there');
-  assert.ok(erasedOf(h, A).includes('Hooba-Mon'), 'the sweep files it on the erased pile (CR 407.3)');
+  assert.ok(!erasedOf(h, A).includes('Hooba-Mon'),
+    'the sweep announces it but never files it: no token ever goes on an erased pile (owner, 2026-10-22)');
   assert.deepEqual(verbsFor(h, 'Hooba-Mon'), ['erased'],
     'THE ORDER IS THE RULING: bin → swept, with no trash between (CR 410.5a)');
   const sweep = h.events.find(ev => ev.type === 'erased' && ev.data!['card'] === 'Hooba-Mon');
@@ -293,7 +294,7 @@ test('CR 410.7 (iv): a TOKEN body with no mods takes the token sweep — binned,
 // specifically (by its reason), not merely that the name turned up on the pile:
 // the body's own sweep would put a name there too, and a "the pile mentions
 // Wraith" assertion cannot tell the two apart.
-test('CR 410.7 (v): a TOKEN mod reaches the erased pile through the bulk event, never a bin', () => {
+test('CR 410.7 (v): a TOKEN mod is announced by the bulk event and reaches neither a bin nor the erased pile', () => {
   const h = new Harness(12904);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -307,12 +308,13 @@ test('CR 410.7 (v): a TOKEN mod reaches the erased pile through the bulk event, 
   assert.ok(!binOf(h, A).includes('Wraith'),
     'a token mod has no card of its own, so no bin entry (CR 410.4c)');
   assert.equal(trashesOf(h, 'Wraith').length, 0, 'and therefore nothing to trash');
-  assert.ok(erasedOf(h, A).includes('Wraith'),
-    'it still has to be visible somewhere — the erased pile (CR 407.3a)');
+  assert.ok(!erasedOf(h, A).includes('Wraith'),
+    'and no erased pile either: no token, unit or mod, is ever filed there (owner, 2026-10-22)');
   const bulk = h.events.filter(ev => ev.type === 'erased'
     && (ev.data!['cards'] as string[] | undefined)?.includes('Wraith'));
   assert.equal(bulk.length, 1,
-    'and it got there through the disposal’s own bulk erased event, exactly once');
+    'it is still ANNOUNCED, through the disposal’s own bulk erased event, exactly once');
+  assert.equal(bulk[0]!.data!['token'], true, 'marked as a token, which is what keeps it off the pile');
   assert.match(bulk[0]!.msg, /token mod has no card to bin/,
     'announced with the reason that distinguishes it from a bin sweep');
 });
@@ -491,8 +493,10 @@ test('CR 410.7: E.disposeToBin exists and takes (entity, mods, announce, opts)',
 // test would have passed on `destroy` alone, which is exactly how the gap
 // survived. Nothing about zones, entities or timing changed with the fix; it
 // only announces what was already happening.
-test('CR 407.3a: a TOKEN mod reaches the erased pile however its host leaves play', () => {
-  const seen: Record<string, { pile: number; events: number }> = {};
+test('CR 407.3a: a TOKEN mod is announced however its host leaves play, and never filed on the erased pile', () => {
+  // Owner, 2026-10-22: "Never file tokens". The ANNOUNCEMENT this test was
+  // written for stays on every route; the pile entry it also asserted is gone.
+  const seen: Record<string, { pile: number; events: number; wraith: boolean }> = {};
   for (const how of ['destroy', 'recall', 'cache'] as const) {
     const h = new Harness(99);
     toDeployment(h);
@@ -509,16 +513,17 @@ test('CR 407.3a: a TOKEN mod reaches the erased pile however its host leaves pla
       seen[how] = {
         pile: (h.state.players[P]!.erased ?? []).length - pileBefore,
         events: e.events.slice(evBefore).filter(v => v.type === 'erased').length,
+        wraith: (h.state.players[P]!.erased ?? []).includes(E.WRAITH),
       };
     });
   }
-  // recall and cache each announce exactly the token mod; a death also erases
-  // the Unstable body it was riding (a modded card is Unstable — CR 803.8e), so
-  // it legitimately files two.
-  assert.equal(seen['recall']!.pile, 1, 'a RECALLED host left its token mod off the erased pile');
-  assert.equal(seen['cache']!.pile, 1, 'a CACHED host left its token mod off the erased pile');
-  assert.ok(seen['destroy']!.pile >= 1, 'a dying host must still file its token mod');
+  // recall and cache file nothing; a death files only the Unstable body the
+  // token mod was riding (a modded card is Unstable — CR 803.8e), a real card.
+  assert.equal(seen['recall']!.pile, 0, 'a RECALLED host files no token mod');
+  assert.equal(seen['cache']!.pile, 0, 'a CACHED host files no token mod');
+  assert.equal(seen['destroy']!.pile, 1, 'a dying host files its own card and not its token mod');
   for (const how of ['destroy', 'recall', 'cache'] as const) {
+    assert.equal(seen[how]!.wraith, false, `${how}: the token mod is never on the erased pile`);
     assert.ok(seen[how]!.events >= 1,
       `${how} produced no 'erased' event at all — CR 407.3a is about the ERASE, not the verb that `
       + 'caused it, so every route has to say so out loud.');

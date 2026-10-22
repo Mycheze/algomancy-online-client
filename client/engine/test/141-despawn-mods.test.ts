@@ -215,16 +215,16 @@ test('CR 801.2f (iv): a nontoken mod is binned and trashed exactly once on all t
 // ══════════════════════════════════════════════════════════════════════
 //
 // CR 410.4c: a token mod has no card of its own, so it never reaches a bin and is
-// never trashed; CR 407.3a files it on the public erased pile instead. Moving the
-// deletion later must not file it twice, nor let it slip into a bin.
-test('CR 407.3a (v): a token mod reaches the erased pile exactly once, and no bin, on all three routes', () => {
+// never trashed; and no token is ever filed on the erased pile (owner,
+// 2026-10-22). Moving the deletion later must not file it, nor let it slip into a bin.
+test('CR 407.3a (v): a token mod reaches neither the erased pile nor a bin, on all three routes', () => {
   for (const [i, route] of ROUTES.entries()) {
     const { h, A, host } = board(14120 + i, 'Wraith-token');
 
     leaveBy(h, host, route);
 
-    assert.equal(countIn(erasedOf(h, A), 'Wraith'), 1,
-      `${route}: the token mod is filed on the erased pile exactly once (CR 407.3a)`);
+    assert.equal(countIn(erasedOf(h, A), 'Wraith'), 0,
+      `${route}: the token mod is never filed on the erased pile (owner, 2026-10-22: never file tokens)`);
     assert.equal(countIn(binOf(h, A), 'Wraith'), 0,
       `${route}: a token mod has no card to bin`);
     assert.equal(trashesOf(h, 'Wraith').length, 0,

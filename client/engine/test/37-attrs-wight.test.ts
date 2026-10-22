@@ -615,7 +615,7 @@ test('CR 410.5a: a dying Wraith enters the bin untrashed, then is erased out of 
   assert.ok(h.events.some(ev => ev.type === 'erased' && ev.data!['card'] === 'Wraith' && ev.data!['from'] === 'bin'),
     'it did enter the bin — the sweep takes it out of one (CR 410.5a)');
   assert.deepEqual(h.state.players[P]!.bin, [], 'the state-based sweep erased it again');
-  assert.deepEqual(h.q.erased(P), ['Wraith'], 'and it shows in the erased pile');
+  assert.deepEqual(h.q.erased(P), [], 'and it is not filed on the erased pile (owner, 2026-10-22: never file tokens)');
 });
 
 test('CR 721.6: "augment a Wraith onto a unit" makes the same token, directly as a mod', () => {
