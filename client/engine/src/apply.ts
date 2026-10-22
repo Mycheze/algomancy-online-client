@@ -7,7 +7,7 @@
  */
 import type {
   Action, ActivateVia, AmendEdit, ApplyResult, CardName, Decision, EffectPart, Element, EngineEvent, Entity,
-  EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem,
+  EntityId, FormationSpot, GameMode, GameState, ResourceKind, Seat, StackItem, TargetRef,
 } from './types.ts';
 import { ACTIVATIONS_PER_TURN, E, GameEnded, IllegalAction, Suspended, hiddenSegment, nthUseKey, other, type ChainRest, type CostOpts } from './engine.ts';
 import {
@@ -2060,6 +2060,33 @@ function hasteModAllowed(e: E, seat: Seat, c: CardDef, from: ModZone,
 const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);
 
 /**
+ * CR 110.10a, 110.12 (CT-331): every host a battle-window Virus may be applied
+ * to in `region` right now — the units standing there, then the spells on that
+ * region's stack (CR 723.4) — narrowed by Gatekeeper of Souls' "I must be
+ * targeted if able" through the SAME compulsion the target collector applies
+ * (`E.compelledTargets`). Applying a Virus targets its host, so while a
+ * Gatekeeper stands in the battle the Virus goes onto it or onto nothing: not
+ * onto another unit, and not onto a spell on the stack either, exactly as an
+ * "any target" spell may not aim at a player then.
+ *
+ * ONE list for both sides of the fuzzer's "legalActions lied" check:
+ * `pushBattleAugments` offers it and both battle branches of `doAugment`
+ * refuse anything outside it. With no Gatekeeper it is the old list, in the
+ * old order.
+ */
+function battleVirusHosts(e: E, region: number): TargetRef[] {
+  const out: TargetRef[] = e.unitsIn(region).map(u => ({ unit: u.id }));
+  for (const it of e.s.stack) {
+    if (STACK_VIRUS_HOSTS.has(it.kind) && it.region === region) out.push({ stack: it.id });
+  }
+  return e.compelledTargets(out, region);
+}
+const virusHostOk = (e: E, region: number, host: TargetRef): boolean => {
+  const key = JSON.stringify(host);
+  return battleVirusHosts(e, region).some(r => JSON.stringify(r) === key);
+};
+
+/**
  * CR 723.2a: pay for a battle-window Virus augment and say how, exactly as the
  * deployment branch says it. Both battle branches of `doAugment` (a unit host,
  * a spell on the stack) call this, so the cache's "ignoring affinity" line —
@@ -2119,6 +2146,8 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     e.need(target !== undefined && STACK_VIRUS_HOSTS.has(target.kind),
       'no such spell on the stack');
     e.need(target!.region === e.s.battle!.region, 'that spell is in another region');
+    e.need(virusHostOk(e, target!.region, { stack: hostStack }),
+      'Gatekeeper of Souls must be targeted if able (CR 110.12)');
     // CR 723.5b: zoneTake, NOT hand.splice. Once the battle window can be entered
     // from the bin, a hardcoded `hand.splice(index)` deletes an unrelated card
     // out of the hand and leaves the bin card in place — the single most
@@ -2181,6 +2210,8 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
       'only Virus cards can augment from hand during battle');
     e.need(e.s.priority === seat, 'you do not have priority');
     e.need(host.region === e.s.battle!.region, 'that unit is in another region');
+    e.need(virusHostOk(e, host.region, { unit: host.id }),
+      'Gatekeeper of Souls must be targeted if able (CR 110.12)');
     zoneTake(e, seat, from, index);
     payBattleAugment(e, seat, name, price!);   // CR 701.2b, 723.2a, as above
     const item: StackItem = {
@@ -2206,8 +2237,17 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
       e.ev('info', `${name} augments out of ${e.pname(seat)}'s cache, ignoring affinity.`);
     }
     const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
+    const queued = e.s.triggerQueue.length;
     e.fireEvent('targeted', ev);
-    e.attachMod(host, name, seat, 'augment');
+    // CR 110.11 (D-U03-14, owner 2026-10-22): as for a graft (doGraft) — when the
+    // targeting triggered anything (Mohruung), it RESOLVES first and the augment
+    // attaches after (E.finishPendingMods). A spell-token host keeps the old
+    // path: nothing listens for one, and its line below is said at once.
+    if (!tokenHost && e.s.triggerQueue.length > queued) {
+      (e.s.pendingMods ??= []).push({ seat, host: host.id, card: name, appliedAs: 'augment' });
+    } else {
+      e.attachMod(host, name, seat, 'augment');
+    }
     // CR 721.4a: "you can only do this with attributes" — the same restriction CR 721.4b
     // enforces on the stack, said out loud HERE because this is the moment the
     // player commits the card. A text-only augment (Graxxlid, Skybreaker) is
@@ -2263,8 +2303,17 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
     e.ev('info', `${name} grafts out of ${e.pname(seat)}'s cache, ignoring affinity.`);
   }
   const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
+  const queued = e.s.triggerQueue.length;
   e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)
-  e.attachMod(host, name, seat, 'graft', position);
+  // CR 110.11 (CT-242): "if you try to Graft something underneath the Mohruung,
+  // he will trigger first" — when the targeting triggered anything, the graft
+  // waits until those triggers have resolved (E.finishPendingMods). With
+  // nothing triggered it attaches at once, exactly as before.
+  if (e.s.triggerQueue.length > queued) {
+    (e.s.pendingMods ??= []).push({ seat, host: host.id, card: name, appliedAs: 'graft', position });
+  } else {
+    e.attachMod(host, name, seat, 'graft', position);
+  }
   e.settle();
 }
 
@@ -3173,7 +3222,7 @@ function doDecide(e: E, seat: Seat, choice: number | number[]): void {
   // straight past this if the item still owes another choice, which is exactly
   // how it stays marked across a chain of mid-resolution decisions).
   e.endResolving(null);
-  e.finishResolutionTail();
+  e.finishResolutionTail(sus.item);
   // castChain's loop, resumed: the item that suspended was `chain[0]` of some
   // cast; commitItem's own tail (endResolving + settle) has its counterpart
   // just above, and the items behind it are cast exactly as the loop would
@@ -4077,18 +4126,17 @@ function pushBinPlays(e: E, seat: Seat, region: number, out: Action[]): void {
  * The cache is walked LAST, so every hand and bin offer keeps its index.
  */
 function pushBattleAugments(e: E, seat: Seat, region: number, out: Action[]): void {
+  const hosts = battleVirusHosts(e, region);
   for (const src of sources(e, seat, ['hand', 'bin', 'cache'])) {
     if (!isAugment(src.name)) continue;
     const c = getCard(src.name);
     if (!battleAugmentAllowed(e, seat, c, src.from, region)) continue;
     if (!modAffordable(e, seat, src.name, src.price)) continue;
-    for (const host of e.unitsIn(region)) {
-      out.push({ type: 'augment', seat, from: src.from, index: src.index, hostId: host.id });
-    }
-    // CR 723.4: and onto a spell on the stack — either player's
-    for (const it of e.s.stack) {
-      if (!STACK_VIRUS_HOSTS.has(it.kind) || it.region !== region) continue;
-      out.push({ type: 'augment', seat, from: src.from, index: src.index, hostStack: it.id });
+    // the units in the battle, then (CR 723.4) the spells on its stack — either
+    // player's — narrowed by CR 110.12 exactly as doAugment narrows them
+    for (const host of hosts) {
+      if ('unit' in host) out.push({ type: 'augment', seat, from: src.from, index: src.index, hostId: host.unit });
+      else if ('stack' in host) out.push({ type: 'augment', seat, from: src.from, index: src.index, hostStack: host.stack });
     }
   }
 }

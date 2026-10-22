@@ -167,13 +167,15 @@ function board(seed = 4242): Board {
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
   // CR 504.5: the haste step is now ALWAYS offered, so this fixture would sit in
-  // planning rather than battle — and Ignis Sprite's spawn trigger resolves
-  // immediately outside battle, putting a second (Fireball) token in the strip
-  // this test is counting. Close the step to reach the board it means.
+  // planning rather than battle — close the step to reach the board it means.
+  // The unit is a vanilla one (Curio Drifter): an Ignis Sprite's spawn trigger
+  // used to wait on the battle stack here, but its controller is alone in this
+  // region, so that stack drains on its own (CR 703.7, CT-234) and its Fireball
+  // would be a second token in the strip this test is counting.
   skipHasteStep(h);
   const seat = h.state.initiative;
   const e = new E(h.state);
-  const unit = e.spawnUnit(seat, 'Ignis Sprite', e.homeRegion(seat)).id;
+  const unit = e.spawnUnit(seat, 'Curio Drifter', e.homeRegion(seat)).id;
   const token = e.createSpellToken(seat, 'Poison', 1, e.homeRegion(seat)).id;
   e.settle();
   return { state: h.state, seat, unit, token };
@@ -219,7 +221,7 @@ test('#25: no spell tokens means no strip — the spot is earned, not reserved',
   skipHasteStep(h);                                  // CR 504.5 (see board() above)
   const seat = h.state.initiative;
   const e = new E(h.state);
-  e.spawnUnit(seat, 'Ignis Sprite', e.homeRegion(seat));
+  e.spawnUnit(seat, 'Curio Drifter', e.homeRegion(seat));
   e.settle();
   const html = paint(h.state, seat);
   assert.ok(html.includes(`data-animzone="field:${seat}"`), 'the board rendered');

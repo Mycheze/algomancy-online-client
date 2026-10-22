@@ -303,7 +303,7 @@ card('Temporal Rift', {
       // stack by hand.
       // CR 700.1, 704.4b: "(Negate all effects, this battle is over.)" really is all of
       // them — a {Battle} unit mid-cast never arrives. Confirmed, not narrowed.
-      for (const it of [...g.s.stack]) g.negate(it.id);
+      for (const it of g.stackIn(ctx.region)) g.negate(it.id);   // CT-234: this region's stack
       g.ev('info', 'Temporal Rift: all effects are negated — the battle is over.');
       g.endBattleRound();
     },

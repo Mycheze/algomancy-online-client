@@ -710,8 +710,8 @@ card('Celestial Shifter', {
 // controller) is negated; spells, viruses and ambushes are untouched.
 card('Containment Protocol', {
   spellEffect: {
-    run: (g, _ctx) => {
-      const hits = g.s.stack.filter(i => i.kind === 'triggered' || i.kind === 'activated');
+    run: (g, ctx) => {
+      const hits = g.stackIn(ctx.region).filter(i => i.kind === 'triggered' || i.kind === 'activated');   // CT-234
       if (!hits.length) { g.ev('info', 'Containment Protocol: no activated or triggered effects to negate.'); return; }
       for (const i of hits) g.negate(i.id);
     },

@@ -69,7 +69,7 @@ card('Molten Riftbreaker', {
     effect: {
       run: (g, ctx) => {
         let negated = 0;
-        for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
+        for (const it of g.stackIn(ctx.region)) {   // CR 704.4: a copy; CT-234: this region's stack
           if (isSpellEffect(it.kind) && it.controller === ctx.controller) { g.negate(it.id); negated++; }
         }
         if (!negated) g.ev('info', 'Molten Riftbreaker: you have no spell on the stack — nothing is negated.');

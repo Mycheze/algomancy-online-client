@@ -150,7 +150,7 @@ card('Calming Force', {
   spellEffect: {
     run: (g, ctx) => {
       let n = 0;
-      for (const it of [...g.s.stack]) {   // CR 704.4: negate() splices
+      for (const it of g.stackIn(ctx.region)) {   // CR 704.4: a copy; CT-234: this region's stack
         g.negate(it.id);
         n++;
       }
@@ -238,8 +238,9 @@ card('Feed to Hooba', {
 // only base power 2 or less) is left exactly as it was. It radiates like a
 // static — live as a unit in play, donated while it is an augment mod — and
 // CR 712.1a silences it with every other ability. The compulsion is region-scoped
-// like everything else (CR 601.1d), which is also what "during battle" amounts to:
-// outside battle the only units in your region are your own.
+// like everything else (CR 601.1d) AND gated on a battle being on in that region
+// (E.mustBeTargetedIn, CT-239): deployment happens in the home region too, so
+// region scope alone is not what "during battle" amounts to.
 card('Gatekeeper of Souls', {
   // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.

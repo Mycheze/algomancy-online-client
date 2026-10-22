@@ -91,24 +91,23 @@ function arcOnTheStack(seed: number) {
   return { h, A, item: item!, home };
 }
 
-test('cr:concepts.golden.regions — engine differs: Molten Riftbreaker despawn text resolving in a home region negates a spell on the stack in the battle region', () => {
+test('cr:concepts.golden.regions — Molten Riftbreaker despawn text resolving in a home region leaves a spell on the stack in the battle region alone (CT-234)', () => {
   const { h, A, item, home } = arcOnTheStack(80108);
   withE(h, g => {
     run(getCard('Molten Riftbreaker').augmentText![0]!.effect, g, { controller: A, sourceName: 'Molten Riftbreaker', region: home });
   });
   const negated = h.events.filter(ev => /negat/i.test(ev.type) || /negat/i.test(ev.msg));
-  assert.ok(negated.some(ev => /Luminous Arc/.test(ev.msg)), 'the Luminous Arc was negated');
-  const still = h.state.stack.find(it => it.id === item.id);
-  assert.ok(!still || still.negated, 'the spell in the other region is gone or negated');
+  assert.ok(!negated.some(ev => /Luminous Arc/.test(ev.msg)), 'the Luminous Arc was not negated');
+  assert.ok(h.state.stack.some(it => it.id === item.id), 'the spell in the other region is still on its own stack');
 });
 
-test('cr:concepts.golden.regions — engine differs: Cosmic Reversal resolving in a home region returns a spell on the stack in the battle region to its controller hand', () => {
+test('cr:concepts.golden.regions — Cosmic Reversal resolving in a home region does not reach a spell on the stack in the battle region (CT-234)', () => {
   const { h, A, item, home } = arcOnTheStack(80304);
   withE(h, g => {
     run(getCard('Cosmic Reversal').spellEffect!, g, { controller: A, sourceName: 'Cosmic Reversal', region: home });
   });
-  assert.ok(!h.state.stack.some(it => it.id === item.id), 'the spell in the other region left the stack');
-  assert.ok(h.state.players[A]!.hand.includes('Luminous Arc'), 'and went to the hand of its controller');
+  assert.ok(h.state.stack.some(it => it.id === item.id), 'the spell in the other region is still on its own stack');
+  assert.ok(!h.state.players[A]!.hand.includes('Luminous Arc'), 'and did not go to the hand of its controller');
 });
 
 /* ---------- 102 players ---------- */

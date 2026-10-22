@@ -32,6 +32,23 @@ import { effStats, ent, spawn, toDeployment, withE } from './util.ts';
 
 const other = (s: Seat): Seat => (1 - s) as Seat;
 
+/** CT-239: Gatekeeper of Souls compels only "during battle", so a probe of the
+ * channel puts a battle on in `region` (its declare step, exactly the shape
+ * E.startBattleRound opens) for the length of the query. */
+function duringBattleIn<T>(g: E, region: number, fn: () => T): T {
+  const s = g.s, was = { phase: s.phase, battle: s.battle };
+  s.phase = 'battle';
+  s.battle = {
+    round: 1, attacker: 0, defender: 1, region, step: 'declare',
+    columns: [], blocks: {}, sentAttackers: [], attackerPool: null, happened: false,
+  };
+  try { return fn(); } finally { s.phase = was.phase; s.battle = was.battle; }
+}
+const mustIn = (h: Harness, region: number): Set<EntityId> => {
+  const g = new E(h.state);
+  return duringBattleIn(g, region, () => g.mustBeTargetedIn(region));
+};
+
 function tok(h: Harness, seat: Seat, p: number, t: number): EntityId {
   const g = new E(h.state);
   const u = g.spawnUnit(seat, 'Unit Token', g.homeRegion(seat), { token: true, tokenStats: [p, t] });
@@ -91,10 +108,10 @@ test('462 Gatekeeper of Souls under Transmogrifant need not be targeted', () => 
   const p = h.state.deployPlayer!;
   const gk = spawn(h, p, 'Gatekeeper of Souls');
   const region = ent(h, gk)!.region;
-  assert.ok(new E(h.state).mustBeTargetedIn(region).has(gk), 'setup: it must be targeted');
+  assert.ok(mustIn(h, region).has(gk), 'setup: it must be targeted');
   spawn(h, p, 'Transmogrifant');
   assert.ok(stripped(h, gk), 'setup: stripped');
-  assert.ok(!new E(h.state).mustBeTargetedIn(region).has(gk), 'a stripped Gatekeeper no longer must be targeted');
+  assert.ok(!mustIn(h, region).has(gk), 'a stripped Gatekeeper no longer must be targeted');
 });
 
 test('462 two Transmogrifants in play: only the newer applies, a token gets +2/+2 once', () => {
@@ -154,7 +171,7 @@ test('462 a stripper only one way under another: The Everywhere entering under T
   withE(h, e => { e.entity(te)!.named = 'Gatekeeper of Souls'; });
   assert.ok(stripped(h, te), 'The Everywhere printed text is older than Transmogrifant');
   assert.ok(!stripped(h, gk), 'so it silences nothing');
-  assert.ok(new E(h.state).mustBeTargetedIn(ent(h, gk)!.region).has(gk), 'the Gatekeeper still must be targeted');
+  assert.ok(mustIn(h, ent(h, gk)!.region).has(gk), 'the Gatekeeper still must be targeted');
 });
 
 test('462 The Everywhere not under Transmogrifant silences what it names, and Transmogrifant still applies', () => {
@@ -172,7 +189,7 @@ test('462 The Everywhere not under Transmogrifant silences what it names, and Tr
   withE(h, e => { e.entity(te)!.named = 'Gatekeeper of Souls'; });
   assert.ok(!stripped(h, te), 'The Everywhere is not one of Transmogrifant "your other units"');
   assert.ok(stripped(h, gk));
-  assert.ok(!new E(h.state).mustBeTargetedIn(region).has(gk));
+  assert.ok(!mustIn(h, region).has(gk));
   assert.ok(!stripped(h, tm), 'Transmogrifant is not named');
   assert.deepEqual(effStats(h, t), [3, 3]);
 });

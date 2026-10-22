@@ -83,7 +83,11 @@ function binTargeted(seed = 1902): { h: Harness; buried: string } {
   const h = new Harness(seed);
   toDeployment(h);
   const bw = spawn(h, 0, 'Blightwalker');
+  const atk = spawn(h, 1, 'Unit Token');
   toNextBattle(h, 1);
+  // CT-234 (CR 703.7): the attack puts seat 1 in seat 0's region, so the
+  // trigger waits on a stack two players share instead of draining on its own
+  h.do({ type: 'declareAttack', seat: 1, columns: [[atk]] });
   h.state.players[0]!.bin.push('Hooba-Bot', 'Wisp', 'Fireball', 'Prismatic Observer', 'Good Whale');
   withE(h, e => { e.destroy(e.entity(bw)!, 'dies'); });
   return { h, buried: 'Hooba-Bot' };

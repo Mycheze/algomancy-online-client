@@ -665,7 +665,15 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // its damage reached <player>." in E.commitPlayerDamage, said when a Lethal
   // hit was wholly redirected into Oorblak. It carries the seat, so it is not
   // log-only.
-  assert.equal(sites.length, 222,`the engine and apply make ${sites.length} announcements`);
+  // 222 → 223 with CT-242 (E.finishPendingMods): "<card>: its host left play
+  // before it could attach — it goes to <player>'s bin." A graft that waited
+  // on its host's targeted trigger, whose host that trigger removed. It says
+  // where the card went (the bin moves), so it is not an absence either.
+  // 223 → 225 with CT-341 and CT-260 (round 2026-10-22): "<unit> stays a copy
+  // of <card>: that copy is the later one (CR 113.2b)." in E.wearCopy, and
+  // "Pure: <unit> is read at p/t, without its stat attributes — it dies." in
+  // the Pure death sweep. Both carry the unit, so neither is log-only.
+  assert.equal(sites.length, 225,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');

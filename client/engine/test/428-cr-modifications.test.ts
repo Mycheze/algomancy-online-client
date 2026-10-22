@@ -152,7 +152,7 @@ test('cr:effects.graft.applying.targets — grafting onto Mohruung targets it, a
 
 // ── effects.graft.composite.no-target ────────────────────────────────────
 
-test('cr:effects.graft.composite.no-target — engine differs: Megadeath with Resurrect grafted attacks with no target, its composite is pushed to the stack, and makes nothing', () => {
+test('cr:effects.graft.composite.no-target — Megadeath with Resurrect grafted attacks with no target, its composite is never put on the stack, and makes nothing (CT-252)', () => {
   const h = new Harness(71755);
   toDeployment(h);
   const A = h.state.initiative as Seat;
@@ -166,7 +166,7 @@ test('cr:effects.graft.composite.no-target — engine differs: Megadeath with Re
   const pushed = h.state.stack.length - before;
   drainAll(h);
   assert.equal(Object.values(h.state.entities).filter(u => u.card === 'Poison').length, 0, 'no Poison');
-  assert.equal(pushed, 1, `measured ${pushed} item(s) pushed; the ruling says none`);
+  assert.equal(pushed, 0, `measured ${pushed} item(s) pushed; the ruling says none`);
 });
 
 // ── effects.mods.erase-off-host ──────────────────────────────────────────

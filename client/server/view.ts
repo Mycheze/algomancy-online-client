@@ -292,6 +292,14 @@ export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | nu
    * redaction cannot itself be a tell.) */
   if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));
 
+  // CT-242: a graft waiting on its host's "when I become targeted" trigger is a
+  // card out of its applier's hand and not yet on the board — a deployment (or
+  // haste-step) mod, so it is that seat's business only, like their stack half.
+  if (v.pendingMods) {
+    const mine = v.pendingMods.filter(g => g.seat === seat);
+    if (mine.length) v.pendingMods = mine; else delete v.pendingMods;
+  }
+
   // deck order is hidden (and derivable from the seed) — send a count only.
   // Constructed per-player decks too: even your OWN deck's order is hidden.
   v.sharedDeck = v.sharedDeck.map(() => HIDDEN_CARD);

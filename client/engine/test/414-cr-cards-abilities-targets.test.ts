@@ -126,7 +126,7 @@ test('cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on t
   finishBattle(h);
 });
 
-test('cr:concepts.targets.becomes-targeted — engine differs: a graft onto Mohruung queues the trigger before the graft attaches, but the Crystal is made only after it attaches', () => {
+test('cr:concepts.targets.becomes-targeted — a graft onto Mohruung queues the trigger, the Crystal is made, and only then does the graft attach (CT-242)', () => {
   const h = new Harness(33603);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -135,7 +135,6 @@ test('cr:concepts.targets.becomes-targeted — engine differs: a graft onto Mohr
   giveResources(h, A, 'fire', 2);
   const start = h.log.length;
   h.do({ type: 'graft', seat: A, from: 'hand', index: give(h, A, 'Flame Juggle'), hostId: mohr, position: 0 });
-  assert.equal(ent(h, mohr)!.mods.length, 1, 'the graft is already attached when the action returns');
   drain(h);
   const lines = h.log.slice(start);
   const iTrig = lines.findIndex(l => /^Trigger: Mohruung/.test(l));
@@ -143,7 +142,7 @@ test('cr:concepts.targets.becomes-targeted — engine differs: a graft onto Mohr
   const iCrystal = lines.findIndex(l => /creates a Crystal 2/.test(l));
   assert.ok(tokensOf(h, A).some(t => t.card === 'Crystal'), 'a Crystal was made');
   assert.ok(iTrig >= 0 && iTrig < iAttach, `the trigger is queued before the graft attaches:\n${lines.join('\n')}`);
-  assert.ok(iAttach < iCrystal, `the graft is attached BEFORE the trigger resolves:\n${lines.join('\n')}`);
+  assert.ok(iCrystal >= 0 && iCrystal < iAttach, `the trigger resolves BEFORE the graft attaches:\n${lines.join('\n')}`);
   assert.equal(ent(h, mohr)!.mods.length, 1);
 });
 
@@ -259,7 +258,7 @@ test('cr:concepts.targets.must-be-targeted.choice-only — a Gatekeeper of Souls
   finishBattle(h);
 });
 
-test('cr:concepts.targets.must-be-targeted — engine differs: Gatekeeper of Souls compels the target of an Overbloom played in deployment, outside battle', () => {
+test('cr:concepts.targets.must-be-targeted — Gatekeeper of Souls compels nothing outside battle: an Overbloom played in deployment may target the other unit (CT-239)', () => {
   const h = new Harness(30305);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -271,7 +270,7 @@ test('cr:concepts.targets.must-be-targeted — engine differs: Gatekeeper of Sou
   h.do({ type: 'playCard', seat: P, handIndex: idx });
   const vals = h.state.decision!.options.map(o => JSON.stringify(o.value));
   assert.ok(vals.includes(JSON.stringify({ unit: gk })), 'the Gatekeeper is offered');
-  assert.ok(!vals.includes(JSON.stringify({ unit: mine })), `the other unit is not offered: ${vals.join(' ')}`);
+  assert.ok(vals.includes(JSON.stringify({ unit: mine })), `the other unit is offered too: ${vals.join(' ')}`);
 });
 
 // ── tester additions: the rules no verifier probe demonstrated ───────────────
@@ -433,7 +432,9 @@ test('cr:concepts.targets.not-target.distribution — Channel Through distribute
   finishBattle(h);
 });
 
-test('cr:concepts.targets.region.global — a stack item and the cards in either bin are offered from every region, while a unit is offered only in its own', () => {
+test('cr:concepts.targets.region.global — a stack item and the cards in a bin are offered only in a region where they are: the item on its own region stack, a bin where its player is present (CT-234)', () => {
+  // CR 601.2a, 101.6, 110.5a (owner, 2026-10-11): each region has its own stack,
+  // and a player's bin is reached only where that player is present.
   const h = new Harness(41407);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -452,17 +453,23 @@ test('cr:concepts.targets.region.global — a stack item and the cards in either
   let other = -1;
   withE(h, e => { other = e.homeRegion(A); });
   assert.notEqual(other, battle, 'setup: a second region with no battle in it');
-  const ask = (what: string, region: number): string[] => {
+  const ask = (what: string, region: number, ally: Seat = D): string[] => {
     let out: string[] = [];
-    withE(h, e => { out = e.targetCandidates({ what } as never, region, undefined, D).map(r => JSON.stringify(r)); });
+    withE(h, e => { out = e.targetCandidates({ what } as never, region, undefined, ally).map(r => JSON.stringify(r)); });
     return out;
   };
-  for (const r of [battle, other]) {
-    assert.ok(ask('stackEffect', r).includes(JSON.stringify({ stack: item.id })), `the stack item, from region ${r}`);
-    const bins = ask('anyBinCard', r).join(' ');
-    assert.match(bins, /Twin Flame/, `a card in one bin, from region ${r}: ${bins}`);
-    assert.match(bins, /Overbloom/, `and in the other, from region ${r}: ${bins}`);
-  }
+  // the battle region: both players are present, and the item is on its stack
+  assert.ok(ask('stackEffect', battle).includes(JSON.stringify({ stack: item.id })), 'the stack item, from its own region');
+  const here = ask('anyBinCard', battle).join(' ');
+  assert.match(here, /Twin Flame/, `both bins from the battle region: ${here}`);
+  assert.match(here, /Overbloom/, `both bins from the battle region: ${here}`);
+  // the other region: its stack is empty, and only its owner A is present there
+  assert.ok(!ask('stackEffect', other).includes(JSON.stringify({ stack: item.id })),
+    'the battle stack item is not on the other region stack');
+  const there = ask('anyBinCard', other, A).join(' ');
+  assert.match(there, /Twin Flame/, `A is present at home, so A's bin: ${there}`);
+  assert.doesNotMatch(there, /Overbloom/, `D is not present there, so not D's bin: ${there}`);
+  assert.equal(ask('binCard', other, D).length, 0, 'nor is D own bin reached for D there');
   assert.ok(ask('unit', battle).includes(JSON.stringify({ unit: foe })), 'control: the unit, from its own region');
   assert.ok(!ask('unit', other).includes(JSON.stringify({ unit: foe })), 'but not from the other');
   finishBattle(h);

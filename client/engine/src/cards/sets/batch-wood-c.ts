@@ -565,8 +565,9 @@ card('Woodland Warding', {
   spellEffect: {
     run: (g, ctx) => {
       const mine = ctx.controller;
-      const alliedItems = new Set(g.s.stack.filter(i => i.controller === mine).map(i => i.id));
-      const hits = g.s.stack.filter(it => {
+      const here = g.stackIn(ctx.region);   // CT-234 (CR 601.2a): this region's stack
+      const alliedItems = new Set(here.filter(i => i.controller === mine).map(i => i.id));
+      const hits = here.filter(it => {
         if (it.controller === mine) return false;
         if (it.kind === 'virus') {
           // "targeting allied … units" (hostId — a unit or spell token of mine)

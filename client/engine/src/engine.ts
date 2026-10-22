@@ -7832,7 +7832,7 @@ export class E {
    * X answers alike and the first one settles it.
    */
   requiredSlotsFillable(spec: TargetSpec, region: number, ally: Seat, sourceId?: EntityId,
-    xs?: readonly number[]): boolean {
+    xs?: readonly number[], event?: EngineEvent | null): boolean {
     // CR 110.7, CT-303: `min: 'X'` requires every counted slot, so how many is a
     // question about the X being judged — X = 3 against one legal unit is not
     // fillable, X = 0 is fillable at nothing. Any other X spec keeps the
@@ -7851,7 +7851,9 @@ export class E {
       if (i >= need) return true;
       const taken = new Set(picked.map(r => JSON.stringify(r)));
       const chosen = picked.map(r => this.resolveTargetRef(r)).filter((t): t is ResolvedTarget => t !== null);
-      const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen)
+      // `event`: a trigger's restriction may read the event that fired it
+      // (CR 110.1a "that player's bin"), exactly as the collector passes it
+      const cands = this.targetCandidates(specForSlot(spec, i), region, undefined, ally, sourceId, x, chosen, event)
         .filter(c => !taken.has(JSON.stringify(c)));
       if (spec.count !== 'X') return cands.some(c => fill(x, i + 1, [...picked, c]));
       const last = picked.length > 0 && i > 0 && sameSlot(i, i - 1) ? JSON.stringify(picked[picked.length - 1]) : undefined;
@@ -7906,9 +7908,9 @@ export class E {
     const out: TargetRef[] = [];
     this.pushUnitTargets(out, spec, region, ally);
     this.pushPlayerTargets(out, spec, region, ally);
-    this.pushStackTargets(out, spec, excludeStackId);
+    this.pushStackTargets(out, spec, region, excludeStackId);
     this.pushCachedCardTargets(out, spec, region);
-    this.pushBinCardTargets(out, spec, ally);
+    this.pushBinCardTargets(out, spec, region, ally);
     this.pushFormationTargets(out, spec, region);
     return out;
   }
@@ -8004,6 +8006,35 @@ export class E {
    * replay-safe, and an order that depends on `presentSeats`' internal
    * mutation history is not.
    */
+  /**
+   * CR 601.2a, 101.6 (CT-234) — THE STACK OF ONE REGION. Each region has its own
+   * stack, owned by nobody and shared by the players present in it (owner,
+   * 2026-10-11). The engine keeps one array, `s.stack`, and every item carries
+   * the region it was put on the stack in (`StackItem.region`), so a region's
+   * stack is that array filtered, in the same bottom-to-top order. A COPY: a
+   * negate-all may splice `s.stack` while it walks this.
+   */
+  stackIn(region: number): StackItem[] {
+    return this.s.stack.filter(it => it.region === region);
+  }
+
+  /**
+   * CR 703.7 (CT-234; owner 2026-10-22) — is this battle-phase item on the stack
+   * of a region where only ONE player is present? Such a stack "drains on its
+   * own — like a deployment stack: it resolves in order without a priority
+   * window, since nobody else is there to respond". settle() resolves it, top
+   * down; the battle's priority window never sees it, and its push and its
+   * resolution leave that window's priority and passes alone.
+   *
+   * ⚠ A non-battle region where BOTH players are present (round 2: the region
+   * the round-1 battle was fought in, still occupied until regroup) is not
+   * covered by the ruling; its items stay in the battle's window, as every item
+   * was before. See the CT-234 report.
+   */
+  soloStacked(item: StackItem): boolean {
+    return this.s.phase === 'battle' && this.seatsHere(item.region).length < 2;
+  }
+
   seatsHere(region: number): Seat[] {
     const present = this.s.regions[region]?.presentSeats ?? [];
     return [this.initiative, this.nit].filter(s => present.includes(s));
@@ -8044,9 +8075,13 @@ export class E {
     }
   }
 
-  private pushStackTargets(out: TargetRef[], spec: TargetSpec, excludeStackId: number | undefined): void {
+  private pushStackTargets(out: TargetRef[], spec: TargetSpec, region: number, excludeStackId: number | undefined): void {
     if (spec.what === 'stackSpell' || spec.what === 'stackEffect') {
-      for (const it of this.s.stack) {
+      // CR 601.2a, 101.6 (CT-234; owner 2026-10-11): each region has its own stack,
+      // and an effect reaches only the stack of the region it resolves in.
+      // This walked the whole array, so a Frosted Denial in one region could aim
+      // at an item on another region's stack.
+      for (const it of this.stackIn(region)) {
         if (it.id === excludeStackId) continue;   // CR 704.4: a negated item is not here to skip
         // CR 700.1a: "spell effect" is `isSpellEffect` — never a hand-copied kind
         // list. An Ambush is NOT one (report #218): a plain "target effect"
@@ -8087,17 +8122,23 @@ export class E {
     }
   }
 
-  private pushBinCardTargets(out: TargetRef[], spec: TargetSpec, ally: Seat | undefined): void {
+  private pushBinCardTargets(out: TargetRef[], spec: TargetSpec, region: number, ally: Seat | undefined): void {
+    // CR 403.6's presence test, for a bin (CT-234; owner 2026-10-11): a player's
+    // bin is tied to that player and is reached only in a region where that
+    // player is PRESENT — in deployment each seat is alone in its own region, so
+    // only your own bin; in battle both seats are in the battle region.
+    const here = this.seatsHere(region);
     // CR 110.3a: a card in YOUR OWN bin ("recall target unit in your bin",
     // "put target unit with cost 2 or less from your bin into play"). Every
     // printed one reaches only the caster's bin, so this does too; a card the
     // restriction wants to reach in an opponent's bin would need `restrict`
     // to say so and this to widen. Duplicates collapse: the bin holds names,
     // and naming a card there IS the reference (BinRef).
-    if (spec.what === 'binCard' && ally !== undefined) out.push(...this.binRefs(ally));
-    // "target card in A bin" (Collect Remains) — the zone is unowned, so both
+    if (spec.what === 'binCard' && ally !== undefined && here.includes(ally)) out.push(...this.binRefs(ally));
+    // "target card in A bin" (Collect Remains) — the zone is unowned, so every
+    // bin whose player is here, in seat order as before (the option order)
     if (spec.what === 'anyBinCard') {
-      for (const p of this.s.players) out.push(...this.binRefs(p.seat));
+      for (const p of this.s.players) if (here.includes(p.seat)) out.push(...this.binRefs(p.seat));
     }
   }
 
@@ -8115,8 +8156,11 @@ export class E {
    * two-target spell could never aim at anything else.
    *
    * Returns `out` itself (same array, not a copy) when nothing compels, so
-   * `restrictTargets` can tell the two cases apart by identity. */
-  private compelledTargets(out: TargetRef[], region: number, chosen?: readonly ResolvedTarget[]): TargetRef[] {
+   * `restrictTargets` can tell the two cases apart by identity.
+   *
+   * Public for one other caller: a battle-window Virus's HOST choice (apply.ts
+   * `battleVirusHosts`, CT-331), which is a target choice too (CR 110.10a). */
+  compelledTargets(out: TargetRef[], region: number, chosen?: readonly ResolvedTarget[]): TargetRef[] {
     const gates = this.mustBeTargetedIn(region);
     for (const t of chosen ?? []) if (isEntityTarget(t)) gates.delete(t.id);
     let cands = out;
@@ -8447,9 +8491,16 @@ export class E {
 
   /** CR 110.12: the units in `region` that must be targeted if able. Radiates like
    * a static — live as a unit in play, donated while an augment mod — and is
-   * silenced by CR 712.1a exactly as an ability is. */
+   * silenced by CR 712.1a exactly as an ability is.
+   *
+   * CT-239: the printed clause is "When a player selects targets for an effect
+   * DURING BATTLE", so it compels only while a battle is on in that region.
+   * Region scope alone is not that: deployment happens in the home region too,
+   * and a Gatekeeper there used to narrow its own controller's Overbloom. */
   mustBeTargetedIn(region: number): Set<EntityId> {
     const out = new Set<EntityId>();
+    const b = this.s.phase === 'battle' ? this.s.battle : null;
+    if (!b || b.region !== region) return out;
     const live = this.radiates();
     for (const { anchor } of this.anchored((h, a) =>
       this.donates(h, a, 'mustBeTargeted')                      // CR 710.7: off the FACES
@@ -8772,12 +8823,17 @@ export class E {
      *
      * Same discriminator as `beginResolving`, and for the same reason.
      */
-    const inBattle = this.s.phase === 'battle';
+    // CT-234: a solo-region stack has no window either (CR 703.7), so it is
+    // pushed exactly as a deployment item is, and the battle window's priority
+    // and passes are not touched
+    const solo = this.soloStacked(item);
+    const inBattle = this.s.phase === 'battle' && !solo;
     // snapshotted before resolution can spend a part, exactly as the no-stack
     // branch in `commitItem` does it, and for the same reason
     if (!inBattle) this.ev('stackFlash', '', { item: structuredClone(item) });
     this.ev('stackPushed', inBattle ? `${item.label} → stack.` : '',
       { id: item.id, controller: item.controller });
+    if (solo) return;
     this.s.passes = 0;
     /**
      * CR 703.3a, 605.1a, 604.3c, 703.2a — WHO RESPONDS FIRST DEPENDS ON WHY THE ITEM IS HERE.
@@ -11088,7 +11144,11 @@ export class E {
   }
 
   resolveTop(): void {
-    this.resolveStackAt(this.s.stack.length - 1);
+    // CT-234: in battle, the top of the WINDOW's stack — a solo-region item
+    // (CR 703.7) is never in the window and settle() drains it on its own
+    let i = this.s.stack.length - 1;
+    if (this.s.phase === 'battle') while (i > 0 && this.soloStacked(this.s.stack[i]!)) i--;
+    this.resolveStackAt(i);
   }
 
   /**
@@ -11107,7 +11167,7 @@ export class E {
     const outer = this.beginResolving(item);
     this.resolveItem(item);
     this.endResolving(outer);
-    this.finishResolutionTail();
+    this.finishResolutionTail(item);
   }
 
   /**
@@ -11212,6 +11272,49 @@ export class E {
     for (let i = this.s.stack.length - 1; i >= 0; i--) {
       if (this.s.stack[i]!.controller === seat) { this.resolveStackAt(i); return; }
     }
+    // their half is drained: a graft of theirs that waited on it lands now (CT-242)
+    this.finishPendingMods(seat);
+  }
+
+  /**
+   * CR 110.11 (CT-242, D-U03-14) — attach the deployment mods (grafts, and
+   * augments since the owner's 2026-10-22 answer) that waited for their host's
+   * "when I become targeted" triggers. Designer, RAQ Graft 101 point 5: "Applying Graft
+   * is 'targeting' effect, so if you try to Graft something underneath the
+   * Mohruung, he will trigger first". `doGraft` parks a graft here when the
+   * targeting queued anything; settle() calls this once the queue and the stack
+   * are drained (and settleDeploySeat for one seat's half of a deployment), so
+   * the trigger — composed at fire time, without the new graft — resolves, and
+   * only then does the graft attach.
+   *
+   * The card was taken and paid for when it was applied. If its host has left
+   * play meanwhile (a graft under Mohruung that deletes it), there is nothing to
+   * attach to: the card goes to its owner's bin, as a Virus whose host is gone
+   * fizzles to the bin. The insertion point is clamped, in case the host lost a
+   * mod while it waited.
+   */
+  finishPendingMods(seat?: Seat): void {
+    const list = this.s.pendingMods;
+    if (!list?.length) return;
+    if (this.s.decision && seat === undefined) return;
+    if (this.s.triggerQueue.some(t => seat === undefined || t.controller === seat)) return;
+    if (this.s.stack.some(i => seat === undefined || i.controller === seat)) return;
+    const now = list.filter(g => seat === undefined || g.seat === seat);
+    if (!now.length) return;
+    const rest = list.filter(g => !now.includes(g));
+    if (rest.length) this.s.pendingMods = rest; else delete this.s.pendingMods;
+    for (const g of now) {
+      const host = this.entity(g.host);
+      if (!host || host.kind !== 'unit' || host.absent) {
+        this.toBin(g.seat, g.card, 'stack');
+        this.ev('info', `${g.card}: its host left play before it could attach — it goes to ${this.pname(g.seat)}'s bin.`,
+          { seat: g.seat, card: g.card });
+        continue;
+      }
+      this.attachMod(host, g.card, g.seat, g.appliedAs,
+        g.appliedAs === 'graft' ? Math.min(g.position ?? host.mods.length, host.mods.length) : undefined);
+    }
+    this.settle();
   }
 
   /** post-resolution: restart the window from the initiative player (CR
@@ -11221,9 +11324,12 @@ export class E {
    * whoever did not control the newest trigger). Set BEFORE settle as well,
    * so a trigger that suspends there for its targets and is pushed later from
    * doDecide finds the new window already open. */
-  finishResolutionTail(): void {
+  finishResolutionTail(item?: StackItem): void {
+    // CT-234: a solo-region item (CR 703.7) resolved outside the window, so the
+    // window is not restarted for it
+    const windowed = !item || !this.soloStacked(item);
     const restart = (): void => {
-      if (this.s.phase === 'battle' && this.s.priority !== null) {
+      if (windowed && this.s.phase === 'battle' && this.s.priority !== null) {
         this.s.priority = this.s.initiative;
         this.s.passes = 0;
       }
@@ -12814,6 +12920,9 @@ export class E {
       // are untaxed by construction. The gate may suspend (asking the
       // controller to pay) or swallow the trigger (no mana — prevented,
       // announced); `continue` covers the swallowed case.
+      // CT-252: a graft composite with a required target it cannot have never
+      // reaches the stack — so it is not taxed either, and is judged first
+      if (this.gateUntargetableComposite(next)) continue;
       if (battleMode && this.gateTaxedTrigger(next)) continue;
       this.stackPendingTrigger(next, stackMode ? 'push' : 'resolve');
     }
@@ -12823,7 +12932,14 @@ export class E {
    * pay gate can resume a dequeued trigger from doDecide with the queue loop
    * long unwound. */
   stackPendingTrigger(next: PendingTrigger, then: 'push' | 'resolve'): void {
-    const item: StackItem = {
+    const item = this.pendingTriggerItem(next);
+    this.collectTargets(item, then, []);
+    this.commitItem(item, then);
+  }
+
+  /** the stack item a queued trigger becomes (takes the next id) */
+  private pendingTriggerItem(next: PendingTrigger): StackItem {
+    return {
       id: this.s.nextId++, kind: 'triggered', card: next.sourceCard, label: next.label,
       controller: next.controller,
       // CR 714.9a: the live source's CURRENT region if it is still in play (it may
@@ -12837,8 +12953,50 @@ export class E {
       ...(next.selfModId !== undefined ? { selfModId: next.selfModId } : {}),
       ...(next.lastKnown ? { lastKnown: next.lastKnown } : {}),     // CR 704.7a
     };
-    this.collectTargets(item, then, []);
-    this.commitItem(item, then);
+  }
+
+  /**
+   * CR 110.7, 722.6 (CT-252) — RAQ "[Solved] Target requirements to put effect on
+   * stack.", _passer: *"When you attack with Megadeath + Resurrect, then 'Create
+   * Poison 5' + 'Put target unit with cost 2 or less from your bin into play'
+   * can't be put on the stack unless you target such unit in your bin."*
+   *
+   * A triggered GRAFT COMPOSITE (a graft cause's trigger carrying at least one
+   * grafted part) one of whose parts REQUIRES a target that nothing legal can
+   * fill is never put on the stack: no response window, no tax, and its
+   * untargeted parts (the Poison 5) do not happen either. It used to be pushed
+   * with that part aimed at nothing and fizzle whole on resolution (CR 722.4f) —
+   * the same board, reached through a priority window the opponent could use.
+   *
+   * Judged exactly as the cast gate judges a play (`requiredSlotsFillable`, CR
+   * 110.7): every required slot of the part, distinct, from the trigger's region
+   * and controller. Not a requirement, so never a reason to drop it: an "up to"
+   * spec (min 0) and a "you may … target" (CT-309), which declines at the target
+   * step and runs with nothing. An X-sized spec is left to the collector — X is
+   * not chosen yet. A plain trigger (no grafted part) is out of scope: the
+   * designer's answer is about the composite.
+   *
+   * CR 109.9b: a trigger never offered spends no bounded use — the cause's [once]
+   * and every bounded graft's reservation written by composeParts go back
+   * (`withholdComposite` → `refundPart`, as for an unpayable grafted [cost]).
+   */
+  private gateUntargetableComposite(t: PendingTrigger): boolean {
+    if (!t.parts.some(p => p.effectKey.startsWith('graft:'))) return false;
+    const region = this.entity(t.sourceId)?.region ?? t.region ?? this.actionRegion(t.controller);
+    const blocked = t.parts.find(p => {
+      const spec = effectByKey(p.effectKey).targets;
+      if (!spec || spec.may || spec.count === 'X' || !requiresTargets(spec)) return false;
+      // the collector's own arguments (stackPendingTrigger → collectPartTargets)
+      return !this.requiredSlotsFillable(spec, region, t.controller, t.sourceId, undefined, t.event);
+    });
+    if (!blocked) return false;
+    // CR 722.6a's own withholding, so it reads and refunds exactly as an
+    // unpayable grafted [cost] does: every part spent, every bounded use back
+    // (refundPart), one line. The item is built only now, so a composite that
+    // does go on the stack takes its id where it always did.
+    const what = blocked.effectKey.startsWith('graft:') ? blocked.effectKey.slice('graft:'.length) : t.sourceCard;
+    this.withholdComposite(this.pendingTriggerItem(t), `${what} has no legal target`);
+    return true;
   }
 
   /**
@@ -13021,11 +13179,20 @@ export class E {
           this.resolveTop();
           return;
         }
+        // CR 703.7 (CT-234; owner 2026-10-22): a battle-phase stack in a region
+        // where only one player is present drains here, top down, like a
+        // deployment stack — no priority window, nobody else to respond
+        if (this.s.phase === 'battle' && !this.s.decision) {
+          for (let i = this.s.stack.length - 1; i >= 0; i--) {
+            if (this.soloStacked(this.s.stack[i]!)) { this.resolveStackAt(i); return; }
+          }
+        }
         // resuming a suspended combat-damage pump used to live HERE,
         // reachable only with the queue already empty. It now lives in the
         // CR 608.9b hold above, which is reached whether the queue is empty or
         // not — a sub-step suspended by a CR 608.6a election or a CR 111.10g pay
         // question may well have a held batch waiting behind it.
+        this.finishPendingMods();   // CR 110.11 (CT-242): the host triggered first
         this.finishDeployStart();   // CR 507.4: resume a suspended rot-damage opening
         this.finishHasteEnd();   // CR 504.6: resume a suspended end-of-haste window
         this.finishTurnEnd();
@@ -13051,7 +13218,8 @@ export class E {
       this.s.priority = other(seat);
       return;
     }
-    if (this.s.stack.length) {
+    // CT-234: the window's own stack (a solo-region item is never in it)
+    if (this.s.stack.some(it => !this.soloStacked(it))) {
       this.resolveTop();
     } else {
       this.advanceBattleStep();
