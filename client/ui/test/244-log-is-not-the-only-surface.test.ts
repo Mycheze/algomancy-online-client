@@ -673,7 +673,11 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // of <card>: that copy is the later one (CR 113.2b)." in E.wearCopy, and
   // "Pure: <unit> is read at p/t, without its stat attributes — it dies." in
   // the Pure death sweep. Both carry the unit, so neither is log-only.
-  assert.equal(sites.length, 225,`the engine and apply make ${sites.length} announcements`);
+  // 225 → 226 with CT-263 (owner 2026-10-22, "Log both"): E.revealHandTo's
+  // "<seat> looks at their own hand." — the public half of a look at one's own
+  // hand, which names no card. Nothing on the board shows a look, so this is
+  // the surface it is meant for.
+  assert.equal(sites.length, 226,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
