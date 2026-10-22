@@ -623,6 +623,7 @@ card('Borrower of Forms', {
       ctx.spawnWearing?.({
         copy: g.prepareCopy(t, {
           from: 'Borrower of Forms', until: 'permanent', printedStats: [p, dt],
+          seat: ctx.controller,   // CR 113.2b: the caster's play stamps the face
         }),
         counters: t.counters,
         tempPower: t.tempPower,

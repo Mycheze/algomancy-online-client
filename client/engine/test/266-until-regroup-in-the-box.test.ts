@@ -136,6 +136,7 @@ const FIXTURE: Record<string, (u: Entity) => void> = {
   tempAttrs: u => { u.tempAttrs = ['Flying']; },
   baseSet: u => { u.baseSet = [7, 7]; },
   baseSetSeq: u => { u.baseSetSeq = 42; },
+  baseSetAt: u => { u.baseSetAt = [42, 1]; },
   tempAttrsAt: u => { u.tempAttrsAt = [[42, 1]]; },
   suppressed: u => { u.suppressed = { abilities: 'Suppression Field' }; },
   unstable: u => { u.unstable = true; },
@@ -165,6 +166,7 @@ const FIXTURE: Record<string, (u: Entity) => void> = {
  */
 const NO_REPRESENTATION: Record<string, string> = {
   baseSetSeq: 'a last-wins tiebreak timestamp for baseSet, with no meaning of its own',
+  baseSetAt: 'CR 113.2b (CT-341): baseSet\'s layer timestamp, read only to order it last-wins; baseSet itself is represented',
   tempAttrsAt: 'CR 712.2: when each tempAttrs entry was granted, read only to order it against a stripper; tempAttrs itself is represented',
   damageShieldBy: 'CR 708.8b (report #210): the seat that cast the damageShield, read only to attribute its +1/+1 counters; damageShield itself is represented',
 };

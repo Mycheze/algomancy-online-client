@@ -1383,8 +1383,9 @@ export class E {
    * of THAT. A `setBase` therefore wins over a copy in BOTH orders — it is a
    * layer-2 rewrite of whatever layer 1 currently says.
    *
-   * Last-wins by `seq` among the stored copies that carry the `name` facet,
-   * the same rule and the same `nextId` clock `baseSet`/`baseSetSeq` uses.
+   * Last-wins by timestamp among the stored copies that carry the `name` facet,
+   * the same rule `baseSet` uses: `CopyRef.at` (CR 113.2b — a hidden step by
+   * initiative, CT-341), or `[seq, ∞]` on a face saved before it.
    *
    * Cheap and recursion-free ON PURPOSE: it reads `e.copies` and nothing else,
    * so it can be called from inside the `facesOf` walk, from inside statics,
@@ -1398,10 +1399,13 @@ export class E {
     let best: CopyRef | undefined;
     for (const c of e.copies ?? []) {
       if (!c.facets.includes('name')) continue;
-      if (!best || c.seq >= best.seq) best = c;
+      if (!best || !E.older(E.copyStamp(c), E.copyStamp(best))) best = c;
     }
     return best;
   }
+  /** CR 113.2 / CT-341: a face's layer timestamp — the stamp it was given, or the
+   * clock tick it took on a state saved before faces carried one */
+  static copyStamp(c: CopyRef): Stamp { return c.at ?? [c.seq, Infinity]; }
 
   /**
    * The card NAME this entity answers to (see `nameOf`, which is this) — and
@@ -1584,8 +1588,10 @@ export class E {
     facets?: CopyFacet[];
     /** override layer 1 — Borrower of Forms only, see CopyRef.printedStats */
     printedStats?: [number, number];
+    /** CR 113.2b: whose play it is (default: the target's controller) */
+    seat?: Seat;
   }): CopyRef {
-    return this.wearCopy(target, this.prepareCopy(src, opts));
+    return this.wearCopy(target, this.prepareCopy(src, { ...opts, seat: opts.seat ?? target.controller }));
   }
 
   /**
@@ -1600,6 +1606,9 @@ export class E {
     until: 'regroup' | 'permanent';
     facets?: CopyFacet[];
     printedStats?: [number, number];
+    /** CR 113.2b: whose play the copy is part of, which orders it inside a
+     * hidden step. Defaults to `src`'s controller. */
+    seat?: Seat;
   }): CopyRef {
     const name = this.faceName(src);                        // copy of a copy chains via the FACE
     // CR 710.2a: the copy carries its source's mods — their names and how each
@@ -1618,6 +1627,9 @@ export class E {
       facets: opts.facets ?? [...FULL_FACETS],
       until: opts.until,
       from: opts.from,
+      // CR 113.2b / CT-341: the layer stamp, taken BEFORE the tick `seq` consumes,
+      // so outside a hidden step `at` orders exactly as `seq` always did
+      at: this.stampNow(opts.seat ?? src.controller),
       seq: this.s.nextId++,
       ...(opts.printedStats ? { printedStats: opts.printedStats } : {}),
       ...(mods.length ? { mods, modText } : {}),
@@ -1630,7 +1642,18 @@ export class E {
     const name = ref.card;
     const list = (target.copies ??= []);
     if (ref.facets.includes('name')) {
-      // one identity face at a time: an older whole-face copy is replaced
+      // one identity face at a time: an OLDER whole-face copy is replaced. By
+      // timestamp, not by arrival (CR 113.2b / CT-341): inside a hidden step a
+      // face clicked later can still be the older one, and then it is the
+      // face already worn that stands. Outside a hidden step the incoming
+      // face is always the newest, so this is the replacement it always was.
+      const ours = E.copyStamp(ref);
+      const newer = list.find(c => c.facets.includes('name') && E.older(ours, E.copyStamp(c)));
+      if (newer) {
+        this.ev('info', `${target.card} stays a copy of ${newer.card}: that copy is the later one (CR 113.2b).`,
+          { unit: target.id, copy: newer.card });
+        return ref;
+      }
       for (let i = list.length - 1; i >= 0; i--) {
         if (list[i]!.facets.includes('name')) list.splice(i, 1);
       }
@@ -1795,9 +1818,10 @@ export class E {
    * They resolve LAST-WINS, never by summing: each one replaces the number,
    * so two of them on one unit leave it on the later one's value and two
    * copies of the SAME one leave it exactly where one copy would. Timestamps
-   * come from the shared nextId clock — the stamp's `baseSetSeq`, and for a
-   * static the id of the entity carrying the text (so a Statweaver played
-   * after a Formless overrides it, and before it does not).
+   * are CR 113.2 layer stamps — the stamp's `baseSetAt`, and for a static the
+   * stamp of the entity carrying the text, `stampOf` (so a Statweaver played
+   * after a Formless overrides it, and before it does not). Inside a hidden
+   * step both are ordered by initiative, not by click (CR 113.2b, CT-341).
    *
    * Layer 3 (counters, temp deltas, +X/+X statics) then applies ON TOP.
    *
@@ -1814,18 +1838,21 @@ export class E {
     // layers 0-1: what the card this entity currently IS prints (CR 709.4a)
     let [p, t] = this.printedStats(e);
     // layer 2: collect the rewrites, then apply them in timestamp order
-    let rewrites: { seq: number; p?: number; t?: number }[] | undefined;
+    let rewrites: { at: Stamp; p?: number; t?: number }[] | undefined;
     for (const { holder, srcId, mod } of statics) {
       if (mod.baseP === undefined && mod.baseT === undefined) continue;
       (rewrites ??= []).push({
-        seq: srcId,
+        at: this.stampOf(srcId),
         p: typeof mod.baseP === 'function' ? mod.baseP(this, holder, e) : mod.baseP,
         t: typeof mod.baseT === 'function' ? mod.baseT(this, holder, e) : mod.baseT,
       });
     }
-    if (e.baseSet) (rewrites ??= []).push({ seq: e.baseSetSeq ?? 0, p: e.baseSet[0], t: e.baseSet[1] });
+    if (e.baseSet) {
+      (rewrites ??= []).push({ at: e.baseSetAt ?? [e.baseSetSeq ?? 0, Infinity], p: e.baseSet[0], t: e.baseSet[1] });
+    }
     if (rewrites) {
-      if (rewrites.length > 1) rewrites.sort((a, b) => a.seq - b.seq);
+      // stable: two rewrites with one stamp (one source's two statics) keep their order
+      if (rewrites.length > 1) rewrites.sort((a, b) => (E.older(a.at, b.at) ? -1 : E.older(b.at, a.at) ? 1 : 0));
       for (const r of rewrites) {
         if (r.p !== undefined) p = r.p;
         if (r.t !== undefined) t = r.t;
@@ -4473,8 +4500,13 @@ export class E {
    * it last-wins against the CONTINUOUS base-setters (Aberrant Statweaver's
    * "your units are base 3/3"), which live on StaticMod instead.
    */
-  setBase(target: Entity, p: number, t: number): void {
+  setBase(target: Entity, p: number, t: number, seat: Seat = target.controller): void {
     target.baseSet = [p, t];
+    // CR 113.2b / CT-341: the layer stamp, taken BEFORE the tick baseSetSeq
+    // consumes — outside a hidden step it orders exactly as baseSetSeq did;
+    // inside one, by initiative. `seat`: whose play it is (in a hidden step a
+    // seat reaches only its own units, CR 507.1b, so the target's controller)
+    target.baseSetAt = this.stampNow(seat);
     target.baseSetSeq = this.s.nextId++;
     this.ev('statChanged', `${target.card}'s base becomes ${p}/${t} until regroup.`,
       { unit: target.id, baseP: p, baseT: t });
@@ -14494,6 +14526,7 @@ export class E {
       e.tempPower = 0; e.tempToughness = 0; delete e.tempAttrs; delete e.tempAttrsAt;
       delete e.baseSet;      // layer 2 is an until-regroup rewrite too
       delete e.baseSetSeq;
+      delete e.baseSetAt;
       delete e.suppressed;   // CR 506.2d: so is a switched-off attribute/ability layer
       delete e.unstable;     // CR 803.8d: "they gain unstable UNTIL REGROUP" — this is that
       delete e.damageShield; // CR 506.2d: "UNTIL REGROUP, prevent all damage …" — and this

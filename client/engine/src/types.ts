@@ -375,6 +375,11 @@ export interface Entity {
    * before the field, which reads as "oldest" and so loses to a live static.
    */
   baseSetSeq?: number;
+  /** CR 113.2, 113.2b / CT-341: `baseSet`'s layer timestamp (E.stampNow, taken
+   * as `baseSetSeq` is), which orders a hidden step by initiative rather than
+   * by click. Layer 2 sorts by it; absent (a state saved before it) it reads
+   * as `[baseSetSeq, ∞]`, the clock order it always had. */
+  baseSetAt?: Stamp;
   /** the game turn this entity ARRIVED in play (GameState.turn at spawn time).
    * Additive/optional so states serialized before it still load — read it
    * through E.spawnedTurn(u), which answers undefined for an entity that
@@ -536,6 +541,11 @@ export interface CopyRef {
   /** the card that caused the copy, for the log and the text box */
   from: CardName;
   seq: number;
+  /** CR 113.2, 113.2b / CT-341: the face's layer timestamp (E.stampNow, taken
+   * as `seq` is), which orders a hidden step by initiative rather than by
+   * click. The copy layer sorts by it; absent (a state saved before it) it
+   * reads as `[seq, ∞]`, the clock order it always had. */
+  at?: Stamp;
   /**
    * LAYER 1 OVERRIDE — this face's "printed" numbers, when they are not the
    * copied card's printed numbers.
