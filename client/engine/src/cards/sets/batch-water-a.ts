@@ -637,7 +637,7 @@ const brippEffect: EffectDef = {
     g.ev('info', `Bripp reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`,
       { privateTo: ctx.controller });
     // the looker keeps what they saw (client-side note-taking strip)
-    if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
+    g.revealHandTo(ctx.controller, who);   // CT-263: logged for the caster's own hand too
     if (!hand.length) return;
     const pick = ctx.choose('brippPick', {
       kind: 'payOrDecline', seat: ctx.controller,

@@ -865,7 +865,7 @@ card('Thought Extraction', {
         // three siblings carrying the identical line were not.
         g.ev('info', `Thought Extraction reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`,
           { privateTo: ctx.controller });
-        if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
+        g.revealHandTo(ctx.controller, who);   // CT-263: logged for the caster's own hand too
         if (hand.length) {
           const i = hand.length === 1 ? 0 : ctx.choose('te', {
             kind: 'payOrDecline', seat: ctx.controller,

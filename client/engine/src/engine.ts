@@ -4140,6 +4140,17 @@ export class E {
    * #156 is about. Marking rather than moving the call is deliberate: the fix
    * has to hold for the eighth site nobody has written yet. */
   revealHandTo(viewer: Seat, owner: Seat): void {
+    // CR D6.5a / CT-263 — owner, 2026-10-22: "Log both". The
+    // public line is written whoever owns the hand, so the other player's log
+    // says a hand was looked at even when the looker looked at their own
+    // (Thought Extraction aimed at its caster). It names no card: the names go
+    // only to the looker, on each card's own `privateTo` line.
+    if (viewer === owner) {
+      // `seenHand[viewer]` is the OTHER hand as this seat last saw it — a
+      // player's own hand is never a snapshot, it is just their hand.
+      this.ev('info', `${this.pname(viewer)} looks at their own hand.`);
+      return;
+    }
     this.s.seenHand[viewer] = { turn: this.s.turn, cards: [...this.player(owner).hand], pending: owner };
     this.ev('info', `${this.pname(viewer)} looks at ${this.pname(owner)}'s hand.`);
   }

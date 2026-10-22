@@ -171,7 +171,7 @@ card('Bioremediation', {
       const who = t.player;
       const hand = g.player(who).hand;
       g.ev('info', `Bioremediation reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`);
-      if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
+      g.revealHandTo(ctx.controller, who);   // CT-263: logged for the caster's own hand too
       if (who === ctx.controller || !hand.length) return;
       const pick = hand.length === 1 ? 0 : ctx.choose('take', {
         kind: 'electricPath', seat: ctx.controller,

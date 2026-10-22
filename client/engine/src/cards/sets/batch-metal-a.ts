@@ -1071,7 +1071,7 @@ card('Eldritch Dreamtender', {
         // the shared log every time this trigger resolved.
         g.ev('info', `Eldritch Dreamtender reveals ${g.pname(who)}'s hand: ${hand.join(', ') || '(empty)'}.`,
           { privateTo: ctx.controller });
-        if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);
+        g.revealHandTo(ctx.controller, who);   // CT-263: logged for the caster's own hand too
         if (!hand.length) return;
         const pick = ctx.choose('dream', {
           kind: 'payOrDecline', seat: ctx.controller,
