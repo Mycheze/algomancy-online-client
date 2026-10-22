@@ -69,3 +69,25 @@ test('CR 802.25a, 802.25k: Rampart Guardian attacking in a column with Just a Un
   assert.deepEqual(effStats(h, g0), [0, 4], 'the column shares Pure, and a Pure card ignores its own Tough');
   finishBattle(h);
 });
+
+/* ── the kill riders ────────────────────────────────────────────────── */
+
+function killedOne(seed: number, attrs: string[]) {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const victim = spawn(h, D, 'Unit Token');
+  const e = new E(h.state);
+  const before = e.snapshotUnits();
+  e.destroy(e.entity(victim)!, 'dies');
+  const rot = e.rot(D), hand = h.state.players[A]!.hand.length;
+  e.killRiders(before, new Set(attrs), 'Probe', A);
+  return { rotGained: e.rot(D) - rot, drew: h.state.players[A]!.hand.length - hand };
+}
+
+test('CR 802.25a: a Pure source that is Afflicting and Reaping pays neither rider for a kill', () => {
+  assert.deepEqual(killedOne(58405, ['Afflicting', 'Reaping']), { rotGained: 1, drew: 1 },
+    'PREMISE: without Pure the kill pays a rot to the victim controller and a card to the source controller');
+  assert.deepEqual(killedOne(58406, ['Pure', 'Afflicting', 'Reaping']), { rotGained: 0, drew: 0 },
+    'a Pure source ignores its own Afflicting and Reaping');
+});

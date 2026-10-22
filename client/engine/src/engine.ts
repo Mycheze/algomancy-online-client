@@ -6290,6 +6290,8 @@ export class E {
     controller: Seat, only?: Set<EntityId>): void {
     const dead = this.killDiff(before, only);
     if (!dead.length) return;
+    // CR 802.25a: a Pure source ignores its own other attributes, kill riders included
+    if (attrs.has('Pure')) return;
     if (attrs.has('Afflicting')) this.afflictingRot(dead, sourceName);
     // CR 802.21: "When a reaping source kills one or more units, draw A CARD" —
     // one draw for the whole kill, however many bodies it took. This read
