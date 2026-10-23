@@ -426,6 +426,21 @@ function verifiedReplay(raw: LedgerFile, sigs: (string | null)[] | null, refs: (
   return { open, facts, validUpTo: raw.actions.length, why: '' };
 }
 
+/** The card a cache slot of a ref resolved to. referenceKey writes a cache
+ * slot as the cache ENTRY's JSON (`0:{"card":"Hooba-Lin","uid":3,…}`), not as
+ * a quoted name, so parseRef's `named` never holds it — every cached play,
+ * and every augment, graft or prophecy from the cache, read as naming no card
+ * until the 332 (c) walk drifted onto one (2026-10-22). `part` is the slot's
+ * `|`-separated position; a cache entry's JSON holds no `|`. */
+function cachedCard(ref: string, part: number): CardName | undefined {
+  const m = /^\d+:(\{.*\})$/s.exec(ref.split('|')[part] ?? '');
+  if (!m) return undefined;
+  try {
+    const card = (JSON.parse(m[1]!) as { card?: unknown }).card;
+    return typeof card === 'string' ? card : undefined;
+  } catch { return undefined; }
+}
+
 /**
  * The refs as text. Exact for the ACTING seat — that is what a zone delta is
  * — and blind to everything else: the other seat's draws, the opening deal.
@@ -466,14 +481,14 @@ function refsLedger(refs: string[], actions: Action[], decks: LedgerFile['decks'
         continue;
       }
       case 'playCard': case 'playCached': case 'playFromBin': {
-        const c = p.named[0];
+        const c = p.type === 'playCached' ? cachedCard(ref, 1) : p.named[0];
         if (c) m.push([seat, c, p.type === 'playCached' ? 'C' : p.type === 'playFromBin' ? 'B' : 'H', 'X']);
         break;
       }
       case 'augment': case 'graft': {
         // augment|<hand|bin|cache>|i:"Card"|…
         const from = ref.split('|')[1];
-        const c = p.named[0];
+        const c = from === 'cache' ? cachedCard(ref, 2) : p.named[0];
         if (c) m.push([seat, c, from === 'bin' ? 'B' : from === 'cache' ? 'C' : 'H', 'X']);
         break;
       }
@@ -482,7 +497,8 @@ function refsLedger(refs: string[], actions: Action[], decks: LedgerFile['decks'
       case 'prophesy': {
         // prophesy|<hand|bin|cache>|i:"Card"
         const from = ref.split('|')[1];
-        if (p.named[0]) m.push([seat, p.named[0], from === 'bin' ? 'B' : from === 'cache' ? 'C' : 'H', 'S']);
+        const c = from === 'cache' ? cachedCard(ref, 2) : p.named[0];
+        if (c) m.push([seat, c, from === 'bin' ? 'B' : from === 'cache' ? 'C' : 'H', 'S']);
         break;
       }
       default: break;
