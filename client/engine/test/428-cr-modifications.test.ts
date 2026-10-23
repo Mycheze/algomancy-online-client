@@ -657,3 +657,24 @@ test('cr:effects.modular.what.pool — Spellbind is the only card in the pool wi
   const modular = rows.filter(c => c.attrs.includes('Modular') || /\{Modular\}/.test(c.type)).map(c => c.name);
   assert.deepEqual([...new Set(modular)], ['Spellbind']);
 });
+
+/* Round 2026-10-23: promoted from verifier probe U17-1 (the Manual p.33 example). */
+test('cr:effects.graft.composite — Accelerated Germination grafted onto Oracle of the Flame: one sacrifice makes a Fireball 1 and two 1/1 units', () => {
+  const h = new Harness(991701);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  let oracle = -1;
+  withE(h, e => {
+    oracle = e.spawnUnit(A, 'Oracle of the Flame', e.homeRegion(A)).id;
+    e.attachMod(e.s.entities[oracle]!, 'Accelerated Germination', A, 'graft');
+  });
+  const before = unitsOf(h, A).filter(u => u.token).length;
+  const n = h.log.length;
+  h.do({ type: 'activateAbility', seat: A, entityId: oracle, abilityIndex: 0 });
+  for (let g = 20; (h.state.stack.length || h.state.decision) && g-- > 0;) { if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 }); else pass(h); }
+  const fb = tokensOf(h, A).filter(t => t.card === 'Fireball');
+  assert.equal(fb.length, 1, 'a Fireball');
+  assert.equal(fb[0]!.x, 1, 'a Fireball 1');
+  assert.equal(unitsOf(h, A).filter(u => u.token && u.card !== 'Fireball').length - before, 2, 'and two 1/1 units');
+  assert.equal(h.log.slice(n).filter(l => l.startsWith('Resolving Oracle of the Flame')).length, 1, 'one ability resolving, not two');
+});

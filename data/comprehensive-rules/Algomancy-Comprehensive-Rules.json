@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:fb4e2c4526804ff9",
+ "generated_from": "sha256:7e253d7f384ecfe1",
  "rules": [
   {
    "num": "100.1",
@@ -3184,10 +3184,11 @@
    "sectionTitle": "Abilities",
    "chapterTitle": "1. Game Concepts",
    "parent": "109",
-   "text": "An effect can give units an ability. The ability goes to the units the effect names as it resolves; a unit that arrives afterwards does not gain it.",
+   "text": "An effect can give units an ability. The ability goes to the units the effect names as it resolves; a unit that arrives afterwards does not gain it. An ability given this way is one of the unit's abilities while it lasts, so a unit that has the abilities of other units (Ancient One, rule 710.7) has it too.",
    "see": [],
    "examples": [
-    "Reforge the Dead's grant lasts until regroup and reaches only the units already there."
+    "Reforge the Dead's grant lasts until regroup and reaches only the units already there.",
+    "An Ancient One dying with Reforge the Dead's grant on it and on its two neighbours makes three Robots."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -3432,7 +3433,7 @@
    "examples": [
     "Omniwield Evoker activated twice in a turn creates the Robot from its bounded graft only the first time."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -4611,14 +4612,16 @@
    "sectionTitle": "Costs",
    "chapterTitle": "1. Game Concepts",
    "parent": "111.6",
-   "text": "A player may pay N life only while they have more than N life. A life cost that would bring them to 0 cannot be paid.",
+   "text": "A player may pay N life only while they have more than N life. N is the amount the cost names; for a variable life cost it is the X chosen so far, the point being chosen included. N is not the life the payment will lose: an effect that changes how much life is lost (Arbiter of Vitality doubles it) does not change N, so the cost can still be paid, and the payment can then bring the player to 0. Without such an effect, a life cost that would bring the player to 0 cannot be paid.",
    "see": [
     "112.1"
    ],
    "examples": [
-    "at exactly 9 life, Glararr's \"Pay 9 life:\" cannot be activated."
+    "at exactly 9 life, Glararr's \"Pay 9 life:\" cannot be activated.",
+    "A player with 4 life paying X life for Flesh Tithe can choose at most 3 points, and loses the 3 at once when X is set.",
+    "With Arbiter of Vitality in play, a player at 15 life may pay Glararr's 9 life: they lose 18 and the game is over for them."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -4626,7 +4629,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "111.7",
@@ -5238,10 +5241,12 @@
    "sectionTitle": "Life, Damage, Rot and Debt",
    "chapterTitle": "1. Game Concepts",
    "parent": "112.1",
-   "text": "A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it.",
+   "text": "A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it. One payment, or one effect, that makes a player lose N life is one loss of N life, not N losses of 1.",
    "see": [],
    "examples": [
-    "Throwing Boulder's 3 damage to a player is a loss of 3 life, and the [Pay 2 life] that Arbiter of Armistice adds to a card played during battle is a loss of 2 life."
+    "Throwing Boulder's 3 damage to a player is a loss of 3 life, and the [Pay 2 life] that Arbiter of Armistice adds to a card played during battle is a loss of 2 life.",
+    "With Life Plant in play, paying X = 29 life for Flesh Tithe is one loss of 29 life, so Life Plant creates 29 units.",
+    "Torrential Reclamation, which loses 1 life for each ally it recalls, loses it as one change, so Life Plant creates that many units."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -5303,12 +5308,13 @@
    "sectionTitle": "Life, Damage, Rot and Debt",
    "chapterTitle": "1. Game Concepts",
    "parent": "112",
-   "text": "Effects that multiply life gained or lost multiply together: with n effects that each double it, the amount is multiplied by 2 to the power n. The multiplied amount is gained or lost at once, before it is checked whether the player has reached 0 life.",
+   "text": "Effects that multiply life gained or lost multiply together: with n effects that each double it, the amount is multiplied by 2 to the power n. The multiplied amount is gained or lost at once, before it is checked whether the player has reached 0 life. Life paid as a cost is multiplied the same way; whether the cost can be paid is judged by the amount the cost names (see rule 111.6b).",
    "see": [
     "708"
    ],
    "examples": [
-    "three Arbiters of Vitality multiply a life loss by 8."
+    "three Arbiters of Vitality multiply a life loss by 8.",
+    "With Arbiter of Vitality in play, paying Glararr's 9 life loses 18."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -5318,7 +5324,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "112.4",
@@ -17516,12 +17522,13 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.2",
-   "text": "If either half of a column contains a Pure card, neither half of that column has Swift or Sluggish for that exchange, so both halves strike in the normal sub-step.",
+   "text": "If either half of a column contains a Pure card, neither half of that column has Swift or Sluggish for that exchange, so both halves strike in the normal sub-step. An unblocked column that contains a Pure card has no Swift or Sluggish either: it strikes the player in the normal sub-step.",
    "see": [
     "802.25"
    ],
    "examples": [
-    "A printed Swift column blocked by a Pure unit strikes in the normal sub-step."
+    "A printed Swift column blocked by a Pure unit strikes in the normal sub-step.",
+    "An unblocked Pure column strikes the player in the normal sub-step, and does not double or draw."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -17529,7 +17536,7 @@
    "discrepancies": [
     "D-U12-12"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },
@@ -18349,7 +18356,7 @@
     "112"
    ],
    "examples": [
-    "A fully replaced combat hit still counts as dealt: Vroot's 'that much' pays out the damage its column dealt, not the life the player lost.",
+    "A fully replaced combat hit still counts as dealt: Vroot, which counts all the combat damage its column deals, pays out the damage dealt to the player, not the life the player lost.",
     "Blightsea Polyp turns a Lethal hit into rot. That is still damage dealt to the player, so the player is killed."
    ],
    "basis": "owner",
@@ -18393,7 +18400,7 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.8",
-   "text": "If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took. Damage a redirect takes is not dealt to the player. If all of a column's combat damage to a player is redirected, the column has dealt that player no combat damage: Lethal kills no one, Thieving draws nothing, and nothing that triggers when a column deals combat damage to a player triggers. If some of it gets past the redirects (Piercing excess), the column has dealt the player that much.",
+   "text": "If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took. Damage a redirect takes is not dealt to the player. If all of a column's combat damage to a player is redirected, the column has dealt that player no combat damage: Lethal kills no one, Thieving draws nothing, and nothing that triggers when a column deals combat damage to a player triggers. If some of it gets past the redirects (Piercing excess), the column has dealt the player that much. An ability that triggers when its column deals combat damage, with no player named (Vroot), does trigger on a redirected hit: the column dealt that damage to the unit that took it (see rule 608.9a).",
    "see": [
     "708",
     "802.16"
@@ -18407,7 +18414,8 @@
     "Blightsea Polyp beside two Oorblaks: the player chooses only between the Oorblaks, and no rot is gained.",
     "Gublin (Lethal) attacks and all of its combat damage is redirected into Oorblak. The player is dealt nothing and lives.",
     "A wholly redirected hit raises no \"deals combat damage to a player\" trigger and costs the player no life.",
-    "A partly redirected hit is dealt as what got past Oorblak."
+    "A partly redirected hit is dealt as what got past Oorblak.",
+    "Vroot's 10-power Piercing column puts 4 into Oorblak and 6 past it: each opponent gains 10, all the combat damage its column dealt."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -18451,15 +18459,17 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.9",
-   "text": "An ability that triggers 'when my column deals combat damage' triggers in each sub-step in which its own column deals combat damage, and only for damage its own column dealt; another column's damage does not trigger it. A 0-power unit with such an ability triggers if its column's combined power is greater than 0.",
+   "text": "An ability that triggers 'when my column deals combat damage' triggers in each sub-step in which its own column deals combat damage, and only for damage its own column dealt; another column's damage does not trigger it. A 0-power unit with such an ability triggers if its column's combined power is greater than 0. Such an ability counts combat damage its column deals to anything: to the units blocking it, to a unit that a redirect deals the damage to instead (Oorblak), and to a player. \"That much\" counts all of it.",
    "see": [
     "706"
    ],
    "examples": [
     "A Swift and Sluggish column with Vroot strikes twice, and Vroot's ability triggers twice.",
-    "Vroot's 'that much' is its own column's damage, not the total dealt to the player by every column."
+    "Vroot's 'that much' is its own column's damage, not the total dealt to the player by every column.",
+    "Vroot is blocked by a 0/20 unit: its column deals the blocker 4, and each opponent gains 4.",
+    "Vroot's column is wholly redirected into Oorblak: the column dealt Oorblak 4, and each opponent gains 4."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -20382,12 +20392,13 @@
    "sectionTitle": "Casting Spells",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "702.6",
-   "text": "A variable additional cost sets X. The player pays it one unit at a time until they stop, and the amount paid is X.",
+   "text": "A variable additional cost sets X. The player adds to it one unit at a time until they stop, and the amount they stop at is X. A variable life cost is then lost all at once, as one loss of X life (see rule 112.1a).",
    "see": [],
    "examples": [
-    "a player removes two +1/+1 counters for Discharge, one at a time, then stops; X is 2 and Discharge deals 2 damage."
+    "a player removes two +1/+1 counters for Discharge, one at a time, then stops; X is 2 and Discharge deals 2 damage.",
+    "Every variable life cost in the pool is lost as one change of X."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -23800,15 +23811,17 @@
    "sectionTitle": "Copies and Faces",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "710",
-   "text": "An effect that creates a copy of its own source (\"create a copy of me\") creates a token copy of what the source currently is. The token has none of the source's counters and none of its mods.",
+   "text": "An effect that creates a copy of its own source (\"create a copy of me\") creates a token copy of what the source currently is. The token has none of the source's counters and none of its mods. When a unit has the ability through another unit (Ancient One, rule 710.7), \"me\" is the unit that has it, so the copy is of that unit (rule 710.7a).",
    "see": [
     "304.4a",
     "714"
    ],
    "examples": [
-    "Hooba-God, killed under its own attack trigger, still creates a copy of what it was."
+    "Hooba-God, killed under its own attack trigger, still creates a copy of what it was.",
+    "Three Echoes of Despair beside an Ancient One, after a battle in which a player lost life: three Ancient Ones are created.",
+    "An Ancient One borrowing Echo of Despair, Hooba-God or Swarmling copies itself, not the unit it borrowed from."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -23846,14 +23859,19 @@
    "sectionTitle": "Copies and Faces",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "710",
-   "text": "An ability that gives a unit \"all abilities\" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.",
+   "text": "An ability that gives a unit \"all abilities\" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them and the abilities effects have given them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop; as it dies, it still has the text of the units it was adjacent to, so their \"when I die\" abilities trigger for it. It gets nothing from a unit that has lost its abilities, and none of a unit's text that works only while that card is in another zone (such as its bin). Two Ancient Ones adjacent to each other each have the abilities of every unit adjacent to either of them. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.",
    "see": [],
    "examples": [
     "Ancient One has an adjacent ally's static ability, and loses it when the column breaks.",
     "an adjacent ally's attributes are not given to Ancient One.",
     "Ancient One keeps its own name and stats.",
     "Ancient One between two Jollyglops makes a 1/1 for each of them when it is dealt damage.",
-    "Ancient One between two Debt Bleps has two activations."
+    "Ancient One between two Debt Bleps has two activations.",
+    "Two adjacent Ancient Ones both have the abilities of a unit adjacent to either of them.",
+    "An Ancient One dying with Reforge the Dead's grant on it and on its two neighbours makes three Robots.",
+    "An adjacent ally that has lost its abilities lends Ancient One nothing.",
+    "Ancient One does not have the bin text of a neighbour in play.",
+    "A dying Ancient One has the \"when I die\" text of the allies it stood beside."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -23874,9 +23892,10 @@
    "text": "In text a unit gets this way, \"I\" and \"me\" mean the unit that has the text, not the unit it came from.",
    "see": [],
    "examples": [
-    "next to Gatekeeper of Souls (\"I must be targeted if able\"), it is the Ancient One that must be targeted."
+    "next to Gatekeeper of Souls (\"I must be targeted if able\"), it is the Ancient One that must be targeted.",
+    "Three Echoes of Despair beside an Ancient One: its three borrowed \"create a copy of me\" abilities create three Ancient Ones."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -26647,7 +26666,8 @@
    "text": "Each grafted effect is added to the cause of the host's own card. The host's ability then reads \"cause: effect 1 AND effect 2 AND effect 3 …\", in the order the grafts sit.",
    "see": [],
    "examples": [
-    "Accelerated Germination grafted onto Oracle of the Flame reads \"Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units.\""
+    "Accelerated Germination grafted onto Oracle of the Flame reads \"Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units.\"",
+    "An Ancient One activating an adjacent ally's grafted cause runs the graft too."
    ],
    "basis": "printed",
    "scope": "game",
@@ -26655,7 +26675,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "722.4a",
@@ -26887,12 +26907,14 @@
    "sectionTitle": "Graft",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "722.5",
-   "text": "Each grafted card has its own use. Two copies of the same bounded graft on one host each have one use.",
+   "text": "Each grafted card has its own use. Two copies of the same bounded graft on one host each have one use. A unit that has a grafted cause through Ancient One has a use of its own of each bounded graft in it, apart from the host's (rule 722.8).",
    "see": [
     "109.9k"
    ],
-   "examples": [],
-   "basis": "owner",
+   "examples": [
+    "An Ancient One borrowing a grafted triggered cause runs the graft with its own use."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -27138,15 +27160,17 @@
    "sectionTitle": "Graft",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "722",
-   "text": "A unit that has become a copy of a grafted unit runs the whole copied composite. More grafts may be added to it, but only below the copied grafts.",
+   "text": "A unit that has become a copy of a grafted unit runs the whole copied composite. More grafts may be added to it, but only below the copied grafts. A unit that has the abilities of a grafted unit (Ancient One, rule 710.7) likewise has the whole composite, its grafts included, and each bounded graft in it has a use of its own on that unit.",
    "see": [
     "710"
    ],
    "examples": [
     "A Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite.",
-    "A graft added to that Borrower resolves below the copied grafts."
+    "A graft added to that Borrower resolves below the copied grafts.",
+    "An Ancient One borrowing a grafted triggered cause runs the graft too, with its own use.",
+    "Amphivore with Astral Painseeker grafted, Ancient One behind it, Bloodwind Revenant beside: the designer's board."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -29374,14 +29398,15 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.1",
-   "text": "A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply.",
+   "text": "A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply. A column striking a player with a Pure card in it ignores its other attributes too (see rule 802.25b).",
    "see": [
     "802.25"
    ],
    "examples": [
     "Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies.",
     "A Balanced 4/1 dealt 3 by a Pure source dies: Balanced does not apply in that pairing.",
-    "An Unaware source dealing 3 damage to a Pure unit pumped from 2/3 to 4/5 does not read it at its printed 2/3: it survives, where a pumped non-Pure 2/3 dies."
+    "An Unaware source dealing 3 damage to a Pure unit pumped from 2/3 to 4/5 does not read it at its printed 2/3: it survives, where a pumped non-Pure 2/3 dies.",
+    "An unblocked Pure column strikes in the normal sub-step and does not double or draw."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -33316,7 +33341,7 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.25",
-   "text": "A Pure card ignores its own other attributes too. Its own stat-changing attributes, Tough, Balanced, Inverted and Unaware, do not apply to it at any time, whether or not it is in an interaction.",
+   "text": "A Pure card ignores its own other attributes too. Its own stat-changing attributes, Tough, Balanced, Inverted and Unaware, do not apply to it at any time, whether or not it is in an interaction. Nor do its other attributes apply when its column strikes a player: an unblocked Pure column has no Swift, Sluggish, Powerful, Thieving, Lethal or Blessed.",
    "see": [
     "802.12"
    ],
@@ -33325,7 +33350,8 @@
     "A Pure unit that is also Feeble can block.",
     "A Pure Rampart Guardian (0/4, Tough) that is in no interaction reads 0/4.",
     "A Pure Child of Aether (2/0, Balanced) ignores its own Balanced, reads 2/0 and dies in the state check.",
-    "A Pure Bubb ignores its own Unaware, so the counters on it count."
+    "A Pure Bubb ignores its own Unaware, so the counters on it count.",
+    "An unblocked Pure column strikes in the normal sub-step and does not double or draw."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -33343,11 +33369,13 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.25",
-   "text": "In combat, an interaction is one attacking half-column and the blocking half-column paired with it. If either contains a Pure card, the attributes of both are ignored for that exchange.",
+   "text": "In combat, an interaction is one attacking half-column and the blocking half-column paired with it. An unblocked attacking half-column is an interaction too, with an empty blocking half, when it strikes the player. If either half contains a Pure card, the attributes of both are ignored for that exchange.",
    "see": [
     "608.4"
    ],
-   "examples": [],
+   "examples": [
+    "In an unblocked column with a Pure unit, a column-mate's attributes are off too."
+   ],
    "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
@@ -33364,16 +33392,17 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.25",
-   "text": "In a combat exchange involving a Pure card, neither side has Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting or Thieving, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d).",
+   "text": "In a combat exchange involving a Pure card, neither side has any of its other attributes: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting, Thieving, Lethal, Electric or Reaping, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d). This holds for an unblocked column striking the player too (rule 802.25b).",
    "see": [
     "608.2d",
     "608.6e"
    ],
    "examples": [
     "Just a Unit switches off a Deadly attacker's Deadly.",
-    "A printed Swift column blocked by a Pure unit strikes in the normal sub-step."
+    "A printed Swift column blocked by a Pure unit strikes in the normal sub-step.",
+    "Without Pure, Swift, Sluggish, Powerful, Thieving, Lethal and Blessed each change an unblocked strike on the player; with a Pure unit in the column, none of them does."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -40739,11 +40768,12 @@
    "sectionTitle": "Confirmations and Misclicks",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D7.2",
-   "text": "A variable cost paid one point at a time, such as paying X life, offers the same typed box and dial. Nothing is paid until the player confirms. The dial cannot go below what has already been paid.",
+   "text": "A variable cost paid one point at a time, such as paying X life, offers the same typed box and dial. Nothing is paid until the player confirms. The dial cannot go below the points already chosen, and for a life cost its top counts them: the largest X it offers is one less than the player's life.",
    "see": [],
    "examples": [
     "Paying X life for Flesh Tithe, the player dials to 5 and back to 3; confirming pays 3.",
-    "With 1 life already paid, the dial does not go below 1."
+    "With 1 life already chosen, the dial does not go below 1.",
+    "With 3 of 30 life chosen, the pay-X-life dial still tops out at X = 29."
    ],
    "basis": "owner",
    "scope": "digital",

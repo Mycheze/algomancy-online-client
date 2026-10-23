@@ -237,7 +237,7 @@
     "id": "D-U12-12",
     "kind": "g-other",
     "rule": "combat.damage.substeps.pure",
-    "tier": 1,
+    "tier": 2,
     "summary": "Pure in combat is defined per attacking-half/blocking-half pair; an unblocked column holding a Pure unit has no pair, and no source says whether its own attributes (Swift, Powerful, Thieving) apply to its damage to the player.",
     "sides": [
       {
@@ -247,27 +247,13 @@
       {
         "source": "owner ruling, adopted 2026-08-20",
         "quote": "Combat is where attributes live, and combat already resolves per"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-23",
+        "quote": "Loses them too"
       }
     ],
-    "resolution": "Question for the owner. Pure in combat is defined per pair of an attacking half and a blocking half (combat.damage.substeps.pure); an unblocked column has no pair, and no source speaks to it.",
-    "question": {
-      "topic": "Battle",
-      "ask": "Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "No: \"Pure cards … ignore all other attributes\" has no condition on the Pure card itself.",
-          "table": "An unblocked Pure column strikes in the normal sub-step and does not double or draw."
-        },
-        {
-          "label": "B",
-          "text": "Yes: Pure works only within an interaction with another card, and a player is not a card.",
-          "table": "An unblocked Pure Swift column strikes first, a Powerful one doubles."
-        }
-      ],
-      "follows": "Neither for this case: attr.general.pure is worded per interaction, which leans to B.",
-      "recommend": "A, on the literal grammar of the reminder. B is the more permissive reading, so choose it if Pure is meant to matter only between cards."
-    }
+    "resolution": "Answered by the owner on 2026-10-23 with reading A (\"Loses them too\"): a Pure unit in an unblocked column keeps none of its other attributes when the column strikes the player, so it strikes in the normal sub-step and does not double or draw. combat.damage.substeps.pure, attr.general.pure, attr.pure.own, attr.pure.combat-interaction and attr.pure.combat-damage state it. The engine already did so (600)."
   },
   {
     "id": "D-U12-13",

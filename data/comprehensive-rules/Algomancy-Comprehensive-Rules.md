@@ -1027,11 +1027,13 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.43 · Tests: 37-attrs-wight.test.ts · Example test: 37-attrs-wight.test.ts::at the start of deployment a Wraith body shrinks a chosen ally · Key: concepts.abilities.mod-text</sub>
 
-<a id="r109.8"></a>**109.8.** An effect can give units an ability. The ability goes to the units the effect names as it resolves; a unit that arrives afterwards does not gain it.
+<a id="r109.8"></a>**109.8.** An effect can give units an ability. The ability goes to the units the effect names as it resolves; a unit that arrives afterwards does not gain it. An ability given this way is one of the unit's abilities while it lasts, so a unit that has the abilities of other units (Ancient One, rule 710.7) has it too.
 
 > *Example: Reforge the Dead's grant lasts until regroup and reaches only the units already there.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Reforge the Dead · Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Tests: 27-metal-b.test.ts · Example test: 27-metal-b.test.ts::Reforge the Dead: the grant is until regroup, and only for units already there · Key: concepts.abilities.granted</sub>
+> *Example: An Ancient One dying with Reforge the Dead's grant on it and on its two neighbours makes three Robots.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Reforge the Dead · Designer: RQ 1359188053876408431 · Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Tests: 27-metal-b.test.ts, 589-ancient-one-whole-text-box.test.ts · Example tests: 27-metal-b.test.ts::Reforge the Dead: the grant is until regroup, and only for units already there, 589-ancient-one-whole-text-box.test.ts::CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead on it and two neighbours makes three Robots · Key: concepts.abilities.granted</sub>
 
 <a id="r109.8a"></a>**109.8a** A granted ability is an ability the unit has. An effect that removes a unit's abilities removes the granted abilities the unit has when the removal applies; an ability granted to the unit afterwards is not removed. See rule 712.
 
@@ -1093,7 +1095,7 @@ order.
 
 > *Example: Omniwield Evoker activated twice in a turn creates the Robot from its bounded graft only the first time.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#13 · Tests: 393-raq-mods.test.ts, 94-bounded-uses.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice · Key: concepts.abilities.once.unbounded-cause</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 3 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#13 · Tests: 393-raq-mods.test.ts, 94-bounded-uses.test.ts, 414-cr-cards-abilities-targets.test.ts · Example test: 414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.once.unbounded-cause — Omniwield Evoker with Self-Assembly grafted, activated twice in a turn, makes one Robot · Key: concepts.abilities.once.unbounded-cause</sub>
 
 <a id="r109.9j"></a>**109.9j** An effect that repeats a graft composite (Amphivore, Lost Guardian) repeats its bounded grafts too. See rule 722.
 
@@ -1457,11 +1459,15 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1353859961855148103#5 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 167-variable-ability-costs.test.ts, 17-earth-b.test.ts · Example test: 167-variable-ability-costs.test.ts::CR 111.6a the COMPOUND half-pay hazard: an unpayable half of Instrument of Reassignment's cost pays NOTHING, neither the mana nor the unit · Key: concepts.costs.unpayable.all-or-nothing</sub>
 
-<a id="r111.6b"></a>**111.6b** A player may pay N life only while they have more than N life. A life cost that would bring them to 0 cannot be paid. See rule 112.1.
+<a id="r111.6b"></a>**111.6b** A player may pay N life only while they have more than N life. N is the amount the cost names; for a variable life cost it is the X chosen so far, the point being chosen included. N is not the life the payment will lose: an effect that changes how much life is lost (Arbiter of Vitality doubles it) does not change N, so the cost can still be paid, and the payment can then bring the player to 0. Without such an effect, a life cost that would bring the player to 0 cannot be paid. See rule 112.1.
 
 > *Example: at exactly 9 life, Glararr's "Pay 9 life:" cannot be activated.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-20 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Tests: 38-light-a.test.ts, 47-costs-events.test.ts · Example test: 38-light-a.test.ts::Glararr: CR 111.6b — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL · Key: concepts.costs.unpayable.life</sub>
+> *Example: A player with 4 life paying X life for Flesh Tithe can choose at most 3 points, and loses the 3 at once when X is set.*
+
+> *Example: With Arbiter of Vitality in play, a player at 15 life may pay Glararr's 9 life: they lose 18 and the game is over for them.*
+
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 4 gate test files · Printed: card: Arbiter of Vitality; card: Glararr · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-19, 2026-08-20 (quoted from the retired ruling register) · Tests: 38-light-a.test.ts, 47-costs-events.test.ts, 590-life-cost-one-change.test.ts, 415-cr-costs-life-timestamps.test.ts · Example tests: 38-light-a.test.ts::Glararr: CR 111.6b — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL, 590-life-cost-one-change.test.ts::CR 111.6b / report 273: the life is lost when X closes, and the running total is what is asked, 415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr · Key: concepts.costs.unpayable.life</sub>
 
 <sub>Discrepancies: D-U04-1 (discrepancies.md)</sub>
 
@@ -1648,11 +1654,15 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Printed: Manual p.6; Manual p.6; Rulebook 2023 p.2 · Tests: 415-cr-costs-life-timestamps.test.ts · Demonstrated by test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics — players start at 30, and a player reduced to exactly 0 life loses the game · Key: concepts.life.basics</sub>
 
-<a id="r112.1a"></a>**112.1a** A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it.
+<a id="r112.1a"></a>**112.1a** A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it. One payment, or one effect, that makes a player lose N life is one loss of N life, not N losses of 1.
 
 > *Example: Throwing Boulder's 3 damage to a player is a loss of 3 life, and the [Pay 2 life] that Arbiter of Armistice adds to a card played during battle is a loss of 2 life.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: card: Arbiter of Vitality; card: Soul Siphon; Rulebook 2023 p.11 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 415-cr-costs-life-timestamps.test.ts · Example test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics.gain-and-loss — damage to a player and a paid life cost both reach the life total as life lost · Key: concepts.life.basics.gain-and-loss</sub>
+> *Example: With Life Plant in play, paying X = 29 life for Flesh Tithe is one loss of 29 life, so Life Plant creates 29 units.*
+
+> *Example: Torrential Reclamation, which loses 1 life for each ally it recalls, loses it as one change, so Life Plant creates that many units.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Arbiter of Vitality; card: Soul Siphon; Rulebook 2023 p.11; card: Life Plant · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 415-cr-costs-life-timestamps.test.ts, 590-life-cost-one-change.test.ts · Example tests: 415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics.gain-and-loss — damage to a player and a paid life cost both reach the life total as life lost, 590-life-cost-one-change.test.ts::CR 702.6b / report 273: paying 29 life for Flesh Tithe makes 29 Life Plant units, 590-life-cost-one-change.test.ts::CR 702.6b / report 273: Torrential Reclamation loses its life as one change · Key: concepts.life.basics.gain-and-loss</sub>
 
 <a id="r112.1b"></a>**112.1b** An effect that makes players gain or lose life reaches only the players in its region. "Each opponent loses 1 life" means each opponent in the current region. See rule 601.
 
@@ -1666,11 +1676,13 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1449475896510648320#0 · Tests: 388-raq-blocks-and-windows.test.ts · Example test: 388-raq-blocks-and-windows.test.ts::RAQ Life lost: life lost in a battle adds up the losses and ignores the gains — Soul Siphon makes a 13/13 · Key: concepts.life.lost-in-battle</sub>
 
-<a id="r112.3"></a>**112.3.** Effects that multiply life gained or lost multiply together: with n effects that each double it, the amount is multiplied by 2 to the power n. The multiplied amount is gained or lost at once, before it is checked whether the player has reached 0 life. See rule 708.
+<a id="r112.3"></a>**112.3.** Effects that multiply life gained or lost multiply together: with n effects that each double it, the amount is multiplied by 2 to the power n. The multiplied amount is gained or lost at once, before it is checked whether the player has reached 0 life. Life paid as a cost is multiplied the same way; whether the cost can be paid is judged by the amount the cost names (see rule 111.6b). See rule 708.
 
 > *Example: three Arbiters of Vitality multiply a life loss by 8.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Arbiter of Vitality · Owner ruling, adopted 2026-08-25, 2026-08-30 (quoted from the retired ruling register) · Tests: 137-multiplier-and-mode.test.ts, 45-hybrids-ld-b.test.ts · Example test: 137-multiplier-and-mode.test.ts::CR 708.6: THREE Arbiters multiply — the fold is EXPONENTIAL in n · Demonstrated by test: 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check · Key: concepts.life.multipliers</sub>
+> *Example: With Arbiter of Vitality in play, paying Glararr's 9 life loses 18.*
+
+<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 3 gate test files · Printed: card: Arbiter of Vitality · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-25, 2026-08-30 (quoted from the retired ruling register) · Tests: 137-multiplier-and-mode.test.ts, 45-hybrids-ld-b.test.ts, 415-cr-costs-life-timestamps.test.ts · Example tests: 137-multiplier-and-mode.test.ts::CR 708.6: THREE Arbiters multiply — the fold is EXPONENTIAL in n, 415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr · Demonstrated by test: 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check · Key: concepts.life.multipliers</sub>
 
 <sub>Discrepancies: D-U15-4 (discrepancies.md)</sub>
 
@@ -5090,11 +5102,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 4 gate test files · Printed: Manual p.43 · Designer: RAQ 1363298910528864318#2 · Owner ruling, adopted 2026-08-25, 2026-10-09 (quoted from the retired ruling register) · Tests: 134-column-and-substep.test.ts, 297-damage-substeps-are-steps.test.ts, 388-raq-blocks-and-windows.test.ts, 423-cr-combat-damage.test.ts · Example tests: 134-column-and-substep.test.ts::§5 — a {Swift}{Sluggish} column strikes twice, 297-damage-substeps-are-steps.test.ts::CR 608.2c a {Swift}{Sluggish} column strikes in two sub-steps · Key: combat.damage.substeps.swift-and-sluggish</sub>
 
-<a id="r608.2d"></a>**608.2d** If either half of a column contains a Pure card, neither half of that column has Swift or Sluggish for that exchange, so both halves strike in the normal sub-step. See rule 802.25.
+<a id="r608.2d"></a>**608.2d** If either half of a column contains a Pure card, neither half of that column has Swift or Sluggish for that exchange, so both halves strike in the normal sub-step. An unblocked column that contains a Pure card has no Swift or Sluggish either: it strikes the player in the normal sub-step. See rule 802.25.
 
 > *Example: A printed Swift column blocked by a Pure unit strikes in the normal sub-step.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Owner ruling, adopted 2026-08-20, 2026-08-23 (quoted from the retired ruling register) · Tests: 53-playtest-round7.test.ts · Example test: 53-playtest-round7.test.ts::threads {Pure}: a printed {Swift} column blocked by a Pure unit strikes in the NORMAL sub-step · Key: combat.damage.substeps.pure</sub>
+> *Example: An unblocked Pure column strikes the player in the normal sub-step, and does not double or draw.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Just a Unit · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-20, 2026-08-23 (quoted from the retired ruling register) · Tests: 53-playtest-round7.test.ts, 600-unblocked-pure-column.test.ts · Example tests: 53-playtest-round7.test.ts::threads {Pure}: a printed {Swift} column blocked by a Pure unit strikes in the NORMAL sub-step, 600-unblocked-pure-column.test.ts::CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step and does not double or draw · Key: combat.damage.substeps.pure</sub>
 
 <sub>Discrepancies: D-U12-12 (discrepancies.md)</sub>
 
@@ -5348,11 +5362,11 @@ order.
 
 <a id="r608.8a"></a>**608.8a** Combat damage to a player that an effect replaces but still deals to that player (for example, Blightsea Polyp's rot) was still dealt. An ability that triggers when a column deals combat damage to a player still triggers, and reads the damage dealt, even if the player lost no life. Damage redirected to a unit instead is not dealt to the player (rule 608.8c). See rules 708, 112.
 
-> *Example: A fully replaced combat hit still counts as dealt: Vroot's 'that much' pays out the damage its column dealt, not the life the player lost.*
+> *Example: A fully replaced combat hit still counts as dealt: Vroot, which counts all the combat damage its column deals, pays out the damage dealt to the player, not the life the player lost.*
 
 > *Example: Blightsea Polyp turns a Lethal hit into rot. That is still damage dealt to the player, so the player is killed.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-26, 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 207-replaced-hit-was-dealt.test.ts, 562-lethal-redirected.test.ts · Example tests: 207-replaced-hit-was-dealt.test.ts::CR 608.8a: the payout is the DAMAGE DEALT, not the life lost, 562-lethal-redirected.test.ts::CR 608.8a / CT-296: Blightsea Polyp turns the Lethal hit into rot, which is still damage dealt, so the player is killed · Key: combat.damage.player.replaced-still-dealt</sub>
+<sub>Basis: Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-26, 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Tests: 207-replaced-hit-was-dealt.test.ts, 562-lethal-redirected.test.ts · Example tests: 207-replaced-hit-was-dealt.test.ts::CR 608.8a: the payout is the DAMAGE DEALT, not the life lost, 562-lethal-redirected.test.ts::CR 608.8a / CT-296: Blightsea Polyp turns the Lethal hit into rot, which is still damage dealt, so the player is killed · Key: combat.damage.player.replaced-still-dealt</sub>
 
 <sub>Discrepancies: D-U12-21 (discrepancies.md)</sub>
 
@@ -5362,7 +5376,7 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1362838395298119912#0 · Tests: 387-raq-combat.test.ts, 399-raq-fix-combat.test.ts · Example test: 387-raq-combat.test.ts::RAQ Resonant: the extra damage is not combat damage · Key: combat.damage.player.not-combat</sub>
 
-<a id="r608.8c"></a>**608.8c** If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took. Damage a redirect takes is not dealt to the player. If all of a column's combat damage to a player is redirected, the column has dealt that player no combat damage: Lethal kills no one, Thieving draws nothing, and nothing that triggers when a column deals combat damage to a player triggers. If some of it gets past the redirects (Piercing excess), the column has dealt the player that much. See rules 708, 802.16.
+<a id="r608.8c"></a>**608.8c** If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took. Damage a redirect takes is not dealt to the player. If all of a column's combat damage to a player is redirected, the column has dealt that player no combat damage: Lethal kills no one, Thieving draws nothing, and nothing that triggers when a column deals combat damage to a player triggers. If some of it gets past the redirects (Piercing excess), the column has dealt the player that much. An ability that triggers when its column deals combat damage, with no player named (Vroot), does trigger on a redirected hit: the column dealt that damage to the unit that took it (see rule 608.9a). See rules 708, 802.16.
 
 > *Example: 10 Piercing combat damage that would be dealt to a player is redirected into a 2/4 Oorblak. 4 destroy it, and the other 6 are dealt to the player.*
 
@@ -5382,7 +5396,9 @@ order.
 
 > *Example: A partly redirected hit is dealt as what got past Oorblak.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 10 tests, all passed; 6 gate test files · Printed: card: Oorblak; card: Blightsea Polyp · Designer: RAQ 1397188292239163454#0; RAQ 1397188292239163454#0; RQ 1442982460034912287 · Owner call · adopted 2026-10-16, 2026-10-22 · Tests: 387-raq-combat.test.ts, 17-earth-b.test.ts, 469-replacement-chain-damage.test.ts, 471-oorblak-order-and-polyp.test.ts, 562-lethal-redirected.test.ts, 581-redirected-hit-deals-nothing.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak, 17-earth-b.test.ts::Oorblak: a NON-Piercing overkill is absorbed whole, 469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first, 469-replacement-chain-damage.test.ts::CR 708.4: three Oorblaks and 10 Piercing, 471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp, Oorblak and a Piercing column — the excess past the Oorblak is dealt to the player, as 1 rot, 471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp beside two Oorblaks — the question is about the Oorblaks only, and no rot, 562-lethal-redirected.test.ts::CR 802.24a / CT-296: Gublin wholly redirected into Oorblak deals the player nothing, and the player lives, 581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a wholly redirected hit raises no face-damage event and no combat life loss, 581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a partly redirected hit is dealt as what got past Oorblak · Key: combat.damage.player.redirect</sub>
+> *Example: Vroot's 10-power Piercing column puts 4 into Oorblak and 6 past it: each opponent gains 10, all the combat damage its column dealt.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 13 tests, all passed; 7 gate test files · Printed: card: Oorblak; card: Blightsea Polyp; card: Vroot · Designer: RAQ 1397188292239163454#0; RAQ 1397188292239163454#0; RQ 1442982460034912287 · Owner call · adopted 2026-10-16, 2026-10-22, 2026-10-23 · Tests: 387-raq-combat.test.ts, 17-earth-b.test.ts, 469-replacement-chain-damage.test.ts, 471-oorblak-order-and-polyp.test.ts, 562-lethal-redirected.test.ts, 581-redirected-hit-deals-nothing.test.ts, 601-any-combat-damage-counts.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak, 17-earth-b.test.ts::Oorblak: a NON-Piercing overkill is absorbed whole, 469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first, 469-replacement-chain-damage.test.ts::CR 708.4: three Oorblaks and 10 Piercing, 471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp, Oorblak and a Piercing column — the excess past the Oorblak is dealt to the player, as 1 rot, 471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp beside two Oorblaks — the question is about the Oorblaks only, and no rot, 562-lethal-redirected.test.ts::CR 802.24a / CT-296: Gublin wholly redirected into Oorblak deals the player nothing, and the player lives, 581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a wholly redirected hit raises no face-damage event and no combat life loss, 581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a partly redirected hit is dealt as what got past Oorblak, 601-any-combat-damage-counts.test.ts::CR 608.8c, 608.9a: Vroot whose 10-power Piercing column puts 4 into Oorblak and 6 past it gives 10 · Key: combat.damage.player.redirect</sub>
 
 <sub>Discrepancies: D-U12-13 (discrepancies.md)</sub>
 
@@ -5392,13 +5408,17 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Designer: RAQ 1540678747953569832#0 · Owner ruling, adopted 2026-08-30, 2026-09-20 (quoted from the retired ruling register) · Tests: 239-damage-triggers-after-combat.test.ts · Example test: 239-damage-triggers-after-combat.test.ts::CR 608.9: a combat-damage trigger is announced INSIDE the damage step · Key: combat.damage.triggers</sub>
 
-<a id="r608.9a"></a>**608.9a** An ability that triggers 'when my column deals combat damage' triggers in each sub-step in which its own column deals combat damage, and only for damage its own column dealt; another column's damage does not trigger it. A 0-power unit with such an ability triggers if its column's combined power is greater than 0. See rule 706.
+<a id="r608.9a"></a>**608.9a** An ability that triggers 'when my column deals combat damage' triggers in each sub-step in which its own column deals combat damage, and only for damage its own column dealt; another column's damage does not trigger it. A 0-power unit with such an ability triggers if its column's combined power is greater than 0. Such an ability counts combat damage its column deals to anything: to the units blocking it, to a unit that a redirect deals the damage to instead (Oorblak), and to a player. "That much" counts all of it. See rule 706.
 
 > *Example: A Swift and Sluggish column with Vroot strikes twice, and Vroot's ability triggers twice.*
 
 > *Example: Vroot's 'that much' is its own column's damage, not the total dealt to the player by every column.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23, 2026-08-25, 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 134-column-and-substep.test.ts, 166-face-damage-attribution.test.ts · Example tests: 134-column-and-substep.test.ts::§5 — a {Swift}{Sluggish} column strikes twice, 166-face-damage-attribution.test.ts::CR 608.9a — Vroot: "[Augment] When my column deals combat damage, each opponent gains that much life" · Key: combat.damage.triggers.my-column</sub>
+> *Example: Vroot is blocked by a 0/20 unit: its column deals the blocker 4, and each opponent gains 4.*
+
+> *Example: Vroot's column is wholly redirected into Oorblak: the column dealt Oorblak 4, and each opponent gains 4.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 8 tests, all passed; 3 gate test files · Printed: card: Vroot; card: Oorblak · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-23, 2026-08-25, 2026-08-26 (quoted from the retired ruling register) · Engine: columnDealtCombatDamage · Tests: 134-column-and-substep.test.ts, 166-face-damage-attribution.test.ts, 601-any-combat-damage-counts.test.ts · Example tests: 134-column-and-substep.test.ts::§5 — a {Swift}{Sluggish} column strikes twice, 166-face-damage-attribution.test.ts::CR 608.9a — Vroot: "[Augment] When my column deals combat damage, each opponent gains that much life", 601-any-combat-damage-counts.test.ts::CR 608.9a: Vroot blocked by a 0/20 gives each opponent the 4 its column dealt the blocker, 601-any-combat-damage-counts.test.ts::CR 608.8c, 608.9a: Vroot whose column is wholly redirected into Oorblak gives each opponent the 4 its column dealt · Key: combat.damage.triggers.my-column</sub>
 
 <sub>Discrepancies: D-U12-14 (discrepancies.md)</sub>
 
@@ -5935,11 +5955,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Key: effects.casting.x.minimum</sub>
 
-<a id="r702.6b"></a>**702.6b** A variable additional cost sets X. The player pays it one unit at a time until they stop, and the amount paid is X.
+<a id="r702.6b"></a>**702.6b** A variable additional cost sets X. The player adds to it one unit at a time until they stop, and the amount they stop at is X. A variable life cost is then lost all at once, as one loss of X life (see rule 112.1a).
 
 > *Example: a player removes two +1/+1 counters for Discharge, one at a time, then stops; X is 2 and Discharge deals 2 damage.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.casting.x.variable-cost — Discharge with two counters removed one at a time has X = 2 and deals 2 · Key: effects.casting.x.variable-cost</sub>
+> *Example: Every variable life cost in the pool is lost as one change of X.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Engine: castCostOptions · Tests: 425-cr-casting-and-stack.test.ts, 590-life-cost-one-change.test.ts · Example tests: 425-cr-casting-and-stack.test.ts::cr:effects.casting.x.variable-cost — Discharge with two counters removed one at a time has X = 2 and deals 2, 590-life-cost-one-change.test.ts::CR 702.6b / report 273: every variable life cost in the pool is lost as one change of X · Key: effects.casting.x.variable-cost</sub>
 
 <a id="r702.6c"></a>**702.6c** An X spell released for free by a fulfilled prophecy is cast with X = 0. A variable bracketed cost on it is still collected. See rule 803.
 
@@ -6989,17 +7011,21 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-23, 2026-10-10 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 44-hybrids-ld-a.test.ts, 406-copied-augments.test.ts · Example test: 406-copied-augments.test.ts::CR 710.4: a copy of the copy chains · Demonstrated by test: 44-hybrids-ld-a.test.ts::CR 710.4: a copy of a COPY chains through the face · Key: effects.copies.of-a-copy</sub>
 
-<a id="r710.5"></a>**710.5.** An effect that creates a copy of its own source ("create a copy of me") creates a token copy of what the source currently is. The token has none of the source's counters and none of its mods. See rules 304.4a, 714.
+<a id="r710.5"></a>**710.5.** An effect that creates a copy of its own source ("create a copy of me") creates a token copy of what the source currently is. The token has none of the source's counters and none of its mods. When a unit has the ability through another unit (Ancient One, rule 710.7), "me" is the unit that has it, so the copy is of that unit (rule 710.7a). See rules 304.4a, 714.
 
 > *Example: Hooba-God, killed under its own attack trigger, still creates a copy of what it was.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 108-formation-class.test.ts, 427-cr-continuous-effects.test.ts · Example test: 108-formation-class.test.ts::Hooba-God: killed under its own attack trigger · Key: effects.copies.create-copy-of-me</sub>
+> *Example: Three Echoes of Despair beside an Ancient One, after a battle in which a player lost life: three Ancient Ones are created.*
+
+> *Example: An Ancient One borrowing Echo of Despair, Hooba-God or Swarmling copies itself, not the unit it borrowed from.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Designer: RQ 1354130905681367155 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 108-formation-class.test.ts, 427-cr-continuous-effects.test.ts, 587-borrowed-copy-of-me.test.ts · Example tests: 108-formation-class.test.ts::Hooba-God: killed under its own attack trigger, 587-borrowed-copy-of-me.test.ts::CR 710.5 / report 270: three Echoes beside an Ancient One make three Ancient Ones, 587-borrowed-copy-of-me.test.ts::CR 710.5, 710.7a / report 270: an Ancient One borrowing · Key: effects.copies.create-copy-of-me</sub>
 
 <a id="r710.6"></a>**710.6.** A copy that lasts until regroup (Apex Prime) ends at regroup. The unit is its own card again, still with its counters, and it dies if its own stats cannot survive them. See rules 506.2d, 713.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Apex Prime · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 44-hybrids-ld-a.test.ts · Demonstrated by test: 44-hybrids-ld-a.test.ts::CR 710.6: an until-regroup face lapses at regroup, and the revert can be lethal · Key: effects.copies.until-regroup</sub>
 
-<a id="r710.7"></a>**710.7.** An ability that gives a unit "all abilities" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.
+<a id="r710.7"></a>**710.7.** An ability that gives a unit "all abilities" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them and the abilities effects have given them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop; as it dies, it still has the text of the units it was adjacent to, so their "when I die" abilities trigger for it. It gets nothing from a unit that has lost its abilities, and none of a unit's text that works only while that card is in another zone (such as its bin). Two Ancient Ones adjacent to each other each have the abilities of every unit adjacent to either of them. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.
 
 > *Example: Ancient One has an adjacent ally's static ability, and loses it when the column breaks.*
 
@@ -7011,13 +7037,25 @@ order.
 
 > *Example: Ancient One between two Debt Bleps has two activations.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files · Printed: card: Ancient One; card: Ancient One · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-23, 2026-08-24 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts, 117-copy-everything.test.ts, 585-ancient-one-per-neighbour-uses.test.ts · Example tests: 26-metal-a.test.ts::CR 710.7: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks, 117-copy-everything.test.ts::CR 710.7: attributes are the ONE thing an adjacent ally does not donate, 26-metal-a.test.ts::CR 710.7: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Jollyglops makes two 1/1s per damage from each, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Debt Bleps has two activations · Key: effects.copies.all-abilities</sub>
+> *Example: Two adjacent Ancient Ones both have the abilities of a unit adjacent to either of them.*
+
+> *Example: An Ancient One dying with Reforge the Dead's grant on it and on its two neighbours makes three Robots.*
+
+> *Example: An adjacent ally that has lost its abilities lends Ancient One nothing.*
+
+> *Example: Ancient One does not have the bin text of a neighbour in play.*
+
+> *Example: A dying Ancient One has the "when I die" text of the allies it stood beside.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 16 tests (2 probes it wrote), all passed; 4 gate test files · Printed: card: Ancient One; card: Ancient One · Designer: RQ 1359188053876408431 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-23, 2026-08-24 (quoted from the retired ruling register) · Engine: aoAllies, projectedFaces · Tests: 26-metal-a.test.ts, 117-copy-everything.test.ts, 585-ancient-one-per-neighbour-uses.test.ts, 589-ancient-one-whole-text-box.test.ts · Example tests: 26-metal-a.test.ts::CR 710.7: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks, 117-copy-everything.test.ts::CR 710.7: attributes are the ONE thing an adjacent ally does not donate, 26-metal-a.test.ts::CR 710.7: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Jollyglops makes two 1/1s per damage from each, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Debt Bleps has two activations, 589-ancient-one-whole-text-box.test.ts::CR 710.7 / report 271: two adjacent Ancient Ones both have the abilities of a unit adjacent to either, 589-ancient-one-whole-text-box.test.ts::CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead on it and two neighbours makes three Robots, 589-ancient-one-whole-text-box.test.ts::CR 712.2, 710.7 / report 271: an ally that has lost its abilities lends none, 589-ancient-one-whole-text-box.test.ts::CR 400.5 / report 271: an Ancient One does not borrow the bin text of a neighbour in play, 589-ancient-one-whole-text-box.test.ts::CR 714.9, 710.7 / report 271: a dying Ancient One has the when-I-die text of the allies it stood beside · Key: effects.copies.all-abilities</sub>
 
 <a id="r710.7a"></a>**710.7a** In text a unit gets this way, "I" and "me" mean the unit that has the text, not the unit it came from.
 
 > *Example: next to Gatekeeper of Souls ("I must be targeted if able"), it is the Ancient One that must be targeted.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 117-copy-everything.test.ts · Example test: 117-copy-everything.test.ts::CR 710.7: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted · Key: effects.copies.all-abilities.i-is-me</sub>
+> *Example: Three Echoes of Despair beside an Ancient One: its three borrowed "create a copy of me" abilities create three Ancient Ones.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Designer: RQ 1354130905681367155 · Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Tests: 117-copy-everything.test.ts, 587-borrowed-copy-of-me.test.ts · Example tests: 117-copy-everything.test.ts::CR 710.7: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted, 587-borrowed-copy-of-me.test.ts::CR 710.5 / report 270: three Echoes beside an Ancient One make three Ancient Ones · Key: effects.copies.all-abilities.i-is-me</sub>
 
 <a id="r710.8"></a>**710.8.** A copy of a spell is put on the stack above the spell it copies, so it resolves first. It is an effect on the stack like any other: players may respond to it, and it can be targeted and negated. See rules 108.4, 703, 704.2d.
 
@@ -7780,7 +7818,9 @@ order.
 
 > *Example: Accelerated Germination grafted onto Oracle of the Flame reads "Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units."*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Key: effects.graft.composite</sub>
+> *Example: An Ancient One activating an adjacent ally's grafted cause runs the graft too.*
+
+<sub>Basis: Printed · Verified: not verified (the text changed after verification); 2 gate test files · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Tests: 588-ancient-one-borrows-grafts.test.ts, 428-cr-modifications.test.ts · Example tests: 428-cr-modifications.test.ts::cr:effects.graft.composite — Accelerated Germination grafted onto Oracle of the Flame, 588-ancient-one-borrows-grafts.test.ts::CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause runs the graft too · Key: effects.graft.composite</sub>
 
 <a id="r722.4a"></a>**722.4a** The host's own graft cause decides when the whole composite triggers or can be activated.
 
@@ -7830,15 +7870,17 @@ order.
 
 <a id="r722.5a"></a>**722.5a** Under an unbounded cause, the composite can fire any number of times, but each bounded graft in it is included only the first time in a turn. See rule 109.9i.
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#13 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice · Key: effects.graft.bounded.unbounded-cause</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#13 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice · Key: effects.graft.bounded.unbounded-cause</sub>
 
 <a id="r722.5b"></a>**722.5b** Under a bounded cause, the whole composite fires only once per turn, its unbounded grafts included. See rule 109.9h.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.33 · Designer: RAQ 1355115946032889914#14 · Tests: 393-raq-mods.test.ts, 04-mods.test.ts · Demonstrated by test: 393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn · Key: effects.graft.bounded.bounded-cause</sub>
 
-<a id="r722.5c"></a>**722.5c** Each grafted card has its own use. Two copies of the same bounded graft on one host each have one use. See rule 109.9k.
+<a id="r722.5c"></a>**722.5c** Each grafted card has its own use. Two copies of the same bounded graft on one host each have one use. A unit that has a grafted cause through Ancient One has a use of its own of each bounded graft in it, apart from the host's (rule 722.8). See rule 109.9k.
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Tests: 94-bounded-uses.test.ts · Key: effects.graft.bounded.per-mod</sub>
+> *Example: An Ancient One borrowing a grafted triggered cause runs the graft with its own use.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RQ 1358902095196983396 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Engine: withGrafts · Tests: 94-bounded-uses.test.ts, 588-ancient-one-borrows-grafts.test.ts · Example test: 588-ancient-one-borrows-grafts.test.ts::CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause runs the graft too, with its own use · Key: effects.graft.bounded.per-mod</sub>
 
 <a id="r722.5d"></a>**722.5d** A unit that leaves play and comes back is a new object, so its bounded graft can be used again the same turn. See rule 410.
 
@@ -7900,13 +7942,17 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353859961855148103#3 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted · Key: effects.graft.multiplier.as-far-as-possible</sub>
 
-<a id="r722.8"></a>**722.8.** A unit that has become a copy of a grafted unit runs the whole copied composite. More grafts may be added to it, but only below the copied grafts. See rule 710.
+<a id="r722.8"></a>**722.8.** A unit that has become a copy of a grafted unit runs the whole copied composite. More grafts may be added to it, but only below the copied grafts. A unit that has the abilities of a grafted unit (Ancient One, rule 710.7) likewise has the whole composite, its grafts included, and each bounded graft in it has a use of its own on that unit. See rule 710.
 
 > *Example: A Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite.*
 
 > *Example: A graft added to that Borrower resolves below the copied grafts.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Designer: RAQ 1372468222158180424#4; RAQ 1372468222158180424#5 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 393-raq-mods.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder, 393-raq-mods.test.ts::RAQ Borrower of Forms: a graft added to a Borrower · Key: effects.graft.copies</sub>
+> *Example: An Ancient One borrowing a grafted triggered cause runs the graft too, with its own use.*
+
+> *Example: Amphivore with Astral Painseeker grafted, Ancient One behind it, Bloodwind Revenant beside: the designer's board.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Designer: RAQ 1372468222158180424#4; RAQ 1372468222158180424#5; RQ 1358902095196983396 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Engine: withGrafts · Tests: 393-raq-mods.test.ts, 588-ancient-one-borrows-grafts.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder, 393-raq-mods.test.ts::RAQ Borrower of Forms: a graft added to a Borrower, 588-ancient-one-borrows-grafts.test.ts::CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause runs the graft too, with its own use, 588-ancient-one-borrows-grafts.test.ts::CR 710.7, 722.7 / report 271: the designer board · Key: effects.graft.copies</sub>
 
 <a id="r723"></a>
 ### 723. Virus
@@ -8523,7 +8569,7 @@ order.
 
 <sub>Discrepancies: D-U16-1, D-U19-12 (discrepancies.md)</sub>
 
-<a id="r802.1n"></a>**802.1n** A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply. See rule 802.25.
+<a id="r802.1n"></a>**802.1n** A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply. A column striking a player with a Pure card in it ignores its other attributes too (see rule 802.25b). See rule 802.25.
 
 > *Example: Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies.*
 
@@ -8531,7 +8577,9 @@ order.
 
 > *Example: An Unaware source dealing 3 damage to a Pure unit pumped from 2/3 to 4/5 does not read it at its printed 2/3: it survives, where a pumped non-Pure 2/3 dies.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Just a Unit; Manual p.42 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-09-05 (quoted from the retired ruling register) · Tests: 430-cr-attributes-1.test.ts, 555-pure-ignores-stat-attributes.test.ts · Example tests: 555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian kills it, because its Tough is off in the pairing, 555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Balanced 4/1 dealt 3 by a Pure source dies, because Balanced is off in the pairing, 430-cr-attributes-1.test.ts::cr:attr.general.pure — Unaware is off in a Pure pairing outside combat: an Unaware source does not collapse a pumped Pure recipient to its printed stats · Key: attr.general.pure</sub>
+> *Example: An unblocked Pure column strikes in the normal sub-step and does not double or draw.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Just a Unit; Manual p.42 · Owner call · adopted 2026-10-22, 2026-10-23; Owner ruling, adopted 2026-09-05 (quoted from the retired ruling register) · Tests: 430-cr-attributes-1.test.ts, 555-pure-ignores-stat-attributes.test.ts, 600-unblocked-pure-column.test.ts · Example tests: 555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian kills it, because its Tough is off in the pairing, 555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Balanced 4/1 dealt 3 by a Pure source dies, because Balanced is off in the pairing, 430-cr-attributes-1.test.ts::cr:attr.general.pure — Unaware is off in a Pure pairing outside combat: an Unaware source does not collapse a pumped Pure recipient to its printed stats, 600-unblocked-pure-column.test.ts::CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step and does not double or draw · Key: attr.general.pure</sub>
 
 <sub>Discrepancies: D-U19-2 (discrepancies.md)</sub>
 
@@ -9619,7 +9667,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Our glossary (not a source): Pure · Tests: 40-light-c.test.ts · Demonstrated by test: 40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions · Key: attr.pure</sub>
 
-<a id="r802.25a"></a>**802.25a** A Pure card ignores its own other attributes too. Its own stat-changing attributes, Tough, Balanced, Inverted and Unaware, do not apply to it at any time, whether or not it is in an interaction. See rule 802.12.
+<a id="r802.25a"></a>**802.25a** A Pure card ignores its own other attributes too. Its own stat-changing attributes, Tough, Balanced, Inverted and Unaware, do not apply to it at any time, whether or not it is in an interaction. Nor do its other attributes apply when its column strikes a player: an unblocked Pure column has no Swift, Sluggish, Powerful, Thieving, Lethal or Blessed. See rule 802.12.
 
 > *Example: An Alluring column that is itself Pure ignores its own Alluring and never triggers.*
 
@@ -9631,19 +9679,25 @@ order.
 
 > *Example: A Pure Bubb ignores its own Unaware, so the counters on it count.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Just a Unit · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 53-playtest-round7.test.ts, 584-pure-ignores-its-own-attributes.test.ts, 430-cr-attributes-1.test.ts · Example tests: 53-playtest-round7.test.ts::CR 802.15n: an Alluring column that is itself {Pure} never even triggers, 430-cr-attributes-1.test.ts::cr:attr.feeble.pure — a Pure unit granted Feeble is accepted as a blocker, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Rampart Guardian, in no interaction, ignores its own Tough and reads 0/4, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Child of Aether ignores its own Balanced, reads 2/0 and dies in the state check, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Bubb ignores its own Unaware, so its counters count · Key: attr.pure.own</sub>
+> *Example: An unblocked Pure column strikes in the normal sub-step and does not double or draw.*
 
-<a id="r802.25b"></a>**802.25b** In combat, an interaction is one attacking half-column and the blocking half-column paired with it. If either contains a Pure card, the attributes of both are ignored for that exchange. See rule 608.4.
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 9 tests (2 probes it wrote), all passed; 4 gate test files · Printed: card: Just a Unit · Owner call · adopted 2026-10-22, 2026-10-23; Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 53-playtest-round7.test.ts, 584-pure-ignores-its-own-attributes.test.ts, 430-cr-attributes-1.test.ts, 600-unblocked-pure-column.test.ts · Example tests: 53-playtest-round7.test.ts::CR 802.15n: an Alluring column that is itself {Pure} never even triggers, 430-cr-attributes-1.test.ts::cr:attr.feeble.pure — a Pure unit granted Feeble is accepted as a blocker, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Rampart Guardian, in no interaction, ignores its own Tough and reads 0/4, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Child of Aether ignores its own Balanced, reads 2/0 and dies in the state check, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Bubb ignores its own Unaware, so its counters count, 600-unblocked-pure-column.test.ts::CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step and does not double or draw · Key: attr.pure.own</sub>
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 40-light-c.test.ts · Demonstrated by test: 40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions · Key: attr.pure.combat-interaction</sub>
+<a id="r802.25b"></a>**802.25b** In combat, an interaction is one attacking half-column and the blocking half-column paired with it. An unblocked attacking half-column is an interaction too, with an empty blocking half, when it strikes the player. If either half contains a Pure card, the attributes of both are ignored for that exchange. See rule 608.4.
 
-<a id="r802.25c"></a>**802.25c** In a combat exchange involving a Pure card, neither side has Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting or Thieving, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d). See rules 608.2d, 608.6e.
+> *Example: In an unblocked column with a Pure unit, a column-mate's attributes are off too.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Just a Unit · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 40-light-c.test.ts, 600-unblocked-pure-column.test.ts · Example test: 600-unblocked-pure-column.test.ts::CR 802.25b, 802.25k: in an unblocked column with a Pure unit, a column-mate attributes are off too · Demonstrated by test: 40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions · Key: attr.pure.combat-interaction</sub>
+
+<a id="r802.25c"></a>**802.25c** In a combat exchange involving a Pure card, neither side has any of its other attributes: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting, Thieving, Lethal, Electric or Reaping, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d). This holds for an unblocked column striking the player too (rule 802.25b). See rules 608.2d, 608.6e.
 
 > *Example: Just a Unit switches off a Deadly attacker's Deadly.*
 
 > *Example: A printed Swift column blocked by a Pure unit strikes in the normal sub-step.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 40-light-c.test.ts, 53-playtest-round7.test.ts · Example tests: 40-light-c.test.ts::Just a Unit: {Pure} switches off Deadly, 53-playtest-round7.test.ts::threads {Pure} · Key: attr.pure.combat-damage</sub>
+> *Example: Without Pure, Swift, Sluggish, Powerful, Thieving, Lethal and Blessed each change an unblocked strike on the player; with a Pure unit in the column, none of them does.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Just a Unit · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 40-light-c.test.ts, 53-playtest-round7.test.ts, 600-unblocked-pure-column.test.ts · Example tests: 40-light-c.test.ts::Just a Unit: {Pure} switches off Deadly, 53-playtest-round7.test.ts::threads {Pure}, 600-unblocked-pure-column.test.ts::CR 608.2d, 802.25c: PREMISE: without Pure · Key: attr.pure.combat-damage</sub>
 
 <a id="r802.25d"></a>**802.25d** When blocks are declared, a Pure card in either the attacking column or the units blocking it switches off Flying, Evasive and the lone Sneaky attacker's protection for that column, and a Pure unit's own Feeble does not stop it blocking. See rules 802.2, 802.12, 802.13, 802.14.
 
@@ -10493,22 +10547,22 @@ Generated from the records and the verdicts. Nothing here is a rule.
 | basis | rules |
 |---|---|
 | Printed | 456 |
-| Designer | 205 |
-| Owner call | 689 |
+| Designer | 203 |
+| Owner call | 682 |
 | Engine only | 40 |
-| Mixed | 431 |
+| Mixed | 440 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1812 |
+| confirmed | 1809 |
 | partial | 8 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
 | not verified | 1 |
-| text changed | 0 |
+| text changed | 3 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 
@@ -10672,7 +10726,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - <a id="F-U12-2"></a><a id="F-U12-3"></a>**F-U12-2** 02-combat test title asserts the superseded no-priority-between-sub-steps law (CT-230). Rules 608.3b, 608.3e. Also found as F-U12-3.
   02-combat.test.ts 'the owner ruling of 2026-08-18 (“Formation changes during combat […]”)/Swift: swift column deals damage first, no priority between sub-steps' names the owner ruling of 2026-08-18 (“Formation changes during combat […]”)’s second clause, which the owner ruling of 2026-09-16 (“A split damage step is several…”) amended: a split damage step opens a priority window between sub-steps. The pilot verifier's probe found this test's own board stops at that window (damageSubs Swift and normal, step damageWindow); its assertions are made there and prove only the Swift strike. Retitle it.
 - <a id="F-U12-4"></a>**F-U12-4** Vroot ('when my column deals combat damage', not 'to a player') does not trigger when its column's damage is wholly redirected into Oorblak. Rule 608.8c.
-  Possible divergence outside this record's claim. The engine lumps Vroot with the 'deals combat damage to a player' listeners, so a column whose hit is wholly redirected into Oorblak gives Vroot nothing. But Vroot's trigger has no 'to a player'; Oorblak's text has the damage 'dealt to me instead', and the owner (2026-10-16) said it is still combat damage. Read that way, the column did deal combat damage (to Oorblak) and Vroot should pay out that much. Worth an owner check.
+  Possible divergence outside this record's claim. The engine lumps Vroot with the 'deals combat damage to a player' listeners, so a column whose hit is wholly redirected into Oorblak gives Vroot nothing. But Vroot's trigger has no 'to a player'; Oorblak's text has the damage 'dealt to me instead', and the owner (2026-10-16) said it is still combat damage. Read that way, the column did deal combat damage (to Oorblak) and Vroot should pay out that much. Worth an owner check. Re-checked: fixed on 2026-10-23 (owner "Any combat damage", asked what Vroot counts): Vroot, Flowstone Arcanite and Blightmound count the combat damage their column deals to blockers, to Oorblak and to the player, and the "to a player" family is unchanged (601).
 - <a id="F-U13-1"></a><a id="F-U23-4"></a><a id="F-U23-7"></a><a id="F-U23-8"></a>**F-U13-1** The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) (a lone sent counterattacker auto-forms) is unmarked, but its guard was flipped to assert the opposite (CT-251). Rules 610.4e, D1.2b, D1.2c. Also found as F-U23-4, F-U23-7, F-U23-8.
   The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) says that when a round-2 counterattack pool holds exactly one unit and no ridable spell token, the only-unit formation is auto-declared as a forced action. On 2026-08-24 (a decisions-for-the-player audit) test 32 was flipped: its comment says the auto-declare branch is deleted, and it asserts forcedAction is null and that both attacking and declining are legal. No ruling records the reversal, and the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading carries no reversal mark, so the register still presents the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) as current. Register fix: write the reversing ruling (or mark the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)) and point the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading at it. Re-checked: fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-4): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-7): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-8): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479).
 - <a id="F-U14-1"></a><a id="F-U17-7"></a><a id="F-U17-9"></a>**F-U14-1** A graft trigger with no legal target goes on the stack and fizzles instead of not being put on the stack (CT-252). Rules 702.8b, 722.4e. Also found as F-U17-7, F-U17-9.

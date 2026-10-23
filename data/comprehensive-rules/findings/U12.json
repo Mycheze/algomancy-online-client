@@ -65,14 +65,15 @@
         "quote": "type: 'triggered', events: ['damage', 'combatFaceDamage'],   // CR 608.8a"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "// combat 'lifeLost' listeners: Vroot and every \"when my column deals"
-      },
-      {
         "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
         "quote": "assert.ok(!fired(hit(58111 + 3 * i, column, 'whole', setup).evs, name), `${name}: the column dealt the player nothing`);"
+      },
+      {
+        "file": "client/engine/test/601-any-combat-damage-counts.test.ts",
+        "quote": "assert.equal(vrootGain(evs), 4, 'the column dealt 4 combat damage, to Oorblak');"
       }
     ],
-    "rule": "combat.damage.player.redirect"
+    "rule": "combat.damage.player.redirect",
+    "closed": "fixed on 2026-10-23 (owner \"Any combat damage\", asked what Vroot counts): Vroot, Flowstone Arcanite and Blightmound count the combat damage their column deals to blockers, to Oorblak and to the player, and the \"to a player\" family is unchanged (601)."
   }
 ]

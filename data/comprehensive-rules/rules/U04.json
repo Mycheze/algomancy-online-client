@@ -412,18 +412,35 @@
     "key": "concepts.costs.unpayable.life",
     "parent": "concepts.costs.unpayable",
     "order": 2,
-    "text": "A player may pay N life only while they have more than N life. A life cost that would bring them to 0 cannot be paid.",
+    "text": "A player may pay N life only while they have more than N life. N is the amount the cost names; for a variable life cost it is the X chosen so far, the point being chosen included. N is not the life the payment will lose: an effect that changes how much life is lost (Arbiter of Vitality doubles it) does not change N, so the cost can still be paid, and the payment can then bring the player to 0. Without such an effect, a life cost that would bring the player to 0 cannot be paid.",
     "examples": [
       {
         "text": "at exactly 9 life, Glararr's \"Pay 9 life:\" cannot be activated.",
         "test": "38-light-a.test.ts::Glararr: CR 111.6b — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL"
+      },
+      {
+        "text": "A player with 4 life paying X life for Flesh Tithe can choose at most 3 points, and loses the 3 at once when X is set.",
+        "test": "590-life-cost-one-change.test.ts::CR 111.6b / report 273: the life is lost when X closes, and the running total is what is asked"
+      },
+      {
+        "text": "With Arbiter of Vitality in play, a player at 15 life may pay Glararr's 9 life: they lose 18 and the game is over for them.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr"
       }
     ],
     "see": [
       "concepts.life.basics"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Arbiter of Vitality",
+          "quote": "[Augment] Double all life gain and life loss."
+        },
+        {
+          "ref": "card: Glararr",
+          "quote": "Pay 9 life:"
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -436,18 +453,25 @@
           "quote": "does, under R49's rule: you may pay N life only while you have **more** than N,",
           "adopted": "2026-08-20",
           "from": "register@72de434"
+        },
+        {
+          "quote": "The printed N",
+          "adopted": "2026-10-23",
+          "from": "owner, chat 2026-10-23 (With Arbiter out, paying N life loses 2N, so a player on 15 can pay 9 life (Glararr) and die. Which N does 111.6b check?)"
         }
       ],
       "engine": [],
       "tests": [
         "38-light-a.test.ts",
-        "47-costs-events.test.ts"
+        "47-costs-events.test.ts",
+        "590-life-cost-one-change.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”) says no designer statement was found either way: an owner/engine call (D-U04-1).",
+    "notes": "The owner ruling of 2026-08-19 (“Non-mana costs are paid when you…”) says no designer statement was found either way: an owner/engine call (D-U04-1). Owner 2026-10-23 (\"The printed N\"): 111.6b checks the cost as named, before Arbiter of Vitality doubles the loss; the doubled payment may kill the payer. Raised by report 273 (Life Plant / Flesh Tithe).",
     "sourceHashes": {}
   },
   {
@@ -1721,11 +1745,19 @@
     "key": "concepts.life.basics.gain-and-loss",
     "parent": "concepts.life.basics",
     "order": 1,
-    "text": "A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it.",
+    "text": "A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it. One payment, or one effect, that makes a player lose N life is one loss of N life, not N losses of 1.",
     "examples": [
       {
         "text": "Throwing Boulder's 3 damage to a player is a loss of 3 life, and the [Pay 2 life] that Arbiter of Armistice adds to a card played during battle is a loss of 2 life.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics.gain-and-loss — damage to a player and a paid life cost both reach the life total as life lost"
+      },
+      {
+        "text": "With Life Plant in play, paying X = 29 life for Flesh Tithe is one loss of 29 life, so Life Plant creates 29 units.",
+        "test": "590-life-cost-one-change.test.ts::CR 702.6b / report 273: paying 29 life for Flesh Tithe makes 29 Life Plant units"
+      },
+      {
+        "text": "Torrential Reclamation, which loses 1 life for each ally it recalls, loses it as one change, so Life Plant creates that many units.",
+        "test": "590-life-cost-one-change.test.ts::CR 702.6b / report 273: Torrential Reclamation loses its life as one change"
       }
     ],
     "see": [],
@@ -1742,6 +1774,10 @@
         {
           "ref": "Rulebook 2023 p.11",
           "quote": "Unblocked attacking damage is dealt to the defending player’s life"
+        },
+        {
+          "ref": "card: Life Plant",
+          "quote": "[Augment][once] When you gain or lose life, create that many 1/1 units."
         }
       ],
       "designer": [],
@@ -1755,13 +1791,14 @@
       ],
       "engine": [],
       "tests": [
-        "415-cr-costs-life-timestamps.test.ts"
+        "415-cr-costs-life-timestamps.test.ts",
+        "590-life-cost-one-change.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Report 273 (2026-10-23): a variable life cost was N one-point losses; the engine now loses X once (590).",
     "sourceHashes": {}
   },
   {
@@ -1839,7 +1876,7 @@
     "key": "concepts.life.multipliers",
     "parent": "112",
     "order": 3,
-    "text": "Effects that multiply life gained or lost multiply together: with n effects that each double it, the amount is multiplied by 2 to the power n. The multiplied amount is gained or lost at once, before it is checked whether the player has reached 0 life.",
+    "text": "Effects that multiply life gained or lost multiply together: with n effects that each double it, the amount is multiplied by 2 to the power n. The multiplied amount is gained or lost at once, before it is checked whether the player has reached 0 life. Life paid as a cost is multiplied the same way; whether the cost can be paid is judged by the amount the cost names (see rule concepts.costs.unpayable.life).",
     "examples": [
       {
         "text": "three Arbiters of Vitality multiply a life loss by 8.",
@@ -1848,6 +1885,10 @@
       {
         "text": null,
         "test": "137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check"
+      },
+      {
+        "text": "With Arbiter of Vitality in play, paying Glararr's 9 life loses 18.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr"
       }
     ],
     "see": [
@@ -1872,18 +1913,24 @@
           "quote": "  now committed in one go, BEFORE the lethal check.",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "The printed N",
+          "adopted": "2026-10-23",
+          "from": "owner, chat 2026-10-23 (With Arbiter out, paying N life loses 2N, so a player on 15 can pay 9 life (Glararr) and die. Which N does 111.6b check?)"
         }
       ],
       "engine": [],
       "tests": [
         "137-multiplier-and-mode.test.ts",
-        "45-hybrids-ld-b.test.ts"
+        "45-hybrids-ld-b.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "How a life multiplier composes with an additive life modifier is unruled (owner ruling of 2026-08-30, “multipliers are exponential (round-32 Q4)”): D-U04-6.",
+    "notes": "How a life multiplier composes with an additive life modifier is unruled (owner ruling of 2026-08-30, “multipliers are exponential (round-32 Q4)”): D-U04-6. Owner 2026-10-23 (\"The printed N\"): a multiplied life payment, see 111.6b.",
     "sourceHashes": {}
   },
   {

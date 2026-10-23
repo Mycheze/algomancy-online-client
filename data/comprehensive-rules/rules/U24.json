@@ -2605,15 +2605,19 @@
     "key": "annexd.confirm.dials.ramp",
     "parent": "annexd.confirm.dials",
     "order": 2,
-    "text": "A variable cost paid one point at a time, such as paying X life, offers the same typed box and dial. Nothing is paid until the player confirms. The dial cannot go below what has already been paid.",
+    "text": "A variable cost paid one point at a time, such as paying X life, offers the same typed box and dial. Nothing is paid until the player confirms. The dial cannot go below the points already chosen, and for a life cost its top counts them: the largest X it offers is one less than the player's life.",
     "examples": [
       {
         "text": "Paying X life for Flesh Tithe, the player dials to 5 and back to 3; confirming pays 3.",
         "test": "260-cost-ramp-and-bin-targets.test.ts::CR D7.2b one confirm walks the ramp to the dialled X and then stops"
       },
       {
-        "text": "With 1 life already paid, the dial does not go below 1.",
+        "text": "With 1 life already chosen, the dial does not go below 1.",
         "test": "260-cost-ramp-and-bin-targets.test.ts::CR D7.2b the dial goes DOWN as well as up, and never below what is already paid"
+      },
+      {
+        "text": "With 3 of 30 life chosen, the pay-X-life dial still tops out at X = 29.",
+        "test": "591-life-dial-counts-chosen-points.test.ts::CR 111.6b / report 273: with 3 of 30 life chosen, the pay-X-life dial still tops out at X = 29"
       }
     ],
     "see": [],
@@ -2635,13 +2639,14 @@
       ],
       "engine": [],
       "tests": [
-        "260-cost-ramp-and-bin-targets.test.ts"
+        "260-cost-ramp-and-bin-targets.test.ts",
+        "591-life-dial-counts-chosen-points.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "",
+    "notes": "Report 273 (2026-10-23): points are chosen, and the life lost when X is set; the dial reads the chosen points (591).",
     "sourceHashes": {}
   },
   {

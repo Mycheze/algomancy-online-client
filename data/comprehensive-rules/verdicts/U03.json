@@ -164,15 +164,20 @@
   },
   {
     "key": "concepts.abilities.granted",
-    "textHash": "45ebb5b87a1c3ae4",
+    "textHash": "e976717c6c41b681",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts grant snapshot to Entity.granted at resolution (R63)",
+        "loc": "client/engine/src/cards/sets/batch-metal-b.ts:Reforge the Dead spellEffect",
         "agrees": true,
-        "note": ""
+        "note": "grants to g.unitsOf(controller, region) at resolution: a snapshot"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Ancient One when() (n.granted)",
+        "agrees": true,
+        "note": "a neighbour's granted text is one of the sources the Ancient One borrows"
       }
     ],
     "tests_run": [
@@ -181,25 +186,65 @@
         "pattern": "Reforge the Dead: the grant is until regroup, and only for units already there",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "27-metal-b.test.ts",
+        "pattern": "Reforge the Dead: CR 109.8",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "589-ancient-one-whole-text-box.test.ts",
+        "pattern": "CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U03-1.test.ts",
+        "test": "probe U03-1: real Reforge the Dead cast — Ancient One dying beside two granted neighbours makes three Robots; a late unit gets no grant",
+        "passed": true,
+        "demonstrates": "yes: with the real spell (589 injects the grant via grantText), the three units there get it, a unit spawned after resolution does not, and the dying Ancient One makes 3 Robots (own + two neighbours')"
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: Reforge the Dead",
         "supports": "yes",
-        "note": ""
+        "note": "an effect giving units an ability until regroup"
       },
       {
-        "ref": "R63",
+        "ref": "RQ 1359188053876408431",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon answering mirco_jud's question whether Ancient One with 3 adjacent allies gets Reforge's effect from each: up to 4 tokens"
+      },
+      {
+        "ref": "owner register@72de434 (snapshot of 'your units')",
+        "supports": "yes",
+        "note": "supports sentence 2 (later arrivals get nothing)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- The grant is a **snapshot of \"your units\"** at resolution. A unit that"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"Your units gain \\\"When I die, create a Robot 3.\\\" until regroup.\","
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "You could get up to 4 tokens when an ancient one dies with reforge the dead."
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "does the \\\"Ancient One\\\" also get that effect from each adjacent unit"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+        "text": "const units = g.unitsOf(ctx.controller, ctx.region);"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+        "text": "(n.granted ?? []).forEach((gt, gi) => {"
       }
     ],
     "basis_ok": true,
@@ -842,21 +887,37 @@
   },
   {
     "key": "concepts.abilities.once.unbounded-cause",
-    "textHash": "0450c32bd8609514",
+    "textHash": "984a7089251a5359",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.composeParts",
+        "loc": "client/engine/src/engine.ts:withGrafts",
         "agrees": true,
-        "note": "unbounded cause composes every time; bounded rider skipped once mod.budgets.graft set"
+        "note": "a bounded graft whose per-turn budget is already set is skipped ('used this turn: skipped, composite still fires'); unbounded parts and the base are always included"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:graftsJoining",
+        "agrees": true,
+        "note": "a real graft's [once] is kept on its mod entity under key 'graft'"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:14774 (turn start)",
+        "agrees": true,
+        "note": "every entity's budgets are wiped each turn, so 'first time in a turn' holds"
       }
     ],
     "tests_run": [
       {
-        "file": "393-raq-mods.test.ts",
-        "pattern": "RAQ Graft 101 point 12: an unbounded host activated twice",
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "pattern": "cr:concepts.abilities.once.unbounded-cause",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 12",
         "passed": true,
         "asserts_claim": true
       }
@@ -866,18 +927,46 @@
       {
         "ref": "Manual p.33",
         "supports": "yes",
-        "note": ""
+        "note": "quote verbatim (whitespace/hyphenation-normalised) under BOUNDED AND UNBOUNDED GRAFT; same page defines the bounded symbol as 'limited to only trigger once per turn', which grounds 'first time in a turn'"
       },
       {
         "ref": "RAQ 1355115946032889914#13",
         "supports": "yes",
-        "note": ""
+        "note": "[Solved] Graft 101 thread, _passer, status covered; claim 13 (0-based) is the unbounded-host claim and the quote is verbatim in its source"
       }
     ],
     "quote_spans": [
       {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "bounded and unbounded effects, the graft cause will trig-"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "ger an unlimited number of times, but each of the bound-"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "ed effects will only trigger a limited number of times."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "trigger once per turn."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Any Unbounded Grafts underneath will be included on every resolution, but Bounded Grafts underneath will be included only on 1st resolution."
+      },
+      {
         "file": "client/engine/src/engine.ts",
-        "text": "if ((mod.budgets['graft'] ?? 0) > 0) continue;   // used this turn: skipped, composite still fires"
+        "text": "if ((j.on.budgets[j.key] ?? 0) > 0) continue;   // used this turn: skipped, composite still fires"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const e of Object.values(this.s.entities)) e.budgets = {};"
+      },
+      {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "text": "assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 1, 'second activation: no second Robot');"
       }
     ],
     "basis_ok": true,

@@ -300,53 +300,75 @@
   },
   {
     "key": "annexd.confirm.dials.ramp",
-    "textHash": "21d53d8f8b9783f4",
+    "textHash": "8bdca449c7219375",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/ui/main.ts startCostRamp/numDec",
+        "loc": "client/ui/main.ts:costRamp",
         "agrees": true,
-        "note": ""
+        "note": "min = done, max = done + (life - 1 - done) for life"
+      },
+      {
+        "loc": "client/ui/main.ts:numup/numdown/numtake",
+        "agrees": true,
+        "note": "only numtake answers"
       }
     ],
     "tests_run": [
       {
-        "file": "260-cost-ramp-and-bin-targets.test.ts",
-        "pattern": "R280 §4 one confirm walks the ramp to the dialled X and then stops",
+        "file": "client/ui/test/260-cost-ramp-and-bin-targets.test.ts",
+        "pattern": "CR D7.2b one confirm walks",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": false,
+        "note": "Note: example 1's bound test (260) dials to 5 and confirms 5; it never dials back to 3. The 'back to 3' half is demonstrated by probe U24-1 instead."
       },
       {
-        "file": "260-cost-ramp-and-bin-targets.test.ts",
-        "pattern": "R280 §2b the dial goes DOWN as well as up, and never below what is already paid",
+        "file": "client/ui/test/260-cost-ramp-and-bin-targets.test.ts",
+        "pattern": "CR D7.2b the dial goes DOWN",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/591-life-dial-counts-chosen-points.test.ts",
+        "pattern": "CR 111.6b / report 273: with 3 of 30",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1: Flesh Tithe pay-X-life dial up to 5, back down to 3, nothing sent until confirm, confirm pays 3",
+        "passed": true,
+        "demonstrates": "yes: dialling sends nothing; dial 5 then back to 3 and confirm pays exactly 3"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R280",
+        "ref": "owner register@72de434 (2026-08-30) #1",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": "nothing is spent until Confirm"
       },
       {
-        "ref": "R280",
+        "ref": "owner register@72de434 (2026-08-30) #2",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": "dial cannot go below what is paid"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "Down is free because **nothing is spent until Confirm** — that is the \"and had"
+        "file": "client/ui/main.ts",
+        "text": "? Math.max(0, h.state.players[dec.seat]!.life - 1 - done)"
+      },
+      {
+        "file": "client/ui/test/591-life-dial-counts-chosen-points.test.ts",
+        "text": "assert.ok(html.includes('max=\"29\"'), `the dial must top out at 29 (never the last life), not 3 + 29: ${html.match(/max=\"\\d+\"/)?.[0]}`);"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.confirm.never-refuse",

@@ -476,3 +476,37 @@ test('cr:concepts.timestamps.when — a static dates from its card, a mod from w
     finishBattle(h);
   }
 });
+
+/* Round 2026-10-23 (owner, "The printed N"): promoted from verifier probe U04-1. */
+test('cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr, loses 18 and dies', () => {
+  const h = new Harness(3809);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const D = (1 - A) as Seat;
+  spawn(h, A, 'Arbiter of Vitality');
+  const gl = spawn(h, A, 'Glararr');
+  const victim = spawn(h, A, 'Good Whale');
+  h.state.players[A]!.life = 15;
+  assert.ok(h.legal(A).some(a => a.type === 'activateAbility' && a.entityId === gl), 'offered: 15 > 9, the printed N');
+  try {
+    h.do({ type: 'activateAbility', seat: A, entityId: gl, abilityIndex: 0 });
+    if (h.state.phase !== 'gameover') pick(h, { unit: victim });
+  } catch (e) { if (h.state.phase !== 'gameover') throw e; }
+  const lost = h.events.filter(ev => ev.type === 'lifeLost' && ev.data?.['seat'] === A).map(ev => ev.data?.['n']);
+  assert.equal(h.state.players[A]!.life, -3, '9 doubled to 18');
+  assert.deepEqual(lost, [18], 'one loss of 18');
+  assert.equal(h.state.winner, D, 'and the payer died');
+});
+
+test('cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, at exactly 9 life Glararr is still unpayable (N stays 9)', () => {
+  const h = new Harness(3809);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'Arbiter of Vitality');
+  const gl = spawn(h, A, 'Glararr');
+  spawn(h, A, 'Good Whale');
+  h.state.players[A]!.life = 9;
+  assert.ok(!h.legal(A).some(a => a.type === 'activateAbility' && a.entityId === gl));
+  assert.throws(() => h.do({ type: 'activateAbility', seat: A, entityId: gl, abilityIndex: 0 }), /cannot pay/);
+  assert.equal(h.state.players[A]!.life, 9);
+});
