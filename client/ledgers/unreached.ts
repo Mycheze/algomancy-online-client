@@ -270,6 +270,7 @@ export const WITNESSED: Readonly<Record<string, Witness>> = {
   'Skybreaker': { scenario: 'skybreaker-negates-spells', engine: '7864bb8', on: '2026-08-27' },
   // Cinder Scuttler's witness note went with its UNREACHED entry above —
   // a witness for a card the drill now reaches is a note about nothing (187).
+  // Bloated Manablub's went the same way on 2026-10-22.
   'Automaton of Abundance': { scenario: 'automaton-augmented-batch', engine: '7864bb8', on: '2026-08-27' },
   'Scholar of the Void': { scenario: 'scholar-transforms', engine: '7864bb8', on: '2026-08-27' },
   'Stellarspore Harvester': { scenario: 'stellarspore-steals', engine: '7864bb8', on: '2026-08-27' },
@@ -277,7 +278,6 @@ export const WITNESSED: Readonly<Record<string, Witness>> = {
   'Worldbender': { scenario: 'worldbender-card-step', engine: '7864bb8', on: '2026-08-27' },
   'Skittering Blight': { scenario: 'skittering-blight-rot-into-counters', engine: '7864bb8', on: '2026-08-27' },
   'Earnest Defender': { scenario: 'earnest-defender-enemy-spell', engine: '7864bb8', on: '2026-08-27' },
-  'Bloated Manablub': { scenario: 'manablub-dies-in-their-region', engine: '7864bb8', on: '2026-08-27' },
   'Molten Riftbreaker': { scenario: 'riftbreaker-negates-your-own-spell', engine: '7864bb8', on: '2026-08-27' },
   'Prediction Prophet': { scenario: 'prediction-prophet-predict-the-future', engine: '7864bb8', on: '2026-08-27' },
   'Stalwart Sentinel': { scenario: 'stalwart-sentinel-from-bin', engine: '7864bb8', on: '2026-08-27' },
