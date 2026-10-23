@@ -704,6 +704,17 @@ const OPEN: TodoEntry[] = [
     verify: "Cast Torrential Reclamation for X = 2: count each player's sacrifices.",
     status: "open",
   },
+  {
+    id: 362, area: "engine", severity: "minor",
+    cards: [],
+    title: "Electric is applied to effect damage only, never to combat damage",
+    detail: "CR 802.17a: \"When an Electric source deals a unit more than its lethal damage, the excess may be dealt to a unit adjacent to that unit instead.\" It names no kind of damage, but the engine jumps Electric excess only for effect damage; a unit made Electric that deals excess combat damage to a blocker sends none on. No unit prints Electric, so it is reached only through grants (and Envoy of Lightning, whose grant is spell effects only).",
+    evidence: "CR pass 2026-10-23 (r1022-handoff/CR-PASS-1023.md, new defect 3): an isolated verifier measured it while checking 802.25c.",
+    fix: "Find which grants can put Electric on a unit in combat; look for a designer or RAQ answer on Electric in combat; if none, an owner question. Then either extend the combat damage path or state the limit in 802.17.",
+    proof: null,
+    verify: "Grant Electric to an attacker that deals excess combat damage to a blocker with an adjacent unit: does the excess jump?",
+    status: "open",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
