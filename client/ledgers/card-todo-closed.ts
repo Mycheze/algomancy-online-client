@@ -12353,8 +12353,9 @@ export const CLOSED: TodoEntry[] = [
     verify: "Fold a refs-only game with a playCached and a cache augment into the card ledger: both cards are counted.",
     guards: [
       "332-card-ledger-drift.test.ts::card stats drift (c) the deal moved and nothing recorded it",
+      "595-card-ledger-cache-refs.test.ts::card stats: a refs-only game counts cached plays and augments, grafts and prophecies from the cache (fix 8b88225)",
     ],
-    closed: "FIXED 2026-10-23 (8b88225): refsLedger reads the cached card out of the slot's JSON (cachedCard). 332 (c) guards it only while its seeded walk happens to reach a cache play; the deterministic guard is server 595 \"card stats: a refs-only game counts cached plays and augments, grafts and prophecies from the cache (fix 8b88225)\" (7573a65, on round-1022e after this ledger was written): add it to guards once both are on one branch.",
+    closed: "FIXED 2026-10-23 (8b88225): refsLedger reads the cached card out of the slot's JSON (cachedCard). 332 (c) guards it only while its seeded walk happens to reach a cache play; server 595 (7573a65) is the deterministic guard.",
     status: 'done',
   },
   {
