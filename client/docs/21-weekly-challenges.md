@@ -134,14 +134,15 @@ export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown, op
 |---|---|---|
 | `GET /api/challenge` | anyone | `{ now, current: ChallengeView \| null, past: ChallengeView[], mine?: Record<id, RunScore> }` (`mine`: the caller's best per challenge) |
 | `GET /api/challenge/<id>/board` | anyone | `{ id, closed, rows: BoardRow[], winner?: BoardRow }` — the one leaderboard |
-| `GET /api/challenge/run/<runId>` | anyone if the week is closed; otherwise the run's owner only | `{ runId, challengeId, name, deck, actions, score, at }` |
+| `GET /api/challenge/run/<runId>` | anyone if the week is closed; otherwise the run's owner only | `{ runId, challengeId, name, deck, actions, score, at, verdict, partedAt, refusedAt, older? }` — see **Watch** |
 | `POST /api/challenge/run` | signed in | body `{ challengeId, deck, actions }` → `{ ok: true, runId, score, improved: boolean, rank: number }` or `{ ok: false, error }` |
 
 ```ts
 ChallengeView = ChallengeDef & { opens: number; closes: number; closed: boolean;
   entrants: number }                    // par: the row's committed number
 BoardRow = { rank: number; name: string; score: RunScore; at: number;
-  runId?: string; deck?: CardName[] }   // runId and deck only when closed
+  runId?: string; deck?: CardName[];    // runId and deck only when closed
+  older?: true }                        // see Watch: "played on older rules"
 ```
 
 **How a POST is handled:**
@@ -160,6 +161,37 @@ BoardRow = { rank: number; name: string; score: RunScore; at: number;
 - `weeks.json` (`version: 2`) holds the frozen results per closed week: `{closedAt, frozenAt, winner, top: BoardRow[]}`, the top ten.
   - `sweepChallenges()` (on main.ts's expiry tick, throttled) freezes each newly closed week.
   - It catches up on weeks missed while the server was down and is idempotent.
+- `sigs.jsonl` is append-only: `{runId, engine, sigs}` — the board's fingerprint after every
+  action of the run (`digest(signature(state))`, BL-38's), written by the verifier at
+  submission and by the backfill tool for older runs. The first line for a run wins; a
+  fingerprint is never recomputed. It is its own file because `runs.jsonl` is never rewritten.
+
+### Watch (added 2026-10-23)
+
+Watch replays a stored run on the **live** engine, so after a rules change it can play a
+different game. Owner, 2026-10-23: "Fingerprints + banner".
+- `server/challenge-sigs.ts` `walkRun` is verifyRun's walk with a per-action fingerprint (its
+  `onStep` hook); past where verifyRun stops it goes on as Watch does, a refused action
+  leaving `''`.
+- `server/challenge-resim.ts` walks a stored run again on this engine **in the verifier
+  worker** (lanes: a submission first, then a Watch, then background work), cached per run per
+  engine, and compares against `sigs.jsonl`:
+  - `as-recorded` — every recorded fingerprint reproduced; `reconstruction` from `partedAt`, the
+    first one that is not; `unverified` — the run has no fingerprints. `refusedAt` is the first
+    action this engine refuses. The replay bar (`ui/replaybar.ts`) shows these as for BL-38.
+  - A run stamped with the live engine is not walked again: as-recorded if fingerprinted,
+    unverified if not.
+- **The board mark** (owner, 2026-10-23: "Flag it, still ranked"). A run is marked `older` when
+  it no longer reproduces *materially* on the live engine: it no longer verifies (an action
+  refused, the dummy's move changed, the goal not met), or it meets the goal at another action,
+  or for another score. Its score and rank stand. A cosmetic parting (the board differs, and the
+  run still verifies to the same score at the same action) is a reconstruction for Watch and is
+  **not** marked. The board answers from the cache and never waits: an unworked run is queued in
+  the background lane and is unmarked until it has been. The page shows "played on older rules",
+  with the reason on hover.
+- **Backfill** (`server/challenge-sigs-backfill.ts`): runs verified before fingerprints were
+  kept get them from a checkout of the engine they were stamped with — only runs stamped with
+  that engine, only runs it reproduces (verifies, same goal action, same score), idempotent.
 
 ### Browser (`client/ui/challenge.ts` + a generalised `ui/solo.ts`)
 

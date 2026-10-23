@@ -25,28 +25,60 @@
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import type { ChallengeDef, RunScore } from '../engine/src/challenge.ts';
 import type { Action, CardName } from '../engine/src/types.ts';
+import type { Walk } from './challenge-sigs.ts';
 
 const ROLE = 'algomancy-challenge-verifier';
 
 export interface VerifyJob { def: ChallengeDef; deck: unknown; actions: unknown; maxActions: number }
 export type VerifyResult =
-  | { ok: true; score: RunScore; deck: CardName[]; actions: Action[] }
+  /** `sigs`: the board's fingerprint after each of `actions` (challenge-sigs.ts) */
+  | { ok: true; score: RunScore; deck: CardName[]; actions: Action[]; sigs: string[] }
   | { ok: false; error: string; at?: number };
+
+/** A stored run walked again on THIS engine — Watch's verdict and the board's
+ * "older rules" mark (challenge-resim.ts). The whole log, as Watch walks it. */
+export interface ResimJob { def: ChallengeDef; deck: CardName[]; actions: Action[]; maxActions: number }
+export type ResimResult = ({ ok: true } & Walk) | { ok: false; error: string };
+
+type Job = { kind: 'verify'; job: VerifyJob } | { kind: 'resim'; job: ResimJob };
+type Out = VerifyResult | ResimResult;
 
 // ── the worker half ───────────────────────────────────────────────────
 
 if (!isMainThread && (workerData as { role?: string } | null)?.role === ROLE && parentPort) {
   const port = parentPort;
-  const { verifyRun, checkChallengeDeck } = await import('../engine/src/challenge.ts');
-  port.on('message', (msg: { id: number; job: VerifyJob }) => {
-    let out: VerifyResult;
+  const ch = await import('../engine/src/challenge.ts');
+  const ap = await import('../engine/src/apply.ts');
+  const { walkRun } = await import('./challenge-sigs.ts');
+  const eng = {
+    verifyRun: ch.verifyRun, checkChallengeDeck: ch.checkChallengeDeck, challengeDeal: ch.challengeDeal,
+    DUMMY_DECK: ch.DUMMY_DECK, createGame: ap.createGame, apply: ap.apply,
+  } as unknown as import('./challenge-sigs.ts').WalkEngine;
+  port.on('message', (msg: { id: number } & Job) => {
+    let out: Out;
+    if (msg.kind === 'resim') {
+      try {
+        out = { ok: true, ...walkRun(eng, msg.job.def, msg.job.deck, msg.job.actions, { maxActions: msg.job.maxActions, full: true }) };
+      } catch (err) {
+        out = { ok: false, error: `the run could not be replayed: ${err instanceof Error ? err.message : String(err)}` };
+      }
+      port.postMessage({ id: msg.id, out });
+      return;
+    }
     try {
-      const r = verifyRun(msg.job.def, msg.job.deck, msg.job.actions, { maxActions: msg.job.maxActions });
-      if (r.ok) {
-        const d = checkChallengeDeck(msg.job.deck);
-        out = d.ok ? { ok: true, score: r.score, deck: d.cards, actions: r.actions } : { ok: false, error: d.error };
+      // one pass: verifyRun's own walk, fingerprinted as it goes
+      const w = Array.isArray(msg.job.actions)
+        ? walkRun(eng, msg.job.def, msg.job.deck, msg.job.actions, { maxActions: msg.job.maxActions, full: false })
+        : null;
+      if (!w) {
+        out = { ok: false, error: 'the run must be a list of actions' };
+      } else if (w.verify.ok) {
+        const d = ch.checkChallengeDeck(msg.job.deck);
+        out = d.ok
+          ? { ok: true, score: w.verify.score, deck: d.cards, actions: (msg.job.actions as Action[]).slice(0, w.verify.n), sigs: w.sigs }
+          : { ok: false, error: d.error };
       } else {
-        out = { ok: false, error: r.error, ...(r.at !== undefined ? { at: r.at } : {}) };
+        out = { ok: false, error: w.verify.error, ...(w.verify.at !== undefined ? { at: w.verify.at } : {}) };
       }
     } catch (err) {
       out = { ok: false, error: `the run could not be replayed: ${err instanceof Error ? err.message : String(err)}` };
@@ -62,11 +94,21 @@ export const JOB_TIMEOUT_MS = 180_000;
 /** jobs waiting behind the running one; past this a submit is told to retry */
 export const MAX_QUEUED = 16;
 
-interface Pending { id: number; job: VerifyJob; resolve: (r: VerifyResult) => void }
+interface Pending { id: number; job: Job; resolve: (r: Out) => void }
 
+/**
+ * Three lanes, served in this order: a SUBMISSION (a player is waiting on
+ * their score), then a WATCH (a player is waiting on a replay to open), then
+ * the BACKGROUND re-simulations behind the board's "older rules" mark. One
+ * worker, one job at a time: a submission waits at most for the one job
+ * already running, never behind a backlog of re-simulations.
+ */
+export type Lane = 'watch' | 'background';
 let worker: Worker | null = null;
 let running: (Pending & { timer: NodeJS.Timeout; w: Worker }) | null = null;
 const queue: Pending[] = [];
+const watchQueue: Pending[] = [];
+const backQueue: Pending[] = [];
 let nextId = 1;
 
 function spawn(): Worker {
@@ -75,7 +117,7 @@ function spawn(): Worker {
     // one engine and one replay; a runaway log should hit this, not the box
     resourceLimits: { maxOldGenerationSizeMb: 512 },
   });
-  w.on('message', (msg: { id: number; out: VerifyResult }) => {
+  w.on('message', (msg: { id: number; out: Out }) => {
     if (!running || running.w !== w || msg.id !== running.id) return;
     finish(msg.out);
   });
@@ -93,7 +135,7 @@ function spawn(): Worker {
   return w;
 }
 
-function finish(out: VerifyResult): void {
+function finish(out: Out): void {
   const r = running;
   if (!r) return;
   clearTimeout(r.timer);
@@ -104,7 +146,7 @@ function finish(out: VerifyResult): void {
 
 function pump(): void {
   if (running) return;
-  const next = queue.shift();
+  const next = queue.shift() ?? watchQueue.shift() ?? backQueue.shift();
   if (!next) { worker?.unref(); return; }
   if (!worker) worker = spawn();
   const w = worker;
@@ -116,7 +158,7 @@ function pump(): void {
     void w.terminate();
   }, JOB_TIMEOUT_MS);
   running = { ...next, timer, w };
-  w.postMessage({ id: next.id, job: next.job });
+  w.postMessage({ id: next.id, ...next.job });
 }
 
 /** Verify a run off the main thread. Never rejects: every failure is a result. */
@@ -125,14 +167,22 @@ export function verifyInWorker(job: VerifyJob): Promise<VerifyResult> {
     return Promise.resolve({ ok: false, error: 'the server is busy checking other runs; try again in a minute' });
   }
   return new Promise(resolve => {
-    queue.push({ id: nextId++, job, resolve });
+    queue.push({ id: nextId++, job: { kind: 'verify', job }, resolve: resolve as (r: Out) => void });
+    pump();
+  });
+}
+
+/** Walk a stored run again on this engine, off the main thread. Never rejects. */
+export function resimInWorker(job: ResimJob, lane: Lane): Promise<ResimResult> {
+  return new Promise(resolve => {
+    (lane === 'watch' ? watchQueue : backQueue).push({ id: nextId++, job: { kind: 'resim', job }, resolve: resolve as (r: Out) => void });
     pump();
   });
 }
 
 /** Tests and shutdown: stop the worker (queued jobs are failed). */
 export async function stopChallengeWorker(): Promise<void> {
-  for (const p of queue.splice(0)) p.resolve({ ok: false, error: 'the verifier stopped' });
+  for (const p of [...queue.splice(0), ...watchQueue.splice(0), ...backQueue.splice(0)]) p.resolve({ ok: false, error: 'the verifier stopped' });
   const w = worker;
   worker = null;
   if (running) finish({ ok: false, error: 'the verifier stopped' });

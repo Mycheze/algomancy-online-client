@@ -12308,7 +12308,7 @@ if (params.has('room') && params.get('room')!.trim()) {
       const [run, cal] = await Promise.all([
         fetch(`/api/challenge/run/${encodeURIComponent(runId)}`, { headers: acct.authHeaders(false) }).then(r => r.json()),
         fetch('/api/challenge', { headers: acct.authHeaders(false) }).then(r => r.json()),
-      ]) as [{ challengeId?: string; name?: string; deck?: CardName[]; actions?: Action[] },
+      ]) as [{ challengeId?: string; name?: string; deck?: CardName[]; actions?: Action[] } & Partial<Pick<ReplayMeta, 'verdict' | 'partedAt' | 'refusedAt'>>,
         { current?: ChallengeDef | null; past?: ChallengeDef[] }];
       const def = [...(cal.current ? [cal.current] : []), ...(cal.past ?? [])].find(c => c.id === run.challengeId);
       if (!def || !run.deck || !run.actions) throw new Error('no such run');
@@ -12320,8 +12320,18 @@ if (params.has('room') && params.get('room')!.trim()) {
       openSocket = () => rs.socket() as unknown as WebSocket;
       NET = new NetBackend(def.title, 0, undefined, undefined, undefined, true);
       h = NET;
-      openReplay(rs, { code: def.title, verdict: 'as-recorded', forked: false, partedAt: null, refusedAt: null,
-        exitTo: `?challenge=1&board=${encodeURIComponent(def.id)}` });
+      // the server's verdict (server/challenge-resim.ts): this engine's walk
+      // against the fingerprints the verifier recorded. A run that has none,
+      // or a server that sent none, is UNVERIFIED — never "as recorded" on
+      // the strength of nothing (it once was, hard-coded, and a run whose
+      // rules had changed played a different game under the green badge)
+      const verdict = run.verdict === 'as-recorded' || run.verdict === 'reconstruction' ? run.verdict : 'unverified';
+      const partedAt = typeof run.partedAt === 'number' ? run.partedAt : null;
+      openReplay(rs, {
+        code: def.title, verdict: verdict === 'reconstruction' && partedAt === null ? 'unverified' : verdict, forked: false,
+        partedAt, refusedAt: typeof run.refusedAt === 'number' ? run.refusedAt : null,
+        exitTo: `?challenge=1&board=${encodeURIComponent(def.id)}`,
+      });
     } catch {
       uiError = 'that run cannot be watched';
       render();

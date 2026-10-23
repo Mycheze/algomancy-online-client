@@ -45,7 +45,11 @@ import { chosenDeck, esc } from './util.ts';
 // ── the server's shapes (server/api-challenge.ts, server/challenge-store.ts) ──
 
 export type ChallengeView = ChallengeDef & { opens: number; closes: number; closed: boolean; entrants: number };
-export interface BoardRow { rank: number; name: string; score: RunScore; at: number; runId?: string; deck?: CardName[] }
+export interface BoardRow {
+  rank: number; name: string; score: RunScore; at: number; runId?: string; deck?: CardName[];
+  /** the run no longer reproduces on today's rules (server/challenge-resim.ts) */
+  older?: boolean;
+}
 export interface BoardReply { id: string; closed: boolean; rows: BoardRow[]; winner?: BoardRow }
 export interface ChallengeReply {
   now: number;
@@ -273,6 +277,13 @@ function weekCardHtml(c: ChallengeView): string {
   </div>`;
 }
 
+/** Owner, 2026-10-23: "Flag it, still ranked". A run the rules have moved
+ * under keeps its score and rank; the board says so, in a player's words. */
+const OLDER_TIP = 'The rules have changed since this run was played: replayed today, it would not go the same way. '
+  + 'Its score stands.';
+const olderHtml = (r: BoardRow): string =>
+  r.older ? ` <span class="dim chold" title="${esc(OLDER_TIP)}">played on older rules</span>` : '';
+
 function boardHtml(c: ChallengeView, past = false): string {
   const b = boards.get(c.id);
   let body: string;
@@ -280,10 +291,10 @@ function boardHtml(c: ChallengeView, past = false): string {
   else if (b === 'error') body = '<p class="dim">Could not load the leaderboard.</p>';
   else if (!b.rows.length) body = '<p class="dim">No runs yet.</p>';
   else {
-    body = `${b.closed && b.winner ? `<p>Winner: <b>${esc(b.winner.name)}</b>, Skill ${b.winner.score.skill}</p>` : ''}
+    body = `${b.closed && b.winner ? `<p>Winner: <b>${esc(b.winner.name)}</b>, Skill ${b.winner.score.skill}${olderHtml(b.winner)}</p>` : ''}
       <table class="accttable chboard"><thead><tr><th>#</th><th>player</th><th>Skill</th><th>Cards</th><th>Elements</th><th>Turns</th>${
         b.closed ? '<th></th>' : ''}</tr></thead>
-      <tbody>${b.rows.map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}</td><td><b>${r.score.skill}</b></td><td>${r.score.cards}${
+      <tbody>${b.rows.map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}${olderHtml(r)}</td><td><b>${r.score.skill}</b></td><td>${r.score.cards}${
         r.score.extra ? ` <span class="dim">(${r.score.extra} extra)</span>` : ''}</td><td>${r.score.elements}</td><td>${r.score.turns}</td>${
         b.closed ? `<td class="chrowbtns">${r.deck ? `<button data-btn="ch-try" data-id="${esc(c.id)}" data-run="${esc(r.runId ?? '')}" title="load this deck into the builder">Try this deck</button>` : ''}${
           r.runId ? `<button data-btn="ch-watch" data-run="${esc(r.runId)}">Watch</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table>`;

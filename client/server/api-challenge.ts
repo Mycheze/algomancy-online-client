@@ -8,7 +8,8 @@
  *                                           only once the week has closed
  *   GET  /api/challenge/run/<runId>         a closed week's run: anyone; an open
  *                                           week's: its owner only (404 otherwise —
- *                                           a refusal must not say the run exists)
+ *                                           a refusal must not say the run exists);
+ *                                           with Watch's verdict on it (challenge-resim.ts)
  *   POST /api/challenge/run                 a NAMED account: submit a run
  *
  * ── WHO MAY SUBMIT ───────────────────────────────────────────────────────
@@ -32,9 +33,10 @@ import {
   weekWindow,
 } from './challenges.ts';
 import {
-  appendRun, bestOf, board, compareRuns, duplicateRun, entrants, mine, rankOf, runById, runHash, runMeta,
+  appendRun, appendSigs, bestOf, board, compareRuns, duplicateRun, entrants, mine, rankOf, runById, runHash, runMeta,
 } from './challenge-store.ts';
 import { verifyInWorker } from './challenge-worker.ts';
+import { olderRules, runVerdict } from './challenge-resim.ts';
 import { engineVersion } from './engine-version.ts';
 
 /** the caps docs/21 names — checked here, before a worker is asked */
@@ -122,7 +124,7 @@ export async function challengeRoutes(
   if (req.method === 'GET' && boardMatch) {
     const def = opened(boardMatch[1]!);
     if (!def) return notFound(res, 'no such challenge');
-    sendBig(req, res, board(def, now));
+    sendBig(req, res, board(def, now, runId => olderRules(runId, rows)));
     return true;
   }
 
@@ -139,9 +141,13 @@ export async function challengeRoutes(
     }
     const r = runById(runId);
     if (!r) return notFound(res);
+    // Watch's verdict (challenge-resim.ts): what this engine makes of the
+    // run, against the fingerprints the verifier recorded
+    const v = await runVerdict(runId, rows);
     sendBig(req, res, {
       runId: r.runId, challengeId: r.challengeId, name: nameOf(r),
       deck: r.deck, actions: r.actions, score: r.score, at: r.at,
+      verdict: v.verdict, partedAt: v.partedAt, refusedAt: v.refusedAt, ...(v.older ? { older: true } : {}),
     });
     return true;
   }
@@ -201,6 +207,14 @@ async function submit(req: IncomingMessage, res: ServerResponse, now: number, ro
           engine: engineVersion(), actions: r.actions, hash,
         });
         runId = meta.runId; at = meta.at;
+        // its fingerprints, for Watch (challenge-sigs.ts). A run that lost
+        // them is still a run — Watch shows it as unverified — so a failed
+        // write is logged, not refused.
+        try {
+          appendSigs({ runId, engine: engineVersion(), sigs: r.sigs });
+        } catch (err) {
+          console.error(`[challenges] could not record the fingerprints of run ${runId}:`, err);
+        }
       } catch (err) {
         console.error('[challenges] could not record a run:', err);
         json(res, { ok: false, error: 'the run checked out but could not be saved; try again' }, 500);

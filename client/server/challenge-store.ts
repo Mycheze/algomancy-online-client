@@ -13,6 +13,15 @@
  *   weeks.json   the FROZEN result of every closed week — winner and top ten
  *                — rewritten atomically (temp file + rename, the
  *                pattern league-store.ts and accounts.ts use).
+ *   sigs.jsonl   APPEND-ONLY, one line per fingerprinted run:
+ *                {runId, engine, sigs} — the board's fingerprint after every
+ *                action of the run, on the engine that verified it
+ *                (challenge-sigs.ts). Written by the verifier at submission,
+ *                and by the backfill tool (challenge-sigs-backfill.ts) for a
+ *                run verified before fingerprints were kept — which is why it
+ *                is its own file and not a field on the run's line: runs.jsonl
+ *                is never rewritten. Like a run's score, a recorded fingerprint
+ *                is NEVER recomputed; the first line for a run wins.
  *
  * ── WHY `actions` IS WRITTEN LAST ────────────────────────────────────────
  *
@@ -49,6 +58,9 @@ import type { Action, CardName } from '../engine/src/types.ts';
 import { accountById } from './accounts.ts';
 import { CHALLENGES, isClosed, weekWindow } from './challenges.ts';
 import { challengesDir } from './statepaths.ts';
+import { parseSigsIndex, readSigsLine, type SigsRow } from './challenge-sigs.ts';
+
+export type { SigsRow };
 
 /** a row of runs.jsonl, whole */
 export interface RunRow {
@@ -85,6 +97,9 @@ export interface BoardRow {
   /** only once the week has closed */
   runId?: string;
   deck?: CardName[];
+  /** the run no longer reproduces on today's rules (challenge-resim.ts); its
+   * score and rank stand. Absent when it does, or is not worked out yet. */
+  older?: true;
 }
 
 /** a frozen row: the public row plus whose it was (kept, never sent) */
@@ -183,14 +198,14 @@ function index(m: Mem, meta: RunMeta): void {
 }
 
 /** Re-read both files (boot, and the tests' "after a restart"). */
-export function loadChallengeStore(): void { mem = null; db(); }
+export function loadChallengeStore(): void { mem = null; sigMem = null; db(); }
 
 /** Tests only: point the store at a throwaway directory. Returns a restore function. */
 export function useChallengeDir(path: string): () => void {
   const prev = dirOverride;
   dirOverride = path;
   loadChallengeStore();
-  return () => { dirOverride = prev; mem = null; };
+  return () => { dirOverride = prev; mem = null; sigMem = null; };
 }
 
 function persistWeeks(m: Mem): void {
@@ -260,6 +275,81 @@ export function runById(runId: string): RunRow | null {
   }
 }
 
+// ── fingerprints (sigs.jsonl) ─────────────────────────────────────────
+
+const sigsFile = (): string => join(dir(), 'sigs.jsonl');
+
+/** fingerprinted runs: runId → where its line is. The fingerprints themselves
+ * stay on disk (a long run's are hundreds of KB), as a run's log does. */
+interface SigMem { at: Map<string, { off: number; len: number }>; size: number; mtime: number }
+let sigMem: SigMem | null = null;
+
+/**
+ * The index, current with the file on disk. Re-read whenever the file's size
+ * or mtime moved under us: the backfill's output is appended (or uploaded) by
+ * an operator while the server runs, and a run it fingerprinted must not go
+ * on reading "unverified" until a restart.
+ */
+function sigDb(): SigMem {
+  let st: { size: number; mtimeMs: number } | null = null;
+  try { st = statSync(sigsFile()); } catch { /* no fingerprints yet */ }
+  const size = st?.size ?? 0, mtime = st?.mtimeMs ?? 0;
+  if (sigMem && sigMem.size === size && sigMem.mtime === mtime) return sigMem;
+  let buf: Buffer = Buffer.alloc(0);
+  try { buf = readFileSync(sigsFile()); } catch { /* none */ }
+  sigMem = { at: parseSigsIndex(buf), size, mtime };
+  return sigMem;
+}
+
+/** Is this run fingerprinted? */
+export const hasSigs = (runId: string): boolean => sigDb().at.has(runId);
+
+/** A run's recorded fingerprints, or null. */
+export function sigsOf(runId: string): SigsRow | null {
+  const where = sigDb().at.get(runId);
+  if (!where) return null;
+  let fd: number | null = null;
+  try {
+    fd = openSync(sigsFile(), 'r');
+    const buf = Buffer.alloc(where.len);
+    readSync(fd, buf, 0, where.len, where.off);
+    const r = readSigsLine(buf);
+    return r && r.runId === runId ? r : null;
+  } catch (err) {
+    console.error(`[challenges] could not read the fingerprints of ${runId}:`, err);
+    return null;
+  } finally {
+    if (fd !== null) closeSync(fd);
+  }
+}
+
+/**
+ * Record a run's fingerprints. Never twice: a run that already has a line
+ * keeps it (a recorded fingerprint is never recomputed). Throws if it could
+ * not be written; the caller decides what that costs (a run without
+ * fingerprints is shown as unverified, never refused).
+ */
+export function appendSigs(row: SigsRow): boolean {
+  const m = sigDb();
+  if (m.at.has(row.runId)) return false;
+  mkdirSync(dir(), { recursive: true });
+  let lead = '';
+  try {
+    const fd = openSync(sigsFile(), 'r');
+    try {
+      const st = statSync(sigsFile());
+      if (st.size > 0) {
+        const last = Buffer.alloc(1);
+        readSync(fd, last, 0, 1, st.size - 1);
+        if (last[0] !== 0x0a) lead = '\n';
+      }
+    } finally { closeSync(fd); }
+  } catch { /* no file yet */ }
+  appendFileSync(sigsFile(), `${lead}${JSON.stringify({ runId: row.runId, engine: row.engine, sigs: row.sigs })}\n`);
+  sigMem = null;
+  return true;
+}
+
 /** the account id behind a run (the run route's owner check) */
 export const runOwner = (runId: string): string | null => db().byId.get(runId)?.user ?? null;
 export const runMeta = (runId: string): Omit<RunMeta, 'off' | 'len' | 'hash'> | null => db().byId.get(runId) ?? null;
@@ -295,16 +385,20 @@ function ranked(challengeId: string, before = Infinity): RunMeta[] {
  * name stamped on the run */
 const shownName = (r: { user: string; name: string }): string => accountById(r.user)?.username ?? r.name;
 
-function publicRow(r: RunMeta, rank: number, closed: boolean): BoardRow {
+/** is this run marked as played on older rules (challenge-resim.ts `olderRules`) */
+export type OlderFlag = (runId: string) => boolean;
+
+function publicRow(r: RunMeta, rank: number, closed: boolean, flag?: OlderFlag): BoardRow {
   return {
     rank, name: shownName(r), score: r.score, at: r.at,
     ...(closed ? { runId: r.runId, deck: r.deck } : {}),
+    ...(flag?.(r.runId) ? { older: true as const } : {}),
   };
 }
 
-const stripFrozen = (r: FrozenRow): BoardRow => {
+const stripFrozen = (r: FrozenRow, flag?: OlderFlag): BoardRow => {
   const { user, ...row } = r;
-  return { ...row, name: accountById(user)?.username ?? r.name };
+  return { ...row, name: accountById(user)?.username ?? r.name, ...(flag?.(r.runId) ? { older: true as const } : {}) };
 };
 
 /** a cap on what one board answer carries (a closed board carries decks) */
@@ -315,14 +409,14 @@ export const BOARD_ROWS = 200;
  * once the week has closed. `winner` is the frozen one, and only on a closed
  * week.
  */
-export function board(def: ChallengeDef, now: number): { id: string; closed: boolean; rows: BoardRow[]; winner?: BoardRow } {
+export function board(def: ChallengeDef, now: number, flag?: OlderFlag): { id: string; closed: boolean; rows: BoardRow[]; winner?: BoardRow } {
   const closed = isClosed(def, now);
   // a board asked for between the close and the sweep's next tick freezes it
   // there and then — the freeze's answer does not depend on when it runs
   if (closed) sweepChallenges(now, [def]);
-  const rows = ranked(def.id).slice(0, BOARD_ROWS).map((r, i) => publicRow(r, i + 1, closed));
+  const rows = ranked(def.id).slice(0, BOARD_ROWS).map((r, i) => publicRow(r, i + 1, closed, flag));
   const w = closed ? db().weeks.weeks[def.id]?.winner : null;
-  return { id: def.id, closed, rows, ...(w ? { winner: stripFrozen(w) } : {}) };
+  return { id: def.id, closed, rows, ...(w ? { winner: stripFrozen(w, flag) } : {}) };
 }
 
 /** a player's rank on the live board (0 = no run) */

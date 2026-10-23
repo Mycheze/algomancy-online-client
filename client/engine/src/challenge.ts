@@ -523,8 +523,13 @@ function canon(v: unknown): string {
  * actions after it are dropped. A game that ends first (the dummy dead, a
  * concede, the player dead) fails — even if the goal was met by the very
  * action that ended it — and so does a log that runs out first.
+ *
+ * `onStep` sees the board after every action this replay applies, before it
+ * is judged — the server fingerprints the run with it (server/challenge-sigs.ts),
+ * in the same pass, so a stored fingerprint is of exactly the game verified.
  */
-export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown, opts: { maxActions?: number } = {}):
+export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown,
+  opts: { maxActions?: number; onStep?: (i: number, after: GameState) => void } = {}):
   { ok: true; score: RunScore; actions: Action[] } | { ok: false; error: string; at?: number } {
   const max = opts.maxActions ?? 20000;
   const check = checkChallengeDeck(deck);
@@ -559,6 +564,7 @@ export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown, op
     }
     acc = foldRun(acc, state, a, r.state, r.events);
     state = r.state;
+    opts.onStep?.(i, state);
     if (state.phase === 'gameover') {
       return { ok: false, error: `action ${i}: the game ended before the goal was met`, at: i };
     }
