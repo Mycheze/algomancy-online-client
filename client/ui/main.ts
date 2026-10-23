@@ -2553,8 +2553,9 @@ function counterStepperHtml(dec: Decision): string {
  * ⚠ WHY IT DID NOT, AND WHY THE FIX IS SHAPED LIKE THIS. A variable cost is
  * not a number question. `E.collectCastCosts` loops, and every turn of the
  * loop raises a fresh `kind: 'targets'` decision offering ONE option — "Pay 1
- * more life" — plus CR 702.6b's "That's enough — X = n". Each answer is charged on
- * the spot and cannot be taken back short of cancelling the cast, which is
+ * more life" — plus CR 702.6b's "That's enough — X = n". Each answer is committed on
+ * the spot (a life point is counted into X then, and the X life is lost as one
+ * change when X closes — report 273) and cannot be taken back short of cancelling the cast, which is
  * exactly what the owner had to do. `castCostOptions` cannot collapse the loop
  * either: it is what re-asks CR 111.6b ("never your last life") before every single
  * point, and CR 705.3b gives `payMana` the same shape for the same reason.
@@ -2568,7 +2569,7 @@ function counterStepperHtml(dec: Decision): string {
  *
  * The dial reads the TOTAL X, floored at what is already paid: down is free
  * because nothing is spent until Confirm, and the floor is honest because a
- * paid point is gone. That is the "and had to hit cancel" half — an overshoot
+ * committed point cannot come back. That is the "and had to hit cancel" half — an overshoot
  * is no longer reachable, because the number is read before it is spent
  * (CR D7.2, which every other stepper in this file already carries).
  *
@@ -2629,8 +2630,10 @@ function costRamp(dec: Decision | null | undefined): CostRampView {
   // private to the engine, so a ramp aimed past it simply stops early when the
   // "pay one more" option is no longer offered. Both directions are safe
   // because the run's real terminator is the option's absence, never this.
+  // Report 273: the chosen life points are not lost until X closes (one life
+  // change of X), so the total still holds them — take them off the room here.
   const room = row.unit === 'life'
-    ? Math.max(0, h.state.players[dec.seat]!.life - 1)
+    ? Math.max(0, h.state.players[dec.seat]!.life - 1 - done)
     : Math.max(0, q().openMana(dec.seat));
   return {
     active: true, seat: dec.seat,
