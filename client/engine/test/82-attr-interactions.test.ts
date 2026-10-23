@@ -98,6 +98,29 @@ function dealAllFrom(
   return g.events;
 }
 
+/**
+ * Deal effect damage from a SPELL: the source is a card with no entity in
+ * play, so the engine judges it by the printed card's attributes
+ * (effectSourceAttrs' fallback), exactly as a resolving spell is judged.
+ */
+function dealFromSpell(h: Harness, controller: Seat, spell: string, targetId: EntityId, n: number): void {
+  const g = new E(h.state);
+  g.dealEffectDamageAll(
+    {
+      controller, sourceName: spell, region: g.homeRegion(controller),
+      targets: [], event: null,
+      eraseSelf: () => {},
+      choose: (_k, dec) => {
+        if (dec.kind === 'assignDamage') return 'default';
+        throw new Error('no choice expected');
+      },
+    },
+    [{ target: g.entity(targetId)!, n }]);
+  g.settle();
+  h.state = g.s;
+  absorb(h, g.events);
+}
+
 /** the 'damage' events of a batch, split by what they landed on */
 function damageTo(evs: EngineEvent[]): {
   units: { unit: EntityId; n: number; total: number }[];
@@ -262,9 +285,16 @@ test('Blessed: an effect hit gains its controller that much life, before the let
 });
 
 test('Reaping: a kill by effect damage draws its controller a card', () => {
-  const { h, A, src, tgt } = duel(7208, 'Flame of History', 'Unit Token');
+  // Flame of History is the pool's {Reaping} source, and it is a SPELL. This
+  // test used to spawn it as a unit body to deal from; since CT-244 (spells
+  // print no stats, zeroed at extraction) that body is a 0/0 and dies on
+  // arrival, so the damage is dealt from the spell itself — no entity in play.
+  const h = new Harness(7208);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const tgt = spawn(h, (1 - A) as Seat, 'Unit Token');
   const before = h.state.players[A]!.hand.length;
-  dealFrom(h, A, src, tgt, 3);
+  dealFromSpell(h, A, 'Flame of History', tgt, 3);
   assert.equal(ent(h, tgt), undefined);
   assert.equal(h.state.players[A]!.hand.length, before + 1,
     '{Reaping} pays out on a kill however the damage was dealt');

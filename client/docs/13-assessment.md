@@ -109,9 +109,12 @@ Gated promises — the hard 316 — across the last four rounds:
 | 27 | 278 / 316 | 38  | +14  | a whole round, eighteen agents |
 | 29 | 279 / 316 | 37  | +1   | nothing aimed at it — the erased-pile fix moved one in passing |
 
-The remaining **34 claims across 33 cards** are named individually in
+The remaining **33 claims across 32 cards** are named individually in
 `84-card-semantics`'s `UNREACHED` with the precondition each lacks:
-**BOARD 23 · CHOICE 5 · VOCAB 2 · EXTRACT 2 · REGION 1.**
+**BOARD 23 · CHOICE 5 · VOCAB 2 · EXTRACT 2.**
+
+> **REGION went 1 → 0 on 2026-10-22:** Bloated Manablub, its last entry, is
+> observed delivering "each opponent loses 3 life" after that round's engine work.
 
 > **BOARD went 25 → 23 on 2026-10-21:** Void Mandible and Cthyrian Rector now
 > sacrifice themselves as their trigger resolves (CT-264), and the drill sees it.

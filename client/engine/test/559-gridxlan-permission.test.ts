@@ -22,7 +22,7 @@ import { giveResources, spawn, toDeployment, unitsOf, withE } from './util.ts';
 type BinPlay = Extract<Action, { type: 'playFromBin' }>;
 const binPlays = (h: Harness, seat: Seat): BinPlay[] =>
   legalActions(h.state, seat).filter((a): a is BinPlay => a.type === 'playFromBin');
-const offered = (h: Harness, seat: Seat): string[] =>
+const binOffered = (h: Harness, seat: Seat): string[] =>
   binPlays(h, seat).map(a => h.state.players[seat]!.bin[a.binIndex]!);
 
 function setup(seed: number) {
@@ -44,7 +44,7 @@ test('CR 707.10: Gridxlan has no activated ability, and with an empty hand it of
   const { h, p, grid } = setup(55900);
   assert.ok(!legalActions(h.state, p).some(a => a.type === 'activateAbility' && a.entityId === grid),
     'no activateAbility is offered for it');
-  const o = offered(h, p);
+  const o = binOffered(h, p);
   assert.ok(o.includes('Curio Drifter'), 'a vanilla unit is offered');
   assert.ok(o.includes('Ignis Sprite'), '"one unit" is any unit — a unit with abilities is offered too');
   assert.ok(!o.includes('Channeled Boon'), 'a spell is not a unit');
@@ -82,7 +82,7 @@ test('CR 707.10: as an augment mod, Gridxlan grants the permission to its host c
   h.state.players[p]!.hand.length = 0;
   h.state.players[p]!.bin.push('Curio Drifter');
   giveResources(h, p, 'water', 1);
-  assert.deepEqual(offered(h, p), ['Curio Drifter'], 'the donated [Augment] box grants it from the host');
+  assert.deepEqual(binOffered(h, p), ['Curio Drifter'], 'the donated [Augment] box grants it from the host');
 });
 
 test('CR 707.10: with a Bonesculptor and a Gridxlan up, a vanilla spends the narrower grant first', () => {
@@ -90,7 +90,7 @@ test('CR 707.10: with a Bonesculptor and a Gridxlan up, a vanilla spends the nar
   spawn(h, p, 'The Bonesculptor');
   // the vanilla is reachable by both grants; Ignis Sprite only by Gridxlan's
   h.do(binPlays(h, p).find(a => h.state.players[p]!.bin[a.binIndex] === 'Curio Drifter')!);
-  assert.deepEqual(offered(h, p), ['Ignis Sprite'],
+  assert.deepEqual(binOffered(h, p), ['Ignis Sprite'],
     'the Drifter was charged to The Bonesculptor, so Gridxlan can still play the unit only it reaches');
   h.do(binPlays(h, p)[0]!);
   assert.deepEqual(binPlays(h, p), [], 'and then both grants are spent');

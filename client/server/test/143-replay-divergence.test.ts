@@ -55,7 +55,12 @@ import { analyze, reportLines, type RoomFile } from '../replay-room.ts';
 // cascade test needs the corrupted answer to WEDGE the rest of the log, and
 // plenty of seeds reach one without wedging — so `orderingLog` now checks the
 // wedge itself and skips a seed that has drifted out of it.
-const SEEDS = [12, 17, 38, 45, 60, 77, 79, 83, 103, 107];
+// Drifted out again by the 2026-10-22 engine round (none of 12, 17, 38, 45,
+// 60, 77, 79, 83, 103, 107 wedged any more). Rather than re-pin a third list,
+// the helper now SEARCHES: these seeds first (re-found 2026-10-23), then
+// every seed up to SEARCH_TO, so the next drift costs time, not a red suite.
+const SEEDS = [3, 41, 48, 75, 81, 97];
+const SEARCH_TO = 300;
 
 interface OrderingLog { seed: number; actions: Action[]; at: number }
 let cached: OrderingLog | null = null;
@@ -63,7 +68,8 @@ let cached: OrderingLog | null = null;
 /** A complete, faithful game log with a trigger-ORDERING answer inside it. */
 function orderingLog(): OrderingLog {
   if (cached) return cached;
-  for (const seed of SEEDS) {
+  const order = [...SEEDS, ...Array.from({ length: SEARCH_TO }, (_, i) => i + 1).filter(n => !SEEDS.includes(n))];
+  for (const seed of order) {
     const r = fuzzGame(seed, 2500);
     const at = r.actions.findIndex(a => a.type === 'decide' && Array.isArray(a.choice));
     if (at < 0) continue;
@@ -73,7 +79,7 @@ function orderingLog(): OrderingLog {
     return (cached = { seed, actions: r.actions, at });
   }
   throw new Error(
-    `none of the seeds ${SEEDS.join(', ')} still reaches an orderTriggers decision that wedges when corrupted — `
+    `no fuzz seed from 1 to ${SEARCH_TO} still reaches an orderTriggers decision that wedges when corrupted — `
     + 'find a fresh one (scan fuzzGame logs for a `decide` whose choice is an array) '
     + 'rather than deleting this file: the answers it pins are still live',
   );
