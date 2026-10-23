@@ -241,11 +241,13 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1353859961855148103#5 · Example test: 17-earth-b.test.ts::CR 111.14: all or nothing — one card in hand cannot pay a doubled [Discard a card] · Key: concepts.golden.as-much-as-possible.costs</sub>
 
-<a id="r101.6"></a>**101.6.** Every effect is specific to the region it happens in. It never affects anything in another region, and it treats the players and cards in other regions as if they do not exist. A card that says "all" or "each" means all or each in this region. See rule 601. *(Engine differs, see F-U01-2.)*
+<a id="r101.6"></a>**101.6.** Every effect is specific to the region it happens in. It never affects anything in another region, and it treats the players and cards in other regions as if they do not exist. A card that says "all" or "each" means all or each in this region. See rule 601.
 
 > *Example: Cosmic Reversal, cast in one region, leaves a spell unit in another region alone.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 2 gate test files · Printed: Rulebook 2023 p.8; Manual p.19; Manual p.19; Manual p.42 · Designer: RAQ 1454169054402314362#0 · Owner ruling, adopted 2026-08-29 (quoted from the retired ruling register) · Example test: 229-cosmic-and-control.test.ts::CR 601.1c: the board half is scoped to the region · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::CR 601.4e no ally or enemy slot · Key: concepts.golden.regions</sub>
+> *Example: Molten Riftbreaker dies in its controller's home region while a battle goes on elsewhere. Its "negate all allied spells" does not reach the spell on the battle region's stack.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Rulebook 2023 p.8; Manual p.19; Manual p.19; Manual p.42 · Designer: RAQ 1454169054402314362#0 · Owner ruling, adopted 2026-08-29 (quoted from the retired ruling register) · Tests: 578-region-stacks-and-bins.test.ts · Example tests: 229-cosmic-and-control.test.ts::CR 601.1c: the board half is scoped to the region, 578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack · Demonstrated by test: 243-ally-and-enemy-scope.test.ts::CR 601.4e no ally or enemy slot · Key: concepts.golden.regions</sub>
 
 <sub>Discrepancies: D-U01-12 (discrepancies.md)</sub>
 
@@ -280,13 +282,17 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.19 · Tests: 412-cr-general.test.ts · Example test: 15-water-b.test.ts::Recall: each player recalls a unit and loses 2 life · Key: concepts.players.each-player</sub>
 
-<a id="r102.4"></a>**102.4.** A card's owner is the player whose card it is. A card's owner never changes, whoever controls it and whatever zone it goes to. See rules 400.4a, 400.4c. *(Engine differs, see F-U01-1.)*
+<a id="r102.4"></a>**102.4.** A card's owner is the player whose card it is. Taking control of a card does not change its owner, and neither does moving it into or out of a player's hand, bin or cache, even another player's. A card that goes into a shared zone (a draft pack, a deck or the recycle pile) leaves its ownership behind there: whoever next takes it out owns it. See rules 400.4a, 400.4c. *(Engine differs, see F-U01-6.)*
 
 > *Example: A unit whose control has been taken is recalled: the player it was stolen from is still the card's owner.*
 
 > *Example: The same recalled unit goes to the hand of the player who controls it, not its owner's hand.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-29, 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Example tests: 246-zones-follow-control.test.ts::CR 400.4a: ownership does NOT move, 246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand · Key: concepts.players.owner</sub>
+> *Example: A stolen unit is recalled to the hand of the player who stole it and played again from there. Its owner is still the player it was stolen from.*
+
+> *Example: A stolen card in the thief's hand is recycled. Its ownership stays behind in the recycle pile, and the player who next takes it out owns it.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), 1 failed; 2 gate test files · Tests: 551-ownership-survives-own-zones.test.ts · Example tests: 246-zones-follow-control.test.ts::CR 400.4a: ownership does NOT move, 246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand, 551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a stolen card recalled to the thief hand and played again is still its owner card, 551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a shared zone resets ownership · Key: concepts.players.owner</sub>
 
 <sub>Discrepancies: D-U01-10 (discrepancies.md)</sub>
 
@@ -302,11 +308,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Uglk · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Example test: 93-engine-defects.test.ts::Uglk hands an opponent CONTROL of a unit without handing over the card · Key: concepts.players.controller</sub>
 
-<a id="r102.5a"></a>**102.5a** Putting a card into play out of another player's zone makes you its controller, not its owner. See rule 400.4.
+<a id="r102.5a"></a>**102.5a** A player who plays a card, or puts it into play, out of another player's zone becomes its controller, not its owner. See rule 400.4.
 
-> *Example: Wake the Dead raising a unit out of the opponent's bin: the caster controls it, and the opponent still owns it.*
+> *Example: Wake the Dead playing a unit out of the opponent's bin: the caster controls it, and the opponent still owns it.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Wake the Dead · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Example test: 93-engine-defects.test.ts::Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership · Key: concepts.players.controller.from-other-zone</sub>
+> *Example: The unit Wake the Dead plays out of the opponent's bin is still the opponent's card once it is in play.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Wake the Dead · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 557-wake-the-dead-plays-on-the-stack.test.ts · Example tests: 93-engine-defects.test.ts::Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership, 557-wake-the-dead-plays-on-the-stack.test.ts::CR 102.5a / CT-245: a unit Wake the Dead plays out of the opponent bin is still the opponent card · Key: concepts.players.controller.from-other-zone</sub>
 
 <a id="r102.6"></a>**102.6.** "You" on a card means the controller of the effect. An instruction that names no player (such as "Gain rot") is done by the controller of the effect. See rule 102.5.
 
@@ -690,9 +698,9 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Tests: 21-fixes.test.ts, 413-cr-elements-resources.test.ts · Example tests: 21-fixes.test.ts::CR 106.8: spending a Prismite into your 3rd element copy DOES grant the shard — "then activate it", 21-fixes.test.ts::CR 106.8: a Prismite spent into your SECOND copy pays nothing — the p.18 bar is three · Key: concepts.resources.prismite.exchange.activation</sub>
 
-<a id="r106.8d"></a>**106.8d** A Prismite may be exchanged for any non-Prismite resource: an element resource of one of the game's elements, or a Shard. It cannot be exchanged for another Prismite. *(Engine differs, see F-U02-3.)*
+<a id="r106.8d"></a>**106.8d** A Prismite may be exchanged for any non-Prismite resource: an element resource of one of the game's elements, or a Shard. It cannot be exchanged for another Prismite.
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.18; Manual p.18 · Owner ruling, adopted 2026-08-24, 2026-09-19 (quoted from the retired ruling register) · Tests: 308-recycle-for-prismite.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by test: 308-recycle-for-prismite.test.ts::CR 106.8d what stays illegal: exchanging a Prismite into a Prismite or a Shard · Key: concepts.resources.prismite.exchange.element-only</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Printed: Manual p.18; Manual p.18 · Owner ruling, adopted 2026-08-24, 2026-09-19 (quoted from the retired ruling register) · Tests: 308-recycle-for-prismite.test.ts, 413-cr-elements-resources.test.ts · Demonstrated by test: 308-recycle-for-prismite.test.ts::CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite · Key: concepts.resources.prismite.exchange.element-only</sub>
 
 <sub>Discrepancies: D-U02-8 (discrepancies.md)</sub>
 
@@ -1248,9 +1256,13 @@ order.
 
 <sub>Discrepancies: D-U03-5 (discrepancies.md)</sub>
 
-<a id="r110.5a"></a>**110.5a** An effect on the stack can be targeted only by an effect in its own region, since each region has its own stack (rule 601.2a). A card in a player's bin can be targeted only by an effect that resolves in a region where that player is present. See rules 405, 406. *(Engine differs, see F-U01-2.)*
+<a id="r110.5a"></a>**110.5a** An effect on the stack can be targeted only by an effect in its own region, since each region has its own stack (rule 601.2a). A card in a player's bin can be targeted only by an effect that resolves in a region where that player is present. See rules 405, 406.
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; no gate test · Printed: Manual p.19; Manual p.19; Manual p.19 · Designer: RAQ 1454169054402314362#0 · Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Key: concepts.targets.region.global</sub>
+> *Example: A spell on the battle region's stack and the cards in a bin are offered as targets only where they are: the spell only to an effect in the battle region, a player's bin only where that player is present.*
+
+> *Example: In deployment, an effect that targets a card in a bin can reach only the bin of the player deploying there.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.19; Manual p.19; Manual p.19 · Designer: RAQ 1454169054402314362#0 · Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Tests: 578-region-stacks-and-bins.test.ts, 414-cr-cards-abilities-targets.test.ts · Example tests: 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.region.global — a stack item and the cards in a bin are offered only in a region where they are, 578-region-stacks-and-bins.test.ts::CR 403.6 / CT-234: in deployment a bin card target reaches only the bin of the player present · Key: concepts.targets.region.global</sub>
 
 <a id="r110.5b"></a>**110.5b** A player's cache, and a player as a target, can be targeted only by an effect that resolves in a region where that player is present. See rule 403.
 
@@ -1326,15 +1338,19 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355115946032889914#4 · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 393-raq-mods.test.ts, 17-earth-b.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 point 5 · Key: concepts.targets.applying-mods</sub>
 
-<a id="r110.10a"></a>**110.10a** A Virus being applied is an effect on the stack that targets its host. It can be redirected, and an effect that answers "target effect targeting me" or an effect targeting an ally can answer it. See rule 723.
+<a id="r110.10a"></a>**110.10a** A Virus being applied is an effect on the stack that targets its host. It can be redirected, an effect that answers "target effect targeting me" or an effect targeting an ally can answer it, and a unit that must be targeted if able (rule 110.12) compels it like any other targeted effect. See rule 723.
 
 > *Example: Graxxlid ("Negate target effect targeting me") can negate a Virus being applied to it.*
 
 > *Example: Boon of Protection can negate a Virus being applied to an allied unit.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 16-earth-a.test.ts, 23-wood-a.test.ts · Example tests: 16-earth-a.test.ts::Graxxlid: a Virus being applied to me IS an effect targeting me, 23-wood-a.test.ts::Boon of Protection: a Virus being applied to an allied unit IS an allied target · Key: concepts.targets.applying-mods.virus</sub>
+> *Example: With a Gatekeeper of Souls in the battle, a Virus can be applied only to the Gatekeeper.*
 
-<a id="r110.11"></a>**110.11.** An ability that triggers "when I become targeted" triggers whenever its unit is targeted, by a spell, an ability, an augment, a graft or a Virus. When the effect that targeted is put on the stack, the trigger goes on the stack above it and so resolves first. When a graft targets the unit, the unit triggers first, before the graft is applied. *(Engine differs, see F-U03-5.)*
+> *Example: A Virus that Tides of the Cosmos plays goes onto the Gatekeeper of Souls in the battle.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 4 gate test files · Tests: 16-earth-a.test.ts, 23-wood-a.test.ts, 545-virus-gatekeeper.test.ts, 577-tides-virus-gatekeeper.test.ts · Example tests: 16-earth-a.test.ts::Graxxlid: a Virus being applied to me IS an effect targeting me, 23-wood-a.test.ts::Boon of Protection: a Virus being applied to an allied unit IS an allied target, 545-virus-gatekeeper.test.ts::CR 110.12 / CT-331: with a Gatekeeper of Souls in the battle, a Virus may be applied only to it, 577-tides-virus-gatekeeper.test.ts::CR 110.12 / CT-331: a Virus played by Tides of the Cosmos goes onto the Gatekeeper of Souls in the battle · Key: concepts.targets.applying-mods.virus</sub>
+
+<a id="r110.11"></a>**110.11.** An ability that triggers "when I become targeted" triggers whenever its unit is targeted, by a spell, an ability, an augment, a graft or a Virus. When the effect that targeted is put on the stack, the trigger goes on the stack above it and so resolves first. When a graft targets the unit, or an augment is applied to it in deployment, the trigger resolves first, and only then is the mod attached.
 
 > *Example: Mohruung targeted by an augment makes a Crystal 2.*
 
@@ -1342,15 +1358,23 @@ order.
 
 > *Example: A spell aimed at Mohruung waits on the stack under Mohruung's trigger, so the Crystal 2 is made before the spell resolves.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 3; verifier ran 5 tests (2 probes it wrote), all passed; 4 gate test files · Printed: card: Mohruung · Designer: RAQ 1355115946032889914#4 · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 48-playtest-hotfix.test.ts, 17-earth-b.test.ts, 393-raq-mods.test.ts, 414-cr-cards-abilities-targets.test.ts · Example tests: 17-earth-b.test.ts::Mohruung: augment-targeting triggers a Crystal 2, 393-raq-mods.test.ts::RAQ Graft 101 point 5, 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on the stack ABOVE the spell that targeted it, and the Crystal is made while the spell still waits · Demonstrated by test: 48-playtest-hotfix.test.ts::a spell aimed at Mohruung actually creates the Crystal 2 · Key: concepts.targets.becomes-targeted</sub>
+> *Example: A graft applied to Mohruung: the Crystal 2 is made first, and the graft attaches after.*
+
+> *Example: An augment applied to Mohruung in deployment: the Crystal 2 is made first, then the augment attaches.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 8 tests (2 probes it wrote), all passed; 6 gate test files · Printed: card: Mohruung · Designer: RAQ 1355115946032889914#4 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 48-playtest-hotfix.test.ts, 17-earth-b.test.ts, 393-raq-mods.test.ts, 414-cr-cards-abilities-targets.test.ts, 547-graft-after-targeted-trigger.test.ts, 576-augment-after-targeted-trigger.test.ts · Example tests: 17-earth-b.test.ts::Mohruung: augment-targeting triggers a Crystal 2, 393-raq-mods.test.ts::RAQ Graft 101 point 5, 414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on the stack ABOVE the spell that targeted it, and the Crystal is made while the spell still waits, 547-graft-after-targeted-trigger.test.ts::CR 110.11 / CT-242: grafting onto Mohruung resolves his trigger before the graft attaches, 576-augment-after-targeted-trigger.test.ts::CR 110.11 / D-U03-14: an augment onto Mohruung in deployment — the Crystal first, then the augment · Demonstrated by test: 48-playtest-hotfix.test.ts::a spell aimed at Mohruung actually creates the Crystal 2 · Key: concepts.targets.becomes-targeted</sub>
 
 <sub>Discrepancies: D-U03-13 (discrepancies.md)</sub>
 
-<a id="r110.12"></a>**110.12.** A unit that "must be targeted if able" (Gatekeeper of Souls) must be one of the targets of an effect whose targets are selected during battle, when it can legally be one. Once it is among the targets, the effect's other targets may be anything legal. *(Engine differs, see F-U03-2.)*
+<a id="r110.12"></a>**110.12.** A unit that "must be targeted if able" (Gatekeeper of Souls) must be one of the targets of an effect whose targets are selected during a battle in its region, when it can legally be one. Outside battle, or while the battle is in another region, it compels nothing. Once it is among the targets, the effect's other targets may be anything legal.
 
 > *Example: Twin Flame aims at Gatekeeper of Souls first, then at any other unit.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: card: Gatekeeper of Souls · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 382-gatekeeper-multi-target.test.ts · Example test: 382-gatekeeper-multi-target.test.ts::CR 110.12: a two-target spell aims at the Gatekeeper first · Key: concepts.targets.must-be-targeted</sub>
+> *Example: In deployment, a player with a Gatekeeper of Souls in play may aim an Overbloom at another unit.*
+
+> *Example: During a battle in another region, a Gatekeeper of Souls at home compels nothing.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Gatekeeper of Souls · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 382-gatekeeper-multi-target.test.ts, 544-gatekeeper-battle-only.test.ts · Example tests: 382-gatekeeper-multi-target.test.ts::CR 110.12: a two-target spell aims at the Gatekeeper first, 544-gatekeeper-battle-only.test.ts::CR 110.12 / CT-239: in deployment a Gatekeeper of Souls compels nothing, 544-gatekeeper-battle-only.test.ts::CR 110.12 / CT-239: during battle a Gatekeeper outside the battle region compels nothing · Key: concepts.targets.must-be-targeted</sub>
 
 <a id="r110.12a"></a>**110.12a** With two such units in the region, each must be targeted if able: a two-target effect must target both.
 
@@ -1497,13 +1521,17 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; no gate test · Key: concepts.costs.modifiers.floor-zero</sub>
 
-<a id="r111.10c"></a>**111.10c** A cost modifier applies to what its text names. One that names "spells" applies to every spell played, spell units and spell tokens included. One that names "cards" applies to every card played, units included, and not to spell tokens, which are not cards. Neither applies to applying a mod, which is not playing a card. See rules 701.1c, 701.2b, 111.10e. *(Engine differs, see F-U04-2.)*
+<a id="r111.10c"></a>**111.10c** A cost modifier applies to what its text names. One that names "spells" applies to every spell played, spell units and spell tokens included. One that names "cards" applies to every card played, units included, and not to spell tokens, which are not cards. Neither applies to applying a mod, which is not playing a card. See rules 701.1c, 701.2b, 111.10e.
 
-> *Example: Tranquility ("Spells cost [one] more") taxes a Fireball token cast in battle.*
+> *Example: Tranquility ("Spells cost [one] more") taxes a spell token cast in battle.*
 
 > *Example: Arbiter of Armistice ("Cards played during battle gain [Pay 2 life]") takes no life for a spell token.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 6 tests (3 probes it wrote), all passed; 3 gate test files · Designer: RAQ 1537748882501668934#0 · Owner ruling, adopted 2026-08-24, 2026-09-28 (quoted from the retired ruling register) · Tests: 337-spell-tokens-are-played.test.ts, 38-light-a.test.ts, 415-cr-costs-life-timestamps.test.ts · Example tests: 337-spell-tokens-are-played.test.ts::CR 702.7a: Tranquility taxes a spell token [1] in battle, 337-spell-tokens-are-played.test.ts::CR 701.1c: Arbiter of Armistice prints Cards, so a token cast pays no life · Key: concepts.costs.modifiers.noun</sub>
+> *Example: A card played as an Ambush under Arbiter of Armistice pays the "cards played" tax.*
+
+> *Example: Tranquility ("Spells cost [one] more") taxes a spell unit played in battle, and not a plain unit.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 4 gate test files · Designer: RAQ 1537748882501668934#0; RAQ 1461450216874967235#2 · Owner ruling, adopted 2026-08-24, 2026-09-28 (quoted from the retired ruling register) · Tests: 337-spell-tokens-are-played.test.ts, 38-light-a.test.ts, 415-cr-costs-life-timestamps.test.ts, 548-ambush-imposed-costs.test.ts · Example tests: 337-spell-tokens-are-played.test.ts::CR 702.7a: Tranquility taxes a spell token [1] in battle, 337-spell-tokens-are-played.test.ts::CR 701.1c: Arbiter of Armistice prints Cards, so a token cast pays no life, 548-ambush-imposed-costs.test.ts::CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life, 415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.modifiers.noun — Tranquility ("Spells cost [one] more") taxes a spell unit played in battle, not a plain unit · Key: concepts.costs.modifiers.noun</sub>
 
 <a id="r111.10d"></a>**111.10d** A cost modifier may give cards an additional cost ("Cards played during battle gain [Pay 2 life]"). The player who plays the card pays it, with the card's other costs, before the card is put on the stack. If it requires a sacrifice, that player chooses the unit from their own units. A card whose imposed cost cannot be paid cannot be played.
 
@@ -1513,9 +1541,15 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Arbiter of Armistice; card: Vengeance · Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Tests: 45-hybrids-ld-b.test.ts, 38-light-a.test.ts · Example tests: 45-hybrids-ld-b.test.ts::Vengeance: opponents' battle cards gain '[Sacrifice a unit]' — the payer picks, off a menu of THEIR units only, 38-light-a.test.ts::Arbiter of Armistice: an unpayable life tax makes the card uncastable · Key: concepts.costs.modifiers.imposed</sub>
 
-<a id="r111.10e"></a>**111.10e** A card played as an Ambush is a card played. During battle, an imposed cost on "cards played" applies to it. See rule 803. *(Engine differs, see F-U04-2.)*
+<a id="r111.10e"></a>**111.10e** A card played as an Ambush is a card played. During battle, an imposed cost on "cards played" applies to it: it pays the life, makes the sacrifice, and cannot be played if it cannot pay. See rule 803.
 
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; no gate test · Printed: card: Arbiter of Armistice · Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Key: concepts.costs.modifiers.imposed.ambush</sub>
+> *Example: An Ambush played under Arbiter of Armistice ("Cards played during battle gain [Pay 2 life]") pays the 2 life.*
+
+> *Example: An Ambush that cannot pay the imposed life is not offered.*
+
+> *Example: An Ambush played under an opposing Vengeance owes the sacrifice, chosen by its player before it reaches the stack.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: Arbiter of Armistice · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Tests: 548-ambush-imposed-costs.test.ts · Example tests: 548-ambush-imposed-costs.test.ts::CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life, 548-ambush-imposed-costs.test.ts::CR 111.10d / CT-243: an Ambush that cannot pay the imposed life is not offered, and apply refuses it, 548-ambush-imposed-costs.test.ts::CR 111.10e / CT-243: an Ambush under an opposing Vengeance owes the sacrifice · Key: concepts.costs.modifiers.imposed.ambush</sub>
 
 <sub>Discrepancies: D-U04-4 (discrepancies.md)</sub>
 
@@ -1774,7 +1808,11 @@ order.
 
 > *Example: Hyper Beam negated by Dematerialize deals no damage, and the debt its caster gained to play it stays.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Deferral Drone · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 47-costs-events.test.ts, 44-hybrids-ld-a.test.ts, 415-cr-costs-life-timestamps.test.ts · Example test: 415-cr-costs-life-timestamps.test.ts::cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no damage, and the debt gained to play it stays · Demonstrated by test: 47-costs-events.test.ts::CR 112.14c: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt · Key: concepts.debt.as-cost</sub>
+> *Example: A spell with a [Gain N debt] cost that an effect plays in place still gains the debt.*
+
+> *Example: Tides of the Cosmos plays Hyper Beam in a battle window: its caster gains the 4 debt.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 4 gate test files · Printed: card: Deferral Drone · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 47-costs-events.test.ts, 44-hybrids-ld-a.test.ts, 415-cr-costs-life-timestamps.test.ts, 556-inline-play-is-a-whole-play.test.ts · Example tests: 415-cr-costs-life-timestamps.test.ts::cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no damage, and the debt gained to play it stays, 556-inline-play-is-a-whole-play.test.ts::CR 112.14c / CT-332: a [Gain N debt] spell played in place gains the debt, 556-inline-play-is-a-whole-play.test.ts::CR 702.4e / CT-332: Tides of the Cosmos playing Hyper Beam in a battle window gains the debt · Demonstrated by test: 47-costs-events.test.ts::CR 112.14c: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt · Key: concepts.debt.as-cost</sub>
 
 <a id="r112.15"></a>**112.15.** Rot and debt are counters on players. An effect that removes counters from players removes them. An effect that changes the number of counters "put on" a player does not change how many are removed.
 
@@ -2090,11 +2128,15 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13; Manual p.12; Rulebook 2023 p.10 · Tests: 416-cr-parts-of-a-card.test.ts · Example test: 416-cr-parts-of-a-card.test.ts::cr:card.stats.what — an unblocked 4/3 deals 4 combat damage; a 7/5 survives 4 damage and dies at its fifth · Key: card.stats.what</sub>
 
-<a id="r206.2"></a>**206.2.** Stats mark a card as a unit. Spell units also have stats, and enter play as units with them when they resolve. See rules 301, 303.
+<a id="r206.2"></a>**206.2.** Stats mark a card as a unit. A spell has no stats, and neither does a spell token. Spell units do have stats, and enter play as units with them when they resolve. See rules 301, 303.
 
 > *Example: Lonely Forager, a Spell Unit, resolves into play as a 3/1 unit; Resurrect, a plain spell, goes to the bin.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Rulebook 2023 p.3; Rulebook 2023 p.3 · Tests: 416-cr-parts-of-a-card.test.ts · Example test: 416-cr-parts-of-a-card.test.ts::cr:card.stats.units — Lonely Forager, a Spell Unit, resolves into play as a 3/1 unit, while a plain spell resolves into the bin · Key: card.stats.units</sub>
+> *Example: No spell in the card pool carries a power or a defense.*
+
+> *Example: A Fireball spell token carries no stats.*
+
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Rulebook 2023 p.3; Rulebook 2023 p.3 · Tests: 416-cr-parts-of-a-card.test.ts, 565-spells-print-no-stats.test.ts, 567-stats-only-where-printed.test.ts · Example tests: 416-cr-parts-of-a-card.test.ts::cr:card.stats.units — Lonely Forager, a Spell Unit, resolves into play as a 3/1 unit, while a plain spell resolves into the bin, 565-spells-print-no-stats.test.ts::CR 206.2 / CT-244: no spell in the engine pool or the catalogue carries power or toughness, 567-stats-only-where-printed.test.ts::CR 206.2 / CT-244: spell tokens carry no stats in the pool or the catalogue · Key: card.stats.units</sub>
 
 <sub>Discrepancies: D-U05-8 (discrepancies.md)</sub>
 
@@ -2405,7 +2447,9 @@ order.
 
 > *Example: The units Wake the Dead plays out of a bin are played: Bloomcaster and Stalwart Sentinel both see them.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Tests: 11-fire-wood.test.ts, 139-spawn-and-play.test.ts, 417-cr-card-types.test.ts · Example tests: 11-fire-wood.test.ts::Bloomcaster: PLAYING a unit makes a 1/1, 139-spawn-and-play.test.ts::Wake the Dead: the units it plays out of a bin are PLAYED · Key: types.units.put-vs-play</sub>
+> *Example: The unit Gridxlan lets its player play from the bin is played: it is paid for, and only one is allowed each deployment.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 4 gate test files · Tests: 11-fire-wood.test.ts, 139-spawn-and-play.test.ts, 417-cr-card-types.test.ts, 559-gridxlan-permission.test.ts · Example tests: 11-fire-wood.test.ts::Bloomcaster: PLAYING a unit makes a 1/1, 139-spawn-and-play.test.ts::Wake the Dead: the units it plays out of a bin are PLAYED, 559-gridxlan-permission.test.ts::CR 707.10 / CR 301.9: the unit Gridxlan lets you play is PLAYED, paid for, and only one per deployment · Key: types.units.put-vs-play</sub>
 
 <a id="r302"></a>
 ### 302. Spells
@@ -2453,7 +2497,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.13; Manual p.13; Manual p.43 · Designer: RAQ 1461450216874967235#1 · Tests: 396-raq-timing.test.ts, 05-rulings.test.ts · Example test: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: negated, the unit does not enter play · Demonstrated by tests: 05-rulings.test.ts::a fizzled spell unit never spawns, 396-raq-timing.test.ts::RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind · Key: types.spell-units.prevented</sub>
 
-<a id="r303.5"></a>**303.5.** Playing a spell unit is playing a spell, and while it is on the stack it is a spell: anything that refers to a spell, or to an allied spell, applies to it. See rules 300.5a, 701. *(Engine differs, see F-U06-1.)*
+<a id="r303.5"></a>**303.5.** Playing a spell unit is playing a spell, and while it is on the stack it is a spell: anything that refers to a spell, or to an allied spell, applies to it. See rules 300.5a, 701.
 
 > *Example: A spell unit played through Hooba-Pon counts as playing a spell.*
 
@@ -2461,15 +2505,19 @@ order.
 
 > *Example: If Molten Riftbreaker despawns while an allied spell unit is on the stack, its "negate all allied spells" negates that spell unit.*
 
-<sub>Basis: Designer · Verified: partial in round 4; verifier ran 5 tests (2 probes it wrote), all passed; 1 gate test file · Designer: RAQ 1461450216874967235#2; RAQ 1461450216874967235#3; RAQ 1461450216874967235#4 · Tests: 396-raq-timing.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell, 396-raq-timing.test.ts::Origon negates it as the first spell, 396-raq-timing.test.ts::Molten Riftbreaker dying negates it as an allied spell · Key: types.spell-units.is-a-spell</sub>
+> *Example: A Jelly that Wake the Dead plays from a bin is played as a spell: its spell is cast, and its body arrives only after it resolves.*
 
-<a id="r303.6"></a>**303.6.** A spell unit is also a unit card. An effect that lets a player play a unit lets them play a spell unit, and it is played as a spell. See rule 300.5b. *(Engine differs, see F-U06-1.)*
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Designer: RAQ 1461450216874967235#2; RAQ 1461450216874967235#3; RAQ 1461450216874967235#4 · Tests: 396-raq-timing.test.ts, 557-wake-the-dead-plays-on-the-stack.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell, 396-raq-timing.test.ts::Origon negates it as the first spell, 396-raq-timing.test.ts::Molten Riftbreaker dying negates it as an allied spell, 557-wake-the-dead-plays-on-the-stack.test.ts::CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives · Key: types.spell-units.is-a-spell</sub>
+
+<a id="r303.6"></a>**303.6.** A spell unit is also a unit card. An effect that lets a player play a unit lets them play a spell unit, and it is played as a spell. See rule 300.5b.
 
 > *Example: Hooba-Pon offers a spell unit from the hand; its spell part happens and its body takes the open position.*
 
 > *Example: Insidious Invitation's "play a unit from hand" lets each player play a spell unit.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Printed: card: Hooba-Pon · Designer: RAQ 1461450216874967235#0 · Tests: 110-literal-water.test.ts · Example tests: 110-literal-water.test.ts::Hooba-Pon: a SPELL UNIT is a unit, 110-literal-water.test.ts::lets each player play a SPELL UNIT · Key: types.spell-units.is-a-unit</sub>
+> *Example: A Jelly that Wake the Dead plays gets its spell part, then its unit body.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Hooba-Pon · Designer: RAQ 1461450216874967235#0 · Tests: 110-literal-water.test.ts, 417-cr-card-types.test.ts · Example tests: 110-literal-water.test.ts::Hooba-Pon: a SPELL UNIT is a unit, 110-literal-water.test.ts::lets each player play a SPELL UNIT, 417-cr-card-types.test.ts::cr:types.spell-units.is-a-unit — a Jelly that Wake the Dead plays gets its spell part and then its unit body · Key: types.spell-units.is-a-unit</sub>
 
 <a id="r303.7"></a>**303.7.** A spell unit played during battle enters play in the region where it resolved, outside of formation, unless its own text or the effect that played it places it in a formation. See rules 301.7, 602.
 
@@ -2483,11 +2531,11 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.43; Manual p.43 · Tests: 417-cr-card-types.test.ts · Example test: 417-cr-card-types.test.ts::cr:types.spell-units.not-played — Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play · Key: types.spell-units.not-played</sub>
 
-<a id="r303.9"></a>**303.9.** A spell unit that an effect lets a player play from somewhere other than the hand is still played: its spell effect happens, and the unit enters play only if the spell resolves. See rules 301.9, 701. *(Engine differs, see F-U06-1.)*
+<a id="r303.9"></a>**303.9.** A spell unit that an effect lets a player play from somewhere other than the hand is still played: its spell effect happens, and the unit enters play only if the spell resolves. See rules 301.9, 701.
 
 > *Example: A Jelly that Wake the Dead plays from a bin has its spell part happen, and its body enters play only if that spell resolves.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (2 probes it wrote), 1 failed; no gate test · Printed: Manual p.43 · Designer: RAQ 1461450216874967235#0; RAQ 1461450216874967235#2 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Key: types.spell-units.played-by-effect</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: Manual p.43 · Designer: RAQ 1461450216874967235#0; RAQ 1461450216874967235#2 · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 557-wake-the-dead-plays-on-the-stack.test.ts · Example test: 557-wake-the-dead-plays-on-the-stack.test.ts::CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives · Key: types.spell-units.played-by-effect</sub>
 
 <a id="r303.10"></a>**303.10.** If a spell unit's own text says that another player gains control of it, it enters play under that player's control. There is no moment when its caster controls it. Its owner does not change. See rules 102, 711.
 
@@ -2786,13 +2834,15 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.19 · Owner ruling, adopted 2026-08-29, 2026-08-30 (quoted from the retired ruling register) · Tests: 418-cr-zones.test.ts · Demonstrated by test: 418-cr-zones.test.ts::cr:zones.general.per-player — a card put in one player hand, cache, bin or erased pile leaves the other player four zones untouched · Key: zones.general.per-player</sub>
 
-<a id="r400.4"></a>**400.4.** A card that leaves play for a bin, a hand, a cache or an erased pile goes to that zone of the player who controlled it when it left play, not to its owner's. See rules 102, 711. *(Engine differs, see F-U07-7.)*
+<a id="r400.4"></a>**400.4.** A card that leaves play for a bin, a hand, a cache or an erased pile goes to that zone of the player who controlled it when it left play, not to its owner's. See rules 102, 711.
 
 > *Example: A unit stolen with a control-changing effect is recalled. It goes to the hand of the player who stole it.*
 
 > *Example: A stolen unit dies. It goes to its controller's bin, and its controller trashes it.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-29, 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 4 tests (2 probes it wrote), 1 failed; 2 gate test files · Tests: 246-zones-follow-control.test.ts, 229-cosmic-and-control.test.ts · Example tests: 246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand, not the owner, 229-cosmic-and-control.test.ts::CR 801.2e: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin · Key: zones.general.follow-control</sub>
+> *Example: A stolen unit is erased from play. It and its mods go to the erased pile of the player who stole it.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-29, 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 246-zones-follow-control.test.ts, 229-cosmic-and-control.test.ts · Example tests: 246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand, not the owner, 229-cosmic-and-control.test.ts::CR 801.2e: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin, 246-zones-follow-control.test.ts::CR 400.4 / CT-229: a stolen unit erased from play goes to the THIEF erased pile, with its mods · Key: zones.general.follow-control</sub>
 
 <sub>Discrepancies: D-U07-10, D-U07-4 (discrepancies.md)</sub>
 
@@ -2900,7 +2950,7 @@ order.
 
 <a id="r402.5"></a>**402.5.** Discarding a card moves it from its hand to the bin. Discarding is not playing the card: nothing goes on the stack. See rules 405, 701, 801.
 
-<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-21 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::discarding from hand trashes · Key: zones.hand.discard</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-21 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::discarding from hand trashes · Key: zones.hand.discard</sub>
 
 <a id="r402.6"></a>**402.6.** Card text that restricts playing a card "from your hand" restricts only the hand. The card may still be played from any other zone an effect allows.
 
@@ -3005,7 +3055,7 @@ order.
 
 > *Example: A negated Jelly, a spell unit played through Hooba-Pon, does not enter play.*
 
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.13; Manual p.13 · Tests: 396-raq-timing.test.ts, 418-cr-zones.test.ts · Example test: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: negated, the unit does not enter play · Key: zones.bin.entering.spell-unit-fails</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.13; Manual p.13 · Tests: 396-raq-timing.test.ts, 418-cr-zones.test.ts · Example test: 396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: negated, the unit does not enter play · Key: zones.bin.entering.spell-unit-fails</sub>
 
 <a id="r405.2b"></a>**405.2b** An ambushing unit whose ambush fails to resolve goes to the bin. See rule 803.
 
@@ -3029,11 +3079,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 15-water-b.test.ts · Example test: 15-water-b.test.ts::CR 405.4a: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash · Key: zones.bin.trash.inline-play</sub>
 
-<a id="r405.5"></a>**405.5.** An {Unstable} card that would enter a bin from an active zone is erased instead: it goes to the erased pile, not the bin. See 803. See rules 803, 713, 400.2a. *(Engine differs, see F-U07-6.)*
+<a id="r405.5"></a>**405.5.** An {Unstable} card that would enter a bin from an active zone is erased instead: it ends on the erased pile, not in the bin. One that dies in play is still trashed (rule 801.2h). See 803. See rules 803, 713, 400.2a.
 
 > *Example: A unit carrying a mod is {Unstable}. When it dies, it ends on the erased pile and is not left in the bin.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Abyssal Evocation · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 125-active-zone.test.ts, 224-mod-trash.test.ts, 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.bin.unstable — a modded unit that dies ends on the erased pile, not in the bin · Key: zones.bin.unstable</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Printed: card: Abyssal Evocation · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-24, 2026-08-25 (quoted from the retired ruling register) · Tests: 125-active-zone.test.ts, 224-mod-trash.test.ts, 418-cr-zones.test.ts · Example test: 418-cr-zones.test.ts::cr:zones.bin.unstable — a modded unit that dies ends on the erased pile, not in the bin · Key: zones.bin.unstable</sub>
 
 <sub>Discrepancies: D-U07-3 (discrepancies.md)</sub>
 
@@ -3104,7 +3154,7 @@ order.
 
 > *Example: A non-{Unstable} virus negated off the stack goes to the bin.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.3; Manual p.34; card: Cosmic Reversal · Owner ruling, adopted 2026-08-19, 2026-08-25 (quoted from the retired ruling register) · Tests: 125-active-zone.test.ts, 35-rot-debt-trash.test.ts · Example test: 125-active-zone.test.ts::CR 406.4 negative control: a NON-Unstable virus negated off the stack still BINS · Demonstrated by test: 35-rot-debt-trash.test.ts::CR 801.2b: a NEGATED spell is not trashed either · Key: zones.stack.leaving</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 7 tests, all passed; 2 gate test files · Printed: Rulebook 2023 p.3; Manual p.34; card: Cosmic Reversal · Owner ruling, adopted 2026-08-19, 2026-08-25 (quoted from the retired ruling register) · Tests: 125-active-zone.test.ts, 35-rot-debt-trash.test.ts · Example test: 125-active-zone.test.ts::CR 406.4 negative control: a NON-Unstable virus negated off the stack still BINS · Demonstrated by test: 35-rot-debt-trash.test.ts::CR 801.2b: a NEGATED spell is not trashed either · Key: zones.stack.leaving</sub>
 
 <a id="r406.4a"></a>**406.4a** A spell whose text says "Erase me" goes to the erased pile when it resolves, instead of the bin. See rule 407.
 
@@ -3151,15 +3201,29 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 178-played-item-and-erased-mods.test.ts · Example test: 178-played-item-and-erased-mods.test.ts::CR 720.9 Reclaim the Fallen: leavesGame:false · Key: zones.erased.says-erase.into-play</sub>
 
-<a id="r407.3"></a>**407.3.** A token that ceases to exist after entering a zone is recorded on the erased pile. See rule 410.5.
+<a id="r407.3"></a>**407.3.** A token is never recorded on the erased pile, because a token is not a card and the erased pile is a list of cards. This holds for unit tokens and spell tokens alike: a token that ceases to exist after entering a bin, a hand or a cache, and a token erased from play or from the stack, are not recorded. See rule 410.5.
 
-<sub>Basis: Owner ruling, adopted 2026-09-28 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 418-cr-zones.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, is NOT trashed, and is then erased · Key: zones.erased.tokens</sub>
+> *Example: A unit token sent to the cache ceases to exist there and is not recorded on the erased pile.*
+
+> *Example: A token unit carrying a real mod is erased from play. The mod is recorded on the erased pile; the token is not.*
+
+> *Example: A spell token recalled off the stack is not recorded on the erased pile.*
+
+> *Example: A token that dies enters the bin, is not trashed, and then ceases to exist, without being recorded.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests (a probe it wrote), all passed; 3 gate test files · Tests: 35-rot-debt-trash.test.ts, 418-cr-zones.test.ts, 549-never-file-tokens.test.ts · Example tests: 418-cr-zones.test.ts::cr:zones.erased.tokens — a unit token sent to the cache ceases to exist there and is NOT recorded on the erased pile, 549-never-file-tokens.test.ts::CR 407.1 / never file tokens: a token host erased from play is not filed, its real mod is, 549-never-file-tokens.test.ts::CR 407.1 / never file tokens: a spell token recalled off the stack is not filed, 35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, is NOT trashed, and is then erased · Key: zones.erased.tokens</sub>
 
 <sub>Discrepancies: D-U07-5 (discrepancies.md)</sub>
 
-<a id="r407.3a"></a>**407.3a** A token mod is recorded on the erased pile once when its host leaves play, however the host leaves.
+<a id="r407.3a"></a>**407.3a** A token mod is never recorded on the erased pile either, however its host leaves play, and also when it is erased off a host that stays in play (rule 720.9a).
 
-<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 129-disposal-tail.test.ts, 141-despawn-mods.test.ts · Demonstrated by test: 129-disposal-tail.test.ts::CR 407.3a: a TOKEN mod reaches the erased pile however its host leaves play · Key: zones.erased.tokens.mods</sub>
+> *Example: A unit carrying a token mod leaves play in each of the three ways. The token mod is announced as erased each time, and never recorded on the erased pile.*
+
+> *Example: A token mod reaches neither the erased pile nor a bin, on all three routes.*
+
+> *Example: A Wraith token mod erased together with its host reaches neither the erased pile nor a bin.*
+
+<sub>Basis: Owner call · adopted 2026-10-22 · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Tests: 129-disposal-tail.test.ts, 141-despawn-mods.test.ts, 145-erase-routes.test.ts · Example tests: 129-disposal-tail.test.ts::CR 407.3a: a TOKEN mod is announced however its host leaves play, and never filed on the erased pile, 141-despawn-mods.test.ts::CR 407.3a (v): a token mod reaches neither the erased pile nor a bin, on all three routes, 145-erase-routes.test.ts::CR 407.3a (vi-token): a token mod (Wraith) erased with its host reaches neither the erased pile nor a bin · Key: zones.erased.tokens.mods</sub>
 
 <a id="r407.4"></a>**407.4.** A transformed card is recorded on the erased pile as its front face. See rule 410.3.
 
@@ -3186,9 +3250,9 @@ order.
 
 <sub>Basis: Owner call · adopted 2026-10-21; Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests (a probe it wrote), all passed; 2 gate test files · Tests: 300-recycle-mark.test.ts, 526-card-code-never-reads-the-deck.test.ts · Demonstrated by test: 300-recycle-mark.test.ts::CR 408.2a every reader of the deck reshuffles at the mark · Key: zones.recycle.mark.scope</sub>
 
-<a id="r408.2b"></a>**408.2b** When anything that uses the deck reaches the mark, whatever the reason, the recycle pile is shuffled and put above the mark, under the cards still left in the deck; the mark goes back to the very bottom, with an empty recycle pile behind it. An effect that reveals more cards than are above the mark reshuffles when it reaches the mark and keeps revealing until it has its full number. See rule 401.4.
+<a id="r408.2b"></a>**408.2b** When anything that uses the deck needs a card past the mark, whatever the reason, the recycle pile is shuffled and put above the mark, under the cards still left in the deck; the mark goes back to the very bottom, with an empty recycle pile behind it. Taking the last card above the mark does not by itself reshuffle the pile: it is shuffled only when a card past the mark is needed. An effect that reveals more cards than are above the mark reshuffles when it reaches the mark and keeps revealing until it has its full number. See rule 401.4.
 
-<sub>Basis: Owner call · adopted 2026-10-21; Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 300-recycle-mark.test.ts, 514-deck-reads-reach-the-mark.test.ts · Demonstrated by tests: 300-recycle-mark.test.ts::CR 408.2b when the deck runs out the pile is shuffled in, 300-recycle-mark.test.ts::CR 408.2b a glimpse WIDER than the deck · Key: zones.recycle.mark.reshuffle</sub>
+<sub>Basis: Owner call · adopted 2026-10-21, 2026-10-22; Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests (a probe it wrote), all passed; 2 gate test files · Tests: 300-recycle-mark.test.ts, 514-deck-reads-reach-the-mark.test.ts · Demonstrated by tests: 300-recycle-mark.test.ts::CR 408.2b when the deck runs out the pile is shuffled in, 300-recycle-mark.test.ts::CR 408.2b a glimpse WIDER than the deck · Key: zones.recycle.mark.reshuffle</sub>
 
 <a id="r408.2c"></a>**408.2c** Every player can see how many cards are in the recycle pile. No player may look at them.
 
@@ -3302,7 +3366,7 @@ order.
 
 <a id="r410.4"></a>**410.4.** When a modded unit is recalled or cached, its mods go to the bin and the unit goes on alone. A token mod ceases to exist instead (see rule 410.4c). See rules 720, 403.7, 410.4d, 410.4c.
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.35; Manual p.35; Rulebook 2023 p.15 · Designer: RAQ 1372468222158180424#8 · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 35-rot-debt-trash.test.ts, 141-despawn-mods.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::CR 801.2f: recalling a modded unit trashes its MODS · Key: zones.changes.mods</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Printed: Manual p.35; Manual p.35; Rulebook 2023 p.15 · Designer: RAQ 1372468222158180424#8 · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 35-rot-debt-trash.test.ts, 141-despawn-mods.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::CR 801.2f: recalling a modded unit trashes its MODS · Key: zones.changes.mods</sub>
 
 <a id="r410.4a"></a>**410.4a** A mod that goes to a bin when its host leaves play goes to the bin of the host's controller. See rule 400.4.
 
@@ -3344,11 +3408,11 @@ order.
 
 > *Example: Recalling a unit token triggers Rider of the Tides too.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Designer: RAQ 1355689559609839787#3 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 393-raq-mods.test.ts, 15-water-b.test.ts, 403-raq-fix-mods.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand, 15-water-b.test.ts::Rider of the Tides: recalling a TOKEN triggers it too · Key: zones.changes.tokens.recalled</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Designer: RAQ 1355689559609839787#3 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 393-raq-mods.test.ts, 15-water-b.test.ts, 403-raq-fix-mods.test.ts · Example tests: 393-raq-mods.test.ts::RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand, 15-water-b.test.ts::Rider of the Tides: recalling a TOKEN triggers it too · Key: zones.changes.tokens.recalled</sub>
 
 <a id="r410.5c"></a>**410.5c** A token put into a cache enters the cache and is then erased.
 
-<sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::CR 410.5c: a CACHED token visits the cache and is erased out of it · Key: zones.changes.tokens.cached</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.4; Rulebook 2023 p.4 · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Tests: 35-rot-debt-trash.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::CR 410.5c: a CACHED token visits the cache and is erased out of it · Key: zones.changes.tokens.cached</sub>
 
 <sub>Discrepancies: D-U07-14 (discrepancies.md)</sub>
 
@@ -3391,7 +3455,7 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 3 gate test files · Printed: Manual p.7; Manual p.7; Manual p.7; Manual p.7; Manual p.7 · Tests: 20-draft.test.ts, 08-cards2.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 20-draft.test.ts::haste step still works after a draft turn (gates compose) · Key: turn.general.phases</sub>
 
-<a id="r500.2"></a>**500.2.** Turns are global: all players share the same phases and sync up at the end of each step. In a 1v1 or team game, the printed rules take some steps in initiative order: the initiative player, or team, acts first, and the non-initiative player waits to see what they did before acting (see rule 501.4 and rule 507.3). See rule 100. *(Engine differs, see F-U08-4.)*
+<a id="r500.2"></a>**500.2.** Turns are global: all players share the same phases and sync up at the end of each step. In a 1v1 or team game, the printed rules take some steps in initiative order: the initiative player, or team, acts first, and the non-initiative player waits to see what they did before acting (see rule 501.4 and rule 507.3). See rule 100.
 
 <sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; no gate test · Printed: Rulebook 2023 p.5; Manual p.7; Rulebook 2023 p.5; Rulebook 2023 p.5; Rulebook 2023 p.5; Rulebook 2023 p.5; Rulebook 2023 p.5; Rulebook 2023 p.5 · Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Key: turn.general.global</sub>
 
@@ -3399,7 +3463,7 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-18, 2026-10-04, 2026-10-11 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; no gate test · Key: turn.general.global.digital</sub>
 
-<a id="r500.3"></a>**500.3.** In each turn one player has the initiative. In a 1v1 game the initiative player (IT) acts first and the non-initiative player (NIT) acts after them. See rules 103, 508, 904. *(Engine differs, see F-U08-1.)*
+<a id="r500.3"></a>**500.3.** In each turn one player has the initiative. In a 1v1 game the initiative player (IT) acts first and the non-initiative player (NIT) acts after them. See rules 103, 508, 904.
 
 <sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; no gate test · Printed: Manual p.20; Manual p.20; Manual p.20; Rulebook 2023 p.5 · Key: turn.general.initiative</sub>
 
@@ -3458,13 +3522,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 3 gate test files · Printed: Rulebook 2023 p.7 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 08-cards2.test.ts, 15-water-b.test.ts, 419-cr-planning.test.ts · Demonstrated by test: 419-cr-planning.test.ts::cr:turn.planning.no-interaction — nobody holds priority in the resource step, and passing priority there is refused · Key: turn.planning.no-interaction</sub>
 
-<a id="r501.4"></a>**501.4.** In a 1v1 game, the refresh, the draw step and the draft step happen for both players simultaneously. The resource step and the haste step are taken first by the initiative player and then by the non-initiative player. See rules 500.3, 502, 504. *(Engine differs, see F-U08-1.)*
+<a id="r501.4"></a>**501.4.** In a 1v1 game, the refresh, the draw step and the draft step happen for both players simultaneously. The resource step and the haste step are taken first by the initiative player and then by the non-initiative player. See rules 500.3, 502, 504, D1.5.
 
 <sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; no gate test · Printed: Manual p.27; Rulebook 2023 p.5; Rulebook 2023 p.5; Manual p.20 · Key: turn.planning.order</sub>
 
 <sub>Discrepancies: D-U08-1 (discrepancies.md)</sub>
 
-<a id="r501.4a"></a>**501.4a** A step of the planning phase ends for all players together. No player begins the resource step until every player has finished the draft step. See rule 503.2. *(Engine differs, see F-U08-4.)*
+<a id="r501.4a"></a>**501.4a** A step of the planning phase ends for all players together. No player begins the resource step until every player has finished the draft step. See rules 503.2, D1.6.
 
 <sub>Basis: Printed · Verified: confirmed in round 3; verifier ran 1 test (a probe it wrote), passed; no gate test · Printed: Rulebook 2023 p.5; Manual p.16 · Key: turn.planning.order.sync</sub>
 
@@ -3681,7 +3745,7 @@ order.
 
 > *Example: One Courier grants one play: a second unit in the same haste step is refused.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Dispatch Courier · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts, 419-cr-planning.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: the "Each turn" allowance is one, and one Courier grants one · Key: turn.haste.grants.each-turn</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Dispatch Courier · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts, 419-cr-planning.test.ts · Example test: 26-metal-a.test.ts::Dispatch Courier: the "Each turn" allowance is one, and one Courier grants one · Key: turn.haste.grants.each-turn</sub>
 
 <a id="r504.8"></a>**504.8.** Mods are applied in deployment, not in the haste step, even when the mod card has haste. The exceptions are a card that allows mods in the haste step (the sub-rule below) and a Virus applied in battle (see 723). See rules 507, 720, 723.
 
@@ -3962,7 +4026,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Engine: apply.ts:doAugment, engine.ts:stackAugmentAttrs · Tests: 78-round17-core.test.ts · Example test: 78-round17-core.test.ts::CR 721.4a: only ATTRIBUTES transfer · Demonstrated by test: 78-round17-core.test.ts::CR 721.4a: a spell token is a legal augment host during deployment · Key: turn.deploy.mods.spell-token</sub>
 
-<a id="r507.3"></a>**507.3.** In 1v1 and team games the printed rules have the initiative team deploy first. Its players deploy in any order they wish, and then the non-initiative team does the same. See rules 500, 904. *(Engine differs, see F-U09-3.) (Untested: no executed test demonstrates it.)*
+<a id="r507.3"></a>**507.3.** In 1v1 and team games the printed rules have the initiative team deploy first. Its players deploy in any order they wish, and then the non-initiative team does the same. See rules 500, 904, D1.5. *(Untested: no executed test demonstrates it.)*
 
 > *Example: In a 2v2 game both initiative players finish deploying before either non-initiative player begins.*
 
@@ -3988,9 +4052,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 37-attrs-wight.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves · Key: turn.deploy.start.triggers</sub>
 
-<a id="r507.5"></a>**507.5.** Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack normally resolves without anyone having to act. *(Digital client)* See rule 703.
+<a id="r507.5"></a>**507.5.** Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule 703.7). See rule 703.
 
-<sub>Basis: Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 276-deployment-stack.test.ts · Demonstrated by test: 276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack · Key: turn.deploy.stack</sub>
+> *Example: In deployment, a player cannot ask to keep priority: the ask is refused.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 276-deployment-stack.test.ts, 568-hold-priority.test.ts · Example test: 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused · Demonstrated by test: 276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack · Key: turn.deploy.stack</sub>
 
 <sub>Discrepancies: D-U09-2 (discrepancies.md)</sub>
 
@@ -4101,13 +4167,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Printed: Rulebook 2023 p.4 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.exclusive — every unit and spell token in play names one region, and an attacking unit and the spell token riding with it leave their home region for the battle region · Key: combat.regions.exclusive</sub>
 
-<a id="r601.2a"></a>**601.2a** The stack, the bins, the hands and the caches are bound by the regional rule like everything else (rule 101.6). Each region has its own stack. No player owns it: it is shared by the players present in that region, and only they can put effects on it or respond to them. A player's bin, hand and cache are tied to that player: an effect can affect them only in a region where that player is present (rule 601.4c). See rule 601.4c. *(Engine differs, see F-U01-2.)*
+<a id="r601.2a"></a>**601.2a** The stack, the bins, the hands and the caches are bound by the regional rule like everything else (rule 101.6). Each region has its own stack. No player owns it: it is shared by the players present in that region, and only they can put effects on it or respond to them. A player's bin, hand and cache are tied to that player: an effect can affect them only in a region where that player is present (rule 601.4c). See rule 601.4c.
 
 > *Example: During deployment, an effect that targets a cached card can reach only its controller's own cache. In battle, where both players are present, it can reach either cache.*
 
-> *Example: Frosted Denial, cast while battle resolves in one region, cannot negate an effect that was played in another region.*
+> *Example: Molten Riftbreaker dies in its controller's home region during a battle elsewhere: its "negate all allied spells" leaves the spell on the battle region's stack alone. Dying in the battle region, it negates it.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.19; Manual p.19; Manual p.19; Manual p.19 · Designer: RAQ 1454169054402314362#0 · Owner ruling, adopted 2026-08-18, 2026-09-01, 2026-10-11 (quoted from the retired ruling register) · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.regions.exclusive.no-region-zones — cached and binned cards carry no region, no region holds a stack, and a cache is reachable only where its owner is present · Key: combat.regions.exclusive.no-region-zones</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Printed: Manual p.19; Manual p.19; Manual p.19; Manual p.19 · Designer: RAQ 1454169054402314362#0 · Owner ruling, adopted 2026-08-18, 2026-09-01, 2026-10-11 (quoted from the retired ruling register) · Tests: 421-cr-regions-formations.test.ts, 578-region-stacks-and-bins.test.ts · Example tests: 421-cr-regions-formations.test.ts::cr:combat.regions.exclusive.no-region-zones — cached and binned cards carry no region, no region holds a stack, and a cache is reachable only where its owner is present, 578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack · Key: combat.regions.exclusive.no-region-zones</sub>
 
 <sub>Discrepancies: D-U01-12 (discrepancies.md)</sub>
 
@@ -4316,11 +4382,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 66-formation-placement.test.ts, 108-formation-class.test.ts · Example test: 108-formation-class.test.ts::BL-24 Hooba-Lin (augment): the host attacks → the ask, and the 1/1 lands in the chosen slot · Key: combat.formations.placement</sub>
 
-<a id="r602.6a"></a>**602.6a** The positions such a unit may take are: a new column at either end of the line; the back slot of any column that holds exactly one unit; and the front slot of a hole left after blocks (rule 602.5a). See rules 602.5a, 602.6k.
+<a id="r602.6a"></a>**602.6a** The positions such a unit may take are: a new column at either end of the line; the back slot of any column that holds exactly one unit; and the front slot of a hole left after blocks (rule 602.5a). A line with no column left has one end, so there the only position is one new column. See rules 602.5a, 602.6k.
 
 > *Example: An attacking line has two columns, the first with two units and the second with one. The legal positions are a new column at the left end, the back slot of the second column, and a new column at the right end.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 2 tests, all passed; 1 gate test file · Tests: 66-formation-placement.test.ts · Example test: 66-formation-placement.test.ts::CR 602.6a: a two-unit column offers no back slot · Demonstrated by test: 66-formation-placement.test.ts::CR 602.6a: a placement can FILL a CR 602.5a hole, and can never create one · Key: combat.formations.placement.legal-positions</sub>
+> *Example: A lone Hooba-Lin attacks and is killed under its trigger. Its remembered line holds no column, so the 1/1 takes the one new column there.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 2 gate test files · Tests: 66-formation-placement.test.ts, 561-remembered-empty-formation.test.ts · Example tests: 66-formation-placement.test.ts::CR 602.6a: a two-unit column offers no back slot, 561-remembered-empty-formation.test.ts::CR 602.6f / CT-250: a lone ${name} killed under its attack trigger · Demonstrated by test: 66-formation-placement.test.ts::CR 602.6a: a placement can FILL a CR 602.5a hole, and can never create one · Key: combat.formations.placement.legal-positions</sub>
 
 <sub>Discrepancies: D-U10-4 (discrepancies.md)</sub>
 
@@ -4348,13 +4416,19 @@ order.
 
 > *Example: Hooba-Lin's host attacks, then is stolen before the trigger resolves, so it is in play but out of the formation. No 1/1 is created.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 108-formation-class.test.ts · Example test: 108-formation-class.test.ts::CR 602.6e Hooba-Lin: alive but out of the formation (CR 711.3) → no token, no question · Key: combat.formations.placement.source-formation</sub>
+> *Example: Hooba-Bot blocks, and with its trigger waiting, Organic Exchange puts it into the attacking line. The Robot is made in the attacking line, where Hooba-Bot now stands, for the player who controls the trigger.*
 
-<a id="r602.6f"></a>**602.6f** If the effect's source has left play while its effect is on the stack, “my formation” means the formation the source was in when it left play, and the effect still places the unit there. See rules 714, 602.6k. *(Engine differs, see F-U10-6.)*
+> *Example: The same with Hooba-Pon: the unit it lets its player play goes into the attacking line, where Hooba-Pon now stands.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 2 gate test files · Tests: 108-formation-class.test.ts, 580-source-formation-after-exchange.test.ts · Example tests: 108-formation-class.test.ts::CR 602.6e Hooba-Lin: alive but out of the formation (CR 711.3) → no token, no question, 580-source-formation-after-exchange.test.ts::CR 602.6e / Organic Exchange: Hooba-Bot swapped into the attacking line under its block trigger makes the Robot there, 580-source-formation-after-exchange.test.ts::CR 602.6e / Organic Exchange: Hooba-Pon swapped into the attacking line under its block trigger plays the unit into that line · Key: combat.formations.placement.source-formation</sub>
+
+<a id="r602.6f"></a>**602.6f** If the effect's source has left play while its effect is on the stack, “my formation” means the formation the source was in when it left play, and the effect still places the unit there, even if no unit is left standing in that formation. See rules 714, 602.6k.
 
 > *Example: Hooba-Lin attacks and is killed with its trigger on the stack. The 1/1 is still created, in the formation Hooba-Lin was in.*
 
-<sub>Basis: Designer · Verified: confirmed in round 3; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1353895783266516992#2 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 108-formation-class.test.ts, 421-cr-regions-formations.test.ts · Example test: 108-formation-class.test.ts::CR 714.4 Hooba-Lin: killed under its own attack trigger · Key: combat.formations.placement.source-gone</sub>
+> *Example: Hooba-Lin attacks alone and is killed with its trigger on the stack. The attacking line now holds no unit, and the 1/1 is still created in it.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Designer: RAQ 1353895783266516992#2 · Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Tests: 108-formation-class.test.ts, 421-cr-regions-formations.test.ts, 561-remembered-empty-formation.test.ts · Example tests: 108-formation-class.test.ts::CR 714.4 Hooba-Lin: killed under its own attack trigger, 561-remembered-empty-formation.test.ts::CR 602.6f / CT-250: a lone ${name} killed under its attack trigger · Key: combat.formations.placement.source-gone</sub>
 
 <sub>Discrepancies: D-U10-6 (discrepancies.md)</sub>
 
@@ -4380,7 +4454,7 @@ order.
 
 > *Example: The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.*
 
-<sub>Basis: Engine only · Verified: confirmed in round 3; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Engine: formationSlots · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column · Key: combat.formations.placement.defending-emptied-block</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Engine: formationSlots · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column · Key: combat.formations.placement.defending-emptied-block</sub>
 
 <sub>Discrepancies: D-U10-9 (discrepancies.md)</sub>
 
@@ -4392,7 +4466,9 @@ order.
 
 > *Example: The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-22, 2026-10-09 (quoted from the retired ruling register) · Verified: partial in round 3; verifier ran 4 tests (2 probes it wrote), all passed; 3 gate test files · Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts · Example tests: 66-formation-placement.test.ts::CR 602.6k: a formation you are not standing in cannot be joined at all, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.empty-formation — after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation, 400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot · Key: combat.formations.placement.empty-formation</sub>
+> *Example: A living Hooba-Lin whose line has emptied around it is offered nothing; only a source that has left play keeps its remembered formation.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-22, 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 4 gate test files · Tests: 66-formation-placement.test.ts, 400-raq-fix-blocks.test.ts, 421-cr-regions-formations.test.ts, 561-remembered-empty-formation.test.ts · Example tests: 66-formation-placement.test.ts::CR 602.6k: a formation you are not standing in cannot be joined at all, 421-cr-regions-formations.test.ts::cr:combat.formations.placement.empty-formation — after blocks every attacking unit dies, the attacker is offered no position, not even the hole, and Tiderunner Initiate enters play outside any formation, 400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot, 561-remembered-empty-formation.test.ts::CR 602.6k / CT-250: the remembered exception is the dead source only · Key: combat.formations.placement.empty-formation</sub>
 
 <sub>Discrepancies: D-U10-10 (discrepancies.md)</sub>
 
@@ -4455,21 +4531,23 @@ order.
 
 <sub>Discrepancies: D-U10-8 (discrepancies.md)</sub>
 
-<a id="r603.2"></a>**603.2.** A unit in a formation is adjacent to its left, right, front and back neighbours in that formation. *(Engine differs, see F-U10-3.)*
+<a id="r603.2"></a>**603.2.** A unit in a formation is adjacent to its left, right, front and back neighbours in that formation.
 
 > *Example: Inspiration gives +2/+2 to its controller's units adjacent to it in formation, and to no others.*
 
 > *Example: The defender blocks the first and third attacking columns and leaves the second unblocked. The two blockers are not neighbours, so an Inspiration in one does not buff the other.*
 
-<sub>Basis: Printed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.22; Rulebook 2023 p.10; Manual p.23 · Tests: 23-wood-a.test.ts, 421-cr-regions-formations.test.ts · Example test: 23-wood-a.test.ts::Inspiration: +2/+2 to your units adjacent to it in formation · Key: combat.columns.adjacency</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: Manual p.22; Rulebook 2023 p.10; Manual p.23 · Tests: 23-wood-a.test.ts, 421-cr-regions-formations.test.ts, 560-defending-gap-adjacency.test.ts · Example tests: 23-wood-a.test.ts::Inspiration: +2/+2 to your units adjacent to it in formation, 560-defending-gap-adjacency.test.ts::CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap · Key: combat.columns.adjacency</sub>
 
 <sub>Discrepancies: D-U10-7 (discrepancies.md)</sub>
 
-<a id="r603.2a"></a>**603.2a** A unit in a formation has at most three adjacent positions: the same row of the column to its left, the same row of the column to its right, and the other slot of its own column. The other row of a neighbouring column is diagonal, and is not adjacent. Where a line ends, there is a position past the end only as rule 603.3 allows. See rule 603.3. *(Engine differs, see F-U10-3.)*
+<a id="r603.2a"></a>**603.2a** A unit in a formation has at most three adjacent positions: the same row of the column to its left, the same row of the column to its right, and the other slot of its own column. The other row of a neighbouring column is diagonal, and is not adjacent. Where a line ends, there is a position past the end only as rule 603.3 allows. See rule 603.3.
 
 > *Example: Hooba-Nan stands in the front row of a middle column. Its adjacent slots are the front rows of the columns on either side and the slot behind it, and nothing diagonal.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 3 gate test files · Printed: Manual p.22 · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Tests: 66-formation-placement.test.ts, 23-wood-a.test.ts, 421-cr-regions-formations.test.ts · Example test: 23-wood-a.test.ts::Hooba-Nan in the middle: both sides and below, and nothing diagonal · Key: combat.columns.adjacency.positions</sub>
+> *Example: A blocker stands next to an unblocked attacking column. It has no adjacent position in that column.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 4 gate test files · Printed: Manual p.22 · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Tests: 66-formation-placement.test.ts, 23-wood-a.test.ts, 421-cr-regions-formations.test.ts, 560-defending-gap-adjacency.test.ts · Example tests: 23-wood-a.test.ts::Hooba-Nan in the middle: both sides and below, and nothing diagonal, 560-defending-gap-adjacency.test.ts::CR 603.3b / CT-249: a blocker next to an unblocked column has no adjacent slot in it · Key: combat.columns.adjacency.positions</sub>
 
 <sub>Discrepancies: D-U10-2 (discrepancies.md)</sub>
 
@@ -4722,11 +4800,11 @@ order.
 
 <sub>Discrepancies: D-U11-7 (discrepancies.md)</sub>
 
-<a id="r606.1f"></a>**606.1f** An empty blocking column keeps its place in the defending formation. Two blockers with an empty blocking column between them are not neighbours, so they are not adjacent (see 603). See rules 603, 606.4g. *(Engine differs, see F-U11-3.)*
+<a id="r606.1f"></a>**606.1f** An empty blocking column keeps its place in the defending formation. Two blockers with an empty blocking column between them are not neighbours, so they are not adjacent (see 603). See rules 603, 606.4g.
 
 > *Example: Against a three-column attack, the defending player blocks the first and third columns. The two blockers are not adjacent: the empty middle blocking column lies between them.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (2 probes it wrote), all passed; 1 gate test file · Printed: Manual p.22; Manual p.23 · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Tests: 422-cr-attacking-blocking.test.ts · Key: combat.blocks.general.gap-adjacency</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.22; Manual p.23 · Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Tests: 422-cr-attacking-blocking.test.ts, 560-defending-gap-adjacency.test.ts · Example test: 560-defending-gap-adjacency.test.ts::CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap · Key: combat.blocks.general.gap-adjacency</sub>
 
 <a id="r606.2"></a>**606.2.** The defending player may block with units it controls in the battle region. See rule 601.
 
@@ -4846,7 +4924,7 @@ order.
 
 > *Example: A unit side-blocks next to a unit blocking the attacking column. The two are adjacent, which matters to cards that count adjacent units.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: Manual p.23; Manual p.23 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.adjacency — a side-blocker is adjacent to the blocker beside it · Key: combat.blocks.side.adjacency</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.23; Manual p.23 · Tests: 422-cr-attacking-blocking.test.ts · Example test: 422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.adjacency — a side-blocker is adjacent to the blocker beside it · Key: combat.blocks.side.adjacency</sub>
 
 <a id="r606.5"></a>**606.5.** In the first battle round, the defending player declares at the same time as its blocks which of its units it sends to counterattack (see 610). See rule 610.
 
@@ -5268,11 +5346,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Adversary of the Deep; Manual p.23 · Designer: RAQ 1365594171867664445#3 · Tests: 387-raq-combat.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Piercing: an unblocked Piercing column hits the player, 387-raq-combat.test.ts::RAQ Piercing: a defending Piercing column with an attacker in front of it carries its excess to the attacker · Key: combat.damage.player</sub>
 
-<a id="r608.8a"></a>**608.8a** Combat damage to a player that an effect replaces (for example, Blightsea Polyp's rot) was still dealt. An ability that triggers when a column deals combat damage to a player still triggers, and reads the damage dealt, even if the player lost no life. See rules 708, 112.
+<a id="r608.8a"></a>**608.8a** Combat damage to a player that an effect replaces but still deals to that player (for example, Blightsea Polyp's rot) was still dealt. An ability that triggers when a column deals combat damage to a player still triggers, and reads the damage dealt, even if the player lost no life. Damage redirected to a unit instead is not dealt to the player (rule 608.8c). See rules 708, 112.
 
 > *Example: A fully replaced combat hit still counts as dealt: Vroot's 'that much' pays out the damage its column dealt, not the life the player lost.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-26, 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 207-replaced-hit-was-dealt.test.ts · Example test: 207-replaced-hit-was-dealt.test.ts::CR 608.8a: the payout is the DAMAGE DEALT, not the life lost · Key: combat.damage.player.replaced-still-dealt</sub>
+> *Example: Blightsea Polyp turns a Lethal hit into rot. That is still damage dealt to the player, so the player is killed.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-26, 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 207-replaced-hit-was-dealt.test.ts, 562-lethal-redirected.test.ts · Example tests: 207-replaced-hit-was-dealt.test.ts::CR 608.8a: the payout is the DAMAGE DEALT, not the life lost, 562-lethal-redirected.test.ts::CR 608.8a / CT-296: Blightsea Polyp turns the Lethal hit into rot, which is still damage dealt, so the player is killed · Key: combat.damage.player.replaced-still-dealt</sub>
 
 <sub>Discrepancies: D-U12-21 (discrepancies.md)</sub>
 
@@ -5282,7 +5362,7 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Designer: RAQ 1362838395298119912#0 · Tests: 387-raq-combat.test.ts, 399-raq-fix-combat.test.ts · Example test: 387-raq-combat.test.ts::RAQ Resonant: the extra damage is not combat damage · Key: combat.damage.player.not-combat</sub>
 
-<a id="r608.8c"></a>**608.8c** If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took. See rules 708, 802.16.
+<a id="r608.8c"></a>**608.8c** If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took. Damage a redirect takes is not dealt to the player. If all of a column's combat damage to a player is redirected, the column has dealt that player no combat damage: Lethal kills no one, Thieving draws nothing, and nothing that triggers when a column deals combat damage to a player triggers. If some of it gets past the redirects (Piercing excess), the column has dealt the player that much. See rules 708, 802.16.
 
 > *Example: 10 Piercing combat damage that would be dealt to a player is redirected into a 2/4 Oorblak. 4 destroy it, and the other 6 are dealt to the player.*
 
@@ -5296,7 +5376,13 @@ order.
 
 > *Example: Blightsea Polyp beside two Oorblaks: the player chooses only between the Oorblaks, and no rot is gained.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 4 gate test files · Printed: card: Oorblak; card: Blightsea Polyp · Designer: RAQ 1397188292239163454#0; RAQ 1397188292239163454#0; RQ 1442982460034912287 · Owner call · adopted 2026-10-16 · Tests: 387-raq-combat.test.ts, 17-earth-b.test.ts, 469-replacement-chain-damage.test.ts, 471-oorblak-order-and-polyp.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak, 17-earth-b.test.ts::Oorblak: a NON-Piercing overkill is absorbed whole, 469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first, 469-replacement-chain-damage.test.ts::CR 708.4: three Oorblaks and 10 Piercing, 471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp, Oorblak and a Piercing column — the excess past the Oorblak is dealt to the player, as 1 rot, 471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp beside two Oorblaks — the question is about the Oorblaks only, and no rot · Key: combat.damage.player.redirect</sub>
+> *Example: Gublin (Lethal) attacks and all of its combat damage is redirected into Oorblak. The player is dealt nothing and lives.*
+
+> *Example: A wholly redirected hit raises no "deals combat damage to a player" trigger and costs the player no life.*
+
+> *Example: A partly redirected hit is dealt as what got past Oorblak.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 10 tests, all passed; 6 gate test files · Printed: card: Oorblak; card: Blightsea Polyp · Designer: RAQ 1397188292239163454#0; RAQ 1397188292239163454#0; RQ 1442982460034912287 · Owner call · adopted 2026-10-16, 2026-10-22 · Tests: 387-raq-combat.test.ts, 17-earth-b.test.ts, 469-replacement-chain-damage.test.ts, 471-oorblak-order-and-polyp.test.ts, 562-lethal-redirected.test.ts, 581-redirected-hit-deals-nothing.test.ts · Example tests: 387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak, 17-earth-b.test.ts::Oorblak: a NON-Piercing overkill is absorbed whole, 469-replacement-chain-damage.test.ts::CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first, 469-replacement-chain-damage.test.ts::CR 708.4: three Oorblaks and 10 Piercing, 471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp, Oorblak and a Piercing column — the excess past the Oorblak is dealt to the player, as 1 rot, 471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp beside two Oorblaks — the question is about the Oorblaks only, and no rot, 562-lethal-redirected.test.ts::CR 802.24a / CT-296: Gublin wholly redirected into Oorblak deals the player nothing, and the player lives, 581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a wholly redirected hit raises no face-damage event and no combat life loss, 581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a partly redirected hit is dealt as what got past Oorblak · Key: combat.damage.player.redirect</sub>
 
 <sub>Discrepancies: D-U12-13 (discrepancies.md)</sub>
 
@@ -5664,11 +5750,15 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.43; Manual p.43 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.playing.put-into-play.spell-unit — Lonely Forager put into play from the bin by Covenant of the Damned draws no card · Key: effects.playing.put-into-play.spell-unit</sub>
 
-<a id="r701.4"></a>**701.4.** A card played during the resolution of another effect is played. During battle it is put on the stack and can be responded to (rule 703.5), and abilities that trigger on a play see it. See rule 703.5. *(Engine differs, see F-U14-3.)*
+<a id="r701.4"></a>**701.4.** A card played during the resolution of another effect is played. During battle it is put on the stack and can be responded to (rule 703.5), and abilities that trigger on a play see it. See rule 703.5.
 
 > *Example: Tides of the Cosmos plays a unit, and Bloomcaster's "Whenever you play a unit" triggers on it.*
 
-<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Designer: RAQ 1396955380000755795#8 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 169-mid-resolution-window.test.ts, 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Tides 7: a free play is a play · Key: effects.playing.mid-resolution</sub>
+> *Example: A unit Wake the Dead plays waits on the stack and can be answered; a negated one never arrives.*
+
+> *Example: A card an effect plays where nobody can respond is still announced as played, for a unit and for a spell.*
+
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 4 gate test files · Designer: RAQ 1396955380000755795#8 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 169-mid-resolution-window.test.ts, 396-raq-timing.test.ts, 557-wake-the-dead-plays-on-the-stack.test.ts, 556-inline-play-is-a-whole-play.test.ts · Example tests: 396-raq-timing.test.ts::RAQ Tides 7: a free play is a play, 557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives, 556-inline-play-is-a-whole-play.test.ts::CR 108.1a / CT-143: the in-place branch fires the wide cardPlayed, for a unit and for a spell · Key: effects.playing.mid-resolution</sub>
 
 <a id="r701.4a"></a>**701.4a** A card played by an effect is played from the zone it came out of. If it came out of a hand, it is played from the hand. If it came out of the cache, a bin, the deck or anywhere else, it is not played from the hand.
 
@@ -5897,11 +5987,15 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1454169054402314362#1 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::Rebalance is playable with no unit of your own · Key: effects.casting.targets-required.untargeted</sub>
 
-<a id="r702.8b"></a>**702.8b** A triggered graft composite whose targeted part has no legal target is not put on the stack at all, and its untargeted parts do not happen either. See rules 722, 706. *(Engine differs, see F-U14-1.)*
+<a id="r702.8b"></a>**702.8b** A triggered graft composite whose targeted part has no legal target is not put on the stack at all, and its untargeted parts do not happen either. See rules 722, 706.
 
 > *Example: Megadeath grafted with Resurrect, and no unit of cost 2 or less in the bin: no Poison 5 is made.*
 
-<sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1410252965276684418#2 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all · Key: effects.casting.targets-required.graft-trigger</sub>
+> *Example: Megadeath with Resurrect grafted, and no unit of cost 2 or less in the bin: the composite never reaches the stack.*
+
+> *Example: With a cost 2 unit in the bin, the composite goes on the stack.*
+
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Designer: RAQ 1410252965276684418#2 · Tests: 390-raq-stack.test.ts, 546-graft-composite-no-target.test.ts · Example tests: 390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all, 546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack, 546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: the control · Key: effects.casting.targets-required.graft-trigger</sub>
 
 <sub>Discrepancies: D-U14-3 (discrepancies.md)</sub>
 
@@ -5940,9 +6034,13 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.30; Manual p.30 · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.priority — only the player with priority may play a card · Key: effects.priority.priority</sub>
 
-<a id="r703.2a"></a>**703.2a** A player who uses priority to take an action may keep priority and take further actions. Each action goes on the stack as an effect; none of them happens immediately. *(Engine differs, see F-U14-2.) (Untested: no executed test demonstrates it.)*
+<a id="r703.2a"></a>**703.2a** A player who uses priority to take an action may keep priority and take further actions. Each action goes on the stack as an effect; none of them happens immediately. See rules D2.9, 703.7.
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), 1 failed; no gate test · Printed: Manual p.30; Manual p.30 · Key: effects.priority.priority.hold</sub>
+> *Example: A player casts a spell and keeps priority, then casts a second spell on top of it before the opponent can respond. When the player passes, the opponent receives priority.*
+
+> *Example: A player who keeps priority and then passes hands the window over, and the items wait for both players to pass.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Printed: Manual p.30; Manual p.30 · Owner call · adopted 2026-10-22 · Tests: 568-hold-priority.test.ts · Example tests: 568-hold-priority.test.ts::CR 703.2a / CT-253: the holder stacks a second action before the opponent gets a look, then CR 703.2b, 568-hold-priority.test.ts::CR 703.2a / CT-253: a holder who passes hands the window over, and the item waits for both passes · Key: effects.priority.priority.hold</sub>
 
 <a id="r703.2b"></a>**703.2b** When a player passes priority after taking one or more actions, each other player receives priority, so that they can respond. This continues until all players pass priority in succession.
 
@@ -6002,11 +6100,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-10-01 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Tests: 358-burst-order.test.ts · Example test: 358-burst-order.test.ts::CR 803.5d: the caster picks each Fireball in RESOLVE order and aims it · Key: effects.priority.simultaneous.burst</sub>
 
-<a id="r703.5"></a>**703.5.** A card played during another effect's resolution waits on the stack until that resolution has finished. Only then do players receive priority, and they may respond to the played card before it resolves. See rule 701.4. *(Engine differs, see F-U14-3.)*
+<a id="r703.5"></a>**703.5.** A card played during another effect's resolution waits on the stack until that resolution has finished. Only then do players receive priority, and they may respond to the played card before it resolves. See rule 701.4.
 
 > *Example: a card Tides of the Cosmos plays for free can be answered on the stack.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), 1 failed; 1 gate test file · Designer: RAQ 1396955380000755795#4 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 169-mid-resolution-window.test.ts · Example test: 169-mid-resolution-window.test.ts::a free play is still a play, so it can be answered on the stack · Key: effects.priority.mid-resolution</sub>
+> *Example: A unit Wake the Dead plays waits on the stack until Wake the Dead has finished resolving, and can be answered before it resolves.*
+
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1396955380000755795#4 · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 169-mid-resolution-window.test.ts, 557-wake-the-dead-plays-on-the-stack.test.ts · Example tests: 169-mid-resolution-window.test.ts::a free play is still a play, so it can be answered on the stack, 557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives · Key: effects.priority.mid-resolution</sub>
 
 <sub>Discrepancies: D-U14-5 (discrepancies.md)</sub>
 
@@ -6016,17 +6116,25 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.resolving — while Premonition is resolving it cannot be targeted, negated, augmented or responded to · Key: effects.priority.resolving</sub>
 
-<a id="r703.7"></a>**703.7.** Deployment uses the stack, but each player has a stack of their own there. Only that player sees it and holds priority over it; no other player can respond to it or is made to wait on it. *(Digital client)* See rule 507.
+<a id="r703.7"></a>**703.7.** Deployment uses the stack, but each player has a stack of their own there, which only that player sees *(Digital client)*; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. A player's plays still go on that stack, and it resolves on its own. See rule 507.
 
 > *Example: In deployment a player plays a deploy-timing spell at their Earthbound Replicator; the spell goes on that player's own stack, so the Replicator can copy it.*
 
-<sub>Basis: Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 138-spell-copy.test.ts · Example test: 138-spell-copy.test.ts::CR 507.5/CT-176: a deploy-timing play names a REAL stack item · Key: effects.priority.deployment</sub>
+> *Example: In deployment a player asks to keep priority as they play a card. The ask is refused: nobody can hold priority there.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 138-spell-copy.test.ts, 568-hold-priority.test.ts · Example tests: 138-spell-copy.test.ts::CR 507.5/CT-176: a deploy-timing play names a REAL stack item, 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused · Key: effects.priority.deployment</sub>
 
 <a id="r703.8"></a>**703.8.** There is no priority in the haste step. Haste cards are played there as special actions. See rule 504.
 
 > *Example: Molten Upheaval played in the haste step makes its Fireball at once; no one has priority and nothing waits on a stack.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Printed: Manual p.13 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.haste-step — in the haste step nobody has priority and a haste card resolves at once with no stack · Key: effects.priority.haste-step</sub>
+
+<a id="r703.9"></a>**703.9.** During battle, a region where only one player is present has its own stack too (rule 601.2a), and nobody holds priority over it. An item put on that stack resolves on its own, top first, with no priority window, and the battle's priority window is not changed by it. See rules 601, 703.7.
+
+> *Example: Molten Riftbreaker dies in its controller's home region during a battle elsewhere. Its trigger resolves there on its own, and does not reach the spell on the battle region's stack.*
+
+<sub>Basis: Owner call · adopted 2026-10-22 · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 578-region-stacks-and-bins.test.ts · Example test: 578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack · Key: effects.priority.solo-region</sub>
 
 <a id="r704"></a>
 ### 704. Resolution and Fizzling
@@ -6109,9 +6217,13 @@ order.
 
 <sub>Discrepancies: D-U03-3 (discrepancies.md)</sub>
 
-<a id="r704.5a"></a>**704.5a** The check is made once, as the effect begins to resolve. An earlier part of the effect cannot make a later part's target illegal in the middle of its resolution. *(Engine differs, see F-U14-9.) (Untested: no executed test demonstrates it.)*
+<a id="r704.5a"></a>**704.5a** The check is made once, as the effect begins to resolve. An earlier part of the effect cannot make a later part's target illegal in the middle of its resolution.
 
-<sub>Basis: Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; no gate test · Key: effects.resolution.recheck.once</sub>
+> *Example: Minor Kraken is grafted under a part that grows its target past 5 defense. The target was judged legal as the item began to resolve, so it is still recalled.*
+
+> *Example: A target already past 5 defense when the item begins to resolve is still refused.*
+
+<sub>Basis: Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 554-target-judged-once.test.ts · Example tests: 554-target-judged-once.test.ts::CR 704.5a / CT-232: Minor Kraken grafted under a part that grows its target past 5 defense still recalls it, 554-target-judged-once.test.ts::CR 704.5 / CT-232 CONTROL · Key: effects.resolution.recheck.once</sub>
 
 <a id="r704.5b"></a>**704.5b** A target remains the same object while it stays where it is. A target that changes zone (to a hand, a bin, and so on) is gone, and the effect does not follow it to a new object. A target that stays put is still a legal target even if another effect also targets it. See rule 410.
 
@@ -6439,7 +6551,9 @@ order.
 
 > *Example: Origon negates the spell whose play made it trigger, even with an identical spell above it on the stack.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Void Mandible · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 178-played-item-and-erased-mods.test.ts, 162-item-identity-and-truthful-events.test.ts · Example tests: 178-played-item-and-erased-mods.test.ts::Void Mandible: with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES, 178-played-item-and-erased-mods.test.ts::Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy was not played, 162-item-identity-and-truthful-events.test.ts::Origon negates the item the play event NAMES, with a second identical spell above it on the stack · Key: effects.triggered.that-item</sub>
+> *Example: Void Mandible negates a unit Wake the Dead plays by its stack item, not a same-named bystander.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Printed: card: Void Mandible · Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Tests: 178-played-item-and-erased-mods.test.ts, 162-item-identity-and-truthful-events.test.ts · Example tests: 178-played-item-and-erased-mods.test.ts::Void Mandible: with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES, 178-played-item-and-erased-mods.test.ts::Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy was not played, 162-item-identity-and-truthful-events.test.ts::Origon negates the item the play event NAMES, with a second identical spell above it on the stack, 178-played-item-and-erased-mods.test.ts::Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negated by id (CR 706.13) · Key: effects.triggered.that-item</sub>
 
 <a id="r707"></a>
 ### 707. Static Abilities
@@ -6540,11 +6654,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-23, 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 3 gate test files · Tests: 28-metal-c.test.ts, 16-earth-a.test.ts, 87-replacement-layer.test.ts · Example tests: 28-metal-c.test.ts::Transmogrifant: the augment-donated static anchors on the host, 16-earth-a.test.ts::Crevice Lurker: CR 707.9 — donated as an augment, the HOST's region carries the tax · Demonstrated by test: 87-replacement-layer.test.ts::a donated [Augment] replacement reads from its HOST · Key: effects.static.from-mod</sub>
 
-<a id="r707.10"></a>**707.10.** A permission a card grants ("You may play one unit with no abilities from your bin each deployment") is a standing fact, not an ability that goes on the stack. Using it cannot be responded to, and an effect that negates activated or triggered abilities cannot stop it. (engine differs, see F-U15-1) *(Digital client)* *(Engine differs, see F-U15-1.)*
+<a id="r707.10"></a>**707.10.** A permission a card grants ("You may play one unit with no abilities from your bin each deployment") is a standing fact, not an ability that goes on the stack. Using it cannot be responded to, and an effect that negates activated or triggered abilities cannot stop it.
 
-> *Example: Containment Protocol cannot stop a player using The Bonesculptor's permission, because there is nothing on the stack to negate.*
+> *Example: The Bonesculptor's permission is used by playing the unit from the bin like any card. Nothing of the permission's own goes on the stack, so there is no ability for Containment Protocol to negate.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; no gate test · Key: effects.static.permission</sub>
+> *Example: Each Bonesculptor allows one such play each deployment.*
+
+> *Example: Gridxlan's "If your hand is empty, you may play one unit from your bin during deployment" is a permission too: with its controller's hand empty, it offers any unit in the bin as a play.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 558-bonesculptor-permission.test.ts, 559-gridxlan-permission.test.ts · Example tests: 558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: using the permission puts no ability on the stack, and the unit is played, 558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: one play each deployment for each Bonesculptor, 559-gridxlan-permission.test.ts::CR 707.10: Gridxlan has no activated ability, and with an empty hand it offers ANY unit in the bin as a play · Key: effects.static.permission</sub>
 
 <a id="r708"></a>
 ### 708. Replacement and Prevention Effects
@@ -6746,9 +6864,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 44-hybrids-ld-a.test.ts · Example test: 44-hybrids-ld-a.test.ts::CR 709.4a: {Unaware} reads the COPIED face's printed stats · Key: effects.continuous.layers.copy</sub>
 
-<a id="r709.4b"></a>**709.4b** In layer 4, Tough and Balanced apply in the order the unit has them, from top to bottom. A Tough unit that attacks with a Balanced unit behind it has its defense doubled, then its stats balanced. Where a Balanced unit gets Tough from a mod, the Manual's answer gives both orders: Tough "augmented onto" a Balanced unit doubles, then balances; Tough "applied to" a Balanced unit balances, then doubles (D-U16-1). The engine takes a unit's printed attributes first, in type-line order, then those from its mods in the order the mods were applied, then those its column shares with it, front to back, so it balances first (the owner ruling of 2026-08-18 calls this order the engine's own reading; engine differs from the "augmented onto" reading, see F-U16-4). *(Digital client)* See rule 802. *(Engine differs, see F-U16-4.)*
+<a id="r709.4b"></a>**709.4b** In layer 4, the stat-changing attributes apply one after the other. Those the unit has from its augment mods apply first, in the order the mods were attached *(Digital client)*; then the rest of its own attributes, its printed ones in type-line order and then those effects have given it; then those its column shares with it, front to back. So Tough augmented onto a Balanced unit has its defense doubled, then its stats balanced; Tough applied to a Balanced unit by an effect balances, then doubles; and a Tough unit attacking with a Balanced unit behind it is doubled, then balanced. See rule 802.
 
-<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 1 gate test file · Printed: Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 08-cards2.test.ts · Demonstrated by test: 08-cards2.test.ts::CR 709.4b: layer-4 application order · Key: effects.continuous.layers.attribute-order</sub>
+> *Example: Child of Aether (2/0, printed Balanced) augmented with Rampart Guardian (Tough) is doubled first (still 2/0), then balanced: a 2/2.*
+
+> *Example: The same Child of Aether given Tough by an effect is balanced first (2/2), then doubled: a 2/4.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 1 gate test file · Printed: Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 08-cards2.test.ts · Example tests: 08-cards2.test.ts::CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances, 08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles · Demonstrated by test: 08-cards2.test.ts::CR 709.4b: layer-4 application order · Key: effects.continuous.layers.attribute-order</sub>
 
 <sub>Discrepancies: D-U16-1 (discrepancies.md)</sub>
 
@@ -6845,11 +6967,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-10-09, 2026-10-10 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 406-copied-augments.test.ts, 403-raq-fix-mods.test.ts · Example test: 406-copied-augments.test.ts::CR 710.2c: when that copy dies, only Borrower of Forms goes to the bin · Key: effects.copies.exact.mods.leaving</sub>
 
-<a id="r710.2d"></a>**710.2d** A [once] ability from a copied augment can be used once per turn on the copy, exactly as if a real mod of that card were on it. See rule 109.9.
+<a id="r710.2d"></a>**710.2d** A [once] ability from a copied augment can be used once per turn on the copy, exactly as if a real mod of that card were on it. A copy of a unit with two augments of the same card has two such uses, one for each. See rule 109.9.
 
 > *Example: a Borrower of Forms that copied a Graxxlid-augmented unit can use Graxxlid's ability once per turn.*
 
-<sub>Basis: Owner ruling, adopted 2026-10-10 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 406-copied-augments.test.ts · Example test: 406-copied-augments.test.ts::CR 710.2d: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid · Key: effects.copies.exact.mods.once</sub>
+> *Example: A copy of a unit wearing two Debt Blep augments offers two activations, and spending one leaves the other.*
+
+> *Example: A copy of a unit wearing two Jollyglop augments triggers twice when it is dealt damage.*
+
+<sub>Basis: Owner ruling, adopted 2026-10-10 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 406-copied-augments.test.ts, 563-copied-and-borrowed-uses.test.ts · Example tests: 406-copied-augments.test.ts::CR 710.2d: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid, 563-copied-and-borrowed-uses.test.ts::CR 710.2d / CT-342: a copy of a unit with two Debt Blep augments offers two activations, 563-copied-and-borrowed-uses.test.ts::CR 710.2d / CT-342: a copy of a unit with two Jollyglop augments triggers twice when it is dealt damage · Key: effects.copies.exact.mods.once</sub>
 
 <a id="r710.3"></a>**710.3.** If a unit becomes a copy more than once, the latest copy applies. It does not have two faces.
 
@@ -6873,7 +6999,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Apex Prime · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 44-hybrids-ld-a.test.ts · Demonstrated by test: 44-hybrids-ld-a.test.ts::CR 710.6: an until-regroup face lapses at regroup, and the revert can be lethal · Key: effects.copies.until-regroup</sub>
 
-<a id="r710.7"></a>**710.7.** An ability that gives a unit "all abilities" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop.
+<a id="r710.7"></a>**710.7.** An ability that gives a unit "all abilities" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.
 
 > *Example: Ancient One has an adjacent ally's static ability, and loses it when the column breaks.*
 
@@ -6881,7 +7007,11 @@ order.
 
 > *Example: Ancient One keeps its own name and stats.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Ancient One; card: Ancient One · Owner ruling, adopted 2026-08-23, 2026-08-24 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts, 117-copy-everything.test.ts · Example tests: 26-metal-a.test.ts::CR 710.7: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks, 117-copy-everything.test.ts::CR 710.7: attributes are the ONE thing an adjacent ally does not donate, 26-metal-a.test.ts::CR 710.7: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body · Key: effects.copies.all-abilities</sub>
+> *Example: Ancient One between two Jollyglops makes a 1/1 for each of them when it is dealt damage.*
+
+> *Example: Ancient One between two Debt Bleps has two activations.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files · Printed: card: Ancient One; card: Ancient One · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-23, 2026-08-24 (quoted from the retired ruling register) · Tests: 26-metal-a.test.ts, 117-copy-everything.test.ts, 585-ancient-one-per-neighbour-uses.test.ts · Example tests: 26-metal-a.test.ts::CR 710.7: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks, 117-copy-everything.test.ts::CR 710.7: attributes are the ONE thing an adjacent ally does not donate, 26-metal-a.test.ts::CR 710.7: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Jollyglops makes two 1/1s per damage from each, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Debt Bleps has two activations · Key: effects.copies.all-abilities</sub>
 
 <a id="r710.7a"></a>**710.7a** In text a unit gets this way, "I" and "me" mean the unit that has the text, not the unit it came from.
 
@@ -6936,9 +7066,11 @@ order.
 
 <a id="r711.1"></a>**711.1.** When a player gains control of a unit, the unit changes sides: it becomes that player's unit, an ally of that player's units and an enemy of its former controller's. Its owner does not change. See rules 102.4, 102.5, 102.7b.
 
-> *Example: a stolen unit recalled goes to the hand of the player who controls it, and its owner is unchanged.*
+> *Example: A stolen unit is recalled: it goes to the hand of the player who controls it.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-18, 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 246-zones-follow-control.test.ts · Example test: 246-zones-follow-control.test.ts::CR 400.4a: ownership does NOT move · Key: effects.control.what</sub>
+> *Example: Its owner is unchanged.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-18, 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Tests: 246-zones-follow-control.test.ts · Example tests: 246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand, not the owner, 246-zones-follow-control.test.ts::CR 400.4a: ownership does NOT move — only the destination does · Key: effects.control.what</sub>
 
 <a id="r711.2"></a>**711.2.** A unit's mods change controller with it. The unit's new controller controls the mods and their text, so text a mod gives the unit refers to the new controller. See rules 102.6a, 720.
 
@@ -7077,6 +7209,12 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: The Everywhere · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 38-light-a.test.ts · Example test: 38-light-a.test.ts::The Everywhere: the silence is CONTINUOUS · Demonstrated by tests: 38-light-a.test.ts::The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION, 38-light-a.test.ts::The Everywhere: a second naming replaces the first · Key: effects.stripping.named-card</sub>
 
+<a id="r712.6a"></a>**712.6a** The Everywhere may name The Everywhere. Every The Everywhere in its region then loses all abilities, the one that named it included, and the naming keeps applying: the namer losing its abilities does not end its own strip. See rule 712.5.
+
+> *Example: A player names The Everywhere with The Everywhere. Every copy in the region loses its abilities, the namer too, and the silence stays on.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: The Everywhere · Owner call · adopted 2026-10-22 · Tests: 586-everywhere-names-itself.test.ts · Example test: 586-everywhere-names-itself.test.ts::CT-329: The Everywhere that names The Everywhere strips itself and every copy beside it, and the strip keeps applying · Key: effects.stripping.named-card.itself</sub>
+
 <a id="r712.7"></a>**712.7.** Text a copy has from the mods of the unit it copied is part of the copy's own card text. An effect that makes the copy lose all attributes and abilities takes it, and "erase all of its mods" finds no mod to erase. See rule 710.2a.
 
 > *Example: Suppression Field strips the augment text a Borrower of Forms copied.*
@@ -7160,11 +7298,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-21, 2026-08-25, 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 79-round17-layers.test.ts · Example test: 79-round17-layers.test.ts::CR 713.4: report #114 · Key: effects.state.no-damage-needed</sub>
 
-<a id="r713.4a"></a>**713.4a** Pure does not save a unit from a state-check death. Pure hides attributes in a combat exchange; it does not change the unit's stats. See rule 802.
+<a id="r713.4a"></a>**713.4a** Pure does not change a unit's printed stats, so it does not by itself save a unit from a state-check death: a Pure 2/3 dealt 3 damage dies. But a Pure unit ignores its own other attributes, the stat-changing ones included (rule 802.25a), so a combination of its own attributes cannot kill it in a state check. See rule 802.
 
-> *Example: a Pure 1/3 that is also Tough and Inverted reads 1/0 and dies in the state check.*
+> *Example: A Pure 1/3 that is also Tough and Inverted ignores both, reads 1/3, and lives through the state check.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 427-cr-continuous-effects.test.ts · Example test: 427-cr-continuous-effects.test.ts::cr:effects.state.no-damage-needed.pure — a Pure 1/3 that is Tough and Inverted reads 1/0 and still dies in the state check · Key: effects.state.no-damage-needed.pure</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: card: Just a Unit · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 427-cr-continuous-effects.test.ts · Example test: 427-cr-continuous-effects.test.ts::cr:effects.state.no-damage-needed.pure — a Pure 1/3 that is Tough and Inverted ignores both, reads 1/3 and lives through the state check · Key: effects.state.no-damage-needed.pure</sub>
 
 <a id="r713.5"></a>**713.5.** In a state check, a token that is in any zone other than play or the stack (a hand, a bin, a cache) ceases to exist. This happens before anything its arrival there caused to trigger is put on the stack. See rules 410.5, 407.3.
 
@@ -7257,7 +7395,7 @@ order.
 
 > *Example: Echo of Despair, gone before its after-combat trigger resolves, still makes its copy.*
 
-<sub>Basis: Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Tests: 401-raq-fix-stack.test.ts, 108-formation-class.test.ts, 427-cr-continuous-effects.test.ts · Example test: 401-raq-fix-stack.test.ts::CR 714.6 Echo of Despair · Key: effects.last-known.face</sub>
+<sub>Basis: Owner ruling, adopted 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Tests: 401-raq-fix-stack.test.ts, 108-formation-class.test.ts, 427-cr-continuous-effects.test.ts · Example test: 401-raq-fix-stack.test.ts::CR 714.6 Echo of Despair · Key: effects.last-known.face</sub>
 
 <a id="r714.7"></a>**714.7.** While its source is still in play, an effect reads the source as it is when the effect resolves, not as it was when the effect was put on the stack. See rules 107.8, 109.3b.
 
@@ -7398,11 +7536,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 36-cache-prophecy.test.ts · Demonstrated by test: 36-cache-prophecy.test.ts::caching a unit sheds its mods to the bin · Key: effects.mods.unstable.cache</sub>
 
-<a id="r720.7c"></a>**720.7c** A token mod has no card of its own. It never enters a bin: however its host leaves play, the token mod is erased. See rules 410.4c, 407.3a.
+<a id="r720.7c"></a>**720.7c** A token mod has no card of its own. It never enters a bin: however its host leaves play, the token mod is erased, and it is not recorded on the erased pile (rule 407.3a). See rules 410.4c, 407.3a.
 
-> *Example: A unit carrying a Wraith token as an augment is recalled, cached or killed. Whichever way it leaves, the Wraith goes to no bin and is not trashed: it is erased.*
+> *Example: A unit carrying a Wraith token as an augment is recalled, cached or killed. Whichever way it leaves, the Wraith goes to no bin, is not trashed and is not recorded on the erased pile: it is erased.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Tests: 141-despawn-mods.test.ts, 129-disposal-tail.test.ts · Example test: 141-despawn-mods.test.ts::CR 407.3a (v): a token mod reaches the erased pile exactly once · Key: effects.mods.unstable.token-mod</sub>
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Tests: 141-despawn-mods.test.ts, 129-disposal-tail.test.ts · Example test: 141-despawn-mods.test.ts::CR 407.3a (v): a token mod reaches neither the erased pile nor a bin, on all three routes · Key: effects.mods.unstable.token-mod</sub>
 
 <a id="r720.7d"></a>**720.7d** The {Unstable} that a mod gives goes with the mod. A unit stops having {Unstable} for this reason when its last mod leaves it, and a unit a mod is moved onto has it from then on. See rule 720.10.
 
@@ -7424,19 +7562,23 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-29 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 224-mod-trash.test.ts · Demonstrated by test: 224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all · Key: effects.mods.trash.erased-with-host</sub>
 
-<a id="r720.9"></a>**720.9.** An effect or a cost can erase a mod off a host that stays in play. The mod card goes to the erased pile of the mod's controller. The host stays in play, and can die if losing the mod leaves it unable to survive. See rules 407.2, 407.2a. *(Engine differs, see F-U17-1.)*
+<a id="r720.9"></a>**720.9.** An effect or a cost can erase a mod off a host that stays in play. The mod card goes to the erased pile of the mod's controller. The host stays in play, and can die if losing the mod leaves it unable to survive. See rules 407.2, 407.2a.
 
 > *Example: Return to Nature negates everything on the stack and erases all mods in the region.*
 
 > *Example: A mod on a stolen unit is erased off it; it goes to the erased pile of the player who stole the unit, not its owner's.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-26, 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 5 tests (2 probes it wrote), all passed; 4 gate test files · Tests: 17-earth-b.test.ts, 178-played-item-and-erased-mods.test.ts, 246-zones-follow-control.test.ts, 428-cr-modifications.test.ts · Example tests: 17-earth-b.test.ts::Return to Nature: negates everything on the stack and erases all mods in the region, 246-zones-follow-control.test.ts::CR 720.9: the erased pile files a stolen mod under the THIEF · Key: effects.mods.erase-off-host</sub>
+> *Example: Return to Nature erases the mods on a stolen unit. Each goes to the erased pile of the player who stole the unit, its mods' controller.*
 
-<a id="r720.9a"></a>**720.9a** A token mod erased off a host that stays in play is not recorded on the erased pile, because a token is not a card. See rule 720.7c. *(Engine differs, see F-U17-4.)*
+<sub>Basis: Owner ruling, adopted 2026-08-26, 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 4 gate test files · Tests: 17-earth-b.test.ts, 178-played-item-and-erased-mods.test.ts, 246-zones-follow-control.test.ts, 428-cr-modifications.test.ts · Example tests: 17-earth-b.test.ts::Return to Nature: negates everything on the stack and erases all mods in the region, 246-zones-follow-control.test.ts::CR 720.9: the erased pile files a stolen mod under the THIEF, 17-earth-b.test.ts::CR 720.9 / CT-258: Return to Nature files each erased mod on its CONTROLLER erased pile, a stolen host included · Key: effects.mods.erase-off-host</sub>
+
+<a id="r720.9a"></a>**720.9a** A token mod erased off a host that stays in play is not recorded on the erased pile either, because a token is not a card (rule 407.3). See rule 720.7c.
 
 > *Example: A Wraith token mod erased off a host that stays in play, as the payment of a cost, is not filed on the erased pile.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 428-cr-modifications.test.ts · Example test: 428-cr-modifications.test.ts::cr:effects.mods.erase-off-host.token — a Wraith token mod erased off a living host as a cost (eraseMod) is not filed on the erased pile · Key: effects.mods.erase-off-host.token</sub>
+> *Example: Return to Nature erases a Wraith token mod with the other mods in the region. The Wraith is not recorded on the erased pile.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 428-cr-modifications.test.ts, 17-earth-b.test.ts · Example tests: 428-cr-modifications.test.ts::cr:effects.mods.erase-off-host.token — a Wraith token mod erased off a living host as a cost (eraseMod) is not filed on the erased pile, 17-earth-b.test.ts::CR 720.9a / CT-259: Return to Nature does not file a TOKEN mod on the erased pile · Key: effects.mods.erase-off-host.token</sub>
 
 <sub>Discrepancies: D-U07-5 (discrepancies.md)</sub>
 
@@ -7660,11 +7802,13 @@ order.
 
 <sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355115946032889914#15; RAQ 1355115946032889914#15 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example · Key: effects.graft.composite.targets</sub>
 
-<a id="r722.4e"></a>**722.4e** A triggered composite with a part that requires a target, when that part has no legal target, is not put on the stack at all. Its untargeted parts do not happen either. See rule 702.8b. *(Engine differs, see F-U14-1.)*
+<a id="r722.4e"></a>**722.4e** A triggered composite with a part that requires a target, when that part has no legal target, is not put on the stack at all. Its untargeted parts do not happen either. See rule 702.8b.
 
 > *Example: Megadeath with Resurrect grafted attacks with no cheap unit in the bin: no Poison 5 either.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Designer: RAQ 1410252965276684418#2 · Tests: 390-raq-stack.test.ts · Example test: 390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all · Key: effects.graft.composite.no-target</sub>
+> *Example: The same composite is never put on the stack at all.*
+
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1410252965276684418#2 · Tests: 390-raq-stack.test.ts, 546-graft-composite-no-target.test.ts · Example tests: 390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all, 546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack · Key: effects.graft.composite.no-target</sub>
 
 <a id="r722.4f"></a>**722.4f** A composite fizzles when it has lost all of its targets, and then none of it happens, its untargeted parts included. While at least one target remains, every part resolves as far as it can. Only a composite that was never targeted cannot fizzle: one with no part that calls for a target, or one whose only target was optional ("up to one") and none was chosen (see rule 704.6g). See rule 704.
 
@@ -7970,7 +8114,7 @@ order.
 
 > *Example: A card that leaves a cache for a bin is trashed.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-09-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 36-cache-prophecy.test.ts · Example tests: 35-rot-debt-trash.test.ts::discarding from hand trashes, by the owner of the bin it enters, 36-cache-prophecy.test.ts::CR 801.2: a card leaving the cache for a BIN is trashed (classified automatically) · Key: keywords.actions.trash</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-09-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 36-cache-prophecy.test.ts · Example tests: 35-rot-debt-trash.test.ts::discarding from hand trashes, by the owner of the bin it enters, 36-cache-prophecy.test.ts::CR 801.2: a card leaving the cache for a BIN is trashed (classified automatically) · Key: keywords.actions.trash</sub>
 
 <sub>Discrepancies: D-U18-2 (discrepancies.md)</sub>
 
@@ -7984,7 +8128,7 @@ order.
 
 > *Example: A spell Tides of the Cosmos plays for free off the deck goes to the bin afterwards and is not trashed.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 15-water-b.test.ts · Example test: 15-water-b.test.ts::CR 405.4a: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash · Demonstrated by tests: 35-rot-debt-trash.test.ts::CR 801.2b: a spell going to the bin after RESOLVING is not trashed (it comes from the stack), 35-rot-debt-trash.test.ts::CR 801.2b: a NEGATED spell is not trashed either · Key: keywords.actions.trash.not-from-stack</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 15-water-b.test.ts · Example test: 15-water-b.test.ts::CR 405.4a: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash · Demonstrated by tests: 35-rot-debt-trash.test.ts::CR 801.2b: a spell going to the bin after RESOLVING is not trashed (it comes from the stack), 35-rot-debt-trash.test.ts::CR 801.2b: a NEGATED spell is not trashed either · Key: keywords.actions.trash.not-from-stack</sub>
 
 <a id="r801.2c"></a>**801.2c** Erasing a card is not trashing it: an erased card never enters a bin. See rules 407.1c, 801.6.
 
@@ -8016,11 +8160,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-29 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 224-mod-trash.test.ts · Demonstrated by test: 224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all · Key: keywords.actions.trash.mods-erased-with-host</sub>
 
-<a id="r801.2h"></a>**801.2h** An {Unstable} card that dies in play is erased instead of entering the bin, so it is not trashed. An {Unstable} card that goes to a bin from an inactive zone (a hand, the deck or a cache) enters the bin and is trashed. See rules 405.5, 400, 803. *(Engine differs, see F-U18-1.)*
+<a id="r801.2h"></a>**801.2h** An {Unstable} card that dies in play is still trashed: trashing is part of its death, not something entering a bin causes, and Unstable changes where the card goes, not its death (rule 803.8i). It does not stay in a bin: it is erased, and ends on the erased pile. An {Unstable} card that goes to a bin from an inactive zone (a hand, the deck or a cache) enters the bin and is trashed. See rules 405.5, 400, 803.
 
 > *Example: Aberrant Statweaver (printed {Unstable}) discarded from a hand goes to the bin and is trashed: the hand is inactive.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Printed: card: Abyssal Evocation · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 125-active-zone.test.ts · Example test: 125-active-zone.test.ts::CR 803.8a: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive · Key: keywords.actions.trash.unstable-death</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 2 gate test files · Printed: card: Abyssal Evocation · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-24, 2026-08-25 (quoted from the retired ruling register) · Tests: 125-active-zone.test.ts, 224-mod-trash.test.ts · Example test: 125-active-zone.test.ts::CR 803.8a: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive · Key: keywords.actions.trash.unstable-death</sub>
 
 <sub>Discrepancies: D-U07-3 (discrepancies.md)</sub>
 
@@ -8062,7 +8206,7 @@ order.
 
 > *Example: Throw off a Cliff deletes a unit with 4 or more defense: it goes to the bin, as a death.*
 
-<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.13; card: Throw off a Cliff; card: Pull Under · Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Tests: 182-correctness-sample.test.ts, 429-cr-keyword-actions.test.ts · Example test: 182-correctness-sample.test.ts::Throw off a Cliff: only defense>=4 is offered, and the target is DELETED (bin, a death) · Key: keywords.actions.delete</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.13; card: Throw off a Cliff; card: Pull Under · Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Tests: 182-correctness-sample.test.ts, 429-cr-keyword-actions.test.ts · Example test: 182-correctness-sample.test.ts::Throw off a Cliff: only defense>=4 is offered, and the target is DELETED (bin, a death) · Key: keywords.actions.delete</sub>
 
 <sub>Discrepancies: D-U18-9 (discrepancies.md)</sub>
 
@@ -8307,13 +8451,13 @@ order.
 
 > *Example: A token attacking in a column behind a Flying unit has Flying too.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Rulebook 2023 p.12 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared · Key: attr.general.shared</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Rulebook 2023 p.12 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared · Key: attr.general.shared</sub>
 
 <a id="r802.1d"></a>**802.1d** Attributes are not shared with the units to the left or right of a unit. They are shared only within its column. See rule 603.1a.
 
 > *Example: A unit attacking in the next column beside a Flying unit does not have Flying.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Rulebook 2023 p.12 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared · Key: attr.general.shared.not-sideways</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: Manual p.24; Rulebook 2023 p.12 · Tests: 421-cr-regions-formations.test.ts · Example test: 421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared · Key: attr.general.shared.not-sideways</sub>
 
 <a id="r802.1e"></a>**802.1e** A unit has the attributes of its column for everything it does while it is in the column, not only for combat damage. Damage it deals with its abilities has those attributes too. See rule 112.6.
 
@@ -8327,7 +8471,7 @@ order.
 
 > *Example: Outside battle, a unit standing beside a Blessed unit gains nothing from it.*
 
-<sub>Basis: Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 298-column-attrs-outside-combat.test.ts, 421-cr-regions-formations.test.ts · Example test: 298-column-attrs-outside-combat.test.ts::CR 712.8b outside battle there are no columns at all · Key: attr.general.shared.combat-only</sub>
+<sub>Basis: Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Tests: 298-column-attrs-outside-combat.test.ts, 421-cr-regions-formations.test.ts · Example test: 298-column-attrs-outside-combat.test.ts::CR 712.8b outside battle there are no columns at all · Key: attr.general.shared.combat-only</sub>
 
 <a id="r802.1g"></a>**802.1g** When a unit leaves a column, the other units in that column immediately lose the attributes it was sharing with them. See rules 603.1a, 608.2b.
 
@@ -8365,7 +8509,7 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 79-round17-layers.test.ts, 08-cards2.test.ts · Example tests: 79-round17-layers.test.ts::CR 802.1k layer 5: hitting 0 mid-calculation is not death, 08-cards2.test.ts::Child of Aether: Balanced (power & defense = max) keeps a 2/0 alive · Key: attr.general.stats-then-death</sub>
 
-<a id="r802.1m"></a>**802.1m** When Tough and Balanced both apply to a unit, they apply one after the other, from top to bottom. If Tough is augmented onto a Balanced unit, or a Tough unit attacks with a Balanced unit behind it, the unit has its defense doubled, then its stats balanced. If Tough is applied to a Balanced unit, it has its stats balanced, then its defense doubled. Attributes granted by a unit's augments apply in the order the mods were gained, the first attached first, and attributes shared from its column apply from front to back. An attribute the unit has from more than one source takes the position of the first. See rules 206.4, 721. *(Engine differs, see F-U19-5.)*
+<a id="r802.1m"></a>**802.1m** When Tough and Balanced both apply to a unit, they apply one after the other, from top to bottom. If Tough is augmented onto a Balanced unit, or a Tough unit attacks with a Balanced unit behind it, the unit has its defense doubled, then its stats balanced. If Tough is applied to a Balanced unit, it has its stats balanced, then its defense doubled. The attributes a unit has from its augments apply first, in the order the mods were attached, the first attached first *(Digital client)*; then its printed attributes; then those effects have given it; then those shared from its column, front to back. An attribute the unit has from more than one source takes the position of the first. See rules 206.4, 721.
 
 > *Example: A 3/1 augmented with Rampart Guardian (Tough) and then Child of Aether (Balanced) is a 3/3; augmented in the other order it is a 3/6.*
 
@@ -8373,17 +8517,21 @@ order.
 
 > *Example: Rampart Guardian (0/4, Tough) attacks with Child of Aether (Balanced) behind it: its defense is doubled (0/8), then its stats balanced, and it is an 8/8.*
 
-<sub>Basis: Mixed · Verified: partial in round 3; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Printed: Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 08-cards2.test.ts, 430-cr-attributes-1.test.ts · Example tests: 08-cards2.test.ts::CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→Tough, 430-cr-attributes-1.test.ts::cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it is doubled, then balanced: Rampart Guardian is an 8/8 · Key: attr.general.application-order</sub>
+> *Example: Child of Aether given Tough by an effect is balanced first (2/2), then its defense doubled: a 2/4.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 2 gate test files · Printed: Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42; Manual p.42 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 08-cards2.test.ts, 430-cr-attributes-1.test.ts · Example tests: 08-cards2.test.ts::CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→Tough, 08-cards2.test.ts::CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances, 430-cr-attributes-1.test.ts::cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it is doubled, then balanced: Rampart Guardian is an 8/8, 08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles · Key: attr.general.application-order</sub>
 
 <sub>Discrepancies: D-U16-1, D-U19-12 (discrepancies.md)</sub>
 
-<a id="r802.1n"></a>**802.1n** A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply. See rule 802.25. *(Engine differs, see F-U19-1, F-U19-2.)*
+<a id="r802.1n"></a>**802.1n** A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply. See rule 802.25.
 
 > *Example: Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies.*
 
+> *Example: A Balanced 4/1 dealt 3 by a Pure source dies: Balanced does not apply in that pairing.*
+
 > *Example: An Unaware source dealing 3 damage to a Pure unit pumped from 2/3 to 4/5 does not read it at its printed 2/3: it survives, where a pumped non-Pure 2/3 dies.*
 
-<sub>Basis: Printed · Verified: confirmed in round 3; verifier ran 5 tests (5 probes it wrote), all passed; 1 gate test file · Printed: card: Just a Unit; Manual p.42 · Owner ruling, adopted 2026-09-05 (quoted from the retired ruling register) · Tests: 430-cr-attributes-1.test.ts · Example test: 430-cr-attributes-1.test.ts::cr:attr.general.pure — Unaware is off in a Pure pairing outside combat: an Unaware source does not collapse a pumped Pure recipient to its printed stats · Key: attr.general.pure</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Just a Unit; Manual p.42 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-09-05 (quoted from the retired ruling register) · Tests: 430-cr-attributes-1.test.ts, 555-pure-ignores-stat-attributes.test.ts · Example tests: 555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian kills it, because its Tough is off in the pairing, 555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Balanced 4/1 dealt 3 by a Pure source dies, because Balanced is off in the pairing, 430-cr-attributes-1.test.ts::cr:attr.general.pure — Unaware is off in a Pure pairing outside combat: an Unaware source does not collapse a pumped Pure recipient to its printed stats · Key: attr.general.pure</sub>
 
 <sub>Discrepancies: D-U19-2 (discrepancies.md)</sub>
 
@@ -8775,13 +8923,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 82-attr-interactions.test.ts · Demonstrated by test: 82-attr-interactions.test.ts::Powerful (source) and Vulnerable (receiver) both apply to one effect hit · Key: attr.vulnerable.powerful</sub>
 
-<a id="r802.11e"></a>**802.11e** A Pure Vulnerable unit, and a Vulnerable unit in an interaction with a Pure card, is not dealt double damage. See rule 802.25. *(Engine differs, see F-U19-3.)*
+<a id="r802.11e"></a>**802.11e** A Pure Vulnerable unit, and a Vulnerable unit in an interaction with a Pure card, is not dealt double damage. See rule 802.25.
 
 > *Example: Chitin Shredder (Powerful), made Pure, deals 2 damage to Crumbling Ancient (Vulnerable, 3/8). It is dealt 2: neither Powerful nor Vulnerable doubles it, and the Ancient survives.*
 
 > *Example: Crumbling Ancient (Vulnerable) made Pure is dealt 2 by a 2-damage effect, not 4.*
 
-<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Just a Unit · Owner ruling, adopted 2026-08-20, 2026-09-05 (quoted from the retired ruling register) · Tests: 290-pure-outside-combat.test.ts, 430-cr-attributes-1.test.ts · Example tests: 290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too, 430-cr-attributes-1.test.ts::cr:attr.vulnerable.pure — a Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4 · Key: attr.vulnerable.pure</sub>
+> *Example: A Pure, Vulnerable Oorblak takes a redirected hit from a column that is not Pure. It is dealt the damage once, not doubled.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Just a Unit · Owner ruling, adopted 2026-08-20, 2026-09-05 (quoted from the retired ruling register) · Tests: 290-pure-outside-combat.test.ts, 430-cr-attributes-1.test.ts, 553-oorblak-pure-redirect.test.ts · Example tests: 290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too, 430-cr-attributes-1.test.ts::cr:attr.vulnerable.pure — a Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4, 553-oorblak-pure-redirect.test.ts::CR 802.11e / CT-227: a Pure Vulnerable Oorblak under a plain column is dealt the redirected hit once, not doubled · Key: attr.vulnerable.pure</sub>
 
 <a id="r802.12"></a>**802.12. Feeble.** Feeble is an attribute. A Feeble unit can't block.
 
@@ -9091,9 +9241,13 @@ order.
 
 <sub>Discrepancies: D-U20-7 (discrepancies.md)</sub>
 
-<a id="r802.17c"></a>**802.17c** The Electric source's controller chooses where the excess goes at each jump. *(Engine differs, see F-U20-1.)*
+<a id="r802.17c"></a>**802.17c** The Electric source's controller chooses where the excess goes at each jump.
 
-<sub>Basis: Owner ruling, adopted 2026-08-18, 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Tests: 05-rulings.test.ts · Demonstrated by test: 05-rulings.test.ts::CR 802.17: electric excess follows a controller-chosen non-overlapping path, atomically · Key: attr.electric.chooser</sub>
+> *Example: A Fight makes the opponent's Electric unit the source. Its controller, not the caster, chooses where the excess goes.*
+
+> *Example: The source's controller's answer steers the excess onto the chosen neighbour.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-18, 2026-10-09 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 05-rulings.test.ts, 552-electric-path-chooser.test.ts · Example tests: 552-electric-path-chooser.test.ts::CR 802.17c / CT-226: a Fight that makes the opponents Electric unit the source asks the SOURCE controller for the path, not the caster, 552-electric-path-chooser.test.ts::CR 802.17c / CT-226: the source controller answer steers the excess onto the chosen neighbour · Demonstrated by test: 05-rulings.test.ts::CR 802.17: electric excess follows a controller-chosen non-overlapping path, atomically · Key: attr.electric.chooser</sub>
 
 <a id="r802.17d"></a>**802.17d** Each jump is optional. At any jump, the source's controller may instead keep all the remaining excess on the unit it has reached; it is then all dealt to that unit and goes no further. This is so even when there is only one unit to jump to.
 
@@ -9297,7 +9451,7 @@ order.
 
 > *Example: Two Thieving units in one column deal combat damage to a player. Their controller draws one card.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1460213341011050536#0 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 388-raq-blocks-and-windows.test.ts · Example test: 388-raq-blocks-and-windows.test.ts::RAQ Thieving: two Thieving units in one column draw ONE card · Key: attr.thieving.per-column</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1460213341011050536#0 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 388-raq-blocks-and-windows.test.ts · Example test: 388-raq-blocks-and-windows.test.ts::RAQ Thieving: two Thieving units in one column draw ONE card · Key: attr.thieving.per-column</sub>
 
 <a id="r802.20c"></a>**802.20c** Piercing excess counts: a blocked Thieving column whose Piercing excess is dealt to the opponent draws a card. See rule 802.16.
 
@@ -9305,11 +9459,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.thieving.piercing — a Thieving and Piercing column blocked by a 1/1 deals 3 of excess to the defending player, and its controller draws a card · Key: attr.thieving.piercing</sub>
 
-<a id="r802.20d"></a>**802.20d** If combat damage a Thieving column deals to an opponent is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, and the column's controller still draws a card (see rule 608.8a). See rules 608.8a, 112.12.
+<a id="r802.20d"></a>**802.20d** If combat damage a Thieving column deals to an opponent is replaced by an effect that still deals it to that player (for example, Blightsea Polyp, which deals it as rot), the damage was still dealt, and the column's controller still draws a card (see rule 608.8a). If all of it is redirected to a unit instead (Oorblak), the column dealt the opponent nothing and draws no card (see rule 608.8c). See rules 608.8a, 112.12.
 
 > *Example: Blightsea Polyp turns a Thieving column's combat damage to the defending player into 1 rot. The attacker still draws a card.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.thieving.replaced — a Thieving column whose hit to the defending player Blightsea Polyp turns into 1 rot costs no life, and its controller still draws a card · Key: attr.thieving.replaced</sub>
+> *Example: A Thieving column's combat damage is all redirected into Oorblak. Its controller draws no card.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 431-cr-attributes-2.test.ts, 581-redirected-hit-deals-nothing.test.ts · Example tests: 431-cr-attributes-2.test.ts::cr:attr.thieving.replaced — a Thieving column whose hit to the defending player Blightsea Polyp turns into 1 rot costs no life, and its controller still draws a card, 581-redirected-hit-deals-nothing.test.ts::CR 802.20 / CT-296: a Thieving column wholly redirected into Oorblak draws no card · Key: attr.thieving.replaced</sub>
 
 <sub>Discrepancies: D-U12-21 (discrepancies.md)</sub>
 
@@ -9329,7 +9485,7 @@ order.
 
 > *Example: Seismomancy kills a unit by damage and draws exactly once.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 4 gate test files · Tests: 07-cards.test.ts, 18-earth-c.test.ts, 263-reaping-counts-the-kill.test.ts · Example tests: 07-cards.test.ts::Flame of History: Reaping, 156-reaping-and-formation.test.ts::Seismomancy: a kill by DAMAGE still pays {Reaping} exactly once · Key: attr.reaping.draw</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 4 gate test files · Tests: 07-cards.test.ts, 18-earth-c.test.ts, 263-reaping-counts-the-kill.test.ts · Example tests: 07-cards.test.ts::Flame of History: Reaping, 156-reaping-and-formation.test.ts::Seismomancy: a kill by DAMAGE still pays {Reaping} exactly once · Key: attr.reaping.draw</sub>
 
 <a id="r802.21b"></a>**802.21b** A unit counts as killed by a Reaping source however the source killed it: by damage, by -1/-1 counters, by changing its stats, or by destroying it outright.
 
@@ -9423,13 +9579,13 @@ order.
 
 <a id="r802.24"></a>**802.24. Lethal.** Lethal is an attribute. Its reminder text reads "Any combat damage from a lethal unit will kill a player." See rule 802.1.
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Gublin · Our glossary (not a source): Lethal · Tests: 44-hybrids-ld-a.test.ts · Demonstrated by test: 44-hybrids-ld-a.test.ts::Gublin: {Lethal} · Key: attr.lethal</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Gublin · Our glossary (not a source): Lethal · Tests: 44-hybrids-ld-a.test.ts · Demonstrated by test: 44-hybrids-ld-a.test.ts::Gublin: {Lethal} · Key: attr.lethal</sub>
 
 <a id="r802.24a"></a>**802.24a** If a column with Lethal deals any combat damage to a player, however little, that player is killed (see rule 104). See rule 104.1.
 
 > *Example: Gublin (1/4) attacks unblocked and deals 1 combat damage to the defending player, who is killed.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Gublin · Tests: 44-hybrids-ld-a.test.ts, 37-attrs-wight.test.ts · Example test: 44-hybrids-ld-a.test.ts::Gublin: {Lethal} · Demonstrated by test: 37-attrs-wight.test.ts::CR 802.24a {Lethal}: any combat damage from a lethal unit kills the player · Key: attr.lethal.kills</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: card: Gublin · Tests: 44-hybrids-ld-a.test.ts, 37-attrs-wight.test.ts · Example test: 44-hybrids-ld-a.test.ts::Gublin: {Lethal} · Demonstrated by test: 37-attrs-wight.test.ts::CR 802.24a {Lethal}: any combat damage from a lethal unit kills the player · Key: attr.lethal.kills</sub>
 
 <sub>Discrepancies: D-U20-17 (discrepancies.md)</sub>
 
@@ -9437,13 +9593,19 @@ order.
 
 > *Example: A Lethal unit blocked by a 2/2 kills it as any unit would; Lethal does nothing to the blocker.*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: Gublin · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.lethal.combat-only — a Lethal unit blocked by a 2/2 kills it as any unit would, and the defending player is untouched · Key: attr.lethal.combat-only</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Printed: card: Gublin · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 431-cr-attributes-2.test.ts · Example test: 431-cr-attributes-2.test.ts::cr:attr.lethal.combat-only — a Lethal unit blocked by a 2/2 kills it as any unit would, and the defending player is untouched · Key: attr.lethal.combat-only</sub>
 
-<a id="r802.24c"></a>**802.24c** If a Lethal column's combat damage to a player is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, so the player is still killed. See rules 608.8a, 112.12.
+<a id="r802.24c"></a>**802.24c** If a Lethal column's combat damage to a player is replaced by an effect that still deals it to that player (Blightsea Polyp, which deals it as rot), the damage was still dealt, so the player is still killed. If it is all dealt to a unit instead (Oorblak), the player was dealt nothing and is not killed; Piercing excess that gets past and is dealt to the player kills. See rules 608.8a, 112.12.
 
 > *Example: Blightsea Polyp turns a Lethal column's combat damage into 1 rot. The player is still killed.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-23, 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 37-attrs-wight.test.ts, 431-cr-attributes-2.test.ts · Example test: 37-attrs-wight.test.ts::CR 802.24c {Lethal} still kills THROUGH the Blightsea replacement · Key: attr.lethal.replaced</sub>
+> *Example: A Lethal column's combat damage is all redirected into Oorblak. The player is not killed.*
+
+> *Example: Piercing Lethal damage beyond Oorblak's lethal damage gets past and reaches the player, who is killed.*
+
+> *Example: Oorblak and Blightsea Polyp together: the redirect takes it all, so the Polyp sees nothing and no one is killed.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 3 gate test files · Printed: card: Oorblak · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-23, 2026-08-28 (quoted from the retired ruling register) · Tests: 37-attrs-wight.test.ts, 431-cr-attributes-2.test.ts, 562-lethal-redirected.test.ts · Example tests: 37-attrs-wight.test.ts::CR 802.24c {Lethal} still kills THROUGH the Blightsea replacement, 431-cr-attributes-2.test.ts::cr:attr.lethal.replaced — a Lethal column whose combat damage is all redirected into Oorblak does not kill the defending player, 562-lethal-redirected.test.ts::CR 608.8c / CT-296: a Piercing Lethal excess that gets past Oorblak reaches the player and kills, 562-lethal-redirected.test.ts::CR 608.8c / CT-296: Oorblak first, then Blightsea Polyp · Key: attr.lethal.replaced</sub>
 
 <sub>Discrepancies: D-U12-21 (discrepancies.md)</sub>
 
@@ -9457,13 +9619,19 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Our glossary (not a source): Pure · Tests: 40-light-c.test.ts · Demonstrated by test: 40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions · Key: attr.pure</sub>
 
-<a id="r802.25a"></a>**802.25a** A Pure card ignores its own other attributes too. See rule 802.12.
+<a id="r802.25a"></a>**802.25a** A Pure card ignores its own other attributes too. Its own stat-changing attributes, Tough, Balanced, Inverted and Unaware, do not apply to it at any time, whether or not it is in an interaction. See rule 802.12.
 
 > *Example: An Alluring column that is itself Pure ignores its own Alluring and never triggers.*
 
 > *Example: A Pure unit that is also Feeble can block.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Just a Unit · Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 53-playtest-round7.test.ts · Example test: 53-playtest-round7.test.ts::CR 802.15n: an Alluring column that is itself {Pure} never even triggers · Key: attr.pure.own</sub>
+> *Example: A Pure Rampart Guardian (0/4, Tough) that is in no interaction reads 0/4.*
+
+> *Example: A Pure Child of Aether (2/0, Balanced) ignores its own Balanced, reads 2/0 and dies in the state check.*
+
+> *Example: A Pure Bubb ignores its own Unaware, so the counters on it count.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Printed: card: Just a Unit · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 53-playtest-round7.test.ts, 584-pure-ignores-its-own-attributes.test.ts, 430-cr-attributes-1.test.ts · Example tests: 53-playtest-round7.test.ts::CR 802.15n: an Alluring column that is itself {Pure} never even triggers, 430-cr-attributes-1.test.ts::cr:attr.feeble.pure — a Pure unit granted Feeble is accepted as a blocker, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Rampart Guardian, in no interaction, ignores its own Tough and reads 0/4, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Child of Aether ignores its own Balanced, reads 2/0 and dies in the state check, 584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Bubb ignores its own Unaware, so its counters count · Key: attr.pure.own</sub>
 
 <a id="r802.25b"></a>**802.25b** In combat, an interaction is one attacking half-column and the blocking half-column paired with it. If either contains a Pure card, the attributes of both are ignored for that exchange. See rule 608.4.
 
@@ -9485,19 +9653,19 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 40-light-c.test.ts · Example tests: 40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can, 40-light-c.test.ts::Just a Unit: {Pure} blocks an Evasive column alone · Key: attr.pure.blocking</sub>
 
-<a id="r802.25e"></a>**802.25e** Pure does not change a unit's printed stats: a Pure 2/3 is destroyed by 3 damage. But Tough, Balanced and Inverted are attributes, so in an interaction involving a Pure card they do not apply (rule 802.1n). See rules 802.6, 802.7, 802.8. *(Engine differs, see F-U19-1.)*
+<a id="r802.25e"></a>**802.25e** Pure does not change a unit's printed stats: a Pure 2/3 is destroyed by 3 damage. But Tough, Balanced and Inverted are attributes, so in an interaction involving a Pure card they do not apply (rule 802.1n). See rules 802.6, 802.7, 802.8.
 
 > *Example: A Tough 0/4 blocks a column containing Just a Unit (Pure). Tough does not apply in that exchange, so the blocker has 4 defense, not 8.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (3 probes it wrote), all passed; no gate test · Printed: card: Just a Unit; Manual p.42 · Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Key: attr.pure.stat-attributes</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests (2 probes it wrote), all passed; 1 gate test file · Printed: card: Just a Unit; Manual p.42 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-20 (quoted from the retired ruling register) · Tests: 555-pure-ignores-stat-attributes.test.ts · Example test: 555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: in combat, Rampart Guardian blocking a 5-power Pure attacker has 4 defense, not 8, and dies · Key: attr.pure.stat-attributes</sub>
 
 <sub>Discrepancies: D-U19-2 (discrepancies.md)</sub>
 
-<a id="r802.25f"></a>**802.25f** Unaware is an attribute, so in combat it does not apply in an exchange involving a Pure card: the units in that exchange are read at their current stats, not their printed ones (rule 802.1n). See rule 802.9. *(Engine differs, see F-U19-2.)*
+<a id="r802.25f"></a>**802.25f** Unaware is an attribute, so in combat it does not apply in an exchange involving a Pure card: the units in that exchange are read at their current stats, not their printed ones (rule 802.1n). See rule 802.9.
 
-> *Example: Bubb (Unaware) blocks a column containing Just a Unit (Pure) that has a +1/+1 counter. Unaware does not apply in that exchange, so the counter counts.*
+> *Example: Bubb (Unaware) blocks a Pure 3/3 that has four +1/+1 counters. Unaware does not apply in that exchange, so the counters count: the 7/7 kills Bubb and survives.*
 
-<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test (a probe it wrote), passed; no gate test · Printed: card: Just a Unit; Manual p.42 · Key: attr.pure.unaware-combat</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Just a Unit; Manual p.42 · Owner call · adopted 2026-10-22 · Tests: 555-pure-ignores-stat-attributes.test.ts · Example test: 555-pure-ignores-stat-attributes.test.ts::CR 802.25f / CT-260: in combat, Bubb blocking a Pure 3/3 with four +1/+1 counters collapses nobody · Key: attr.pure.unaware-combat</sub>
 
 <a id="r802.25g"></a>**802.25g** Outside combat, an interaction is one effect and one recipient of its damage. Pure applies to each such pairing separately.
 
@@ -9507,9 +9675,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-09-05 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 290-pure-outside-combat.test.ts · Demonstrated by test: 290-pure-outside-combat.test.ts::§1 a Pure source · Key: attr.pure.noncombat.source</sub>
 
-<a id="r802.25i"></a>**802.25i** A Pure recipient is dealt plain damage by any source: the source's attributes do not apply to it, and neither do its own Vulnerable and Unaware.
+<a id="r802.25i"></a>**802.25i** A Pure recipient is dealt plain damage by any source: the source's attributes do not apply to it, and neither do its own other attributes, Vulnerable, Unaware, Tough, Balanced and Inverted included.
 
-<sub>Basis: Owner ruling, adopted 2026-09-05 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 290-pure-outside-combat.test.ts · Demonstrated by tests: 290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it, 290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too · Key: attr.pure.noncombat.recipient</sub>
+> *Example: A Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4.*
+
+> *Example: A plain source deals 5 to a Pure Rampart Guardian (0/4, Tough). Its own Tough does not apply, and it dies.*
+
+> *Example: A Deadly column's combat damage is redirected into a Pure Oorblak. Deadly does not apply to it, so 2 damage does not kill it.*
+
+<sub>Basis: Owner ruling, adopted 2026-09-05 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests (2 probes it wrote), all passed; 4 gate test files · Tests: 290-pure-outside-combat.test.ts, 555-pure-ignores-stat-attributes.test.ts, 553-oorblak-pure-redirect.test.ts, 430-cr-attributes-1.test.ts · Example tests: 430-cr-attributes-1.test.ts::cr:attr.vulnerable.pure — a Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4, 555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Pure recipient ignores its own Tough, so a plain source dealing 5 to a Pure Tough 0/4 kills it, 553-oorblak-pure-redirect.test.ts::CR 802.25i / CT-227: a Pure Oorblak ignores the redirected columns Deadly, so 2 damage does not kill it · Demonstrated by test: 290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it · Key: attr.pure.noncombat.recipient</sub>
 
 <a id="r802.25j"></a>**802.25j** A recipient that is not Pure, damaged by the same effect as a Pure recipient, is dealt damage with all attributes applying.
 
@@ -9569,9 +9743,11 @@ order.
 
 <sub>Discrepancies: D-U20-14 (discrepancies.md)</sub>
 
-<a id="r802.26h"></a>**802.26h** Modular is not shared with the other units of a column. See rule 802.1. *(Engine differs, see F-U20-3.)*
+<a id="r802.26h"></a>**802.26h** Modular is not shared with the other units of a column. See rule 802.1.
 
-<sub>Basis: Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Tests: 298-column-attrs-outside-combat.test.ts · Key: attr.modular.not-shared</sub>
+> *Example: A unit given Modular keeps it in a column, and its column-mate does not get it.*
+
+<sub>Basis: Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 298-column-attrs-outside-combat.test.ts · Example test: 298-column-attrs-outside-combat.test.ts::CR 802.26h / CT-261: {Modular} is an object attribute too, so a unit given it keeps it and its column-mate does not · Key: attr.modular.not-shared</sub>
 
 <a id="r803"></a>
 ### 803. Other Keyword Abilities
@@ -9864,7 +10040,7 @@ order.
 
 > *Example: A Borrower of Forms that copied a modded unit is not Unstable and dies to the bin.*
 
-<sub>Basis: Designer · Verified: confirmed in round 2; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1372468222158180424#1; RAQ 1372468222158180424#3 · Tests: 403-raq-fix-mods.test.ts, 393-raq-mods.test.ts, 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::CR 710.2a: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable} · Demonstrated by tests: 403-raq-fix-mods.test.ts::CR 720.7e: a Borrower that copied a modded unit dies to the bin, 393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable · Key: keywords.abilities.unstable.copy</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Designer: RAQ 1372468222158180424#1; RAQ 1372468222158180424#3 · Tests: 403-raq-fix-mods.test.ts, 393-raq-mods.test.ts, 26-metal-a.test.ts · Example test: 26-metal-a.test.ts::CR 710.2a: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable} · Demonstrated by tests: 403-raq-fix-mods.test.ts::CR 720.7e: a Borrower that copied a modded unit dies to the bin, 393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable · Key: keywords.abilities.unstable.copy</sub>
 
 <a id="r803.8h"></a>**803.8h** Moving a mod moves its Unstable with it. The unit the mod leaves stops being Unstable when its last mod is gone, unless something else makes it Unstable; the unit it moves to becomes Unstable. See rule 720.
 
@@ -10312,27 +10488,27 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1817 numbered rules.
+1821 numbered rules.
 
 | basis | rules |
 |---|---|
-| Printed | 460 |
-| Designer | 206 |
-| Owner call | 688 |
-| Engine only | 42 |
-| Mixed | 421 |
+| Printed | 456 |
+| Designer | 205 |
+| Owner call | 689 |
+| Engine only | 40 |
+| Mixed | 431 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1802 |
-| partial | 13 |
+| confirmed | 1812 |
+| partial | 8 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
 | not verified | 1 |
-| text changed | 1 |
+| text changed | 0 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 
@@ -10340,13 +10516,11 @@ Generated from the records and the verdicts. Nothing here is a rule.
 - [109.9n](#r109.9n) A bounded "When I am trashed" ability is limited for each trashed card, not for each player and card name: two copies of one card trashed in the same turn each trigger.
 - [111.3a](#r111.3a) A cost that removes counters from the player's allies, or recalls an ally, likewise uses only the player's own units in the region where the cost is paid.
 - [406.4b](#r406.4b) A self-erasing spell that is negated or fails to resolve goes to the bin. Its "Erase me" never happened.
-- [602.6j](#r602.6j) After blocks, while the defending formation still holds at least one unit, a unit placed into it may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.
 - [603.1c](#r603.1c) Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot.
 - [713.3a](#r713.3a) Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.
 - [723.4e](#r723.4e) Triggered and activated abilities, Viruses, units being cast and Ambushes on the stack are not legal hosts for a Virus.
 - [D1.2i](#rD1.2i) When a player chooses the order of replacement effects (see rule 708.4a), each choice is the unit whose effect it is: the player answers by clicking that unit on the board, the choices are not also buttons in the prompt bar, and the prompt says what is being chosen. A question raised by combat damage or by rot is asked before any of that damage or rot is dealt. The other player sees that a question is open, but not the question; while the rot question is open at the start of deployment, the other player cannot deploy.
 - [D2.3](#rD2.3) A player may turn on auto-pass. With it on, the client passes priority for the player only in a window where passing is the only thing they could do. Auto-pass never passes through an open decision.
-- [D2.9](#rD2.9) This client has no way to keep priority after acting: when a player puts something on the stack in battle, priority goes to the opponent. A player can still respond to their own spell, once priority comes back to them with it still on the stack.
 - [D3.1](#rD3.1) A game may be played with a chess clock, in which each player has a bank of time. The home screen offers three settings: no clock, 45 minutes and 60 minutes.
 - [D3.1a](#rD3.1a) Unless the player chooses otherwise, the bank is 45 minutes for a constructed game and 60 minutes for a live draft.
 - [D3.1b](#rD3.1b) A game with no clock shows no clocks.
@@ -10381,12 +10555,14 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Findings: where the engine differs
 
-73 divergences, filed as 121 findings. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.
+76 divergences, filed as 125 findings. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.
 
 - <a id="F-U01-1"></a><a id="F-U01-3"></a>**F-U01-1** Ownership is lost once a stolen card passes through the thief's hand (CT-233). Rule 102.4. Also found as F-U01-3.
-  Zones follow control, so a stolen unit that is recalled goes to the thief's hand. The hand holds a bare card name, so when the thief replays it the new unit's owner defaults to the playing seat, and the engine records the thief as owner. The rulings say ownership never moves ("its OWNER's, always, forever"). The verifier's probe measured owner = thief after the replay. Low impact today because zones follow control, but the owner field no longer means what the ruling says it keeps meaning. (Measured by a verifier probe; the probe files are not committed.)
-- <a id="F-U01-2"></a><a id="F-U01-4"></a><a id="F-U01-5"></a>**F-U01-2** The engine lets effects reach the stack and the bins across regions (CT-234). Rules 101.6, 110.5a, 601.2a. Also found as F-U01-4, F-U01-5.
-  The rules make the stack, the bins and the caches regional (Manual p.19, Caleb, the owner ruling of 2026-10-11 (“The stack, the bins and the…”)): each region has its own stack, shared by the players present in it, and a player's bin and cache can be reached only where that player is present. The engine keeps one stack for battle and offers a stack item and the cards in either bin as targets from every region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions. Cache targets already agree (owner ruling of 2026-09-05, “A cached card is a target…”). Unit targeting, statics and triggers are region-scoped and agree with print. (Measured by a verifier probe, not committed, and by the 414 CR test.)
+  Zones follow control, so a stolen unit that is recalled goes to the thief's hand. The hand holds a bare card name, so when the thief replays it the new unit's owner defaults to the playing seat, and the engine records the thief as owner. The rulings say ownership never moves ("its OWNER's, always, forever"). The verifier's probe measured owner = thief after the replay. Low impact today because zones follow control, but the owner field no longer means what the ruling says it keeps meaning. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-233): a stolen card keeps its owner through the thief's own hand, bin and cache (551); the routes still open are F-U01-6. Re-checked (F-U01-3): fixed on 2026-10-22 with F-U01-1 (CT-233): 551 keeps the owner through a hand and a bin.
+- <a id="F-U01-2"></a><a id="F-U01-4"></a><a id="F-U01-5"></a>**F-U01-2** The engine lets effects reach the stack and the bins across regions (CT-234). Rule 101.6. Also found as F-U01-4, F-U01-5.
+  The rules make the stack, the bins and the caches regional (Manual p.19, Caleb, the owner ruling of 2026-10-11 (“The stack, the bins and the…”)): each region has its own stack, shared by the players present in it, and a player's bin and cache can be reached only where that player is present. The engine keeps one stack for battle and offers a stack item and the cards in either bin as targets from every region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions. Cache targets already agree (owner ruling of 2026-09-05, “A cached card is a target…”). Unit targeting, statics and triggers are region-scoped and agree with print. (Measured by a verifier probe, not committed, and by the 414 CR test.) Re-checked: fixed on 2026-10-22 (CT-234): each region has its own stack and a bin is reached only where its player is present; 578 drives Molten Riftbreaker at home and in the battle, and the bin reach. Re-checked (F-U01-4): fixed on 2026-10-22 (CT-234): each region has its own stack and a bin is reached only where its player is present; 578 drives Molten Riftbreaker at home and in the battle, and the bin reach. Re-checked (F-U01-5): fixed on 2026-10-22 (CT-234): each region has its own stack and a bin is reached only where its player is present; 578 drives Molten Riftbreaker at home and in the battle, and the bin reach.
+- <a id="F-U01-6"></a><a id="F-U01-7"></a>**F-U01-6** Three routes still give a card the wrong owner: a mod applied from hand, bin or cache, an inline-played spell that resolves into a bin, and effects that move a bin card to a hand. Rule 102.4. Also found as F-U01-7.
+  The rule (owner 2026-10-22, "Reset in shared zones") keeps a card's owner through a player's own hand, bin and cache. The engine fixed the main routes in the 2026-10-22 round (CT-233, guard 551), and its own report lists three it did not: a mod applied from a hand, bin or cache takes the player applying it as its owner (the mod's owner field also means who applied it); a spell played inline that resolves or fizzles into a bin loses its owner; and card effects that move a bin card to a hand pass no owner. Filed as new tickets by that round; not re-measured here.
 - **CT-235**: 10 divergences.
   - <a id="F-U02-1"></a>**F-U02-1** X-cost test titles still cite the owner ruling of 2026-08-25 (“the owner's answers to the 27…”), which the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) reversed. Rule 107.5.
     Three tests in 133-x-cost-semantics are titled "the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) — …" although the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) reversed §20. Their assertions agree with the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) (X = 3 costs [3], X = 5 costs [5]; no Sentry costs exactly X), and one of them is the guard for RAQ 1359629594512068770#1. The labels point a reader at reversed law. Retitle them to the owner ruling of 2026-10-09 (“Stasis Sentry raises an X spell's…”) (or to the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) for the no-Sentry cases).
@@ -10424,14 +10600,14 @@ Generated from the records and the verdicts. Nothing here is a rule.
   - <a id="F-U24-4"></a>**F-U24-4** Announcements of a loss the player paid for are still shown only in the game log. Rule D7.4.
     The owner ruling of 2026-08-30 (“nothing may exist only in the…”) requires an announcement the player acts on or has lost something by to reach a surface other than the log. The verifier measured the client's own derived inventory in 244-log-is-not-the-only-surface: 39 announcements are log-only, 21 of them tier 1 (spells fizzling, costs that cannot be paid, declined costs, life not gained or not lost, nothing lured). The owner ruling of 2026-08-30 (“nothing may exist only in the…”) records nineteen and the test asserted 21 (20 since 2026-10-16, when the Wraith change removed one), so the ruling's count is also stale. Re-checked: the cost-toast tier (CT-142, done; 256-cost-toasts passes) gives every tier-1 announcement a toast, so none is log-only; what stands is the ruling's "Nineteen ... remain log-only" sentence, filed with the stale register text.
 - <a id="F-U02-3"></a>**F-U02-3** A Prismite cannot be exchanged into a Shard, though the printed card says "a non-prismite resource" (CT-237). Rule 106.8d.
-  doExchangePrismite accepts only an element of the game. The printed Prismite reads "Erase me: Create a non-prismite resource, then activate it" and Manual p.18 says active Prismites "may be exchanged for other resources"; a Shard is a non-prismite resource. No ruling forbids the Shard (the owner ruling of 2026-09-19 (“Recycling can make a Prismite”) rules the Prismite-into-Prismite case), and test 308's title asserts the refusal. Low impact: a Shard is never better than an element resource.
+  doExchangePrismite accepts only an element of the game. The printed Prismite reads "Erase me: Create a non-prismite resource, then activate it" and Manual p.18 says active Prismites "may be exchanged for other resources"; a Shard is a non-prismite resource. No ruling forbids the Shard (the owner ruling of 2026-09-19 (“Recycling can make a Prismite”) rules the Prismite-into-Prismite case), and test 308's title asserts the refusal. Low impact: a Shard is never better than an element resource. Re-checked: fixed on 2026-10-22 (CT-237): a Prismite may be exchanged into a Shard, never into a Prismite (308).
 - **CT-238**: 2 divergences.
   - <a id="F-U03-1"></a>**F-U03-1** Wraith test title still calls the self-pick an unconfirmed reading after the owner confirmed it. Rule 110.4a.
     The owner ruling of 2026-08-22 (“The Wraith token, redesigned; and "an…”) item 4 (owner, 2026-08-21) settled that "an ally" may be the Wraith itself, and the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”) (owner, 2026-08-30) made "an ally includes itself" general. The 37-attrs-wight test is still titled "(unconfirmed reading)" with a warning mark. The title states an open question that is closed; retitle it to cite the ruling.
   - <a id="F-U07-3"></a><a id="F-U14-4"></a><a id="F-U21-1"></a>**F-U07-3** Abyssal Evocation timing test is still titled OPEN after the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) ruled it. Rules 405.9, 702.2a, 803.8c. Also found as F-U14-4, F-U21-1.
     The owner ruling of 2026-08-23 (“Playing a spell from your BIN…”) left open whether a bin-played card obeys its printed timing. The owner ruling of 2026-08-25 (“the owner's answers to the 27…”) (owner) answered: a bin-play grant does not waive printed timing ("Already correct — Abyssal Evocation, Writhing Host."). The test and its comment still call the question open and say the assertion "flips" if the owner rules otherwise.
 - <a id="F-U03-2"></a>**F-U03-2** Gatekeeper of Souls compels targets chosen outside battle (CT-239). Rule 110.12.
-  Printed: "When a player selects targets for an effect during battle, I must be targeted if able." The engine applies the compulsion by region only, so in deployment a player whose own Gatekeeper stands in their home region can only aim a unit-targeting effect (Overbloom) at the Gatekeeper. Measured by the round-1 verifier's probe. (Measured by a verifier probe; the probe files are not committed.)
+  Printed: "When a player selects targets for an effect during battle, I must be targeted if able." The engine applies the compulsion by region only, so in deployment a player whose own Gatekeeper stands in their home region can only aim a unit-targeting effect (Overbloom) at the Gatekeeper. Measured by the round-1 verifier's probe. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-239): Gatekeeper of Souls compels targets only during a battle in its region (544).
 - **CT-240**: 3 divergences.
   - <a id="F-U03-3"></a>**F-U03-3** The owner ruling of 2026-08-19 (“Per-slot target legality, re-checked at resolution”) Enigmatic Warder test asserts nothing on its main path. Rule 110.4c.
     49-playtest-round6 'the owner ruling of 2026-08-19 (“Per-slot target legality, re-checked at resolution”): Enigmatic Warder cannot redirect an ENEMY into an ally slot' passes twice and then looks for Fight on the stack; Fight has resolved by then, so the ally-slot assertion inside `if (after)` never runs, and the remaining assertion holds whatever the Warder did. Assert before passing, or drop the guard.
@@ -10457,19 +10633,19 @@ Generated from the records and the verdicts. Nothing here is a rule.
   - <a id="F-U21-2"></a>**F-U21-2** Three test titles claim more than their tests assert. Rule 803.8d.
     Each title names a behaviour the body never checks. The 12-fire-a Abyssal Evocation test says "until regroup" ends the stamp but never reaches regroup. The 403 the owner ruling of 2026-10-09 (“A copy is read by its…”) test says the Borrower dies to the bin but never kills it (26-metal-a's the owner ruling of 2026-10-09 (“A copy is read by its…”) test does). The owner ruling of 2026-08-19 (“Prophecy conditions count forward from the…”) "One Battle Passes" title says both battles tick, but the test counts only one round. Each needs an assertion added or its title narrowed. These are test problems, not engine bugs: the round-1 verifier measured the engine and it agrees.
 - <a id="F-U03-5"></a>**F-U03-5** A deployment graft onto Mohruung is attached before Mohruung's trigger resolves (CT-242). Rule 110.11.
-  The designer: grafting onto Mohruung, "he will trigger first". The engine fires the targeted event, attaches the graft at once, and only then resolves the queued trigger: the round-2 verifier's probe logs "Flame Juggle grafts onto Mohruung" before "Resolving Mohruung: create a Crystal 2". The RAQ guard (393 point 5) asserts only that a Crystal is made, not the order. Pending D-U03-13. (Measured by a verifier probe; the probe files are not committed.)
+  The designer: grafting onto Mohruung, "he will trigger first". The engine fires the targeted event, attaches the graft at once, and only then resolves the queued trigger: the round-2 verifier's probe logs "Flame Juggle grafts onto Mohruung" before "Resolving Mohruung: create a Crystal 2". The RAQ guard (393 point 5) asserts only that a Crystal is made, not the order. Pending D-U03-13. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-242; owner "Resolves first", D-U03-13): the graft, and a deployment augment, attach after Mohruung's trigger resolves (547, 576).
 - <a id="F-U03-6"></a>**F-U03-6** Enigmatic Warder can be activated at an effect it could never be a legal target of. Rule 110.9.
   Caleb (1403796597896253511): 'you can change any spell where warder could be a legal target'. The engine lets Warder's [two] ability aim at any stack effect, including a targetless trigger (511 'CT-306 Enigmatic Warder at a targetless trigger') or an effect whose every slot Warder cannot fill; it then pays [two] for nothing after a confirm. Under Caleb's criterion those effects should not be offered to Warder at all. Gravitational Correction / Divine Intervention are covered by the owner call and are not part of this. Re-checked: fixed on 2026-10-21: Enigmatic Warder's ability now targets only an effect with a target Warder could legally be (Caleb, RQ 1403796597896253511); 530 shows a targetless trigger and effects it cannot fill are not offered, while Gravitational Correction and Divine Intervention still are.
-- <a id="F-U04-2"></a><a id="F-U04-3"></a><a id="F-U04-4"></a>**F-U04-2** An Ambush ignores imposed and "cards" cost modifiers (Arbiter of Armistice, Vengeance), though it is a card played (CT-243). Rules 111.10c, 111.10e. Also found as F-U04-3, F-U04-4.
-  The owner ruling of 2026-08-24 (“a spell token is a token…”) counts an Ambush as a card being played, and Arbiter of Armistice ("Cards played during battle gain [Pay 2 life]") and Vengeance ("Cards your opponents play during battle gain '[Sacrifice a unit]'") print the noun "Cards". Measured by the round-1 verifier: an Ambush played under Arbiter of Armistice pays no life, while a spell card in the same spot is billed 2 life; doAmbush pays only the Ambush line's mana and never consults the card-play cost layer. The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) records the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)
+- <a id="F-U04-2"></a><a id="F-U04-3"></a><a id="F-U04-4"></a>**F-U04-2** An Ambush ignores imposed and "cards" cost modifiers (Arbiter of Armistice, Vengeance), though it is a card played (CT-243). Rule 111.10e. Also found as F-U04-3, F-U04-4.
+  The owner ruling of 2026-08-24 (“a spell token is a token…”) counts an Ambush as a card being played, and Arbiter of Armistice ("Cards played during battle gain [Pay 2 life]") and Vengeance ("Cards your opponents play during battle gain '[Sacrifice a unit]'") print the noun "Cards". Measured by the round-1 verifier: an Ambush played under Arbiter of Armistice pays no life, while a spell card in the same spot is billed 2 life; doAmbush pays only the Ambush line's mana and never consults the card-play cost layer. The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) records the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-243, owner "Yes, it pays"): an Ambush pays the imposed play costs, Arbiter of Armistice's life and Vengeance's sacrifice (548). Re-checked (F-U04-3): fixed on 2026-10-22 (CT-243, owner "Yes, it pays"): an Ambush pays the imposed play costs, Arbiter of Armistice's life and Vengeance's sacrifice (548). Re-checked (F-U04-4): fixed on 2026-10-22 (CT-243, owner "Yes, it pays"): an Ambush pays the imposed play costs, Arbiter of Armistice's life and Vengeance's sacrifice (548).
 - <a id="F-U04-5"></a>**F-U04-5** "sacrifice me. If you do" triggers sacrifice their source as the ability goes on the stack; print makes it part of the effect (CT-264). Rule 111.8.
   Eldritch Dreamtender, Cthyrian Rector and Void Mandible print "When …, sacrifice me. If you do, …" as effect prose with no [cost] bracket, so the sacrifice happens as the ability resolves: players can respond while the unit is still in play, and if it is gone by then the "If you do" part does nothing. The owner ruling of 2026-08-22 (“"Sacrifice me" is a CAST COST…”) (owner) reads the prose as a cast cost, and the engine follows the owner ruling of 2026-08-22 (“"Sacrifice me" is a CAST COST…”): 26-metal-a asserts the sacrifice is paid on the way to the stack. Print outranks the owner ruling of 2026-08-22 (“"Sacrifice me" is a CAST COST…”) (D-U04-2). Suspected from the ruling and the test title; not re-measured against the engine in this pass. Re-checked: fixed on 2026-10-21 (report #259, CT-264): the three "sacrifice me. If you do" triggers go on the stack with their source in play and sacrifice it as they resolve; killed in response, nothing happens. 515 drives all three cards; RQ 1363535826436493614 is the designer saying so.
 - <a id="F-U04-6"></a>**F-U04-6** "sacrifice me. If you do, …" triggers are sacrificed as a cast cost, against the designer's ruling. Rule 111.8.
   Eldritch Dreamtender, Cthyrian Rector and Void Mandible carry castCost {sacrificeUnits, from:'self'} (owner ruling of 2026-08-22, “"Sacrifice me" is a CAST COST…”), so the source is sacrificed as the trigger goes on the stack. Caleb Gannon ruled on 2025-04-20, on Eldritch Dreamtender, that the sacrifice happens on resolution: if the opponent kills it with the trigger on the stack, it cannot be sacrificed and nothing is discarded. In the engine the opponent can never respond while the source is still in play, so the opponent loses the interaction the designer describes. Re-checked: fixed on 2026-10-21 with F-U04-5 (report #259, CT-264): 515 shows the sacrifice made as the trigger resolves, and nothing done when the source was killed in response.
 - <a id="F-U05-1"></a>**F-U05-1** Spells carry power and toughness values in printed.json that the cards do not print (CT-244). Rule 206.2.
-  Spells print no stats (stats mark a unit, Rulebook 2023 p.3), but the oracle transcription has power and toughness fields on spell rows and the extractor copies them: 91 of 138 spells in printed.json have non-zero values (Arc Lightning 1/3, Spectrogenesis 4/5, Interdiction Rift 4/3 in the oracle). Suspected harmless; check that no engine or UI path reads a spell's power or toughness (an "Everything is Deadly" reach onto spells, a copy of a spell, Unaware reading printed stats, a card-stats or search surface). If none does, zero them at extraction so nothing can start to.
-- <a id="F-U06-1"></a><a id="F-U06-3"></a><a id="F-U06-4"></a><a id="F-U14-3"></a><a id="F-U14-6"></a><a id="F-U14-7"></a>**F-U06-1** Wake the Dead plays a spell unit out of a bin without casting its spell (CT-245). Rules 303.5, 303.6, 303.9, 701.4, 703.5. Also found as F-U06-3, F-U06-4, F-U14-3, F-U14-6, F-U14-7.
-  The owner ruling of 2026-08-25 (“"I spawn with N counters" is…”) rules that Wake the Dead's "Play up to two units" is a real play, and the Hooba-Pon RAQ says playing a spell unit means its spell part happens and the body arrives only if the spell resolves. The owner ruling of 2026-08-25 (“"I spawn with N counters" is…”) itself records, under "Left open", that Wake the Dead spawns a spell unit's body and skips the spell. Nothing later in the register or the ledgers closes it. Suspected still live; a test should play a spell unit (Leaping Lillik, Spawntender) through Wake the Dead and assert that its spell effect happens. The verifier measured it (round 1 probe: Jelly played from a bin by Wake the Dead): the body arrives, no target is asked, no spell-played event fires, and the victim stays 7/5. Affects rule 303.5 and rule 303.6 too.
+  Spells print no stats (stats mark a unit, Rulebook 2023 p.3), but the oracle transcription has power and toughness fields on spell rows and the extractor copies them: 91 of 138 spells in printed.json have non-zero values (Arc Lightning 1/3, Spectrogenesis 4/5, Interdiction Rift 4/3 in the oracle). Suspected harmless; check that no engine or UI path reads a spell's power or toughness (an "Everything is Deadly" reach onto spells, a copy of a spell, Unaware reading printed stats, a card-stats or search surface). If none does, zero them at extraction so nothing can start to. Re-checked: fixed on 2026-10-22 (CT-244): spells and spell tokens are zeroed at extraction, and stat searches leave spells out (ui 565, 567).
+- <a id="F-U06-1"></a><a id="F-U06-3"></a><a id="F-U06-4"></a><a id="F-U14-3"></a><a id="F-U14-6"></a><a id="F-U14-7"></a>**F-U06-1** Wake the Dead plays a spell unit out of a bin without casting its spell (CT-245). Rules 303.9, 701.4, 703.5. Also found as F-U06-3, F-U06-4, F-U14-3, F-U14-6, F-U14-7.
+  The owner ruling of 2026-08-25 (“"I spawn with N counters" is…”) rules that Wake the Dead's "Play up to two units" is a real play, and the Hooba-Pon RAQ says playing a spell unit means its spell part happens and the body arrives only if the spell resolves. The owner ruling of 2026-08-25 (“"I spawn with N counters" is…”) itself records, under "Left open", that Wake the Dead spawns a spell unit's body and skips the spell. Nothing later in the register or the ledgers closes it. Suspected still live; a test should play a spell unit (Leaping Lillik, Spawntender) through Wake the Dead and assert that its spell effect happens. The verifier measured it (round 1 probe: Jelly played from a bin by Wake the Dead): the body arrives, no target is asked, no spell-played event fires, and the victim stays 7/5. Affects rule 303.5 and rule 303.6 too. Re-checked: fixed on 2026-10-22 (CT-245): Wake the Dead plays its units onto the stack, and a spell unit casts its spell and arrives only if it resolves (557). Re-checked (F-U06-3): fixed on 2026-10-22 (CT-245): Wake the Dead plays its units onto the stack, and a spell unit casts its spell and arrives only if it resolves (557). Re-checked (F-U06-4): fixed on 2026-10-22 (CT-245): Wake the Dead plays its units onto the stack, and a spell unit casts its spell and arrives only if it resolves (557). Re-checked (F-U14-3): fixed on 2026-10-22 (CT-245, CT-255): Wake the Dead and The Bonesculptor make real plays that go on the stack (557, 558). Re-checked (F-U14-6): fixed on 2026-10-22 (CT-245, CT-255): Wake the Dead and The Bonesculptor make real plays that go on the stack (557, 558). Re-checked (F-U14-7): fixed on 2026-10-22 (CT-245, CT-255): Wake the Dead and The Bonesculptor make real plays that go on the stack (557, 558).
 - **CT-231**: 3 divergences.
   - <a id="F-U07-5"></a><a id="F-U18-2"></a>**F-U07-5** Glossary Glimpse row says an expired glimpse card is still moddable; the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) says it is not. Rules 403.5, 801.9i. Also found as F-U18-2.
     Our Glimpse row ends "public, targetable, and still moddable out of the zone at full price". The owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) refuses grafting and augmenting from an expired glimpse ("an expired glimpse is not a graft, not an augment, not anything"), and the Cache row of the same glossary agrees with the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”). Test 177 does not catch it. Fix the Glimpse row.
@@ -10478,63 +10654,67 @@ Generated from the records and the verdicts. Nothing here is a rule.
   - <a id="F-REG-2"></a>**F-REG-2** The Electric glossary row still says excess is lost at the end of the chain. No rule of its own.
     ui/glossary.ts's {Electric} row (cites the owner ruling of 2026-08-18 (“Electric damage pathing […]”) only) says each unit absorbs only enough to die and 'When the chain runs out the excess is lost'. The owner ruling of 2026-10-09 (“{Electric}'s jump is optional, and excess…”) (amending the owner ruling of 2026-08-18 (“Electric damage pathing […]”)) rules each hop optional (excess may stay on the current unit) and a dead-end remainder is dealt to the last unit, never lost; the owner ruling of 2026-10-10 (“{Piercing} is elective outside combat too […]”) makes the Piercing dead end elective. The row's text states superseded law; its text was left alone (B3 changes headings only).
 - <a id="F-U07-6"></a><a id="F-U07-10"></a><a id="F-U07-11"></a><a id="F-U18-1"></a><a id="F-U18-3"></a>**F-U07-6** Engine trashes a dying {Unstable} body via the bin; print and Caleb say it never enters the bin (CT-246). Rules 405.5, 801.2h. Also found as F-U07-10, F-U07-11, F-U18-1, F-U18-3.
-  Per the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) the engine pushes a dying {Unstable} card into the bin, trashes it there, then sweeps it to the erased pile. The printed reminder ("If they would enter a bin, erase them instead.") and Caleb's glossary line in the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) make it a replacement for entering the bin, which would mean no trash. Under the authority order rule 405.5 states the printed reading. A divergence, not necessarily a bug: it is open as D-U07-3 and depends on the owner's answer there.
+  Per the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) the engine pushes a dying {Unstable} card into the bin, trashes it there, then sweeps it to the erased pile. The printed reminder ("If they would enter a bin, erase them instead.") and Caleb's glossary line in the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) make it a replacement for entering the bin, which would mean no trash. Under the authority order rule 405.5 states the printed reading. A divergence, not necessarily a bug: it is open as D-U07-3 and depends on the owner's answer there. Re-checked: by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it. Re-checked (F-U07-10): by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it. Re-checked (F-U07-11): by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it. Re-checked (F-U18-1): by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it. Re-checked (F-U18-3): by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it.
 - <a id="F-U07-7"></a><a id="F-U07-9"></a><a id="F-REG-1"></a>**F-U07-7** A stolen unit erased from play is filed on its OWNER's erased pile, not its controller's (CT-229). Rule 400.4. Also found as F-U07-9, F-REG-1.
-  The owner ruling of 2026-08-30 (“zones follow control, in all four…”) ("All four follow control") corrected the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) item 3, and every other route (bin, hand, cache, a mod erased off a host, an {Unstable} death's sweep) files the card under the controller. Erasing a unit from play still emits the erased event with the owner's seat, so a stolen unit erased by Banishment or Celestial Purge lands on its owner's erased pile. Measured by the round-1 verifier probe; test 246 covers only the mod route. (Measured by a verifier probe; the probe files are not committed.)
-- <a id="F-U08-1"></a><a id="F-U09-3"></a>**F-U08-1** Resource, haste and deployment steps run simultaneously and hidden instead of initiative player first, then non-initiative player (CT-247). Rules 500.3, 501.4, 507.3. Also found as F-U09-3.
-  Print (Manual p.27 legend for 1v1, Rulebook 2023 p.5, Manual p.20) has the initiative player take the resource step and the haste step (and deployment) first and the non-initiative player after, seeing what was done. The engine runs these as hidden simultaneous segments: both seats act at once, interleaved, and the non-initiative player never gets the information print gives them. The verifier measured it: the non-initiative seat activated a resource, finished the resource step and played a haste card before the initiative seat acted. Initiative-first order holds in battle only. The draft-step sync is the separate finding F-U08-4. (Measured by a verifier probe; the probe files are not committed.)
-- <a id="F-U08-4"></a>**F-U08-4** Planning steps do not sync: a seat that has drafted starts its resource step while the other still drafts (CT-248). Rules 500.2, 501.4a.
-  Print says turns sync up at the end of each step and the draft step is complete once all players have passed their pack. The engine gates the resource step on the acting seat's own draft (and, in constructed, its own recycle of 2) only, so a seat that has committed its draft may activate, recycle and even finish its resource step while the other seat is still drafting. The verifier measured it in a live draft. The hidden plan segment keeps the early start out of the other seat's view, so the observable effect may be nil; either sync the step or ratify the early start as a digital convention. (Measured by a verifier probe; the probe files are not committed.)
-- <a id="F-U10-3"></a><a id="F-U11-3"></a><a id="F-U11-4"></a>**F-U10-3** Defending formation adjacency ignores unblocked columns between blockers (CT-249). Rules 603.2, 603.2a, 606.1f. Also found as F-U11-3, F-U11-4.
-  adjacentInFormation builds the defender grid from the sorted block keys, so blockers on attacking columns 1 and 3 (column 2 unblocked) are treated as left/right neighbours. Inspiration then buffs across the gap (round-1 verifier probe on rule 603.2). The Manual makes blocking position matter for adjacency, and a blocking column is keyed to the attacking column it faces, so the unblocked column is a gap. The engine's own comment calls its reading an approximation. (Measured by a verifier probe; the probe files are not committed.)
+  The owner ruling of 2026-08-30 (“zones follow control, in all four…”) ("All four follow control") corrected the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) item 3, and every other route (bin, hand, cache, a mod erased off a host, an {Unstable} death's sweep) files the card under the controller. Erasing a unit from play still emits the erased event with the owner's seat, so a stolen unit erased by Banishment or Celestial Purge lands on its owner's erased pile. Measured by the round-1 verifier probe; test 246 covers only the mod route. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-229): a stolen unit erased from play is filed on its controller's erased pile, with its mods (246). Re-checked (F-U07-9): fixed on 2026-10-22 with F-U07-7 (CT-229, 246). Re-checked (F-REG-1): fixed on 2026-10-22 with F-U07-7 (CT-229, 246).
+- <a id="F-U08-1"></a><a id="F-U09-3"></a>**F-U08-1** Resource, haste and deployment steps run simultaneously and hidden instead of initiative player first, then non-initiative player (CT-247). Rules 501.4, 507.3. Also found as F-U09-3.
+  Print (Manual p.27 legend for 1v1, Rulebook 2023 p.5, Manual p.20) has the initiative player take the resource step and the haste step (and deployment) first and the non-initiative player after, seeing what was done. The engine runs these as hidden simultaneous segments: both seats act at once, interleaved, and the non-initiative player never gets the information print gives them. The verifier measured it: the non-initiative seat activated a resource, finished the resource step and played a haste card before the initiative seat acted. Initiative-first order holds in battle only. The draft-step sync is the separate finding F-U08-4. (Measured by a verifier probe; the probe files are not committed.) Re-checked: wontfix 2026-10-22 (CT-247): the owner keeps the simultaneous hidden resource, haste and deployment steps as a house rule; rule D1.5 states the convention. Re-checked (F-U09-3): wontfix 2026-10-22 (CT-247): the owner keeps the simultaneous hidden resource, haste and deployment steps as a house rule; rule D1.5 states the convention.
+- <a id="F-U08-4"></a>**F-U08-4** Planning steps do not sync: a seat that has drafted starts its resource step while the other still drafts (CT-248). Rule 501.4a.
+  Print says turns sync up at the end of each step and the draft step is complete once all players have passed their pack. The engine gates the resource step on the acting seat's own draft (and, in constructed, its own recycle of 2) only, so a seat that has committed its draft may activate, recycle and even finish its resource step while the other seat is still drafting. The verifier measured it in a live draft. The hidden plan segment keeps the early start out of the other seat's view, so the observable effect may be nil; either sync the step or ratify the early start as a digital convention. (Measured by a verifier probe; the probe files are not committed.) Re-checked: wontfix 2026-10-22 (CT-248): the owner keeps the early start of the resource step as a digital convention; rule D1.6 states it.
+- <a id="F-U10-3"></a><a id="F-U11-3"></a><a id="F-U11-4"></a>**F-U10-3** Defending formation adjacency ignores unblocked columns between blockers (CT-249). Rules 603.2, 606.1f. Also found as F-U11-3, F-U11-4.
+  adjacentInFormation builds the defender grid from the sorted block keys, so blockers on attacking columns 1 and 3 (column 2 unblocked) are treated as left/right neighbours. Inspiration then buffs across the gap (round-1 verifier probe on rule 603.2). The Manual makes blocking position matter for adjacency, and a blocking column is keyed to the attacking column it faces, so the unblocked column is a gap. The engine's own comment calls its reading an approximation. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-249): the defending grid keeps an unblocked attacking column as a gap, so blockers either side of it are not neighbours (560). Re-checked (F-U11-3): fixed on 2026-10-22 with F-U10-3 (CT-249, 560). Re-checked (F-U11-4): fixed on 2026-10-22 with F-U10-3 (CT-249, 560).
 - <a id="F-U10-6"></a><a id="F-U10-7"></a>**F-U10-6** A lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation (CT-250). Rule 602.6f. Also found as F-U10-7.
-  Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6). (Measured by a verifier probe; the probe files are not committed.)
+  Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6). (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-250): a dead source places into the formation it remembers even when that formation is empty (561, Hooba-Lin, -Bot, -God and -Pon). Re-checked (F-U10-7): fixed on 2026-10-22 with F-U10-6 (CT-250, 561).
 - <a id="F-U10-8"></a>**F-U10-8** Stack-effect targets are not region-filtered. Rule 601.2a.
   pushStackTargets offers every item on the single game stack as a 'target effect'/'target spell effect' with no check of the item's region against the resolving region, contrary to 'every single effect is specific to the region it takes place in'. Already tracked as F-U01-2; probe shows an item stamped with another region is offered in battle. Natural reachability not demonstrated.
 - <a id="F-U12-1"></a><a id="F-U15-3"></a><a id="F-U15-5"></a><a id="F-U20-6"></a>**F-U12-1** A redirected Piercing leftover is offered to other replacement holders (CT-228). Rules 608.8c, 708.4a, 802.16p. Also found as F-U15-3, F-U15-5, F-U20-6.
   The designer: Piercing combat damage redirected into Oorblak is dealt to Oorblak up to its lethal damage and the leftover goes to the player, because 'replacement effects only apply once in an effect'; the register states the claim as 'not redirected again'. The pilot verifier measured that the engine stops only the SAME replacement from applying again: a second Oorblak or a Blightsea Polyp in the region takes the leftover, and only a holder with a higher entity id sees it (a lower-id Polyp consumes the whole hit first). The rule states the ruling (no further redirection). Re-checked: not a bug: the owner ruled on 2026-10-16 that a Piercing leftover "is still considered combat damage, so it'd go to the second one" and adopted Caleb's chain (each replacement effect applies once); the engine's chain is the rule (CT-228 ruled correct; 469 shows it). Re-checked (F-U15-3): not a bug: the owner ruled on 2026-10-16 that a Piercing leftover "is still considered combat damage, so it'd go to the second one" and adopted Caleb's chain (each replacement effect applies once); the engine's chain is the rule (CT-228 ruled correct; 469 shows it). Re-checked (F-U15-5): not a bug: the owner ruled on 2026-10-16 that a Piercing leftover "is still considered combat damage, so it'd go to the second one" and adopted Caleb's chain (each replacement effect applies once); the engine's chain is the rule (CT-228 ruled correct; 469 shows it). Re-checked (F-U20-6): not a bug: the owner ruled on 2026-10-16 that a Piercing leftover "is still considered combat damage, so it'd go to the second one" and adopted Caleb's chain (each replacement effect applies once); the engine's chain is the rule (CT-228 ruled correct; 469 shows it).
 - <a id="F-U12-2"></a><a id="F-U12-3"></a>**F-U12-2** 02-combat test title asserts the superseded no-priority-between-sub-steps law (CT-230). Rules 608.3b, 608.3e. Also found as F-U12-3.
   02-combat.test.ts 'the owner ruling of 2026-08-18 (“Formation changes during combat […]”)/Swift: swift column deals damage first, no priority between sub-steps' names the owner ruling of 2026-08-18 (“Formation changes during combat […]”)’s second clause, which the owner ruling of 2026-09-16 (“A split damage step is several…”) amended: a split damage step opens a priority window between sub-steps. The pilot verifier's probe found this test's own board stops at that window (damageSubs Swift and normal, step damageWindow); its assertions are made there and prove only the Swift strike. Retitle it.
+- <a id="F-U12-4"></a>**F-U12-4** Vroot ('when my column deals combat damage', not 'to a player') does not trigger when its column's damage is wholly redirected into Oorblak. Rule 608.8c.
+  Possible divergence outside this record's claim. The engine lumps Vroot with the 'deals combat damage to a player' listeners, so a column whose hit is wholly redirected into Oorblak gives Vroot nothing. But Vroot's trigger has no 'to a player'; Oorblak's text has the damage 'dealt to me instead', and the owner (2026-10-16) said it is still combat damage. Read that way, the column did deal combat damage (to Oorblak) and Vroot should pay out that much. Worth an owner check.
 - <a id="F-U13-1"></a><a id="F-U23-4"></a><a id="F-U23-7"></a><a id="F-U23-8"></a>**F-U13-1** The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) (a lone sent counterattacker auto-forms) is unmarked, but its guard was flipped to assert the opposite (CT-251). Rules 610.4e, D1.2b, D1.2c. Also found as F-U23-4, F-U23-7, F-U23-8.
   The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) says that when a round-2 counterattack pool holds exactly one unit and no ridable spell token, the only-unit formation is auto-declared as a forced action. On 2026-08-24 (a decisions-for-the-player audit) test 32 was flipped: its comment says the auto-declare branch is deleted, and it asserts forcedAction is null and that both attacking and declining are legal. No ruling records the reversal, and the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading carries no reversal mark, so the register still presents the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) as current. Register fix: write the reversing ruling (or mark the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)) and point the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading at it. Re-checked: fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-4): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-7): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-8): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479).
 - <a id="F-U14-1"></a><a id="F-U17-7"></a><a id="F-U17-9"></a>**F-U14-1** A graft trigger with no legal target goes on the stack and fizzles instead of not being put on the stack (CT-252). Rules 702.8b, 722.4e. Also found as F-U17-7, F-U17-9.
-  The designer says a graft composite whose targeted part has no legal target cannot be put on the stack. The RAQ register's own note says the engine reaches the same visible result (no Poison) by putting the item on the stack and fizzling it under the owner ruling of 2026-08-23 (“An effect fizzles when it loses…”). Then the opponent gets a priority window, and the item can be taxed or negated, though it should never exist. Suspected; not checked against the engine.
+  The designer says a graft composite whose targeted part has no legal target cannot be put on the stack. The RAQ register's own note says the engine reaches the same visible result (no Poison) by putting the item on the stack and fizzling it under the owner ruling of 2026-08-23 (“An effect fizzles when it loses…”). Then the opponent gets a priority window, and the item can be taxed or negated, though it should never exist. Suspected; not checked against the engine. Re-checked: fixed on 2026-10-22 (CT-252): a graft composite whose required target has none is never put on the stack (546). Re-checked (F-U17-7): fixed on 2026-10-22 (CT-252): a graft composite whose required target has none is never put on the stack (546). Re-checked (F-U17-9): fixed on 2026-10-22 (CT-252): a graft composite whose required target has none is never put on the stack (546).
 - <a id="F-U14-2"></a>**F-U14-2** The engine appears to pass priority to the other player after every action, so a player cannot hold priority (CT-253). Rule 703.2a.
-  The Manual says a player who acts may keep priority and take further actions before passing. The owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) and the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) describe the engine handing priority to the other seat whenever an item is pushed. If so, a player can never stack two of their own actions before the opponent may respond (the Manual names Burst as the usual exception, and Burst is handled separately). Suspected from ruling text only; Annex D may record a digital convention that settles it. Measured by the U14 tester: after a battle cast of Luminous Arc, priority is on the other seat, not the caster (pushItem hands it to other(controller)). (Measured by a verifier probe; the probe files are not committed.)
+  The Manual says a player who acts may keep priority and take further actions before passing. The owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) and the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) describe the engine handing priority to the other seat whenever an item is pushed. If so, a player can never stack two of their own actions before the opponent may respond (the Manual names Burst as the usual exception, and Burst is handled separately). Suspected from ruling text only; Annex D may record a digital convention that settles it. Measured by the U14 tester: after a battle cast of Luminous Arc, priority is on the other seat, not the caster (pushItem hands it to other(controller)). (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-253; owner: follow the Manual): a player may keep priority after acting in battle, on request (568); the client asks with the Control key or the Hold priority toggle (569).
 - <a id="F-U14-5"></a><a id="F-U14-8"></a>**F-U14-5** Bloomcaster does not hear its own play (CT-254). Rule 701.1e. Also found as F-U14-8.
   The owner ruling of 2026-08-18 (“"Whenever you play a unit" includes…”) (current) says Bloomcaster's "Whenever you play a unit" fires on its own arrival when played normally. The verifier measured no 1/1 when Bloomcaster is played from hand: the card listens on cardPlayed from holders in play, and Bloomcaster is on the stack when its own play fires. Either the engine regressed when Bloomcaster moved to cardPlayed (owner rulings of 2026-08-24, “a spell token is a token…” and 2026-08-25, “"I spawn with N counters" is…”), or the owner ruling of 2026-08-18 (“"Whenever you play a unit" includes…”) is stale and should be superseded (D-U14-11). (Measured by a verifier probe; the probe files are not committed.) Re-checked: not a bug: the owner answered D-U14-11 with reading B on 2026-10-11 (owner ruling of 2026-10-11, “"Whenever you play a unit" does…”), and the engine already does B for Bloomcaster; CT-254 closes. The other routes that heard their own play (F-U14-10) were fixed on 2026-10-11 (CT-277). Re-checked (F-U14-8): not a bug, as F-U14-5 (owner ruling of 2026-10-11, “"Whenever you play a unit" does…”).
 - <a id="F-U14-9"></a>**F-U14-9** Cards that re-check their target restriction by hand let an earlier part make a later part’s target illegal mid-resolution (CT-232). Rule 704.5a.
-  The rule (the owner ruling of 2026-10-09 (“Every target is re-checked against its…”)’s encoding) says target legality is judged once, as the item begins to resolve, so an earlier part of the same item cannot make a later part’s target illegal. markIllegalTargets does judge once, but Minor Kraken (and, by the same pattern, Throw off a Cliff and Leave None Pure) re-checks its printed restriction inside its own run. Measured by the U14 tester: a composite whose first part puts 11 +1/+1 counters on a 0/2 and whose second part is Minor Kraken’s recall does not recall it (control without the counters: recalled). (Measured by a verifier probe; the probe files are not committed.)
+  The rule (the owner ruling of 2026-10-09 (“Every target is re-checked against its…”)’s encoding) says target legality is judged once, as the item begins to resolve, so an earlier part of the same item cannot make a later part’s target illegal. markIllegalTargets does judge once, but Minor Kraken (and, by the same pattern, Throw off a Cliff and Leave None Pure) re-checks its printed restriction inside its own run. Measured by the U14 tester: a composite whose first part puts 11 +1/+1 counters on a 0/2 and whose second part is Minor Kraken’s recall does not recall it (control without the counters: recalled). (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-232): no run re-tests its own target restriction; legality is judged once, as the item begins to resolve (554).
 - <a id="F-U14-10"></a>**F-U14-10** Stalwart Sentinel hears its own play from a bin and takes its two counters (CT-277). Rule 701.1e.
   The owner ruling of 2026-10-11 (“"Whenever you play a unit" does…”): an ability that triggers when its controller plays a unit does not hear its own card being played (on the stack, not in play). Stalwart Sentinel's '[once] When you play a unit or spell from anywhere other than your hand' listens on 'spawned' with no self-exclusion, so a Sentinel played from a bin by Wake the Dead fires on its own arrival and gets two +1/+1 counters (probe zz-probe-U14-1.test.ts 1b). Bloomcaster is unaffected (it listens on cardPlayed while in play). So the engine follows the owner ruling of 2026-10-11 (“"Whenever you play a unit" does…”) for Bloomcaster but not for the Sentinel. Re-checked: fixed on 2026-10-11 (CT-277, the owner ruling of 2026-10-11 (“"Whenever you play a unit" does…”)): a unit being played is left out of its own play's listeners, and 444-no-self-hearing-play shows no play listener in the pool, Stalwart Sentinel included, hearing its own play from hand, a cache, a bin or the deck.
 - <a id="F-U15-1"></a><a id="F-U15-4"></a>**F-U15-1** The Bonesculptor's bin-play permission is built as an activated ability, so it reaches the stack and can be negated (CT-255). Rule 707.10. Also found as F-U15-4.
-  The owner ruling of 2026-08-25 (“"I spawn with N counters" is…”) and the owner ruling of 2026-08-25 (“the STATIC half of 75 gets…”) both say "You may play one unit with no abilities from your bin each deployment" is a standing permission that no one should be able to answer, and both record that the engine builds it as a free bounded activated ability that reaches the stack, where Containment Protocol can negate it. Both left it open ("filed rather than fixed"). The round-1 verifier's probe confirmed it still resolves as an activated item.
+  The owner ruling of 2026-08-25 (“"I spawn with N counters" is…”) and the owner ruling of 2026-08-25 (“the STATIC half of 75 gets…”) both say "You may play one unit with no abilities from your bin each deployment" is a standing permission that no one should be able to answer, and both record that the engine builds it as a free bounded activated ability that reaches the stack, where Containment Protocol can negate it. Both left it open ("filed rather than fixed"). The round-1 verifier's probe confirmed it still resolves as an activated item. Re-checked: fixed on 2026-10-22 (CT-255): The Bonesculptor's bin play is a standing permission, used as an ordinary play from the bin; nothing of its own reaches the stack (558). Re-checked (F-U15-4): fixed on 2026-10-22 (CT-255): The Bonesculptor's bin play is a standing permission, used as an ordinary play from the bin; nothing of its own reaches the stack (558).
 - <a id="F-U16-3"></a><a id="F-U16-5"></a><a id="F-U16-7"></a>**F-U16-3** A unit stripped by a continuous effect (Monke, Transmogrifant) keeps applying its own static abilities (CT-256). Rule 712.1a. Also found as F-U16-5, F-U16-7.
   Transmogrifant and Monke make other units "lose all attributes and abilities", and the owner ruling of 2026-08-21 (“The suppression layer: "loses all attributes…”) says a static is an ability, but static-vs-static resolves in one pass that skips only a holder with the one-time stamp. The verifier's probe measured a 1/1 token at 3/5 with Sandstone Defender under Transmogrifant, where the printed text gives 3/3. The owner ruling of 2026-08-21 (“The suppression layer: "loses all attributes…”) justifies the one pass only by the mutual case (two Monkes); the one-sided case falls out of the same shortcut. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-16 (report #214, CT-256; owner 2026-10-16: "Everything (besides an attribute) is an ability."): a unit a continuous effect strips stops applying its static abilities; 462 and 427 show a Sandstone Defender under Transmogrifant giving a 1/1 token nothing (a 3/3). Re-checked (F-U16-5): fixed on 2026-10-16 with F-U16-3 (report #214, CT-256): 462 shows a unit under Transmogrifant applying none of its statics. Re-checked (F-U16-7): fixed on 2026-10-16 with F-U16-3 (report #214, CT-256): 462 shows a unit under Transmogrifant applying none of its statics.
 - <a id="F-U16-4"></a><a id="F-U16-6"></a><a id="F-U19-5"></a>**F-U16-4** Tough augmented onto a printed-Balanced unit: the engine balances first, the Manual's "augmented onto" sentence doubles first (CT-257). Rules 709.4b, 802.1m. Also found as F-U16-6, F-U19-5.
-  Manual p.42: "if Tough is augmented onto a Balanced unit ... it will have its defense doubled, then its stats balanced." The engine (the owner ruling of 2026-08-18 (“Stat layer 4 application order”)’s own call: printed attributes before mod attributes) gives the reverse: the verifier's probe measured Child of Aether (2/0 Balanced) with a Tough augment at 2/4, where that sentence gives 2/2. The same answer's last sentence ("applied to") gives balanced, then doubled, so this waits on the owner's reading (D-U16-1).
+  Manual p.42: "if Tough is augmented onto a Balanced unit ... it will have its defense doubled, then its stats balanced." The engine (the owner ruling of 2026-08-18 (“Stat layer 4 application order”)’s own call: printed attributes before mod attributes) gives the reverse: the verifier's probe measured Child of Aether (2/0 Balanced) with a Tough augment at 2/4, where that sentence gives 2/2. The same answer's last sentence ("applied to") gives balanced, then doubled, so this waits on the owner's reading (D-U16-1). Re-checked: fixed on 2026-10-22 (CT-257; the owner took the Manual p.42 first clause, D-U16-1): Tough augmented onto a Balanced unit doubles, then balances (08-cards2). Re-checked (F-U16-6): fixed on 2026-10-22 (CT-257; the owner took the Manual p.42 first clause, D-U16-1): Tough augmented onto a Balanced unit doubles, then balances (08-cards2). Re-checked (F-U19-5): fixed on 2026-10-22 (CT-257; the owner took the Manual p.42 first clause, D-U16-1): Tough augmented onto a Balanced unit doubles, then balances (08-cards2).
 - <a id="F-U17-1"></a><a id="F-U17-5"></a><a id="F-U17-8"></a>**F-U17-1** Return to Nature files each erased mod on its OWNER's erased pile; the owner ruling of 2026-08-30 (“zones follow control, in all four…”) says the erased pile follows control (CT-258). Rule 720.9. Also found as F-U17-5, F-U17-8.
-  The owner ruling of 2026-08-30 (“zones follow control, in all four…”) (the owner: "All four follow control") moved the erased pile of a mod erased off a living host from mod.owner to mod.controller, and a mod's controller is its host's controller (owner ruling of 2026-08-29, “a mod is PART of the…”). The 17-earth-b test puts the opponent's mod on P's host, runs Return to Nature, and asserts the mod lands on the OPPONENT's (owner's) pile; the 178 test's message says the same. Either Return to Nature does not go through the controller-filing path, or the test asserts superseded law. Measured by the round-1 verifier: Return to Nature groups its erased mods byOwner and files under m.owner (alreadyFiled), so a mod owned by D on a host controlled by A was filed on D's pile, while E.eraseMod files under mod.controller. (Measured by a verifier probe; the probe files are not committed.)
+  The owner ruling of 2026-08-30 (“zones follow control, in all four…”) (the owner: "All four follow control") moved the erased pile of a mod erased off a living host from mod.owner to mod.controller, and a mod's controller is its host's controller (owner ruling of 2026-08-29, “a mod is PART of the…”). The 17-earth-b test puts the opponent's mod on P's host, runs Return to Nature, and asserts the mod lands on the OPPONENT's (owner's) pile; the 178 test's message says the same. Either Return to Nature does not go through the controller-filing path, or the test asserts superseded law. Measured by the round-1 verifier: Return to Nature groups its erased mods byOwner and files under m.owner (alreadyFiled), so a mod owned by D on a host controlled by A was filed on D's pile, while E.eraseMod files under mod.controller. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-258): Return to Nature files each erased mod under its controller, a stolen host's mods under the thief (17-earth-b, 178, 428). Re-checked (F-U17-5): fixed on 2026-10-22 (CT-258): Return to Nature files each erased mod under its controller, a stolen host's mods under the thief (17-earth-b, 178, 428). Re-checked (F-U17-8): fixed on 2026-10-22 (CT-258): Return to Nature files each erased mod under its controller, a stolen host's mods under the thief (17-earth-b, 178, 428).
 - <a id="F-U17-4"></a><a id="F-U17-6"></a>**F-U17-4** Return to Nature files TOKEN mods on the erased pile; the owner ruling of 2026-08-26 (“an erased card goes to the…”) says a token mod erased off a living host is not filed (CT-259). Rule 720.9a. Also found as F-U17-6.
-  The owner ruling of 2026-08-26 (“an erased card goes to the…”): "A token mod is not filed. The owner ruling of 2026-08-24 (“tokens are NOT cards, and trashing…”): a token is not a card, and the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)’s pile is a list of cards." E.eraseMod (the cost route) honours it and files nothing for a token mod. Return to Nature files its own grouped erased line for every mod it erases off hosts that stay in play, token mods included; its own comment says so. Measured by the round-1 verifier: a Wraith token mod erased by Return to Nature is recorded on the erased pile. (Measured by a verifier probe; the probe files are not committed.)
-- <a id="F-U19-1"></a><a id="F-U19-2"></a>**F-U19-1** Tough, Balanced and Inverted stay on in an interaction with a Pure card, against Pure's printed "ignore all other attributes" (CT-260). Rules 802.1n, 802.25e, 802.25f. Also found as F-U19-2.
-  The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) (and the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”), as the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) reads it) keep the stat attributes Tough, Balanced and Inverted applying in a Pure pairing because "they are stat layers". Pure's printed reminder ignores all other attributes, and the Manual lists Tough as an attribute. Under the authority order the printed text wins (rule 802.1n; D-U19-2). Suspected engine behaviour: a Pure blocker facing a Tough unit is priced against the doubled defense. Measured by the round-1 verifier: a Pure source dealing 5 to Rampart Guardian leaves it alive as a Tough 0/8. Measured by the round-2 verifier: a Balanced 4/1 dealt 3 by a Pure source survives as a 4/4. (Measured by a verifier probe; the probe files are not committed.)
+  The owner ruling of 2026-08-26 (“an erased card goes to the…”): "A token mod is not filed. The owner ruling of 2026-08-24 (“tokens are NOT cards, and trashing…”): a token is not a card, and the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)’s pile is a list of cards." E.eraseMod (the cost route) honours it and files nothing for a token mod. Return to Nature files its own grouped erased line for every mod it erases off hosts that stay in play, token mods included; its own comment says so. Measured by the round-1 verifier: a Wraith token mod erased by Return to Nature is recorded on the erased pile. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-259): Return to Nature files no token mod, as eraseMod does not (17-earth-b, 428). Re-checked (F-U17-6): fixed on 2026-10-22 (CT-259): Return to Nature files no token mod, as eraseMod does not (17-earth-b, 428).
+- <a id="F-U18-4"></a>**F-U18-4** An Unstable card that dies is binned and trashed before it is erased. Rule 801.2h.
+  Printed Unstable reminder: 'If they would enter a bin, erase them instead.' The engine bins the dying Unstable card, fires a trash for it, then erases it (CT-246). Re-checked: by design 2026-10-22 (CT-246 closed): the owner, asked to choose between print and Caleb (erased at once, no trash) and his 2026-08-24 sequence, answered "Trash isnt a trigger tho. Its a kind of death thing. So these options are the same option". A dying Unstable card is trashed as part of its death and ends erased; rules 405.5 and 801.2h state it, re-verified with the whole answer quoted.
+- <a id="F-U19-1"></a><a id="F-U19-2"></a>**F-U19-1** Tough, Balanced and Inverted stay on in an interaction with a Pure card, against Pure's printed "ignore all other attributes" (CT-260). Rule 802.1n. Also found as F-U19-2.
+  The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) (and the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”), as the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) reads it) keep the stat attributes Tough, Balanced and Inverted applying in a Pure pairing because "they are stat layers". Pure's printed reminder ignores all other attributes, and the Manual lists Tough as an attribute. Under the authority order the printed text wins (rule 802.1n; D-U19-2). Suspected engine behaviour: a Pure blocker facing a Tough unit is priced against the doubled defense. Measured by the round-1 verifier: a Pure source dealing 5 to Rampart Guardian leaves it alive as a Tough 0/8. Measured by the round-2 verifier: a Balanced 4/1 dealt 3 by a Pure source survives as a 4/4. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-260; the owner followed print): in a Pure interaction Tough, Balanced, Inverted and Unaware do not apply (555). Re-checked (F-U19-2): fixed on 2026-10-22 (CT-260; the owner followed print): in a Pure interaction Tough, Balanced, Inverted and Unaware do not apply (555).
 - <a id="F-U19-3"></a>**F-U19-3** Oorblak's combat-damage redirect doubles damage onto a Pure Vulnerable Oorblak (CT-227). Rule 802.11e.
-  The pilot's round-2 probe (P5) gave Oorblak Pure and Vulnerable and redirected a non-Pure 3-power unblocked column into it: Oorblak was dealt 6 and died. The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) and the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) say a Pure recipient's own Vulnerable is off. The redirect is a damage commit in card code (the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) calls it "the fourth site") and appears not to read Pure. Exotic but reachable (Just a Unit is a Virus).
+  The pilot's round-2 probe (P5) gave Oorblak Pure and Vulnerable and redirected a non-Pure 3-power unblocked column into it: Oorblak was dealt 6 and died. The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) and the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) say a Pure recipient's own Vulnerable is off. The redirect is a damage commit in card code (the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) calls it "the fourth site") and appears not to read Pure. Exotic but reachable (Just a Unit is a Virus). Re-checked: fixed on 2026-10-22 (CT-227): Oorblak's redirect is attribute-blind when the column or Oorblak is Pure, so a Pure Vulnerable Oorblak is dealt the hit once (553).
 - <a id="F-U20-1"></a><a id="F-U20-5"></a>**F-U20-1** The Electric path is asked of the effect's controller, not the Electric source's controller (CT-226). Rule 802.17c. Also found as F-U20-5.
-  The owner ruling of 2026-08-18 (“Electric damage pathing […]”) (and the owner ruling of 2026-10-09 (“{Electric}'s jump is optional, and excess…”)) give the choice of the Electric path to the Electric source's controller. The orchestrator's known-divergence list and the pilot verifier record that the engine asks the effect's controller. Every Electric source in the pool today is a spell or a spell effect, so the two players coincide in every test; 05-rulings asserts the source's controller only in that coinciding case. The rule states the ruling. Round-1 verifier measured it: dealEffectDamageAll raises the electricPath decision for ctx.controller, while the Piercing split beside it already uses the source unit's controller (the probe for rule 802.17c).
+  The owner ruling of 2026-08-18 (“Electric damage pathing […]”) (and the owner ruling of 2026-10-09 (“{Electric}'s jump is optional, and excess…”)) give the choice of the Electric path to the Electric source's controller. The orchestrator's known-divergence list and the pilot verifier record that the engine asks the effect's controller. Every Electric source in the pool today is a spell or a spell effect, so the two players coincide in every test; 05-rulings asserts the source's controller only in that coinciding case. The rule states the ruling. Round-1 verifier measured it: dealEffectDamageAll raises the electricPath decision for ctx.controller, while the Piercing split beside it already uses the source unit's controller (the probe for rule 802.17c). Re-checked: fixed on 2026-10-22 (CT-226): the Electric path is asked of the Electric source's controller (552). Re-checked (F-U20-5): fixed on 2026-10-22 (CT-226): the Electric path is asked of the Electric source's controller (552).
 - <a id="F-U20-3"></a>**F-U20-3** Modular would be shared through a column if a unit ever printed it (CT-261). Rule 802.26h.
-  The owner ruling (Caleb's "Modular is also special", in the owner ruling of 2026-09-16 (“A unit in a column HAS…”)) is that Modular is not a column-shared attribute. The owner ruling of 2026-09-16 (“A unit in a column HAS…”) itself records that Modular is in the engine's shared attribute set and is harmless only because the one card that prints it is a spell. The round-1 verifier confirmed colAttrs would union it. Latent: no unit prints Modular today; 298 §5c guards the premise, not the non-sharing.
+  The owner ruling (Caleb's "Modular is also special", in the owner ruling of 2026-09-16 (“A unit in a column HAS…”)) is that Modular is not a column-shared attribute. The owner ruling of 2026-09-16 (“A unit in a column HAS…”) itself records that Modular is in the engine's shared attribute set and is harmless only because the one card that prints it is a spell. The round-1 verifier confirmed colAttrs would union it. Latent: no unit prints Modular today; 298 §5c guards the premise, not the non-sharing. Re-checked: fixed on 2026-10-22 (CT-261): Modular is not shared through a column (298 §5c, a unit given Modular by a grant).
 - <a id="F-U20-4"></a>**F-U20-4** Reaping never loses Reaping after drawing (printed second sentence not built) (CT-173). Rule 802.21c.
   Reaping's reminder says the source loses Reaping until regroup after drawing. The owner ruling of 2026-08-30 (“{Reaping} draws one card for the…”) says this is deliberately not built because every Reaping printer is a one-shot spell; the round-1 verifier confirmed nothing removes Reaping after a draw. Latent: becomes live the day a unit can carry Reaping. 263 §4 guards the premise. Re-checked: already open as CT-173, which records the clause as measured and deliberately not built (unreachable today).
 - <a id="F-U23-1"></a><a id="F-U23-6"></a>**F-U23-1** Holding full control does not stop the deployment stack from resolving itself (CT-185). Rule D2.7a. Also found as F-U23-6.
-  The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) rules that while full control (Ctrl) is held, nothing resolves automatically, 'even during deployment'. The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) records that clause as not built: the deployment stack drains inside settle(), and the engine has no flag for the hold. Already filed by the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) as CT-185 (owner's call); listed here so the export's marker has a target. The verifier confirmed: the engine has no full-control flag, and CT-185 (a holdStack action) is still open. Re-checked: already open as CT-185 (the holdStack action); no new ticket.
+  The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) rules that while full control (Ctrl) is held, nothing resolves automatically, 'even during deployment'. The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) records that clause as not built: the deployment stack drains inside settle(), and the engine has no flag for the hold. Already filed by the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) as CT-185 (owner's call); listed here so the export's marker has a target. The verifier confirmed: the engine has no full-control flag, and CT-185 (a holdStack action) is still open. Re-checked: withdrawn 2026-10-22: the owner ruled that no player holds priority in deployment and closed CT-185 as wontfix, so the clause it tracked is no longer the rule (rule D2.7a now states the call). Re-checked (F-U23-6): withdrawn 2026-10-22: the owner ruled that no player holds priority in deployment and closed CT-185 as wontfix, so the clause it tracked is no longer the rule (rule D2.7a now states the call).
 - <a id="F-U23-2"></a><a id="F-U23-5"></a>**F-U23-2** The automatic pass is latched per state counter, which the owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b) rules out (CT-262). Rule D2.4. Also found as F-U23-5.
   The owner ruling of 2026-08-29 (“THE CLIENT MAY NOT HOLD A…”)(b) rules that an automatic answer (it names the haste-step ready and the automatic pass) is latched by being unanswered, never by a state counter, because states keep arriving while an intent is outstanding. The owner ruling of 2026-08-29 (“the affordances that must stay live…”) says the automatic pass is latched once per actionCount via takeAutoPass, and test 70 [59] asserts that a new state number re-opens the latch. If a state with a new actionCount reaches a seat while its automatic pass is still outstanding, a second pass could go out and come back refused. The verifier confirmed it in the client: the haste ready was converted (hasteAutoOut), but the automatic pass still goes through takeAutoPass, keyed on actionCount.
 - <a id="F-U23-3"></a><a id="F-U24-3"></a>**F-U23-3** The live action counter tells the opponent when you act inside every hidden simultaneous segment (CT-106). Rules D2.5e, D6.1. Also found as F-U24-3.
   A hidden simultaneous segment is meant to show nobody the other side's plays until everyone is done (owner ruling of 2026-08-18, “Haste step engine model […]”). The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) measured that GameState.actionCount is served live to both seats and rises on every action, so a modified client sees when its opponent acts in the resource step, the haste step and deployment. The shipped client renders nothing from it. The owner ruling of 2026-08-28 (“the haste step readies itself, and…”) names the fix (a per-seat action counter in the engine or rooms.ts) and leaves it as the owner's call. Pinned by 205 §3d. Re-checked: already decided: CT-106 is wontfix by the owner (2026-08-29, "I am not worried about this"); no new ticket.
 - <a id="F-U24-5"></a>**F-U24-5** Looking at your own hand tells the other player nothing, not even that a hand was looked at (CT-263). Rule D6.5a.
-  The rule says that when an effect lets a player look at a hand, the other players log says only that the hand was looked at. The U24 tester measured Thought Extraction aimed at the caster own hand: the other player log has no look line at all (it goes from Resolving straight to the discard). Aimed at the other player hand, that player log does say "looks at". Four look-at sites skip the public line when the looker owns the hand (if (who !== ctx.controller) g.revealHandTo(...)). Either the rule should say the line is written only when looking at another player hand, or the engine should write it for both. (Measured by a verifier probe; the probe files are not committed.)
+  The rule says that when an effect lets a player look at a hand, the other players log says only that the hand was looked at. The U24 tester measured Thought Extraction aimed at the caster own hand: the other player log has no look line at all (it goes from Resolving straight to the discard). Aimed at the other player hand, that player log does say "looks at". Four look-at sites skip the public line when the looker owns the hand (if (who !== ctx.controller) g.revealHandTo(...)). Either the rule should say the line is written only when looking at another player hand, or the engine should write it for both. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-263, owner "Log both"): looking at your own hand writes the public line too, naming nothing (550).
 
 ### Digital-client rules in the main document
 
@@ -10924,5 +11104,5 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1818 rules and 99 sections.
+- New: 1822 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)

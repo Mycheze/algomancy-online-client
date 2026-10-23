@@ -1241,26 +1241,44 @@
   },
   {
     "key": "turn.deploy.stack",
-    "textHash": "2550f7616b86cb83",
+    "textHash": "55d329f67beb5b8d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U09-r1",
+    "round": 4,
+    "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:playAtTiming",
+        "loc": "client/engine/src/engine.ts:settleDeploySeat",
         "agrees": true,
-        "note": "deploy branch commits with 'push'"
+        "note": "per-seat deployment stack, resolved with no priority"
       },
       {
-        "loc": "client/engine/src/engine.ts:settle",
+        "loc": "client/engine/src/apply.ts:holdPriority gate",
         "agrees": true,
-        "note": "deploy stack drained automatically at the safe point"
+        "note": "holdPriority refused outside battle ('only in battle')"
       }
     ],
     "tests_run": [
       {
         "file": "276-deployment-stack.test.ts",
-        "pattern": "R286 §1: the play really went ON a stack",
+        "pattern": "CR 507.5: the play really went ON a stack",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "276-deployment-stack.test.ts",
+        "pattern": "CR 703.7: seat 0 acting does not build, aim or resolve seat 1's held triggers",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "276-deployment-stack.test.ts",
+        "pattern": "CR 703.7: the acting seat's TOPMOST item resolves",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "568-hold-priority.test.ts",
+        "pattern": "CR 507.5 / CT-253: in deployment the ask is refused",
         "passed": true,
         "asserts_claim": true
       }
@@ -1268,24 +1286,28 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R286",
+        "ref": "owner (register) 2026-09-01",
         "supports": "yes",
-        "note": ""
+        "note": "a deployment play goes on a stack. The 'each player's OWN stack' half is the same owner ruling ('an isolated stack just for the person in that region'), quoted in 276-deployment-stack's header but not cited in the record: add it"
+      },
+      {
+        "ref": "owner chat 2026-10-22 (CT-185)",
+        "supports": "yes",
+        "note": "cannot hold priority in deployment; plays stay as they are (on the stack)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "1. **A deployment play goes on a stack**"
+        "file": "client/engine/test/276-deployment-stack.test.ts",
+        "text": "But it's an isolated stack just for the person in"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (this.s.phase === 'deploy' && this.s.stack.length && !this.s.decision) {"
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "text": "you CANNOT hold priority during Deployment"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "turn.deploy.stack.no-waiting",

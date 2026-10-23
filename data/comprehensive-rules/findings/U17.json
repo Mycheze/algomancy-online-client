@@ -6,31 +6,20 @@
     "summary": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) (the owner: \"All four follow control\") moved the erased pile of a mod erased off a living host from mod.owner to mod.controller, and a mod's controller is its host's controller (owner ruling of 2026-08-29, “a mod is PART of the…”). The 17-earth-b test puts the opponent's mod on P's host, runs Return to Nature, and asserts the mod lands on the OPPONENT's (owner's) pile; the 178 test's message says the same. Either Return to Nature does not go through the controller-filing path, or the test asserts superseded law. Measured by the round-1 verifier: Return to Nature groups its erased mods byOwner and files under m.owner (alreadyFiled), so a mod owned by D on a host controlled by A was filed on D's pile, while E.eraseMod files under mod.controller. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
-        "file": "client/engine/test/17-earth-b.test.ts",
-        "quote": "test('Return to Nature: each erased mod reaches its OWN owner\\'s erased pile', () => {"
-      },
-      {
-        "file": "client/engine/test/17-earth-b.test.ts",
-        "quote": "\"the mod O applied must reach O's pile — grouping by the HOST's controller would \""
-      },
-      {
-        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
-        "quote": "\"and the pile is the MOD OWNER's, not the host controller's\");"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "quote": "const list = byOwner.get(m.owner) ?? [];"
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "quote": "CR 720.9 / CT-258: Return to Nature files each erased mod on its CONTROLLER erased pile, a stolen host included"
       }
     ],
     "ct": "CT-258",
     "dupes": [
       "F-U17-5",
       "F-U17-8"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-258): Return to Nature files each erased mod under its controller, a stolen host's mods under the thief (17-earth-b, 178, 428)."
   },
   {
     "id": "F-U17-2",
@@ -81,18 +70,19 @@
         "quote": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "quote": "// this every card would be listed twice. This site also files TOKEN"
-      },
-      {
         "file": "client/engine/src/engine.ts",
         "quote": "if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {"
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "quote": "CR 720.9a / CT-259: Return to Nature does not file a TOKEN mod on the erased pile"
       }
     ],
     "ct": "CT-259",
     "dupes": [
       "F-U17-6"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-259): Return to Nature files no token mod, as eraseMod does not (17-earth-b, 428)."
   },
   {
     "id": "F-U17-5",
@@ -101,15 +91,16 @@
     "summary": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) moved the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”) erased pile to follow control ('All four follow control — one rule, no seam'), and E.eraseMod files { seat: mod.controller }. Return to Nature files its own grouped 'erased' line byOwner (m.owner) and passes alreadyFiled, so on a stolen host the erased mod goes to the original owner's pile. Probe: mod owned by D, controlled by A → filed under D. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "quote": "const list = byOwner.get(m.owner) ?? [];"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "quote": "CR 720.9 / CT-258: Return to Nature files each erased mod on its CONTROLLER erased pile, a stolen host included"
       }
     ],
-    "ct": "CT-258"
+    "ct": "CT-258",
+    "closed": "fixed on 2026-10-22 (CT-258): Return to Nature files each erased mod under its controller, a stolen host's mods under the thief (17-earth-b, 178, 428)."
   },
   {
     "id": "F-U17-6",
@@ -118,15 +109,16 @@
     "summary": "The owner ruling of 2026-08-26 (“an erased card goes to the…”): 'A token mod is not filed. The owner ruling of 2026-08-24 (“tokens are NOT cards, and trashing…”): a token is not a card, and the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)’s pile is a list of cards.' E.eraseMod honours it; Return to Nature's grouped line files every erased mod, token mods included. Probe: a Wraith token mod erased by Return to Nature is recorded on the erased pile.",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "quote": "// this every card would be listed twice. This site also files TOKEN"
-      },
-      {
         "file": "client/engine/src/engine.ts",
         "quote": "if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {"
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "quote": "CR 720.9a / CT-259: Return to Nature does not file a TOKEN mod on the erased pile"
       }
     ],
-    "ct": "CT-259"
+    "ct": "CT-259",
+    "closed": "fixed on 2026-10-22 (CT-259): Return to Nature files no token mod, as eraseMod does not (17-earth-b, 428)."
   },
   {
     "id": "F-U17-7",
@@ -141,9 +133,14 @@
       {
         "file": "client/engine/test/390-raq-stack.test.ts",
         "quote": "// the stack unless you target such unit in your bin."
+      },
+      {
+        "file": "client/engine/test/546-graft-composite-no-target.test.ts",
+        "quote": "CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack"
       }
     ],
-    "ct": "CT-252"
+    "ct": "CT-252",
+    "closed": "fixed on 2026-10-22 (CT-252): a graft composite whose required target has none is never put on the stack (546)."
   },
   {
     "id": "F-U17-8",
@@ -152,15 +149,16 @@
     "summary": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) moved the erased pile to follow control (eraseMod uses mod.controller), but Return to Nature files its own grouped erased line by m.owner and calls eraseMod with alreadyFiled, so a mod on a stolen host goes to the owner's pile.",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "quote": "          const list = byOwner.get(m.owner) ?? [];"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "quote": "CR 720.9 / CT-258: Return to Nature files each erased mod on its CONTROLLER erased pile, a stolen host included"
       }
     ],
-    "ct": "CT-258"
+    "ct": "CT-258",
+    "closed": "fixed on 2026-10-22 (CT-258): Return to Nature files each erased mod under its controller, a stolen host's mods under the thief (17-earth-b, 178, 428)."
   },
   {
     "id": "F-U17-9",
@@ -171,8 +169,13 @@
       {
         "file": "client/engine/test/390-raq-stack.test.ts",
         "quote": "  // the stack unless you target such unit in your bin.\""
+      },
+      {
+        "file": "client/engine/test/546-graft-composite-no-target.test.ts",
+        "quote": "CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack"
       }
     ],
-    "ct": "CT-252"
+    "ct": "CT-252",
+    "closed": "fixed on 2026-10-22 (CT-252): a graft composite whose required target has none is never put on the stack (546)."
   }
 ]

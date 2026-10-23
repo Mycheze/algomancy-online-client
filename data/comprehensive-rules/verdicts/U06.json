@@ -994,74 +994,49 @@
   },
   {
     "key": "types.spell-units.is-a-spell",
-    "textHash": "67ce40e58137593c",
-    "verdict": "partial",
+    "textHash": "fe8b9b3984f3e3d8",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/dsl.ts:isPlayedSpellKind",
+        "loc": "client/engine/src (spellPlayed for spell units)",
         "agrees": true,
-        "note": "spellUnit is a played spell kind"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:commitItem",
-        "agrees": true,
-        "note": "a spell unit play fires spellPlayed and bumps both spell ledgers"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-earth-c.ts:Tranquility",
-        "agrees": true,
-        "note": "taxes a spell unit (probe)"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-wood-a.ts:Earnest Defender",
-        "agrees": true,
-        "note": "isSpellEffect accepts a spell unit (probe)"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/396-raq-timing.test.ts",
+        "file": "396-raq-timing.test.ts",
         "pattern": "RAQ Hooba-Pon spell unit: it counts as playing a spell",
         "passed": true,
-        "asserts_claim": true,
-        "passed_note": "yes: spellPlayed event for Jelly played through Hooba-Pon"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/396-raq-timing.test.ts",
+        "file": "396-raq-timing.test.ts",
         "pattern": "Origon negates it as the first spell",
         "passed": true,
-        "asserts_claim": true,
-        "passed_note": "yes: Origon negates the Jelly, no body arrives, Jelly in bin"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/396-raq-timing.test.ts",
+        "file": "396-raq-timing.test.ts",
         "pattern": "Molten Riftbreaker dying negates it as an allied spell",
         "passed": true,
-        "asserts_claim": true,
-        "passed_note": "yes: passes; Riftbreaker's despawn negates the allied Jelly"
-      }
-    ],
-    "probes": [
-      {
-        "file": "client/engine/test/zz-probe-U06-1.test.ts",
-        "test": "probe U06-1a: Tranquility taxes a spell unit (Jelly) and Sparkwraith hears it as a spell",
-        "passed": true,
-        "demonstrates": "yes: the engine treats a spell unit as a spell for a 'Spells cost more' tax and a 'whenever you play a spell' trigger"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/zz-probe-U06-1.test.ts",
-        "test": "probe U06-1b: Earnest Defender sees a spell unit (Jelly) targeting its ally as an enemy spell",
+        "file": "557-wake-the-dead-plays-on-the-stack.test.ts",
+        "pattern": "CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives",
         "passed": true,
-        "demonstrates": "yes: 'target of an enemy spell' accepts a spell unit"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1461450216874967235#2",
         "supports": "yes",
-        "note": "_passer [Solved]; covered"
+        "note": ""
       },
       {
         "ref": "RAQ 1461450216874967235#3",
@@ -1077,32 +1052,27 @@
     "quote_spans": [
       {
         "file": "client/ledgers/raq.ts",
-        "text": "source: \"_passer (write-up): \\\"Q: Does that count as 'playing a spell' for some triggers? A: Yes.\\\"\","
+        "text": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
       },
       {
         "file": "client/ledgers/raq.ts",
-        "text": "source: \"_passer (write-up): \\\"Q: Would Origon try to negate it? A: Yes\\\"\","
+        "text": "Q: Molten Riftbreaker dying would negate that as 'allied SPELL'? A: Yes"
       }
     ],
     "basis_ok": true,
-    "problem": "engineDiffers [F-U06-1] is not borne out: the ruling and all three examples hold, but the engine AGREES with the rule. All three bound tests pass, and probes zz-probe-U06-1 (Tranquility taxes Jelly, Sparkwraith hears it, Earnest Defender treats it as an enemy spell) found no divergence. The engine's spell predicates (isPlayedSpellKind, isSpellEffect, stackSpell, NEGATE_BINS, Flame Shield, Dream Lapse, Cosmic Reversal) all include spellUnit; only cards printing 'nonunit spell' exclude it."
+    "problem": ""
   },
   {
     "key": "types.spell-units.is-a-unit",
-    "textHash": "5029de6fa8089c7a",
+    "textHash": "62a7e9d7ac2d352b",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U06-r2",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Hooba-Pon / Insidious Invitation",
+        "loc": "client/engine/src (Hooba-Pon / Insidious Invitation / Wake the Dead playInline)",
         "agrees": true,
-        "note": "spell units offered and played as spells via the stack"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
-        "agrees": false,
-        "note": "engineDiffers real: isUnitCard admits spell units but they are not played as spells"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -1117,40 +1087,39 @@
         "pattern": "lets each player play a SPELL UNIT",
         "passed": true,
         "asserts_claim": true
-      }
-    ],
-    "probes": [
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U06/u06-r2-probes.test.ts",
-        "title": "types.spell-units.played-by-effect (engine divergence measured): a Jelly that Wake the Dead plays from a bin arrives with NO spell part and NO spellPlayed event",
+        "file": "417-cr-card-types.test.ts",
+        "pattern": "cr:types.spell-units.is-a-unit",
         "passed": true,
-        "demonstrates": "yes — the divergence is real"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Hooba-Pon",
         "supports": "yes",
-        "note": "'play a unit from your hand'"
+        "note": ""
       },
       {
         "ref": "RAQ 1461450216874967235#0",
         "supports": "yes",
-        "note": "spell part happens, then spawns"
+        "note": "_passer [Solved] write-up, covered"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/ledgers/raq.ts",
-        "text": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+        "file": "client/engine/src/cards/printed.json",
+        "text": "you may play a unit from your hand into an open position in my formation."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**A SPELL UNIT raised by Wake the Dead does not cast its spell.**"
+        "file": "client/ledgers/raq.ts",
+        "text": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed; divergence (Wake the Dead) real."
+    "problem": ""
   },
   {
     "key": "types.spell-units.not-played",
@@ -1251,75 +1220,67 @@
   },
   {
     "key": "types.spell-units.played-by-effect",
-    "textHash": "197299f8613b0467",
+    "textHash": "64255ae9f3bd7efd",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U06-r2",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
-        "agrees": false,
-        "note": "spawnUnit(..., {from:'bin', asPlay:true}) — no stack item, spell part skipped; matches the flagged engineDiffers"
+        "loc": "client/engine/src (Wake the Dead playInline)",
+        "agrees": true,
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "557-wake-the-dead-plays-on-the-stack.test.ts",
+        "pattern": "CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U06/u06-r2-probes.test.ts",
-        "title": "types.spell-units.played-by-effect (engine divergence measured): a Jelly that Wake the Dead plays from a bin arrives with NO spell part and NO spellPlayed event",
+        "file": "client/engine/test/zz-probe-U06-2.test.ts",
+        "test": "probe U06-2: a Jelly that Wake the Dead plays from a bin, negated on the stack, never gets a body and its spell part does not happen",
         "passed": true,
-        "demonstrates": "yes — measures the divergence: body arrives, cardPlayed fires, no target asked, no -2/-2, no spellPlayed"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
-        "title": "types.spell-units.played-by-effect: a Jelly that Wake the Dead plays from a bin has its spell part happen",
-        "passed": false,
-        "demonstrates": "no — asserts the ruling and fails against the engine (MEASURED body=true askedForTarget=false spellPlayedEvent=false)"
+        "demonstrates": "yes: \"enters play only if the spell resolves\" for a spell unit played from a bin"
       }
     ],
     "source_checks": [
       {
         "ref": "Manual p.43",
-        "supports": "partly",
-        "note": "'spell effects only happen when the card is played' — the converse; with R165 (it IS a play) it implies the rule"
+        "supports": "yes",
+        "note": "spell effects happen when the card is played (vs resurrected)"
       },
       {
         "ref": "RAQ 1461450216874967235#0",
-        "supports": "partly",
-        "note": "about a play from HAND via Hooba-Pon, not from another zone"
+        "supports": "yes",
+        "note": "spell part then unit only if it resolves (asked about Hooba-Pon, from hand)"
       },
       {
         "ref": "RAQ 1461450216874967235#2",
-        "supports": "partly",
-        "note": "Hooba-Pon context"
+        "supports": "yes",
+        "note": ""
       },
       {
-        "ref": "R165",
-        "supports": "partly",
-        "note": "establishes Wake the Dead's verb 'play' makes it a play; its 'Left open' section names the skipped spell part as a defect"
+        "ref": "owner register \"the printed verb decides\"",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "spell effects only happen when the card is"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: No, spell effects only happen when the card is"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "The ruling: the printed verb decides."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "**A SPELL UNIT raised by Wake the Dead does not cast its spell.**"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "text": "{ owner: c.seat, from: 'bin', asPlay: true });"
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "text": "assert.equal(jelly.from, 'bin', 'played from the bin (CR 701.4a)');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling holds by composition (Manual p.43 + R165 + the Hooba-Pon RAQ); no source states the from-bin case directly. Engine divergence is real and documented in R165 'Left open'.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "types.spell-units.prevented",
@@ -3275,20 +3236,15 @@
   },
   {
     "key": "types.units.put-vs-play",
-    "textHash": "30a8961836f8fea6",
+    "textHash": "7d34fdbf09f0b0d8",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U06-r1",
+    "round": 4,
+    "verifier": "U06-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Exhume",
+        "loc": "client/engine/src (cardPlayed vs spawned)",
         "agrees": true,
-        "note": "plain spawnUnit, no asPlay"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
-        "agrees": true,
-        "note": "spawnUnit(…, { from: 'bin', asPlay: true }) fires cardPlayed"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -3296,34 +3252,40 @@
         "file": "11-fire-wood.test.ts",
         "pattern": "Bloomcaster: PLAYING a unit makes a 1/1",
         "passed": true,
-        "asserts_claim": "partly: the put-into-play half uses the white-box spawn helper, not a printed \"put into play\" card"
+        "asserts_claim": true
       },
       {
         "file": "139-spawn-and-play.test.ts",
         "pattern": "Wake the Dead: the units it plays out of a bin are PLAYED",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "559-gridxlan-permission.test.ts",
+        "pattern": "CR 707.10 / CR 301.9: the unit Gridxlan lets you play is PLAYED",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
-        "title": "types.units.put-vs-play: a unit Exhume puts into play is not played (Bloomcaster makes no 1/1 for it)",
+        "file": "client/engine/test/zz-probe-U06-1.test.ts",
+        "test": "probe U06-1: a unit Resurrect puts into play from the bin is not played — Bloomcaster makes no 1/1",
         "passed": true,
-        "demonstrates": true
+        "demonstrates": "yes: a real \"put into play\" EFFECT (the Bloomcaster test used the harness spawn helper)"
       }
     ],
     "source_checks": [
       {
-        "ref": "R165",
+        "ref": "owner register \"The ruling: the printed verb decides.\"",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "The ruling: the printed verb decides."
+        "file": "client/engine/test/11-fire-wood.test.ts",
+        "text": "'putting Bloomcaster into play is not PLAYING a unit — the old test asserted 1 here');"
       }
     ],
     "basis_ok": true,

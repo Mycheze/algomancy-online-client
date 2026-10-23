@@ -1492,59 +1492,55 @@
     "key": "turn.haste.grants.each-turn",
     "textHash": "89d0dfa560e8802b",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U08-r2",
+    "round": 4,
+    "verifier": "U08-r4",
     "engine": [
       {
-        "loc": "engine.ts:hastePlayAllowance",
+        "loc": "client/engine/src/apply.ts:playCard haste branch (mayPlayAtHaste + chargeHastePlay)",
         "agrees": true,
-        "note": "SUMS playAtHaste over every anchored grantor; mayPlayAtHaste compares against hastePlaysUsed."
+        "note": "each Courier's playAtHaste returns an allowance of 1; the allowance is charged per granted play"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Dispatch Courier",
+        "agrees": true,
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "26-metal-a.test.ts",
-        "pattern": "Dispatch Courier: the \"Each turn\" allowance is one",
+        "pattern": "Dispatch Courier: the \"Each turn\" allowance is one, and one Courier grants one",
         "passed": true,
-        "asserts_claim": "yes - one Courier, second vanilla unit not offered and refused"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
-        "title": "turn.haste.grants.each-turn: TWO Dispatch Couriers fund TWO haste-step plays (measured)",
+        "file": "419-cr-planning.test.ts",
+        "pattern": "cr:turn.haste.grants.each-turn — two Dispatch Couriers fund two haste-step plays",
         "passed": true,
-        "demonstrates": "yes - two Couriers, two plays accepted, third refused"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Dispatch Courier",
-        "supports": "partly",
-        "note": "prints 'Each turn, you may play a unit' (one per card); stacking is R97's reading."
+        "supports": "yes",
+        "note": "'Each turn' = one play per turn per Courier"
       },
       {
-        "ref": "R97",
+        "ref": "owner (register) 2026-08-23",
         "supports": "yes",
-        "note": "'two Couriers each print ... and two of them are two plays'."
+        "note": "fragment says two Couriers each print the grant; supports the per-grantor count"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "\"text\": \"[Augment] Each turn, you may play a unit during the mana step as if it had [Haste].\","
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "twice as permissive, but two Couriers each print \"Each turn, you may play a unit\" and two of"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "total += p.playAtHaste?.(this, anchor, ctx) ?? 0;"
+        "text": "Each turn, you may play a unit during the mana step as if it had [Haste]."
       }
     ],
     "basis_ok": true,
-    "problem": "None."
+    "problem": ""
   },
   {
     "key": "turn.haste.immediate",

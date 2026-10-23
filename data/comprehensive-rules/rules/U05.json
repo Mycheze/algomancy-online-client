@@ -1733,11 +1733,19 @@
     "key": "card.stats.units",
     "parent": "206",
     "order": 2,
-    "text": "Stats mark a card as a unit. Spell units also have stats, and enter play as units with them when they resolve.",
+    "text": "Stats mark a card as a unit. A spell has no stats, and neither does a spell token. Spell units do have stats, and enter play as units with them when they resolve.",
     "examples": [
       {
         "text": "Lonely Forager, a Spell Unit, resolves into play as a 3/1 unit; Resurrect, a plain spell, goes to the bin.",
         "test": "416-cr-parts-of-a-card.test.ts::cr:card.stats.units — Lonely Forager, a Spell Unit, resolves into play as a 3/1 unit, while a plain spell resolves into the bin"
+      },
+      {
+        "text": "No spell in the card pool carries a power or a defense.",
+        "test": "565-spells-print-no-stats.test.ts::CR 206.2 / CT-244: no spell in the engine pool or the catalogue carries power or toughness"
+      },
+      {
+        "text": "A Fireball spell token carries no stats.",
+        "test": "567-stats-only-where-printed.test.ts::CR 206.2 / CT-244: spell tokens carry no stats in the pool or the catalogue"
       }
     ],
     "see": [
@@ -1760,13 +1768,15 @@
       "owner": [],
       "engine": [],
       "tests": [
-        "416-cr-parts-of-a-card.test.ts"
+        "416-cr-parts-of-a-card.test.ts",
+        "565-spells-print-no-stats.test.ts",
+        "567-stats-only-where-printed.test.ts"
       ]
     },
     "basis": "printed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The sources do not say whether a spell has a power or defense: D-U05-8. The card data gives 91 spells non-zero power/toughness: F-U05-1.",
+    "notes": "The transcription gave 91 spells and the three spell tokens stat values no card prints; since 2026-10-22 (CT-244) the extractor zeroes them (565, 567). F-U05-1 closed. \"A spell has no stats\" reads the Rulebook's \"easily recognized by the existence of stats\" literally (D-U05-8).",
     "sourceHashes": {}
   },
   {

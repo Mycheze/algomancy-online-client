@@ -7,10 +7,6 @@
     "evidence": [
       {
         "file": "client/engine/src/engine.ts",
-        "quote": "unit: u.id, card: u.card, seat: u.owner, region: u.region,"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
         "quote": "// CR 410.4b: the host AND its mods reach the public erased pile, under the"
       },
       {
@@ -20,9 +16,14 @@
       {
         "file": "client/engine/src/engine.ts",
         "quote": "const binSeat = opts.binTo ?? u.controller;"
+      },
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "quote": "CR 400.4 / CT-229: a stolen unit erased from play goes to the THIEF erased pile, with its mods"
       }
     ],
-    "ct": "CT-229"
+    "ct": "CT-229",
+    "closed": "fixed on 2026-10-22 with F-U07-7 (CT-229, 246)."
   },
   {
     "id": "F-REG-2",

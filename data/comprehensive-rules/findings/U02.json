@@ -44,10 +44,6 @@
     "summary": "doExchangePrismite accepts only an element of the game. The printed Prismite reads \"Erase me: Create a non-prismite resource, then activate it\" and Manual p.18 says active Prismites \"may be exchanged for other resources\"; a Shard is a non-prismite resource. No ruling forbids the Shard (the owner ruling of 2026-09-19 (“Recycling can make a Prismite”) rules the Prismite-into-Prismite case), and test 308's title asserts the refusal. Low impact: a Shard is never better than an element resource.",
     "evidence": [
       {
-        "file": "client/engine/src/apply.ts",
-        "quote": "e.need((e.s.elements as string[]).includes(element), 'not an element of this game');"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "> \"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
       },
@@ -57,9 +53,10 @@
       },
       {
         "file": "client/engine/test/308-recycle-for-prismite.test.ts",
-        "quote": "CR 106.8d what stays illegal: exchanging a Prismite into a Prismite or a Shard"
+        "quote": "CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite"
       }
     ],
-    "ct": "CT-237"
+    "ct": "CT-237",
+    "closed": "fixed on 2026-10-22 (CT-237): a Prismite may be exchanged into a Shard, never into a Prismite (308)."
   }
 ]

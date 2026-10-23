@@ -1422,21 +1422,33 @@
   },
   {
     "key": "effects.casting.targets-required.graft-trigger",
-    "textHash": "4d03344a6a068e74",
+    "textHash": "e244df7ee7681018",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:resolveItem",
-        "agrees": false,
-        "note": "engineDiffers is real: the composite is stacked and then fizzles under R86 rather than being refused"
+        "loc": "client/engine/src/engine.ts:withholdComposite (CR 110.7 / CT-252 drop at trigger time)",
+        "agrees": true,
+        "note": "the composite is dropped before it reaches the stack; logs 'does not go on the stack'. (The raq.ts ledger note saying the engine fizzles it is stale: 546 asserts nothing is pushed.)"
       }
     ],
     "tests_run": [
       {
-        "file": "390-raq-stack.test.ts",
-        "pattern": "RAQ target requirements: a graft trigger with a required target and none available makes nothing at all",
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ target requirements: a graft trigger with a required target",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/546-graft-composite-no-target.test.ts",
+        "pattern": "CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/546-graft-composite-no-target.test.ts",
+        "pattern": "CR 110.7 / CT-252: the control",
         "passed": true,
         "asserts_claim": true
       }
@@ -1446,18 +1458,21 @@
       {
         "ref": "RAQ 1410252965276684418#2",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "verbatim; [Solved]; covered. 'Targeted part' is read as a REQUIRED target, per the key: 546 also shows an optional (you may) target does not hold the composite back"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/390-raq-stack.test.ts",
-        "text": "a graft trigger with a required target and none available makes nothing at all"
+        "file": "client/ledgers/raq.ts",
+        "text": "can't be put on the stack unless you target such unit in your bin."
+      },
+      {
+        "file": "client/engine/test/546-graft-composite-no-target.test.ts",
+        "text": "assert.equal(poisons(h), 0, 'no Poison 5: the untargeted half goes too');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.casting.targets-required.untargeted",
@@ -2268,64 +2283,54 @@
   },
   {
     "key": "effects.playing.mid-resolution",
-    "textHash": "377e278eeb5201de",
+    "textHash": "11e5d24b010d86c6",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:inlinePlayGoesToStack",
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline -> E.commitItem",
         "agrees": true,
-        "note": "in a live battle priority window a mid-resolution play is pushed and fires cardPlayed (R198)"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline (Insidious Invitation loop)",
-        "agrees": false,
-        "note": "the declared divergence: R198 records that Insidious Invitation collects every seat's play inside the one resolution before any window opens, so the second player cannot respond to the first play before declaring their own (169 test 2 asserts the first play is on the stack and 'nobody has had priority yet' while the opponent is asked); outside a battle window the in-place path resolves without a stack item (169 §6c)"
+        "note": "push branch in battle; both branches fire cardPlayed"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/396-raq-timing.test.ts",
-        "pattern": "RAQ Tides 7",
+        "pattern": "RAQ Tides 7: a free play is a play",
         "passed": true,
-        "asserts_claim": "yes: Tides of the Cosmos plays Curio Drifter; Bloomcaster makes its 1/1"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/169-mid-resolution-window.test.ts",
-        "pattern": "R198|§6",
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "pattern": "CR 701.4 / CT-245: a unit Wake the Dead plays can be answered",
         "passed": true,
-        "asserts_claim": "supporting: Hooba-Pon, Insidious Invitation, Tides and Spell Excavation plays reach the stack with a window; §6a Bloomcaster hears an Invitation play"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "client/engine/test/zz-probe-U14-1.test.ts",
-        "test": "probe U14-1: Tides cast at a split damage-step boundary — the free play is put on the stack there too",
+        "file": "client/engine/test/556-inline-play-is-a-whole-play.test.ts",
+        "pattern": "CR 108.1a / CT-143: the in-place branch fires the wide cardPlayed",
         "passed": true,
-        "demonstrates": "yes (control): a Tides play during battle is pushed both from the attack window and from an R295 sub-step boundary window; the divergence is not there"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1396955380000755795#8",
         "supports": "yes",
-        "note": "_passer [Solved]: 'Played units/spells will trigger things with wording when you play ... like Bloomcaster'"
+        "note": "claim index 8 (write-up point 7), verbatim, covered"
       },
       {
-        "ref": "R198",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "'Playing a card during a resolution is playing a card.' It goes on the stack and priority is handed out with it there; the Insidious Invitation ordering approximation is recorded in the same ruling"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/cards/sets/batch-water-a.ts",
-        "text": "g.s.phase === 'battle' && g.s.priority !== null && !g.s.battle?.damageStep;"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "* **Insidious Invitation's per-seat loop still asks everybody before anybody responds.**"
+        "file": "client/ledgers/raq.ts",
+        "text": "7. Played units/spells will trigger things with wording 'when you play ...' like Bloomcaster or Death Greeter."
       }
     ],
     "basis_ok": true,
@@ -2721,47 +2726,63 @@
   },
   {
     "key": "effects.priority.deployment",
-    "textHash": "40b3025c28233260",
+    "textHash": "2becb2616680c1a7",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:deployIsolate",
+        "loc": "client/engine/src/apply.ts:apply ('priority can be kept only in battle')",
         "agrees": true,
-        "note": "R286 as built: a deployment play is committed with 'push' onto the acting seat's stack; settle's hold is seat-aware in deployment"
+        "note": "a hold ask in deployment is refused"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:settle (CR 507.5 deployment drain, deployIsolate)",
+        "agrees": true,
+        "note": "each seat's deployment stack drains top down at the safe point, with no window; a question open for the other seat does not hold this seat back"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/138-spell-copy.test.ts",
-        "pattern": "R286/CT-176: a deploy-timing play names a REAL stack item",
+        "pattern": "CR 507.5/CT-176: a deploy-timing play names a REAL stack item",
         "passed": true,
-        "asserts_claim": "yes: in deployment Overbloom (deploy-timing spell) aimed at the player's Earthbound Replicator is pushed (stackPushed names the play's item id)"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/138-spell-copy.test.ts",
-        "pattern": "R164/CT-176 Earthbound Replicator: a DEPLOY",
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "pattern": "CR 507.5 / CT-253: in deployment the ask is refused",
         "passed": true,
-        "asserts_claim": "supporting: the same play is copied by the Replicator"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "both seats deploy at once: NIT may act and finish before IT",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R286",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "owner: 'It does get the stack. But it's an isolated stack just for the person in that region.' Ruling point 2: the stack belongs to one seat and so does priority; the other seat cannot see it, respond to it, or be made to wait on it. Amends R144(a) and R250 §3, not superseded itself"
+        "note": "isolated stack per player"
+      },
+      {
+        "ref": "owner, chat 2026-10-22 (CT-185)",
+        "supports": "yes",
+        "note": "cannot hold priority; no on-the-stack shenanigans; plays stay as they are (on the stack)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "private deployIsolate(): Seat | null {"
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "text": "'and that is not an inference — the item was pushed, and the push names the same id'"
       },
       {
-        "file": "client/engine/test/138-spell-copy.test.ts",
-        "text": "assert.ok(h.events.some(e => e.type === 'stackPushed' && e.data?.['id'] === d['item']),"
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "text": "/only in battle/, 'a deployment play that asks is refused'"
       }
     ],
     "basis_ok": true,
@@ -2810,58 +2831,42 @@
   },
   {
     "key": "effects.priority.mid-resolution",
-    "textHash": "815bfe34c28a4167",
+    "textHash": "3da914e97ce63ca6",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U14-r2",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:inlinePlayGoesToStack / pushInlinePlay",
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline / inlinePlayGoesToStack",
         "agrees": true,
-        "note": "Tides, Insidious Invitation, Hooba-Pon push the played card; priority after the outer resolution (finishResolutionTail)"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead spellEffect",
-        "agrees": false,
-        "note": "units are spawned in place (spawnUnit asPlay) with no stack item — no response window"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-earth-c.ts:The Bonesculptor",
-        "agrees": false,
-        "note": "plays the bin unit by spawnUnit in place, no stack item"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline (in-place branch)",
-        "agrees": false,
-        "note": "outside a battle priority window a mid-resolution play resolves in place (latent: no current caller reaches it, per 169 §6b)"
+        "note": "in a battle priority window the played card is pushed as a stack item; the window opens after the playing resolution finishes. Every playInline caller is battle-only (169 §6b), so the in-place branch is unreachable by any card."
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/169-mid-resolution-window.test.ts",
-        "pattern": "a free play is still a play",
+        "pattern": "CR 701.4 Tides of the Cosmos",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "pattern": "CR 701.4 / CT-245: a unit Wake the Dead plays can be answered",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U14/u14-r2-probes.test.ts",
-        "title": "effects.priority.mid-resolution: a unit Wake the Dead plays waits on the stack until Wake has resolved",
-        "passed": false,
-        "demonstrates": "yes (divergence): onStack=false, inPlay=true — Wake the Dead's played unit never reaches the stack"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1396955380000755795#4",
         "supports": "yes",
-        "note": "once Tides resolves the played cards are separate effects on the stack"
+        "note": "claim index 4 is the _passer write-up point 5; verbatim; status covered, thread [Solved]"
       },
       {
-        "ref": "R198",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "goes on the stack; resolution finishes; then priority"
+        "note": "the resolution finishes, then priority is handed out"
       }
     ],
     "quote_spans": [
@@ -2870,17 +2875,12 @@
         "text": "5. Once Cosmos resolves, played cards are 2 separate effects put on the stack at the same time and you get to decide the order."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "the resolution that played it finishes; then priority is handed out with the"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "text": "// spell's own resolution — the units arrive with no stack item of their own,"
+        "file": "client/engine/test/169-mid-resolution-window.test.ts",
+        "text": "'Tides itself has already finished and binned — the free play OUTLIVES its resolution'"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed. The flagged divergence is real: Wake the Dead (probe) and The Bonesculptor put the played unit into play inside the resolution with no stack item; playInline's in-place branch is a further latent case.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.priority.priority",
@@ -2926,50 +2926,47 @@
   },
   {
     "key": "effects.priority.priority.hold",
-    "textHash": "dfaa4f72fa5fb736",
+    "textHash": "3f1fb327acbf21cf",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pushItem",
-        "agrees": false,
-        "note": "engineDiffers is real: pushItem sets priority = other(item.controller), so the caster cannot keep priority (Burst groups excepted)"
+        "loc": "client/engine/src/apply.ts:apply (holdPriority ask) + client/engine/src/engine.ts:pushItem priority hand-off",
+        "agrees": true,
+        "note": "the actor keeps priority when the action asks; items wait on the stack"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U14/u14-probes.test.ts",
-        "title": "effects.priority.priority.hold: after a battle cast the caster keeps priority (printed)",
-        "passed": false,
-        "demonstrates": "yes: the divergence — after the cast, priority is measured on the other seat"
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "pattern": "CR 703.2a / CT-253: the holder stacks a second action",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "pattern": "CR 703.2a / CT-253: a holder who passes hands the window over",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.30",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
-      },
-      {
-        "ref": "Manual p.30",
-        "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "both quotes verbatim, same paragraph"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "they may maintain their priority to continue taking"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "the stack as effects, they do not happen immediately."
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "    if (this.s.priority !== null) this.s.priority = other(item.controller);"
       }
     ],
     "basis_ok": true,
@@ -3247,6 +3244,48 @@
       {
         "file": "client/docs/digital-rules.md",
         "text": "separate effects put on the stack at the same time … Any additional [cost] of"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.solo-region",
+    "textHash": "79d01bb00b6d9f9f",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U14-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:soloStacked / settle (CR 703.7 drain)",
+        "agrees": true,
+        "note": "a battle-phase item in a region with fewer than two seats present is resolved by settle, top down, leaving the battle window's priority and passes alone"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "pattern": "CR 601.2a / CT-234: Molten Riftbreaker dying in the other region",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner, chat 2026-10-22 (CT-234)",
+        "supports": "yes",
+        "note": "'drains on its own' (the test header gives the fuller sentence: in order, without a priority window)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "text": "assert.equal(h.state.priority, priority, 'the battle window priority was not touched');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (let i = this.s.stack.length - 1; i >= 0; i--) {"
       }
     ],
     "basis_ok": true,
@@ -4536,30 +4575,43 @@
   },
   {
     "key": "effects.resolution.recheck.once",
-    "textHash": "af12beffeadde60f",
+    "textHash": "b922f5f826aff1ec",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:markIllegalTargets",
+        "loc": "client/engine/src/engine.ts:markIllegalTargets / resolveParts",
         "agrees": true,
-        "note": "records EffectPart.invalid once before the fizzle vote"
+        "note": "legality is judged once at the start of resolution; runs do not re-test their restriction (554 §2 sweep)"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/engine/test/554-target-judged-once.test.ts",
+        "pattern": "CR 704.5a / CT-232: Minor Kraken grafted",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/554-target-judged-once.test.ts",
+        "pattern": "CR 704.5 / CT-232 CONTROL",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R324",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "  so a suspended resolution replays the same verdict (R85). An earlier part of"
+        "file": "client/engine/test/554-target-judged-once.test.ts",
+        "text": "'judged once, at the start: a 13-defense unit is not a legal target, so it stays'"
       }
     ],
     "basis_ok": true,

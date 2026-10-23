@@ -16,12 +16,17 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "**2. Ownership does not move. Only the destination does.**"
+      },
+      {
+        "file": "client/engine/test/551-ownership-survives-own-zones.test.ts",
+        "quote": "CR 102.4 / CT-233: a stolen card recalled to the thief hand and played again is still its owner card"
       }
     ],
     "ct": "CT-233",
     "dupes": [
       "F-U01-3"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-233): a stolen card keeps its owner through the thief's own hand, bin and cache (551); the routes still open are F-U01-6."
   },
   {
     "id": "F-U01-2",
@@ -38,35 +43,16 @@
         "quote": "Every single effect is specific to the region it takes"
       },
       {
-        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
-        "quote": "a stack item and the cards in either bin are offered from every region"
-      },
-      {
-        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
-        "quote": "a stack item and the cards in either bin are offered from every region"
-      },
-      {
-        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
-        "quote": "a stack item and the cards in either bin are offered from every region"
-      },
-      {
-        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
-        "quote": "a stack item and the cards in either bin are offered from every region"
-      },
-      {
-        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
-        "quote": "a stack item and the cards in either bin are offered from every region"
-      },
-      {
-        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
-        "quote": "a stack item and the cards in either bin are offered from every region"
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "quote": "CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack"
       }
     ],
     "ct": "CT-234",
     "dupes": [
       "F-U01-4",
       "F-U01-5"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-234): each region has its own stack and a bin is reached only where its player is present; 578 drives Molten Riftbreaker at home and in the battle, and the bin reach."
   },
   {
     "id": "F-U01-3",
@@ -77,9 +63,14 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "| whose card is this? | its OWNER's, always, forever |"
+      },
+      {
+        "file": "client/engine/test/551-ownership-survives-own-zones.test.ts",
+        "quote": "CR 102.4 / CT-233: a stolen card in the thief bin is still its owner card, and the bin keeps it there"
       }
     ],
-    "ct": "CT-233"
+    "ct": "CT-233",
+    "closed": "fixed on 2026-10-22 with F-U01-1 (CT-233): 551 keeps the owner through a hand and a bin."
   },
   {
     "id": "F-U01-4",
@@ -94,9 +85,14 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "recalled. The STACK is not regional and is deliberately left global; narrowing"
+      },
+      {
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "quote": "CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack"
       }
     ],
-    "ct": "CT-234"
+    "ct": "CT-234",
+    "closed": "fixed on 2026-10-22 (CT-234): each region has its own stack and a bin is reached only where its player is present; 578 drives Molten Riftbreaker at home and in the battle, and the bin reach."
   },
   {
     "id": "F-U01-5",
@@ -115,8 +111,40 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "So Frosted Denial's *\"target enemy effect\"*, Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect."
+      },
+      {
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "quote": "CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack"
       }
     ],
-    "ct": "CT-234"
+    "ct": "CT-234",
+    "closed": "fixed on 2026-10-22 (CT-234): each region has its own stack and a bin is reached only where its player is present; 578 drives Molten Riftbreaker at home and in the battle, and the bin reach."
+  },
+  {
+    "id": "F-U01-6",
+    "rule": "concepts.players.owner",
+    "title": "Three routes still give a card the wrong owner: a mod applied from hand, bin or cache, an inline-played spell that resolves into a bin, and effects that move a bin card to a hand",
+    "summary": "The rule (owner 2026-10-22, \"Reset in shared zones\") keeps a card's owner through a player's own hand, bin and cache. The engine fixed the main routes in the 2026-10-22 round (CT-233, guard 551), and its own report lists three it did not: a mod applied from a hand, bin or cache takes the player applying it as its owner (the mod's owner field also means who applied it); a spell played inline that resolves or fizzles into a bin loses its owner; and card effects that move a bin card to a hand pass no owner. Filed as new tickets by that round; not re-measured here.",
+    "evidence": [
+      {
+        "file": "client/engine/test/551-ownership-survives-own-zones.test.ts",
+        "quote": "CR 102.4 / CT-233: a stolen card recalled to the thief hand and played again is still its owner card"
+      }
+    ],
+    "dupes": [
+      "F-U01-7"
+    ]
+  },
+  {
+    "id": "F-U01-7",
+    "title": "A foreign-owned card recalled from a bin to a hand loses its owner",
+    "summary": "Rule: moving a card out of a bin into a hand keeps its owner. Engine: Eldritch Reclaimer (and the other bin->hand recalls that call toHand without opts.owner, plus Cosmic Reversal stack->hand) drops the PlayerState.foreign entry, so the thief becomes the owner. Probe zz-probe-U01-1 fails on it. Probably the known F-U01-6.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-water-a.ts",
+        "quote": "g.toHand(ctx.controller, name, 'bin');                          // CR 402.4"
+      }
+    ],
+    "rule": "concepts.players.owner"
   }
 ]

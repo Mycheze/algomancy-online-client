@@ -469,15 +469,19 @@
         "quote": "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **\"Yes\"**"
       },
       {
-        "source": "file: client/engine/src/engine.ts",
-        "quote": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
-      },
-      {
         "source": "owner ruling, adopted 2026-08-28",
         "quote": "Two cards, and **both consume a hit WHOLE**: Blightsea Polyp returns `true`"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-22",
+        "quote": "Doesn't kill"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-22",
+        "quote": "Yes, none of them"
       }
     ],
-    "resolution": "Owner extensions of one designer answer. Caleb said \"Yes\" (2024-10-24, in #rules-questions, quoted in the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”)) to a replaced hit still counting as dealt when Blightsea Polyp turns it into rot for the same player, and he was shown Lethal only. The owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”) extends it to Thieving and Blessed, and the engine to a hit Oorblak redirects to itself, where the player is dealt nothing (attr.lethal.replaced: a Lethal hit redirected into Oorblak still kills the player). The rules state the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”) with basis owner, for sign-off. Read literally, Lethal's reminder (\"will kill a player\") and Oorblak's \"that damage is dealt to me instead\" suggest a redirected hit kills no player, so the Oorblak extension is the one to confirm. The same answer decides whether a redirected hit counts for \"when my column deals combat damage to an opponent\" (effects.replacement.substitute)."
+    "resolution": "Owner extensions of one designer answer. Caleb said \"Yes\" (2024-10-24, in #rules-questions, quoted in the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”)) to a replaced hit still counting as dealt when Blightsea Polyp turns it into rot for the same player, and he was shown Lethal only. The owner ruling of 2026-08-28 extends it to Thieving and Blessed. The Oorblak extension is settled the other way by the owner on 2026-10-22 (CT-296): a hit wholly redirected into Oorblak \"Doesn't kill\", and \"Yes, none of them\" for Thieving and the \"deals combat damage to a player\" payouts; a partial redirect counts as what got past. combat.damage.player.redirect, attr.lethal.replaced and attr.thieving.replaced state it; the engine was aligned the same day (562, 581)."
   },
   {
     "id": "D-U12-22",

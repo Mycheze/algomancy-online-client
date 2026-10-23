@@ -2020,11 +2020,15 @@
     "key": "combat.damage.player.replaced-still-dealt",
     "parent": "combat.damage.player",
     "order": 1,
-    "text": "Combat damage to a player that an effect replaces (for example, Blightsea Polyp's rot) was still dealt. An ability that triggers when a column deals combat damage to a player still triggers, and reads the damage dealt, even if the player lost no life.",
+    "text": "Combat damage to a player that an effect replaces but still deals to that player (for example, Blightsea Polyp's rot) was still dealt. An ability that triggers when a column deals combat damage to a player still triggers, and reads the damage dealt, even if the player lost no life. Damage redirected to a unit instead is not dealt to the player (rule 608.8c).",
     "examples": [
       {
         "text": "A fully replaced combat hit still counts as dealt: Vroot's 'that much' pays out the damage its column dealt, not the life the player lost.",
         "test": "207-replaced-hit-was-dealt.test.ts::CR 608.8a: the payout is the DAMAGE DEALT, not the life lost"
+      },
+      {
+        "text": "Blightsea Polyp turns a Lethal hit into rot. That is still damage dealt to the player, so the player is killed.",
+        "test": "562-lethal-redirected.test.ts::CR 608.8a / CT-296: Blightsea Polyp turns the Lethal hit into rot, which is still damage dealt, so the player is killed"
       }
     ],
     "see": [
@@ -2049,13 +2053,14 @@
       ],
       "engine": [],
       "tests": [
-        "207-replaced-hit-was-dealt.test.ts"
+        "207-replaced-hit-was-dealt.test.ts",
+        "562-lethal-redirected.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”) also quotes Caleb (2024-10-24, rules-questions, not a RAQ thread) answering 'Yes' to whether combat damage still applies after Rot Jelly's replacement; that exchange is quoted only inside the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”), so the basis is owner.",
+    "notes": "The owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”) also quotes Caleb (2024-10-24, rules-questions, not a RAQ thread) answering 'Yes' to whether combat damage still applies after Rot Jelly's replacement; that exchange is quoted only inside the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”), so the basis is owner. Round 2026-10-22 (CT-296): the redirect case is split off to 608.8c, where the owner ruled a wholly redirected hit is not dealt to the player. D-U12-21.",
     "sourceHashes": {}
   },
   {
@@ -2100,7 +2105,7 @@
     "key": "combat.damage.player.redirect",
     "parent": "combat.damage.player",
     "order": 3,
-    "text": "If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took.",
+    "text": "If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is still combat damage that would be dealt to the player: another such effect that has not applied (a second Oorblak) may take it, the same one may not, and what none takes is dealt to the player. A redirect applies before an effect that changes how combat damage is dealt to a player (Blightsea Polyp); that effect applies only to damage actually dealt to the player, such as Piercing excess no redirect took. Damage a redirect takes is not dealt to the player. If all of a column's combat damage to a player is redirected, the column has dealt that player no combat damage: Lethal kills no one, Thieving draws nothing, and nothing that triggers when a column deals combat damage to a player triggers. If some of it gets past the redirects (Piercing excess), the column has dealt the player that much.",
     "examples": [
       {
         "text": "10 Piercing combat damage that would be dealt to a player is redirected into a 2/4 Oorblak. 4 destroy it, and the other 6 are dealt to the player.",
@@ -2125,6 +2130,18 @@
       {
         "text": "Blightsea Polyp beside two Oorblaks: the player chooses only between the Oorblaks, and no rot is gained.",
         "test": "471-oorblak-order-and-polyp.test.ts::CR 608.8c: Polyp beside two Oorblaks — the question is about the Oorblaks only, and no rot"
+      },
+      {
+        "text": "Gublin (Lethal) attacks and all of its combat damage is redirected into Oorblak. The player is dealt nothing and lives.",
+        "test": "562-lethal-redirected.test.ts::CR 802.24a / CT-296: Gublin wholly redirected into Oorblak deals the player nothing, and the player lives"
+      },
+      {
+        "text": "A wholly redirected hit raises no \"deals combat damage to a player\" trigger and costs the player no life.",
+        "test": "581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a wholly redirected hit raises no face-damage event and no combat life loss"
+      },
+      {
+        "text": "A partly redirected hit is dealt as what got past Oorblak.",
+        "test": "581-redirected-hit-deals-nothing.test.ts::CR 608.8c / CT-296: a partly redirected hit is dealt as what got past Oorblak"
       }
     ],
     "see": [
@@ -2172,6 +2189,16 @@
           "quote": "There's no way for it to add rot (unless piercing is added into the mix) since it gets directed to the Oorblak, which isn't a player",
           "adopted": "2026-10-16",
           "from": "report round 2026-10-16, Blightsea Polyp and Oorblak (in session)"
+        },
+        {
+          "quote": "Doesn't kill",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-296)"
+        },
+        {
+          "quote": "Yes, none of them",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-296)"
         }
       ],
       "engine": [],
@@ -2179,13 +2206,15 @@
         "387-raq-combat.test.ts",
         "17-earth-b.test.ts",
         "469-replacement-chain-damage.test.ts",
-        "471-oorblak-order-and-polyp.test.ts"
+        "471-oorblak-order-and-polyp.test.ts",
+        "562-lethal-redirected.test.ts",
+        "581-redirected-hit-deals-nothing.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The RAQ (one Oorblak) is unchanged: with no second Oorblak the 6 reach the player. The owner (O7) reads the leftover as combat damage another Oorblak may take, and (O10) puts the redirect before Polyp. Caleb, 2025-11-25: replacement effects apply once each (RQ 1442982460034912287). F-U12-1 closed; D-U12-13.",
+    "notes": "The RAQ (one Oorblak) is unchanged: with no second Oorblak the 6 reach the player. The owner (O7) reads the leftover as combat damage another Oorblak may take, and (O10) puts the redirect before Polyp. Caleb, 2025-11-25: replacement effects apply once each (RQ 1442982460034912287). F-U12-1 closed; D-U12-13. Owner 2026-10-22 (CT-296): a Lethal hit wholly redirected into Oorblak \"Doesn't kill\"; asked whether the same holds for Thieving and the \"deals combat damage to a player\" payouts: \"Yes, none of them\". Partial redirect pays the excess. His 2026-10-16 words already in this record (\"The column doesn't even get to deal damage to the player\") say why. Engine aligned the same day (562, 581).",
     "sourceHashes": {
       "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635",
       "RQ 1442982460034912287": "edcc9a20d186b9aac49dde4a5b4e8075aa66f4856337bdca96b4673c713f58ec"

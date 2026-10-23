@@ -1,30 +1,10 @@
 # Algomancy Comprehensive Rules: Questions for the Owner
 
-9 questions. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.
-
-## Triggers and the stack
-
-### 1. When a graft (or a deployment augment) is applied to Mohruung, is the Crystal made before the mod attaches?
-
-*D-U03-13, rule 110.11; also filed as D-U03-14 (rule 110.11), D-U17-13 (rule 722.3c).*
-
-- RAQ 1355115946032889914#4: "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
-- owner ruling, adopted 2026-08-19: "the stack **above** the spell that targeted — the trigger resolves first."
-- file: client/engine/src/apply.ts: "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
-- card: Mohruung: "When I become targeted, [Switch1] Create a Crystal 2."
-
-- **A.** Yes: "he will trigger first" means the trigger resolves before the graft is applied. *At the table:* The Crystal exists before the graft attaches, so a graft that counts or reads units sees it; engine change, CT-242.
-- **B.** No: the trigger only fires first; the graft attaches, then the Crystal is made. *At the table:* As today; CT-242 closes as not a bug.
-
-**Today:** A (rule 110.11); the engine does B.
-
-**Recommended:** A. A graft has no stack item, so "trigger first" says something only if the trigger resolves first. Apply the same answer to an augment applied in deployment (D-U03-14).
-
-**Answer:**
+7 questions. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.
 
 ## Mods
 
-### 2. In battle, may a Virus be augmented onto a spell token standing in play (not one being cast)?
+### 1. In battle, may a Virus be augmented onto a spell token standing in play (not one being cast)?
 
 *D-U06-9, rule 305.6; also filed as D-U17-4 (rule 721.4a).*
 
@@ -46,7 +26,7 @@
 
 ## Battle
 
-### 3. Does Temporal Rift's "End this battle" also cancel the second battle round (the counterattack)?
+### 2. Does Temporal Rift's "End this battle" also cancel the second battle round (the counterattack)?
 
 *D-U09-4, rule 505.3f; also filed as D-U13-1 (rule 610.4).*
 
@@ -65,7 +45,7 @@
 
 **Answer:**
 
-### 4. Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?
+### 3. Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?
 
 *D-U12-12, rule 608.2d.*
 
@@ -81,7 +61,7 @@
 
 **Answer:**
 
-### 5. If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?
+### 4. If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?
 
 *D-U12-11, rule 608.3d.*
 
@@ -100,28 +80,7 @@
 
 ## Stats and attributes
 
-### 6. A Balanced unit gets Tough from an augment: is it doubled, then balanced, or balanced, then doubled?
-
-*D-U16-1, rule 709.4b; also filed as D-U19-1 (rule 802.1m).*
-
-- Manual p.42: "“Tough” is augmented onto a “Balanced” unit, or if a"
-- Manual p.42: "will have its defense doubled, then its stats balanced."
-- Manual p.42: "If “Tough” is applied to a “Balanced” unit, it will have"
-- Manual p.42: "its stats balanced, then its defense doubled."
-- Manual p.42: "A: Attributes apply in order from top to bottom. So if"
-- owner ruling, adopted 2026-08-18: "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
-- owner ruling, adopted 2026-08-18: "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
-
-- **A.** Doubled, then balanced: the Manual's first sentence names this exact case ("augmented onto"); its last sentence ("applied to") is a different grant, such as an effect. *At the table:* Child of Aether with Rampart Guardian is a 2/2; engine change, CT-257.
-- **B.** The Manual's two sentences describe the same case and contradict each other, so the engine's order (the owner ruling of 2026-08-18 (“Stat layer 4 application order”): printed attributes first) stands: balanced, then doubled. *At the table:* As today: the same unit is a 2/4.
-
-**Today:** Split: rule 802.1m states A; rule 709.4b states both and the engine's order.
-
-**Recommended:** A: the Manual names the case, and printed text is read literally.
-
-**Answer:**
-
-### 7. May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
+### 5. May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
 
 *D-U19-5, rule 802.2a.*
 
@@ -140,7 +99,7 @@
 
 **Answer:**
 
-### 8. Does Inverted invert from the printed stats, or from a rewritten base?
+### 6. Does Inverted invert from the printed stats, or from a rewritten base?
 
 *D-U19-3, rule 802.8c.*
 
@@ -164,7 +123,7 @@
 
 **Answer:**
 
-### 9. Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
+### 7. Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
 
 *D-U20-2, rule 802.14a.*
 

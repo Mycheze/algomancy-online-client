@@ -209,6 +209,10 @@
       {
         "text": "A stolen unit dies. It goes to its controller's bin, and its controller trashes it.",
         "test": "229-cosmic-and-control.test.ts::CR 801.2e: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin"
+      },
+      {
+        "text": "A stolen unit is erased from play. It and its mods go to the erased pile of the player who stole it.",
+        "test": "246-zones-follow-control.test.ts::CR 400.4 / CT-229: a stolen unit erased from play goes to the THIEF erased pile, with its mods"
       }
     ],
     "see": [
@@ -240,11 +244,8 @@
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) extends the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) from bins to the hand, the cache and the erased pile, and deliberately overrules a Manual recall sentence the printed pages do not contain (D-U07-10). The owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) still says a card erased off the stack goes to its OWNER's erased pile: D-U07-4. Not covered: a card that leaves the stack or a hand rather than play. Engine differs on one route: a card erased FROM PLAY is filed on its owner's erased pile (the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) item 3 behaviour the owner ruling of 2026-08-30 (“zones follow control, in all four…”) corrected); measured by the round-1 verifier probe. F-U07-7. Test 246's erased-pile case covers a mod erased off a host, not a unit erased from play.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U07-7"
-    ]
+    "notes": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) extends the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) from bins to the hand, the cache and the erased pile, and deliberately overrules a Manual recall sentence the printed pages do not contain (D-U07-10). The owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) still says a card erased off the stack goes to its OWNER's erased pile: D-U07-4. Not covered: a card that leaves the stack or a hand rather than play. The one route that differed, a card erased FROM PLAY filed on its owner's pile (F-U07-7), was fixed on 2026-10-22 (CT-229, 246). Test 246's erased-pile case covers a mod erased off a host, not a unit erased from play.",
+    "sourceHashes": {}
   },
   {
     "key": "zones.general.follow-control.ownership",
@@ -1947,7 +1948,7 @@
     "key": "zones.bin.unstable",
     "parent": "405",
     "order": 5,
-    "text": "An {Unstable} card that would enter a bin from an active zone is erased instead: it goes to the erased pile, not the bin. See 803.",
+    "text": "An {Unstable} card that would enter a bin from an active zone is erased instead: it ends on the erased pile, not in the bin. One that dies in play is still trashed (rule keywords.actions.trash.unstable-death). See 803.",
     "examples": [
       {
         "text": "A unit carrying a mod is {Unstable}. When it dies, it ends on the erased pile and is not left in the bin.",
@@ -1978,6 +1979,16 @@
           "quote": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "**An Unstable card that dies enters a bin, is trashed there, and is only then",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
+        },
+        {
+          "quote": "Trash isnt a trigger tho. Its a kind of death thing. So these options are the same option",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-246: asked to choose between print and Caleb, erased with no bin and no trash, and his 2026-08-24 bin, trash, erase sequence)"
         }
       ],
       "engine": [],
@@ -1990,10 +2001,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "low",
-    "notes": "Stated under the authority order: the printed reminder (Abyssal Evocation, Spell Excavation) and Caleb's glossary line quoted in the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) both say the card does not enter the bin. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”), the current owner ruling, says a dying {Unstable} card enters the bin and is trashed there before it is erased, and the engine does that. The difference is whether the death trashes. Tier-1 question: D-U07-3.",
-    "engineDiffers": [
-      "F-U07-6"
-    ],
+    "notes": "Settled 2026-10-22 (CT-246, closed by design): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\": trashing is part of a death, so an {Unstable} card that dies is trashed and still ends on the erased pile, which is the printed result (\"erase them instead\"), and the register's 2026-08-24 sequence (enters a bin, trashed there, then erased) stands. D-U07-3, D-U18-1. F-U07-6 closed.",
     "sourceHashes": {},
     "rebuttal": "Kept. \"Not the bin\" from play is deliberate: the authority order puts printed text and Caleb above our R-rulings, and the printed reminder (\"If they would enter a bin, erase them instead.\") and Caleb's Unstable glossary line quoted in the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) (\"from an active zone\") cover play as well as the stack. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) is an owner ruling that records itself as diverging from both. The rule already carries engineDiffers F-U07-6 for the measured play route, and D-U07-3 asks the owner whether the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) stands as a deliberate divergence. The owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”)’s own from-play bullet defers to the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”), so the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) is now cited only for the glossary line and the active-zone list."
   },
@@ -2795,10 +2803,22 @@
     "key": "zones.erased.tokens",
     "parent": "407",
     "order": 3,
-    "text": "A token that ceases to exist after entering a zone is recorded on the erased pile.",
+    "text": "A token is never recorded on the erased pile, because a token is not a card and the erased pile is a list of cards. This holds for unit tokens and spell tokens alike: a token that ceases to exist after entering a bin, a hand or a cache, and a token erased from play or from the stack, are not recorded.",
     "examples": [
       {
-        "text": null,
+        "text": "A unit token sent to the cache ceases to exist there and is not recorded on the erased pile.",
+        "test": "418-cr-zones.test.ts::cr:zones.erased.tokens — a unit token sent to the cache ceases to exist there and is NOT recorded on the erased pile"
+      },
+      {
+        "text": "A token unit carrying a real mod is erased from play. The mod is recorded on the erased pile; the token is not.",
+        "test": "549-never-file-tokens.test.ts::CR 407.1 / never file tokens: a token host erased from play is not filed, its real mod is"
+      },
+      {
+        "text": "A spell token recalled off the stack is not recorded on the erased pile.",
+        "test": "549-never-file-tokens.test.ts::CR 407.1 / never file tokens: a spell token recalled off the stack is not filed"
+      },
+      {
+        "text": "A token that dies enters the bin, is not trashed, and then ceases to exist, without being recorded.",
         "test": "35-rot-debt-trash.test.ts::a TOKEN dying enters the bin, is NOT trashed, and is then erased"
       }
     ],
@@ -2811,32 +2831,46 @@
       "ours": [],
       "owner": [
         {
-          "quote": "the event window still sees it, and the erased pile (R65) still records it.",
-          "adopted": "2026-09-28",
+          "quote": "Never file tokens",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22"
+        },
+        {
+          "quote": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a",
+          "adopted": "2026-08-26",
           "from": "register@72de434"
         }
       ],
       "engine": [],
       "tests": [
         "35-rot-debt-trash.test.ts",
-        "418-cr-zones.test.ts"
+        "418-cr-zones.test.ts",
+        "549-never-file-tokens.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”) continues \"and the erased pile (owner ruling of 2026-08-21, “Discarding is not playing; conceding; the…”) still records it\". The owner ruling of 2026-08-26 (“an erased card goes to the…”) reads the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)’s pile as \"a list of cards\" and does not file a token mod erased off a living host: D-U07-5.",
+    "notes": "REVERSED 2026-10-22: the owner's one rule, \"Never file tokens\". The rule used to say a token that ceases to exist after entering a zone is recorded (the register's 2026-09-28 line \"the erased pile (R65) still records it\", now replaced). The 2026-08-26 register reason (a token is not a card, the pile is a list of cards) now covers every route. Engine aligned the same day (549 and sixteen flipped tests). D-U07-5 settled.",
     "sourceHashes": {}
   },
   {
     "key": "zones.erased.tokens.mods",
     "parent": "zones.erased.tokens",
     "order": 1,
-    "text": "A token mod is recorded on the erased pile once when its host leaves play, however the host leaves.",
+    "text": "A token mod is never recorded on the erased pile either, however its host leaves play, and also when it is erased off a host that stays in play (rule effects.mods.erase-off-host.token).",
     "examples": [
       {
-        "text": null,
-        "test": "129-disposal-tail.test.ts::CR 407.3a: a TOKEN mod reaches the erased pile however its host leaves play"
+        "text": "A unit carrying a token mod leaves play in each of the three ways. The token mod is announced as erased each time, and never recorded on the erased pile.",
+        "test": "129-disposal-tail.test.ts::CR 407.3a: a TOKEN mod is announced however its host leaves play, and never filed on the erased pile"
+      },
+      {
+        "text": "A token mod reaches neither the erased pile nor a bin, on all three routes.",
+        "test": "141-despawn-mods.test.ts::CR 407.3a (v): a token mod reaches neither the erased pile nor a bin, on all three routes"
+      },
+      {
+        "text": "A Wraith token mod erased together with its host reaches neither the erased pile nor a bin.",
+        "test": "145-erase-routes.test.ts::CR 407.3a (vi-token): a token mod (Wraith) erased with its host reaches neither the erased pile nor a bin"
       }
     ],
     "see": [],
@@ -2846,26 +2880,22 @@
       "ours": [],
       "owner": [
         {
-          "quote": "reaches the public erased pile exactly once on each of the three routes.",
-          "adopted": "2026-08-25",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "The rule turns on the destination, not",
-          "adopted": "2026-08-25",
-          "from": "register@72de434"
+          "quote": "Never file tokens",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22"
         }
       ],
       "engine": [],
       "tests": [
         "129-disposal-tail.test.ts",
-        "141-despawn-mods.test.ts"
+        "141-despawn-mods.test.ts",
+        "145-erase-routes.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-08-26 (“an erased card goes to the…”) does not file a token mod erased off a host that stays in play. D-U07-5.",
+    "notes": "REVERSED 2026-10-22: \"Never file tokens\". The rule used to record a token mod once when its host left play (register 2026-08-25, \"reaches the public erased pile exactly once on each of the three routes\"), now replaced. D-U07-5, D-U17-1 settled.",
     "sourceHashes": {}
   },
   {
@@ -3047,7 +3077,7 @@
     "key": "zones.recycle.mark.reshuffle",
     "parent": "zones.recycle.mark",
     "order": 2,
-    "text": "When anything that uses the deck reaches the mark, whatever the reason, the recycle pile is shuffled and put above the mark, under the cards still left in the deck; the mark goes back to the very bottom, with an empty recycle pile behind it. An effect that reveals more cards than are above the mark reshuffles when it reaches the mark and keeps revealing until it has its full number.",
+    "text": "When anything that uses the deck needs a card past the mark, whatever the reason, the recycle pile is shuffled and put above the mark, under the cards still left in the deck; the mark goes back to the very bottom, with an empty recycle pile behind it. Taking the last card above the mark does not by itself reshuffle the pile: it is shuffled only when a card past the mark is needed. An effect that reveals more cards than are above the mark reshuffles when it reaches the mark and keeps revealing until it has its full number.",
     "examples": [
       {
         "text": null,
@@ -3085,6 +3115,11 @@
           "quote": "So ANYTHING that uses the deck should be able to trigger the reshuffle.",
           "adopted": "2026-10-21",
           "from": "owner chat 2026-10-21"
+        },
+        {
+          "quote": "Only when needed",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-330)"
         }
       ],
       "engine": [],
@@ -3096,7 +3131,7 @@
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Owner 2026-10-22 (CT-330, closed by design): asked whether exposing the reminder reshuffles at once or only when a card past it is needed: \"Only when needed\", as the engine does.",
     "sourceHashes": {}
   },
   {
@@ -4225,7 +4260,16 @@
     ],
     "see": [],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "during the game. If they leave play or enter a zone such as a"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "hand or discard, they are erased from the game and returned to"
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -4240,7 +4284,7 @@
         "35-rot-debt-trash.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "low",
     "notes": "The owner ruling of 2026-08-22 (“A token entering a ZONE is…”): \"There is no designer statement about a token being cached — none at all.\" It extends the hand and bin answers so that no zone behaves differently. Owner-overturnable. D-U07-14. A second test title disagrees: F-U07-2.",

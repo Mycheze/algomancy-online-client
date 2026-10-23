@@ -21,7 +21,8 @@
     "ct": "CT-247",
     "dupes": [
       "F-U09-3"
-    ]
+    ],
+    "closed": "wontfix 2026-10-22 (CT-247): the owner keeps the simultaneous hidden resource, haste and deployment steps as a house rule; rule D1.5 states the convention."
   },
   {
     "id": "F-U08-2",
@@ -80,6 +81,7 @@
         "quote": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step."
       }
     ],
-    "ct": "CT-248"
+    "ct": "CT-248",
+    "closed": "wontfix 2026-10-22 (CT-248): the owner keeps the early start of the resource step as a digital convention; rule D1.6 states it."
   }
 ]

@@ -114,11 +114,8 @@
     "basis": "printed",
     "scope": "game",
     "confidence": "high",
-    "notes": "U01 concepts.general.turns says the same at 100; this is the turn-structure statement. Engine differs on \"sync up at the end of each step\": a seat that has finished the draft step (or constructed's recycle) starts its resource step while the other seat is still drafting (F-U08-4, D-U08-10). The rule states print (authority order). 20-draft.test.ts was removed from the sources because it asserts the divergence. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule). REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U08-4"
-    ]
+    "notes": "U01 concepts.general.turns says the same at 100; this is the turn-structure statement. Engine differs on \"sync up at the end of each step\": a seat that has finished the draft step (or constructed's recycle) starts its resource step while the other seat is still drafting (F-U08-4, D-U08-10). The rule states print (authority order). 20-draft.test.ts was removed from the sources because it asserts the divergence. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule). REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. REVIEW COMMENT 2026-10-11 (owner): the fully global turn is a digital choice; paper takes synced steps INT first, NIT second. The owner ruling of 2026-10-11 (“The fully global turn is a…”); the client half is turn.general.global.digital. Round 2026-10-22: the owner kept the early start of the resource step (CT-248 wontfix), so the client half is a digital convention, annexd.general.early-resource-step, not an engine defect. F-U08-4 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.general.global.digital",
@@ -201,11 +198,8 @@
     "basis": "printed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Who gets the initiative at the start is 103 (U01); passing it is 508 (U09). Which planning steps follow IT-first order: turn.planning.order. RAQ 1540678747953569832#1 (IT puts triggers on the stack first) belongs to 706. Engine differs: the initiative player acts first in battle, but the resource step, the haste step and deployment run for both seats at once as hidden simultaneous segments (a digital half of the owner ruling of 2026-08-18 (“Haste step engine model […]”), Annex D). The rule states print: F-U08-1, D-U08-11. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U08-1"
-    ]
+    "notes": "Who gets the initiative at the start is 103 (U01); passing it is 508 (U09). Which planning steps follow IT-first order: turn.planning.order. RAQ 1540678747953569832#1 (IT puts triggers on the stack first) belongs to 706. Engine differs: the initiative player acts first in battle, but the resource step, the haste step and deployment run for both seats at once as hidden simultaneous segments (a digital half of the owner ruling of 2026-08-18 (“Haste step engine model […]”), Annex D). The rule states print: F-U08-1, D-U08-11. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule). Round 2026-10-22: the owner kept the simultaneous hidden steps (CT-247 wontfix), so the client half is a digital convention, annexd.general.initiative-order, not an engine defect. F-U08-1 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "turn.general.initiative.not-token",
@@ -694,7 +688,8 @@
     "see": [
       "turn.general.initiative",
       "502",
-      "504"
+      "504",
+      "annexd.general.initiative-order"
     ],
     "sources": {
       "printed": [
@@ -724,11 +719,8 @@
     "basis": "printed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Manual p.27 (The Turn, TEAMS/1V1 column) marks each step with a legend colour: steps 1-3 of planning \"SIMULTANEOUSLY\", steps 4 (Gather and activate resources) and 5 (Play haste cards) \"IT FIRST, THEN NIT\", and deployment IT first too. The colours are read off the scan (rendered page 27); the page text keeps only the legend words, so the quotes cannot carry the mapping. Rulebook 2023 p.5 states it in prose for the mana phase. The owner ruling of 2026-08-18 (“Haste step engine model […]”) (its standing, digital half; not cited as a source because it states the opposite) and the hidden-simultaneous-segment model run the resource and haste steps for both seats at once, interleaved and hidden: D-U08-1, F-U08-1. Printed beats an R-ruling under the authority order, so the rule states print. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
+    "notes": "Manual p.27 (The Turn, TEAMS/1V1 column) marks each step with a legend colour: steps 1-3 of planning \"SIMULTANEOUSLY\", steps 4 (Gather and activate resources) and 5 (Play haste cards) \"IT FIRST, THEN NIT\", and deployment IT first too. The colours are read off the scan (rendered page 27); the page text keeps only the legend words, so the quotes cannot carry the mapping. Rulebook 2023 p.5 states it in prose for the mana phase. The owner ruling of 2026-08-18 (“Haste step engine model […]”) (its standing, digital half; not cited as a source because it states the opposite) and the hidden-simultaneous-segment model run the resource and haste steps for both seats at once, interleaved and hidden: D-U08-1, F-U08-1. Printed beats an R-ruling under the authority order, so the rule states print. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule). Round 2026-10-22: the owner kept the client's simultaneous hidden steps (CT-247 wontfix), so the difference is a digital convention, annexd.general.initiative-order, not an engine defect. F-U08-1 closed.",
     "sourceHashes": {},
-    "engineDiffers": [
-      "F-U08-1"
-    ],
     "rebuttal": "Already flagged: the record carries engineDiffers [\"F-U08-1\"] (stripped from the verifier's view). The rule states print under the authority order; the verifier's measurement agrees with F-U08-1. The owner ruling of 2026-08-18 (“Haste step engine model […]”) is removed from the sources because its quoted sentence states the engine model the rule departs from; the conflict stays recorded in D-U08-1."
   },
   {
@@ -738,7 +730,8 @@
     "text": "A step of the planning phase ends for all players together. No player begins the resource step until every player has finished the draft step.",
     "examples": [],
     "see": [
-      "turn.draw.draft"
+      "turn.draw.draft",
+      "annexd.general.early-resource-step"
     ],
     "sources": {
       "printed": [
@@ -760,11 +753,8 @@
     "basis": "printed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Engine differs: 20-draft.test.ts \"planning is gated until you commit; open again after (opponent still drafting)\" lets a seat that has committed its draft activate and recycle while the other seat is still drafting, and the verifier measured the same for constructed's recycle. Not bound as an example, since it shows the divergence. F-U08-4, D-U08-10. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
+    "notes": "Engine differs: 20-draft.test.ts \"planning is gated until you commit; open again after (opponent still drafting)\" lets a seat that has committed its draft activate and recycle while the other seat is still drafting, and the verifier measured the same for constructed's recycle. Not bound as an example, since it shows the divergence. F-U08-4, D-U08-10. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule). Round 2026-10-22: the owner kept the early start (CT-248 wontfix): annexd.general.early-resource-step. F-U08-4 closed.",
     "sourceHashes": {},
-    "engineDiffers": [
-      "F-U08-4"
-    ],
     "rebuttal": "The divergence was flagged: the record carried engineDiffers (stripped from the verifier's view), now pointed at the narrower finding F-U08-4. Under the authority order print (Rulebook 2023 p.5, Manual p.16) beats engine behaviour, which no ruling states; the rule states print and the engine early start is the filed finding, with the question in D-U08-10."
   },
   {

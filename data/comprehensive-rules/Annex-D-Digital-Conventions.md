@@ -109,6 +109,18 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Demonstrated by test: 434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.battle-open — in battle nothing is held: a cast is on the opponent view and in their events at once · Key: annexd.general.hidden-segment.battle-open</sub>
 
+<a id="rD1.5"></a>**D1.5.** Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules 501.4 and rule 507.3), this client runs those steps for both players at once, each hidden from the other (rule D1.4). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client. See rules 501, 507, D1.4.
+
+> *Example: The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-10-11 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 21-fixes.test.ts · Example test: 21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT · Key: annexd.general.initiative-order</sub>
+
+<a id="rD1.6"></a>**D1.6.** In a draft, a player who has made their pick may begin the resource step, activating and recycling, while the other player is still drafting. The printed turn ends each step for every player together (rule 501.4a); this client does not hold the faster player back, because the resource step is hidden and the other player cannot see the head start. See rules 501.4a, D1.4.
+
+> *Example: A player who has committed their draft pick may activate a resource while the opponent is still drafting.*
+
+<sub>Basis: Owner call · adopted 2026-10-22 · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Tests: 20-draft.test.ts · Example test: 20-draft.test.ts::planning is gated until you commit; open again after (opponent still drafting) · Key: annexd.general.early-resource-step</sub>
+
 <a id="rD2"></a>
 ### D2. Priority and Auto-Pass
 
@@ -248,13 +260,17 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 434-cr-digital-1.test.ts · Example test: 434-cr-digital-1.test.ts::cr:annexd.auto-pass.regroup-confirm.card-ended — the pass under Temporal Rift does not read as ending the battle, yet the regroup announcement still fires when the Rift ends it · Key: annexd.auto-pass.regroup-confirm.card-ended</sub>
 
-<a id="rD2.7"></a>**D2.7.** Full control is held, not set. While a player holds the Control key, the client gives them every stop: auto-pass, standing passes, auto-yields and the automatic haste-step ready all stand down. When they let go, everything returns to how it was.
+<a id="rD2.7"></a>**D2.7.** Full control is held, not set. While a player holds the Control key, the client gives them every stop: auto-pass, standing passes, auto-yields and the automatic haste-step ready all stand down. In battle, an action taken while holding it also keeps priority (rule D2.9). When they let go, everything returns to how it was.
 
-<sub>Basis: Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 272-full-control.test.ts · Demonstrated by tests: 272-full-control.test.ts::BL-18 §2 with full control ON, the auto-pass preference sends nothing, 272-full-control.test.ts::CT-183 §6 letting go goes right back to the way it was · Key: annexd.auto-pass.full-control</sub>
+> *Example: Holding the Control key as a player acts asks to keep priority; letting go stops asking.*
 
-<a id="rD2.7a"></a>**D2.7a** This includes deployment: while a player holds full control, nothing on their deployment stack resolves automatically. Engine differs, see F-U23-1. See rule 507. *(Engine differs, see F-U23-1.) (Untested: no executed test demonstrates it.)*
+<sub>Basis: Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests (a probe it wrote), all passed; 2 gate test files · Tests: 272-full-control.test.ts, 569-hold-priority-toggle.test.ts · Example test: 569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: holding Ctrl asks too, and letting go stops asking · Demonstrated by tests: 272-full-control.test.ts::BL-18 §2 with full control ON, the auto-pass preference sends nothing, 272-full-control.test.ts::CT-183 §6 letting go goes right back to the way it was · Key: annexd.auto-pass.full-control</sub>
 
-<sub>Basis: Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; no gate test · Key: annexd.auto-pass.full-control.deployment</sub>
+<a id="rD2.7a"></a>**D2.7a** Full control changes nothing in deployment. No player holds priority there (rule 703.7), so holding the Control key asks for nothing, and each deployment stack still resolves on its own. See rule 507.
+
+> *Example: In deployment there is no Hold priority toggle, and holding the Control key adds no ask.*
+
+<sub>Basis: Owner call · adopted 2026-10-22 · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 569-hold-priority-toggle.test.ts, 568-hold-priority.test.ts · Example test: 569-hold-priority-toggle.test.ts::CR 507.5 / CT-253: in deployment nothing asks to hold · Key: annexd.auto-pass.full-control.deployment</sub>
 
 <sub>Discrepancies: D-U23-4 (discrepancies.md)</sub>
 
@@ -290,11 +306,19 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Discrepancies: D-U23-10 (discrepancies.md)</sub>
 
-<a id="rD2.9"></a>**D2.9.** This client has no way to keep priority after acting: when a player puts something on the stack in battle, priority goes to the opponent. A player can still respond to their own spell, once priority comes back to them with it still on the stack. See rule 703.
+<a id="rD2.9"></a>**D2.9.** This client does not keep priority for a player who acts unless they ask: in battle, once their action is on the stack, priority goes to the opponent. A player asks to keep it by acting while holding the Control key (rule D2.7) or with the Hold priority toggle beside Pass turned on; then they keep priority and may act again (rule 703.2a). A pass never asks. A player who did not keep priority can still respond to their own spell once priority comes back to them with it on the stack. See rules 703, D2.7.
+
+> *Example: With the toggle off and no Control key held, a play goes out as it always did, and priority passes to the opponent.*
+
+> *Example: The Hold priority toggle sits beside Pass; a tap turns it on.*
+
+> *Example: Holding the Control key asks too; letting go stops asking.*
+
+> *Example: A pass never carries the ask.*
 
 > *Example: The defender casts a spell, the attacker passes, and the defender casts a second spell on top of the first.*
 
-<sub>Basis: Engine only · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 272-full-control.test.ts · Example test: 272-full-control.test.ts::BL-18 §4 you can respond to your own spell with the first still on the stack · Key: annexd.auto-pass.no-retain</sub>
+<sub>Basis: Owner call · adopted 2026-10-22 · Verified: confirmed in round 4; verifier ran 6 tests, all passed; 3 gate test files · Tests: 272-full-control.test.ts, 569-hold-priority-toggle.test.ts, 568-hold-priority.test.ts · Example tests: 569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: with the toggle off and no Ctrl, a play goes out as it always did, 569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: the hold toggle sits beside Pass and a tap turns it on, 569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: holding Ctrl asks too, and letting go stops asking, 569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: a pass never carries the ask, 272-full-control.test.ts::BL-18 §4 you can respond to your own spell with the first still on the stack · Key: annexd.auto-pass.no-retain</sub>
 
 <sub>Discrepancies: D-U23-16 (discrepancies.md)</sub>
 
@@ -698,11 +722,19 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 172-event-channel-secrecy.test.ts, 435-cr-digital-2.test.ts · Example test: 172-event-channel-secrecy.test.ts::CR D6.5: no event names a card in a zone the state channel hides — the invariant, not the instance · Key: annexd.reveal.hidden-names</sub>
 
-<a id="rD6.5a"></a>**D6.5a** When an effect lets a player look at a hand, the cards seen are named in the game log to that player only. The other players' log says only that the hand was looked at. See rule 402.2a. *(Engine differs, see F-U24-5.)*
+<a id="rD6.5a"></a>**D6.5a** When an effect lets a player look at another player's hand, the cards are shown to the looker only: the client keeps them in the looker's note-taking strip, and no log line names them to anyone else (where a card's log line names them, it goes to the looker alone). The other players' log says only that the hand was looked at, and names no card. This holds when a player looks at their own hand too: the other player's log says that they looked at their own hand, and names nothing. See rule 402.2a.
 
 > *Example: Thought Extraction is aimed at a player's own hand. The opponent is not shown the cards in it.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 173-look-at-a-hand.test.ts, 435-cr-digital-2.test.ts · Example test: 173-look-at-a-hand.test.ts::CR 402.2a Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to · Key: annexd.reveal.hidden-names.look-at</sub>
+> *Example: Thought Extraction is aimed at its caster's own hand. The opponent's log says a hand was looked at, and names no card.*
+
+> *Example: Aimed at the opponent's hand, the public line names the hand looked at.*
+
+> *Example: Hand Peeper looks at the opponent's hand: no log line names the cards, and the look still works.*
+
+> *Example: Hand Peeper used on its player's own hand: the look is logged for everyone, and nothing is kept in the strip.*
+
+<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 3 gate test files · Tests: 173-look-at-a-hand.test.ts, 435-cr-digital-2.test.ts, 550-look-at-own-hand-logged.test.ts · Example tests: 173-look-at-a-hand.test.ts::CR 402.2a Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to, 550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263: Thought Extraction aimed at the caster own hand tells the opponent a hand was looked at, naming nothing, 550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263 control: aimed at the opponent, the public line still names the hand looked at, 173-look-at-a-hand.test.ts::CR 402.2a control — Hand Peeper: the same printed verb with NO naming line at all, and it still works, 550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263: Hand Peeper on your own hand logs the look and takes no snapshot · Key: annexd.reveal.hidden-names.look-at</sub>
 
 <a id="rD6.5b"></a>**D6.5b** A card that an effect moves out of a hidden hand into another hidden zone, without the effect saying "reveal", is named only to the player who chose it. The other players are told that a card moved, not which.
 

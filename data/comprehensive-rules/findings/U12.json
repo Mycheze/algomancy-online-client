@@ -54,5 +54,25 @@
       }
     ],
     "ct": "CT-230"
+  },
+  {
+    "id": "F-U12-4",
+    "title": "Vroot ('when my column deals combat damage', not 'to a player') does not trigger when its column's damage is wholly redirected into Oorblak",
+    "summary": "Possible divergence outside this record's claim. The engine lumps Vroot with the 'deals combat damage to a player' listeners, so a column whose hit is wholly redirected into Oorblak gives Vroot nothing. But Vroot's trigger has no 'to a player'; Oorblak's text has the damage 'dealt to me instead', and the owner (2026-10-16) said it is still combat damage. Read that way, the column did deal combat damage (to Oorblak) and Vroot should pay out that much. Worth an owner check.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-light-a.ts",
+        "quote": "type: 'triggered', events: ['damage', 'combatFaceDamage'],   // CR 608.8a"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "// combat 'lifeLost' listeners: Vroot and every \"when my column deals"
+      },
+      {
+        "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
+        "quote": "assert.ok(!fired(hit(58111 + 3 * i, column, 'whole', setup).evs, name), `${name}: the column dealt the player nothing`);"
+      }
+    ],
+    "rule": "combat.damage.player.redirect"
   }
 ]

@@ -18,8 +18,8 @@
         "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
       },
       {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "quote": "        g.spawnUnit(ctx.controller, c.name, ctx.region,"
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "quote": "CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives"
       }
     ],
     "ct": "CT-245",
@@ -29,7 +29,8 @@
       "F-U14-3",
       "F-U14-6",
       "F-U14-7"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-245): Wake the Dead plays its units onto the stack, and a spell unit casts its spell and arrives only if it resolves (557)."
   },
   {
     "id": "F-U06-2",
@@ -55,10 +56,6 @@
     "summary": "Wake the Dead ('Play up to two units in any bin…') offers spell units (isUnitCard) but spawns their bodies directly: the spell part never happens, nothing goes on the stack, no 'spellPlayed' fires and nothing can negate it. The designer (RAQ Hooba-Pon thread) rules that a spell unit played via 'play a unit' casts its spell and spawns only if it resolves. Probe: Jelly from A's bin, victim stays 7/5, no target asked. digital-rules the owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) lists it as 'Left open, and filed rather than fixed'.",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "quote": "        g.spawnUnit(ctx.controller, c.name, ctx.region,"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "- **A SPELL UNIT raised by Wake the Dead does not cast its spell.** *\"Up to two"
       },
@@ -69,9 +66,14 @@
       {
         "file": "client/ledgers/raq.ts",
         "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+      },
+      {
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "quote": "CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives"
       }
     ],
-    "ct": "CT-245"
+    "ct": "CT-245",
+    "closed": "fixed on 2026-10-22 (CT-245): Wake the Dead plays its units onto the stack, and a spell unit casts its spell and arrives only if it resolves (557)."
   },
   {
     "id": "F-U06-4",
@@ -80,18 +82,19 @@
     "summary": "Wake the Dead 'plays' units from a bin via spawnUnit(asPlay) inline: a spell unit (Jelly) arrives with no stack item, no target, no spell effect and no spellPlayed event, so Origon/Riftbreaker/'play a spell' watchers never see it. Designer (Hooba-Pon RAQ) and Manual p.43 say a played spell unit casts its spell and is a spell. Already filed as open in the owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) (known; engineDiffers F-U06-1). Measured by probe u06-r2-probes.test.ts.",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "quote": "{ owner: c.seat, from: 'bin', asPlay: true });"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "**A SPELL UNIT raised by Wake the Dead does not cast its spell.**"
       },
       {
         "file": "client/ledgers/raq.ts",
         "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+      },
+      {
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "quote": "CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives"
       }
     ],
-    "ct": "CT-245"
+    "ct": "CT-245",
+    "closed": "fixed on 2026-10-22 (CT-245): Wake the Dead plays its units onto the stack, and a spell unit casts its spell and arrives only if it resolves (557)."
   }
 ]

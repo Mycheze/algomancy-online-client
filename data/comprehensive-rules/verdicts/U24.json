@@ -4558,48 +4558,88 @@
   },
   {
     "key": "annexd.reveal.hidden-names.look-at",
-    "textHash": "9f2e2151a223699d",
+    "textHash": "2abcd384ca844a4c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:revealHandTo + privateTo lines",
+        "loc": "client/engine/src/engine.ts:E.revealHandTo",
         "agrees": true,
-        "note": ""
+        "note": "own hand: public 'looks at their own hand.' line, no snapshot; other hand: seenHand snapshot + public 'looks at X's hand.' naming no card"
+      },
+      {
+        "loc": "client/server/view.ts:visibleToSeat",
+        "agrees": true,
+        "note": "privateTo naming lines reach the looker only"
       }
     ],
     "tests_run": [
       {
-        "file": "173-look-at-a-hand.test.ts",
-        "pattern": "R197b §1 Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to",
+        "file": "client/server/test/173-look-at-a-hand.test.ts",
+        "pattern": "CR 402.2a",
         "passed": true,
-        "asserts_claim": "yes",
-        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 14/14 pass"
-      }
-    ],
-    "probes": [],
-    "source_checks": [
-      {
-        "ref": "R197b",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "asserts_claim": true
       },
       {
-        "ref": "R197b",
+        "file": "client/engine/test/550-look-at-own-hand-logged.test.ts",
+        "pattern": "CR D6.5a / CT-263",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.reveal.hidden-names.look-at",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24: Hand Peeper aimed at its own player hand logs the look to the opponent, names nothing, no snapshot",
+        "passed": true,
+        "demonstrates": "yes: the real Hand Peeper activation on its own player's hand (550's Hand Peeper example only white-boxes revealHandTo) gives the opponent one 'looks at their own hand' line naming no card, and no seenHand snapshot"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 'is a private look — you see it, the table'",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": "look at = private to the looker; not verifiable verbatim (register not in mirror), consistent with 173's header"
+      },
+      {
+        "ref": "owner register@72de434 '(the client's note-taking strip) and writes only \"X looks at Y's hand\"'",
+        "supports": "yes",
+        "note": "strip + public line naming no card"
+      },
+      {
+        "ref": "owner 'Log both' (CT-263, 2026-10-22)",
+        "supports": "yes",
+        "note": "per 550/engine comment: the public line is written whoever owns the hand; supports the own-hand sentence"
+      },
+      {
+        "ref": "card: Thought Extraction / Hand Peeper",
+        "supports": "yes",
+        "note": "both print \"Look at target player's hand\"; target player includes yourself"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "*\"**Look at** target player's hand\"* is a private look — you see it, the table"
+        "file": "client/engine/src/engine.ts",
+        "text": "this.ev('info', `${this.pname(viewer)} looks at their own hand.`);"
+      },
+      {
+        "file": "client/engine/test/550-look-at-own-hand-logged.test.ts",
+        "text": "CT-263, owner 2026-10-22: \"Log both\"."
+      },
+      {
+        "file": "client/server/test/173-look-at-a-hand.test.ts",
+        "text": "'the looker must still get the line: this is a look, not a secret from everyone');"
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.reveal.hidden-names.moved-card",

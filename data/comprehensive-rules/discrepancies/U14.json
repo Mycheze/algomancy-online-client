@@ -63,7 +63,7 @@
         "quote": "| a **required** target the item never had a legal candidate for | fizzles | fizzles — it wanted a target and has none |"
       }
     ],
-    "resolution": "Follow the designer for a graft composite (the case the designer answered). Whether the same holds for every triggered ability with a required target is not stated by the designer; the owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”) and the owner ruling of 2026-08-23 (“An effect fizzles when it loses…”) should be marked where they conflict. Filed as F-U14-1 (CT-252)."
+    "resolution": "Follow the designer for a graft composite (the case the designer answered): done in the engine on 2026-10-22 (CT-252; F-U14-1 closed, 546). Whether the same holds for every triggered ability with a required target is not stated by the designer, and is still unruled: a plain trigger with no candidate is pushed and fizzles."
   },
   {
     "id": "D-U14-5",

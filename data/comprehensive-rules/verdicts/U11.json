@@ -2314,78 +2314,61 @@
   },
   {
     "key": "combat.blocks.general.gap-adjacency",
-    "textHash": "32bbc256c0afaa70",
+    "textHash": "9ae42c2f40a00fa7",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U11-r2",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "engine.ts:adjacentInFormation",
-        "agrees": false,
-        "note": "engineDiffers is real: formationGrid(defender) is Object.keys(b.blocks) sorted and compacted, so blockers on columns 1 and 3 are grid neighbours; the code itself labels this '⚠ approximation'"
-      },
-      {
-        "loc": "engine.ts:repairFormation",
+        "loc": "client/engine/src/engine.ts:formationGrid",
         "agrees": true,
-        "note": "the empty blocking column keeps its place: after blocks nothing collapses, block keys stay at their attacking-column index"
+        "note": "defending grid has one column per attacking column, empty where unblocked"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/66-formation-placement.test.ts",
-        "pattern": "R75",
+        "file": "client/engine/test/560-defending-gap-adjacency.test.ts",
+        "pattern": "CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent",
         "passed": true,
-        "asserts_claim": "partly: 'a blocking formation may legitimately have EMPTY columns, and they are never \"repaired\"' supports 'keeps its place'; no test covers the adjacency clause"
-      }
-    ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-r2-probes.test.ts",
-        "title": "combat.blocks.general.gap-adjacency (measurement): blockers on the first and third of three columns are read by the engine as adjacent",
-        "passed": true,
-        "demonstrates": "yes: confirms the flagged divergence — keys ['0','2'] keep their place, yet adjacentInFormation(d0) = [d2]"
+        "asserts_claim": true
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
-        "title": "combat.blocks.side.adjacency (measurement): two blockers with an EMPTY blocking column between them read as adjacent",
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "CR 602.5d: a blocking formation may legitimately have EMPTY columns",
         "passed": true,
-        "demonstrates": "yes, same measurement"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.22",
-        "supports": "partly",
-        "note": "'locked in position … adjacent to their left, right, front and back neighbors' — the gap case is a reading, not stated; Manual p.23 'Units may even be placed blocking in slots where attackers aren't, which can be beneficial for adjacency matters cards' strengthens it: blocking position matters for adjacency"
+        "supports": "yes",
+        "note": ""
       },
       {
         "ref": "Manual p.23",
         "supports": "yes",
-        "note": "empty defending columns are allowed"
+        "note": "defending formation may have empty columns"
       },
       {
-        "ref": "R75 its adjacency definition",
-        "supports": "partly",
-        "note": "adjacency is the neighbouring column, same row; with blocking columns keyed by attacking column (R72) a gap column is the neighbour"
+        "ref": "owner register@72de434 '(ci - 1, ri) — the neighbouring column, same row'",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
-      },
-      {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "adjacent to their left, right, front and back neighbors until"
+        "text": "formation, but unlike offensive formations, the defending formation is allowed to be assigned with empty"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- `(ci - 1, ri)` — the neighbouring column, **same row**"
+        "file": "client/engine/test/560-defending-gap-adjacency.test.ts",
+        "text": "assert.deepEqual(e.adjacentInFormation(insp), [], 'the unblocked middle column lies between them');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling stands as the natural reading of the printed adjacency definition (no source states the gap case in words); the flagged engine divergence is real and measured.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.blocks.general.locked",
@@ -2589,50 +2572,43 @@
     "key": "combat.blocks.side.adjacency",
     "textHash": "b3738217b78d986c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U11-r1",
+    "round": 4,
+    "verifier": "U11-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:adjacentInFormation",
+        "loc": "client/engine/src/engine.ts:adjacentInFormation / openSideColumns",
         "agrees": true,
-        "note": "defender grid = blocking columns sorted by key; a side-block next to a block reads as adjacent. Caveat: the grid is COMPRESSED, so blockers with an empty blocking column between them also read as adjacent (see bugs)"
+        "note": "a side-block gets its own column of the shared index space, adjacent to the neighbouring blocker"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
-        "title": "combat.blocks.side.adjacency: a side-blocker is adjacent to the blocker beside it",
+        "file": "client/engine/test/422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.blocks.side.adjacency",
         "passed": true,
-        "demonstrates": true
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
-        "title": "combat.blocks.side.adjacency (measurement): two blockers with an EMPTY blocking column between them read as adjacent",
-        "passed": true,
-        "demonstrates": "yes - measures the over-adjacency caveat, not the rule"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.23",
         "supports": "yes",
-        "note": "\"Units may even be placed blocking in slots where attackers aren't, which can be beneficial for adjacency matters cards.\""
+        "note": "side-blocking 'can be beneficial for adjacency matters cards'"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "columns. Units may even be placed blocking in slots"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "where attackers aren’t, which can be beneficial for"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "// treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
+        "file": "client/engine/test/422-cr-attacking-blocking.test.ts",
+        "text": "assert.deepEqual(g.adjacentInFormation(s).map(u => u.id), [b0]);"
       }
     ],
     "basis_ok": true,
-    "problem": "The rule as worded holds. The engine over-applies it: blockers separated by an empty blocking column are also treated as neighbours (bug list).",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.blocks.side.any-number",

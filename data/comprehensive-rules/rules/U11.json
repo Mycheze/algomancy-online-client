@@ -2630,7 +2630,7 @@
     "examples": [
       {
         "text": "Against a three-column attack, the defending player blocks the first and third columns. The two blockers are not adjacent: the empty middle blocking column lies between them.",
-        "test": null
+        "test": "560-defending-gap-adjacency.test.ts::CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap"
       }
     ],
     "see": [
@@ -2659,16 +2659,14 @@
       ],
       "engine": [],
       "tests": [
-        "422-cr-attacking-blocking.test.ts"
+        "422-cr-attacking-blocking.test.ts",
+        "560-defending-gap-adjacency.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Added in round 1 from the verifier's measured engine behaviour. The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) (not in the pack; read from digital-rules.md) defines adjacency by grid position; the Manual makes empty blocking columns real. The engine compresses the block keys, so blockers on columns 1 and 3 read as adjacent (F-U11-3).",
-    "engineDiffers": [
-      "F-U11-3"
-    ],
+    "notes": "Added in round 1 from the verifier's measured engine behaviour. Adjacency is by grid position (the owner ruling of 2026-08-22, read from digital-rules.md); the Manual makes empty blocking columns real. Engine aligned 2026-10-22 (CT-249): the defending grid keeps one column per attacking column (560); F-U11-3 closed.",
     "sourceHashes": {}
   },
   {

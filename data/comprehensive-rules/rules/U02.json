@@ -1681,7 +1681,7 @@
     "examples": [
       {
         "text": null,
-        "test": "308-recycle-for-prismite.test.ts::CR 106.8d what stays illegal: exchanging a Prismite into a Prismite or a Shard"
+        "test": "308-recycle-for-prismite.test.ts::CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite"
       }
     ],
     "see": [],
@@ -1719,11 +1719,8 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The printed Prismite (\"Create a non-prismite resource\", known from the owner ruling of 2026-08-24 (“a Prismite DOES activate its new…”)’s quote) and Manual p.18 (\"exchanged for other resources\") read literally admit a Shard; no ruling or designer source forbids one. The owner ruling of 2026-09-19 (“Recycling can make a Prismite”)’s \"an exchange names an element\" is given as the reason a Prismite cannot become a Prismite, and the Shard refusal is in a test title only. Printed text outranks an R-ruling and the permissive reading is taken: D-U02-8. The engine refuses a Shard (verifier, apply.ts: \"e.need((e.s.elements as string[]).includes(element), 'not an element of this game');\"): F-U02-3. Moot at the table: a Shard is never better than an element resource.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U02-3"
-    ]
+    "notes": "The printed Prismite (\"Create a non-prismite resource\", known from the owner ruling of 2026-08-24 (“a Prismite DOES activate its new…”)’s quote) and Manual p.18 (\"exchanged for other resources\") read literally admit a Shard; no ruling or designer source forbids one. The owner ruling of 2026-09-19 (“Recycling can make a Prismite”)’s \"an exchange names an element\" is given as the reason a Prismite cannot become a Prismite, and the Shard refusal is in a test title only. Printed text outranks an R-ruling and the permissive reading is taken: D-U02-8. Engine aligned 2026-10-22 (CT-237): the exchange accepts a Shard (308's retitled test). F-U02-3 closed. Moot at the table: a Shard is never better than an element resource.",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.resources.shard",

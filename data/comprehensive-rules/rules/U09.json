@@ -1740,7 +1740,8 @@
     ],
     "see": [
       "500",
-      "904"
+      "904",
+      "annexd.general.initiative-order"
     ],
     "sources": {
       "printed": [
@@ -1766,12 +1767,9 @@
     "basis": "printed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "This client does not follow this order: see turn.deploy.order.simultaneous and D-U09-1. Rulebook 2023 says the NIT may \"wait and see\" what the IT does; Manual p.19 and p.42 say there is no information between regions, and in deployment each player is in a separate region. The Rulebook 2023 p.5 quote speaks of \"the mana and main phases\"; Rulebook 2023 calls deployment the main phase (\"After the main phase, the turn is over\"). engine differs: F-U09-3 (measured: the non-initiative player is offered and may make a play before the initiative player is done).",
+    "notes": "This client does not follow this order: see turn.deploy.order.simultaneous and D-U09-1. Rulebook 2023 says the NIT may \"wait and see\" what the IT does; Manual p.19 and p.42 say there is no information between regions, and in deployment each player is in a separate region. The Rulebook 2023 p.5 quote speaks of \"the mana and main phases\"; Rulebook 2023 calls deployment the main phase (\"After the main phase, the turn is over\"). engine differs: F-U09-3 (measured: the non-initiative player is offered and may make a play before the initiative player is done). Round 2026-10-22: CT-247 wontfix, the convention is annexd.general.initiative-order. F-U09-3 closed.",
     "sourceHashes": {},
-    "untested": true,
-    "engineDiffers": [
-      "F-U09-3"
-    ]
+    "untested": true
   },
   {
     "key": "turn.deploy.order.simultaneous",
@@ -1910,11 +1908,15 @@
     "key": "turn.deploy.stack",
     "parent": "507",
     "order": 5,
-    "text": "Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack normally resolves without anyone having to act.",
+    "text": "Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule effects.priority.deployment).",
     "examples": [
       {
         "text": null,
         "test": "276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack"
+      },
+      {
+        "text": "In deployment, a player cannot ask to keep priority: the ask is refused.",
+        "test": "568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused"
       }
     ],
     "see": [
@@ -1931,21 +1933,26 @@
           "from": "register@72de434"
         },
         {
-          "quote": "4. **The default is still auto-resolve, and that is why nobody noticed.** Battle",
-          "adopted": "2026-09-01",
-          "from": "register@72de434"
+          "quote": "the ruling on Deployment stack is that you CANNOT hold priority during Deployment.",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-185)"
+        },
+        {
+          "quote": "Plays stay as they are",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-185)"
         }
       ],
       "engine": [],
       "tests": [
-        "276-deployment-stack.test.ts"
+        "276-deployment-stack.test.ts",
+        "568-hold-priority.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
-    "digitalClause": "and that stack normally resolves without anyone having to act.",
     "confidence": "high",
-    "notes": "The full stack rule is 703 (U14 effects.priority.deployment). The client never gives a deployment priority stop (the owner ruling of 2026-09-01 (“full control is a KEY YOU…”) deployment clause, CT-185): D-U09-2.",
+    "notes": "The full stack rule is 703 (effects.priority.deployment). Owner 2026-10-22 (CT-185 closed wontfix): no priority in deployment; plays still go on the stack. The register's \"the default is still auto-resolve\" (a default a player could stop) is replaced by that call. D-U09-2.",
     "sourceHashes": {}
   },
   {

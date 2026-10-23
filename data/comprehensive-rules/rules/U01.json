@@ -442,6 +442,10 @@
       {
         "text": null,
         "test": "243-ally-and-enemy-scope.test.ts::CR 601.4e no ally or enemy slot"
+      },
+      {
+        "text": "Molten Riftbreaker dies in its controller's home region while a battle goes on elsewhere. Its \"negate all allied spells\" does not reach the spell on the battle region's stack.",
+        "test": "578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack"
       }
     ],
     "see": [
@@ -481,18 +485,17 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "578-region-stacks-and-bins.test.ts"
+      ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "RAQ 1454169054402314362#0 is not in the pack (found in the extract's RAQ register). Regions themselves are 601 (U10). The owner ruling of 2026-08-29 (“regions scope \"all\", and they do…”) notes that the stack is not regional (owner ruling of 2026-08-29, “Cosmic Reversal reaches the board; every…”); that is 406/601. Round 1: The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) makes the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions in the client. Print and Caleb outrank the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”), so the rule states them: D-U01-12, F-U01-2. Round 2: the verifier's probe confirmed the divergence: Molten Riftbreaker's effect resolving in one region negated its controller's Luminous Arc on the stack in another (F-U01-2). Example 1 now claims only the half its test asserts.",
+    "notes": "RAQ 1454169054402314362#0 is not in the pack (found in the extract's RAQ register). Regions themselves are 601 (U10). The owner ruling of 2026-08-29 (“regions scope \"all\", and they do…”) notes that the stack is not regional (owner ruling of 2026-08-29, “Cosmic Reversal reaches the board; every…”); that is 406/601. Round 1: The owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) makes the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions in the client. Print and Caleb outrank the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”), so the rule states them: D-U01-12, F-U01-2. Round 2: the verifier's probe confirmed the divergence: Molten Riftbreaker's effect resolving in one region negated its controller's Luminous Arc on the stack in another (F-U01-2). Example 1 now claims only the half its test asserts. Engine aligned 2026-10-22 (CT-234, 578): F-U01-2 closed.",
     "sourceHashes": {
       "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
-    },
-    "engineDiffers": [
-      "F-U01-2"
-    ]
+    }
   },
   {
     "key": "concepts.golden.regions.information",
@@ -700,7 +703,7 @@
     "key": "concepts.players.owner",
     "parent": "102",
     "order": 4,
-    "text": "A card's owner is the player whose card it is. A card's owner never changes, whoever controls it and whatever zone it goes to.",
+    "text": "A card's owner is the player whose card it is. Taking control of a card does not change its owner, and neither does moving it into or out of a player's hand, bin or cache, even another player's. A card that goes into a shared zone (a draft pack, a deck or the recycle pile) leaves its ownership behind there: whoever next takes it out owns it.",
     "examples": [
       {
         "text": "A unit whose control has been taken is recalled: the player it was stolen from is still the card's owner.",
@@ -709,6 +712,14 @@
       {
         "text": "The same recalled unit goes to the hand of the player who controls it, not its owner's hand.",
         "test": "246-zones-follow-control.test.ts::CR 801.7a: a stolen unit recalled goes to the THIEF hand"
+      },
+      {
+        "text": "A stolen unit is recalled to the hand of the player who stole it and played again from there. Its owner is still the player it was stolen from.",
+        "test": "551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a stolen card recalled to the thief hand and played again is still its owner card"
+      },
+      {
+        "text": "A stolen card in the thief's hand is recycled. Its ownership stays behind in the recycle pile, and the player who next takes it out owns it.",
+        "test": "551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a shared zone resets ownership"
       }
     ],
     "see": [
@@ -721,26 +732,28 @@
       "ours": [],
       "owner": [
         {
-          "quote": "| whose card is this? | its OWNER's, always, forever |",
-          "adopted": "2026-08-29",
-          "from": "register@72de434"
-        },
-        {
           "quote": "**2. Ownership does not move. Only the destination does.**",
           "adopted": "2026-08-30",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Reset in shared zones",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-233)"
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "551-ownership-survives-own-zones.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "Who owns a card in live draft, where every card comes out of one shared deck, is not stated by any source (D-U07-8). In constructed it is the player who brought the card (400.4c). Round 1: the verifier measured that a stolen card recalled to the thief's hand and replayed is recorded as owned by the thief; the rule states the ruling (F-U01-1).",
+    "notes": "Who owns a card in live draft, where every card comes out of one shared deck, is not stated by any source (D-U07-8). In constructed it is the player who brought the card (400.4c). Round 1: the verifier measured that a stolen card recalled to the thief's hand and replayed is recorded as owned by the thief; the rule states the ruling (F-U01-1). Round 2026-10-22 (CT-233): the owner ruled that ownership holds in a player's own hand, bin and cache, and resets in shared zones (\"Reset in shared zones\"); the old \"always, forever\" register line is replaced by that call. The engine now keeps the owner through a hand, bin and cache (551). Three routes still lose it (new tickets from the round): a mod applied from hand/bin/cache, an inline-played spell resolving into a bin, and card effects moving a bin card to a hand: F-U01-6. The erased pile is a player's own zone too (zones follow control, 400.4).",
     "sourceHashes": {},
     "engineDiffers": [
-      "F-U01-1"
+      "F-U01-6"
     ]
   },
   {
@@ -823,11 +836,15 @@
     "key": "concepts.players.controller.from-other-zone",
     "parent": "concepts.players.controller",
     "order": 1,
-    "text": "Putting a card into play out of another player's zone makes you its controller, not its owner.",
+    "text": "A player who plays a card, or puts it into play, out of another player's zone becomes its controller, not its owner.",
     "examples": [
       {
-        "text": "Wake the Dead raising a unit out of the opponent's bin: the caster controls it, and the opponent still owns it.",
+        "text": "Wake the Dead playing a unit out of the opponent's bin: the caster controls it, and the opponent still owns it.",
         "test": "93-engine-defects.test.ts::Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership"
+      },
+      {
+        "text": "The unit Wake the Dead plays out of the opponent's bin is still the opponent's card once it is in play.",
+        "test": "557-wake-the-dead-plays-on-the-stack.test.ts::CR 102.5a / CT-245: a unit Wake the Dead plays out of the opponent bin is still the opponent card"
       }
     ],
     "see": [
@@ -850,12 +867,14 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "557-wake-the-dead-plays-on-the-stack.test.ts"
+      ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-23 (“OWNER is not CONTROLLER, and putting…”)’s next sentence ('It dies to its owner's bin') was reversed by the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”): the unit now dies into its controller's bin (400.4, 405).",
+    "notes": "The owner ruling of 2026-08-23 (“OWNER is not CONTROLLER, and putting…”)’s next sentence ('It dies to its owner's bin') was reversed by the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”): the unit now dies into its controller's bin (400.4, 405). Round 2026-10-22: Wake the Dead now PLAYS its units (CT-245), so the text says \"plays ... or puts into play\".",
     "sourceHashes": {}
   },
   {

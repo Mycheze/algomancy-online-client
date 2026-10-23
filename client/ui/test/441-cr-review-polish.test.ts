@@ -164,7 +164,8 @@ test('§4 Annex P lists each divergence once; a folded-in dupe\'s id lands on it
   }
   // every "engine differs, see F-…" a rule prints lands on an element of Annex P, in both html forms
   const cited = new Set(INPUTS.records.flatMap(r => r.engineDiffers ?? []));
-  assert.ok(cited.size > 30);
+  // positive control only: the count falls as the engine is fixed (34 before the 2026-10-22 round, 3 after)
+  assert.ok(cited.size > 0, 'no rule cites a finding, so the loop below checks nothing');
   for (const id of cited) {
     assert.ok(annexP.includes(` id="${id}"`), `${id}: a rule links to it and the page has no such element`);
     assert.ok(FILES.html.includes(` id="${id}"`), `${id}: the .html edition has no such element`);

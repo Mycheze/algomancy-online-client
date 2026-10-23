@@ -84,13 +84,18 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+      },
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "quote": "CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances"
       }
     ],
     "ct": "CT-257",
     "dupes": [
       "F-U16-6",
       "F-U19-5"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-257; the owner took the Manual p.42 first clause, D-U16-1): Tough augmented onto a Balanced unit doubles, then balances (08-cards2)."
   },
   {
     "id": "F-U16-5",
@@ -131,9 +136,14 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+      },
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "quote": "CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances"
       }
     ],
-    "ct": "CT-257"
+    "ct": "CT-257",
+    "closed": "fixed on 2026-10-22 (CT-257; the owner took the Manual p.42 first clause, D-U16-1): Tough augmented onto a Balanced unit doubles, then balances (08-cards2)."
   },
   {
     "id": "F-U16-7",

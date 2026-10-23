@@ -2297,13 +2297,13 @@
   },
   {
     "key": "concepts.targets.applying-mods.virus",
-    "textHash": "60ed2e6869b69b83",
+    "textHash": "ec8a0fed6b22f34e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "engine.ts virus stack item with targets (R88)",
+        "loc": "client/engine/src/apply.ts:doAugment (virus stack item, Gatekeeper compulsion)",
         "agrees": true,
         "note": ""
       }
@@ -2320,120 +2320,146 @@
         "pattern": "Boon of Protection: a Virus being applied to an allied unit IS an allied target",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "545-virus-gatekeeper.test.ts",
+        "pattern": "CR 110.12 / CT-331: with a Gatekeeper of Souls in the battle, a Virus may be applied only to it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "577-tides-virus-gatekeeper.test.ts",
+        "pattern": "CR 110.12 / CT-331: a Virus played by Tides of the Cosmos goes onto the Gatekeeper of Souls in the battle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "522-virus-host-redirect.test.ts",
+        "pattern": "CT-322",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R88",
+        "ref": "owner register quoting calebgannon \"You can redirect a virus, it is a targeted effect\"",
         "supports": "yes",
-        "note": "quotes calebgannon — designer, so basis could be designer"
+        "note": "Caleb's words carried in the owner register"
+      },
+      {
+        "ref": "owner register quoting calebgannon \"Yep! They're fully interactible.\"",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> **calebgannon:** \"You can redirect a virus, it is a targeted effect\""
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "text": "test('Graxxlid: a Virus being applied to me IS an effect targeting me', () => {"
+      },
+      {
+        "file": "client/engine/test/545-virus-gatekeeper.test.ts",
+        "text": "assert.deepEqual(hosts, [gk], 'the Gatekeeper is the only host offered');"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Note: the redirect clause has no bound example; I ran 522-virus-host-redirect.test.ts (CT-322, 7 pass) which demonstrates it."
   },
   {
     "key": "concepts.targets.becomes-targeted",
-    "textHash": "11444dcf4ce773ac",
+    "textHash": "4c631773c0c5febb",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U03-r3",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitItem",
+        "loc": "client/engine/src/engine.ts:targeted event + pendingMods/finishPendingMods",
         "agrees": true,
-        "note": "spells/abilities fire targeted at commit, before the item is pushed: trigger lands above"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:doAugment",
-        "agrees": true,
-        "note": "deployment augment and battle Virus on a unit fire targeted with data.unit"
-      },
-      {
-        "loc": "client/engine/src/apply.ts:doGraft",
-        "agrees": true,
-        "note": "fireEvent(targeted) precedes attachMod; the queued trigger RESOLVES only at settle(), after the graft is attached"
+        "note": "trigger above the targeting item; mods attach after the trigger resolves"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/48-playtest-hotfix.test.ts",
+        "file": "48-playtest-hotfix.test.ts",
         "pattern": "a spell aimed at Mohruung actually creates the Crystal 2",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/17-earth-b.test.ts",
+        "file": "17-earth-b.test.ts",
         "pattern": "Mohruung: augment-targeting triggers a Crystal 2",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/393-raq-mods.test.ts",
+        "file": "393-raq-mods.test.ts",
         "pattern": "RAQ Graft 101 point 5",
         "passed": true,
-        "asserts_claim": "yes for \"grafting makes a Crystal\"; it does not assert the order"
+        "asserts_claim": true
+      },
+      {
+        "file": "414-cr-cards-abilities-targets.test.ts",
+        "pattern": "cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on the stack ABOVE",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "547-graft-after-targeted-trigger.test.ts",
+        "pattern": "CR 110.11 / CT-242: grafting onto Mohruung resolves his trigger before the graft attaches",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "576-augment-after-targeted-trigger.test.ts",
+        "pattern": "CR 110.11 / D-U03-14: an augment onto Mohruung in deployment",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
-        "title": "concepts.targets.becomes-targeted: the \"when I become targeted\" trigger goes on the stack ABOVE the spell that targeted, and resolves first",
+        "file": "client/engine/test/zz-probe-U03-1.test.ts",
+        "test": "probe U03-1: a Virus applied to Mohruung in battle triggers him; the trigger sits above the Virus and the Crystal is made first",
         "passed": true,
-        "demonstrates": "yes: example 4 (illustrative) — trigger above Twin Flame, Crystal made while Twin Flame still waits"
+        "demonstrates": "yes: the Virus case (no bound test covered it)"
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-r3-verify-probes.test.ts",
-        "title": "concepts.targets.becomes-targeted: measure the order of Mohruung's trigger, the graft attaching, and the Crystal",
+        "file": "client/engine/test/zz-probe-U03-1.test.ts",
+        "test": "probe U03-2: an activated ability (Astralith) targeting Mohruung triggers him",
         "passed": true,
-        "demonstrates": "measured: log order is trigger queued -> graft attaches -> Crystal made. The trigger FIRES before the graft is applied (matches the text literally) but RESOLVES after it"
+        "demonstrates": "yes: the ability case (no bound test covered it)"
       }
     ],
     "source_checks": [
       {
         "ref": "card: Mohruung",
         "supports": "yes",
-        "note": "printed trigger"
+        "note": ""
       },
       {
         "ref": "RAQ 1355115946032889914#4",
         "supports": "yes",
-        "note": "_passer: grafting is targeting, he will trigger first"
+        "note": "_passer [Solved] write-up, covered"
       },
       {
-        "ref": "R53",
+        "ref": "owner register (targeted event wherever the targeting comes from; trigger above the spell) + owner chat 2026-10-22 \"Resolves first\"",
         "supports": "yes",
-        "note": "every targeting path; trigger above the spell"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "file": "client/engine/src/cards/printed.json",
         "text": "When I become targeted, [Switch1] Create a Crystal 2."
       },
       {
         "file": "client/ledgers/raq.ts",
         "text": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "the stack **above** the spell that targeted — the trigger resolves first."
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
       }
     ],
     "basis_ok": true,
-    "problem": "Engine matches the text as written (\"triggers first, before the graft is applied\": the trigger is queued before attachMod). The flagged divergence is real only under the reading \"the trigger RESOLVES before the graft is applied\": measured, the graft attaches first and the Crystal comes after. The text should say which it means. Mohruung's own trigger is [Switch1] (once per turn), which \"triggers whenever\" glosses over for that card.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.targets.change",
@@ -3043,61 +3069,62 @@
   },
   {
     "key": "concepts.targets.must-be-targeted",
-    "textHash": "d8905639d6ea718e",
+    "textHash": "49f33997616eea02",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U03-r2",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.compelledTargets / E.mustBeTargetedIn",
-        "agrees": false,
-        "note": "no battle-phase check: the Gatekeeper compels targets chosen in deployment too — the flagged divergence (F-U03-2) is real; the R314 'already among targets frees the other slots' half agrees"
+        "loc": "client/engine/src/engine.ts:mustBeTargetedIn",
+        "agrees": true,
+        "note": "battle-region only; first slot compelled, other slots free"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/382-gatekeeper-multi-target.test.ts",
-        "pattern": "R314: a two-target spell aims at the Gatekeeper first",
+        "file": "382-gatekeeper-multi-target.test.ts",
+        "pattern": "CR 110.12: a two-target spell aims at the Gatekeeper first",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "544-gatekeeper-battle-only.test.ts",
+        "pattern": "CR 110.12 / CT-239: in deployment a Gatekeeper of Souls compels nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "544-gatekeeper-battle-only.test.ts",
+        "pattern": "CR 110.12 / CT-239: during battle a Gatekeeper outside the battle region compels nothing",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
-        "title": "concepts.targets.must-be-targeted: measures whether Gatekeeper of Souls compels a target chosen OUTSIDE battle (printed: \"during battle\")",
-        "passed": true,
-        "demonstrates": "yes — the engine compels a deployment Overbloom, confirming the divergence"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Gatekeeper of Souls",
         "supports": "yes",
-        "note": "printed 'during battle'"
+        "note": "\"during battle\"; in-its-region follows from the region rule"
       },
       {
-        "ref": "R314",
+        "ref": "owner register (compels an effect to aim at it, not every slot)",
         "supports": "yes",
-        "note": "compels the effect, not every slot"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "\"text\": \"[Augment] When a player selects targets for an effect during battle, I must be targeted if able.\","
+        "text": "When a player selects targets for an effect during battle, I must be targeted if able."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "Gatekeeper of Souls compels an effect to aim at it, not every target slot of"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "const gates = this.mustBeTargetedIn(region);"
+        "file": "client/engine/test/382-gatekeeper-multi-target.test.ts",
+        "text": "'with the Gatekeeper targeted, the second slot may aim at another unit');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed; engine diverges by also compelling outside battle (see bugs)."
+    "problem": ""
   },
   {
     "key": "concepts.targets.must-be-targeted.able",
@@ -3544,26 +3571,27 @@
   },
   {
     "key": "concepts.targets.region.global",
-    "textHash": "d356dc13527b22e3",
+    "textHash": "b726d8b0372a7f6a",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.pushStackTargets",
-        "agrees": false,
-        "note": "one global state.stack; a stack item is offered from every region (F-U01-2, as the record declares)"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.pushBinCardTargets",
-        "agrees": false,
-        "note": "takes no region: cards in either bin are offered from every region (F-U01-2)"
+        "loc": "client/engine/src/engine.ts:targetCandidates",
+        "agrees": true,
+        "note": "stack items from their own region stack; bins only of players present"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "file": "414-cr-cards-abilities-targets.test.ts",
         "pattern": "cr:concepts.targets.region.global",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "578-region-stacks-and-bins.test.ts",
+        "pattern": "CR 403.6 / CT-234: in deployment a bin card target reaches only the bin of the player present",
         "passed": true,
         "asserts_claim": true
       }
@@ -3573,39 +3601,27 @@
       {
         "ref": "Manual p.19",
         "supports": "yes",
-        "note": "\"Every single effect is specific to the region it takes place in, meaning it will never impact anything in any other region\"; \"if a player enters a region, their bin, hand, resources, and even the player themself can be interacted with.\""
+        "note": "region-specific effects; a player who enters a region exposes their bin there"
       },
       {
         "ref": "RAQ 1454169054402314362#0",
         "supports": "yes",
-        "note": "calebgannon, status covered: \"everything in the game is region specific\"."
+        "note": ""
       },
       {
-        "ref": "R344",
+        "ref": "owner register \"Each region has its own stack.\" / \"An effect can reach a player's bin or cache only in a region where that player is present.\"",
         "supports": "yes",
-        "note": "current ruling (amends R250/R265): each region has its own stack; a bin or cache is reachable only where its owner is present."
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "Every single effect is specific to the region it takes"
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "Additionally, if a player enters a region, their bin, hand,"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "An effect can reach a player's bin or cache only in a region where that player is present."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "Each region has its own stack."
-      },
-      {
         "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
-        "text": "assert.ok(ask('stackEffect', r).includes(JSON.stringify({ stack: item.id })), `the stack item, from region ${r}`);"
+        "text": "'the battle stack item is not on the other region stack');"
       }
     ],
     "basis_ok": true,

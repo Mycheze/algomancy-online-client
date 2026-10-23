@@ -2763,71 +2763,55 @@
   },
   {
     "key": "concepts.resources.prismite.exchange.element-only",
-    "textHash": "edf3ae1a51435751",
+    "textHash": "ba4c5a1e83bdb4d3",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U02-r2",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doExchangePrismite",
-        "agrees": false,
-        "note": "requires element in s.elements, so 'prismite' AND 'shard' are refused; the Shard refusal is the flagged divergence F-U02-3 (real)"
+        "loc": "client/engine/src/apply.ts:exchangePrismite legalActions",
+        "agrees": true,
+        "note": "offers the game's elements then shard; prismite refused"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
-        "pattern": "what stays illegal",
+        "file": "308-recycle-for-prismite.test.ts",
+        "pattern": "CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite",
         "passed": true,
-        "asserts_claim": "yes for the Prismite-into-Prismite claim; it also asserts the Shard refusal, which is the divergence"
+        "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
-        "title": "concepts.resources.prismite.exchange.element-only: the engine refuses a Prismite into a Prismite AND into a Shard (the Shard half is the divergence)",
-        "passed": true,
-        "demonstrates": "yes: divergence measured; Shard exchange refused and not offered"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.18",
-        "supports": "partly",
-        "note": "\"exchanged for other resources\" -- literal reading includes a Shard; does not name it"
-      },
-      {
-        "ref": "R132",
         "supports": "yes",
-        "note": "quotes the Prismite card: \"Create a non-prismite resource\" -- a Shard is a non-prismite resource (literal printed reading)"
+        "note": "active Prismites may be exchanged for other resources"
       },
       {
-        "ref": "R299 (its Prismite-into-Prismite half)",
-        "supports": "partly",
-        "note": "supports the Prismite refusal; the same sentence (\"an exchange names an element\") contradicts the Shard half, and R17 says \"a resource of any element\" -- the rule overrides these on printed-literal authority"
+        "ref": "owner register \"Erase me: Create a non-prismite resource, then activate it.\"",
+        "supports": "yes",
+        "note": "this is the printed Prismite text (oracle Prismite card) too"
+      },
+      {
+        "ref": "owner register \"Exchanging a Prismite into a Prismite stays illegal\"",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Erase me: Create a non-prismite resource, then activate it."
-      },
-      {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "exchanged for other resources, meaning players essentially get to pick their two"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.need((e.s.elements as string[]).includes(element), 'not an element of this game');"
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "\"text\": \"Erase me: Create a non-prismite resource, then activate it."
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling holds on the printed Prismite text (printed > R-rulings) and the divergence is real. But note: current R299/R17 say element-only, so this rule overrules a current ruling without a designer source; and the KEY \"element-only\" now misdescribes the text.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.resources.recycle",

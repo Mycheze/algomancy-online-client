@@ -2027,6 +2027,14 @@
       {
         "text": null,
         "test": "05-rulings.test.ts::CR 802.17: electric excess follows a controller-chosen non-overlapping path, atomically"
+      },
+      {
+        "text": "A Fight makes the opponent's Electric unit the source. Its controller, not the caster, chooses where the excess goes.",
+        "test": "552-electric-path-chooser.test.ts::CR 802.17c / CT-226: a Fight that makes the opponents Electric unit the source asks the SOURCE controller for the path, not the caster"
+      },
+      {
+        "text": "The source's controller's answer steers the excess onto the chosen neighbour.",
+        "test": "552-electric-path-chooser.test.ts::CR 802.17c / CT-226: the source controller answer steers the excess onto the chosen neighbour"
       }
     ],
     "see": [],
@@ -2048,17 +2056,15 @@
       ],
       "engine": [],
       "tests": [
-        "05-rulings.test.ts"
+        "05-rulings.test.ts",
+        "552-electric-path-chooser.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "Known divergence (CONTROL decision 6): the engine asks the effect's controller. The two coincide for every Electric card in the pool today, since the only Electric sources are spells and spell effects: F-U20-1.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U20-1"
-    ]
+    "notes": "Known divergence (CONTROL decision 6): the engine asks the effect's controller. The two coincide for every Electric card in the pool today, since the only Electric sources are spells and spell effects: F-U20-1. Engine aligned 2026-10-22 (CT-226, 552): the path decision goes to the Electric source's controller. F-U20-1 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.electric.optional",
@@ -3457,11 +3463,15 @@
     "key": "attr.thieving.replaced",
     "parent": "attr.thieving",
     "order": 4,
-    "text": "If combat damage a Thieving column deals to an opponent is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, and the column's controller still draws a card (see rule 608.8a).",
+    "text": "If combat damage a Thieving column deals to an opponent is replaced by an effect that still deals it to that player (for example, Blightsea Polyp, which deals it as rot), the damage was still dealt, and the column's controller still draws a card (see rule 608.8a). If all of it is redirected to a unit instead (Oorblak), the column dealt the opponent nothing and draws no card (see rule 608.8c).",
     "examples": [
       {
         "text": "Blightsea Polyp turns a Thieving column's combat damage to the defending player into 1 rot. The attacker still draws a card.",
         "test": "431-cr-attributes-2.test.ts::cr:attr.thieving.replaced — a Thieving column whose hit to the defending player Blightsea Polyp turns into 1 rot costs no life, and its controller still draws a card"
+      },
+      {
+        "text": "A Thieving column's combat damage is all redirected into Oorblak. Its controller draws no card.",
+        "test": "581-redirected-hit-deals-nothing.test.ts::CR 802.20 / CT-296: a Thieving column wholly redirected into Oorblak draws no card"
       }
     ],
     "see": [
@@ -3482,17 +3492,23 @@
           "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just",
           "adopted": "2026-08-28",
           "from": "questions-round27 Q5; register@72de434"
+        },
+        {
+          "quote": "Yes, none of them",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-296)"
         }
       ],
       "engine": [],
       "tests": [
-        "431-cr-attributes-2.test.ts"
+        "431-cr-attributes-2.test.ts",
+        "581-redirected-hit-deals-nothing.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”): Caleb was shown Lethal only; the extension to Thieving is the client's inference, confirmed in general form by the owner (owner ruling of 2026-08-28, “a REPLACED combat hit was still…”). No test for Thieving through a Polyp.",
+    "notes": "The owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”): Caleb was shown Lethal only; the extension to Thieving is the client's inference, confirmed in general form by the owner (owner ruling of 2026-08-28, “a REPLACED combat hit was still…”). No test for Thieving through a Polyp. Round 2026-10-22 (CT-296): the owner, asked whether Thieving and the face-damage payouts also fail on a wholly redirected hit: \"Yes, none of them\". 581.",
     "sourceHashes": {}
   },
   {
@@ -4326,11 +4342,23 @@
     "key": "attr.lethal.replaced",
     "parent": "attr.lethal",
     "order": 3,
-    "text": "If a Lethal column's combat damage to a player is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, so the player is still killed.",
+    "text": "If a Lethal column's combat damage to a player is replaced by an effect that still deals it to that player (Blightsea Polyp, which deals it as rot), the damage was still dealt, so the player is still killed. If it is all dealt to a unit instead (Oorblak), the player was dealt nothing and is not killed; Piercing excess that gets past and is dealt to the player kills.",
     "examples": [
       {
         "text": "Blightsea Polyp turns a Lethal column's combat damage into 1 rot. The player is still killed.",
         "test": "37-attrs-wight.test.ts::CR 802.24c {Lethal} still kills THROUGH the Blightsea replacement"
+      },
+      {
+        "text": "A Lethal column's combat damage is all redirected into Oorblak. The player is not killed.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.lethal.replaced — a Lethal column whose combat damage is all redirected into Oorblak does not kill the defending player"
+      },
+      {
+        "text": "Piercing Lethal damage beyond Oorblak's lethal damage gets past and reaches the player, who is killed.",
+        "test": "562-lethal-redirected.test.ts::CR 608.8c / CT-296: a Piercing Lethal excess that gets past Oorblak reaches the player and kills"
+      },
+      {
+        "text": "Oorblak and Blightsea Polyp together: the redirect takes it all, so the Polyp sees nothing and no one is killed.",
+        "test": "562-lethal-redirected.test.ts::CR 608.8c / CT-296: Oorblak first, then Blightsea Polyp"
       }
     ],
     "see": [
@@ -4338,7 +4366,12 @@
       "112.12"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Oorblak",
+          "quote": "If combat damage would be dealt to you, that damage is dealt to me instead."
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -4351,18 +4384,24 @@
           "quote": "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **\"Yes\"**",
           "adopted": "2026-08-28",
           "from": "questions-round27 Q5; register@72de434"
+        },
+        {
+          "quote": "Doesn't kill",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-296)"
         }
       ],
       "engine": [],
       "tests": [
         "37-attrs-wight.test.ts",
-        "431-cr-attributes-2.test.ts"
+        "431-cr-attributes-2.test.ts",
+        "562-lethal-redirected.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Caleb answered \"Yes\" (2024-10-24) when shown Rot Jelly (now Blightsea Polyp) and Gublin (owner ruling of 2026-08-28, “a REPLACED combat hit was still…”); the exchange was in the main rules channel, not a RAQ thread.",
+    "notes": "Caleb answered \"Yes\" (2024-10-24) when shown Rot Jelly (now Blightsea Polyp) and Gublin (register 2026-08-28); the exchange was in the main rules channel. Owner 2026-10-22 (CT-296): a hit wholly redirected into Oorblak \"Doesn't kill\"; the engine used to kill through it and was aligned the same day (562; 431 inverted). D-U12-21, D-U20-24.",
     "sourceHashes": {}
   },
   {
@@ -4436,7 +4475,7 @@
     "key": "attr.pure.own",
     "parent": "attr.pure",
     "order": 1,
-    "text": "A Pure card ignores its own other attributes too.",
+    "text": "A Pure card ignores its own other attributes too. Its own stat-changing attributes, Tough, Balanced, Inverted and Unaware, do not apply to it at any time, whether or not it is in an interaction.",
     "examples": [
       {
         "text": "An Alluring column that is itself Pure ignores its own Alluring and never triggers.",
@@ -4444,7 +4483,19 @@
       },
       {
         "text": "A Pure unit that is also Feeble can block.",
-        "test": null
+        "test": "430-cr-attributes-1.test.ts::cr:attr.feeble.pure — a Pure unit granted Feeble is accepted as a blocker"
+      },
+      {
+        "text": "A Pure Rampart Guardian (0/4, Tough) that is in no interaction reads 0/4.",
+        "test": "584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Rampart Guardian, in no interaction, ignores its own Tough and reads 0/4"
+      },
+      {
+        "text": "A Pure Child of Aether (2/0, Balanced) ignores its own Balanced, reads 2/0 and dies in the state check.",
+        "test": "584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Child of Aether ignores its own Balanced, reads 2/0 and dies in the state check"
+      },
+      {
+        "text": "A Pure Bubb ignores its own Unaware, so the counters on it count.",
+        "test": "584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Bubb ignores its own Unaware, so its counters count"
       }
     ],
     "see": [
@@ -4464,17 +4515,24 @@
           "quote": "attributes\", its own other attributes included.",
           "adopted": "2026-08-20",
           "from": "register@72de434"
+        },
+        {
+          "quote": "1/3, lives",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (a Pure 1/3 that is Tough and Inverted, in no interaction: 1/3 and lives, or 1/0 and dies)"
         }
       ],
       "engine": [],
       "tests": [
-        "53-playtest-round7.test.ts"
+        "53-playtest-round7.test.ts",
+        "584-pure-ignores-its-own-attributes.test.ts",
+        "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Round 2026-10-22: the owner settled the question 427 left open: this holds always, not only in an interaction, and it beats effects.state.no-damage-needed.pure (a Pure Tough Inverted 1/3 reads 1/3 and lives). The engine was changed the same day (584). The owner's own words were not in this pass's inputs; the rule rests on the register line and print as before.",
     "sourceHashes": {}
   },
   {
@@ -4636,7 +4694,7 @@
     "examples": [
       {
         "text": "A Tough 0/4 blocks a column containing Just a Unit (Pure). Tough does not apply in that exchange, so the blocker has 4 defense, not 8.",
-        "test": null
+        "test": "555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: in combat, Rampart Guardian blocking a 5-power Pure attacker has 4 defense, not 8, and dies"
       }
     ],
     "see": [
@@ -4662,19 +4720,23 @@
           "quote": "Stats are not attributes: a Pure 2/3 still dies to 3 damage.",
           "adopted": "2026-08-20",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Print: ignore all",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-260: Pure and the stat-changing attributes)"
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "555-pure-ignores-stat-attributes.test.ts"
+      ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "POLISH (2026-10-10): it contradicted attr.general.pure (802.1n), which states print. The printed reminder ignores \"all other attributes\", and the Manual names Tough as an attribute (\"4. Attributes like Tough\"); the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s \"{Tough}, {Balanced} and {Inverted} still read (they are stat layers, the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”))\" is our ruling and print outranks it (D-U19-2, settled; CT-260 asks the owner whether to change the engine). The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”)’s first sentence still holds: printed stats are not attributes. The engine keeps the three on: F-U19-1. The 431 example that asserted the old reading is no longer bound here.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U19-1"
-    ]
+    "notes": "POLISH (2026-10-10): it contradicted attr.general.pure (802.1n), which states print. The printed reminder ignores \"all other attributes\", and the Manual names Tough as an attribute (\"4. Attributes like Tough\"); the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s \"{Tough}, {Balanced} and {Inverted} still read (they are stat layers, the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”))\" is our ruling and print outranks it (D-U19-2, settled; CT-260 asks the owner whether to change the engine). The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”)’s first sentence still holds: printed stats are not attributes. The engine keeps the three on: F-U19-1. The 431 example that asserted the old reading is no longer bound here. Engine aligned 2026-10-22 (CT-260, 555); F-U19-1 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.unaware-combat",
@@ -4683,8 +4745,8 @@
     "text": "Unaware is an attribute, so in combat it does not apply in an exchange involving a Pure card: the units in that exchange are read at their current stats, not their printed ones (rule attr.general.pure).",
     "examples": [
       {
-        "text": "Bubb (Unaware) blocks a column containing Just a Unit (Pure) that has a +1/+1 counter. Unaware does not apply in that exchange, so the counter counts.",
-        "test": null
+        "text": "Bubb (Unaware) blocks a Pure 3/3 that has four +1/+1 counters. Unaware does not apply in that exchange, so the counters count: the 7/7 kills Bubb and survives.",
+        "test": "555-pure-ignores-stat-attributes.test.ts::CR 802.25f / CT-260: in combat, Bubb blocking a Pure 3/3 with four +1/+1 counters collapses nobody"
       }
     ],
     "see": [
@@ -4703,18 +4765,23 @@
       ],
       "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "Print: ignore all",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-260: Pure and the stat-changing attributes)"
+        }
+      ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "555-pure-ignores-stat-attributes.test.ts"
+      ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "POLISH (2026-10-10): the same contradiction as attr.pure.stat-attributes, found beside it. attr.general.pure (802.1n) states print (\"Tough, Balanced, Inverted and Unaware do not apply\"); this rule stated the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”) (\"The collapse survives {Pure}\"), which print outranks (D-U19-2). Outside combat the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) already switches Unaware off (attr.pure.noncombat.recipient). The engine keeps the collapse on in combat: F-U19-2 (CT-260).",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U19-2"
-    ]
+    "notes": "POLISH (2026-10-10): the same contradiction as attr.pure.stat-attributes, found beside it. attr.general.pure (802.1n) states print (\"Tough, Balanced, Inverted and Unaware do not apply\"); this rule stated the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”) (\"The collapse survives {Pure}\"), which print outranks (D-U19-2). Outside combat the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) already switches Unaware off (attr.pure.noncombat.recipient). The engine keeps the collapse on in combat: F-U19-2 (CT-260). Engine aligned 2026-10-22 (CT-260, 555); F-U19-2 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "attr.pure.noncombat",
@@ -4793,15 +4860,23 @@
     "key": "attr.pure.noncombat.recipient",
     "parent": "attr.pure",
     "order": 9,
-    "text": "A Pure recipient is dealt plain damage by any source: the source's attributes do not apply to it, and neither do its own Vulnerable and Unaware.",
+    "text": "A Pure recipient is dealt plain damage by any source: the source's attributes do not apply to it, and neither do its own other attributes, Vulnerable, Unaware, Tough, Balanced and Inverted included.",
     "examples": [
       {
         "text": null,
         "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it"
       },
       {
-        "text": null,
-        "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too"
+        "text": "A Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.vulnerable.pure — a Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4"
+      },
+      {
+        "text": "A plain source deals 5 to a Pure Rampart Guardian (0/4, Tough). Its own Tough does not apply, and it dies.",
+        "test": "555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Pure recipient ignores its own Tough, so a plain source dealing 5 to a Pure Tough 0/4 kills it"
+      },
+      {
+        "text": "A Deadly column's combat damage is redirected into a Pure Oorblak. Deadly does not apply to it, so 2 damage does not kill it.",
+        "test": "553-oorblak-pure-redirect.test.ts::CR 802.25i / CT-227: a Pure Oorblak ignores the redirected columns Deadly, so 2 damage does not kill it"
       }
     ],
     "see": [],
@@ -4818,13 +4893,16 @@
       ],
       "engine": [],
       "tests": [
-        "290-pure-outside-combat.test.ts"
+        "290-pure-outside-combat.test.ts",
+        "555-pure-ignores-stat-attributes.test.ts",
+        "553-oorblak-pure-redirect.test.ts",
+        "430-cr-attributes-1.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Round 2026-10-22: the stat-changing attributes added (CT-260, print, 555); Oorblak's redirect follows it (CT-227, 553).",
     "sourceHashes": {}
   },
   {
@@ -5281,7 +5359,12 @@
     "parent": "attr.modular",
     "order": 8,
     "text": "Modular is not shared with the other units of a column.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "A unit given Modular keeps it in a column, and its column-mate does not get it.",
+        "test": "298-column-attrs-outside-combat.test.ts::CR 802.26h / CT-261: {Modular} is an object attribute too, so a unit given it keeps it and its column-mate does not"
+      }
+    ],
     "see": [
       "802.1"
     ],
@@ -5304,10 +5387,7 @@
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Unreachable today: the only Modular card (Spellbind) is a spell and never stands in a column. The owner ruling of 2026-09-16 (“A unit in a column HAS…”) says Modular is in the engine's shared attribute set and is harmless only because no unit prints it; 298 §5c guards that premise, not the non-sharing. Latent divergence: F-U20-3.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U20-3"
-    ]
+    "notes": "Unreachable today: the only Modular card (Spellbind) is a spell and never stands in a column. The owner ruling of 2026-09-16 (“A unit in a column HAS…”) says Modular is in the engine's shared attribute set and is harmless only because no unit prints it; 298 §5c guards that premise, not the non-sharing. Latent divergence: F-U20-3. Engine aligned 2026-10-22 (CT-261): Modular is left out of the column's shared set and kept by the unit that has it (298 §5c). F-U20-3 closed.",
+    "sourceHashes": {}
   }
 ]

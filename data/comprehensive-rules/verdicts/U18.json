@@ -99,53 +99,63 @@
   {
     "key": "keywords.actions.delete",
     "textHash": "76d390981e29f959",
-    "verdict": "partial",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src (delete → died event, verb \"is deleted\")",
+        "loc": "client/engine/src/engine.ts:destroy(u, 'is deleted')",
         "agrees": true,
-        "note": "a deletion fires one died event, fires When I die, and bins the card with its controller"
+        "note": "a delete is a died event with verb \"is deleted\"; the unit goes to its controller's bin, or to the bin the effect names (Pull Under: \"your bin\")"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/182-correctness-sample.test.ts",
-        "pattern": "Throw off a Cliff: only defense>=4 is offered",
+        "pattern": "Throw off a Cliff: only defense>=4 is offered, and the target is DELETED",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/429-cr-keyword-actions.test.ts",
-        "pattern": "cr:keywords.actions.delete",
+        "pattern": "cr:keywords.actions.delete — Throw off a Cliff deletes a unit",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "client/engine/test/zz-probe-U18-2.test.ts",
-        "test": "probe U18-2: Unmake deletes A Pile of Rubbish — it dies, its own \"When I die\" draws, and it is in its controller bin",
+        "file": "client/engine/test/zz-probe-U18-1.test.ts",
+        "test": "probe U18-1: a unit deleted by Pull Under dies, and its own \"When I die\" triggers, and it goes to the bin the effect names",
         "passed": true,
-        "demonstrates": "yes: one died event, its own When I die triggered and drew, the card is in its controller bin"
+        "demonstrates": "yes: Spiteful Shadow deleted by Pull Under emits died (verb \"is deleted\"), its own When I die trigger goes on the stack, and the card lands in the caster's bin (\"your bin\"), not its controller's"
       }
     ],
     "source_checks": [
       {
-        "ref": "Manual p.13",
+        "ref": "Manual p.13 \"a unit dies or is deleted, it is placed in the bin (discard\"",
         "supports": "yes",
-        "note": "\"When a unit dies or is deleted, it is placed in the bin (discard zone).\" — the default destination."
+        "note": ""
       },
       {
         "ref": "card: Throw off a Cliff",
         "supports": "yes",
-        "note": "the example card."
+        "note": ""
       },
       {
-        "ref": "R348",
+        "ref": "card: Pull Under",
         "supports": "yes",
-        "note": "owner, current: a deleted unit dies; dies-triggers including its own When I die trigger; into the bin as any death does."
+        "note": "an effect that names another bin (\"your bin\")"
+      },
+      {
+        "ref": "owner \"A deleted unit dies.\"",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner \"Abilities that trigger when a unit dies, its own \\\"When I die\\\" included, trigger when it is deleted.\"",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
@@ -154,20 +164,20 @@
         "text": "a unit dies or is deleted, it is placed in the bin (discard"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A deleted unit dies."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "Abilities that trigger when a unit dies, its own \"When I die\" included, trigger when it is deleted."
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Delete target unit with 4 or more defense."
       },
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "Delete target unit. If you do, put it and {/n}all of its mods into your bin."
+        "text": "all of its mods into your bin."
+      },
+      {
+        "file": "client/engine/test/429-cr-keyword-actions.test.ts",
+        "text": "'a delete is a death'"
       }
     ],
     "basis_ok": true,
-    "problem": "All holds except the clause \"Unless the effect names another bin\": no cited source says a delete effect can name a different bin. Manual p.13 and R348 give only the default (\"placed in the bin\", \"as any death does\"). The clause is true of the pool (Pull Under prints \"Delete target unit. If you do, put it and all of its mods into your bin.\"), but that card is not cited. Cite it, or drop the clause."
+    "problem": ""
   },
   {
     "key": "keywords.actions.delete.named-bin",
@@ -2036,15 +2046,15 @@
     "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:toBin",
+        "loc": "client/engine/src/engine.ts (bin entry: 'stack' never trashes, every other zone does)",
         "agrees": true,
-        "note": "hand, deck, play, cache entries trash; 'stack' does not"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "discarding from hand trashes",
+        "pattern": "discarding from hand trashes, by the owner of the bin it enters",
         "passed": true,
         "asserts_claim": true
       },
@@ -2053,35 +2063,12 @@
         "pattern": "CR 801.2: a card leaving the cache for a BIN is trashed",
         "passed": true,
         "asserts_claim": true
-      },
-      {
-        "file": "35-rot-debt-trash.test.ts",
-        "pattern": "CR 801.2a: milling from the deck trashes",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "35-rot-debt-trash.test.ts",
-        "pattern": "CR 801.2a: sacrificing and dying both trash",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "35-rot-debt-trash.test.ts",
-        "pattern": "CR 801.2b: a spell going to the bin after RESOLVING",
-        "passed": true,
-        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "owner 2026-09-28 'with its noun restored: *a card entering a bin from anywhere but the stack is'",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "owner 2026-08-19 'Trashing: a card entering a bin from anywhere but the stack'",
+        "ref": "owner: a card entering a bin from anywhere but the stack",
         "supports": "yes",
         "note": ""
       }
@@ -2089,15 +2076,7 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "toBin(seat: Seat, name: CardName, from: 'hand' | 'deck' | 'play' | 'stack' | 'cache' | 'sandbox' | 'amend'): void {"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (from === 'stack' || from === 'sandbox' || from === 'amend') return;"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.noteTrashed(seat, name, from);"
+        "text": "   * `from` is the zone the card came from. 'stack' never trashes (a spell or"
       }
     ],
     "basis_ok": true,
@@ -2282,67 +2261,58 @@
     "key": "keywords.actions.trash.not-from-stack",
     "textHash": "5ac7a0aa99534151",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "loc": "client/engine/src/engine.ts (from 'stack' never trashes; dischargeItem for free plays)",
         "agrees": true,
-        "note": "single exit for resolution/negation/fizzle: toBin(…, 'stack')"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:toBin",
-        "agrees": true,
-        "note": "stack never trashes"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "R40: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)",
+        "pattern": "CR 801.2b: a spell going to the bin after RESOLVING is not trashed",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "R40: a NEGATED spell is not trashed either",
+        "pattern": "CR 801.2b: a NEGATED spell is not trashed either",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "15-water-b.test.ts",
-        "pattern": "R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash",
+        "pattern": "CR 405.4a: Tides plays an ORDINARY spell for free",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U18-1.test.ts",
+        "test": "probe U18-1: a spell that fails to resolve (its only target gone) goes to the bin and is not trashed",
+        "passed": true,
+        "demonstrates": "yes: Pull Under fizzles (all targets gone), reaches the bin, no trashed event"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R40 (its bin-entry definition, for cards)",
+        "ref": "owner quotes (after resolving / negating is not trashing; free play from:'stack')",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R40 (its bin-entry definition, for cards)",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R146",
-        "supports": "yes",
-        "note": ""
+        "note": "'failed to resolve' follows from 'from the stack'; probe demonstrates"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "      this.toBin(item.controller, item.card, 'stack');"
+        "file": "client/engine/test/15-water-b.test.ts",
+        "text": "    'a free play that RESOLVED is not a trash (CR 801.2b)');"
       }
     ],
     "basis_ok": true,
-    "problem": "\"failed to resolve\" (fizzle) has no bound example; it shares dischargeItem with resolution and negation, which are tested.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "keywords.actions.trash.tokens",
@@ -2466,76 +2436,93 @@
   },
   {
     "key": "keywords.actions.trash.unstable-death",
-    "textHash": "fa5171a1d8ddae25",
+    "textHash": "ecf1be73724d0040",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U18-r2",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.destroy / binning tail (R137 block)",
-        "agrees": false,
-        "note": "DIVERGES as flagged (F-U18-1): a dying printed-Unstable card is pushed into the bin, trashed, then swept to the erased pile"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.discardFromHand",
+        "loc": "client/engine/src/engine.ts:destroy",
         "agrees": true,
-        "note": "from hand: binned and trashed, no Unstable replacement"
+        "note": "a dying Unstable card is binned, trashed once, then swept to the erased pile; discard/mill/cache-to-bin of a printed-Unstable card bins and trashes"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/125-active-zone.test.ts",
-        "pattern": "DISCARDED FROM HAND bins and TRASHES",
+        "pattern": "CR 803.8a: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES",
         "passed": true,
-        "asserts_claim": "yes, for the inactive-zone sentence"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U18/u18-probes.test.ts",
-        "title": "keywords.actions.trash.unstable-death: a printed-Unstable card that DIES in play IS trashed (then erased) — contradicts \"not trashed\"",
+        "file": "client/engine/test/125-active-zone.test.ts",
+        "pattern": "CR 803.8a: a printed-Unstable card MILLED from the deck",
         "passed": true,
-        "demonstrates": "yes: confirms the flagged engine divergence (one trashed event on death)"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/125-active-zone.test.ts",
+        "pattern": "CR 803.8a: a printed-Unstable card binned from the CACHE",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "pattern": "CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/429-cr-keyword-actions.test.ts",
+        "pattern": "cr:keywords.actions.trash.unstable-death — engine differs",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Abyssal Evocation",
         "supports": "yes",
-        "note": "printed reminder: would enter a bin -> erase instead; with R40 (trash = entering a bin) gives no trash. Spell Excavation prints the same"
+        "note": "erase instead of entering a bin — where it ends"
       },
       {
-        "ref": "R145 (glossary line)",
+        "ref": "owner \"Unstable\": \"If an unstable card would enter a bin from an active",
         "supports": "yes",
-        "note": "the glossary Unstable line"
+        "note": "active zones only, so hand/deck/cache bin normally"
       },
       {
-        "ref": "R145",
-        "supports": "partly",
-        "note": "supports the inactive-zone sentence; but R145 §2 itself keeps R137 for play (\"still routes bin → trashed → state-based sweep\"), so it does not back the first sentence"
-      },
-      {
-        "ref": "history R137",
+        "ref": "owner \"A card leaving an **inactive** zone for a bin is **binned and trashed\"",
         "supports": "yes",
-        "note": "R137 admits it diverges from the printed reminder and a direct Caleb ruling (2025-04-08); authority order favours print/designer, so the rule is right to follow them"
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-08-24 \"An Unstable card that dies enters a bin, is trashed there, and is only then\"",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner 2026-10-22 \"Trash isnt a trigger tho. Its a kind of death thing...\"",
+        "supports": "yes",
+        "note": "answering CT-246: trash is part of the death, not caused by the bin entry — the record's exact reasoning"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "file": "client/engine/src/cards/printed.json",
         "text": "(If they would enter a bin, erase them instead.)"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "3. A card leaving an **inactive** zone for a bin is **binned and trashed"
+        "file": "client/engine/test/125-active-zone.test.ts",
+        "text": "'and it was trashed (CR 801.3)'"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "R137 (owner, 2026-08-24) is UNCHANGED for a CARD: an {Unstable} card that"
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "text": "'the Unstable body is trashed exactly once'"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed against print + Caleb (quoted in R137); divergence real. Caleb 2025-04-08 should be cited as designer support; R145 cites partly against the first sentence."
+    "problem": ""
   },
   {
     "key": "keywords.actions.trash.ways",

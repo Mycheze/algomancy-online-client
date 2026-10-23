@@ -2161,55 +2161,57 @@
   },
   {
     "key": "effects.static.permission",
-    "textHash": "7d7abdb3f99a07fe",
+    "textHash": "9979a2b5ade326eb",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U15-r1",
+    "round": 4,
+    "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-earth-c.ts:The Bonesculptor",
-        "agrees": false,
-        "note": "built as type 'activated', cost {}, bounded, timing deploy — the divergence the rule flags is real"
+        "loc": "client/engine/src/apply.ts:legalActions (playFromBin via playPermissions grants)",
+        "agrees": true,
+        "note": "The Bonesculptor and Gridxlan have no activated ability; the permission is an ordinary playFromBin action, bounded per deployment per grantor; nothing of the grantor reaches the stack"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U15/u15-probes.test.ts",
-        "title": "effects.static.permission: The Bonesculptor permission is used as an activated ability (measured shape)",
+        "file": "client/engine/test/558-bonesculptor-permission.test.ts",
+        "pattern": "CR 707.10 / CT-255: using the permission puts no ability on the stack",
         "passed": true,
-        "demonstrates": "yes — the divergence: offered as activateAbility, resolves as an activated item"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "R165",
-        "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "asserts_claim": true
       },
       {
-        "ref": "R168",
+        "file": "client/engine/test/558-bonesculptor-permission.test.ts",
+        "pattern": "CR 707.10 / CT-255: one play each deployment for each Bonesculptor",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/559-gridxlan-permission.test.ts",
+        "pattern": "CR 707.10: Gridxlan has no activated ability",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "quote found verbatim in the source and states the claim"
+        "note": "the owner names the permission as something nobody should be able to answer, and the old build (on the stack, negatable by Containment Protocol) as the defect"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "deployment\"* is not an effect anyone should be able to answer, but it is built"
+        "file": "client/engine/test/558-bonesculptor-permission.test.ts",
+        "text": "'no Bonesculptor item ever resolved: nothing there for Containment Protocol to negate'"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "should simply be true reaches the stack and Containment Protocol can negate"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
-        "text": "    type: 'activated', cost: {}, bounded: true, timing: 'deploy',"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You may play one unit with no abilities from your bin each deployment."
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed against R165/R168 (both record the permission should simply be true and file the engine as wrong). Divergence real: the probe shows the permission is offered as activateAbility and resolves as an activated item. Note: Containment Protocol is battle-timing and the Bonesculptor is deploy-only on an isolated deployment stack (R286), so the illustrative example's negation is not reachable in practice; the divergence is structural.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.static.printed-form",
@@ -3374,27 +3376,39 @@
   },
   {
     "key": "effects.triggered.that-item",
-    "textHash": "2b3aa1f368f2433e",
+    "textHash": "d2b83edc1d1e534b",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U15-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-light-c.ts:Void Mandible (cardPlayed item id)",
+        "loc": "client/engine/src/cards/sets/batch-light-c.ts + batch-hybrids-fwe.ts:Void Mandible / Origon (negate by the play event's item id, CR 706.13)",
         "agrees": true,
-        "note": ""
+        "note": "178's class guard: no card file finds a stack item by card name; play events never name a copy"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
-        "pattern": "Void Mandible",
+        "pattern": "Void Mandible: with two same-card same-seat spells up",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "pattern": "Void Mandible: a COPY on the stack is never negated",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/162-item-identity-and-truthful-events.test.ts",
-        "pattern": "Origon negates",
+        "pattern": "Origon negates the item the play event NAMES",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "pattern": "Void Mandible: a unit Wake the Dead plays",
         "passed": true,
         "asserts_claim": true
       }
@@ -3404,17 +3418,12 @@
       {
         "ref": "card: Void Mandible",
         "supports": "yes",
-        "note": ""
+        "note": "verbatim (printed text continues with the reminder '(This is not optional.)')"
       },
       {
-        "ref": "R191 (§1)",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R207",
-        "supports": "yes",
-        "note": ""
+        "note": "a play event names the item it made; a listener matches on that id; a copy was not played (_passer)"
       }
     ],
     "quote_spans": [
@@ -3423,8 +3432,8 @@
         "text": "When a nontoken card is played during battle, sacrifice me. If you do, negate that effect."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A play event names the item it made, and a listener matches on that id."
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "text": "'CR 706.13: the SECOND Burgeon is negated — the one `cardPlayed` named. '"
       }
     ],
     "basis_ok": true,

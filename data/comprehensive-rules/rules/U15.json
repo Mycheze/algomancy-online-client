@@ -2135,11 +2135,19 @@
     "key": "effects.static.permission",
     "parent": "707",
     "order": 10,
-    "text": "A permission a card grants (\"You may play one unit with no abilities from your bin each deployment\") is a standing fact, not an ability that goes on the stack. Using it cannot be responded to, and an effect that negates activated or triggered abilities cannot stop it. (engine differs, see F-U15-1)",
+    "text": "A permission a card grants (\"You may play one unit with no abilities from your bin each deployment\") is a standing fact, not an ability that goes on the stack. Using it cannot be responded to, and an effect that negates activated or triggered abilities cannot stop it.",
     "examples": [
       {
-        "text": "Containment Protocol cannot stop a player using The Bonesculptor's permission, because there is nothing on the stack to negate.",
-        "test": null
+        "text": "The Bonesculptor's permission is used by playing the unit from the bin like any card. Nothing of the permission's own goes on the stack, so there is no ability for Containment Protocol to negate.",
+        "test": "558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: using the permission puts no ability on the stack, and the unit is played"
+      },
+      {
+        "text": "Each Bonesculptor allows one such play each deployment.",
+        "test": "558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: one play each deployment for each Bonesculptor"
+      },
+      {
+        "text": "Gridxlan's \"If your hand is empty, you may play one unit from your bin during deployment\" is a permission too: with its controller's hand empty, it offers any unit in the bin as a play.",
+        "test": "559-gridxlan-permission.test.ts::CR 707.10: Gridxlan has no activated ability, and with an empty hand it offers ANY unit in the bin as a play"
       }
     ],
     "see": [],
@@ -2160,16 +2168,15 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "558-bonesculptor-permission.test.ts",
+        "559-gridxlan-permission.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "game",
-    "digitalClause": "(engine differs, see F-U15-1)",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) and the owner ruling of 2026-08-25 (“the STATIC half of 75 gets…”) both say the permission \"should simply be true\" and both leave the engine building it as a bounded activated ability; filed, not fixed.",
-    "engineDiffers": [
-      "F-U15-1"
-    ],
+    "notes": "The register's 2026-08-25 lines say the permission \"should simply be true\" and record the engine building it as an activated ability. Engine aligned 2026-10-22 (CT-255, and Gridxlan the same way): a PlayPermission offered as an ordinary playFromBin (558, 559). F-U15-1 closed. The inline \"(engine differs, see F-U15-1)\" marker is removed from the text.",
     "sourceHashes": {}
   },
   {
@@ -3134,6 +3141,10 @@
       {
         "text": "Origon negates the spell whose play made it trigger, even with an identical spell above it on the stack.",
         "test": "162-item-identity-and-truthful-events.test.ts::Origon negates the item the play event NAMES, with a second identical spell above it on the stack"
+      },
+      {
+        "text": "Void Mandible negates a unit Wake the Dead plays by its stack item, not a same-named bystander.",
+        "test": "178-played-item-and-erased-mods.test.ts::Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negated by id (CR 706.13)"
       }
     ],
     "see": [
@@ -3179,7 +3190,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-26 (“the item the event NAMES, and…”) and the owner ruling of 2026-08-26 (“the WIDE play event learns which…”) (their game half: which item a play-triggered ability acts on). Not drafted: The owner ruling of 2026-08-26 (“the WIDE play event learns which…”)’s \"an item-less play leaves nothing to negate\" (it is the asPlay spawn approximation; 703.5 states the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”), and the divergence is already a CT entry), and the owner ruling of 2026-08-26 (“the item the event NAMES, and…”)-§4 (log event types, despawn dispatch, restore drift: not game rules). had no CR rule before the register is retired.",
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-26 (“the item the event NAMES, and…”) and the owner ruling of 2026-08-26 (“the WIDE play event learns which…”) (their game half: which item a play-triggered ability acts on). Not drafted: The owner ruling of 2026-08-26 (“the WIDE play event learns which…”)’s \"an item-less play leaves nothing to negate\" (it is the asPlay spawn approximation; 703.5 states the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”), and the divergence is already a CT entry), and the owner ruling of 2026-08-26 (“the item the event NAMES, and…”)-§4 (log event types, despawn dispatch, restore drift: not game rules). had no CR rule before the register is retired. Round 2026-10-22 (CT-245): Wake the Dead's plays now have stack items, so the item-less case the notes left out is gone; 178 (c) shows the Mandible negating the raised item by id.",
     "sourceHashes": {}
   }
 ]

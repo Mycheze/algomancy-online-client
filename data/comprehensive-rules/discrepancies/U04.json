@@ -87,9 +87,13 @@
       {
         "source": "card: Arbiter of Armistice",
         "quote": "Cards played during battle gain [Pay 2 life]."
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-22",
+        "quote": "Yes, it pays"
       }
     ],
-    "resolution": "The printed noun \"Cards\" read literally, with the owner ruling of 2026-08-24 (“a spell token is a token…”), puts an Ambush play under the imposed cost, so the rule says so with an engine-differs marker (F-U04-2 (CT-243)). Question for the owner only if the owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”)’s deferral was meant as a ruling that an Ambush is exempt."
+    "resolution": "The printed noun \"Cards\" read literally, with the owner ruling of 2026-08-24 (“a spell token is a token…”), puts an Ambush play under the imposed cost. The owner confirmed it on 2026-10-22: \"Yes, it pays\". Engine fix: done 2026-10-22 (CT-243; F-U04-2 closed): 548."
   },
   {
     "id": "D-U04-5",

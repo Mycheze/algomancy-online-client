@@ -14,7 +14,8 @@
         "quote": "engine (CT-246; CR 801.2h differs): a modded unit dying is binned, TRASHED, and only then erased"
       }
     ],
-    "ct": "CT-246"
+    "ct": "CT-246",
+    "closed": "by design 2026-10-22 (CT-246 closed): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it."
   },
   {
     "id": "F-U18-2",
@@ -52,6 +53,24 @@
         "quote": "The engine's Unstable-death trash (owner, 2026-08-24; CR 801.2h says otherwise, CT-246) is UNCHANGED for a CARD: an {Unstable} card that"
       }
     ],
-    "ct": "CT-246"
+    "ct": "CT-246",
+    "closed": "by design 2026-10-22 (CT-246 closed): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it."
+  },
+  {
+    "id": "F-U18-4",
+    "title": "An Unstable card that dies is binned and trashed before it is erased",
+    "summary": "Printed Unstable reminder: 'If they would enter a bin, erase them instead.' The engine bins the dying Unstable card, fires a trash for it, then erases it (CT-246).",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "quote": "(If they would enter a bin, erase them instead.)"
+      },
+      {
+        "file": "client/engine/test/429-cr-keyword-actions.test.ts",
+        "quote": "'and the engine trashed it (the printed reading says it is not trashed)');"
+      }
+    ],
+    "rule": "keywords.actions.trash.unstable-death",
+    "closed": "by design 2026-10-22 (CT-246 closed): the owner, asked to choose between print and Caleb (erased at once, no trash) and his 2026-08-24 sequence, answered \"Trash isnt a trigger tho. Its a kind of death thing. So these options are the same option\". A dying Unstable card is trashed as part of its death and ends erased; rules 405.5 and 801.2h state it, re-verified with the whole answer quoted."
   }
 ]

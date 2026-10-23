@@ -43,19 +43,20 @@
     "summary": "E.adjacentInFormation builds the defender's grid from the block keys sorted and compressed, so two blockers with an unblocked (empty) blocking column between them read as neighbours. The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) defines adjacency by grid position and the Manual makes the defending formation's empty columns real. Measured by the verifier's probe: blocks {0:[d0], 2:[d2]} gives adjacentInFormation(d0) = [d2]. The engine comment flags it as an approximation.",
     "evidence": [
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "// treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
-      },
-      {
         "file": "data/rules/Algomancy-Manual.txt",
         "quote": "columns. Units may even be placed blocking in slots"
       },
       {
         "file": "client/docs/digital-rules.md",
         "quote": "- `(ci - 1, ri)` — the neighbouring column, **same row**"
+      },
+      {
+        "file": "client/engine/test/560-defending-gap-adjacency.test.ts",
+        "quote": "CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap"
       }
     ],
-    "ct": "CT-249"
+    "ct": "CT-249",
+    "closed": "fixed on 2026-10-22 with F-U10-3 (CT-249, 560)."
   },
   {
     "id": "F-U11-4",
@@ -64,18 +65,15 @@
     "summary": "formationGrid(defender) compacts the sorted block keys, so adjacentInFormation/adjacentSlots treat blockers on columns 1 and 3 (column 2 unblocked) as neighbours. The printed definition (adjacent to left/right neighbours, formations locked in position, side-blocks placed 'for adjacency matters cards') puts an empty slot between them. The code comment admits the approximation. Already flagged by the rule as engineDiffers F-U11-3.",
     "evidence": [
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "quote": "      return Object.keys(b.blocks).sort((a, z) => Number(a) - Number(z)).map(k => b.blocks[Number(k)]!);"
-      },
-      {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
         "quote": "adjacent to their left, right, front and back neighbors until"
+      },
+      {
+        "file": "client/engine/test/560-defending-gap-adjacency.test.ts",
+        "quote": "CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap"
       }
     ],
-    "ct": "CT-249"
+    "ct": "CT-249",
+    "closed": "fixed on 2026-10-22 with F-U10-3 (CT-249, 560)."
   }
 ]

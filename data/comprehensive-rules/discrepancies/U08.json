@@ -57,7 +57,7 @@
         "quote": "playing different games during deployment"
       }
     ],
-    "resolution": "Settled by the authority order: Manual p.27 (\"IT FIRST, THEN NIT\"), Manual p.38 and Rulebook 2023 p.5 have the initiative side take the resource step, the haste step and deployment first, and the non-initiative side \"wait and see\". They outrank the owner ruling of 2026-08-18 (“Haste step engine model […]”)’s hidden simultaneous segment, so turn.planning.order, turn.general.initiative and turn.deploy.order state print. The client's simultaneous hidden steps are F-U08-1 (CT-247, filed as an owner decision: keep them as a digital convention in Annex D, or change the engine). turn.deploy.order.simultaneous states the client today; if the owner keeps it, it belongs in Annex D. The argument that the order is moot because each player is in a separate region during deployment (Manual p.42) does not make the two the same: under print the non-initiative player chooses after the initiative player has finished."
+    "resolution": "Settled by the authority order for the game: Manual p.27 (\"IT FIRST, THEN NIT\"), Manual p.38 and Rulebook 2023 p.5 have the initiative side take the resource step, the haste step and deployment first, and the non-initiative side \"wait and see\"; turn.planning.order, turn.general.initiative and turn.deploy.order state print. For the client the owner kept the simultaneous hidden steps on 2026-10-22 (CT-247 wontfix): they are a digital convention, annexd.general.initiative-order (with turn.general.global.digital and turn.deploy.order.simultaneous). F-U08-1 and F-U09-3 closed."
   },
   {
     "id": "D-U08-2",
@@ -215,6 +215,6 @@
         "quote": "// committed seat may proceed simultaneously while the opponent drafts"
       }
     ],
-    "resolution": "The rule states print; the engine behaviour is F-U08-4 (CT-248). The early start happens inside the hidden plan segment, so the drafting seat cannot see it and the information effect may be nil. Question for the owner only if the early start should be kept as a digital convention (Annex D) rather than fixed."
+    "resolution": "The rule states print. The owner kept the early start on 2026-10-22 (CT-248 wontfix): it is a digital convention, annexd.general.early-resource-step. F-U08-4 closed."
   }
 ]

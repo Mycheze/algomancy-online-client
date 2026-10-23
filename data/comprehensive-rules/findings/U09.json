@@ -52,6 +52,7 @@
         "quote": "/** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):"
       }
     ],
-    "ct": "CT-247"
+    "ct": "CT-247",
+    "closed": "wontfix 2026-10-22 (CT-247): the owner keeps the simultaneous hidden resource, haste and deployment steps as a house rule; rule D1.5 states the convention."
   }
 ]

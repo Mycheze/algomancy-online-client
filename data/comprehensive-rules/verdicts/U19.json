@@ -1160,90 +1160,79 @@
   },
   {
     "key": "attr.general.application-order",
-    "textHash": "c453a9ff3e223605",
-    "verdict": "partial",
-    "round": 3,
-    "verifier": "U19-r3",
+    "textHash": "f72517e0ef0e4808",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "engine.ts:statLayerAttrs",
-        "agrees": false,
-        "note": "order = own attrs (printed, then temp, statics, augment mods in e.mods order) then column-mates in column order; a printed Balanced therefore applies BEFORE an augmented Tough — opposite of the Manual sentence (flagged engineDiffers F-U19-5)."
-      },
-      {
-        "loc": "engine.ts:effStats layer 4",
+        "loc": "client/engine/src/engine.ts:E.statLayerAttrs",
         "agrees": true,
-        "note": "applies Tough/Balanced one after the other in that list order; duplicates deduped at first occurrence."
-      },
-      {
-        "loc": "engine.ts:attachMod",
-        "agrees": true,
-        "note": "augments always push to the end of host.mods (only grafts take a position), so augment order = order gained in the engine."
+        "note": "augment mods in attachment order, then ownAttrs (printed, then temp grants/statics), then column-mates; take() keeps first occurrence"
       }
     ],
     "tests_run": [
       {
         "file": "08-cards2.test.ts",
-        "pattern": "layer-4 application order",
+        "pattern": "CR 709.4b: layer-4 application order",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
-        "title": "attr.general.application-order — Tough augmented onto a printed-Balanced unit: the printed Balanced applies first",
+        "file": "client/engine/test/zz-probe-U19-1.test.ts",
+        "test": "probe U19-1a: a duplicate Balanced shared from the column keeps the position of the first (own) Balanced",
         "passed": true,
-        "demonstrates": "yes: divergence real — Child of Aether + Rampart Guardian is 2/4 in the engine, 2/2 per the Manual"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-r3-probes.test.ts",
-        "title": "attr.general.application-order — a Tough unit attacking with a Balanced unit behind it: doubled, then balanced",
-        "passed": true,
-        "demonstrates": "yes: Rampart Guardian with Child of Aether behind is 8/8 (doubled then balanced), as the Manual says"
+        "demonstrates": "yes: the last sentence: a token granted Balanced then Tough reads 3/6, and still 3/6 with a Balanced column-mate behind it (a moved Balanced would read 3/3)"
       }
     ],
     "source_checks": [
       {
-        "ref": "Manual p.42 (six lines)",
+        "ref": "Manual p.42",
         "supports": "yes",
-        "note": "verbatim; supports the first three sentences."
+        "note": "all six quotes verbatim; the Tough/Balanced Q&A supports sentences 1-3 and the augment-before-printed, printed-before-applied, own-before-column order"
       },
       {
-        "ref": "R19",
-        "supports": "partly",
-        "note": "supports mod-stack order, column front-to-back, and the duplicate rule, but R19 itself marks the ordering an engine call ('\"order gained\" is the engine's reading'); no printed or designer source states 'first attached first'."
+        "ref": "owner register@72de434 (column order front to back; duplicates don't stack)",
+        "supports": "partial",
+        "note": "fragments; supports front-to-back and dedupe. The 'position of the first' detail rests on the engine + probe. Columns hold at most 2 units (apply.ts), so front-to-back is trivially met"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "Attributes apply in order from top to bottom. So if"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: Attributes apply in order from top to bottom. So if"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "will have its defense doubled, then its stats balanced."
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "No, but you can place new mods in-between old"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "\"order gained\" is the engine's reading. (Engine 2026-07-16.)"
-      },
-      {
-        "file": "client/engine/test/08-cards2.test.ts",
-        "text": "'Tough then Balanced: 3/1 → 3/2 → 3/3'"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (appliedAs === 'graft' && position !== undefined) host.mods.splice(position, 0, mod.id);"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "its stats balanced, then its defense doubled."
       }
     ],
     "basis_ok": true,
-    "problem": "The clause 'Attributes granted by a unit's augments apply in the order the mods were gained, the first attached first' rests only on R19, which labels it the engine's reading. The printed rule is positional ('from top to bottom'), and Manual p.43 lets a player 'place new mods in-between old ones', so on the table a later mod can sit above an earlier one, and order gained is not the same as order on the card. Augments are placed beneath the card (Manual p.32). Better wording: 'in the order the mods sit on the card, top to bottom', and the clause should be marked as a digital reading. The Manual sentences, the column front-to-back clause, the duplicate clause and the flagged divergence (F-U19-5: the engine applies printed Balanced before augmented Tough, 2/4 not 2/2) all check out.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.general.kinds",
@@ -1368,102 +1357,74 @@
   },
   {
     "key": "attr.general.pure",
-    "textHash": "2c223a04d650b0fe",
+    "textHash": "065b9485ff635d36",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U19-r3",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "engine.ts:effStats (layer 4) / victimShare",
-        "agrees": false,
-        "note": "Tough and Balanced are stat layers read regardless of Pure (R61/R289); divergence from the printed reading is real and flagged (engineDiffers)."
-      },
-      {
-        "loc": "engine.ts:dealEffectDamageAll (collapsed = !pureWith(u) && ...)",
+        "loc": "client/engine/src/engine.ts:E.statLayerAttrs (pureBlind)",
         "agrees": true,
-        "note": "for effect damage a Pure pairing does switch Unaware off — matches the rule for that site."
-      },
-      {
-        "loc": "engine.ts:exchangeAt",
-        "agrees": false,
-        "note": "in combat 'collapsed' is computed regardless of 'pure' (R106: the collapse survives Pure), so Unaware still applies in a Pure combat exchange — a second real divergence."
+        "note": "units read inside a Pure interaction get no Tough/Balanced/Inverted/Unaware"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "555-pure-ignores-stat-attributes.test.ts",
+        "pattern": "CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "555-pure-ignores-stat-attributes.test.ts",
+        "pattern": "CR 802.25e / CT-260: a Balanced 4/1 dealt 3 by a Pure source",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.general.pure — Unaware is off in a Pure pairing outside combat",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
-        "title": "attr.general.pure — Tough still applies to a unit in an interaction with a Pure card (engine)",
+        "file": "client/engine/test/zz-probe-U19-1.test.ts",
+        "test": "probe U19-1b: in a Pure pairing a non-Pure recipient's Inverted does not apply",
         "passed": true,
-        "demonstrates": "yes: the divergence in the example is real (Rampart Guardian survives 5 from a Pure source as a 0/8)"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-r2-probes.test.ts",
-        "title": "attr.general.pure — Balanced still applies to a unit in an interaction with a Pure source (engine)",
-        "passed": true,
-        "demonstrates": "yes: Balanced also stays on (divergence)"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-r2-probes.test.ts",
-        "title": "attr.general.pure — Unaware is off in a Pure pairing (engine): an Unaware source does not collapse a pumped Pure recipient to its printed stats",
-        "passed": true,
-        "demonstrates": "yes: engine agrees for effect damage"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-r3-probes.test.ts",
-        "title": "attr.general.pure — in COMBAT, Tough still doubles a blocker whose exchange holds a Pure attacker (engine)",
-        "passed": true,
-        "demonstrates": "yes: divergence also in combat"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-r3-probes.test.ts",
-        "title": "attr.general.pure — in COMBAT, Unaware still collapses an exchange that holds a Pure attacker (engine)",
-        "passed": true,
-        "demonstrates": "yes: in combat the engine keeps Unaware on against Pure (divergence), unlike effect damage"
+        "demonstrates": "yes: the Inverted clause (no bound test covered Inverted): a plain source's 2 leaves an Inverted 3/4 alive, a Pure source's 2 kills it (read as 1/2)"
       }
     ],
     "source_checks": [
       {
         "ref": "card: Just a Unit",
         "supports": "yes",
-        "note": "verbatim reminder in the oracle; literal 'ignore all other attributes' includes Tough/Balanced/Inverted/Unaware (all type-line attributes)."
+        "note": "Pure reminder, verbatim"
       },
       {
-        "ref": "Manual p.42 (layers list)",
-        "supports": "partly",
-        "note": "on-topic: it names Tough an attribute ('Attributes like Tough') and lists Inverted/Unaware as stat layers; says nothing about Pure."
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "names Tough, Inverted, Unaware as attribute layers; Balanced is a {Balanced} type-line attribute (Child of Aether)"
       },
       {
-        "ref": "R289",
-        "supports": "partly",
-        "note": "supports only the Unaware half for effect damage; the same ruling says Tough, Balanced and Inverted STILL read against Pure, and R106 says the Unaware collapse survives Pure in combat. These are the overruled readings, honestly flagged as engineDiffers."
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "fragment; corroborates Vulnerable/Unaware off"
       }
     ],
     "quote_spans": [
       {
         "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "{i}(Pure cards and cards they are interacting with ignore all other attributes.)"
+        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "const collapsed = (u: Entity): boolean => !pureWith(u) && (srcUnaware || this.unaware(u));"
-      },
-      {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "4. Attributes like Tough, 5. Inverted"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
       }
     ],
     "basis_ok": true,
-    "problem": "None in the ruling, which is the literal printed reminder (printed outranks R61/R289/R106). Divergence confirmed real: engine keeps Tough/Balanced (and Inverted per R289) on against Pure everywhere, and keeps Unaware on in a Pure COMBAT exchange (R106) while switching it off for effect damage (R289). The Manual p.42 citation is only on-topic.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.general.reminder",
@@ -1494,19 +1455,19 @@
     "key": "attr.general.shared",
     "textHash": "69d27f6fc4d8229a",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "loc": "client/engine/src/engine.ts:E.colAttrs / E.effAttrs",
         "agrees": true,
-        "note": ""
+        "note": "a unit in a column has the column's combat attributes; Modular/Unstable/Burst (object attributes) excluded, consistent with 'combat attribute'"
       }
     ],
     "tests_run": [
       {
         "file": "421-cr-regions-formations.test.ts",
-        "pattern": "cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared",
+        "pattern": "cr:combat.columns.definition.shared-attributes",
         "passed": true,
         "asserts_claim": true
       }
@@ -1516,23 +1477,27 @@
       {
         "ref": "Manual p.24",
         "supports": "yes",
-        "note": ""
+        "note": "Combat attributes shared by units in the same column; Bloodwind Revenant example"
       },
       {
         "ref": "Rulebook 2023 p.12",
         "supports": "yes",
-        "note": ""
+        "note": "Smoke Ghost example: both units have Flying"
       },
       {
-        "ref": "R93",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": ""
+        "note": "corroborates; printed alone supports the text"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "return col ? this.colAttrs(col) : this.ownAttrs(e);"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Combat attributes (denoted in gold text) are shared by"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Units in the same column of a formation share attributes, meaning that if Smoke"
       }
     ],
     "basis_ok": true,
@@ -1604,19 +1569,19 @@
     "key": "attr.general.shared.combat-only",
     "textHash": "61e235f48e41df86",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "loc": "client/engine/src/engine.ts:E.columnOf",
         "agrees": true,
-        "note": "columnOf returns null outside battle"
+        "note": "reads s.battle and answers null without one, so effAttrs = ownAttrs outside battle"
       }
     ],
     "tests_run": [
       {
         "file": "298-column-attrs-outside-combat.test.ts",
-        "pattern": "R294 §3 outside battle there are no columns at all",
+        "pattern": "CR 712.8b outside battle there are no columns at all",
         "passed": true,
         "asserts_claim": true
       }
@@ -1624,15 +1589,15 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R294",
+        "ref": "owner register@72de434 'A column only exists'",
         "supports": "yes",
-        "note": ""
+        "note": "a truncated fragment; read with the engine (columnOf) and test 298 it states the rule; printed sources only describe sharing while attacking/blocking in a formation"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "return col ? this.colAttrs(col) : this.ownAttrs(e);"
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "text": "ONLY EXISTS IN COMBAT — `E.columnOf` reads `s.battle` and answers null"
       }
     ],
     "basis_ok": true,
@@ -1701,11 +1666,11 @@
     "key": "attr.general.shared.not-sideways",
     "textHash": "cd2efd7c56c82c9a",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "loc": "client/engine/src/engine.ts:E.columnOf / E.colAttrs",
         "agrees": true,
         "note": ""
       }
@@ -1713,7 +1678,7 @@
     "tests_run": [
       {
         "file": "421-cr-regions-formations.test.ts",
-        "pattern": "cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared",
+        "pattern": "cr:combat.columns.definition.shared-attributes",
         "passed": true,
         "asserts_claim": true
       }
@@ -1723,12 +1688,12 @@
       {
         "ref": "Manual p.24",
         "supports": "yes",
-        "note": ""
+        "note": "NOTE box verbatim"
       },
       {
         "ref": "Rulebook 2023 p.12",
         "supports": "yes",
-        "note": ""
+        "note": "left/right does not gain Flying"
       }
     ],
     "quote_spans": [
@@ -1737,8 +1702,8 @@
         "text": "Combat attributes are not shared by units to the left or to the right, they"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "return col ? this.colAttrs(col) : this.ownAttrs(e);"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "the left or the right of another unit, it will not gain Flying."
       }
     ],
     "basis_ok": true,
@@ -3904,77 +3869,58 @@
   },
   {
     "key": "attr.vulnerable.pure",
-    "textHash": "81cfcc4bc61c6ab3",
-    "verdict": "partial",
+    "textHash": "709738e86b0db339",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "loc": "client/engine/src/engine.ts:E.dealEffectDamageAll (Pure pairing) / Oorblak redirect hook",
         "agrees": true,
-        "note": "mult = (!pureWith(u) && effAttrs(u).has('Vulnerable')) ? 2 : 1 — Vulnerable is off in a Pure pairing"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:commitUnitDamage",
-        "agrees": true,
-        "note": "combat commit: mult = (!hit.pure && Vulnerable) ? 2 : 1"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/290-pure-outside-combat.test.ts",
-        "pattern": "§2 a Pure recipient's own Vulnerable",
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§2 a Pure recipient\\'s own Vulnerable is off too",
         "passed": true,
-        "asserts_claim": "yes: Chitin Shredder dealing 2 with Pure to Crumbling Ancient: dealt 2, Ancient alive"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/430-cr-attributes-1.test.ts",
+        "file": "430-cr-attributes-1.test.ts",
         "pattern": "cr:attr.vulnerable.pure",
         "passed": true,
-        "asserts_claim": "yes: Crumbling Ancient granted Pure is dealt 2 by 2 effect damage"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "client/engine/test/zz-probe-U19-1.test.ts",
-        "test": "probe U19-1 combat: the Vulnerable blocker itself Pure / the attacker Pure — a Vulnerable 3/8 blocker takes 4 from a 4-power attacker, not 8 (+ no-Pure control: 8, dies)",
+        "file": "553-oorblak-pure-redirect.test.ts",
+        "pattern": "CR 802.11e / CT-227: a Pure Vulnerable Oorblak",
         "passed": true,
-        "demonstrates": "yes: in combat too the engine does NOT double damage to a Vulnerable unit in a Pure exchange — the engine agrees with the rule"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Just a Unit",
         "supports": "yes",
-        "note": "Pure cards and cards they interact with ignore all other attributes"
+        "note": "Vulnerable is an attribute, so ignored by/against a Pure card"
       },
       {
-        "ref": "R61",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "combat: the victim's Vulnerable is off too"
-      },
-      {
-        "ref": "R289 (its per-pairing switch)",
-        "supports": "yes",
-        "note": "outside combat: a Pure recipient's own Vulnerable is off"
+        "note": "fragments: victim's Vulnerable off; its own Vulnerable off"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "  are off against it, and so are its own {Vulnerable} and {Unaware}."
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "const mult = (!pureWith(u) && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;"
-      },
-      {
-        "file": "client/engine/test/290-pure-outside-combat.test.ts",
-        "text": "assert.equal(dealtTo(evs).get(tgt), 2, '2 → 2: neither the source doubling nor the receiver doubling');"
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
       }
     ],
     "basis_ok": true,
-    "problem": "Rule text and both examples hold, but the record carries engineDiffers [F-U19-3] and the engine does NOT differ: both bound tests pass with the ruling's numbers, the engine gates Vulnerable on Pure at every damage site, and probe zz-probe-U19-1 shows the same in combat. The engineDiffers mark is false and should be dropped."
+    "problem": ""
   },
   {
     "key": "attr.vulnerable.receipt",

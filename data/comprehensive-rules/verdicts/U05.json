@@ -1636,34 +1636,57 @@
   },
   {
     "key": "card.stats.units",
-    "textHash": "63e1faa7a02013d8",
+    "textHash": "e67837d4f36ef9f5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "cards/dsl.ts:Printed.kind",
+        "loc": "client/engine/src (spellUnit resolves to a unit; extract zeroes spell stats)",
         "agrees": true,
-        "note": "kind 'spellUnit' carries power/toughness and spawns as a unit on resolution"
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "416-cr-parts-of-a-card.test.ts",
+        "pattern": "cr:card.stats.units",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/565-spells-print-no-stats.test.ts",
+        "pattern": "CR 206.2 / CT-244: no spell in the engine pool or the catalogue carries power or toughness",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/567-stats-only-where-printed.test.ts",
+        "pattern": "CR 206.2 / CT-244: spell tokens carry no stats in the pool or the catalogue",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
         "ref": "Rulebook 2023 p.3",
         "supports": "yes",
-        "note": "both quotes verbatim"
+        "note": "units recognized by stats; spell units have stats and enter play as they resolve"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "moved. They can be easily recognized by the existence of stats on the card (5)."
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "They can be easily recognized by the existence of stats on the card (5)."
+      },
+      {
+        "file": "client/engine/test/416-cr-parts-of-a-card.test.ts",
+        "text": "assert.ok(h.state.players[P]!.bin.includes('Resurrect'), 'it is binned');"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Note: the oracle JSON carries nonzero power/toughness on many spells (transcription noise); the engine pool and catalogue zero them, and the printed rulebook supports the record."
   },
   {
     "key": "card.stats.what",

@@ -1456,52 +1456,51 @@
   },
   {
     "key": "effects.graft.composite.no-target",
-    "textHash": "a9c6ac73274ea684",
+    "textHash": "182162f70fc78a92",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U17-r2",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:queueTrigger/R86 fizzle",
-        "agrees": false,
-        "note": "the composite IS pushed to the stack and then fizzles whole (R86); same observable outcome, wrong mechanism — the declared divergence is real"
+        "loc": "client/engine/src (graft composite dropped at trigger time, CR 110.7)",
+        "agrees": true,
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/390-raq-stack.test.ts",
-        "pattern": "a graft trigger with a required target and none available",
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ target requirements: a graft trigger with a required target and none available makes nothing at all",
         "passed": true,
-        "asserts_claim": "yes for 'no Poison 5'; does not assert the item never reached the stack"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
-        "title": "effects.graft.composite.no-target: DIVERGENCE — the targetless composite IS pushed to the stack, then makes nothing",
+        "file": "546-graft-composite-no-target.test.ts",
+        "pattern": "CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack",
         "passed": true,
-        "demonstrates": "yes: 1 item pushed on attack, then no Poison"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "RAQ 1410252965276684418#2",
         "supports": "yes",
-        "note": "_passer verbatim: can't be put on the stack unless such a unit is targeted."
+        "note": "_passer [Solved]; status covered"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/390-raq-stack.test.ts",
-        "text": "  // the stack unless you target such unit in your bin.\""
+        "file": "client/ledgers/raq.ts",
+        "text": "'Create Poison 5' + 'Put target unit with cost 2 or less from your bin into play' can't be put on the stack unless you target such unit in your bin."
       },
       {
-        "file": "client/engine/test/390-raq-stack.test.ts",
-        "text": "  assert.equal(poison.length, 0, 'no Poison 5 either: the whole graft effect goes, not just its targeted half');"
+        "file": "client/engine/test/546-graft-composite-no-target.test.ts",
+        "text": "assert.equal(poisons(h), 0, 'no Poison 5: the untargeted half goes too');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling sound; engineDiffers is real: the engine stacks the item and fizzles it (see bugs)."
+    "problem": ""
   },
   {
     "key": "effects.graft.composite.one-ability",
@@ -2760,150 +2759,120 @@
   },
   {
     "key": "effects.mods.erase-off-host",
-    "textHash": "4cd5fef6b6377b82",
+    "textHash": "add68a54a0b71226",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U17-r2",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:eraseMod",
-        "agrees": true,
-        "note": "unlinks, deletes, files 'erased' under mod.controller (R262); caller owns checkDeaths"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:payCastCost (eraseMod branch)",
-        "agrees": true,
-        "note": "Slag Spewer's cost erase goes through eraseMod"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Return to Nature",
-        "agrees": false,
-        "note": "groups by m.owner, not m.controller — the declared divergence is real"
+        "agrees": "files on the mod controller's erased pile; host stays; state check may kill it",
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/17-earth-b.test.ts",
-        "pattern": "Return to Nature: negates everything",
+        "file": "17-earth-b.test.ts",
+        "pattern": "Return to Nature: negates everything on the stack and erases all mods in the region",
         "passed": true,
-        "asserts_claim": "yes: mods erased, not binned"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/246-zones-follow-control.test.ts",
-        "pattern": "erased pile files a stolen mod",
+        "file": "246-zones-follow-control.test.ts",
+        "pattern": "CR 720.9: the erased pile files a stolen mod under the THIEF",
         "passed": true,
-        "asserts_claim": "yes: eraseMod files under the thief"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
-        "pattern": "R208",
+        "file": "17-earth-b.test.ts",
+        "pattern": "CR 720.9 / CT-258: Return to Nature files each erased mod on its CONTROLLER erased pile",
         "passed": true,
-        "asserts_claim": "yes: cost-erase and Suppression Field file the erased pile with the host surviving (test title still says 'Q3 is OPEN', stale)"
+        "asserts_claim": true
+      },
+      {
+        "file": "428-cr-modifications.test.ts",
+        "pattern": "cr:effects.mods.erase-off-host — a host kept alive only by a +2/+2 mod dies",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "428-cr-modifications.test.ts",
+        "pattern": "cr:effects.mods.erase-off-host — Return to Nature files a mod on a stolen host",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "178-played-item-and-erased-mods.test.ts",
+        "pattern": "CR 720.9 Slag Spewer: an erase paid as a COST",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
-        "title": "effects.mods.erase-off-host: a host kept alive only by a +2/+2 mod dies when Return to Nature erases the mod",
-        "passed": true,
-        "demonstrates": "yes: host with -2 counters and Aetherflux Golem dies once the mod is erased"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
-        "title": "effects.mods.erase-off-host: DIVERGENCE — Return to Nature files a mod on a stolen host under its OWNER, not its controller",
-        "passed": true,
-        "demonstrates": "yes: the erased event names the owner seat"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R219",
+        "ref": "owner quotes (erased zone; host left as moveMod leaves it; mod.controller)",
         "supports": "yes",
-        "note": "Owner: an erased card ends up in the erased zone."
-      },
-      {
-        "ref": "R208 (its primitive half)",
-        "supports": "yes",
-        "note": "Caller owns checkDeaths; a host losing a +X/+X mod can die."
-      },
-      {
-        "ref": "R262",
-        "supports": "yes",
-        "note": "eraseMod's erased pile follows control."
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> **\"Obviously the card says where it should end up. It's erased… It should just"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "afterwards, exactly as `moveMod` leaves it, because a host that loses a +X/+X"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "text": "          const list = byOwner.get(m.owner) ?? [];"
+        "file": "client/engine/test/428-cr-modifications.test.ts",
+        "text": "assert.ok(!ent(h, host), 'the host died once the mod was erased');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling sound; engineDiffers is real: Return to Nature files by mod owner, contrary to R262 (see bugs).",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.mods.erase-off-host.token",
-    "textHash": "92203bb428542494",
+    "textHash": "075780c4e14d35d0",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U17-r2",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:eraseMod",
-        "agrees": true,
-        "note": "`!mod.token` guard: a token mod emits no 'erased' event"
+        "agrees": "token mods are not filed",
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "428-cr-modifications.test.ts",
+        "pattern": "cr:effects.mods.erase-off-host.token — a Wraith token mod erased off a living host as a cost",
+        "passed": true,
+        "asserts_claim": true
       },
       {
-        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Return to Nature",
-        "agrees": false,
-        "note": "files every mod, token mods included, in its own grouped 'erased' line before calling eraseMod(alreadyFiled) — the declared divergence is real"
-      }
-    ],
-    "tests_run": [],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
-        "title": "effects.mods.erase-off-host.token: eraseMod files no token mod; DIVERGENCE — Return to Nature does file it",
+        "file": "17-earth-b.test.ts",
+        "pattern": "CR 720.9a / CT-259: Return to Nature does not file a TOKEN mod on the erased pile",
         "passed": true,
-        "demonstrates": "yes: eraseMod files nothing for a Wraith mod; Return to Nature emits an erased event naming Wraith"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R219",
+        "ref": "owner: A token mod is not filed",
         "supports": "yes",
-        "note": "States verbatim that a token mod is not filed (R133: a token is not a card)."
+        "note": ""
+      },
+      {
+        "ref": "owner: Never file tokens",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "    if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "text": "        // this every card would be listed twice. This site also files TOKEN"
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "text": "'only the card mod is filed: a token is not a card (CR 720.9a)');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling sound; engineDiffers is real: Return to Nature files token mods on the erased pile (see bugs)."
+    "problem": ""
   },
   {
     "key": "effects.mods.moving",
@@ -4132,37 +4101,42 @@
   },
   {
     "key": "effects.mods.unstable.token-mod",
-    "textHash": "3343ae2f3ecd6fc7",
+    "textHash": "04bd487af306e51d",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:afterDespawn",
+        "loc": "client/engine/src (despawn mod disposal, CR 407.3a)",
         "agrees": true,
-        "note": "token mods deleted and announced as erased on recall/cache; disposeToBin on death"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/141-despawn-mods.test.ts",
-        "pattern": "R167 (v): a token mod reaches the erased pile",
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "CR 407.3a (v): a token mod reaches neither the erased pile nor a bin, on all three routes",
         "passed": true,
-        "asserts_claim": "yes: Wraith augmented (augmentWraith) to Rune Channeler; on death, recall and cache: erased once, never in bin, never trashed"
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R156 (its announce-on-every-route half)",
+        "ref": "owner: has no card of its own, so it can never enter a bin",
         "supports": "yes",
-        "note": "R262 corrects only the seat of the erased-pile entry; the every-route point stands"
+        "note": ""
+      },
+      {
+        "ref": "owner: Never file tokens",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "has no card of its own, so it can never enter a bin — whichever way its host"
+        "file": "client/engine/test/141-despawn-mods.test.ts",
+        "text": "`${route}: a token mod has no card to bin`);"
       }
     ],
     "basis_ok": true,

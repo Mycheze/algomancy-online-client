@@ -14,14 +14,15 @@
         "quote": "should simply be true reaches the stack and Containment Protocol can negate"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
-        "quote": "    type: 'activated', cost: {}, bounded: true, timing: 'deploy',"
+        "file": "client/engine/test/558-bonesculptor-permission.test.ts",
+        "quote": "CR 707.10 / CT-255: The Bonesculptor has no activated ability, and its permission is a play from the bin"
       }
     ],
     "ct": "CT-255",
     "dupes": [
       "F-U15-4"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-255): The Bonesculptor's bin play is a standing permission, used as an ordinary play from the bin; nothing of its own reaches the stack (558)."
   },
   {
     "id": "F-U15-2",
@@ -69,15 +70,16 @@
     "summary": "'You may play one unit with no abilities from your bin each deployment' is built as a free bounded activated ability and resolves as an activated item (probe), where the owner rulings of 2026-08-25 (“\"I spawn with N counters\" is…”) and 2026-08-25 (“the STATIC half of 75 gets…”) say a permission should simply be true and not reach the stack. Already filed in the owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) 'Left open'.",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
-        "quote": "    type: 'activated', cost: {}, bounded: true, timing: 'deploy',"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "- **The Bonesculptor's permission is an ACTIVATED ABILITY, so it reaches the"
+      },
+      {
+        "file": "client/engine/test/558-bonesculptor-permission.test.ts",
+        "quote": "CR 707.10 / CT-255: The Bonesculptor has no activated ability, and its permission is a play from the bin"
       }
     ],
-    "ct": "CT-255"
+    "ct": "CT-255",
+    "closed": "fixed on 2026-10-22 (CT-255): The Bonesculptor's bin play is a standing permission, used as an ordinary play from the bin; nothing of its own reaches the stack (558)."
   },
   {
     "id": "F-U15-5",

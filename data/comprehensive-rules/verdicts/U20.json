@@ -1487,58 +1487,53 @@
   },
   {
     "key": "attr.electric.chooser",
-    "textHash": "af9cd563e4de397a",
+    "textHash": "46f1d29ee4e6a4c0",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
-        "agrees": false,
-        "note": "electricPath is asked of ctx.controller (the effect's controller), while pierceKeep asks dealerSeat (the source unit's controller)"
+        "loc": "client/engine/src/engine.ts:electricPath decision (seat: dealerSeat)",
+        "agrees": true,
+        "note": "asked of the source's controller, also when a Fight makes an opponent's unit the source"
       }
     ],
     "tests_run": [
       {
         "file": "05-rulings.test.ts",
-        "pattern": "R4: electric excess follows a controller-chosen non-overlapping path, atomically",
+        "pattern": "CR 802.17: electric excess follows a controller-chosen",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "552-electric-path-chooser.test.ts",
+        "pattern": "CR 802.17c / CT-226: a Fight that makes the opponents Electric unit the source",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "552-electric-path-chooser.test.ts",
+        "pattern": "CR 802.17c / CT-226: the source controller answer steers",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
-        "title": "attr.electric.chooser: the Electric path is asked of the EFFECT's controller even when the source unit is the opponent's",
-        "passed": true,
-        "demonstrates": true
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R4",
+        "ref": "owner register@72de434 (2026-08-18, 2026-10-09)",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R317",
-        "supports": "yes",
-        "note": ""
+        "note": "'The Electric source's controller chooses the path' / 'at every hop the source's controller chooses'; printed Electric reminder ('can be directed to an adjacent unit, recursively') names no chooser, so the owner call fills a gap"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "The **Electric source's controller** chooses the path. There are **no formation changes"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "kind: 'electricPath', seat: ctx.controller,"
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively.)"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed (R4, R317) and the flagged divergence (F-U20-1) is real: with an opponent's unit as the source (as Battle/Fight make it), the probe shows the path is asked of the effect's controller. The bound example cannot see this (caster = source controller).",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.electric.dead-end",
@@ -1999,11 +1994,11 @@
     "key": "attr.lethal",
     "textHash": "209503dcff3965fe",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "loc": "client/engine/src/cards/printed.json:Gublin attrs ['Lethal']",
         "agrees": true,
         "note": ""
       }
@@ -2021,83 +2016,91 @@
       {
         "ref": "card: Gublin",
         "supports": "yes",
-        "note": ""
+        "note": "type line '[Augment] {Lethal} Insect Unit' and the reminder verbatim"
       },
       {
-        "ref": "glossary: Lethal (ours)",
+        "ref": "glossary: Lethal",
         "supports": "yes",
-        "note": "not an authority"
+        "note": "not authority; not needed"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Any combat damage from a lethal unit will kill a player.)"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "[Augment] {Lethal} Insect Unit"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.lethal.combat-only",
     "textHash": "8053a5bd94813125",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "loc": "client/engine/src/engine.ts:Lethal reads L.playerHits only (combat ledger)",
         "agrees": true,
-        "note": "only combat playerHits read Lethal; dealEffectDamageAll never reads it"
+        "note": ""
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
-        "title": "attr.lethal.combat-only: Lethal noncombat damage to a player does not kill them",
+        "file": "431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.lethal.combat-only — a Lethal unit blocked by a 2/2",
         "passed": true,
-        "demonstrates": true
+        "asserts_claim": true
       },
       {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
-        "title": "attr.lethal.combat-only: a blocked Lethal unit deals ordinary combat damage to its blocker",
+        "file": "431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.lethal.combat-only — a blocked Gublin",
         "passed": true,
-        "demonstrates": true
+        "asserts_claim": true
+      },
+      {
+        "file": "431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.lethal.combat-only — Lethal noncombat damage to a player does not kill them",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Gublin",
         "supports": "yes",
-        "note": "\"combat damage\" ... \"kill a player\""
+        "note": "'combat damage' ... 'kill a player' read literally"
       },
       {
-        "ref": "R166",
-        "supports": "partly",
-        "note": "on-topic"
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "corroborates"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Any combat damage from a lethal unit will kill a player.)"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.lethal.kills",
     "textHash": "ef8e12b4ec2cac1e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "loc": "client/engine/src/engine.ts:Lethal over L.playerHits (killPlayer when reached > 0)",
         "agrees": true,
         "note": ""
       }
@@ -2111,7 +2114,7 @@
       },
       {
         "file": "37-attrs-wight.test.ts",
-        "pattern": "R48 {Lethal}: any combat damage from a lethal unit kills the player",
+        "pattern": "CR 802.24a {Lethal}: any combat damage",
         "passed": true,
         "asserts_claim": true
       }
@@ -2121,69 +2124,93 @@
       {
         "ref": "card: Gublin",
         "supports": "yes",
-        "note": ""
+        "note": "reminder verbatim; Gublin is a printed 1/4"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Any combat damage from a lethal unit will kill a player.)"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.lethal.replaced",
-    "textHash": "c89d33f479c113ab",
+    "textHash": "e4c7289f855e03fb",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "loc": "client/engine/src/engine.ts:E.replaceCombatDamage (redirect pass, then dealt pass) + Lethal over reached[]",
         "agrees": true,
-        "note": "Lethal reads playerHits, pre-replacement"
+        "note": "a redirect always comes first, so Oorblak + Polyp: Polyp sees nothing"
       }
     ],
     "tests_run": [
       {
         "file": "37-attrs-wight.test.ts",
-        "pattern": "R48 {Lethal} still kills THROUGH the Blightsea replacement",
+        "pattern": "CR 802.24c {Lethal} still kills THROUGH the Blightsea replacement",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "562-lethal-redirected.test.ts",
+        "pattern": "CR 608.8a / CT-296: Blightsea Polyp turns the Lethal hit into rot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.lethal.replaced — a Lethal column whose combat damage is all redirected",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "562-lethal-redirected.test.ts",
+        "pattern": "CR 608.8c / CT-296: a Piercing Lethal excess",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "562-lethal-redirected.test.ts",
+        "pattern": "CR 608.8c / CT-296: Oorblak first, then Blightsea Polyp",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
-        "title": "attr.lethal.replaced (side measurement): a Lethal column fully redirected into Oorblak still kills the player",
-        "passed": true,
-        "demonstrates": true
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R98",
+        "ref": "card: Oorblak",
         "supports": "yes",
-        "note": ""
+        "note": "redirect text verbatim"
       },
       {
-        "ref": "R238",
+        "ref": "owner register@72de434 (Caleb 2024-10-24 'Yes')",
         "supports": "yes",
-        "note": ""
+        "note": "replaced-by-rot damage still counts as dealt"
+      },
+      {
+        "ref": "owner, chat 2026-10-22 (CT-296) 'Doesn't kill'",
+        "supports": "yes",
+        "note": "wholly redirected Lethal hit does not kill"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "If combat damage would be dealt to you, that damage is dealt to me instead."
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Any combat damage from a lethal unit will kill a player.)"
       }
     ],
     "basis_ok": true,
-    "problem": "Confirmed for Blightsea Polyp (Caleb was shown exactly Lethal + Rot Jelly). Note the engine applies the same to Oorblak, whose damage is dealt to Oorblak instead of the player: a Lethal column fully redirected into Oorblak still kills the player (measured). No source rules on that case; the rule's \"replaced\" wording would cover it.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.modular",
@@ -2403,54 +2430,41 @@
   },
   {
     "key": "attr.modular.not-shared",
-    "textHash": "bb77665ec3a6d4b1",
+    "textHash": "26bbb04e4bd113f6",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U20-r2",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "engine.ts:effAttrs",
-        "agrees": false,
-        "note": "Modular sits in ownAttrs, so colAttrs/effAttrs share it to column-mates; no observable effect since Modular is read only off the card at play (collectModular) and no unit prints it"
+        "loc": "client/engine/src/engine.ts:E.UNSHARED_ATTRS / colAttrs",
+        "agrees": true,
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
-        "pattern": "(§5, not run by name)",
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "CR 802.26h / CT-261: {Modular} is an object attribute too",
         "passed": true,
-        "asserts_claim": "no: §5 guards that no unit prints Modular",
-        "note": "executed at wave end: whole file 9/9 pass"
+        "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-r2-probes.test.ts",
-        "title": "attr.modular.not-shared: a unit given Modular in an attacking column — does its column-mate read Modular?",
-        "passed": true,
-        "demonstrates": "yes: the divergence is real at the attribute-set level (column-mate effAttrs has Modular); latent"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R294",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "owner: \"Modular is also special\"; R294: object attributes do not share vertically"
+        "note": "'Modular is also special' — said of attributes not applied to other units in the column (Unstable, Burst)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "And, asked about a third: *\"Modular is also special. But doesn't matter yet cause"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "{Modular} (how a card is played) describe the card as an **object**. Those do not"
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "text": "* And, asked about a third: *\"Modular is also special. But doesn't matter yet"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.modular.text-augment",
@@ -4361,48 +4375,76 @@
   },
   {
     "key": "attr.pure.noncombat.recipient",
-    "textHash": "2577d28495d857e7",
+    "textHash": "12aa228c5ae60b4e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "loc": "client/engine/src/engine.ts:E.statLayerAttrs",
         "agrees": true,
-        "note": "pureWith(u) gates the Vulnerable multiplier and collapsed()"
+        "note": "a Pure unit's own stat attributes never apply; source attributes are blinded for a Pure pairing (pureBlind / 290, 555, 553)"
       }
     ],
     "tests_run": [
       {
-        "file": "290-pure-outside-combat.test.ts",
-        "pattern": "§2 a Pure recipient: the source's Powerful and Deadly do nothing to it",
+        "file": "client/engine/test/290-pure-outside-combat.test.ts",
+        "pattern": "§2 a Pure recipient",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "290-pure-outside-combat.test.ts",
-        "pattern": "§2 a Pure recipient's own Vulnerable is off too",
+        "file": "client/engine/test/430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.vulnerable.pure",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/555-pure-ignores-stat-attributes.test.ts",
+        "pattern": "CR 802.25e / CT-260",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/553-oorblak-pure-redirect.test.ts",
+        "pattern": "CR 802.25i / CT-227",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U20-2.test.ts",
+        "test": "probe U20-2: a Pure Unaware recipient (Bubb +2 counters) is dealt plain damage against its 8 defense",
+        "passed": true,
+        "demonstrates": "yes: Unaware recipient (untested otherwise) — non-Pure Bubb dies to 7, Pure Bubb survives 7 at 8 defense"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U20-2.test.ts",
+        "test": "probe U20-2b: a Pure Tough+Inverted recipient takes plain damage against its printed 4",
+        "passed": true,
+        "demonstrates": "yes: Inverted and Tough off for a Pure recipient; 3 does not kill a 0/4, the 4th point does"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R289",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": ""
+        "note": "'A Pure recipient takes plain damage from anyone. The source's attributes' — fragment; the own-attribute half is also consistent with printed Just a Unit (not cited) and attr.pure.own"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **A Pure recipient takes plain damage from anyone.** The source's attributes"
+        "file": "client/engine/test/290-pure-outside-combat.test.ts",
+        "text": "assert.ok(ent(h, tgt), 'alive: Deadly is off against a Pure recipient');"
+      },
+      {
+        "file": "client/engine/test/553-oorblak-pure-redirect.test.ts",
+        "text": "assert.ok(ent(h, oor), 'the column attributes do not apply to a Pure recipient');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.pure.noncombat.source",
@@ -4491,26 +4533,173 @@
   },
   {
     "key": "attr.pure.own",
-    "textHash": "2c8eaa5c85fce565",
+    "textHash": "a5f4688c43479b1e",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:alluringColumn",
+        "loc": "client/engine/src/engine.ts:E.statLayerAttrs",
         "agrees": true,
-        "note": ""
-      },
-      {
-        "loc": "client/engine/src/apply.ts:checkBlocks",
-        "agrees": true,
-        "note": "Feeble ignored with own Pure"
+        "note": "returns no Tough/Balanced/Inverted/Unaware whenever effAttrs has Pure, interaction or not"
       }
     ],
     "tests_run": [
       {
-        "file": "53-playtest-round7.test.ts",
-        "pattern": "R84 + R61: an Alluring column that is itself {Pure} never even triggers",
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "CR 802.15n: an Alluring column that is itself",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.feeble.pure",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/584-pure-ignores-its-own-attributes.test.ts",
+        "pattern": "CR 802.25a",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U20-1.test.ts",
+        "test": "probe U20-1: a Pure Tough+Inverted Rampart Guardian in no interaction ignores its own Inverted and Tough",
+        "passed": true,
+        "demonstrates": "yes: Inverted (untested by 584) is also off for a Pure unit in no interaction; the non-Pure control dies at 0/0, the Pure one reads 0/4"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": "'ignore all other attributes', read literally, includes the Pure card's own"
+      },
+      {
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "fragment 'its own other attributes included'"
+      },
+      {
+        "ref": "owner chat 2026-10-22",
+        "supports": "yes",
+        "note": "answers the no-interaction case (Pure Tough Inverted 1/3): '1/3, lives' = own Tough and Inverted off outside an interaction"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.effAttrs(e).has('Pure')) return out;"
+      },
+      {
+        "file": "client/engine/test/584-pure-ignores-its-own-attributes.test.ts",
+        "text": "assert.deepEqual(effStats(h, g0), [0, 4], 'Pure: its own Tough is ignored');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.stat-attributes",
+    "textHash": "09a6bbc45991d75d",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U20-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.statLayerAttrs (pureBlind for the combat sub-step)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "555-pure-ignores-stat-attributes.test.ts",
+        "pattern": "CR 802.25e / CT-260: in combat, Rampart Guardian blocking a 5-power Pure attacker",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.pure.stat-attributes — a Tough 0/4 blocking a 5-power Just a Unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U20-1.test.ts",
+        "test": "probe U20-1a: Just a Unit (a Pure 2/3) is destroyed by 3 damage, and survives 2",
+        "passed": true,
+        "demonstrates": "yes: sentence 1"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U19-1.test.ts",
+        "test": "probe U19-1b: in a Pure pairing a non-Pure recipient's Inverted does not apply",
+        "passed": true,
+        "demonstrates": "yes: the Inverted clause"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "Tough/Inverted are attribute layers"
+      },
+      {
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "'Stats are not attributes: a Pure 2/3 still dies to 3 damage.'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.unaware-combat",
+    "textHash": "5acd922c4d942e4d",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U20-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.statLayerAttrs (pureBlind) / Unaware collapse",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "555-pure-ignores-stat-attributes.test.ts",
+        "pattern": "CR 802.25f / CT-260: in combat, Bubb blocking a Pure 3/3",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.pure.unaware-combat",
         "passed": true,
         "asserts_claim": true
       }
@@ -4523,75 +4712,9 @@
         "note": ""
       },
       {
-        "ref": "R61",
-        "supports": "yes",
-        "note": ""
-      }
-    ],
-    "quote_spans": [
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "attributes\", its own other attributes included."
-      }
-    ],
-    "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
-  },
-  {
-    "key": "attr.pure.stat-attributes",
-    "textHash": "0e6049b352b83e80",
-    "verdict": "confirmed",
-    "round": 4,
-    "verifier": "U20-r4",
-    "engine": [
-      {
-        "loc": "client/engine/src/engine.ts:effStats",
-        "agrees": false,
-        "note": "layer 4 applies Tough/Balanced via statLayerAttrs with no Pure check, so Tough still doubles defense in a Pure exchange (the flagged divergence F-U19-1 is real)"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:exchangeAt",
-        "agrees": true,
-        "note": "Pure empties the exchange's attribute SETS only (atkAttrs/blkAttrs), stats untouched -> a Pure 2/3 dies to 3"
-      }
-    ],
-    "tests_run": [],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-r4-probes.test.ts",
-        "title": "attr.pure.stat-attributes: a Tough 0/4 blocking Just a Unit (5 power) survives — the engine keeps Tough on (defense 8)",
-        "passed": true,
-        "demonstrates": "yes - the divergence is real: Tough 0/4 survives 5 from Just a Unit (8 defense), while the plain 0/4 control dies"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-r4-probes.test.ts",
-        "title": "attr.pure.stat-attributes (control): a plain 0/4 blocking the same 5-power Just a Unit dies",
-        "passed": true,
-        "demonstrates": "yes - control"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-r4-probes.test.ts",
-        "title": "attr.pure.stat-attributes: a Pure 2/3 (Just a Unit) blocking a 3-power unit dies — stats still count",
-        "passed": true,
-        "demonstrates": "yes - first sentence: a Pure 2/3 dies to 3"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "card: Just a Unit",
-        "supports": "yes",
-        "note": "'ignore all other attributes' - no carve-out for stat-layer attributes; Tough/Balanced/Inverted are bracketed attributes on cards"
-      },
-      {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": "'4. Attributes like Tough, 5. Inverted' names Tough as an attribute; the same page's Q&A calls Tough and Balanced attributes ('Attributes apply in order')"
-      },
-      {
-        "ref": "R61",
-        "supports": "partly",
-        "note": "supports only the first sentence (stats are not attributes). Our own R289 says the OPPOSITE of the second sentence ('{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)'); the rule does not cite or acknowledge it. Printed literal outranks R-rulings, so the rule stands, but the divergence is ruling-backed, not an engine slip"
+        "note": "Unaware is layer 6 of the attribute layers"
       }
     ],
     "quote_spans": [
@@ -4602,97 +4725,10 @@
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "A: Attributes apply in order from top to bottom. So if"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "Stats are not attributes: a Pure 2/3 still dies to 3 damage."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling follows printed literal and the engineDiffers flag is real (probe). Caveat: R289 explicitly rules that Tough/Balanced/Inverted still read under Pure; the rule should cite that ruling as the superseded/contrary reading rather than present the divergence as engine-only.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
-  },
-  {
-    "key": "attr.pure.unaware-combat",
-    "textHash": "27be9a091c17f5a9",
-    "verdict": "confirmed",
-    "round": 4,
-    "verifier": "U20-r4",
-    "engine": [
-      {
-        "loc": "client/engine/src/engine.ts:exchangeAt",
-        "agrees": false,
-        "note": "`collapsed` is computed from unaware(u) independently of `pure`; its docstring says the collapse survives Pure - the flagged divergence F-U19-2 is real"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:victimShare",
-        "agrees": false,
-        "note": "collapsed -> printedStats even when pure is true"
-      }
-    ],
-    "tests_run": [],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-r4-probes.test.ts",
-        "title": "attr.pure.unaware-combat: Bubb (Unaware) blocks Just a Unit with one +1/+1 counter — the engine reads printed power 2, not 3",
-        "passed": true,
-        "demonstrates": "yes - divergence real: Bubb takes 2 (printed), the +1/+1 counter is ignored under Pure"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "card: Just a Unit",
-        "supports": "yes",
-        "note": "'ignore all other attributes'; Unaware is a bracketed attribute (Bubb attrs ['Unaware'])"
-      },
-      {
-        "ref": "Manual p.42",
-        "supports": "partly",
-        "note": "lists Unaware as stat layer 6 next to 'Attributes like Tough'; shows Unaware acts as a stat layer, does not itself say it is switched off by Pure"
-      },
-      {
-        "ref": "R106 (uncited, contrary)",
-        "supports": "no",
-        "note": "our current ruling says 'The collapse survives {Pure}' - the divergence is ruling-backed. R289 meanwhile switches a Pure recipient's own Unaware OFF outside combat, so our rulings are internally inconsistent; the printed-literal reading the rule takes matches R289's"
-      }
-    ],
-    "quote_spans": [
-      {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "  are off against it, and so are its own {Vulnerable} and {Unaware}."
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "   * {Pure}: Pure switches the ATTRIBUTE layer off for the exchange (R61), and"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "    const [, t] = collapsed ? this.printedStats(u) : this.effStats(u);"
-      }
-    ],
-    "basis_ok": true,
-    "problem": "Ruling follows printed literal; divergence confirmed by probe. Caveat: R106 explicitly rules the opposite ('The collapse survives {Pure}') and should be named as the contrary reading; R289 already treats Unaware as switched off by Pure outside combat, so the engine is inconsistent between combat and noncombat.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.reaping",
@@ -4803,18 +4839,13 @@
     "key": "attr.reaping.draw",
     "textHash": "5cc5ae5c8629e581",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "loc": "client/engine/src/engine.ts:E.killRiders -> reapingDraw once",
         "agrees": true,
-        "note": "one reapingDraw when killed.length > 0"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:killRiders",
-        "agrees": true,
-        "note": "kill-diff path pays once"
+        "note": ""
       }
     ],
     "tests_run": [
@@ -4825,8 +4856,20 @@
         "asserts_claim": true
       },
       {
-        "file": "156-reaping-and-formation.test.ts",
-        "pattern": "Seismomancy: a kill by DAMAGE still pays {Reaping} exactly once",
+        "file": "156-reaping-and-formation.test.ts (client/ui/test)",
+        "pattern": "Seismomancy: a kill by DAMAGE still pays",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "263-reaping-counts-the-kill.test.ts",
+        "pattern": "CR 802.21 THE FIX: two units dying in one kill draw ONE card",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "263-reaping-counts-the-kill.test.ts",
+        "pattern": "CR 802.21 and it does not scale with the body count",
         "passed": true,
         "asserts_claim": true
       }
@@ -4834,29 +4877,19 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R283",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "scan reminder (client/ui/scan-reminders.json)",
-        "supports": "yes",
-        "note": "not cited, but the printed reminder says \"draw a card\""
+        "note": "'kills ONE OR MORE units, draw A CARD' — the scan reminder (oracle omits type-line reminders)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "*\"kills ONE OR MORE units, draw A CARD\"* — singular, for any number of bodies."
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (srcAttrs.has('Reaping') && !this.killWatch?.reaps && killed.length) {"
+        "file": "client/engine/test/263-reaping-counts-the-kill.test.ts",
+        "text": "(When a reaping source kills one or more units, draw a card."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.reaping.loses",
@@ -5847,24 +5880,19 @@
     "key": "attr.thieving.per-column",
     "textHash": "1c72c6ce049d01c9",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U20-r2",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "engine.ts:assignCombatDamage",
+        "loc": "client/engine/src/engine.ts:thievingDraws (one per column hit to a player per sub-step)",
         "agrees": true,
-        "note": "thievingDraw incremented once per column (colAttrs) that hits a player in a sub-step"
-      },
-      {
-        "loc": "engine.ts:thievingDraws",
-        "agrees": true,
-        "note": "draws the per-seat tally"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/388-raq-blocks-and-windows.test.ts",
-        "pattern": "RAQ Thieving: two Thieving units in one column",
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Thieving: two Thieving units in one column draw ONE card",
         "passed": true,
         "asserts_claim": true
       }
@@ -5874,31 +5902,22 @@
       {
         "ref": "RAQ 1460213341011050536#0",
         "supports": "yes",
-        "note": "one card; the column is the source"
+        "note": "[Solved], _passer, status covered: draw only 1 card, the column is the source"
       },
       {
-        "ref": "R24",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "one card per connecting column per damage sub-step, not per point"
+        "note": "one per column hit to a player per damage sub-step"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/raq.ts",
         "text": "No, you get to draw only 1 card. (Background: The source of combat damage is column"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (atkAttrs.has('Thieving')) L.thievingDraw[b.attacker] = (L.thievingDraw[b.attacker] ?? 0) + 1;"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.thieving.piercing",
@@ -5941,34 +5960,51 @@
   },
   {
     "key": "attr.thieving.replaced",
-    "textHash": "029297df527e5aa3",
+    "textHash": "5ece05bd23475b2f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "loc": "client/engine/src/engine.ts:thievingDraws / L.playerHits with reached",
         "agrees": true,
-        "note": "thievingDraw counted when the hit is assigned, before commitPlayerDamage applies replacements"
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "431-cr-attributes-2.test.ts",
+        "pattern": "cr:attr.thieving.replaced",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "581-redirected-hit-deals-nothing.test.ts",
+        "pattern": "CR 802.20 / CT-296: a Thieving column wholly redirected",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R238",
+        "ref": "owner register@72de434 / questions-round27 Q5",
         "supports": "yes",
-        "note": "owner ruling; R238 itself notes Caleb was shown Lethal only and the Thieving extension is inference"
+        "note": "Caleb via the owner: 'blightsea pollup says it deals damage as, so its still damage'"
+      },
+      {
+        "ref": "owner, chat 2026-10-22 (CT-296) 'Yes, none of them'",
+        "supports": "yes",
+        "note": "no Thieving draw on a wholly redirected hit (context in 581 header)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **{Thieving} and {Lethal}** already read `L.playerHits` (pre-replacement) and"
+        "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
+        "text": "2026-10-22, asked whether that also means no {Thieving} draw and no \"when my"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   }
 ]

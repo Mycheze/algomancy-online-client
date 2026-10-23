@@ -592,67 +592,72 @@
   },
   {
     "key": "effects.continuous.layers.attribute-order",
-    "textHash": "a584a5924ecde266",
+    "textHash": "2c82536b76a44d32",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U16-r2",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:ownAttrs/effAttrs layer-4 order (R19)",
-        "agrees": true,
-        "note": "printed attrs in type-line order, then augment-granted in mod order, then column-shared front to back"
-      },
-      {
-        "loc": "engineDiffers F-U16-4",
-        "agrees": true,
-        "note": "divergence real: Child of Aether (2/0 Balanced) augmented with Rampart Guardian (Tough) measures 2/4 (balanced then doubled); the Manual's 'augmented onto' clause gives 2/2"
+        "loc": "client/engine/src/engine.ts:statLayerAttrs",
+        "agrees": "augment mods in attachment order, then own (printed, then applied), then column-mates front to back",
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/08-cards2.test.ts",
-        "pattern": "R19: layer-4 application order",
+        "file": "08-cards2.test.ts",
+        "pattern": "CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "CR 709.4b: layer-4 application order",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
-        "title": "effects.continuous.layers.attribute-order: a printed-Balanced unit augmented with Tough is balanced, then doubled (measured against the Manual p.42 first clause)",
-        "passed": true,
-        "demonstrates": "yes - engine measured 2/4, confirming the flagged divergence"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": "the Q&A quoted verbatim, including its two conflicting clauses"
+        "note": "all six quoted lines verbatim; give the augmented / column / applied orders"
       },
       {
-        "ref": "R19",
+        "ref": "owner: \"order gained\" is the engine's reading",
         "supports": "yes",
-        "note": "order is the engine's own call"
+        "note": "covers the attachment-order / printed-then-applied detail"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "Attributes apply in order from top to bottom. So if"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: Attributes apply in order from top to bottom. So if"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "its stats balanced, then its defense doubled."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const card of augmented) take(this.card(card).augmentAttrs.filter(a => own.has(a)));"
       }
     ],
     "basis_ok": true,
-    "problem": "The ruling quotes the Manual's internal conflict honestly (D-U16-1). The engine divergence from the 'augmented onto' clause is real.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.continuous.layers.copy",
@@ -1291,51 +1296,73 @@
   },
   {
     "key": "effects.control.what",
-    "textHash": "d37883572ff5f021",
+    "textHash": "dbb79761a12b99af",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:giveControl",
+        "loc": "client/engine/src/engine.ts:giveControl",
         "agrees": true,
-        "note": "u.controller = to; owner untouched"
+        "note": "sets u.controller (owner untouched)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:unitsOf",
+        "agrees": true,
+        "note": "a seat's units are those it controls, so ally/enemy follow control"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:(target spec allyUnit/enemyUnit)",
+        "agrees": true,
+        "note": "`if (spec.what === 'enemyUnit' && u.controller === ally) continue;`"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/246-zones-follow-control.test.ts",
-        "pattern": "R262 §3: ownership does NOT move",
+        "pattern": "CR 801.7a: a stolen unit recalled goes to the THIEF hand",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "pattern": "CR 400.4a: ownership does NOT move",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U16-1.test.ts",
+        "test": "probe U16-1: a stolen unit changes sides — counted as the thief's ally, no longer the former controller's; owner unchanged",
+        "passed": true,
+        "demonstrates": "yes: after giveControl, the former controller's Prickly Protector loses +1/+1 (one fewer ally) and the thief's gains +1/+1; unitsOf moves it; owner unchanged"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R8",
+        "ref": "owner \"The unit **swaps sides, straight up**\"",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R112",
+        "ref": "owner \"the unit AND its mods change controller (owner never\"",
         "supports": "yes",
-        "note": ""
+        "note": "owner never changes"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "u.controller = to;"
+        "text": "if (spec.what === 'enemyUnit' && u.controller === ally) continue;"
       },
       {
         "file": "client/engine/test/246-zones-follow-control.test.ts",
-        "text": "'the facts riding the event still report the OWNER. R262 moved zones, not ownership.'"
+        "text": "'the fixture must leave ownership with the original owner'"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.control.zones",
@@ -1398,29 +1425,53 @@
   },
   {
     "key": "effects.copies.all-abilities",
-    "textHash": "cd5927e74d15936e",
+    "textHash": "8d247ed79ab3fc79",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:PROJECTED_FACETS",
+        "loc": "client/engine/src (Ancient One projection, CR 710.7)",
         "agrees": true,
-        "note": "Ancient One projects statics/activated/triggered/behavior, never name, stats or attrs; continuous, re-read every time"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "pattern": "R118: Ancient One",
+        "file": "26-metal-a.test.ts",
+        "pattern": "CR 710.7: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks",
         "passed": true,
-        "asserts_claim": "yes: Glowhaven Elder's static radiated by Ancient One and gone when the Elder leaves the column; Ancient One keeps its name and 1/1"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/117-copy-everything.test.ts",
-        "pattern": "R127: attributes are the ONE",
+        "file": "117-copy-everything.test.ts",
+        "pattern": "CR 710.7: attributes are the ONE thing an adjacent ally does not donate",
         "passed": true,
-        "asserts_claim": "yes: adjacent Good Whale's Piercing is not on Ancient One"
+        "asserts_claim": true
+      },
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "CR 710.7: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "585-ancient-one-per-neighbour-uses.test.ts",
+        "pattern": "CR 710.7 / CT-342: Ancient One between two Jollyglops makes two 1/1s per damage from each",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "585-ancient-one-per-neighbour-uses.test.ts",
+        "pattern": "CR 710.7 / CT-342: Ancient One between two Debt Bleps has two activations",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "563-copied-and-borrowed-uses.test.ts",
+        "pattern": "CR 710.7 / CT-342: Ancient One next to an ally wearing two Jollyglops borrows two uses",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1428,27 +1479,26 @@
       {
         "ref": "card: Ancient One",
         "supports": "yes",
-        "note": "'I have all abilities of adjacent allies. (This includes modded abilities.)'"
+        "note": ""
       },
       {
-        "ref": "R127",
+        "ref": "owner quotes (whole text box; no name/stats; each neighbour separate)",
         "supports": "yes",
-        "note": "owner: 'It basically just copies the whole text box of adjacent allies (so only during combat) right in its text box'; the only thing it doesn't copy is attributes"
-      },
-      {
-        "ref": "R118 (ruling 1 ...)",
-        "supports": "yes",
-        "note": "'A projected face never carries name or stats.' Ruling 1 is current"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "const PROJECTED_FACETS: readonly CopyFacet[] = ['statics', 'activated', 'triggered', 'behavior'];"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "I have all abilities of adjacent allies."
       },
       {
-        "file": "client/engine/test/26-metal-a.test.ts",
-        "text": "assert.deepEqual(effStats(h, ancient), [1, 1], 'and it is still a 1/1');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(This includes modded abilities.)"
+      },
+      {
+        "file": "client/engine/test/585-ancient-one-per-neighbour-uses.test.ts",
+        "text": "assert.equal(unitsOf(h, A).filter(u => u.token).length, 4, 'one borrowed use per neighbour: two 1/1s each');"
       }
     ],
     "basis_ok": true,
@@ -1872,21 +1922,33 @@
   },
   {
     "key": "effects.copies.exact.mods.once",
-    "textHash": "982d9df84ca6bdbd",
+    "textHash": "8cb536107266f49a",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "apply.ts activateAbility via {face, text}",
+        "loc": "client/engine/test/563-copied-and-borrowed-uses.test.ts budgets 'augment:<card>#0@k' per copied box",
         "agrees": true,
-        "note": "budget key 'augment:<card>#i' on the copy (R9 per card per host)"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/406-copied-augments.test.ts",
-        "pattern": "R341: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid",
+        "file": "406-copied-augments.test.ts",
+        "pattern": "CR 710.2d: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "563-copied-and-borrowed-uses.test.ts",
+        "pattern": "CR 710.2d / CT-342: a copy of a unit with two Debt Blep augments offers two activations",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "563-copied-and-borrowed-uses.test.ts",
+        "pattern": "CR 710.2d / CT-342: a copy of a unit with two Jollyglop augments triggers twice when it is dealt damage",
         "passed": true,
         "asserts_claim": true
       }
@@ -1894,20 +1956,23 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R341",
+        "ref": "owner: [once] is per card per host (R9)",
         "supports": "yes",
-        "note": ""
+        "note": "per card per host: each copied mod card's box on the copy has its own use"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/test/406-copied-augments.test.ts",
-        "text": "'not offered a second time this turn'"
+        "text": "assert.equal(graxOffers(h, A, bof).length, 0, 'not offered a second time this turn');"
+      },
+      {
+        "file": "client/engine/test/563-copied-and-borrowed-uses.test.ts",
+        "text": "assert.equal(unitsOf(h, D).filter(u => u.token).length, 4, 'both copied [once] boxes fired: two 1/1s each');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.copies.exact.mods.underneath",
@@ -2586,62 +2651,52 @@
     "key": "effects.last-known.face",
     "textHash": "8e6e6b5e1b48329a",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U16-r2",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-light-a.ts:Hooba-God",
+        "loc": "client/engine/src (copy-of-me resolves against the source's last-known face)",
         "agrees": true,
-        "note": "me = self ? nameOf(self) : lk!.face - the copy is made from the last-known face"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Echo of Despair",
-        "agrees": true,
-        "note": "requires a last-known snapshot when the source is gone, then spawns printed 'Echo of Despair' (not lk.face); same answer unless the source was wearing another face"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/401-raq-fix-stack.test.ts",
-        "pattern": "R325 Echo of Despair",
+        "file": "401-raq-fix-stack.test.ts",
+        "pattern": "CR 714.6 Echo of Despair",
         "passed": true,
-        "asserts_claim": "yes - a copy token is made after the source is gone"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/108-formation-class.test.ts",
-        "pattern": "R325 Hooba-God",
+        "file": "427-cr-continuous-effects.test.ts",
+        "pattern": "cr:effects.last-known.face",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U16/u16-r2-probes.test.ts",
-        "title": "effects.last-known.face: Hooba-God reads its last-known FACE; Echo of Despair spawns its printed name",
+        "file": "client/engine/test/zz-probe-U16-2.test.ts",
+        "test": "probe U16-2: a Good Whale that became a copy of Echo of Despair, gone before the trigger resolves, makes an Echo of Despair copy (its last face), not a Good Whale",
         "passed": true,
-        "demonstrates": "yes (Echo branch)"
+        "demonstrates": "yes: the copy made is of what the source was when it left (its copied face), not its printed card"
       }
     ],
     "source_checks": [
       {
-        "ref": "R325",
+        "ref": "owner: Echo of Despair … (copy of its last-known face)",
         "supports": "yes",
-        "note": "'(copy of its last-known face) and Lumengrove Lurker.' - the parenthetical attaches to Hooba-God in the list; Echo is in the list of read-only sources"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "(last-known power), Echo of Despair, Hooba-Lin, Hooba-Bot, Hooba-Pon, Hooba-God"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-light-a.ts",
-        "text": "const me = self ? g.nameOf(self) : lk!.face;   // R118 layer 0: what I AM (or was)"
+        "file": "client/engine/test/401-raq-fix-stack.test.ts",
+        "text": "assert.ok(unitsOf(h, A).some(u => u.card === 'Echo of Despair' && u.token), 'the copy was made');"
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: Echo of Despair's code spawns its printed name rather than reading lk.face; it agrees with the rule in every reachable case found.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.last-known.formation",
@@ -3188,46 +3243,62 @@
   },
   {
     "key": "effects.state.no-damage-needed.pure",
-    "textHash": "fdb3bda3cffe2fcd",
+    "textHash": "3ea403916c1fd93a",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U16-r1",
+    "round": 4,
+    "verifier": "U16-r4",
     "engine": [
       {
-        "loc": "engine.ts:pure / isLethal",
-        "agrees": true,
-        "note": "Pure is read only for combat exchanges; isLethal reads effStats, which Pure does not touch"
+        "loc": "client/engine/src/engine.ts:statLayerAttrs",
+        "agrees": "returns no stat-layer attrs for a Pure unit (CR 802.25a)",
+        "note": ""
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "427-cr-continuous-effects.test.ts",
+        "pattern": "cr:effects.state.no-damage-needed.pure — a Pure 1/3 that is Tough and Inverted",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
-        "title": "effects.state.no-damage-needed.pure: a Pure unit that is Tough and Inverted still dies in the state check",
+        "file": "client/engine/test/zz-probe-U16-1.test.ts",
+        "test": "probe U16-1: a Pure 2/3 (Just a Unit) dealt 3 damage dies; dealt 2 lives",
         "passed": true,
-        "demonstrates": true
+        "demonstrates": "yes: Pure does not change printed stats; a Pure 2/3 with 3 damage dies"
       }
     ],
     "source_checks": [
       {
-        "ref": "R226",
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner: Stats are not attributes…",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner: its own other attributes included",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- ⚠ **`{Pure}` is NOT an escape.** R61 blinds a whole attack/block *exchange* to"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "pure(...cols: readonly EntityId[][]): boolean {"
+        "file": "client/engine/test/427-cr-continuous-effects.test.ts",
+        "text": "assert.ok(ent(h, u), 'a Pure unit ignores its own Tough and Inverted: it lives');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.state.together",
@@ -3904,6 +3975,53 @@
     "basis_ok": true,
     "problem": "",
     "carried": "demoted-example 2026-10-11"
+  },
+  {
+    "key": "effects.stripping.named-card.itself",
+    "textHash": "3da1ef6e351cc07a",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U16-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts:card('The Everywhere')",
+        "agrees": true,
+        "note": "naming The Everywhere suppresses every copy in the region including the namer, and the naming persists"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/586-everywhere-names-itself.test.ts",
+        "pattern": "CT-329: The Everywhere that names The Everywhere strips itself",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: The Everywhere",
+        "supports": "yes",
+        "note": "\"During [Haste] name a card. My last named card loses all abilities.\" — names any card, its own name included; strip covers every card of that name in its region"
+      },
+      {
+        "ref": "owner \"Keeps applying\" (CT-329)",
+        "supports": "yes",
+        "note": "answers exactly whether the strip keeps applying once the namer is stripped"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "During [Haste] name a card. My last named card loses all abilities. {i}(As long as I am in their region.)"
+      },
+      {
+        "file": "client/engine/test/586-everywhere-names-itself.test.ts",
+        "text": "'and still applies after the batch settles'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "effects.stripping.one-clause",

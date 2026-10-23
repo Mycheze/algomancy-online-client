@@ -166,59 +166,45 @@
     "key": "zones.bin.entering.spell-unit-fails",
     "textHash": "cdb97753265c1cd1",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:resolveItem (R86/R324 fizzle branch)",
+        "loc": "client/engine/src/engine.ts:dischargeItem (fizzle branch, kind spellUnit)",
         "agrees": true,
-        "note": "an item that declared targets and lost all of them calls dischargeItem(item, true) for spellUnit: no spawn, bin, no trash"
-      },
-      {
-        "loc": "engine.ts:negate/dischargeItem",
-        "agrees": true,
-        "note": "a negated spellUnit is binned via toBin(...'stack')"
+        "note": "a fizzled spell unit never spawns and is discharged to the bin"
       }
     ],
     "tests_run": [
       {
         "file": "396-raq-timing.test.ts",
-        "pattern": "Hooba-Pon spell unit: negated",
+        "pattern": "RAQ Hooba-Pon spell unit: negated, the unit does not enter play",
         "passed": true,
-        "asserts_claim": "yes for the example (no Jelly body); it does not assert the bin half"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
-        "title": "zones.bin.entering.spell-unit-fails: a spell unit whose only target left play does not spawn, enters the bin, and is not trashed",
+        "file": "418-cr-zones.test.ts",
+        "pattern": "cr:zones.bin.entering.spell-unit-fails",
         "passed": true,
-        "demonstrates": "yes: Jelly's target recalled in response, Jelly fizzled, no body, one more Jelly in the caster's bin, no trash"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.13",
         "supports": "yes",
-        "note": "literal: spell unit prevented from resolving does not spawn and enters the bin"
+        "note": "SPELL UNITS paragraph: prevented from resolving, e.g. targets invalid -> will not spawn, enters the bin"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (targeted && !item.parts.some(partAlive)) {"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.toBin(item.controller, item.card, 'stack');"
-      },
-      {
-        "file": "client/engine/test/396-raq-timing.test.ts",
-        "text": "assert.ok(!unitsOf(h, A).some(u => u.card === 'Jelly'), 'no Jelly body');"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "invalid, the unit will not spawn and will enter the bin."
       }
     ],
     "basis_ok": true,
-    "problem": "Bound example test asserts only 'does not enter play'; the bin half is shown by the probe."
+    "problem": ""
   },
   {
     "key": "zones.bin.identity",
@@ -725,88 +711,83 @@
   },
   {
     "key": "zones.bin.unstable",
-    "textHash": "b90c5f4e9a0e9c51",
+    "textHash": "a680af0d63b11b27",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:dischargeItem",
+        "loc": "client/engine/src/engine.ts:dischargeItem / destroy",
         "agrees": true,
-        "note": "from the STACK an Unstable item goes straight to the erased pile, no bin"
-      },
-      {
-        "loc": "engine.ts:disposeToBin / destroy",
-        "agrees": false,
-        "note": "from PLAY the engine pushes the card into the bin, fires died(to:'bin'), trashes it, then erases it (R137) — the flagged divergence is real"
+        "note": "an Unstable card leaving the stack is erased (not binned); a modded unit that dies is binned, trashed, then swept to the erased pile"
       }
     ],
     "tests_run": [
       {
-        "file": "125-active-zone.test.ts",
-        "pattern": "Aberrant Statweaver negated off the stack is ERASED",
+        "file": "client/engine/test/418-cr-zones.test.ts",
+        "pattern": "cr:zones.bin.unstable — a modded unit that dies ends on the erased pile",
         "passed": true,
-        "asserts_claim": "yes: stack route"
+        "asserts_claim": true
       },
       {
-        "file": "125-active-zone.test.ts",
-        "pattern": "DISCARDED FROM HAND bins and TRASHES",
+        "file": "client/engine/test/125-active-zone.test.ts",
+        "pattern": "CR 803.8k: Aberrant Statweaver negated off the stack is ERASED, not binned",
         "passed": true,
-        "asserts_claim": "yes: inactive zone is not replaced"
+        "asserts_claim": true
       },
       {
-        "file": "42-dark-b.test.ts",
-        "pattern": "Hooba-Mon exchanges a MODDED host",
+        "file": "client/engine/test/125-active-zone.test.ts",
+        "pattern": "CR 803.8k: a printed-Unstable virus whose HOST DIES fizzles to the erased pile",
         "passed": true,
-        "asserts_claim": "yes for the divergence: order ['trashed','erased']"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
-        "title": "zones.bin.unstable (measure): a modded unit that DIES passes through the bin and is TRASHED before the erase (the engine divergence)",
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "pattern": "CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed",
         "passed": true,
-        "demonstrates": "yes: confirms the divergence from play"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Abyssal Evocation",
         "supports": "yes",
-        "note": "printed reminder: if they would enter a bin, erase them instead"
+        "note": "\"(If they would enter a bin, erase them instead.)\""
       },
       {
-        "ref": "R145 (glossary line)",
+        "ref": "owner \"Unstable\": \"If an unstable card would enter a bin from an active",
         "supports": "yes",
-        "note": "Caleb's glossary definition quoted in R145: active zone -> erase instead"
+        "note": "\"from an active zone\""
       },
       {
-        "ref": "R145 (active zones)",
+        "ref": "owner \"The ACTIVE ZONES are PLAY ... and the STACK.\"",
         "supports": "yes",
-        "note": "play and stack are the active zones"
+        "note": ""
       },
       {
-        "ref": "R137 (history)",
+        "ref": "owner 2026-08-24 \"An Unstable card that dies enters a bin, is trashed there, and is only then\"",
         "supports": "yes",
-        "note": "R137 itself records it diverges from the printed reminder and Caleb 2025-04-08"
+        "note": "supports \"still trashed\" on death"
+      },
+      {
+        "ref": "owner 2026-10-22 \"Trash isnt a trigger tho. Its a kind of death thing...\"",
+        "supports": "yes",
+        "note": "answering CT-246 (print/Caleb erase-no-trash vs bin-trash-erase): trash is part of death, so a dying Unstable card is trashed and still ends erased"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(If they would enter a bin, erase them instead.)"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**An Unstable card that dies enters a bin, is trashed there, and is only then"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.noteTrashed(binSeat, u.card, 'play', u);"
+        "file": "client/engine/test/418-cr-zones.test.ts",
+        "text": "'and not left in the bin'"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed against print + designer; engineDiffers is real for the from-play route only (the stack route agrees). R137 is still a current owner ruling that says the opposite; the rule relies on the authority order."
+    "problem": ""
   },
   {
     "key": "zones.bin.what",
@@ -1643,36 +1624,37 @@
     "key": "zones.changes.mods",
     "textHash": "4a8b41447909f595",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:leavePlay",
+        "loc": "client/engine/src/engine.ts:recall / cacheUnit (mod disposal)",
         "agrees": true,
-        "note": "nontoken mods pushed into a bin; token mods not"
-      },
-      {
-        "loc": "engine.ts:recall / cacheUnit",
-        "agrees": true,
-        "note": "unit goes to hand / cache alone; afterDespawn trashes mods and announces token mods as erased"
+        "note": "nontoken mods binned (host controller bin) and trashed once on recall and cache; token mods reach no bin"
       }
     ],
     "tests_run": [
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "recalling a modded unit trashes its MODS",
+        "pattern": "CR 801.2f: recalling a modded unit trashes its MODS",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "141-despawn-mods.test.ts",
-        "pattern": "nontoken mod is binned and trashed exactly once on all three routes",
+        "pattern": "CR 801.2f (iv): a nontoken mod is binned and trashed exactly once on all three routes",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "141-despawn-mods.test.ts",
-        "pattern": "token mod reaches the erased pile exactly once",
+        "pattern": "CR 407.3a (v): a token mod reaches neither the erased pile nor a bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "224-mod-trash.test.ts",
+        "pattern": "CR 720.8: a cached host attributes its left-behind mods",
         "passed": true,
         "asserts_claim": true
       }
@@ -1682,28 +1664,28 @@
       {
         "ref": "Manual p.35",
         "supports": "yes",
-        "note": "literal for the hand case"
+        "note": "leave play without dying/erase, e.g. into hand -> mods to bin, base card to hand"
       },
       {
         "ref": "Rulebook 2023 p.15",
         "supports": "yes",
-        "note": "literal"
+        "note": "same rule, 'put back into the discard'"
       },
       {
         "ref": "RAQ 1372468222158180424#8",
         "supports": "yes",
-        "note": "mods on a recalled Borrower go to the bin as usual"
+        "note": "_passer: mods attached to a recalled Borrower go to the bin as usual; status covered"
       },
       {
-        "ref": "R46",
+        "ref": "owner (register) cache",
         "supports": "yes",
-        "note": "cached unit's mods go to the bin"
+        "note": "cache case is the owner's call"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (!m.token) this.player(m.controller).bin.push(m.card);   // R69: a token MOD has no card of its own — erased"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "hand from play, all of its mods are put back into the"
       },
       {
         "file": "client/ledgers/raq.ts",
@@ -1711,8 +1693,7 @@
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.changes.mods.dies",
@@ -2266,19 +2247,19 @@
     "key": "zones.changes.tokens.cached",
     "textHash": "437d750b15bfe646",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:cacheUnit",
+        "loc": "client/engine/src/engine.ts:cacheUnit / eraseFromZone",
         "agrees": true,
-        "note": "cacheCard then eraseFromZone(cache, uid) for a token"
+        "note": "a cached token fires the cached event with the token in the cache, then the sweep erases it from the cache (not filed on the erased pile)"
       }
     ],
     "tests_run": [
       {
-        "file": "35-rot-debt-trash.test.ts",
-        "pattern": "R69: a CACHED token visits the cache",
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "pattern": "CR 410.5c: a CACHED token visits the cache and is erased out of it",
         "passed": true,
         "asserts_claim": true
       }
@@ -2286,20 +2267,37 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R69",
+        "ref": "Rulebook 2023 p.4 \"during the game. If they leave play or enter a zone such as a\"",
         "supports": "yes",
-        "note": "and says it is the engine's call"
+        "note": "tokens leaving play are erased"
+      },
+      {
+        "ref": "Rulebook 2023 p.4 \"hand or discard, they are erased from the game and returned to\"",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner \"The CACHE is the engine's call, not a ruling.\"",
+        "supports": "partial",
+        "note": "the owner flags the cache visit as an engine call, not a ruling; the \"enters the cache\" half therefore rests on the engine (code + executed test 35), the \"erased\" half on print — the record's basis \"mixed\" reflects that"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (u.token) this.eraseFromZone(seat, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid });"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "during the game. If they leave play or enter a zone such as a"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "hand or discard, they are erased from the game and returned to"
+      },
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "text": "'the cached event fired with the token really sitting in the cache'"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.changes.tokens.dies",
@@ -2368,25 +2366,37 @@
     "key": "zones.changes.tokens.recalled",
     "textHash": "5f63d0ed406a3b79",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:recall/recallSpellTokenItem",
+        "loc": "client/engine/src/engine.ts:recallSpellTokenItem / toHand + eraseFromZone(hand)",
         "agrees": true,
-        "note": "toHand (handEntered) then eraseFromZone(hand)"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "393-raq-mods.test.ts",
-        "pattern": "RAQ Recall Spell Token",
+        "pattern": "RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "15-water-b.test.ts",
         "pattern": "Rider of the Tides: recalling a TOKEN triggers it too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "403-raq-fix-mods.test.ts",
+        "pattern": "CR 801.7d: Dream Lapse recalls a cast Fireball token",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "CR 410.5b: a recalled TOKEN enters the hand, is NOT trashed, and is then erased",
         "passed": true,
         "asserts_claim": true
       }
@@ -2396,18 +2406,22 @@
       {
         "ref": "RAQ 1355689559609839787#3",
         "supports": "yes",
-        "note": ""
+        "note": "the quote is the claim field; its source (_passer) supports the SPELL-token half, status covered. The UNIT-token half rests on claim #4 of the same thread (_passer: 'Same applies to Unit Tokens being Recalled'), which the record should cite"
       },
       {
-        "ref": "R335",
+        "ref": "owner (register) 2026-10-09",
         "supports": "yes",
-        "note": ""
+        "note": "spell tokens only"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (u.token) this.eraseFromZone(seat, u.card, 'hand', `${u.card} is erased from the hand — it is a token.`);"
+        "file": "client/ledgers/raq.ts",
+        "text": "A recalled spell token enters its controller's hand (so Rider of the Tides and Xenopod Progenitor hear it) and is then erased."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Same applies to Unit Tokens being Recalled or Dying"
       }
     ],
     "basis_ok": true,
@@ -2911,76 +2925,113 @@
   },
   {
     "key": "zones.erased.tokens",
-    "textHash": "97e36fd85fbe3a67",
+    "textHash": "84a0d9e0500069b4",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:ev (R65 erased-pile writer)",
+        "loc": "client/engine/src/engine.ts:ev (erased-pile filing skips token: true)",
         "agrees": true,
-        "note": "every 'erased' event with a seat appends to that seat's erased pile"
-      },
-      {
-        "loc": "engine.ts:eraseFromZone",
-        "agrees": true,
-        "note": "bin/hand/cache sweeps of a token emit 'erased'"
+        "note": "dischargeItem passes no card for a spell token, so an Unstable token erased off the stack is announced but not filed"
       }
     ],
     "tests_run": [
       {
+        "file": "418-cr-zones.test.ts",
+        "pattern": "cr:zones.erased.tokens",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "549-never-file-tokens.test.ts",
+        "pattern": "CR 407.1 / never file tokens: a token host erased from play is not filed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "549-never-file-tokens.test.ts",
+        "pattern": "CR 407.1 / never file tokens: a spell token recalled off the stack is not filed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "TOKEN dying enters the bin, is NOT trashed",
+        "pattern": "a TOKEN dying enters the bin, is NOT trashed, and is then erased",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "CR 410.5c: a CACHED token visits the cache",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
-        "title": "zones.erased.tokens: a cached unit token is recorded on the erased pile",
+        "file": "client/engine/test/zz-probe-U07-2.test.ts",
+        "test": "probe U07-2: a spell token negated off the stack (unstable=true/false) is not filed on the erased pile, nor binned",
         "passed": true,
-        "demonstrates": "yes: the cache route too"
+        "demonstrates": "yes: the 'erased from the stack' route, which no bound test reached; an Unstable spell token negated off the stack is announced erased and never filed"
       }
     ],
     "source_checks": [
       {
-        "ref": "R306",
+        "ref": "owner chat 2026-10-22",
         "supports": "yes",
-        "note": "the erased pile still records a dying token"
+        "note": "Never file tokens"
+      },
+      {
+        "ref": "owner (register) 2026-08-26",
+        "supports": "yes",
+        "note": "a token is not a card"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (names.length) (this.player(seat).erased ??= []).push(...names);"
-      },
-      {
-        "file": "client/engine/test/35-rot-debt-trash.test.ts",
-        "text": "assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (R65)');"
+        "text": "if (type === 'erased' && typeof data?.['seat'] === 'number' && data['token'] !== true) {"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.erased.tokens.mods",
-    "textHash": "9efec3cf02d3093f",
+    "textHash": "f29d3dc26ab0f650",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:afterDespawn/disposeToBin/eraseFromPlay",
+        "loc": "client/engine/src/engine.ts:ev / eraseMod / disposeToBin (token mods announced with token: true)",
         "agrees": true,
-        "note": "each route emits exactly one 'erased' naming the token mods"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "129-disposal-tail.test.ts",
-        "pattern": "R65: a TOKEN mod reaches the erased pile however its host leaves play",
+        "pattern": "CR 407.3a: a TOKEN mod is announced however its host leaves play",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "CR 407.3a (v): a token mod reaches neither the erased pile nor a bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "145-erase-routes.test.ts",
+        "pattern": "CR 407.3a (vi-token): a token mod (Wraith) erased with its host",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "428-cr-modifications.test.ts",
+        "pattern": "cr:effects.mods.erase-off-host.token",
         "passed": true,
         "asserts_claim": true
       }
@@ -2988,25 +3039,14 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R167",
+        "ref": "owner chat 2026-10-22",
         "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R156",
-        "supports": "yes",
-        "note": ""
+        "note": "Never file tokens -- one rule covering token mods"
       }
     ],
-    "quote_spans": [
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "`${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,"
-      }
-    ],
+    "quote_spans": [],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.erased.what",
@@ -3121,88 +3161,59 @@
   },
   {
     "key": "zones.general.follow-control",
-    "textHash": "fbcde89c06038008",
+    "textHash": "fb7b8be890674063",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:disposeToBin",
+        "loc": "client/engine/src/engine.ts:recall / cacheUnit / destroy / eraseFromPlay (destination = controller)",
         "agrees": true,
-        "note": "bin = controller"
-      },
-      {
-        "loc": "engine.ts:recall",
-        "agrees": true,
-        "note": "hand = opts.to ?? controller"
-      },
-      {
-        "loc": "engine.ts:cacheUnit",
-        "agrees": true,
-        "note": "cache = opts.to ?? controller"
-      },
-      {
-        "loc": "engine.ts:eraseFromPlay",
-        "agrees": false,
-        "note": "the 'erased' event is filed under seat: u.owner, so a stolen unit erased from play reaches its OWNER's erased pile — the flagged divergence is real"
+        "note": "an explicit printed destination (opts.to) may override; ownership is unchanged"
       }
     ],
     "tests_run": [
       {
         "file": "246-zones-follow-control.test.ts",
-        "pattern": "a stolen unit recalled goes to the THIEF hand",
+        "pattern": "CR 801.7a: a stolen unit recalled goes to the THIEF hand",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "246-zones-follow-control.test.ts",
+        "pattern": "CR 801.8: a stolen unit cached goes to the THIEF cache",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "246-zones-follow-control.test.ts",
+        "pattern": "CR 400.4 / CT-229: a stolen unit erased from play goes to the THIEF erased pile",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "229-cosmic-and-control.test.ts",
-        "pattern": "a stolen unit that dies is trashed by its CONTROLLER",
+        "pattern": "CR 801.2e: a stolen unit that dies is trashed by its CONTROLLER",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
-        "title": "zones.general.follow-control: a STOLEN unit erased from play is filed on the CONTROLLER erased pile",
-        "passed": false,
-        "demonstrates": "no — fails: controller pile [], owner pile ['Good Whale']; this is the engine divergence"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
-        "title": "zones.general.follow-control (measure): which erased pile a stolen unit erased from play reaches",
-        "passed": true,
-        "demonstrates": "yes: measures the divergence (owner's pile)"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R250 §4",
+        "ref": "owner 2026-08-29",
         "supports": "yes",
-        "note": "zones always follow control"
+        "note": "Zones ALWAYS follow control"
       },
       {
-        "ref": "R262",
+        "ref": "owner 2026-08-30",
         "supports": "yes",
-        "note": "'All four follow control' — bin, hand, cache, erased pile"
+        "note": "All four follow control"
       }
     ],
-    "quote_spans": [
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "unit: u.id, card: u.card, seat: u.owner, region: u.region,"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "const seat = opts.to ?? u.controller;"
-      }
-    ],
+    "quote_spans": [],
     "basis_ok": true,
-    "problem": "Ruling confirmed; engineDiffers is real: eraseFromPlay files a stolen unit (and its mods) on the owner's erased pile. R262's table changed eraseMod but not eraseFromPlay."
+    "problem": ""
   },
   {
     "key": "zones.general.follow-control.constructed-owner",
@@ -3562,49 +3573,57 @@
     "key": "zones.hand.discard",
     "textHash": "71a7a3cdfcef2071",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U07-r1-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:discardFromHand",
+        "loc": "client/engine/src/engine.ts:discardFromHand",
         "agrees": true,
-        "note": "splices the hand and toBin(seat, name, 'hand') — trashed, no stack item"
+        "note": "takeFromHand then toBin(seat, name, 'hand'); no stack push, no play event"
       }
     ],
     "tests_run": [
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "R40: discarding from hand trashes",
+        "pattern": "discarding from hand trashes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "418-cr-zones.test.ts",
+        "pattern": "cr:zones.bin.what — a discarded card goes to the bin",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U07-3.test.ts",
+        "test": "probe U07-3: discarding moves the card hand -> bin, pushes nothing on the stack, and is not a play",
+        "passed": true,
+        "demonstrates": "yes: discarding Meteor Shower leaves the stack unchanged and raises no spellPlayed/cardPlayed/stackPushed/triggered event"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R65",
+        "ref": "owner (register) 2026-08-21",
         "supports": "yes",
-        "note": ""
+        "note": "Discarding is not playing, nothing reaches the stack"
       },
       {
-        "ref": "R40",
+        "ref": "owner (register) 2026-08-19",
         "supports": "yes",
-        "note": ""
+        "note": "discarding trashes (bin)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "spawns, and the only thing anyone sees is the card's own \"when I am trashed\""
-      },
-      {
         "file": "client/engine/src/engine.ts",
-        "text": "this.toBin(seat, name!, 'hand');"
+        "text": "this.toBin(seat, name, 'hand', took.owner);"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.hand.entering",
@@ -4476,7 +4495,7 @@
   },
   {
     "key": "zones.recycle.mark.reshuffle",
-    "textHash": "5cd62282730278d4",
+    "textHash": "25dbcf84b38883a7",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U07-r4",
@@ -4484,56 +4503,64 @@
       {
         "loc": "client/engine/src/engine.ts:refillFromRecycled",
         "agrees": true,
-        "note": "the shuffled pile is pushed UNDER what is left of the deck; the pile is emptied"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:revealTop/takeTop",
-        "agrees": true,
-        "note": "a wide reveal refills with need = n"
+        "note": "refills only when deck.length < need; pile pushed UNDER what is left, shuffled, pile emptied; called by takeFromDeck/revealTop/takeTop"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "file": "300-recycle-mark.test.ts",
         "pattern": "CR 408.2b when the deck runs out the pile is shuffled in",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "file": "300-recycle-mark.test.ts",
         "pattern": "CR 408.2b a glimpse WIDER than the deck",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/514-deck-reads-reach-the-mark.test.ts",
-        "pattern": "CR 408.2b revealTop wider than the deck",
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "CR 408.2a every reader of the deck reshuffles at the mark",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/514-deck-reads-reach-the-mark.test.ts",
-        "pattern": "Tides of the Cosmos off a one-card deck",
+        "file": "514-deck-reads-reach-the-mark.test.ts",
+        "pattern": "CR 408.2b revealTop wider than the deck reshuffles the pile in under what is left",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "514-deck-reads-reach-the-mark.test.ts",
+        "pattern": "Tides of the Cosmos off a one-card deck with ten recycled reveals eight",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U07-1.test.ts",
+        "test": "probe U07-1: taking the LAST card above the mark does not reshuffle; the next draw does",
+        "passed": true,
+        "demonstrates": "yes: drawing the last real card leaves the 5-card pile untouched and announces no reshuffle; the next draw shuffles the whole pile in, and a later recycle starts a fresh pile behind the new deck"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "owner register@72de434 2026-09-16 (two fragments)",
+        "ref": "owner 2026-09-16 (register@72de434)",
         "supports": "yes",
-        "note": ""
+        "note": "shuffled and becomes the new deck behind a fresh mark and an empty pile"
       },
       {
-        "ref": "owner chat 2026-10-21 'When you hit that reminder, for whatever reason...'",
+        "ref": "owner chat 2026-10-21",
         "supports": "yes",
-        "note": "also quoted verbatim in 514's header"
+        "note": "for whatever reason / ANYTHING that uses the deck"
       },
       {
-        "ref": "owner chat 2026-10-21 'So ANYTHING that uses the deck...'",
+        "ref": "owner chat 2026-10-22 (CT-330)",
         "supports": "yes",
-        "note": ""
+        "note": "'Only when needed' supports the no-reshuffle-on-the-last-card sentence"
       }
     ],
     "quote_spans": [
@@ -4542,8 +4569,8 @@
         "text": "deck.push(...this.shuffle(pile.splice(0, n)));"
       },
       {
-        "file": "client/engine/test/514-deck-reads-reach-the-mark.test.ts",
-        "text": "So ANYTHING that uses the deck should be able to trigger"
+        "file": "client/engine/src/engine.ts",
+        "text": "if (deck.length >= need) return;"
       }
     ],
     "basis_ok": true,
@@ -4745,35 +4772,60 @@
     "key": "zones.stack.leaving",
     "textHash": "e3114f9321af2fcd",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:dischargeItem",
+        "loc": "client/engine/src/engine.ts:dischargeItem",
         "agrees": true,
-        "note": "Unstable -> erased pile; eraseSelf -> erased pile; else toBin(...,'stack') which never trashes"
+        "note": "single exit for resolve/negate/fizzle: Unstable -> erased; eraseSelf -> erased pile; else toBin(...,'stack') with no trash"
       },
       {
-        "loc": "engine.ts:afterParts",
+        "loc": "client/engine/src/engine.ts:negate",
         "agrees": true,
-        "note": "spellUnit spawns instead; spell discharges to bin"
-      },
-      {
-        "loc": "cards/sets/batch-water-a.ts:Cosmic Reversal",
-        "agrees": true,
-        "note": "recalled stack items go to their controller's hand via toHand"
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "125-active-zone.test.ts",
-        "pattern": "NON-Unstable virus negated off the stack still BINS",
+        "pattern": "CR 406.4 negative control: a NON-Unstable virus negated off the stack still BINS",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "35-rot-debt-trash.test.ts",
-        "pattern": "NEGATED spell is not trashed either",
+        "pattern": "CR 801.2b: a NEGATED spell is not trashed either",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "CR 801.2b: a spell going to the bin after RESOLVING is not trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "CR 803.8k: Aberrant Statweaver negated off the stack is ERASED",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "418-cr-zones.test.ts",
+        "pattern": "cr:zones.bin.entering — a resolved spell, a negated spell and a spell that fails to resolve",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "89-self-erase.test.ts",
+        "pattern": "every card in the pool that prints a self-erase reaches the erased pile",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "Cosmic Reversal: recalls all other spell effects on the stack to hands",
         "passed": true,
         "asserts_claim": true
       }
@@ -4783,7 +4835,7 @@
       {
         "ref": "Rulebook 2023 p.3",
         "supports": "yes",
-        "note": "spell resolves -> discard"
+        "note": "resolved spell -> discard"
       },
       {
         "ref": "Manual p.34",
@@ -4793,36 +4845,26 @@
       {
         "ref": "card: Cosmic Reversal",
         "supports": "yes",
-        "note": "negate and put into controller's hands"
+        "note": "recall = negate and put into controller's hand"
       },
       {
-        "ref": "R145",
+        "ref": "owner (register) x3",
         "supports": "yes",
-        "note": "negated augment -> bin; Unstable from the stack -> erased pile"
-      },
-      {
-        "ref": "R40",
-        "supports": "yes",
-        "note": "from the stack is not trashing"
+        "note": "negated augment -> bin; negating is not trashing; self-erase from the stack -> erased pile"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "this.toBin(item.controller, item.card, 'stack');"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "When a spell resolves, it goes directly to your discard."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**From the stack** — straight to the owner's public erased pile (R65)."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "> Q: \"Negating an augment puts it in the bin or erase?\" → A: **\"Into the bin\"**"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Negate them and put them into their controller's hands."
       }
     ],
     "basis_ok": true,
-    "problem": "Scope is cards; a spell token on the stack has no card (NEGATE_BINS excludes 'spellToken') and is not covered.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "zones.stack.leaving.self-erase",

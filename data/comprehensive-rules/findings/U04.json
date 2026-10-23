@@ -35,15 +35,16 @@
         "quote": "### (b) 'cardPlayed': a {Battle} unit and an Ambush are cards being played"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "quote": "printed cost line, and the engine keeps it outside the play-tax layer too, though CR 111.10e"
+        "file": "client/engine/test/548-ambush-imposed-costs.test.ts",
+        "quote": "CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life"
       }
     ],
     "ct": "CT-243",
     "dupes": [
       "F-U04-3",
       "F-U04-4"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-243, owner \"Yes, it pays\"): an Ambush pays the imposed play costs, Arbiter of Armistice's life and Vengeance's sacrifice (548)."
   },
   {
     "id": "F-U04-3",
@@ -52,15 +53,16 @@
     "summary": "doAmbush pays only the Ambush line's mana and never consults lifeToPlay/unitsToPlay, so a card played as an Ambush during battle pays no [Pay 2 life] under Arbiter of Armistice and no [Sacrifice a unit] under an opponent's Vengeance, although the owner ruling of 2026-08-24 (“a spell token is a token…”) rules an Ambush is a card being played and both cards print the noun \"Cards\". The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) records this as a deliberate, still-open decision, so it is a divergence from the printed literal rather than from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
-        "file": "client/engine/src/apply.ts",
-        "quote": "printed cost line, and the engine keeps it outside the play-tax layer too, though CR 111.10e"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "'cardPlayed': a {Battle} unit and an Ambush are cards being played"
+      },
+      {
+        "file": "client/engine/test/548-ambush-imposed-costs.test.ts",
+        "quote": "CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life"
       }
     ],
-    "ct": "CT-243"
+    "ct": "CT-243",
+    "closed": "fixed on 2026-10-22 (CT-243, owner \"Yes, it pays\"): an Ambush pays the imposed play costs, Arbiter of Armistice's life and Vengeance's sacrifice (548)."
   },
   {
     "id": "F-U04-4",
@@ -79,9 +81,14 @@
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
         "quote": "you can play cards as an ambush during battle, even if"
+      },
+      {
+        "file": "client/engine/test/548-ambush-imposed-costs.test.ts",
+        "quote": "CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life"
       }
     ],
-    "ct": "CT-243"
+    "ct": "CT-243",
+    "closed": "fixed on 2026-10-22 (CT-243, owner \"Yes, it pays\"): an Ambush pays the imposed play costs, Arbiter of Armistice's life and Vengeance's sacrifice (548)."
   },
   {
     "id": "F-U04-5",

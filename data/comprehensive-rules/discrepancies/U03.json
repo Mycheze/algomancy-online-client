@@ -229,7 +229,7 @@
     "id": "D-U03-13",
     "kind": "g-other",
     "rule": "concepts.targets.becomes-targeted",
-    "tier": 1,
+    "tier": 2,
     "summary": "The designer says a graft onto Mohruung makes \"he will trigger first\". A graft in deployment is not put on the stack, so the owner ruling of 2026-08-19 (“\"When I become targeted\" fires on…”)’s \"above the spell that targeted\" does not order it. The engine queues the trigger first but attaches the graft before the trigger resolves (round-2 probe: the graft line precedes the Crystal line in the log).",
     "seeAlso": [
       {
@@ -257,26 +257,12 @@
       {
         "source": "card: Mohruung",
         "quote": "When I become targeted, [Switch1] Create a Crystal 2."
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-22",
+        "quote": "Resolves first"
       }
     ],
-    "resolution": "Question for the owner. The rule states reading A; the engine attaches the graft before the trigger resolves: F-U03-5 (CT-242). Under B the rule's last sentence becomes \"triggers when the graft is applied\" and F-U03-5 (CT-242) closes. Merged here: the same order for an augment applied in deployment (D-U03-14), and whether the graft being applied joins Mohruung's triggered composite (D-U17-13: the engine fixes the composite before the graft attaches, which fits both readings).",
-    "question": {
-      "topic": "Triggers and the stack",
-      "ask": "When a graft (or a deployment augment) is applied to Mohruung, is the Crystal made before the mod attaches?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Yes: \"he will trigger first\" means the trigger resolves before the graft is applied.",
-          "table": "The Crystal exists before the graft attaches, so a graft that counts or reads units sees it; engine change, CT-242."
-        },
-        {
-          "label": "B",
-          "text": "No: the trigger only fires first; the graft attaches, then the Crystal is made.",
-          "table": "As today; CT-242 closes as not a bug."
-        }
-      ],
-      "follows": "A (rule concepts.targets.becomes-targeted); the engine does B.",
-      "recommend": "A. A graft has no stack item, so \"trigger first\" says something only if the trigger resolves first. Apply the same answer to an augment applied in deployment (D-U03-14)."
-    }
+    "resolution": "Answered by the owner on 2026-10-22, reading A: \"Resolves first\". When a graft is applied to Mohruung, or an augment in deployment (D-U03-14), his trigger resolves and the Crystal is made before the mod attaches; concepts.targets.becomes-targeted states it. Engine fix: done 2026-10-22 (CT-242; F-U03-5 closed): 547 for a graft, 576 for a deployment augment, with the targeted listeners derived from the registry. D-U17-13 (whether the graft joins the triggered composite) is unaffected: the engine fixes the composite before the graft attaches, which fits this answer."
   }
 ]

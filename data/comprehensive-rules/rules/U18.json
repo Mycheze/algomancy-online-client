@@ -422,7 +422,7 @@
     "key": "keywords.actions.trash.unstable-death",
     "parent": "keywords.actions.trash",
     "order": 8,
-    "text": "An {Unstable} card that dies in play is erased instead of entering the bin, so it is not trashed. An {Unstable} card that goes to a bin from an inactive zone (a hand, the deck or a cache) enters the bin and is trashed.",
+    "text": "An {Unstable} card that dies in play is still trashed: trashing is part of its death, not something entering a bin causes, and Unstable changes where the card goes, not its death (rule keywords.abilities.unstable.still-dies). It does not stay in a bin: it is erased, and ends on the erased pile. An {Unstable} card that goes to a bin from an inactive zone (a hand, the deck or a cache) enters the bin and is trashed.",
     "examples": [
       {
         "text": "Aberrant Statweaver (printed {Unstable}) discarded from a hand goes to the bin and is trashed: the hand is inactive.",
@@ -453,20 +453,28 @@
           "quote": "A card leaving an **inactive** zone for a bin is **binned and trashed",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "**An Unstable card that dies enters a bin, is trashed there, and is only then",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
+        },
+        {
+          "quote": "Trash isnt a trigger tho. Its a kind of death thing. So these options are the same option",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-246: asked to choose between print and Caleb, erased with no bin and no trash, and his 2026-08-24 bin, trash, erase sequence)"
         }
       ],
       "engine": [],
       "tests": [
-        "125-active-zone.test.ts"
+        "125-active-zone.test.ts",
+        "224-mod-trash.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "low",
-    "engineDiffers": [
-      "F-U18-1"
-    ],
-    "notes": "States the printed reading, as 405.5 (zones.bin.unstable) does, because print and Caleb outrank the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”). The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) (owner) deliberately rules the other way: the card enters the bin, is trashed there and is then erased, and the engine does that. Open question D-U18-1 (the same as D-U07-3). If the owner keeps the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”), restate the first sentence as: an {Unstable} card that dies enters the bin, is trashed there, and is then erased.",
+    "notes": "Settled 2026-10-22 (CT-246, closed by design). The owner was asked to choose between print and Caleb (erased at once, no trash) and his 2026-08-24 sequence (bin, trash, erase), and answered that trash is part of the death, so the two are the same. Redrafted after the round-4 verifier read the bare \"Trash isnt a trigger\" as not saying a dying Unstable card is trashed: the record now quotes the whole answer with the question, and no longer says the card enters its bin (print: \"erase them instead\"). 224-mod-trash pins the body trashed (its CT-246 guard; its titles still say the old text of this rule). D-U18-1, D-U07-3. F-U18-1, F-U18-4 closed.",
     "sourceHashes": {},
     "rebuttal": "Kept. The verifier is right that the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) and the engine trash a dying {Unstable} card, but the rule states the printed reading on purpose: the authority order puts printed text and Caleb above our R-rulings, and the reminder (\"If they would enter a bin, erase them instead.\") and Caleb's glossary line quoted in the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) (\"would enter a bin from an active zone\") both replace the bin entry. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) records itself as diverging from both. The rule already carries engineDiffers F-U18-1 and D-U18-1 asks the owner, matching 405.5 (zones.bin.unstable). The owner ruling of 2026-08-19 (“Trashing: a card entering a bin…”) erase quote, which did not support the clause, is replaced by the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”); the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) is now listed in history."
   },

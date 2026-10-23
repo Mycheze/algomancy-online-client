@@ -14,14 +14,15 @@
         "quote": "the Electric SOURCE's controller chooses"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "kind: 'electricPath', seat: ctx.controller,"
+        "file": "client/engine/test/552-electric-path-chooser.test.ts",
+        "quote": "CR 802.17c / CT-226: a Fight that makes the opponents Electric unit the source asks the SOURCE controller for the path, not the caster"
       }
     ],
     "ct": "CT-226",
     "dupes": [
       "F-U20-5"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-226): the Electric path is asked of the Electric source's controller (552)."
   },
   {
     "id": "F-U20-2",
@@ -45,9 +46,14 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "statement. {Modular} *is* in `attrs`, and is harmless only because the one card"
+      },
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "quote": "CR 802.26h / CT-261: {Modular} is an object attribute too, so a unit given it keeps it and its column-mate does not"
       }
     ],
-    "ct": "CT-261"
+    "ct": "CT-261",
+    "closed": "fixed on 2026-10-22 (CT-261): Modular is not shared through a column (298 §5c, a unit given Modular by a grant)."
   },
   {
     "id": "F-U20-4",
@@ -70,15 +76,16 @@
     "summary": "dealEffectDamageAll raises the electricPath decision for ctx.controller. The owner ruling of 2026-08-18 (“Electric damage pathing […]”) and the owner ruling of 2026-10-09 (“{Electric}'s jump is optional, and excess…”) give the choice to the Electric source's controller. They differ when a spell makes an opponent's unit the source (Battle, Fight). Measured by the probe for rule attr.electric.chooser. The Piercing split beside it already uses dealerSeat (the source unit's controller).",
     "evidence": [
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "kind: 'electricPath', seat: ctx.controller,"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "The **Electric source's controller** chooses the path. There are **no formation changes"
+      },
+      {
+        "file": "client/engine/test/552-electric-path-chooser.test.ts",
+        "quote": "CR 802.17c / CT-226: a Fight that makes the opponents Electric unit the source asks the SOURCE controller for the path, not the caster"
       }
     ],
-    "ct": "CT-226"
+    "ct": "CT-226",
+    "closed": "fixed on 2026-10-22 (CT-226): the Electric path is asked of the Electric source's controller (552)."
   },
   {
     "id": "F-U20-6",

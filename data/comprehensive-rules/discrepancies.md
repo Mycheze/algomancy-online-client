@@ -2,29 +2,7 @@
 
 Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision, and owner-questions.md lists it on its own; every other item already says which source decides and which side the document follows. An item filed by more than one drafting unit is kept once, and names the others under "Also filed as".
 
-## 1. Questions for the owner (9)
-
-### D-U03-13 · Other · rule 110.11
-
-The designer says a graft onto Mohruung makes "he will trigger first". A graft in deployment is not put on the stack, so the owner ruling of 2026-08-19 (“"When I become targeted" fires on…”)’s "above the spell that targeted" does not order it. The engine queues the trigger first but attaches the graft before the trigger resolves (round-2 probe: the graft line precedes the Crystal line in the log).
-
-*Also filed as D-U03-14 (rule 110.11), D-U17-13 (rule 722.3c).*
-
-- RAQ 1355115946032889914#4: "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
-- owner ruling, adopted 2026-08-19: "the stack **above** the spell that targeted — the trigger resolves first."
-- file: client/engine/src/apply.ts: "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
-- card: Mohruung: "When I become targeted, [Switch1] Create a Crystal 2."
-
-**Question:** When a graft (or a deployment augment) is applied to Mohruung, is the Crystal made before the mod attaches?
-
-- **Reading A.** Yes: "he will trigger first" means the trigger resolves before the graft is applied. *At the table:* The Crystal exists before the graft attaches, so a graft that counts or reads units sees it; engine change, CT-242.
-- **Reading B.** No: the trigger only fires first; the graft attaches, then the Crystal is made. *At the table:* As today; CT-242 closes as not a bug.
-
-**The document today:** A (rule 110.11); the engine does B.
-
-**Recommended:** A. A graft has no stack item, so "trigger first" says something only if the trigger resolves first. Apply the same answer to an augment applied in deployment (D-U03-14).
-
-**Resolution:** Question for the owner. The rule states reading A; the engine attaches the graft before the trigger resolves: F-U03-5 (CT-242). Under B the rule's last sentence becomes "triggers when the graft is applied" and F-U03-5 (CT-242) closes. Merged here: the same order for an augment applied in deployment (D-U03-14), and whether the graft being applied joins Mohruung's triggered composite (D-U17-13: the engine fixes the composite before the graft attaches, which fits both readings).
+## 1. Questions for the owner (7)
 
 ### D-U06-9 · Other · rule 305.6
 
@@ -110,31 +88,6 @@ Pure in combat is defined per attacking-half/blocking-half pair; an unblocked co
 
 **Resolution:** Question for the owner. Pure in combat is defined per pair of an attacking half and a blocking half (rule 608.2d); an unblocked column has no pair, and no source speaks to it.
 
-### D-U16-1 · Sources disagree · rule 709.4b
-
-The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a Balanced unit. Its first sentence says Tough "augmented onto" a Balanced unit is doubled, then balanced; its last sentence says Tough "applied to" a Balanced unit is balanced, then doubled. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) says the order between printed, mod-given and column-shared attributes is the engine's own call, and the engine balances first.
-
-*Also filed as D-U19-1 (rule 802.1m).*
-
-- Manual p.42: "“Tough” is augmented onto a “Balanced” unit, or if a"
-- Manual p.42: "will have its defense doubled, then its stats balanced."
-- Manual p.42: "If “Tough” is applied to a “Balanced” unit, it will have"
-- Manual p.42: "its stats balanced, then its defense doubled."
-- Manual p.42: "A: Attributes apply in order from top to bottom. So if"
-- owner ruling, adopted 2026-08-18: "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
-- owner ruling, adopted 2026-08-18: "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
-
-**Question:** A Balanced unit gets Tough from an augment: is it doubled, then balanced, or balanced, then doubled?
-
-- **Reading A.** Doubled, then balanced: the Manual's first sentence names this exact case ("augmented onto"); its last sentence ("applied to") is a different grant, such as an effect. *At the table:* Child of Aether with Rampart Guardian is a 2/2; engine change, CT-257.
-- **Reading B.** The Manual's two sentences describe the same case and contradict each other, so the engine's order (the owner ruling of 2026-08-18 (“Stat layer 4 application order”): printed attributes first) stands: balanced, then doubled. *At the table:* As today: the same unit is a 2/4.
-
-**The document today:** Split: rule 802.1m states A; rule 709.4b states both and the engine's order.
-
-**Recommended:** A: the Manual names the case, and printed text is read literally.
-
-**Resolution:** Question for the owner. rule 802.1m states reading A, the Manual's first sentence, and files the engine's order as F-U19-5 (CT-257); rule 709.4b states both sentences and the engine's order, F-U16-4 (CT-257). Whichever reading the owner takes, the two rules are redrafted to state it alone.
-
 ### D-U19-3 · Sources disagree · rule 802.8c
 
 What Inverted inverts from when a base rewrite is in play: The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) (owner, 2026-08-22) inverts from the rewritten base; the owner's later general answer that any difference from printed stats is a stat change, and a _passer post in #rules-questions, invert from the printed stats instead.
@@ -200,7 +153,7 @@ Sources are silent on WHEN "attacking alone" is judged. If a Sneaky unit attacks
 
 **Resolution:** Question for the owner. The owner ruling of 2026-08-18 (“Sneaky's "attacking alone"”) says what "alone" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.
 
-## 2. Record and test fixes (55)
+## 2. Record and test fixes (58)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -228,7 +181,7 @@ The Manual and Caleb say every effect is region-specific and never impacts anyth
 - owner ruling, adopted 2026-08-29: "The STACK is not regional and is deliberately left global; narrowing"
 - owner ruling, adopted 2026-10-11: "A player's bin and cache are tied to that player."
 
-**Resolution:** Settled by the authority order, and answered by the owner on 2026-10-11 (owner ruling of 2026-10-11, “The stack, the bins and the…”): Manual p.19 and Caleb ("everything in the game is region specific") outrank the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”) and the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”), and the owner's ruling the owner ruling of 2026-10-11 (“The stack, the bins and the…”) amends both. Each region has its own stack, owned by nobody and shared by the players present in it; a player's bin and cache are tied to that player and are in a region only while that player is. The rules state this (101.6, 601.2a, 110.5a), and the engine's one battle stack and its bins open to every region are an engine divergence, F-U01-2 (CT-234, engine work now, no longer an owner decision). Document fix: 101.6 and 601.2a on 2026-10-10; 110.5a, which still stated the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”)’s premise, and 601.2a's stack sentence on 2026-10-11. Register fix: The owner ruling of 2026-10-11 (“The stack, the bins and the…”) is the mark this row asked for on the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) and the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”).
+**Resolution:** Settled by the authority order, and answered by the owner on 2026-10-11 (owner ruling of 2026-10-11, “The stack, the bins and the…”): Manual p.19 and Caleb ("everything in the game is region specific") outrank the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”) and the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”), and the owner's ruling the owner ruling of 2026-10-11 (“The stack, the bins and the…”) amends both. Each region has its own stack, owned by nobody and shared by the players present in it; a player's bin and cache are tied to that player and are in a region only while that player is. The rules state this (101.6, 601.2a, 110.5a), and the engine's one battle stack and its bins open to every region are an engine divergence, F-U01-2 (CT-234, engine work now, no longer an owner decision). Document fix: 101.6 and 601.2a on 2026-10-10; 110.5a, which still stated the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”)’s premise, and 601.2a's stack sentence on 2026-10-11. Register fix: The owner ruling of 2026-10-11 (“The stack, the bins and the…”) is the mark this row asked for on the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) and the owner ruling of 2026-08-30 (“An ally includes itself, "another" is…”). Engine fix: done 2026-10-22 (CT-234; F-U01-2 closed): one stack per region, bins reached only where their player is present (578).
 
 ### D-U02-8 · Sources disagree · rule 106.8d
 
@@ -238,7 +191,7 @@ Whether a Prismite can be exchanged into a Shard. The card says "a non-prismite 
 - Manual p.18: "exchanged for other resources, meaning players essentially get to pick their two"
 - owner ruling, adopted 2026-09-19: "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
 
-**Resolution:** Printed text, read literally, outranks the owner ruling of 2026-09-19 (“Recycling can make a Prismite”), and the permissive reading is taken: the rule allows a Shard. The engine refuses it: F-U02-3 (CT-237). A Shard is never better than an element resource, so the fix is low priority. Question for the owner only if the owner ruling of 2026-09-19 (“Recycling can make a Prismite”)’s "an exchange names an element" was a deliberate ruling on Shards rather than the reason a Prismite cannot become a Prismite.
+**Resolution:** Printed text, read literally, outranks the owner ruling of 2026-09-19 (“Recycling can make a Prismite”), and the permissive reading is taken: the rule allows a Shard. Engine fix: done 2026-10-22 (CT-237; F-U02-3 closed): the exchange offers and accepts a Shard (308).
 
 ### D-U03-11 · Ruling chain wrong · rule 109.8a
 
@@ -248,6 +201,20 @@ The owner ruling of 2026-08-21 (“Granting rules text”), presented as current
 - owner ruling, adopted 2026-10-09: "stripping applies**. Anything the unit gains **afterwards** — a mod attached, an"
 
 **Resolution:** Mark the owner ruling of 2026-08-21 (“Granting rules text”)’s silencing sentence amended by the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”) (only granted text that predates the strip is silenced). The rule follows the owner ruling of 2026-10-09 (“Stripping is a layer applied in…”).
+
+### D-U03-13 · Other · rule 110.11
+
+The designer says a graft onto Mohruung makes "he will trigger first". A graft in deployment is not put on the stack, so the owner ruling of 2026-08-19 (“"When I become targeted" fires on…”)’s "above the spell that targeted" does not order it. The engine queues the trigger first but attaches the graft before the trigger resolves (round-2 probe: the graft line precedes the Crystal line in the log).
+
+*Also filed as D-U03-14 (rule 110.11), D-U17-13 (rule 722.3c).*
+
+- RAQ 1355115946032889914#4: "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
+- owner ruling, adopted 2026-08-19: "the stack **above** the spell that targeted — the trigger resolves first."
+- file: client/engine/src/apply.ts: "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
+- card: Mohruung: "When I become targeted, [Switch1] Create a Crystal 2."
+- owner ruling, adopted 2026-10-22: "Resolves first"
+
+**Resolution:** Answered by the owner on 2026-10-22, reading A: "Resolves first". When a graft is applied to Mohruung, or an augment in deployment (D-U03-14), his trigger resolves and the Crystal is made before the mod attaches; rule 110.11 states it. Engine fix: done 2026-10-22 (CT-242; F-U03-5 closed): 547 for a graft, 576 for a deployment augment, with the targeted listeners derived from the registry. D-U17-13 (whether the graft joins the triggered composite) is unaffected: the engine fixes the composite before the graft attaches, which fits this answer.
 
 ### D-U03-3 · Ruling chain wrong · rule 110.8
 
@@ -300,8 +267,9 @@ The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) say
 - owner ruling, adopted 2026-08-24: "printed cost line and today sits outside the R59/R60/R122 play-tax layer"
 - owner ruling, adopted 2026-08-24: "'cardPlayed': a {Battle} unit and an Ambush are cards being played"
 - card: Arbiter of Armistice: "Cards played during battle gain [Pay 2 life]."
+- owner ruling, adopted 2026-10-22: "Yes, it pays"
 
-**Resolution:** The printed noun "Cards" read literally, with the owner ruling of 2026-08-24 (“a spell token is a token…”), puts an Ambush play under the imposed cost, so the rule says so with an engine-differs marker (F-U04-2 (CT-243)). Question for the owner only if the owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”)’s deferral was meant as a ruling that an Ambush is exempt.
+**Resolution:** The printed noun "Cards" read literally, with the owner ruling of 2026-08-24 (“a spell token is a token…”), puts an Ambush play under the imposed cost. The owner confirmed it on 2026-10-22: "Yes, it pays". Engine fix: done 2026-10-22 (CT-243; F-U04-2 closed): 548.
 
 ### D-U04-8 · Ruling chain wrong · rule 111.8
 
@@ -403,8 +371,9 @@ Does a dying {Unstable} card enter the bin (and get trashed) before it is erased
 - owner ruling, adopted 2026-08-24: "therefore no trash". That reading is what the engine implemented until today,"
 - owner ruling, adopted 2026-08-29: "Trashing means it goes to the BIN. But the unit that died was unstable, so"
 - owner ruling, adopted 2026-08-25: "It's not a death, but it is a despawn and trashing. Weird corner case."
+- owner ruling, adopted 2026-10-22: "Trash isnt a trigger tho. Its a kind of death thing."
 
-**Resolution:** Settled by the authority order. The printed reminder ("If they would enter a bin, erase them instead") has one reading: the card never enters the bin, so it is not trashed. Caleb's "erased instead of ending up in the bin" fits it, the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) itself calls it "the plain sense of the text", and the owner's own words in the owner ruling of 2026-08-29 (“a mod is PART of the…”) ("it didn't go to the bin") argue it too. Print and designer outrank the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”), so rule 405.5 and rule 801.2h state that reading, and the exchange route follows (rule 410.4d says only that the unit and its mods are erased). The engine passes the card through the bin and trashes it: F-U07-6 (CT-246, filed as an owner decision on whether to change the engine). Register fix: mark the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”)’s body-trash ruling, and the owner rulings of 2026-08-25 (“a card entering a bin goes…”) and 2026-08-25 (“the other three ways an exchange…”)’ trash on the exchange route, as outranked by the printed reminder.
+**Resolution:** Settled by the owner on 2026-10-22 (CT-246 closed by design): "Trash isnt a trigger tho. Its a kind of death thing." Trashing is part of a death, so a dying {Unstable} card is trashed, and it still ends on the erased pile as the printed reminder says ("erase them instead"); the engine's sequence (enters a bin, trashed there, then erased; register 2026-08-24) stands. rule 405.5 and rule 801.2h state it; the exchange route (rule 410.4d) follows. F-U07-6 closed.
 
 ### D-U07-4 · Ruling chain wrong · rule 400.4
 
@@ -414,6 +383,22 @@ The owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) sends an 
 - owner ruling, adopted 2026-08-30: "(a) All four follow control"
 
 **Resolution:** Add a narrowing mark on the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) for the stack route if the owner's "one rule, no seam" reaches it, as the B4 adjudication did for the owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) and the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”). Question for the owner only if the stack route (a card that never left play) is meant to differ, since the owner ruling of 2026-08-30 (“zones follow control, in all four…”)’s four routes are all departures from play.
+
+### D-U07-5 · Sources disagree · rule 407.3
+
+Do tokens belong on the erased pile? The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”) and the owner ruling of 2026-08-25 (“a printed "when I despawn" means…”) record a dying token, and a token mod whose host leaves play. The owner ruling of 2026-08-26 (“an erased card goes to the…”) refuses to file a token mod erased off a living host, because "the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)’s pile is a list of cards".
+
+*Also filed as D-U17-1 (rule 720.9a).*
+
+- owner ruling, adopted 2026-08-26: "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
+- owner ruling, adopted 2026-09-28: "unchanged: the `died` event still says `to: 'bin'`, anything reading the bin in"
+- owner ruling, adopted 2026-08-25: "reaches the public erased pile exactly once on each of the three routes."
+- owner ruling, adopted 2026-08-26: "list of cards. (`disposeToBin` does file token mods; that disagreement"
+- owner ruling, adopted 2026-08-25: "event `disposeToBin` emits, anchored on the host's owner. No zone changes, no"
+- owner ruling, adopted 2026-08-26: "disagree about it — `disposeToBin` **does** announce token mods on the erased"
+- owner ruling, adopted 2026-10-22: "Never file tokens"
+
+**Resolution:** Settled by the owner on 2026-10-22, one rule for every route: "Never file tokens". No token, unit, spell or mod, is recorded on the erased pile, because a token is not a card. rule 407.3, rule 407.3a, rule 720.7c and rule 720.9a state it. Engine aligned the same day (549, sixteen flipped tests; Return to Nature, F-U17-4, CT-259).
 
 ### D-U07-6 · Ruling chain wrong · rule 403.5
 
@@ -447,7 +432,7 @@ The printed rules have the initiative player take the resource step and the hast
 - Manual p.42: "treat all other players as if they don’t exist."
 - owner ruling, adopted 2026-09-01: "playing different games during deployment"
 
-**Resolution:** Settled by the authority order: Manual p.27 ("IT FIRST, THEN NIT"), Manual p.38 and Rulebook 2023 p.5 have the initiative side take the resource step, the haste step and deployment first, and the non-initiative side "wait and see". They outrank the owner ruling of 2026-08-18 (“Haste step engine model […]”)’s hidden simultaneous segment, so rule 501.4, rule 500.3 and rule 507.3 state print. The client's simultaneous hidden steps are F-U08-1 (CT-247, filed as an owner decision: keep them as a digital convention in Annex D, or change the engine). rule 507.3a states the client today; if the owner keeps it, it belongs in Annex D. The argument that the order is moot because each player is in a separate region during deployment (Manual p.42) does not make the two the same: under print the non-initiative player chooses after the initiative player has finished.
+**Resolution:** Settled by the authority order for the game: Manual p.27 ("IT FIRST, THEN NIT"), Manual p.38 and Rulebook 2023 p.5 have the initiative side take the resource step, the haste step and deployment first, and the non-initiative side "wait and see"; rule 501.4, rule 500.3 and rule 507.3 state print. For the client the owner kept the simultaneous hidden steps on 2026-10-22 (CT-247 wontfix): they are a digital convention, rule D1.5 (with rule 500.2a and rule 507.3a). F-U08-1 and F-U09-3 closed.
 
 ### D-U08-10 · Other · rule 501.4a
 
@@ -457,7 +442,7 @@ Print syncs every step: no player begins the resource step until every player ha
 - Manual p.16: "Once all players have passed their pack, the draft step"
 - file: client/engine/test/20-draft.test.ts: "// committed seat may proceed simultaneously while the opponent drafts"
 
-**Resolution:** The rule states print; the engine behaviour is F-U08-4 (CT-248). The early start happens inside the hidden plan segment, so the drafting seat cannot see it and the information effect may be nil. Question for the owner only if the early start should be kept as a digital convention (Annex D) rather than fixed.
+**Resolution:** The rule states print. The owner kept the early start on 2026-10-22 (CT-248 wontfix): it is a digital convention, rule D1.6. F-U08-4 closed.
 
 ### D-U08-3 · Sources disagree · rule 504.1
 
@@ -482,7 +467,7 @@ The owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)
 - owner ruling, adopted 2026-09-01: "2. **That stack belongs to one seat**, and so does the priority over it. The"
 - owner ruling, adopted 2026-09-01: "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *"Even during deployment, nothing"
 
-**Resolution:** Mark the owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)’s no-priority clause as amended by the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”) in the register (the reason why rot cannot be responded to). The rule that rot itself cannot be responded to stands either way, because rot damage never goes on a stack (owner ruling of 2026-08-19, “The haste step ends, and deployment…”). The engine gap, no priority stop on your own deployment stack, is already CT-185. It is not filed again here. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
+**Resolution:** Mark the owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”)’s no-priority clause as amended by the owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”) in the register (the reason why rot cannot be responded to). The rule that rot itself cannot be responded to stands either way, because rot damage never goes on a stack (owner ruling of 2026-08-19, “The haste step ends, and deployment…”). The engine gap, no priority stop on your own deployment stack, is already CT-185. It is not filed again here. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.] Settled 2026-10-22: the owner ruled that no player holds priority in deployment ("you CANNOT hold priority during Deployment"), so the 2026-08-19 no-priority clause is the law again and the 2026-09-01 per-seat priority is replaced; CT-185 closed as wontfix. rule 507.5 and rule 703.7 state it.
 
 ### D-U10-6 · Other · rule 602.6f
 
@@ -492,7 +477,7 @@ Sources silent on a remembered formation that holds no living unit: a source tha
 - owner ruling, adopted 2026-08-22: "always grow at an end. A formation you are not standing in cannot be joined at"
 - owner ruling, adopted 2026-08-25: "legal exactly while its battle runs; **emptying it does not remove it**"
 
-**Resolution:** The rule states the designer's answer: the effect places into the formation the source was in, and 602.6k names this as an exception to the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no slots'. The engine places nothing for a lone source that dies before blocks (F-U10-6 (CT-250)). Question for the owner only if a lone source that dies under its own trigger is meant to place nothing, in which case F-U10-6 (CT-250) closes as no-bug and 602.6f gains the qualifier.
+**Resolution:** The rule states the designer's answer: the effect places into the formation the source was in, even when it is empty, and 602.6k names this as an exception to the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no slots'. Engine fix: done 2026-10-22 (CT-250; F-U10-6 closed): a dead source remembers its formation even when it is empty (561).
 
 ### D-U10-7 · Other · rule 603.2
 
@@ -500,9 +485,9 @@ Sources do not say in so many words whether two blockers with an unblocked attac
 
 - Manual p.23: "where attackers aren’t, which can be beneficial for"
 - owner ruling, adopted 2026-09-25: "- **Attacking line only.** A blocking column is keyed to the attacking column it"
-- file: client/engine/src/engine.ts: "    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
+- file: client/engine/test/560-defending-gap-adjacency.test.ts: "CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap"
 
-**Resolution:** The rule follows the Manual: where a blocker stands matters for adjacency, and blocking columns are keyed to the attacking columns they face, so an unblocked column is a gap. The engine differs: F-U10-3 (CT-249).
+**Resolution:** The rule follows the Manual: where a blocker stands matters for adjacency, and blocking columns are keyed to the attacking columns they face, so an unblocked column is a gap. Engine fix: done 2026-10-22 (CT-249; F-U10-3 closed): the defending grid keeps one column per attacking column, an unblocked one empty (560).
 
 ### D-U11-6 · Owner call only · rule 606.7
 
@@ -633,7 +618,7 @@ The designer says a graft trigger whose required target has no legal candidate c
 - owner ruling, adopted 2026-08-23: "does not apply, because this is not a cast. In practice it is unreachable:"
 - owner ruling, adopted 2026-08-23: "| a **required** target the item never had a legal candidate for | fizzles | fizzles — it wanted a target and has none |"
 
-**Resolution:** Follow the designer for a graft composite (the case the designer answered). Whether the same holds for every triggered ability with a required target is not stated by the designer; the owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”) and the owner ruling of 2026-08-23 (“An effect fizzles when it loses…”) should be marked where they conflict. Filed as F-U14-1 (CT-252).
+**Resolution:** Follow the designer for a graft composite (the case the designer answered): done in the engine on 2026-10-22 (CT-252; F-U14-1 closed, 546). Whether the same holds for every triggered ability with a required target is not stated by the designer, and is still unruled: a plain trigger with no candidate is pushed and fizzles.
 
 ### D-U14-5 · Ruling chain wrong · rule 703.5
 
@@ -662,6 +647,22 @@ The owner ruling of 2026-08-23 (“The static → effect-attribute channel (Effe
 - owner ruling, adopted 2026-10-09: "So everything that prices damage from that source prices the rider: {Powerful}"
 
 **Resolution:** The rule follows the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”). Mark the owner ruling of 2026-08-23 (“The static → effect-attribute channel (EffectAttrMod)…”)’s "OPEN — the RESONANT rider" section as superseded by the owner ruling of 2026-10-09 (“{Resonant} is its source's trigger: damage…”) in the register. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
+
+### D-U16-1 · Sources disagree · rule 709.4b
+
+The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a Balanced unit. Its first sentence says Tough "augmented onto" a Balanced unit is doubled, then balanced; its last sentence says Tough "applied to" a Balanced unit is balanced, then doubled. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) says the order between printed, mod-given and column-shared attributes is the engine's own call, and the engine balances first.
+
+*Also filed as D-U19-1 (rule 802.1m).*
+
+- Manual p.42: "“Tough” is augmented onto a “Balanced” unit, or if a"
+- Manual p.42: "will have its defense doubled, then its stats balanced."
+- Manual p.42: "If “Tough” is applied to a “Balanced” unit, it will have"
+- Manual p.42: "its stats balanced, then its defense doubled."
+- Manual p.42: "A: Attributes apply in order from top to bottom. So if"
+- owner ruling, adopted 2026-08-18: "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
+- owner ruling, adopted 2026-08-18: "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+
+**Resolution:** Answered by the owner on 2026-10-22 (CT-257): reading A, the Manual p.42 first clause. Tough augmented onto a Balanced unit is doubled, then balanced; the last clause ("applied to") is a grant by an effect, which balances, then doubles. rule 709.4b and rule 802.1m state it alone. Engine fix: done 2026-10-22 (F-U16-4, F-U19-5 closed): 08-cards2 drives both clauses.
 
 ### D-U16-14 · Sources disagree · rule 712.1a
 
@@ -699,7 +700,7 @@ Pure's printed reminder ignores "all other attributes"; the rulings keep the sta
 - card: Just a Unit: "(Pure cards and cards they are interacting with ignore all other attributes.)"
 - owner ruling, adopted 2026-09-05: "{Unaware} are all off, against units and against players alike — "its own"
 
-**Resolution:** Settled by printed text, read literally: Pure ignores "all other attributes", and the Manual names Tough as an attribute ("4. Attributes like Tough"), so Tough, Balanced, Inverted and Unaware do not apply in a Pure interaction. The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”)’s "stats are not attributes" is our ruling and does not change what the Manual calls Tough. rule 802.1n states print; the engine keeps the stat attributes on: F-U19-1 (CT-260, filed as an owner decision on whether to change the engine). Document fix: done 2026-10-10. rule 802.25e (which stated the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)) and rule 802.25f (which stated the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”)) contradicted rule 802.1n; both now state print and are marked engine-differs (F-U19-1, F-U19-2). Register fix: mark the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s "still read" sentence and the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”)’s "survives {Pure}" as outranked by the printed reminder.
+**Resolution:** Settled by printed text, read literally: Pure ignores "all other attributes", and the Manual names Tough as an attribute ("4. Attributes like Tough"), so Tough, Balanced, Inverted and Unaware do not apply in a Pure interaction. The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”)’s "stats are not attributes" is our ruling and does not change what the Manual calls Tough. rule 802.1n states print; the owner followed print on 2026-10-22 and the engine was changed (CT-260; F-U19-1 closed, 555). Document fix: done 2026-10-10. rule 802.25e (which stated the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)) and rule 802.25f (which stated the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”)) contradicted rule 802.1n; both now state print and are marked engine-differs (F-U19-1, F-U19-2). Register fix: mark the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s "still read" sentence and the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”)’s "survives {Pure}" as outranked by the printed reminder.
 
 ### D-U19-6 · Ruling chain wrong · rule 802.9h
 
@@ -775,7 +776,7 @@ No ruling says a player cannot keep priority after acting. Test 272 records that
 
 - file: client/ui/test/272-full-control.test.ts: "// the window here: `engine.ts` hands priority to the other seat as soon as"
 
-**Resolution:** The rule states the engine's convention as basis engine and points at 703. If F-U14-2 (CT-253) is upheld (the Manual wins), this Annex D rule is withdrawn rather than kept as a convention.
+**Resolution:** F-U14-2 (CT-253) was upheld on 2026-10-22: the owner ruled to follow the Manual, and the engine keeps priority with a player who asks (568). The Annex D rule was not withdrawn but rewritten to the client's convention, "auto-pass, hold to keep": priority passes after an action unless the player asks with the Control key or the Hold priority toggle (rule D2.9).
 
 ### D-U23-18 · Ruling chain wrong · rule D5.5
 
@@ -812,7 +813,7 @@ The owner ruling of 2026-08-30 (“nothing may exist only in the…”) still sa
 
 **Resolution:** Mark the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s closing count as answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) in the register ("its log-only count answered by the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”)"); CT-236 tracks the stale sentence. The rules follow the owner ruling of 2026-08-30 (“the shared cost-toast tier: what CT-142…”) (rule D7.4b). rule D7.4 states the owner ruling of 2026-08-30 (“nothing may exist only in the…”)’s standard; its engine-differs marker for F-U24-4 (CT-236) has been dropped, because the toast tier gives every such announcement a surface. D-U24-9 is this item from the rule's side: its count of nineteen against the inventory test's 21 is the same stale sentence. [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
 
-## 3. Engine-only and owner-only rules (89)
+## 3. Engine-only and owner-only rules (88)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -1063,21 +1064,6 @@ That a cached token enters the cache before it is erased is "the engine's call, 
 
 **Resolution:** Stated at low confidence (rule 410.5c). The owner ruling of 2026-08-22 (“A token entering a ZONE is…”) says the owner may overturn it "with no other change".
 
-### D-U07-5 · Sources disagree · rule 407.3
-
-Do tokens belong on the erased pile? The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”) and the owner ruling of 2026-08-25 (“a printed "when I despawn" means…”) record a dying token, and a token mod whose host leaves play. The owner ruling of 2026-08-26 (“an erased card goes to the…”) refuses to file a token mod erased off a living host, because "the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)’s pile is a list of cards".
-
-*Also filed as D-U17-1 (rule 720.9a).*
-
-- owner ruling, adopted 2026-08-26: "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
-- owner ruling, adopted 2026-09-28: "unchanged: the `died` event still says `to: 'bin'`, anything reading the bin in"
-- owner ruling, adopted 2026-08-25: "reaches the public erased pile exactly once on each of the three routes."
-- owner ruling, adopted 2026-08-26: "list of cards. (`disposeToBin` does file token mods; that disagreement"
-- owner ruling, adopted 2026-08-25: "event `disposeToBin` emits, anchored on the host's owner. No zone changes, no"
-- owner ruling, adopted 2026-08-26: "disagree about it — `disposeToBin` **does** announce token mods on the erased"
-
-**Resolution:** Two owner rulings disagree by route, and no printed or designer source speaks to the erased pile, a digital surface (owner ruling of 2026-08-21, “Discarding is not playing; conceding; the…”). The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”), the owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) and the owner ruling of 2026-08-25 (“a printed "when I despawn" means…”) record tokens and token mods on it; the owner ruling of 2026-08-26 (“an erased card goes to the…”) does not file a token mod erased off a host that stays in play, and says it left that disagreement alone. The rules state each route as its ruling says: rule 407.3 records tokens, rule 720.9a does not record that one route, and the Return to Nature path is filed as F-U17-4 (CT-259). Sign-off: one rule for every route. The owner answered D-U06-1 with reading B (the owner ruling of 2026-10-11 (“A token is not a card…”): a token is not a card), so the owner ruling of 2026-08-26 (“an erased card goes to the…”)’s reason stands.
-
 ### D-U08-6 · Owner call only · rule 504.5
 
 That the haste step happens every turn, even when nobody can play anything, is the owner's call. The Manual says only that the step ends when everyone has played what they want, "which can be none".
@@ -1257,10 +1243,11 @@ That a replaced combat hit still counts as dealt rests on the owner (owner rulin
 - owner ruling, adopted 2026-08-28: "> **"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
 - owner ruling, adopted 2026-08-28: "- **Caleb was shown {Lethal} only.** The client's extension of the ruling to"
 - owner ruling, adopted 2026-08-28: "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **"Yes"**"
-- file: client/engine/src/engine.ts: "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
 - owner ruling, adopted 2026-08-28: "Two cards, and **both consume a hit WHOLE**: Blightsea Polyp returns `true`"
+- owner ruling, adopted 2026-10-22: "Doesn't kill"
+- owner ruling, adopted 2026-10-22: "Yes, none of them"
 
-**Resolution:** Owner extensions of one designer answer. Caleb said "Yes" (2024-10-24, in #rules-questions, quoted in the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”)) to a replaced hit still counting as dealt when Blightsea Polyp turns it into rot for the same player, and he was shown Lethal only. The owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”) extends it to Thieving and Blessed, and the engine to a hit Oorblak redirects to itself, where the player is dealt nothing (rule 802.24c: a Lethal hit redirected into Oorblak still kills the player). The rules state the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”) with basis owner, for sign-off. Read literally, Lethal's reminder ("will kill a player") and Oorblak's "that damage is dealt to me instead" suggest a redirected hit kills no player, so the Oorblak extension is the one to confirm. The same answer decides whether a redirected hit counts for "when my column deals combat damage to an opponent" (rule 708.3).
+**Resolution:** Owner extensions of one designer answer. Caleb said "Yes" (2024-10-24, in #rules-questions, quoted in the owner ruling of 2026-08-28 (“a REPLACED combat hit was still…”)) to a replaced hit still counting as dealt when Blightsea Polyp turns it into rot for the same player, and he was shown Lethal only. The owner ruling of 2026-08-28 extends it to Thieving and Blessed. The Oorblak extension is settled the other way by the owner on 2026-10-22 (CT-296): a hit wholly redirected into Oorblak "Doesn't kill", and "Yes, none of them" for Thieving and the "deals combat damage to a player" payouts; a partial redirect counts as what got past. rule 608.8c, rule 802.24c and rule 802.20d state it; the engine was aligned the same day (562, 581).
 
 ### D-U12-5 · Owner call only · rule 608.5a
 
@@ -1619,7 +1606,7 @@ The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) gives the ow
 - owner ruling, adopted 2026-09-01: "> the haste step or anything. Even during deployment, nothing will"
 - owner ruling, adopted 2026-09-01: "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *"Even during deployment, nothing"
 
-**Resolution:** Under owner decision 2 the rule states the ruling, with the marker 'engine differs, see F-U23-1 (CT-185)'. Whether to build it (a replay-safe holdStack action) is CT-185's open owner call.
+**Resolution:** Superseded 2026-10-22: the owner ruled "you CANNOT hold priority during Deployment" and closed CT-185 as wontfix. rule D2.7a now says that full control changes nothing in deployment; F-U23-1 is withdrawn.
 
 ### D-U23-7 · Owner call only · rule D4.1
 
@@ -1981,7 +1968,7 @@ The sources are silent on whether a spell has a power or defense. They say stats
 
 - Rulebook 2023 p.3: "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
 
-**Resolution:** The rule says only that stats mark a unit and that spell units have them. The card data gives 91 spells stat values: F-U05-1 (CT-244).
+**Resolution:** The rule says stats mark a unit, so a spell and a spell token have none, and spell units have them. The card data used to give 91 spells stat values; since 2026-10-22 they are zeroed at extraction (CT-244; F-U05-1 closed).
 
 ### D-U05-9 · Other · rule 203.1
 
@@ -2105,7 +2092,7 @@ The sources are silent on who owns a card in live draft, where every card comes 
 
 - owner ruling, adopted 2026-08-30: "Only exception is that "owner" in constructed is always the person's who"
 
-**Resolution:** No rule written for live draft. Ownership still matters there (the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”): "whose card is this? its OWNER's, always, forever").
+**Resolution:** No rule written for live draft ownership at the deal. Since 2026-10-22 the owner's call "Reset in shared zones" (rule 102.4) says what happens when a card goes back into a shared zone: its ownership stays behind, and whoever next takes it out owns it.
 
 ### D-U07-9 · Other · rule 400.2
 

@@ -911,6 +911,10 @@
       {
         "text": "The units Wake the Dead plays out of a bin are played: Bloomcaster and Stalwart Sentinel both see them.",
         "test": "139-spawn-and-play.test.ts::Wake the Dead: the units it plays out of a bin are PLAYED"
+      },
+      {
+        "text": "The unit Gridxlan lets its player play from the bin is played: it is paid for, and only one is allowed each deployment.",
+        "test": "559-gridxlan-permission.test.ts::CR 707.10 / CR 301.9: the unit Gridxlan lets you play is PLAYED, paid for, and only one per deployment"
       }
     ],
     "see": [
@@ -931,13 +935,14 @@
       "tests": [
         "11-fire-wood.test.ts",
         "139-spawn-and-play.test.ts",
-        "417-cr-card-types.test.ts"
+        "417-cr-card-types.test.ts",
+        "559-gridxlan-permission.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) (b): Exhume, Resurrect, Rousing Spirit and Lurking Dread put into play; Wake the Dead and The Bonesculptor play. The rest of playing is 701.",
+    "notes": "The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) (b): Exhume, Resurrect, Rousing Spirit and Lurking Dread put into play; Wake the Dead and The Bonesculptor play. The rest of playing is 701. Round 2026-10-22: Wake the Dead (CT-245), The Bonesculptor (CT-255) and Gridxlan now make real plays, through the stack.",
     "sourceHashes": {}
   },
   {
@@ -1282,6 +1287,10 @@
       {
         "text": "If Molten Riftbreaker despawns while an allied spell unit is on the stack, its \"negate all allied spells\" negates that spell unit.",
         "test": "396-raq-timing.test.ts::Molten Riftbreaker dying negates it as an allied spell"
+      },
+      {
+        "text": "A Jelly that Wake the Dead plays from a bin is played as a spell: its spell is cast, and its body arrives only after it resolves.",
+        "test": "557-wake-the-dead-plays-on-the-stack.test.ts::CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives"
       }
     ],
     "see": [
@@ -1308,21 +1317,19 @@
       "owner": [],
       "engine": [],
       "tests": [
-        "396-raq-timing.test.ts"
+        "396-raq-timing.test.ts",
+        "557-wake-the-dead-plays-on-the-stack.test.ts"
       ]
     },
     "basis": "designer",
     "scope": "game",
     "confidence": "high",
-    "notes": "The designer answers are about a spell unit played through Hooba-Pon; no source limits them to that route. engine differs: F-U06-1 (measured: a spell unit Wake the Dead plays from a bin fires no spell-played event and never goes on the stack).",
+    "notes": "The designer answers are about a spell unit played through Hooba-Pon; no source limits them to that route. Wake the Dead now plays its picks as real plays (CT-245, 557); F-U06-1 closed. The earlier partial verdict found the engine already agreeing on every bound example.",
     "sourceHashes": {
       "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190",
       "RAQ 1461450216874967235#3": "86583bb730672c5ba5900df06a06faa79ef6d4449e4bcea1d2930256c6b46791",
       "RAQ 1461450216874967235#4": "416e7b81b509be8a010acda6c0a2bab17aad7d9e96a32c38f367a014b50f57f4"
-    },
-    "engineDiffers": [
-      "F-U06-1"
-    ]
+    }
   },
   {
     "key": "types.spell-units.is-a-unit",
@@ -1337,6 +1344,10 @@
       {
         "text": "Insidious Invitation's \"play a unit from hand\" lets each player play a spell unit.",
         "test": "110-literal-water.test.ts::lets each player play a SPELL UNIT"
+      },
+      {
+        "text": "A Jelly that Wake the Dead plays gets its spell part, then its unit body.",
+        "test": "417-cr-card-types.test.ts::cr:types.spell-units.is-a-unit — a Jelly that Wake the Dead plays gets its spell part and then its unit body"
       }
     ],
     "see": [
@@ -1359,19 +1370,17 @@
       "owner": [],
       "engine": [],
       "tests": [
-        "110-literal-water.test.ts"
+        "110-literal-water.test.ts",
+        "417-cr-card-types.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "States the designer ruling for every \"play a unit\" effect; the RAQ thread names Hooba-Pon and Insidious Invitation. engine differs: F-U06-1 (measured: Wake the Dead lets a player play a spell unit from a bin but spawns its body without playing it as a spell).",
+    "notes": "States the designer ruling for every \"play a unit\" effect; the RAQ thread names Hooba-Pon and Insidious Invitation. Wake the Dead aligned 2026-10-22 (CT-245, 557, 417); F-U06-1 closed.",
     "sourceHashes": {
       "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751"
-    },
-    "engineDiffers": [
-      "F-U06-1"
-    ]
+    }
   },
   {
     "key": "types.spell-units.in-battle",
@@ -1473,7 +1482,7 @@
     "examples": [
       {
         "text": "A Jelly that Wake the Dead plays from a bin has its spell part happen, and its body enters play only if that spell resolves.",
-        "test": null
+        "test": "557-wake-the-dead-plays-on-the-stack.test.ts::CR 303.9 / CT-245: a Jelly that Wake the Dead plays from a bin casts its spell, then its body arrives"
       }
     ],
     "see": [
@@ -1506,19 +1515,18 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "557-wake-the-dead-plays-on-the-stack.test.ts"
+      ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Combines 301.9 (the printed verb decides whether it is a play) with the Hooba-Pon RAQ (what playing a spell unit means; its thread is about playing from hand, and no source limits it to the hand). The owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”) itself records that Wake the Dead, which prints \"play\", spawns a spell unit's body and skips its spell. engine differs: F-U06-1 (measured by the verifier: Jelly from a bin, body arrives, no target asked, no spell-played event, the victim stays 7/5).",
+    "notes": "Combines 301.9 (the printed verb decides whether it is a play) with the Hooba-Pon RAQ (what playing a spell unit means; no source limits it to the hand). Engine aligned 2026-10-22 (CT-245): Wake the Dead plays each pick through the inline play, so a spell unit casts its spell and its body arrives only if it resolves (557). F-U06-1 closed.",
     "sourceHashes": {
       "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751",
       "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190"
     },
-    "engineDiffers": [
-      "F-U06-1"
-    ],
     "rebuttal": "engineDiffers F-U06-1 was already set (it is stripped from the verifier's copy); the rule states the designer ruling, and F-U06-1 now carries the verifier's measurement."
   },
   {

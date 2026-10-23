@@ -880,75 +880,63 @@
   },
   {
     "key": "concepts.golden.regions",
-    "textHash": "5b96fefaf5eedeb2",
+    "textHash": "cc0b44affcf68af2",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U01-r3",
+    "round": 4,
+    "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:pushUnitTargets/unitsIn, fireEvent, staticsFor",
+        "loc": "client/engine/src/engine.ts:targetCandidates / stackIn(region)",
         "agrees": true,
-        "note": "units, targets, statics and listeners are region-scoped (R265 measured 0 leaks)"
-      },
-      {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Cosmic Reversal",
-        "agrees": false,
-        "note": "engineDiffers is REAL: the board half is unitsIn(ctx.region) but the stack half iterates the whole g.s.stack, so a spell in another region is recalled. Same for Molten Riftbreaker / Frosted Denial (R265 'documented non-exceptions'). The stack, bins and cache are global by owner ruling."
+        "note": "region-scoped"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/229-cosmic-and-control.test.ts",
-        "pattern": "R250 \\+ R243: the board half is scoped to the region",
+        "file": "229-cosmic-and-control.test.ts",
+        "pattern": "CR 601.1c: the board half is scoped to the region",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
-        "pattern": "§3a no ally or enemy slot",
+        "pattern": "CR 601.4e no ally or enemy slot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "578-region-stacks-and-bins.test.ts",
+        "pattern": "CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U01/u01-r3-verify-probes.test.ts",
-        "title": "concepts.golden.regions: the stack is global — Cosmic Reversal resolving in a home region recalls a spell on the stack in the battle region",
-        "passed": true,
-        "demonstrates": "yes: the divergence is real (itemRegion=0, effectRegion=1, the Luminous Arc left the stack for its controller's hand). Effect run directly in the home region, so a synthetic placement"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
-        "title": "concepts.golden.regions: the stack is global — Molten Riftbreaker's despawn text ... negates its controller's spell on the stack in another region",
-        "passed": true,
-        "demonstrates": "yes: re-run this round — the Luminous Arc in region 1 was negated by an effect resolving in region 0"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Rulebook 2023 p.8",
         "supports": "yes",
-        "note": "'single most important rule ... Every single effect is specific to its region' and 'Destroy all units means ... in this region'"
+        "note": "\"Destroy all units\" means all in this region; single most important rule"
       },
       {
         "ref": "Manual p.19",
         "supports": "yes",
-        "note": "'will never impact anything in any other region'"
+        "note": "never impact anything in any other region"
       },
       {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": "'region treats the players and cards in other regions as if they don't exist'"
+        "note": "treats players and cards in other regions as if they don't exist"
       },
       {
         "ref": "RAQ 1454169054402314362#0",
         "supports": "yes",
-        "note": "calebgannon: everything is region specific; add 'in this region' to every card"
+        "note": "calebgannon, status covered"
       },
       {
-        "ref": "R243",
+        "ref": "owner register \"all is all in this region\"",
         "supports": "yes",
-        "note": "'all' is 'all in this region' — but R243 scopes effects, not information, and R250 leaves the stack global"
+        "note": ""
       }
     ],
     "quote_spans": [
@@ -957,25 +945,12 @@
         "text": "This is perhaps the single most important rule of Algomancy: Every single effect is specific to its region."
       },
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "Every single effect is specific to the region it takes"
-      },
-      {
         "file": "client/ledgers/raq.ts",
         "text": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "The STACK is not regional and is deliberately left global; narrowing"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "So Frosted Denial's *\"target enemy effect\"*, Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect."
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling confirmed; the flagged engine divergence is real (stack, bins and cache are global in the engine; Cosmic Reversal / Molten Riftbreaker / Frosted Denial reach a stack item in another region). Minor: the text omits the printed exception for the attack step (units entering a neighbouring region to battle); presumably covered by 601.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.golden.regions.information",
@@ -1206,21 +1181,27 @@
   },
   {
     "key": "concepts.players.controller.from-other-zone",
-    "textHash": "17827a700aa5dc26",
+    "textHash": "752d9f778ec62ab8",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U01-r1",
+    "round": 4,
+    "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "loc": "client/engine/src/cards/sets (Wake the Dead via playInline)",
         "agrees": true,
-        "note": "Wake the Dead passes owner = the bin's seat, controller = caster"
+        "note": "caster controls, opponent owns"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/93-engine-defects.test.ts",
+        "file": "93-engine-defects.test.ts",
         "pattern": "Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "557-wake-the-dead-plays-on-the-stack.test.ts",
+        "pattern": "CR 102.5a / CT-245: a unit Wake the Dead plays out of the opponent bin is still the opponent card",
         "passed": true,
         "asserts_claim": true
       }
@@ -1230,22 +1211,26 @@
       {
         "ref": "card: Wake the Dead",
         "supports": "yes",
-        "note": "oracle text matches"
+        "note": "\"any bin\" lets a player play out of another player's bin"
       },
       {
-        "ref": "R107",
+        "ref": "owner register@72de434 \"Putting a card into play out of a zone you do not own does not\"",
         "supports": "yes",
-        "note": ""
+        "note": "fragment, but it is about exactly this case"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "piles are public.\"* Putting a card into play out of a zone you do not own does not"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"Play up to two units in any bin with total cost [8] or less now, for free.\""
+      },
+      {
+        "file": "client/engine/test/93-engine-defects.test.ts",
+        "text": "test('Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership', () => {"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Note: no card in the pool puts (rather than plays) a unit into play out of another player's zone, so the \"puts it into play\" half rests on the owner quote alone."
   },
   {
     "key": "concepts.players.each-opponent",
@@ -1437,69 +1422,80 @@
   },
   {
     "key": "concepts.players.owner",
-    "textHash": "0d1d003a42d263ad",
+    "textHash": "9db2bcf00619fbf7",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U01-r2",
+    "round": 4,
+    "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:recall",
+        "loc": "client/engine/src/engine.ts:E.zoneOwner / markForeign / takeFromHand / removeFromBin",
         "agrees": true,
-        "note": "R262: the destination follows the controller, and u.owner and the leftPlayFacts event still report the owner"
+        "note": "owner kept through hand/bin/cache side table (PlayerState.foreign); shared zones drop it"
       },
       {
-        "loc": "client/engine/src/types.ts:PlayerState.hand",
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Eldritch Reclaimer run (toHand without owner)",
         "agrees": false,
-        "note": "hands and bins hold bare CardNames, so ownership is not carried through a zone. A stolen card recalled to the thief's hand and played again is a NEW entity owned by the thief (probe). This is the engineDiffers divergence, and it is real"
+        "note": "engineDiffers holds: a foreign-owned card recalled from the thief bin to the thief hand loses its owner (probe U01-1 fails as expected); same pattern in other bin->hand recalls and Cosmic Reversal stack->hand"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/246-zones-follow-control.test.ts",
-        "pattern": "ownership does NOT move",
+        "file": "246-zones-follow-control.test.ts",
+        "pattern": "CR 400.4a: ownership does NOT move",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/246-zones-follow-control.test.ts",
-        "pattern": "a stolen unit recalled goes to the THIEF hand",
+        "file": "246-zones-follow-control.test.ts",
+        "pattern": "CR 801.7a: a stolen unit recalled goes to the THIEF hand",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "551-ownership-survives-own-zones.test.ts",
+        "pattern": "CR 102.4 / CT-233: a stolen card recalled to the thief hand and played again is still its owner card",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "551-ownership-survives-own-zones.test.ts",
+        "pattern": "CR 102.4 / CT-233: a shared zone resets ownership",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
-        "title": "concepts.players.owner: a stolen card recalled to the thief and replayed from the thief hand — the engine records the thief as owner",
-        "passed": true,
-        "demonstrates": "yes (divergence): replayed owner=thief, original owner lost"
+        "file": "client/engine/test/zz-probe-U01-1.test.ts",
+        "test": "probe U01-1: a stolen card that died in the thief bin, recalled to the thief hand by Eldritch Reclaimer, keeps its owner",
+        "passed": false,
+        "demonstrates": "yes (divergence): the rule says the owner survives bin->hand; the engine makes the thief the owner (zoneOwner 1 !== owner 0), confirming engineDiffers"
       }
     ],
     "source_checks": [
       {
-        "ref": "R250 (its §4)",
+        "ref": "owner register@72de434 \"Ownership does not move. Only the destination does.\"",
         "supports": "yes",
-        "note": "'whose card is this? | its OWNER's, always, forever'"
+        "note": "supports sentence 2 (control/zone moves do not change owner)"
       },
       {
-        "ref": "R262",
+        "ref": "owner chat 2026-10-22 (CT-233) \"Reset in shared zones\"",
         "supports": "yes",
-        "note": "'Ownership does not move. Only the destination does.' and in constructed the owner is always whoever brought the card"
+        "note": "supports sentence 3; the fuller owner ruling is quoted in the 551 test header and types.ts ForeignCard doc"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "| whose card is this? | its OWNER's, always, forever |"
+        "file": "client/engine/test/551-ownership-survives-own-zones.test.ts",
+        "text": "once it enters a shared pack, deck or"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**2. Ownership does not move. Only the destination does.**"
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "text": "test('CR 400.4a: ownership does NOT move — only the destination does', () => {"
       }
     ],
     "basis_ok": true,
-    "problem": "The ruling is confirmed and the engine divergence is real. Ownership survives while the card is in play, but not a trip through a hand or bin, because those zones store only card names. A card that is recalled or binned and then played again gets the player who played it as its new owner.",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": "Note: the record lists engineDiffers F-U01-6 but no engine[] entry; I found the divergence myself (bin->hand recall drops foreign ownership). Example 4 test only asserts that no ownership record survives the recycle, not who owns the card when drawn."
   },
   {
     "key": "concepts.players.owner.token",

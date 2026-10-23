@@ -108,20 +108,20 @@
   },
   {
     "key": "annexd.auto-pass.full-control",
-    "textHash": "45a656585dcaff10",
+    "textHash": "21f08e5469dbe938",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/ui/main.ts:planAutoPass/fullControlOn",
+        "loc": "client/ui/main.ts:setFullControl / planAutoPass (full disables prefOn, yieldIds, passMode and the autoHasteDone ready)",
         "agrees": true,
-        "note": "auto-pass, standing pass, auto-yield and the haste ready (the !full guard) stand down"
+        "note": ""
       },
       {
-        "loc": "client/server/main.ts forcedAction drain",
+        "loc": "client/server/main.ts:forced drain (room.fullControl break) + client/server/rooms.ts:setPassAll",
         "agrees": true,
-        "note": "breaks on room.fullControl[seat]"
+        "note": "the server's standing pass and forced steps also stand down"
       }
     ],
     "tests_run": [
@@ -129,52 +129,60 @@
         "file": "client/ui/test/272-full-control.test.ts",
         "pattern": "BL-18 §2 with full control ON, the auto-pass preference sends nothing",
         "passed": true,
-        "asserts_claim": true,
-        "note": "ran the file; all tests pass"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "BL-18 §2 a standing Pass-all armed BEFORE the switch",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "BL-18 §2 an auto-yield stored from before the switch",
+        "passed": true,
+        "asserts_claim": true
       },
       {
         "file": "client/ui/test/272-full-control.test.ts",
         "pattern": "CT-183 §6 letting go goes right back to the way it was",
         "passed": true,
-        "asserts_claim": true,
-        "note": "ran the file; all tests pass"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
+        "pattern": "CR 703.2a / CT-253: holding Ctrl asks too",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "probe U23-1: holding Ctrl stops the automatic haste ready; letting go restores it",
+        "passed": true,
+        "demonstrates": "yes: with Ctrl up the client sends doneHaste by itself; while held it sends none; released, it sends it again (no bound test covered the haste-step ready)"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R287",
+        "ref": "owner questions-round36 Q5; register@72de434",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R287",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R287",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "every stop regardless of auto pass / yields / haste step; momentary, not persistent; letting go restores"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> given every single stop, regardless of your settings (auto pass) or yields or"
+        "file": "client/ui/main.ts",
+        "text": "if (!plan.pass && !full && autoHasteDone(s, NET.seat, NET.legal, bluffHasteOn())) {"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> automatically resolve if you're holding ctrl. When you let go, it goes right"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "**MOMENTARY, NOT PERSISTENT.** It is a modifier you hold for the beat you want"
+        "file": "client/ui/test/272-full-control.test.ts",
+        "text": " *   \"I just wanted \\\"Full control\\\" so when you're holding control, you will be"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.auto-pass.full-control.chord",
@@ -226,47 +234,57 @@
   },
   {
     "key": "annexd.auto-pass.full-control.deployment",
-    "textHash": "202884631800eba0",
+    "textHash": "de7c1f254322f8b9",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:settle (deployment stack drain)",
-        "agrees": false,
-        "note": "the engine has no full-control flag (no reference in engine/src); CT-185 (holdStack) is still open in ledgers/card-todo.ts. Divergence is real."
+        "loc": "client/ui/main.ts:holdPriorityButton / act (no hold ask outside battle)",
+        "agrees": true,
+        "note": "the deployment bar has no hold toggle and Ctrl adds no ask"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:apply ('priority can be kept only in battle')",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:settle (CR 507.5 deployment drain)",
+        "agrees": true,
+        "note": "the deployment stack drains regardless of room.fullControl; the server's forced-step drain and auto-pass are battle-only, so full control has nothing to change there"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
+        "pattern": "CR 507.5 / CT-253: in deployment nothing asks to hold",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "pattern": "CR 507.5 / CT-253: in deployment the ask is refused",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R287",
+        "ref": "owner, chat 2026-10-22 (CT-185)",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R287",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "both quotes verbatim in the record; 'you can't do any on the stack shenanigans' in deployment. Note: the owner's older questions-round36 Q5 wording ('Even during deployment, nothing will automatically resolve if you're holding ctrl', quoted in the 272 header) reads the other way, but the 2026-10-22 ruling is later and is about the deployment stack itself"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> the haste step or anything. Even during deployment, nothing will"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
-      },
-      {
-        "file": "client/ledgers/card-todo.ts",
-        "text": "+ 'be IN that log or the replay diverges. So: a `holdStack` action carrying the seat '"
+        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
+        "text": "assert.equal(play!.holdPriority, undefined, 'toggle on and Ctrl held, and still no ask in deployment');"
       }
     ],
     "basis_ok": true,
-    "problem": "Ruling clause is the owner's (R287) and the engine-differs flag is accurate."
+    "problem": ""
   },
   {
     "key": "annexd.auto-pass.full-control.latency",
@@ -824,46 +842,80 @@
   },
   {
     "key": "annexd.auto-pass.no-retain",
-    "textHash": "370c24e8069a950c",
+    "textHash": "75c1dc46d8cc3b59",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts (push to stack in battle)",
+        "loc": "client/engine/src/engine.ts:pushItem (priority = holdPriority === controller ? controller : other)",
         "agrees": true,
-        "note": "casting hands priority to the opponent (272 §4 and 358 measure it)"
+        "note": "without the ask, priority goes to the opponent once the item is pushed"
+      },
+      {
+        "loc": "client/ui/main.ts:holdPriorityOn (holdToggle || fullControlOn)",
+        "agrees": true,
+        "note": "the toggle or Ctrl adds holdPriority to the action; a pass never carries it"
       }
     ],
     "tests_run": [
       {
-        "file": "client/ui/test/272-full-control.test.ts",
-        "pattern": "BL-18 §4 you can respond to your own spell with the first still on the stack",
+        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
+        "pattern": "CR 703.2a / CT-253: with the toggle off and no Ctrl",
         "passed": true,
-        "asserts_claim": true,
-        "note": "ran the file; all tests pass"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
+        "pattern": "CR 703.2a / CT-253: the hold toggle sits beside Pass",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
+        "pattern": "CR 703.2a / CT-253: holding Ctrl asks too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/569-hold-priority-toggle.test.ts",
+        "pattern": "CR 703.2a / CT-253: a pass never carries the ask",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "BL-18 §4 you can respond to your own spell",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "pattern": "CR 703.2a / CT-253: without the ask a cast still hands priority",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
-    "source_checks": [],
+    "source_checks": [
+      {
+        "ref": "owner, chat 2026-10-22 (CT-253)",
+        "supports": "yes",
+        "note": "'auto-pass, hold to keep'"
+      }
+    ],
     "quote_spans": [
       {
         "file": "client/ui/test/272-full-control.test.ts",
-        "text": "'MEASURED, and it is the finding: casting hands priority to the OPPONENT here. If this ever '"
+        "text": "'you responded to your own spell and both are on the stack — which is the doneWhen line'"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (this.s.priority !== null) this.s.priority = other(item.controller);",
-        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "// whoever did NOT act responds first; a fresh window starts from initiative",
-        "note": "added at the wave-3 repair: the code at this verdict's own engine[].loc, quoted (the verifier named it and ran the test, but quoted no span)"
+        "text": "this.s.priority = this.s.holdPriority === item.controller ? item.controller : other(item.controller);"
       }
     ],
     "basis_ok": true,
-    "problem": "ui/main.ts's BL-18 comment still says \"nothing but passPriority moves priority away from a seat inside a battle window\", which the test measures as false; the rule follows the test."
+    "problem": ""
   },
   {
     "key": "annexd.auto-pass.open-decision",
@@ -2336,6 +2388,65 @@
     "problem": ""
   },
   {
+    "key": "annexd.general.early-resource-step",
+    "textHash": "00da12ff6674e685",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U23-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:recycleForResource/activateResource gate (draft)",
+        "agrees": true,
+        "note": "a committed seat may activate and recycle while the other still drafts"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:hiddenSegment",
+        "agrees": true,
+        "note": "the draft/resource step is phase 'planning' = hidden 'plan' segment; server/view.ts viewFor serves the opponent's half frozen, so the head start is not visible"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "planning is gated until you commit; open again after",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U23-1.test.ts",
+        "test": "probe U23-1: the draft step sits in the hidden planning segment, and a committed seat may plan while the other drafts",
+        "passed": true,
+        "demonstrates": "yes: hiddenSegment is 'plan' through the draft, and seat 0 is offered resource actions while seat 1 is offered only draft commits"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "owner chat 2026-10-22 (CT-248)",
+        "supports": "yes",
+        "note": "'Keep early start' answers 'keep the early start of the resource step, or wait for both players'"
+      },
+      {
+        "ref": "(uncited) Manual p.16",
+        "supports": "yes",
+        "note": "printed sync sentence is a cross-reference; Manual p.16 'Once all players have passed their pack, the draft step is complete.' backs it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "text": "// committed seat may proceed simultaneously while the opponent drafts"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (s.phase === 'planning') return (s.hasteDone || s.hasteEnding) ? 'haste' : 'plan';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.general.hidden-segment",
     "textHash": "06a558e2bb2ba414",
     "verdict": "confirmed",
@@ -2489,6 +2600,58 @@
     "basis_ok": true,
     "problem": "",
     "carried": "demoted-example 2026-10-11"
+  },
+  {
+    "key": "annexd.general.initiative-order",
+    "textHash": "6433427b2c82ebca",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U23-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:hiddenSegment / settle (deployIsolate)",
+        "agrees": true,
+        "note": "the resource step, haste step and deployment run for both seats at once; neither seat waits on the other"
+      },
+      {
+        "loc": "client/server/view.ts:viewFor (frozenOpp)",
+        "agrees": true,
+        "note": "the opponent's half is served as the segment began"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "both seats deploy at once: NIT may act and finish before IT",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "both quotes: runs the steps for both players at once, each unseen until both are done; a deliberate digital convention"
+      },
+      {
+        "ref": "Manual p.38 (checked)",
+        "supports": "yes",
+        "note": "the printed order it departs from: the initiative team deploys before passing to the non-initiative team"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "text": "both seats deploy at once: NIT may act and finish before IT"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "will deploy units in any order they wish before passing"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.general.not-rules",

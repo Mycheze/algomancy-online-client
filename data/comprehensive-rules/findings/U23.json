@@ -14,15 +14,19 @@
         "quote": "that currently drains itself inside `settle()`, in the engine, which has never"
       },
       {
-        "file": "client/ledgers/card-todo.ts",
+        "file": "client/ledgers/card-todo-closed.ts",
         "quote": "+ 'be IN that log or the replay diverges. So: a `holdStack` action carrying the seat '"
+      },
+      {
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "quote": "CR 507.5 / CT-253: in deployment the ask is refused"
       }
     ],
     "ct": "CT-185",
     "dupes": [
       "F-U23-6"
     ],
-    "closed": "already open as CT-185 (the holdStack action); no new ticket."
+    "closed": "withdrawn 2026-10-22: the owner ruled that no player holds priority in deployment and closed CT-185 as wontfix, so the clause it tracked is no longer the rule (rule D2.7a now states the call)."
   },
   {
     "id": "F-U23-2",
@@ -119,11 +123,16 @@
         "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
       },
       {
-        "file": "client/ledgers/card-todo.ts",
+        "file": "client/ledgers/card-todo-closed.ts",
         "quote": "+ 'be IN that log or the replay diverges. So: a `holdStack` action carrying the seat '"
+      },
+      {
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "quote": "CR 507.5 / CT-253: in deployment the ask is refused"
       }
     ],
-    "ct": "CT-185"
+    "ct": "CT-185",
+    "closed": "withdrawn 2026-10-22: the owner ruled that no player holds priority in deployment and closed CT-185 as wontfix, so the clause it tracked is no longer the rule (rule D2.7a now states the call)."
   },
   {
     "id": "F-U23-7",

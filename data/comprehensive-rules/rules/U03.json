@@ -2865,7 +2865,16 @@
     "parent": "concepts.targets.region",
     "order": 1,
     "text": "An effect on the stack can be targeted only by an effect in its own region, since each region has its own stack (rule combat.regions.exclusive.no-region-zones). A card in a player's bin can be targeted only by an effect that resolves in a region where that player is present.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "A spell on the battle region's stack and the cards in a bin are offered as targets only where they are: the spell only to an effect in the battle region, a player's bin only where that player is present.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.region.global — a stack item and the cards in a bin are offered only in a region where they are"
+      },
+      {
+        "text": "In deployment, an effect that targets a card in a bin can reach only the bin of the player deploying there.",
+        "test": "578-region-stacks-and-bins.test.ts::CR 403.6 / CT-234: in deployment a bin card target reaches only the bin of the player present"
+      }
+    ],
     "see": [
       "405",
       "406"
@@ -2905,18 +2914,18 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "578-region-stacks-and-bins.test.ts",
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”). This rule stated the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s premise (\"Effects on the stack and cards in bins are in no region. A target there can be chosen from any region.\") after 601.2a and 101.6 had been fixed on 2026-10-10: the sweep for that fix searched for the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s quote in 601.2a only. Now states the owner ruling of 2026-10-11 (“The stack, the bins and the…”); the engine still offers a stack item and either bin's cards from every region (414 cr test), F-U01-2. Its old example (bound to that 414 test) asserted the engine's behaviour and was dropped. The key keeps its old name (keys are permanent). Cache targets: 110.5b (owner ruling of 2026-09-05, “A cached card is a target…”).",
+    "notes": "REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”). This rule stated the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s premise (\"Effects on the stack and cards in bins are in no region. A target there can be chosen from any region.\") after 601.2a and 101.6 had been fixed on 2026-10-10: the sweep for that fix searched for the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s quote in 601.2a only. Now states the owner ruling of 2026-10-11 (“The stack, the bins and the…”); the engine still offers a stack item and either bin's cards from every region (414 cr test), F-U01-2. Its old example (bound to that 414 test) asserted the engine's behaviour and was dropped. The key keeps its old name (keys are permanent). Cache targets: 110.5b (owner ruling of 2026-09-05, “A cached card is a target…”). Engine aligned 2026-10-22 (CT-234): one stack per region (E.stackIn), bin targets only where their player is present (578); 414's test was rewritten to assert the rule. F-U01-2 closed.",
     "sourceHashes": {
       "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
-    },
-    "engineDiffers": [
-      "F-U01-2"
-    ]
+    }
   },
   {
     "key": "concepts.targets.region.cache",
@@ -3389,7 +3398,7 @@
     "key": "concepts.targets.applying-mods.virus",
     "parent": "concepts.targets.applying-mods",
     "order": 1,
-    "text": "A Virus being applied is an effect on the stack that targets its host. It can be redirected, and an effect that answers \"target effect targeting me\" or an effect targeting an ally can answer it.",
+    "text": "A Virus being applied is an effect on the stack that targets its host. It can be redirected, an effect that answers \"target effect targeting me\" or an effect targeting an ally can answer it, and a unit that must be targeted if able (rule concepts.targets.must-be-targeted) compels it like any other targeted effect.",
     "examples": [
       {
         "text": "Graxxlid (\"Negate target effect targeting me\") can negate a Virus being applied to it.",
@@ -3398,6 +3407,14 @@
       {
         "text": "Boon of Protection can negate a Virus being applied to an allied unit.",
         "test": "23-wood-a.test.ts::Boon of Protection: a Virus being applied to an allied unit IS an allied target"
+      },
+      {
+        "text": "With a Gatekeeper of Souls in the battle, a Virus can be applied only to the Gatekeeper.",
+        "test": "545-virus-gatekeeper.test.ts::CR 110.12 / CT-331: with a Gatekeeper of Souls in the battle, a Virus may be applied only to it"
+      },
+      {
+        "text": "A Virus that Tides of the Cosmos plays goes onto the Gatekeeper of Souls in the battle.",
+        "test": "577-tides-virus-gatekeeper.test.ts::CR 110.12 / CT-331: a Virus played by Tides of the Cosmos goes onto the Gatekeeper of Souls in the battle"
       }
     ],
     "see": [
@@ -3422,20 +3439,22 @@
       "engine": [],
       "tests": [
         "16-earth-a.test.ts",
-        "23-wood-a.test.ts"
+        "23-wood-a.test.ts",
+        "545-virus-gatekeeper.test.ts",
+        "577-tides-virus-gatekeeper.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The words are calebgannon's, reached through the owner ruling of 2026-08-23 (“\"Target effect targeting me\" is a…”) (no RAQ claim in the pack carries them), so the basis is typed owner.",
+    "notes": "The words are calebgannon's, reached through the owner ruling of 2026-08-23 (“\"Target effect targeting me\" is a…”) (no RAQ claim in the pack carries them), so the basis is typed owner. Round 2026-10-22 (CT-331): the Gatekeeper clause follows from the Virus being a targeted effect (Caleb via the register) and Gatekeeper's printed \"When a player selects targets for an effect during battle\"; the engine now narrows the Virus host list through the same compulsion (545, 577).",
     "sourceHashes": {}
   },
   {
     "key": "concepts.targets.becomes-targeted",
     "parent": "110",
     "order": 11,
-    "text": "An ability that triggers \"when I become targeted\" triggers whenever its unit is targeted, by a spell, an ability, an augment, a graft or a Virus. When the effect that targeted is put on the stack, the trigger goes on the stack above it and so resolves first. When a graft targets the unit, the unit triggers first, before the graft is applied.",
+    "text": "An ability that triggers \"when I become targeted\" triggers whenever its unit is targeted, by a spell, an ability, an augment, a graft or a Virus. When the effect that targeted is put on the stack, the trigger goes on the stack above it and so resolves first. When a graft targets the unit, or an augment is applied to it in deployment, the trigger resolves first, and only then is the mod attached.",
     "examples": [
       {
         "text": null,
@@ -3452,6 +3471,14 @@
       {
         "text": "A spell aimed at Mohruung waits on the stack under Mohruung's trigger, so the Crystal 2 is made before the spell resolves.",
         "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on the stack ABOVE the spell that targeted it, and the Crystal is made while the spell still waits"
+      },
+      {
+        "text": "A graft applied to Mohruung: the Crystal 2 is made first, and the graft attaches after.",
+        "test": "547-graft-after-targeted-trigger.test.ts::CR 110.11 / CT-242: grafting onto Mohruung resolves his trigger before the graft attaches"
+      },
+      {
+        "text": "An augment applied to Mohruung in deployment: the Crystal 2 is made first, then the augment attaches.",
+        "test": "576-augment-after-targeted-trigger.test.ts::CR 110.11 / D-U03-14: an augment onto Mohruung in deployment — the Crystal first, then the augment"
       }
     ],
     "see": [],
@@ -3479,6 +3506,11 @@
           "quote": "the stack **above** the spell that targeted — the trigger resolves first.",
           "adopted": "2026-08-19",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Resolves first",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-242, D-U03-13)"
         }
       ],
       "engine": [],
@@ -3486,29 +3518,36 @@
         "48-playtest-hotfix.test.ts",
         "17-earth-b.test.ts",
         "393-raq-mods.test.ts",
-        "414-cr-cards-abilities-targets.test.ts"
+        "414-cr-cards-abilities-targets.test.ts",
+        "547-graft-after-targeted-trigger.test.ts",
+        "576-augment-after-targeted-trigger.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The stack sentence is the owner ruling of 2026-08-19 (“\"When I become targeted\" fires on…”)’s, which speaks of the spell that targeted. The graft sentence is the designer's \"he will trigger first\", read as the trigger coming before the graft is applied; the round-2 verifier measured the engine attaching a deployment graft BEFORE the trigger resolves: F-U03-5, D-U03-13. Sources are silent on the order for an augment applied in deployment: D-U03-14. No suite test asserts the order; the bound examples assert only that the Crystal is made.",
+    "notes": "The stack sentence is the owner ruling of 2026-08-19 (\"When I become targeted\" fires on…), which speaks of the spell that targeted. The graft sentence is the designer's \"he will trigger first\". The owner answered D-U03-13 on 2026-10-22 with reading A, \"Resolves first\", for a graft and for an augment applied in deployment (D-U03-14). The engine was aligned the same day (CT-242: 547, 576); F-U03-5 closed.",
     "sourceHashes": {
       "RAQ 1355115946032889914#4": "2a28941d645c95cca0c5eaacec4f843c7b6adad38ca159527170c52dce59e0cc"
-    },
-    "engineDiffers": [
-      "F-U03-5"
-    ]
+    }
   },
   {
     "key": "concepts.targets.must-be-targeted",
     "parent": "110",
     "order": 12,
-    "text": "A unit that \"must be targeted if able\" (Gatekeeper of Souls) must be one of the targets of an effect whose targets are selected during battle, when it can legally be one. Once it is among the targets, the effect's other targets may be anything legal.",
+    "text": "A unit that \"must be targeted if able\" (Gatekeeper of Souls) must be one of the targets of an effect whose targets are selected during a battle in its region, when it can legally be one. Outside battle, or while the battle is in another region, it compels nothing. Once it is among the targets, the effect's other targets may be anything legal.",
     "examples": [
       {
         "text": "Twin Flame aims at Gatekeeper of Souls first, then at any other unit.",
         "test": "382-gatekeeper-multi-target.test.ts::CR 110.12: a two-target spell aims at the Gatekeeper first"
+      },
+      {
+        "text": "In deployment, a player with a Gatekeeper of Souls in play may aim an Overbloom at another unit.",
+        "test": "544-gatekeeper-battle-only.test.ts::CR 110.12 / CT-239: in deployment a Gatekeeper of Souls compels nothing"
+      },
+      {
+        "text": "During a battle in another region, a Gatekeeper of Souls at home compels nothing.",
+        "test": "544-gatekeeper-battle-only.test.ts::CR 110.12 / CT-239: during battle a Gatekeeper outside the battle region compels nothing"
       }
     ],
     "see": [],
@@ -3535,17 +3574,15 @@
       ],
       "engine": [],
       "tests": [
-        "382-gatekeeper-multi-target.test.ts"
+        "382-gatekeeper-multi-target.test.ts",
+        "544-gatekeeper-battle-only.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The engine also compels targets chosen in deployment: F-U03-2.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U03-2"
-    ]
+    "notes": "Engine aligned 2026-10-22 (CT-239): the compulsion applies only during a battle in the Gatekeeper's region (544); F-U03-2 closed. Printed \"during battle\" read with the regional rule (101.6): a Gatekeeper outside the battle region is in no battle.",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.targets.must-be-targeted.several",

@@ -8,13 +8,18 @@
       {
         "file": "client/ledgers/raq.ts",
         "quote": ": 'covered', guards: [\"390-raq-stack.test.ts::a graft trigger with a r"
+      },
+      {
+        "file": "client/engine/test/546-graft-composite-no-target.test.ts",
+        "quote": "CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack"
       }
     ],
     "ct": "CT-252",
     "dupes": [
       "F-U17-7",
       "F-U17-9"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-252): a graft composite whose required target has none is never put on the stack (546)."
   },
   {
     "id": "F-U14-2",
@@ -31,11 +36,12 @@
         "quote": "responder.** `pushItem` hands priority to `other(controller)`, but"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "if (this.s.priority !== null) this.s.priority = other(item.controller);"
+        "file": "client/engine/test/568-hold-priority.test.ts",
+        "quote": "CR 703.2a / CT-253: the holder stacks a second action before the opponent gets a look, then CR 703.2b"
       }
     ],
-    "ct": "CT-253"
+    "ct": "CT-253",
+    "closed": "fixed on 2026-10-22 (CT-253; owner: follow the Manual): a player may keep priority after acting in battle, on request (568); the client asks with the Control key or the Hold priority toggle (569)."
   },
   {
     "id": "F-U14-3",
@@ -52,11 +58,12 @@
         "quote": "'playing a spell' for some triggers? A: Yes.\"* Wake the Dead spawns the body"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "quote": "// spell's own resolution — the units arrive with no stack item of their own,"
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "quote": "CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives"
       }
     ],
-    "ct": "CT-245"
+    "ct": "CT-245",
+    "closed": "fixed on 2026-10-22 (CT-245, CT-255): Wake the Dead and The Bonesculptor make real plays that go on the stack (557, 558)."
   },
   {
     "id": "F-U14-4",
@@ -107,11 +114,12 @@
         "quote": "**Playing a card during a resolution is playing a card.** It goes on the stack;"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "quote": "          { owner: c.seat, from: 'bin', asPlay: true });"
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "quote": "CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives"
       }
     ],
-    "ct": "CT-245"
+    "ct": "CT-245",
+    "closed": "fixed on 2026-10-22 (CT-245, CT-255): Wake the Dead and The Bonesculptor make real plays that go on the stack (557, 558)."
   },
   {
     "id": "F-U14-7",
@@ -120,15 +128,16 @@
     "summary": "The owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”) (and the designer on Tides) says a card played during a resolution goes on the stack and is respondable once the resolution finishes. Wake the Dead and The Bonesculptor still spawn the played unit in place (spawnUnit asPlay), so nobody can respond to or negate it. Probe: onStack=false, inPlay=true. The Wake the Dead comment calls this \"the standing playInline approximation\", but playInline itself now pushes in battle.",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
-        "quote": "// spell's own resolution — the units arrive with no stack item of their own,"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "the resolution that played it finishes; then priority is handed out with the"
+      },
+      {
+        "file": "client/engine/test/557-wake-the-dead-plays-on-the-stack.test.ts",
+        "quote": "CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives"
       }
     ],
-    "ct": "CT-245"
+    "ct": "CT-245",
+    "closed": "fixed on 2026-10-22 (CT-245, CT-255): Wake the Dead and The Bonesculptor make real plays that go on the stack (557, 558)."
   },
   {
     "id": "F-U14-8",
@@ -151,19 +160,16 @@
     "summary": "The rule (the owner ruling of 2026-10-09 (“Every target is re-checked against its…”)’s encoding) says target legality is judged once, as the item begins to resolve, so an earlier part of the same item cannot make a later part’s target illegal. markIllegalTargets does judge once, but Minor Kraken (and, by the same pattern, Throw off a Cliff and Leave None Pure) re-checks its printed restriction inside its own run. Measured by the U14 tester: a composite whose first part puts 11 +1/+1 counters on a 0/2 and whose second part is Minor Kraken’s recall does not recall it (control without the counters: recalled). (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-water-a.ts",
-        "quote": "if (def <= 5) g.recall(t);"
-      },
-      {
-        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
-        "quote": "if (g.effStats(u)[1] >= 4) g.destroy(u, 'is deleted');"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "the same item therefore cannot make a later part's target illegal"
+      },
+      {
+        "file": "client/engine/test/554-target-judged-once.test.ts",
+        "quote": "CR 704.5a / CT-232: Minor Kraken grafted under a part that grows its target past 5 defense still recalls it"
       }
     ],
-    "ct": "CT-232"
+    "ct": "CT-232",
+    "closed": "fixed on 2026-10-22 (CT-232): no run re-tests its own target restriction; legality is judged once, as the item begins to resolve (554)."
   },
   {
     "id": "F-U14-10",

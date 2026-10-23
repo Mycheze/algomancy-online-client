@@ -65,7 +65,7 @@
         "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
       }
     ],
-    "resolution": "Under owner decision 2 the rule states the ruling, with the marker 'engine differs, see F-U23-1 (CT-185)'. Whether to build it (a replay-safe holdStack action) is CT-185's open owner call."
+    "resolution": "Superseded 2026-10-22: the owner ruled \"you CANNOT hold priority during Deployment\" and closed CT-185 as wontfix. annexd.auto-pass.full-control.deployment now says that full control changes nothing in deployment; F-U23-1 is withdrawn."
   },
   {
     "id": "D-U23-5",
@@ -277,7 +277,7 @@
         "quote": "// the window here: `engine.ts` hands priority to the other seat as soon as"
       }
     ],
-    "resolution": "The rule states the engine's convention as basis engine and points at 703. If F-U14-2 (CT-253) is upheld (the Manual wins), this Annex D rule is withdrawn rather than kept as a convention."
+    "resolution": "F-U14-2 (CT-253) was upheld on 2026-10-22: the owner ruled to follow the Manual, and the engine keeps priority with a player who asks (568). The Annex D rule was not withdrawn but rewritten to the client's convention, \"auto-pass, hold to keep\": priority passes after an action unless the player asks with the Control key or the Hold priority toggle (annexd.auto-pass.no-retain)."
   },
   {
     "id": "D-U23-18",

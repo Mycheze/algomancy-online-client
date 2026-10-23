@@ -1670,15 +1670,20 @@
   },
   {
     "key": "combat.damage.player.redirect",
-    "textHash": "c9f50085d4a122eb",
+    "textHash": "85a944993966836c",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Oorblak",
+        "loc": "client/engine/src/engine.ts:replaceCombatDamage",
         "agrees": true,
-        "note": "each Oorblak applies once; Piercing excess stays combat damage and may be taken by another; the redirect precedes Blightsea Polyp's rot conversion"
+        "note": "two passes: redirects (Oorblak) first, each applies once, Piercing excess re-offered to unapplied redirects; then 'dealt' pass (Polyp) on what got past"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:combat damage breakdown (out.reached)",
+        "agrees": true,
+        "note": "wholly redirected hit -> no combatFaceDamage share, no Thieving draw, no Lethal kill"
       }
     ],
     "tests_run": [
@@ -1696,13 +1701,49 @@
       },
       {
         "file": "client/engine/test/469-replacement-chain-damage.test.ts",
-        "pattern": "CR 708.4",
+        "pattern": "CR 708.4: two Oorblaks and 10 Piercing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/469-replacement-chain-damage.test.ts",
+        "pattern": "CR 708.4: three Oorblaks and 10 Piercing",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
-        "pattern": "CR 608.8c",
+        "pattern": "CR 608.8c: Polyp, Oorblak and a Piercing column",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
+        "pattern": "CR 608.8c: Polyp beside two Oorblaks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/562-lethal-redirected.test.ts",
+        "pattern": "CR 802.24a / CT-296: Gublin wholly redirected into Oorblak",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
+        "pattern": "CR 608.8c / CT-296: a wholly redirected hit raises no face-damage event",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
+        "pattern": "CR 608.8c / CT-296: a partly redirected hit is dealt as what got past Oorblak",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
+        "pattern": "CR 802.20 / CT-296: a Thieving column wholly redirected into Oorblak draws no card",
         "passed": true,
         "asserts_claim": true
       }
@@ -1720,24 +1761,19 @@
         "note": ""
       },
       {
-        "ref": "RAQ 1397188292239163454#0",
+        "ref": "RAQ 1397188292239163454#0 (both quotes)",
         "supports": "yes",
-        "note": "_passer [Solved]: 4 kill it, 6 still Piercing go to the player; Caleb quoted: replacement effects apply once"
+        "note": "[Solved]; _passer write-up quoting calebgannon; covered"
       },
       {
         "ref": "RQ 1442982460034912287",
         "supports": "yes",
-        "note": "calebgannon, same conversation as his two-Automaton chain ('1 token -> 2tokens -> 3 tokens') and the Resonant/Oorblak replacement discussion"
+        "note": "author calebgannon; general statement 'replacement effects only apply once onto an effect'"
       },
       {
-        "ref": "owner 2026-10-16 (Oorblak and Piercing)",
+        "ref": "owner quotes 2026-10-16 (x3), 2026-10-22 (x2)",
         "supports": "yes",
-        "note": "the excess is still combat damage, so a second Oorblak takes it — designer silent on two Oorblaks"
-      },
-      {
-        "ref": "owner 2026-10-16 (Polyp and Oorblak) x2",
-        "supports": "yes",
-        "note": "redirect first; rot only from Piercing excess"
+        "note": "second Oorblak takes Piercing excess; redirect before Polyp; no Lethal kill; none of the to-a-player triggers"
       }
     ],
     "quote_spans": [
@@ -1746,16 +1782,8 @@
         "text": "If combat damage would be dealt to you, that damage is dealt to me instead."
       },
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "Columns deal combat damage to players as 1 rot."
-      },
-      {
         "file": "client/ledgers/raq.ts",
         "text": "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
-      },
-      {
-        "file": "client/ledgers/raq.ts",
-        "text": "replacement effects only apply once in an effect Unless a new trigger occurs"
       },
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
@@ -1767,21 +1795,39 @@
   },
   {
     "key": "combat.damage.player.replaced-still-dealt",
-    "textHash": "00e17ef63805a6aa",
+    "textHash": "37b211a5d24f6bb6",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "loc": "client/engine/src/engine.ts:replaceCombatDamage / combatFaceDamage breakdown",
         "agrees": true,
-        "note": "combatFaceDamage carries the damage dealt; R238 test pays out n though life unchanged"
+        "note": "a Polyp-replaced hit still emits combatFaceDamage with dealt = n and amount = 0; a wholly redirected hit gets no breakdown share"
       }
     ],
     "tests_run": [
       {
-        "file": "207-replaced-hit-was-dealt.test.ts",
-        "pattern": "R238: the payout is the DAMAGE DEALT, not the life lost",
+        "file": "client/engine/test/207-replaced-hit-was-dealt.test.ts",
+        "pattern": "CR 608.8a: the payout is the DAMAGE DEALT",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/207-replaced-hit-was-dealt.test.ts",
+        "pattern": "CR 608.8a: a fully replaced hit still fires the face-damage event",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/562-lethal-redirected.test.ts",
+        "pattern": "CR 608.8a / CT-296: Blightsea Polyp turns the Lethal hit into rot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
+        "pattern": "CR 608.8c / CT-296: a wholly redirected hit raises no face-damage event",
         "passed": true,
         "asserts_claim": true
       }
@@ -1789,29 +1835,28 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R238",
+        "ref": "owner questions-round27 Q5 'Yes, blightsea pollup says it deals damage as, so its still damage. Just'",
         "supports": "yes",
-        "note": "owner ruling"
+        "note": ""
       },
       {
-        "ref": "R195",
-        "supports": "partly",
-        "note": "per-column attribution; its life-lost reading amended by R238"
+        "ref": "owner register@72de434 'Face damage is attributed. The event is not split.'",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+        "file": "client/engine/test/207-replaced-hit-was-dealt.test.ts",
+        "text": "assert.equal(face[0]!.data?.['n'], 4, 'n is what was DEALT (4), not what was lost (0)');"
       },
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Columns deal combat damage to players as 1 rot."
+        "file": "client/engine/test/207-replaced-hit-was-dealt.test.ts",
+        "text": "'the opponent gained exactly the damage the column dealt, though it lost no life to it');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": "Note only: example 1 uses Vroot, whose trigger is 'when my column deals combat damage' (not 'to a player'); the 'to a player' half is shown by the combatFaceDamage event test in 207."
   },
   {
     "key": "combat.damage.split",

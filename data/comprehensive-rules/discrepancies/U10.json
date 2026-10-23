@@ -81,7 +81,7 @@
         "quote": "legal exactly while its battle runs; **emptying it does not remove it**"
       }
     ],
-    "resolution": "The rule states the designer's answer: the effect places into the formation the source was in, and 602.6k names this as an exception to the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no slots'. The engine places nothing for a lone source that dies before blocks (F-U10-6 (CT-250)). Question for the owner only if a lone source that dies under its own trigger is meant to place nothing, in which case F-U10-6 (CT-250) closes as no-bug and 602.6f gains the qualifier."
+    "resolution": "The rule states the designer's answer: the effect places into the formation the source was in, even when it is empty, and 602.6k names this as an exception to the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no slots'. Engine fix: done 2026-10-22 (CT-250; F-U10-6 closed): a dead source remembers its formation even when it is empty (561)."
   },
   {
     "id": "D-U10-7",
@@ -99,11 +99,11 @@
         "quote": "- **Attacking line only.** A blocking column is keyed to the attacking column it"
       },
       {
-        "source": "file: client/engine/src/engine.ts",
-        "quote": "    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
+        "source": "file: client/engine/test/560-defending-gap-adjacency.test.ts",
+        "quote": "CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap"
       }
     ],
-    "resolution": "The rule follows the Manual: where a blocker stands matters for adjacency, and blocking columns are keyed to the attacking columns they face, so an unblocked column is a gap. The engine differs: F-U10-3 (CT-249)."
+    "resolution": "The rule follows the Manual: where a blocker stands matters for adjacency, and blocking columns are keyed to the attacking columns they face, so an unblocked column is a gap. Engine fix: done 2026-10-22 (CT-249; F-U10-3 closed): the defending grid keeps one column per attacking column, an unblocked one empty (560)."
   },
   {
     "id": "D-U10-8",

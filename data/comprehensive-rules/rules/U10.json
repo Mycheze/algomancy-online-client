@@ -347,8 +347,8 @@
         "test": "421-cr-regions-formations.test.ts::cr:combat.regions.exclusive.no-region-zones — cached and binned cards carry no region, no region holds a stack, and a cache is reachable only where its owner is present"
       },
       {
-        "text": "Frosted Denial, cast while battle resolves in one region, cannot negate an effect that was played in another region.",
-        "test": null
+        "text": "Molten Riftbreaker dies in its controller's home region during a battle elsewhere: its \"negate all allied spells\" leaves the spell on the battle region's stack alone. Dying in the battle region, it negates it.",
+        "test": "578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack"
       }
     ],
     "see": [
@@ -409,19 +409,17 @@
       ],
       "engine": [],
       "tests": [
-        "421-cr-regions-formations.test.ts"
+        "421-cr-regions-formations.test.ts",
+        "578-region-stacks-and-bins.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "POLISH (2026-10-10): it stated the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s premise (\"Three zones have no region and are deliberately global\") and so contradicted concepts.golden.regions (101.6), which states Manual p.19 and Caleb's RAQ answer. Print and the designer outrank the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) and the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) (D-U01-12, settled; D-U10-5 merged into it). The client keeps the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions: F-U01-2 (CT-234). The cache half of the old text (reachable only where its owner is present, the owner ruling of 2026-09-05 (“A cached card is a target…”)) is kept, and the bound 421 example still demonstrates it; that test title also asserts \"no region holds a stack\", which is the engine's divergent behaviour (F-U01-2). REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so.",
+    "notes": "POLISH (2026-10-10): it stated the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”)’s premise (\"Three zones have no region and are deliberately global\") and so contradicted concepts.golden.regions (101.6), which states Manual p.19 and Caleb's RAQ answer. Print and the designer outrank the owner ruling of 2026-08-30 (“An ally includes itself, \"another\" is…”) and the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”) (D-U01-12, settled; D-U10-5 merged into it). The client keeps the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions: F-U01-2 (CT-234). The cache half of the old text (reachable only where its owner is present, the owner ruling of 2026-09-05 (“A cached card is a target…”)) is kept, and the bound 421 example still demonstrates it; that test title also asserts \"no region holds a stack\", which is the engine's divergent behaviour (F-U01-2). REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. REVIEW COMMENT 2026-10-11 (owner, on F-U01-2), the owner ruling of 2026-10-11 (“The stack, the bins and the…”): the stack is one per region, owned by nobody and shared by the players present; bins and caches are tied to their owner. Text redrafted to say so. Engine aligned 2026-10-22 (CT-234): one stack per region; 578 (Riftbreaker at home and in the battle; deployment bin reach; a lint that no card walks the whole stack). F-U01-2 closed. The Frosted Denial example had no test bound and was dropped for the Riftbreaker one 578 drives.",
     "sourceHashes": {
       "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
-    },
-    "engineDiffers": [
-      "F-U01-2"
-    ]
+    }
   },
   {
     "key": "combat.regions.arrangement",
@@ -1847,7 +1845,7 @@
     "key": "combat.formations.placement.legal-positions",
     "parent": "combat.formations.placement",
     "order": 1,
-    "text": "The positions such a unit may take are: a new column at either end of the line; the back slot of any column that holds exactly one unit; and the front slot of a hole left after blocks (rule 602.5a).",
+    "text": "The positions such a unit may take are: a new column at either end of the line; the back slot of any column that holds exactly one unit; and the front slot of a hole left after blocks (rule 602.5a). A line with no column left has one end, so there the only position is one new column.",
     "examples": [
       {
         "text": "An attacking line has two columns, the first with two units and the second with one. The legal positions are a new column at the left end, the back slot of the second column, and a new column at the right end.",
@@ -1856,6 +1854,10 @@
       {
         "text": null,
         "test": "66-formation-placement.test.ts::CR 602.6a: a placement can FILL a CR 602.5a hole, and can never create one"
+      },
+      {
+        "text": "A lone Hooba-Lin attacks and is killed under its trigger. Its remembered line holds no column, so the 1/1 takes the one new column there.",
+        "test": "561-remembered-empty-formation.test.ts::CR 602.6f / CT-250: a lone ${name} killed under its attack trigger"
       }
     ],
     "see": [
@@ -1890,13 +1892,14 @@
       ],
       "engine": [],
       "tests": [
-        "66-formation-placement.test.ts"
+        "66-formation-placement.test.ts",
+        "561-remembered-empty-formation.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner's words give the ends and the second slot of a one-unit column; the hole is a third kind added by the ruling's author (the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”): 'The hole is a third kind the ruling does not enumerate'). See D-U10-4.",
+    "notes": "The owner's words give the ends and the second slot of a one-unit column; the hole is a third kind added by the ruling's author (the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”): 'The hole is a third kind the ruling does not enumerate'). See D-U10-4. Round 2026-10-22 (CT-250): the empty-line sentence is the engine's (an attacking line with no column left offers one new column, auto-picked under 602.6d); no printed or owner source states it.",
     "sourceHashes": {}
   },
   {
@@ -2037,6 +2040,14 @@
       {
         "text": "Hooba-Lin's host attacks, then is stolen before the trigger resolves, so it is in play but out of the formation. No 1/1 is created.",
         "test": "108-formation-class.test.ts::CR 602.6e Hooba-Lin: alive but out of the formation (CR 711.3) → no token, no question"
+      },
+      {
+        "text": "Hooba-Bot blocks, and with its trigger waiting, Organic Exchange puts it into the attacking line. The Robot is made in the attacking line, where Hooba-Bot now stands, for the player who controls the trigger.",
+        "test": "580-source-formation-after-exchange.test.ts::CR 602.6e / Organic Exchange: Hooba-Bot swapped into the attacking line under its block trigger makes the Robot there"
+      },
+      {
+        "text": "The same with Hooba-Pon: the unit it lets its player play goes into the attacking line, where Hooba-Pon now stands.",
+        "test": "580-source-formation-after-exchange.test.ts::CR 602.6e / Organic Exchange: Hooba-Pon swapped into the attacking line under its block trigger plays the unit into that line"
       }
     ],
     "see": [
@@ -2056,28 +2067,38 @@
           "quote": "the source is **alive and in play but unslotted**",
           "adopted": "2026-08-28",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Source's formation",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (Hooba and Organic Exchange)"
         }
       ],
       "engine": [],
       "tests": [
-        "108-formation-class.test.ts"
+        "108-formation-class.test.ts",
+        "580-source-formation-after-exchange.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Owner 2026-10-22, \"Source's formation\": with a Hooba's block trigger waiting, Organic Exchange can move the source into the other line, and the trigger places into the line the source now stands in (580).",
     "sourceHashes": {}
   },
   {
     "key": "combat.formations.placement.source-gone",
     "parent": "combat.formations.placement",
     "order": 6,
-    "text": "If the effect's source has left play while its effect is on the stack, “my formation” means the formation the source was in when it left play, and the effect still places the unit there.",
+    "text": "If the effect's source has left play while its effect is on the stack, “my formation” means the formation the source was in when it left play, and the effect still places the unit there, even if no unit is left standing in that formation.",
     "examples": [
       {
         "text": "Hooba-Lin attacks and is killed with its trigger on the stack. The 1/1 is still created, in the formation Hooba-Lin was in.",
         "test": "108-formation-class.test.ts::CR 714.4 Hooba-Lin: killed under its own attack trigger"
+      },
+      {
+        "text": "Hooba-Lin attacks alone and is killed with its trigger on the stack. The attacking line now holds no unit, and the 1/1 is still created in it.",
+        "test": "561-remembered-empty-formation.test.ts::CR 602.6f / CT-250: a lone ${name} killed under its attack trigger"
       }
     ],
     "see": [
@@ -2103,19 +2124,17 @@
       "engine": [],
       "tests": [
         "108-formation-class.test.ts",
-        "421-cr-regions-formations.test.ts"
+        "421-cr-regions-formations.test.ts",
+        "561-remembered-empty-formation.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "engine differs, see F-U10-6: a lone Hooba-Lin killed under its own attack trigger before blocks makes its 1/1 outside any formation (round-2 verifier probe). The designer's answer names Hooba-Lin without excepting a lone attacker, and 602.6k now names this rule as an exception. See D-U10-6.",
+    "notes": "The designer's [Solved] answer names Hooba-Lin, Hooba-Bot and Hooba-Pon among the effects that \"will remember they were in formation and will work fine\", with no lone-attacker exception. Engine aligned 2026-10-22 (CT-250, 561); F-U10-6 closed. The last clause makes explicit what the old text left to 602.6k's exception list (D-U10-6).",
     "sourceHashes": {
       "RAQ 1353895783266516992#2": "83fda5aac7c0abc39be0eb511b893b31ffa926160cc95d236239fcb54be22e45"
     },
-    "engineDiffers": [
-      "F-U10-6"
-    ],
     "rebuttal": "Text kept. The verifier offered two fixes: qualify the rule, or treat the lone-source case as an engine bug. The source is a [Solved] designer answer ('will remember they were in formation and will work fine', naming Hooba-Lin), which outranks the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s 'no slots' prose under the authority order, so the rule states it, 602.6k excepts it, and the engine's behaviour is filed as F-U10-6."
   },
   {
@@ -2595,7 +2614,7 @@
       },
       {
         "text": "The defender blocks the first and third attacking columns and leaves the second unblocked. The two blockers are not neighbours, so an Inspiration in one does not buff the other.",
-        "test": null
+        "test": "560-defending-gap-adjacency.test.ts::CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent, so Inspiration does not buff across the gap"
       }
     ],
     "see": [],
@@ -2620,17 +2639,15 @@
       "engine": [],
       "tests": [
         "23-wood-a.test.ts",
-        "421-cr-regions-formations.test.ts"
+        "421-cr-regions-formations.test.ts",
+        "560-defending-gap-adjacency.test.ts"
       ]
     },
     "basis": "printed",
     "scope": "game",
     "confidence": "high",
-    "notes": "A defending formation's columns are the attacking columns they block (the owner ruling of 2026-08-22 (“Formation gravity: the back row always…”), the owner ruling of 2026-09-25 (“The empty column past each end…”): 'A blocking column is keyed to the attacking column it answers'), and the Manual says where a blocker stands matters for adjacency (p.23). The engine reads two blockers with an unblocked column between them as neighbours: F-U10-3, D-U10-7.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U10-3"
-    ]
+    "notes": "A defending formation's columns are the attacking columns they block (blocking columns are keyed to the attacking column they answer), and the Manual says where a blocker stands matters for adjacency (p.23). Engine aligned 2026-10-22 (CT-249): the defending grid keeps an unblocked column as a gap (560); F-U10-3 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.adjacency.positions",
@@ -2641,6 +2658,10 @@
       {
         "text": "Hooba-Nan stands in the front row of a middle column. Its adjacent slots are the front rows of the columns on either side and the slot behind it, and nothing diagonal.",
         "test": "23-wood-a.test.ts::Hooba-Nan in the middle: both sides and below, and nothing diagonal"
+      },
+      {
+        "text": "A blocker stands next to an unblocked attacking column. It has no adjacent position in that column.",
+        "test": "560-defending-gap-adjacency.test.ts::CR 603.3b / CT-249: a blocker next to an unblocked column has no adjacent slot in it"
       }
     ],
     "see": [
@@ -2671,17 +2692,15 @@
       "tests": [
         "66-formation-placement.test.ts",
         "23-wood-a.test.ts",
-        "421-cr-regions-formations.test.ts"
+        "421-cr-regions-formations.test.ts",
+        "560-defending-gap-adjacency.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The printed words say left/right/front/back; the owner's words (owner ruling of 2026-08-22, “Joining a formation is a CHOICE…”) fix what that means within the grid. 'At most': a back-row unit at an end of a line, and any unit at an end of a defending line, has no position past that end (603.3a, 603.3b). Whether a unit is adjacent to the enemy unit facing it across the column is not addressed: D-U10-2. The engine treats blockers on either side of an unblocked column as neighbours: F-U10-3.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U10-3"
-    ]
+    "notes": "The printed words say left/right/front/back; the owner's words (owner ruling of 2026-08-22, “Joining a formation is a CHOICE…”) fix what that means within the grid. 'At most': a back-row unit at an end of a line, and any unit at an end of a defending line, has no position past that end (603.3a, 603.3b). Whether a unit is adjacent to the enemy unit facing it across the column is not addressed: D-U10-2. Engine aligned 2026-10-22 (CT-249, 560): F-U10-3 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "combat.columns.adjacency.only-in-formation",
@@ -3128,7 +3147,7 @@
         "421-cr-regions-formations.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "low",
     "notes": "ENGINE-ONLY. The owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s hole is a column emptied of ATTACKERS; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”)’s extra spot is a column with no block entry. Neither names a blocking column emptied of its blockers. The round-1 verifier measured the engine offering its front slot ('column N (an empty slot in the line)'). See D-U10-9. The round-2 verifier measured the spot only while another unit remains in the defending formation; once it holds none, rule 602.6k applies.",
@@ -3151,6 +3170,10 @@
       {
         "text": "The defender declares no blockers. An effect that puts a unit into the defender's formation may still put it in front of the unblocked attacking column (rule 602.6c); the attacker is offered no such spot.",
         "test": "400-raq-fix-blocks.test.ts::CR 607.2c the attacker is never offered a blocking spot"
+      },
+      {
+        "text": "A living Hooba-Lin whose line has emptied around it is offered nothing; only a source that has left play keeps its remembered formation.",
+        "test": "561-remembered-empty-formation.test.ts::CR 602.6k / CT-250: the remembered exception is the dead source only"
       }
     ],
     "see": [
@@ -3184,13 +3207,14 @@
       "tests": [
         "66-formation-placement.test.ts",
         "400-raq-fix-blocks.test.ts",
-        "421-cr-regions-formations.test.ts"
+        "421-cr-regions-formations.test.ts",
+        "561-remembered-empty-formation.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Stated in the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s own prose, not in the owner's quoted words; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) (designer-backed) adds the defender's after-blocks spot, and the designer's answer for a source that has left play (602.6f) is the second exception. The round-2 verifier measured the engine following the rule plus the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) exception, so the earlier engineDiffers (F-U10-5) is withdrawn. The 602.6f exception is not followed for a lone source: F-U10-6, on 602.6f. It sits uneasily with the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) ('emptying it does not remove it'): D-U10-6, D-U10-10.",
+    "notes": "Stated in the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”)’s own prose, not in the owner's quoted words; the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) (designer-backed) adds the defender's after-blocks spot, and the designer's answer for a source that has left play (602.6f) is the second exception. The round-2 verifier measured the engine following the rule plus the owner ruling of 2026-10-09 (“A blocker put in after blocks…”) exception, so the earlier engineDiffers (F-U10-5) is withdrawn. The 602.6f exception is not followed for a lone source: F-U10-6, on 602.6f. It sits uneasily with the owner ruling of 2026-08-25 (“{Reaping} is a kill rider, and…”) ('emptying it does not remove it'): D-U10-6, D-U10-10. Round 2026-10-22 (CT-250): the 602.6f exception is now built (561), which answers the partial verdict's objection.",
     "sourceHashes": {}
   }
 ]

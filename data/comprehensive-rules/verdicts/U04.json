@@ -795,63 +795,62 @@
   },
   {
     "key": "concepts.costs.modifiers.imposed.ambush",
-    "textHash": "a836648abffdcd54",
+    "textHash": "8cd0ae70a8e506f5",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U04-r2",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "cards/sets/batch-light-a.ts:Arbiter of Armistice costMods.life",
-        "agrees": false,
-        "note": "gates on ctx.purpose === 'play'; the Ambush play path never asks the cost-mod layer, so an Ambush pays no life (the flagged divergence is real)"
+        "loc": "client/engine/src/apply.ts (ambush play pays imposed costs)",
+        "agrees": true,
+        "note": ""
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
-        "title": "concepts.costs.modifiers.imposed.ambush: an Ambush under Arbiter of Armistice — does it pay [Pay 2 life]?",
+        "file": "548-ambush-imposed-costs.test.ts",
+        "pattern": "CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life",
         "passed": true,
-        "demonstrates": "yes: the divergence. A spell card there owes 2 life; a Lurking Slimebeast Ambush pays none"
+        "asserts_claim": true
+      },
+      {
+        "file": "548-ambush-imposed-costs.test.ts",
+        "pattern": "CR 111.10d / CT-243: an Ambush that cannot pay the imposed life is not offered",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "548-ambush-imposed-costs.test.ts",
+        "pattern": "CR 111.10e / CT-243: an Ambush under an opposing Vengeance owes the sacrifice",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Arbiter of Armistice",
         "supports": "yes",
-        "note": "\"Cards played during battle\" literally covers a card played as an Ambush"
+        "note": ""
       },
       {
-        "ref": "R129",
+        "ref": "owner register \"a {Battle} unit and an Ambush are cards being played\" + owner chat 2026-10-22 \"Yes, it pays\"",
         "supports": "yes",
-        "note": "an Ambush is a card being played (cardPlayed event)"
-      },
-      {
-        "ref": "R122",
-        "supports": "no",
-        "note": "documents the opposite engine behaviour: Ambush sits outside the play-tax layer, left as a future decision. Useful only as evidence of the divergence"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "### (b) 'cardPlayed': a {Battle} unit and an Ambush are cards being played"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Cards played during battle gain [Pay 2 life]."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "printed cost line and today sits outside the R59/R60/R122 play-tax layer"
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "you can play cards as an ambush during battle, even if"
-      },
-      {
-        "file": "client/engine/src/cards/dsl.ts",
-        "text": "new Set<StackItem['kind']>(['unit', 'spell', 'spellUnit', 'ambush']);"
+        "file": "client/engine/test/548-ambush-imposed-costs.test.ts",
+        "text": "assert.equal(h.state.stack.length, 0, 'the cost is paid BEFORE the Ambush reaches the stack');"
       }
     ],
-    "basis_ok": false,
-    "problem": "Ruling and divergence both check out. Basis 'printed' overstates: the card prints only the tax; that an Ambush is a card played comes from R129 (owner) and Manual p.40 ('play cards as an ambush'), which is not cited. Basis should be mixed, or cite Manual p.40. R122 is cited as a ruling source but says the reverse."
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "concepts.costs.modifiers.minimum",
@@ -948,96 +947,107 @@
   },
   {
     "key": "concepts.costs.modifiers.noun",
-    "textHash": "3d1de0e3cedf134d",
+    "textHash": "86d97f14e60a8a18",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U04-r2",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "cards/sets/batch-earth-c.ts:Tranquility costMods.delta",
+        "loc": "client/engine/src/engine.ts:E.manaToPlay",
         "agrees": true,
-        "note": "isPlayedSpellKind: spell, spellUnit, spellToken; purpose 'play' only"
+        "note": "Tranquility taxes spell units and spell tokens, not plain units"
       },
       {
-        "loc": "cards/sets/batch-light-a.ts:Arbiter of Armistice costMods.life",
+        "loc": "client/engine/src/engine.ts:E.lifeToPlay",
         "agrees": true,
-        "note": "CARD_PLAY_KINDS (unit, spell, spellUnit, ambush) excludes spellToken; purpose 'play' excludes mods. The Ambush half is not reached (flagged divergence)"
+        "note": "Arbiter taxes cards (units, Ambush), 0 for a token"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:1566",
+        "agrees": true,
+        "note": "'cardPlayed' is not fired for a token"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/337-spell-tokens-are-played.test.ts",
-        "pattern": "Tranquility taxes a spell token",
+        "pattern": "CR 702.7a: Tranquility taxes a spell token",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
       },
       {
         "file": "client/engine/test/337-spell-tokens-are-played.test.ts",
-        "pattern": "Arbiter of Armistice prints Cards",
+        "pattern": "CR 701.1c: Arbiter of Armistice prints Cards",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/548-ambush-imposed-costs.test.ts",
+        "pattern": "CR 111.10e / CT-243: an Ambush played under Arbiter",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.costs.modifiers.noun",
+        "passed": true,
+        "asserts_claim": true
       },
       {
         "file": "client/engine/test/38-light-a.test.ts",
-        "pattern": "Arbiter of Armistice",
+        "pattern": "Arbiter of Armistice: the tax is on PLAYING",
         "passed": true,
-        "asserts_claim": "yes: a Virus augment applied in battle pays no life"
+        "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U04/u04-r2-probes.test.ts",
-        "title": "concepts.costs.modifiers.noun: Tranquility (\"Spells cost [one] more\") taxes a SPELL UNIT played in battle",
-        "passed": true,
-        "demonstrates": "yes"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U04/u04-r2-probes.test.ts",
-        "title": "concepts.costs.modifiers.noun: Arbiter of Armistice (\"Cards played\") taxes a UNIT played in battle",
-        "passed": true,
-        "demonstrates": "yes"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
-        "title": "concepts.costs.modifiers.imposed.ambush: an Ambush under Arbiter of Armistice — does it pay [Pay 2 life]?",
-        "passed": true,
-        "demonstrates": "yes: the flagged Ambush divergence is real"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R305",
-        "supports": "yes",
-        "note": "spell(s) counts a token; card(s) does not"
-      },
-      {
-        "ref": "R129",
-        "supports": "yes",
-        "note": "units and Ambushes are cards played"
-      },
-      {
         "ref": "RAQ 1537748882501668934#0",
-        "supports": "partly",
-        "note": "the quoted words are our claim paraphrase in extract.json, not _passer's, who wrote \"Mods are not considered 'played'\". Same substance"
+        "supports": "yes",
+        "note": "[Solved] Mods are NOT Played; _passer: mods are applied, not played; quote verbatim. Cost modifiers print 'to play' / 'played', so a mod is outside them."
+      },
+      {
+        "ref": "RAQ 1461450216874967235#2",
+        "supports": "yes",
+        "note": "_passer: a spell unit played counts as 'playing a spell'; quote verbatim."
+      },
+      {
+        "ref": "owner '\"spell(s)\": a token counts' / '\"card(s)\": a token does not'",
+        "supports": "yes",
+        "note": "supports spell tokens in 'spells', out of 'cards'"
+      },
+      {
+        "ref": "owner \"'cardPlayed': a {Battle} unit and an Ambush are cards being played\"",
+        "supports": "yes",
+        "note": "units (and Ambush) are cards played"
+      },
+      {
+        "ref": "card: Tranquility / Arbiter of Armistice",
+        "supports": "yes",
+        "note": "'Spells cost [one] more to play during battle.' / 'Cards played during battle gain [Pay 2 life].'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **\"spell(s)\"**: a token counts."
+        "file": "client/ledgers/raq.ts",
+        "text": "Mods are not considered 'played', so they wouldn't trigger any"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **\"card(s)\"**: a token does not."
+        "file": "client/ledgers/raq.ts",
+        "text": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
       },
       {
-        "file": "client/engine/src/cards/dsl.ts",
-        "text": "return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';"
+        "file": "client/engine/test/38-light-a.test.ts",
+        "text": "assert.equal(h.state.players[A]!.life, life1, 'a Virus augment is applied, not played');"
+      },
+      {
+        "file": "client/engine/test/337-spell-tokens-are-played.test.ts",
+        "text": "assert.equal(e.lifeToPlay(A, 'Crystal'), 0, 'a token is not a card');"
       }
     ],
     "basis_ok": true,
-    "problem": "The designer citation quotes our paraphrase as if it were the designer's words.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.costs.modifiers.paid-reduction",
@@ -2593,63 +2603,75 @@
   },
   {
     "key": "concepts.debt.as-cost",
-    "textHash": "513dbbfd40b8f707",
+    "textHash": "990cd9277fee3760",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U04-r2",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.payActivationCost",
+        "loc": "client/engine/src/engine.ts (printed.gainDebt cast cost; activation gain-debt cost)",
         "agrees": true,
-        "note": "cost.debt -> gainDebt in the cast window"
-      },
-      {
-        "loc": "engine.ts:E.canPayCastCost",
-        "agrees": true,
-        "note": "gainDebt always payable; charged with the cast-time costs"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/47-costs-events.test.ts",
-        "pattern": "printed.gainDebt is a REAL",
+        "file": "47-costs-events.test.ts",
+        "pattern": "CR 112.14c: printed.gainDebt is a REAL cast cost",
         "passed": true,
-        "asserts_claim": "partly: debt charged at play; the test does not negate"
+        "asserts_claim": true
+      },
+      {
+        "file": "415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.debt.as-cost",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "556-inline-play-is-a-whole-play.test.ts",
+        "pattern": "CR 112.14c / CT-332: a [Gain N debt] spell played in place gains the debt",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "556-inline-play-is-a-whole-play.test.ts",
+        "pattern": "CR 702.4e / CT-332: Tides of the Cosmos playing Hyper Beam in a battle window gains the debt",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
-        "title": "concepts.debt.as-cost: a negated debt-cost spell keeps the debt paid",
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe U04-1: Deferral Drone activated in battle and negated by Dematerialize — the 4 debt stays",
         "passed": true,
-        "demonstrates": "yes: Hyper Beam negated by Dematerialize deals 0 and the debt stays"
+        "demonstrates": "yes: the ability half (no bound test negated an ability)"
       }
     ],
     "source_checks": [
       {
         "ref": "card: Deferral Drone",
         "supports": "yes",
-        "note": "\"Gain 4 debt:\" is an activation cost (oracle prints \"[Augment][once] Gain 4 debt: ...\")"
+        "note": "\"Gain 4 debt:\" is an activation cost"
       },
       {
-        "ref": "R49 (its cast-cost and activation-cost body)",
+        "ref": "owner register (printed gainDebt is charged, a negated ...)",
         "supports": "yes",
-        "note": "a negated Hyper Beam still costs its caster the debt"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "printed `Printed.gainDebt` line, which the engine itself charges — a negated"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Gain 4 debt: The next card you play this phase costs [3] less."
       },
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Gain 4 debt: The next card you play this phase costs [3] less."
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "text": "assert.equal((h.state.players[A]!.debt ?? 0) - debt0, gained, 'and the debt stays gained');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": "Note: the example-1 test (47) asserts only that the debt is charged on play, not the negation its title names; 415 and probe U04-1 cover negation."
   },
   {
     "key": "concepts.debt.automatic",

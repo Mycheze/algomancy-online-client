@@ -591,7 +591,7 @@
     "key": "attr.general.application-order",
     "parent": "attr.general",
     "order": 12,
-    "text": "When Tough and Balanced both apply to a unit, they apply one after the other, from top to bottom. If Tough is augmented onto a Balanced unit, or a Tough unit attacks with a Balanced unit behind it, the unit has its defense doubled, then its stats balanced. If Tough is applied to a Balanced unit, it has its stats balanced, then its defense doubled. Attributes granted by a unit's augments apply in the order the mods were gained, the first attached first, and attributes shared from its column apply from front to back. An attribute the unit has from more than one source takes the position of the first.",
+    "text": "When Tough and Balanced both apply to a unit, they apply one after the other, from top to bottom. If Tough is augmented onto a Balanced unit, or a Tough unit attacks with a Balanced unit behind it, the unit has its defense doubled, then its stats balanced. If Tough is applied to a Balanced unit, it has its stats balanced, then its defense doubled. The attributes a unit has from its augments apply first, in the order the mods were attached, the first attached first; then its printed attributes; then those effects have given it; then those shared from its column, front to back. An attribute the unit has from more than one source takes the position of the first.",
     "examples": [
       {
         "text": "A 3/1 augmented with Rampart Guardian (Tough) and then Child of Aether (Balanced) is a 3/3; augmented in the other order it is a 3/6.",
@@ -599,11 +599,15 @@
       },
       {
         "text": "Child of Aether prints Balanced and is a 2/0. Augmented with Rampart Guardian (Tough), its defense is doubled (still 2/0), then its stats balanced: it is a 2/2.",
-        "test": null
+        "test": "08-cards2.test.ts::CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances"
       },
       {
         "text": "Rampart Guardian (0/4, Tough) attacks with Child of Aether (Balanced) behind it: its defense is doubled (0/8), then its stats balanced, and it is an 8/8.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it is doubled, then balanced: Rampart Guardian is an 8/8"
+      },
+      {
+        "text": "Child of Aether given Tough by an effect is balanced first (2/2), then its defense doubled: a 2/4.",
+        "test": "08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles"
       }
     ],
     "see": [
@@ -641,11 +645,6 @@
       "ours": [],
       "owner": [
         {
-          "quote": "attrs in type-line order, then augment-granted attrs in mod-stack order, then",
-          "adopted": "2026-08-18",
-          "from": "register@72de434"
-        },
-        {
           "quote": "column-shared attrs** (column order, front to back). Duplicates don't stack — an",
           "adopted": "2026-08-18",
           "from": "register@72de434"
@@ -654,6 +653,11 @@
           "quote": "\"order gained\" is the engine's reading. (Engine 2026-07-16.)",
           "adopted": "2026-08-18",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Doubled then balanced",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-257: Tough augmented onto a Balanced unit)"
         }
       ],
       "engine": [],
@@ -665,11 +669,9 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Round-1 revision. The Manual Q&A on p.42 names the exact case the owner ruling of 2026-08-18 (“Stat layer 4 application order”) calls an engine call: Tough augmented onto a Balanced unit is doubled, then balanced. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) puts a unit's own printed attributes before its augments' and says \"the Manual doesn't specify an order for printed-vs-granted-vs-shared\", which p.42 answers for this pair. Printed text outranks R-rulings, so the rule states the Manual; the owner ruling of 2026-08-18 (“Stat layer 4 application order”) still supplies the mod-stack order, the front-to-back column order and the duplicate rule. The verifier's probe measured the engine balancing first (F-U19-5; D-U19-1). The Manual's \"applied to\" case (an effect granting Tough) is stated as printed; the guard test covers only two augments on a plain host. Round 2: the verifier noted the mod order's direction was implicit. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) names it \"order gained\", which the guard test pins as first attached first (Rampart Guardian then Child of Aether makes a 3/1 a 3/3); the Manual's \"top to bottom\" does not say which mod is on top, so that clause rests on the owner ruling of 2026-08-18 (“Stat layer 4 application order”)’s engine reading alone: D-U19-12.",
+    "notes": "Settled 2026-10-22 (CT-257, D-U16-1 reading A): the Manual p.42 first clause governs a Tough augment on a Balanced unit, and the engine now applies augment mods' attributes before the unit's printed ones (08-cards2). F-U19-5 closed. The earlier partial verdict said the mod order (\"order gained\") is the client's reading where the table orders mods by position on the card (\"top to bottom\", Manual p.43 lets new mods go in between): that clause is now tagged digital (digitalClause). D-U19-12.",
     "sourceHashes": {},
-    "engineDiffers": [
-      "F-U19-5"
-    ]
+    "digitalClause": "in the order the mods were attached, the first attached first"
   },
   {
     "key": "attr.general.pure",
@@ -679,7 +681,11 @@
     "examples": [
       {
         "text": "Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies.",
-        "test": null
+        "test": "555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian kills it, because its Tough is off in the pairing"
+      },
+      {
+        "text": "A Balanced 4/1 dealt 3 by a Pure source dies: Balanced does not apply in that pairing.",
+        "test": "555-pure-ignores-stat-attributes.test.ts::CR 802.25e / CT-260: a Balanced 4/1 dealt 3 by a Pure source dies, because Balanced is off in the pairing"
       },
       {
         "text": "An Unaware source dealing 3 damage to a Pure unit pumped from 2/3 to 4/5 does not read it at its printed 2/3: it survives, where a pumped non-Pure 2/3 dies.",
@@ -707,21 +713,23 @@
           "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}.",
           "adopted": "2026-09-05",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Print: ignore all",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-260: Pure and the stat-changing attributes)"
         }
       ],
       "engine": [],
       "tests": [
-        "430-cr-attributes-1.test.ts"
+        "430-cr-attributes-1.test.ts",
+        "555-pure-ignores-stat-attributes.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Printed text read literally outranks R-rulings (authority order). The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) says Tough, Balanced and Inverted \"still read (they are stat layers, the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”))\" — that sentence is the ruling's engine description, not an owner quote, and the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) says only that STATS are not attributes. The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) itself turns Unaware off in a noncombat Pure pairing, while the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”) says the combat Unaware collapse \"survives {Pure}\". So the rulings disagree with each other and with the print: D-U19-2. The pilot (D608-48) kept engine law here; this draft follows the authority order instead, and the owner should see the difference. Round 1: the verifier measured Tough still applying against a Pure source (probe) and Unaware switched off in a noncombat Pure pairing; both recorded on F-U19-1 and D-U19-2. Round 2: the verifier confirmed the rule and measured Balanced also staying on against a Pure source (a Balanced 4/1 survives 3 as a 4/4), added to F-U19-1. The owner rulings of 2026-09-05 (“{Pure} outside combat: the same switch…”) and 2026-08-20 (“{Pure}: the attribute layer, switched off…”) conflict it asked to list for the owner is D-U19-2, which now asks the owner directly.",
-    "engineDiffers": [
-      "F-U19-1",
-      "F-U19-2"
-    ],
+    "notes": "Print: Pure ignores \"all other attributes\", and the stat-changing ones are attributes. The owner confirmed print on 2026-10-22 (CT-260), and the engine was changed the same day (555). F-U19-1, F-U19-2 closed. D-U19-2.",
     "sourceHashes": {},
     "rebuttal": "Text kept. CONTROL's authority order puts printed text read literally above R-rulings, and Pure's printed reminder ignores \"all other attributes\"; Manual p.42 is cited only because it names Tough an attribute (\"4. Attributes like Tough\"), which is the point the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s \"they are stat layers\" disputes. Owner decision 2 has the rule state current law and flag the engine: engineDiffers F-U19-1/F-U19-2, D-U19-2. The verifier's probe (a Pure source's 5 leaves Rampart Guardian a Tough 0/8) measures F-U19-1; it does not make the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) outrank the card."
   },
@@ -3413,6 +3421,10 @@
       {
         "text": "Crumbling Ancient (Vulnerable) made Pure is dealt 2 by a 2-damage effect, not 4.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.vulnerable.pure — a Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4"
+      },
+      {
+        "text": "A Pure, Vulnerable Oorblak takes a redirected hit from a column that is not Pure. It is dealt the damage once, not doubled.",
+        "test": "553-oorblak-pure-redirect.test.ts::CR 802.11e / CT-227: a Pure Vulnerable Oorblak under a plain column is dealt the redirected hit once, not doubled"
       }
     ],
     "see": [
@@ -3442,16 +3454,14 @@
       "engine": [],
       "tests": [
         "290-pure-outside-combat.test.ts",
-        "430-cr-attributes-1.test.ts"
+        "430-cr-attributes-1.test.ts",
+        "553-oorblak-pure-redirect.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The bound test makes the SOURCE Pure, although its title names a Pure recipient (F-U19-4). The pilot's round-2 probe found Oorblak's redirect doubling damage onto a Pure Vulnerable Oorblak (F-U19-3).",
-    "engineDiffers": [
-      "F-U19-3"
-    ],
+    "notes": "The bound 290 test makes the SOURCE Pure, although its title names a Pure recipient (F-U19-4). Oorblak's redirect used to double damage onto a Pure Vulnerable Oorblak; fixed 2026-10-22 (CT-227, 553): the redirect is attribute-blind when the column or Oorblak is Pure. F-U19-3 closed (the earlier partial verdict called the mark false for every other site).",
     "sourceHashes": {}
   },
   {

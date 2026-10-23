@@ -72,10 +72,11 @@
     "summary": "The rule says that when an effect lets a player look at a hand, the other players log says only that the hand was looked at. The U24 tester measured Thought Extraction aimed at the caster own hand: the other player log has no look line at all (it goes from Resolving straight to the discard). Aimed at the other player hand, that player log does say \"looks at\". Four look-at sites skip the public line when the looker owns the hand (if (who !== ctx.controller) g.revealHandTo(...)). Either the rule should say the line is written only when looking at another player hand, or the engine should write it for both. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
-        "file": "client/engine/src/cards/sets/batch-dark-b.ts",
-        "quote": "if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);"
+        "file": "client/engine/test/550-look-at-own-hand-logged.test.ts",
+        "quote": "CR D6.5a / CT-263: Thought Extraction aimed at the caster own hand tells the opponent a hand was looked at, naming nothing"
       }
     ],
-    "ct": "CT-263"
+    "ct": "CT-263",
+    "closed": "fixed on 2026-10-22 (CT-263, owner \"Log both\"): looking at your own hand writes the public line too, naming nothing (550)."
   }
 ]

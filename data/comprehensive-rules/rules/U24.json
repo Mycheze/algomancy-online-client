@@ -723,11 +723,27 @@
     "key": "annexd.reveal.hidden-names.look-at",
     "parent": "annexd.reveal.hidden-names",
     "order": 1,
-    "text": "When an effect lets a player look at a hand, the cards seen are named in the game log to that player only. The other players' log says only that the hand was looked at.",
+    "text": "When an effect lets a player look at another player's hand, the cards are shown to the looker only: the client keeps them in the looker's note-taking strip, and no log line names them to anyone else (where a card's log line names them, it goes to the looker alone). The other players' log says only that the hand was looked at, and names no card. This holds when a player looks at their own hand too: the other player's log says that they looked at their own hand, and names nothing.",
     "examples": [
       {
         "text": "Thought Extraction is aimed at a player's own hand. The opponent is not shown the cards in it.",
         "test": "173-look-at-a-hand.test.ts::CR 402.2a Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to"
+      },
+      {
+        "text": "Thought Extraction is aimed at its caster's own hand. The opponent's log says a hand was looked at, and names no card.",
+        "test": "550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263: Thought Extraction aimed at the caster own hand tells the opponent a hand was looked at, naming nothing"
+      },
+      {
+        "text": "Aimed at the opponent's hand, the public line names the hand looked at.",
+        "test": "550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263 control: aimed at the opponent, the public line still names the hand looked at"
+      },
+      {
+        "text": "Hand Peeper looks at the opponent's hand: no log line names the cards, and the look still works.",
+        "test": "173-look-at-a-hand.test.ts::CR 402.2a control — Hand Peeper: the same printed verb with NO naming line at all, and it still works"
+      },
+      {
+        "text": "Hand Peeper used on its player's own hand: the look is logged for everyone, and nothing is kept in the strip.",
+        "test": "550-look-at-own-hand-logged.test.ts::CR D6.5a / CT-263: Hand Peeper on your own hand logs the look and takes no snapshot"
       }
     ],
     "see": [
@@ -747,22 +763,25 @@
           "quote": "(the client's note-taking strip) and writes only *\"X looks at Y's hand\"*, which",
           "adopted": "2026-08-26",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Log both",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-263)"
         }
       ],
       "engine": [],
       "tests": [
         "173-look-at-a-hand.test.ts",
-        "435-cr-digital-2.test.ts"
+        "435-cr-digital-2.test.ts",
+        "550-look-at-own-hand-logged.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "engine differs: F-U24-5 (measured by the U24 tester: Thought Extraction aimed at the caster own hand writes no line at all to the other player; aimed at the other hand, the other log says \"looks at\").",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U24-5"
-    ]
+    "notes": "Owner 2026-10-22 (CT-263): \"Log both\": looking at your own hand is logged for the other player too, with no card names. Engine aligned the same day (550). F-U24-5 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.reveal.hidden-names.moved-card",

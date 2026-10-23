@@ -2197,30 +2197,25 @@
     "key": "keywords.abilities.unstable.copy",
     "textHash": "e8b391879ac9ce22",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U21-r2",
+    "round": 4,
+    "verifier": "U21-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:isUnstable",
-        "agrees": true,
-        "note": "mods.length>0 || stamp || printed-Unstable face; the copied-mods derivation was removed by R336"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:copy (delete copy.unstable)",
-        "agrees": true,
-        "note": "a copy does not carry the stamp"
+        "agrees": "a copy has no mod entities until one is attached",
+        "note": ""
       }
     ],
     "tests_run": [
       {
         "file": "26-metal-a.test.ts",
-        "pattern": "R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}",
+        "pattern": "CR 710.2a: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "403-raq-fix-mods.test.ts",
-        "pattern": "R336: a Borrower that copied a modded unit dies to the bin",
+        "pattern": "CR 720.7e: a Borrower that copied a modded unit dies to the bin",
         "passed": true,
         "asserts_claim": true
       },
@@ -2236,31 +2231,26 @@
       {
         "ref": "RAQ 1372468222158180424#1",
         "supports": "yes",
-        "note": "_passer"
+        "note": ""
       },
       {
         "ref": "RAQ 1372468222158180424#3",
         "supports": "yes",
-        "note": "_passer"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/corpus/algomancy_corpus.jsonl",
+        "file": "client/ledgers/raq.ts",
         "text": "No, freshly resolved BoFy has no mods so he isn't Unstable."
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "* R336 / CT-225 removed it — the RAQ (\"Borrower of Forms\"): a freshly"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (e.mods.length > 0 || e.unstable === true) return true;"
+        "file": "client/ledgers/raq.ts",
+        "text": "Q: What if I attach some mods to him AFTER he resolved? A: Then he becomes Unstable"
       }
     ],
     "basis_ok": true,
-    "problem": "None. The text generalises from Borrower of Forms to any copy; the engine has one isUnstable, so the generalisation holds, but a copy of a PRINTED-Unstable unit is still Unstable through its face (not a contradiction, the rule is about modded units).",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "keywords.abilities.unstable.granted",

@@ -107,7 +107,8 @@
       "F-U07-11",
       "F-U18-1",
       "F-U18-3"
-    ]
+    ],
+    "closed": "by design 2026-10-22 (CT-246 closed): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it."
   },
   {
     "id": "F-U07-7",
@@ -116,19 +117,20 @@
     "summary": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) (\"All four follow control\") corrected the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) item 3, and every other route (bin, hand, cache, a mod erased off a host, an {Unstable} death's sweep) files the card under the controller. Erasing a unit from play still emits the erased event with the owner's seat, so a stolen unit erased by Banishment or Celestial Purge lands on its owner's erased pile. Measured by the round-1 verifier probe; test 246 covers only the mod route. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "unit: u.id, card: u.card, seat: u.owner, region: u.region,"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
+      },
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "quote": "CR 400.4 / CT-229: a stolen unit erased from play goes to the THIEF erased pile, with its mods"
       }
     ],
     "ct": "CT-229",
     "dupes": [
       "F-U07-9",
       "F-REG-1"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-229): a stolen unit erased from play is filed on its controller's erased pile, with its mods (246)."
   },
   {
     "id": "F-U07-8",
@@ -150,15 +152,16 @@
     "summary": "E.eraseFromPlay emits the erased event with seat: u.owner, so a stolen unit erased from play (Banishment, Celestial Purge) is recorded on its owner's erased pile. The owner ruling of 2026-08-30 (“zones follow control, in all four…”) (\"All four follow control\") superseded the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) item 3; every other route (bin, hand, cache, eraseMod, an Unstable death's sweep) uses the controller. (Measured by a verifier probe; the probe files are not committed.)",
     "evidence": [
       {
-        "file": "client/engine/src/engine.ts",
-        "quote": "unit: u.id, card: u.card, seat: u.owner, region: u.region,"
-      },
-      {
         "file": "client/docs/digital-rules.md",
         "quote": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
+      },
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "quote": "CR 400.4 / CT-229: a stolen unit erased from play goes to the THIEF erased pile, with its mods"
       }
     ],
-    "ct": "CT-229"
+    "ct": "CT-229",
+    "closed": "fixed on 2026-10-22 with F-U07-7 (CT-229, 246)."
   },
   {
     "id": "F-U07-10",
@@ -175,7 +178,8 @@
         "quote": "  *\"Unstable units still die, they just get erased instead of ending up in the"
       }
     ],
-    "ct": "CT-246"
+    "ct": "CT-246",
+    "closed": "by design 2026-10-22 (CT-246 closed): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it."
   },
   {
     "id": "F-U07-11",
@@ -192,6 +196,7 @@
         "quote": "**An Unstable card that dies enters a bin, is trashed there, and is only then"
       }
     ],
-    "ct": "CT-246"
+    "ct": "CT-246",
+    "closed": "by design 2026-10-22 (CT-246 closed): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it."
   }
 ]

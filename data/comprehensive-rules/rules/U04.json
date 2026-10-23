@@ -850,12 +850,20 @@
     "text": "A cost modifier applies to what its text names. One that names \"spells\" applies to every spell played, spell units and spell tokens included. One that names \"cards\" applies to every card played, units included, and not to spell tokens, which are not cards. Neither applies to applying a mod, which is not playing a card.",
     "examples": [
       {
-        "text": "Tranquility (\"Spells cost [one] more\") taxes a Fireball token cast in battle.",
+        "text": "Tranquility (\"Spells cost [one] more\") taxes a spell token cast in battle.",
         "test": "337-spell-tokens-are-played.test.ts::CR 702.7a: Tranquility taxes a spell token [1] in battle"
       },
       {
         "text": "Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") takes no life for a spell token.",
         "test": "337-spell-tokens-are-played.test.ts::CR 701.1c: Arbiter of Armistice prints Cards, so a token cast pays no life"
+      },
+      {
+        "text": "A card played as an Ambush under Arbiter of Armistice pays the \"cards played\" tax.",
+        "test": "548-ambush-imposed-costs.test.ts::CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life"
+      },
+      {
+        "text": "Tranquility (\"Spells cost [one] more\") taxes a spell unit played in battle, and not a plain unit.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.modifiers.noun — Tranquility (\"Spells cost [one] more\") taxes a spell unit played in battle, not a plain unit"
       }
     ],
     "see": [
@@ -868,7 +876,11 @@
       "designer": [
         {
           "ref": "RAQ 1537748882501668934#0",
-          "quote": "Applying a mod is not playing a card"
+          "quote": "Mods are not considered 'played', so they wouldn't trigger any"
+        },
+        {
+          "ref": "RAQ 1461450216874967235#2",
+          "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
         }
       ],
       "ours": [],
@@ -893,19 +905,18 @@
       "tests": [
         "337-spell-tokens-are-played.test.ts",
         "38-light-a.test.ts",
-        "415-cr-costs-life-timestamps.test.ts"
+        "415-cr-costs-life-timestamps.test.ts",
+        "548-ambush-imposed-costs.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-24 (“a spell token is a token…”) is not in the U04 pack (read from digital-rules.md): it puts units and Ambush plays inside the noun \"card\". The engine keeps a card played as an Ambush outside the card-play cost layer (measured r1, F-U04-2).",
+    "notes": "The owner ruling of 2026-08-24 (“a spell token is a token…”) is not in the U04 pack (read from digital-rules.md): it puts units and Ambush plays inside the noun \"card\". Engine aligned 2026-10-22 (CT-243, owner \"Yes, it pays\"): an Ambush pays the card-play imposed costs (548). F-U04-2 closed.",
     "sourceHashes": {
+      "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190",
       "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
     },
-    "engineDiffers": [
-      "F-U04-2"
-    ],
     "rebuttal": "Text kept: \"cards\" names every card played, and the owner ruling of 2026-08-24 (“a spell token is a token…”) rules an Ambush is a card being played. The engine's Ambush gap is a divergence from that, not a narrower law: The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) calls it an undecided future decision. Flagged engineDiffers F-U04-2 (D-U04-4)."
   },
   {
@@ -965,8 +976,21 @@
     "key": "concepts.costs.modifiers.imposed.ambush",
     "parent": "concepts.costs.modifiers",
     "order": 4.5,
-    "text": "A card played as an Ambush is a card played. During battle, an imposed cost on \"cards played\" applies to it.",
-    "examples": [],
+    "text": "A card played as an Ambush is a card played. During battle, an imposed cost on \"cards played\" applies to it: it pays the life, makes the sacrifice, and cannot be played if it cannot pay.",
+    "examples": [
+      {
+        "text": "An Ambush played under Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") pays the 2 life.",
+        "test": "548-ambush-imposed-costs.test.ts::CR 111.10e / CT-243: an Ambush played under Arbiter of Armistice pays the 2 life"
+      },
+      {
+        "text": "An Ambush that cannot pay the imposed life is not offered.",
+        "test": "548-ambush-imposed-costs.test.ts::CR 111.10d / CT-243: an Ambush that cannot pay the imposed life is not offered, and apply refuses it"
+      },
+      {
+        "text": "An Ambush played under an opposing Vengeance owes the sacrifice, chosen by its player before it reaches the stack.",
+        "test": "548-ambush-imposed-costs.test.ts::CR 111.10e / CT-243: an Ambush under an opposing Vengeance owes the sacrifice"
+      }
+    ],
     "see": [
       "803"
     ],
@@ -986,22 +1010,21 @@
           "from": "register@72de434"
         },
         {
-          "quote": "printed cost line and today sits outside the R59/R60/R122 play-tax layer",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
+          "quote": "Yes, it pays",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-243)"
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "548-ambush-imposed-costs.test.ts"
+      ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "low",
-    "notes": "The printed noun \"Cards\" (Arbiter of Armistice, Vengeance) with the owner ruling of 2026-08-24 (“a spell token is a token…”) (an Ambush is a card being played) states this. The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) is cited because it records that the engine keeps an Ambush outside the play-tax layer and calls widening it a future decision: it rules nothing either way. Measured r1: an Ambush under Arbiter of Armistice pays no life (F-U04-2, D-U04-4).",
+    "notes": "The printed noun \"Cards\" (Arbiter of Armistice, Vengeance) with the register's 2026-08-24 line (an Ambush is a card being played), confirmed by the owner on 2026-10-22: \"Yes, it pays\" (CT-243). The 2026-08-24 register line that recorded the engine keeping an Ambush outside the play-tax layer is dropped: it ruled nothing, and the engine was aligned the same day (548). F-U04-2 closed. Basis mixed (printed + owner), as the earlier verifier asked.",
     "sourceHashes": {},
-    "engineDiffers": [
-      "F-U04-2"
-    ],
     "rebuttal": "Text kept. The verifier's first option is taken: basis is now printed (the card's noun \"Cards\", with the owner ruling of 2026-08-24 (“a spell token is a token…”)), and engineDiffers F-U04-2 records the measured divergence. The owner ruling of 2026-08-24 (“an IMPOSED additional cast cost on…”) is not a ruling that an Ambush is exempt; it says widening the layer onto Ambush is an undecided \"future decision\", so the printed literal stands until the owner rules otherwise (D-U04-4)."
   },
   {
@@ -2794,6 +2817,14 @@
       {
         "text": "Hyper Beam negated by Dematerialize deals no damage, and the debt its caster gained to play it stays.",
         "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no damage, and the debt gained to play it stays"
+      },
+      {
+        "text": "A spell with a [Gain N debt] cost that an effect plays in place still gains the debt.",
+        "test": "556-inline-play-is-a-whole-play.test.ts::CR 112.14c / CT-332: a [Gain N debt] spell played in place gains the debt"
+      },
+      {
+        "text": "Tides of the Cosmos plays Hyper Beam in a battle window: its caster gains the 4 debt.",
+        "test": "556-inline-play-is-a-whole-play.test.ts::CR 702.4e / CT-332: Tides of the Cosmos playing Hyper Beam in a battle window gains the debt"
       }
     ],
     "see": [
@@ -2819,13 +2850,14 @@
       "tests": [
         "47-costs-events.test.ts",
         "44-hybrids-ld-a.test.ts",
-        "415-cr-costs-life-timestamps.test.ts"
+        "415-cr-costs-life-timestamps.test.ts",
+        "556-inline-play-is-a-whole-play.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Round 1: the 47-costs-events test shows only the charge at play; the negation half was measured by the verifier's probe (u04-probes \"concepts.debt.as-cost\"), not yet promoted to a test.",
+    "notes": "Round 1: the 47-costs-events test shows only the charge at play; the negation half was measured by the verifier's probe (u04-probes \"concepts.debt.as-cost\"), not yet promoted to a test. Round 2026-10-22 (CT-332): a free play by an effect pays its printed debt cost too (556); Hyper Beam's [Gain 4 debt] used to go unpaid when Tides of the Cosmos played it.",
     "sourceHashes": {}
   },
   {

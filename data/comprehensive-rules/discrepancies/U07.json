@@ -65,9 +65,13 @@
       {
         "source": "owner ruling, adopted 2026-08-25",
         "quote": "It's not a death, but it is a despawn and trashing. Weird corner case."
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-22",
+        "quote": "Trash isnt a trigger tho. Its a kind of death thing."
       }
     ],
-    "resolution": "Settled by the authority order. The printed reminder (\"If they would enter a bin, erase them instead\") has one reading: the card never enters the bin, so it is not trashed. Caleb's \"erased instead of ending up in the bin\" fits it, the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) itself calls it \"the plain sense of the text\", and the owner's own words in the owner ruling of 2026-08-29 (“a mod is PART of the…”) (\"it didn't go to the bin\") argue it too. Print and designer outrank the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”), so zones.bin.unstable and keywords.actions.trash.unstable-death state that reading, and the exchange route follows (zones.changes.mods.exchanged says only that the unit and its mods are erased). The engine passes the card through the bin and trashes it: F-U07-6 (CT-246, filed as an owner decision on whether to change the engine). Register fix: mark the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”)’s body-trash ruling, and the owner rulings of 2026-08-25 (“a card entering a bin goes…”) and 2026-08-25 (“the other three ways an exchange…”)’ trash on the exchange route, as outranked by the printed reminder."
+    "resolution": "Settled by the owner on 2026-10-22 (CT-246 closed by design): \"Trash isnt a trigger tho. Its a kind of death thing.\" Trashing is part of a death, so a dying {Unstable} card is trashed, and it still ends on the erased pile as the printed reminder says (\"erase them instead\"); the engine's sequence (enters a bin, trashed there, then erased; register 2026-08-24) stands. zones.bin.unstable and keywords.actions.trash.unstable-death state it; the exchange route (zones.changes.mods.exchanged) follows. F-U07-6 closed."
   },
   {
     "id": "D-U07-4",
@@ -91,7 +95,7 @@
     "id": "D-U07-5",
     "kind": "a-sources-disagree",
     "rule": "zones.erased.tokens",
-    "tier": 3,
+    "tier": 2,
     "summary": "Do tokens belong on the erased pile? The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”) and the owner ruling of 2026-08-25 (“a printed \"when I despawn\" means…”) record a dying token, and a token mod whose host leaves play. The owner ruling of 2026-08-26 (“an erased card goes to the…”) refuses to file a token mod erased off a living host, because \"the owner ruling of 2026-08-21 (“Discarding is not playing; conceding; the…”)’s pile is a list of cards\".",
     "seeAlso": [
       {
@@ -123,9 +127,13 @@
       {
         "source": "owner ruling, adopted 2026-08-26",
         "quote": "disagree about it — `disposeToBin` **does** announce token mods on the erased"
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-22",
+        "quote": "Never file tokens"
       }
     ],
-    "resolution": "Two owner rulings disagree by route, and no printed or designer source speaks to the erased pile, a digital surface (owner ruling of 2026-08-21, “Discarding is not playing; conceding; the…”). The owner ruling of 2026-09-28 (“Tokens are NOT trashed: the owner…”), the owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) and the owner ruling of 2026-08-25 (“a printed \"when I despawn\" means…”) record tokens and token mods on it; the owner ruling of 2026-08-26 (“an erased card goes to the…”) does not file a token mod erased off a host that stays in play, and says it left that disagreement alone. The rules state each route as its ruling says: zones.erased.tokens records tokens, effects.mods.erase-off-host.token does not record that one route, and the Return to Nature path is filed as F-U17-4 (CT-259). Sign-off: one rule for every route. The owner answered D-U06-1 with reading B (the owner ruling of 2026-10-11 (“A token is not a card…”): a token is not a card), so the owner ruling of 2026-08-26 (“an erased card goes to the…”)’s reason stands."
+    "resolution": "Settled by the owner on 2026-10-22, one rule for every route: \"Never file tokens\". No token, unit, spell or mod, is recorded on the erased pile, because a token is not a card. zones.erased.tokens, zones.erased.tokens.mods, effects.mods.unstable.token-mod and effects.mods.erase-off-host.token state it. Engine aligned the same day (549, sixteen flipped tests; Return to Nature, F-U17-4, CT-259)."
   },
   {
     "id": "D-U07-6",
@@ -193,7 +201,7 @@
         "quote": "Only exception is that \"owner\" in constructed is always the person's who"
       }
     ],
-    "resolution": "No rule written for live draft. Ownership still matters there (the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”): \"whose card is this? its OWNER's, always, forever\")."
+    "resolution": "No rule written for live draft ownership at the deal. Since 2026-10-22 the owner's call \"Reset in shared zones\" (concepts.players.owner) says what happens when a card goes back into a shared zone: its ownership stays behind, and whoever next takes it out owns it."
   },
   {
     "id": "D-U07-9",

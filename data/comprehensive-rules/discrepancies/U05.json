@@ -195,7 +195,7 @@
         "quote": "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
       }
     ],
-    "resolution": "The rule says only that stats mark a unit and that spell units have them. The card data gives 91 spells stat values: F-U05-1 (CT-244)."
+    "resolution": "The rule says stats mark a unit, so a spell and a spell token have none, and spell units have them. The card data used to give 91 spells stat values; since 2026-10-22 they are zeroed at extraction (CT-244; F-U05-1 closed)."
   },
   {
     "id": "D-U05-9",

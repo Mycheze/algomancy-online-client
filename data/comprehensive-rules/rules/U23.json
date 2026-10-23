@@ -636,6 +636,91 @@
     "sourceHashes": {}
   },
   {
+    "key": "annexd.general.initiative-order",
+    "parent": "D1",
+    "order": 5,
+    "text": "Where the printed rules have the initiative player take the resource step and the haste step first, and the initiative team deploy first (rules turn.planning.order and turn.deploy.order), this client runs those steps for both players at once, each hidden from the other (rule annexd.general.hidden-segment). The non-initiative player neither waits for the initiative player nor sees what they did before acting. This is a house rule of the client.",
+    "examples": [
+      {
+        "text": "The non-initiative player is offered plays at once in deployment, and can finish deploying while the initiative player is still acting.",
+        "test": "21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT"
+      }
+    ],
+    "see": [
+      "501",
+      "507",
+      "D1.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "This client runs those steps for both players at once, each unseen by the other until both are done.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
+        },
+        {
+          "quote": "That is a deliberate digital convention: a paper game cannot hide one player's actions while the other acts.",
+          "adopted": "2026-10-11",
+          "from": "register@72de434"
+        },
+        {
+          "quote": "Keep simultaneous",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-247: keep the hidden simultaneous steps, or sequence them by initiative as printed)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "CT-247 closed wontfix on 2026-10-22: the owner kept the simultaneous hidden resource, haste and deployment steps (the house rule) as a digital convention. His 2026-10-22 words were not in this pass's inputs; the quotes are the register's write-up of the same decision of 2026-10-11 (500.2a carries them too). F-U08-1, F-U09-3 closed. D-U08-1, D-U09-1.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.general.early-resource-step",
+    "parent": "D1",
+    "order": 6,
+    "text": "In a draft, a player who has made their pick may begin the resource step, activating and recycling, while the other player is still drafting. The printed turn ends each step for every player together (rule turn.planning.order.sync); this client does not hold the faster player back, because the resource step is hidden and the other player cannot see the head start.",
+    "examples": [
+      {
+        "text": "A player who has committed their draft pick may activate a resource while the opponent is still drafting.",
+        "test": "20-draft.test.ts::planning is gated until you commit; open again after (opponent still drafting)"
+      }
+    ],
+    "see": [
+      "501.4a",
+      "D1.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Keep early start",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-248: keep the early start of the resource step, or wait for both players)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "medium",
+    "notes": "CT-248 closed wontfix on 2026-10-22: the owner kept the early start as a digital convention. His words were not in this pass's inputs, so the rule rests on the engine (code + 20-draft) and is typed engine. F-U08-4 closed. D-U08-10.",
+    "sourceHashes": {}
+  },
+  {
     "key": "annexd.general.hidden-segment.redaction",
     "parent": "annexd.general.hidden-segment",
     "order": 1,
@@ -1311,30 +1396,55 @@
     "key": "annexd.auto-pass.no-retain",
     "parent": "D2",
     "order": 9,
-    "text": "This client has no way to keep priority after acting: when a player puts something on the stack in battle, priority goes to the opponent. A player can still respond to their own spell, once priority comes back to them with it still on the stack.",
+    "text": "This client does not keep priority for a player who acts unless they ask: in battle, once their action is on the stack, priority goes to the opponent. A player asks to keep it by acting while holding the Control key (rule annexd.auto-pass.full-control) or with the Hold priority toggle beside Pass turned on; then they keep priority and may act again (rule effects.priority.priority.hold). A pass never asks. A player who did not keep priority can still respond to their own spell once priority comes back to them with it on the stack.",
     "examples": [
+      {
+        "text": "With the toggle off and no Control key held, a play goes out as it always did, and priority passes to the opponent.",
+        "test": "569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: with the toggle off and no Ctrl, a play goes out as it always did"
+      },
+      {
+        "text": "The Hold priority toggle sits beside Pass; a tap turns it on.",
+        "test": "569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: the hold toggle sits beside Pass and a tap turns it on"
+      },
+      {
+        "text": "Holding the Control key asks too; letting go stops asking.",
+        "test": "569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: holding Ctrl asks too, and letting go stops asking"
+      },
+      {
+        "text": "A pass never carries the ask.",
+        "test": "569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: a pass never carries the ask"
+      },
       {
         "text": "The defender casts a spell, the attacker passes, and the defender casts a second spell on top of the first.",
         "test": "272-full-control.test.ts::BL-18 §4 you can respond to your own spell with the first still on the stack"
       }
     ],
     "see": [
-      "703"
+      "703",
+      "annexd.auto-pass.full-control"
     ],
     "sources": {
       "printed": [],
       "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "Auto-pass, hold to keep",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-253)"
+        }
+      ],
       "engine": [],
       "tests": [
-        "272-full-control.test.ts"
+        "272-full-control.test.ts",
+        "569-hold-priority-toggle.test.ts",
+        "568-hold-priority.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "ENGINE-ONLY. The test's own comment calls priority passing to the opponent on a cast 'the finding' and says retaining priority would be an engine change. U14's F-U14-2 suspects this differs from the Manual's rule that a player who acts may keep priority. D-U23-16.",
+    "notes": "Rewritten 2026-10-22 (CT-253). The owner ruled to follow the Manual (a player who acts may keep priority, 703.2a), with the client's default \"auto-pass, hold to keep\". The rule used to say the client had no way to keep priority; D-U23-16 said it would be withdrawn if F-U14-2 was upheld, and the key is kept for the default it still states (no retain without the ask). The last sentence is the old rule's, still bound to 272 §4.",
     "sourceHashes": {}
   },
   {
@@ -1823,7 +1933,7 @@
     "key": "annexd.auto-pass.full-control",
     "parent": "D2",
     "order": 7,
-    "text": "Full control is held, not set. While a player holds the Control key, the client gives them every stop: auto-pass, standing passes, auto-yields and the automatic haste-step ready all stand down. When they let go, everything returns to how it was.",
+    "text": "Full control is held, not set. While a player holds the Control key, the client gives them every stop: auto-pass, standing passes, auto-yields and the automatic haste-step ready all stand down. In battle, an action taken while holding it also keeps priority (rule annexd.auto-pass.no-retain). When they let go, everything returns to how it was.",
     "examples": [
       {
         "text": null,
@@ -1832,6 +1942,10 @@
       {
         "text": null,
         "test": "272-full-control.test.ts::CT-183 §6 letting go goes right back to the way it was"
+      },
+      {
+        "text": "Holding the Control key as a player acts asks to keep priority; letting go stops asking.",
+        "test": "569-hold-priority-toggle.test.ts::CR 703.2a / CT-253: holding Ctrl asks too, and letting go stops asking"
       }
     ],
     "see": [],
@@ -1858,21 +1972,27 @@
       ],
       "engine": [],
       "tests": [
-        "272-full-control.test.ts"
+        "272-full-control.test.ts",
+        "569-hold-priority-toggle.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "",
+    "notes": "Round 2026-10-22 (CT-253): the Control key also carries the keep-priority ask in battle (569).",
     "sourceHashes": {}
   },
   {
     "key": "annexd.auto-pass.full-control.deployment",
     "parent": "annexd.auto-pass.full-control",
     "order": 1,
-    "text": "This includes deployment: while a player holds full control, nothing on their deployment stack resolves automatically. Engine differs, see F-U23-1.",
-    "examples": [],
+    "text": "Full control changes nothing in deployment. No player holds priority there (rule effects.priority.deployment), so holding the Control key asks for nothing, and each deployment stack still resolves on its own.",
+    "examples": [
+      {
+        "text": "In deployment there is no Hold priority toggle, and holding the Control key adds no ask.",
+        "test": "569-hold-priority-toggle.test.ts::CR 507.5 / CT-253: in deployment nothing asks to hold"
+      }
+    ],
     "see": [
       "507"
     ],
@@ -1882,29 +2002,27 @@
       "ours": [],
       "owner": [
         {
-          "quote": "> the haste step or anything. Even during deployment, nothing will",
-          "adopted": "2026-09-01",
-          "from": "questions-round36 Q5; register@72de434"
+          "quote": "the ruling on Deployment stack is that you CANNOT hold priority during Deployment.",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-185)"
         },
         {
-          "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing",
-          "adopted": "2026-09-01",
-          "from": "questions-round36 Q5; register@72de434"
+          "quote": "The stack technically only exists for triggers during deployment, you can't do any 'on the stack' shenanigans.",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-185)"
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "569-hold-priority-toggle.test.ts",
+        "568-hold-priority.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "engineDiffers": [
-      "F-U23-1"
-    ],
-    "notes": "The owner ruling of 2026-09-01 (“full control is a KEY YOU…”) records the clause as unbuilt and filed as CT-185, 'the owner's call'. The owner ruling of 2026-09-01 (“deployment DOES use the stack, and…”) names full control as the case that makes the per-seat deployment stack visible. D-U23-4. engine differs: F-U23-1 (the deployment stack drains itself inside settle(); the engine has no full-control hold, CT-185 open).",
-    "sourceHashes": {},
-    "untested": true,
-    "untestableReason": "not built: the engine has no full-control hold on the deployment stack (F-U23-1, CT-185 open), so a test asserting this rule fails today; the divergence is carried by the finding until CT-185 lands"
+    "notes": "Rewritten 2026-10-22: the owner ruled \"you CANNOT hold priority during Deployment\" and closed CT-185 (the holdStack action) as wontfix. The rule used to state the 2026-09-01 clause \"Even during deployment, nothing will automatically resolve if you're holding ctrl\", recorded then as unbuilt; that clause is replaced by the 2026-10-22 call. F-U23-1 and F-U23-6 closed. D-U23-4.",
+    "sourceHashes": {}
   },
   {
     "key": "annexd.auto-pass.full-control.latency",

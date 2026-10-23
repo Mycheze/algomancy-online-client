@@ -3,7 +3,7 @@
     "id": "D-U16-1",
     "kind": "a-sources-disagree",
     "rule": "effects.continuous.layers.attribute-order",
-    "tier": 1,
+    "tier": 2,
     "summary": "The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a Balanced unit. Its first sentence says Tough \"augmented onto\" a Balanced unit is doubled, then balanced; its last sentence says Tough \"applied to\" a Balanced unit is balanced, then doubled. The owner ruling of 2026-08-18 (“Stat layer 4 application order”) says the order between printed, mod-given and column-shared attributes is the engine's own call, and the engine balances first.",
     "seeAlso": [
       {
@@ -41,25 +41,7 @@
         "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
       }
     ],
-    "resolution": "Question for the owner. attr.general.application-order states reading A, the Manual's first sentence, and files the engine's order as F-U19-5 (CT-257); effects.continuous.layers.attribute-order states both sentences and the engine's order, F-U16-4 (CT-257). Whichever reading the owner takes, the two rules are redrafted to state it alone.",
-    "question": {
-      "topic": "Stats and attributes",
-      "ask": "A Balanced unit gets Tough from an augment: is it doubled, then balanced, or balanced, then doubled?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Doubled, then balanced: the Manual's first sentence names this exact case (\"augmented onto\"); its last sentence (\"applied to\") is a different grant, such as an effect.",
-          "table": "Child of Aether with Rampart Guardian is a 2/2; engine change, CT-257."
-        },
-        {
-          "label": "B",
-          "text": "The Manual's two sentences describe the same case and contradict each other, so the engine's order (the owner ruling of 2026-08-18 (“Stat layer 4 application order”): printed attributes first) stands: balanced, then doubled.",
-          "table": "As today: the same unit is a 2/4."
-        }
-      ],
-      "follows": "Split: attr.general.application-order states A; effects.continuous.layers.attribute-order states both and the engine's order.",
-      "recommend": "A: the Manual names the case, and printed text is read literally."
-    }
+    "resolution": "Answered by the owner on 2026-10-22 (CT-257): reading A, the Manual p.42 first clause. Tough augmented onto a Balanced unit is doubled, then balanced; the last clause (\"applied to\") is a grant by an effect, which balances, then doubles. effects.continuous.layers.attribute-order and attr.general.application-order state it alone. Engine fix: done 2026-10-22 (F-U16-4, F-U19-5 closed): 08-cards2 drives both clauses."
   },
   {
     "id": "D-U16-2",

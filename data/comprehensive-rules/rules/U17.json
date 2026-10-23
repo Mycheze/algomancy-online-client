@@ -1016,11 +1016,11 @@
     "key": "effects.mods.unstable.token-mod",
     "parent": "effects.mods.unstable",
     "order": 3,
-    "text": "A token mod has no card of its own. It never enters a bin: however its host leaves play, the token mod is erased.",
+    "text": "A token mod has no card of its own. It never enters a bin: however its host leaves play, the token mod is erased, and it is not recorded on the erased pile (rule zones.erased.tokens.mods).",
     "examples": [
       {
-        "text": "A unit carrying a Wraith token as an augment is recalled, cached or killed. Whichever way it leaves, the Wraith goes to no bin and is not trashed: it is erased.",
-        "test": "141-despawn-mods.test.ts::CR 407.3a (v): a token mod reaches the erased pile exactly once"
+        "text": "A unit carrying a Wraith token as an augment is recalled, cached or killed. Whichever way it leaves, the Wraith goes to no bin, is not trashed and is not recorded on the erased pile: it is erased.",
+        "test": "141-despawn-mods.test.ts::CR 407.3a (v): a token mod reaches neither the erased pile nor a bin, on all three routes"
       }
     ],
     "see": [
@@ -1036,6 +1036,11 @@
           "quote": "has no card of its own, so it can never enter a bin — whichever way its host",
           "adopted": "2026-08-25",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Never file tokens",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22"
         }
       ],
       "engine": [],
@@ -1047,7 +1052,7 @@
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) restates the owner ruling of 2026-08-22 (“A token entering a ZONE is…”) (not in the pack). Whether a token mod erased off a host that STAYS in play is filed on the erased pile is open: D-U17-1.",
+    "notes": "The owner ruling of 2026-08-25 (“[…] is about the ERASE, not about…”) restates the owner ruling of 2026-08-22 (“A token entering a ZONE is…”) (not in the pack). Whether a token mod erased off a host that STAYS in play is filed on the erased pile is open: D-U17-1. Round 2026-10-22: example rebound to 141's retitled test; the erased-pile clause added for the owner's \"Never file tokens\".",
     "sourceHashes": {}
   },
   {
@@ -1229,6 +1234,10 @@
       {
         "text": "A mod on a stolen unit is erased off it; it goes to the erased pile of the player who stole the unit, not its owner's.",
         "test": "246-zones-follow-control.test.ts::CR 720.9: the erased pile files a stolen mod under the THIEF"
+      },
+      {
+        "text": "Return to Nature erases the mods on a stolen unit. Each goes to the erased pile of the player who stole the unit, its mods' controller.",
+        "test": "17-earth-b.test.ts::CR 720.9 / CT-258: Return to Nature files each erased mod on its CONTROLLER erased pile, a stolen host included"
       }
     ],
     "see": [
@@ -1267,10 +1276,7 @@
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "engineDiffers": [
-      "F-U17-1"
-    ],
-    "notes": "The owner ruling of 2026-08-30 (“zones follow control, in all four…”) is not in the U17 pack; read from client/docs/digital-rules.md. Return to Nature files by mod OWNER (F-U17-1; measured by the r1 verifier). The 178 tests titled for the old no-filing law are F-U07-4.",
+    "notes": "The owner ruling of 2026-08-30 (zones follow control, in all four…) is read from client/docs/digital-rules.md. Engine aligned 2026-10-22 (CT-258): Return to Nature files by the mod's controller (17-earth-b, 178, 428). F-U17-1 closed. The 178 tests titled for the old no-filing law are F-U07-4.",
     "sourceHashes": {},
     "rebuttal": "Text kept: it states the owner ruling of 2026-08-30 (“zones follow control, in all four…”) (the erased pile follows control). engineDiffers F-U17-1 was already set for Return to Nature filing by owner (stripped from the verifier's copy); F-U17-1 now carries the verifier's probe measurement. The Return to Nature example claims only negation and erasure, which its test asserts; a second example now binds the controller-pile clause to the owner ruling of 2026-08-30 (“zones follow control, in all four…”) test."
   },
@@ -1278,11 +1284,15 @@
     "key": "effects.mods.erase-off-host.token",
     "parent": "effects.mods.erase-off-host",
     "order": 1,
-    "text": "A token mod erased off a host that stays in play is not recorded on the erased pile, because a token is not a card.",
+    "text": "A token mod erased off a host that stays in play is not recorded on the erased pile either, because a token is not a card (rule zones.erased.tokens).",
     "examples": [
       {
         "text": "A Wraith token mod erased off a host that stays in play, as the payment of a cost, is not filed on the erased pile.",
         "test": "428-cr-modifications.test.ts::cr:effects.mods.erase-off-host.token — a Wraith token mod erased off a living host as a cost (eraseMod) is not filed on the erased pile"
+      },
+      {
+        "text": "Return to Nature erases a Wraith token mod with the other mods in the region. The Wraith is not recorded on the erased pile.",
+        "test": "17-earth-b.test.ts::CR 720.9a / CT-259: Return to Nature does not file a TOKEN mod on the erased pile"
       }
     ],
     "see": [
@@ -1297,21 +1307,24 @@
           "quote": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a",
           "adopted": "2026-08-26",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Never file tokens",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22"
         }
       ],
       "engine": [],
       "tests": [
-        "428-cr-modifications.test.ts"
+        "428-cr-modifications.test.ts",
+        "17-earth-b.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "low",
-    "notes": "The owner ruling of 2026-08-26 (“an erased card goes to the…”) says this disagrees with how a token mod is filed when its host leaves play (owner ruling of 2026-08-25, “[…] is about the ERASE, not about…”), and left it: D-U17-1. The verifier measured that the cost route (eraseMod) files nothing for a token mod, but Return to Nature files it: F-U17-4.",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U17-4"
-    ]
+    "notes": "Engine aligned 2026-10-22 (CT-259): Return to Nature skips token mods as eraseMod does (17-earth-b, 428). F-U17-4 closed. The owner's 2026-10-22 \"Never file tokens\" makes this one route of a rule for every route (zones.erased.tokens, zones.erased.tokens.mods); D-U17-1 settled.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.mods.moving",
@@ -2952,6 +2965,10 @@
       {
         "text": "Megadeath with Resurrect grafted attacks with no cheap unit in the bin: no Poison 5 either.",
         "test": "390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all"
+      },
+      {
+        "text": "The same composite is never put on the stack at all.",
+        "test": "546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack"
       }
     ],
     "see": [
@@ -2969,16 +2986,14 @@
       "owner": [],
       "engine": [],
       "tests": [
-        "390-raq-stack.test.ts"
+        "390-raq-stack.test.ts",
+        "546-graft-composite-no-target.test.ts"
       ]
     },
     "basis": "designer",
     "scope": "game",
     "confidence": "high",
-    "engineDiffers": [
-      "F-U14-1"
-    ],
-    "notes": "The engine reaches the same visible result by stacking and fizzling the item (F-U14-1; measured by the r1 verifier's probe: \"Megadeath: Create a Poison 5 → stack.\" then a fizzle). The difference shows in a bounded use spent by the fizzle (owner ruling of 2026-08-23, “a bounded use is spent by…”), a response window, and a tax.",
+    "notes": "Engine aligned 2026-10-22 (CT-252, 546; 428's test now asserts nothing is stacked). F-U14-1 closed.",
     "sourceHashes": {
       "RAQ 1410252965276684418#2": "db27f57d93e2c1e65f0238cbb4d49645cdd87eb58adcf9d058fa1a7dc8b0e104"
     },

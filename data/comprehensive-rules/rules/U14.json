@@ -754,6 +754,14 @@
       {
         "text": "Tides of the Cosmos plays a unit, and Bloomcaster's \"Whenever you play a unit\" triggers on it.",
         "test": "396-raq-timing.test.ts::RAQ Tides 7: a free play is a play"
+      },
+      {
+        "text": "A unit Wake the Dead plays waits on the stack and can be answered; a negated one never arrives.",
+        "test": "557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives"
+      },
+      {
+        "text": "A card an effect plays where nobody can respond is still announced as played, for a unit and for a spell.",
+        "test": "556-inline-play-is-a-whole-play.test.ts::CR 108.1a / CT-143: the in-place branch fires the wide cardPlayed, for a unit and for a spell"
       }
     ],
     "see": [
@@ -778,19 +786,18 @@
       "engine": [],
       "tests": [
         "169-mid-resolution-window.test.ts",
-        "396-raq-timing.test.ts"
+        "396-raq-timing.test.ts",
+        "557-wake-the-dead-plays-on-the-stack.test.ts",
+        "556-inline-play-is-a-whole-play.test.ts"
       ]
     },
     "basis": "designer",
     "scope": "game",
     "confidence": "high",
-    "notes": "Engine differs for plays made through a spawn (\"asPlay\": Wake the Dead, The Bonesculptor), per the owner ruling of 2026-08-26 (“the WIDE play event learns which…”) and the owner ruling of 2026-08-25 (“\"I spawn with N counters\" is…”): see F-U14-3.",
+    "notes": "Engine aligned 2026-10-22: Wake the Dead (CT-245) and The Bonesculptor (CT-255) make real plays through the stack, and an in-place play is a whole play (CT-332, CT-143: costs paid, the wide play event fired). F-U14-3 closed.",
     "sourceHashes": {
       "RAQ 1396955380000755795#8": "d7b245a4138b1fec7dc7f5e7d5e771ae4a62619ada3cebcf03ccd74ef2540a75"
-    },
-    "engineDiffers": [
-      "F-U14-3"
-    ]
+    }
   },
   {
     "key": "effects.playing.mid-resolution.zone",
@@ -2305,6 +2312,14 @@
       {
         "text": "Megadeath grafted with Resurrect, and no unit of cost 2 or less in the bin: no Poison 5 is made.",
         "test": "390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all"
+      },
+      {
+        "text": "Megadeath with Resurrect grafted, and no unit of cost 2 or less in the bin: the composite never reaches the stack.",
+        "test": "546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: Megadeath + Resurrect with no legal bin card never reaches the stack"
+      },
+      {
+        "text": "With a cost 2 unit in the bin, the composite goes on the stack.",
+        "test": "546-graft-composite-no-target.test.ts::CR 110.7 / CT-252: the control"
       }
     ],
     "see": [
@@ -2323,19 +2338,17 @@
       "owner": [],
       "engine": [],
       "tests": [
-        "390-raq-stack.test.ts"
+        "390-raq-stack.test.ts",
+        "546-graft-composite-no-target.test.ts"
       ]
     },
     "basis": "designer",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Engine differs: by the RAQ register's own note the engine puts it on the stack and fizzles it (F-U14-1). The owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”) and the owner ruling of 2026-08-23 (“An effect fizzles when it loses…”) say otherwise for triggers in general (D-U14-3).",
+    "notes": "Engine aligned 2026-10-22 (CT-252): a triggered graft composite whose required target cannot be filled is withheld before it is stacked (546). F-U14-1 closed. Whether the same holds for a plain trigger with a required target is unruled (D-U14-3): the engine still pushes such a trigger and lets it fizzle.",
     "sourceHashes": {
       "RAQ 1410252965276684418#2": "db27f57d93e2c1e65f0238cbb4d49645cdd87eb58adcf9d058fa1a7dc8b0e104"
-    },
-    "engineDiffers": [
-      "F-U14-1"
-    ]
+    }
   },
   {
     "key": "effects.priority.stack",
@@ -2539,8 +2552,20 @@
     "parent": "effects.priority.priority",
     "order": 1,
     "text": "A player who uses priority to take an action may keep priority and take further actions. Each action goes on the stack as an effect; none of them happens immediately.",
-    "examples": [],
-    "see": [],
+    "examples": [
+      {
+        "text": "A player casts a spell and keeps priority, then casts a second spell on top of it before the opponent can respond. When the player passes, the opponent receives priority.",
+        "test": "568-hold-priority.test.ts::CR 703.2a / CT-253: the holder stacks a second action before the opponent gets a look, then CR 703.2b"
+      },
+      {
+        "text": "A player who keeps priority and then passes hands the window over, and the items wait for both players to pass.",
+        "test": "568-hold-priority.test.ts::CR 703.2a / CT-253: a holder who passes hands the window over, and the item waits for both passes"
+      }
+    ],
+    "see": [
+      "annexd.auto-pass.no-retain",
+      "effects.priority.deployment"
+    ],
     "sources": {
       "printed": [
         {
@@ -2554,19 +2579,23 @@
       ],
       "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "Follow the Manual",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-253: a player who acts may keep priority)"
+        }
+      ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "568-hold-priority.test.ts"
+      ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Engine suspected to hand priority to the other player after every push (the owner ruling of 2026-08-29 (“Cosmic Reversal reaches the board; every…”), the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”)): F-U14-2. Annex D may hold a digital convention for this. engine differs: F-U14-2 (measured: priority goes to the other seat after a battle cast).",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U14-2"
-    ],
-    "untested": true
+    "notes": "Engine aligned 2026-10-22 (CT-253): the owner ruled to follow the Manual; the engine keeps priority with the actor on request (568). How a player asks is a digital convention: annexd.auto-pass.no-retain. In deployment no player holds priority (effects.priority.deployment). F-U14-2 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.priority.priority.pass",
@@ -2967,6 +2996,10 @@
       {
         "text": "a card Tides of the Cosmos plays for free can be answered on the stack.",
         "test": "169-mid-resolution-window.test.ts::a free play is still a play, so it can be answered on the stack"
+      },
+      {
+        "text": "A unit Wake the Dead plays waits on the stack until Wake the Dead has finished resolving, and can be answered before it resolves.",
+        "test": "557-wake-the-dead-plays-on-the-stack.test.ts::CR 701.4 / CT-245: a unit Wake the Dead plays can be answered, and a negated one never arrives"
       }
     ],
     "see": [
@@ -2990,19 +3023,17 @@
       ],
       "engine": [],
       "tests": [
-        "169-mid-resolution-window.test.ts"
+        "169-mid-resolution-window.test.ts",
+        "557-wake-the-dead-plays-on-the-stack.test.ts"
       ]
     },
     "basis": "designer",
     "scope": "game",
     "confidence": "high",
-    "notes": "Engine differs for plays made through a spawn (\"asPlay\": Wake the Dead, The Bonesculptor): the unit is put into play inside the resolution and never waits on the stack. See F-U14-3.",
+    "notes": "Engine aligned 2026-10-22 (CT-245, CT-255): no play is made through a spawn any more; F-U14-3 closed.",
     "sourceHashes": {
       "RAQ 1396955380000755795#4": "325946fed1e92195a657d5818c9119358e7f48caa519f336bef429f13636c8e0"
-    },
-    "engineDiffers": [
-      "F-U14-3"
-    ]
+    }
   },
   {
     "key": "effects.priority.resolving",
@@ -3047,11 +3078,15 @@
     "key": "effects.priority.deployment",
     "parent": "703",
     "order": 7,
-    "text": "Deployment uses the stack, but each player has a stack of their own there. Only that player sees it and holds priority over it; no other player can respond to it or is made to wait on it.",
+    "text": "Deployment uses the stack, but each player has a stack of their own there, which only that player sees; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. A player's plays still go on that stack, and it resolves on its own.",
     "examples": [
       {
         "text": "In deployment a player plays a deploy-timing spell at their Earthbound Replicator; the spell goes on that player's own stack, so the Replicator can copy it.",
         "test": "138-spell-copy.test.ts::CR 507.5/CT-176: a deploy-timing play names a REAL stack item"
+      },
+      {
+        "text": "In deployment a player asks to keep priority as they play a card. The ask is refused: nobody can hold priority there.",
+        "test": "568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused"
       }
     ],
     "see": [
@@ -3068,21 +3103,32 @@
           "from": "register@72de434"
         },
         {
-          "quote": "2. **That stack belongs to one seat**, and so does the priority over it. The",
-          "adopted": "2026-09-01",
-          "from": "register@72de434"
+          "quote": "the ruling on Deployment stack is that you CANNOT hold priority during Deployment.",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-185)"
+        },
+        {
+          "quote": "The stack technically only exists for triggers during deployment, you can't do any 'on the stack' shenanigans.",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-185)"
+        },
+        {
+          "quote": "Plays stay as they are",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-185)"
         }
       ],
       "engine": [],
       "tests": [
-        "138-spell-copy.test.ts"
+        "138-spell-copy.test.ts",
+        "568-hold-priority.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
-    "digitalClause": "Only that player sees it and holds priority over it; no other player can respond to it or is made to wait on it.",
+    "digitalClause": "which only that player sees",
     "confidence": "high",
-    "notes": "",
+    "notes": "Owner 2026-10-22 (CT-185 closed wontfix, CT-253): \"you CANNOT hold priority during Deployment\"; the stack there exists for triggers, with no \"on the stack\" responses; plays still go through the player's own deployment stack (\"Plays stay as they are\"). The register line that gave each seat priority over its own deployment stack (2026-09-01, \"That stack belongs to one seat, and so does the priority over it\") is replaced by that call; its first half (one seat's stack) stands in the isolated-stack quote.",
     "sourceHashes": {}
   },
   {
@@ -3124,6 +3170,43 @@
     "scope": "game",
     "confidence": "medium",
     "notes": "Caleb's words are quoted in the owner ruling of 2026-08-23 (“A card may be granted permission…”) without an RAQ id (\"mana step\" = haste step, per the owner ruling of 2026-08-23 (“A card may be granted permission…”)). Primary home is 504.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.solo-region",
+    "parent": "703",
+    "order": 9,
+    "text": "During battle, a region where only one player is present has its own stack too (rule combat.regions.exclusive.no-region-zones), and nobody holds priority over it. An item put on that stack resolves on its own, top first, with no priority window, and the battle's priority window is not changed by it.",
+    "examples": [
+      {
+        "text": "Molten Riftbreaker dies in its controller's home region during a battle elsewhere. Its trigger resolves there on its own, and does not reach the spell on the battle region's stack.",
+        "test": "578-region-stacks-and-bins.test.ts::CR 601.2a / CT-234: Molten Riftbreaker dying in the other region does not negate a spell on the battle stack"
+      }
+    ],
+    "see": [
+      "601",
+      "703.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Drains on its own",
+          "adopted": "2026-10-22",
+          "from": "owner, chat 2026-10-22 (CT-234)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "578-region-stacks-and-bins.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "Owner 2026-10-22 (CT-234): a one-player region's stack \"drains on its own\". The engine drains it at settle(), top down, leaving the battle window's priority and passes alone (578). Not ruled: a non-battle region where both players are present; the owner called the round-1-region-in-round-2 case \"literally impossible by the game rules\". The defender's region in the declare step holds only the defender, so triggers there drain the same way.",
     "sourceHashes": {}
   },
   {
@@ -3684,7 +3767,16 @@
     "parent": "effects.resolution.recheck",
     "order": 1,
     "text": "The check is made once, as the effect begins to resolve. An earlier part of the effect cannot make a later part's target illegal in the middle of its resolution.",
-    "examples": [],
+    "examples": [
+      {
+        "text": "Minor Kraken is grafted under a part that grows its target past 5 defense. The target was judged legal as the item began to resolve, so it is still recalled.",
+        "test": "554-target-judged-once.test.ts::CR 704.5a / CT-232: Minor Kraken grafted under a part that grows its target past 5 defense still recalls it"
+      },
+      {
+        "text": "A target already past 5 defense when the item begins to resolve is still refused.",
+        "test": "554-target-judged-once.test.ts::CR 704.5 / CT-232 CONTROL"
+      }
+    ],
     "see": [],
     "sources": {
       "printed": [],
@@ -3698,17 +3790,15 @@
         }
       ],
       "engine": [],
-      "tests": []
+      "tests": [
+        "554-target-judged-once.test.ts"
+      ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Stated in the owner ruling of 2026-10-09 (“Every target is re-checked against its…”)’s encoding section, not in a designer source. engine differs: F-U14-9 (Minor Kraken’s own restriction re-check sees an earlier part’s counters).",
-    "sourceHashes": {},
-    "untested": true,
-    "engineDiffers": [
-      "F-U14-9"
-    ]
+    "notes": "Stated in the register's 2026-10-09 encoding section, not in a designer source. Engine aligned 2026-10-22 (CT-232): twelve cards that re-tested their own restriction inside the run no longer do (554, with a sweep derived from the registry). F-U14-9 closed.",
+    "sourceHashes": {}
   },
   {
     "key": "effects.resolution.recheck.same-object",

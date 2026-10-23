@@ -1,20 +1,15 @@
 [
   {
     "key": "combat.columns.adjacency",
-    "textHash": "deaeb29ffeaeb161",
+    "textHash": "95dc95d0adbbbd02",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U10-r2",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:adjacentInFormation",
+        "loc": "client/engine/src/engine.ts:adjacentInFormation / formationGrid",
         "agrees": true,
-        "note": "orthogonal neighbours in the same grid"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:formationGrid",
-        "agrees": false,
-        "note": "divergence real (engineDiffers): defender grid compacts block keys, so blockers of columns 1 and 3 are neighbours across an unblocked column 2"
+        "note": "defending grid indexed by attacking column, so a gap separates blockers"
       }
     ],
     "tests_run": [
@@ -22,47 +17,51 @@
         "file": "client/engine/test/23-wood-a.test.ts",
         "pattern": "Inspiration: +2/+2 to your units adjacent to it in formation",
         "passed": true,
-        "asserts_claim": "yes"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r2-verify2-probes.test.ts",
-        "title": "probe combat.columns.adjacency — blockers of columns 1 and 3 with column 2 unblocked: the engine treats them as neighbours (Inspiration buffs across the gap)",
+        "file": "client/engine/test/560-defending-gap-adjacency.test.ts",
+        "pattern": "CR 606.1f / CT-249: blockers either side of an unblocked column are not adjacent",
         "passed": true,
-        "demonstrates": "yes: confirms the divergence against illustrative example 2 (other blocker got +2/+2 -> 3/3)"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.columns.adjacency — blockers of the first and third columns",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.22",
         "supports": "yes",
-        "note": "left, right, front and back neighbors"
+        "note": ""
       },
       {
         "ref": "Rulebook 2023 p.10",
         "supports": "yes",
-        "note": "same sentence"
+        "note": ""
       },
       {
         "ref": "Manual p.23",
-        "supports": "partly",
-        "note": "side-blocks \"beneficial for adjacency matters cards\" -- on-topic, supports that empty columns matter, not the base claim"
+        "supports": "yes",
+        "note": "side-blocking for adjacency, consistent"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "adjacent to their left, right, front and back neighbors until"
       },
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "ing formation is allowed to be assigned with empty"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "right, front and back neighbors until regroup."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.columns.adjacency.at-resolution",
@@ -204,20 +203,15 @@
   },
   {
     "key": "combat.columns.adjacency.positions",
-    "textHash": "fc1bed8430bc3d4f",
+    "textHash": "a672cf89ce53001c",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U10-r2",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:adjacentInFormation",
+        "loc": "client/engine/src/engine.ts:adjacentSlots",
         "agrees": true,
-        "note": "(ci±1, same row) and (ci, other row); nothing diagonal"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:formationGrid",
-        "agrees": false,
-        "note": "divergence real (engineDiffers): the defender grid is the sorted block keys compacted, so blockers of non-consecutive columns read as left/right neighbours"
+        "note": "(ci-1,ri), (ci,1-ri), (ci+1,ri) only; past-end slot only on the attacking line front row (CR 603.3)"
       }
     ],
     "tests_run": [
@@ -225,51 +219,51 @@
         "file": "client/engine/test/23-wood-a.test.ts",
         "pattern": "Hooba-Nan in the middle: both sides and below, and nothing diagonal",
         "passed": true,
-        "asserts_claim": "yes"
-      }
-    ],
-    "probes": [
+        "asserts_claim": true
+      },
       {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r2-verify2-probes.test.ts",
-        "title": "probe combat.columns.adjacency — blockers of columns 1 and 3 with column 2 unblocked: the engine treats them as neighbours (Inspiration buffs across the gap)",
+        "file": "client/engine/test/560-defending-gap-adjacency.test.ts",
+        "pattern": "CR 603.3b / CT-249: a blocker next to an unblocked column has no adjacent slot in it",
         "passed": true,
-        "demonstrates": "yes: confirms the flagged divergence"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/560-defending-gap-adjacency.test.ts",
+        "pattern": "CR 603.2 / CT-249: blockers on NEIGHBOURING attacking columns are still adjacent",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.22",
         "supports": "yes",
-        "note": "left, right, front and back neighbors"
+        "note": "left/right/front/back neighbours: at most three for a unit in a 2-row grid"
       },
       {
-        "ref": "R75 (its adjacency rule)",
+        "ref": "owner register@72de434 'sides and above/below. Nothing diagonal.'",
         "supports": "yes",
-        "note": "Nothing diagonal"
+        "note": ""
       },
       {
-        "ref": "R304 (via 603.3)",
+        "ref": "owner register@72de434 'The other row of a neighbouring column is diagonal'",
         "supports": "yes",
-        "note": "past-the-end position"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
         "text": "adjacent to their left, right, front and back neighbors until"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "it's referring to its sides and above/below. Nothing diagonal.\""
-      },
-      {
         "file": "client/engine/src/engine.ts",
-        "text": "// treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
+        "text": "*  · (ci, 1 - ri) — the other slot in its OWN column (above / below)"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.columns.definition",
@@ -1607,140 +1601,136 @@
     "key": "combat.formations.placement.defending-emptied-block",
     "textHash": "f1e7743d92b654e5",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U10-r3",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "engine.ts:formationSlots",
+        "loc": "client/engine/src/engine.ts:formationSlots",
         "agrees": true,
-        "note": "for the defender the grid is the block map; a block entry with no living unit yields a {kind:hole} front slot, but only when some grid column still holds a living unit (else only flash spots return)"
-      },
-      {
-        "loc": "engine.ts:putInSlot",
-        "agrees": true,
-        "note": "pushes into the existing blocks[ci] array, so the unit blocks that column"
+        "note": "a declared blocking column (b.blocks[ci] defined) with no living unit is offered as a 'hole' while some unit stands in the defending grid"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/421-cr-regions-formations.test.ts",
-        "pattern": "cr:combat\\.formations\\.placement\\.defending-emptied-block",
+        "pattern": "cr:combat.formations.placement.defending-emptied-block — after blocks a blocking column whose blocker died",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.formations.placement.defending-emptied-block — with no blocker left standing",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r3-verify-probes.test.ts",
-        "title": "combat.formations.placement.defending-emptied-block — the emptied blocking column is not offered when no blocker is left standing",
-        "passed": true,
-        "demonstrates": "yes: the \"while the defending formation still holds at least one unit\" condition is real; with no blocker standing only the unblocked column 2 spot is offered"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R72 (its emptied BLOCK column note)",
-        "supports": "partly",
-        "note": "on-topic: says an emptied block column keeps its key and stays a hole in the block map; it does not say a unit may be placed there. The placement is engine-derived (formationSlots hole kind, R75 lists the hole as an attacking-line kind). basis \"engine\" is honest."
+        "ref": "owner register@72de434 'Key *presence* is that sticky flag (R13)...'",
+        "supports": "partial",
+        "note": "truncated; says an emptied blocking column is a hole, not the placement claim itself; the claim rests on engine + tests"
+      },
+      {
+        "ref": "engine formationSlots",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "spot: { kind: 'hole', column: i },"
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "text": "assert.ok(g.formationSlots(D).some(s => s.spot.kind === 'hole' && s.spot.column === 0), 'its front slot is offered');"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (!grid.some(col => col.some(id => this.entity(id)))) return flash;"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (slot.col) { slot.col.push(u.id); return; }"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "Key *presence* is that sticky flag (R13), so `blocks[ci] = []` is a hole in"
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "text": "assert.equal(h.state.players[D]!.life, life, 'the column is blocked: nothing reached the player');"
       }
     ],
-    "basis_ok": true,
-    "problem": "None material. The only cited ruling is on-topic rather than stating the rule; the rule rests on the engine, as its basis says.",
-    "carried": "example-label 2026-10-11"
+    "basis_ok": false,
+    "problem": "basis is 'engine' (code + test only) but sources.owner cites an owner quote; basis should be 'mixed' (or drop the owner quote). Content verified by engine and tests."
   },
   {
     "key": "combat.formations.placement.empty-formation",
-    "textHash": "17ed5ea4156579be",
-    "verdict": "partial",
-    "round": 3,
-    "verifier": "U10-r3",
+    "textHash": "f7c17fd13ea4ba2f",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "engine.ts:formationSlots",
+        "loc": "client/engine/src/engine.ts:formationSlots",
         "agrees": true,
-        "note": "no living unit in the grid → only flash block spots (defender, after blocks); attacker gets [] — not even a hole"
-      },
-      {
-        "loc": "engine.ts:placeInFormation",
-        "agrees": false,
-        "note": "a dead source resolves to its last-known seat, but formationSlots(seat) is [] when that formation holds no unit, so a LONE Hooba-Lin's 1/1 is created and left outside: the 602.6f exception the text names is not honoured by the engine"
+        "note": "no living unit in the grid and not remembered -> only flashBlockSlots (defender's front of an unblocked column) is returned; remembered (dead source) is the other exception"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/66-formation-placement.test.ts",
-        "pattern": "R75: a formation you are not standing in",
+        "pattern": "CR 602.6k: a formation you are not standing in",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.formations.placement.empty-formation",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/400-raq-fix-blocks.test.ts",
-        "pattern": "R322 the attacker is never offered a blocking spot",
+        "pattern": "CR 607.2c the attacker is never offered a blocking spot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/561-remembered-empty-formation.test.ts",
+        "pattern": "CR 602.6k / CT-250: the remembered exception is the dead source only",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r3-verify-probes.test.ts",
-        "title": "combat.formations.play-into.needs-formation — after blocks every attacker dies; the attacker casts Tiderunner Initiate, nothing is asked, it enters outside any formation",
+        "file": "client/engine/test/zz-probe-U10-1.test.ts",
+        "test": "probe U10-1: living Hooba-Lin, line emptied (unslotted), trigger makes nothing",
         "passed": true,
-        "demonstrates": "yes: demonstrates illustrative example 2 (no position, not even the hole; enters outside)"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r3-verify-probes.test.ts",
-        "title": "combat.formations.placement.empty-formation — a source-gone effect whose formation holds no unit: a LONE Hooba-Lin killed under its attack trigger",
-        "passed": true,
-        "demonstrates": "no: measures that the 602.6f exception does NOT apply in the engine — \"no open position in the formation — Unit Token stays in the region, outside it.\""
+        "demonstrates": "yes: a living source whose line holds no unit is offered nothing and creates nothing (supports empty-formation example 4 and source-formation)"
       }
     ],
     "source_checks": [
       {
-        "ref": "R75 (its placement rule)",
+        "ref": "owner register@72de434 'always grow at an end. A formation you are not standing in cannot be joined at'",
         "supports": "yes",
-        "note": "\"A formation you are not standing in cannot be joined at all — with no living unit in the grid the answer is \\\"no slots\\\"\""
+        "note": "owner quote; matches engine comment on formationSlots"
       },
       {
-        "ref": "R322",
+        "ref": "owner register@72de434 'all — with no living unit in the grid the answer is \"no slots\"...'",
         "supports": "yes",
-        "note": "the 602.6c exception (defender with no blockers)"
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 'defender may start a formation this way even having declared no blockers.'",
+        "supports": "yes",
+        "note": "the defender exception; 400 test shows the defender with no blocks is offered the block spot"
+      },
+      {
+        "ref": "cross-refs 602.6c / 602.6f",
+        "supports": "yes",
+        "note": "numbering not independently checkable (rules/ forbidden); engine cites CR 602.6f for the remembered exception and 602.6c for blocking-column placement, consistent"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (!grid.some(col => col.some(id => this.entity(id)))) return flash;"
+        "text": "if (!remembered && !grid.some(col => col.some(id => this.entity(id)))) return flash;"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "all — with no living unit in the grid the answer is \"no slots\", not \"open a"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "no open position in the formation — ${u.card} stays in the region, outside it."
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "text": "assert.deepEqual(new E(h.state).formationSlots(A), [], 'but no position is offered, not even the hole');"
       }
     ],
     "basis_ok": true,
-    "problem": "The last clause names 602.6f (a source that left play still places into the formation it was in) as an exception, but the engine applies no such exception: when that formation holds no unit, formationSlots returns nothing and the unit stays outside (probe: lone Hooba-Lin). The divergence is flagged on the source-gone rule but not here, so this rule states as engine-true a behaviour the engine lacks. Either flag the engine divergence here too, or drop 602.6f from the exceptions. The rest (no position, not even a hole; 602.6c exception) is confirmed.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.formations.placement.ends-only",
@@ -1783,48 +1773,70 @@
   },
   {
     "key": "combat.formations.placement.legal-positions",
-    "textHash": "c51636d2bb24ad1c",
+    "textHash": "9db8cef24dbb060b",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U10-r2",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:formationSlots",
         "agrees": true,
-        "note": "left end, back slot of each one-unit column, hole front slot, right end (ends only for the attacking line; see placement.defending)"
+        "note": "ends (attacking line only), behind a one-unit column, holes; an empty remembered line offers one 'a new column'"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/66-formation-placement.test.ts",
-        "pattern": "R75: a two-unit column offers no back slot",
+        "pattern": "CR 602.6a: a two-unit column offers no back slot",
         "passed": true,
-        "asserts_claim": "yes: exactly [left end, column 2 behind, right end]"
+        "asserts_claim": true
       },
       {
         "file": "client/engine/test/66-formation-placement.test.ts",
-        "pattern": "R75: a placement can FILL an R72 hole, and can never create one",
+        "pattern": "CR 602.6a: a placement can FILL a CR 602.5a hole",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "CR 602.6a: both ENDS and the back slot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/561-remembered-empty-formation.test.ts",
+        "pattern": "CR 602.6f / CT-250: a lone Hooba-Lin killed under its attack trigger",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U10-1.test.ts",
+        "test": "probe U10-1: dead lone Hooba-Lin, the 1/1 opens one new column",
+        "passed": true,
+        "demonstrates": "yes: a line with no column left offers exactly one new column (auto-picked) through a dead source"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R75 (its placement rule)",
+        "ref": "owner register@72de434 (four quotes)",
         "supports": "yes",
-        "note": "the three kinds are listed verbatim"
+        "note": "ends, back slot of a one-unit column, front slot of a hole"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**the BACK slot of a column that holds exactly one unit**;"
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "text": "'column 2, behind The Foretold',"
+      },
+      {
+        "file": "client/engine/test/561-remembered-empty-formation.test.ts",
+        "text": "assert.equal(cols.length, 1, 'a column is opened');"
       }
     ],
     "basis_ok": true,
-    "problem": "Exhaustive list reads as universal; for a defending formation the ends are excluded and the R322 block spot is added (rule placement.defending). Acceptable given the cross-reference.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": "Note only: the end-column positions apply to the attacking line; the defending line cannot widen (engine: only the attacker gets ends), which a separate defending-placement rule covers."
   },
   {
     "key": "combat.formations.placement.one-or-none",
@@ -1867,117 +1879,146 @@
   },
   {
     "key": "combat.formations.placement.source-formation",
-    "textHash": "aa1e04ce889a8afd",
+    "textHash": "35aacc868e9bbb13",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U10-r1",
+    "round": 4,
+    "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:formationSeatOf",
+        "loc": "client/engine/src/engine.ts:placeInFormation / formationSeatOf",
         "agrees": true,
-        "note": "alive unit in no grid → null → placeInFormation logs and places nothing"
+        "note": "seat = formationSeatOf(sourceId); a live source in no grid -> null -> 'it is not in a formation', nothing placed or created; after Organic Exchange the grid it stands in is used"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/108-formation-class.test.ts",
-        "pattern": "R225 Hooba-Lin: alive but out of the formation (R172) → no token, no question",
-        "passed": true,
-        "asserts_claim": "yes (Hooba-Lin as the unit, stolen and stolen back, rather than a host)"
-      }
-    ],
-    "probes": [],
-    "source_checks": [
-      {
-        "ref": "R225 (its second grade)",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R225 (history)",
-        "supports": "yes",
-        "note": "history only, correctly not cited as a ruling"
-      }
-    ],
-    "quote_spans": [
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "   * out of the line (R172) still names none."
-      }
-    ],
-    "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
-  },
-  {
-    "key": "combat.formations.placement.source-gone",
-    "textHash": "a8e6c915606a4522",
-    "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U10-r3",
-    "engine": [
-      {
-        "loc": "engine.ts:formationSeatOf",
-        "agrees": true,
-        "note": "reads lastKnownOf(id).formationSeat while the battle in its region is on"
-      },
-      {
-        "loc": "engine.ts:placeInFormation / formationSlots",
-        "agrees": false,
-        "note": "divergence is real: when the remembered formation holds no unit (a lone source), formationSlots returns [] and the 1/1 is not placed"
-      }
-    ],
-    "tests_run": [
-      {
-        "file": "client/engine/test/108-formation-class.test.ts",
-        "pattern": "R325 Hooba-Lin",
+        "pattern": "CR 602.6e Hooba-Lin: alive but out of the formation",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/421-cr-regions-formations.test.ts",
-        "pattern": "cr:combat\\.formations\\.placement\\.source-gone",
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "CR 602.6e Hooba-Bot: alive but out of the formation",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/580-source-formation-after-exchange.test.ts",
+        "pattern": "CR 602.6e / Organic Exchange: Hooba-Bot swapped",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/580-source-formation-after-exchange.test.ts",
+        "pattern": "CR 602.6e / Organic Exchange: Hooba-Pon swapped",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U10/u10-r3-verify-probes.test.ts",
-        "title": "combat.formations.placement.empty-formation — a source-gone effect whose formation holds no unit: a LONE Hooba-Lin killed under its attack trigger",
+        "file": "client/engine/test/zz-probe-U10-1.test.ts",
+        "test": "probe U10-1: living Hooba-Lin, line emptied (unslotted), trigger makes nothing",
         "passed": true,
-        "demonstrates": "yes: demonstrates the flagged engine divergence (lone source: the 1/1 is created and left outside the formation)"
+        "demonstrates": "yes: a living source whose line holds no unit is offered nothing and creates nothing (supports empty-formation example 4 and source-formation)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 'formation by pointing at the SOURCE.'",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 'the source is **alive and in play but unslotted**'",
+        "supports": "yes",
+        "note": "fragment; the conclusion (nothing created) is shown by 108 tests"
+      },
+      {
+        "ref": "owner chat 2026-10-22 'Source's formation'",
+        "supports": "yes",
+        "note": "Organic Exchange case"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "`${src}: it is not in a formation, so there is no formation of mine for ${u.card} to join.`);"
+      },
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "text": "assert.equal(unitsOf(h, A).length, before, `${why}: nothing was created`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.placement.source-gone",
+    "textHash": "00d918283bcf1f92",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U10-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationSeatOf / remembersFormation",
+        "agrees": true,
+        "note": "a source that left play answers from its last-known formationSeat; formationSlots(seat, remembered=true) offers positions even with nobody standing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "CR 714.4 Hooba-Lin: killed under its own attack trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/561-remembered-empty-formation.test.ts",
+        "pattern": "CR 602.6f / CT-250: a lone Hooba-Lin killed under its attack trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.formations.placement.source-gone",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U10-1.test.ts",
+        "test": "probe U10-1: dead lone Hooba-Lin, the 1/1 opens one new column",
+        "passed": true,
+        "demonstrates": "yes: a line with no column left offers exactly one new column (auto-picked) through a dead source"
       }
     ],
     "source_checks": [
       {
         "ref": "RAQ 1353895783266516992#2",
         "supports": "yes",
-        "note": "_passer names Hooba-Lin among effects that \"remember they were in formation and will work fine\""
+        "note": "_passer [Solved], status covered; names Hooba-Lin among those that remember their formation"
       },
       {
-        "ref": "R325",
+        "ref": "owner register@72de434 'last-known state'",
         "supports": "yes",
-        "note": "last-known state includes the formation it stood in"
+        "note": "supports 'even if no unit is left standing'"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/ledgers/raq.ts",
+        "text": "But there are some which will remember they were in formation and will work fine (Hooba-Bot, Hooba-Pon, Hooba-Lin, Embermaw Fledgling, Lumengrove Lurker)."
+      },
+      {
         "file": "client/engine/src/engine.ts",
         "text": "if (lk) return lk.formationSeat !== null && lk.region === b.region ? lk.formationSeat : null;"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "formation it stood in), it reads the source's **last-known state**: what the"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "> Hooba-Nan). But there are some which will remember they were in formation and"
       }
     ],
-    "basis_ok": true,
-    "problem": "Ruling confirmed against the RAQ and R325; the engine follows it when the formation still holds a unit (bound test) and diverges when it holds none (probe), which is the flagged divergence.",
-    "carried": "example-label 2026-10-11"
+    "basis_ok": false,
+    "problem": "basis is 'designer' but the record also relies on an owner source (the 'even if no unit is left standing' half rests on the owner's last-known-state call); basis should be 'mixed'. Content verified."
   },
   {
     "key": "combat.formations.placement.spell-unit",
@@ -2933,25 +2974,20 @@
   },
   {
     "key": "combat.regions.exclusive.no-region-zones",
-    "textHash": "19b23d8d1ecd94ad",
+    "textHash": "f4cadaaecf0feed1",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U10-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.pushStackTargets",
-        "agrees": false,
-        "note": "one game-wide state.stack, offered from every region (F-U01-2, declared)"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.pushBinCardTargets",
-        "agrees": false,
-        "note": "bins are offered from every region (F-U01-2, declared)"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.pushCachedCardTargets",
+        "loc": "client/engine/src/engine.ts:stackIn",
         "agrees": true,
-        "note": "a cache is offered only where its owner is present"
+        "note": "one state.stack array, items stamped by region; every sweep reads stackIn(region), so each region behaves as its own stack (421 asserts the storage shape, 578 the behaviour)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:targetCandidates",
+        "agrees": true,
+        "note": "cache and bin targets reachable only where their owner is present"
       }
     ],
     "tests_run": [
@@ -2962,8 +2998,20 @@
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
-        "pattern": "cr:concepts.targets.region.global",
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "pattern": "CR 601.2a / CT-234: Molten Riftbreaker dying in the other region",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "pattern": "CR 601.2a / CT-234: the control",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "pattern": "CR 403.6 / CT-234: in deployment a bin card target",
         "passed": true,
         "asserts_claim": true
       }
@@ -2971,60 +3019,37 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "Manual p.19",
+        "ref": "Manual p.19 (four quotes)",
         "supports": "yes",
-        "note": "\"Every single effect is specific to the region it takes place in, meaning it will never impact anything in any other region\"; \"if a player enters a region, their bin, hand, resources, and even the player themself can be interacted with\" (covers hand too)."
+        "note": "every effect region-specific; bin, hand, resources and player reachable once the player enters a region"
       },
       {
         "ref": "RAQ 1454169054402314362#0",
         "supports": "yes",
-        "note": "calebgannon: everything is region specific."
+        "note": "calebgannon, covered"
       },
       {
-        "ref": "R12",
+        "ref": "owner quotes (2026-08-18, 2026-09-01, 2026-10-11 x3)",
         "supports": "yes",
-        "note": "a region-ending effect affects only that region's battle and stack."
-      },
-      {
-        "ref": "R344",
-        "supports": "yes",
-        "note": "current: no player owns a region's stack; only players present can use it; bin and cache are in a region only while their owner is present."
-      },
-      {
-        "ref": "R286",
-        "supports": "yes",
-        "note": "deployment: \"an isolated stack just for the person in that region\"."
+        "note": "region stack shared, no owner, only present players act on it; caches in a region only while owner present"
       }
     ],
     "quote_spans": [
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "place in, meaning it will never impact anything in any"
+        "text": "Additionally, if a player enters a region, their bin, hand,"
       },
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "resources, and even the player themself can be interacted with."
+        "file": "client/ledgers/raq.ts",
+        "text": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "No player owns a region's stack: it is shared by every player present in that region."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "Only a player present in a region can put an effect on its stack or respond to one there."
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
-      },
-      {
-        "file": "client/engine/test/421-cr-regions-formations.test.ts",
-        "text": "assert.equal(refs.length, 2, 'both caches are in reach once both players are present');"
+        "file": "client/engine/test/578-region-stacks-and-bins.test.ts",
+        "text": "'Twin Flame is still on the battle stack: the Riftbreaker reached only its own region stack');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": "Note only: the hand clause has no dedicated test (printed text supports it)."
   },
   {
     "key": "combat.regions.information",

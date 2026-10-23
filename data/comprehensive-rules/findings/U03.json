@@ -27,15 +27,16 @@
         "quote": "\"text\": \"[Augment] When a player selects targets for an effect during battle, I must be targeted if able.\","
       },
       {
-        "file": "client/engine/src/cards/sets/batch-light-c.ts",
-        "quote": "// like everything else (CR 601.2), which is also what \"during battle\" amounts to:"
-      },
-      {
         "file": "client/engine/src/engine.ts",
         "quote": "const gates = this.mustBeTargetedIn(region);"
+      },
+      {
+        "file": "client/engine/test/544-gatekeeper-battle-only.test.ts",
+        "quote": "CR 110.12 / CT-239: in deployment a Gatekeeper of Souls compels nothing"
       }
     ],
-    "ct": "CT-239"
+    "ct": "CT-239",
+    "closed": "fixed on 2026-10-22 (CT-239): Gatekeeper of Souls compels targets only during a battle in its region (544)."
   },
   {
     "id": "F-U03-3",
@@ -84,9 +85,14 @@
       {
         "file": "client/engine/src/apply.ts",
         "quote": "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
+      },
+      {
+        "file": "client/engine/test/547-graft-after-targeted-trigger.test.ts",
+        "quote": "CR 110.11 / CT-242: grafting onto Mohruung resolves his trigger before the graft attaches"
       }
     ],
-    "ct": "CT-242"
+    "ct": "CT-242",
+    "closed": "fixed on 2026-10-22 (CT-242; owner \"Resolves first\", D-U03-13): the graft, and a deployment augment, attach after Mohruung's trigger resolves (547, 576)."
   },
   {
     "id": "F-U03-6",

@@ -12,12 +12,17 @@
       {
         "file": "client/engine/src/cards/printed.json",
         "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+      },
+      {
+        "file": "client/engine/test/555-pure-ignores-stat-attributes.test.ts",
+        "quote": "CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian kills it, because its Tough is off in the pairing"
       }
     ],
     "ct": "CT-260",
     "dupes": [
       "F-U19-2"
-    ]
+    ],
+    "closed": "fixed on 2026-10-22 (CT-260; the owner followed print): in a Pure interaction Tough, Balanced, Inverted and Unaware do not apply (555)."
   },
   {
     "id": "F-U19-2",
@@ -32,9 +37,14 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}."
+      },
+      {
+        "file": "client/engine/test/555-pure-ignores-stat-attributes.test.ts",
+        "quote": "CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian kills it, because its Tough is off in the pairing"
       }
     ],
-    "ct": "CT-260"
+    "ct": "CT-260",
+    "closed": "fixed on 2026-10-22 (CT-260; the owner followed print): in a Pure interaction Tough, Balanced, Inverted and Unaware do not apply (555)."
   },
   {
     "id": "F-U19-3",
@@ -51,11 +61,12 @@
         "quote": "is a unit-damage commit living in CARD CODE,"
       },
       {
-        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
-        "quote": "const mult = (!info.pure && g.effAttrs(self).has('Vulnerable')) ? 2 : 1;"
+        "file": "client/engine/test/553-oorblak-pure-redirect.test.ts",
+        "quote": "CR 802.11e / CT-227: a Pure Vulnerable Oorblak under a plain column is dealt the redirected hit once, not doubled"
       }
     ],
-    "ct": "CT-227"
+    "ct": "CT-227",
+    "closed": "fixed on 2026-10-22 (CT-227): Oorblak's redirect is attribute-blind when the column or Oorblak is Pure, so a Pure Vulnerable Oorblak is dealt the hit once (553)."
   },
   {
     "id": "F-U19-4",
@@ -83,8 +94,13 @@
       {
         "file": "client/docs/digital-rules.md",
         "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+      },
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "quote": "CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances"
       }
     ],
-    "ct": "CT-257"
+    "ct": "CT-257",
+    "closed": "fixed on 2026-10-22 (CT-257; the owner took the Manual p.42 first clause, D-U16-1): Tough augmented onto a Balanced unit doubles, then balances (08-cards2)."
   }
 ]

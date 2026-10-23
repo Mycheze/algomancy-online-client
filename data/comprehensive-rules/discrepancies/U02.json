@@ -151,7 +151,7 @@
         "quote": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
       }
     ],
-    "resolution": "Printed text, read literally, outranks the owner ruling of 2026-09-19 (“Recycling can make a Prismite”), and the permissive reading is taken: the rule allows a Shard. The engine refuses it: F-U02-3 (CT-237). A Shard is never better than an element resource, so the fix is low priority. Question for the owner only if the owner ruling of 2026-09-19 (“Recycling can make a Prismite”)’s \"an exchange names an element\" was a deliberate ruling on Shards rather than the reason a Prismite cannot become a Prismite."
+    "resolution": "Printed text, read literally, outranks the owner ruling of 2026-09-19 (“Recycling can make a Prismite”), and the permissive reading is taken: the rule allows a Shard. Engine fix: done 2026-10-22 (CT-237; F-U02-3 closed): the exchange offers and accepts a Shard (308)."
   },
   {
     "id": "D-U02-9",

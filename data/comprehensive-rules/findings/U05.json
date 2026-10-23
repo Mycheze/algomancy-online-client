@@ -6,15 +6,16 @@
     "summary": "Spells print no stats (stats mark a unit, Rulebook 2023 p.3), but the oracle transcription has power and toughness fields on spell rows and the extractor copies them: 91 of 138 spells in printed.json have non-zero values (Arc Lightning 1/3, Spectrogenesis 4/5, Interdiction Rift 4/3 in the oracle). Suspected harmless; check that no engine or UI path reads a spell's power or toughness (an \"Everything is Deadly\" reach onto spells, a copy of a spell, Unaware reading printed stats, a card-stats or search surface). If none does, zero them at extraction so nothing can start to.",
     "evidence": [
       {
-        "file": "client/engine/src/cards/printed.json",
-        "quote": "\"name\": \"Arc Lightning\", \"factions\": [ \"fire\" ], \"cost\": \"rr\", \"mana\": 4, \"power\": 1, \"toughness\": 3,"
-      },
-      {
         "file": "data/cards/AlgomancyCards-OracleText.json",
         "quote": "\"name\": \"Interdiction Rift\", \"power\": \"4\", \"toughness\": \"3\","
+      },
+      {
+        "file": "client/ui/test/565-spells-print-no-stats.test.ts",
+        "quote": "CR 206.2 / CT-244: no spell in the engine pool or the catalogue carries power or toughness"
       }
     ],
-    "ct": "CT-244"
+    "ct": "CT-244",
+    "closed": "fixed on 2026-10-22 (CT-244): spells and spell tokens are zeroed at extraction, and stat searches leave spells out (ui 565, 567)."
   },
   {
     "id": "F-U05-2",

@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1818 rules and 99 sections.
+- New: 1822 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -916,6 +916,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 703.6 `effects.priority.resolving`
   - 703.7 `effects.priority.deployment`
   - 703.8 `effects.priority.haste-step`
+  - 703.9 `effects.priority.solo-region`
   - 704.1 `effects.resolution.order`
   - 704.1a `effects.resolution.order.choices`
   - 704.1b `effects.resolution.order.no-window`
@@ -1066,6 +1067,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 712.4 `effects.stripping.one-clause`
   - 712.5 `effects.stripping.mutual`
   - 712.6 `effects.stripping.named-card`
+  - 712.6a `effects.stripping.named-card.itself`
   - 712.7 `effects.stripping.copied-text`
   - 712.8 `effects.column-share`
   - 712.8a `effects.column-share.everything`
@@ -1622,6 +1624,8 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D1.4a `annexd.general.hidden-segment.redaction`
   - D1.4b `annexd.general.hidden-segment.barrier`
   - D1.4c `annexd.general.hidden-segment.battle-open`
+  - D1.5 `annexd.general.initiative-order`
+  - D1.6 `annexd.general.early-resource-step`
   - D2.1 `annexd.auto-pass.open-decision`
   - D2.1a `annexd.auto-pass.open-decision.battle`
   - D2.1b `annexd.auto-pass.open-decision.segment`
