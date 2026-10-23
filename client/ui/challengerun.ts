@@ -30,6 +30,7 @@ import type { BotPolicy } from './bot.ts';
 import { SoloServer, type ActedBy, type SoloDeal } from './solo.ts';
 import * as acct from './account.ts';
 import { esc } from './util.ts';
+import type { ChallengeReportRun } from '../server/report-run.ts';
 
 /** the run in progress (one at a time), so a reload continues it */
 const RUN_KEY = 'algoChallengeRun';
@@ -203,6 +204,24 @@ export class ChallengeRun {
       this.onChange?.();
     });
   }
+}
+
+/**
+ * Report round 2026-10-23 — what a report filed from this run carries, so the
+ * moment can be replayed (server/report-run.ts keeps it, beside the journal,
+ * and `replay-report-run.ts` rebuilds it): the challenge as this browser dealt
+ * it, the ordered deck, the room's WHOLE log — both seats, not cut at the goal
+ * — and the index the reporter is at. Typed against the server's own shape, so
+ * the two cannot drift; the server checks it again regardless.
+ */
+export function reportAttachment(run: ChallengeRun): ChallengeReportRun {
+  const actions = run.server.save.actions;
+  const d = run.def;
+  return {
+    kind: 'challenge',
+    def: { id: d.id, week: d.week, title: d.title, goal: d.goal, seed: d.seed, par: d.par },
+    deck: [...run.deck], actions, at: actions.length,
+  };
 }
 
 let current: ChallengeRun | null = null;

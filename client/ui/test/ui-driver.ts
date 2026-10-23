@@ -212,6 +212,15 @@ function fieldEl(id: string): Record<string, unknown> | null {
   return FIELDS.get(id)!.el;
 }
 
+/** type into a typing box through the client's own `input` listeners */
+function typeInto(id: string, text: string, paint: () => string): string {
+  const el = fieldEl(id);
+  assert.ok(el, `no typing box #${id} on screen`);
+  el['value'] = text;
+  for (const fn of FIELDS.get(id)!.on.get('input') ?? []) fn({ target: el });
+  return paint();
+}
+
 /** CT-183: everything a keydown/keyup handler in ui/main.ts branches on. `up`
  * chooses the event TYPE, which is the whole point — a held-key feature is
  * half keyup, and nothing in this suite could send one. */
@@ -1071,6 +1080,9 @@ export function replay(): ReplayClient {
 export interface HomeClient extends ReplayClient {
   pointer(type: string, want: Pick, init?: Record<string, unknown>): string;
   tap(want: Pick): string;
+  /** a layer's typing box (the report form's note) — a challenge run's board
+   * is a home-screen page, and it has the report form (report 592) */
+  type(id: string, text: string): string;
 }
 
 export function home(): HomeClient {
@@ -1093,6 +1105,7 @@ export function home(): HomeClient {
       dispatch('pointerup', want, paint, finger);
       return dispatch('click', want, paint, finger);
     },
+    type: (id, text) => typeInto(id, text, paint),
   };
 }
 
@@ -1129,13 +1142,7 @@ export async function client(): Promise<Client> {
     },
     key: (k, opts = false) => press(k, paint, opts),
     fire: type => fire(type, paint),
-    type: (id, text) => {
-      const el = fieldEl(id);
-      assert.ok(el, `no typing box #${id} on screen`);
-      el['value'] = text;
-      for (const fn of FIELDS.get(id)!.on.get('input') ?? []) fn({ target: el });
-      return paint();
-    },
+    type: (id, text) => typeInto(id, text, paint),
     keyIn: (id, k, opts = {}) => {
       const el = fieldEl(id);
       assert.ok(el, `no typing box #${id} on screen`);

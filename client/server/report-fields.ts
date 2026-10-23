@@ -92,6 +92,13 @@ export function reporterLabel(by: ReportedBy | null | undefined): string {
   return marks.length ? `${by.name} (${marks.join(', ')})` : by.name;
 }
 
+/** IssueRow.solo — what a row filed from a solo room says about the run it was
+ * filed on (the run itself is in report-runs.jsonl; server/report-run.ts) */
+export type SoloPointer =
+  | { kind: 'challenge'; at: number; challengeId: string }
+  | { kind: 'learn'; at: number }
+  | { refused: string };
+
 /** One row of var/issues.jsonl, exactly as /api/report writes it. */
 export interface IssueRow {
   ts: string;
@@ -137,4 +144,14 @@ export interface IssueRow {
    * when there is one. Absent on every other row.
    */
   dispute?: { winner: number | null; league?: string };
+  /**
+   * Report round 2026-10-23 — this row was filed from a SOLO room (a Weekly
+   * Challenge run, Learn to Play), which has no server room to replay, and the
+   * form sent the game along. The game itself is NOT here: it is the line of
+   * report-runs.jsonl with this row's `ts` (server/report-run.ts says why it
+   * may never be inlined). This is the pointer: which kind of room, the action
+   * index the reporter was at, the challenge id — or `refused` with why the
+   * attachment was not kept. Absent on every other row.
+   */
+  solo?: SoloPointer;
 }

@@ -98,7 +98,8 @@ import {
 import { matchLengths, recordLiveGame, syncGamesDir } from './history.ts';
 import { concessionWeight } from './concession.ts';
 import { gameElements, gameSides, summarizeGame } from './stats.ts';
-import { gamesDir, issuesFile, verdictsFile } from './statepaths.ts';
+import { gamesDir, issuesFile, reportRunsFile, verdictsFile } from './statepaths.ts';
+import { MAX_RUN_BYTES, RUNS_PER_HOUR, storeReportRun } from './report-run.ts';
 import { reportKind, reportSeverity, reportedBy, reporterLabel, type IssueRow } from './report-fields.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -116,6 +117,8 @@ const GAMES_DIR = gamesDir();
  * the version with no window.
  */
 const ISSUES_FILE = issuesFile();
+/** the runs reports from a solo room were filed on (report-run.ts) — captured like ISSUES_FILE */
+const REPORT_RUNS_FILE = reportRunsFile();
 const ART_DIR = join(HERE, '..', '..', 'data', 'cards');
 const artVersionsOnDisk = artVersions(ART_DIR);
 const PORT = Number(process.env['PORT'] ?? 8080);
@@ -526,13 +529,22 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       return res.end(JSON.stringify({ ok: false, error: 'too many reports from here — wait a minute' }));
     }
     try {
-      const { room, seat, note, kind, severity, page } = await readBody(req, 64 * 1024, true) as {
-        room?: string; seat?: number; note?: string; kind?: unknown; severity?: unknown; page?: unknown;
+      // the body cap leaves room for a solo room's run (report-run.ts); the
+      // note itself is still cut at 4000 below
+      const { room, seat, note, kind, severity, page, solo } = await readBody(req, MAX_RUN_BYTES + 64 * 1024, true) as {
+        room?: string; seat?: number; note?: string; kind?: unknown; severity?: unknown; page?: unknown; solo?: unknown;
       };
       const code = String(room ?? '').toUpperCase().trim();
       const r = getRoom(code);   // unknown room: still log it (actionIndex null)
+      const ts = new Date().toISOString();
+      // Report round 2026-10-23: a report from a Weekly Challenge run or Learn
+      // to Play carries the game it was filed on. The run goes to its own file
+      // keyed by `ts`; the row gets a pointer. A refused run still files the note.
+      const soloPtr = solo === undefined || solo === null ? undefined
+        : rateLimited(addrOf(req), 'report-run', RUNS_PER_HOUR, 3_600_000) ? { refused: 'too many runs from here this hour' }
+        : await storeReportRun(REPORT_RUNS_FILE, ts, solo);
       const entry: IssueRow = {
-        ts: new Date().toISOString(),
+        ts,
         room: code,
         seat: seat === 0 || seat === 1 ? seat : null,
         note: String(note ?? '').slice(0, 4000),
@@ -547,10 +559,12 @@ async function handleRequest(req: import('node:http').IncomingMessage,
         by: reportedBy(accountForToken(tokenOf(req))),
         // the form is on every page now; a report from the deck builder says so
         ...(typeof page === 'string' && page.trim() ? { page: page.trim().slice(0, 32) } : {}),
+        ...(soloPtr ? { solo: soloPtr } : {}),
       };
       await appendFile(ISSUES_FILE, JSON.stringify(entry) + '\n');
       // one line: a note with newlines in it could otherwise forge log lines
-      console.log(`[report] ${entry.room || `(${entry.page ?? 'no room'})`} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'} `
+      const soloTag = !soloPtr ? '' : 'refused' in soloPtr ? ` (run refused: ${soloPtr.refused})` : ` (${soloPtr.kind} run @${soloPtr.at})`;
+      console.log(`[report] ${entry.room || `(${entry.page ?? 'no room'})`}${soloTag} seat ${entry.seat ?? '?'} @action ${entry.actionIndex ?? '?'} `
         + `by ${reporterLabel(entry.by)} `
         + `[${entry.kind}${entry.severity ? '/' + entry.severity : ''}]: ${entry.note.replace(/\s*\n\s*/g, ' ⏎ ')}`);
       res.writeHead(200, { 'content-type': 'application/json' });

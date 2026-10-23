@@ -18,7 +18,8 @@
  *     around each paint; this layer is painted only when the FORM changes.
  *   · Every page gets the same form: a fixed "📝 Report" pill while no board
  *     is up, the rail button while one is. In a game the report carries the
- *     room, the seat and the action index (the replayable moment); elsewhere
+ *     room, the seat and the action index (the replayable moment) — in a
+ *     solo room (a Weekly Challenge, Learn to Play) the game itself; elsewhere
  *     it carries the PAGE it was filed from, read off `#app`'s own root class
  *     (deckpage, cbpage, acctpage…) so no list of screens is kept here.
  *
@@ -53,8 +54,21 @@ const REPORT_PROMPT: Record<ReportKind, string> = {
   other: 'What is it?',
 };
 
-/** where a report is filed from: a game (room + seat), or a page */
-export interface ReportCtx { room?: string; seat?: number | null }
+/** where a report is filed from: a game (room + seat), a solo room (the run
+ * itself), or a page */
+export interface ReportCtx { room?: string; seat?: number | null; solo?: SoloAttachment }
+
+/**
+ * Report round 2026-10-23 — a Weekly Challenge run or a Learn to Play game
+ * has no room on the server, so a report from one used to carry the note
+ * alone, while the whole game sat in this browser. It now carries the game:
+ * the deal and the action log, and the index the reporter was at — taken when
+ * the form OPENS, the moment the reporter is looking at. Built by the room
+ * that owns it (challengerun.ts / learn.ts `reportAttachment`, typed against
+ * the server's own sanitizer there); opaque here beyond the `kind`, which
+ * names the page the row is filed from.
+ */
+export interface SoloAttachment { kind: 'challenge' | 'learn'; at: number }
 
 /**
  * BL-48 — the same form, opened by the post-game screen's "Dispute game".
@@ -168,7 +182,7 @@ function disputeDialogHtml(): string {
 
 function dialogHtml(): string {
   if (dispute) return disputeDialogHtml();
-  const where = ctx.room
+  const where = ctx.room || ctx.solo
     ? 'Filed with this exact moment of the game, so a bug can be replayed.'
     : 'Filed with the page you are on.';
   return `<div class="reportscrim" id="reportscrim"><div class="overlaybox reportbox" role="dialog" aria-label="Report">
@@ -283,9 +297,13 @@ function send(): void {
   const note = draft.trim();
   const k = kind;
   const sev = severityApplies(k) ? severity : null;
+  const solo = ctx.solo;
   const body: Record<string, unknown> = ctx.room
     ? { room: ctx.room, seat: ctx.seat ?? null, page: 'game', note, kind: k, severity: sev }
-    : { room: '', seat: null, page: pageOf(appEl()?.innerHTML ?? '') ?? 'unknown', note, kind: k, severity: sev };
+    : solo
+      // no room to name: the run itself, and the page says which kind of room
+      ? { room: '', seat: null, page: solo.kind, note, kind: k, severity: sev, solo }
+      : { room: '', seat: null, page: pageOf(appEl()?.innerHTML ?? '') ?? 'unknown', note, kind: k, severity: sev };
   busy = true;
   error = '';
   paint();
@@ -299,7 +317,7 @@ function send(): void {
         draft = '';
         kind = null;
         severity = null;
-        showToast(k === 'bug' && ctx.room ? 'logged — thanks, we can replay this exact moment' : 'logged — thanks');
+        showToast(k === 'bug' && (ctx.room || solo) ? 'logged — thanks, we can replay this exact moment' : 'logged — thanks');
       } else error = 'the report was not accepted';
     }).catch(() => { error = 'could not reach the server to file the report'; })
     .finally(() => { busy = false; paint(); });

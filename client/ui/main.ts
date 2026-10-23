@@ -10940,9 +10940,16 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   resetblocks: () => { resetFormation(); },
   // the rail's Report: the form is ui/report.ts's own layer; this hands it
   // the room and the seat, which is what makes an in-game report replayable
-  // CR D8.1: a Learn to Play game has no room on the server to replay, so its
-  // report is filed as a page report rather than against a room code that is not one
-  reportopen: () => { openReport(learn.currentSolo() || chrun.currentRun() ? {} : { room: NET?.room, seat: NET?.seat ?? null }); return 'no-repaint'; },
+  // CR D8.1: a Learn to Play game or a challenge run has no room on the server,
+  // so it never names a room code that is not one — it sends the game itself
+  // (report round 2026-10-23: it used to send the note alone)
+  reportopen: () => {
+    const run = chrun.currentRun(), solo = learn.currentSolo();
+    openReport(run ? { solo: chrun.reportAttachment(run) }
+      : solo ? { solo: learn.reportAttachment(solo.server) }
+      : { room: NET?.room, seat: NET?.seat ?? null });
+    return 'no-repaint';
+  },
   menuitem: btn => { const it = ui.menu!.items[Number(btn.dataset['i'])]!; ui.menu = null; it.go(); },
   menuclose: () => { ui.menu = null; },
   // the rail's copy of the card menu (railMenuHtml) — same entries, no cursor

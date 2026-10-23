@@ -268,6 +268,15 @@ export const RQ_SNAPSHOT =
 /** BL-16 — the admin's triage marks on reports; the live file, on the server */
 export const MARKS_JSONL = join(VAR_DIR, 'report-marks.jsonl');
 /**
+ * Report round 2026-10-23 — the RUN each report from a solo room (a Weekly
+ * Challenge run, Learn to Play) was filed on, one JSON line per report keyed
+ * by its `ts` (server/report-run.ts; server/statepaths.ts `reportRunsFile`).
+ * Fetched beside the journal by `npm run reports`, and NOT committed: a run is
+ * a whole action log, and nothing in the suite reads it — the replay tool
+ * (server/replay-report-run.ts) reads it here, in var/.
+ */
+export const REPORT_RUNS_JSONL = join(VAR_DIR, 'report-runs.jsonl');
+/**
  * The committed copy of MARKS_JSONL, and it is here for the reason the two
  * above are: a judgement the owner has already made must be visible to the
  * round BEFORE the round spends an hour re-making it.
