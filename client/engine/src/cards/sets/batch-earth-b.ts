@@ -445,8 +445,12 @@ card('Oorblak', {
         // 'damage' events — and here {Deadly} is the whole of it, because a
         // redirected hit that does not reach this body's defense still kills.
         const lethal = deadly || self.damage >= t;
+        // CR 608.9a (owner, 2026-10-23, Vroot: "Any combat damage"): the column
+        // still DEALT this combat damage — to me instead of the player — so
+        // the event names it, and "when my column deals combat damage" (no
+        // "to a player") hears it. `E.columnDealtCombatDamage` reads it.
         const ev = g.ev('damage', `${self.card} takes ${through} (${self.damage} total).`,
-          { unit: self.id, n: through, lethal });
+          { unit: self.id, n: through, lethal, ...(info.col ? { redirectCol: [...info.col] } : {}) });
         g.fireEvent('damage', ev);
       }
       g.settleDamagePrevention();

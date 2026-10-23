@@ -4949,7 +4949,7 @@ export class E {
    * all do the same thing to the same player, so their order changes nothing.
    */
   private replaceCombatDamage(seat: Seat, amount: number,
-    info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean },
+    info: { attacker: Seat; region: number; attrs: Set<string>; pure: boolean; col?: readonly EntityId[] },
     out?: { reached: number }): number {
     const holders = this.anchored((h, a) =>
       this.donates(h, a, 'replaceCombatDamageToPlayer')          // CR 710.7: off the FACES
@@ -13782,10 +13782,14 @@ export class E {
    * entitled to hear is decided by its PRINTED TEXT, not by this method:
    *
    *  · 'units' — the plain 'damage' event, untagged by `source` (combat, never
-   *    effect damage), against a unit in the column directly opposing mine.
-   *    Only for text that is not narrowed to a player: Vroot ("my column deals
-   *    combat damage") and Blightmound ("when I deal combat damage") hear it;
-   *    Zephyrzoa and Eldritch Dreamtender print "to an opponent" and must not.
+   *    effect damage), against a unit in the column directly opposing mine —
+   *    or against the unit a redirect dealt my column's hit to instead
+   *    (Oorblak; the event carries `redirectCol`, CR 608.8c). Only for text
+   *    that is not narrowed to a player: Vroot ("my column deals combat
+   *    damage"), Flowstone Arcanite and Blightmound ("when I deal combat
+   *    damage") hear it; Zephyrzoa and Eldritch Dreamtender print "to an
+   *    opponent" and must not. The owner, 2026-10-23, on Vroot: "Any combat
+   *    damage" — blockers, Oorblak and the player all count.
    *  · 'poison' — RETIRED once Poisonous damage counted as damage dealt, and kept only as a no-op arm so a stale
    *    caller fails loudly in review rather than silently. It existed because
    *    a {Poisonous} column's unit damage arrived as -1/-1 counters with "NO
@@ -13834,6 +13838,15 @@ export class E {
     if (ev.type === 'damage') {
       if (!channels.includes('units')) return false;
       if (ev.data?.['source'] !== undefined) return false;          // effect damage, not combat
+      // CR 608.8c, 608.9a — combat damage REDIRECTED to a unit (Oorblak: "that
+      // damage is dealt to me instead") is still combat damage my column
+      // dealt, just not to the player. The owner, 2026-10-23, asked whether
+      // Vroot's column counts when its damage all goes to Oorblak: "Any
+      // combat damage". So the unqualified clause — the 'units' channel's
+      // cards, which print no "to a player" — hears it; the "to a player"
+      // family listens on 'face' only and still does not (CT-296).
+      const via = ev.data?.['redirectCol'];
+      if (Array.isArray(via)) return (via as EntityId[]).includes(self.id);
       return opposing(ev.data?.['unit'] as EntityId | undefined);
     }
     // CR 802.18b: the 'poison' arm is retired (see the channel note above). A
@@ -14623,13 +14636,16 @@ export class E {
     for (const hit of L.playerHits) {
       const out = { reached: hit.amount };
       const left = this.replaceCombatDamage(hit.seat, hit.amount,
-        { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure }, out);
+        { attacker: hit.by, region: b.region, attrs: hit.attrs, pure: !!hit.pure, col: hit.col }, out);
       reached.push(out.reached);
       // CT-296 (owner, 2026-10-22, "Yes, none of them"): a hit WHOLLY redirected
       // into a unit dealt the player nothing, so the column did not "deal combat
       // damage to a player" — no breakdown share (the 'combatFaceDamage' and
-      // combat 'lifeLost' listeners: Vroot and every "when my column deals
-      // combat damage" card) and no {Thieving} draw. What got past the
+      // combat 'lifeLost' listeners: every "when my column deals combat damage
+      // to a player" card) and no {Thieving} draw. The clause WITHOUT "to a
+      // player" (Vroot, Flowstone Arcanite, Blightmound) hears the redirect on
+      // the redirecting unit's 'damage' event instead — the owner, 2026-10-23,
+      // "Any combat damage" — which is what `col` is passed down for. What got past the
       // redirects is what the column dealt the player (CR 608.8c: "the other 6
       // are dealt to the player"), as life or — Blightsea Polyp, CR 608.8a — as
       // rot, which is still dealt.

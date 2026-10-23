@@ -2267,6 +2267,16 @@ export interface CardBehavior {
        * the pass its text names and declines the other.
        */
       stage: 'redirect' | 'dealt';
+      /**
+       * CR 608.9a — the striking COLUMN's unit ids. A redirect that deals the
+       * hit to a unit instead (Oorblak) puts them on its 'damage' event as
+       * `redirectCol`, because the column still DEALT that combat damage — to
+       * the unit — and a "when my column deals combat damage" trigger with no
+       * "to a player" in it hears any combat damage its column deals (the
+       * owner, 2026-10-23, on Vroot: "Any combat damage"). Optional: the
+       * engine always passes it; a dry run or an old caller may not.
+       */
+      col?: readonly EntityId[];
     }) => boolean | number;
   /**
    * CR 708.5: continuous AMOUNT modifiers — "it deals that much damage plus 1
