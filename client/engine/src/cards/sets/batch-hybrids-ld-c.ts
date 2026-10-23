@@ -597,8 +597,14 @@ const swarmlingCopy: EffectDef = {
       return;
     }
     g.payMana(ctx.controller, 1);
+    // CR 710.5, 710.7a / report 270: "a copy of me" is a copy of the unit that HAS
+    // this text, as it currently is — an Ancient One beside a Swarmling makes
+    // Ancient Ones. Gone (or never in play: the discarded card's own trigger
+    // runs from a bin stand-in), it is what it last was, else the card itself.
+    const self = selfOf(g, ctx);
+    const me = self ? g.nameOf(self) : g.lastKnownOf(ctx.sourceId)?.face ?? ctx.sourceName;
     // CR 601.5: a created unit arrives where its SOURCE is (ctx.region)
-    g.spawnUnit(ctx.controller, 'Swarmling', ctx.region, { token: true });
+    g.spawnUnit(ctx.controller, me, ctx.region, { token: true });
   },
 };
 const discardedByMe = (g: E, self: Entity, ev: { data?: Record<string, unknown> }): boolean =>

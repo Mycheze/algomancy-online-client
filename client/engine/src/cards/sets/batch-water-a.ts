@@ -879,11 +879,18 @@ card('Echo of Despair', {
         creates: ['Echo of Despair'],
         run: (g, ctx) => {
           // CR 714.6: a copy of me is made from my last-known state if I am gone
-          if (!selfOf(g, ctx) && !g.lastKnownOf(ctx.sourceId)) {
+          const self = selfOf(g, ctx);
+          const lk = self ? undefined : g.lastKnownOf(ctx.sourceId);
+          if (!self && !lk) {
             g.ev('info', 'Echo of Despair: the original is gone — there is nothing to copy.');
             return;
           }
-          g.spawnUnit(ctx.controller, 'Echo of Despair', ctx.region, { token: true });
+          // CR 710.5, 710.7a / report 270: "me" is the unit that HAS this text,
+          // as it currently is — its face. An Ancient One beside an Echo has
+          // the sentence, so its copy is an Ancient One (the designer: "3
+          // Ancient Ones are created"); a Borrower wearing an Echo is an Echo.
+          // The name used to be hardcoded, so the Ancient One made Echoes.
+          g.spawnUnit(ctx.controller, self ? g.nameOf(self) : lk!.face, ctx.region, { token: true });
         },
       },
     },

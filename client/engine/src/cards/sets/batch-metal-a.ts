@@ -108,7 +108,7 @@
  */
 import type { EngineEvent, Entity, EntityId, EventType, Seat, TargetRef } from '../../types.ts';
 import type { E } from '../../engine.ts';
-import { card, eventBinSlot, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
+import { allCardNames, card, eventBinSlot, getCard, type EffectDef, type TokenRequest } from '../dsl.ts';
 import { selfOf, isEnt, eraseFromPlay, rechooseTargets, commitRetargets, sacrificeMeOnResolve } from './helpers.ts';
 
 // ─────────────────────────── shared helpers ───────────────────────────
@@ -195,21 +195,39 @@ card('Aberrant Statweaver', {
 // own triggers. "I" in a copied ability is the Ancient One; ab.when runs with
 // the Ancient One as self. Bounded copies burn a per-source budget on the
 // Ancient One.
-const AO_EVENTS: EventType[] = [
-  'spawned', 'died', 'despawned', 'draw', 'lifeLost', 'damage',
-  // CR 402.4: Rider of the Tides, Xenopod Progenitor and Galerider Eel moved OFF
-  // 'despawned'+'draw' and onto 'handEntered' (the one hand-entry event). All
-  // three were mimickable here before, so leaving this list alone would have
-  // quietly taken them away from the Ancient One — a regression caused by the
-  // rewire, not a pre-existing gap.
-  'handEntered',
-  // CR 108.1a: 'cardPlayed' rides beside 'spellPlayed' because Void Mandible's
-  // augment text moved onto it — an adjacent ally wearing one must still be
-  // mimicked ("it explicitly includes modded abilities").
-  'countersChanged', 'modApplied', 'spellPlayed', 'cardPlayed', 'targeted',
-  'attackDeclared', 'attacked', 'blocksDeclared', 'blocked',
-  'afterCombat', 'endOfTurn',
-];
+/**
+ * The events the bookkeeping when() listens on: EVERY event a triggered
+ * ability in the pool listens on from play, DERIVED from the registry.
+ *
+ * Report 271: this used to be a hand-kept list of 18 events, and it had
+ * fallen behind the pool by seven — 'combatFaceDamage' among them, which is
+ * the event Bloodwind Revenant and Amphivore listen on, the designer's own
+ * worked example ("you would get two Bloodwind Revenant triggers since
+ * Ancient One is also copying that"). An adjacent ally's trigger on an event
+ * missing from the list was silently never borrowed. A list of what the
+ * Ancient One may borrow cannot be shorter than what its neighbours can do,
+ * so it is read off the cards. Recomputed when the registry grows (test
+ * files register synthetic cards); a getter on the ability below, because
+ * the registry is only complete once every set file has loaded.
+ */
+let aoEventsAt = -1;
+let aoEventsList: EventType[] = [];
+function aoEvents(): EventType[] {
+  const names = allCardNames();
+  if (names.length === aoEventsAt) return aoEventsList;
+  const out = new Set<EventType>();
+  for (const n of names) {
+    if (n === 'Ancient One') continue;
+    const d = getCard(n);
+    for (const ab of [...d.abilities ?? [], ...d.augmentText ?? []]) {
+      if (ab.type !== 'triggered' || ab.zone) continue;   // CR 400.5: zone text is never live from play
+      for (const t of ab.events) out.add(t);
+    }
+  }
+  aoEventsAt = names.length;
+  aoEventsList = [...out];
+  return aoEventsList;
+}
 /**
  * The reentrancy guard, and the last of the module-level latches
  * playtest report #60 named (the replacement layer removed the other five).
@@ -247,21 +265,81 @@ const AO_EVENTS: EventType[] = [
  * between actions; entity-scoped, which is the true scope of reentrancy.
  */
 const AO_SCAN_KEY = 'ao:scanning';
-/** the FACES an Ancient One (or its host) borrows right now: every adjacent
- * ally's own face plus every card augmented onto it ("this includes modded
- * abilities"). Geometry and raw fields only — nothing may read a number
- * from here, because `projects` runs underneath effStats. */
-function aoBorrowedFaces(g: E, self: Entity): string[] {
-  const out: string[] = [];
-  for (const n of g.adjacentInFormation(self.id)) {
-    if (n.controller !== self.controller) continue;
-    out.push(g.nameOf(n));
+/**
+ * CR 712.2 / report 271: is the text that arrived on `n` with `holder` (the
+ * unit itself for its own and copied text, the augment mod for a mod's) stripped
+ * right now? A unit that has lost its abilities has none to lend — the card
+ * says "all ABILITIES of adjacent allies". `deep` asks the full question
+ * (continuous strippers too); the projection runs under the faces latch and
+ * may ask only the shallow, one-shot half (E.textStrippedShallow).
+ */
+function aoStripped(g: E, n: Entity, holder: Entity, deep: boolean, at?: Parameters<E['abilityTextStripped']>[1]): boolean {
+  if (!deep) return g.textStrippedShallow(holder, n);
+  return at !== undefined ? g.abilityTextStripped(n, at)
+    : holder.id === n.id ? g.abilityTextStripped(n) : g.abilityTextStripped(n, g.stampOf(holder.id));
+}
+/** does `u` carry this card's sentence, unstripped — as its face, as an
+ * augment, or as a box a copy copied */
+function aoHasText(g: E, u: Entity, deep: boolean): boolean {
+  if (g.nameOf(u) === 'Ancient One' && !aoStripped(g, u, u, deep)) return true;
+  for (const id of u.mods) {
+    const m = g.entity(id);
+    if (m && m.appliedAs === 'augment' && m.card === 'Ancient One' && !aoStripped(g, u, m, deep)) return true;
+  }
+  return (g.copiedAugments(u, 'behavior').includes('Ancient One')
+    || g.copiedAugments(u, 'triggered').includes('Ancient One')) && !aoStripped(g, u, u, deep);
+}
+/**
+ * CR 710.7 — the allies whose text an Ancient One (or its host) `self` has right
+ * now, nearest first, each ONCE.
+ *
+ * Its adjacent allies — and, report 271, the allies adjacent to any adjacent
+ * ally that has this same sentence, and so on outward. The designer: "If there
+ * are two copies of this card next to each other, they would both have all
+ * the abilities of any creature adjacent to either of them." It used to stop
+ * at the first ring and skip a neighbouring Ancient One outright, so the
+ * second Ancient One borrowed nothing through the first. Each ally counts
+ * once however many paths reach it, which is the designer's other ruling:
+ * the ability is "boolean … it doesn't stack or create a feedback loop".
+ *
+ * `firstRing` replaces the geometry for `self` alone: a dying Ancient One is
+ * already out of the formation grid when its own death is announced, and
+ * reads the allies it stood beside off the death event (E.destroy's
+ * `adjacent` fact). Geometry and raw fields only — `projects` runs under effStats.
+ */
+function aoAllies(g: E, self: Entity, deep: boolean, firstRing?: Entity[]): Entity[] {
+  const seen = new Set<EntityId>([self.id]);
+  const out: Entity[] = [];
+  let frontier: Entity[] = [self];
+  while (frontier.length) {
+    const next: Entity[] = [];
+    for (const m of frontier) {
+      for (const n of m === self && firstRing ? firstRing : g.adjacentInFormation(m.id)) {
+        if (n.controller !== self.controller || seen.has(n.id)) continue;
+        seen.add(n.id);
+        out.push(n);
+        if (aoHasText(g, n, deep)) next.push(n);
+      }
+    }
+    frontier = next;
+  }
+  return out;
+}
+/** the FACES an Ancient One (or its host) borrows right now, and parallel to
+ * them the unit whose own printed text each one is (`carriers`, for the grafts
+ * a borrowed graft cause brings — report 271): every ally's own face plus every
+ * card augmented onto it ("this includes modded abilities"). */
+function aoBorrowedSources(g: E, self: Entity): { card: string; carrier?: EntityId }[] {
+  const out: { card: string; carrier?: EntityId }[] = [];
+  for (const n of aoAllies(g, self, false)) {
+    const ownStripped = aoStripped(g, n, n, false);
+    if (!ownStripped) out.push({ card: g.nameOf(n), carrier: n.id });
     for (const modId of n.mods) {
       const m = g.entity(modId);
-      if (m && m.appliedAs === 'augment') out.push(m.card);
+      if (m && m.appliedAs === 'augment' && !aoStripped(g, n, m, false)) out.push({ card: m.card });
     }
     // CR 710.2a: a neighbour that is a COPY carries the augments it copied
-    for (const c of g.copiedAugments(n, 'behavior')) out.push(c);
+    if (!ownStripped) for (const c of g.copiedAugments(n, 'behavior')) out.push({ card: c });
   }
   return out;
 }
@@ -279,18 +357,28 @@ card('Ancient One', {
   // CR 721.1: printed INSIDE the [Augment] box, so it radiates from a unit in
   // play AND from an augment mod. Body text does neither when the card is a mod.
   augmentBox: {
-    projects: [{ faces: aoBorrowedFaces, facets: ['statics', 'activated', 'behavior'] }],
+    projects: [{
+      faces: (g, self) => aoBorrowedSources(g, self).map(s => s.card),
+      carriers: (g, self) => aoBorrowedSources(g, self).map(s => s.carrier),
+      facets: ['statics', 'activated', 'behavior'],
+    }],
   },
   augmentText: [{
-    type: 'triggered', events: AO_EVENTS,
+    type: 'triggered',
+    get events(): EventType[] { return aoEvents(); },
     label: 'I have all abilities of adjacent allies (triggered abilities)',
     when: (g, self, ev) => {
       if (self.budgets[AO_SCAN_KEY]) return false;   // see AO_SCAN_KEY
       self.budgets[AO_SCAN_KEY] = 1;
       try {
         const src = ev.data?.['unit'] as EntityId | undefined;
-        for (const n of g.adjacentInFormation(self.id)) {
-          if (n.controller !== self.controller) continue;
+        // report 271: my OWN death — I am out of the grid by now, so the allies I
+        // stood beside ride the event (CR 714.9)
+        const firstRing = ev.type === 'died' && src === self.id && !g.entity(self.id)
+          ? ((ev.data?.['adjacent'] as EntityId[] | undefined) ?? [])
+            .map(id => g.entity(id)).filter((u): u is Entity => !!u)
+          : undefined;
+        for (const n of aoAllies(g, self, true, firstRing)) {
           // CR 710.4: a neighbour that is itself a COPY donates the face it wears
           const face = g.nameOf(n);
           // CR 109.9k, 710.7 / CT-342: `use` tells two sources of one text
@@ -300,24 +388,38 @@ card('Ancient One', {
           // number. The owner, 2026-10-22: two Jollyglop neighbours give TWO
           // uses — "each neighbour's copy of the ability is separate, the same
           // as two mods each having their own use".
-          const sources: { cardName: string; prefix: 'ability' | 'augment'; use: string }[] = [
+          // CR 712.2 / report 271: text the neighbour has LOST is not lent
+          const ownStripped = aoStripped(g, n, n, true);
+          const sources: { cardName: string; prefix: 'ability' | 'augment'; use: string }[] = ownStripped ? [] : [
             { cardName: face, prefix: 'ability', use: `@n${n.id}` },
             { cardName: face, prefix: 'augment', use: `@n${n.id}` },
           ];
           for (const modId of n.mods) {
             const m = g.entity(modId);
-            if (m && m.appliedAs === 'augment') sources.push({ cardName: m.card, prefix: 'augment', use: `@m${m.id}` });
+            if (m && m.appliedAs === 'augment' && !aoStripped(g, n, m, true)) {
+              sources.push({ cardName: m.card, prefix: 'augment', use: `@m${m.id}` });
+            }
           }
           // CR 710.2a: and the augments a neighbouring COPY copied
-          for (const { card: c, nth } of g.copiedAugmentBoxes(n, 'triggered')) {
+          if (!ownStripped) for (const { card: c, nth } of g.copiedAugmentBoxes(n, 'triggered')) {
             sources.push({ cardName: c, prefix: 'augment', use: `@c${n.id}.${nth}` });
           }
+          // CR 109.8, 710.7 / report 271: and text the neighbour was GRANTED — the
+          // designer, on Reforge the Dead: "it copies the ability from each
+          // adjacent unit"
+          (n.granted ?? []).forEach((gt, gi) => {
+            if (gt.at !== undefined ? aoStripped(g, n, n, true, gt.at) : ownStripped) return;
+            sources.push({ cardName: gt.card, prefix: gt.via, use: `@g${n.id}.${gi}` });
+          });
           for (const { cardName, prefix, use } of sources) {
             if (cardName === 'Ancient One') continue;   // no recursive mimicry
             const def = getCard(cardName);
             const list = prefix === 'ability' ? def.abilities : def.augmentText;
             (list ?? []).forEach((ab, idx) => {
               if (ab.type !== 'triggered' || !ab.events.includes(ev.type)) return;
+              // CR 400.5 / report 271: "if I am in your bin" is not text a unit in
+              // play has — fireEvent's own scan refuses it, and so must this one
+              if (ab.zone) return;
               if (ab.self && src !== self.id) return;       // "when I ...": I = the Ancient One
               if (ab.when && !ab.when(g, self, ev)) return; // conditions read me as "I" (CR 109.3a: now)
               const key = `ao:${prefix}:${cardName}#${idx}${use}`;
@@ -325,12 +427,18 @@ card('Ancient One', {
                 if ((self.budgets[key] ?? 0) > 0) return;
                 self.budgets[key] = 1;
               }
+              // budgetKey: a declined borrowed [once] hands back THIS key (CR 109.9b)
+              const base = { effectKey: `${prefix}:${cardName}#${idx}`, targets: [], ...(ab.bounded ? { budgetKey: key } : {}) };
+              // CR 722.4, 710.7 / report 271: a borrowed graft cause is the
+              // neighbour's WHOLE composite — "this effect includes
+              // modifications such as grafted … abilities" — each graft with
+              // its own use on me (E.graftsJoining)
+              const parts = prefix === 'ability' && ab.graftCause ? g.withGrafts(base, self, n) : [base];
               g.s.triggerQueue.push({
                 sourceId: self.id, sourceCard: cardName, controller: self.controller,
                 abilityIndex: idx,
                 label: `${self.card} (as ${cardName}): ${ab.label}`,
-                // budgetKey: a declined borrowed [once] hands back THIS key (CR 109.9b)
-                parts: [{ effectKey: `${prefix}:${cardName}#${idx}`, targets: [], ...(ab.bounded ? { budgetKey: key } : {}) }],
+                parts,
                 event: { type: ev.type, msg: ev.msg, ...(ev.data ? { data: ev.data } : {}) },
               });
               g.s.triggerOrderedSeats = [];
