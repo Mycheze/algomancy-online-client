@@ -172,7 +172,8 @@ const tampered = ACTIONS.map((a, i) => (i === J ? { ...a, handIndex: 99 } as Act
 const FAITHFUL = forge({});
 const COSMETIC = forge({ sigs: PRINTS.map((s, i) => (i === K ? '0123456789abcdef' : s)) });
 const REFUSED = forge({ actions: tampered });
-const BETTER = forge({ score: { ...SCORE, raw: SCORE.raw - 1 } });
+// one card fewer than the run really used: first on every board, on a score the engine no longer gives it
+const BETTER = forge({ score: { ...SCORE, cards: SCORE.cards - 1, unique: SCORE.unique - 1, raw: SCORE.raw - 1 } });
 const BARE = forge({ sigs: null });
 
 test('docs/21 Watch / report round 2026-10-23 §3 a run from another engine is checked against its own fingerprints', async () => {
@@ -205,10 +206,10 @@ test('docs/21 Watch / report round 2026-10-23 §4 the board marks a run the rule
   assert.equal(first.status, 200);
   await settleResims();
   const r = await call('GET', `/api/challenge/${W.id}/board`);
-  const rows = r.body['rows'] as { rank: number; runId: string; older?: boolean }[];
+  const rows = (r.body['boards'] as Record<string, { rank: number; runId: string; older?: boolean }[]>)['fastest']!;
   const marked = rows.filter(x => x.older).map(x => x.runId).sort();
   assert.deepEqual(marked, [REFUSED, BETTER].sort(), 'the material ones, and only those');
   assert.equal(rows.find(x => x.runId === BETTER)?.rank, 1, 'still ranked: first, on its stamped score');
-  const winner = r.body['winner'] as { runId?: string; older?: boolean };
+  const winner = (r.body['winners'] as Record<string, { runId?: string; older?: boolean }>)['fastest']!;
   assert.equal(winner.older, true, 'the frozen winner wears the mark too');
 });

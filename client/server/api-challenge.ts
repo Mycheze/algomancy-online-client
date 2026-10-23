@@ -25,7 +25,7 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { gzipSync } from 'node:zlib';
-import type { ChallengeDef } from '../engine/src/challenge.ts';
+import { BOARD_KINDS, compareScores, type ChallengeDef } from '../engine/src/challenge.ts';
 import { accountById, accountForToken } from './accounts.ts';
 import { json, rateLimited, readBody, tokenOf } from './api-util.ts';
 import {
@@ -33,7 +33,7 @@ import {
   weekWindow,
 } from './challenges.ts';
 import {
-  appendRun, appendSigs, bestOf, board, compareRuns, duplicateRun, entrants, mine, rankOf, runById, runHash, runMeta,
+  appendRun, appendSigs, bestOf, board, duplicateRun, entrants, mine, runById, runHash, runMeta,
 } from './challenge-store.ts';
 import { verifyInWorker } from './challenge-worker.ts';
 import { olderRules, runVerdict } from './challenge-resim.ts';
@@ -197,16 +197,16 @@ async function submit(req: IncomingMessage, res: ServerResponse, now: number, ro
     const hash = runHash(r.deck, r.actions);
     // the same run sent twice (a retried submit, a double click) is one run
     const dup = duplicateRun(def.id, me.id, hash);
-    let runId: string, at: number;
+    let runId: string;
     if (dup) {
-      runId = dup.runId; at = dup.at;
+      runId = dup.runId;
     } else {
       try {
         const meta = appendRun({
           challengeId: def.id, user: me.id, name: me.username, at: now, deck: r.deck, score: r.score,
           engine: engineVersion(), actions: r.actions, hash,
         });
-        runId = meta.runId; at = meta.at;
+        runId = meta.runId;
         // its fingerprints, for Watch (challenge-sigs.ts). A run that lost
         // them is still a run — Watch shows it as unverified — so a failed
         // write is logged, not refused.
@@ -221,8 +221,11 @@ async function submit(req: IncomingMessage, res: ServerResponse, now: number, ro
         return true;
       }
     }
-    const improved = !dup && (!before || compareRuns({ score: r.score, at, runId }, before) < 0);
-    json(res, { ok: true, runId, score: r.score, improved, rank: rankOf(def.id, me.id) });
+    // the boards this run is a new best on (a later run that only ties is not)
+    const newBest = dup ? [] : BOARD_KINDS.filter(k => !before || compareScores(k, r.score, before[k].score) < 0);
+    const after = bestOf(def.id, me.id);
+    const ranks = Object.fromEntries(BOARD_KINDS.map(k => [k, after?.[k].rank ?? 0]));
+    json(res, { ok: true, runId, score: r.score, improved: newBest.length > 0, newBest, ranks });
     return true;
   } finally {
     inFlight.delete(me.id);

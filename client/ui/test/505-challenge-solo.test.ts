@@ -8,7 +8,7 @@
  *   §3 reaching the goal raises the complete panel: the score, Export, Retry,
  *      and (signed out) the sign-in prompt with the run kept in this browser
  *   §4 signed in, the run is POSTed as {challengeId, deck, actions} and the
- *      reply's new best and leaderboard rank are shown
+ *      reply's new bests and its rank on each board are shown
  *   §5 a saved run resumes to the same game; undo takes the goal back
  *   §6 Learn to Play's room is the room it was: no hook, no change (a
  *      refused bot move still falls back); only a STRICT room waits
@@ -31,7 +31,7 @@ const g = globalThis as Record<string, unknown>;
 g['__UI_DRIVER_SEARCH'] = `?challenge=play&id=${DEF.id}`;
 g['__UI_DRIVER_STORE'] = { algoChallengeRun: JSON.stringify({ v: 1, def: DEF, deck: DECK, actions: [], by: [] }) };
 g['__UI_DRIVER_FETCH'] = async (url: string) => {
-  if (url === '/api/challenge/run') return { status: 200, json: async () => ({ ok: true, runId: 'r1', score: {}, improved: true, rank: 2 }) };
+  if (url === '/api/challenge/run') return { status: 200, json: async () => ({ ok: true, runId: 'r1', score: {}, improved: true, newBest: ['fastest', 'purest'], ranks: { fastest: 1, leanest: 3, purest: 2, overall: 2 } }) };
   return new Promise(() => {});
 };
 const { home } = await import('./ui-driver.ts');
@@ -92,10 +92,11 @@ test('§3 the goal raises the complete panel; signed out, the run is kept', () =
   const run = chrun.currentRun()!;
   const html = ui.html();
   assert.match(html, /Goal met/);
-  for (const k of ['Skill', 'Cards', 'Elements', 'Turns']) {
-    assert.match(html, new RegExp(`<div class="statval">${run.done!.score[k.toLowerCase() as 'skill']}</div><div class="statlab">${k}</div>`), `${k} as a stat cell`);
+  for (const k of ['Turns', 'Cards', 'Elements']) {
+    assert.match(html, new RegExp(`<div class="statval">${run.done!.score[k.toLowerCase() as 'turns']}</div><div class="statlab">${k}</div>`), `${k} as a stat cell`);
   }
-  assert.equal(run.done!.score.skill, 300, 'par 3 over a 1 · 1 · 1 run: higher than par is better than par');
+  assert.ok(html.indexOf('>Turns<') < html.indexOf('>Cards<'), 'turns first: the hardest to cut');
+  assert.doesNotMatch(html, /Skill/, 'no Skill: the boards rank the three numbers (owner, 2026-10-23)');
   assert.doesNotMatch(html, /Extra copies/, 'no extra copies, no cell for them');
   assert.match(html, /data-chal="export"/);
   assert.match(html, /data-chal="retry"/);
@@ -125,7 +126,7 @@ test('§4 signed in, the run is posted and the reply shown', async () => {
     assert.deepEqual(post.body, { challengeId: DEF.id, deck: DECK, actions: run.actions() });
     assert.equal(run.submit.s, 'done');
     const html = chrun.layerHtml(run);
-    assert.match(html, /New best\. Rank #2\./);
+    assert.match(html, /New best: fastest, purest\. #1 fastest · #3 leanest · #2 purest · #2 overall\./);
   } finally {
     localStorage.removeItem('algoToken');
     g['fetch'] = was;

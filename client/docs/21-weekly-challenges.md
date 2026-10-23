@@ -14,13 +14,30 @@ owner 2026-10-19.
   so a run is a deterministic puzzle.
 - **Reveal:** while a week is open the board shows names and numbers only. Decks and runs open
   when it closes.
-- **Winner:** the best Algomancer Skill wins the week (ties go to the earlier run). One trophy.
+- **Winner:** ~~the best Algomancer Skill wins the week. One trophy.~~ Superseded 2026-10-23, below.
 
 **Changed 2026-10-21 (owner).** Skill used to be the bare product, lower better, with a board
 per metric. Two runs (8·2·5 → "80", 6·2·5 → "60") read as the better run scoring lower. Now:
 - **Skill is par ÷ raw × 100, HIGHER is better.** The week's reference run scores exactly 100.
 - **One leaderboard, ranked by Skill only.** Fewer cards and fewer elements are both valid
   routes to a good Skill; neither is "strictly better", so no metric gets a board of its own.
+
+**Changed 2026-10-23 (owner), after the first week's 31 runs.** One number cannot say which run
+is best: elements (1 to 7) weighed as much as turns, the hardest thing to cut, and Skill hid
+both turn-3 runs under a 3·2·5 one while a 12-turn 3·1·12 run scored 250. Players (Nyar, on
+Discord) asked for a leaderboard per thing optimised. Now:
+- **Three leaderboards, three first places, three trophies a week.** Each sorts by one metric
+  and breaks ties with the other two, then the earlier run:
+  - **Fastest** — turns, then cards, then elements. The page's default tab.
+  - **Leanest** — cards, then turns, then elements.
+  - **Purest** — elements, then turns, then cards.
+- **Overall** — a fourth tab, no trophy: turns² × cards × √elements (compared exactly as
+  turns⁴ × cards² × elements). Resources grow each turn, so what a run can do by turn T grows
+  about like T²; elements weigh least.
+- A player's entry on a board is their best run **for that board** — one player can stand on
+  the boards with different runs.
+- Skill and par are no longer shown. Every run still stamps `raw` and `skill` (nothing
+  recomputes a stamp), and nothing ranks by them.
 
 ## Scoring
 
@@ -132,12 +149,13 @@ export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown, op
 
 | route | who | returns |
 |---|---|---|
-| `GET /api/challenge` | anyone | `{ now, current: ChallengeView \| null, past: ChallengeView[], mine?: Record<id, RunScore> }` (`mine`: the caller's best per challenge) |
-| `GET /api/challenge/<id>/board` | anyone | `{ id, closed, rows: BoardRow[], winner?: BoardRow }` — the one leaderboard |
+| `GET /api/challenge` | anyone | `{ now, current: ChallengeView \| null, past: ChallengeView[], mine?: Record<id, Record<BoardKind, { score, rank }>> }` (`mine`: the caller's best and rank on each board) |
+| `GET /api/challenge/<id>/board` | anyone | `{ id, closed, boards: Record<BoardKind, BoardRow[]>, winners?: { fastest, leanest, purest } }` — all four boards at once; `winners` only once closed |
 | `GET /api/challenge/run/<runId>` | anyone if the week is closed; otherwise the run's owner only | `{ runId, challengeId, name, deck, actions, score, at, verdict, partedAt, refusedAt, older? }` — see **Watch** |
-| `POST /api/challenge/run` | signed in | body `{ challengeId, deck, actions }` → `{ ok: true, runId, score, improved: boolean, rank: number }` or `{ ok: false, error }` |
+| `POST /api/challenge/run` | signed in | body `{ challengeId, deck, actions }` → `{ ok: true, runId, score, improved: boolean, newBest: BoardKind[], ranks: Record<BoardKind, number> }` or `{ ok: false, error }` |
 
 ```ts
+BoardKind = 'fastest' | 'leanest' | 'purest' | 'overall'   // engine challenge.ts, compareScores
 ChallengeView = ChallengeDef & { opens: number; closes: number; closed: boolean;
   entrants: number }                    // par: the row's committed number
 BoardRow = { rank: number; name: string; score: RunScore; at: number;
@@ -156,9 +174,10 @@ BoardRow = { rank: number; name: string; score: RunScore; at: number;
 
 **Storage** (`var/challenges/`, path getter in `server/statepaths.ts`):
 - `runs.jsonl` is append-only: `{runId, challengeId, user, name, at, deck, actions, score,
-  engine}`. A score is stamped once and never recomputed; it carries `raw` (what the board
-  ranks by) and `skill` (what it shows), so the board never needs the par again.
-- `weeks.json` (`version: 2`) holds the frozen results per closed week: `{closedAt, frozenAt, winner, top: BoardRow[]}`, the top ten.
+  engine}`. A score is stamped once and never recomputed; the boards rank its `cards`,
+  `elements` and `turns` (it also carries `raw` and `skill`, which nothing shows since
+  2026-10-23).
+- `weeks.json` (`version: 3`) holds the frozen results per closed week: `{closedAt, frozenAt, boards: Record<BoardKind, BoardRow[]>}`, the top ten of each; a trophy board's winner is its first row. No week froze under version 2, and an older file is not read (the sweep refreezes from `runs.jsonl`).
   - `sweepChallenges()` (on main.ts's expiry tick, throttled) freezes each newly closed week.
   - It catches up on weeks missed while the server was down and is idempotent.
 - `sigs.jsonl` is append-only: `{runId, engine, sigs}` — the board's fingerprint after every
@@ -197,9 +216,11 @@ different game. Owner, 2026-10-23: "Fingerprints + banner".
 
 - **Page:** the `?challenge` screen and a `nav-challenge` button. Every page has a button,
   because the owner uses the installed web app with no URL bar.
-  - This week: goal, time left, one line "Higher Skill is better. Par scores 100." (the
-    formula and the par number in its tooltip), my best, the Leaderboard.
-  - Past weeks: their leaderboards, and once closed each deck with Watch and Try this deck.
+  - This week: goal, time left, one line "Three first places: fewest turns, fewest cards,
+    fewest elements.", my best and rank on each board, the Leaderboard: tabs Fastest (default)
+    / Leanest / Purest / Overall, the sorting column bold, each tab's order in a line under it.
+  - Past weeks: their leaderboards (the same tabs, and a "Winners ·" line), and once closed
+    each deck with Watch and Try this deck.
 - **Builder:** the challenge page shows the deck as a summary (its rows numbered by position,
   the Turn-1 hand, Import from a saved deck, Clear, one Undo, Play) and a **Build on the table**
   button (`ch-tabletop`). The order is built on the tabletop page (`ui/tabletop.ts`, host kind

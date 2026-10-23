@@ -19,7 +19,7 @@ import assert from 'node:assert/strict';
 import '../src/cards/registry.ts';
 import { apply, createGame } from '../src/apply.ts';
 import {
-  DUMMY, DUMMY_DECK, PLAYER, better, challengeDeal, foldRun, goalText, newChallengeGame, newRun,
+  BOARD_KINDS, DUMMY, DUMMY_DECK, PLAYER, challengeDeal, compareScores, foldRun, goalText, newChallengeGame, newRun,
   progress, progressLabel, scoreRun, settleDummy, verifyRun, type ChallengeDef, type Goal, type RunAcc, type RunScore,
 } from '../src/challenge.ts';
 import type { Action, CardName, Element, ResourceKind } from '../src/types.ts';
@@ -264,10 +264,7 @@ test('§11 verifyRun refuses an agreed fix in the log, which the engine itself w
   assert.equal(!r.ok && r.at, 0);
 });
 
-test('§12 better: the lower raw wins, whatever it is made of; a tie is no win', () => {
-  const s = (o: Partial<RunScore>): RunScore => ({ unique: 5, extra: 0, cards: 5, elements: 2, turns: 4, raw: 40, skill: 225, ...o });
-  assert.equal(better(s({ raw: 30 }), s({})), true);
-  assert.equal(better(s({}), s({})), false, 'a tie is not a win');
-  assert.equal(better(s({ cards: 10, elements: 1, raw: 40 }), s({})), false, 'one element or fewer cards: the same raw is the same rank');
-  assert.equal(better(s({ turns: 3, raw: 50 }), s({})), false, 'fewer turns do not win on their own');
+test('§12 a tie is no win, on any board (the full orders are test 539)', () => {
+  const s: RunScore = { unique: 5, extra: 0, cards: 5, elements: 2, turns: 4, raw: 40, skill: 225 };
+  for (const k of BOARD_KINDS) assert.equal(compareScores(k, s, { ...s }), 0, k);
 });

@@ -99,7 +99,11 @@ test('docs/21 Watch / report round 2026-10-23 §5 the board marks a run played o
   const row = (rank: number, name: string, older: boolean): Record<string, unknown> =>
     ({ rank, name, score: { ...SCORE, skill: 300 - rank }, at: 1, runId: `run-${name}`, deck: DECK, ...(older ? { older: true } : {}) });
   const p = page(`?challenge=1&board=${DEF.id}`, {
-    [`/api/challenge/${DEF.id}/board`]: { id: DEF.id, closed: true, rows: [row(1, 'Tom', true), row(2, 'Lee', false)], winner: row(1, 'Tom', true) },
+    [`/api/challenge/${DEF.id}/board`]: {
+      id: DEF.id, closed: true,
+      boards: Object.fromEntries(['fastest', 'leanest', 'purest', 'overall'].map(k => [k, [row(1, 'Tom', true), row(2, 'Lee', false)]])),
+      winners: { fastest: row(1, 'Tom', true), leanest: row(2, 'Lee', false) },
+    },
     '/api/challenge': CAL,
   });
   const rows = [...p.html.matchAll(/<tr><td>(\d+)<\/td><td>(.*?)<\/td>/g)].map(m => [m[1], m[2]]);
@@ -107,5 +111,6 @@ test('docs/21 Watch / report round 2026-10-23 §5 the board marks a run played o
   assert.match(rows[0]![1]!, /^Tom <span[^>]*title="The rules have changed since this run was played[^"]*Its score stands\."[^>]*>played on older rules<\/span>$/,
     'first, and marked');
   assert.doesNotMatch(rows[1]![1]!, /older rules/, 'an unmarked run is not');
-  assert.match(p.html, /Winner: <b>Tom<\/b>, Skill 299 <span[^>]*>played on older rules</, 'the winner line too');
+  assert.match(p.html, /Fastest: <b>Tom<\/b> <span[^>]*>played on older rules</, 'the winners line too');
+  assert.match(p.html, /Leanest: <b>Lee<\/b>(?! <span)/, '…and only on the marked winner');
 });

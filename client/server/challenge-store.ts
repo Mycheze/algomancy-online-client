@@ -42,18 +42,21 @@
  * including after downtime, which is what makes it idempotent in substance
  * and not just in "it skips a week it already wrote".
  *
- * ── ONE BOARD, BY SKILL ──────────────────────────────────────────────────
+ * ── FOUR BOARDS, THREE FIRST PLACES ──────────────────────────────────────
  *
- * Ranked by the stamped `raw` ascending (= Skill descending, but exact: two
- * runs that round to the same Skill still order), ties to the earlier run.
- * A player's entry is their best run. There are no per-metric boards (owner,
- * 2026-10-21): fewer cards and fewer elements are both valid ways to a good
- * Skill, not one better than the other.
+ * Each board ranks the same stamped scores its own way (the engine's
+ * `compareScores`): fastest, leanest, purest — each with a week winner — and
+ * overall, a view with no trophy. Ties go to the earlier run. A player's entry
+ * on a board is their best run FOR THAT BOARD, so one player can stand on
+ * the boards with different runs. Nothing is recomputed: a re-ranking is a
+ * re-sort of what was stamped. (2026-10-21 to -23 it was one board, by Skill.)
  */
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { createHash, randomBytes } from 'node:crypto';
 import { join } from 'node:path';
-import { better, type ChallengeDef, type RunScore } from '../engine/src/challenge.ts';
+import {
+  BOARD_KINDS, TROPHY_KINDS, compareScores, type BoardKind, type ChallengeDef, type RunScore,
+} from '../engine/src/challenge.ts';
 import type { Action, CardName } from '../engine/src/types.ts';
 import { accountById } from './accounts.ts';
 import { CHALLENGES, isClosed, weekWindow } from './challenges.ts';
@@ -110,13 +113,15 @@ export interface FrozenWeek {
   closedAt: number;
   /** when the sweep wrote it */
   frozenAt: number;
-  winner: FrozenRow | null;
-  /** the board's first FROZEN_TOP rows at the close; `winner` is the first */
-  top: FrozenRow[];
+  /** each board's first FROZEN_TOP rows at the close; a trophy board's
+   * winner is its first row */
+  boards: Record<BoardKind, FrozenRow[]>;
 }
 
-/** version 2: one board (`top` a list); version 1 kept a board per metric */
-interface WeeksFile { version: 2; weeks: Record<string, FrozenWeek> }
+/** version 3: a top ten per board. Version 2 kept one board by Skill, and
+ * version 1 a board per metric; neither froze a week on the live server (the
+ * first week closed under version 3), and an older file is not read. */
+interface WeeksFile { version: 3; weeks: Record<string, FrozenWeek> }
 
 /** rows kept when a week freezes */
 export const FROZEN_TOP = 10;
@@ -161,7 +166,7 @@ function parseMeta(line: Buffer, off: number): RunMeta | null {
 
 function db(): Mem {
   if (mem) return mem;
-  const m: Mem = { runs: [], byId: new Map(), byChallenge: new Map(), size: 0, ragged: false, weeks: { version: 2, weeks: {} } };
+  const m: Mem = { runs: [], byId: new Map(), byChallenge: new Map(), size: 0, ragged: false, weeks: { version: 3, weeks: {} } };
   let buf: Buffer | null = null;
   try { buf = readFileSync(runsFile()); } catch { /* no runs yet */ }
   if (buf) {
@@ -183,7 +188,7 @@ function db(): Mem {
     const raw = JSON.parse(readFileSync(weeksFile(), 'utf8')) as Partial<WeeksFile>;
     // an older shape is not read: nothing deployed ever wrote one, and the
     // sweep refreezes a closed week from runs.jsonl
-    if (raw && raw.version === 2 && typeof raw.weeks === 'object' && raw.weeks) m.weeks = { version: 2, weeks: raw.weeks };
+    if (raw && raw.version === 3 && typeof raw.weeks === 'object' && raw.weeks) m.weeks = { version: 3, weeks: raw.weeks };
   } catch { /* nothing frozen yet */ }
   mem = m;
   return m;
@@ -361,23 +366,24 @@ export function entrants(challengeId: string): number {
 
 // ── ranking ───────────────────────────────────────────────────────────
 
-/** <0 when `a` ranks above `b`: the lower raw (the higher Skill), then the
- * earlier run (then the run id, so the order is total). */
-export function compareRuns(a: { score: RunScore; at: number; runId: string }, b: { score: RunScore; at: number; runId: string }): number {
-  if (better(a.score, b.score)) return -1;
-  if (better(b.score, a.score)) return 1;
-  return a.at - b.at || (a.runId < b.runId ? -1 : a.runId > b.runId ? 1 : 0);
+type Ranked = { score: RunScore; at: number; runId: string };
+
+/** <0 when `a` ranks above `b` on board `kind`: the better score, then the
+ * earlier run (then the run id, so the order is total) */
+export function compareRuns(kind: BoardKind, a: Ranked, b: Ranked): number {
+  return compareScores(kind, a.score, b.score)
+    || a.at - b.at || (a.runId < b.runId ? -1 : a.runId > b.runId ? 1 : 0);
 }
 
-/** each player's best run, ranked; `before` keeps only runs stamped before it */
-function ranked(challengeId: string, before = Infinity): RunMeta[] {
+/** each player's best run for board `kind`, ranked; `before` keeps only runs stamped before it */
+function ranked(challengeId: string, kind: BoardKind, before = Infinity): RunMeta[] {
   const best = new Map<string, RunMeta>();
   for (const r of db().byChallenge.get(challengeId) ?? []) {
     if (r.at >= before) continue;
     const cur = best.get(r.user);
-    if (!cur || compareRuns(r, cur) < 0) best.set(r.user, r);
+    if (!cur || compareRuns(kind, r, cur) < 0) best.set(r.user, r);
   }
-  return [...best.values()].sort(compareRuns);
+  return [...best.values()].sort((a, b) => compareRuns(kind, a, b));
 }
 
 /** the name a row shows: the account's name as every public view shows it
@@ -404,40 +410,52 @@ const stripFrozen = (r: FrozenRow, flag?: OlderFlag): BoardRow => {
 /** a cap on what one board answer carries (a closed board carries decks) */
 export const BOARD_ROWS = 200;
 
+export interface BoardReply {
+  id: string;
+  closed: boolean;
+  boards: Record<BoardKind, BoardRow[]>;
+  /** only on a closed week: the frozen first place of each trophy board */
+  winners?: Partial<Record<BoardKind, BoardRow>>;
+}
+
+const perBoard = <T>(f: (kind: BoardKind) => T): Record<BoardKind, T> =>
+  Object.fromEntries(BOARD_KINDS.map(k => [k, f(k)])) as Record<BoardKind, T>;
+
 /**
- * The board for one challenge, as anybody may see it: decks and run ids only
- * once the week has closed. `winner` is the frozen one, and only on a closed
- * week.
+ * The boards for one challenge, as anybody may see them: decks and run ids
+ * only once the week has closed. `winners` are the frozen ones, and only on a
+ * closed week.
  */
-export function board(def: ChallengeDef, now: number, flag?: OlderFlag): { id: string; closed: boolean; rows: BoardRow[]; winner?: BoardRow } {
+export function board(def: ChallengeDef, now: number, flag?: OlderFlag): BoardReply {
   const closed = isClosed(def, now);
   // a board asked for between the close and the sweep's next tick freezes it
   // there and then — the freeze's answer does not depend on when it runs
   if (closed) sweepChallenges(now, [def]);
-  const rows = ranked(def.id).slice(0, BOARD_ROWS).map((r, i) => publicRow(r, i + 1, closed, flag));
-  const w = closed ? db().weeks.weeks[def.id]?.winner : null;
-  return { id: def.id, closed, rows, ...(w ? { winner: stripFrozen(w, flag) } : {}) };
+  const boards = perBoard(k => ranked(def.id, k).slice(0, BOARD_ROWS).map((r, i) => publicRow(r, i + 1, closed, flag)));
+  const fw = closed ? db().weeks.weeks[def.id] : null;
+  const winners: Partial<Record<BoardKind, BoardRow>> = {};
+  if (fw) for (const k of TROPHY_KINDS) { const w = fw.boards[k]?.[0]; if (w) winners[k] = stripFrozen(w, flag); }
+  return { id: def.id, closed, boards, ...(fw ? { winners } : {}) };
 }
 
-/** a player's rank on the live board (0 = no run) */
-export function rankOf(challengeId: string, user: string): number {
-  return ranked(challengeId).findIndex(r => r.user === user) + 1;
+/** a player's best run on one board, and its rank there (rank 0 = no run) */
+export interface MyBest { score: RunScore; rank: number }
+
+/** a player's best on each board of one challenge, or null for no run */
+export function bestOf(challengeId: string, user: string): Record<BoardKind, MyBest> | null {
+  if (!(db().byChallenge.get(challengeId) ?? []).some(r => r.user === user)) return null;
+  return perBoard(k => {
+    const list = ranked(challengeId, k);
+    const i = list.findIndex(r => r.user === user);
+    return { score: list[i]!.score, rank: i + 1 };
+  });
 }
 
-/** a player's best run on one challenge, or null */
-export function bestOf(challengeId: string, user: string): { score: RunScore; at: number; runId: string } | null {
-  let out: { score: RunScore; at: number; runId: string } | null = null;
-  for (const r of db().byChallenge.get(challengeId) ?? []) {
-    if (r.user === user && (!out || compareRuns(r, out) < 0)) out = { score: r.score, at: r.at, runId: r.runId };
-  }
-  return out;
-}
-
-/** every challenge this player has a run on → their best score */
-export function mine(user: string): Record<string, RunScore> {
-  const out: Record<string, RunScore> = {};
+/** every challenge this player has a run on → their best on each board */
+export function mine(user: string): Record<string, Record<BoardKind, MyBest>> {
+  const out: Record<string, Record<BoardKind, MyBest>> = {};
   const ids = new Set(db().runs.filter(r => r.user === user).map(r => r.challengeId));
-  for (const id of ids) { const b = bestOf(id, user); if (b) out[id] = b.score; }
+  for (const id of ids) { const b = bestOf(id, user); if (b) out[id] = b; }
   return out;
 }
 
@@ -450,10 +468,10 @@ function freeze(def: ChallengeDef, now: number): boolean {
   const m = db();
   if (m.weeks.weeks[def.id] || !isClosed(def, now)) return false;
   const { closes } = weekWindow(def);
-  const top: FrozenRow[] = ranked(def.id, closes).slice(0, FROZEN_TOP).map((r, i) => ({
+  const boards = perBoard(k => ranked(def.id, k, closes).slice(0, FROZEN_TOP).map((r, i): FrozenRow => ({
     rank: i + 1, name: shownName(r), score: r.score, at: r.at, runId: r.runId, deck: r.deck, user: r.user,
-  }));
-  m.weeks.weeks[def.id] = { closedAt: closes, frozenAt: now, winner: top[0] ?? null, top };
+  })));
+  m.weeks.weeks[def.id] = { closedAt: closes, frozenAt: now, boards };
   return true;
 }
 

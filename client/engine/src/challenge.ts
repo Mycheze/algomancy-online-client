@@ -481,9 +481,44 @@ export function scoreRun(acc: RunAcc, par: number): RunScore {
   return { unique, extra, cards, elements, turns, raw, skill: skillOf(par, raw) };
 }
 
-/** `a` strictly beats `b`: the lower raw (= the higher Skill). A tie is not a
- * win — the earlier run keeps it, which only the caller knows. */
-export const better = (a: RunScore, b: RunScore): boolean => a.raw < b.raw;
+// ── the leaderboards ──────────────────────────────────────────────────
+
+/**
+ * Owner, 2026-10-23, after the first week's 31 runs: no one number says which
+ * run is best. A 3-turn run, a 3-card run and a 1-element run are each the
+ * best at something, and the single Skill hid both turn-3 runs under a
+ * 3·2·5 one. So there are three leaderboards, each with its own first place:
+ * one metric first, the other two as its tie-breaks. `overall` is a fourth
+ * view with no trophy: turns² × cards × √elements — resources grow every
+ * turn, so what a run can do by turn T grows about like T², and elements
+ * (1 to 7) weigh least. Stamped `raw` and `skill` stay on every run and are
+ * no longer what anything ranks by.
+ */
+export type BoardKind = 'fastest' | 'leanest' | 'purest' | 'overall';
+export const BOARD_KINDS: readonly BoardKind[] = ['fastest', 'leanest', 'purest', 'overall'];
+/** the boards with a first place that wins the week */
+export const TROPHY_KINDS: readonly BoardKind[] = ['fastest', 'leanest', 'purest'];
+
+/** each board's order: the metrics compared, first to last */
+const ORDER: Record<Exclude<BoardKind, 'overall'>, readonly ('turns' | 'cards' | 'elements')[]> = {
+  fastest: ['turns', 'cards', 'elements'],
+  leanest: ['cards', 'turns', 'elements'],
+  purest: ['elements', 'turns', 'cards'],
+};
+
+/** the overall cost, squared so it is a whole number: (turns² × cards × √elements)²
+ * — compared exactly, where the root would round */
+const overallSq = (s: RunScore): number => s.turns ** 4 * s.cards ** 2 * Math.max(1, s.elements);
+
+/** <0 when `a` ranks above `b` on board `kind`; 0 is a tie (the earlier run
+ * keeps it, which only the caller knows) */
+export function compareScores(kind: BoardKind, a: RunScore, b: RunScore): number {
+  if (kind === 'overall') {
+    return overallSq(a) - overallSq(b) || a.turns - b.turns || a.cards - b.cards || a.elements - b.elements;
+  }
+  for (const k of ORDER[kind]) if (a[k] !== b[k]) return a[k] - b[k];
+  return 0;
+}
 
 // ── verification ──────────────────────────────────────────────────────
 

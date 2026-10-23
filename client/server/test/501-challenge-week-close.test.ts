@@ -4,15 +4,15 @@
  *    — and the check catches each way a row can be wrong
  * §2 a week's window is Sunday 07:00 UTC to the next Sunday 07:00 UTC, and
  *    current/past read it
- * §3 ⭐ the sweep freezes a closed week once: the winner is the best Skill,
- *    a tie goes to the earlier run, and a reload of the store (a restart)
- *    followed by another sweep rewrites nothing
+ * §3 ⭐ the sweep freezes a closed week once: a winner on each trophy board
+ *    (fastest, leanest, purest), a tie to the earlier run, and a reload of
+ *    the store (a restart) followed by another sweep rewrites nothing
  * §4 ⭐ a run sent to a closed week is ranked on its board but cannot move
  *    the frozen winner — even when the sweep had not run yet when it arrived
  * §5 a server that was down across two closes catches both up in one sweep
- * §6 ⭐ ONE board, by Skill: each player's best run; one element or fewer
- *    cards are both just ways to a raw, and an equal raw goes to the earlier
- *    run; a category asked for is not a thing; the frozen top is ten rows
+ * §6 ⭐ four boards, each its own order: a player stands on each with their
+ *    best run FOR IT (one player, different runs), an equal score goes to the
+ *    earlier run, and every board freezes its top ten
  *
  * The store is driven directly with stamped scores — what is under test is
  * keeping and ranking, not verification (500 sends real runs over HTTP).
@@ -22,7 +22,9 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { skillOf, type ChallengeDef, type RunScore } from '../../engine/src/challenge.ts';
+import {
+  BOARD_KINDS, TROPHY_KINDS, skillOf, type BoardKind, type ChallengeDef, type RunScore,
+} from '../../engine/src/challenge.ts';
 import { register, useAccountsFile } from '../accounts.ts';
 import {
   CHALLENGES, WEEK_MS, calendarProblems, currentChallenge, pastChallenges, weekWindow,
@@ -107,25 +109,28 @@ test('challenge close §2 a week runs Sunday 07:00 UTC to Sunday 07:00 UTC', () 
 
 test('challenge close §3 the sweep freezes once, and a restart changes nothing', () => {
   fresh('c3');
-  run(A, 'Alice', score(5, 0, 2, 10), aw.opens + 1 * HOUR);   // raw 100, Skill 100
-  run(A, 'Bob', score(4, 0, 2, 10), aw.opens + 2 * HOUR);     // raw 80, Skill 125
-  run(A, 'Carol', score(2, 0, 4, 10), aw.opens + 3 * HOUR);   // raw 80, Skill 125, later
+  run(A, 'Alice', score(5, 0, 2, 10), aw.opens + 1 * HOUR);
+  run(A, 'Bob', score(4, 0, 2, 10), aw.opens + 2 * HOUR);
+  run(A, 'Carol', score(4, 0, 2, 10), aw.opens + 3 * HOUR);   // Bob's numbers, later
+  run(A, 'Dave', score(9, 0, 1, 12), aw.opens + 4 * HOUR);    // the only one element
   assert.deepEqual(sweepChallenges(aw.closes - 1, ROWS), [], 'nothing has closed yet');
   assert.equal(frozenWeek('test-a'), null);
 
   assert.deepEqual(sweepChallenges(aw.closes, ROWS), ['test-a'], 'week A closes; B is still open');
   const w = frozenWeek('test-a')!;
   assert.equal(w.closedAt, aw.closes);
-  assert.equal(w.winner?.name, 'Bob', 'the best Skill wins, and the tie goes to the earlier run');
-  assert.equal(w.winner?.score.skill, 125);
-  assert.deepEqual(w.top.map(r => r.name), ['Bob', 'Carol', 'Alice']);
+  assert.equal(w.boards.fastest[0]?.name, 'Bob', 'fewest turns, then fewest cards; the tie goes to the earlier run');
+  assert.equal(w.boards.leanest[0]?.name, 'Bob');
+  assert.equal(w.boards.purest[0]?.name, 'Dave', 'one element wins purest, whatever it took');
+  assert.deepEqual(w.boards.fastest.map(r => r.name), ['Bob', 'Carol', 'Alice', 'Dave']);
+  assert.deepEqual(w.boards.overall.map(r => r.name), ['Bob', 'Carol', 'Alice', 'Dave']);
   const file = join(root, 'c3', 'weeks.json');
   const bytes = readFileSync(file, 'utf8');
 
   loadChallengeStore();
   assert.deepEqual(sweepChallenges(aw.closes + 5 * HOUR, ROWS), [], 'a frozen week is never frozen again');
   assert.equal(readFileSync(file, 'utf8'), bytes, 'weeks.json is untouched by a second sweep after a reload');
-  assert.equal(frozenWeek('test-a')?.winner?.name, 'Bob', 'the frozen winner survives the reload');
+  assert.equal(frozenWeek('test-a')?.boards.purest[0]?.name, 'Dave', 'the frozen winners survive the reload');
 });
 
 test('challenge close §4 a late run is ranked but cannot move the frozen winner', () => {
@@ -135,19 +140,20 @@ test('challenge close §4 a late run is ranked but cannot move the frozen winner
   const late = run(A, 'Dave', score(1, 0, 1, 1), aw.closes + 1000);
   const b = board(A, aw.closes + 2000);
   assert.equal(b.closed, true);
-  assert.equal(b.rows[0]?.name, 'Dave', 'the late run is ranked on the board');
-  assert.equal(b.rows[0]?.runId, late, 'a closed board shows run ids');
-  assert.deepEqual(b.rows[0]?.deck, ['Some Card'], '…and decks');
-  assert.equal(b.winner?.name, 'Alice', 'the winner counts only runs from before the close');
-  assert.equal('user' in (b.winner ?? {}), false, 'a frozen row goes out without its account id');
+  for (const k of BOARD_KINDS) assert.equal(b.boards[k][0]?.name, 'Dave', `the late run is ranked on ${k}`);
+  assert.equal(b.boards.fastest[0]?.runId, late, 'a closed board shows run ids');
+  assert.deepEqual(b.boards.fastest[0]?.deck, ['Some Card'], '…and decks');
+  assert.deepEqual(Object.keys(b.winners ?? {}).sort(), ['fastest', 'leanest', 'purest'], 'three trophies; overall has none');
+  for (const k of TROPHY_KINDS) assert.equal(b.winners?.[k]?.name, 'Alice', `the ${k} winner counts only runs from before the close`);
+  assert.equal('user' in (b.winners?.fastest ?? {}), false, 'a frozen row goes out without its account id');
 
   run(A, 'Erin', score(1, 0, 1, 1), aw.closes + 3 * HOUR);
   assert.deepEqual(sweepChallenges(aw.closes + 4 * HOUR, [A]), []);
-  assert.equal(board(A, aw.closes + 4 * HOUR).winner?.name, 'Alice');
+  assert.equal(board(A, aw.closes + 4 * HOUR).winners?.fastest?.name, 'Alice');
 
   const open = board(B, bw.opens + HOUR);
   assert.equal(open.closed, false);
-  assert.equal(open.winner, undefined, 'an open week has no winner');
+  assert.equal(open.winners, undefined, 'an open week has no winners');
 });
 
 test('challenge close §5 a sweep after downtime catches up on every missed week', () => {
@@ -155,30 +161,34 @@ test('challenge close §5 a sweep after downtime catches up on every missed week
   run(A, 'Alice', score(5, 0, 2, 10), aw.opens + HOUR);
   run(B, 'Bob', score(5, 0, 2, 10), bw.opens + HOUR);
   assert.deepEqual(sweepChallenges(bw.closes + 3 * WEEK_MS, ROWS).sort(), ['test-a', 'test-b']);
-  assert.equal(frozenWeek('test-a')?.winner?.name, 'Alice');
-  assert.equal(frozenWeek('test-b')?.winner?.name, 'Bob');
+  assert.equal(frozenWeek('test-a')?.boards.fastest[0]?.name, 'Alice');
+  assert.equal(frozenWeek('test-b')?.boards.fastest[0]?.name, 'Bob');
   assert.equal(frozenWeek('test-b')?.closedAt, bw.closes, 'closedAt is the boundary, not the late sweep');
 });
 
-test('challenge close §6 one board by Skill: each best, either way to it, top ten frozen', () => {
+test('challenge close §6 four boards: each player\'s best for each, ties to the earlier run, top ten each', () => {
   fresh('c6');
-  // Alice: one cheap long run, one expensive short run — she is ranked by the cheaper
-  run(A, 'Alice', score(2, 0, 1, 20), aw.opens + HOUR);       // raw 40, Skill 250
-  run(A, 'Alice', score(10, 0, 3, 3), aw.opens + 2 * HOUR);   // raw 90, Skill 111
-  run(A, 'Bob', score(3, 0, 1, 3), aw.opens + 3 * HOUR);      // raw 9, Skill 1111
-  // the owner's point: one element, or fewer cards — the same raw is the same rank
-  run(A, 'Carol', score(6, 0, 1, 5), aw.opens + 4 * HOUR);    // 6 cards · 1 element: raw 30
-  run(A, 'Dave', score(3, 0, 2, 5), aw.opens + 5 * HOUR);     // 3 cards · 2 elements: raw 30, later
+  // Alice: one lean slow run, one fast heavy run — each board takes the one it likes
+  run(A, 'Alice', score(2, 0, 1, 20), aw.opens + HOUR);
+  run(A, 'Alice', score(10, 0, 3, 3), aw.opens + 2 * HOUR);
+  run(A, 'Bob', score(3, 0, 2, 5), aw.opens + 3 * HOUR);
+  run(A, 'Carol', score(6, 0, 1, 5), aw.opens + 4 * HOUR);
+  run(A, 'Dave', score(3, 0, 2, 5), aw.opens + 5 * HOUR);     // Bob's numbers, later
   const b = board(A, aw.opens + 6 * HOUR);
-  assert.deepEqual(b.rows.map(r => [r.rank, r.name, r.score.skill]),
-    [[1, 'Bob', 1111], [2, 'Carol', 333], [3, 'Dave', 333], [4, 'Alice', 250]]);
-  assert.equal('by' in b, false, 'there are no categories');
-  assert.equal(b.rows[0]?.runId, undefined, 'an open board shows no run ids');
-  assert.equal(b.rows[0]?.deck, undefined, '…and no decks');
+  const show = (k: BoardKind): string[] => b.boards[k].map(r => `${r.rank} ${r.name} ${r.score.cards}/${r.score.elements}/${r.score.turns}`);
+  assert.deepEqual(show('fastest'), ['1 Alice 10/3/3', '2 Bob 3/2/5', '3 Dave 3/2/5', '4 Carol 6/1/5']);
+  assert.deepEqual(show('leanest'), ['1 Alice 2/1/20', '2 Bob 3/2/5', '3 Dave 3/2/5', '4 Carol 6/1/5']);
+  assert.deepEqual(show('purest'), ['1 Carol 6/1/5', '2 Alice 2/1/20', '3 Bob 3/2/5', '4 Dave 3/2/5'],
+    'one element each: the fewer turns first');
+  // turns² × cards × √elements: Bob 25·3·√2 ≈ 106 · Carol 25·6 = 150 · Alice 9·10·√3 ≈ 156
+  assert.deepEqual(show('overall'), ['1 Bob 3/2/5', '2 Dave 3/2/5', '3 Carol 6/1/5', '4 Alice 10/3/3']);
+  assert.equal(b.boards.fastest[0]?.runId, undefined, 'an open board shows no run ids');
+  assert.equal(b.boards.fastest[0]?.deck, undefined, '…and no decks');
 
   for (let i = 0; i < 12; i++) run(A, `Many${i}`, score(50 + i, 0, 1, 1), aw.opens + (7 + i) * HOUR);
   sweepChallenges(aw.closes, [A]);
   const w = frozenWeek('test-a')!;
-  assert.equal(w.top.length, FROZEN_TOP, 'ten rows frozen');
-  assert.equal(w.winner?.name, 'Bob');
+  for (const k of BOARD_KINDS) assert.equal(w.boards[k].length, FROZEN_TOP, `ten rows frozen on ${k}`);
+  assert.equal(w.boards.fastest[0]?.name, 'Many0');
+  assert.equal(w.boards.leanest[0]?.name, 'Alice');
 });

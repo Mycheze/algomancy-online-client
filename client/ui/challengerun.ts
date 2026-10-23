@@ -23,8 +23,8 @@
 import type { Action, CardName, EngineEvent, GameState } from '../engine/src/types.ts';
 import { legalActions } from '../engine/src/apply.ts';
 import {
-  DUMMY_DECK, challengeDeal, dummyMove, foldRun, newRun, progress, progressLabel, scoreRun,
-  type ChallengeDef, type RunAcc, type RunScore,
+  BOARD_KINDS, DUMMY_DECK, challengeDeal, dummyMove, foldRun, newRun, progress, progressLabel, scoreRun,
+  type BoardKind, type ChallengeDef, type RunAcc, type RunScore,
 } from '../engine/src/challenge.ts';
 import type { BotPolicy } from './bot.ts';
 import { SoloServer, type ActedBy, type SoloDeal } from './solo.ts';
@@ -39,8 +39,11 @@ const DONE_KEY = 'algoChallengeDone';
 
 export interface RunRecord { v: 1; def: ChallengeDef; deck: CardName[]; actions: Action[]; by: ActedBy[] }
 export interface DoneRun { challengeId: string; title: string; deck: CardName[]; actions: Action[]; score: RunScore; at: number }
-/** `improved`: a new best for this player; `rank`: their place on the leaderboard */
-export interface SubmitReply { ok: boolean; error?: string; runId?: string; score?: RunScore; improved?: boolean; rank?: number }
+/** `newBest`: the boards this run is the player's new best on; `ranks`: their place on each board */
+export interface SubmitReply {
+  ok: boolean; error?: string; runId?: string; score?: RunScore;
+  improved?: boolean; newBest?: BoardKind[]; ranks?: Partial<Record<BoardKind, number>>;
+}
 
 // ── storage ──────────────────────────────────────────────────────────
 
@@ -247,10 +250,20 @@ let hooks: { home: () => void; page: () => void; signIn: () => void; retry: (run
 export const statCell = (label: string, value: string | number): string =>
   `<div class="statcell"><div class="statval">${esc(String(value))}</div><div class="statlab">${esc(label)}</div></div>`;
 
-/** Skill, then what it is made of — extra copies only when there are any */
+/** what the run took — turns first, the hardest to cut; extra copies only when there are any */
 export function scoreHtml(s: RunScore): string {
-  return `<div class="statgrid chscore">${statCell('Skill', s.skill)}${statCell('Cards', s.cards)}${
-    s.extra ? statCell('Extra copies', s.extra) : ''}${statCell('Elements', s.elements)}${statCell('Turns', s.turns)}</div>`;
+  return `<div class="statgrid chscore">${statCell('Turns', s.turns)}${statCell('Cards', s.cards)}${
+    s.extra ? statCell('Extra copies', s.extra) : ''}${statCell('Elements', s.elements)}</div>`;
+}
+
+const BOARD_NAME: Record<BoardKind, string> = { fastest: 'fastest', leanest: 'leanest', purest: 'purest', overall: 'overall' };
+
+/** "New best: fastest, leanest. #1 fastest · #3 leanest · #2 purest · #2 overall." */
+function placedText(r: SubmitReply): string {
+  const nb = (r.newBest ?? []).map(k => BOARD_NAME[k]);
+  const head = nb.length ? `New best: ${nb.join(', ')}.` : 'On the leaderboard. No new best.';
+  const ranks = BOARD_KINDS.flatMap(k => (r.ranks?.[k] ? [`#${r.ranks[k]} ${BOARD_NAME[k]}`] : []));
+  return `${head}${ranks.length ? ` ${ranks.join(' · ')}.` : ''}`;
 }
 
 function submitHtml(run: ChallengeRun): string {
@@ -260,10 +273,7 @@ function submitHtml(run: ChallengeRun): string {
       <button class="primary" data-chal="signin">Sign in</button>`;
     case 'sending': return '<p class="dim">Submitting…</p>';
     case 'error': return `<p class="chproblem">${esc(st.error)}</p><button data-chal="resend">Try again</button>`;
-    case 'done': {
-      const r = st.reply;
-      return `<p>${r.improved ? 'New best.' : 'On the leaderboard. No new best.'}${r.rank ? ` Rank #${r.rank}.` : ''}</p>`;
-    }
+    case 'done': return `<p>${esc(placedText(st.reply))}</p>`;
     default: return '';
   }
 }

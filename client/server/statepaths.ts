@@ -94,6 +94,6 @@ export const crCommentsFile = (): string => process.env['ALGO_CR_COMMENTS_FILE']
  * account id and name, the ordered deck, the whole action log, the score the
  * server worked out — append-only, one line each, a score stamped once and
  * never recomputed. `weeks.json` is the frozen result of each closed week
- * (winner and top ten per category), rewritten atomically.
+ * (the top ten of each leaderboard), rewritten atomically.
  */
 export const challengesDir = (): string => process.env['ALGO_CHALLENGES_DIR'] ?? join(VAR_DIR, 'challenges');
