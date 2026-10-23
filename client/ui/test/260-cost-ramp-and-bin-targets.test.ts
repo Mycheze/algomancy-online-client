@@ -117,11 +117,16 @@ test('CR D7.2b the premise: a pay-X-life cost really is one repeatable option an
   assert.equal(pays.length, 1, 'the engine offers exactly one "pay one more" option');
   assert.match(pays[0]!.label, /Pay 1 more life/);
   assert.ok(optIdx(d, 'doneCost') >= 0, 'the "that is enough" option is on the menu');
-  // …and the point is charged AS IT IS ANSWERED, which is why an overshoot
-  // cost the owner a whole play
+  // …and the point is COMMITTED as it is answered (there is no un-paying it),
+  // which is why an overshoot cost the owner a whole play. Report 273: it is
+  // counted into X on the spot and the life is lost as one change when X
+  // closes, so the receipt moves and the life total does not, yet.
   const life = h.state.players[0]!.life;
   h.do({ type: 'decide', seat: 0, choice: optIdx(d, 'payLife1') });
-  assert.equal(h.state.players[0]!.life, life - 1, 'one answer really is one life, charged on the spot');
+  const sus = h.state.suspension;
+  assert.ok(sus && sus.type === 'cast', 'still inside the cast');
+  assert.equal(sus.item.parts[sus.partIndex]!.costPaid?.life, 1, 'one answer really is one point of X, committed on the spot');
+  assert.equal(h.state.players[0]!.life, life, 'and the life is lost when X closes, as one change');
   assert.match(h.state.decision!.prompt, /X = 1 so far/, 'and the next question is a fresh one');
 });
 

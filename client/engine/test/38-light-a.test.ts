@@ -225,13 +225,16 @@ test('Flesh Tithe: pay X life, create an X/X unit', () => {
   const A = h.state.deployPlayer!;
   giveResources(h, A, 'light', 4);                           // l/4
   const before = unitsOf(h, A).length;
-  // CR 702.6b: "[Pay X life]" is an additional cost — paid at cast, a point at a
-  // time (CR 111.6b re-asked each time), and what was paid IS X.
+  // CR 702.6b: "[Pay X life]" is an additional cost — sized at cast, a point at a
+  // time (CR 111.6b re-asked each time), and what was paid IS X. Report 273:
+  // the points are counted as chosen and the X life is lost as ONE change
+  // when X closes, still before the spell reaches the stack (590).
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Flesh Tithe') });
   assert.equal(h.state.decision!.seat, A, 'the caster pays as they cast');
   for (let i = 0; i < 5; i++) pick(h, { payLife1: true });
-  assert.equal(h.state.players[A]!.life, 25, '5 life paid before it reached the stack');
+  assert.equal(h.state.players[A]!.life, 30, 'the 5 points are chosen, not yet lost');
   pick(h, { doneCost: true });                               // X = 5
+  assert.equal(h.state.players[A]!.life, 25, '5 life paid, as one payment, before it reached the stack');
   const made = unitsOf(h, A).filter(u => u.token);
   assert.equal(made.length, 1, 'one token created');
   assert.equal(unitsOf(h, A).length, before + 1);

@@ -9750,6 +9750,11 @@ export class E {
       const { includeSelf: _paid, ...rest } = cost;
       return { ...rest, n: owed, xMin: 0 };
     }
+    // Report 273: the points of a variable life cost are COUNTED as they are
+    // chosen and LOST together when X closes (finishVariableCost), so the life
+    // total has not moved yet — CR 111.6b is asked of the whole running total.
+    // (A fixed life cost is charged outright, so `done` is 0 for it.)
+    if (cost.kind === 'payLife') return { ...cost, n: owed + done, xMin: 0 };
     return { ...cost, n: owed, xMin: 0 } as CastCost;
   }
 
@@ -9761,6 +9766,15 @@ export class E {
     paid.x = this.costPaidSoFar(part, cost);
     paid.xDone = true;
     this.ev('info', `${item.label}: X = ${paid.x} (${this.castCostLabel(cost)}).`);
+    // Report 273: "[Pay X life]" is ONE payment of X life — one life change,
+    // so "when you lose life, create THAT MANY" (Life Plant, [once]) hears X,
+    // not a run of 1s whose first spends the use. The points were counted one
+    // at a time (CR 702.6b, re-asking CR 111.6b against the running total) and
+    // are lost here, together, once X is fixed.
+    if (cost.kind === 'payLife' && paid.x > 0) {
+      this.ev('info', `${this.pname(item.controller)} pays ${paid.x} life — the cost of ${item.label}.`);
+      this.loseLife(item.controller, paid.x, `${item.label} (cost)`);
+    }
     // CR D7.1a: the other way a variable cost lands on zero is that there was
     // nothing left to pay with — no decision is raised at all, so the warning
     // has nowhere to hang but the log. It is still worth saying.
@@ -9851,11 +9865,13 @@ export class E {
       return this.modsOnSource(seat, item.sourceId)
         .map(m => ({ label: `Erase ${m.card}`, value: { eraseMod: m.id }, card: m.card }));
     }
-    // CR 702.6b: a VARIABLE life cost is paid a point at a time, so that
-    // "never your last life" (CR 111.6b) is re-asked before each one.
+    // CR 702.6b: a VARIABLE life cost is sized a point at a time, so that
+    // "never your last life" (CR 111.6b) is re-asked before each one — of the
+    // running total, since nothing is lost until X closes (report 273).
     if (cost.kind === 'payLife') {
-      return this.canPayLife(seat, 1)
-        ? [{ label: `Pay 1 more life (you have ${this.player(seat).life})`, value: { payLife1: true } }]
+      const so = part.costPaid?.life ?? 0;
+      return this.canPayLife(seat, so + 1)
+        ? [{ label: `Pay 1 more life (you have ${this.player(seat).life}${so ? `, ${so} chosen` : ''})`, value: { payLife1: true } }]
         : [];
     }
     if (cost.kind === 'removeCounters') {
@@ -9959,11 +9975,11 @@ export class E {
     if ('doneCost' in obj) { this.finishVariableCost(item, part, cost); return; }
     if ('payCost' in obj) { this.chargeCastCost(item, part, cost); return; }
     const paid = (part.costPaid ??= {});
+    // Report 273: one more point of X — COUNTED, not lost. The whole X is lost
+    // as one life change when the cost closes (finishVariableCost).
     if ('payLife1' in obj) {
-      this.need(this.canPayLife(item.controller, 1), 'bad cost choice');
+      this.need(this.canPayLife(item.controller, (paid.life ?? 0) + 1), 'bad cost choice');
       paid.life = (paid.life ?? 0) + 1;
-      this.ev('info', `${this.pname(item.controller)} pays 1 life — the cost of ${item.label}.`);
-      this.loseLife(item.controller, 1, `${item.label} (cost)`);
       return;
     }
     // CR 705.3b: one point of a printed "[x]". The reserve is re-checked here and

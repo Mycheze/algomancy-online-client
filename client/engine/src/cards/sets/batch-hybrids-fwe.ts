@@ -437,7 +437,10 @@ card('Torrential Reclamation', {
         const u = g.entity(id);
         if (u) g.destroy(u, 'is sacrificed');
       }
-      for (let r = 0; r < recalled.length; r++) g.loseLife(ctx.controller, 1, 'Torrential Reclamation');
+      // "you lose 1 life for each ally recalled this way" is ONE loss of that
+      // many (report 273's class): a run of 1s would let a [once] "that many"
+      // listener (Life Plant) hear only the first.
+      if (recalled.length > 0) g.loseLife(ctx.controller, recalled.length, 'Torrential Reclamation');
     },
   },
 });
