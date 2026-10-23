@@ -1301,6 +1301,12 @@ export interface FaceProjection {
   /** the card names whose faces are projected. Duplicates are deduped by the
    * engine; the projector's own face is skipped (no recursive mimicry). */
   faces: (g: E, self: Entity) => CardName[];
+  /** CR 722.4, 710.7 / report 271: parallel to `faces`, entry for entry — the
+   * unit whose OWN printed text each projected face is, or undefined where no
+   * unit prints it (a mod's [Augment] box, a box a copy copied). A borrowed
+   * graft cause brings ITS carrier's grafts (E.projectedCarrier). Same rule
+   * as `faces`: geometry and raw fields only, never a number. */
+  carriers?: (g: E, self: Entity) => (EntityId | undefined)[];
   /** which facets each projected face contributes. Defaults to statics +
    * activated + triggered + behavior; `name` and `stats` are refused by the
    * engine, and `attrs` is CR 710.7's one stated exclusion for Ancient One. */

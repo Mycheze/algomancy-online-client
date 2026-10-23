@@ -1617,9 +1617,25 @@ export class E {
    * shallow answer dp/dt already gets.
    */
   private projectedFaces(e: Entity, facet: CopyFacet, everyCopy = false): CardName[] {
+    return this.projectedSources(e, facet, everyCopy).map(s => s.card);
+  }
+
+  /**
+   * CR 722.4, 710.7 / report 271: the unit whose OWN text the `nth` projected
+   * copy of `card` is (counted as `projectedFaces(e, 'activated', true)` and
+   * so `activatedBoxes` count it) — the neighbour an Ancient One borrowed it
+   * from, whose grafts join it. Undefined for a box no unit prints (a mod's,
+   * a copied one) and for a projector that does not say (`carriers`).
+   */
+  projectedCarrier(e: Entity, card: CardName, nth: number): Entity | undefined {
+    const hit = this.projectedSources(e, 'activated', true).filter(s => s.card === card)[nth];
+    return hit?.carrier !== undefined ? this.entity(hit.carrier) : undefined;
+  }
+
+  private projectedSources(e: Entity, facet: CopyFacet, everyCopy: boolean): { card: CardName; carrier?: EntityId }[] {
     if (facet === 'name' || facet === 'stats') return [];   // never projected
     if (this.inFaces) return [];
-    const out: CardName[] = [];
+    const out: { card: CardName; carrier?: EntityId }[] = [];
     this.inFaces = true;
     try {
       const mine = this.faceName(e);
@@ -1632,12 +1648,16 @@ export class E {
           if (!(pr.onto ? pr.onto(this, anchor, e) : anchor.id === e.id)) continue;
           const facets = pr.facets ?? PROJECTED_FACETS;
           if (!facets.includes(facet)) continue;
-          for (const name of pr.faces(this, anchor)) {
-            if (name === mine) continue;                     // no recursive mimicry
+          const carriers = pr.carriers?.(this, anchor);
+          pr.faces(this, anchor).forEach((name, i) => {
+            if (name === mine) return;                       // no recursive mimicry
             // `everyCopy`: one entry per SOURCE (two Jollyglop neighbours are
             // two), for the [once] bookkeeping of E.activatedBoxes (CT-342)
-            if (everyCopy || !out.includes(name)) out.push(name);
-          }
+            if (everyCopy || !out.some(o => o.card === name)) {
+              const carrier = carriers?.[i];
+              out.push(carrier !== undefined ? { card: name, carrier } : { card: name });
+            }
+          });
         }
       }
     } finally { this.inFaces = false; }
@@ -2841,8 +2861,8 @@ export class E {
     // CR 402.4, 706.6a: a draw is a card entering a hand, and it is announced as one — a
     // multi-card draw is ONE 'handEntered' exactly as it is ONE 'draw'. The
     // 'draw' event is NOT replaced: it keeps its own narrow meaning ("when you
-    // DRAW", which a bin recursion is not), and Ancient One's AO_EVENTS scan
-    // still reads it.
+    // DRAW", which a bin recursion is not), and Ancient One's event scan
+    // (derived from the pool) still reads it.
     if (got) this.toHand(seat, drawn, 'deck');
     if (!silent && got > 0) {
       const ev = this.ev('draw', `${this.pname(seat)} draws ${got}.`, { seat, n: got });
@@ -6928,9 +6948,16 @@ export class E {
       // seat is stamped too — the pair (binSeat, binNth) is CR 405.6's bin
       // identity, the same one `noteTrashed` stamps on 'trashed', read back by
       // `eventBinSlot`.
+      // CR 714.9 / report 271: and the allies it stood beside, read off the grid
+      // before removeFromFormation closes the gap below — a dying Ancient
+      // One's borrowed "when I die" text is its neighbours', and the designer
+      // gives it "up to 4 tokens when an Ancient One dies with Reforge the
+      // Dead in play, since it copies the ability from each adjacent unit".
+      const adjacent = this.adjacentInFormation(u.id).map(n => n.id);
       const evData: Record<string, unknown> = {
         ...this.leftPlayFacts(u), verb, to: 'bin',
         binSeat, binNth: binNthAt(this, binSeat, binIndex),
+        ...(adjacent.length ? { adjacent } : {}),
       };
       // CR 602.5c: hold the death event ITSELF, not "whatever the last event was".
       // removeFromFormation() below can now log a formation collapse, and a
@@ -12038,12 +12065,13 @@ export class E {
         { budget: part.effectKey, refunded: true });
       return;
     }
-    const holder = part.fromMod !== undefined
-      ? this.entity(part.fromMod)
-      : part.budgetOn !== undefined ? this.entity(part.budgetOn)
+    // `budgetOn`/`budgetKey` first: a graft an Ancient One borrowed names its
+    // mod (`fromMod`) but keeps its use on the borrower (E.graftsJoining)
+    const holder = part.budgetOn !== undefined ? this.entity(part.budgetOn)
+      : part.fromMod !== undefined ? this.entity(part.fromMod)
         : (item.sourceId !== undefined ? this.entity(item.sourceId) : undefined);
     if (!holder) return;                       // the carrier is gone: nothing to refund onto
-    const key = part.fromMod !== undefined ? 'graft' : (part.budgetKey ?? part.effectKey);
+    const key = part.budgetKey ?? (part.fromMod !== undefined ? 'graft' : part.effectKey);
     if ((holder.budgets[key] ?? 0) <= 0) return;   // not bounded, or already back
     delete holder.budgets[key];
     this.ev('info',
@@ -12587,7 +12615,7 @@ export class E {
   /** Compose the parts of a firing ability: base effect + graft-mod effects,
    * top-to-bottom (Manual p.33). Bounded pieces consume per-card budgets (CR 803.4). */
   composeParts(source: Entity, abilityIndex: number, abilityKeyPrefix: 'ability' | 'augment', viaCard?: CardName,
-    fromAugment?: EntityId, copyNth?: number): EffectPart[] | null {
+    fromAugment?: EntityId, copyNth?: number, carrier?: Entity): EffectPart[] | null {
     // CR 710.1: with no `viaCard` the ability is the source's OWN, which
     // means the card it currently IS — the face, not the physical card.
     const cardName = viaCard ?? this.faceName(source);
@@ -12634,60 +12662,99 @@ export class E {
       ...(ability.bounded && augmentMod ? { budgetOn: augmentMod.id } : {}),
       ...(ability.bounded && copyNth ? { budgetKey } : {}),
     };
-    const parts: EffectPart[] = [base];
     // grafted effects join only a graft cause, and only from graft-applied mods
-    if (ability.graftCause && abilityKeyPrefix === 'ability') {
-      const grafts: EffectPart[] = [];
-      // CR 722.8, 710.2b / CT-219: a COPY of a graft cause carries the grafts it copied
-      // (CopyRef.mods), and they come FIRST — RAQ "Borrower of Forms": "it
-      // inherits all of the combined text", and a graft added to the copy
-      // later goes "only 'underneath' original copied grafts". A copied graft
-      // has no entity, so a bounded one keeps its budget on the copy itself,
-      // under its part key (which is what refundPart hands back).
-      // CR 109.9k / CT-342: two copied grafts of one name are two uses, as
-      // two real ones are — the k-th keeps `graft:<card>@<k>` (`nthUseKey`)
-      const seenGraft = new Map<CardName, number>();
-      for (const cm of this.identityCopy(source)?.mods ?? []) {
-        if (cm.appliedAs !== 'graft') continue;
-        const g = this.card(cm.card).graftEffect;
-        if (!g) continue;
-        const nth = seenGraft.get(cm.card) ?? 0;
-        seenGraft.set(cm.card, nth + 1);
-        const key = `graft:${cm.card}`;
-        const useKey = nthUseKey(key, nth);
-        if (g.bounded) {
-          if ((source.budgets[useKey] ?? 0) > 0) continue;
-          source.budgets[useKey] = 1;
-        }
-        grafts.push({ effectKey: key, targets: [], ...(g.bounded && nth ? { budgetKey: useKey } : {}) });
+    if (ability.graftCause && abilityKeyPrefix === 'ability') return this.withGrafts(base, source, carrier ?? source);
+    return [base];
+  }
+
+  /**
+   * CR 722.4, 722.8, 710.7 / report 271 — the grafts that join a firing of the
+   * graft cause printed on `carrier`, fired by `holder`, in the order they
+   * resolve: the grafts a COPY copied first (CR 710.2b), then its real graft
+   * mods. Each comes with the entity and key its [Switch1] use is kept under.
+   *
+   * `holder` and `carrier` are the same unit for every ability but one kind:
+   * an Ancient One that BORROWS a neighbour's graft cause. The neighbour's
+   * grafts are part of the text it has — the designer, on Ancient One: "This
+   * effect includes modifications such as grafted and augmented abilities",
+   * and, of the Amphivore with a graft beside it, the Ancient One's copy fires
+   * that graft too. Each borrowed graft keeps its OWN use on the borrower
+   * (the designer, "If Ancient One copies a bounded Graft effect … it triggers
+   * on each creature"), keyed by the graft it came from, so neither unit's
+   * [once] spends the other's.
+   */
+  graftsJoining(holder: Entity, carrier: Entity = holder):
+    { card: CardName; bounded: boolean; on: Entity; key: string; part: EffectPart }[] {
+    const out: { card: CardName; bounded: boolean; on: Entity; key: string; part: EffectPart }[] = [];
+    const borrowed = carrier.id !== holder.id;
+    // CR 722.8, 710.2b / CT-219: a COPY of a graft cause carries the grafts it copied
+    // (CopyRef.mods), and they come FIRST — RAQ "Borrower of Forms": "it
+    // inherits all of the combined text", and a graft added to the copy
+    // later goes "only 'underneath' original copied grafts". A copied graft
+    // has no entity, so a bounded one keeps its budget on the copy itself,
+    // under its part key (which is what refundPart hands back).
+    // CR 109.9k / CT-342: two copied grafts of one name are two uses, as
+    // two real ones are — the k-th keeps `graft:<card>@<k>` (`nthUseKey`)
+    const seenGraft = new Map<CardName, number>();
+    for (const cm of this.identityCopy(carrier)?.mods ?? []) {
+      if (cm.appliedAs !== 'graft') continue;
+      const g = this.card(cm.card).graftEffect;
+      if (!g) continue;
+      const nth = seenGraft.get(cm.card) ?? 0;
+      seenGraft.set(cm.card, nth + 1);
+      const effectKey = `graft:${cm.card}`;
+      const key = borrowed ? `${effectKey}@c${carrier.id}.${nth}` : nthUseKey(effectKey, nth);
+      out.push({ card: cm.card, bounded: g.bounded, on: holder, key,
+        part: { effectKey, targets: [], ...(g.bounded && (borrowed || nth) ? { budgetKey: key } : {}) } });
+    }
+    for (const modId of carrier.mods) {
+      const mod = this.entity(modId);
+      if (!mod || mod.appliedAs !== 'graft') continue;
+      const g = this.card(mod.card).graftEffect;
+      if (!g) continue;
+      const effectKey = `graft:${mod.card}`;
+      // a borrowed real graft keeps `fromMod` (CR 722.7d groups a multiplied
+      // cost's copies by it) and holds its use on the borrower (`budgetOn`)
+      out.push(borrowed
+        ? { card: mod.card, bounded: g.bounded, on: holder, key: `${effectKey}@m${mod.id}`,
+          part: { effectKey, targets: [], fromMod: mod.id, budgetOn: holder.id, budgetKey: `${effectKey}@m${mod.id}` } }
+        : { card: mod.card, bounded: g.bounded, on: mod, key: 'graft',
+          part: { effectKey: `graft:${mod.card}`, targets: [], fromMod: mod.id } });
+    }
+    return out;
+  }
+
+  /**
+   * CR 722.4, 722.5a, 722.7: a graft cause's composite — its own `base` part, then
+   * every graft that joins it (`graftsJoining`) whose use is not spent this
+   * turn, then the copies a multiplier asks for. Reserves each bounded graft's
+   * use as it goes. `composeParts` calls it for every graft cause, and the
+   * Ancient One's borrowed triggers call it with the neighbour as `carrier`.
+   */
+  withGrafts(base: EffectPart, holder: Entity, carrier: Entity = holder): EffectPart[] {
+    const grafts: EffectPart[] = [];
+    for (const j of this.graftsJoining(holder, carrier)) {
+      if (j.bounded) {
+        if ((j.on.budgets[j.key] ?? 0) > 0) continue;   // used this turn: skipped, composite still fires
+        j.on.budgets[j.key] = 1;
       }
-      for (const modId of source.mods) {
-        const mod = this.entity(modId);
-        if (!mod || mod.appliedAs !== 'graft') continue;
-        const g = this.card(mod.card).graftEffect;
-        if (!g) continue;
-        if (g.bounded) {
-          if ((mod.budgets['graft'] ?? 0) > 0) continue;   // used this turn: skipped, composite still fires
-          mod.budgets['graft'] = 1;
-        }
-        grafts.push({ effectKey: `graft:${mod.card}`, targets: [], fromMod: mod.id });
-      }
-      // CR 722.7: "(Trigger two copies of this graft ability as one single
-      // trigger)" — a multiplier in the composite (the cause itself, Lost
-      // Guardian's own ability; or a multiplier grafted under this host)
-      // repeats every OTHER graft N times, top-to-bottom and then top-to-
-      // bottom again, bounded grafts included. Each copy is its own part, so
-      // it collects its own targets and pays its own [cost]. The multiplier
-      // parts themselves appear once and do nothing at resolution.
-      const copies = [base, ...grafts]
-        .map(p => effectByKey(p.effectKey).graftCopies ?? 1)
-        .reduce((a, b) => a * b, 1);
-      parts.push(...grafts);
-      for (let round = 1; round < copies; round++) {
-        for (const p of grafts) {
-          if (effectByKey(p.effectKey).graftCopies) continue;   // never multiply a multiplier
-          parts.push({ ...p, targets: [] });
-        }
+      grafts.push(j.part);
+    }
+    // CR 722.7: "(Trigger two copies of this graft ability as one single
+    // trigger)" — a multiplier in the composite (the cause itself, Lost
+    // Guardian's own ability; or a multiplier grafted under this host)
+    // repeats every OTHER graft N times, top-to-bottom and then top-to-
+    // bottom again, bounded grafts included. Each copy is its own part, so
+    // it collects its own targets and pays its own [cost]. The multiplier
+    // parts themselves appear once and do nothing at resolution.
+    const copies = [base, ...grafts]
+      .map(p => effectByKey(p.effectKey).graftCopies ?? 1)
+      .reduce((a, b) => a * b, 1);
+    const parts: EffectPart[] = [base, ...grafts];
+    for (let round = 1; round < copies; round++) {
+      for (const p of grafts) {
+        if (effectByKey(p.effectKey).graftCopies) continue;   // never multiply a multiplier
+        parts.push({ ...p, targets: [] });
       }
     }
     return parts;
@@ -13208,9 +13275,9 @@ export class E {
    * nothing to refund onto and this is correctly a no-op for it. */
   private refundTriggerBudgets(t: PendingTrigger): void {
     for (const part of t.parts) {
-      const holder = this.entity(part.fromMod ?? part.budgetOn ?? t.sourceId);
+      const holder = this.entity(part.budgetOn ?? part.fromMod ?? t.sourceId);
       if (!holder) continue;
-      const key = part.fromMod !== undefined ? 'graft' : (part.budgetKey ?? part.effectKey);
+      const key = part.budgetKey ?? (part.fromMod !== undefined ? 'graft' : part.effectKey);
       if ((holder.budgets[key] ?? 0) <= 0) continue;
       delete holder.budgets[key];
     }

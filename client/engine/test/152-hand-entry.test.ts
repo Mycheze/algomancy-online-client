@@ -317,29 +317,31 @@ test('CR 112.15 class guard: no card writes a player\'s rot or debt directly', (
 });
 
 /* A REWIRE CAN TAKE SOMETHING AWAY. Ancient One mimics an adjacent ally's
- * triggered abilities, and it only scans on the events in its own `AO_EVENTS`
- * list. All three cards listened on 'despawned'+'draw', both of which are in
- * that list; moving them to 'handEntered' would have silently taken them away
- * from the Ancient One unless the list moved too. This asserts the invariant
- * rather than the one edit, so the next card to move events cannot lose it. */
+ * triggered abilities, and it only scans on the events its bookkeeping
+ * ability listens on. All three cards listened on 'despawned'+'draw'; moving
+ * them to 'handEntered' would have silently taken them away from the Ancient
+ * One unless its list moved too. This asserts the invariant rather than the
+ * one edit, so the next card to move events cannot lose it.
+ *
+ * Report 271: the list is no longer a literal — it is DERIVED from the pool
+ * (it had fallen seven events behind it), so this reads the live ability
+ * instead of the source text. The pool-wide form of this guard is
+ * 589-ancient-one-whole-text-box. */
 test('Ancient One can still mimic the three hand-entry cards (AO_EVENTS covers their events)', () => {
-  const src = fs.readFileSync(path.join(SRC, 'cards', 'sets', 'batch-metal-a.ts'), 'utf8');
-  const block = /const AO_EVENTS: EventType\[\] = \[([\s\S]*?)\n\];/.exec(src);
-  assert.ok(block, "AO_EVENTS is still a literal array — if it moved, this guard needs rewriting");
-  // ⚠ COMMENT LINES FIRST. The array carries a prose comment that NAMES the
-  // very events being checked, so matching over the raw block made this guard
-  // pass with the entry deleted. Measured: it stayed green under mutation.
-  const code = block![1]!.split('\n').filter(L => !COMMENT.test(L)).join('\n');
-  const listed = new Set([...code.matchAll(/'([a-zA-Z]+)'/g)].map(m => m[1]!));
-  assert.ok(listed.has('despawned') && listed.has('draw'),
-    'the guard reads the right array (both pre-existing entries are there)');
+  const ao = getCard('Ancient One').augmentText?.find(a => a.type === 'triggered');
+  assert.ok(ao && 'events' in ao, 'the Ancient One still mimics through a triggered bookkeeping ability');
+  const listed = new Set<string>(ao.events);
+  // 'draw' is no longer on it: nothing in the pool listens on it from play any
+  // more, which is exactly what a derived list should say
+  assert.ok(listed.has('despawned') && listed.has('handEntered'),
+    'the guard reads the right list (it has the events these cards moved between)');
   for (const card of LISTENERS) {
     const def = getCard(card);
     const abilities = [...(def.abilities ?? []), ...(def.augmentText ?? [])];
     const events = abilities.flatMap(a => ('events' in a ? a.events : []));
     assert.ok(events.length, `${card} still declares triggered events`);
     for (const ev of events) {
-      assert.ok(listed.has(ev), `${card} listens on '${ev}', which AO_EVENTS must scan`);
+      assert.ok(listed.has(ev), `${card} listens on '${ev}', which the Ancient One must scan`);
     }
   }
 });

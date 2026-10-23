@@ -1732,7 +1732,7 @@ function canPayAbilityCost(e: E, seat: Seat, cost: AbilityCost, u: Entity, regio
 function abilityUnusable(
   e: E, seat: Seat,
   ab: { effect: EffectDef; usableWhen?: ActivatedAbility['usableWhen']; cost?: AbilityCost; graftCause?: boolean },
-  u: Entity, region: number, taxCard: CardName,
+  u: Entity, region: number, taxCard: CardName, carrier: Entity = u,
 ): string | null {
   // CR 111.7b first: the precondition is about the source, and a self-sacrificing
   // ability's cost would otherwise remove the thing the condition asks about
@@ -1749,7 +1749,7 @@ function abilityUnusable(
   if (eff.castCost && !e.canPayCastCost(seat, eff.castCost, region, 0, u.id, manaReserve)) {
     return 'that ability has nothing it can be used on';
   }
-  const graft = graftCostUnpayable(e, seat, ab, u, region, manaReserve);
+  const graft = graftCostUnpayable(e, seat, ab, u, region, manaReserve, carrier);
   if (graft) return graft;
   // CR 110.7, judged at an X the activation could be declared with (CR 702.3a,
   // report #211): an ability's X is its variable bracketed cost, collected
@@ -1774,19 +1774,35 @@ function abilityUnusable(
  * reserves this activation's own graft budgets.
  */
 function graftCostUnpayable(e: E, seat: Seat, ab: { graftCause?: boolean }, u: Entity, region: number,
-  manaReserve: number): string | null {
+  manaReserve: number, carrier: Entity = u): string | null {
   if (!ab.graftCause) return null;
-  for (const id of u.mods) {
-    const mod = e.entity(id);
-    const g = mod && mod.appliedAs === 'graft' ? getCard(mod.card).graftEffect : undefined;
-    if (!mod || !g) continue;
-    if (g.bounded && (mod.budgets['graft'] ?? 0) > 0) continue;
-    const cc = effectByKey(`graft:${mod.card}`).castCost;
+  // CR 722.4, 710.7 / report 271: the grafts that would JOIN this firing — the
+  // carrier's (an Ancient One's borrowed cause brings its neighbour's), each
+  // skipped when its use is spent. Real graft mods only, as before: a copy's
+  // copied grafts are not gated here.
+  for (const j of e.graftsJoining(u, carrier)) {
+    if (j.part.fromMod === undefined) continue;
+    if (j.bounded && (j.on.budgets[j.key] ?? 0) > 0) continue;
+    const cc = effectByKey(j.part.effectKey).castCost;
     if (cc && costAmount(cc) !== null && !e.canPayCastCost(seat, cc, region, 0, u.id, manaReserve)) {
-      return `${mod.card}'s grafted cost cannot be paid`;
+      return `${j.card}'s grafted cost cannot be paid`;
     }
   }
   return null;
+}
+
+/**
+ * CR 722.4, 710.7 / report 271 — whose grafts join the activated graft cause
+ * `via` addresses. A projected face's own text ({ face }, the default 'ability'
+ * text) is the neighbour's an Ancient One borrowed it from — "this effect
+ * includes modifications such as grafted … abilities" — so it brings THAT
+ * unit's grafts. Everything else is the unit's own.
+ */
+function viaCarrier(e: E, u: Entity, via?: ActivateVia): Entity {
+  if (via && typeof via === 'object' && 'face' in via && (via.text ?? 'ability') === 'ability') {
+    return e.projectedCarrier(u, via.face, via.copy ?? 0) ?? u;
+  }
+  return u;
 }
 
 function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: number, via?: ActivateVia): void {
@@ -1823,14 +1839,15 @@ function doActivateAbility(e: E, seat: Seat, entityId: EntityId, abilityIndex: n
   e.need(canPayAbilityCost(e, seat, cost, u, region, viaCard ?? e.faceName(u)), 'cannot pay the activation cost');
   // CR 722.6a: a grafted [cost] that cannot be paid — asked before composeParts
   // spends this activation's bounded graft budgets
+  const carrier = viaCarrier(e, u, via);
   const graftGate = graftCostUnpayable(e, seat, ability, u, region,
-    (cost.mana ?? 0) + e.abilityTax(seat, viaCard ?? e.faceName(u), region, 'activate').total);
+    (cost.mana ?? 0) + e.abilityTax(seat, viaCard ?? e.faceName(u), region, 'activate').total, carrier);
   e.need(!graftGate, graftGate ?? '');
   // compose BEFORE paying costs: a spent bounded cause makes this illegal
-  const parts = e.composeParts(u, abilityIndex, prefix, viaCard, viaMod(via), copyNth);
+  const parts = e.composeParts(u, abilityIndex, prefix, viaCard, viaMod(via), copyNth, carrier);
   e.need(parts, 'that ability was already used this turn');
   // CR 705.3a: …and only then, whether the effect has anything to spend itself on
-  const unusable = abilityUnusable(e, seat, ability, u, region, viaCard ?? e.faceName(u));
+  const unusable = abilityUnusable(e, seat, ability, u, region, viaCard ?? e.faceName(u), carrier);
   e.need(!unusable, unusable ?? '');
   // CR 710.1: the log and the stack row name the FACE — the card this unit
   // currently IS. For anything not wearing a copy that is `u.card` verbatim,
@@ -4296,7 +4313,7 @@ function pushActivatedOptions(e: E, seat: Seat, region: number, out: Action[]): 
         if (ab.bounded && (holder.budgets[nthUseKey(`${prefix}:${budgetCard}#${i}`, viaCopy(via))] ?? 0) > 0) return;
         if (strips.length && E.strippedBy(viaStamp(e, via), strips)) return;      // CR 712.2
         if (e.abilityIsSuppressed(u, ab, viaStamp(e, via))) return;                 // CR 712.4
-        if (abilityUnusable(e, seat, ab, u, region, budgetCard)) return;         // CR 705.3a
+        if (abilityUnusable(e, seat, ab, u, region, budgetCard, viaCarrier(e, u, via))) return;   // CR 705.3a
         out.push({ type: 'activateAbility', seat, entityId: u.id, abilityIndex: i, ...(via ? { via } : {}) });
       });
     };

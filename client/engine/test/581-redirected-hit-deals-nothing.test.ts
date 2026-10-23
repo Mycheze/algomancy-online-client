@@ -35,7 +35,10 @@ function listensOnFaceDamage(v: unknown, seen = new Set<unknown>()): boolean {
     && (o['events'] as string[]).includes('combatFaceDamage')) return true;
   return Object.values(o).some(x => listensOnFaceDamage(x, seen));
 }
-const LISTENERS = allCardNames().filter(n => listensOnFaceDamage(getCard(n)));
+// Ancient One listens on EVERY event a card in the pool listens on, to lend its
+// neighbours' triggers (report 271); alone in a column it has nothing to lend
+// and never fires. 588 covers it borrowing Bloodwind Revenant and Amphivore.
+const LISTENERS = allCardNames().filter(n => n !== 'Ancient One' && listensOnFaceDamage(getCard(n)));
 /** a listener that hears it from the BIN, not from the column (CR 400.5) */
 const fromBin = (n: string): boolean => JSON.stringify(getCard(n), (_k, v) => typeof v === 'function' ? undefined : v)
   .includes('"zone":"bin"');
