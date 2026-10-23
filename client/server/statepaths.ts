@@ -41,6 +41,17 @@ export const accountsFile = (): string =>
 /** playtest reports from the in-game 🐛 button, stamped with room + action */
 export const issuesFile = (): string => process.env['ALGO_ISSUES_FILE'] ?? join(VAR_DIR, 'issues.jsonl');
 
+/**
+ * Report round 2026-10-23 — the RUN a report from a solo room was filed on (a
+ * Weekly Challenge run, a Learn to Play game: rooms that live in the browser,
+ * so no saved game exists to replay). One JSON line per report, keyed by the
+ * issues row's `ts` (report-run.ts says why it may never go INTO that row).
+ * Beside the journal by default, so every override of ALGO_ISSUES_FILE — the
+ * tests, `npm run dev`, the prod mirror — takes its runs with it.
+ */
+export const reportRunsFile = (): string =>
+  process.env['ALGO_REPORT_RUNS_FILE'] ?? join(dirname(issuesFile()), 'report-runs.jsonl');
+
 /** the scenario tester's verdicts — the owner's judgements, and the only copy */
 export const verdictsFile = (): string => process.env['ALGO_VERDICTS_FILE'] ?? join(VAR_DIR, 'verdicts.jsonl');
 

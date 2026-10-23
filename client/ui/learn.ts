@@ -10,6 +10,7 @@ import { tutorialBotV1 } from './bot.ts';
 import { CONSTRUCT } from './bot.ts';
 import { buildLearnerDeck, isLearnElement, type LearnElement } from './lessondeck.ts';
 import { SoloServer, type SoloDeal, type SoloSave } from './solo.ts';
+import type { LearnReportRun } from '../server/report-run.ts';
 
 const KEY = 'algoLearn';
 
@@ -62,6 +63,18 @@ export function newDeal(el: LearnElement, seed = Math.floor(Math.random() * 1e6)
 /** the Learn to Play game this page is running, if any */
 let current: { server: SoloServer; progress: LearnProgress } | null = null;
 export const currentSolo = (): { server: SoloServer; progress: LearnProgress } | null => current;
+
+/** Report round 2026-10-23 — what a report filed from this game carries (as
+ * challengerun.ts's `reportAttachment`): the deal and the whole log, and the
+ * index the learner is at. */
+export function reportAttachment(server: SoloServer): LearnReportRun {
+  const { deal, actions } = server.save;
+  return {
+    kind: 'learn',
+    deal: { seed: deal.seed, names: [...deal.names], decks: [[...deal.decks[0]], [...deal.decks[1]]], lesson: deal.lesson },
+    actions, at: actions.length,
+  };
+}
 
 /**
  * The room for `?learn=play`: the saved game when there is one for this

@@ -17,19 +17,35 @@
  *
  *   node scripts/fetch-reports.mjs            fetch both, report the delta
  *   node scripts/fetch-reports.mjs --dry-run  print what it would fetch
+ *
+ * Since 2026-10-23 it also brings down `report-runs.jsonl` — the game each
+ * report from a solo room (a Weekly Challenge run, Learn to Play) was filed
+ * on — into var/ (not committed: a run is a whole action log), and names the
+ * one command that replays each new one (server/replay-report-run.ts).
+ *
+ * TEST SEAM, and nothing else: ALGO_REPORTS_SOURCE_ROOT names a local
+ * directory laid out like the deploy box's checkout (it is copied from in
+ * place of scp), and ALGO_REPORTS_DEST_ROOT a directory laid out like this
+ * repo (written to in place of it). Test 594 runs the whole script between
+ * two scratch directories; unset, both are the real thing.
  */
 import { execFileSync } from 'node:child_process';
 import {
   copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync,
 } from 'node:fs';
 import { hostname, tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import {
-  DEPLOY_HOST, ISSUES_JSONL, ISSUES_SNAPSHOT, MARKS_JSONL, MARKS_SNAPSHOT,
-  VAR_DIR, VERDICTS_JSONL, VERDICTS_SNAPSHOT, remote,
+  DEPLOY_HOST, ISSUES_JSONL, ISSUES_SNAPSHOT, MARKS_JSONL, MARKS_SNAPSHOT, REPO_ROOT,
+  REPORT_RUNS_JSONL, VAR_DIR, VERDICTS_JSONL, VERDICTS_SNAPSHOT, remote,
 } from './paths.mjs';
 
 const DRY = process.argv.includes('--dry-run');
+
+/** the test seam (see the header): where a remote file is read from, and where a local one is written */
+const SOURCE_ROOT = process.env.ALGO_REPORTS_SOURCE_ROOT || null;
+const DEST_ROOT = process.env.ALGO_REPORTS_DEST_ROOT || null;
+const local = abs => (DEST_ROOT ? join(DEST_ROOT, relative(REPO_ROOT, abs)) : abs);
 
 /** die with a message a human can act on; never exit 0 having done nothing */
 function fail(what) {
@@ -56,8 +72,8 @@ function rowsOf(file) {
   return readFileSync(file, 'utf8').split('\n').filter(l => l.trim()).length;
 }
 
-const before = rowsOf(ISSUES_SNAPSHOT);
-const beforeVerdicts = rowsOf(VERDICTS_SNAPSHOT);
+const before = rowsOf(local(ISSUES_SNAPSHOT));
+const beforeVerdicts = rowsOf(local(VERDICTS_SNAPSHOT));
 
 /**
  * Fetch one remote file to a scratch path first, check it, then move it.
@@ -66,14 +82,20 @@ const beforeVerdicts = rowsOf(VERDICTS_SNAPSHOT);
  * good snapshot — losing reports to the very command whose job is not losing
  * reports.
  */
-function fetch(src, dest, scratch) {
-  const from = remote(src);
+function fetch(src, destAbs, scratch) {
+  const from = SOURCE_ROOT ? join(SOURCE_ROOT, relative(REPO_ROOT, src)) : remote(src);
+  const dest = local(destAbs);
   if (DRY) { console.log(`  would fetch ${from}\n            -> ${dest}`); return null; }
 
   const tmp = join(scratch, 'fetched.jsonl');
   try {
-    execFileSync('scp', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', from, tmp],
-      { stdio: ['ignore', 'inherit', 'pipe'] });
+    if (SOURCE_ROOT) {
+      if (!existsSync(from)) throw Object.assign(new Error('no such file'), { stderr: `${from}: No such file or directory` });
+      copyFileSync(from, tmp);
+    } else {
+      execFileSync('scp', ['-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', from, tmp],
+        { stdio: ['ignore', 'inherit', 'pipe'] });
+    }
   } catch (e) {
     const err = String(e.stderr ?? '');
     // A journal that does not exist yet is not a failure to fetch — the deploy
@@ -161,12 +183,23 @@ try {
   // anything has no such file yet, which `fetch` reports and keeps rather than
   // failing on — the day-one case verdicts.jsonl already taught it.
   const markRows = fetch(MARKS_JSONL, MARKS_SNAPSHOT, scratch);
+  // 2026-10-23: the runs reports from a solo room carry. Into var/, the same
+  // path on both machines — the journal's merge rules, and never committed.
+  const runRows = fetch(REPORT_RUNS_JSONL, REPORT_RUNS_JSONL, scratch);
   if (DRY) process.exit(0);
   // the raw copy still lands in var/ as well: the scenario runner reads it
   // there, and a gitignored working copy costs nothing. ⚠ AFTER the --dry-run
   // exit — a dry run that writes a file is not a dry run.
-  mkdirSync(VAR_DIR, { recursive: true });
-  copyFileSync(VERDICTS_SNAPSHOT, join(VAR_DIR, 'verdicts.jsonl'));
+  mkdirSync(local(VAR_DIR), { recursive: true });
+  copyFileSync(local(VERDICTS_SNAPSHOT), join(local(VAR_DIR), 'verdicts.jsonl'));
+  /** the report timestamps that have a run in var/ */
+  const runTs = new Set();
+  if (existsSync(local(REPORT_RUNS_JSONL))) {
+    for (const line of readFileSync(local(REPORT_RUNS_JSONL), 'utf8').split('\n')) {
+      if (!line.trim()) continue;
+      try { const r = JSON.parse(line); if (typeof r.ts === 'string') runTs.add(r.ts); } catch { /* torn line */ }
+    }
+  }
 
   const delta = issues - (before ?? 0);
   console.log(
@@ -181,7 +214,7 @@ try {
     // fields exist so triage can start from "game-breaking bug in ABCD"
     // rather than from opening the file. Rows from before the form print as
     // "untyped"; the fields are optional and the intake parses both shapes.
-    const fresh = readFileSync(ISSUES_SNAPSHOT, 'utf8').split('\n').filter(l => l.trim())
+    const fresh = readFileSync(local(ISSUES_SNAPSHOT), 'utf8').split('\n').filter(l => l.trim())
       .slice(before ?? 0).map(l => JSON.parse(l));
     for (const r of fresh) {
       const tag = r.kind ? `${r.kind}${r.severity ? '/' + r.severity : ''}` : 'untyped';
@@ -193,6 +226,14 @@ try {
           ? ` (${[r.by.owner ? 'owner' : '', r.by.judge ? `judge L${r.by.judge}` : ''].filter(Boolean).join(', ')})` : ''}`;
       const where = r.room ? `${r.room} seat ${r.seat ?? '?'}` : `page ${r.page ?? '?'}`;
       console.log(`  · ${String(r.ts).slice(0, 10)} ${where} by ${by} [${tag}] ${String(r.note).replace(/\s+/g, ' ').slice(0, 90)}`);
+      // 2026-10-23: a report from a solo room says whether its game came with it
+      if (r.solo) {
+        if (r.solo.refused) console.log(`      ${r.solo.kind ?? 'solo'} run NOT kept: ${r.solo.refused}`);
+        else if (runTs.has(r.ts)) {
+          console.log(`      ${r.solo.kind} run attached${r.solo.challengeId ? ` (${r.solo.challengeId})` : ''}, at action ${r.solo.at} — `
+            + `replay: node client/server/replay-report-run.ts ${r.ts}`);
+        } else console.log(`      ${r.solo.kind} run named but not in ${local(REPORT_RUNS_JSONL)} — fetch again?`);
+      }
     }
   }
   // BL-16: what the owner has already judged, folded to the mark in force —
@@ -202,7 +243,7 @@ try {
   // means a different report in the live journal than in this snapshot, and
   // that mismatch is what the first version of the dashboard shipped wrong.
   const inForce = new Map();
-  for (const line of readFileSync(MARKS_SNAPSHOT, 'utf8').split('\n')) {
+  for (const line of (existsSync(local(MARKS_SNAPSHOT)) ? readFileSync(local(MARKS_SNAPSHOT), 'utf8') : '').split('\n')) {
     if (!line.trim()) continue;
     try {
       const r = JSON.parse(line);
@@ -219,6 +260,7 @@ try {
       ? ' A dismissed report still needs a ledger entry — `by-design` or `wontfix`, with the '
         + 'reason — it does not need investigating.'
       : ''));
+  console.log(`runs:     ${runRows} solo-room run(s) kept in ${local(REPORT_RUNS_JSONL)}.`);
   const vBefore = beforeVerdicts ?? 0;
   const vDelta = verdicts - vBefore;
   console.log(
