@@ -14,7 +14,9 @@
  * 'combatFaceDamage', the event that carries "my column dealt combat damage
  * to a player". Each one is run three ways — unredirected (it fires: the
  * scenario really reaches it), wholly redirected (it does not), and partly
- * redirected (it fires).
+ * redirected (it fires). Less the cards whose printed clause names no player
+ * (Vroot, Flowstone Arcanite, Blightmound): the owner, 2026-10-23, "Any combat
+ * damage" — they hear a redirect into Oorblak too, and 601 guards them.
  *
  * Seeds 58101-58199.
  */
@@ -38,7 +40,17 @@ function listensOnFaceDamage(v: unknown, seen = new Set<unknown>()): boolean {
 // Ancient One listens on EVERY event a card in the pool listens on, to lend its
 // neighbours' triggers (report 271); alone in a column it has nothing to lend
 // and never fires. 588 covers it borrowing Bloodwind Revenant and Amphivore.
-const LISTENERS = allCardNames().filter(n => n !== 'Ancient One' && listensOnFaceDamage(getCard(n)));
+//
+// The owner, 2026-10-23, on Vroot ("When my column deals combat damage"):
+// "Any combat damage". A card whose printed clause names no player hears its
+// column's damage to Oorblak too, so it is not in THIS family — 601 holds it,
+// derived the same way from the printed words. What is left here is every
+// "to a player" / "to an opponent" listener, which CT-296 still governs.
+const ownText = (n: string): string => (getCard(n).text ?? '').replace(/\{i\}\([^)]*\)/g, '').replace(/\s+/g, ' ');
+const ANY_COMBAT_DAMAGE = (n: string): boolean =>
+  /\bdeals? combat damage\b(?! to (?:a |an |target )?(?:players?|oppo-? ?nents?)\b)/i.test(ownText(n));
+const LISTENERS = allCardNames().filter(n => n !== 'Ancient One' && listensOnFaceDamage(getCard(n))
+  && !ANY_COMBAT_DAMAGE(n));
 /** a listener that hears it from the BIN, not from the column (CR 400.5) */
 const fromBin = (n: string): boolean => JSON.stringify(getCard(n), (_k, v) => typeof v === 'function' ? undefined : v)
   .includes('"zone":"bin"');
@@ -82,9 +94,13 @@ const fired = (evs: EngineEvent[], name: string): boolean =>
   evs.some(e => e.msg.startsWith(name) && e.msg.includes('→ stack'));
 
 test('CT-296: the face-damage listener family is derived from the registry, and it is not empty', () => {
-  assert.ok(LISTENERS.length >= 10, `found ${LISTENERS.length}: ${LISTENERS.join(', ')}`);
-  for (const n of ['Vroot', 'Rippleback Skulker', 'Zephyrzoa', 'Sarcophage', 'Cinder Scuttler']) {
+  assert.ok(LISTENERS.length >= 7, `found ${LISTENERS.length}: ${LISTENERS.join(', ')}`);
+  for (const n of ['Rippleback Skulker', 'Zephyrzoa', 'Sarcophage', 'Cinder Scuttler']) {
     assert.ok(LISTENERS.includes(n), `${n} is in the family`);
+  }
+  // owner, 2026-10-23 ("Any combat damage"): the unqualified clause is 601's
+  for (const n of ['Vroot', 'Flowstone Arcanite', 'Blightmound']) {
+    assert.ok(!LISTENERS.includes(n), `${n} prints no player, so a redirect into Oorblak still counts (601)`);
   }
 });
 

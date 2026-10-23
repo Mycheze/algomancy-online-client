@@ -41,7 +41,11 @@
  *    per CR 608.9a, only in a SUB-STEP MY OWN COLUMN STRIKES IN
  *    (E.strikesInCurrentSubStep; "a", not "the", per CR 608.2c, because a
  *    {Swift}{Sluggish} column strikes in two). A column that both kills
- *    blockers and pierces through fires once per damage instance.
+ *    blockers and pierces through fires once per damage instance. Damage a
+ *    redirect deals to a unit instead of the player (Oorblak) counts too —
+ *    the owner, 2026-10-23: "Any combat damage" (CR 608.8c, 608.9a).
+ *    A column whose hit Oorblak takes 4 of and lets 6 Piercing past fires
+ *    twice, for 4 and for 6.
  *    It is ONE shared predicate (CR 608.9a),
  *    E.columnDealtCombatDamage, over the four cards printing the clause;
  *    Vroot's own reading — the LIVE COLUMN's total power, not the anchor's —
@@ -102,8 +106,9 @@ const opponentsOf = (g: E, region: number, seat: Seat): Seat[] =>
  * "My column deals combat damage" (header approximation): the shared engine
  * predicate, E.columnDealtCombatDamage, on the two channels this UNQUALIFIED
  * text is entitled to hear — 'units' (a combat 'damage' event against the
- * column directly opposing mine) and 'face' (the aggregated combat 'lifeLost'
- * where my column connects). No 'poison': Vroot is not {Poisonous} and no
+ * column directly opposing mine, or against the Oorblak a redirect dealt my
+ * column's hit to: "Any combat damage", owner 2026-10-23) and 'face' (the
+ * combat face damage my column dealt). No 'poison': Vroot is not {Poisonous} and no
  * column it stands in emits -1/-1 counters in place of its damage unless a
  * {Poisonous} ally is in it, in which case that ally's channel is that ally's
  * business, not this text's. Zephyrzoa and Eldritch Dreamtender print "to an
