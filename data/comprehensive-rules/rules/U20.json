@@ -4475,7 +4475,7 @@
     "key": "attr.pure.own",
     "parent": "attr.pure",
     "order": 1,
-    "text": "A Pure card ignores its own other attributes too. Its own stat-changing attributes, Tough, Balanced, Inverted and Unaware, do not apply to it at any time, whether or not it is in an interaction.",
+    "text": "A Pure card ignores its own other attributes too. Its own stat-changing attributes, Tough, Balanced, Inverted and Unaware, do not apply to it at any time, whether or not it is in an interaction. Nor do its other attributes apply when its column strikes a player: an unblocked Pure column has no Swift, Sluggish, Powerful, Thieving, Lethal or Blessed.",
     "examples": [
       {
         "text": "An Alluring column that is itself Pure ignores its own Alluring and never triggers.",
@@ -4496,6 +4496,10 @@
       {
         "text": "A Pure Bubb ignores its own Unaware, so the counters on it count.",
         "test": "584-pure-ignores-its-own-attributes.test.ts::CR 802.25a: a Pure Bubb ignores its own Unaware, so its counters count"
+      },
+      {
+        "text": "An unblocked Pure column strikes in the normal sub-step and does not double or draw.",
+        "test": "600-unblocked-pure-column.test.ts::CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step and does not double or draw"
       }
     ],
     "see": [
@@ -4520,30 +4524,40 @@
           "quote": "1/3, lives",
           "adopted": "2026-10-22",
           "from": "owner, chat 2026-10-22 (a Pure 1/3 that is Tough and Inverted, in no interaction: 1/3 and lives, or 1/0 and dies)"
+        },
+        {
+          "quote": "Loses them too",
+          "adopted": "2026-10-23",
+          "from": "owner, chat 2026-10-23 (owner-questions 3, D-U12-12: Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?)"
         }
       ],
       "engine": [],
       "tests": [
         "53-playtest-round7.test.ts",
         "584-pure-ignores-its-own-attributes.test.ts",
-        "430-cr-attributes-1.test.ts"
+        "430-cr-attributes-1.test.ts",
+        "600-unblocked-pure-column.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Round 2026-10-22: the owner settled the question 427 left open: this holds always, not only in an interaction, and it beats effects.state.no-damage-needed.pure (a Pure Tough Inverted 1/3 reads 1/3 and lives). The engine was changed the same day (584). The owner's own words were not in this pass's inputs; the rule rests on the register line and print as before.",
+    "notes": "Round 2026-10-22: the owner settled the question 427 left open: this holds always, not only in an interaction, and it beats effects.state.no-damage-needed.pure (a Pure Tough Inverted 1/3 reads 1/3 and lives). The engine was changed the same day (584). The owner's own words were not in this pass's inputs; the rule rests on the register line and print as before. Owner 2026-10-23 (D-U12-12, \"Loses them too\"): an unblocked Pure column striking the player keeps none of its other attributes (600).",
     "sourceHashes": {}
   },
   {
     "key": "attr.pure.combat-interaction",
     "parent": "attr.pure",
     "order": 2,
-    "text": "In combat, an interaction is one attacking half-column and the blocking half-column paired with it. If either contains a Pure card, the attributes of both are ignored for that exchange.",
+    "text": "In combat, an interaction is one attacking half-column and the blocking half-column paired with it. An unblocked attacking half-column is an interaction too, with an empty blocking half, when it strikes the player. If either half contains a Pure card, the attributes of both are ignored for that exchange.",
     "examples": [
       {
         "text": null,
         "test": "40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions"
+      },
+      {
+        "text": "In an unblocked column with a Pure unit, a column-mate's attributes are off too.",
+        "test": "600-unblocked-pure-column.test.ts::CR 802.25b, 802.25k: in an unblocked column with a Pure unit, a column-mate attributes are off too"
       }
     ],
     "see": [
@@ -4568,24 +4582,30 @@
           "quote": "- **Combat damage** — both columns' attribute sets are empty for that",
           "adopted": "2026-08-20",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Loses them too",
+          "adopted": "2026-10-23",
+          "from": "owner, chat 2026-10-23 (owner-questions 3, D-U12-12: Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?)"
         }
       ],
       "engine": [],
       "tests": [
-        "40-light-c.test.ts"
+        "40-light-c.test.ts",
+        "600-unblocked-pure-column.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "\"Ignored\" here covers the attributes the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) lists; for the stat-layer attributes see attr.pure.stat-attributes and D-U20-14.",
+    "notes": "\"Ignored\" here covers the attributes the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) lists; for the stat-layer attributes see attr.pure.stat-attributes and D-U20-14. Owner 2026-10-23 (D-U12-12, \"Loses them too\").",
     "sourceHashes": {}
   },
   {
     "key": "attr.pure.combat-damage",
     "parent": "attr.pure",
     "order": 3,
-    "text": "In a combat exchange involving a Pure card, neither side has Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting or Thieving, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d).",
+    "text": "In a combat exchange involving a Pure card, neither side has any of its other attributes: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting, Thieving, Lethal, Electric or Reaping, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d). This holds for an unblocked column striking the player too (rule 802.25b).",
     "examples": [
       {
         "text": "Just a Unit switches off a Deadly attacker's Deadly.",
@@ -4594,6 +4614,10 @@
       {
         "text": "A printed Swift column blocked by a Pure unit strikes in the normal sub-step.",
         "test": "53-playtest-round7.test.ts::threads {Pure}"
+      },
+      {
+        "text": "Without Pure, Swift, Sluggish, Powerful, Thieving, Lethal and Blessed each change an unblocked strike on the player; with a Pure unit in the column, none of them does.",
+        "test": "600-unblocked-pure-column.test.ts::CR 608.2d, 802.25c: PREMISE: without Pure"
       }
     ],
     "see": [
@@ -4601,7 +4625,12 @@
       "608.6e"
     ],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
       "designer": [],
       "ours": [],
       "owner": [
@@ -4619,18 +4648,24 @@
           "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step.",
           "adopted": "2026-08-20",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Loses them too",
+          "adopted": "2026-10-23",
+          "from": "owner, chat 2026-10-23 (owner-questions 3, D-U12-12: Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?)"
         }
       ],
       "engine": [],
       "tests": [
         "40-light-c.test.ts",
-        "53-playtest-round7.test.ts"
+        "53-playtest-round7.test.ts",
+        "600-unblocked-pure-column.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Round 2026-10-23: the list now names Lethal, Electric and Reaping, which print (\"all other attributes\") switches off too; owner 2026-10-23 (D-U12-12) puts the unblocked strike in.",
     "sourceHashes": {}
   },
   {

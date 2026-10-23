@@ -1670,20 +1670,15 @@
   },
   {
     "key": "combat.damage.player.redirect",
-    "textHash": "85a944993966836c",
+    "textHash": "90ea75dd3ea47963",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:replaceCombatDamage",
+        "loc": "client/engine/src/engine.ts:E.replaceCombatDamage",
         "agrees": true,
-        "note": "two passes: redirects (Oorblak) first, each applies once, Piercing excess re-offered to unapplied redirects; then 'dealt' pass (Polyp) on what got past"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:combat damage breakdown (out.reached)",
-        "agrees": true,
-        "note": "wholly redirected hit -> no combatFaceDamage share, no Thieving draw, no Lethal kill"
+        "note": "redirect stage before dealt stage; each donor applied once (applied set); Piercing excess offered on"
       }
     ],
     "tests_run": [
@@ -1719,6 +1714,12 @@
       },
       {
         "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
+        "pattern": "CR 608.8c: (Blightsea Polyp then Oorblak | Oorblak then Blightsea Polyp) — Oorblak takes the damage of the column and no rot is gained",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/471-oorblak-order-and-polyp.test.ts",
         "pattern": "CR 608.8c: Polyp beside two Oorblaks",
         "passed": true,
         "asserts_claim": true
@@ -1746,6 +1747,18 @@
         "pattern": "CR 802.20 / CT-296: a Thieving column wholly redirected into Oorblak draws no card",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
+        "pattern": "CT-296 / CR 608.8c: <each face-damage listener> hears an unredirected hit, not one wholly redirected",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/601-any-combat-damage-counts.test.ts",
+        "pattern": "CR 608.8c, 608.9a: Vroot whose 10-power Piercing column puts 4 into Oorblak and 6 past it",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1761,26 +1774,27 @@
         "note": ""
       },
       {
-        "ref": "RAQ 1397188292239163454#0 (both quotes)",
+        "ref": "card: Vroot",
         "supports": "yes",
-        "note": "[Solved]; _passer write-up quoting calebgannon; covered"
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1397188292239163454#0",
+        "supports": "yes",
+        "note": "[Solved], _passer + Caleb quoted; status covered"
       },
       {
         "ref": "RQ 1442982460034912287",
         "supports": "yes",
-        "note": "author calebgannon; general statement 'replacement effects only apply once onto an effect'"
+        "note": "author calebgannon; general tldr on replacement effects applying once"
       },
       {
-        "ref": "owner quotes 2026-10-16 (x3), 2026-10-22 (x2)",
+        "ref": "owner report round 2026-10-16 (x3), chat 2026-10-22 CT-296 (x2), chat 2026-10-23",
         "supports": "yes",
-        "note": "second Oorblak takes Piercing excess; redirect before Polyp; no Lethal kill; none of the to-a-player triggers"
+        "note": "own evidence"
       }
     ],
     "quote_spans": [
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "If combat damage would be dealt to you, that damage is dealt to me instead."
-      },
       {
         "file": "client/ledgers/raq.ts",
         "text": "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
@@ -1788,6 +1802,14 @@
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
         "text": "the tldr is replacement effects only apply once onto an effect"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "If combat damage would be dealt to you, that damage is dealt to me instead."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "* (`stage: 'dealt'`: Blightsea Polyp's \"as 1 rot\"). The owner, 2026-10-16:"
       }
     ],
     "basis_ok": true,
@@ -1795,15 +1817,15 @@
   },
   {
     "key": "combat.damage.player.replaced-still-dealt",
-    "textHash": "37b211a5d24f6bb6",
+    "textHash": "c76c3dbc7ad68dbd",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:replaceCombatDamage / combatFaceDamage breakdown",
+        "loc": "client/engine/src/engine.ts:E.replaceCombatDamage",
         "agrees": true,
-        "note": "a Polyp-replaced hit still emits combatFaceDamage with dealt = n and amount = 0; a wholly redirected hit gets no breakdown share"
+        "note": "two passes: redirect, then 'dealt' (Polyp); combatFaceDamage still fires with dealt amount"
       }
     ],
     "tests_run": [
@@ -1814,49 +1836,64 @@
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/207-replaced-hit-was-dealt.test.ts",
-        "pattern": "CR 608.8a: a fully replaced hit still fires the face-damage event",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
         "file": "client/engine/test/562-lethal-redirected.test.ts",
         "pattern": "CR 608.8a / CT-296: Blightsea Polyp turns the Lethal hit into rot",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "client/engine/test/581-redirected-hit-deals-nothing.test.ts",
-        "pattern": "CR 608.8c / CT-296: a wholly redirected hit raises no face-damage event",
+        "file": "client/engine/test/562-lethal-redirected.test.ts",
+        "pattern": "CR 802.24a / CT-296: Gublin wholly redirected into Oorblak",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U12-1.test.ts",
+        "test": "probe U12-1: <Rippleback Skulker | Zephyrzoa | Amphivore | Bloodwind Revenant> (\"deals combat damage to a player/an opponent\") still fires when Blightsea Polyp turns the hit into rot",
+        "passed": true,
+        "demonstrates": "yes: with Polyp, no combat lifeLost, rot gained, and each 'to a player / to an opponent' trigger still goes on the stack (the bound example uses Vroot, whose clause names no player)"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "owner questions-round27 Q5 'Yes, blightsea pollup says it deals damage as, so its still damage. Just'",
+        "ref": "owner questions-round27 Q5 'Yes, blightsea pollup says it deals damage as, so its still damage'",
         "supports": "yes",
-        "note": ""
+        "note": "own evidence"
       },
       {
-        "ref": "owner register@72de434 'Face damage is attributed. The event is not split.'",
+        "ref": "owner register 'Face damage is attributed. The event is not split.'",
+        "supports": "partial",
+        "note": "own evidence; supports per-column reading of dealt damage"
+      },
+      {
+        "ref": "owner 2026-10-23 'Any combat damage'",
         "supports": "yes",
-        "note": ""
+        "note": "supports the Vroot example only"
+      },
+      {
+        "ref": "verifier note",
+        "supports": "n/a",
+        "note": "Sentence 3 (redirected damage is not dealt to the player) is a pointer to 608.8c and is backed there; 562 Gublin/Oorblak test also passes."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/test/207-replaced-hit-was-dealt.test.ts",
-        "text": "assert.equal(face[0]!.data?.['n'], 4, 'n is what was DEALT (4), not what was lost (0)');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Columns deal combat damage to players as 1 rot."
       },
       {
         "file": "client/engine/test/207-replaced-hit-was-dealt.test.ts",
         "text": "'the opponent gained exactly the damage the column dealt, though it lost no life to it');"
+      },
+      {
+        "file": "client/engine/test/562-lethal-redirected.test.ts",
+        "text": "assert.equal(h.state.winner, A, 'rot is still combat damage dealt to the player');"
       }
     ],
     "basis_ok": true,
-    "problem": "Note only: example 1 uses Vroot, whose trigger is 'when my column deals combat damage' (not 'to a player'); the 'to a player' half is shown by the combatFaceDamage event test in 207."
+    "problem": ""
   },
   {
     "key": "combat.damage.split",
@@ -2413,26 +2450,56 @@
   },
   {
     "key": "combat.damage.substeps.pure",
-    "textHash": "5e987419227b0a2a",
+    "textHash": "31601c4a9b2a6e39",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:exchangeAt/scheduled",
+        "loc": "client/engine/src/engine.ts:E.combatSubStepsOf",
         "agrees": true,
-        "note": "pure(atk,blk) suppresses attrs for the pairing; scheduled(...,suppressed) -> normal"
+        "note": "pure reconstructed per pairing; unblocked column pairs against an empty blocking half"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage exchange setup (attrsOf)",
+        "agrees": true,
+        "note": "pure exchange => both attribute sets empty"
       }
     ],
     "tests_run": [
       {
-        "file": "53-playtest-round7.test.ts",
-        "pattern": "R117 threads {Pure}: a printed {Swift} column blocked by a Pure unit strikes in the NORMAL sub-step",
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "CR 608.9a threads {Pure}: a printed {Swift} column blocked by a Pure unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 802.25b, 802.25k: in an unblocked column with a Pure unit, a column-mate attributes are off too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 608.2d, 802.25c: PREMISE: without Pure",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U20-1.test.ts",
+        "test": "probe U20-1: a Pure BLOCKER switches off every listed attacker attribute, in both blocker sizes / a Pure ATTACKER switches off the blocker's ... / PREMISE without Pure ... / Electric in combat ...",
+        "passed": true,
+        "demonstrates": "yes: Swift/Sluggish on either half opposite a Pure card leave the damage sub-steps (damageSubs) identical to a plain exchange, i.e. both halves strike in the normal sub-step"
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: Just a Unit",
@@ -2440,33 +2507,41 @@
         "note": ""
       },
       {
-        "ref": "R61",
+        "ref": "owner register@72de434 (2026-08-20)",
         "supports": "yes",
-        "note": ""
+        "note": "own evidence"
       },
       {
-        "ref": "R117",
+        "ref": "owner register@72de434 (2026-08-23)",
         "supports": "yes",
-        "note": ""
+        "note": "own evidence"
+      },
+      {
+        "ref": "owner, chat 2026-10-23 (D-U12-12) 'Loses them too'",
+        "supports": "yes",
+        "note": "asked about a Pure unit's own attributes in an unblocked column; the column-mate half rests on column-shared Pure (test 600 column-mate) and the printed 'cards they are interacting with'"
       }
     ],
     "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Pure cards and cards they are interacting with ignore all other attributes."
+      },
       {
         "file": "client/engine/src/engine.ts",
         "text": "const pure = this.pure(atk, blk);"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "const attrs = suppressed ? new Set<string>() : this.colAttrs(colIds);"
+        "text": "const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);"
       },
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "Pure cards and cards they are interacting with ignore all other attributes."
+        "file": "client/engine/test/600-unblocked-pure-column.test.ts",
+        "text": "assert.deepEqual(strike(60002, [['Pure', 'Swift', 'Sluggish']]), PLAIN, 'Pure: once, in the normal sub-step');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.damage.substeps.schedule",
@@ -2780,27 +2855,68 @@
   },
   {
     "key": "combat.damage.triggers.my-column",
-    "textHash": "24e2a4e2940cdd0b",
+    "textHash": "6c0c7ecc7a3231c4",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U12-r1",
+    "round": 4,
+    "verifier": "U12-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:combatSubStepsOf/dealersIn",
+        "loc": "client/engine/src/engine.ts:E.strikesInCurrentSubStep",
         "agrees": true,
-        "note": "own-column gate per sub-step; COLUMN is the dealer"
+        "note": "reads the full sub-step list"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.columnDealtCombatDamage",
+        "agrees": true,
+        "note": "column power gate"
       }
     ],
     "tests_run": [
       {
-        "file": "134-column-and-substep.test.ts",
-        "pattern": "R157 §5 — a {Swift}{Sluggish} column strikes twice",
+        "file": "client/engine/test/134-column-and-substep.test.ts",
+        "pattern": "§5 — a {Swift}{Sluggish} column strikes twice",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "166-face-damage-attribution.test.ts",
-        "pattern": "R195 — Vroot: \"[Augment] When my column deals combat damage, each opponent gains that much life\"",
+        "file": "client/engine/test/134-column-and-substep.test.ts",
+        "pattern": "CR 608.9a — Vroot: a 0-power anchor in a POWERED column still pays out",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/134-column-and-substep.test.ts",
+        "pattern": "§4 — Vroot: alone in a 0-POWER column it pays out nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/166-face-damage-attribution.test.ts",
+        "pattern": "CR 608.9a — Vroot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/601-any-combat-damage-counts.test.ts",
+        "pattern": "CR 608.9a: Vroot blocked by a 0/20",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/601-any-combat-damage-counts.test.ts",
+        "pattern": "CR 608.8c, 608.9a: Vroot whose column is wholly redirected into Oorblak",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/601-any-combat-damage-counts.test.ts",
+        "pattern": "CR 608.8c, 608.9a: Vroot whose 10-power Piercing column",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/601-any-combat-damage-counts.test.ts",
+        "pattern": "CR 608.8c, 608.9a: (each any-combat-damage card) hears its column dealing combat damage",
         "passed": true,
         "asserts_claim": true
       }
@@ -2808,39 +2924,46 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R117",
+        "ref": "card: Vroot",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R157 §4",
-        "supports": "yes",
-        "note": "0-power unit fires when the column has positive power"
-      },
-      {
-        "ref": "R157 §5",
+        "ref": "card: Oorblak",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R195",
+        "ref": "owner register@72de434 (x4)",
+        "supports": "yes",
+        "note": "own evidence; §4 power gate and §5 sub-step quotes match the test headers"
+      },
+      {
+        "ref": "owner, chat 2026-10-23 (What does Vroot count?) 'Any combat damage'",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"Only if the other unit in the column has a positive power. 0 power units do"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] When my column deals combat damage, each opponent gains that much life."
       },
       {
-        "file": "client/engine/test/134-column-and-substep.test.ts",
-        "text": "assert.equal(h.log.filter(l => l.includes('gains 6 life')).length, 2,"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "If combat damage would be dealt to you, that damage is dealt to me instead."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.combatSubStepsOf(u).includes(b.damageStep);"
+      },
+      {
+        "file": "client/engine/test/601-any-combat-damage-counts.test.ts",
+        "text": "assert.equal(vrootGain(evs), 10, '4 to Oorblak and 6 to the player');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "combat.damage.triggers.split",

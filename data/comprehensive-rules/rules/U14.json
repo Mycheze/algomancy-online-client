@@ -1974,11 +1974,15 @@
     "key": "effects.casting.x.variable-cost",
     "parent": "effects.casting.x",
     "order": 2,
-    "text": "A variable additional cost sets X. The player pays it one unit at a time until they stop, and the amount paid is X.",
+    "text": "A variable additional cost sets X. The player adds to it one unit at a time until they stop, and the amount they stop at is X. A variable life cost is then lost all at once, as one loss of X life (see rule concepts.life.basics.gain-and-loss).",
     "examples": [
       {
         "text": "a player removes two +1/+1 counters for Discharge, one at a time, then stops; X is 2 and Discharge deals 2 damage.",
         "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.x.variable-cost — Discharge with two counters removed one at a time has X = 2 and deals 2"
+      },
+      {
+        "text": "Every variable life cost in the pool is lost as one change of X.",
+        "test": "590-life-cost-one-change.test.ts::CR 702.6b / report 273: every variable life cost in the pool is lost as one change of X"
       }
     ],
     "see": [],
@@ -1993,15 +1997,18 @@
           "from": "register@72de434"
         }
       ],
-      "engine": [],
+      "engine": [
+        "castCostOptions"
+      ],
       "tests": [
-        "425-cr-casting-and-stack.test.ts"
+        "425-cr-casting-and-stack.test.ts",
+        "590-life-cost-one-change.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Report 273 (2026-10-23): the register line is about how X is sized; that the life is lost once is the engine (590).",
     "sourceHashes": {}
   },
   {

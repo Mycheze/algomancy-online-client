@@ -4194,85 +4194,57 @@
   },
   {
     "key": "attr.pure.combat-damage",
-    "textHash": "8a384219db67a660",
+    "textHash": "9bf7be08d8106120",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "loc": "client/engine/src/engine.ts:assignCombatDamage exchange setup (attrsOf) + victimShare (!pure Vulnerable)",
         "agrees": true,
-        "note": "pure -> both attribute sets empty"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:commitUnitDamage",
-        "agrees": true,
-        "note": "Vulnerable multiplier gated on !hit.pure"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:strikes",
-        "agrees": true,
-        "note": "sub-step reads pure"
+        "note": "Electric/Reaping are not read on combat damage at all, so their part is vacuous"
       }
     ],
     "tests_run": [
       {
-        "file": "40-light-c.test.ts",
+        "file": "client/engine/test/40-light-c.test.ts",
         "pattern": "Just a Unit: {Pure} switches off Deadly",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "53-playtest-round7.test.ts",
-        "pattern": "R117 threads {Pure}",
-        "passed": true,
-        "asserts_claim": true
-      }
-    ],
-    "probes": [],
-    "source_checks": [
-      {
-        "ref": "R61",
-        "supports": "yes",
-        "note": ""
-      }
-    ],
-    "quote_spans": [
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
-      }
-    ],
-    "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
-  },
-  {
-    "key": "attr.pure.combat-interaction",
-    "textHash": "8ff0b3969f066dbe",
-    "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
-    "engine": [
-      {
-        "loc": "client/engine/src/engine.ts:exchangeAt",
-        "agrees": true,
-        "note": "pure(atk, blk)"
-      }
-    ],
-    "tests_run": [
-      {
-        "file": "40-light-c.test.ts",
+        "file": "client/engine/test/40-light-c.test.ts",
         "pattern": "Just a Unit: the exchange is attribute-blind in BOTH directions",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "CR 608.9a threads {Pure}",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 608.2d, 802.25c: PREMISE: without Pure",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 608.2d, 802.25a: an unblocked Pure column",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U20-1.test.ts",
+        "test": "probe U20-1: a Pure BLOCKER switches off every listed attacker attribute, in both blocker sizes / a Pure ATTACKER switches off the blocker's ... / PREMISE without Pure ... / Electric in combat ...",
+        "passed": true,
+        "demonstrates": "yes: in a blocked exchange, with a Pure card on either side, Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting, Thieving, Lethal, Electric, Reaping, Swift, Sluggish (attacker) and Vulnerable, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting, Reaping, Swift, Sluggish (blocker) change nothing incl. the sub-steps; premise shows Piercing/Deadly/Powerful/Poisonous/Resonant/Blessed/Afflicting/Swift/Sluggish/Vulnerable act without Pure. Electric and Reaping do not act on combat damage in this engine even without Pure (Electric is read only for effect damage), so for those two the claim is vacuously true"
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: Just a Unit",
@@ -4280,20 +4252,110 @@
         "note": ""
       },
       {
-        "ref": "R61",
+        "ref": "owner register@72de434 (x3)",
         "supports": "yes",
-        "note": ""
+        "note": "own evidence; lists the same attributes"
+      },
+      {
+        "ref": "owner chat 2026-10-23 D-U12-12",
+        "supports": "yes",
+        "note": "unblocked case"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**attack-column / block-column pair**, which is exactly that interaction. So"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Pure cards and cards they are interacting with ignore all other attributes."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.combat-interaction",
+    "textHash": "2a92cbead0895151",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U20-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.pure / assignCombatDamage exchange setup",
+        "agrees": true,
+        "note": "one Pure card in either column blinds both; unblocked = empty blocking half"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/40-light-c.test.ts",
+        "pattern": "Just a Unit: the exchange is attribute-blind in BOTH directions",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 802.25b, 802.25k: in an unblocked column with a Pure unit, a column-mate attributes are off too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U20-1.test.ts",
+        "test": "probe U20-1: a Pure BLOCKER switches off every listed attacker attribute, in both blocker sizes / a Pure ATTACKER switches off the blocker's ... / PREMISE without Pure ... / Electric in combat ...",
+        "passed": true,
+        "demonstrates": "yes: in a blocked exchange, with a Pure card on either side, Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting, Thieving, Lethal, Electric, Reaping, Swift, Sluggish (attacker) and Vulnerable, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting, Reaping, Swift, Sluggish (blocker) change nothing incl. the sub-steps; premise shows Piercing/Deadly/Powerful/Poisonous/Resonant/Blessed/Afflicting/Swift/Sluggish/Vulnerable act without Pure. Electric and Reaping do not act on combat damage in this engine even without Pure (Electric is read only for effect damage), so for those two the claim is vacuously true"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 (x2)",
+        "supports": "yes",
+        "note": "own evidence"
+      },
+      {
+        "ref": "owner chat 2026-10-23 D-U12-12",
+        "supports": "yes",
+        "note": "the unblocked half"
+      },
+      {
+        "ref": "verifier note",
+        "supports": "n/a",
+        "note": "Example 1 has text null (test exists and passes); a rendering nit, not a truth problem."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Pure cards and cards they are interacting with ignore all other attributes."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (u && this.ownAttrs(u).has('Pure')) return true;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// An UNBLOCKED column is an exchange with an empty blocking half, and that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "attr.pure.noncombat",
@@ -4533,74 +4595,114 @@
   },
   {
     "key": "attr.pure.own",
-    "textHash": "a5f4688c43479b1e",
+    "textHash": "87b546ed2aced57b",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.statLayerAttrs",
+        "loc": "client/engine/src/engine.ts:effStats (Pure own stat layers)",
         "agrees": true,
-        "note": "returns no Tough/Balanced/Inverted/Unaware whenever effAttrs has Pure, interaction or not"
+        "note": "584 + probe"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage exchange setup (attrsOf)",
+        "agrees": true,
+        "note": "unblocked column pairs against empty half"
       }
     ],
     "tests_run": [
       {
         "file": "client/ui/test/53-playtest-round7.test.ts",
-        "pattern": "CR 802.15n: an Alluring column that is itself",
+        "pattern": "CR 802.15n: an Alluring column that is itself {Pure} never even triggers",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/430-cr-attributes-1.test.ts",
-        "pattern": "cr:attr.feeble.pure",
+        "pattern": "cr:attr.feeble.pure — a Pure unit granted Feeble is accepted as a blocker",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/584-pure-ignores-its-own-attributes.test.ts",
-        "pattern": "CR 802.25a",
+        "pattern": "CR 802.25a: a Pure Rampart Guardian",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/584-pure-ignores-its-own-attributes.test.ts",
+        "pattern": "CR 802.25a: a Pure Child of Aether",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/584-pure-ignores-its-own-attributes.test.ts",
+        "pattern": "CR 802.25a: a Pure Bubb",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 608.2d, 802.25c: PREMISE: without Pure",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "client/engine/test/zz-probe-U20-1.test.ts",
-        "test": "probe U20-1: a Pure Tough+Inverted Rampart Guardian in no interaction ignores its own Inverted and Tough",
+        "file": "client/engine/test/zz-probe-U20-2.test.ts",
+        "test": "probe U20-2: a Pure 1/3 that is Tough and Inverted, in no interaction, reads 1/3 and lives",
         "passed": true,
-        "demonstrates": "yes: Inverted (untested by 584) is also off for a Pure unit in no interaction; the non-Pure control dies at 0/0, the Pure one reads 0/4"
+        "demonstrates": "yes: the owner's case; the same non-Pure 1/3 Tough+Inverted dies"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U20-2.test.ts",
+        "test": "probe U20-2: a Pure 2/3 with two +1/+1 counters and Inverted, in no interaction, ignores its own Inverted: 4/5",
+        "passed": true,
+        "demonstrates": "yes: own Inverted off outside any interaction (not covered by bound tests)"
       }
     ],
     "source_checks": [
       {
         "ref": "card: Just a Unit",
         "supports": "yes",
-        "note": "'ignore all other attributes', read literally, includes the Pure card's own"
+        "note": ""
       },
       {
-        "ref": "owner register@72de434",
+        "ref": "owner register@72de434 (2026-08-20)",
         "supports": "yes",
-        "note": "fragment 'its own other attributes included'"
+        "note": "own evidence"
       },
       {
-        "ref": "owner chat 2026-10-22",
+        "ref": "owner chat 2026-10-22 '1/3, lives'",
         "supports": "yes",
-        "note": "answers the no-interaction case (Pure Tough Inverted 1/3): '1/3, lives' = own Tough and Inverted off outside an interaction"
+        "note": "question: a Pure 1/3 Tough+Inverted in no interaction"
+      },
+      {
+        "ref": "owner chat 2026-10-23 D-U12-12 'Loses them too'",
+        "supports": "yes",
+        "note": "question exactly about a Pure unit's own attributes in an unblocked column"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (this.effAttrs(e).has('Pure')) return out;"
+        "text": "\"text\": \"{i}(Pure cards and cards they are interacting with ignore all other attributes.)\","
       },
       {
         "file": "client/engine/test/584-pure-ignores-its-own-attributes.test.ts",
         "text": "assert.deepEqual(effStats(h, g0), [0, 4], 'Pure: its own Tough is ignored');"
+      },
+      {
+        "file": "client/engine/test/600-unblocked-pure-column.test.ts",
+        "text": "assert.deepEqual(kept, [], 'a Pure unit with any of these, unblocked, strikes the player as a plain one');"
       }
     ],
     "basis_ok": true,

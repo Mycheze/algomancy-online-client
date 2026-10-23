@@ -1687,35 +1687,62 @@
   },
   {
     "key": "effects.casting.x.variable-cost",
-    "textHash": "018c6970977cff94",
+    "textHash": "ba152adb4fde36db",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U14-r1",
+    "round": 4,
+    "verifier": "U14-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:collectCastCosts('variable')",
+        "loc": "client/engine/src/engine.ts:castCostOptions",
         "agrees": true,
-        "note": ""
+        "note": "variable costs offered one unit at a time until doneCost; life counted into costPaid and lost once when X closes"
       }
     ],
-    "tests_run": [],
+    "tests_run": [
+      {
+        "file": "425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.casting.x.variable-cost",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "590-life-cost-one-change.test.ts",
+        "pattern": "CR 702.6b / report 273: every variable life cost in the pool",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "590-life-cost-one-change.test.ts",
+        "pattern": "CR 111.6b / report 273: the life is lost when X closes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R64 (its cost half)",
+        "ref": "owner register@72de434 (2026-08-21)",
         "supports": "yes",
-        "note": "quote verified verbatim in source"
+        "note": "variable cost is where X comes from, paid one unit at a time"
+      },
+      {
+        "ref": "see concepts.life.basics.gain-and-loss",
+        "supports": "yes",
+        "note": "the one-loss sentence rests on that rule and test 590"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A **variable** cost is where X comes from. You pay one unit of it at a time"
+        "file": "client/engine/src/engine.ts",
+        "text": "// running total, since nothing is lost until X closes (report 273)."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Switch1] [Pay X life], create an X/X unit."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.general.cast-is-play",

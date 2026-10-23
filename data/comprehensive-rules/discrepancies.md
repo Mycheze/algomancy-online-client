@@ -2,7 +2,7 @@
 
 Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision, and owner-questions.md lists it on its own; every other item already says which source decides and which side the document follows. An item filed by more than one drafting unit is kept once, and names the others under "Also filed as".
 
-## 1. Questions for the owner (7)
+## 1. Questions for the owner (6)
 
 ### D-U06-9 · Other · rule 305.6
 
@@ -70,24 +70,6 @@ A half-column that gains Sluggish during the step when no Sluggish sub-step was 
 
 **Resolution:** Question for the owner. The RAQ example that covers the gain had a Sluggish column already scheduled, so it does not decide this. The document states the owner ruling of 2026-09-16 (“A split damage step is several…”).
 
-### D-U12-12 · Other · rule 608.2d
-
-Pure in combat is defined per attacking-half/blocking-half pair; an unblocked column holding a Pure unit has no pair, and no source says whether its own attributes (Swift, Powerful, Thieving) apply to its damage to the player.
-
-- card: Just a Unit: "Pure cards and cards they are interacting with ignore all other attributes."
-- owner ruling, adopted 2026-08-20: "Combat is where attributes live, and combat already resolves per"
-
-**Question:** Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?
-
-- **Reading A.** No: "Pure cards … ignore all other attributes" has no condition on the Pure card itself. *At the table:* An unblocked Pure column strikes in the normal sub-step and does not double or draw.
-- **Reading B.** Yes: Pure works only within an interaction with another card, and a player is not a card. *At the table:* An unblocked Pure Swift column strikes first, a Powerful one doubles.
-
-**The document today:** Neither for this case: rule 802.1n is worded per interaction, which leans to B.
-
-**Recommended:** A, on the literal grammar of the reminder. B is the more permissive reading, so choose it if Pure is meant to matter only between cards.
-
-**Resolution:** Question for the owner. Pure in combat is defined per pair of an attacking half and a blocking half (rule 608.2d); an unblocked column has no pair, and no source speaks to it.
-
 ### D-U19-3 · Sources disagree · rule 802.8c
 
 What Inverted inverts from when a base rewrite is in play: The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) (owner, 2026-08-22) inverts from the rewritten base; the owner's later general answer that any difference from printed stats is a stat change, and a _passer post in #rules-questions, invert from the printed stats instead.
@@ -153,7 +135,7 @@ Sources are silent on WHEN "attacking alone" is judged. If a Sneaky unit attacks
 
 **Resolution:** Question for the owner. The owner ruling of 2026-08-18 (“Sneaky's "attacking alone"”) says what "alone" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.
 
-## 2. Record and test fixes (58)
+## 2. Record and test fixes (59)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -498,6 +480,16 @@ Whether a block step happens when every attacking unit has gone before blocks wa
 - owner ruling, adopted 2026-10-16: "If there's no attacking formation (everyone died or something), no blocking can occur. It does still need to allow counter attackers, but you can't put something in to block"
 
 **Resolution:** Settled by the owner on 2026-10-16 (CT-297): no unit may block an emptied attack, head-on or to the side, but counterattackers may still be sent in round 1. rule 606.7 (basis owner) and rule 606.4 state it; the engine agrees (479, 53).
+
+### D-U12-12 · Other · rule 608.2d
+
+Pure in combat is defined per attacking-half/blocking-half pair; an unblocked column holding a Pure unit has no pair, and no source says whether its own attributes (Swift, Powerful, Thieving) apply to its damage to the player.
+
+- card: Just a Unit: "Pure cards and cards they are interacting with ignore all other attributes."
+- owner ruling, adopted 2026-08-20: "Combat is where attributes live, and combat already resolves per"
+- owner ruling, adopted 2026-10-23: "Loses them too"
+
+**Resolution:** Answered by the owner on 2026-10-23 with reading A ("Loses them too"): a Pure unit in an unblocked column keeps none of its other attributes when the column strikes the player, so it strikes in the normal sub-step and does not double or draw. rule 608.2d, rule 802.1n, rule 802.25a, rule 802.25b and rule 802.25c state it. The engine already did so (600).
 
 ### D-U12-13 · Engine only · rule 608.8c
 

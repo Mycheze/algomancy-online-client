@@ -677,7 +677,7 @@
     "key": "attr.general.pure",
     "parent": "attr.general",
     "order": 13,
-    "text": "A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply.",
+    "text": "A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply. A column striking a player with a Pure card in it ignores its other attributes too (see rule attr.pure.combat-interaction).",
     "examples": [
       {
         "text": "Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies.",
@@ -690,6 +690,10 @@
       {
         "text": "An Unaware source dealing 3 damage to a Pure unit pumped from 2/3 to 4/5 does not read it at its printed 2/3: it survives, where a pumped non-Pure 2/3 dies.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.general.pure — Unaware is off in a Pure pairing outside combat: an Unaware source does not collapse a pumped Pure recipient to its printed stats"
+      },
+      {
+        "text": "An unblocked Pure column strikes in the normal sub-step and does not double or draw.",
+        "test": "600-unblocked-pure-column.test.ts::CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step and does not double or draw"
       }
     ],
     "see": [
@@ -718,18 +722,24 @@
           "quote": "Print: ignore all",
           "adopted": "2026-10-22",
           "from": "owner, chat 2026-10-22 (CT-260: Pure and the stat-changing attributes)"
+        },
+        {
+          "quote": "Loses them too",
+          "adopted": "2026-10-23",
+          "from": "owner, chat 2026-10-23 (owner-questions 3, D-U12-12: Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?)"
         }
       ],
       "engine": [],
       "tests": [
         "430-cr-attributes-1.test.ts",
-        "555-pure-ignores-stat-attributes.test.ts"
+        "555-pure-ignores-stat-attributes.test.ts",
+        "600-unblocked-pure-column.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Print: Pure ignores \"all other attributes\", and the stat-changing ones are attributes. The owner confirmed print on 2026-10-22 (CT-260), and the engine was changed the same day (555). F-U19-1, F-U19-2 closed. D-U19-2.",
+    "notes": "Print: Pure ignores \"all other attributes\", and the stat-changing ones are attributes. The owner confirmed print on 2026-10-22 (CT-260), and the engine was changed the same day (555). F-U19-1, F-U19-2 closed. D-U19-2. Owner 2026-10-23 (D-U12-12, \"Loses them too\").",
     "sourceHashes": {},
     "rebuttal": "Text kept. CONTROL's authority order puts printed text read literally above R-rulings, and Pure's printed reminder ignores \"all other attributes\"; Manual p.42 is cited only because it names Tough an attribute (\"4. Attributes like Tough\"), which is the point the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s \"they are stat layers\" disputes. Owner decision 2 has the rule state current law and flag the engine: engineDiffers F-U19-1/F-U19-2, D-U19-2. The verifier's probe (a Pure source's 5 leaves Rampart Guardian a Tough 0/8) measures F-U19-1; it does not make the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) outrank the card."
   },

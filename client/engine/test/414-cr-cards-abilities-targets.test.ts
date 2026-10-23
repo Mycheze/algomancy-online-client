@@ -474,3 +474,25 @@ test('cr:concepts.targets.region.global — a stack item and the cards in a bin 
   assert.ok(!ask('unit', other).includes(JSON.stringify({ unit: foe })), 'but not from the other');
   finishBattle(h);
 });
+
+/* Round 2026-10-23: promoted from verifier probe U03-2 (the bounded graft really is a Robot maker). */
+test('cr:concepts.abilities.once.unbounded-cause — Omniwield Evoker with Self-Assembly grafted, activated twice in a turn, makes one Robot', () => {
+  const h = new Harness(990302);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  let ev = -1;
+  withE(h, e => {
+    ev = e.spawnUnit(A, 'Omniwield Evoker', e.homeRegion(A)).id;
+    e.attachMod(e.s.entities[ev]!, 'Self-Assembly', A, 'graft', 0);
+  });
+  giveResources(h, A, 'metal', 6);
+  const settle = () => { for (let g = 20; (h.state.stack.length || h.state.decision) && g-- > 0;) { if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 }); else pass(h); } };
+  h.do({ type: 'activateAbility', seat: A, entityId: ev, abilityIndex: 0 });
+  settle();
+  assert.equal(ent(h, ev)!.counters, 1, 'first activation: host part');
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 1, 'first activation: the bounded graft makes a Robot');
+  h.do({ type: 'activateAbility', seat: A, entityId: ev, abilityIndex: 0 });
+  settle();
+  assert.equal(ent(h, ev)!.counters, 2, 'second activation: host part runs again');
+  assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 1, 'second activation: no second Robot');
+});

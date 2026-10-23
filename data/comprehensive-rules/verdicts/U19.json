@@ -1357,33 +1357,50 @@
   },
   {
     "key": "attr.general.pure",
-    "textHash": "065b9485ff635d36",
+    "textHash": "bb5a1ef06bd68ec0",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.statLayerAttrs (pureBlind)",
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll attrsVs/pureWith",
         "agrees": true,
-        "note": "units read inside a Pure interaction get no Tough/Balanced/Inverted/Unaware"
+        "note": "per-recipient Pure pairing blinds attributes"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage exchange setup (attrsOf, collapsed && !pure)",
+        "agrees": true,
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "555-pure-ignores-stat-attributes.test.ts",
-        "pattern": "CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian",
+        "file": "client/engine/test/555-pure-ignores-stat-attributes.test.ts",
+        "pattern": "CR 802.25e / CT-260: a Pure source dealing 5 to Rampart Guardian kills it",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "555-pure-ignores-stat-attributes.test.ts",
-        "pattern": "CR 802.25e / CT-260: a Balanced 4/1 dealt 3 by a Pure source",
+        "file": "client/engine/test/555-pure-ignores-stat-attributes.test.ts",
+        "pattern": "CR 802.25e / CT-260: a Balanced 4/1 dealt 3 by a Pure source dies",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "430-cr-attributes-1.test.ts",
+        "file": "client/engine/test/555-pure-ignores-stat-attributes.test.ts",
+        "pattern": "CR 802.25e (all 6 in file)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/430-cr-attributes-1.test.ts",
         "pattern": "cr:attr.general.pure — Unaware is off in a Pure pairing outside combat",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "600-unblocked-pure-column.test.ts",
+        "pattern": "CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step",
         "passed": true,
         "asserts_claim": true
       }
@@ -1391,36 +1408,54 @@
     "probes": [
       {
         "file": "client/engine/test/zz-probe-U19-1.test.ts",
-        "test": "probe U19-1b: in a Pure pairing a non-Pure recipient's Inverted does not apply",
+        "test": "probe U19-1: an Inverted 2/3 with two -1/-1 counters (a 4/5 while Inverted) dealt 3 by a Pure source is read without Inverted, as a 0/1, and dies; a plain source does not kill it",
         "passed": true,
-        "demonstrates": "yes: the Inverted clause (no bound test covered Inverted): a plain source's 2 leaves an Inverted 3/4 alive, a Pure source's 2 kills it (read as 1/2)"
+        "demonstrates": "yes: Inverted (not covered by any bound test) is off for a non-Pure recipient in a pairing with a Pure source"
       }
     ],
     "source_checks": [
       {
         "ref": "card: Just a Unit",
         "supports": "yes",
-        "note": "Pure reminder, verbatim"
+        "note": ""
       },
       {
         "ref": "Manual p.42",
-        "supports": "yes",
-        "note": "names Tough, Inverted, Unaware as attribute layers; Balanced is a {Balanced} type-line attribute (Child of Aether)"
+        "supports": "partial",
+        "note": "verbatim; shows Tough/Inverted/Unaware are the attribute stat layers, does not itself speak of Pure"
       },
       {
-        "ref": "owner register@72de434",
+        "ref": "owner register@72de434 (2026-09-05)",
         "supports": "yes",
-        "note": "fragment; corroborates Vulnerable/Unaware off"
+        "note": "own evidence"
+      },
+      {
+        "ref": "owner chat 2026-10-22 CT-260 'Print: ignore all'",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner chat 2026-10-23 D-U12-12 'Loses them too'",
+        "supports": "yes",
+        "note": "supports the unblocked-column sentence"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/cards/AlgomancyCards-OracleText.json",
-        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Pure cards and cards they are interacting with ignore all other attributes."
       },
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "4. Attributes like Tough, 5. Inverted"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const attrsVs = (u: Entity | undefined): Set<string> => (pureWith(u) ? NO_ATTRS : srcAttrs);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "}) && !pure;"
       }
     ],
     "basis_ok": true,

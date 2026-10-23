@@ -1262,41 +1262,60 @@
   },
   {
     "key": "effects.graft.bounded.per-mod",
-    "textHash": "b9901725eb2cca43",
+    "textHash": "82b677ffa6f410a7",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U17-r2",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:composeParts",
+        "loc": "client/engine/src/engine.ts:E.graftsJoining / E.withGrafts",
         "agrees": true,
-        "note": "bounded rider budget kept on the mod entity (mod.budgets['graft'])"
+        "note": "a real graft's use is kept on the mod entity (key 'graft' on `on: mod`); a borrowed one on the borrower under graft:<card>@m<id>"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/94-bounded-uses.test.ts",
+        "file": "94-bounded-uses.test.ts",
         "pattern": "the bounded budget of a graft rider is per MOD",
         "passed": true,
-        "asserts_claim": "yes: both copies compose the first time, neither the second"
+        "asserts_claim": true
+      },
+      {
+        "file": "588-ancient-one-borrows-grafts.test.ts",
+        "pattern": "CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause runs the graft too, with its own use",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R113",
+        "ref": "RQ 1358902095196983396",
         "supports": "yes",
-        "note": "Per mod entity; two copies each get their own use."
+        "note": "the Ancient One's copy triggers too (its own use)"
+      },
+      {
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "'per mod entity' — two copies each have a use"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "The budget is per *card* (R9), which for the rider means per **mod entity** — two copies of"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "\"author\":\"calebgannon\",\"content\":\"Both\""
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "part: { effectKey, targets: [], fromMod: mod.id, budgetOn: holder.id, budgetKey: `${effectKey}@m${mod.id}` } }"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": ": { card: mod.card, bounded: g.bounded, on: mod, key: 'graft',"
       },
       {
         "file": "client/engine/test/94-bounded-uses.test.ts",
-        "text": "    'both copies compose the first time — each mod holds its own use');"
+        "text": "'both copies compose the first time — each mod holds its own use');"
       }
     ],
     "basis_ok": true,
@@ -1306,13 +1325,13 @@
     "key": "effects.graft.bounded.unbounded-cause",
     "textHash": "d6e0d23e1fdf9b88",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "engine.ts:composeParts",
+        "loc": "client/engine/src/engine.ts:E.withGrafts",
         "agrees": true,
-        "note": "bounded riders skipped once mod.budgets['graft'] set"
+        "note": "'used this turn: skipped, composite still fires'; the cause itself is unbounded so composeParts does not refuse it"
       }
     ],
     "tests_run": [
@@ -1321,79 +1340,128 @@
         "pattern": "RAQ Graft 101 point 12: an unbounded host activated twice",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "94-bounded-uses.test.ts",
+        "pattern": "ANSWER 4: an UNBOUNDED cause fires every time",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": false
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U03-2.test.ts",
+        "test": "probe U03-2: Omniwield Evoker with Self-Assembly grafted, activated twice — one Robot",
+        "passed": true,
+        "demonstrates": "yes: corroborates with a second bounded graft"
+      }
+    ],
     "source_checks": [
       {
         "ref": "Manual p.33",
         "supports": "yes",
-        "note": ""
+        "note": "verbatim"
       },
       {
         "ref": "RAQ 1355115946032889914#13",
         "supports": "yes",
-        "note": ""
-      }
-    ],
-    "quote_spans": [
-      {
-        "file": "client/ledgers/raq.ts",
-        "text": "Any Unbounded Grafts underneath will be included on every resolution, but Bounded Grafts underneath will be included only on 1st resolution."
-      }
-    ],
-    "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
-  },
-  {
-    "key": "effects.graft.composite",
-    "textHash": "d1d064b809356cb8",
-    "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
-    "engine": [
-      {
-        "loc": "engine.ts:composeParts",
-        "agrees": true,
-        "note": ""
-      }
-    ],
-    "tests_run": [
-      {
-        "file": "04-mods.test.ts",
-        "pattern": "graft composition: composite fires as ONE stack item, top-to-bottom",
-        "passed": true,
-        "asserts_claim": "yes — the Manual's Oracle + Accelerated Germination example"
-      }
-    ],
-    "probes": [],
-    "source_checks": [
-      {
-        "ref": "Manual p.33",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "Manual p.33",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "Rulebook 2023 p.16",
-        "supports": "yes",
-        "note": ""
+        "note": "_passer [Solved], covered"
       }
     ],
     "quote_spans": [
       {
         "file": "data/rules/Algomancy-Manual.txt",
-        "text": "“Cause — effect1 AND effect2 AND effect3... etc.”"
+        "text": "bounded and unbounded effects, the graft cause will trig-"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Any Unbounded Grafts underneath will be included on every resolution, but Bounded Grafts underneath will be included only on 1st resolution."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((j.on.budgets[j.key] ?? 0) > 0) continue;   // used this turn: skipped, composite still fires"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.composite",
+    "textHash": "2b96234a9246a437",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U17-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.composeParts / E.withGrafts",
+        "agrees": true,
+        "note": "base part of the host's cause, then each joining graft in mod order, as ONE stack item"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "588-ancient-one-borrows-grafts.test.ts",
+        "pattern": "CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause runs the graft too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U17-1.test.ts",
+        "test": "probe U17-1: Oracle of the Flame + Accelerated Germination — sacrifice makes a Fireball 1 and two 1/1s, one composite",
+        "passed": true,
+        "demonstrates": "yes: the Manual's worked example (example 1, which has no bound test) — one resolving ability makes a Fireball 1 and two 1/1s"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U17-1.test.ts",
+        "test": "probe U17-1b: grafts join the composite in the order they sit under the host",
+        "passed": true,
+        "demonstrates": "yes: a graft inserted above another resolves first: parts = [cause, Self-Assembly, Accelerated Germination]"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": "both quotes verbatim; the same page gives the Oracle/Germination example verbatim and 'resolve as one ability from top to bottom'"
+      },
+      {
+        "ref": "Rulebook 2023 p.16",
+        "supports": "yes",
+        "note": "verbatim (the hyphen break 'Ef-/fect3' normalised)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "adding additional effects onto the cause of the top-"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "“Cause — effect1 AND effect2 AND effect3... etc.”"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "“Sacrifice me: Create a Fireball 1 AND (once per turn)"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "cause. Then the resulting card is read as “Cause -> Effect1 AND Effect2 AND Ef-"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const parts: EffectPart[] = [base, ...grafts];"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "effects.graft.composite.fizzle",
@@ -1753,15 +1821,20 @@
   },
   {
     "key": "effects.graft.copies",
-    "textHash": "053726d93231a0de",
+    "textHash": "145c06377fe215ac",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "engine.ts:composeParts",
+        "loc": "client/engine/src/engine.ts:E.graftsJoining",
         "agrees": true,
-        "note": "copied grafts (CopyRef.mods) composed first, real grafts after (R336)"
+        "note": "a copy's copied grafts come first, real grafts after; a borrowing Ancient One gets the carrier's grafts with keys on itself (@m<mod>)"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Ancient One when()",
+        "agrees": true,
+        "note": "a borrowed graft cause is composed via g.withGrafts(base, self, n)"
       }
     ],
     "tests_run": [
@@ -1776,6 +1849,18 @@
         "pattern": "RAQ Borrower of Forms: a graft added to a Borrower",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "588-ancient-one-borrows-grafts.test.ts",
+        "pattern": "CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause runs the graft too, with its own use",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "588-ancient-one-borrows-grafts.test.ts",
+        "pattern": "CR 710.7, 722.7 / report 271: the designer board",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -1783,17 +1868,22 @@
       {
         "ref": "RAQ 1372468222158180424#4",
         "supports": "yes",
-        "note": ""
+        "note": "'it inherits all of the combined text', covered"
       },
       {
         "ref": "RAQ 1372468222158180424#5",
         "supports": "yes",
-        "note": ""
+        "note": "more grafts only underneath the copied ones"
       },
       {
-        "ref": "R336",
+        "ref": "RQ 1358902095196983396",
         "supports": "yes",
-        "note": ""
+        "note": "'Both' answers drevoc's 'if Ancient One copies a bounded graft effect does it trigger on both creatures or only once per turn?' — the Ancient One's copy has its own use; the question's premise is that the Ancient One copies the graft. Supports sentence 3, not more"
+      },
+      {
+        "ref": "owner register@72de434",
+        "supports": "yes",
+        "note": "copied grafts run"
       }
     ],
     "quote_spans": [
@@ -1806,8 +1896,16 @@
         "text": "Yes, BUT only 'underneath' original copied grafts."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "- **Copied grafts run.** \"It inherits all of the combined text\": a copy of a grafted unit runs its graft cause with the copied grafts."
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Hi, if Ancient One copies a bounded graft effect does it trigger on both creatures or only once per turn?"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const cm of this.identityCopy(carrier)?.mods ?? []) {"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+        "text": "const parts = prefix === 'ability' && ab.graftCause ? g.withGrafts(base, self, n) : [base];"
       }
     ],
     "basis_ok": true,

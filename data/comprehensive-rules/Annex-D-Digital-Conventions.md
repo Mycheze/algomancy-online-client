@@ -1081,13 +1081,15 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-08-26 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests (a probe it wrote), all passed; 1 gate test file · Tests: 168-three-card-divergences.test.ts · Example test: 168-three-card-divergences.test.ts::CR D7.2a Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar dials past the old cap and puts the VALUE on the wire, not an index · Key: annexd.confirm.dials.number</sub>
 
-<a id="rD7.2b"></a>**D7.2b** A variable cost paid one point at a time, such as paying X life, offers the same typed box and dial. Nothing is paid until the player confirms. The dial cannot go below what has already been paid.
+<a id="rD7.2b"></a>**D7.2b** A variable cost paid one point at a time, such as paying X life, offers the same typed box and dial. Nothing is paid until the player confirms. The dial cannot go below the points already chosen, and for a life cost its top counts them: the largest X it offers is one less than the player's life.
 
 > *Example: Paying X life for Flesh Tithe, the player dials to 5 and back to 3; confirming pays 3.*
 
-> *Example: With 1 life already paid, the dial does not go below 1.*
+> *Example: With 1 life already chosen, the dial does not go below 1.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 260-cost-ramp-and-bin-targets.test.ts · Example tests: 260-cost-ramp-and-bin-targets.test.ts::CR D7.2b one confirm walks the ramp to the dialled X and then stops, 260-cost-ramp-and-bin-targets.test.ts::CR D7.2b the dial goes DOWN as well as up, and never below what is already paid · Key: annexd.confirm.dials.ramp</sub>
+> *Example: With 3 of 30 life chosen, the pay-X-life dial still tops out at X = 29.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests (a probe it wrote), all passed; 2 gate test files · Tests: 260-cost-ramp-and-bin-targets.test.ts, 591-life-dial-counts-chosen-points.test.ts · Example tests: 260-cost-ramp-and-bin-targets.test.ts::CR D7.2b one confirm walks the ramp to the dialled X and then stops, 260-cost-ramp-and-bin-targets.test.ts::CR D7.2b the dial goes DOWN as well as up, and never below what is already paid, 591-life-dial-counts-chosen-points.test.ts::CR 111.6b / report 273: with 3 of 30 life chosen, the pay-X-life dial still tops out at X = 29 · Key: annexd.confirm.dials.ramp</sub>
 
 <a id="rD7.2c"></a>**D7.2c** The button that ends a variable cost ("That's enough") is drawn as a full button that commits, distinct from the buttons that decline.
 

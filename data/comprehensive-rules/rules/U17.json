@@ -2746,7 +2746,11 @@
     "examples": [
       {
         "text": "Accelerated Germination grafted onto Oracle of the Flame reads \"Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units.\"",
-        "test": null
+        "test": "428-cr-modifications.test.ts::cr:effects.graft.composite — Accelerated Germination grafted onto Oracle of the Flame"
+      },
+      {
+        "text": "An Ancient One activating an adjacent ally's grafted cause runs the graft too.",
+        "test": "588-ancient-one-borrows-grafts.test.ts::CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause runs the graft too"
       }
     ],
     "see": [],
@@ -2769,12 +2773,15 @@
       "ours": [],
       "owner": [],
       "engine": [],
-      "tests": []
+      "tests": [
+        "588-ancient-one-borrows-grafts.test.ts",
+        "428-cr-modifications.test.ts"
+      ]
     },
     "basis": "printed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The example is the Manual's own (p.33).",
+    "notes": "The example is the Manual's own (p.33). Report 271 (2026-10-23): a borrowed graft cause is read as its whole composite (588).",
     "sourceHashes": {}
   },
   {
@@ -3248,14 +3255,24 @@
     "key": "effects.graft.bounded.per-mod",
     "parent": "effects.graft.bounded",
     "order": 3,
-    "text": "Each grafted card has its own use. Two copies of the same bounded graft on one host each have one use.",
-    "examples": [],
+    "text": "Each grafted card has its own use. Two copies of the same bounded graft on one host each have one use. A unit that has a grafted cause through Ancient One has a use of its own of each bounded graft in it, apart from the host's (rule 722.8).",
+    "examples": [
+      {
+        "text": "An Ancient One borrowing a grafted triggered cause runs the graft with its own use.",
+        "test": "588-ancient-one-borrows-grafts.test.ts::CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause runs the graft too, with its own use"
+      }
+    ],
     "see": [
       "109.9k"
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1358902095196983396",
+          "quote": "Both"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -3264,16 +3281,21 @@
           "from": "register@72de434"
         }
       ],
-      "engine": [],
+      "engine": [
+        "withGrafts"
+      ],
       "tests": [
-        "94-bounded-uses.test.ts"
+        "94-bounded-uses.test.ts",
+        "588-ancient-one-borrows-grafts.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Restates 109.9k (U03) at the graft section.",
-    "sourceHashes": {}
+    "notes": "Restates 109.9k (U03) at the graft section. Report 271 (2026-10-23): Caleb \"Both\" (RQ 1358902095196983396).",
+    "sourceHashes": {
+      "RQ 1358902095196983396": "7261831cedbc6024402b4f1e317ea63e3586ec694464f9d8fb5c6c4f8b0861fc"
+    }
   },
   {
     "key": "effects.graft.bounded.new-object",
@@ -3707,7 +3729,7 @@
     "key": "effects.graft.copies",
     "parent": "722",
     "order": 8,
-    "text": "A unit that has become a copy of a grafted unit runs the whole copied composite. More grafts may be added to it, but only below the copied grafts.",
+    "text": "A unit that has become a copy of a grafted unit runs the whole copied composite. More grafts may be added to it, but only below the copied grafts. A unit that has the abilities of a grafted unit (Ancient One, rule 710.7) likewise has the whole composite, its grafts included, and each bounded graft in it has a use of its own on that unit.",
     "examples": [
       {
         "text": "A Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite.",
@@ -3716,6 +3738,14 @@
       {
         "text": "A graft added to that Borrower resolves below the copied grafts.",
         "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a graft added to a Borrower"
+      },
+      {
+        "text": "An Ancient One borrowing a grafted triggered cause runs the graft too, with its own use.",
+        "test": "588-ancient-one-borrows-grafts.test.ts::CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause runs the graft too, with its own use"
+      },
+      {
+        "text": "Amphivore with Astral Painseeker grafted, Ancient One behind it, Bloodwind Revenant beside: the designer's board.",
+        "test": "588-ancient-one-borrows-grafts.test.ts::CR 710.7, 722.7 / report 271: the designer board"
       }
     ],
     "see": [
@@ -3731,6 +3761,10 @@
         {
           "ref": "RAQ 1372468222158180424#5",
           "quote": "Yes, BUT only 'underneath' original copied grafts."
+        },
+        {
+          "ref": "RQ 1358902095196983396",
+          "quote": "Both"
         }
       ],
       "ours": [],
@@ -3741,18 +3775,22 @@
           "from": "register@72de434"
         }
       ],
-      "engine": [],
+      "engine": [
+        "withGrafts"
+      ],
       "tests": [
-        "393-raq-mods.test.ts"
+        "393-raq-mods.test.ts",
+        "588-ancient-one-borrows-grafts.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Copies are 710 (U16).",
+    "notes": "Copies are 710 (U16). Report 271 (2026-10-23): Caleb 2025-04-07 (RQ 1358902095196983396) answered \"Both\" to \"if Ancient One copies a bounded graft effect does it trigger on both creatures or only once per turn?\" (588).",
     "sourceHashes": {
       "RAQ 1372468222158180424#4": "fa3423ed0c8af541951d9ce99db39a7441ac923ab8c699d224f2e358cbe17154",
-      "RAQ 1372468222158180424#5": "82edfb53d8bbdcf31bee61244484fef0741789970ea31ed2dec111a502e0eaad"
+      "RAQ 1372468222158180424#5": "82edfb53d8bbdcf31bee61244484fef0741789970ea31ed2dec111a502e0eaad",
+      "RQ 1358902095196983396": "7261831cedbc6024402b4f1e317ea63e3586ec694464f9d8fb5c6c4f8b0861fc"
     }
   },
   {

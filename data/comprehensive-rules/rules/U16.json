@@ -1004,11 +1004,19 @@
     "key": "effects.copies.create-copy-of-me",
     "parent": "710",
     "order": 5,
-    "text": "An effect that creates a copy of its own source (\"create a copy of me\") creates a token copy of what the source currently is. The token has none of the source's counters and none of its mods.",
+    "text": "An effect that creates a copy of its own source (\"create a copy of me\") creates a token copy of what the source currently is. The token has none of the source's counters and none of its mods. When a unit has the ability through another unit (Ancient One, rule 710.7), \"me\" is the unit that has it, so the copy is of that unit (rule 710.7a).",
     "examples": [
       {
         "text": "Hooba-God, killed under its own attack trigger, still creates a copy of what it was.",
         "test": "108-formation-class.test.ts::Hooba-God: killed under its own attack trigger"
+      },
+      {
+        "text": "Three Echoes of Despair beside an Ancient One, after a battle in which a player lost life: three Ancient Ones are created.",
+        "test": "587-borrowed-copy-of-me.test.ts::CR 710.5 / report 270: three Echoes beside an Ancient One make three Ancient Ones"
+      },
+      {
+        "text": "An Ancient One borrowing Echo of Despair, Hooba-God or Swarmling copies itself, not the unit it borrowed from.",
+        "test": "587-borrowed-copy-of-me.test.ts::CR 710.5, 710.7a / report 270: an Ancient One borrowing"
       }
     ],
     "see": [
@@ -1017,7 +1025,12 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1354130905681367155",
+          "quote": "3 ancient ones, it would not gain flying"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -1029,14 +1042,17 @@
       "engine": [],
       "tests": [
         "108-formation-class.test.ts",
-        "427-cr-continuous-effects.test.ts"
+        "427-cr-continuous-effects.test.ts",
+        "587-borrowed-copy-of-me.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-08-23 (“the COPY LAYER: a face in…”) lists Echo of Despair, Hooba-God and Swarmling as the cards this covers.",
-    "sourceHashes": {}
+    "notes": "The owner ruling of 2026-08-23 (“the COPY LAYER: a face in…”) lists Echo of Despair, Hooba-God and Swarmling as the cards this covers. Report 270 (2026-10-23): Caleb, 2025-03-25 (RQ 1354130905681367155), answering \"are 3 copies of ancient one created, or only 1\" and whether a copy of an Ancient One augmented with flying has flying.",
+    "sourceHashes": {
+      "RQ 1354130905681367155": "05fe65dbaded43b9809c7bde4a4877e2b0f59d0ee02d9d4a23700d0764296903"
+    }
   },
   {
     "key": "effects.copies.until-regroup",
@@ -1084,7 +1100,7 @@
     "key": "effects.copies.all-abilities",
     "parent": "710",
     "order": 7,
-    "text": "An ability that gives a unit \"all abilities\" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.",
+    "text": "An ability that gives a unit \"all abilities\" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them and the abilities effects have given them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop; as it dies, it still has the text of the units it was adjacent to, so their \"when I die\" abilities trigger for it. It gets nothing from a unit that has lost its abilities, and none of a unit's text that works only while that card is in another zone (such as its bin). Two Ancient Ones adjacent to each other each have the abilities of every unit adjacent to either of them. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.",
     "examples": [
       {
         "text": "Ancient One has an adjacent ally's static ability, and loses it when the column breaks.",
@@ -1105,6 +1121,26 @@
       {
         "text": "Ancient One between two Debt Bleps has two activations.",
         "test": "585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Debt Bleps has two activations"
+      },
+      {
+        "text": "Two adjacent Ancient Ones both have the abilities of a unit adjacent to either of them.",
+        "test": "589-ancient-one-whole-text-box.test.ts::CR 710.7 / report 271: two adjacent Ancient Ones both have the abilities of a unit adjacent to either"
+      },
+      {
+        "text": "An Ancient One dying with Reforge the Dead's grant on it and on its two neighbours makes three Robots.",
+        "test": "589-ancient-one-whole-text-box.test.ts::CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead on it and two neighbours makes three Robots"
+      },
+      {
+        "text": "An adjacent ally that has lost its abilities lends Ancient One nothing.",
+        "test": "589-ancient-one-whole-text-box.test.ts::CR 712.2, 710.7 / report 271: an ally that has lost its abilities lends none"
+      },
+      {
+        "text": "Ancient One does not have the bin text of a neighbour in play.",
+        "test": "589-ancient-one-whole-text-box.test.ts::CR 400.5 / report 271: an Ancient One does not borrow the bin text of a neighbour in play"
+      },
+      {
+        "text": "A dying Ancient One has the \"when I die\" text of the allies it stood beside.",
+        "test": "589-ancient-one-whole-text-box.test.ts::CR 714.9, 710.7 / report 271: a dying Ancient One has the when-I-die text of the allies it stood beside"
       }
     ],
     "see": [],
@@ -1119,7 +1155,12 @@
           "quote": "(This includes modded abilities.)"
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1359188053876408431",
+          "quote": "You could get up to 4 tokens when an ancient one dies with reforge the dead."
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -1143,18 +1184,24 @@
           "from": "owner, chat 2026-10-22 (CT-342: Ancient One between two Jollyglops, two once-per-turn uses or one)"
         }
       ],
-      "engine": [],
+      "engine": [
+        "aoAllies",
+        "projectedFaces"
+      ],
       "tests": [
         "26-metal-a.test.ts",
         "117-copy-everything.test.ts",
-        "585-ancient-one-per-neighbour-uses.test.ts"
+        "585-ancient-one-per-neighbour-uses.test.ts",
+        "589-ancient-one-whole-text-box.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Owner 2026-10-22 (CT-342): an Ancient One between two Jollyglops gets two uses, \"each neighbour's copy of the ability is separate\", the same as two mods each having their own use. Engine aligned the same day (563, 585).",
-    "sourceHashes": {}
+    "notes": "Owner 2026-10-22 (CT-342): an Ancient One between two Jollyglops gets two uses, \"each neighbour's copy of the ability is separate\", the same as two mods each having their own use. Engine aligned the same day (563, 585). Report 271 (2026-10-23, 589): granted text, two adjacent Ancient Ones (the oracle ruling \"they would both have all the abilities of any creature adjacent to either of them\", not a citable source kind), stripped allies and zone text. Caleb 2025-04-08 (RQ 1359188053876408431) on Reforge the Dead. Its death: the died event carries the units adjacent to it (589); rule 714.5 (a count of a departed source's adjacent allies is 0) is about counting, not about which text it had.",
+    "sourceHashes": {
+      "RQ 1359188053876408431": "34541c6b810dfd39a0d1eb145b1021c033f1ae2691612754ef2d0517d92c0e0c"
+    }
   },
   {
     "key": "effects.copies.all-abilities.i-is-me",
@@ -1165,12 +1212,21 @@
       {
         "text": "next to Gatekeeper of Souls (\"I must be targeted if able\"), it is the Ancient One that must be targeted.",
         "test": "117-copy-everything.test.ts::CR 710.7: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted"
+      },
+      {
+        "text": "Three Echoes of Despair beside an Ancient One: its three borrowed \"create a copy of me\" abilities create three Ancient Ones.",
+        "test": "587-borrowed-copy-of-me.test.ts::CR 710.5 / report 270: three Echoes beside an Ancient One make three Ancient Ones"
       }
     ],
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1354130905681367155",
+          "quote": "3 ancient ones, it would not gain flying"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -1181,14 +1237,17 @@
       ],
       "engine": [],
       "tests": [
-        "117-copy-everything.test.ts"
+        "117-copy-everything.test.ts",
+        "587-borrowed-copy-of-me.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
-    "sourceHashes": {}
+    "notes": "Caleb, 2025-03-25 (RQ 1354130905681367155): three Echoes beside an Ancient One make \"3 ancient ones\".",
+    "sourceHashes": {
+      "RQ 1354130905681367155": "05fe65dbaded43b9809c7bde4a4877e2b0f59d0ee02d9d4a23700d0764296903"
+    }
   },
   {
     "key": "effects.copies.spells",

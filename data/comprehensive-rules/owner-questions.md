@@ -1,6 +1,6 @@
 # Algomancy Comprehensive Rules: Questions for the Owner
 
-7 questions. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.
+6 questions. In each, the authoritative source's own words support two readings and no higher source decides between them; everything else in discrepancies.md is already decided by the authority order or awaits sign-off there. Answer each with one line: the reading you choose. Each item's full record, with every quote, is in discrepancies.md under its id.
 
 ## Mods
 
@@ -45,23 +45,7 @@
 
 **Answer:**
 
-### 3. Does a Pure unit in an unblocked column keep its own other attributes (Swift, Powerful, Thieving) when it strikes the player?
-
-*D-U12-12, rule 608.2d.*
-
-- card: Just a Unit: "Pure cards and cards they are interacting with ignore all other attributes."
-- owner ruling, adopted 2026-08-20: "Combat is where attributes live, and combat already resolves per"
-
-- **A.** No: "Pure cards … ignore all other attributes" has no condition on the Pure card itself. *At the table:* An unblocked Pure column strikes in the normal sub-step and does not double or draw.
-- **B.** Yes: Pure works only within an interaction with another card, and a player is not a card. *At the table:* An unblocked Pure Swift column strikes first, a Powerful one doubles.
-
-**Today:** Neither for this case: rule 802.1n is worded per interaction, which leans to B.
-
-**Recommended:** A, on the literal grammar of the reminder. B is the more permissive reading, so choose it if Pure is meant to matter only between cards.
-
-**Answer:**
-
-### 4. If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?
+### 3. If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?
 
 *D-U12-11, rule 608.3d.*
 
@@ -80,7 +64,7 @@
 
 ## Stats and attributes
 
-### 5. May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
+### 4. May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
 
 *D-U19-5, rule 802.2a.*
 
@@ -99,7 +83,7 @@
 
 **Answer:**
 
-### 6. Does Inverted invert from the printed stats, or from a rewritten base?
+### 5. Does Inverted invert from the printed stats, or from a rewritten base?
 
 *D-U19-3, rule 802.8c.*
 
@@ -123,7 +107,7 @@
 
 **Answer:**
 
-### 7. Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
+### 6. Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
 
 *D-U20-2, rule 802.14a.*
 

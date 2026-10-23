@@ -1799,57 +1799,94 @@
   },
   {
     "key": "concepts.costs.unpayable.life",
-    "textHash": "c254c2e41bd5c197",
+    "textHash": "a18c8dd0eaaf4669",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U04-r2",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.canPayLife",
+        "loc": "client/engine/src/engine.ts:canPayLife",
         "agrees": true,
-        "note": "n <= 0 || life > n; used by activation, cast-cost and imposed (Arbiter) life gates; variable life paid a point at a time re-asks it"
+        "note": "life > n with the printed n; multiplier applied later in loseLife"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:castCostOptions (payLife)",
+        "agrees": true,
+        "note": "variable life re-asks canPayLife(so + 1): running total incl. the point being chosen"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/38-light-a.test.ts",
-        "pattern": "at exactly 9 life",
+        "file": "38-light-a.test.ts",
+        "pattern": "Glararr: CR 111.6b",
         "passed": true,
-        "asserts_claim": "yes: activation throws, not offered, no life paid"
+        "asserts_claim": true
       },
       {
-        "file": "client/engine/test/38-light-a.test.ts",
-        "pattern": "Arbiter of Armistice",
+        "file": "590-life-cost-one-change.test.ts",
+        "pattern": "CR 111.6b / report 273: the life is lost when X closes",
         "passed": true,
-        "asserts_claim": "yes: an imposed 2-life tax is unpayable at exactly 2 life"
+        "asserts_claim": true
       }
     ],
-    "probes": [],
-    "source_checks": [
+    "probes": [
       {
-        "ref": "R49 (its life-cost ruling)",
-        "supports": "yes",
-        "note": "states it, and says openly it is the engine's own ruling with no designer statement"
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe U04-1a: with Arbiter of Vitality out, a player on 15 may pay Glararr's 9 life, loses 18 and dies",
+        "passed": true,
+        "demonstrates": "yes: printed N (9) gates payability; the payment is doubled to one loss of 18 and the payer dies"
       },
       {
-        "ref": "R60 (its life half)",
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe U04-1b: with Arbiter of Vitality out, at exactly 9 life Glararr is still unpayable (N stays 9)",
+        "passed": true,
+        "demonstrates": "yes: N is still the printed 9 with Arbiter out"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe U04-1c: without Arbiter, at 10 life Glararr pays 9 and leaves 1",
+        "passed": true,
+        "demonstrates": "yes: more than N life suffices without a multiplier"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Arbiter of Vitality",
         "supports": "yes",
-        "note": "applies the same rule to the imposed life tax"
+        "note": ""
+      },
+      {
+        "ref": "card: Glararr",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 (2026-08-19, 08-20)",
+        "supports": "yes",
+        "note": "more than N; last life refused"
+      },
+      {
+        "ref": "owner chat 2026-10-23",
+        "supports": "yes",
+        "note": "'The printed N' answers exactly which N 111.6b checks with Arbiter out"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "while you have **more** than N — paying your last life is refused too. Life"
+        "file": "client/engine/src/engine.ts",
+        "text": "return n <= 0 || this.player(seat).life > n;"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "return n <= 0 || this.player(seat).life > n;"
+        "text": "return this.canPayLife(seat, so + 1)"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Pay 9 life: [Switch1] Erase target unit."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.costs.what-a-cost-is",
@@ -2808,55 +2845,97 @@
   },
   {
     "key": "concepts.life.basics.gain-and-loss",
-    "textHash": "78428b3aa294d4bb",
+    "textHash": "322b81410fb90898",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.gainLife / E.loseLife; set-life cards (Triskaidekaphage, Haunting Memories) move life by gain/loss",
+        "loc": "client/engine/src/engine.ts:loseLife",
         "agrees": true,
-        "note": ""
+        "note": "every life move goes through gainLife/loseLife; one call = one lifeLost event"
       },
       {
-        "loc": "engine.ts:E.payCard",
+        "loc": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts:Haunting Memories",
         "agrees": true,
-        "note": "life costs are charged via loseLife"
+        "note": "a set-life effect is expressed as gain/loss of the difference"
       }
     ],
-    "tests_run": [],
-    "probes": [],
+    "tests_run": [
+      {
+        "file": "415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.life.basics.gain-and-loss",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "590-life-cost-one-change.test.ts",
+        "pattern": "CR 702.6b / report 273: paying 29 life for Flesh Tithe",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "590-life-cost-one-change.test.ts",
+        "pattern": "CR 702.6b / report 273: Torrential Reclamation loses its life as one change",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U04-2.test.ts",
+        "test": "probe U04-2: Haunting Memories setting a life total is expressed as one life loss of the difference",
+        "passed": true,
+        "demonstrates": "yes: even a 'life total becomes' effect moves life only as a gain/loss (one lifeLost of the difference)"
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: Arbiter of Vitality",
         "supports": "yes",
-        "note": "\"(Damage causes loss of life.)\""
+        "note": "reminder: damage causes loss of life"
       },
       {
         "ref": "card: Soul Siphon",
         "supports": "yes",
-        "note": ""
+        "note": "same reminder"
       },
       {
         "ref": "Rulebook 2023 p.11",
-        "supports": "partly",
-        "note": "damage to the life total"
+        "supports": "yes",
+        "note": "unblocked damage goes to the player's life total"
       },
       {
-        "ref": "R162 (its multiplicative family)",
+        "ref": "card: Life Plant",
         "supports": "yes",
-        "note": "lists face damage, rot, costs as life changes"
+        "note": "'create that many' presupposes a gain/loss is one amount"
+      },
+      {
+        "ref": "owner register@72de434",
+        "supports": "partial",
+        "note": "fragment lists combat face damage, effect damage, printed costs among life-change sources; weak but consistent"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/cards/sets/batch-light-a.ts",
-        "text": "if (life > 13) g.loseLife(ctx.controller, life - 13, 'Triskaidekaphage');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Double all life gain and life loss. {i}(Damage causes loss of life.)"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Unblocked attacking damage is dealt to the defending player’s life"
+      },
+      {
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "text": "assert.equal(life - h.state.players[D]!.life, lost, 'and the life total moved by exactly the life lost, nothing else');"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts",
+        "text": "if (want > cur) g.gainLife(who, want - cur, 'Haunting Memories');"
       }
     ],
     "basis_ok": true,
-    "problem": "Engine-only exception: the sandbox (test mode) setter writes life directly; not a game rule.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.life.basics.region",
@@ -2984,62 +3063,79 @@
   },
   {
     "key": "concepts.life.multipliers",
-    "textHash": "f23d8ae3b706501e",
+    "textHash": "6b5c3f87fb53ed8d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.lifeAmount (called from loseLife/gainLife before the total moves)",
+        "loc": "client/engine/src/engine.ts:loseLife (lifeAmount before p.life -= n)",
         "agrees": true,
-        "note": "factors multiply; committed before the lethal check"
+        "note": "multiplied before the total moves and before the lethal check"
       }
     ],
     "tests_run": [
       {
         "file": "137-multiplier-and-mode.test.ts",
-        "pattern": "R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n",
+        "pattern": "CR 708.6: THREE Arbiters",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "137-multiplier-and-mode.test.ts",
-        "pattern": "Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check",
+        "pattern": "Arbiter of Vitality: a LETHAL loss",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe U04-1a: with Arbiter of Vitality out, a player on 15 may pay Glararr's 9 life, loses 18 and dies",
+        "passed": true,
+        "demonstrates": "yes: printed N (9) gates payability; the payment is doubled to one loss of 18 and the payer dies"
+      },
+      {
+        "file": "client/engine/test/zz-probe-U04-1.test.ts",
+        "test": "probe U04-1b: with Arbiter of Vitality out, at exactly 9 life Glararr is still unpayable (N stays 9)",
+        "passed": true,
+        "demonstrates": "yes: N is still the printed 9 with Arbiter out"
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: Arbiter of Vitality",
         "supports": "yes",
-        "note": "printed doubling"
+        "note": "'all' life loss includes paid life"
       },
       {
-        "ref": "R264",
+        "ref": "owner register@72de434 (2026-08-30)",
         "supports": "yes",
-        "note": "n factors give 2^n"
+        "note": "factors multiply, 2^n"
       },
       {
-        "ref": "R162 (its multiplicative family)",
+        "ref": "owner register@72de434 (2026-08-25)",
         "supports": "yes",
         "note": "committed in one go before the lethal check"
+      },
+      {
+        "ref": "owner chat 2026-10-23",
+        "supports": "yes",
+        "note": "payability judged on the printed N"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**The claiming factors MULTIPLY. n mods each declaring"
-      },
-      {
         "file": "client/engine/src/engine.ts",
         "text": "n = this.lifeAmount('lifeLoss', seat, n, why);"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Double all life gain and life loss. {i}(Damage causes loss of life.)"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.player-counters",

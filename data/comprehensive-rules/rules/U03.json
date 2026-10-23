@@ -1281,11 +1281,15 @@
     "key": "concepts.abilities.granted",
     "parent": "109",
     "order": 8,
-    "text": "An effect can give units an ability. The ability goes to the units the effect names as it resolves; a unit that arrives afterwards does not gain it.",
+    "text": "An effect can give units an ability. The ability goes to the units the effect names as it resolves; a unit that arrives afterwards does not gain it. An ability given this way is one of the unit's abilities while it lasts, so a unit that has the abilities of other units (Ancient One, rule 710.7) has it too.",
     "examples": [
       {
         "text": "Reforge the Dead's grant lasts until regroup and reaches only the units already there.",
         "test": "27-metal-b.test.ts::Reforge the Dead: the grant is until regroup, and only for units already there"
+      },
+      {
+        "text": "An Ancient One dying with Reforge the Dead's grant on it and on its two neighbours makes three Robots.",
+        "test": "589-ancient-one-whole-text-box.test.ts::CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead on it and two neighbours makes three Robots"
       }
     ],
     "see": [],
@@ -1296,7 +1300,12 @@
           "quote": "Your units gain \"When I die, create a Robot 3.\" until regroup."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1359188053876408431",
+          "quote": "You could get up to 4 tokens when an ancient one dies with reforge the dead."
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -1307,14 +1316,17 @@
       ],
       "engine": [],
       "tests": [
-        "27-metal-b.test.ts"
+        "27-metal-b.test.ts",
+        "589-ancient-one-whole-text-box.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
-    "sourceHashes": {}
+    "notes": "Report 271 (2026-10-23): Caleb 2025-04-08 (RQ 1359188053876408431), asked whether Ancient One with 3 adjacent allies gets Reforge the Dead's effect from each.",
+    "sourceHashes": {
+      "RQ 1359188053876408431": "34541c6b810dfd39a0d1eb145b1021c033f1ae2691612754ef2d0517d92c0e0c"
+    }
   },
   {
     "key": "concepts.abilities.granted.is-ability",
@@ -1772,7 +1784,7 @@
     "examples": [
       {
         "text": "Omniwield Evoker activated twice in a turn creates the Robot from its bounded graft only the first time.",
-        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice"
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.once.unbounded-cause — Omniwield Evoker with Self-Assembly grafted, activated twice in a turn, makes one Robot"
       }
     ],
     "see": [
@@ -1796,13 +1808,14 @@
       "engine": [],
       "tests": [
         "393-raq-mods.test.ts",
-        "94-bounded-uses.test.ts"
+        "94-bounded-uses.test.ts",
+        "414-cr-cards-abilities-targets.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Round 2026-10-23: the example was bound to a 393 test that grafts Flame Juggle, not Self-Assembly; it is now bound to the promoted probe (414). Basis mixed: Manual p.33 and the RAQ.",
     "sourceHashes": {
       "RAQ 1355115946032889914#13": "9c6de10396bd5ba4d54b8b2fc6e245fa17c45e9f051aa9181e4cdbd3fc8e8d7d"
     }
