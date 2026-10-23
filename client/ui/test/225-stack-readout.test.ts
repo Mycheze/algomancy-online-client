@@ -463,19 +463,24 @@ test('§3c the ordering options are drawn as the cards they came from', async ()
 
 /** THREE orderable triggers: a Minor Kraken alone, and Ancient One beside a
  * second Kraken (it borrows that ally's attack trigger). Throws, like the
- * two-trigger fixture, rather than going quiet. */
+ * two-trigger fixture, rather than going quiet.
+ *
+ * Ancient One sits at the END of the line, beside one Kraken only. It used to
+ * sit between the two, when two same-face neighbours lent it one trigger; since
+ * CT-342 (owner 2026-10-22: "each neighbour's copy of the ability is
+ * separate") that line borrows twice and asks about four. */
 function threeTriggers(seed: number): { h: Harness; seat: Seat } {
   const h = new Harness(seed);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat;
   const D = (1 - A) as Seat;
   const k1 = spawn(h, A, 'Minor Kraken');
-  const ancient = spawn(h, A, 'Ancient One');
   const k2 = spawn(h, A, 'Minor Kraken');
+  const ancient = spawn(h, A, 'Ancient One');
   spawn(h, D, 'Unit Token');
   spawn(h, D, 'Unit Token');
   toNextBattle(h, A);
-  h.do({ type: 'declareAttack', seat: A, columns: [[k1], [ancient, k2]] });
+  h.do({ type: 'declareAttack', seat: A, columns: [[k1], [k2, ancient]] });
   assert.equal(h.state.decision?.kind, 'orderTriggers', 'the three-trigger fixture still asks for an order');
   assert.equal(h.state.decision?.options.length, 3, 'and it asks about three');
   return { h, seat: A };
