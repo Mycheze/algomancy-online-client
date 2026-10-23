@@ -14133,6 +14133,11 @@ export class E {
     const blk = blockedEver ? this.aliveInCol(b.blocks[ci]!) : [];
     // CR 802.25b {Pure}: one Pure card in either column blinds the whole exchange
     // to attributes — both sides', in both directions.
+    // An UNBLOCKED column is an exchange with an empty blocking half, and that
+    // is deliberate: a Pure column striking the player keeps none of its own
+    // attributes either (CR 608.2d, 802.25a). The owner, 2026-10-23 (D-U12-12),
+    // chose "An unblocked Pure column strikes in the normal sub-step and does
+    // not double or draw." Test 600 pins it for every attribute.
     const pure = this.pure(atk, blk);
     const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);
     // CR 802.25f (CT-260): Unaware is an attribute, so a Pure exchange never collapses
