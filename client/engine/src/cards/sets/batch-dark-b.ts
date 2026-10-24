@@ -532,9 +532,9 @@ card('Hooba-Mon', {
           }
           return;
         }
-        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // CR 405.7
-        if (name === undefined) return;
-        g.exchangeInPlace(self, name, ctx.controller);   // CR 410.2a
+        const took = g.takeFromBin(ctx.controller, t.binCard.index, 'revived');   // CR 405.7
+        if (took === undefined) return;
+        g.exchangeInPlace(self, took.card, ctx.controller, { owner: took.owner });   // CR 410.2a; CR 102.4
       },
     },
   }],

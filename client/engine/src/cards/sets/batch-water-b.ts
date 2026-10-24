@@ -231,9 +231,11 @@ card('Rippleback Skulker', {
           g.ev('info', 'Rippleback Skulker: no bin card is targeted (or it has left) — nothing is taken.');
           return;
         }
-        const taken = g.removeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // CR 405.7
-        if (taken !== undefined) {
-          g.toHand(ctx.controller, taken, 'bin');   // CR 402.4
+        const took = g.takeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // CR 405.7
+        if (took !== undefined) {
+          const taken = took.card;
+          // CR 402.4; CR 102.4 / CT-344: out of that player's bin, still its owner's card
+          g.toHand(ctx.controller, taken, 'bin', { owner: took.owner });
           g.ev('info', `Rippleback Skulker: ${taken} → ${g.pname(ctx.controller)}'s hand.`);
         }
       },

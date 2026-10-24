@@ -518,9 +518,10 @@ card('Combustible Bogwalker', {
           g.ev('info', 'Combustible Bogwalker: no unit in your bin — the cost is paid for nothing.');
           return;
         }
-        const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
-        if (name !== undefined) {
-          g.toHand(ctx.controller, name, 'bin');   // CR 402.4
+        const took = g.takeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
+        if (took !== undefined) {
+          const name = took.card;
+          g.toHand(ctx.controller, name, 'bin', { owner: took.owner });   // CR 402.4; CR 102.4
           g.ev('info', `Combustible Bogwalker: ${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);
         }
       },
@@ -721,8 +722,8 @@ card('Inexorable Miasma', {
         g.removeCounters(u, 1);
         const idx = g.player(ctx.controller).bin.lastIndexOf('Inexorable Miasma');
         if (idx === -1) { g.ev('info', 'Inexorable Miasma: it left the bin — nothing is recalled.'); return; }
-        g.removeFromBin(ctx.controller, idx, 'recalled');   // CR 405.7
-        g.toHand(ctx.controller, 'Inexorable Miasma', 'bin');   // CR 402.4
+        const took = g.takeFromBin(ctx.controller, idx, 'recalled');   // CR 405.7
+        g.toHand(ctx.controller, 'Inexorable Miasma', 'bin', { owner: took!.owner });   // CR 402.4; CR 102.4
         g.ev('info', `Inexorable Miasma is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
       },
     },

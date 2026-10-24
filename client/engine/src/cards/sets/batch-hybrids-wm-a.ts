@@ -355,7 +355,8 @@ card('Reconfigure', {
         const si = bt.sentAttackers.indexOf(a.id);
         if (si !== -1) bt.sentAttackers.splice(si, 1);
       }
-      g.attachMod(b, a.card, a.owner, 'augment');
+      // CR 102.4 / CT-343: the caster APPLIES it; the card stays its owner's
+      g.attachMod(b, a.card, ctx.controller, 'augment', undefined, { owner: a.owner });
       // CR 720.10: one primitive, no hand-rolled re-parenting. Everything follows
       // the mod — statics, cost mods and donated text re-anchor through
       // `anchored()`, {Unstable} is derived from `mods.length` so it lands on

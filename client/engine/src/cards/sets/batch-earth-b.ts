@@ -243,6 +243,10 @@ const mentorBuff: EffectDef = {
     g.addTemp(self, 2, 2);
   },
 };
+const appliedByMe = (g: E, mod: EntityId, seat: Seat): boolean => {
+  const m = g.entity(mod);
+  return !!m && g.appliedBy(m) === seat;
+};
 card('Morphic Mentor', {
   abilities: [{
     type: 'triggered', events: ['modApplied'], graftCause: true,
@@ -250,7 +254,8 @@ card('Morphic Mentor', {
     when: (g, self, ev) =>
       g.s.phase === 'battle' &&
       ev.data?.appliedAs === 'augment' &&
-      g.entity(ev.data?.mod as EntityId)?.owner === self.controller &&
+      // CR 102.4 / CT-343: "you applied" is the APPLIER, not the mod card's owner
+      appliedByMe(g, ev.data?.mod as EntityId, self.controller) &&
       g.entity(ev.data?.host as EntityId)?.region === self.region,
     effect: mentorBuff,
   }],

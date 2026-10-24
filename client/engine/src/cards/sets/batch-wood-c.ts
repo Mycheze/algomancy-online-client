@@ -444,9 +444,10 @@ card('Verdant Necrophage', {
           plans.push({ seat, idx });
         }
         for (const { seat, idx } of plans) {
-          const name = g.removeFromBin(seat, idx, 'recalled');   // CR 405.7
-          if (name !== undefined) {
-            g.toHand(seat, name, 'bin');   // CR 402.4
+          const took = g.takeFromBin(seat, idx, 'recalled');   // CR 405.7
+          if (took !== undefined) {
+            const name = took.card;
+            g.toHand(seat, name, 'bin', { owner: took.owner });   // CR 402.4; CR 102.4
             g.ev('info', `${g.pname(seat)} recalls ${name} from their bin.`);
           }
         }

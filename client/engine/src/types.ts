@@ -301,6 +301,16 @@ export interface Entity {
   modOf?: EntityId;
   /** how a mod was applied: augments grant attrs/text, grafts join the cause */
   appliedAs?: 'augment' | 'graft';
+  /**
+   * CR 102.4 / CT-343: for kind 'mod', the player who APPLIED it, when that is
+   * not its `owner`. A mod's `owner` is whose CARD it is (CR 102.4: a stolen card
+   * in the thief's hand, bin or cache is still its owner's, and so is the mod
+   * made of it); who applied it is a different fact ("you applied an augment",
+   * Morphic Mentor). Optional/additive: absent = the owner applied it, which is
+   * what `owner` meant on every mod before the two were split. Read through
+   * `E.appliedBy`, never raw.
+   */
+  appliedBy?: Seat;
   /** spell token X value */
   x?: number;
   /** counterattacker sent during round-1 blocks: "treated as if it doesn't exist" */
@@ -1130,9 +1140,12 @@ export interface StackItem {
    * so it is {Unstable} and its card never reaches a bin (CR 803.8f).
    *
    * `by` is who APPLIED it, which is not the item's controller when you virus
-   * an enemy spell — a card belongs to its owner, so that is the erased pile
-   * it lands in and the mod owner it becomes on a spell unit's body. */
-  augments?: { card: CardName; by: Seat }[];
+   * an enemy spell: the erased pile it lands in (CR 723.4b, zones follow the
+   * player) and the applier of the mod it becomes on a spell unit's body.
+   * `owner` (CR 102.4 / CT-343) is whose CARD it is, when that is not `by` — a
+   * foreign-owned card applied out of the applier's own hand, bin or cache.
+   * Optional/additive: absent = `by` owns it, as every older entry meant. */
+  augments?: { card: CardName; by: Seat; owner?: Seat }[];
   /**
    * CR 803.8c, 724.5: this card is {Unstable}. A STAMP, not a derivation, and TWO
    * cards write it:
@@ -1159,7 +1172,9 @@ export interface StackItem {
    * item without it is owned by its controller, which every older item was.
    * CR 102.4 / CT-233: the same field carries a card played out of a hand,
    * bin or cache where another player owned it, and a card that goes to a bin
-   * off the stack keeps it there (PlayerState.foreign).
+   * off the stack keeps it there (PlayerState.foreign). CR 102.4 / CT-343: on a
+   * kind 'virus' item, the owner of the Virus card, which the mod it becomes
+   * keeps (Entity.owner) while its controller is the applier.
    */
   owner?: Seat;
   /**
@@ -2318,7 +2333,9 @@ export interface GameState {
    * the phase flip. Normally empty again within the same action; it outlives
    * one only while a decision those triggers raised is open. `position` is a
    * graft's insertion point. Additive/optional. */
-  pendingMods?: { seat: Seat; host: EntityId; card: CardName; appliedAs: 'graft' | 'augment'; position?: number }[];
+  pendingMods?: { seat: Seat; host: EntityId; card: CardName; appliedAs: 'graft' | 'augment'; position?: number;
+    /** CR 102.4 / CT-343: the card's owner, when not `seat` (optional/additive) */
+    owner?: Seat }[];
   /** CR 507.4: the START-OF-DEPLOYMENT opening is in progress — the rot damage
    * (and anything it queued) is still draining, and the 'startOfDeployment'
    * event has NOT fired yet. The event waits for it (E.finishDeployStart,

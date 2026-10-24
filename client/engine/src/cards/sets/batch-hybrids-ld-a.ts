@@ -588,9 +588,10 @@ const covenant: EffectDef = {
       g.ev('info', 'Covenant of the Damned: no unit in your bin — no effect.');
       return;
     }
-    const name = g.removeFromBin(ctx.controller, t.binCard.index, 'revived');   // CR 405.7
-    if (name === undefined) return;
-    g.spawnUnit(ctx.controller, name, ctx.region);
+    const took = g.takeFromBin(ctx.controller, t.binCard.index, 'revived');   // CR 405.7
+    if (took === undefined) return;
+    const name = took.card;
+    g.spawnUnit(ctx.controller, name, ctx.region, { owner: took.owner });   // CR 102.4
     g.gainDebt(ctx.controller, manaOf(name));   // CR 112.14
   },
 };
@@ -710,10 +711,11 @@ card('Zephyrzoa', {
         if (n) {
           // CR 405.7: per card, back-to-front — each removal fires its own
           // 'leftBin'; the order into the hand is preserved
-          const moved: string[] = [];
-          while (bin.length) moved.unshift(g.removeFromBin(ctx.controller, bin.length - 1, 'recalled')!);
-          // CR 706.6a: the whole bin arrives at once — ONE 'handEntered'
-          g.toHand(ctx.controller, moved, 'bin');
+          const moved: { card: CardName; owner: Seat }[] = [];
+          while (bin.length) moved.unshift(g.takeFromBin(ctx.controller, bin.length - 1, 'recalled')!);
+          // CR 706.6a: the whole bin arrives at once — ONE 'handEntered'.
+          // CR 102.4 / CT-344: each card with the owner it had in the bin
+          g.toHand(ctx.controller, moved.map(m => m.card), 'bin', { owner: moved.map(m => m.owner) });
           g.ev('info', `Zephyrzoa: ${g.pname(ctx.controller)} recalls their whole bin (${n} card(s)) to hand.`);
         } else {
           g.ev('info', 'Zephyrzoa: the bin is empty — nothing to recall.');
@@ -767,8 +769,9 @@ card('Reclaim the Fallen', {
       for (const m of mods) g.eraseMod(m, { leavesGame: false });
       for (const m of mods) {
         // CARD-TODO #17: "under their CONTROLLER's control" — a mod's
-        // controller is its host's (attachMod), while its OWNER is whoever
-        // applied it. So a virus you stuck on an enemy comes back on their
+        // controller is its host's (attachMod), while its OWNER is whose card
+        // it is (CR 102.4 / CT-343: normally whoever applied it, but not a
+        // stolen card applied out of the thief's own zone). So a virus you stuck on an enemy comes back on their
         // side, as the printed text says, but it is still your card (CR 102.4), though it goes to its controller's bin when it dies (CR 400.4). Passing only the controller made it
         // theirs outright.
         g.spawnUnit(m.controller, m.card, ctx.region,
@@ -828,15 +831,17 @@ card('Uglk', {
           picks.push({ seat, idx, opp });
         }
         for (const { seat, idx, opp } of picks) {
-          const name = g.removeFromBin(seat, idx, 'revived');   // CR 405.7
-          if (name === undefined) continue;
+          const took = g.takeFromBin(seat, idx, 'revived');   // CR 405.7
+          if (took === undefined) continue;
+          const name = took.card;
           g.ev('info', `Uglk: ${g.pname(seat)} gives ${name} to ${g.pname(opp)}.`);
           // CARD-TODO #17: "under an opponent's control" is a CONTROL clause,
           // not a transfer of the card. It came out of `seat`'s bin, so it is
           // still `seat`'s card (CR 102.5a), but it dies to its controller's bin (CR 400.4); `opp` only
           // controls it. Before the owner option existed this handed the card
           // over permanently, which the printed text never says.
-          g.spawnUnit(opp, name, ctx.region, { owner: seat });
+          // CR 102.4 / CT-344: the owner it had in that bin (normally `seat`)
+          g.spawnUnit(opp, name, ctx.region, { owner: took.owner });
         }
       },
     },
