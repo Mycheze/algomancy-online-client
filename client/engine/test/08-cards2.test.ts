@@ -38,7 +38,10 @@ test('Child of Aether: Balanced (power & defense = max) keeps a 2/0 alive', () =
   assert.deepEqual(effStats(h, child), [2, 2], 'Balanced: 2/0 → 2/2');
 });
 
-test('CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→Tough', () => {
+// Report #279: this test used to assert that attach order mattered (3/3 one
+// way, 3/6 the other). The designer: "balanced always applies last" (rules-
+// questions 2025-09-25; "balanced now applies after tough always", 2025-03-22).
+test('CR 709.4b: layer-4 application order — Tough then Balanced, whichever was augmented first', () => {
   const h = new Harness(303);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -50,7 +53,7 @@ test('CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→T
   const host2 = spawn(h, p, 'Lonely Forager');
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Child of Aether'), hostId: host2 });
   h.do({ type: 'augment', seat: p, from: 'hand', index: give(h, p, 'Rampart Guardian'), hostId: host2 });
-  assert.deepEqual(effStats(h, host2), [3, 6], 'Balanced then Tough: 3/1 → 3/3 → 3/6');
+  assert.deepEqual(effStats(h, host2), [3, 3], 'Balanced augmented first still applies last: 3/1 → 3/2 → 3/3');
 });
 
 test('CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances: Child of Aether with Rampart Guardian is a 2/2', () => {
@@ -68,15 +71,17 @@ test('CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles f
   assert.deepEqual(effStats(h, child), [2, 2], 'doubled (2/0 stays 2/0), then balanced: 2/2');
 });
 
-test('CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles: 2/4', () => {
-  // the Manual's other clause: "applied to" a Balanced unit — a grant, not an
-  // augment, comes after what the unit prints
+// It was 'Tough APPLIED to a printed-Balanced unit by an effect balances
+// first, then doubles: 2/4' (the Manual p.42's "applied to" clause). Report
+// #279: the designer's later rule overrides it — "balanced always applies
+// last", so a Balanced unit always has equal stats.
+test('CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect still doubles first, then balances: 2/2', () => {
   const h = new Harness(309);
   toDeployment(h);
   const p = h.state.deployPlayer!;
   const child = spawn(h, p, 'Child of Aether');
   withE(h, e => e.addTempAttr(e.entity(child)!, 'Tough'));
-  assert.deepEqual(effStats(h, child), [2, 4], 'balanced (2/2), then doubled (2/4)');
+  assert.deepEqual(effStats(h, child), [2, 2], 'doubled (2/0 stays 2/0), then balanced (2/2)');
 });
 
 test('Tidepool Terror: Deadly — 1 damage kills the 7/5 it blocks (CR 802.3a)', () => {

@@ -1959,12 +1959,17 @@ export class E {
       p += typeof mod.dp === 'function' ? mod.dp(this, holder, e) : (mod.dp ?? 0);
       t += typeof mod.dt === 'function' ? mod.dt(this, holder, e) : (mod.dt ?? 0);
     }
-    // layer 4: Tough / Balanced in application order (CR 709.4b); duplicates don't stack
+    // layer 4: Tough, THEN Balanced — always, whatever granted either one and
+    // in whatever order (report #279). The designer, rules-questions:
+    // 2025-01-31 "just always have balanced apply last … So a balanced unit
+    // will always have equal stats" (and "yeah" to "Balance is calculated after
+    // Tough, but before Inverted and Unaware?"); 2025-03-22 "balanced now
+    // applies after tough always"; 2025-09-25, a column of Child of Aether and
+    // Rampart Guardian: "balanced always applies last. So 8/8 and 2/2".
+    // An attribute is present or not, so each applies once (CR 709.4c).
     const statAttrs = this.statLayerAttrs(e);
-    for (const a of statAttrs) {
-      if (a === 'Tough') t *= 2;
-      else if (a === 'Balanced') { const m = Math.max(p, t); p = m; t = m; }
-    }
+    if (statAttrs.includes('Tough')) t *= 2;
+    if (statAttrs.includes('Balanced')) { const m = Math.max(p, t); p = m; t = m; }
     /**
      * LAYER 5 — {Inverted} (CR 802.8a). "Invert the stat changes of inverted units."
      *
@@ -2203,10 +2208,11 @@ export class E {
       this.destroy(u, 'dies');
     }
   }
-  /** CR 709.4b, 709.4c, 802.1j: the stat-layer attrs, in layer-4 application order — augment
-   * mods (attachment order; CT-257, what is augmented onto a unit comes before
-   * what it prints), then own printed (type-line order) and applied grants, then
-   * column-shared (column order); first occurrence wins, an attribute is
+  /** CR 709.4b, 709.4c, 802.1j: the stat-layer attrs a unit has — augment
+   * mods, its own printed and applied ones, and what its column shares. Only
+   * MEMBERSHIP matters: layer 4 applies Tough and then Balanced whatever their
+   * order here (report #279, the designer's "balanced always applies last";
+   * see effStats), and layers 5 and 6 apply once after it. An attribute is
    * either present or not. {Inverted} rides the same walk because it is
    * granted by exactly the same channels ({Inverted} is printed on Its Dark
    * Bubb, donated by Reality Bender's type-line [Augment], and grantable by a
@@ -2248,17 +2254,12 @@ export class E {
       }
     };
     /*
-     * CR 709.4b (CT-257) — what is AUGMENTED ONTO a unit applies before what it
-     * prints. Manual p.42: if "Tough" is augmented onto a "Balanced" unit, "it
-     * will have its defense doubled, then its stats balanced"; the owner,
-     * 2026-10-22, ruled that clause governs. So the augment mods' type-line
-     * attributes come first — a copy's copied augments, then the unit's own
-     * mods in the order they were attached — and then the rest of the unit's
-     * own set in its usual order: printed (type-line order), then what was
-     * APPLIED to it (until-regroup grants, statics), which is the Manual's
-     * other clause ("applied to" a Balanced unit: balanced, then doubled).
-     * Column-shared attributes still come last, front to back. Membership is
-     * `ownAttrs`' (strips included); only the ORDER is decided here.
+     * The walk order below is historical: CT-257 (2026-10-22) made the
+     * augments' attributes apply before the unit's own, in attach order, to
+     * get Manual p.42's "Tough augmented onto a Balanced unit: doubled, then
+     * balanced". Report #279 found the designer's later rule, which covers
+     * that and every other case: Balanced applies after Tough always. effStats
+     * no longer reads this order. Membership is `ownAttrs`' (strips included).
      */
     const own = this.ownAttrs(e);
     const augmented: string[] = [...this.copiedAugments(e, 'attrs')];
