@@ -660,7 +660,8 @@ card('Dream Lapse', {
       const recallable = it.card !== undefined && it.kind !== 'spellToken' && isSpellEffect(it.kind);
       if (recallable) {
         // CR 402.4: off the STACK and into a hand — `from: 'stack'`
-        g.toHand(it.controller, it.card!, 'stack');
+        // CR 102.4 / CT-344: still its owner's card in its controller's hand
+        g.toHand(it.controller, it.card!, 'stack', it.owner !== undefined ? { owner: it.owner } : {});
         g.ev('info', `Dream Lapse: ${it.card} is recalled to ${g.pname(it.controller)}'s hand.`);
       } else if (it.kind === 'spellToken' && !it.copy) {
         // CR 801.7d: a spell token enters the hand and is erased from it

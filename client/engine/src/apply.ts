@@ -3624,8 +3624,9 @@ function doAmend(e: E, seat: Seat, by: Seat, edit: AmendEdit): void {
       e.quietLeavePlay(u);
       // a token has no card to put anywhere (CR 410.5): it is simply gone
       if (u.token) break;
-      if (edit.to === 'hand') e.toHand(to, u.card, 'play', { unit: u.id, quiet: true });
-      else if (edit.to === 'bin') e.toBin(to, u.card, 'amend');
+      // CR 102.4 / CT-344: the card keeps its owner in the controller's hand or bin
+      if (edit.to === 'hand') e.toHand(to, u.card, 'play', { unit: u.id, quiet: true, owner: u.owner });
+      else if (edit.to === 'bin') e.toBin(to, u.card, 'amend', u.owner);
       else e.recycleToBottom(to, u.card);
       break;
     }
@@ -3683,8 +3684,9 @@ export function amendFrozen(frozen: GameState, action: Extract<Action, { type: '
       const to = before.entities[edit.id]?.controller ?? seat;
       if (known) e.quietLeavePlay(u!);
       if (known && u!.token) break;
-      if (edit.to === 'hand') e.toHand(to, edit.card, 'play', { quiet: true });
-      else if (edit.to === 'bin') e.toBin(to, edit.card, 'amend');
+      const owned = known ? { owner: u!.owner } : {};   // CR 102.4 / CT-344, as in doAmend
+      if (edit.to === 'hand') e.toHand(to, edit.card, 'play', { quiet: true, ...owned });
+      else if (edit.to === 'bin') e.toBin(to, edit.card, 'amend', known ? u!.owner : undefined);
       else e.recycleToBottom(to, edit.card);
       break;
     }

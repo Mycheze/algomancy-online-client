@@ -130,6 +130,20 @@ test('CR 102.4 / CT-344: a foreign-owned card prophesied out of the hand keeps i
   assert.equal(cc!.owner, D);
 });
 
+test('CR 102.4 / CT-344: a foreign-owned spell recalled off the stack (Cosmic Reversal) is still its owner card in the hand', () => {
+  const { h, A, D } = battle(62306);
+  giveResources(h, A, 'water', 1);
+  giveResources(h, D, 'water', 2);
+  const at = give(h, A, 'Premonition');
+  h.state.players[A]!.foreign = [{ zone: 'hand', at, card: 'Premonition', owner: D }];
+  h.do({ type: 'playCard', seat: A, handIndex: at });
+  assert.equal(h.state.stack.at(-1)?.owner, D, 'the item carries its owner');
+  h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Cosmic Reversal') });
+  pass(h); pass(h);                                            // Cosmic Reversal resolves
+  assert.equal(handOwner(h, A, 'Premonition'), D, 'back in the hand of its controller, still D card');
+  finishBattle(h);
+});
+
 // ══ §2 · THE CLASS GUARD ═══════════════════════════════════════════════
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -149,8 +163,8 @@ function tsFiles(dir: string, out: string[] = []): string[] {
 const REMOVE = /\.removeFromBin\(\s*[^,]+,\s*[^,]+,\s*('[^']*'|[^,)]+)/;
 /** the two exits that may drop the owner: the card leaves the game, or enters a shared pile */
 const DROPS_OWNER = new Set(["'erased'", "'recycled'"]);
-/** a `toHand(` call whose zone is the bin */
-const TO_HAND_FROM_BIN = /\btoHand\([^;]*'bin'/;
+/** a `toHand(` call whose zone is a bin or the stack (a card that was the player's own) */
+const TO_HAND_FROM_BIN = /\btoHand\([^;]*'(bin|stack)'/;
 /** a raw hand/bin splice */
 const RAW_SPLICE = /\b(hand|bin|zone)\.splice\(/;
 
@@ -179,6 +193,7 @@ test('the bin-exit sweep is not blind: it flags planted exits and passes the rig
   assert.ok(!REMOVE.test('  removeFromBin(seat: Seat, binIndex: number, reason: string): CardName | undefined {'),
     'the declaration is not a call');
   assert.ok(TO_HAND_FROM_BIN.test("g.toHand(ctx.controller, name, 'bin');"), 'a bin recall to a hand is seen');
+  assert.ok(TO_HAND_FROM_BIN.test("g.toHand(it.controller, it.card!, 'stack');"), 'and a stack recall');
   assert.ok(!/owner/.test("g.toHand(ctx.controller, name, 'bin');"), 'and has no owner');
   assert.ok(RAW_SPLICE.test('    zone.splice(index, 1);'), 'a raw splice is seen');
   assert.ok(COMMENT.test("  // g.removeFromBin(seat, i, 'recalled');"), 'a commented line is skipped');
@@ -201,8 +216,9 @@ test('CR 102.4 / CT-344 class guard: every takeFromBin in a card file uses the o
   assert.deepEqual(unused.map(b => `${b.at}  ${b.line}`), []);
 });
 
-test('CR 102.4 / CT-344 class guard: every recall from a bin to a hand passes the owner', () => {
-  const bare = sweep(TO_HAND_FROM_BIN, h => !/owner/.test(h.line));
+test('CR 102.4 / CT-344 class guard: every recall from a bin or the stack to a hand passes the owner', () => {
+  // a token has no owner to keep (it is erased from the hand), so `token: true` passes too
+  const bare = sweep(TO_HAND_FROM_BIN, h => !/owner|token: true/.test(h.line));
   assert.deepEqual(bare.map(b => `${b.at}  ${b.line}`), []);
 });
 

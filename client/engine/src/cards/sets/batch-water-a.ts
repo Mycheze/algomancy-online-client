@@ -773,7 +773,8 @@ card('Cosmic Reversal', {
           g.recallSpellTokenItem(item, 'Cosmic Reversal');
         } else {
           // CR 402.4: off the STACK and into a hand — `from: 'stack'`
-          g.toHand(item.controller, item.card!, 'stack');
+          // CR 102.4 / CT-344: still its owner's card in its controller's hand
+          g.toHand(item.controller, item.card!, 'stack', item.owner !== undefined ? { owner: item.owner } : {});
           g.ev('info', `Cosmic Reversal recalls ${item.label} to ${g.pname(item.controller)}'s hand.`);
         }
       }
