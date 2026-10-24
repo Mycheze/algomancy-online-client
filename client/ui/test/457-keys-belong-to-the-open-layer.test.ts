@@ -127,7 +127,7 @@ test('D3 §2 just after a sent report closes, the board does not take the keys y
 const NOT_GAME_KEYS: Record<string, string> = {
   'main.ts:hideHoverTip': 'a key press hides the hover tooltip — it acts on nothing',
   'main.ts:primeAudio': 'the first key press unlocks audio — it acts on nothing',
-  'crsearch.ts:input.focus()': "'/' focuses the comprehensive-rules search on the review page; it skips text boxes itself",
+  'crsearch.ts:input.focus()': "'/' focuses the comprehensive-rules search on the review page; it skips text boxes and open dialogs itself",
   'rules.ts:rules-q': 'Escape in the rules search box clears it; it reads only that box',
 };
 

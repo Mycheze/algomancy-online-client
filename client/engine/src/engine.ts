@@ -10819,6 +10819,21 @@ export class E {
         const refIsAlly = (r: TargetRef): boolean => isAlly(this.resolveTargetRef(r));
         const askAlly = mixedAllegiance(def.targets, max)
           && already.length > 0 && already.every(isAlly);
+        /**
+         * CT-289 (report #206, Minor Kraken): the same question for a single
+         * printed "UP TO ONE target unit" slot (`min: 0`, not a "you may") when
+         * every unit it can reach right now is the caster's own — Debeli's
+         * Kraken recalled his own Curio Drifter with nothing asking. "Up to
+         * one" is the shape: the pool's members (Minor Kraken, Lumengrove
+         * Lurker, Grob) all send the unit away, while the "you may … target"
+         * family (Powerforge Synergist, Flux Constructor) moves counters onto
+         * a unit you will usually want to be your own, and never asks. With
+         * any enemy in reach the pick was a choice and nothing asks either.
+         * Never a narrowing (CR D1.1a): the same options, the stop included.
+         */
+        const askOnly = !askAlly && max === 1 && def.targets.min === 0 && !def.targets.may
+          && (slot.what === 'unit' || slot.what === 'any')
+          && cands.every(refIsAlly);
         // `card` gives the UI a scan to render for targets that are not on the
         // board — a card in a bin or a cache has no entity to look at
         // CT-307: the spec's own "this pick does nothing" question, display-only
@@ -10835,7 +10850,9 @@ export class E {
             ...(askAlly && refIsAlly(c)
               ? { confirm: `${item.label} can target an enemy, and every target you have picked `
                   + 'is one of your own units. Did you mean to?' }
-              : ask ? { confirm: ask, confirmWhy: 'noop' as const } : {}),
+              : askOnly
+                ? { confirm: 'Every unit you can target right now is one of your own. Did you mean to?' }
+                : ask ? { confirm: ask, confirmWhy: 'noop' as const } : {}),
           };
         });
         // CT-309: a "you may … target" offers the stop before the first pick

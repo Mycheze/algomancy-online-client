@@ -21,6 +21,8 @@
  */
 import { esc } from './util.ts';
 import type { CrReviewDoc } from './crtypes.ts';
+import { isReportOpen, reportJustSent } from './report.ts';
+import { isComposerOpen, isSheetOpen } from './crlayer.ts';
 
 export type CrHitKind = 'rule' | 'section' | 'chapter' | 'gloss' | 'finding' | 'disc';
 
@@ -293,6 +295,11 @@ function make(): void {
   }, { capture: true });
   document.addEventListener('keydown', e => {
     if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || !host?.active() || !input?.isConnected) return;
+    // CT-291: a dialog over the page has the keyboard — this page's own
+    // comment sheet and composer (they capture only Escape), and the report
+    // form (its own capture listener already stops page keys; asked here too
+    // so the rule reads in one place)
+    if (isReportOpen() || reportJustSent() || isComposerOpen() || isSheetOpen()) return;
     const el = e.target as HTMLElement | null;
     if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
     e.preventDefault();

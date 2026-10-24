@@ -18,7 +18,7 @@ import type { XPreviewRow } from '../engine/src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationNeedsConfirm,
   assignSplitStep, assignSplitStepper, assignSplitSubmit, autoHasteDone,
-  blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
+  blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens, handBlockLine, handBlockReason,
   counterAmountIndex, counterPickIndex, counterPickValue, counterStepper,
   counterStepperCount,
   dismissSeenCard, dismissSeenHand,
@@ -10103,7 +10103,15 @@ setZoomDecorator((src, copy) => {
     const n = h.state.players[p]?.hand[i];
     if (n && n !== HIDDEN_CARD) {
       const xrows = xPreviewFor(n, p);
-      badges = handBadges(n, handOffers(legalFor(p), i), xrows);
+      const offers = handOffers(legalFor(p), i);
+      badges = handBadges(n, offers, xrows);
+      // CT-288 (#211): a card with no ring says why, under the zoom — the one
+      // surface both a hover and a finger's tap (#201) reach. Only for a seat
+      // this screen plays, and never in the replay viewer.
+      const mine = !replayActive() && (bothSeats() || NET?.seat === p);
+      const why = !mine || offers.length || pickable(`hand:${p}:${i}`) ? ''
+        : handBlockLine(handBlockReason(q(), p, i, legalFor(p)));
+      if (why) copy.insertAdjacentHTML('beforeend', `<div class="zoomhang handwhy">${esc(why)}</div>`);
     }
   } else if (src.dataset['prevstack'] !== undefined) {
     const id = Number(src.dataset['prevstack']);
@@ -11760,8 +11768,8 @@ function typingIn(t: EventTarget | null): boolean {
 }
 /** CT-135: every overlay a hotkey must not reach through — THE list (269 reads
  * it here). `withPick` false leaves out the two pick dialogs: those are the
- * game's own question, which Enter answers and undo may take back, not a layer
- * over the game. D3: and the moment just after a sent report closes. */
+ * game's own question, which Enter answers — the hotkeys' Enter branch is the
+ * one caller that asks. D3: and the moment just after a sent report closes. */
 function overlaysUp(withPick = true): boolean {
   const overlayUp = isReportOpen() || isRevealsOpen() || amend.isAmendOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
@@ -11779,7 +11787,10 @@ function overlaysUp(withPick = true): boolean {
  * also where Escape closes those layers and Enter answers the pick dialog.
  */
 function inputOwned(e: KeyboardEvent): boolean {
-  return typingIn(e.target) || (inGame && (overlaysUp(false) || actBarUp()));
+  // CT-291: the pick dialogs too. Enter answers them (the hotkeys' own branch),
+  // but a Ctrl+Z pressed over a draft or bottom pick is not aimed at the board
+  // underneath it any more than one over the report is.
+  return typingIn(e.target) || (inGame && (overlaysUp() || actBarUp()));
 }
 
 document.addEventListener('keydown', e => {

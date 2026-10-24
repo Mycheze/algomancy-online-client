@@ -9,7 +9,8 @@
  * (CR 724.4a). A printed spell attribute was on the scan only.
  *
  * The owner chose CHIPS ONLY: the stack card and its zoom wear the chips a
- * unit does; the does-line wording is left alone. The chips read
+ * unit does; the does-line wording was left alone then (CT-194 later made
+ * it say the doubled number: test 618). The chips read
  * `E.stackItemAttrs`, which calls the very `stackItemGrants` resolution hands
  * to each part, so a chip cannot claim what the damage will not do.
  *
