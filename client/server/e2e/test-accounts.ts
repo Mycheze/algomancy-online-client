@@ -4,8 +4,9 @@
  * server, no framework:
  *
  *   1. In-process: the stat fold, the achievement table, the friend graph,
- *      passwords, and the "register under a name and claim the games you
- *      already played" path.
+ *      passwords, and BL-28: registering under a name claims NOTHING played
+ *      under it; the one game a new account may start with is the one its
+ *      sign-up ticket names.
  *   2. Integration: spawn the real server against a throwaway accounts file
  *      and a throwaway games directory, then register / log in / join a room
  *      over a websocket and check the seat really is bound to the account.
