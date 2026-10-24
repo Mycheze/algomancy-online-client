@@ -68,11 +68,57 @@ export const CHALLENGES: ChallengeDef[] = [
     goal: { kind: 'counters', n: 100 },
     seed: 20261115, par: 81,
   },
+  // The Parade (2026-11-22-parade, week of 11-15) was taken out before it
+  // opened (owner, 2026-10-24: "Just remove it from the rotation"); its
+  // reference run is parked in challenge-runs/parked/ for a later week.
+  // ── the weeks drafted 2026-10-24, approved by the owner the same day ──
   {
-    id: '2026-11-22-parade', week: '2026-11-15', title: 'The Parade',
-    blurb: 'Play 100 unit cards.',
-    goal: { kind: 'unitsPlayed', n: 100 },
-    seed: 20261122, par: 286,
+    id: '2026-11-15-set', week: '2026-11-15', title: 'Full Set',
+    blurb: 'Control five Robots, five Crystals, five Fireballs and five Poisons, all at the same time.',
+    goal: { kind: 'tokenSet', tokens: { Robot: 5, Crystal: 5, Fireball: 5, Poison: 5 } },
+    seed: 20261122, par: 108,
+  },
+  {
+    id: '2026-11-22-draw', week: '2026-11-22', title: 'Page Turner',
+    blurb: 'Draw 15 cards in a single turn.',
+    goal: { kind: 'drawsInTurn', n: 15 },
+    seed: 20261129, par: 234,
+  },
+  {
+    id: '2026-11-29-owngoal', week: '2026-11-29', title: 'Own Goal',
+    blurb: 'Lose the game, but only to an effect the dummy controls.',
+    goal: { kind: 'dummyWins' },
+    seed: 20261206, par: 84,
+  },
+  {
+    id: '2026-12-06-oneshot', week: '2026-12-06', title: 'One and Done',
+    blurb: 'Defeat a 60-life dummy with one blow: any hit that leaves it standing ends the run.',
+    goal: { kind: 'oneShot' }, setup: { dummyLife: 60 },
+    seed: 20261213, par: 30,
+  },
+  {
+    id: '2026-12-13-health', week: '2026-12-13', title: 'Picture of Health',
+    blurb: 'Reach 100 life.',
+    goal: { kind: 'life', n: 100 },
+    seed: 20261220, par: 70,
+  },
+  {
+    id: '2026-12-20-grafts', week: '2026-12-20', title: '12 Grafts of Christmas',
+    blurb: 'Twelve graft effects, one of each size from 1 part to 12; a multiplier\'s repeats count as parts.',
+    goal: { kind: 'graftLadder', n: 12 },
+    seed: 20261227, par: 200,
+  },
+  {
+    id: '2026-12-27-spree', week: '2026-12-27', title: 'Spending Spree',
+    blurb: 'Spend 50 mana, with every dormant resource yours to open each planning step.',
+    goal: { kind: 'manaSpent', n: 50 }, setup: { emblem: 'anyActivations' },
+    seed: 20270103, par: 40,
+  },
+  {
+    id: '2027-01-03-stack', week: '2027-01-03', title: 'Stack Overflow',
+    blurb: 'Put 30 effects on the stack at once.',
+    goal: { kind: 'stackDepth', n: 30 },
+    seed: 20270110, par: 56,
   },
 ];
 

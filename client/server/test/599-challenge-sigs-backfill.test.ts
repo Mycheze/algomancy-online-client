@@ -48,7 +48,7 @@ test.after(async () => {
 
 // a calendar row and its committed reference run: the tool reads the
 // CHECKOUT's calendar, so the run must be on it
-const ID = '2026-11-22-parade';   // the quickest to verify
+const ID = '2026-11-01-tokens';   // quick to verify (The Parade, the quickest, is parked)
 const DEF = challengeById(ID)!;
 assert.ok(DEF, `the calendar has ${ID}`);
 const REF = JSON.parse(readFileSync(join(SERVER, 'challenge-runs', `${ID}.json`), 'utf8')) as { deck: CardName[]; actions: Action[] };

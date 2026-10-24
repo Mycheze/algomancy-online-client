@@ -33,7 +33,15 @@ const PAR: Record<string, RunScore> = {
   '2026-11-01-tokens': { unique: 10, extra: 3, cards: 13, elements: 1, turns: 8, raw: 104, skill: 100 },
   '2026-11-08-giant': { unique: 7, extra: 0, cards: 7, elements: 2, turns: 5, raw: 70, skill: 100 },
   '2026-11-15-counters': { unique: 9, extra: 0, cards: 9, elements: 1, turns: 9, raw: 81, skill: 100 },
-  '2026-11-22-parade': { unique: 13, extra: 0, cards: 13, elements: 2, turns: 11, raw: 286, skill: 100 },
+  // The Parade (2026-11-22-parade) is parked, not on the calendar: challenge-runs/parked/
+  '2026-11-15-set': { unique: 9, extra: 0, cards: 9, elements: 2, turns: 6, raw: 108, skill: 100 },
+  '2026-11-22-draw': { unique: 8, extra: 5, cards: 13, elements: 2, turns: 9, raw: 234, skill: 100 },
+  '2026-11-29-owngoal': { unique: 7, extra: 0, cards: 7, elements: 3, turns: 4, raw: 84, skill: 100 },
+  '2026-12-06-oneshot': { unique: 5, extra: 0, cards: 5, elements: 2, turns: 3, raw: 30, skill: 100 },
+  '2026-12-13-health': { unique: 7, extra: 0, cards: 7, elements: 2, turns: 5, raw: 70, skill: 100 },
+  '2026-12-20-grafts': { unique: 9, extra: 1, cards: 10, elements: 2, turns: 10, raw: 200, skill: 100 },
+  '2026-12-27-spree': { unique: 10, extra: 0, cards: 10, elements: 1, turns: 4, raw: 40, skill: 100 },
+  '2027-01-03-stack': { unique: 8, extra: 0, cards: 8, elements: 1, turns: 7, raw: 56, skill: 100 },
 };
 
 const fileOf = (id: string): string => join(REFERENCE_RUNS_DIR, `${id}.json`);

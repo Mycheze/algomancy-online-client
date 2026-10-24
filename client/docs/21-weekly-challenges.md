@@ -81,7 +81,8 @@ Skill    = par ÷ raw × 100, rounded half up    — HIGHER is better (skillOf)
   card step** (the same draw as any constructed game), not the lesson's `drawPerTurn`. This is
   the one new per-seat knob on `LessonDeal`.
 - **Seat 1, the dummy:**
-  - No cards in hand ever: opening hand 0, draws 0, Shards 0, prismites 0, life 99.
+  - No cards in hand ever: opening hand 0, draws 0, Shards 0, prismites 0, life 99 (or the
+    row's `setup.dummyLife`).
   - Its deck is `DUMMY_DECK`.
   - It acts only through `dummyMove`, the most passive legal action, a pure function of the
     state. The browser and the server use this one definition.
@@ -90,6 +91,16 @@ Skill    = par ÷ raw × 100, rounded half up    — HIGHER is better (skillOf)
   is over and the run failed. Nothing else ends it; the player can give up. The action that meets
   the goal counts even if it also ends the game (CT-353, 2026-10-24: the permissive reading, the
   same on the server's `verifyRun` and in the browser).
+- **A row's setup** (`ChallengeDef.setup`, added 2026-10-24) changes the deal: `dummyLife` (the
+  dummy's starting life) and `emblem` (a rule the player has all game; `anyActivations` = "You
+  may activate any number of dormant resources during your planning step", the lesson deal's
+  per-seat `activations` knob at 99). It is part of the deal, so everything that re-deals a run
+  carries it with the row: the browser's run record, a report attachment (`report-run.ts`), Watch
+  and the admin tab. The challenge page shows it under the goal (`setupLines`). A row without it
+  deals exactly the game every earlier week dealt.
+- **A goal can fail a run** (`RunAcc.failed`, `runFailed`): oneShot fails the moment the dummy
+  loses life and lives (or is hit twice in the action that kills it). `verifyRun` refuses at that
+  action with the sentence; the browser shows "Run failed" with it.
 
 ## Module contracts
 
@@ -101,10 +112,20 @@ export type Goal =
   | { kind: 'spellTokens'; n: number }   // seat 0 has created ≥ n spell tokens (cumulative)
   | { kind: 'unitSize'; p: number; t: number } // seat 0 controls a unit with effStats ≥ p/t
   | { kind: 'counters'; n: number }      // ≥ n +1/+1 counters placed on seat 0's units (cumulative)
-  | { kind: 'unitsPlayed'; n: number };  // seat 0 has played ≥ n unit cards (cumulative)
+  | { kind: 'unitsPlayed'; n: number }   // seat 0 has played ≥ n unit cards (cumulative)
+  // added 2026-10-24
+  | { kind: 'tokenSet'; tokens: Record<CardName, number> } // ≥ tokens[name] of each, at once (unit and spell tokens)
+  | { kind: 'drawsInTurn'; n: number }   // seat 0 draws ≥ n cards in one turn (the bottom step's put-back is not a draw)
+  | { kind: 'dummyWins' }                // the dummy wins while an item IT controls is resolving (no concession)
+  | { kind: 'oneShot' }                  // the dummy dies from one life loss; any loss it lives through FAILS the run
+  | { kind: 'graftLadder'; n: number }   // a graft composite (CR 722.4) of exactly k parts fired, for every k in 1..n
+  | { kind: 'manaSpent'; n: number }     // seat 0's resources gone open → expended, cumulative
+  | { kind: 'stackDepth'; n: number }    // ≥ n items on the stack after an action
+  | { kind: 'life'; n: number };         // seat 0 has ≥ n life
 
 export interface ChallengeDef { id: string; week: string /* YYYY-MM-DD, a Sunday */; title: string;
-  blurb: string; goal: Goal; seed: number; par: number /* the reference run's raw */ }
+  blurb: string; goal: Goal; seed: number; par: number /* the reference run's raw */;
+  setup?: { dummyLife?: number; emblem?: 'anyActivations' } }
 
 export const PLAYER: Seat;            // 0
 export const DUMMY: Seat;             // 1
@@ -259,4 +280,28 @@ different game. Owner, 2026-10-23: "Fingerprints + banner".
 - Test 506 replays each one through `verifyRun` and requires `ok`.
 - It proves the goal is achievable at its `n`, guards against drift, and requires its `raw` to
   equal the row's committed `par` (so it scores Skill 100).
-- Pars: crowd 90, tokens 104, giant 70 (raised from 60/60 to 80/80 before it opened, owner 2026-10-24), counters 81, parade 286.
+- Pars: crowd 90, tokens 104, giant 70 (raised from 60/60 to 80/80 before it opened, owner 2026-10-24), counters 81;
+  set 108, draw 234, owngoal 84, oneshot 30, health 70, grafts 200, spree 40, stack 56.
+- **The Parade is parked** (owner, 2026-10-24, before it opened: "Just remove it from the
+  rotation"): its run is `challenge-runs/parked/2026-11-22-parade.json` (par 286), which the gate
+  does not replay. Back on the calendar = a new row, and the file moved back under that row's id.
+
+### The weeks from 15 Nov 2026 (owner, 2026-10-24)
+
+The owner's rule for overlap: only the exact goal may not repeat ("100 units, 80 units and 20
+units is the same thing basically. But 100 life, 100 units, 100/100 are totally different").
+
+| week | title | goal | reference (turns · cards · elements), solver policy |
+|---|---|---|---|
+| 11-15 | Full Set | tokenSet 5 Robot, 5 Crystal, 5 Fireball, 5 Poison | 6 · 9 · 2 — `conspiracy`: the grove crowd, Cosmic Conspirator, All-Consuming Blight |
+| 11-22 | Page Turner | drawsInTurn 15 | 9 · 13 · 2 — `draw-attack`: Luminary Leaders + Dreamfloat Drifters attack, three Invigorates |
+| 11-29 | Own Goal | dummyWins | 4 · 7 · 3 — `vengeance`: Flesh Tithe to 1 life, Rebalance gives the dummy a Spirit of Vengeance, a Sprouter dies |
+| 12-06 | One and Done | oneShot, dummy 60 | 3 · 5 · 2 — `tithe-burgeon`: a 29/29 attacks alone, Life Channel, Burgeon: 64 |
+| 12-13 | Picture of Health | life 100 | 5 · 7 · 2 — `fission`: Equilibriate, Flesh Tithe 63/63, Stellar Fission on it: 127 |
+| 12-20 | 12 Grafts of Christmas | graftLadder 12 | 10 · 10 · 2 — `evoker-ladder`: Omniwield Evoker fired after each graft |
+| 12-27 | Spending Spree | manaSpent 50, emblem | 4 · 10 · 1 — `shifter-sink`: recycle and open everything, Celestial Shifter's [x] |
+| 01-03 | Stack Overflow | stackDepth 30 | 7 · 8 · 1 — `poison-stack`: a crowd of 30, Blight, every Poison cast in one window |
+
+Not built: **Double KO** ("kill the dummy and yourself with the same effect"). The engine ends the
+game at the first life total to reach 0 (`E.loseLife` throws `GameEnded`; CR 104.1a), so the
+second player's life never changes and no run can show both at 0. It waits on that rules change.
