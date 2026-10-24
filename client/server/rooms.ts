@@ -2287,6 +2287,38 @@ export function allRooms(): IterableIterator<Room> {
   return rooms.values();
 }
 
+/**
+ * CT-334: how many of the OTHER seat's actions the open hidden step holds from
+ * `seat` — 0 outside one. What `viewFor` takes off the `actionCount` it serves
+ * `seat`, so the count moves for your own plays and not for theirs.
+ */
+export function hiddenActionsFrom(room: Room, seat: Seat): number {
+  if (!room.segSnapshot || room.segStartIndex < 0) return 0;
+  const opp = seat === 0 ? 1 : 0;
+  let n = 0;
+  for (let i = room.segStartIndex; i < room.actions.length; i++) if (room.actions[i]!.seat === opp) n++;
+  return n;
+}
+
+/** the `actionCount` of the view `seat` is served now (CT-334): what a client
+ * stamps its answers with, so what anything comparing them must use too */
+export const viewActionCount = (room: Room, seat: Seat): number =>
+  Math.max(0, room.state.actionCount - hiddenActionsFrom(room, seat));
+
+/**
+ * CT-197: the test-mode sandbox rooms in the map, the least recently played
+ * first — what main.ts's 50-room sandbox cap starts from after a restart.
+ * The cap's list lived only in memory, so every sandbox restored at boot was
+ * invisible to it and its file outlived the cap. Called once, right after
+ * `restoreRooms()`; `/api/sandbox/open` appends every later one.
+ */
+export function sandboxCodesByAge(): string[] {
+  return [...rooms.values()]
+    .filter(r => r.scenario !== undefined && isSandboxId(r.scenario))
+    .sort((a, b) => a.lastActionAt - b.lastActionAt || (a.code < b.code ? -1 : a.code > b.code ? 1 : 0))
+    .map(r => r.code);
+}
+
 /* ── IDLE ROOMS CLOSE THEMSELVES (2026-10-04) ─────────────────────────────
  *
  * The owner: "Any game that's started seems to be allowed to stay open
@@ -2382,11 +2414,28 @@ const FILE_CODE = /^[A-Z0-9]{1,12}$/;
 /**
  * What a visitor to a CLOSED room's link is told, or null when the code names
  * no closed room. Read off the file — the room is gone from memory by then.
+ *
+ * CT-195: and a FINISHED one. main.ts sweepFinished forgets a decided room an
+ * hour after its last visitor leaves (and a restart does not load one older
+ * than RESTORE_WINDOW_MS), so its link reached here too and was answered "No
+ * game with code", as if it had been mistyped. The file still holds the
+ * result, so the link says the game is over, who won, and where its replay is
+ * (the match history's replay link — /api/replay serves it to the two players
+ * only, so the sentence says it is theirs: a watcher's link lands here too).
  */
 export function closedNotice(code: string): string | null {
   if (!FILE_CODE.test(code)) return null;
   try {
-    const raw = JSON.parse(readFileSync(join(GAMES_DIR, `${code}.json`), 'utf8')) as { closed?: Partial<RoomClosed> };
+    const raw = JSON.parse(readFileSync(join(GAMES_DIR, `${code}.json`), 'utf8')) as {
+      closed?: Partial<RoomClosed>; winner?: unknown; names?: unknown; scenario?: unknown;
+    };
+    if (raw.winner === 0 || raw.winner === 1) {
+      const name = Array.isArray(raw.names) && typeof raw.names[raw.winner] === 'string'
+        ? String(raw.names[raw.winner]) : `Player ${raw.winner + 1}`;
+      // a scenario room is a test fixture, never a history row (history.ts)
+      return `Game ${code} is over: ${name} won.`
+        + (raw.scenario === undefined || raw.scenario === null ? ' Its players can watch it back from their match history.' : '');
+    }
     if (raw.closed?.reason !== 'idle') return null;
     const h = Math.max(1, Math.round((Number(raw.closed.afterMs) || IDLE_SHORT_MS) / 3600_000));
     return `Game ${code} closed after ${h} hour${h === 1 ? '' : 's'} without a move.`;
@@ -3710,12 +3759,13 @@ export function noteFixRun(room: Room, continues: boolean, at: number, now = Dat
   persist(room);
 }
 
-/** End the open run: clear it and hand back what to file (null: none). */
-export function takeFixRun(room: Room): { from: number; at: number; fixes: Amendment[] } | null {
+/** End the open run: clear it and hand back what to file (null: none).
+ * `keepDate`: the boot's flush, which is not a move (CT-196, see persist). */
+export function takeFixRun(room: Room, keepDate = false): { from: number; at: number; fixes: Amendment[] } | null {
   const r = room.fixRun;
   if (!r) return null;
   room.fixRun = null;
-  persist(room);
+  persist(room, keepDate);
   const fixes = room.amendments.slice(r.from);
   return fixes.length ? { from: r.from, at: r.at, fixes } : null;
 }
@@ -4215,7 +4265,15 @@ export function lastActionOf(raw: { lastActionAt?: unknown; actions?: unknown; v
   return mtimeMs;
 }
 
-function persist(room: Room): void {
+/**
+ * `keepDate` (CT-196): write the file but leave its mtime where it was.
+ * history.ts reads the mtime as the day a game was played, so a write that is
+ * not a move must not move it — the restore's version stamp and fork record,
+ * and the boot's filing of a fix run, were re-dating every unfinished game to
+ * the day of each restart. Every other write is a move (or a seat, a deck, a
+ * name — something history should re-read), and dates the file as before.
+ */
+function persist(room: Room, keepDate = false): void {
   // ⚠ SANDBOX ROOMS ARE PERSISTED TOO — BL-06's call, and test-sandbox.ts
   // asserts a played one rebuilds byte-identically across a restart. What
   // bounds the disk is main.ts's cap: the fifty-first sandbox evicts the
@@ -4223,6 +4281,8 @@ function persist(room: Room): void {
   try {
     mkdirSync(GAMES_DIR, { recursive: true });
     const path = join(GAMES_DIR, `${room.code}.json`);
+    let was: number | null = null;
+    if (keepDate) { try { was = statSync(path).mtimeMs; } catch { /* no file yet: nothing to keep */ } }
     // temp + rename, like accounts.ts: this file is the game's only record,
     // and a crash mid-write must not leave it half-written (restoreRooms
     // would silently skip the corrupt room and the game would be lost)
@@ -4328,9 +4388,42 @@ function persist(room: Room): void {
       ...(room.mode === 'constructed' ? { decks: room.decks, deckIds: room.deckIds } : {}),
     }));
     renameSync(tmp, path);
+    if (was !== null) pinMtime(path, was);
   } catch (err) {
     console.error(`[rooms] could not persist ${room.code}:`, err);
   }
+}
+
+/**
+ * CT-335 — A RUN OF FIXES IN A FILE THE RESTORE DOES NOT LOAD.
+ *
+ * A restored room's unfiled run is filed by main.ts at boot (flushFixRun). A
+ * room the restore leaves on disk — closed, or a week without a move — never
+ * reaches the map, so its run was never filed by anybody. restoreRooms takes
+ * such a run OUT of its file (the date kept: not a move) and parks it here;
+ * main.ts files each one as the same report row a live run files.
+ */
+export interface StaleFixRun {
+  code: string;
+  users: [string | null, string | null];
+  from: number;
+  at: number;
+  fixes: Amendment[];
+}
+const staleFixRuns: StaleFixRun[] = [];
+/** the runs the last restore took out of files it did not load; empties the list */
+export function takeStaleFixRuns(): StaleFixRun[] {
+  return staleFixRuns.splice(0);
+}
+/** a not-restored file's unfiled run, parked for main.ts — null when none */
+function staleFixRunOf(code: string, raw: { fixRun?: unknown; amendments?: unknown; users?: unknown }): StaleFixRun | null {
+  const run = sanitizeFixRun(raw.fixRun, raw.amendments);
+  if (!run) return null;
+  const fixes = sanitizeAmendments(raw.amendments, 0).slice(run.from);
+  if (!fixes.length) return null;
+  const u = Array.isArray(raw.users) ? raw.users : [];
+  const user = (x: unknown): string | null => (typeof x === 'string' ? x : null);
+  return { code, users: [user(u[0]), user(u[1])], from: run.from, at: run.at, fixes };
 }
 
 /** Restore all persisted rooms by replaying their action logs. Best-effort:
@@ -4402,10 +4495,25 @@ export function restoreRooms(now = Date.now()): void {
         /** BL-46: the run of them not yet filed */
         fixRun?: unknown;
       };
+      // CT-335: a file this loop does not load still files its run of fixes
+      const strayRun = raw.fixRun === undefined ? null : staleFixRunOf(code, raw);
       // 2026-10-04: a CLOSED game is over for good — never back in the map
-      if (raw.closed) { closedCount++; continue; }
+      if (raw.closed) {
+        closedCount++;
+        if (strayRun) {
+          const { fixRun: _filed, ...rest } = raw;
+          const tmp = `${path}.tmp`;
+          writeFileSync(tmp, JSON.stringify(rest));
+          renameSync(tmp, path);
+          pinMtime(path, mtimeMs);
+          staleFixRuns.push(strayRun);
+        }
+        continue;
+      }
       const lastActionAt = lastActionOf(raw, mtimeMs);
       if (now - lastActionAt > RESTORE_WINDOW_MS) {
+        if (strayRun) staleFixRuns.push(strayRun);
+        const { fixRun: _filed, ...kept } = raw;
         // a week without a move. An UNFINISHED one is closed in its file on
         // the way past (no result — `winner` untouched), so its link says what
         // happened instead of "no game with that code"; a finished one keeps
@@ -4414,12 +4522,18 @@ export function restoreRooms(now = Date.now()): void {
           const n = Array.isArray(raw.actions) ? raw.actions.length : 0;
           const closed: RoomClosed = { reason: 'idle', at: now, afterMs: idleWindowMs(n) };
           const tmp = `${path}.tmp`;
-          writeFileSync(tmp, JSON.stringify({ ...raw, lastActionAt, closed }));
+          writeFileSync(tmp, JSON.stringify({ ...kept, lastActionAt, closed }));
           renameSync(tmp, path);
           pinMtime(path, lastActionAt);
           closedCount++;
         } else {
           stale++;
+          if (strayRun) {
+            const tmp = `${path}.tmp`;
+            writeFileSync(tmp, JSON.stringify(kept));
+            renameSync(tmp, path);
+            pinMtime(path, mtimeMs);   // CT-196: filing a run is not a move
+          }
         }
         continue;
       }
@@ -4577,7 +4691,8 @@ export function restoreRooms(now = Date.now()): void {
       // engine change — the loss-free case is the one that used to leave no
       // trace at all.
       if (decidedWinner(restored) === null && stampVersion(restored)) dirty = true;
-      if (dirty) persist(restored);
+      // CT-196: a restart is not a move — the stamp is written, the date kept
+      if (dirty) persist(restored, true);
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions`
         + `${skipped.length ? `, ${skipped.length} unreplayable` : ''}`
         + `${restored.drifted.length ? `, ${restored.drifted.length} changed meaning` : ''}`

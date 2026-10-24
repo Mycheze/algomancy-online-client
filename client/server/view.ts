@@ -163,10 +163,20 @@ export function spectatorView(state: GameState): SeatView {
   return structuredClone(state) as SeatView;
 }
 
-export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | null): SeatView {
+/**
+ * `oppHidden` (CT-334): how many of the OTHER seat's actions the open hidden
+ * step holds from `seat` — rooms.ts `hiddenActionsFrom`. Read only with a
+ * frozen board, and taken off `actionCount`, which otherwise ticked once for
+ * every hidden play the opponent made: a client reading the wire could count
+ * them. Your own actions still move it (the client's send latch and pick
+ * chains wait on exactly that), and the reveal moves it the rest of the way.
+ */
+export function viewFor(state: GameState, seat: Seat, frozenOpp?: GameState | null, oppHidden = 0): SeatView {
   const v = structuredClone(state) as SeatView;
 
   if (frozenOpp) {
+    // CT-334: the count as if the opponent had not moved since the step opened
+    v.actionCount = Math.max(0, state.actionCount - Math.max(0, oppHidden));
     const o = other(seat);
     // a name is cosmetic and never hidden — and renameSeat() writes it
     // OUTSIDE the action log, so the snapshot (turn 1's is taken at room

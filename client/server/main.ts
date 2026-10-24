@@ -49,9 +49,9 @@ import {
   type Room, type SegKey,
   seatVerdict,
   notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
-  closedNotice, codeTaken, sweepIdleRooms,
+  closedNotice, codeTaken, sweepIdleRooms, sandboxCodesByAge, hiddenActionsFrom, viewActionCount,
   answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
-  rewindOptions, rewindRoom, type Proposal, fixRunContinues, noteFixRun, takeFixRun, FIX_RUN_IDLE_MS,
+  rewindOptions, rewindRoom, type Proposal, fixRunContinues, noteFixRun, takeFixRun, takeStaleFixRuns, FIX_RUN_IDLE_MS,
   disputedSeats, disputesRefusal,
 } from './rooms.ts';
 import { fileDispute } from './dispute.ts';
@@ -1305,7 +1305,7 @@ function baseView(room: Room, seat: Seat) {
   // at creation, so a room that has never sent a clock never will.)
   const clock = clockSnapshot(room);
   return {
-    view: viewFor(room.state, seat, room.segSnapshot),
+    view: viewFor(room.state, seat, room.segSnapshot, hiddenActionsFrom(room, seat)),
     // CR D8.4: the runner screen's payload, on every push. `undefined` for every
     // ordinary room — which is what keeps the tester out of normal play: a
     // client only ever draws the verdict bar when the SERVER says this room is
@@ -1912,12 +1912,12 @@ function carryOutFix(room: Room, p: Proposal, by: Seat): void {
  * rewritten — it waits for the run to end instead. Every fix's own words and
  * reason are in it, in order.
  */
-function flushFixRun(room: Room): void {
-  const run = takeFixRun(room);
+function flushFixRun(room: Room, keepDate = false): void {
+  const run = takeFixRun(room, keepDate);
   if (run) void fileFixReport(room, run);
 }
 
-async function fileFixReport(room: Room, run: { from: number; at: number; fixes: Amendment[] }): Promise<void> {
+async function fileFixReport(room: Pick<Room, 'code' | 'users'>, run: { from: number; at: number; fixes: Amendment[] }): Promise<void> {
   const first = run.fixes[0]!;
   const line = (f: Amendment): string => `${f.what}. What went wrong: ${f.reason}`;
   const entry: IssueRow = {
@@ -3032,7 +3032,7 @@ function sweepPassAll(): void {
   for (const room of allRooms()) {
     const seat = passAllDue(room, now);
     if (seat === null) continue;
-    const at = room.state.actionCount;
+    const at = viewActionCount(room, seat);   // CT-334: the count its view carries
     try {
       landAction(room, seat, { type: 'passPriority', seat });
       notePassAllCovered(room, seat, at);
@@ -3126,8 +3126,14 @@ expiryTimer.unref();
 
 loadAccounts();
 restoreRooms();
+// CT-197: the sandbox cap counts the sandboxes a restart brought back, oldest
+// first, so the next one opened evicts the oldest of them rather than none
+sandboxCodes.push(...sandboxCodesByAge());
 // BL-46: a run of agreed fixes the last process did not get to file
-for (const room of allRooms()) if (room.fixRun) flushFixRun(room);
+// (CT-196: filing it is not a move, so the file keeps its date)
+for (const room of allRooms()) if (room.fixRun) flushFixRun(room, true);
+// CT-335: …and the runs in files too old (or closed) to be restored at all
+for (const stray of takeStaleFixRuns()) void fileFixReport(stray, stray);
 // Every saved game becomes a match-history row and feeds the players' stats,
 // finished or not — most of ours end when somebody has to go, and those games
 // still happened. Cheap after the first pass: a game whose file has not been
