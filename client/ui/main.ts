@@ -11768,8 +11768,8 @@ function typingIn(t: EventTarget | null): boolean {
 }
 /** CT-135: every overlay a hotkey must not reach through — THE list (269 reads
  * it here). `withPick` false leaves out the two pick dialogs: those are the
- * game's own question, which Enter answers and undo may take back, not a layer
- * over the game. D3: and the moment just after a sent report closes. */
+ * game's own question, which Enter answers — the hotkeys' Enter branch is the
+ * one caller that asks. D3: and the moment just after a sent report closes. */
 function overlaysUp(withPick = true): boolean {
   const overlayUp = isReportOpen() || isRevealsOpen() || amend.isAmendOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
@@ -11787,7 +11787,10 @@ function overlaysUp(withPick = true): boolean {
  * also where Escape closes those layers and Enter answers the pick dialog.
  */
 function inputOwned(e: KeyboardEvent): boolean {
-  return typingIn(e.target) || (inGame && (overlaysUp(false) || actBarUp()));
+  // CT-291: the pick dialogs too. Enter answers them (the hotkeys' own branch),
+  // but a Ctrl+Z pressed over a draft or bottom pick is not aimed at the board
+  // underneath it any more than one over the report is.
+  return typingIn(e.target) || (inGame && (overlaysUp() || actBarUp()));
 }
 
 document.addEventListener('keydown', e => {
