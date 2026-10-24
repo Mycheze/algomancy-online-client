@@ -172,8 +172,10 @@ export interface CrAnchor {
   num?: string;
 }
 
-/** an author as everyone sees it: a name and the trust marks, never an id */
-export interface CrAuthor { name: string; owner?: true; judge?: 1 | 2 | 3 }
+/** an author as everyone sees it: a name and the trust marks, never an id.
+ * `system` (CT-276): the review process's own replies (server/crreview.ts
+ * RULES_EDITOR) — set by the author's id, so no account's name can earn it. */
+export interface CrAuthor { name: string; owner?: true; judge?: 1 | 2 | 3; system?: true }
 
 /**
  * One comment as the page receives it. Account ids never leave the server;

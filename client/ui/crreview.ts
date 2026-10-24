@@ -430,12 +430,15 @@ function isOutdated(th: Thread): boolean {
 const isOpen = (th: Thread): boolean => !th.root.resolved && !th.root.deleted && th.root.kind !== 'answer';
 
 function badges(c: CrComment): string {
-  return acct.badgeChipsHtml({
+  // CT-276: the review process's own replies carry a mark no account can earn
+  const sys = c.by.system ? '<span class="crchipx crsys" title="written by the rules review process, not by a player">system</span> ' : '';
+  return sys + acct.badgeChipsHtml({
     ...(c.by.owner ? { owner: true as const } : {}), ...(c.by.judge ? { judge: c.by.judge } : {}), since: '',
   });
 }
 
-function commentHtml(c: CrComment): string {
+/** one comment's markup — exported for server/test/616 (CT-276: the system chip) */
+export function commentHtml(c: CrComment): string {
   const answer = c.kind === 'answer'
     ? ` <span class="crchipx crans">${c.reading === 'other' ? 'answer: other' : `answer: Reading ${esc(c.reading ?? '')}`}</span>` : '';
   const acts = c.canEdit && !c.deleted
