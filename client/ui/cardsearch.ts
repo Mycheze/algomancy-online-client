@@ -143,6 +143,10 @@ export const FLAGS: readonly FlagDef[] = [
   { flag: 'unstable', help: 'printed {Unstable}', test: r => r.unstable },
   { flag: 'augment', help: 'an [Augment] card', test: r => r.keywords.includes('augment'), mechanic: true },
   { flag: 'graft', help: 'graftable — it prints a [Switch]', test: r => r.keywords.includes('graft'), mechanic: true },
+  // the two graft symbols, read off the printed text like TEXT_ALIASES:
+  // [Switch1] is the once-per-turn one. A card printing both would be both.
+  { flag: 'bounded', help: 'prints a bounded graft, [Switch1] (once per turn)', test: r => r.textLc.includes('[switch1]') },
+  { flag: 'unbounded', help: 'prints an unbounded graft, [Switch]', test: r => r.textLc.includes('[switch]') },
   { flag: 'ambush', help: 'has an Ambush play mode', test: r => r.ambush, mechanic: true },
   { flag: 'prophecy', help: 'prints a Prophecy banner', test: r => r.prophecy, mechanic: true },
   { flag: 'discardme', help: 'has a "Discard me" play mode', test: r => r.discardMe, mechanic: true },

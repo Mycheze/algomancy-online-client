@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-24', kind: 'new', text: 'Card search now has is:bounded and is:unbounded, to find just the once-per-turn grafts or just the unlimited ones.' },
   { date: '2026-10-23', kind: 'change', text: 'Weekly challenges now have three leaderboards, each with its own winner: Fastest (fewest turns), Leanest (fewest cards) and Purest (fewest elements), plus an Overall view. Skill is gone.' },
   { date: '2026-10-23', kind: 'fix', text: "Ancient One beside Echo of Despair now makes copies of Ancient One. It also borrows its neighbours' grafted and granted abilities, two Ancient Ones side by side share everything, and a dying one has its neighbours' when-I-die abilities." },
   { date: '2026-10-23', kind: 'fix', text: "Paying X life is now one loss of X life, not X losses of 1. Life Plant with Flesh Tithe for 29 makes 29 units, not 1, and the same goes for Torrential Reclamation's life loss." },

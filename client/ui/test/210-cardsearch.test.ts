@@ -257,6 +257,17 @@ test('is: covers every declared flag and nothing else', () => {
   assert.equal(count('class:card'), CARDS);
 });
 
+test('is:bounded and is:unbounded split the grafts by their printed symbol', () => {
+  // [Switch1] is bounded, [Switch] unbounded. No card prints both, and no card
+  // is a graft without printing one, so the two flags partition is:graft.
+  assert.equal(count('is:bounded'), 113);
+  assert.equal(count('is:unbounded'), 27);
+  assert.equal(count('is:bounded is:unbounded'), 0);
+  assert.equal(count('is:bounded') + count('is:unbounded'), count('is:graft'));
+  assert.equal(count('is:bounded'), count('o:bounded'), 'the flag agrees with the text alias');
+  assert.equal(count('is:unbounded'), count('o:graft -o:bounded'));
+});
+
 test('the classes partition the pool', () => {
   const total = ['card', 'token', 'resource', 'marker', 'help', 'exclusive']
     .reduce((n, c) => n + count(`class:${c}`), 0);
