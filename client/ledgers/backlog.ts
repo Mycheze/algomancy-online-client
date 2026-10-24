@@ -806,6 +806,36 @@ const OPEN: Entry[] = [
       + 'draft fuzz walk, so expect to re-seed the fixtures that pin one (143, 171, test-accounts '
       + 'search for theirs now).',
   },
+  {
+    id: 'BL-49',
+    slug: 'weekly-challenges-owner-weeks',
+    title: 'Weekly Challenges: the owner\'s nine new weeks, 15 Nov to 10 Jan (12 Grafts of Christmas on 20 Dec)',
+    area: 'teaching',
+    size: 'L',
+    status: 'active',
+    track: 'feature',
+    said: "Owner, 2026-10-24: \"Force the dummy to win the game from an effect it controls · Put 30 effects to go onto the stack at once · Reach 100 life · Kill the dummy and yourself simultaneously (via the same effect) · Kill the dummy in 'one shot' (if it takes any amount of damage that isn't lethal, you lose). It starts at 60 life. · Draw 15 cards in a single turn · Control, simultaneously, 5 robot tokens, 5 crystal tokens, 5 fireball tokens and 5 poison tokens · Spend 50 mana. You start the game with an emblem that says 'You may activate any number of dormant resources during your planning step.'\" And: \"let's make it the 12 Grafts of Christmas.\" \"The challenges can't overlap basically at all\" (clarified: only the exact same goal); \"We need more unique challenges that will make people actually think and dive into the options.\"",
+    means: "Nine new calendar rows from Sun 15 Nov (The Parade removed from the rotation, parked): token checklist (5 Robot + 5 Crystal + 5 Fireball + 5 Poison at once), draw 15 in one turn, the dummy wins from its own effect, one-shot the dummy from 60 life (non-lethal damage fails the run), 12 Grafts of Christmas on the week of 20 Dec (graft effects of exactly 1..12 parts, multipliers count), spend 50 mana with the dormant-resource emblem, 30 effects on the stack at once, reach 100 life, and a double KO (one effect brings both to 0). Shared machinery built once: per-week dummy starting life, a per-week emblem/rule, a fail condition. Each row has a reference run (challenge-solve.ts) the gate replays; par = its raw.",
+    doneWhen: [
+      'Nine rows on the calendar from Sun 15 Nov, 12 Grafts of Christmas on the week of Sun 20 Dec, no two with the same goal',
+      'Each row has a reference run that test 506 replays green, and Watch, the three boards, report runs and the admin Challenges tab handle every new goal kind',
+      'The Parade is off the calendar with its reference run parked, not replayed',
+      'The owner has seen the finished list (title, blurb, reference turns/cards/elements) before it deploys, and it is live before Sun 15 Nov',
+    ],
+    decided: [
+      'Owner 2026-10-24: only the exact same goal cannot repeat ("100 life, 100 units, 100/100 are totally different").',
+      'Owner 2026-10-24: 12 Grafts counts PARTS, multipliers count; it goes over Christmas. Order otherwise does not matter.',
+      'Owner 2026-10-24: The Parade removed ("maybe we\'ll put it in later"); Something Big raised to 80/80 (deployed 2e951ea).',
+    ],
+    asks: [],
+    notes: "ACTIVE 2026-10-24 (the double-KO rule for normal games is tracked as CT-409, an owner confirmation; that one week waits on it): the calendar agent is building it on branch pa-cal (worktree .claude/worktrees/pa-cal); design menu in ~/.claude/projects/-home-bena-Documents-Algomancy/zero-handoff/PA-cal-menu.md.",
+    touches: [
+      'client/server/challenges.ts',
+      'client/server/challenge-runs/',
+      'client/engine/src/challenge.ts',
+      'client/docs/21-weekly-challenges.md',
+    ],
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
