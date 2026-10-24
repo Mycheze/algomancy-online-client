@@ -1675,7 +1675,9 @@ function activationSource(e: E, u: Entity, via?: ActivateVia):
     }
     // CR 710.2a: a copy's copied augment mod is addressed as `{ face, text: 'augment' }`
     // too — its [Augment] text is the copy's own, keyed on the mod's card
-    e.need(e.facesWith(u, 'activated').includes(via.face)
+    // CR 721.1c / CT-349: a face borrowed off a neighbour's MOD is its
+    // [Augment] text only, so its body list is not addressable
+    e.need(e.faceEntries(u, 'activated').some(f => f.card === via.face && (via.text === 'augment' || !f.box))
       || (via.text === 'augment' && e.copiedAugments(u, 'activated').includes(via.face)),
     'that unit does not have that ability');
     const def = getCard(via.face);

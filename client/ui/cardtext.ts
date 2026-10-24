@@ -996,11 +996,13 @@ export function entityTextBox(e: E, u: Entity): CardTextBox {
   }
   // faces PROJECTED onto it right now (Ancient One) — additive, abilities only
   for (const facet of ['statics', 'activated', 'triggered', 'behavior'] as const) {
-    for (const name of e.facesWith(u, facet)) {
+    for (const { card: name, box } of e.faceEntries(u, facet)) {
       if (name === face) continue;
       if (lines.some(l => l.origin === 'copy' && l.from === name)) continue;
+      // CR 721.1c / CT-349: borrowed off a neighbour's MOD, it is that mod's
+      // [Augment] text only — the text the neighbour itself has of it
       lines.push({
-        text: clean(textOf(name)), from: name, origin: 'copy', active: !silenced,
+        text: box ? augmentClause(name) : clean(textOf(name)), from: name, origin: 'copy', active: !silenced,
       });
     }
   }

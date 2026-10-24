@@ -329,17 +329,20 @@ function aoAllies(g: E, self: Entity, deep: boolean, firstRing?: Entity[]): Enti
  * them the unit whose own printed text each one is (`carriers`, for the grafts
  * a borrowed graft cause brings — report 271): every ally's own face plus every
  * card augmented onto it ("this includes modded abilities"). */
-function aoBorrowedSources(g: E, self: Entity): { card: string; carrier?: EntityId }[] {
-  const out: { card: string; carrier?: EntityId }[] = [];
+function aoBorrowedSources(g: E, self: Entity): { card: string; carrier?: EntityId; box?: true }[] {
+  const out: { card: string; carrier?: EntityId; box?: true }[] = [];
   for (const n of aoAllies(g, self, false)) {
     const ownStripped = aoStripped(g, n, n, false);
     if (!ownStripped) out.push({ card: g.nameOf(n), carrier: n.id });
+    // CR 721.1 / CT-349: a mod lends its host only its [Augment] box, so the
+    // box is all the Ancient One borrows of it — never the mod card's body
     for (const modId of n.mods) {
       const m = g.entity(modId);
-      if (m && m.appliedAs === 'augment' && !aoStripped(g, n, m, false)) out.push({ card: m.card });
+      if (m && m.appliedAs === 'augment' && !aoStripped(g, n, m, false)) out.push({ card: m.card, box: true });
     }
-    // CR 710.2a: a neighbour that is a COPY carries the augments it copied
-    if (!ownStripped) for (const c of g.copiedAugments(n, 'behavior')) out.push({ card: c });
+    // CR 710.2a: a neighbour that is a COPY carries the augments it copied —
+    // their boxes, likewise
+    if (!ownStripped) for (const c of g.copiedAugments(n, 'behavior')) out.push({ card: c, box: true });
   }
   return out;
 }
@@ -360,6 +363,7 @@ card('Ancient One', {
     projects: [{
       faces: (g, self) => aoBorrowedSources(g, self).map(s => s.card),
       carriers: (g, self) => aoBorrowedSources(g, self).map(s => s.carrier),
+      boxOnly: (g, self) => aoBorrowedSources(g, self).map(s => !!s.box),
       facets: ['statics', 'activated', 'behavior'],
     }],
   },

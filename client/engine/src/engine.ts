@@ -779,10 +779,12 @@ export class E {
    * it is wearing one) plus every face projected onto it right now (Ancient
    * One); an augment MOD carries only its own text, because a mod is never
    * copied and a projection lands on its HOST, which the walk reaches
-   * separately.
+   * separately. `box` marks a face whose [Augment] box alone is live (an
+   * augment mod's own card, and a mod's face projected onto a unit — CR 721.1
+   * / CT-349).
    */
-  private behaviorFaces(holder: Entity, anchor: Entity): CardName[] {
-    return holder.id === anchor.id ? this.facesWith(holder, 'behavior') : [holder.card];
+  private behaviorFaces(holder: Entity, anchor: Entity): { card: CardName; box: boolean }[] {
+    return holder.id === anchor.id ? this.faceEntries(holder, 'behavior') : [{ card: holder.card, box: true }];
   }
 
   /**
@@ -813,9 +815,9 @@ export class E {
       return box ? [{ face: holder.card, def: box }] : [];
     }
     const out: { face: CardName; def: CardBehavior }[] = [];
-    for (const face of this.facesWith(holder, facet)) {
+    for (const { card: face, box } of this.faceEntries(holder, facet)) {
       const def = this.card(face);
-      out.push({ face, def });
+      if (!box) out.push({ face, def });      // CR 721.1 / CT-349: a mod's face is its box only
       if (def.augmentBox) out.push({ face, def: def.augmentBox });
     }
     // CR 710.2a: a copy's copied augment mods — each one's [Augment] box, read off
@@ -861,8 +863,9 @@ export class E {
     if (holder.id !== anchor.id) return !!own.augmentBox?.[key];
     if (own[key] || own.augmentBox?.[key]) return true;
     return this.behaviorFaces(holder, anchor)
-      .some(f => f !== holder.card
-        && (!!this.card(f)[key] || !!this.card(f).augmentBox?.[key]))
+      .some(({ card: f, box }) => f !== holder.card
+        // CR 721.1 / CT-349: a mod's face is its box only
+        && ((!box && !!this.card(f)[key]) || !!this.card(f).augmentBox?.[key]))
       // CR 710.2a: the [Augment] boxes of the mods a copy copied
       || this.copiedAugments(holder, 'behavior').some(c => !!this.card(c).augmentBox?.[key]);
   }
@@ -1518,9 +1521,11 @@ export class E {
     const idCopy = this.identityCopy(u);
     const idFace = idCopy?.card ?? u.card;
     if (!idCopy || idCopy.facets.includes('activated')) { add(idFace, 'ability', true); add(idFace, 'augment', true); }
-    for (const name of this.projectedFaces(u, 'activated', true)) {
+    for (const { card: name, box } of this.projectedSources(u, 'activated', true)) {
       if (name === idFace) continue;
-      add(name, 'ability', false); add(name, 'augment', false);
+      // CR 721.1 / CT-349: a mod's face lends its [Augment] text only
+      if (!box) add(name, 'ability', false);
+      add(name, 'augment', false);
     }
     for (const card of this.copiedAugments(u, 'activated')) add(card, 'augment', false);
     return out;
@@ -1587,11 +1592,22 @@ export class E {
    * reading `e.card` raw, and must (CR 201.5).
    */
   facesWith(e: Entity, facet: CopyFacet): CardName[] {
-    const out: CardName[] = [];
+    return this.faceEntries(e, facet).map(f => f.card);
+  }
+
+  /**
+   * `facesWith`, with each face's REACH: `box` is true for a face projected
+   * only as a mod's [Augment] box (CR 721.1 / CT-349 — an Ancient One beside
+   * an ally wearing Infernal Wispweaver borrows the Wispweaver's box, not its
+   * body), so a reader that takes a face's text takes only `augmentBox` /
+   * `augmentText` off such a face. The identity face is always whole.
+   */
+  faceEntries(e: Entity, facet: CopyFacet): { card: CardName; box: boolean }[] {
+    const out: { card: CardName; box: boolean }[] = [];
     const id = this.identityCopy(e);
-    if (!id || id.facets.includes(facet)) out.push(id?.card ?? e.card);
-    for (const name of this.projectedFaces(e, facet)) {
-      if (!out.includes(name)) out.push(name);
+    if (!id || id.facets.includes(facet)) out.push({ card: id?.card ?? e.card, box: false });
+    for (const s of this.projectedSources(e, facet, false)) {
+      if (!out.some(f => f.card === s.card)) out.push({ card: s.card, box: !!s.box });
     }
     return out;
   }
@@ -1632,10 +1648,10 @@ export class E {
     return hit?.carrier !== undefined ? this.entity(hit.carrier) : undefined;
   }
 
-  private projectedSources(e: Entity, facet: CopyFacet, everyCopy: boolean): { card: CardName; carrier?: EntityId }[] {
+  private projectedSources(e: Entity, facet: CopyFacet, everyCopy: boolean): { card: CardName; carrier?: EntityId; box?: true }[] {
     if (facet === 'name' || facet === 'stats') return [];   // never projected
     if (this.inFaces) return [];
-    const out: { card: CardName; carrier?: EntityId }[] = [];
+    const out: { card: CardName; carrier?: EntityId; box?: true }[] = [];
     this.inFaces = true;
     try {
       const mine = this.faceName(e);
@@ -1649,14 +1665,23 @@ export class E {
           const facets = pr.facets ?? PROJECTED_FACETS;
           if (!facets.includes(facet)) continue;
           const carriers = pr.carriers?.(this, anchor);
+          const boxOnly = pr.boxOnly?.(this, anchor);
           pr.faces(this, anchor).forEach((name, i) => {
             if (name === mine) return;                       // no recursive mimicry
+            const carrier = carriers?.[i];
+            // CR 721.1 / CT-349: a mod's face projects its [Augment] box only
+            const box = boxOnly?.[i] === true;
+            const entry: { card: CardName; carrier?: EntityId; box?: true } = { card: name };
+            if (carrier !== undefined) entry.carrier = carrier;
+            if (box) entry.box = true;
             // `everyCopy`: one entry per SOURCE (two Jollyglop neighbours are
             // two), for the [once] bookkeeping of E.activatedBoxes (CT-342)
-            if (everyCopy || !out.some(o => o.card === name)) {
-              const carrier = carriers?.[i];
-              out.push(carrier !== undefined ? { card: name, carrier } : { card: name });
-            }
+            if (everyCopy) { out.push(entry); return; }
+            const seen = out.findIndex(o => o.card === name);
+            if (seen < 0) out.push(entry);
+            // deduped by name, the whole face wins over a box-only one: an ally
+            // printing the card lends all of it, whoever else wears it as a mod
+            else if (out[seen]!.box && !box) out[seen] = entry;
           });
         }
       }
