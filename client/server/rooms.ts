@@ -2291,6 +2291,10 @@ export function allRooms(): IterableIterator<Room> {
  * CT-334: how many of the OTHER seat's actions the open hidden step holds from
  * `seat` — 0 outside one. What `viewFor` takes off the `actionCount` it serves
  * `seat`, so the count moves for your own plays and not for theirs.
+ *
+ * The standing pass's `at` (passAllStale) needs no such care: `passPriority`
+ * is legal only in a battle priority window, and battle is never a hidden
+ * step, so wherever a pass can be stamped this is 0 and the two counts agree.
  */
 export function hiddenActionsFrom(room: Room, seat: Seat): number {
   if (!room.segSnapshot || room.segStartIndex < 0) return 0;
@@ -2299,11 +2303,6 @@ export function hiddenActionsFrom(room: Room, seat: Seat): number {
   for (let i = room.segStartIndex; i < room.actions.length; i++) if (room.actions[i]!.seat === opp) n++;
   return n;
 }
-
-/** the `actionCount` of the view `seat` is served now (CT-334): what a client
- * stamps its answers with, so what anything comparing them must use too */
-export const viewActionCount = (room: Room, seat: Seat): number =>
-  Math.max(0, room.state.actionCount - hiddenActionsFrom(room, seat));
 
 /**
  * CT-197: the test-mode sandbox rooms in the map, the least recently played

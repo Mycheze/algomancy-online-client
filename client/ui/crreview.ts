@@ -437,7 +437,8 @@ function badges(c: CrComment): string {
   });
 }
 
-function commentHtml(c: CrComment): string {
+/** one comment's markup — exported for server/test/616 (CT-276: the system chip) */
+export function commentHtml(c: CrComment): string {
   const answer = c.kind === 'answer'
     ? ` <span class="crchipx crans">${c.reading === 'other' ? 'answer: other' : `answer: Reading ${esc(c.reading ?? '')}`}</span>` : '';
   const acts = c.canEdit && !c.deleted

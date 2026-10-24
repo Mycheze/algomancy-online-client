@@ -117,6 +117,9 @@ const now = Date.now();
 
 const OLD = now - 8 * DAY;
 const STRAYS = { finished: 'FX614F', unfinished: 'FX614U', closed: 'FX614C' } as const;
+/** and one the restore DOES load: played yesterday, its run filed by the boot flush */
+const RESTORED = 'FX614R';
+const YESTERDAY = now - DAY;
 let server: ServerHandle | null = null;
 after(async () => { await server?.stop(); server = null; });
 
@@ -133,22 +136,24 @@ async function booted(): Promise<ServerHandle> {
     raw['lastActionAt'] = now - (SANDBOXES - i) * 60_000;
     writeFile(GAMES, sbCode(i), raw);
   }
-  // three games a restore does not load, each with a run of fixes nobody filed
-  for (const [kind, code] of Object.entries(STRAYS)) {
+  // three games a restore does not load, each with a run of fixes nobody filed,
+  // and one it does load, with the same
+  for (const [kind, code] of [...Object.entries(STRAYS), ['restored', RESTORED] as const]) {
     const room = mod.createRoom(code, 61470, ['Rashi', 'Bena'], 'shared');
     play(mod, room, 7);
     if (kind === 'finished') mod.applyToRoom(room, { type: 'concede', seat: 1 });
     const raw = fileOf(GAMES, code);
     const n = (raw['actions'] as unknown[]).length;
-    raw['lastActionAt'] = OLD;
+    const when = kind === 'restored' ? YESTERDAY : OLD;
+    raw['lastActionAt'] = when;
     raw['amendments'] = [
       { kind: 'edit', at: n - 2, seat: 0, by: 1, what: `seat 1 gets 3 life back in ${code}`, reason: 'the engine took it twice' },
       { kind: 'edit', at: n - 2, seat: 0, by: 1, what: 'and one more', reason: 'still off by one' },
     ];
-    raw['fixRun'] = { from: 0, at: n - 2, len: n, last: OLD };
+    raw['fixRun'] = { from: 0, at: n - 2, len: n, last: when };
     if (kind === 'closed') raw['closed'] = { reason: 'idle', at: OLD + 3600_000, afterMs: 12 * 3600_000 };
     writeFile(GAMES, code, raw);
-    utimesSync(join(GAMES, `${code}.json`), OLD / 1000, OLD / 1000);
+    utimesSync(join(GAMES, `${code}.json`), when / 1000, when / 1000);
   }
   server = await spawnServer({
     ALGO_GAMES_DIR: GAMES, ALGO_ISSUES_FILE: ISSUES, ALGO_ACCOUNTS_FILE: join(DIR, 'accounts.json'),
@@ -175,8 +180,9 @@ test('CT-197: the sandbox cap counts the sandboxes a restart restored, so the ne
 test('CR D4.5 / CT-335: a run of agreed fixes in a game too old or closed to restore is filed at boot and leaves the file', async () => {
   await booted();
   let rows: any[] = [];
-  for (let k = 0; k < 40 && rows.length < 3; k++) { await sleep(100); rows = fixRows(); }
-  assert.equal(rows.length, 3, 'one row for each of the three unrestored games');
+  for (let k = 0; k < 40 && rows.length < 4; k++) { await sleep(100); rows = fixRows(); }
+  assert.equal(rows.filter(r => (Object.values(STRAYS) as string[]).includes(r.room)).length, 3,
+    'one row for each of the three unrestored games');
   for (const code of Object.values(STRAYS)) {
     const row = rows.find(r => r.room === code);
     assert.ok(row, `${code} filed its run`);
@@ -190,4 +196,16 @@ test('CR D4.5 / CT-335: a run of agreed fixes in a game too old or closed to res
   assert.ok(fileOf(GAMES, STRAYS.unfinished)['closed'], 'the unfinished one is closed on the way past, as before');
   assert.equal(Math.round(statSync(join(GAMES, `${STRAYS.finished}.json`)).mtimeMs), Math.round(OLD),
     'and filing is not a move: the finished file keeps its date (CT-196)');
+  assert.equal(Math.round(statSync(join(GAMES, `${STRAYS.closed}.json`)).mtimeMs), Math.round(OLD),
+    'nor does the closed file move its date');
+});
+
+test('CT-196: filing the run of fixes a restored game carried is not a move, so its file keeps its date', async () => {
+  await booted();
+  let row: any;
+  for (let k = 0; k < 40 && !row; k++) { await sleep(100); row = fixRows().find(r => r.room === RESTORED); }
+  assert.ok(row, 'the boot flush filed the restored game run');
+  assert.equal(fileOf(GAMES, RESTORED)['fixRun'], undefined, 'and took it out of the file — so the file WAS written');
+  assert.equal(Math.round(statSync(join(GAMES, `${RESTORED}.json`)).mtimeMs), Math.round(YESTERDAY),
+    'with the date it had: history still reads it as played yesterday');
 });

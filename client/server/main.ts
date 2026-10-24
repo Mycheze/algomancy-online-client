@@ -49,7 +49,7 @@ import {
   type Room, type SegKey,
   seatVerdict,
   notePassAllCovered, passAllDue, passAllStale, sanitizePassAll, setPassAll, setReportHold, setWatchHold, watchHoldExpired,
-  closedNotice, codeTaken, sweepIdleRooms, sandboxCodesByAge, hiddenActionsFrom, viewActionCount,
+  closedNotice, codeTaken, sweepIdleRooms, sandboxCodesByAge, hiddenActionsFrom,
   answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
   rewindOptions, rewindRoom, type Proposal, fixRunContinues, noteFixRun, takeFixRun, takeStaleFixRuns, FIX_RUN_IDLE_MS,
   disputedSeats, disputesRefusal,
@@ -3032,7 +3032,7 @@ function sweepPassAll(): void {
   for (const room of allRooms()) {
     const seat = passAllDue(room, now);
     if (seat === null) continue;
-    const at = viewActionCount(room, seat);   // CT-334: the count its view carries
+    const at = room.state.actionCount;
     try {
       landAction(room, seat, { type: 'passPriority', seat });
       notePassAllCovered(room, seat, at);
