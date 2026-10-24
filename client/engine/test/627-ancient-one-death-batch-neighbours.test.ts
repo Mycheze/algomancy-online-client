@@ -78,3 +78,39 @@ test('CR 714.9, 710.7 / CT-351: a batch-mate neighbour lends the when-I-die text
   assert.equal(borrowedQueued(h), 1, 'the token disposed first still wore its Rubbish as the batch died');
   finishBattle(h);
 });
+
+test('CR 714.9, 710.7 / CT-351: a dying Ancient One borrows through a second Ancient One disposed earlier in the same batch', () => {
+  const h = new Harness(62703);
+  toDeployment(h);
+  const A = h.state.initiative;
+  // ids in disposal order: the Rubbish, the near Ancient One, then the far one
+  const rubbish = spawn(h, A, 'A Pile of Rubbish');
+  const near = spawn(h, A, 'Ancient One');
+  const far = spawn(h, A, 'Ancient One');
+  spawn(h, (1 - A) as Seat, 'Unit Token');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[rubbish], [near], [far]] });
+  killTogether(h, [rubbish, near, far]);
+  assert.equal(ent(h, far), undefined, 'all three died together');
+  assert.equal(borrowedQueued(h), 2,
+    'the near one borrows the Rubbish directly, the far one through the near one (the designer: "adjacent to either")');
+  finishBattle(h);
+});
+
+test('CR 714.9, 710.7 / CT-351: a batch-mate that wore Ancient One as a mod still passes its neighbours text on', () => {
+  const h = new Harness(62704);
+  toDeployment(h);
+  const A = h.state.initiative;
+  const rubbish = spawn(h, A, 'A Pile of Rubbish');
+  const carrier = spawn(h, A, 'Unit Token');
+  const ancient = spawn(h, A, 'Ancient One');
+  spawn(h, (1 - A) as Seat, 'Unit Token');
+  withE(h, e => { e.attachMod(e.entity(carrier)!, 'Ancient One', A, 'augment'); });
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[rubbish], [carrier], [ancient]] });
+  killTogether(h, [rubbish, carrier, ancient]);
+  assert.equal(ent(h, ancient), undefined, 'all three died together');
+  assert.equal(borrowedQueued(h), 1,
+    'the Ancient One reaches the Rubbish through the token that wore the Ancient One mod, disposed before it');
+  finishBattle(h);
+});

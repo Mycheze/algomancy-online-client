@@ -864,7 +864,14 @@ export class E {
     if (own[key] || own.augmentBox?.[key]) return true;
     return this.behaviorFaces(holder, anchor)
       .some(({ card: f, box }) => f !== holder.card
-        // CR 721.1 / CT-349: a mod's face is its box only
+        // CR 721.1 / CT-349: a mod's face is its box only. UNREACHABLE in
+        // today's pool, and kept on purpose: every caller but
+        // `mustBeTargeted` re-reads the blocks through `behaviorBlocks`
+        // (which already drops a box face's body), and no card prints a
+        // body channel beside [Augment] text (the r1024 sweep), so no board
+        // can tell this line apart. It is here so the presence predicate
+        // cannot disagree with `behaviorBlocks` the day such a card exists —
+        // `mustBeTargeted` takes this answer as final.
         && ((!box && !!this.card(f)[key]) || !!this.card(f).augmentBox?.[key]))
       // CR 710.2a: the [Augment] boxes of the mods a copy copied
       || this.copiedAugments(holder, 'behavior').some(c => !!this.card(c).augmentBox?.[key]);

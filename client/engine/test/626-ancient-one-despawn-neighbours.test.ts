@@ -68,3 +68,20 @@ test('CR 721.1f, 714.9 / CT-350: an erased Ancient One has the when-I-despawn te
   assert.equal(borrowed(h), 1, 'one borrowed "when I despawn" trigger, from the Pile of Runes beside it');
   finishBattle(h);
 });
+
+test('CR 721.1f, 410.2a / CT-350: an Ancient One exchanged out of play (Hooba-Mon, Necromorph) has the when-I-despawn text of the ally it stood beside', () => {
+  const { h, A, ancient } = board(62604);
+  withE(h, e => { e.exchangeInPlace(e.entity(ancient)!, 'Good Whale', A); });
+  assert.equal(ent(h, ancient), undefined, 'the Ancient One was exchanged away');
+  assert.equal(borrowed(h), 1, 'one borrowed "when I despawn" trigger: its neighbours are read before the newcomer takes its slot');
+  finishBattle(h);
+});
+
+test('CR 721.1f, 714.9 / CT-350: an Ancient One recalled by an ambush has the when-I-despawn text of the ally it stood beside', () => {
+  const { h, A, ancient } = board(62605);
+  // Lurking Slimebeast's ambush: recall the target ally and take its position
+  withE(h, e => { e.ambushSwap(e.entity(ancient)!, 'Lurking Slimebeast', A); });
+  assert.equal(ent(h, ancient), undefined, 'the Ancient One is back in hand');
+  assert.equal(borrowed(h), 1, 'one borrowed "when I despawn" trigger: its neighbours are read before the ambusher takes its slot');
+  finishBattle(h);
+});
