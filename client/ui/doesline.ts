@@ -71,16 +71,43 @@ export interface SlotContext {
   mode: unknown;
   /** escapes the template's own words (main.ts passes esc; tests identity) */
   text: (s: string) => string;
+  /** CT-194: the item deals double damage ({Powerful}) — its own "Deal N
+   * damage" says the doubled number, and why (`doublesDamage`) */
+  powerful?: boolean;
 }
 
 /** every slot token a template may use — test/344 holds templates to it */
 export const SLOT_RE = /\{(\d+)(\+|\.controller)?\}|\{(me|you|opponent|X)\}|\{mode:((?:[^{}]|\{[^{}]*\})*)\}/g;
 
+/**
+ * CT-194: the damage the ITEM deals — "Deal 3 damage", "deal damage equal to",
+ * "{me} deals {X} damage" (the printed "I deal"). Not "{0} deals": Squish's
+ * damage is dealt by its target, whose attributes are its own (CR 802.10e).
+ */
+const OWN_DAMAGE_RE = /(^|[^}\w])([Dd]eal|\{me\} deals) (?:(\d+|\{X\}) )?damage\b/;
+
 /** fill one template; null when every sentence of it dropped out */
 export function renderTemplate(tpl: string, c: SlotContext): string | null {
-  const sentences = tpl.split(/(?<=\.)\s+/).map(sentence => {
+  const sentences = tpl.split(/(?<=\.)\s+/).map(raw => {
     let missing = false;
     let live = false;
+    // CT-194: a {Powerful} item deals double (CR 802.10d) — say the number it
+    // will really deal, and why, rather than the printed one
+    let sentence = raw;
+    let doubled = false;
+    let doubleX = false;
+    const dm = c.powerful ? OWN_DAMAGE_RE.exec(raw) : null;
+    if (dm) {
+      doubled = true;
+      const n = dm[3];
+      const head = raw.slice(0, dm.index) + dm[1] + dm[2];
+      const rest = raw.slice(dm.index + dm[0].length)
+        .replace(/\bsplit (\d+)\b/, (_m, k: string) => `split ${2 * Number(k)}`);   // Channel Through's points
+      if (n === undefined) sentence = `${head} double damage${rest}`;
+      else if (n === '{X}') { doubleX = true; sentence = `${head} {X} damage${rest}`; }
+      else sentence = `${head} ${2 * Number(n)} damage${rest}`;
+    }
+    const xNow = (): number => (doubleX ? 2 : 1) * c.amount!.x;
     let out = '';
     let last = 0;
     for (const m of sentence.matchAll(SLOT_RE)) {
@@ -99,7 +126,7 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
       else if (m[3] === 'you') v = c.you;
       else if (m[3] === 'opponent') v = c.opponent;
       else if (m[3] === 'X') {
-        if (c.amount && !c.amount.live) v = String(c.amount.x);
+        if (c.amount && !c.amount.live) v = String(xNow());
         else { v = 'X'; live = !!c.amount; }
       }
       else if (m[4] !== undefined) {
@@ -112,8 +139,9 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
     }
     if (missing) return null;
     const tail = sentence.slice(last);
-    // a live amount says what it is now, once, at the end of its sentence
-    const now = live ? ` (currently ${c.amount!.x})` : '';
+    // a live amount says what it is now, once, at the end of its sentence;
+    // a doubled one says why
+    const now = live ? ` (currently ${xNow()}${doubled ? ', Powerful' : ''})` : doubled ? ' (Powerful)' : '';
     return out + c.text(tail.replace(/\.$/, '')) + now + (tail.endsWith('.') ? '.' : '');
   }).filter((s): s is string => s !== null && s.trim() !== '');
   // "Put 1 -1/-1 counters" → "counter": a filled number of one takes the singular
@@ -333,6 +361,7 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
       controllerOf: i => { const s = seatOrKnown(p.targets[i]); return s === null ? null : names[s] ?? null; },
       me: me ? text(me) : null, you: you ? text(you) : null, opponent: opp ? text(opp) : null,
       amount: amountOf(item, p, state), mode: p.mode, text,
+      powerful: doublesDamage(item, p, state),
     };
     // an optional target left empty, and nothing else to say: "Negate nothing"
     // (owner, 2026-09-30, on Nothyr's "up to one")
@@ -344,6 +373,25 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
   const join = (ls: typeof lines): string => ls
     .map((l, i) => (i && l.lower ? l.text[0]!.toLowerCase() + l.text.slice(1) : l.text)).join(', then ');
   return repeats(lines, join);
+}
+
+/**
+ * CT-194 (#188's caption half): does this part deal DOUBLE damage? The chips
+ * already ask `E.stackItemAttrs` — the assembly resolution itself makes — so
+ * the line asks the same thing per part. {Pure} switches it off (CR 802.10f, 802.25g):
+ * a Pure item, or a Pure unit it names, is dealt the printed number. A pure
+ * query; a state the engine cannot read answers no.
+ */
+export function doublesDamage(item: StackItem, part: EffectPart, state: GameState): boolean {
+  try {
+    const e = new E(state);
+    const attrs = e.stackItemAttrs(item, part);
+    if (!attrs.has('Powerful') || attrs.has('Pure')) return false;
+    return !part.targets.some(t => {
+      const u = 'unit' in t ? e.entity(t.unit) : undefined;
+      return !!u && e.effAttrs(u).has('Pure');
+    });
+  } catch { return false; }
 }
 
 const TIMES = ['', '', 'twice', 'three times', 'four times'];
