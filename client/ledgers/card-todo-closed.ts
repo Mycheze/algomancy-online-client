@@ -13009,4 +13009,30 @@ export const CLOSED: TodoEntry[] = [
     closed: "DONE (by designer) 2026-10-24, no engine change. The designer answers it: once. Rules-questions 2025-03-12, asked why two Ancient Ones do not get \"2 copies\" through each other, Caleb [1349398647707537408]: \"its sorta the same reason double flying doesn't stack. The ability of ancient one just says it shares abilities from neighbors, not it gains extra copies of their abilities\"; then \"two copies\" [1349398974871769108] for two DIFFERENT neighbours, which agrees with the owner's CT-342 ruling. 2025-03-22: asked about \"for the ancient one, it's Boolean\", Caleb [1352856688860074046]: \"There ya go\". The engine matches: 589 \"once each\" pins this overlap (the bystander is 4/4, not 5/5). Follow-up for the CR pass: cite these RQs in the CR 710.7 record and in 589's comment (needs rq:index). No owner question is needed. From AUDIT-ct-engine.md.",
     status: 'done',
   },
+  {
+    id: 186, area: 'client', severity: 'minor',
+    title: 'constructed draft mode — a drafted pool you build a deck from, before you play it',
+    detail:
+      'Playtest report #164 (2026-09-14, from the home page, signed out): "Constructed draft '
+      + 'mode would be great". The client has a LIVE draft — you draft out of the pack straight '
+      + 'into the game you are playing — and a constructed mode where you bring a built deck. '
+      + 'What it does not have is the third shape: draft a pool first, build from it, then play '
+      + 'that deck.\n\n'
+      + '\u26a0 WHAT THE REPORTER MEANT IS NOT SETTLED, and the two readings are different '
+      + 'games. "Draft a pool, then build from it" is BL-05 (cube draft into a 30-card '
+      + 'constructed tournament) and is already scoped in the backlog. "Bring a constructed '
+      + 'deck into a draft pod" is something else entirely. They filed signed out and left no '
+      + 'other words, so nobody can tell from the row. ASK BEFORE BUILDING.',
+    evidence: 'playtest report #164; the second request for some form of draft-then-build, after '
+      + '#163 (the Quick Start rules, which shipped the same night as BL-43).',
+    fix: 'Nothing here — it is BL-05\'s. This entry exists so the report is not lost between the '
+      + 'playtest ledger and the backlog, which is the gap 83-card-todo\'s report arm was '
+      + 'written to close.',
+    proof: null,
+    verify: 'There is no way to draft a pool and build from it before playing; the home screen '
+      + 'offers live draft and constructed only.',
+    reportId: 164,
+    status: 'wontfix',
+    closed: "WONTFIX 2026-10-24, the owner, asked whether report 164 meant Cube Draft (BL-05) or Team Draft: \"Neither for now\". No new mode is carried for the report; BL-05 stays in the backlog as its own item.",
+  },
 ];

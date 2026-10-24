@@ -151,31 +151,6 @@ import { still } from './card-todo-helpers.ts';
  *  2026-09-03 — live in card-todo-closed.ts, unchanged and still run. */
 const OPEN: TodoEntry[] = [
   {
-    id: 186, area: 'client', severity: 'minor',
-    title: 'constructed draft mode — a drafted pool you build a deck from, before you play it',
-    detail:
-      'Playtest report #164 (2026-09-14, from the home page, signed out): "Constructed draft '
-      + 'mode would be great". The client has a LIVE draft — you draft out of the pack straight '
-      + 'into the game you are playing — and a constructed mode where you bring a built deck. '
-      + 'What it does not have is the third shape: draft a pool first, build from it, then play '
-      + 'that deck.\n\n'
-      + '\u26a0 WHAT THE REPORTER MEANT IS NOT SETTLED, and the two readings are different '
-      + 'games. "Draft a pool, then build from it" is BL-05 (cube draft into a 30-card '
-      + 'constructed tournament) and is already scoped in the backlog. "Bring a constructed '
-      + 'deck into a draft pod" is something else entirely. They filed signed out and left no '
-      + 'other words, so nobody can tell from the row. ASK BEFORE BUILDING.',
-    evidence: 'playtest report #164; the second request for some form of draft-then-build, after '
-      + '#163 (the Quick Start rules, which shipped the same night as BL-43).',
-    fix: 'Nothing here — it is BL-05\'s. This entry exists so the report is not lost between the '
-      + 'playtest ledger and the backlog, which is the gap 83-card-todo\'s report arm was '
-      + 'written to close.',
-    proof: null,
-    verify: 'There is no way to draft a pool and build from it before playing; the home screen '
-      + 'offers live draft and constructed only.',
-    reportId: 164,
-    status: 'open',
-  },
-  {
     id: 173, area: 'attribute', severity: 'minor',
     cards: ['Flame of History', 'Invasive Reassignment'],
     title:
@@ -533,10 +508,10 @@ const OPEN: TodoEntry[] = [
   },
   {
     id: 385, area: "engine", severity: "minor",
-    title: "OWNER QUESTION: running out of cards loses no game here, but the designer says in constructed you lose and in live draft the game ends",
+    title: "running out of cards loses no game here; the designer (and now the owner) say in constructed you lose and in live draft the game ends",
     detail: "CR 104.5 (concepts.ending.no-deck-out, owner 2026-09-16 \"No deck-out loss\"): \"Running out of cards does not end the game. A player who has to draw from an empty deck draws as many as there are and does not lose.\" The engine does that (300-recycle-mark \"CR 401.4 an empty deck AND an empty pile draws fewer — no loop, no crash, no loss\"). The designer says otherwise. Caleb, rules-questions 2025-04-01 [1356616873655140546]: \"In constructed you lose if you draw on an empty deck\"; 2025-08-04 [1402038431659593859]: \"in constructed you lose\"; and the same day [1402046319643856916]: \"in live draft the game just ends if you run out of cards (don't make sense to make a player lose since its a shared deck)\". Under the authority order the designer outranks the owner's call, so either the rule and the engine change, or the owner keeps no-loss knowingly as a digital convention (Annex D). Here a deck refills from the recycle pile first, so only an empty deck AND an empty pile is affected.",
-    evidence: "CR audit 2026-10-24 (/home/bena/.claude/projects/-home-bena-Documents-Algomancy/zero-handoff/AUDIT-cr.md §3 (c), D-U01-8). Not put to the owner yet; no fix until he answers.",
-    fix: "Ask the owner: \"Caleb says that in constructed you lose if you have to draw from an empty deck, and that in live draft the game just ends (nobody loses). The client has neither: you just draw fewer. Follow Caleb, or keep no-loss as a digital rule?\" If Caleb: a constructed seat that must draw with an empty deck and pile loses; in shared/draft the game ends (as a draw, unless the owner says otherwise); redraft CR 104.5 citing the three messages and re-verify. If no-loss: move 104.5's reasoning to an Annex D convention citing his answer. Do nothing before he answers.",
+    evidence: "CR audit 2026-10-24 (/home/bena/.claude/projects/-home-bena-Documents-Algomancy/zero-handoff/AUDIT-cr.md §3 (c), D-U01-8). Put to the owner 2026-10-24: \"Follow Caleb\".",
+    fix: "Owner 2026-10-24, asked \"Follow Caleb?\" on deck-out: \"Follow Caleb\". Constructed: a player who has to draw from an empty deck loses (check whether the recycle pile refills the deck first, as today, and what empty means then: search Caleb's thread). Live draft: the game ends; how the result is scored then (draw? no result?) is not in the quoted words: search the thread first, then ask the owner. Redraft CR 104.5 with the designer + owner sources (replacing the 2026-09-16 adoption), update 300-recycle-mark's empty-deck test, and measure what this does to saved games (restore replay).",
     proof: null,
     verify: "Read CR 104.5 and 300-recycle-mark's empty-deck test against the three messages quoted in detail.",
     status: 'open',
@@ -731,6 +706,17 @@ const OPEN: TodoEntry[] = [
     evidence: "Coverage-gaps list in var/records/cr-only-round-2026-10-11/ (gitignored, main checkout), re-checked 2026-10-24 in the housework pass; AUDIT-cr.md §6 (\"STILL A GAP\").",
     fix: "Draft the rule in D6.10 (U24) from its sources (designer first, then print, then an owner call or the engine with a test), stamp, re-verify with a fresh verifier and decoys, cr:render, cr:check, 409. If no higher source speaks, file it as a tier-3 owner sign-off.",
     proof: () => still("ui/style.css", "CR D6.10a: the panel the PRINTED card draws around a bracket"),
+    status: 'open',
+  },
+  {
+    id: 407, area: "engine", severity: "minor",
+    cards: [],
+    title: "in battle a Virus cannot be augmented onto a spell token standing in play; the owner allows it",
+    detail: "Owner question D-U06-9 (CR 305.6, also D-U17-4 / 721.4a). The engine lets a Virus mod units in battle and spells on the stack, not a spell token standing in play. Caleb: \"Honestly I don't see why you couldn't\" (augmenting a spell token in play, RQ 1364998183226179735, 2025-04-24) and \"It's very similar to how regular viruses work. So you can hit enemy spells\" (RQ 1347270455198879858, 2025-03-06). Owner 2026-10-24, asked \"During a battle, can a Virus be augmented onto a spell token that is sitting in play?\": \"Yes, allow it\".",
+    evidence: "CR audit 2026-10-24 (zero-handoff/AUDIT-cr.md, Q1); owner answer in chat 2026-10-24.",
+    fix: "Add the second battle path: a Virus from hand may target a spell token in play, with the attribute-only limit Caleb states. Record the owner adoption on the D-U06-9 records (305.6, 721.4a) through the cr scripts. Guard: a Virus gives a Fireball token in play Powerful mid-battle.",
+    proof: null,
+    verify: "In battle, try to augment a Virus onto a spell token standing in play.",
     status: 'open',
   },
 ];

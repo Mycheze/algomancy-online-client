@@ -3663,6 +3663,12 @@ export const CLOSED: LedgerEntry[] = [
       + 'server/e2e/test-custom-rules.ts checks red; dropping the custom exit from foldSeat turns two.',
   },
   {
+    id: 164, room: '', date: '2026-09-14',
+    report: 'Feature request from the home page (signed out): "Constructed draft mode would be great"',
+    status: 'wontfix',
+    note: "Owner 2026-10-24, asked whether it meant Cube Draft (BL-05: draft a pool, then build and play) or Team Draft (live-draft out of a brought constructed deck): \"Neither for now\". No new mode is carried for this report; BL-05 stays in the backlog as its own item (CT-186 closed with it).",
+  },
+  {
     id: 165, room: 'KAWJ', date: '2026-09-15',
     report:
       'Damage got combined here Adversary of the Deep. All combat damage happens as a single '
