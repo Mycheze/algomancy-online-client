@@ -509,6 +509,13 @@ test('CR 608.3e STILL STANDS: a unit killed in the Swift sub-step deals no norma
   answerElections(h);
 
   assert.ok(!ent(h, sprite), 'the Sprite died in the Swift sub-step');
+  // CR 608.3b: the split step opens a window after the Swift sub-step. The
+  // Sprite is already gone at that window, before anything else happens.
+  assert.equal(h.state.battle?.step, 'damageWindow', 'paused at the window after the Swift sub-step');
+  // Pass the window so the NORMAL sub-step really runs, then read the result:
+  // asserting at the window would hold whatever the normal sub-step does.
+  throughDamageWindows(h);
+  assert.equal(h.state.battle?.step, 'afterWindow', 'the normal sub-step has run and combat damage is over');
   assert.ok(ent(h, drift), 'and the Drifter survives');
   assert.equal(ent(h, drift)!.damage, 0,
     'having been dealt NOTHING in the normal sub-step — CR 608.3e, the death was immediate');
