@@ -86,9 +86,10 @@ export function mayResolve(c: CrThreadItem, caller: CrCaller | null): boolean {
  * (api-crreview.ts), and its resolve and reopen rows carry `asAdmin`, so the
  * fold lets them stand exactly as it lets an admin's.
  *
- * ⚠ Its NAME is not reserved: an account may call itself "Rules editor"
- * (accounts.ts allows spaces), and the page shows names only. Until CrAuthor
- * carries a system mark the page can draw, the id is the only difference.
+ * CT-276: its NAME is reserved (accounts.ts usernameProblem refuses it, folded),
+ * and what a reader is sent marks it `system` (CrAuthor), which only this id
+ * earns — so a name alone can never pass for it, even an account's that took
+ * the name before it was reserved.
  */
 export const RULES_EDITOR: ReportedBy = { id: 'system:rules-editor', name: 'Rules editor' };
 
@@ -175,6 +176,8 @@ export function fold(rows: readonly CrRow[]): Map<string, CrThreadItem> {
 
 const author = (by: ReportedBy): CrAuthor => ({
   name: by.name, ...(by.owner ? { owner: true as const } : {}), ...(by.judge ? { judge: by.judge } : {}),
+  // CT-276: by id, never by name
+  ...(by.id === RULES_EDITOR.id ? { system: true as const } : {}),
 });
 
 /** The comments as `caller` sees them: no account ids; the three booleans

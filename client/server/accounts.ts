@@ -30,6 +30,7 @@ import {
 import type { PublicDeckView } from './publicdecks.ts';
 import type { TrioHistoryRow } from './trio.ts';
 import { accountsFile } from './statepaths.ts';
+import { RULES_EDITOR } from './crreview.ts';
 import { canonicalCardName } from '../engine/src/cards/dsl.ts';
 // CR D8.5: a conceded game weighs by the turn it was conceded on. The fold below
 // reads the stamp through this one function; the thresholds live over there.
@@ -543,6 +544,16 @@ function passwordMatches(account: Account, password: string): boolean {
   return got.length === want.length && timingSafeEqual(got, want);
 }
 
+/**
+ * CT-276: names no account may take, because something that is NOT an account
+ * writes under them and the page shows authors by name — the Rules editor's
+ * replies on the rules review page (crreview.ts RULES_EDITOR). Compared folded:
+ * case ignored, and the separators a username may hold (space _ . -) dropped,
+ * so "rules.editor" and "RulesEditor" are the same name as "Rules editor".
+ */
+const RESERVED_USERNAMES: readonly string[] = [RULES_EDITOR.name];
+const foldName = (u: string): string => u.toLowerCase().replace(/[ _.-]/g, '');
+
 /** Usernames are what your opponent sees and what friend requests are typed
  * against, so keep them boring: letters, digits, and a couple of separators. */
 export function usernameProblem(username: string): string | null {
@@ -552,6 +563,7 @@ export function usernameProblem(username: string): string | null {
   if (!/^[A-Za-z0-9][A-Za-z0-9 _.-]*$/.test(u)) {
     return 'a username can use letters, digits, spaces, and _ . - (and must start with a letter or digit)';
   }
+  if (RESERVED_USERNAMES.some(r => foldName(r) === foldName(u))) return 'that username is reserved';
   if (accountByName(u)) return 'that username is taken';
   return null;
 }
