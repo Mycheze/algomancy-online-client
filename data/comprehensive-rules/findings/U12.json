@@ -30,13 +30,14 @@
     "evidence": [
       {
         "file": "client/engine/test/02-combat.test.ts",
-        "quote": "test('Swift: swift column deals damage first, no priority between sub-steps', () => {"
+        "quote": "test('Swift: swift column deals damage first and kills its blocker before the blocker can strike back (CR 608.3e)', () => {"
       }
     ],
     "ct": "CT-230",
     "dupes": [
       "F-U12-3"
-    ]
+    ],
+    "closed": "fixed on 2026-10-24 (CT-230): retitled, and the body passes the window between the sub-steps."
   },
   {
     "id": "F-U12-3",
@@ -46,14 +47,15 @@
     "evidence": [
       {
         "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
-        "quote": "test('CR 608.3e STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits', () => {"
+        "quote": "test('CR 608.3e: a unit killed in the Swift sub-step is gone at the window after it (CR 608.3b) and deals no normal damage', () => {"
       },
       {
         "file": "client/engine/test/239-damage-triggers-after-combat.test.ts",
         "quote": "'having been dealt NOTHING in the normal sub-step — CR 608.3e, the death was immediate');"
       }
     ],
-    "ct": "CT-230"
+    "ct": "CT-230",
+    "closed": "fixed on 2026-10-24 (CT-230): 239 passes the window, runs the normal sub-step and then asserts the dead Swift-step unit dealt nothing; retitled."
   },
   {
     "id": "F-U12-4",

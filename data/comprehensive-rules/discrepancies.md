@@ -390,12 +390,12 @@ The owner ruling of 2026-08-26 (“the glossary is a rules document…”) says 
 
 - owner ruling, adopted 2026-08-26: "over-broad — an expired glimpse card is still public, targetable and moddable),"
 - owner ruling, adopted 2026-09-20: "expired glimpse, unfulfilled banner, or neither | refused | refused"
-- glossary: Glimpse: "still moddable out of the zone at full price"
+- glossary: Glimpse: "it can no longer be played, prophesied or applied as a mod there"
 - owner ruling, adopted 2026-09-20: "was a mod zone with no door on it. A glimpsed card you failed to play stayed a live graft"
 - owner ruling, adopted 2026-08-19: "makes "inert" mean it: the same permission, and the same "ignoring affinity","
-- file: client/ui/glossary.ts: "and still moddable out of the zone at full price."
+- file: client/ui/glossary.ts: "public and targetable, but it can no longer be played, prophesied or applied as a mod there."
 
-**Resolution:** The owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) is current and is stated (rule 403.5, rule 403.3). Mark the owner ruling of 2026-08-26 (“the glossary is a rules document…”)’s Glimpse-row clause as reversed by the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”), and fix the glossary row (F-U07-5 (CT-231)).
+**Resolution:** The owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) is current and is stated (rule 403.5, rule 403.3). Mark the owner ruling of 2026-08-26 (“the glossary is a rules document…”)’s Glimpse-row clause as reversed by the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”), and fix the glossary row (F-U07-5 (CT-231)). The glossary row was fixed on 2026-10-24 (CT-231); the two glossary sides now quote the fixed words.
 
 ### D-U08-1 · Sources disagree · rule 501.4
 
@@ -716,11 +716,11 @@ The RAQ register's note on the Containment Protocol claim says Resonant never wa
 
 Our glossary's Electric row still says the excess is lost when the chain runs out. The owner ruling of 2026-10-09 (“{Electric}'s jump is optional, and excess…”) (from the RAQ) deals it to the last unit.
 
-- glossary: Electric: "When the chain runs out the excess is lost"
+- glossary: Electric: "Excess with nowhere to jump is dealt to the last unit it reached, never lost"
 - owner ruling, adopted 2026-10-09: "no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's "ALL"
 - RAQ 1372451771632320512#2: "All 12 damage sink into Crumbling - this has its use if you had Ember of Life in play"
 
-**Resolution:** Glossary fix (our text, not authority): the row should say the remainder stays on the last unit, and that with Piercing it is elective. Filed as the register-level finding F-REG-2 (CT-231). [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]
+**Resolution:** Glossary fix (our text, not authority): the row should say the remainder stays on the last unit, and that with Piercing it is elective. Filed as the register-level finding F-REG-2 (CT-231). [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.] Fixed on 2026-10-24 (CT-231): the row now quotes as above.
 
 ### D-U20-9 · Ruling chain wrong · rule 802.18b
 
@@ -2167,11 +2167,11 @@ The owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) rules on a 
 
 ### D-U10-2 · Other · rule 603.2a
 
-Sources silent on whether a unit is adjacent to the enemy unit facing it across its column. The Manual's 'front and back neighbors' could name the other row of the unit's own column, or the opposing unit in front of it; the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) fixes the three positions inside one formation; a test comment calls a facing blocker 'an adjacent ENEMY'.
+Sources silent on whether a unit is adjacent to the enemy unit facing it across its column. The Manual's 'front and back neighbors' could name the other row of the unit's own column, or the opposing unit in front of it; the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) fixes the three positions inside one formation; a test comment called a facing blocker 'an adjacent ENEMY' (renamed 2026-10-24, CT-241: 'facing, not adjacent').
 
 - Manual p.22: "adjacent to their left, right, front and back neighbors until"
 - owner ruling, adopted 2026-08-22: "it's referring to its sides and above/below. Nothing diagonal."
-- file: client/engine/test/18-earth-c.test.ts: "// an adjacent ENEMY"
+- file: client/engine/test/18-earth-c.test.ts: "CR 111.7b: an ALLY is required — an enemy blocking it (facing, not adjacent) does not unlock it"
 
 **Resolution:** The rule follows the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”): adjacency is within the unit's own formation. The Manual sentence describes one formation and its two rows, and Manual p.23 puts blockers 'in front of the formation that is attacking them', not in it. Question for the owner only if a card is meant to count the facing enemy as adjacent (Electric's 'directed to an adjacent unit' is the likeliest place; see 802.17). See F-U10-2 (CT-241).
 

@@ -7,14 +7,15 @@
     "evidence": [
       {
         "file": "client/engine/test/37-attrs-wight.test.ts",
-        "quote": "test('CR 110.4a ⚠: a lone Wraith may pick ITSELF as \"an ally\" (unconfirmed reading)', () => {"
+        "quote": "test('CR 110.4a: a lone Wraith may pick ITSELF as \"an ally\" (a unit is its own ally)', () => {"
       },
       {
         "file": "client/docs/digital-rules.md",
         "quote": "4. **\"An ally\" MAY be the Wraith (or its host) ITSELF — a unit is its own"
       }
     ],
-    "ct": "CT-238"
+    "ct": "CT-238",
+    "closed": "fixed on 2026-10-24 (CT-238): the title states the owner's confirmed reading."
   },
   {
     "id": "F-U03-2",
@@ -46,14 +47,11 @@
     "evidence": [
       {
         "file": "client/engine/test/49-playtest-round6.test.ts",
-        "quote": "const after = h.state.stack.find(i => i.card === 'Fight');"
-      },
-      {
-        "file": "client/engine/test/49-playtest-round6.test.ts",
-        "quote": "if (after) {"
+        "quote": "assert.ok(after, 'and Fight is still on the stack, so its slots can be read');"
       }
     ],
-    "ct": "CT-240"
+    "ct": "CT-240",
+    "closed": "fixed on 2026-10-24 (CT-240): the Warder test asserts with no `if`, that the Warder resolved and Fight still holds [ally, Warder]."
   },
   {
     "id": "F-U03-4",

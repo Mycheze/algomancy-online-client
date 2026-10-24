@@ -76,10 +76,11 @@
     "evidence": [
       {
         "file": "client/engine/test/290-pure-outside-combat.test.ts",
-        "quote": "the cheapest way to make the VICTIM side of the pairing Pure is to make the"
+        "quote": "assert.equal(dealtTo(evs2).get(tgt2), 2, 'a Pure recipient takes the printed 2: its own Vulnerable is off');"
       }
     ],
-    "ct": "CT-241"
+    "ct": "CT-241",
+    "closed": "fixed on 2026-10-24 (CT-241): the test now also makes the recipient itself Pure and Vulnerable, hit by a source that is not Pure."
   },
   {
     "id": "F-U19-5",

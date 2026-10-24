@@ -65,6 +65,10 @@
       {
         "text": "In Learn to Play, a unit the Tutorial Bot casts during deployment is not shown to the learner until deployment closes.",
         "test": "306-solo-backend.test.ts::§2 inside deployment the bot's cast is frozen out, and revealed when the step closes"
+      },
+      {
+        "text": "In a hidden step, the count of actions each player is shown moves for their own actions and not for the other player's.",
+        "test": "615-hidden-step-action-count.test.ts::CR D6.1a / CT-334: in a hidden step each seat is served a count that moves for its own actions and not for the other seat"
       }
     ],
     "see": [],
@@ -103,7 +107,8 @@
       "tests": [
         "306-solo-backend.test.ts",
         "203-reveal-waits-for-the-barrier.test.ts",
-        "435-cr-digital-2.test.ts"
+        "435-cr-digital-2.test.ts",
+        "615-hidden-step-action-count.test.ts"
       ]
     },
     "basis": "owner",
@@ -4493,7 +4498,7 @@
     "key": "annexd.confirm.refusals",
     "parent": "D7",
     "order": 5,
-    "text": "When the server refuses something, the player is told, whatever screen they are on: the connecting screen, a waiting room before the game starts, or the board. Joining with a code for which no game exists says that no game has that code.",
+    "text": "When the server refuses something, the player is told, whatever screen they are on: the connecting screen, a waiting room before the game starts, or the board. Joining with a code for which no game exists says that no game has that code. Joining with the code of a finished game the server no longer holds open says instead that the game is over and who won.",
     "examples": [
       {
         "text": "A player types a room code that no game has. The connecting screen shows the refusal instead of waiting forever.",
@@ -4506,6 +4511,10 @@
       {
         "text": "The refusal for an unknown code names the code.",
         "test": "254-join-nonexistent-room.test.ts::CR D7.5 a code the server never minted is refused, and the refusal names it"
+      },
+      {
+        "text": "A finished game's link, followed after the server has let the game go, says the game is over and who won, not that no game has that code.",
+        "test": "614-restart-keeps-rooms-honest.test.ts::CR D7.5 / CT-195: a finished game forgotten from memory answers its link with its result, not No game with code"
       }
     ],
     "see": [],
@@ -4527,13 +4536,14 @@
       ],
       "engine": [],
       "tests": [
-        "254-join-nonexistent-room.test.ts"
+        "254-join-nonexistent-room.test.ts",
+        "614-restart-keeps-rooms-honest.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "high",
-    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-30 (“A refusal the player earns before…”) had no CR rule before the register is retired.",
+    "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-30 (“A refusal the player earns before…”) had no CR rule before the register is retired. CT-195 (2026-10-24): server/rooms.ts closedNotice, read by joinRefusal and the watch route; server/test 614.",
     "sourceHashes": {}
   },
   {

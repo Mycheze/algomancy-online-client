@@ -32,10 +32,11 @@
     "evidence": [
       {
         "file": "client/engine/test/36-cache-prophecy.test.ts",
-        "quote": "test('CR 803.7b: prophesying is a DEPLOYMENT action — illegal in planning, the haste step and battle', () => {"
+        "quote": "test('CR 803.7b: prophesying is a DEPLOYMENT action — a banner not ending in [Haste] is illegal in planning, the haste step and battle (CR 504.9)', () => {"
       }
     ],
-    "ct": "CT-235"
+    "ct": "CT-235",
+    "closed": "fixed on 2026-10-24 (CT-235): the title names the [Haste] banner exception."
   },
   {
     "id": "F-U08-3",
@@ -49,22 +50,23 @@
       },
       {
         "file": "client/engine/test/08-cards2.test.ts",
-        "quote": "assert.ok(h.state.hasteDone, 'haste step engaged (p holds a payable haste card)');"
+        "quote": "assert.ok(h.state.hasteDone, 'the haste step is open (it opens every turn, CR 504.5)');"
       },
       {
         "file": "client/engine/test/15-water-b.test.ts",
-        "quote": "assert.ok(h.state.hasteDone, 'haste step engaged (seat 0 holds a payable haste card)');"
+        "quote": "assert.ok(h.state.hasteDone, 'the haste step is open (it opens every turn, CR 504.5)');"
       },
       {
         "file": "client/engine/test/33-trigger-fixes.test.ts",
-        "quote": "assert.ok(h.state.hasteDone, 'the payable haste card engaged the haste step');"
+        "quote": "assert.ok(h.state.hasteDone, 'the haste step is open (it opens every turn, CR 504.5)');"
       },
       {
         "file": "client/engine/test/36-cache-prophecy.test.ts",
-        "quote": "give(h, P, 'Test Haste Spell'); // so the haste step opens"
+        "quote": "give(h, P, 'Test Haste Spell');                    // something to play there (the step opens every turn, CR 504.5)"
       }
     ],
-    "ct": "CT-235"
+    "ct": "CT-235",
+    "closed": "fixed on 2026-10-24 (CT-235): the messages and comments say the haste step opens every turn."
   },
   {
     "id": "F-U08-4",

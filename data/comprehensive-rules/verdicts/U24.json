@@ -788,26 +788,44 @@
   },
   {
     "key": "annexd.confirm.refusals",
-    "textHash": "88873f9465d97c9f",
+    "textHash": "402a109825890757",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/server/rooms.ts:joinRefusal",
+        "loc": "client/server/rooms.ts:joinRefusal / closedNotice",
         "agrees": true,
-        "note": ""
+        "note": "\"No game with code X.\" for an unknown code; \"Game X is over: <name> won.\" for a finished game dropped from memory"
       },
       {
-        "loc": "client/ui/main.ts:renderConnecting / error handler",
+        "loc": "client/ui (connecting screen, waiting rooms, board error bar)",
         "agrees": true,
-        "note": ""
+        "note": "demonstrated by 254"
       }
     ],
     "tests_run": [
       {
         "file": "client/ui/test/254-join-nonexistent-room.test.ts",
-        "pattern": "R274",
+        "pattern": "CR D7.5 a refused join reaches the connecting screen",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/254-join-nonexistent-room.test.ts",
+        "pattern": "CR D7.5 an error in the constructed waiting room",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/254-join-nonexistent-room.test.ts",
+        "pattern": "CR D7.5 a code the server never minted",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/614-restart-keeps-rooms-honest.test.ts",
+        "pattern": "CR D7.5 / CT-195",
         "passed": true,
         "asserts_claim": true
       }
@@ -815,15 +833,24 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R274",
+        "ref": "owner: \"A refusal from the server reaches the player on the connecting screen, in the constructed/draft waiting room, and on the board alike.\"",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner: \"There is no screen on which the server may say \\\"no\\\" and the client may say nothing.\"",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "There is no screen on which the server may say \"no\" and the client may say nothing."
+        "file": "client/server/rooms.ts",
+        "text": "return `No game with code ${code}. Check the code with your opponent, or start a new game.`;"
+      },
+      {
+        "file": "client/server/test/614-restart-keeps-rooms-honest.test.ts",
+        "text": "assert.match(said!, /^Game R614A is over: Rashi won\\./, 'it says the game is over and who won');"
       }
     ],
     "basis_ok": true,
@@ -4868,75 +4895,78 @@
   },
   {
     "key": "annexd.reveal.hidden-steps.frozen",
-    "textHash": "10646709be8ed9b3",
+    "textHash": "e23fdb0d49aade46",
     "verdict": "confirmed",
-    "round": 3,
-    "verifier": "U24-r3",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/server/view.ts:viewFor (frozenOpp branch)",
+        "loc": "client/server/view.ts:viewFor",
         "agrees": true,
-        "note": "the opponent players/entities/decks are served from the segment-start snapshot; the shared deck/recycle counts are frozen for both seats in haste/deploy"
+        "note": "frozenOpp: the other seat's players/entities/piles served from the segment snapshot; done-flags read live; hasteDone of the other seat masked to false"
       },
       {
-        "loc": "client/server/view.ts:viewFor done-flags",
+        "loc": "client/server/main.ts (held events flushed at the barrier)",
         "agrees": true,
-        "note": "planningDone/draftDone/bottomDone/deployDone live; hasteDone of the other seat mapped to false"
-      },
-      {
-        "loc": "client/server/rooms.ts held events (unheldFor/openSegment)",
-        "agrees": true,
-        "note": "the other seat's events are held to the barrier and delivered as playback frames"
+        "note": "demonstrated by 203 and 435"
       }
     ],
     "tests_run": [
       {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.reveal.hidden-steps.frozen — resource step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.reveal.hidden-steps.frozen — haste step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.reveal.hidden-steps.frozen — deployment",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.reveal.hidden-steps — the resource step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "CR D6.1: of everything a hidden step emits",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "CR D6.2b: the barrier delivers the reveal exactly once",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
         "file": "client/ui/test/306-solo-backend.test.ts",
-        "pattern": "inside deployment the bot's cast is frozen out",
+        "pattern": "§2 inside deployment the bot's cast is frozen out",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/615-hidden-step-action-count.test.ts",
+        "pattern": "CR D6.1a / CT-334: in a hidden step each seat",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U24/u24-r3-verify-probes.test.ts",
-        "title": "annexd.reveal.hidden-steps.frozen: resource step — the other player's \"done\" is live while the step is open",
-        "passed": true,
-        "demonstrates": "yes"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U24/u24-r3-verify-probes.test.ts",
-        "title": "annexd.reveal.hidden-steps.frozen: haste step — the other player's readiness is hidden while it is open, your own is not",
-        "passed": true,
-        "demonstrates": "yes"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U24/u24-r3-verify-probes.test.ts",
-        "title": "annexd.reveal.hidden-steps.frozen: deployment — the other player's units are served as the step began",
-        "passed": true,
-        "demonstrates": "yes"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R78 note",
-        "supports": "partly",
-        "note": "on topic (viewFor freezes the other seat in a segment), but R78 is about resolving; the freeze is better cited from the view.ts contract"
-      },
-      {
-        "ref": "R310",
+        "ref": "owner quotes (register@72de434, 2026-08-22 / 2026-10-04 / 2026-08-28)",
         "supports": "yes",
-        "note": "events held to the barrier"
-      },
-      {
-        "ref": "R228 done-flag clause",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R236",
-        "supports": "yes",
-        "note": "haste readiness hidden"
+        "note": "fragments: frozen segment view, events held to the barrier, done-flags live and public, haste readiness not served; register not in MIRROR, taken as own evidence"
       }
     ],
     "quote_spans": [
@@ -4949,13 +4979,12 @@
         "text": "// done-flags stay live and public — planningDone / draftDone / bottomDone"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "construction:** `viewFor` no longer serves the OTHER seat's per-seat haste"
+        "file": "client/server/view.ts",
+        "text": "v.players[o] = structuredClone(frozenOpp.players[o]!);"
       }
     ],
     "basis_ok": true,
-    "problem": "Not a defect: in the haste step and deployment the shared deck and recycle counts are frozen for BOTH players, including your own plays (R310). The rule only describes the other player's side, so it is incomplete there but not wrong.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.reveal.hidden-steps.haste-ready",

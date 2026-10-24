@@ -178,6 +178,8 @@ export const ENGINE_SRC_DIR = join(REPO_ROOT, 'client', 'engine', 'src');
 export const ENGINE_TEST_DIR = join(REPO_ROOT, 'client', 'engine', 'test');
 export const UI_TEST_DIR = join(REPO_ROOT, 'client', 'ui', 'test');
 export const SERVER_TEST_DIR = join(REPO_ROOT, 'client', 'server', 'test');
+/** the specs, which are also a test fixture directory: tests read files here by name */
+export const CLIENT_DOCS_DIR = join(REPO_ROOT, 'client', 'docs');
 /** the scripts that spawn the real server */
 export const SERVER_E2E_DIR = join(REPO_ROOT, 'client', 'server', 'e2e');
 /** the league store: its `OutboxKind` union is every league message, which the

@@ -133,7 +133,8 @@
     ],
     "dupes": [
       "F-U01-7"
-    ]
+    ],
+    "closed": "fixed on 2026-10-24 (CT-343, CT-344): a mod keeps its card's owner apart from who applied it (622), and every bin exit and stack-to-hand recall passes the owner (623, 624); an inline-played spell already carried it."
   },
   {
     "id": "F-U01-7",
@@ -142,9 +143,11 @@
     "evidence": [
       {
         "file": "client/engine/src/cards/sets/batch-water-a.ts",
-        "quote": "g.toHand(ctx.controller, name, 'bin');                          // CR 402.4"
+        "quote": "g.toHand(ctx.controller, name, 'bin', { owner: took!.owner });"
       }
     ],
-    "rule": "concepts.players.owner"
+    "rule": "concepts.players.owner",
+    "ct": "CT-344",
+    "closed": "fixed on 2026-10-24 (CT-344): Eldritch Reclaimer and the other bin-to-hand recalls take the card with takeFromBin and pass its owner to the hand (623 class guards)."
   }
 ]

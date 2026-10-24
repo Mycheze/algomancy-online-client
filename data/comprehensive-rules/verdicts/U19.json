@@ -3,13 +3,13 @@
     "key": "attr.balanced",
     "textHash": "0ea11a5da84a688c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:E.effStats",
         "agrees": true,
-        "note": ""
+        "note": "Balanced: p = t = max(p, t)"
       }
     ],
     "tests_run": [
@@ -25,17 +25,18 @@
       {
         "ref": "card: Brough",
         "supports": "yes",
-        "note": ""
+        "note": "reminder text verbatim"
+      },
+      {
+        "ref": "glossary: Balanced",
+        "supports": "n/a",
+        "note": "ours, not authority"
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/cards/printed.json",
-        "text": "(The power and defense of balanced units are equal to the greater of the two.)"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "else if (a === 'Balanced') { const m = Math.max(p, t); p = m; t = m; }"
+        "text": "The power and defense of balanced units are equal to the greater of the two."
       }
     ],
     "basis_ok": true,
@@ -43,31 +44,37 @@
   },
   {
     "key": "attr.balanced.after-changes",
-    "textHash": "1838026f8df91a46",
+    "textHash": "f87eb6df121b67d5",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:E.effStats",
         "agrees": true,
         "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "79-round17-layers.test.ts",
-        "pattern": "R93 layer 5: Caleb's worked example",
+        "file": "430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.balanced.after-changes",
         "passed": true,
-        "asserts_claim": "yes: asserts 1/8 after Tough, then 8/8 after Balanced"
+        "asserts_claim": true
+      },
+      {
+        "file": "603-balanced-applies-after-tough.test.ts",
+        "pattern": "CR 802.7 / report 279: a column of Child of Aether and Rampart Guardian",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
-        "title": "attr.balanced.after-changes — Balanced reads after counters: a 1/3 with two +1/+1 counters and Balanced is a 5/5",
+        "file": "client/engine/test/zz-probe-U19-1.test.ts",
+        "test": "zzU19-1 attr.balanced.after-changes: a 1/4 with Tough and Balanced is 1/8 then 8/8",
         "passed": true,
-        "demonstrates": "yes: 1/3 + two +1/+1 counters + Balanced = 5/5"
+        "demonstrates": "yes: the unbound first example holds"
       }
     ],
     "source_checks": [
@@ -77,20 +84,33 @@
         "note": ""
       },
       {
-        "ref": "R93",
+        "ref": "RQ 1334973991701708922",
+        "supports": "yes",
+        "note": "calebgannon \"yeah\" answering _passer: \"Balance is calculated after Tough, but before Inverted and Unaware?\""
+      },
+      {
+        "ref": "RQ 1420904499773706322",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "owner",
+        "supports": "yes",
+        "note": "1/4 tough balanced is 8/8"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "else if (a === 'Balanced') { const m = Math.max(p, t); p = m; t = m; }"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Sooo... Balance is calculated after Tough, but before Inverted and Unaware?"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "will have its defense doubled, then its stats balanced."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": "Note only: example 1 (1/4 Tough Balanced is 8/8) has test null; probe zzU19-1 demonstrates it."
   },
   {
     "key": "attr.deadly",
@@ -1160,15 +1180,15 @@
   },
   {
     "key": "attr.general.application-order",
-    "textHash": "f72517e0ef0e4808",
+    "textHash": "92ee75c7acd0ade2",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.statLayerAttrs",
+        "loc": "client/engine/src/engine.ts:E.effStats",
         "agrees": true,
-        "note": "augment mods in attachment order, then ownAttrs (printed, then temp grants/statics), then column-mates; take() keeps first occurrence"
+        "note": "Tough then Balanced, then Inverted, then Unaware"
       }
     ],
     "tests_run": [
@@ -1186,7 +1206,7 @@
       },
       {
         "file": "430-cr-attributes-1.test.ts",
-        "pattern": "cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it",
+        "pattern": "cr:attr.general.application-order",
         "passed": true,
         "asserts_claim": true
       },
@@ -1195,40 +1215,62 @@
         "pattern": "CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "603-balanced-applies-after-tough.test.ts",
+        "pattern": "CR 802.7 / report 279: Crumbling Ancient",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "client/engine/test/zz-probe-U19-1.test.ts",
-        "test": "probe U19-1a: a duplicate Balanced shared from the column keeps the position of the first (own) Balanced",
+        "file": "client/engine/test/zz-probe-U05-1.test.ts",
+        "test": "zzU05-1 six layers in order",
         "passed": true,
-        "demonstrates": "yes: the last sentence: a token granted Balanced then Tough reads 3/6, and still 3/6 with a Balanced column-mate behind it (a moved Balanced would read 3/3)"
+        "demonstrates": "yes: Inverted and Unaware apply after Tough"
       }
     ],
     "source_checks": [
       {
         "ref": "Manual p.42",
-        "supports": "yes",
-        "note": "all six quotes verbatim; the Tough/Balanced Q&A supports sentences 1-3 and the augment-before-printed, printed-before-applied, own-before-column order"
+        "supports": "partial",
+        "note": "supports augmented-onto and column cases and (same page) Inverted/Unaware as layers 5-6; its \"applied to\" clause is superseded by Caleb"
       },
       {
-        "ref": "owner register@72de434 (column order front to back; duplicates don't stack)",
-        "supports": "partial",
-        "note": "fragments; supports front-to-back and dedupe. The 'position of the first' detail rests on the engine + probe. Columns hold at most 2 units (apply.ts), so front-to-back is trivially met"
+        "ref": "RQ 1353013458328617080",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RQ 1420904499773706322",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RQ 1334955157984641074",
+        "supports": "yes",
+        "note": "calebgannon on Tough/Balanced ordering: always balanced last"
+      },
+      {
+        "ref": "RQ 1334973308885794928",
+        "supports": "yes",
+        "note": "calebgannon, same discussion"
+      },
+      {
+        "ref": "owner",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "A: Attributes apply in order from top to bottom. So if"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "2.) balanced always applies last. So 8/8 and 2/2"
       },
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "will have its defense doubled, then its stats balanced."
-      },
-      {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "its stats balanced, then its defense doubled."
+        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
       }
     ],
     "basis_ok": true,
@@ -2998,11 +3040,11 @@
     "key": "attr.tough",
     "textHash": "56d18abae60178f0",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:E.effStats",
         "agrees": true,
         "note": ""
       }
@@ -3024,19 +3066,19 @@
       },
       {
         "ref": "Manual p.35",
-        "supports": "partly",
-        "note": "says Rampart grants Tough; not what Tough does"
+        "supports": "yes",
+        "note": "Tough is an attribute"
       },
       {
         "ref": "glossary: Tough",
-        "supports": "yes",
-        "note": "ours"
+        "supports": "n/a",
+        "note": "ours, not authority"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (a === 'Tough') t *= 2;"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "for example can be augmented to grant the “Tough”"
       },
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
@@ -3050,13 +3092,13 @@
     "key": "attr.tough.after-counters",
     "textHash": "6948c379acdfec36",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U19-r2",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.effStats (layer 4)",
+        "loc": "client/engine/src/engine.ts:E.effStats",
         "agrees": true,
-        "note": "Tough doubles t after layer 3 (counters, temp deltas)"
+        "note": "counters, temp and dp added before t *= 2"
       }
     ],
     "tests_run": [
@@ -3064,45 +3106,47 @@
         "file": "387-raq-combat.test.ts",
         "pattern": "RAQ Tough: a 0/4 Tough unit with a +1/+1 counter is a 1/10",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.tough.after-counters",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
-        "title": "attr.tough.power — a 0/4 Tough unit with a -1/-1 counter is a -1/6",
+        "file": "client/engine/test/zz-probe-U19-1.test.ts",
+        "test": "zzU19-2 attr.tough.after-counters: a temporary +0/+1 is added before Tough doubles",
         "passed": true,
-        "demonstrates": "yes: the Manual's own -1/-1 example"
+        "demonstrates": "yes: 0/4 with temp +0/+1 and Tough is 0/10"
       }
     ],
     "source_checks": [
       {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": "layer list and the -1/6 example"
+        "note": ""
       },
       {
         "ref": "RAQ 1362832912579559664#0",
         "supports": "yes",
-        "note": "verbatim"
+        "note": "_passer [Solved], covered"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "unit with a -1/-1 counter on it would become a -1/6."
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "place before the defense is doubled, so a 0/4 tough"
       },
       {
         "file": "client/ledgers/raq.ts",
         "text": "That's 1/5 after including counter and 1/10 after including Tough"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "      if (a === 'Tough') t *= 2;"
       }
     ],
-    "basis_ok": true,
-    "problem": ""
+    "basis_ok": false,
+    "problem": "True, but basis is \"designer\" while it cites printed (Manual p.42) and designer sources: should be \"mixed\"."
   },
   {
     "key": "attr.tough.doubling",
@@ -3153,49 +3197,44 @@
     "key": "attr.tough.power",
     "textHash": "d85dc08917bad599",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:E.effStats",
         "agrees": true,
-        "note": ""
+        "note": "Tough only does t *= 2"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
-        "title": "attr.tough.power — a 0/4 Tough unit with a -1/-1 counter is a -1/6",
+        "file": "430-cr-attributes-1.test.ts",
+        "pattern": "cr:attr.tough.power",
         "passed": true,
-        "demonstrates": "yes: 0/4 Tough with a -1/-1 counter is -1/6"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": ""
+        "note": "0/4 tough with -1/-1 counter becomes -1/6: power not doubled"
       },
       {
-        "ref": "R226",
+        "ref": "owner",
         "supports": "yes",
-        "note": ""
+        "note": "\"Power is untouched by {Tough}\""
       }
     ],
     "quote_spans": [
       {
         "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "place before the defense is doubled, so a 0/4 tough"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (a === 'Tough') t *= 2;"
+        "text": "unit with a -1/-1 counter on it would become a -1/6."
       }
     ],
-    "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "basis_ok": false,
+    "problem": "True, but basis is \"printed\" while it also cites an owner quote: should be \"mixed\" (or drop the owner quote)."
   },
   {
     "key": "attr.unaware",

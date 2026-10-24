@@ -1505,44 +1505,51 @@
     "key": "card.stats.layers",
     "textHash": "4e3897ffc7d75f11",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U05-r1",
+    "round": 4,
+    "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.effStats",
+        "loc": "client/engine/src/engine.ts:E.effStats",
         "agrees": true,
-        "note": "layers 1-2 baseWith, 3 counters/temp/statics, 4 Tough/Balanced, 5 Inverted, 6 Unaware"
+        "note": "layers 1-2 baseWith, 3 counters/temp/dp, 4 Tough then Balanced, 5 Inverted, 6 Unaware returns printed"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/387-raq-combat.test.ts",
+        "file": "387-raq-combat.test.ts",
         "pattern": "RAQ Tough: a 0/4 Tough unit with a +1/+1 counter is a 1/10",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U05-1.test.ts",
+        "test": "zzU05-1 six layers in order: printed, base, changes, Tough, Inverted, Unaware",
+        "passed": true,
+        "demonstrates": "yes: base 2/3 replaces printed 0/4, counter and temp +0/+1 add before Tough doubles (3/10), Inverted applies after Tough (1/-4), Unaware returns printed 0/4"
+      }
+    ],
     "source_checks": [
       {
         "ref": "Manual p.42",
         "supports": "yes",
-        "note": "verbatim"
+        "note": "Q&A lists the 6 layers verbatim; text paraphrases it"
       },
       {
         "ref": "RAQ 1362832912579559664#0",
         "supports": "yes",
-        "note": "_passer verbatim"
+        "note": "_passer [Solved], status covered: counter before Tough, 1/10"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Un-"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (a === 'Tough') t *= 2;"
+        "file": "client/ledgers/raq.ts",
+        "text": "That's 1/5 after including counter and 1/10 after including Tough"
       }
     ],
     "basis_ok": true,
@@ -2860,42 +2867,51 @@
   },
   {
     "key": "card.type-line.order",
-    "textHash": "a71a9b6187d68df3",
+    "textHash": "6796b76a42c5f671",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U05-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:E.effStats",
         "agrees": true,
-        "note": "layer-4 attributes applied in mod order"
+        "note": "layer 4: `if Tough t*=2; if Balanced max` regardless of source/order (statLayerAttrs)"
       }
     ],
     "tests_run": [
       {
-        "file": "client/engine/test/08-cards2.test.ts",
-        "pattern": "R19: layer-4 application order",
+        "file": "08-cards2.test.ts",
+        "pattern": "CR 709.4b: layer-4 application order — Tough then Balanced, whichever was augmented first",
         "passed": true,
-        "asserts_claim": true,
-        "passed_note": "yes: Lonely Forager 3/1 + Rampart Guardian (Tough) then Child of Aether (Balanced) = 3/3; reverse order = 3/6"
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "Manual p.42",
+        "ref": "RQ 1353013458328617080",
         "supports": "yes",
-        "note": "Q&A on Tough and Balanced: 'Attributes apply in order from top to bottom.'"
+        "note": "calebgannon, answering a request for the updated FAQ: Balanced after Tough always; supersedes Manual p.42 \"top to bottom\" / \"applied to\" clause"
+      },
+      {
+        "ref": "RQ 1420904499773706322",
+        "supports": "yes",
+        "note": "calebgannon answering the Child of Aether + Rampart Guardian column question"
+      },
+      {
+        "ref": "owner \"Caleb everywhere: 2/2\"",
+        "supports": "yes",
+        "note": "owner adopts the designer rule for every source"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/comprehensive-rules/sources/printed-pages.json",
-        "text": "A: Attributes apply in order from top to bottom. So if"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "The only change is balanced now applies after tough always"
       },
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "\"type\": \"Mystic Axolotl Spell Unit\""
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "2.) balanced always applies last. So 8/8 and 2/2"
       }
     ],
     "basis_ok": true,

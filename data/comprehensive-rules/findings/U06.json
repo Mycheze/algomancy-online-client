@@ -40,14 +40,11 @@
     "evidence": [
       {
         "file": "client/engine/test/393-raq-mods.test.ts",
-        "quote": "  if (plays.length) {"
-      },
-      {
-        "file": "client/engine/test/393-raq-mods.test.ts",
-        "quote": "  const atk = spawn(h, A, 'Unit Token');"
+        "quote": "assert.ok(plays.length > 0, 'Download is castable: there is a real token to take');"
       }
     ],
-    "ct": "CT-240"
+    "ct": "CT-240",
+    "closed": "fixed on 2026-10-24 (CT-240): an enemy token makes Download castable, and the test asserts it is, with a positive control."
   },
   {
     "id": "F-U06-3",

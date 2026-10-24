@@ -11,7 +11,7 @@
       },
       {
         "file": "client/engine/test/35-rot-debt-trash.test.ts",
-        "quote": "engine (CT-246; CR 801.2h differs): a modded unit dying is binned, TRASHED, and only then erased"
+        "quote": "CR 801.2h (CT-246): a modded unit dying is binned, TRASHED, and only then erased"
       }
     ],
     "ct": "CT-246",
@@ -25,14 +25,15 @@
     "evidence": [
       {
         "file": "client/ui/glossary.ts",
-        "quote": "and still moddable out of the zone at full price."
+        "quote": "public and targetable, but it can no longer be played, prophesied or applied as a mod there."
       },
       {
         "file": "client/engine/test/315-cache-mod-permission.test.ts",
         "quote": "CR 801.9i: an expired glimpse is not a graft, not an augment, not anything"
       }
     ],
-    "ct": "CT-231"
+    "ct": "CT-231",
+    "closed": "fixed on 2026-10-24 (CT-231): the Glimpse row says an expired glimpse can no longer be applied as a mod."
   },
   {
     "id": "F-U18-3",

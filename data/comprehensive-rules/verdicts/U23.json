@@ -723,122 +723,180 @@
   },
   {
     "key": "annexd.auto-pass.misclick-confirm",
-    "textHash": "d29720f0a6fe41b3",
+    "textHash": "ce1e3a6fe1ff6c74",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectPartTargets",
+        "agrees": true,
+        "note": "askAlly (mixedAllegiance + every declared target and the candidate an ally) and askOnly (max 1, min 0, not may, every candidate the caster's) add `confirm` to the option; the candidate list is never narrowed and the doneTargets stop is pushed without confirm"
+      },
       {
         "loc": "client/engine/src/cards/dsl.ts:mixedAllegiance",
         "agrees": true,
-        "note": "allyUnit slot beside a unit/any slot"
+        "note": "an allyUnit slot plus a unit/any slot"
       },
       {
-        "loc": "client/ui/main.ts:act (R288 confirm)",
+        "loc": "client/ui/main.ts:confirmBarHtml (allyconfirm/allycancel)",
         "agrees": true,
-        "note": "asks before sending; no leaves the pick open"
+        "note": "the client asks before sending"
       }
     ],
     "tests_run": [
       {
-        "file": "client/ui/test/278-ally-misclick.test.ts",
-        "pattern": "R288",
+        "file": "client/ui/test/620-own-unit-question-up-to-one.test.ts",
+        "pattern": "CR D2.8 / CT-289: an up to one recall",
         "passed": true,
-        "asserts_claim": true,
-        "note": "ran (9/9); §1, §5 yes/no"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/620-own-unit-question-up-to-one.test.ts",
+        "pattern": "CR D2.8 / CT-289: with an enemy in reach",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/620-own-unit-question-up-to-one.test.ts",
+        "pattern": "CR D1.1a / CT-289: the question narrows nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "CR D2.8 Fight aimed at a second unit of your own asks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "CR D2.8 the ALLY slot never asks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "CR D2.8 the question changes no legality",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "CR D2.8 the client asks before sending, and \"yes\" sends",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "CR D7.1b \"no\" sends nothing",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R288",
+        "ref": "owner: literally \"target ally AND target unit on the same card\". Fight is",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "the owner's derivation of the two-slot family (register text, not checkable in MIRROR; taken as its own evidence)"
       },
       {
-        "ref": "R288",
+        "ref": "owner: **WHAT \"NO\" DOES.** Nothing has been sent…",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "no returns to the same pick with nothing sent; 278 D7.1b demonstrates it"
       },
       {
-        "ref": "R288",
+        "ref": "owner: question closes and the same target pick is still open…",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": ""
+      },
+      {
+        "ref": "example 1 (test null): Fight at two of your own asks once",
+        "supports": "yes",
+        "note": "shown by 278 §1 (slot 1 asks) + §2 (slot 0 never asks) + §5 (asked before sending)"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "literally \"target ally AND target unit on the same card\". Fight is"
+        "file": "client/engine/src/engine.ts",
+        "text": "? { confirm: 'Every unit you can target right now is one of your own. Did you mean to?' }"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**WHAT \"NO\" DOES.** Nothing has been sent, so there is nothing to undo: the"
+        "file": "client/engine/src/engine.ts",
+        "text": "const askOnly = !askAlly && max === 1 && def.targets.min === 0 && !def.targets.may"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "question closes and the same target pick is still open. BL-30 asks for \"back to"
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "text": "test('CR D7.1b \"no\" sends nothing and leaves the same pick open', () => {"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "reworded, equivalence-checked 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.auto-pass.misclick-confirm.family",
-    "textHash": "79b281cbc3a2489c",
+    "textHash": "33d196b3ceba16b7",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/engine/src/cards/dsl.ts:mixedAllegiance",
         "agrees": true,
-        "note": "derived, not listed"
+        "note": "derived from slot kinds, no names"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:collectPartTargets",
+        "agrees": true,
+        "note": "askOnly: max === 1 && min === 0 && !may && slot.what unit/any — no names"
       }
     ],
     "tests_run": [
       {
-        "file": "client/ui/test/278-ally-misclick.test.ts",
-        "pattern": "R288 §0",
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.auto-pass.misclick-confirm.family",
         "passed": true,
-        "asserts_claim": true,
-        "note": "Fight in, Organic Exchange out"
-      }
-    ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U23/misclick-family.test.ts",
-        "title": "annexd.auto-pass.misclick-confirm.family",
-        "passed": true,
-        "demonstrates": "yes: the derived family over the whole pool is exactly [Fight, Squish]"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "R288",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "asserts_claim": true
       },
       {
-        "ref": "R288",
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "CR D2.8a the family is derived from printed specs",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/620-own-unit-question-up-to-one.test.ts",
+        "pattern": "CR D2.8 / CT-289: an up to one recall",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner: \"and the derived family today is **Fight and Squish**.\"",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "register prose rather than the owner's words, but the current pool is proved exactly Fight and Squish by 434"
+      },
+      {
+        "ref": "owner: \"⚠ **THE OWNER'S TWO MESSAGES DISAGREE ABOUT ORGANIC EXCHANGE…\"",
+        "supports": "partial",
+        "note": "a register note, not an owner statement; the Organic Exchange exclusion stands on the derivation and on 434/278 asserting it"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "and the derived family today is **Fight and Squish**."
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "text": "assert.deepEqual([...fam].sort(), ['Fight', 'Squish']);"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "⚠ **THE OWNER'S TWO MESSAGES DISAGREE ABOUT ORGANIC EXCHANGE, and the later one"
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "text": "assert.ok(!fam.has('Organic Exchange'), 'Organic Exchange does not ask');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.auto-pass.no-retain",
@@ -4757,7 +4815,7 @@
   },
   {
     "key": "annexd.undo.agreed-fix.proposal",
-    "textHash": "46d6d3247c63a65b",
+    "textHash": "c395a57c1c07fc4d",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
@@ -4765,22 +4823,17 @@
       {
         "loc": "client/server/rooms.ts:proposeFix",
         "agrees": true,
-        "note": "reason required (>=3 chars, refused 'say what went wrong — it is filed as a bug report'); one proposal at a time; cooldown checked; expires = now + FIX_PROPOSAL_MS (60_000)"
+        "note": "reason < 3 chars refused (\"say what went wrong — it is filed as a bug report\"); FIX_PROPOSAL_MS = 60_000; FIX_COOLDOWN_MS = 15_000 checked against fixCooldown"
       },
       {
         "loc": "client/server/rooms.ts:answerFix",
         "agrees": true,
-        "note": "accept/decline only by the other seat, cancel (withdraw) only by the proposer; decline sets fixCooldown = now + FIX_COOLDOWN_MS (15_000) for the proposer"
+        "note": "cancel only by the proposer, accept/decline only by the other seat; decline sets the cooldown, cancel does not"
       },
       {
-        "loc": "client/server/rooms.ts:applyToRoom",
+        "loc": "client/server/rooms.ts:dropProposal / applyToRoom",
         "agrees": true,
-        "note": "any action that lands sets room.proposal = null"
-      },
-      {
-        "loc": "client/server/main.ts:sweepFixes / landAction / carryOutFix / flushFixRun / fileFixReport",
-        "agrees": true,
-        "note": "expiry sweep; one report row per run of fixes, each fix's what + reason in order; filed when the next game action lands, at game end, idle sweep, or at boot for a persisted run"
+        "note": "an action landing drops the proposal (485 §5)"
       }
     ],
     "tests_run": [
@@ -4804,7 +4857,13 @@
       },
       {
         "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
-        "pattern": "§6 two fixes in a row",
+        "pattern": "§3 the proposer cannot accept their own fix",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
+        "pattern": "§6 two fixes in a row file one report",
         "passed": true,
         "asserts_claim": true
       },
@@ -4813,14 +4872,20 @@
         "pattern": "§4 the other seat agrees or declines",
         "passed": true,
         "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/614-restart-keeps-rooms-honest.test.ts",
+        "pattern": "CR D4.5 / CT-335",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "tests: 485, 486, 487",
+        "ref": "tests 485/486/487/614",
         "supports": "yes",
-        "note": "485 §5: empty reason refused, proposer cannot accept ('other player answers'), lapses after FIX_PROPOSAL_MS, an action ends it, cancel by proposer, decline -> 'declined — wait', ok after FIX_COOLDOWN_MS. 486 §2: report filed once, when the next game action lands, note carries the reason. 486 §6: two rewinds in a row -> one row (fix.run = 2) with both reasons in order, filed after a server restart."
+        "note": "every sentence is asserted: reason required, 60 s lapse, ends on any action, withdraw, only the other seat accepts, 15 s cooldown after decline only, reason filed as a bug row, a run filed once when the next action lands with reasons in order, and a restart does not lose it"
       }
     ],
     "quote_spans": [
@@ -4837,20 +4902,8 @@
         "text": "if (reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };"
       },
       {
-        "file": "client/server/rooms.ts",
-        "text": "if (op === 'decline') room.fixCooldown[seatSlot(p.seat)] = now + FIX_COOLDOWN_MS;"
-      },
-      {
-        "file": "client/server/main.ts",
-        "text": "if (action.type !== 'amend' && room.actions.length !== was) flushFixRun(room);"
-      },
-      {
-        "file": "client/server/main.ts",
-        "text": "for (const room of allRooms()) if (room.fixRun) flushFixRun(room);"
-      },
-      {
         "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
-        "text": "assert.equal(row.fix.run, 2, 'it says it holds two');"
+        "text": "assert.equal(rows.length, filed + 1, 'ONE row for the two fixes');"
       }
     ],
     "basis_ok": true,
@@ -4866,58 +4919,60 @@
       {
         "loc": "client/engine/src/apply.ts:doAmend",
         "agrees": true,
-        "note": "every branch uses a quiet primitive: quietDraw, toHand quiet, toBin 'amend', removeFromBin quiet, cacheCard quiet, quietLeavePlay"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:quietLeavePlay",
-        "agrees": true,
-        "note": "no died/despawned event"
+        "note": "quietDraw, quietLeavePlay, takeFromBin/toHand/cacheCard with { quiet: true }"
       }
     ],
     "tests_run": [
       {
-        "file": "484-agreed-fix-action.test.ts",
-        "pattern": "§3 quiet: a unit taken off the board neither dies nor despawns",
+        "file": "client/engine/test/484-agreed-fix-action.test.ts",
+        "pattern": "§3 quiet: a unit taken off the board",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "484-agreed-fix-action.test.ts",
+        "file": "client/engine/test/484-agreed-fix-action.test.ts",
         "pattern": "§3 quiet: a fix into the bin is not a trash",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "484-agreed-fix-action.test.ts",
-        "pattern": "§3 quiet: a card leaving the bin by a fix does not fire leftBin",
+        "file": "client/engine/test/484-agreed-fix-action.test.ts",
+        "pattern": "§3 quiet: a card leaving the bin by a fix",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "484-agreed-fix-action.test.ts",
-        "pattern": "§3 quiet: a fix draw is not a draw",
+        "file": "client/engine/test/484-agreed-fix-action.test.ts",
+        "pattern": "§3 quiet: a fix draw",
         "passed": true,
         "asserts_claim": true
       }
     ],
     "probes": [],
-    "source_checks": [],
-    "quote_spans": [
+    "source_checks": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (from === 'stack' || from === 'sandbox' || from === 'amend') return;"
+        "ref": "card: Afflicting Anima",
+        "supports": "yes",
+        "note": "\"When I am trashed\" — the trigger the test shows silent, with a positive control"
       },
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "else if (edit.from === 'bin') e.removeFromBin(seat, edit.index, 'an agreed fix', { quiet: true });"
+        "ref": "card: Rotling",
+        "supports": "yes",
+        "note": "\"When I leave your bin\" — silent under a fix, positive control fires"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I am trashed, [Switch1] You may pay [1] to create a Wraith."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot."
       },
       {
         "file": "client/engine/src/apply.ts",
         "text": "e.quietDraw(edit.target, edit.n);"
-      },
-      {
-        "file": "client/engine/src/apply.ts",
-        "text": "e.quietLeavePlay(u);"
       }
     ],
     "basis_ok": true,
@@ -4925,35 +4980,25 @@
   },
   {
     "key": "annexd.undo.agreed-fix.rewind",
-    "textHash": "d41436c46c2e004b",
-    "verdict": "partial",
+    "textHash": "fc03ddd6bdb74f0f",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/server/rooms.ts:rewindPlans",
         "agrees": true,
-        "note": "Offers: before the asking seat's own last non-forced, non-amend action (no count limit, but only within the last FIX_REWIND_WINDOW = 80 logged actions); before each of the last FIX_REWIND_MAX = 5 non-forced actions (forced ones skipped and not counted); the start of this step; the start of the step before. Inside an open hidden step a 'before' cut must pass ownOnly (no hidden action of the other seat after it, and strictly after the step's start); the step start may take the other seat's hidden actions. Note: an agreed edit (amend) IS counted among the five."
+        "note": "lastOwn loop has no five-action cap (searches the 80-action window); at most FIX_REWIND_MAX=5 non-forced \"before\" cuts; forced steps neither counted nor cut at; start of this step and of the step before; inside a hidden step a cut is offered only if ownOnly()"
       },
       {
         "loc": "client/server/rewind-cuts.ts:describe / PUBLIC_IN_HIDDEN",
-        "agrees": false,
-        "note": "Only donePlanning, doneDeploying and amend count as public inside a hidden step. doneHaste is NOT public (view.ts redacts hasteDone while the haste step is open), so in the haste step 'finishing the step' is a hidden action and no in-step cut over the other seat's doneHaste is offered. The record's example 'such as finishing the step' is true for planning and deployment only."
-      },
-      {
-        "loc": "client/server/rewind-cuts.ts:cutParts",
         "agrees": true,
-        "note": "Each option is labelled per viewer ('your X', 'their pass'), with 'takes back ...'; hidden actions of the other seat are summarised without a count."
+        "note": "donePlanning / doneDeploying / amend are not hidden, so they may be cut"
       },
       {
         "loc": "client/server/rooms.ts:rewindRoom",
         "agrees": true,
-        "note": "Truncates the log to `to` and rebuilds; sigs, cardLog and soft state cut too. The removed actions are archived on the record (Amendment.removed), not replayed."
-      },
-      {
-        "loc": "client/server/rooms.ts:rewindPlans ('prev' option)",
-        "agrees": false,
-        "note": "Bug (probe zz-U23-4): the 'start of the step before' can sit on a FORCED action (an empty declareBlocks); the rebuilt board re-takes it at once, so the option lands at the start of the current step, not the step before. See bugs."
+        "note": "truncates the log; the board is the prefix replayed"
       }
     ],
     "tests_run": [
@@ -4970,6 +5015,12 @@
         "asserts_claim": true
       },
       {
+        "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
+        "pattern": "§4 a rewind",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
         "file": "client/ui/test/523-rewind-options-name-their-cut.test.ts",
         "pattern": "§1 every rewind option names",
         "passed": true,
@@ -4980,45 +5031,21 @@
         "pattern": "§2 inside a hidden step",
         "passed": true,
         "asserts_claim": true
-      },
-      {
-        "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
-        "pattern": "§4 a rewind",
-        "passed": true,
-        "asserts_claim": true
       }
     ],
     "probes": [
       {
         "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "zz-U23-1 your own last action is offered even with more than five non-forced actions after it",
+        "test": "zz U23-1: own last action offered with more than five non-forced actions after it",
         "passed": true,
-        "demonstrates": "yes: with six non-forced actions (agreed edits by the other seat) after seat 0's last action, the last-own option is offered at exactly that index, labelled '(your last action', and the five action cuts are the five edits after it. A greedy-drive search over three seeds found no natural such board, so 523 §1 alone did not demonstrate the 'more than five' clause."
-      },
-      {
-        "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "zz-U23-2 the action cuts are the last five NON-forced actions, plus your own last one; forced ones are skipped and not counted",
-        "passed": true,
-        "demonstrates": "yes: on public boards with a forced step inside the span, the 'before' cuts are exactly the last five non-forced indices (plus the last-own one), none sits on a forced action, and no forced action is listed in what a cut takes back. 485 §4 only asserted 1..5 cuts and no forced stop on its own fixture."
-      },
-      {
-        "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "zz-U23-3 inside planning, a cut that takes back the other seat's done-planning (public) is offered; one that takes back their recycle is not",
-        "passed": true,
-        "demonstrates": "yes, for planning: a cut over the other seat's donePlanning is offered and named; a cut over their hidden recycle is not, only the step start reaches past it. The haste step (where the done-flag is hidden) was not probed; the code says it is not public there."
-      },
-      {
-        "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "zz-U23-4 FINDING: the start of the step before can sit on a forced action, and the rebuilt board re-takes it at once",
-        "passed": true,
-        "demonstrates": "bug: seed 48593, 'Back to the start of the step before (turn 3, battle (blocks, counterattack))' cuts to 43, a forced empty declareBlocks; after the forced drain the log is 44 long again, so the option does not reach the step before."
+        "demonstrates": "yes: with 7-9 non-forced actions after a seat's own last one (a synthetic tail of refused actions appended to a real battle log, which tailStates skips), rewindOptions still offers exactly one \"(your last action\" option at that index, beside at most five action rewinds. Synthetic, so it shows the algorithm, within its 80-action search window."
       }
     ],
     "source_checks": [
       {
-        "ref": "owner: \"Rewinding a whole step or two seems fine to me. Either say \\\"up to 5 actions\\\" or \\\"restart this step\\\"\" (2026-10-16)",
-        "supports": "partial",
-        "note": "Supports the five-action limit, the start of this step and the step before. It does not speak to the own-last-action option, the per-seat naming, the hidden-step restriction or the forced-action skip; those rest on server code (CT-323/CT-325) and the tests and probes above."
+        "ref": "owner: \"Rewinding a whole step or two seems fine to me. Either say \\\"up to 5 actions\\\" or \\\"restart this step\\\"\"",
+        "supports": "yes",
+        "note": "supports the five-action and step-start options; the rest is demonstrated by tests and the probe"
       }
     ],
     "quote_spans": [
@@ -5027,40 +5054,16 @@
         "text": "export const FIX_REWIND_MAX = 5;"
       },
       {
-        "file": "client/server/rooms.ts",
-        "text": "const FIX_REWIND_WINDOW = 80;"
-      },
-      {
-        "file": "client/server/rooms.ts",
-        "text": "// \"back to before your last action\" — first-class, however far back it is"
-      },
-      {
-        "file": "client/server/rooms.ts",
-        "text": "if (forced(i) || !ownOnly(i)) continue;"
-      },
-      {
-        "file": "client/server/rooms.ts",
-        "text": "if (to <= openStart) return false;   // that is the start of the step's own option"
-      },
-      {
-        "file": "client/server/rooms.ts",
-        "text": "room.actions = restore.slice(0, to);"
-      },
-      {
         "file": "client/server/rewind-cuts.ts",
         "text": "const PUBLIC_IN_HIDDEN = new Set(['donePlanning', 'doneDeploying', 'amend']);"
       },
       {
-        "file": "client/server/view.ts",
-        "text": "if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));"
-      },
-      {
-        "file": "client/server/test/485-agreed-fix-rooms.test.ts",
-        "text": "assert.equal(sig(room), digest(signature(rebuilt)), 'the board is exactly the prefix replayed');"
+        "file": "client/server/rooms.ts",
+        "text": "// \"back to before your last action\" — first-class, however far back it is"
       }
     ],
-    "basis_ok": false,
-    "problem": "Almost all of it holds and is demonstrated (bound tests plus probes zz-U23-1..3). One clause fails: 'their public ones, such as finishing the step, may be taken back'. Finishing the step is public only in planning and deployment (PUBLIC_IN_HIDDEN = donePlanning, doneDeploying, amend). In the haste step the done-flag is hidden (view.ts redacts hasteDone), so no in-step cut over the other player's doneHaste is offered. Suggested fix: 'such as being done planning or done deploying'. Smaller points: the own-last-action option looks back only 80 logged actions (FIX_REWIND_WINDOW), and an agreed edit counts among the five. Basis: 'owner' covers only the five-actions and step-start options; the rest is server code plus tests, so the honest basis is mixed (owner + engine), which this pipeline cannot express because sources.engine takes only client/engine/src symbols. Divergence filed under bugs: the 'start of the step before' option can land on a forced action and then arrive at the start of the current step."
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.undo.agreed-fix.timing",
@@ -5568,37 +5571,57 @@
   },
   {
     "key": "annexd.undo.hidden-step.opponent",
-    "textHash": "7ba979e93113100a",
+    "textHash": "c10b797ce16cd6ce",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/server/rooms.ts:undoForSeat",
         "agrees": true,
-        "note": "\"has your opponent acted since\" is no longer asked; exceptions are a later move naming an entity this action created, or a changed reference key"
+        "note": "walks back to the seat's own latest action in the segment; only seen cards, a fix floor or a later move naming a created unit stop it"
       }
     ],
     "tests_run": [
       {
-        "file": "client/server/e2e/suite.test.ts",
-        "pattern": "test-undo-segment.ts",
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "pattern": "cr:annexd.undo.hidden-step.opponent",
         "passed": true,
-        "asserts_claim": "not run (e2e)",
-        "note": "not run; executed at wave end: node e2e/test-undo-segment.ts exited 0 (ALL PASS)"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/617-undo-spawn-under-cache.test.ts",
+        "pattern": "CR D4.1a / CT-199",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "CR D4.3c",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
-    "source_checks": [],
+    "source_checks": [
+      {
+        "ref": "suite.test.ts (server/e2e)",
+        "supports": "unknown",
+        "note": "spawns the real server; not run. 434, 617 and 374 demonstrate the claim in process"
+      }
+    ],
     "quote_spans": [
       {
+        "file": "client/engine/test/434-cr-digital-1.test.ts",
+        "text": "assert.deepEqual(R.undoForSeat(room, P), { ok: true }, 'my play still comes back');"
+      },
+      {
         "file": "client/server/rooms.ts",
-        "text": "// screen, and what they do must not be able to take your undo away. So"
+        "text": "the last one overall — your opponent is acting in parallel, behind the"
       }
     ],
     "basis_ok": true,
-    "problem": "True subject to the parent's limits (spliceable / reference-key refusals).",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.undo.learn-to-play",

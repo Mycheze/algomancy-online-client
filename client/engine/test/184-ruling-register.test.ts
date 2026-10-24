@@ -135,7 +135,7 @@ const ALLOWED: { file: string; match: string; why: string }[] = [
   { file: 'engine/test/184-ruling-register.test.ts', match: 'R', why: 'this file: the scans\' own positive controls and the allowlist itself' },
   { file: 'engine/scripts/cr/check.mjs', match: 'R', why: 'machinery: the doc of uncite(), which still reads the retired forms in frozen verdict spans' },
   { file: 'ledgers/card-todo.ts', match: 'R157 §20 —', why: 'machinery: CT-235 quotes 133\'s pre-migration titles as its evidence; the retitle resolved its item (1)' },
-  { file: 'ledgers/card-todo.ts', match: 'R11: regroup runs its exact sequence', why: 'machinery: an open entry\'s evidence quotes a test title as it stood when filed' },
+  { file: 'ledgers/card-todo-closed.ts', match: 'R11: regroup runs its exact sequence', why: 'freeze: CT-241\'s evidence quotes a test title as it stood when filed (closed 2026-10-24)' },
   { file: 'ledgers/card-todo-closed.ts', match: 'R157 §17', why: 'freeze: CT-101\'s closing notes describe the retired 202 guard\'s control, as history' },
   { file: 'engine/test/229-cosmic-and-control.test.ts', match: ' *     ', why: 'freeze: a quotation of the test as it used to read (its R3 GUARD), kept verbatim' },
   { file: 'engine/test/43-dark-c.test.ts', match: "between damage sub-steps (R31)'", why: 'freeze: a quotation of the old assertion message, kept verbatim' },

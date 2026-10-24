@@ -29,14 +29,15 @@
     "evidence": [
       {
         "file": "client/ui/glossary.ts",
-        "quote": "insert it from your hand or bin — or from cache, if a fulfilled prophecy paid for it — into a graft-cause unit’s stack"
+        "quote": "or from cache, while a fulfilled prophecy or a glimpse this turn lets you use it"
       },
       {
         "file": "client/docs/digital-rules.md",
         "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |"
       }
     ],
-    "ct": "CT-231"
+    "ct": "CT-231",
+    "closed": "fixed on 2026-10-24 (CT-231): the Graft row takes a cached card under a fulfilled prophecy or a glimpse this turn, and cites the glimpse rule."
   },
   {
     "id": "F-U17-3",
@@ -46,18 +47,15 @@
     "evidence": [
       {
         "file": "client/engine/test/04-mods.test.ts",
-        "quote": "test('mods move with a stolen unit: controller of the unit controls its mods (CR 711.1)', () => {"
+        "quote": "assert.equal(ent(h, modId)!.controller, o, 'and o controls the mod too (CR 711.2)');"
       },
       {
         "file": "client/engine/test/04-mods.test.ts",
-        "quote": "// steal it (control change primitive; no pool card does this yet)"
-      },
-      {
-        "file": "client/engine/test/04-mods.test.ts",
-        "quote": "u.controller = o;"
+        "quote": "assert.ok(e.giveControl(e.entity(host)!, o as 0 | 1), 'the control change happened');"
       }
     ],
-    "ct": "CT-241"
+    "ct": "CT-241",
+    "closed": "fixed on 2026-10-24 (CT-241): the steal goes through giveControl, and the test reads the mod's controller."
   },
   {
     "id": "F-U17-4",

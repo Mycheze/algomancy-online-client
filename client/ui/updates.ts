@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-24', kind: 'fix', text: "The glossary now explains Electric, Glimpse, Graft and Pure the way the game plays them: Electric excess is never lost, an expired glimpse can't be modded, and Pure switches off Tough, Balanced, Inverted and Unaware." },
   { date: '2026-10-24', kind: 'fix', text: 'Torrential Reclamation no longer makes anyone sacrifice a unit when it recalls nothing.' },
   { date: '2026-10-24', kind: 'fix', text: 'Balanced now always applies after Tough, whatever gave each one, so a Balanced unit always has equal power and defense. A 3/8 given a Balanced augment and then a Tough one is now 16/16, not 8/16.' },
   { date: '2026-10-24', kind: 'fix', text: 'The Everywhere names a card, and a token is not a card: Unit Tokens, Robots, Wisps and other tokens are no longer on its list.' },

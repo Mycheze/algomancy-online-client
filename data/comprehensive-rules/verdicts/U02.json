@@ -1573,68 +1573,83 @@
   },
   {
     "key": "concepts.numbers.x-cost.zero",
-    "textHash": "8acae86858ea425e",
+    "textHash": "7e59b4ac009e3b9b",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U02-r1",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.collectX",
+        "loc": "client/engine/src/apply.ts (X offer 0..affordable; xMin only where printed, Frosted Denial)",
         "agrees": true,
-        "note": "menu starts at xFloor (0 unless printed or Stasis Sentry)"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "32-cast-costs.test.ts",
-        "pattern": "X spells resolve from the stored X — a 0-mana caster may still cast for X = 0",
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "pattern": "X spells resolve from the stored X",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
       },
       {
-        "file": "46-hybrids-ld-c.test.ts",
-        "pattern": "R157 §22: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent",
+        "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+        "pattern": "CR 107.2b: an empty hand still activates No Hand Killer",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
       },
       {
-        "file": "182-correctness-sample.test.ts",
-        "pattern": "Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (R221)",
+        "file": "client/engine/test/182-correctness-sample.test.ts",
+        "pattern": "Torrential Reclamation: with X = 0 nothing is recalled",
         "passed": true,
-        "asserts_claim": "yes"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "pattern": "Frosted Denial: xMin 1",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R157 §22",
+        "ref": "RQ 1222932669516615743",
+        "supports": "yes",
+        "note": "calebgannon \"Yeah\" answers \"does the sacrificing also happen once for each returned unit?\" — supports the Torrential X = 0 example"
+      },
+      {
+        "ref": "RQ 1223287683804037202",
+        "supports": "yes",
+        "note": "calebgannon, after \"That's why we allow X and the \\\"for each\\\" to be different\" — fewer recalls, fewer sacrifices"
+      },
+      {
+        "ref": "owner: \"You can legally activate it and discard no cards.\"",
+        "supports": "yes",
+        "note": "No Hand Killer at X = 0"
+      },
+      {
+        "ref": "owner: \"The ruling is a warning, not a prohibition. X = 0 stays legal\"",
         "supports": "yes",
         "note": ""
       },
       {
-        "ref": "R74",
+        "ref": "card: Frosted Denial",
         "supports": "yes",
-        "note": "warning, not a prohibition"
-      },
-      {
-        "ref": "R221",
-        "supports": "yes",
-        "note": ""
+        "note": "\"X can't be zero.\" is the \"unless the card says otherwise\" case"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"You can legally activate it and discard no cards.\"*"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "does the sacrificing also happen once for each returned unit?"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**unconditional with the scaling on top**: `max(1, recalled.length)` rounds. The"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "X can't be zero."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.numbers.x-minimum",

@@ -1895,7 +1895,7 @@
     "key": "attr.electric",
     "parent": "802",
     "order": 17,
-    "text": "Electric is an attribute. Its reminder text reads \"Excess damage from electric sources can be directed to an adjacent unit, recursively.\"",
+    "text": "Electric is an attribute. Its reminder text reads \"Excess damage from electric sources can be directed to an adjacent unit, recursively.\" It applies to combat damage as it does to damage from effects: the excess combat damage an Electric unit deals to a unit may jump on too.",
     "examples": [
       {
         "text": null,
@@ -1916,7 +1916,20 @@
           "quote": "{Battle} {Electric} Elemental Spell"
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1186819175906287667",
+          "quote": "Yep"
+        },
+        {
+          "ref": "RQ 1186819213311090688",
+          "quote": "You could wipe a whole board"
+        },
+        {
+          "ref": "RQ 1152344021289664522",
+          "quote": "Then excess damage goes left right front or back"
+        }
+      ],
       "ours": [
         {
           "ref": "glossary: Electric",
@@ -1929,11 +1942,18 @@
         "387-raq-combat.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "{/n} in the quote is the oracle's line-break markup.",
-    "sourceHashes": {}
+    "notes": "{/n} in the quote is the oracle's line-break markup. Combat damage (CT-362, researched 2026-10-24): the designer, 2023 (before print), in rules-questions: asked whether a 4-attack Deadly Electric unit could kill 4 adjacent units, \"Yep\" / \"You could wipe a whole board\"; on an Electric attack, \"Then excess damage goes left right front or back\". No RAQ thread covers it. The engine spreads only damage from effects (F-U20-7). Nothing in today's pool can put Electric on a unit that fights: only Arc Lightning (a spell, no mod type line) and Envoy of Lightning (single-target spell effects; Battle and Fight take two) name it, and no unit prints it, so the limit is reached only by a test grant.",
+    "sourceHashes": {
+      "RQ 1152344021289664522": "cb23be0f7225ba3d96f13c0006eb6418a3555d6d02ad58fd551058ee8654db10",
+      "RQ 1186819175906287667": "0226a807a39fc59fabf478578bc667e42139a6a48c3d06b7d57ce4bc9adf8166",
+      "RQ 1186819213311090688": "0bcfcf165ed33496a95ebd59659e81bb32b3b6c320010cca4a0f59d22aa7c6a5"
+    },
+    "engineDiffers": [
+      "F-U20-7"
+    ]
   },
   {
     "key": "attr.electric.jump",

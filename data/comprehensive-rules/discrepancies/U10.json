@@ -4,7 +4,7 @@
     "kind": "g-other",
     "rule": "combat.columns.adjacency.positions",
     "tier": 4,
-    "summary": "Sources silent on whether a unit is adjacent to the enemy unit facing it across its column. The Manual's 'front and back neighbors' could name the other row of the unit's own column, or the opposing unit in front of it; the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) fixes the three positions inside one formation; a test comment calls a facing blocker 'an adjacent ENEMY'.",
+    "summary": "Sources silent on whether a unit is adjacent to the enemy unit facing it across its column. The Manual's 'front and back neighbors' could name the other row of the unit's own column, or the opposing unit in front of it; the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”) fixes the three positions inside one formation; a test comment called a facing blocker 'an adjacent ENEMY' (renamed 2026-10-24, CT-241: 'facing, not adjacent').",
     "sides": [
       {
         "source": "Manual p.22",
@@ -16,7 +16,7 @@
       },
       {
         "source": "file: client/engine/test/18-earth-c.test.ts",
-        "quote": "// an adjacent ENEMY"
+        "quote": "CR 111.7b: an ALLY is required — an enemy blocking it (facing, not adjacent) does not unlock it"
       }
     ],
     "resolution": "The rule follows the owner ruling of 2026-08-22 (“Joining a formation is a CHOICE…”): adjacency is within the unit's own formation. The Manual sentence describes one formation and its two rows, and Manual p.23 puts blockers 'in front of the formation that is attacking them', not in it. Question for the owner only if a card is meant to count the facing enemy as adjacent (Electric's 'directed to an adjacent unit' is the likeliest place; see 802.17). See F-U10-2 (CT-241)."

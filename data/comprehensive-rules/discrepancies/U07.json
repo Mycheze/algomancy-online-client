@@ -158,7 +158,7 @@
       },
       {
         "source": "glossary: Glimpse",
-        "quote": "still moddable out of the zone at full price"
+        "quote": "it can no longer be played, prophesied or applied as a mod there"
       },
       {
         "source": "owner ruling, adopted 2026-09-20",
@@ -170,10 +170,10 @@
       },
       {
         "source": "file: client/ui/glossary.ts",
-        "quote": "and still moddable out of the zone at full price."
+        "quote": "public and targetable, but it can no longer be played, prophesied or applied as a mod there."
       }
     ],
-    "resolution": "The owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) is current and is stated (zones.cache.lapse, zones.cache.no-permission). Mark the owner ruling of 2026-08-26 (“the glossary is a rules document…”)’s Glimpse-row clause as reversed by the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”), and fix the glossary row (F-U07-5 (CT-231))."
+    "resolution": "The owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”) is current and is stated (zones.cache.lapse, zones.cache.no-permission). Mark the owner ruling of 2026-08-26 (“the glossary is a rules document…”)’s Glimpse-row clause as reversed by the owner ruling of 2026-09-20 (“The cache's mod verbs are gated…”), and fix the glossary row (F-U07-5 (CT-231)). The glossary row was fixed on 2026-10-24 (CT-231); the two glossary sides now quote the fixed words."
   },
   {
     "id": "D-U07-7",

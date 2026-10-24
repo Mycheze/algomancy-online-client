@@ -703,7 +703,7 @@
     "key": "concepts.players.owner",
     "parent": "102",
     "order": 4,
-    "text": "A card's owner is the player whose card it is. Taking control of a card does not change its owner, and neither does moving it into or out of a player's hand, bin or cache, even another player's. A card that goes into a shared zone (a draft pack, a deck or the recycle pile) leaves its ownership behind there: whoever next takes it out owns it.",
+    "text": "A card's owner is the player whose card it is. Taking control of a card does not change its owner, and neither does moving it into or out of a player's hand, bin or cache, even another player's, nor applying it as a mod. A card that goes into a draft pack, a deck or a recycle pile leaves its ownership behind there: whoever next takes it out owns it. That holds in constructed too, where each player has a deck and a recycle pile of their own: a stolen card that goes into the thief's deck or recycle pile becomes the thief's.",
     "examples": [
       {
         "text": "A unit whose control has been taken is recalled: the player it was stolen from is still the card's owner.",
@@ -720,6 +720,14 @@
       {
         "text": "A stolen card in the thief's hand is recycled. Its ownership stays behind in the recycle pile, and the player who next takes it out owns it.",
         "test": "551-ownership-survives-own-zones.test.ts::CR 102.4 / CT-233: a shared zone resets ownership"
+      },
+      {
+        "text": "Collect Remains takes a card out of the opponent's bin into its caster's hand: the opponent still owns it.",
+        "test": "623-bin-exits-keep-the-owner.test.ts::CR 102.4 / CT-344: Collect Remains takes a card out of the opponent bin into your hand still owned by the opponent"
+      },
+      {
+        "text": "A player augments a unit with a card another player owns, out of their own hand: the mod is still that other player's card, and the player who applied it is recorded apart.",
+        "test": "622-mod-owner-is-not-applier.test.ts::CR 102.4 / CT-343: a foreign-owned augment applied out of the hand keeps its owner, and the applier is recorded apart"
       }
     ],
     "see": [
@@ -740,21 +748,26 @@
           "quote": "Reset in shared zones",
           "adopted": "2026-10-22",
           "from": "owner, chat 2026-10-22 (CT-233)"
+        },
+        {
+          "quote": "Becomes mine",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (CT-345: in constructed, a stolen card that goes into the thief's own deck or recycle pile)"
         }
       ],
       "engine": [],
       "tests": [
-        "551-ownership-survives-own-zones.test.ts"
+        "551-ownership-survives-own-zones.test.ts",
+        "622-mod-owner-is-not-applier.test.ts",
+        "623-bin-exits-keep-the-owner.test.ts",
+        "624-owner-routes-verifier-gaps.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "Who owns a card in live draft, where every card comes out of one shared deck, is not stated by any source (D-U07-8). In constructed it is the player who brought the card (400.4c). Round 1: the verifier measured that a stolen card recalled to the thief's hand and replayed is recorded as owned by the thief; the rule states the ruling (F-U01-1). Round 2026-10-22 (CT-233): the owner ruled that ownership holds in a player's own hand, bin and cache, and resets in shared zones (\"Reset in shared zones\"); the old \"always, forever\" register line is replaced by that call. The engine now keeps the owner through a hand, bin and cache (551). Three routes still lose it (new tickets from the round): a mod applied from hand/bin/cache, an inline-played spell resolving into a bin, and card effects moving a bin card to a hand: F-U01-6. The erased pile is a player's own zone too (zones follow control, 400.4).",
-    "sourceHashes": {},
-    "engineDiffers": [
-      "F-U01-6"
-    ]
+    "notes": "Who owns a card in live draft, where every card comes out of one shared deck, is not stated by any source (D-U07-8). In constructed it is the player who brought the card (400.4c). Round 2026-10-22 (CT-233): the owner ruled that ownership holds in a player's own hand, bin and cache, and resets in shared zones (\"Reset in shared zones\"). Round 2026-10-24: the three routes that still lost it (F-U01-6, F-U01-7) are fixed: mods keep their card's owner apart from who applied them (CT-343, 622), and every bin exit and stack-to-hand recall passes the owner (CT-344, 623, 624). The owner, 2026-10-24, asked about a constructed player's own deck and recycle pile (CT-345): \"Becomes mine\", so every deck and recycle pile resets ownership, which is what the engine does. The erased pile is a player's own zone too (zones follow control, 400.4).",
+    "sourceHashes": {}
   },
   {
     "key": "concepts.players.owner.token",

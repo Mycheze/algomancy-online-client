@@ -1340,52 +1340,82 @@
   },
   {
     "key": "attr.electric",
-    "textHash": "07a7fea7fd373f18",
+    "textHash": "e7054ffcb8329e3a",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAllIn (Electric read at the attrsVs(first).has('Electric') branch)",
         "agrees": true,
-        "note": ""
+        "note": "effect damage jumps"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:combatSubStep / combatSubStepRun",
+        "agrees": false,
+        "note": "combat damage never reads Electric — the declared engineDiffers F-U20-7 is real"
       }
     ],
     "tests_run": [
       {
-        "file": "387-raq-combat.test.ts",
+        "file": "client/engine/test/387-raq-combat.test.ts",
         "pattern": "RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U20-1.test.ts",
+        "test": "probe U20-1: an Electric 6-power attacker kills a 1/1 blocker; the excess does not jump to the adjacent blocker",
+        "passed": true,
+        "demonstrates": "yes (engine differs): with the two blockers adjacent by the engine's own adjacentInFormation, a granted-Electric attacker kills its 1/1 blocker, no electricPath question is asked, and the adjacent blocker takes 0"
+      }
+    ],
     "source_checks": [
       {
         "ref": "card: Envoy of Lightning",
         "supports": "yes",
-        "note": ""
+        "note": "reminder text verbatim"
       },
       {
         "ref": "card: Arc Lightning",
         "supports": "yes",
-        "note": ""
+        "note": "{Electric} on a damage spell"
       },
       {
-        "ref": "glossary: Electric (ours)",
+        "ref": "RQ 1186819175906287667",
         "supports": "yes",
-        "note": "not an authority"
+        "note": "calebgannon \"Yep\" to \"If I had a deadly, electric unit with 4 attack, I could conceivably kill 4 units if they were all properly adjacent\" — combat damage jumps"
+      },
+      {
+        "ref": "RQ 1186819213311090688",
+        "supports": "yes",
+        "note": "same thread"
+      },
+      {
+        "ref": "RQ 1152344021289664522",
+        "supports": "yes",
+        "note": "adjacency directions"
+      },
+      {
+        "ref": "glossary: Electric",
+        "supports": "n/a",
+        "note": "ours; not authority, not relied on"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "const nexts = this.adjacentInFormation(victim.id).filter(u => !visited.has(u.id));"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "If I had a deadly, electric unit with 4 attack, I could conceivably kill 4 units if they were all properly adjacent, correct?"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively."
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.electric.adjacency",

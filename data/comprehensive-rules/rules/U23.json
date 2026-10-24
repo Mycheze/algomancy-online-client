@@ -2176,11 +2176,23 @@
     "key": "annexd.auto-pass.misclick-confirm",
     "parent": "D2",
     "order": 8,
-    "text": "When a spell has one target slot that must be an ally and another that may be any unit, and the player picks an ally for the second slot, the client asks whether they meant to target their own unit. It never refuses: yes resolves exactly as chosen, and no returns to the same target pick with nothing sent.",
+    "text": "When a spell has one target slot that must be an ally and another that may be any unit, and the player picks an ally for the second slot, the client asks whether they meant to target their own unit. It also asks when a single \"up to one target unit\" slot, other than a \"you may\" one, can reach only the player's own units: each of them asks, and when an enemy is in reach nothing asks. It never refuses: yes resolves exactly as chosen, and no returns to the same target pick with nothing sent. The option to pick nothing is still offered, and asks nothing.",
     "examples": [
       {
         "text": "A player casts Fight and picks two of their own units: the client asks once before the cast goes out.",
         "test": null
+      },
+      {
+        "text": "Minor Kraken attacks beside Curio Drifter with no enemy in reach: picking Curio Drifter to recall asks first.",
+        "test": "620-own-unit-question-up-to-one.test.ts::CR D2.8 / CT-289: an up to one recall whose every candidate is your own asks on each of them"
+      },
+      {
+        "text": "With an enemy unit in reach, the same pick asks nothing.",
+        "test": "620-own-unit-question-up-to-one.test.ts::CR D2.8 / CT-289: with an enemy in reach the pick is a choice, and nothing asks"
+      },
+      {
+        "text": null,
+        "test": "620-own-unit-question-up-to-one.test.ts::CR D1.1a / CT-289: the question narrows nothing, the stop is still offered and asks nothing"
       }
     ],
     "see": [
@@ -2208,20 +2220,24 @@
           "from": "register@72de434"
         }
       ],
-      "engine": [],
-      "tests": []
+      "engine": [
+        "collectPartTargets"
+      ],
+      "tests": [
+        "620-own-unit-question-up-to-one.test.ts"
+      ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "Belongs with confirmations (D7, U24) by topic; the owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) was in this unit's pack only. The owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) names guard 278; no 278 title was in the pack, so no example is bound.",
+    "notes": "Belongs with confirmations (D7, U24) by topic. The two-slot shape is the owner ruling of 2026-09-01 (\"warn on a misclicked ally, never…\"). The up-to-one shape is CT-289 (report 206, Minor Kraken recalling Curio Drifter, 2026-10-24): engine.ts collectPartTargets `askOnly`, ui/test 620. A \"you may … target\" slot (Powerforge Synergist, Flux Constructor, Aethercap Siphoner, Apex Prime) is left out: two of them move counters onto a unit you usually want to be your own.",
     "sourceHashes": {}
   },
   {
     "key": "annexd.auto-pass.misclick-confirm.family",
     "parent": "annexd.auto-pass.misclick-confirm",
     "order": 1,
-    "text": "The cards that ask are found from their target slots, not listed by name. Today they are Fight and Squish. Organic Exchange, which targets two units with no ally slot, does not ask.",
+    "text": "The cards that ask are found from their target slots, not listed by name. Of the two-slot shape, today they are Fight and Squish; Organic Exchange, which targets two units with no ally slot, does not ask. The up-to-one shape is found the same way, from a slot that takes at most one unit and may take none, and is not a \"you may\" slot.",
     "examples": [
       {
         "text": null,
@@ -2245,15 +2261,18 @@
           "from": "register@72de434"
         }
       ],
-      "engine": [],
+      "engine": [
+        "collectPartTargets"
+      ],
       "tests": [
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "620-own-unit-question-up-to-one.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "The owner's first message named Organic Exchange; his later derivation excludes it, and the owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) follows the later one. D-U23-10.",
+    "notes": "The owner's first message named Organic Exchange; his later derivation excludes it, and the owner ruling of 2026-09-01 (“warn on a misclicked ally, never…”) follows the later one. D-U23-10. CT-289 (2026-10-24) added the up-to-one shape, derived in collectPartTargets (`askOnly`: max 1, min 0, not `may`, a unit slot, every candidate an ally).",
     "sourceHashes": {}
   },
   {
@@ -2706,6 +2725,10 @@
       {
         "text": null,
         "test": "434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.opponent — the opponent acting in the same step does not stop my undo"
+      },
+      {
+        "text": "A player undoes a unit they spawned in deployment after the opponent cached a card off the shared deck.",
+        "test": "617-undo-spawn-under-cache.test.ts::CR D4.1a / CT-199: undoing your spawn is allowed after the opponent cached a card off the shared deck"
       }
     ],
     "see": [],
@@ -2717,7 +2740,8 @@
       "engine": [],
       "tests": [
         "suite.test.ts",
-        "434-cr-digital-1.test.ts"
+        "434-cr-digital-1.test.ts",
+        "617-undo-spawn-under-cache.test.ts"
       ]
     },
     "basis": "engine",
@@ -4230,7 +4254,7 @@
     "key": "annexd.undo.agreed-fix.rewind",
     "parent": "annexd.undo.agreed-fix",
     "order": 4,
-    "text": "A rewind takes the game back to one of: just before the proposing player's own last action, even when more than five actions came after it; just before any of the last five actions, counting only actions a player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before. Each option names, in the proposing player's words, what it takes back. Inside a hidden step, a point within the step is offered only if it takes back none of the other player's hidden actions there (their public ones, such as finishing the step, may be taken back); the start of the step may take back the other player's hidden actions too. The actions taken back are removed from the game, as if they had not been taken.",
+    "text": "A rewind takes the game back to one of: just before the proposing player's own last action, even when more than five actions came after it; just before any of the last five actions, counting only actions a player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before. Each option names, in the proposing player's words, what it takes back. Inside a hidden step, a point within the step is offered only if it takes back none of the other player's hidden actions there (their public ones, such as finishing planning or deployment, may be taken back); the start of the step may take back the other player's hidden actions too. The actions taken back are removed from the game, as if they had not been taken.",
     "examples": [
       {
         "text": null,
@@ -4305,6 +4329,10 @@
       {
         "text": null,
         "test": "486-agreed-fix-over-the-wire.test.ts::§6 two fixes in a row file one report, and a restart in between does not lose it"
+      },
+      {
+        "text": null,
+        "test": "614-restart-keeps-rooms-honest.test.ts::CR D4.5 / CT-335: a run of agreed fixes in a game too old or closed to restore is filed at boot and leaves the file"
       }
     ],
     "see": [
@@ -4319,7 +4347,8 @@
       "tests": [
         "485-agreed-fix-rooms.test.ts",
         "486-agreed-fix-over-the-wire.test.ts",
-        "487-propose-a-fix-ui.test.ts"
+        "487-propose-a-fix-ui.test.ts",
+        "614-restart-keeps-rooms-honest.test.ts"
       ]
     },
     "basis": "engine",

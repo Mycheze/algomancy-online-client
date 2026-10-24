@@ -33,13 +33,14 @@
     "evidence": [
       {
         "file": "client/ui/glossary.ts",
-        "quote": "When the chain runs out the excess is lost — unless the source is also {Piercing}, which sends it to that unit’s controller."
+        "quote": "Excess with nowhere to jump is dealt to the last unit it reached, never lost"
       },
       {
         "file": "client/docs/digital-rules.md",
         "quote": "no {Piercing} is read: it stays on the last unit — dealt, never lost"
       }
     ],
-    "ct": "CT-231"
+    "ct": "CT-231",
+    "closed": "fixed on 2026-10-24 (CT-231): the Electric row says excess with nowhere to jump is dealt to the last unit, never lost."
   }
 ]

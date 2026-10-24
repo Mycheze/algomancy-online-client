@@ -495,7 +495,7 @@ test('CR 609.3c RAQ STACK ORDER: the initiative seat effects go on the stack FIR
  * kills the attacker in the Swift sub-step, so the attacker deals NOTHING in
  * the normal one. If deaths had moved to after combat with the triggers, the
  * Drifter would have taken 1 and died. */
-test('CR 608.3e STILL STANDS: a unit killed in the Swift sub-step deals no normal damage, and only the trigger queue waits', () => {
+test('CR 608.3e: a unit killed in the Swift sub-step is gone at the window after it (CR 608.3b) and deals no normal damage', () => {
   const h = new Harness(23906);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

@@ -1266,36 +1266,49 @@
     "key": "card.type-line.order",
     "parent": "204",
     "order": 6,
-    "text": "Attributes apply in the order they are printed, top to bottom.",
+    "text": "The order in which a unit's attributes are printed, or in which it gained them, does not decide whether Tough or Balanced applies first: Balanced always applies after Tough (rule attr.general.application-order).",
     "examples": [
       {
-        "text": "A Lonely Forager (3/1) given Tough and then Balanced is 3/3; given Balanced first and then Tough, it is 3/6.",
-        "test": "08-cards2.test.ts::CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
+        "text": "A Lonely Forager (3/1) given Tough and Balanced is a 3/3, whichever it was given first.",
+        "test": "08-cards2.test.ts::CR 709.4b: layer-4 application order — Tough then Balanced, whichever was augmented first"
       }
     ],
     "see": [
       "709"
     ],
     "sources": {
-      "printed": [
+      "printed": [],
+      "designer": [
         {
-          "ref": "Manual p.42",
-          "quote": "A: Attributes apply in order from top to bottom. So if"
+          "ref": "RQ 1353013458328617080",
+          "quote": "The only change is balanced now applies after tough always"
+        },
+        {
+          "ref": "RQ 1420904499773706322",
+          "quote": "2.) balanced always applies last. So 8/8 and 2/2"
         }
       ],
-      "designer": [],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "Caleb everywhere: 2/2",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (report 279: Balanced after Tough whatever the source)"
+        }
+      ],
       "engine": [],
       "tests": [
         "08-cards2.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Manual p.42 Q&A on Tough and Balanced. The full order (type line, then augments, then column) is the owner ruling of 2026-08-18 (“Stat layer 4 application order”), 709 (U16).",
-    "sourceHashes": {}
+    "notes": "Report 279 (2026-10-24). The Manual p.42 Q&A (\"Attributes apply in order from top to bottom\") was the old basis; the designer's 2025 change (\"balanced now applies after tough always\") replaced it for the one pair whose order mattered, and the owner adopted it (\"Caleb everywhere: 2/2\"). The rest is 709 (U16).",
+    "sourceHashes": {
+      "RQ 1353013458328617080": "d9530ffe96d961bbedd7dd498342e1f2c204936830a8fdafc37b81f7f24196a1",
+      "RQ 1420904499773706322": "f388da222d9d9dc1c32d8d4504c7b1aed4248f65d7398da05f6cb1bac1d54570"
+    }
   },
   {
     "key": "card.type-line.icons-not-attributes",

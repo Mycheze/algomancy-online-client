@@ -168,7 +168,7 @@
     "sides": [
       {
         "source": "glossary: Electric",
-        "quote": "When the chain runs out the excess is lost"
+        "quote": "Excess with nowhere to jump is dealt to the last unit it reached, never lost"
       },
       {
         "source": "owner ruling, adopted 2026-10-09",
@@ -179,7 +179,7 @@
         "quote": "All 12 damage sink into Crumbling - this has its use if you had Ember of Life in play"
       }
     ],
-    "resolution": "Glossary fix (our text, not authority): the row should say the remainder stays on the last unit, and that with Piercing it is elective. Filed as the register-level finding F-REG-2 (CT-231). [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.]"
+    "resolution": "Glossary fix (our text, not authority): the row should say the remainder stays on the last unit, and that with Piercing it is elective. Filed as the register-level finding F-REG-2 (CT-231). [The ruling register this refers to was retired on 2026-10-11; its owner calls now live in the rule records.] Fixed on 2026-10-24 (CT-231): the row now quotes as above."
   },
   {
     "id": "D-U20-9",

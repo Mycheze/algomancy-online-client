@@ -7,14 +7,15 @@
     "evidence": [
       {
         "file": "client/engine/test/26-metal-a.test.ts",
-        "quote": "test('CR 405.6: a stolen unit dies — the erase reaches the OWNER\\'s bin, not the controller\\'s', () => {"
+        "quote": "test('CR 405.6: a stolen unit dies — into the bin of its CONTROLLER (CR 405.3), and the erase takes one copy from there', () => {"
       },
       {
         "file": "client/engine/test/26-metal-a.test.ts",
-        "quote": "withE(h, e => e.destroy(e.entity(victim)!, 'dies'));   // → D's bin (the owner's)"
+        "quote": "withE(h, e => e.destroy(e.entity(victim)!, 'dies'));   // → A's bin (CR 405.3: the controller's)"
       }
     ],
-    "ct": "CT-235"
+    "ct": "CT-235",
+    "closed": "fixed on 2026-10-24 (CT-235): the title and comment say the controller's bin, and the test asserts it."
   },
   {
     "id": "F-U07-2",
@@ -24,14 +25,15 @@
     "evidence": [
       {
         "file": "client/engine/test/36-cache-prophecy.test.ts",
-        "quote": "test('CR 410.5c: a TOKEN cached from play is erased, not cached (there is no card)', () => {"
+        "quote": "test('CR 410.5c: a TOKEN cached from play enters the cache and is then erased out of it', () => {"
       },
       {
         "file": "client/engine/test/35-rot-debt-trash.test.ts",
         "quote": "test('CR 410.5c: a CACHED token visits the cache and is erased out of it (⚠ engine call)', () => {"
       }
     ],
-    "ct": "CT-235"
+    "ct": "CT-235",
+    "closed": "fixed on 2026-10-24 (CT-235): both titles say a cached token enters the cache and is erased out of it."
   },
   {
     "id": "F-U07-3",
@@ -78,7 +80,7 @@
     "evidence": [
       {
         "file": "client/ui/glossary.ts",
-        "quote": "Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price."
+        "quote": "public and targetable, but it can no longer be played, prophesied or applied as a mod there."
       },
       {
         "file": "client/engine/test/315-cache-mod-permission.test.ts",
@@ -88,7 +90,8 @@
     "ct": "CT-231",
     "dupes": [
       "F-U18-2"
-    ]
+    ],
+    "closed": "fixed on 2026-10-24 (CT-231): the Glimpse row says an expired glimpse can no longer be applied as a mod."
   },
   {
     "id": "F-U07-6",

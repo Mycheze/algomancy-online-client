@@ -7,7 +7,7 @@
     "evidence": [
       {
         "file": "client/engine/test/45-hybrids-ld-b.test.ts",
-        "quote": "Deferral Drone: gain 4 debt → the next card you play this turn costs [3] less"
+        "quote": "Deferral Drone: gain 4 debt → the next card you play this phase costs [3] less"
       },
       {
         "file": "client/engine/test/45-hybrids-ld-b.test.ts",
@@ -18,7 +18,8 @@
         "quote": "| **clear** | `E.startTurn`, beside the `Entity.budgets` wipe |"
       }
     ],
-    "ct": "CT-235"
+    "ct": "CT-235",
+    "closed": "fixed on 2026-10-24 (CT-235): the test title says \"this phase\", as the card does."
   },
   {
     "id": "F-U04-2",

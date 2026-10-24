@@ -591,11 +591,11 @@
     "key": "attr.general.application-order",
     "parent": "attr.general",
     "order": 12,
-    "text": "When Tough and Balanced both apply to a unit, they apply one after the other, from top to bottom. If Tough is augmented onto a Balanced unit, or a Tough unit attacks with a Balanced unit behind it, the unit has its defense doubled, then its stats balanced. If Tough is applied to a Balanced unit, it has its stats balanced, then its defense doubled. The attributes a unit has from its augments apply first, in the order the mods were attached, the first attached first; then its printed attributes; then those effects have given it; then those shared from its column, front to back. An attribute the unit has from more than one source takes the position of the first.",
+    "text": "When Tough and Balanced both apply to a unit, Tough applies first and Balanced after it, whatever gave the unit each of them: printed on it, its augments in either order of attachment, an effect, or its column. So Tough doubles the unit's defense, then Balanced makes its power and defense equal. Inverted and Unaware apply after both (see rule card.stats.layers).",
     "examples": [
       {
-        "text": "A 3/1 augmented with Rampart Guardian (Tough) and then Child of Aether (Balanced) is a 3/3; augmented in the other order it is a 3/6.",
-        "test": "08-cards2.test.ts::CR 709.4b: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
+        "text": "A 3/1 augmented with Rampart Guardian (Tough) and Child of Aether (Balanced) is a 3/3, whichever was augmented first.",
+        "test": "08-cards2.test.ts::CR 709.4b: layer-4 application order — Tough then Balanced, whichever was augmented first"
       },
       {
         "text": "Child of Aether prints Balanced and is a 2/0. Augmented with Rampart Guardian (Tough), its defense is doubled (still 2/0), then its stats balanced: it is a 2/2.",
@@ -606,8 +606,12 @@
         "test": "430-cr-attributes-1.test.ts::cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it is doubled, then balanced: Rampart Guardian is an 8/8"
       },
       {
-        "text": "Child of Aether given Tough by an effect is balanced first (2/2), then its defense doubled: a 2/4.",
-        "test": "08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles"
+        "text": "Child of Aether given Tough by an effect is doubled first (still 2/0), then balanced: a 2/2.",
+        "test": "08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect still doubles first, then balances"
+      },
+      {
+        "text": "Crumbling Ancient (3/8) augmented with Child of Aether and then with Rampart Guardian is doubled (3/16), then balanced: a 16/16.",
+        "test": "603-balanced-applies-after-tough.test.ts::CR 802.7 / report 279: Crumbling Ancient augmented with Child of Aether and then Rampart Guardian is a 16/16"
       }
     ],
     "see": [
@@ -616,10 +620,6 @@
     ],
     "sources": {
       "printed": [
-        {
-          "ref": "Manual p.42",
-          "quote": "A: Attributes apply in order from top to bottom. So if"
-        },
         {
           "ref": "Manual p.42",
           "quote": "“Tough” is augmented onto a “Balanced” unit, or if a"
@@ -631,47 +631,56 @@
         {
           "ref": "Manual p.42",
           "quote": "will have its defense doubled, then its stats balanced."
-        },
-        {
-          "ref": "Manual p.42",
-          "quote": "If “Tough” is applied to a “Balanced” unit, it will have"
-        },
-        {
-          "ref": "Manual p.42",
-          "quote": "its stats balanced, then its defense doubled."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1353013458328617080",
+          "quote": "The only change is balanced now applies after tough always"
+        },
+        {
+          "ref": "RQ 1420904499773706322",
+          "quote": "2.) balanced always applies last. So 8/8 and 2/2"
+        },
+        {
+          "ref": "RQ 1334955157984641074",
+          "quote": "My gut tells me we need to standardize this and just always have balanced apply last"
+        },
+        {
+          "ref": "RQ 1334973308885794928",
+          "quote": "balanced units ALWAYS having balanced stats just makes intuitive sense"
+        }
+      ],
       "ours": [],
       "owner": [
-        {
-          "quote": "column-shared attrs** (column order, front to back). Duplicates don't stack — an",
-          "adopted": "2026-08-18",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "\"order gained\" is the engine's reading. (Engine 2026-07-16.)",
-          "adopted": "2026-08-18",
-          "from": "register@72de434"
-        },
         {
           "quote": "Doubled then balanced",
           "adopted": "2026-10-22",
           "from": "owner, chat 2026-10-22 (CT-257: Tough augmented onto a Balanced unit)"
+        },
+        {
+          "quote": "Caleb everywhere: 2/2",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (report 279: Balanced after Tough whatever the source)"
         }
       ],
       "engine": [],
       "tests": [
         "08-cards2.test.ts",
-        "430-cr-attributes-1.test.ts"
+        "430-cr-attributes-1.test.ts",
+        "603-balanced-applies-after-tough.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Settled 2026-10-22 (CT-257, D-U16-1 reading A): the Manual p.42 first clause governs a Tough augment on a Balanced unit, and the engine now applies augment mods' attributes before the unit's printed ones (08-cards2). F-U19-5 closed. The earlier partial verdict said the mod order (\"order gained\") is the client's reading where the table orders mods by position on the card (\"top to bottom\", Manual p.43 lets new mods go in between): that clause is now tagged digital (digitalClause). D-U19-12.",
-    "sourceHashes": {},
-    "digitalClause": "in the order the mods were attached, the first attached first"
+    "notes": "Report 279 (2026-10-24): the designer changed the rule in 2025 (\"The only change is balanced now applies after tough always\", 2025-03-22, on the FAQ; \"balanced always applies last. So 8/8 and 2/2\", 2025-09-25, on a column of Child of Aether and Rampart Guardian; the 2025-01-31 Omniphage thread). It supersedes the Manual p.42 \"applied to\" clause (balanced, then doubled), the register's 2026-08-18 \"order gained\" line and the attach-order digital clause, all dropped. The owner, 2026-10-24: \"Caleb everywhere: 2/2\". The engine changed the same day (f86f835, guard 603; 08-cards2 retitled).",
+    "sourceHashes": {
+      "RQ 1334955157984641074": "190dcfa1b50e745c95aa3319913a6f4e57f16c8cd2383828e67af6288a1a3935",
+      "RQ 1334973308885794928": "3da1f9e6ad504e9a286ca0f2651350800fb5bf3ce55cf75459cbb020bf9a2cec",
+      "RQ 1353013458328617080": "d9530ffe96d961bbedd7dd498342e1f2c204936830a8fdafc37b81f7f24196a1",
+      "RQ 1420904499773706322": "f388da222d9d9dc1c32d8d4504c7b1aed4248f65d7398da05f6cb1bac1d54570"
+    }
   },
   {
     "key": "attr.general.pure",
@@ -2065,7 +2074,7 @@
         "430-cr-attributes-1.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
     "notes": "",
@@ -2106,7 +2115,7 @@
         "430-cr-attributes-1.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
     "notes": "",
@@ -2197,7 +2206,7 @@
     "key": "attr.balanced.after-changes",
     "parent": "attr.balanced",
     "order": 1,
-    "text": "Balanced compares the unit's power and defense after its counters and other stat changes, and after any attribute that applied before it, have been applied.",
+    "text": "Balanced compares the unit's power and defense after its counters and other stat changes, and after Tough, have been applied. Inverted and Unaware apply after Balanced.",
     "examples": [
       {
         "text": "A 1/4 with Tough and Balanced: Tough makes it 1/8, then Balanced makes it 8/8.",
@@ -2206,6 +2215,10 @@
       {
         "text": "A 1/3 with two +1/+1 counters and Balanced is a 5/5.",
         "test": "430-cr-attributes-1.test.ts::cr:attr.balanced.after-changes — Balanced reads after counters: a 1/3 with two +1/+1 counters and Balanced is a 5/5"
+      },
+      {
+        "text": "In a column, Child of Aether (2/0, Balanced) and Rampart Guardian (0/4, Tough) share their attributes: Child of Aether is doubled (still 2/0), then balanced, a 2/2; Rampart Guardian is doubled (0/8), then balanced, an 8/8.",
+        "test": "603-balanced-applies-after-tough.test.ts::CR 802.7 / report 279: a column of Child of Aether and Rampart Guardian is 2/2 and 8/8, the designer worked example"
       }
     ],
     "see": [
@@ -2219,7 +2232,16 @@
           "quote": "will have its defense doubled, then its stats balanced."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1334973991701708922",
+          "quote": "yeah"
+        },
+        {
+          "ref": "RQ 1420904499773706322",
+          "quote": "2.) balanced always applies last. So 8/8 and 2/2"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -2230,14 +2252,18 @@
       ],
       "engine": [],
       "tests": [
-        "430-cr-attributes-1.test.ts"
+        "430-cr-attributes-1.test.ts",
+        "603-balanced-applies-after-tough.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Caleb Gannon's worked example, quoted in the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”). The order between Tough and Balanced is rule attr.general.application-order.",
-    "sourceHashes": {}
+    "notes": "Caleb Gannon's worked example, quoted in the owner ruling of 2026-08-23. Report 279 (2026-10-24): \"after Tough\" always (RQ 1334973991701708922 answers _passer's \"Balance is calculated after Tough, but before Inverted and Unaware?\"). The order between Tough and Balanced is rule attr.general.application-order.",
+    "sourceHashes": {
+      "RQ 1334973991701708922": "8230ee0bc0424d96b5d21e22185e6be00ad32c01b504923eb257454f35c25b98",
+      "RQ 1420904499773706322": "f388da222d9d9dc1c32d8d4504c7b1aed4248f65d7398da05f6cb1bac1d54570"
+    }
   },
   {
     "key": "attr.inverted",

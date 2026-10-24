@@ -1422,44 +1422,62 @@
   },
   {
     "key": "concepts.players.owner",
-    "textHash": "9db2bcf00619fbf7",
+    "textHash": "fcc20d38dfb76538",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.zoneOwner / markForeign / takeFromHand / removeFromBin",
+        "loc": "client/engine/src/engine.ts:takeFromHand / zoneOwner / foreignSpliced",
         "agrees": true,
-        "note": "owner kept through hand/bin/cache side table (PlayerState.foreign); shared zones drop it"
+        "note": "a foreign owner rides hand/bin/cache entries; dropped when the card leaves into a pack/deck/recycle pile"
       },
       {
-        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Eldritch Reclaimer run (toHand without owner)",
-        "agrees": false,
-        "note": "engineDiffers holds: a foreign-owned card recalled from the thief bin to the thief hand loses its owner (probe U01-1 fails as expected); same pattern in other bin->hand recalls and Cosmic Reversal stack->hand"
+        "loc": "client/engine/src/apply.ts:doDraft / doBottomCards (reindexForeign -1 = shared zone)",
+        "agrees": true,
+        "note": "pack and constructed bottoming reset ownership"
       }
     ],
     "tests_run": [
       {
-        "file": "246-zones-follow-control.test.ts",
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
         "pattern": "CR 400.4a: ownership does NOT move",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "246-zones-follow-control.test.ts",
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
         "pattern": "CR 801.7a: a stolen unit recalled goes to the THIEF hand",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "551-ownership-survives-own-zones.test.ts",
-        "pattern": "CR 102.4 / CT-233: a stolen card recalled to the thief hand and played again is still its owner card",
+        "file": "client/engine/test/551-ownership-survives-own-zones.test.ts",
+        "pattern": "CR 102.4 / CT-233: a stolen card recalled to the thief hand and played again",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "551-ownership-survives-own-zones.test.ts",
+        "file": "client/engine/test/551-ownership-survives-own-zones.test.ts",
         "pattern": "CR 102.4 / CT-233: a shared zone resets ownership",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/551-ownership-survives-own-zones.test.ts",
+        "pattern": "CR 102.4 / CT-233: a stolen card cached into the thief cache",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/623-bin-exits-keep-the-owner.test.ts",
+        "pattern": "CR 102.4 / CT-344: Collect Remains takes a card out of the opponent bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/622-mod-owner-is-not-applier.test.ts",
+        "pattern": "CR 102.4 / CT-343: a foreign-owned augment applied out of the hand keeps its owner",
         "passed": true,
         "asserts_claim": true
       }
@@ -1467,21 +1485,26 @@
     "probes": [
       {
         "file": "client/engine/test/zz-probe-U01-1.test.ts",
-        "test": "probe U01-1: a stolen card that died in the thief bin, recalled to the thief hand by Eldritch Reclaimer, keeps its owner",
-        "passed": false,
-        "demonstrates": "yes (divergence): the rule says the owner survives bin->hand; the engine makes the thief the owner (zoneOwner 1 !== owner 0), confirming engineDiffers"
+        "test": "probe U01-1: constructed, stolen card recycled into thief pile is the thief card when drawn back",
+        "passed": true,
+        "demonstrates": "yes: in constructed a stolen card recycled from the thief hand lands in the thief OWN recycle pile with no ownership record, and drawn back it is the thief card (the CT-345 sentence had no test)"
       }
     ],
     "source_checks": [
       {
-        "ref": "owner register@72de434 \"Ownership does not move. Only the destination does.\"",
+        "ref": "owner: \"Ownership does not move. Only the destination does.\"",
         "supports": "yes",
-        "note": "supports sentence 2 (control/zone moves do not change owner)"
+        "note": "control change and zone moves keep the owner"
       },
       {
-        "ref": "owner chat 2026-10-22 (CT-233) \"Reset in shared zones\"",
+        "ref": "owner: \"Reset in shared zones\"",
         "supports": "yes",
-        "note": "supports sentence 3; the fuller owner ruling is quoted in the 551 test header and types.ts ForeignCard doc"
+        "note": "pack/deck/recycle pile reset; 551 header states the full ruling"
+      },
+      {
+        "ref": "owner: \"Becomes mine\" (CT-345)",
+        "supports": "yes",
+        "note": "constructed: thief deck/recycle pile makes it the thief card; probe U01-1"
       }
     ],
     "quote_spans": [
@@ -1491,11 +1514,11 @@
       },
       {
         "file": "client/engine/test/246-zones-follow-control.test.ts",
-        "text": "test('CR 400.4a: ownership does NOT move — only the destination does', () => {"
+        "text": "assert.equal(despawn!.data!['owner'], owner,"
       }
     ],
     "basis_ok": true,
-    "problem": "Note: the record lists engineDiffers F-U01-6 but no engine[] entry; I found the divergence myself (bin->hand recall drops foreign ownership). Example 4 test only asserts that no ownership record survives the recycle, not who owns the card when drawn."
+    "problem": ""
   },
   {
     "key": "concepts.players.owner.token",
@@ -1616,55 +1639,44 @@
     "key": "concepts.players.you.mod",
     "textHash": "6ceacaf9c026134d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U01-r1",
+    "round": 4,
+    "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:attachMod",
+        "loc": "client/engine/src/cards/sets/batch-wood-b.ts:Pathogenic Enclave augmentText",
         "agrees": true,
-        "note": "mod controller = host.controller; giveControl moves the mods' controller too"
+        "note": "reads ctx.controller = the mod controller = the host controller"
       }
     ],
-    "tests_run": [
+    "tests_run": [],
+    "probes": [
       {
-        "file": "client/engine/test/43-dark-c.test.ts",
-        "pattern": "Cthyrian Rector: Virus-donated",
+        "file": "client/engine/test/zz-probe-U01-2.test.ts",
+        "test": "probe U01-2: Pathogenic Enclave on an enemy unit deletes the enemy tokens, not yours",
         "passed": true,
-        "asserts_claim": "yes: \"you\" on a Virus on an enemy host is the host's controller"
-      },
-      {
-        "file": "client/engine/test/17-earth-b.test.ts",
-        "pattern": "Oorblak: as a Virus, \"me\" is the HOST",
-        "passed": true,
-        "asserts_claim": true
+        "demonstrates": "yes: A applies Enclave as a battle Virus to D's unit; the mod is controlled by D; when the host dies D's token allies are deleted and A's survive"
       }
     ],
-    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.34",
         "supports": "yes",
-        "note": "literal Pathogenic Enclave example"
+        "note": "\"When a card is augmented onto an opposing unit, they will control the augment and its new ability\" + the Pathogenic Enclave example"
       },
       {
-        "ref": "R157 §6",
+        "ref": "owner: \"You\" on a {Virus} [Augment] is the unit's CONTROLLER",
         "supports": "yes",
         "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "will control the augment and its new ability. For exam-"
-      },
-      {
-        "file": "client/engine/src/engine.ts",
-        "text": "card: name, owner: byPlayer, controller: host.controller, kind: 'mod',"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "will control the augment and its new ability. For example, if you augment Pathogenic Enclave onto an enemy"
       }
     ],
     "basis_ok": true,
-    "problem": "The bound example has test null (illustrative); support comes from the extra tests above.",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.players.you.pays",

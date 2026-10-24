@@ -32,7 +32,7 @@
       },
       {
         "file": "client/engine/test/44-hybrids-ld-a.test.ts",
-        "quote": "'CR 712.1a sits ABOVE layer 0: a silenced copy radiates nothing, all faces at once'"
+        "quote": "'CR 712.2: a strip applied after the copy takes the copied text too: a silenced copy radiates nothing, all faces at once');"
       }
     ],
     "ct": "CT-235"

@@ -25,9 +25,10 @@
     "evidence": [
       {
         "file": "client/engine/test/393-raq-mods.test.ts",
-        "quote": "  if (legalActions(h.state, A).some(a => a.type === 'playCard' && a.handIndex === rc)) {"
+        "quote": "assert.ok(first.includes(bubb2), 'positive control: the real [Augment] unit is offered');"
       }
     ],
-    "ct": "CT-240"
+    "ct": "CT-240",
+    "closed": "fixed on 2026-10-24 (CT-240): a real [Augment] unit makes Reconfigure castable, and the test asserts it is, with a positive control."
   }
 ]

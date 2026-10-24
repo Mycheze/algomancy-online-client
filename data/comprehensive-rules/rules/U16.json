@@ -222,15 +222,15 @@
     "key": "effects.continuous.layers.attribute-order",
     "parent": "effects.continuous.layers",
     "order": 2,
-    "text": "In layer 4, the stat-changing attributes apply one after the other. Those the unit has from its augment mods apply first, in the order the mods were attached; then the rest of its own attributes, its printed ones in type-line order and then those effects have given it; then those its column shares with it, front to back. So Tough augmented onto a Balanced unit has its defense doubled, then its stats balanced; Tough applied to a Balanced unit by an effect balances, then doubles; and a Tough unit attacking with a Balanced unit behind it is doubled, then balanced.",
+    "text": "In layer 4, Tough applies first, doubling the unit's defense, and Balanced after it, making the unit's power and defense equal to the greater of the two. The order holds whatever gave the unit each attribute (printed on it, an augment, an effect or its column) and whichever it gained first. So Tough augmented onto a Balanced unit, Tough given to a Balanced unit by an effect, and a Tough unit attacking with a Balanced unit behind it are all doubled, then balanced.",
     "examples": [
       {
         "text": "Child of Aether (2/0, printed Balanced) augmented with Rampart Guardian (Tough) is doubled first (still 2/0), then balanced: a 2/2.",
         "test": "08-cards2.test.ts::CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances"
       },
       {
-        "text": "The same Child of Aether given Tough by an effect is balanced first (2/2), then doubled: a 2/4.",
-        "test": "08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles"
+        "text": "The same Child of Aether given Tough by an effect is also doubled first (still 2/0), then balanced: a 2/2.",
+        "test": "08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect still doubles first, then balances"
       },
       {
         "text": null,
@@ -244,10 +244,6 @@
       "printed": [
         {
           "ref": "Manual p.42",
-          "quote": "A: Attributes apply in order from top to bottom. So if"
-        },
-        {
-          "ref": "Manual p.42",
           "quote": "“Tough” is augmented onto a “Balanced” unit, or if a"
         },
         {
@@ -257,41 +253,45 @@
         {
           "ref": "Manual p.42",
           "quote": "will have its defense doubled, then its stats balanced."
-        },
-        {
-          "ref": "Manual p.42",
-          "quote": "If “Tough” is applied to a “Balanced” unit, it will have"
-        },
-        {
-          "ref": "Manual p.42",
-          "quote": "its stats balanced, then its defense doubled."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1353013458328617080",
+          "quote": "The only change is balanced now applies after tough always"
+        },
+        {
+          "ref": "RQ 1420904499773706322",
+          "quote": "2.) balanced always applies last. So 8/8 and 2/2"
+        }
+      ],
       "ours": [],
       "owner": [
-        {
-          "quote": "\"order gained\" is the engine's reading. (Engine 2026-07-16.)",
-          "adopted": "2026-08-18",
-          "from": "register@72de434"
-        },
         {
           "quote": "Doubled then balanced",
           "adopted": "2026-10-22",
           "from": "owner, chat 2026-10-22 (CT-257: Tough augmented onto a Balanced unit)"
+        },
+        {
+          "quote": "Caleb everywhere: 2/2",
+          "adopted": "2026-10-24",
+          "from": "owner, chat 2026-10-24 (report 279: Balanced after Tough whatever the source)"
         }
       ],
       "engine": [],
       "tests": [
-        "08-cards2.test.ts"
+        "08-cards2.test.ts",
+        "603-balanced-applies-after-tough.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
-    "digitalClause": "in the order the mods were attached",
     "confidence": "low",
-    "notes": "Settled 2026-10-22 (CT-257): the owner took reading A of D-U16-1, the Manual p.42 first clause (\"augmented onto\" doubles, then balances). Its last clause (\"applied to\") is a grant by an effect, which balances first. The engine was changed the same day: augment mods' attributes first, in attachment order, then the unit's own (printed, then applied), then column-shared (08-cards2). The register's 2026-08-18 order (printed before augments) and its \"engine call\" note are replaced; its \"order gained\" for the mods stays. F-U16-4, F-U16-6 closed.",
-    "sourceHashes": {}
+    "notes": "Report 279 (2026-10-24): the designer's 2025 change (\"balanced now applies after tough always\") supersedes the Manual p.42 \"applied to\" clause and the attach-order reading (owner 2026-08-18, \"order gained\"), both dropped; the owner, 2026-10-24, \"Caleb everywhere: 2/2\". Engine f86f835 (603). The 2026-10-22 effect-granted half of CT-257 (2/4) is reversed: 2/2.",
+    "sourceHashes": {
+      "RQ 1353013458328617080": "d9530ffe96d961bbedd7dd498342e1f2c204936830a8fdafc37b81f7f24196a1",
+      "RQ 1420904499773706322": "f388da222d9d9dc1c32d8d4504c7b1aed4248f65d7398da05f6cb1bac1d54570"
+    }
   },
   {
     "key": "effects.continuous.layers.once",
@@ -1100,7 +1100,7 @@
     "key": "effects.copies.all-abilities",
     "parent": "710",
     "order": 7,
-    "text": "An ability that gives a unit \"all abilities\" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them and the abilities effects have given them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop; as it dies, it still has the text of the units it was adjacent to, so their \"when I die\" abilities trigger for it. It gets nothing from a unit that has lost its abilities, and none of a unit's text that works only while that card is in another zone (such as its bin). Two Ancient Ones adjacent to each other each have the abilities of every unit adjacent to either of them. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.",
+    "text": "An ability that gives a unit \"all abilities\" of other units (Ancient One) gives it everything in those units' text boxes, including the text their mods give them and the abilities effects have given them, but not their attributes, their name or their stats. The unit has the text only while the other units qualify, and loses it the moment they stop; as it leaves play, whether it dies or is recalled, cached, exchanged or erased, it still has the text of the units it was adjacent to, so their \"when I die\" and \"when I despawn\" abilities trigger for it, even when such a unit dies in the same batch as it. It gets nothing from a unit that has lost its abilities, and none of a unit's text that works only while that card is in another zone (such as its bin). Two Ancient Ones adjacent to each other each have the abilities of every unit adjacent to either of them. Each unit it has the text from gives it a use of its own: next to two units with the same [once] ability, it may use that ability twice.",
     "examples": [
       {
         "text": "Ancient One has an adjacent ally's static ability, and loses it when the column breaks.",
@@ -1141,6 +1141,18 @@
       {
         "text": "A dying Ancient One has the \"when I die\" text of the allies it stood beside.",
         "test": "589-ancient-one-whole-text-box.test.ts::CR 714.9, 710.7 / report 271: a dying Ancient One has the when-I-die text of the allies it stood beside"
+      },
+      {
+        "text": "A recalled Ancient One has the \"when I despawn\" text of the ally it stood beside.",
+        "test": "626-ancient-one-despawn-neighbours.test.ts::CR 721.1f, 714.9 / CT-350: a recalled Ancient One has the when-I-despawn text of the ally it stood beside"
+      },
+      {
+        "text": "An Ancient One that dies in one batch with both of its neighbours has both of their \"when I die\" abilities.",
+        "test": "627-ancient-one-death-batch-neighbours.test.ts::CR 714.9, 710.7 / CT-351: an Ancient One dying in one batch with both neighbours borrows both when-I-die lines"
+      },
+      {
+        "text": "Beside a unit wearing Infernal Wispweaver as a mod, Ancient One has only the Wispweaver's [Augment] text, not the text of its body.",
+        "test": "625-ancient-one-borrows-mod-box-only.test.ts::CR 721.1c, 710.7 / CT-349: a mod body static does not reach through an Ancient One (Infernal Wispweaver on a Good Whale)"
       }
     ],
     "see": [],
@@ -1192,13 +1204,16 @@
         "26-metal-a.test.ts",
         "117-copy-everything.test.ts",
         "585-ancient-one-per-neighbour-uses.test.ts",
-        "589-ancient-one-whole-text-box.test.ts"
+        "589-ancient-one-whole-text-box.test.ts",
+        "625-ancient-one-borrows-mod-box-only.test.ts",
+        "626-ancient-one-despawn-neighbours.test.ts",
+        "627-ancient-one-death-batch-neighbours.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Owner 2026-10-22 (CT-342): an Ancient One between two Jollyglops gets two uses, \"each neighbour's copy of the ability is separate\", the same as two mods each having their own use. Engine aligned the same day (563, 585). Report 271 (2026-10-23, 589): granted text, two adjacent Ancient Ones (the oracle ruling \"they would both have all the abilities of any creature adjacent to either of them\", not a citable source kind), stripped allies and zone text. Caleb 2025-04-08 (RQ 1359188053876408431) on Reforge the Dead. Its death: the died event carries the units adjacent to it (589); rule 714.5 (a count of a departed source's adjacent allies is 0) is about counting, not about which text it had.",
+    "notes": "Owner 2026-10-22 (CT-342): an Ancient One between two Jollyglops gets two uses, \"each neighbour's copy of the ability is separate\", the same as two mods each having their own use. Engine aligned the same day (563, 585). Report 271 (2026-10-23, 589): granted text, two adjacent Ancient Ones (the oracle ruling \"they would both have all the abilities of any creature adjacent to either of them\", not a citable source kind), stripped allies and zone text. Caleb 2025-04-08 (RQ 1359188053876408431) on Reforge the Dead. Its death: the died event carries the units adjacent to it (589); rule 714.5 (a count of a departed source's adjacent allies is 0) is about counting, not about which text it had. Round 2026-10-24: CT-349 (a neighbour's mod lends only its [Augment] box, 625), CT-350 (the neighbours are read before it leaves play by any route, so \"when I despawn\" text fires on a recall, cache, exchange or erase, 626) and CT-351 (a neighbour dying in the same batch still counts, 627).",
     "sourceHashes": {
       "RQ 1359188053876408431": "34541c6b810dfd39a0d1eb145b1021c033f1ae2691612754ef2d0517d92c0e0c"
     }
@@ -2427,7 +2442,7 @@
     "key": "effects.stripping.named-card",
     "parent": "712",
     "order": 6,
-    "text": "The Everywhere's controller names a card during the haste step. Every unit with that name in The Everywhere's region loses all abilities, for as long as The Everywhere is in that region. Naming another card replaces the first, and a card that is not in play may be named.",
+    "text": "The Everywhere's controller names a card during the haste step. Every unit with that name in The Everywhere's region loses all abilities, for as long as The Everywhere is in that region. Naming another card replaces the first, and a card that is not in play may be named. A token's name is not a card's name and cannot be named, even while a token with that name is in play (see rule concepts.cards.token.not-card).",
     "examples": [
       {
         "text": null,
@@ -2440,6 +2455,14 @@
       {
         "text": null,
         "test": "38-light-a.test.ts::The Everywhere: a second naming replaces the first"
+      },
+      {
+        "text": "With Unit Tokens in play, Unit Token is not among the names The Everywhere offers.",
+        "test": "602-everywhere-names-cards-not-tokens.test.ts::CR 108.2a / report 274: The Everywhere cannot name a token standing in play"
+      },
+      {
+        "text": null,
+        "test": "602-everywhere-names-cards-not-tokens.test.ts::CR 712.6 / report 274: the menu still holds every card in play and out of it, and name no card"
       }
     ],
     "see": [],
@@ -2462,17 +2485,23 @@
           "quote": "\"a card that is not in play\" (a no-op on the printed card too, and the only way",
           "adopted": "2026-08-23",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
       "tests": [
-        "38-light-a.test.ts"
+        "38-light-a.test.ts",
+        "602-everywhere-names-cards-not-tokens.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Report 274 (2026-10-24): The Everywhere offered \"Unit Token\" while one was in play; \"name a card\" reaches cards only (108.2a, the owner's \"Tokens are NOT cards\"). Engine 61d84e9 (602).",
     "sourceHashes": {}
   },
   {

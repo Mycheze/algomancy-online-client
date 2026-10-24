@@ -1960,14 +1960,23 @@
         "test": "46-hybrids-ld-c.test.ts::CR 107.2b: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent"
       },
       {
-        "text": "Torrential Reclamation for X = 0 recalls nothing, but each player still sacrifices a unit.",
-        "test": "182-correctness-sample.test.ts::Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (CR 107.2b)"
+        "text": "Torrential Reclamation for X = 0 recalls nothing, and nobody sacrifices.",
+        "test": "182-correctness-sample.test.ts::Torrential Reclamation: with X = 0 nothing is recalled, so nobody sacrifices and no life is lost (CT-375)"
       }
     ],
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1222932669516615743",
+          "quote": "Yeah"
+        },
+        {
+          "ref": "RQ 1223287683804037202",
+          "quote": "So you can remove targets to prevent the sacrifice"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -1979,11 +1988,6 @@
           "quote": "**The ruling is a warning, not a prohibition.** X = 0 stays legal and the option",
           "adopted": "2026-08-22",
           "from": "register@72de434"
-        },
-        {
-          "quote": "**unconditional with the scaling on top**: `max(1, recalled.length)` rounds. The",
-          "adopted": "2026-08-28",
-          "from": "register@72de434"
         }
       ],
       "engine": [],
@@ -1991,14 +1995,18 @@
         "32-cast-costs.test.ts",
         "46-hybrids-ld-c.test.ts",
         "42-dark-b.test.ts",
-        "182-correctness-sample.test.ts"
+        "182-correctness-sample.test.ts",
+        "632-torrential-sacrifice-per-recall.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-22 (“A variable cost may WARN that…”) also makes the client warn when X = 0 does nothing: a digital convention (Annex D, U24). The owner ruling of 2026-08-28 (“Torrential Reclamation: the \"for each\" distributes…”) is one card's answer, used here only as an example.",
-    "sourceHashes": {}
+    "notes": "The owner ruling of 2026-08-22 (\"A variable cost may WARN that…\") also makes the client warn when X = 0 does nothing: a digital convention (Annex D, U24). Torrential Reclamation (CT-375, 2026-10-24): the 2026-08-28 owner call (the sacrifice happens at least once) is overridden by the designer, who answered \"Yeah\" to \"does the sacrificing also happen once for each returned unit?\" and added \"So you can remove targets to prevent the sacrifice\"; the engine now sacrifices once per ally actually recalled (50bb47f, 632). Open, not stated here: the designer also said (2025-04-24, RQ 1365004830250242069) \"Torrential requires targets in order to be played so it's not possible\" when asked whether it can be cast with no units to recall; the client still offers X = 0 (CT-303). That is a question for the owner.",
+    "sourceHashes": {
+      "RQ 1222932669516615743": "1e7c9a58b730d3630bdf310e2e202c5246e475f7a4c4f1298c34388e023d33a4",
+      "RQ 1223287683804037202": "5e2d9899291f752dc61717e1d4b67c20a29b86a936ce1835a009b67c4198ba58"
+    }
   },
   {
     "key": "concepts.numbers.x-cost.cant-be-zero",

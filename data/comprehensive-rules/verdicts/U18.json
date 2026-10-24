@@ -1275,19 +1275,31 @@
     "key": "keywords.actions.prophesy",
     "textHash": "782bcb7760949ae4",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U18-r1",
+    "round": 4,
+    "verifier": "U18-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doProphesy / doProphesyFromCache",
+        "loc": "client/engine/src/apply.ts (prophesy action: payMana for the banner, cacheCard with prophecy)",
         "agrees": true,
-        "note": "pays banner, cacheCard with prophecy"
+        "note": ""
       }
     ],
     "tests_run": [
       {
-        "file": "36-cache-prophecy.test.ts",
-        "pattern": "R308: the real card — a glimpsed Vengeance is offered its prophecy in deployment",
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "CR 801.9h: the real card — a glimpsed Vengeance is offered its prophecy in deployment",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "the banner is priced on its own pips, not the card",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "CR 803.7d: with less than the banner mana the prophecy is refused",
         "passed": true,
         "asserts_claim": true
       }
@@ -1295,25 +1307,28 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R42 (its cache-with-the-prophecy-attached definition)",
+        "ref": "owner: \"with its prophecy attached. Only a card that says so may be prophesied from\"",
         "supports": "yes",
-        "note": ""
+        "note": "fragment; consistent"
       },
       {
-        "ref": "R308",
+        "ref": "owner: \"same cost (the banner's mana and affinity, R301)\"",
         "supports": "yes",
-        "note": ""
+        "note": "the banner cost is what is paid"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "  e.cacheCard(seat, name, from, { prophecy: banner.condition });"
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "text": "assert.equal(h.q.openMana(P), 1, 'the banner [2] was paid');"
+      },
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "text": "assert.equal(cacheOf(h, P)[0]!.prophecy!.condition, '13 Units Die');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "keywords.actions.recall",

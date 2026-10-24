@@ -32,10 +32,11 @@
     "evidence": [
       {
         "file": "client/engine/test/42-dark-b.test.ts",
-        "quote": "Umbral Decay: two -1/-1 counters, and {Afflicting} rots the owner of what it kills"
+        "quote": "Umbral Decay: two -1/-1 counters, and {Afflicting} rots the controller of what it kills"
       }
     ],
-    "ct": "CT-235"
+    "ct": "CT-235",
+    "closed": "fixed on 2026-10-24 (CT-235): the title says the controller, and a new test kills a stolen unit and checks the controller is rotted, never the owner."
   },
   {
     "id": "F-U20-3",
@@ -104,5 +105,22 @@
     ],
     "ct": "CT-228",
     "closed": "not a bug: the owner ruled on 2026-10-16 that a Piercing leftover \"is still considered combat damage, so it'd go to the second one\" and adopted Caleb's chain (each replacement effect applies once); the engine's chain is the rule (CT-228 ruled correct; 469 shows it)."
+  },
+  {
+    "id": "F-U20-7",
+    "rule": "attr.electric",
+    "title": "The engine spreads Electric excess only for damage from effects, never for combat damage",
+    "summary": "The rule (the designer, 2023) has an Electric unit's excess combat damage jump to adjacent units as effect damage does. The engine reads Electric only on the effect-damage path (engine.ts, the jump chain after `attrsVs(first).has('Electric')`); combat damage never consults it. Unreachable in today's pool: no card can give Electric to a unit that fights, so only a test grant reaches it. Measured by the 2026-10-24 verifier (probe, uncommitted): combatSubStep never reads Electric, so a granted-Electric attacker that overkills its blocker offers no jump, even between blockers the engine itself calls adjacent.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "if (!attrsVs(first).has('Electric')) {"
+      },
+      {
+        "file": "client/ledgers/card-todo.ts",
+        "quote": "Electric is applied to effect damage only, never to combat damage"
+      }
+    ],
+    "ct": "CT-362"
   }
 ]
