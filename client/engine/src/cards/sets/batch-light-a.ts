@@ -684,21 +684,31 @@ card('The Everywhere', {
         // region. Under the old menu that card could never be named.
         //
         // The list is DECK_LIST's own filter — real pool cards, no token faces
-        // and no resource faces — unioned with every name actually in play, so
-        // today's options are a strict subset (a Robot / Unit Token standing
-        // there is still nameable) and nothing that used to be legal is gone.
+        // and no resource faces — unioned with every CARD name actually in play.
         // Read through `E.nameOf` for the same reason the static below does:
         // Layer 0 (CR 201.5) means a copy answers to its FACE, and the face is the
         // name that has to be nameable for the silence to bite.
-        const pool = allCardNames().filter(n => {
+        //
+        // ⚠ BUT A TOKEN'S NAME IS NOT A CARD'S NAME (report #274). CR 108.2a:
+        // "For card text, a token is not a card: text that refers to a 'card'
+        // does not include a token" — and this text says "name a CARD". The
+        // in-play union used to put token faces back ("a Robot / Unit Token
+        // standing there is still nameable"), which was a promise to keep the
+        // OLD board-built menu's options, never a rules reading. So the union
+        // now admits only names that are cards: a transformed back face or any
+        // other nontoken face is still offered, a Robot / Unit Token / Wisp
+        // face is not — even worn by a nontoken copy (CR 108.4c), because the
+        // NAME is still a token's.
+        const isCardName = (n: string): boolean => {
           const c = getCard(n);
           if (/\bResource\b/.test(c.type)) return false;
           return !/Token/.test(c.type)
             && (c.kind === 'unit' || c.kind === 'spell' || c.kind === 'spellUnit');
-        });
+        };
+        const pool = allCardNames().filter(isCardName);
         const names = [...new Set([
           ...pool,
-          ...g.s.regions.flatMap((_, r) => g.unitsIn(r)).map(u => g.nameOf(u)),
+          ...g.s.regions.flatMap((_, r) => g.unitsIn(r)).map(u => g.nameOf(u)).filter(isCardName),
         ])].sort();
         const NOBODY = '';
         const named = ctx.choose('name', {

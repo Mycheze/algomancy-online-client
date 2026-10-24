@@ -179,19 +179,23 @@ test('The Everywhere: a card NOT in play can be named, and the silence bites whe
   finishBattle(h);
 });
 
-test('The Everywhere: every name the OLD menu offered is still offered', () => {
+// It used to be 'every name the OLD menu offered is still offered', and
+// asserted that a Unit Token standing in play could be named. A token is not a
+// card (CR 108.2a), so that is gone (report #274, 602-everywhere-names-cards-
+// not-tokens); what the old menu offered and still should is the board's CARDS
+// and "name no card".
+test('The Everywhere: every CARD name the OLD menu offered is still offered', () => {
   const h = new Harness(11504);
   toDeployment(h);
   const A = h.state.deployPlayer!;
   const ev = spawn(h, A, 'The Everywhere');
-  spawn(h, A, 'Unit Token');                                 // a TOKEN name: not a deck card
+  spawn(h, A, 'Good Whale');
   toNaming(h, A);
   const menu = (h.state.decision!.options).map(o => o.value);
-  assert.ok(menu.includes('Unit Token'),
-    'the pool filter drops token faces, so the in-play union has to put them back');
+  assert.ok(menu.includes('Good Whale'), 'a card standing on the board');
   assert.ok(menu.includes(''), 'and "name no card" survives — it releases a previous naming');
-  pick(h, 'Unit Token');
-  assert.equal(ent(h, ev)!.named, 'Unit Token');
+  pick(h, 'Good Whale');
+  assert.equal(ent(h, ev)!.named, 'Good Whale');
   finishBattle(h);
 });
 
