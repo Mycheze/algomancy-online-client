@@ -3502,6 +3502,9 @@ button.commitbtn:disabled { opacity: .45; cursor: default; }
 .stchip.live, .stchip.partial { background: rgba(230,120,80,.3); }
 .stchip.none { background: rgba(255,255,255,.06); color: var(--dim); }
 .stchip.agreed-fix { background: rgba(255,255,255,.1); }
+/* the Challenges tab: a calendar row that is open now, and one still to come */
+.stchip.chopen { background: rgba(80,200,120,.25); }
+.stchip.chsoon { background: rgba(110,160,255,.25); }
 /* the connected dot on a live-room seat */
 .dot { display: inline-block; width: .5em; height: .5em; border-radius: 50%; margin-left: .3em; }
 .dot.on { background: rgba(80,200,120,.9); }

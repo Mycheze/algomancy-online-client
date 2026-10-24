@@ -1,4 +1,5 @@
-/* BL-16 — THE OPERATOR DASHBOARD: accounts, reports, games, live rooms.
+/* BL-16 — THE OPERATOR DASHBOARD: accounts, reports, games, live rooms, and
+ * the weekly-challenge calendar (upcoming weeks included — server/admin-challenges.ts).
  *
  * Same contract as meta.ts, decks.ts, cards.ts and account.ts, which main.ts
  * already knows how to drive: `screen()` says whether this page owns the app
@@ -34,6 +35,7 @@
  */
 import * as acct from './account.ts';
 import { esc } from './util.ts';
+import { goalText, type Goal, type RunScore } from '../engine/src/challenge.ts';
 
 /* ── the shapes the server sends (server/admin.ts) ─────────────────── */
 
@@ -78,7 +80,24 @@ interface Overview {
   reports: { total: number; unmarked: number; real: number; not: number; live: number; unfetched: number };
 }
 
-type Tab = 'reports' | 'accounts' | 'games' | 'rooms';
+/** server/admin-challenges.ts — one weekly-challenge calendar row */
+type RefResult =
+  | { state: 'ok'; score: RunScore; actions: number }
+  | { state: 'failed'; error: string; at?: number }
+  | { state: 'missing' }
+  | { state: 'pending' };
+
+interface ChallengeRow {
+  id: string; week: string; title: string; blurb: string; goal: Goal; seed: number; par: number;
+  opens: number; closes: number; status: 'closed' | 'open' | 'upcoming';
+  opensInDays?: number; ref: RefResult; runs?: number; players?: number;
+}
+
+interface ChallengeCal {
+  now: number; rows: ChallengeRow[]; runsOutAt: number | null; weeksLeft: number; upcoming: number;
+}
+
+type Tab = 'reports' | 'accounts' | 'games' | 'rooms' | 'challenges';
 
 /* ── module state ─────────────────────────────────────────────────────── */
 
@@ -93,6 +112,7 @@ let accounts: AccountRow[] = [];
 let reports: ReportRow[] = [];
 let games: GameRow[] = [];
 let rooms: RoomRow[] = [];
+let cal: ChallengeCal | null = null;
 /** reports filter: show only the ones nobody has judged yet */
 let unmarkedOnly = false;
 let $app: HTMLElement | null = null;
@@ -140,6 +160,9 @@ async function load(): Promise<void> {
     } else if (tab === 'games') {
       const r = await get<{ games: GameRow[] }>('/api/admin/games');
       if (r) games = r.games;
+    } else if (tab === 'challenges') {
+      const r = await get<{ ok: boolean } & ChallengeCal>('/api/admin/challenges');
+      if (r) cal = r;
     } else {
       const r = await get<{ rooms: RoomRow[] }>('/api/admin/rooms');
       if (r) rooms = r.rooms;
@@ -349,6 +372,63 @@ function roomsHtml(): string {
     <tbody>${rows || '<tr><td colspan="7">no rooms</td></tr>'}</tbody></table></div>`;
 }
 
+/** "Sun 25 Oct 07:00 UTC" — a week's boundary, in the zone the calendar is kept in */
+function utc(ms: number): string {
+  const d = new Date(ms);
+  if (!Number.isFinite(d.getTime())) return '—';
+  const wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getUTCDay()];
+  const mo = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()];
+  return `${wd} ${d.getUTCDate()} ${mo} ${d.getUTCFullYear()} ${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')} UTC`;
+}
+
+const plural = (n: number, one: string): string => `${n} ${one}${n === 1 ? '' : 's'}`;
+
+function challengeStatus(c: ChallengeRow): string {
+  if (c.status === 'open') return '<span class="stchip chopen">open now</span>';
+  if (c.status === 'closed') return '<span class="stchip none">closed</span>';
+  const n = c.opensInDays ?? 0;
+  return `<span class="stchip chsoon">upcoming</span> <span class="unk">opens in ${n <= 1 ? (n === 1 ? '1 day' : 'under a day') : `${n} days`}</span>`;
+}
+
+/** the reference run, as the engine scored it on this server (never by hand) */
+function referenceCell(r: RefResult): string {
+  if (r.state === 'pending') return '<i>being walked — refresh in a moment</i>';
+  if (r.state === 'missing') return '<span class="stchip live">no reference run file</span>';
+  if (r.state === 'failed') {
+    return `<span class="stchip live" title="${esc(r.error)}">no longer verifies</span> ${esc(r.error)}${r.at !== undefined ? ` (action ${r.at})` : ''}`;
+  }
+  const s = r.score;
+  return `${plural(s.turns, 'turn')} · ${plural(s.cards, 'card')} · ${plural(s.elements, 'element')}
+    <span class="unk" title="raw = cards × elements × turns; ${r.actions} actions">· raw ${s.raw} · Skill ${s.skill}</span>`;
+}
+
+function challengesHtml(): string {
+  if (!cal) return '<p class="adminnote">no calendar</p>';
+  const rows = cal.rows.map(c => `
+    <tr class="${c.status === 'closed' ? 'dim' : ''}">
+      <td>${challengeStatus(c)}</td>
+      <td><b>${esc(c.title)}</b><br><span class="unk">${esc(c.id)}</span></td>
+      <td class="notecell"><b>${esc(goalText(c.goal))}</b><br>${esc(c.blurb)}</td>
+      <td>${esc(utc(c.opens))}<br>${esc(utc(c.closes))}</td>
+      <td class="num">${c.seed}</td>
+      <td class="num">${c.par}</td>
+      <td>${referenceCell(c.ref)}</td>
+      <td class="num">${c.runs === undefined ? '—' : `${plural(c.runs, 'run')}<br>${plural(c.players ?? 0, 'player')}`}</td>
+    </tr>`).join('');
+  const out = cal.runsOutAt === null ? 'The calendar is empty.'
+    : cal.weeksLeft === 0 ? `<b>The calendar has run out</b> — its last week closed ${esc(utc(cal.runsOutAt))}. New challenges must be written.`
+      : `<b>The calendar runs out ${esc(utc(cal.runsOutAt))}</b> — ${plural(cal.weeksLeft, 'week')} from now
+        (${plural(cal.upcoming, 'upcoming row')}). Add rows to <code>CHALLENGES</code> in server/challenges.ts before then.`;
+  return `<p class="adminnote">${out}<br>
+    Players see only the open week and the closed ones; the upcoming rows are on this page alone.
+    The reference run is each row's own solution, scored by this server's engine; its raw is the row's par.
+    Open now first, then upcoming, then closed newest first.</p>
+    <div class="admintablewrap"><table class="admintable">
+    <thead><tr><th>status</th><th>challenge</th><th>goal</th><th>opens / closes</th><th>seed</th>
+      <th>par</th><th>reference run</th><th>board</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="8">no challenges</td></tr>'}</tbody></table></div>`;
+}
+
 function paint(): void {
   const app = $app ?? document.getElementById('app');
   if (!app || !open) return;
@@ -362,12 +442,14 @@ function paint(): void {
   }
   const tabs = ([
     ['reports', 'Reports'], ['accounts', 'Accounts'], ['games', 'Games'], ['rooms', 'Live rooms'],
+    ['challenges', 'Challenges'],
   ] as [Tab, string][]).map(([k, label]) =>
     `<button class="admintab${tab === k ? ' on' : ''}" data-btn="admin-tab" data-tab="${k}">${label}</button>`).join('');
   const body = loading ? '<p class="adminnote">loading…</p>'
     : tab === 'accounts' ? accountsHtml()
       : tab === 'reports' ? reportsHtml()
-        : tab === 'games' ? gamesHtml() : roomsHtml();
+        : tab === 'games' ? gamesHtml()
+          : tab === 'challenges' ? challengesHtml() : roomsHtml();
   app.innerHTML = `<div class="adminpage">
     <div class="adminhead">
       <h1>Admin</h1>

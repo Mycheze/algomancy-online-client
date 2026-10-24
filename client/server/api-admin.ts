@@ -29,6 +29,8 @@ import { accountByName, setAdmin, setBadge } from './accounts.ts';
 import {
   accountRows, adminCount, adminFor, gameRows, marks, reportRows, roomRows, setMark,
 } from './admin.ts';
+import { adminChallenges } from './admin-challenges.ts';
+import { challengeNow } from './challenges.ts';
 
 /** the 404 every refusal answers with — byte-identical to main.ts's own */
 function notFound(res: ServerResponse): true {
@@ -96,6 +98,14 @@ export async function adminRoutes(
 
   if (path === '/api/admin/rooms' && req.method === 'GET') {
     json(res, { ok: true, rooms: roomRows() });
+    return true;
+  }
+
+  // every challenge calendar row, UPCOMING ONES INCLUDED — the one route that
+  // names a row before its week opens (admin-challenges.ts); the public API
+  // (api-challenge.ts) never does
+  if (path === '/api/admin/challenges' && req.method === 'GET') {
+    json(res, { ok: true, ...await adminChallenges(challengeNow()) });
     return true;
   }
 

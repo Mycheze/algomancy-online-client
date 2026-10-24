@@ -231,7 +231,7 @@ async function login(name: string): Promise<string> {
 }
 
 const READS = ['/api/admin/overview', '/api/admin/accounts', '/api/admin/reports',
-  '/api/admin/games', '/api/admin/rooms'];
+  '/api/admin/games', '/api/admin/rooms', '/api/admin/challenges'];
 const WRITES: [string, unknown][] = [
   ['/api/admin/mark', { ts: '2026-09-01T00:00:00Z', mark: 'real' }],
   ['/api/admin/setbadge', { name: 'Karanda', judge: 3 }],
