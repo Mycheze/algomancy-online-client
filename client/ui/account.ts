@@ -236,6 +236,45 @@ export function adoptToken(t: string): void {
 
 /** Is the signed-in account still an unclaimed guest? */
 export const isGuest = (): boolean => !!me?.provisional;
+
+/* ── BL-28: "make an account right after finishing playing" ─────────────
+ *
+ * A seat nobody was signed in on is handed a single-use ticket for that game
+ * on the post-game payload (server main.ts recordFinishedGame). Registering
+ * with it inside the window makes that game the first one on the new profile
+ * — and nothing else: a name typed into a seat claims nothing any more.
+ *
+ * Kept here, with the server's own expiry, so a refresh of the post-game
+ * screen or a sign-up from the ordinary Account screen still carries it. The
+ * window is the SERVER's number (`until`); this file never holds a copy. */
+const SIGNUP_KEY = 'algoSignupClaim';
+export interface SignupTicket { ticket: string; until: number }
+
+export function rememberSignupClaim(room: string, t: SignupTicket): void {
+  try { localStorage.setItem(SIGNUP_KEY, JSON.stringify({ ticket: t.ticket, until: t.until, room })); } catch { /* storage off: the screen still has it */ }
+}
+/** the unexpired ticket this browser holds — for `room`, when one is named */
+export function pendingSignupClaim(room?: string): SignupTicket | null {
+  try {
+    const c = JSON.parse(localStorage.getItem(SIGNUP_KEY) ?? 'null') as (SignupTicket & { room?: string }) | null;
+    if (!c || typeof c.ticket !== 'string') return null;
+    if (!(Number(c.until) > Date.now())) { forgetSignupClaim(); return null; }
+    if (room !== undefined && c.room !== room) return null;
+    return { ticket: c.ticket, until: c.until };
+  } catch { return null; }
+}
+function forgetSignupClaim(): void {
+  try { localStorage.removeItem(SIGNUP_KEY); } catch { /* nothing to forget */ }
+}
+/** how the post-game sign-up went, for the ticket it was made with */
+let signedUpWith: { ticket: string; claimed: boolean } | null = null;
+export const signupOutcome = (ticket: string): 'claimed' | 'lapsed' | null =>
+  signedUpWith?.ticket === ticket ? (signedUpWith.claimed ? 'claimed' : 'lapsed') : null;
+/** what the post-game screen says once the sign-up is done */
+export const signupNoteHtml = (how: 'claimed' | 'lapsed'): string =>
+  `<div class="pgnote">${how === 'claimed'
+    ? 'Signed up — this game is the first one on your profile.'
+    : 'Signed up. The offer for this game had run out, so your profile starts with your next one.'}</div>`;
 export const currentUser = (): Me | null => me;
 export const screen = (): 'auth' | 'profile' | null => view;
 
@@ -904,11 +943,17 @@ async function submitAuth(): Promise<void> {
   if (!username || !password) { authMsg = 'username and password, please'; renderAuth(); return; }
   busy = true; authMsg = ''; renderAuth();
   try {
-    const r = await post<{ token?: string; me?: Me }>(
-      authMode === 'register' ? '/api/auth/register' : '/api/auth/login', { username, password });
+    // BL-28: signing up from here straight after a signed-out game still
+    // carries that game's ticket (the post-game screen's own form is the
+    // usual way in)
+    const claim = authMode === 'register' ? pendingSignupClaim() : null;
+    const r = await post<{ token?: string; me?: Me; claimed?: number }>(
+      authMode === 'register' ? '/api/auth/register' : '/api/auth/login',
+      { username, password, ...(claim ? { claim: claim.ticket } : {}) });
     busy = false;
     if (!r.ok || !r.token || !r.me) { authMsg = r.error ?? 'that did not work'; renderAuth(); return; }
     localStorage.setItem(TOKEN_KEY, r.token);
+    if (claim) { signedUpWith = { ticket: claim.ticket, claimed: !!r.claimed }; forgetSignupClaim(); }
     // the seat name the game server files stats under is the account name, so
     // keep the home screen's name box in step rather than letting them differ
     localStorage.setItem('algoName', r.me.username);
@@ -956,7 +1001,7 @@ export function handleButton(btn: HTMLElement): boolean {
   // `pg-claim` lives on the post-game screen but is an ACCOUNT action, so it
   // is handled here with the rest of them rather than growing a second
   // place that knows how to set a session token.
-  if (!b.startsWith('acct-') && b !== 'pg-claim') return false;
+  if (!b.startsWith('acct-') && b !== 'pg-claim' && b !== 'pg-signup') return false;
 
   switch (b) {
     case 'acct-open-auth':
@@ -1005,6 +1050,38 @@ export function handleButton(btn: HTMLElement): boolean {
             '<div class="pgnote">Saved — this game is on your profile now.</div>';
         } else if (errBox) {
           errBox.textContent = body.error ?? 'that did not work';
+        }
+      })();
+      return true;
+    }
+
+    /* ── BL-28: a signed-out seat signs up straight after its game, and the
+     * ticket the server handed it makes that game the first on the profile ── */
+    case 'pg-signup': {
+      const name = (document.getElementById('pg-su-user') as HTMLInputElement | null)?.value.trim() ?? '';
+      const pw = (document.getElementById('pg-su-pass') as HTMLInputElement | null)?.value ?? '';
+      const errBox = document.getElementById('pg-su-err');
+      const claim = pendingSignupClaim();
+      void (async () => {
+        try {
+          const body = await post<{ token?: string; me?: Me; claimed?: number }>('/api/auth/register',
+            { username: name, password: pw, ...(claim ? { claim: claim.ticket } : {}) });
+          if (body.ok && body.token && body.me) {
+            localStorage.setItem(TOKEN_KEY, body.token);
+            localStorage.setItem('algoName', body.me.username);
+            me = body.me;
+            if (claim) signedUpWith = { ticket: claim.ticket, claimed: !!body.claimed };
+            forgetSignupClaim();
+            // in a game the host repaint is a no-op, so the form is swapped
+            // here (as pg-claim does); the next board paint agrees with it
+            const form = document.getElementById('pg-su-form');
+            if (form) form.outerHTML = signupNoteHtml(body.claimed ? 'claimed' : 'lapsed');
+            rerenderHost();
+          } else if (errBox) {
+            errBox.textContent = body.error ?? 'that did not work';
+          }
+        } catch {
+          if (errBox) errBox.textContent = 'could not reach the server';
         }
       })();
       return true;

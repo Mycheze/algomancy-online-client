@@ -658,6 +658,14 @@ class NetBackend implements Backend {
     if (m.t === 'gameover') {
       this.flushPace();   // CR D5.4b: nothing is left waiting behind the result
       postGame = m as unknown as pg.GameOver;
+      // BL-28: a signed-out seat's sign-up ticket outlives a refresh of this
+      // screen — remembered when it arrives, put back when a rejoin's payload
+      // (which never carries one) comes in instead
+      if (postGame.signup) acct.rememberSignupClaim(this.room, postGame.signup);
+      else if (!acct.token()) {
+        const kept = acct.pendingSignupClaim(this.room);
+        if (kept) postGame = { ...postGame, signup: kept };
+      }
       postGameHidden = false;
       if (m.me) acct.applyMe(m.me);
       render();

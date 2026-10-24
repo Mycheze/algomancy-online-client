@@ -19,8 +19,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  accountByName, allAccounts, claimSeats, gameHistory, rebuildProfiles,
-  saveAccounts, stashHistory, type RecordedGame,
+  gameHistory, rebuildProfiles, saveAccounts, stashHistory, type RecordedGame,
 } from './accounts.ts';
 import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord } from './stats.ts';
 import { concessionWeight, sanitizeConcession, type Concession } from './concession.ts';
@@ -108,16 +107,19 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // hand-seeded fixture. See RecordedGame.matchMs for why absent beats 0.
     ...(typeof raw.matchMs === 'number' && raw.matchMs > 0 ? { matchMs: raw.matchMs } : {}),
     // Seat ownership, best source first: what the room recorded while it was
-    // being played, then a previous import's answer (which may have been
-    // claimed by a registration since), then a name match. A seat nobody was
-    // logged in on stays null and can still be claimed later.
+    // being played, then a previous import's answer (a sign-up ticket may
+    // have bound it since — BL-28 — and every claim already in the store is
+    // kept this way until the owner decides otherwise: legacy-claims.ts).
+    // ⚠ NEVER A NAME MATCH. This used to fall back to `accountByName(the
+    // typed name)`, which bound a signed-out stranger's seat to whoever owned
+    // the name they typed, at every import. A seat nobody was signed in on
+    // stays null.
     users: [0, 1].map(i => {
       const seat = i as 0 | 1;
-      return raw.users?.[seat]
-        ?? previous?.users[seat]
-        ?? accountByName(names[seat])?.id
-        ?? null;
+      return raw.users?.[seat] ?? previous?.users[seat] ?? null;
     }) as [string | null, string | null],
+    // BL-28: where a ticket binding came from survives a re-import, like the binding
+    ...(previous?.signedUp?.length ? { signedUp: previous.signedUp } : {}),
     // Which saved deck each seat brought. Same "best source first" shape as
     // `users`, and the same reason: a re-import must not lose an attribution
     // the live room recorded. Omitted entirely when neither seat had one, so
@@ -229,7 +231,8 @@ export function recordLiveGame(room: {
     room.code,
     new Date().toISOString(),
   );
-  for (const a of allAccounts()) claimSeats(a);
+  // BL-28: no name sweep here. It ran after EVERY finished game and bound a
+  // signed-out seat to whichever account owned the name typed into it.
   rebuildProfiles();
   saveAccounts();
   return row;
@@ -337,7 +340,7 @@ export function syncGamesDir(dir: string, opts: ImportOptions = {}): SyncReport 
     if (row.isNew) report.added++; else report.updated++;
   }
   if (report.added || report.updated) {
-    for (const a of allAccounts()) claimSeats(a);
+    // BL-28: and none here either (every boot) — see importGame's `users`
     rebuildProfiles();
     saveAccounts();
   }

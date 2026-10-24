@@ -98,9 +98,11 @@ export async function accountRoutes(
   if (path === '/api/auth/register' && req.method === 'POST') {
     if (signupBrake()) return true;
     const b = await readBody(req);
-    const r = register(str(b['username'], 40), str(b['password']));
+    // BL-28: `claim` is the sign-up ticket the post-game screen was handed —
+    // the one way a new account starts with a game in it
+    const r = register(str(b['username'], 40), str(b['password']), str(b['claim'], 100) || undefined);
     if (!r.ok) return json(res, r), true;
-    return json(res, { ok: true, token: r.token, me: privateView(r.account, ctx.online) }), true;
+    return json(res, { ok: true, token: r.token, me: privateView(r.account, ctx.online), claimed: r.claimed ?? 0 }), true;
   }
 
   /* BL-42 — play now, sign up later.
