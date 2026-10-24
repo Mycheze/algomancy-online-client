@@ -18,7 +18,7 @@ import type { XPreviewRow } from '../engine/src/cards/dsl.ts';
 import {
   actionNeedsMenu, activatableUnits, activationBadge, activationNeedsConfirm,
   assignSplitStep, assignSplitStepper, assignSplitSubmit, autoHasteDone,
-  blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens,
+  blockPlanIssue, boardMenuEntries, cacheBlockReason, cardClasses, castableTokens, handBlockLine, handBlockReason,
   counterAmountIndex, counterPickIndex, counterPickValue, counterStepper,
   counterStepperCount,
   dismissSeenCard, dismissSeenHand,
@@ -10103,7 +10103,15 @@ setZoomDecorator((src, copy) => {
     const n = h.state.players[p]?.hand[i];
     if (n && n !== HIDDEN_CARD) {
       const xrows = xPreviewFor(n, p);
-      badges = handBadges(n, handOffers(legalFor(p), i), xrows);
+      const offers = handOffers(legalFor(p), i);
+      badges = handBadges(n, offers, xrows);
+      // CT-288 (#211): a card with no ring says why, under the zoom — the one
+      // surface both a hover and a finger's tap (#201) reach. Only for a seat
+      // this screen plays, and never in the replay viewer.
+      const mine = !replayActive() && (bothSeats() || NET?.seat === p);
+      const why = !mine || offers.length || pickable(`hand:${p}:${i}`) ? ''
+        : handBlockLine(handBlockReason(q(), p, i, legalFor(p)));
+      if (why) copy.insertAdjacentHTML('beforeend', `<div class="zoomhang handwhy">${esc(why)}</div>`);
     }
   } else if (src.dataset['prevstack'] !== undefined) {
     const id = Number(src.dataset['prevstack']);

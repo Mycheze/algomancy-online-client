@@ -6,7 +6,7 @@
  * document. main.ts renders the answers; test/50-ui-inspect.test.ts checks
  * them.
  */
-import { allCardNames, effectByKey, eventAmountOf, getCard, isAugment, isGraftable, NO_TARGETS, type EffectDef } from '../engine/src/cards/dsl.ts';
+import { affinityPips, allCardNames, effectByKey, eventAmountOf, getCard, isAugment, isGraftable, NO_TARGETS, type EffectDef } from '../engine/src/cards/dsl.ts';
 import { E } from '../engine/src/engine.ts';
 import { allureViolation } from '../engine/src/apply.ts';
 import { specForSlot } from '../engine/src/cards/dsl.ts';
@@ -424,6 +424,83 @@ export function cacheBlockReason(e: E, seat: Seat, i: number, legal: Action[]): 
   // mana) is the real reason — anything else is the step: a graftable battle
   // spell in deployment is a battle card first, even with nowhere to graft
   return modes.some(short) ? 'mana' : 'timing';
+}
+
+/**
+ * CT-288 (report #211): WHY A HAND CARD HAS NO RING. The cache has said why a
+ * card will not play since report #78 (`cacheBlockReason`); a hand card just
+ * lost its ring, and a click on it did nothing. This asks the hand offer's
+ * gates (apply.ts `pushSourcePlays`) in the order the offer asks them, through
+ * the same public engine predicates, and names the first that fails:
+ *
+ *   no window for this seat at all (the other seat's priority, a decision)
+ *                                    → none: every card is dark, nothing to say
+ *   CR 402.6 "can't be played from your hand"           → no-hand
+ *   the step is not the card's (CR 207.2, 207.4, 803.2b) → timing
+ *   mana, then affinity, then an imposed added cost    → mana / affinity / cost
+ *   a bracketed cast cost or a debt it cannot pay      → cost
+ *   otherwise                                          → no-target
+ *
+ * As in `cacheBlockReason`, the last is the residual: `castable` is
+ * engine-private, so once the rest is known to be fine, "still not offered"
+ * is "no legal target". A card with ANY offer (a graft, a prophecy) is not
+ * blocked. The Ambush mode is priced by its own line.
+ */
+export type HandBlock =
+  | { kind: 'none' } | { kind: 'no-hand' } | { kind: 'cost' } | { kind: 'no-target' }
+  | { kind: 'timing'; when: 'deployment' | 'battle' }
+  | { kind: 'mana'; need: number; have: number }
+  | { kind: 'affinity'; element: string; need: number; have: number };
+
+export function handBlockReason(e: E, seat: Seat, i: number, legal: Action[]): HandBlock {
+  const name = e.s.players[seat]?.hand[i];
+  if (name === undefined) return { kind: 'none' };
+  if (handOffers(legal.filter(a => a.seat === seat), i).length) return { kind: 'none' };
+  const step = cacheStep(e, seat);
+  if (!step) return { kind: 'none' };
+  let c: ReturnType<typeof getCard>;
+  try { c = getCard(name); } catch { return { kind: 'none' }; }
+  if (c.noPlayFromHand) return { kind: 'no-hand' };
+  const region = step === 'battle' ? e.s.battle!.region : e.homeRegion(seat);
+  /** the bill for a cost line of `mana` and `pips`, first gate that fails */
+  const bill = (mana: number, pips: string): HandBlock | null => {
+    const have = e.openMana(seat);
+    if (have < mana) return { kind: 'mana', need: mana, have };
+    for (const [element, need] of Object.entries(affinityPips(pips))) {
+      const got = e.affinity(seat, element);
+      if (got < need) return { kind: 'affinity', element, need, have: got };
+    }
+    return null;
+  };
+  let timed: boolean;
+  if (step === 'haste') timed = c.timing === 'haste' || e.mayPlayAtHaste({ seat, card: c, from: 'hand', region });
+  else if (step === 'deploy') timed = c.timing === 'deploy' || c.timing === 'haste';
+  else timed = c.timing === 'battle';
+  if (!timed) {
+    // CR 803.6: a deployment card with an Ambush line has a battle mode of its own
+    if (step === 'battle' && c.ambush) return bill(c.ambush.mana, c.ambush.cost) ?? { kind: 'no-target' };
+    return { kind: 'timing', when: c.timing === 'battle' ? 'battle' : 'deployment' };
+  }
+  const short = bill(e.manaToPlay(seat, name, { region }), c.cost);
+  if (short) return short;
+  if (!e.canPayImposedPlayCosts(seat, name, { region })) return { kind: 'cost' };
+  const eff = c.spellEffect;
+  if (c.gainDebt !== undefined && !e.canPayCastCost(seat, { kind: 'gainDebt', n: c.gainDebt }, region, 1)) return { kind: 'cost' };
+  if (eff?.castCost && !e.canPayCastCost(seat, eff.castCost, region, 1)) return { kind: 'cost' };
+  return { kind: 'no-target' };
+}
+
+/** CT-288: the reason as one plain sentence for the card zoom; '' when there is none */
+export function handBlockLine(b: HandBlock): string {
+  switch (b.kind) {
+    case 'none': return '';
+    case 'no-hand': return 'It cannot be played from your hand.';
+    case 'timing': return `Only during ${b.when}.`;
+    case 'mana': return `Needs ${b.need} mana; you have ${b.have}.`;
+    case 'affinity': return `Needs ${b.need} ${b.element} affinity; you have ${b.have}.`;
+    case 'cost': return 'You cannot pay its extra cost.';
+    case 'no-target': return 'Nothing legal to aim it at.';
+  }
 }
 
 /**
