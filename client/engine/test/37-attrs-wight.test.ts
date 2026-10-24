@@ -545,9 +545,9 @@ test('at the start of deployment a Wraith body shrinks a chosen ally', () => {
   assert.deepEqual(effStats(h, ally), [3, 3], 'a -1/-1 counter landed on the chosen ally');
 });
 
-// ⚠ UNCONFIRMED (Bena to rule): may "an ally" be the carrier itself? The engine
-// says yes, which is also what keeps the line from ever having no candidate.
-test('CR 110.4a ⚠: a lone Wraith may pick ITSELF as "an ally" (unconfirmed reading)', () => {
+// CR 110.4a (settled by the owner): "A unit is its own ally", so "an ally" may be
+// the carrier itself, which also keeps the line from ever having no candidate.
+test('CR 110.4a: a lone Wraith may pick ITSELF as "an ally" (a unit is its own ally)', () => {
   const h = sterile(3732);
   toDeployment(h);
   const P = h.state.deployPlayer!;
