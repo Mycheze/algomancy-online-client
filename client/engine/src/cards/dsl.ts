@@ -1307,6 +1307,13 @@ export interface FaceProjection {
    * graft cause brings ITS carrier's grafts (E.projectedCarrier). Same rule
    * as `faces`: geometry and raw fields only, never a number. */
   carriers?: (g: E, self: Entity) => (EntityId | undefined)[];
+  /** CR 721.1 / CT-349: parallel to `faces`, entry for entry — true where the
+   * projected face is a MOD's (a neighbour's augment, or an augment a
+   * neighbouring copy copied), so only its [Augment] box is projected, never
+   * its body text: a mod lends its host the box and nothing else, and what
+   * the host has is what the projector borrows. Same rule as `faces`:
+   * geometry and raw fields only. */
+  boxOnly?: (g: E, self: Entity) => boolean[];
   /** which facets each projected face contributes. Defaults to statics +
    * activated + triggered + behavior; `name` and `stats` are refused by the
    * engine, and `attrs` is CR 710.7's one stated exclusion for Ancient One. */
