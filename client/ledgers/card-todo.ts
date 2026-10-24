@@ -710,6 +710,17 @@ const OPEN: TodoEntry[] = [
     verify: "On a touch device, tap your own spell token, a unit with one ability, and a resource.",
     status: 'open',
   },
+  {
+    id: 409, area: "engine", severity: "minor",
+    cards: [],
+    title: "two players brought to 0 life by the same effect: the engine ends the game at the first one, so a simultaneous loss never happens",
+    detail: "Caleb, rules-questions 2025-03-10, asked \"If both players die in the same combat step … who wins?\": \"both players would need to die at the exact same time for this to happen, which is quite rare. But yes currently the rule is player with the highest life total wins\". Owner 2026-10-24: \"If both players are at one life and I play the 'any number of target players each lose 1 life', what happens? In a real game, the INT player technically dies first … So yes, it is possible, just uncommon.\" The engine (per the challenge agent, CR 104.1a) ends the game at the first player to reach 0, so neither rule is applied. Also needed by the double-KO Weekly Challenge (BL-49).",
+    evidence: "Challenge-design round 2026-10-24 (zero-handoff/PA-cal-menu.md); Caleb's message found in data/rulings/work/text.",
+    fix: "Wait for the owner to confirm the reconciliation (highest life wins; on equal life the initiative player loses). Then apply every life change of one effect before checking for a loss, decide by that rule, redraft CR 104.1a with both sources, and measure restore replay.",
+    proof: null,
+    verify: "Both players at 1 life; one effect makes each lose 1: who wins?",
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
