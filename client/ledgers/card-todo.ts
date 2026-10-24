@@ -228,49 +228,6 @@ const OPEN: TodoEntry[] = [
       + "\n\nRE-CHECKED 2026-10-22, still deliberately open: no unit can carry {Reaping} in this pool, so the until-regroup loss still cannot be observed, and 263 section 4 is still the tripwire. The engine.ts note now states the printed reminder and why the second sentence is not built (0ee1250, eb3db42); nothing else changed.",
     status: 'open',
   },
-  {
-    id: 178, area: 'coverage', severity: 'minor',
-    cards: ['Necromantic Rebuke'],
-    title:
-      'the owner\'s `slightly off` verdict on Necromantic Rebuke was answered by fixing the '
-      + 'MISPLAY, and the branch the scenario exists to reach has still never run',
-    detail:
-      'var/verdicts.jsonl carries {"scenario":"rebuke-refused","card":"Necromantic Rebuke",'
-      + '"verdict":"slightly-off","room":"DWYV","actionIndex":6} dated 2026-08-27T13:00Z. The '
-      + 'cause was found and it was a client defect, not the card: the bin menu had collapsed '
-      + 'two identical cards into one row without saying so, the owner paid X as 2, and X=2 '
-      + 'empties the bin and suppresses the ransom. The batch-E scenario round (2026-08-26/27) fixed the menu (DecisionOption.count) '
-      + 'and the board is unchanged. ⚠ But that closed the CAUSE OF THE MISPLAY, not the '
-      + 'verdict: `rebuke-refused` exists to watch the REFUSAL branch at X=1, and '
-      + 'ledgers/unreached.ts records in prose that it "still has not executed". So the card '
-      + 'is unverified for the one clause the scenario was built to witness.\n\n'
-      + '⚠ THIS TICKET DOES NOT CONTRADICT ANY RULING, and it is worth saying so plainly '
-      + 'because 202-settled-rulings-not-reopened convicted an earlier wording of this entry '
-      + 'that read as if it did. digital-rules.md §7 ("Necromantic Rebuke\'s X is the printed '
-      + 'additional cost") marks the card ALREADY CORRECT and nothing here disputes that. The '
-      + 'gap is a COVERAGE gap, which is why the area is `coverage` and not `card`: the '
-      + 'engine is believed right and has never been WATCHED being right on this branch. '
-      + 'The batch-E scenario round fixed the client defect that caused the misplay; it did not, and could not, '
-      + 'witness the refusal.',
-    evidence:
-      'ROUND 36, found by 264-verdict-loop.test.ts ON ITS FIRST RUN — the guard was written '
-      + 'for Vengeance (CT-177) and turned up a second dropped verdict immediately, which is '
-      + 'the positive control docs/13 §7.4 asks every new checker for. ⚠ The finding already '
-      + 'EXISTED, in a comment on UNWITNESSED_CARDS in ledgers/unreached.ts, where nothing '
-      + 'could fail on it. That is the docs/13 §5 shape exactly: a real defect that stops '
-      + 'being work the moment its only home is a sentence.',
-    fix:
-      'Re-open `rebuke-refused` and play it correctly — X = 1, so the bin is not emptied and '
-      + 'the ransom is actually offered — then watch the refusal. If it behaves, the card '
-      + 'earns a WITNESSED row and leaves UNWITNESSED_CARDS; if it does not, this entry '
-      + 'becomes the real ticket. Either way the loop closes on evidence rather than on the '
-      + 'assumption that fixing the menu fixed the card.',
-    proof: null,
-    verify:
-      'Open rebuke-refused, pay X = 1, and refuse the ransom. The refusal branch runs and the '
-      + 'card does what it prints.',
-    status: 'open',
-  },
   // ── the comprehensive-rules export's findings, re-checked at HEAD and filed
   //    2026-10-10 (CT-226..CT-280 are reserved for that project). Each names its
   //    finding ids in data/comprehensive-rules/findings/, which carry the CT back.
@@ -280,8 +237,8 @@ const OPEN: TodoEntry[] = [
     detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) Each title below names behaviour the rulings have since changed; most assertions already follow the new law, so only the words mislead (Biomass Devourer's cannot tell the two bins apart at all). (1) 133: \"R157 §20 — …\" titles; §20 no longer holds (CR 107.5). (2) 45-hybrids-ld-b: Deferral Drone \"this turn\"; the card and the engine say this phase, and the retired register's table listed the clear in E.startTurn. (3) 26-metal-a: a stolen unit dies to its OWNER's bin; CR 405.3 sends it to the controller's. (4) 36-cache-prophecy: a cached token \"is erased, not cached\"; CR 410.5c has it visit the cache. (5) 178: \"Q3 is OPEN\" and \"the pile is untouched\"; CR 407.2 files the pile. (6) 36: prophesying is illegal in the haste step, unqualified; CR 504.9 allows a [Haste] banner. (7) util.ts and three tests: the haste step opens only for a payable haste card; CR 504.5 opens it every turn. (8) 35-rot: \"deployment opens no priority window\"; deployment now has a stack (CR 507.5). (9) 44: old suppression \"is a veto ABOVE copy\"; CR 712.2 says otherwise: a strip takes only what the unit has when it applies. (10) 42-dark-b: Afflicting rots \"the owner\"; Umbral Decay prints the controller.",
     evidence: "Findings F-U02-1, F-U04-1, F-U07-1, F-U07-2, F-U07-4 (dup F-U16-1), F-U08-2, F-U08-3, F-U09-1, F-U16-2, F-U20-2. Quotes: \"R157 §20 — with no Stasis Sentry an X spell costs exactly X\"; \"the next card you play this turn costs [3] less\"; \"| **clear** | `E.startTurn`, beside the `Entity.budgets` wipe |\"; \"R140: a stolen unit dies — the erase reaches the OWNER\"; \"R46: a TOKEN cached from play is erased, not cached (there is no card)\"; \"Q3 is OPEN\"; \"the host lives, and the pile is untouched\"; \"R42: prophesying is a DEPLOYMENT action — illegal in planning, the haste step and battle\"; \"appears when someone holds a payable haste card) */\"; \"R38: rot damage cannot be responded to — deployment opens no priority window\"; \"R118: R62 suppression is a veto ABOVE copy\"; \"{Afflicting} rots the owner of what it kills\".",
     fix: "Retitle each test to the live ruling and reword the messages. Where the assertion cannot tell old law from new (26-metal-a; 42-dark-b, where owner and controller coincide), add the case that can.",
-    proof: () => still('engine/test/133-x-cost-semantics.test.ts', 'CR 107.2 —') || still('engine/test/45-hybrids-ld-b.test.ts', 'the next card you play this turn costs [3] less') || still('engine/test/26-metal-a.test.ts', 'the erase reaches the OWNER') || still('engine/test/36-cache-prophecy.test.ts', 'is erased, not cached (there is no card)', 'illegal in planning, the haste step and battle') || still('engine/test/178-played-item-and-erased-mods.test.ts', 'Q3 is OPEN', 'the pile is untouched') || still('engine/test/35-rot-debt-trash.test.ts', 'deployment opens no priority window') || still('engine/test/44-hybrids-ld-a.test.ts', 'suppression is a veto ABOVE copy') || still('engine/test/42-dark-b.test.ts', 'rots the owner of what it kills'),
-    progress: "PARTLY FIXED 2026-10-24 (33ec835): (2) Deferral Drone says \"this phase\"; (3) 26-metal-a retitled and asserts the controller's bin (mutant-proved); (4)(6) 36 retitled, the token test asserts the cached event; (7) the haste-step messages cite CR 504.5 (08-cards2, 33, 15-water-b, 416, util.ts, ui 75); (10) 42-dark-b retitled, with a new stolen-unit test (mutant-proved). LEFT: (1) 133's proof needle 'CR 107.2 —' can never go false though 133 already cites current law (fix the proof); (5) 178's two titles, cited in full by CT-86's guards in card-todo-closed.ts, proposed: \"CR 720.9 Slag Spewer: an erase paid as a COST announces itself with a real erased event and files the erased pile\" and \"CR 720.9 Suppression Field: mods leave host and game, the host lives, and the erased pile files them\"; (8) 35-rot \"deployment opens no priority window\" matches CR 507.5, so that needle is not a defect (finding F-U09-1 is outdated); (9) 44's title, bound in full by CR 712.1a's example, kept (its message now cites CR 712.2).",
+    proof: () => still('engine/test/45-hybrids-ld-b.test.ts', 'the next card you play this turn costs [3] less') || still('engine/test/26-metal-a.test.ts', 'the erase reaches the OWNER') || still('engine/test/36-cache-prophecy.test.ts', 'is erased, not cached (there is no card)') || still('engine/test/178-played-item-and-erased-mods.test.ts', 'Q3 is OPEN', 'the pile is untouched') || still('engine/test/42-dark-b.test.ts', 'rots the owner of what it kills'),
+    progress: "PARTLY FIXED 2026-10-24 (33ec835): (2) Deferral Drone says \"this phase\"; (3) 26-metal-a retitled and asserts the controller's bin (mutant-proved); (4)(6) 36 retitled, the token test asserts the cached event; (7) the haste-step messages cite CR 504.5 (08-cards2, 33, 15-water-b, 416, util.ts, ui 75); (10) 42-dark-b retitled, with a new stolen-unit test (mutant-proved). LEFT: (1) 133's proof needle 'CR 107.2 —' can never go false though 133 already cites current law (fix the proof); (5) 178's two titles, cited in full by CT-86's guards in card-todo-closed.ts, proposed: \"CR 720.9 Slag Spewer: an erase paid as a COST announces itself with a real erased event and files the erased pile\" and \"CR 720.9 Suppression Field: mods leave host and game, the host lives, and the erased pile files them\"; (8) 35-rot \"deployment opens no priority window\" matches CR 507.5, so that needle is not a defect (finding F-U09-1 is outdated); (9) 44's title, bound in full by CR 712.1a's example, kept (its message now cites CR 712.2). AUDIT 2026-10-24 (housework; AUDIT-ct-engine.md): the proof could never have gone false, because four of its needles matched words that are correct. They are retired here: (1) 133 'CR 107.2 —' (133 cites current law); (6) 36's 'illegal in planning, the haste step and battle', which still matched the RETITLED 36:228 \"CR 803.7b: … a banner not ending in [Haste] is illegal in planning, the haste step and battle (CR 504.9)\"; (8) 35-rot 'deployment opens no priority window' (correct under CR 507.5); (9) 44 'suppression is a veto ABOVE copy' (kept on purpose, bound by CR 712.1a's example in rules/U16.json). The proof now reads only the real defects; today that is item (5). RENAME TABLE for (5), one change: (a) 178-played-item-and-erased-mods.test.ts:268 \"CR 720.9 Slag Spewer: an erase paid as a COST still announces itself with \\\"info\\\" — Q3 is OPEN\" → \"CR 720.9 Slag Spewer: an erase paid as a COST announces itself with a real erased event and files the erased pile\"; (b) :301 \"CR 720.9 Suppression Field: mods leave host and game, the host lives, and the pile is untouched\" → \"CR 720.9 Suppression Field: mods leave host and game, the host lives, and the erased pile files them\"; (c) card-todo-closed.ts CT-86's two guards, which cite both titles as substrings; (d) findings F-U07-4 and F-U16-1, whose evidence quotes them (cr:check reports a stale finding-evidence once the quote leaves the file: re-quote or close through the cr scripts, as d387740 did). Neither 178 title is bound by a rule example, so no re-verify. Verdict tests_run patterns are frozen history: leave them. Then close with guards on the two new 178 titles plus 26-metal-a and 42-dark-b.",
     status: 'open',
   },
   {
@@ -292,6 +249,7 @@ const OPEN: TodoEntry[] = [
     fix: "Update the RAQ note. (The register warnings this entry listed went with the register, 2026-10.)",
     // the register half of this entry went with the register (2026-10 CR-only migration); the RAQ note is what is left
     proof: () => still('ledgers/raq.ts', 'Green partly for the wrong reason given the Sandstone defect'),
+    progress: "AUDIT 2026-10-24 (housework; AUDIT-ct-engine.md, AUDIT-cr.md §5): still real. Rewrite the Wispweaver note in ledgers/raq.ts (\"Green partly for the wrong reason given the Sandstone defect\"): the Sandstone case was a fixture error and the engine was right, so the warning has no basis. In the same edit fix two more stale raq.ts notes: the strike-memory note \"⚠ Green today only because the engine keeps NO strike memory at all\" (D-U12-16; the strike memory exists since 2026-10-09) and the Containment Protocol note \"Resonant never waits on the stack\" (D-U20-6; it waits since 2026-10-09). The Wispweaver edit retires finding F-U15-2's evidence quote: re-quote or close it through the cr scripts. Then the proof goes false; close.",
     status: 'open',
   },
   {
@@ -301,27 +259,7 @@ const OPEN: TodoEntry[] = [
     evidence: "Findings F-U03-1, F-U07-3 (dups F-U14-4, F-U21-1). 37-attrs-wight.test.ts: \"R71 ⚠: a lone Wraith may pick ITSELF as \"an ally\" (unconfirmed reading)\". 12-fire-a.test.ts: \"Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing\". digital-rules.md: \"Already correct — Abyssal Evocation, Writhing Host.\"",
     fix: "Retitle both to cite the ruling that settled them, and drop the \"flips if\" comment in 12-fire-a.",
     proof: () => still('engine/test/37-attrs-wight.test.ts', '(unconfirmed reading)') || still('engine/test/12-fire-a.test.ts', '⚠ OPEN — a bin-played card obeys its PRINTED timing'),
-    progress: "PARTLY FIXED 2026-10-24 (e68f99e): 37-attrs-wight retitled \"a unit is its own ally\", and 12-fire-a's \"flips if\" comment replaced by the owner's 2026-08-25 words and CR 702.2a. LEFT: the 12-fire-a title \"Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing\" is bound in full by CR 405.9 (zones.bin.play-from-bin): rename it and rebind that example in one change.",
-    status: 'open',
-  },
-  {
-    id: 262, area: "client", severity: "minor",
-    title: "the automatic pass is latched per state counter, which the ruling on automatic answers rules out",
-    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule annexd.auto-pass.automatic-answers. CR D2.4: an automatic answer (it names the haste-step ready and the automatic pass) is latched by being unanswered, never by a state counter, because states keep arriving while an intent is outstanding. The haste ready was converted (hasteAutoOut); the automatic pass still goes through takeAutoPass, keyed on actionCount, and 70 [59] asserts that a new state number re-opens the latch. A state with a new actionCount arriving while the pass is outstanding could send a second pass, which comes back refused.",
-    evidence: "Findings F-U23-2 (dup F-U23-5). inspect.ts: \"if (latch.autoAt === actionCount || latch.sentFor === actionCount) return false;\". 70-playtest-round15.test.ts: \"assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');\". digital-rules.md: \"### (b) An automatic answer is latched by the FACT of being unanswered, never\".",
-    fix: "Latch the automatic pass on \"sent and not yet answered\" (as hasteAutoOut does), clearing it on the server's answer, and update 70 [59].",
-    proof: () => still('ui/inspect.ts', 'if (latch.autoAt === actionCount || latch.sentFor === actionCount) return false;'),
-    status: 'open',
-  },
-  {
-    id: 294, area: "card", severity: "minor",
-    cards: ["Automaton of Abundance"],
-    title: "Automaton of Abundance on a batch mixed from two sources (Caleb hedged)",
-    detail: "Caleb, 2024-07-24 (hedged, 'may change'): Accelerated Germination and Fungal Gardener 1/1s made in one batch should give \"two extra tokens\". The engine and CR 304.14 give one (one unique token). Not a ruling while hedged.",
-    evidence: "Report #212 diagnosis.",
-    fix: "Leave the engine; re-check if Caleb settles it.",
-    proof: null,
-    verify: "Accelerated Germination plus Fungal Gardener with an Automaton in play.",
+    progress: "PARTLY FIXED 2026-10-24 (e68f99e): 37-attrs-wight retitled \"a unit is its own ally\", and 12-fire-a's \"flips if\" comment replaced by the owner's 2026-08-25 words and CR 702.2a. LEFT: the 12-fire-a title \"Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing\" is bound in full by CR 405.9 (zones.bin.play-from-bin): rename it and rebind that example in one change. AUDIT 2026-10-24 (housework; AUDIT-ct-engine.md): 37-attrs-wight is done (0 matches). RENAME TABLE, one change: (a) 12-fire-a.test.ts:141 \"Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing\" → a title citing CR 702.2a and the owner's 2026-08-25 \"Already correct\"; (b) rebind the CR 405.9 example (rules/U07.json key zones.bin.play-from-bin), which changes its recordHash and so needs a round-4 re-verify, stamp, cr:render and cr:check; (c) re-quote or close findings F-U07-3, F-U14-4 and F-U21-1, which quote the old title. The verdict pattern in verdicts/U07.json is frozen history: leave it. Best done in one session with CT-235 and CT-354 (one re-verify batch).",
     status: 'open',
   },
   {
@@ -332,16 +270,6 @@ const OPEN: TodoEntry[] = [
     fix: "Filter the payable sizes like collectX does if a card ever needs it; fix the header.",
     proof: null,
     verify: "Read 453's tripwire and test 30's header.",
-    status: 'open',
-  },
-  {
-    id: 340, area: "coverage", severity: "minor",
-    title: "CR Annex D4.5 (agreed fixes) describes the proposal and rewind as they were before this round",
-    detail: "The dispute (c43e21b) and rewind-naming (28e4271) commits moved the code under D4.5 agreed-fix.proposal and .rewind: fixes in a run now file ONE report row, and the rewind offers \"before your last action\" named in each seat's words. The cr agent finalized both records as partial rather than stamp stale text; hidden-step.floor was confirmed.",
-    evidence: "The cr agent, report round 2026-10-21 (c7c80ee).",
-    fix: "Redraft both records against rooms.ts rewindOptions / main.ts fix runs, re-verify with an isolated verifier, cr:render.",
-    proof: null,
-    verify: "cr:check shows both records confirmed; 409 green.",
     status: 'open',
   },
   {
@@ -367,18 +295,7 @@ const OPEN: TodoEntry[] = [
       || still('engine/test/429-cr-keyword-actions.test.ts', 'engine differs: a printed-Unstable')
       || still('engine/test/35-rot-debt-trash.test.ts', 'CR 801.2h says not trashed'),
     verify: "grep \"801.2h says not trashed\" and \"engine differs\" in client/engine/test.",
-    progress: "PARTLY FIXED 2026-10-24 (0aa7c53): 429 and 35 retitled, one 224 title renamed, comments reworded. LEFT: two 224 titles cited in full by card-todo-closed.ts (CT-246) and playtest-ledger-closed.ts; proposed \"CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods\" and \"CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)\". Rename and update both ledgers in one change.",
-    status: "open",
-  },
-  {
-    id: 355, area: "card", severity: "minor",
-    cards: ["Ancient One"],
-    title: "Ancient One: an ally reachable both directly and through a second Ancient One lends its text once (the designer's \"boolean\")",
-    detail: "Report 271 made two adjacent Ancient Ones share everything through each other (the designer: \"both have all the abilities of any creature adjacent to either\"), as a closure that counts each ally once: an ally adjacent to an Ancient One AND reachable through a second one lends one copy, which follows the designer calling it \"boolean\". The owner's ruling of 2026-10-22 (CT-342, \"each neighbour's copy of the ability is separate\") is about two DIFFERENT neighbours, so the two read as compatible, but nobody has asked the owner about the overlap. A note, not a known defect.",
-    evidence: "The ancient agent, report round 2026-10-23 (R1023-ancient, new defect 5): 589 \"a static reaches through two adjacent Ancient Ones, once each\".",
-    fix: "Optional owner question: in a row Ancient One, Ancient One, ally (with the first also beside the ally in a bent formation), does the first Ancient One get the ally's ability once or twice? If twice, the closure keeps one entry per path, not per ally.",
-    proof: null,
-    verify: "Read 589 \"a static reaches through two adjacent Ancient Ones, once each\" and the closure in batch-metal-a.ts.",
+    progress: "PARTLY FIXED 2026-10-24 (0aa7c53): 429 and 35 retitled, one 224 title renamed, comments reworded. LEFT: two 224 titles cited in full by card-todo-closed.ts (CT-246) and playtest-ledger-closed.ts; proposed \"CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods\" and \"CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)\". Rename and update both ledgers in one change. AUDIT 2026-10-24 (housework; AUDIT-ct-engine.md): REAL, AND ABOUT FIVE TIMES WIDER THAN FILED. As filed: 224-mod-trash.test.ts:97 and :280, plus the :102-104 comment that explains why they were kept (it also matches the proof needle). Same change: card-todo-closed.ts (CT-246's guards cite both titles in full) and playtest-ledger-closed.ts (likewise), and findings F-U07-6 and F-U18-1, whose evidence quotes the :97 title (re-quote or close through the cr scripts). Neither title is bound by a rule example. NOT ON THE TICKET, the same stale phrase \"CR 801.2h differs\" (CR 801.2h now agrees with the engine): four more test titles, 42-dark-b.test.ts:272, :315, :351 and 43-dark-c.test.ts:86, whose ledger citations (playtest-ledger-closed.ts) cite only the suffix, so renaming the prefix is free; and comments or messages at 42-dark-b:255, :693, :695; 43-dark-c:191, :245; 62-death-facts:116, :136; 37-attrs-wight:655; 17-earth-b:668; 229-cosmic-and-control:670; 35-rot-debt-trash:393 (\"CR 801.2h would invert it back\"); engine.ts:6846, :6959. Widen the ticket to \"CR 801.2h differs, everywhere\" and sweep with one grep for '801.2h differs', '801.2h says not trashed' and '801.2h would'.",
     status: "open",
   },
   {
@@ -413,6 +330,7 @@ const OPEN: TodoEntry[] = [
     fix: "Either per-seat id ranges inside a hidden step (an engine change that moves ids, so replay-sensitive) or symbolised ids in the view (large). Decide which before starting.",
     proof: null,
     verify: "In deployment, note the id of a unit you spawn, let the opponent spawn twice, spawn again: the gap counts their plays.",
+    progress: "AUDIT 2026-10-24 (housework; AUDIT-ct-client.md): REAL, and the size is L (multi-session, replay-breaking). nextId is one shared clock behind entity ids, stack item ids, cached uids, decision ids and layer seqs; server/view.ts touches neither nextId nor decisionHigh. Masking them in the view is a few lines and does not close it (your own new ids still jump). A real fix is per-seat id bands inside a hidden segment (the precedent is segmentStamp/stampSeg in engine.ts for layer timestamps): about 18 nextId++ sites move to newId(seat); every stored game's ids change, so it needs an engine-version gate (171) and a drift replay of all saved games; renumberAction/renumberRefUids in rooms.ts assume one contiguous clock; ui/passrelease.ts relies on \"nextId only grows\"; and the bands must keep CR 113.2's initiative order because entity id doubles as a layer timestamp. Symbolised per-seat ids in every view is larger still. PRECEDENT: the owner declined this exact threat model for CT-106 on 2026-08-29 (\"Since all they get is very minimal information, I am not worried about this.\"): a modified client reading the wire, nothing on screen. So this is a wontfix candidate under that answer; it needs the owner's one-line confirmation that CT-106's answer covers it before it can be closed. Separately, CR D2.5e (annexd.auto-pass.haste-ready.residual) still says the action counter is sent to both players and rises on every action, which CT-334 made false and which contradicts D6.1a: redraft it to name the id clock as the residual.",
     status: 'open',
   },
   {
@@ -427,13 +345,14 @@ const OPEN: TodoEntry[] = [
   },
   {
     id: 366, area: "engine", severity: "minor",
-    cards: ["Rotling"],
+    cards: ["Rotling", "Spellbind"],
     title: "paying a {Modular} cost out of the bin fires no leftBin, so the bin-exit listeners never hear it",
     detail: "CR 405.7: every exit from a bin fires leftBin. payModularMod (engine.ts) takes a {Modular} mod out of the bin with a raw zone.splice, so Rotling (\"When I leave your bin, ...\") and the other bin-exit listeners do not hear a bin card used as a Modular cost. CT-344's work kept the foreign-owner table right there and left the event out on purpose, because adding it changes replays.",
     evidence: "Round 2026-10-24, R1024-owner.md (new defect 1): the owner agent, fixing CT-344.",
     fix: "Take the card through takeFromBin (which goes through removeFromBin, so leftBin fires) with reason 'modded', keep the owner it returns, replay the stored games for drift, and guard it with a bin listener that hears the Modular payment.",
     proof: null,
     verify: "Rotling in a bin, pay a {Modular} cost with it: its trigger should be offered.",
+    progress: "AUDIT 2026-10-24 (housework; AUDIT-ct-engine.md): REACHABLE TODAY, not latent. payModularMod in engine.ts does zone.splice(index, 1) for modFrom === 'bin' (commented \"⚠ The bin exit fires no 'leftBin'\"). Probe: isGraftable('Rotling') is true and Rotling is the pool's only leftBin listener, and Spellbind ({Modular}, \"apply mods … from your hand and/or bin\") can graft Rotling out of the bin in a real game, where its \"When I leave your bin\" never fires. Size M: fix through takeFromBin with reason 'modded', then replay stored games for drift.",
     status: 'open',
   },
   {

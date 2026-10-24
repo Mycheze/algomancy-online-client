@@ -12898,4 +12898,115 @@ export const CLOSED: TodoEntry[] = [
     closed: "WONTFIX (kept by decision) 2026-10-24, NOT an owner ruling: the round r1024 hygiene agent and orchestrator kept the branch. No card prints a bracketed \"[Sacrifice me]\" cast cost, but the from:'self' path is the printed-cost shape that 515's red-check uses, and its helper and charge branch are shared with includeSelf, which Deformant uses live; the reason is written beside the synthetic card in 32-cast-costs. The proof stays true by design. The owner may reopen it.",
     status: 'wontfix',
   },
+  {
+    id: 178, area: 'coverage', severity: 'minor',
+    cards: ['Necromantic Rebuke'],
+    title:
+      'the owner\'s `slightly off` verdict on Necromantic Rebuke was answered by fixing the '
+      + 'MISPLAY, and the branch the scenario exists to reach has still never run',
+    detail:
+      'var/verdicts.jsonl carries {"scenario":"rebuke-refused","card":"Necromantic Rebuke",'
+      + '"verdict":"slightly-off","room":"DWYV","actionIndex":6} dated 2026-08-27T13:00Z. The '
+      + 'cause was found and it was a client defect, not the card: the bin menu had collapsed '
+      + 'two identical cards into one row without saying so, the owner paid X as 2, and X=2 '
+      + 'empties the bin and suppresses the ransom. The batch-E scenario round (2026-08-26/27) fixed the menu (DecisionOption.count) '
+      + 'and the board is unchanged. ⚠ But that closed the CAUSE OF THE MISPLAY, not the '
+      + 'verdict: `rebuke-refused` exists to watch the REFUSAL branch at X=1, and '
+      + 'ledgers/unreached.ts records in prose that it "still has not executed". So the card '
+      + 'is unverified for the one clause the scenario was built to witness.\n\n'
+      + '⚠ THIS TICKET DOES NOT CONTRADICT ANY RULING, and it is worth saying so plainly '
+      + 'because 202-settled-rulings-not-reopened convicted an earlier wording of this entry '
+      + 'that read as if it did. digital-rules.md §7 ("Necromantic Rebuke\'s X is the printed '
+      + 'additional cost") marks the card ALREADY CORRECT and nothing here disputes that. The '
+      + 'gap is a COVERAGE gap, which is why the area is `coverage` and not `card`: the '
+      + 'engine is believed right and has never been WATCHED being right on this branch. '
+      + 'The batch-E scenario round fixed the client defect that caused the misplay; it did not, and could not, '
+      + 'witness the refusal.',
+    evidence:
+      'ROUND 36, found by 264-verdict-loop.test.ts ON ITS FIRST RUN — the guard was written '
+      + 'for Vengeance (CT-177) and turned up a second dropped verdict immediately, which is '
+      + 'the positive control docs/13 §7.4 asks every new checker for. ⚠ The finding already '
+      + 'EXISTED, in a comment on UNWITNESSED_CARDS in ledgers/unreached.ts, where nothing '
+      + 'could fail on it. That is the docs/13 §5 shape exactly: a real defect that stops '
+      + 'being work the moment its only home is a sentence.',
+    fix:
+      'Re-open `rebuke-refused` and play it correctly — X = 1, so the bin is not emptied and '
+      + 'the ransom is actually offered — then watch the refusal. If it behaves, the card '
+      + 'earns a WITNESSED row and leaves UNWITNESSED_CARDS; if it does not, this entry '
+      + 'becomes the real ticket. Either way the loop closes on evidence rather than on the '
+      + 'assumption that fixing the menu fixed the card.',
+    proof: null,
+    verify:
+      'Open rebuke-refused, pay X = 1, and refuse the ransom. The refusal branch runs and the '
+      + 'card does what it prints.',
+    guards: [
+      "42-dark-b.test.ts::Necromantic Rebuke: DECLINING the ransom is unchanged",
+    ],
+    closed: "DONE (stale) 2026-10-24, no code change. The refusal branch this ticket said had never run is run by 42-dark-b \"Necromantic Rebuke: DECLINING the ransom is unchanged — negated, bin untouched\": X = 1, the ransom is offered, declined, and the effect is negated (all 8 Rebuke tests green, housework audit 2026-10-24). What is still missing is only a human witness in the scenario tester, and ledgers/unreached.ts UNWITNESSED_CARDS already tracks that; its prose there still says the branch \"has not executed\" and should be reworded. Closed in the housework pass from AUDIT-ct-engine.md.",
+    status: 'done',
+  },
+  {
+    id: 262, area: "client", severity: "minor",
+    title: "the automatic pass is latched per state counter, which the ruling on automatic answers rules out",
+    detail: "(Comprehensive-rules export, Stage D, 2026-10-10.) CR rule annexd.auto-pass.automatic-answers. CR D2.4: an automatic answer (it names the haste-step ready and the automatic pass) is latched by being unanswered, never by a state counter, because states keep arriving while an intent is outstanding. The haste ready was converted (hasteAutoOut); the automatic pass still goes through takeAutoPass, keyed on actionCount, and 70 [59] asserts that a new state number re-opens the latch. A state with a new actionCount arriving while the pass is outstanding could send a second pass, which comes back refused.",
+    evidence: "Findings F-U23-2 (dup F-U23-5). inspect.ts: \"if (latch.autoAt === actionCount || latch.sentFor === actionCount) return false;\". 70-playtest-round15.test.ts: \"assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');\". digital-rules.md: \"### (b) An automatic answer is latched by the FACT of being unanswered, never\".",
+    fix: "Latch the automatic pass on \"sent and not yet answered\" (as hasteAutoOut does), clearing it on the server's answer, and update 70 [59].",
+    proof: null,
+    verify: "Read takeAutoPass in client/ui/inspect.ts: it latches once per actionCount, and only this seat can move actionCount while its automatic pass is planned.",
+    guards: [
+      "70-playtest-round15.test.ts::[59] an intent already on the wire blocks the automatic one too",
+      "70-playtest-round15.test.ts::[59] the latch releases only when the server state moves on",
+      "615-hidden-step-action-count.test.ts::CR D6.1a / CT-334: in a hidden step each seat is served a count that moves for its own actions",
+    ],
+    closed: "DONE (stale premise) 2026-10-24, no code change. The harm the ticket predicts, a state with a new actionCount arriving while this seat's automatic pass is outstanding, cannot happen: an automatic pass is planned only while this seat holds priority with no decision open, so only this seat can act. The engine refuses everything else but concede (which ends the game); the server's standing-pass backstop acts for the same seat; an agreed edit needs this seat's accept and an open proposal already holds the auto-pass; and the timer path re-checks actionCount, decision, priority and sentFor before sending. The hidden-step haste-ready case the latch rule was written for no longer moves the count for the other seat (CT-334, 615). The \"ruling\" the ticket cites was an agent's round-31 write-up in the retired register, which also endorsed the per-actionCount latch for the pass; it is not the owner's words. LEFT, as CR work (not this ticket): redraft CR D2.4 (annexd.auto-pass.automatic-answers) to state both latches and why, drop its engineDiffers, and close findings F-U23-2 and F-U23-5. The code proof is retired (it reads a line that stays by design). From AUDIT-ct-client.md.",
+    status: 'done',
+  },
+  {
+    id: 294, area: "card", severity: "minor",
+    cards: ["Automaton of Abundance"],
+    title: "Automaton of Abundance on a batch mixed from two sources (Caleb hedged)",
+    detail: "Caleb, 2024-07-24 (hedged, 'may change'): Accelerated Germination and Fungal Gardener 1/1s made in one batch should give \"two extra tokens\". The engine and CR 304.14 give one (one unique token). Not a ruling while hedged.",
+    evidence: "Report #212 diagnosis.",
+    fix: "Leave the engine; re-check if Caleb settles it.",
+    proof: null,
+    verify: "Accelerated Germination plus Fungal Gardener with an Automaton in play.",
+    guards: [
+      "136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s are one unique token and still yield ONE extra",
+      "458-automaton-copies-stats.test.ts::CR 304.14: a Unit Token created with no stats and one created as a 1/1 are ONE unique token",
+      "26-metal-a.test.ts::Automaton of Abundance: a mixed batch gets one extra per KIND",
+    ],
+    closed: "DONE (by designer) 2026-10-24, no engine change. Caleb answered after the 2024 hedge. _passer, rules-questions 2025-04-07 [1358924177163288707], asked about Automaton of Abundance with Omniweld Evoker making Robot 1/2/3 plus another Robot 3 and Robot 1 in one effect: 2x each, or \"1x Robot 3 (cuz you already made extra Robot 3 with this effect)\"; Caleb, 2025-04-08 [1358924537160536247]: \"it would be the second one\". So it is one extra per unique token per effect, even when the effect makes that token in two parts, which is what the engine and CR 304.14 do; _passer restated it 2025-03-29 [1355526068060033035], \"If you create 10 1/1 with Floral, you would get only extra one 1/1\". The 2024-07-24 hedge (\"this ruling may change when I get to that part of the digital client\") is superseded. Caveat: Caleb's case is one card making the token twice, not two cards grafted into one batch. Follow-up for the CR pass: cite RQ 1358924537160536247 in the 304.14 record (needs rq:index). From AUDIT-ct-engine.md.",
+    status: 'done',
+  },
+  {
+    id: 340, area: "coverage", severity: "minor",
+    title: "CR Annex D4.5 (agreed fixes) describes the proposal and rewind as they were before this round",
+    detail: "The dispute (c43e21b) and rewind-naming (28e4271) commits moved the code under D4.5 agreed-fix.proposal and .rewind: fixes in a run now file ONE report row, and the rewind offers \"before your last action\" named in each seat's words. The cr agent finalized both records as partial rather than stamp stale text; hidden-step.floor was confirmed.",
+    evidence: "The cr agent, report round 2026-10-21 (c7c80ee).",
+    fix: "Redraft both records against rooms.ts rewindOptions / main.ts fix runs, re-verify with an isolated verifier, cr:render.",
+    proof: null,
+    verify: "cr:check shows both records confirmed; 409 green.",
+    guards: [
+      "485-agreed-fix-rooms.test.ts::§4 rewind options: never a cut at a forced step, at most five actions, and the start of the step, and of the step before",
+      "486-agreed-fix-over-the-wire.test.ts::§6 two fixes in a row file one report",
+      "523-rewind-options-name-their-cut.test.ts::§1 every rewind option names whose action it goes back before",
+    ],
+    closed: "FIXED 2026-10-24 (300b949, d387740). 300b949 redrafted both Annex D4.5 records against the code and d387740 re-worded D4.5d; verdicts/U23.json has annexd.undo.agreed-fix.proposal and annexd.undo.agreed-fix.rewind both confirmed in round 4 (300b949's \"PARTIAL\" was superseded by d387740), and cr:check is clean. Its follow-ups are CT-376 and CT-377. Closed in the housework pass from AUDIT-ct-engine.md.",
+    status: 'done',
+  },
+  {
+    id: 355, area: "card", severity: "minor",
+    cards: ["Ancient One"],
+    title: "Ancient One: an ally reachable both directly and through a second Ancient One lends its text once (the designer's \"boolean\")",
+    detail: "Report 271 made two adjacent Ancient Ones share everything through each other (the designer: \"both have all the abilities of any creature adjacent to either\"), as a closure that counts each ally once: an ally adjacent to an Ancient One AND reachable through a second one lends one copy, which follows the designer calling it \"boolean\". The owner's ruling of 2026-10-22 (CT-342, \"each neighbour's copy of the ability is separate\") is about two DIFFERENT neighbours, so the two read as compatible, but nobody has asked the owner about the overlap. A note, not a known defect.",
+    evidence: "The ancient agent, report round 2026-10-23 (R1023-ancient, new defect 5): 589 \"a static reaches through two adjacent Ancient Ones, once each\".",
+    fix: "Optional owner question: in a row Ancient One, Ancient One, ally (with the first also beside the ally in a bent formation), does the first Ancient One get the ally's ability once or twice? If twice, the closure keeps one entry per path, not per ally.",
+    proof: null,
+    verify: "Read 589 \"a static reaches through two adjacent Ancient Ones, once each\" and the closure in batch-metal-a.ts.",
+    guards: [
+      "589-ancient-one-whole-text-box.test.ts::CR 710.7 / report 271: a static reaches through two adjacent Ancient Ones, once each",
+    ],
+    closed: "DONE (by designer) 2026-10-24, no engine change. The designer answers it: once. Rules-questions 2025-03-12, asked why two Ancient Ones do not get \"2 copies\" through each other, Caleb [1349398647707537408]: \"its sorta the same reason double flying doesn't stack. The ability of ancient one just says it shares abilities from neighbors, not it gains extra copies of their abilities\"; then \"two copies\" [1349398974871769108] for two DIFFERENT neighbours, which agrees with the owner's CT-342 ruling. 2025-03-22: asked about \"for the ancient one, it's Boolean\", Caleb [1352856688860074046]: \"There ya go\". The engine matches: 589 \"once each\" pins this overlap (the bystander is 4/4, not 5/5). Follow-up for the CR pass: cite these RQs in the CR 710.7 record and in 589's comment (needs rq:index). No owner question is needed. From AUDIT-ct-engine.md.",
+    status: 'done',
+  },
 ];
