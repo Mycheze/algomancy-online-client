@@ -23,6 +23,7 @@ data/comprehensive-rules/
   Algomancy-Comprehensive-Rules.md     THE document              generated   CR_DOC
   Algomancy-Comprehensive-Rules.html   the same, one HTML page   generated   CR_DOC_HTML
   Algomancy-Comprehensive-Rules.txt    the same, plain text      generated   CR_DOC_TXT
+  Algomancy-Comprehensive-Rules.json   the same, as data (the judge bot's corpus is chunked from it)  generated  CR_JSON
   Annex-D-Digital-Conventions.md       digital-only conventions  generated   CR_ANNEX_D
   rules/*.json                         the rule records, one file per section   CR_RULES_DIR
   rules/glossary.json                  the glossary: pointer rows (term → rule)  CR_RULES_DIR
