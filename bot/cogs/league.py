@@ -220,6 +220,18 @@ def render(row, base=None):
         return {"content": (f"⏰ Your **{season}** match against {_who(people, o.get('id'))} starts "
                             f"{_ts(d['at'], 'R')}. Open the League page and press Play."), "view": view}
 
+    if kind == "dispute":
+        # to an organizer (CT-339): a player says the game that settled a match
+        # went wrong. The result stands; the remedy is the override on the page.
+        by, opp = d.get("by") or {}, d.get("opponent") or {}
+        said = discord.utils.escape_markdown(" ".join(str(d.get("note") or "").split()))[:300]   # one quoted line
+        stage = "the final" if d.get("final") else f"week {d.get('week')}"
+        text = (f"⚖️ {_who(people, by.get('id'))} disputed their **{season}** match against "
+                f"{_who(people, opp.get('id'))} ({stage}, game `{d.get('code', '?')}`)"
+                + (f":\n> {said}" if said else ".")
+                + "\nThe result stands until you set it on the League page.")
+        return {"content": text[:1990], "view": view}
+
     if kind == "season":
         if "place" in d:
             place = {"champion": "🏆 **Champion!**", "finalist": "🥈 **Finalist.**",

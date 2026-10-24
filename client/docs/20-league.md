@@ -234,6 +234,7 @@ never zero times.
 | `reminder` | mid-week and 24h before the deadline, only for unplayed matches | Who is left, and the windows still ahead. |
 | `final` | the finalists are set | Opponent, windows over the final week, the link. Others get "the final is X vs Y". |
 | `season` | the season closes | Final standings and the badge earned. |
+| `dispute` | a player disputes the game that settled a match (BL-48) | To each **organizer**, not the players: who, against whom, the game and what they said. The result stands until the organizer sets it. |
 
 **When a DM is refused** (DMs closed, Discord error 50007 / `Forbidden`), the
 message goes to the **league channel** as a mention. The row is marked

@@ -66,6 +66,12 @@ export function noteLine(n: LeagueNote, time: (unix: number) => string): { html:
       return { html: `<b>${name(d['from'])}</b> accepted: you play ${at}.`, action: 'league' };
     case 'time-reminder':
       return { html: `Your match against <b>${name(d['opponent'])}</b> starts at ${at}.`, action: 'play' };
+    case 'dispute': {
+      // to an organizer: the remedy is the override on the League page
+      const said = String(d['note'] ?? '');
+      return { html: `<b>${name(d['by'])}</b> disputed their ${season} match against <b>${name(d['opponent'])}</b>`
+        + ` (${esc(d['code'] ?? '?')})${said ? `: “${esc(said.length > 120 ? `${said.slice(0, 119)}…` : said)}”` : '.'}`, action: 'league' };
+    }
     default:
       // a kind newer than this page: still a line, never a gap in the list
       return { html: `News from ${season}.`, action: 'league' };
