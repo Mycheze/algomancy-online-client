@@ -191,3 +191,13 @@ test('§5 the frame round the board: a one-line top bar, an action bar that fits
   // than normal" in a battle) — the bar is as tall as what it holds
   assert.doesNotMatch(CSS, /#app\.board\.v2 \.actionbar[^{]*\{[^}]*min-height/);
 });
+
+// CT-336: at 1440x900 with both hands shown (a spectator, a rules question
+// board), the over-full block collapsed the hand-and-deck row to 0px and
+// "deck 948" drew over "HAND (2)" — measured in headless Chrome before and
+// after (round r1024). An `overflow: hidden` line is a scroll container, so
+// its grid row may shrink to nothing; `clip` cuts the same overflow without
+// being one, so the row keeps the line's height.
+test('§6 CT-336: the hand-and-deck line clips without being a scroll container, so its row never collapses', () => {
+  assert.match(CSS, /@supports \(overflow: clip\) \{ \.linfo \.lhand \{ overflow: clip; \} \}/);
+});
