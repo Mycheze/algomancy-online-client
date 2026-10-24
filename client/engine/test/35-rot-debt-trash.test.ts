@@ -402,7 +402,7 @@ test('CR 304.10: the erase lands before anything the visit queued can RESOLVE', 
 // never moved, only what happens on the way.
 //
 // ⚠ The mod ruling (now CR 801.2g; report #129, 2026-08-29) then took the MOD back out of that list and
-// left the BODY where the engine's Unstable-trash route put it (CT-246; CR 801.2h differs): *"When a mod goes onto a unit, it
+// left the BODY where the Unstable-trash route put it (CR 801.2h: still trashed, CT-246): *"When a mod goes onto a unit, it
 // becomes PART of that unit … 'Trashing' didn't happen here."* So the trash
 // list below is the body alone. If it ever loses the body too, report #93 is
 // open again — test/224-mod-trash.test.ts is the fence for that.
@@ -411,7 +411,7 @@ test('CR 304.10: the erase lands before anything the visit queued can RESOLVE', 
 // mod: playtest-ledger.ts names this test as report #93's guard, by name, and
 // 70-playtest-ledger.test.ts reddens if it stops matching. It is still exactly
 // true of the body, which is what #93 was about.
-test('engine (CT-246; CR 801.2h differs): a modded unit dying is binned, TRASHED, and only then erased', () => {
+test('CR 801.2h (CT-246): a modded unit dying is binned, TRASHED, and only then erased', () => {
   const h = new Harness(3524);
   const P = 0 as const;
   const u = spawn(h, P, 'Test Brute');
@@ -421,7 +421,7 @@ test('engine (CT-246; CR 801.2h differs): a modded unit dying is binned, TRASHED
   });
   const t = trashes(h);
   assert.deepEqual(t.map(ev => ev.data!['card']), ['Test Brute'],
-    'the BODY entered a bin from play and was trashed there (CR 801.2; the engine route, CT-246 — CR 801.2h says not trashed) — and only the body, '
+    'the BODY entered a bin from play and was trashed there (CR 801.2, 801.2h: an Unstable card that dies is still trashed; CT-246) — and only the body, '
     + 'because a mod erased with its host was never separately there (CR 801.2g)');
   assert.ok(t.every(ev => ev.data!['from'] === 'play' && ev.data!['seat'] === P));
   assert.deepEqual(h.state.players[P]!.bin, [],
