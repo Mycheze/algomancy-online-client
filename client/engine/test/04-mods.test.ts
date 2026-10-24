@@ -264,9 +264,15 @@ test('mods move with a stolen unit: controller of the unit controls its mods (CR
   const host = spawn(h, p, 'Rune Channeler');
   const sk = give(h, p, 'Ephemeral Skywalker');
   h.do({ type: 'augment', seat: p, from: 'hand', index: sk, hostId: host });
-  // steal it (control change primitive; no pool card does this yet)
-  const u = ent(h, host)!;
-  u.controller = o;
-  u.region = new E(h.state).homeRegion(o);
+  const modId = ent(h, host)!.mods[0]!;
+  assert.equal(ent(h, modId)!.controller, p, 'premise: p controls the mod');
+  // CT-241 (6): steal it through the real control-change primitive (CR 711.1),
+  // not by assigning the field, and then READ the mod
+  const e = new E(h.state);
+  assert.ok(e.giveControl(e.entity(host)!, o as 0 | 1), 'the control change happened');
+  h.state = e.s;
+  assert.equal(ent(h, host)!.controller, o, 'o controls the unit');
+  assert.deepEqual(ent(h, host)!.mods, [modId], 'the mod is still on it');
+  assert.equal(ent(h, modId)!.controller, o, 'and o controls the mod too (CR 711.2)');
   assert.ok(ownAttrs(h, host).has('Flying'), 'mod text/attrs follow the unit');
 });

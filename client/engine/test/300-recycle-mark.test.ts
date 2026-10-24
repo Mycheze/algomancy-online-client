@@ -167,6 +167,17 @@ test('CR 408.2e constructed gives each seat its own pile; shared and draft share
   assert.equal(g.recycleOf(0), g.recycleOf(1), 'and it is literally the same array');
   assert.deepEqual(h.state.sharedRecycled, ['Geode', 'Gublin']);
   assert.equal(h.state.recycled, undefined, 'the per-seat field is absent outside constructed');
+
+  // CT-241 (2): the title's other half — a CONSTRUCTED game, where each seat
+  // recycles into a pile of its own
+  const c = new Harness(30015, undefined, 'constructed', undefined, [DECK_LIST.slice(0, 30), DECK_LIST.slice(30, 60)]);
+  assert.equal(c.state.mode, 'constructed', 'premise: this one IS constructed');
+  const cg = new E(c.state);
+  cg.recycleToBottom(0, 'Geode');
+  cg.recycleToBottom(1, 'Gublin');
+  assert.deepEqual(cg.recycleOf(0), ['Geode'], "seat 0's pile holds only seat 0's card");
+  assert.deepEqual(cg.recycleOf(1), ['Gublin'], "and seat 1's only seat 1's");
+  assert.notEqual(cg.recycleOf(0), cg.recycleOf(1), 'two piles, not one');
 });
 
 /* ══ §6 — EVERY READER OF THE DECK GOES THROUGH THE MARK ════════════ */

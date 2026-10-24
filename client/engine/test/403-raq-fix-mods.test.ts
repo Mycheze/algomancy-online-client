@@ -229,6 +229,27 @@ test('CR 720.7e: a Borrower that copied a modded unit dies to the bin; a mod put
   whiteBox(h, e => { e.attachMod(e.s.entities[bof]!, 'Chitin Shredder', A, 'augment'); });
   assert.ok(new (whiteBoxE())(h.state).isUnstable(ent(h, bof)!), 'a real mod applied to it makes it Unstable');
   finishBattle(h);
+
+  // CT-241 (9): "dies to the bin", observed — the same fresh copy, killed
+  const g = new Harness(40318);
+  toDeployment(g);
+  const gA = g.state.initiative, gD = (1 - gA) as Seat;
+  const gAtk = spawn(g, gA, 'Unit Token');
+  let gHost = -1;
+  whiteBox(g, e => {
+    gHost = e.spawnUnit(gD, 'Good Whale', e.homeRegion(gD)).id;
+    e.attachMod(e.s.entities[gHost]!, 'Glowhaven Elder', gD, 'augment');
+  });
+  toNextBattle(g, gA);
+  g.do({ type: 'declareAttack', seat: gA, columns: [[gAtk]] });
+  const gBof = borrow(g, gA, gHost);
+  const binBefore = g.state.players[gA]!.bin.filter(c => c === 'Borrower of Forms').length;
+  whiteBox(g, e => { e.destroy(e.s.entities[gBof]!, 'dies'); });
+  assert.equal(ent(g, gBof), undefined, 'the copy died');
+  assert.equal(g.state.players[gA]!.bin.filter(c => c === 'Borrower of Forms').length, binBefore + 1,
+    'and the Borrower card went to the bin');
+  assert.ok(!(g.state.players[gA]!.erased ?? []).includes('Borrower of Forms'), 'it was not erased: not Unstable');
+  finishBattle(g);
 });
 
 // ── CR 720.10b / CT-213: a moved mod stays spent; CR 109.9k: its use is its own ──

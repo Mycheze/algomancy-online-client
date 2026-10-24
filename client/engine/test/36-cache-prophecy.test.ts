@@ -369,6 +369,13 @@ test('CR 803.7: "One Battle Passes" — both battles of a turn tick it, counted 
   assert.equal(h.q.cachePermission(P, 0), null, 'the battle has not finished yet');
   h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
   assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'one completed battle round is enough');
+  // CT-241 (9): "BOTH battles of a turn tick it" — the counter the condition reads
+  // moves once per battle round, so the second round of this turn ticks it again
+  assert.equal(h.state.battlesCompleted, before! + 1, 'the first battle round ticked the count once');
+  assert.equal(h.state.phase, 'battle', 'premise: the second battle round is still to come');
+  h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+  assert.notEqual(h.state.phase, 'battle', 'both battle rounds are over');
+  assert.equal(h.state.battlesCompleted, before! + 2, 'and the second ticked it again');
 });
 
 test('CR 803.7: "Your life is 5 or less" is a live check while the prophecy stands', () => {

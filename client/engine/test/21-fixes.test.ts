@@ -11,6 +11,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
+import { E } from '../src/engine.ts';
 import { ALL_ELEMENTS, forcedAction, IllegalAction, legalActions } from '../src/apply.ts';
 import { give, giveResources, resolveAfterCombat, skipHasteStep, spawn, unitsOf, throughDamageWindows} from './util.ts';
 import type { Seat } from '../src/types.ts';
@@ -75,6 +76,41 @@ test('round 2 after a real round-1 battle still restricts to the sent counteratt
   }
   assert.notEqual(h.state.phase, 'battle', 'no counterattackers → battle over');
   assert.ok(h.state.entities[home], 'home unit untouched');
+
+  // CT-241 (5): the title's claim proper — round 1 is a REAL battle (combat
+  // damage lands), one unit is SENT, and round 2 refuses the unit left home.
+  const g = new Harness(2111);
+  const gAtk = spawn(g, it, 'Ignis Sprite');
+  const sent = spawn(g, nit, 'Geode');
+  const stay = spawn(g, nit, 'Geode');
+  toBattle(g, it);
+  g.do({ type: 'declareAttack', seat: it, columns: [[gAtk]] });
+  g.do({ type: 'passPriority', seat: g.state.priority! });
+  g.do({ type: 'passPriority', seat: g.state.priority! });
+  const life0 = g.state.players[nit]!.life;
+  g.do({ type: 'declareBlocks', seat: nit, blocks: {}, send: [sent] });
+  let guard = 20;
+  while (g.state.phase === 'battle' && g.state.battle?.round === 1 && guard-- > 0) {
+    g.do({ type: 'passPriority', seat: g.state.priority! });
+  }
+  assert.ok(g.state.players[nit]!.life < life0, 'round 1 was a real battle: combat damage landed');
+  assert.equal(g.state.battle?.round, 2, 'a unit was sent, so round 2 happens');
+  assert.equal(g.state.battle!.attacker, nit);
+  assert.throws(() => g.do({ type: 'declareAttack', seat: nit, columns: [[stay]] }), IllegalAction,
+    'the unit that stayed home may not counterattack');
+  assert.ok(!legalActions(g.state, nit).some(a => a.type === 'declareAttack'
+    && a.columns.some(col => col.includes(stay))), 'and is never offered');
+  // the region check alone would refuse a unit at home; a unit of NIT's that is
+  // standing IN the battle region but was not sent is refused only by the
+  // sent-pool restriction (CR 610.4b), so this is the case that tests it
+  const e = new E(g.state);
+  const latecomer = e.spawnUnit(nit, 'Geode', g.state.battle!.region).id;
+  g.state = e.s;
+  assert.equal(g.state.entities[latecomer]!.region, g.state.battle!.region, 'premise: it stands in the battle region');
+  assert.throws(() => g.do({ type: 'declareAttack', seat: nit, columns: [[sent], [latecomer]] }),
+    /only units sent at block time may counterattack/, 'a unit not sent may not join the counterattack');
+  g.do({ type: 'declareAttack', seat: nit, columns: [[sent]] });
+  assert.deepEqual(g.state.battle!.columns, [[sent]], 'the sent unit counterattacks');
 });
 
 // ── forcedAction ──────────────────────────────────────────────────────

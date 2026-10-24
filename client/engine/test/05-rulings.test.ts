@@ -427,6 +427,10 @@ test('CR 506.2: regroup runs its exact sequence (return → damage → temp → 
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
   const atk = spawn(h, A, 'Good Whale');   // 7/5: survives Jelly + 1 marked damage
+  // CT-241 (3): the ORDER shows on a unit held up only by a temporary boost.
+  // Damage goes in step (2), the boost in step (3): in that order it lives; with
+  // the boost removed first, its own marked damage would be lethal.
+  const propped = spawn(h, A, 'Rune Channeler');   // printed 4/3, stays home
   giveResources(h, D, 'water', 3);
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
@@ -436,6 +440,9 @@ test('CR 506.2: regroup runs its exact sequence (return → damage → temp → 
   pick(h, { unit: atk });
   pass(h); pass(h);
   ent(h, atk)!.damage = 1;                         // mark some damage too
+  ent(h, propped)!.tempToughness = 3;              // 4/6 for the moment …
+  ent(h, propped)!.damage = 4;                     // … carrying 4, lethal to a 4/3
+  assert.ok(ent(h, propped), 'premise: the boost keeps it alive through the battle');
   const e0 = new E(h.state);
   const tok = e0.createSpellToken(A, 'Fireball', 1, h.state.battle!.region);
   finishBattle(h);
@@ -448,6 +455,8 @@ test('CR 506.2: regroup runs its exact sequence (return → damage → temp → 
   assert.equal(u.tempPower, 0, '(3) temporary changes removed');
   assert.equal(h.state.battle, null, '(4) formations gone');
   assert.ok(!h.state.entities[tok.id], '(+) spell tokens erased');
+  assert.ok(ent(h, propped), '(2) before (3): damage was removed BEFORE the boost lapsed, so it lived');
+  assert.deepEqual([ent(h, propped)!.damage, ent(h, propped)!.tempToughness], [0, 0], 'and both are gone');
 });
 
 test('CR 601.1a: regions are exclusive — home units are not targetable in another region\'s battle', () => {
