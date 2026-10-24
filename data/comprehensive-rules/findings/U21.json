@@ -35,6 +35,7 @@
         "quote": "test('CR 803.7: \"One Battle Passes\" — both battles of a turn tick it, counted forward', () => {"
       }
     ],
-    "ct": "CT-241"
+    "ct": "CT-241",
+    "closed": "fixed with CT-241 (a9ca20a): the test body now asserts its title."
   }
 ]

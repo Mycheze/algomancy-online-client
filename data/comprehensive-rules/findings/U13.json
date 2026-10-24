@@ -41,6 +41,7 @@
         "quote": "// ... battle round 1 finishes; with no counterattackers sent, round 2 is skipped"
       }
     ],
-    "ct": "CT-241"
+    "ct": "CT-241",
+    "closed": "fixed with CT-241 (a9ca20a): the test body now asserts its title."
   }
 ]

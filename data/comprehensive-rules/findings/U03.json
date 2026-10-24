@@ -68,7 +68,8 @@
         "quote": "assert.ok(ent(h, whale), 'original target untouched');"
       }
     ],
-    "ct": "CT-241"
+    "ct": "CT-241",
+    "closed": "fixed with CT-241 (a9ca20a): the test body now asserts its title."
   },
   {
     "id": "F-U03-5",

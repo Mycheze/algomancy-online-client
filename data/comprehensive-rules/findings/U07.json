@@ -146,7 +146,8 @@
         "quote": "assert.notEqual(h.state.mode, 'constructed', 'this harness is a shared-deck game');"
       }
     ],
-    "ct": "CT-241"
+    "ct": "CT-241",
+    "closed": "fixed with CT-241 (a9ca20a): the test body now asserts its title."
   },
   {
     "id": "F-U07-9",

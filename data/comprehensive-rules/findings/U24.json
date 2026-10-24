@@ -28,7 +28,8 @@
         "quote": "re-seed its preview when `b.columns.length` changes, and it does not yet."
       }
     ],
-    "ct": "CT-236"
+    "ct": "CT-236",
+    "closed": "closed on 2026-10-24 (housework): register text only, as F-U11-1; the register was retired on 2026-10-11 and the client was already right."
   },
   {
     "id": "F-U24-3",
@@ -45,7 +46,8 @@
         "quote": "action, so a *modified* client can still see that its opponent did something,"
       }
     ],
-    "ct": "CT-106"
+    "ct": "CT-106",
+    "closed": "closed on 2026-10-24 (housework): CT-106 is wontfix by the owner (\"I am not worried about this\"), as F-U23-3; the actionCount half was fixed by CT-334 (615), and the id-clock leak that remains is CT-364."
   },
   {
     "id": "F-U24-4",

@@ -102,6 +102,7 @@
         "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
       }
     ],
-    "rule": "combat.regions.exclusive.no-region-zones"
+    "rule": "combat.regions.exclusive.no-region-zones",
+    "closed": "fixed with CT-234: pushStackTargets walks the region's own stack (stackIn(region)); 578 guards it."
   }
 ]

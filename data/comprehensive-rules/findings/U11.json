@@ -17,7 +17,8 @@
     "ct": "CT-236",
     "dupes": [
       "F-U24-2"
-    ]
+    ],
+    "closed": "closed on 2026-10-24 (housework): register text only; the register was retired on 2026-10-11 and rekeyBuild (55-ui-formation) already re-seeds the block build."
   },
   {
     "id": "F-U11-2",
@@ -34,7 +35,8 @@
         "quote": "'declareBlocks:spellTokens': {"
       }
     ],
-    "ct": "CT-236"
+    "ct": "CT-236",
+    "closed": "closed on 2026-10-24 (housework): register text only; the register was retired on 2026-10-11 and 75-ui-reachability already has the declareBlocks spellTokens facet."
   },
   {
     "id": "F-U11-3",

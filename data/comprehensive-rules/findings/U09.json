@@ -18,7 +18,8 @@
         "quote": "2. **That stack belongs to one seat**, and so does the priority over it. The"
       }
     ],
-    "ct": "CT-235"
+    "ct": "CT-235",
+    "closed": "closed on 2026-10-24 (housework): the owner ruled on 2026-10-22 that deployment opens no priority window (CT-185 wontfix), so the title states current law."
   },
   {
     "id": "F-U09-2",
@@ -35,7 +36,8 @@
         "quote": "assert.equal(h.state.battle, null, '(4) formations gone');"
       }
     ],
-    "ct": "CT-241"
+    "ct": "CT-241",
+    "closed": "fixed with CT-241 (a9ca20a): the test body now asserts its title."
   },
   {
     "id": "F-U09-3",
