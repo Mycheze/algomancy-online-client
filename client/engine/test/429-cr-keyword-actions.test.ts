@@ -40,7 +40,7 @@ function tok(h: Harness, seat: Seat, p: number, t: number): EntityId {
 
 // ---------------------------------------------------------------- trash
 
-test('cr:keywords.actions.trash.unstable-death — engine differs: a printed-Unstable card that dies in play is trashed once and then erased', () => {
+test('cr:keywords.actions.trash.unstable-death — a printed-Unstable card that dies in play is trashed once and then erased (CR 801.2h)', () => {
   const h = new Harness(71803);
   toDeployment(h);
   const P = h.state.deployPlayer!;

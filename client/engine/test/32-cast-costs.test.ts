@@ -297,6 +297,17 @@ test('forcedAction: NOT forced with two sent units, nor in round 1 with one unit
  * carries a castCost its printed text does not mark. These two pin the
  * PRIMITIVE, on a synthetic card, where the source's life and death can be
  * controlled exactly.
+ *
+ * KEPT ON PURPOSE (CT-333, 2026-10-24), not dead code to sweep: (1) it is the
+ * shape a bracketed "[Sacrifice me]" printed on a spell or trigger would take,
+ * and the CT-264 class (515) names it as the thing to put back for its
+ * red-check; (2) its payability helper (`selfSacrificeable`) and its
+ * choice-free charge branch are shared with `includeSelf`, which Deformant
+ * uses live ("sacrifice me AND another ally"), so removing `from: 'self'` would
+ * save three lines and leave the shared half tested only through Deformant.
+ * The pool's "Sacrifice me: …" cards (Oracle of the Flame, Throwing Boulder,
+ * Sprouter, Prismatic Observer) are ACTIVATED abilities with
+ * `cost: { sacrificeSelf: true }`, a different mechanism.
  */
 
 registerSynthetic({

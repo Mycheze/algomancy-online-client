@@ -390,11 +390,12 @@ test('CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the 
 });
 
 // CR 405.6, the second miss the same stamp closes and one that needs no sweep at
-// all: a death event's `seat` is the CONTROLLER while the card bins to its
-// OWNER. Searching by name found the controller's bin first, so a stolen unit
-// dying erased a same-named card out of the THIEF's bin and left the dead
-// card's own copy sitting in its owner's. The stamp names the bin.
-test('CR 405.6: a stolen unit dies — the erase reaches the OWNER\'s bin, not the controller\'s', () => {
+// all. History: a death event's `seat` is the CONTROLLER while the card used to
+// bin to its OWNER, and searching by name found the controller's bin first, so a
+// stolen unit dying erased a same-named card out of the THIEF's bin. Since CR
+// 405.3 a dying unit goes to its CONTROLLER's bin, so the thief's bin holds BOTH
+// copies (indistinguishable, CR 405.6) and the erase takes one of them from there.
+test('CR 405.6: a stolen unit dies — into the bin of its CONTROLLER (CR 405.3), and the erase takes one copy from there', () => {
   const h = new Harness(2695);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -405,13 +406,17 @@ test('CR 405.6: a stolen unit dies — the erase reaches the OWNER\'s bin, not t
   withE(h, e => e.giveControl(e.entity(victim)!, A));    // CR 711.1: controlled by A, still owned by D
   assert.equal(ent(h, victim)!.controller, A, 'A controls it');
   assert.equal(ent(h, victim)!.owner, D, 'but D still owns it');
-  withE(h, e => e.destroy(e.entity(victim)!, 'dies'));   // → D's bin (the owner's)
+  withE(h, e => e.destroy(e.entity(victim)!, 'dies'));   // → A's bin (CR 405.3: the controller's)
+  assert.deepEqual(h.state.players[A]!.bin.filter(c => c === 'Good Whale'), ['Good Whale', 'Good Whale'],
+    "CR 405.3: the dead copy went to its CONTROLLER's bin, beside the thief's own copy");
+  assert.deepEqual(h.state.players[D]!.bin.filter(c => c === 'Good Whale'), [],
+    "and not to its OWNER's");
   assert.ok(h.state.decision, 'the death is offered to the Devourer');
   pick(h, 1);                                            // pay [two] → erase
   assert.deepEqual(h.state.players[A]!.bin.filter(c => c === 'Good Whale'), ['Good Whale'],
-    "the thief's own copy is untouched: it is not the card that died");
+    "one copy is erased from the controller's bin and the other stays");
   assert.deepEqual(h.state.players[D]!.bin.filter(c => c === 'Good Whale'), [],
-    "the copy that died — in its OWNER's bin — is the one erased");
+    "and the owner's bin is untouched");
   assert.equal(ent(h, dev)!.counters, 2, 'and the erase really happened, so the counters are earned');
 });
 

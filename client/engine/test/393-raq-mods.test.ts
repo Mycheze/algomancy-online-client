@@ -978,20 +978,25 @@ test('RAQ Borrower of Forms: copying a Robot token makes a nontoken unit, which 
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
-  let robot = -1;
+  let robot = -1, other = -1;
   whiteBox(h, e => { robot = e.spawnUnit(D, 'Robot', e.homeRegion(D), { token: true, counters: 3 }).id; });
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   const bof = borrow(h, A, robot);
+  // CT-240: a REAL token of A's in the battle, so D's Download (which takes only an
+  // enemy token) has a legal target and is castable; without it Download was never
+  // offered and the guard below asserted nothing
+  whiteBox(h, e => { other = e.spawnUnit(A, 'Robot', e.s.battle!.region, { token: true, counters: 1 }).id; });
   assert.equal(ent(h, bof)!.token, undefined, 'the Borrower is a card, whatever it copied');
   giveResources(h, D, 'metal', 2);
   passTo(h, D);
   const dl = give(h, D, 'Download');
   const plays = legalActions(h.state, D).filter(a => a.type === 'playCard' && a.handIndex === dl);
-  if (plays.length) {
-    h.do(plays[0]!);
-    assert.ok(!h.state.decision!.options.some(o => (o.value as { unit?: number }).unit === bof), 'not a token to Download');
-  }
+  assert.ok(plays.length > 0, 'Download is castable: there is a real token to take');
+  h.do(plays[0]!);
+  const offered = h.state.decision!.options.map(o => (o.value as { unit?: number }).unit);
+  assert.ok(offered.includes(other), 'positive control: the real token is offered');
+  assert.ok(!offered.includes(bof), 'the Borrower that copied a token is not a token to Download');
   finishBattle(h);
 });
 
@@ -1001,6 +1006,9 @@ test('RAQ Borrower of Forms: a Borrower that copied an [Augment] unit cannot be 
   const A = h.state.initiative, D = (1 - A) as Seat;
   const atk = spawn(h, A, 'Unit Token');
   const bubb = spawn(h, D, 'Bubb');                           // [Augment] {Unaware}
+  // CT-240: a second, REAL [Augment] unit, so Reconfigure has a legal first target
+  // and is castable; without it the guard below never ran
+  const bubb2 = spawn(h, D, 'Bubb');
   const host = spawn(h, A, 'Good Whale');
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk, host]] });
@@ -1009,11 +1017,12 @@ test('RAQ Borrower of Forms: a Borrower that copied an [Augment] unit cannot be 
   giveResources(h, A, 'metal', 2);
   passTo(h, A);
   const rc = give(h, A, 'Reconfigure');
-  if (legalActions(h.state, A).some(a => a.type === 'playCard' && a.handIndex === rc)) {
-    h.do({ type: 'playCard', seat: A, handIndex: rc });
-    assert.ok(!h.state.decision!.options.some(o => (o.value as { unit?: number }).unit === bof),
-      '"True BoFy doesn\'t have :augment: symbol on him"');
-  }
+  assert.ok(legalActions(h.state, A).some(a => a.type === 'playCard' && a.handIndex === rc),
+    'Reconfigure is castable: a real [Augment] unit is there to be its first target');
+  h.do({ type: 'playCard', seat: A, handIndex: rc });
+  const first = h.state.decision!.options.map(o => (o.value as { unit?: number }).unit);
+  assert.ok(first.includes(bubb2), 'positive control: the real [Augment] unit is offered');
+  assert.ok(!first.includes(bof), '"True BoFy doesn\'t have :augment: symbol on him"');
   finishBattle(h);
 });
 

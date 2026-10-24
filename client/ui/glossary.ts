@@ -214,7 +214,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // walks a `visited` chain (engine.ts:4123-4160) and Envoy of Lightning's
   // PRINTED reminder names the recursion outright — "can be directed to an
   // adjacent unit, RECURSIVELY". Printed text wins.
-  { term: 'Electric', cites: ['attr.electric', 'printed'], text: 'Excess damage is directed to an adjacent unit in the formation, recursively: each unit absorbs only enough to destroy it and the rest walks on to a fresh neighbour, never revisiting one. The controller picks the path. When the chain runs out the excess is lost — unless the source is also {Piercing}, which sends it to that unit’s controller.' },
+  { term: 'Electric', cites: ['attr.electric', 'attr.electric.optional', 'attr.electric.dead-end', 'attr.piercing.electric', 'printed'], text: 'Excess damage is directed to an adjacent unit in the formation, recursively: each unit absorbs only enough to destroy it and the rest may jump on to a fresh neighbour, never revisiting one. The controller picks the path, and every jump is optional: they may keep all the remaining excess on the unit it has reached. Excess with nowhere to jump is dealt to the last unit it reached, never lost — unless the source is also {Piercing}: then the controller may keep any of it on that unit, and the rest goes to that unit’s controller.' },
   { term: 'Deadly', cites: ['attr.deadly.any-amount', 'printed'], text: 'Any amount of damage it deals destroys the damaged unit.' },
   { term: 'Swift', cites: ['attr.swift.split', 'printed'], text: 'Its column deals combat damage first, before normal units; triggers from that damage resolve before normal damage.' },
   { term: 'Sluggish', cites: ['combat.damage.substeps.schedule', 'printed'], text: 'Its column deals combat damage last, after normal units.' },
@@ -308,7 +308,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // Just a Unit says "ignore all OTHER ATTRIBUTES" with no list, so printed
   // text was right and the enumeration was ours. Never enumerate a closed
   // list here — 177 asserts this row does not.
-  { term: 'Pure', cites: ['attr.pure', 'attr.general.pure', 'attr.pure.own', 'printed'], text: 'A Pure card and whatever it interacts with ignore ALL other attributes — the entire set, for both sides of the exchange, its own included. In combat: a Pure {Feeble} unit blocks, and evasion, {Piercing}, {Deadly}, {Powerful} and {Swift} all stop applying. Outside combat the same switch applies to each effect and each thing it hits: a Pure spell or ability deals plain damage, and a Pure unit takes plain damage — {Powerful}, {Deadly}, {Piercing}, {Poisonous}, {Unaware} and its own {Vulnerable} all stop applying. Stat layers are untouched — {Tough}, {Balanced} and {Inverted} still read.' },
+  { term: 'Pure', cites: ['attr.pure', 'attr.general.pure', 'attr.pure.own', 'attr.pure.stat-attributes', 'printed'], text: 'A Pure card and whatever it interacts with ignore ALL other attributes — the entire set, for both sides of the exchange, its own included. In combat: a Pure {Feeble} unit blocks, and evasion, {Piercing}, {Deadly}, {Powerful} and {Swift} all stop applying. Outside combat the same switch applies to each effect and each thing it hits: a Pure spell or ability deals plain damage, and a Pure unit takes plain damage — {Powerful}, {Deadly}, {Piercing}, {Poisonous}, {Unaware} and its own {Vulnerable} all stop applying. That includes the attributes that change stats: in an interaction with a Pure card {Tough}, {Balanced}, {Inverted} and {Unaware} do not apply, and a Pure card’s own never apply to it at all. Printed stats are untouched — a Pure 2/3 is destroyed by 3 damage.' },
 ];
 
 /** the Light & Dark zone/counter concepts */
@@ -368,8 +368,8 @@ const EXPANSION_RULES: GlossEntry[] = [
     // see any of them — the span never repeats the word "Glimpse". CT-80
     // named the failure mode "THE GLIMPSE SHAPE" (the printed card is ahead of
     // the row); the {Glimpse} row was an instance of it for three rounds.
-    term: 'Glimpse', short: 'Reveal cards from the deck and cache one. Until end of turn, you may play it.', cites: ['keywords.actions.glimpse', 'printed'],
-    text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled — past the mark, into the recycle pile, not back onto the part of the deck you are drawing from. Until end of turn you may play the cached card as if it were in hand, ignoring affinity but still paying its mana and obeying its timing. Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price.',
+    term: 'Glimpse', short: 'Reveal cards from the deck and cache one. Until end of turn, you may play it.', cites: ['keywords.actions.glimpse', 'keywords.actions.glimpse.permission.mods', 'keywords.actions.glimpse.permission.ends', 'printed'],
+    text: 'Reveal the top N cards of your deck and cache exactly ONE of your choice; the rest are recycled — past the mark, into the recycle pile, not back onto the part of the deck you are drawing from. Until end of turn you may play the cached card as if it were in hand, or apply it as a mod, ignoring affinity but still paying its mana and obeying its timing. Afterwards the permission lapses and it just sits in the cache — public and targetable, but it can no longer be played, prophesied or applied as a mod there.',
   },
   // CR 801.2d (2026-09-28): tokens are NOT trashed — the earlier ruling's "tokens are trashed"
   // was withdrawn by the owner. The token check lives in `E.noteTrashed`.
@@ -411,8 +411,8 @@ const MECHANIC_RULES: GlossEntry[] = [
     //
     // Cites CR 111.15 rather than the multiplier rule (CR 109.9j), which it narrows (RAQ "Graft 101"
     // point 11: a grafted [cost] is mandatory); the multiplier rule stands in it.
-    term: 'Graft', short: 'Insert it into a unit’s graft stack in deployment. Its [Switch] effects join that unit’s ability and resolve as one.', cites: ['concepts.costs.grafted', 'effects.graft.bounded', 'keywords.abilities.prophecy.mods'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
-    text: 'A deployment action: insert it from your hand or bin — or from cache, if a fulfilled prophecy paid for it — into a graft-cause unit’s stack, below the original card. Both cards must carry the graft symbol. The [Switch] effects join that unit’s cause and resolve as ONE ability, top to bottom, which one spell can negate whole. [Switch1] is bounded — once per turn per mod — and a bounded CAUSE bounds the whole composite; but a multiplier in the composite ("trigger two copies of this graft ability") repeats even a bounded graft.',
+    term: 'Graft', short: 'Insert it into a unit’s graft stack in deployment. Its [Switch] effects join that unit’s ability and resolve as one.', cites: ['concepts.costs.grafted', 'effects.graft.bounded', 'keywords.abilities.prophecy.mods', 'keywords.actions.glimpse.permission.mods'], re: /\bgraft(?:s|ed|ing)?\b|[[{]switch1?[\]}]/i,
+    text: 'A deployment action: insert it from your hand or bin — or from cache, while a fulfilled prophecy or a glimpse this turn lets you use it — into a graft-cause unit’s stack, below the original card. Both cards must carry the graft symbol. The [Switch] effects join that unit’s cause and resolve as ONE ability, top to bottom, which one spell can negate whole. [Switch1] is bounded — once per turn per mod — and a bounded CAUSE bounds the whole composite; but a multiplier in the composite ("trigger two copies of this graft ability") repeats even a bounded graft.',
   },
   {
     // same reasoning: "battle" is in half the rulings in the corpus as plain

@@ -350,7 +350,11 @@ test('CR 111.7b: with NO adjacent ally the ability is not offered, and apply() r
   finishBattle(h);
 });
 
-test('CR 111.7b: an ALLY is required — an adjacent enemy does not unlock it', () => {
+// CT-241 (4): narrowed. An enemy is never IN the Boulder's formation (CR 603.2:
+// adjacency is between neighbours in one formation), so "an adjacent enemy"
+// cannot be built; what this board has is an enemy FACING it, and that does not
+// unlock the ability either.
+test('CR 111.7b: an ALLY is required — an enemy blocking it (facing, not adjacent) does not unlock it', () => {
   const h = new Harness(1818);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -359,7 +363,7 @@ test('CR 111.7b: an ALLY is required — an adjacent enemy does not unlock it', 
   toNextBattle(h, A);
   h.do({ type: 'declareAttack', seat: A, columns: [[b]] });
   pass(h); pass(h);
-  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });       // an adjacent ENEMY
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });       // an enemy facing it
   assert.ok(!legalActions(h.state, A).some(a =>
     a.type === 'activateAbility' && a.entityId === b), 'still not offered');
   finishBattle(h);

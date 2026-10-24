@@ -145,7 +145,7 @@ test('Molten Upheaval + the haste step: haste cards play between planning and ba
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
   assert.equal(h.state.phase, 'planning');
-  assert.ok(h.state.hasteDone, 'haste step engaged (p holds a payable haste card)');
+  assert.ok(h.state.hasteDone, 'the haste step is open (it opens every turn, CR 504.5)');
   // CR 504.5a: no seat is auto-done any more — a seat with nothing to play is
   // served `doneHaste` and nothing else, which is what a bluff looks like.
   assert.equal(h.state.hasteDone![o], false, 'the other seat is offered the step too (CR 504.5)');

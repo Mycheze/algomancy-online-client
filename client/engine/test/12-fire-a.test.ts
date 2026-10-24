@@ -21,7 +21,7 @@ import { ALL_ELEMENTS } from '../src/apply.ts';
 import { getCard } from '../src/cards/dsl.ts';
 import {
   effStats, ent, finishBattle, give, giveResources, ownAttrs, pass, pick,
-  resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf,
+  resolveAfterCombat, spawn, toDeployment, toNextBattle, tokensOf, unitsOf, withE,
 } from './util.ts';
 import type { Element, EntityId, Seat } from '../src/types.ts';
 
@@ -139,12 +139,12 @@ test('Abyssal Evocation: without the permission the action is refused, not just 
 });
 
 test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {
-  // Shipped RESTRICTIVE, and this test is what says so out loud. CR 403.3d
-  // settles the analogous CACHE question that way — "normal TIMING applies —
-  // the card is played 'as if it were in your hand' … (Caleb 2025-12-28)" —
-  // and `playAtTiming` enforces it for free, so a bin full of DEPLOY-timing
-  // spells is inert under this card. If the owner rules the other way, this
-  // needs an explicit timing override and this assertion flips.
+  // SETTLED, not open: the owner, 2026-08-25, "Already correct — Abyssal
+  // Evocation, Writhing Host.", now CR 702.2a: "A card played from the cache or
+  // a bin under a permission still obeys its own printed timing". CR 403.3d says
+  // the same of the cache, and `playAtTiming` enforces it for free, so a bin
+  // full of DEPLOY-timing spells is inert under this card. (The title keeps its
+  // old words only because CR record U07 binds it by its full text.)
   const h = new Harness(1243);
   toDeployment(h);
   const A = h.state.initiative;
@@ -196,6 +196,29 @@ test('Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY, and "until reg
   e.destroy(e.entity(body!.id)!, 'dies'); e.settle(); h.state = e.s;
   assert.ok(!h.state.players[A]!.bin.includes('Jelly'), 'erased, not binned');
   assert.ok((h.state.players[A]!.erased ?? []).includes('Jelly'), 'and publicly so');
+
+  // CT-241 (8): "until regroup ends it" — the same play, but the body lives on
+  // through regroup, and the stamp must be gone after it
+  const g = new Harness(1244);
+  toDeployment(g);
+  const gA = g.state.initiative;
+  const gAtk = spawn(g, gA, 'Conduit of Pain');
+  giveResources(g, gA, 'fire', 8);
+  toNextBattle(g, gA);
+  g.do({ type: 'declareAttack', seat: gA, columns: [[gAtk]] });
+  g.state.players[gA]!.bin = ['Jelly'];
+  giveResources(g, gA, 'water', 3);
+  g.do({ type: 'playCard', seat: gA, handIndex: give(g, gA, 'Abyssal Evocation') });
+  pass(g); pass(g);
+  g.do({ type: 'playFromBin', seat: gA, binIndex: 0 });
+  pick(g, { unit: gAtk });
+  pass(g); pass(g);
+  const body2 = unitsOf(g, gA).find(u => u.card === 'Jelly')!;
+  assert.equal(body2.unstable, true, 'stamped while the turn lasts');
+  finishBattle(g);
+  assert.equal(g.state.phase, 'deploy', 'regroup has happened');
+  assert.ok(ent(g, body2.id), 'the body survived to regroup');
+  assert.ok(!ent(g, body2.id)!.unstable, 'and regroup cleared the Unstable stamp');
 });
 
 // ── Animated Spark ───────────────────────────────────────────────────────
@@ -1031,6 +1054,36 @@ test('Gravitational Correction: retargets the effect unless its controller pays 
   assert.ok(ent(h, whale), 'original target untouched');
   assert.equal(ent(h, whale)!.damage, 0);
   finishBattle(h);
+
+  // CT-241 (1): the RAQ this test guards says retargeting "can rescue an effect
+  // from fizzling" — so the original target must be GONE when the Correction
+  // resolves. Same board, but the Whale leaves play first: without the redirect
+  // the Arc would fizzle; with it, it resolves at the new target.
+  const g = new Harness(1212);
+  toDeployment(g);
+  const gA = g.state.initiative, gD = 1 - gA;
+  const conduit2 = spawn(g, gA, 'Conduit of Pain');
+  const whale2 = spawn(g, gD, 'Good Whale');
+  giveResources(g, gA, 'fire', 8);
+  giveResources(g, gD, 'fire', 2);
+  toNextBattle(g, gA);
+  g.do({ type: 'declareAttack', seat: gA, columns: [[conduit2]] });
+  g.do({ type: 'playCard', seat: gA, handIndex: give(g, gA, 'Luminous Arc') });
+  pick(g, { unit: whale2 });
+  const arc2 = g.state.stack.find(i => i.card === 'Luminous Arc')!.id;
+  g.do({ type: 'playCard', seat: gD, handIndex: give(g, gD, 'Gravitational Correction') });
+  pick(g, 2);
+  pick(g, { stack: arc2 });
+  withE(g, e => e.destroy(e.entity(whale2)!, 'dies'));   // the Arc's only target is gone
+  assert.equal(ent(g, whale2), undefined, 'premise: the original target has left play');
+  pass(g); pass(g);                                  // resolve the Correction
+  pick(g, false);                                    // the Arc's controller declines to pay
+  pick(g, { unit: conduit2 });                       // the Correction's controller redirects it
+  pass(g); pass(g);                                  // the Arc resolves
+  assert.ok(!g.events.some(ev => ev.type === 'fizzled' && /Luminous Arc/.test(ev.msg)),
+    'the Arc did NOT fizzle: the redirect rescued it');
+  assert.ok(!ent(g, conduit2), 'and it resolved at its new target');
+  finishBattle(g);
 });
 
 // ── Harbinger of Immolation ──────────────────────────────────────────────

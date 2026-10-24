@@ -98,7 +98,10 @@ export const EVIDENCE: Record<ClaimKind, EventType[]> = {
   // not every creation site emits it, so both count
   create: ['tokenCreated', 'spawned'],
   pump: ['statChanged'],
-  counters: ['countersChanged', 'statChanged'],
+  // CT-293: 'countersRemoved' since CT-286 split removals out of 'countersChanged'
+  // (CR 708.8). The pattern below matches "+1/+1 counters" in a removal clause too
+  // ("Remove three +1/+1 counters …"), and such a clause is evidenced by the removal.
+  counters: ['countersChanged', 'countersRemoved', 'statChanged'],
   destroy: ['died', 'despawned', 'trashed'],
   erase: ['erased', 'despawned', 'trashed'],
   // recall has no event type of its own — it moves a card to hand, which is a

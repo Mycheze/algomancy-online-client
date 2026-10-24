@@ -194,7 +194,7 @@ test('§3 a rewind cuts the log and every claim about the cut actions', () => {
 
 /* ── §4 ─────────────────────────────────────────────────────────────── */
 
-test('§4 rewind options: never a cut at a forced step, at most five actions, and the start of the step', () => {
+test('§4 rewind options: never a cut at a forced step, at most five actions, and the start of the step, and of the step before', () => {
   const room = game('FX4', 48530);
   const forcedAt = (r: Room): boolean[] => r.actions.map((a, i) => {
     const s = replay(48530, r.actions.slice(0, i), [...NAMES], 'shared').state;
@@ -219,6 +219,18 @@ test('§4 rewind options: never a cut at a forced step, at most five actions, an
   const fresh1 = game('FX4B', 48531);
   const o2 = R.rewindOptions(fresh1, 0);
   assert.ok(o2.some(o => /the start of/.test(o.label)), `the start of a step is offered (${o2.map(o => o.label).join(' | ')})`);
+  // CT-340: and the owner's "a whole step or two" — the start of the step BEFORE,
+  // on its own or merged into an action rewind that lands on it. It is offered
+  // only when that step took back something real (a step that was nothing but a
+  // forced action is no place to go back to), so the drive looks for such a board.
+  const prevOffered = (r: Room): boolean => R.rewindPlans(r, 0)
+    .some(p => p.kind === 'prev' || (p.alsoStart !== undefined && p.alsoStart !== 'this step'));
+  const fresh2 = R.createRoom('FX4C', 48532, [...NAMES], 'shared');
+  drive(R, fresh2, r => battleWindow(r) && prevOffered(r));
+  const prev = R.rewindPlans(fresh2, 0).find(p => p.kind === 'prev' || (p.alsoStart !== undefined && p.alsoStart !== 'this step'))!;
+  assert.ok(prev.to < fresh2.actions.length, 'it is a real cut');
+  assert.ok(R.rewindOptions(fresh2, 0).some(o => o.to === prev.to && /the start of/.test(o.label)),
+    'and its label names the start of that step');
 });
 
 /* ── §5 ─────────────────────────────────────────────────────────────── */

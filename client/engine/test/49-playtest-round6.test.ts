@@ -161,14 +161,14 @@ test('Enigmatic Warder cannot redirect an ENEMY into an ally slot', () => {
   // slot decision or a decision that excludes slot 0 — either way the ally
   // slot must still hold D's own unit when the dust settles.
   while (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+  // CT-240: the Warder's ability resolves (two passes); Fight is still on the
+  // stack under it, so its slots are read BEFORE Fight resolves, never behind an if
   pass(h); pass(h);
+  assert.ok(!h.state.stack.some(i => i.card === 'Enigmatic Warder'), 'the Warder ability has resolved');
   const after = h.state.stack.find(i => i.card === 'Fight');
-  if (after) {
-    assert.deepEqual(after.parts[0]!.targets[0], { unit: ally },
-      'the ally slot still holds an ally of the CASTER');
-  }
-  // and A's Warder was never made D's "ally"
-  assert.ok(!ent(h, ally) || ent(h, ally)!.controller === D);
+  assert.ok(after, 'and Fight is still on the stack, so its slots can be read');
+  assert.deepEqual(after.parts[0]!.targets, [{ unit: ally }, { unit: warder }],
+    'the ally slot still holds an ally of the CASTER, and the redirect landed in the plain unit slot');
   finishBattle(h);
 });
 

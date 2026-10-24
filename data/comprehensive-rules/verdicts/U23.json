@@ -4757,20 +4757,20 @@
   },
   {
     "key": "annexd.undo.agreed-fix.proposal",
-    "textHash": "5e9bee6a797b5efc",
-    "verdict": "partial",
+    "textHash": "46d6d3247c63a65b",
+    "verdict": "confirmed",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/server/rooms.ts:proposeFix",
         "agrees": true,
-        "note": "reason required (<3 chars refused, 'say what went wrong'); expires = now + FIX_PROPOSAL_MS (60_000); refused while the decline cooldown runs"
+        "note": "reason required (>=3 chars, refused 'say what went wrong — it is filed as a bug report'); one proposal at a time; cooldown checked; expires = now + FIX_PROPOSAL_MS (60_000)"
       },
       {
         "loc": "client/server/rooms.ts:answerFix",
         "agrees": true,
-        "note": "only the other seat accepts/declines, only the proposer cancels; a decline sets fixCooldown = now + FIX_COOLDOWN_MS (15_000); a cancel sets none"
+        "note": "accept/decline only by the other seat, cancel (withdraw) only by the proposer; decline sets fixCooldown = now + FIX_COOLDOWN_MS (15_000) for the proposer"
       },
       {
         "loc": "client/server/rooms.ts:applyToRoom",
@@ -4778,9 +4778,9 @@
         "note": "any action that lands sets room.proposal = null"
       },
       {
-        "loc": "client/server/main.ts:carryOutFix / flushFixRun / fileFixReport",
-        "agrees": false,
-        "note": "the report is NOT filed when a fix lands: consecutive fixes form a run (rooms.ts FixRun) filed as ONE report row when the run ends — the next game action, the end of the game, a 10-minute idle sweep or a restart"
+        "loc": "client/server/main.ts:sweepFixes / landAction / carryOutFix / flushFixRun / fileFixReport",
+        "agrees": true,
+        "note": "expiry sweep; one report row per run of fixes, each fix's what + reason in order; filed when the next game action lands, at game end, idle sweep, or at boot for a persisted run"
       }
     ],
     "tests_run": [
@@ -4800,13 +4800,13 @@
         "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
         "pattern": "§2 propose then accept",
         "passed": true,
-        "asserts_claim": false
+        "asserts_claim": true
       },
       {
         "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
-        "pattern": "§6 two fixes in a row file one report",
+        "pattern": "§6 two fixes in a row",
         "passed": true,
-        "asserts_claim": false
+        "asserts_claim": true
       },
       {
         "file": "client/ui/test/487-propose-a-fix-ui.test.ts",
@@ -4818,19 +4818,9 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "485-agreed-fix-rooms.test.ts",
+        "ref": "tests: 485, 486, 487",
         "supports": "yes",
-        "note": "reason required, 60 s lapse, ends on any action, decline cooldown, withdraw has none"
-      },
-      {
-        "ref": "486-agreed-fix-over-the-wire.test.ts",
-        "supports": "partial",
-        "note": "§2 asserts the report is NOT filed when the fix lands, only when the next game action lands; §6: two fixes in a row file one row"
-      },
-      {
-        "ref": "487-propose-a-fix-ui.test.ts",
-        "supports": "yes",
-        "note": "the other seat agrees/declines by id"
+        "note": "485 §5: empty reason refused, proposer cannot accept ('other player answers'), lapses after FIX_PROPOSAL_MS, an action ends it, cancel by proposer, decline -> 'declined — wait', ok after FIX_COOLDOWN_MS. 486 §2: report filed once, when the next game action lands, note carries the reason. 486 §6: two rewinds in a row -> one row (fix.run = 2) with both reasons in order, filed after a server restart."
       }
     ],
     "quote_spans": [
@@ -4847,16 +4837,24 @@
         "text": "if (reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };"
       },
       {
+        "file": "client/server/rooms.ts",
+        "text": "if (op === 'decline') room.fixCooldown[seatSlot(p.seat)] = now + FIX_COOLDOWN_MS;"
+      },
+      {
         "file": "client/server/main.ts",
-        "text": " * ONE ROW PER RUN of fixes (rooms.ts FixRun): filed when the run ends, so a"
+        "text": "if (action.type !== 'amend' && room.actions.length !== was) flushFixRun(room);"
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "for (const room of allRooms()) if (room.fixRun) flushFixRun(room);"
       },
       {
         "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
-        "text": "assert.equal(fixRows().length, 0, 'not filed while the run may still continue');"
+        "text": "assert.equal(row.fix.run, 2, 'it says it holds two');"
       }
     ],
     "basis_ok": true,
-    "problem": "All but the last sentence hold (reason required, 60 s lapse, ends when any action lands, proposer may cancel, only the other seat accepts, 15 s cooldown after a decline only). The last sentence is out of date: the reason is not filed when a fix lands. Since the fix-run change, back-to-back fixes with no game action between them form a run that is filed as ONE bug report (every fix's reason in order) when the run ends: the next game action, the game ending, a 10-minute idle sweep or a server restart (main.ts flushFixRun; 486 §2 asserts nothing is filed until the next move, §6 that two fixes file one row)."
+    "problem": ""
   },
   {
     "key": "annexd.undo.agreed-fix.quiet",
@@ -4927,20 +4925,35 @@
   },
   {
     "key": "annexd.undo.agreed-fix.rewind",
-    "textHash": "9d515598e8a8f68b",
+    "textHash": "d41436c46c2e004b",
     "verdict": "partial",
     "round": 4,
     "verifier": "U23-r4",
     "engine": [
       {
         "loc": "client/server/rooms.ts:rewindPlans",
+        "agrees": true,
+        "note": "Offers: before the asking seat's own last non-forced, non-amend action (no count limit, but only within the last FIX_REWIND_WINDOW = 80 logged actions); before each of the last FIX_REWIND_MAX = 5 non-forced actions (forced ones skipped and not counted); the start of this step; the start of the step before. Inside an open hidden step a 'before' cut must pass ownOnly (no hidden action of the other seat after it, and strictly after the step's start); the step start may take the other seat's hidden actions. Note: an agreed edit (amend) IS counted among the five."
+      },
+      {
+        "loc": "client/server/rewind-cuts.ts:describe / PUBLIC_IN_HIDDEN",
         "agrees": false,
-        "note": "offers cuts before each of the last FIX_REWIND_MAX (5) non-forced actions, the start of this step and the start of the step before — AND, first-class, 'back to before your last action' however far back it is (CT-323), which can be more than five actions back; inside a hidden step it also offers no in-step cut that would take back the other seat's hidden action, and drops a cut that takes back nothing this seat can see"
+        "note": "Only donePlanning, doneDeploying and amend count as public inside a hidden step. doneHaste is NOT public (view.ts redacts hasteDone while the haste step is open), so in the haste step 'finishing the step' is a hidden action and no in-step cut over the other seat's doneHaste is offered. The record's example 'such as finishing the step' is true for planning and deployment only."
+      },
+      {
+        "loc": "client/server/rewind-cuts.ts:cutParts",
+        "agrees": true,
+        "note": "Each option is labelled per viewer ('your X', 'their pass'), with 'takes back ...'; hidden actions of the other seat are summarised without a count."
       },
       {
         "loc": "client/server/rooms.ts:rewindRoom",
         "agrees": true,
-        "note": "truncates the log to p.to and rebuilds; sigs/cardLog/soft state cut; the removed actions are archived on the amendment for the record only"
+        "note": "Truncates the log to `to` and rebuilds; sigs, cardLog and soft state cut too. The removed actions are archived on the record (Amendment.removed), not replayed."
+      },
+      {
+        "loc": "client/server/rooms.ts:rewindPlans ('prev' option)",
+        "agrees": false,
+        "note": "Bug (probe zz-U23-4): the 'start of the step before' can sit on a FORCED action (an empty declareBlocks); the rebuilt board re-takes it at once, so the option lands at the start of the current step, not the step before. See bugs."
       }
     ],
     "tests_run": [
@@ -4957,8 +4970,20 @@
         "asserts_claim": true
       },
       {
+        "file": "client/ui/test/523-rewind-options-name-their-cut.test.ts",
+        "pattern": "§1 every rewind option names",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/523-rewind-options-name-their-cut.test.ts",
+        "pattern": "§2 inside a hidden step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
         "file": "client/server/test/486-agreed-fix-over-the-wire.test.ts",
-        "pattern": "§4 a rewind: both seats get a fresh view",
+        "pattern": "§4 a rewind",
         "passed": true,
         "asserts_claim": true
       }
@@ -4966,39 +4991,76 @@
     "probes": [
       {
         "file": "client/server/test/zz-probe-U23-1.test.ts",
-        "test": "probe U23-1: the \"before your last action\" option can reach past five actions",
+        "test": "zz-U23-1 your own last action is offered even with more than five non-forced actions after it",
         "passed": true,
-        "demonstrates": "no (record): seed 48591 at log length 66, seat 0 is offered six cuts; the sixth, 'Back to before your done with haste (your last action)', takes back 6 non-forced actions — beyond the record's 'up to five of the last actions', and none of its other two shapes (it is not a step start)"
+        "demonstrates": "yes: with six non-forced actions (agreed edits by the other seat) after seat 0's last action, the last-own option is offered at exactly that index, labelled '(your last action', and the five action cuts are the five edits after it. A greedy-drive search over three seeds found no natural such board, so 523 §1 alone did not demonstrate the 'more than five' clause."
+      },
+      {
+        "file": "client/server/test/zz-probe-U23-1.test.ts",
+        "test": "zz-U23-2 the action cuts are the last five NON-forced actions, plus your own last one; forced ones are skipped and not counted",
+        "passed": true,
+        "demonstrates": "yes: on public boards with a forced step inside the span, the 'before' cuts are exactly the last five non-forced indices (plus the last-own one), none sits on a forced action, and no forced action is listed in what a cut takes back. 485 §4 only asserted 1..5 cuts and no forced stop on its own fixture."
+      },
+      {
+        "file": "client/server/test/zz-probe-U23-1.test.ts",
+        "test": "zz-U23-3 inside planning, a cut that takes back the other seat's done-planning (public) is offered; one that takes back their recycle is not",
+        "passed": true,
+        "demonstrates": "yes, for planning: a cut over the other seat's donePlanning is offered and named; a cut over their hidden recycle is not, only the step start reaches past it. The haste step (where the done-flag is hidden) was not probed; the code says it is not public there."
+      },
+      {
+        "file": "client/server/test/zz-probe-U23-1.test.ts",
+        "test": "zz-U23-4 FINDING: the start of the step before can sit on a forced action, and the rebuilt board re-takes it at once",
+        "passed": true,
+        "demonstrates": "bug: seed 48593, 'Back to the start of the step before (turn 3, battle (blocks, counterattack))' cuts to 43, a forced empty declareBlocks; after the forced drain the log is 44 long again, so the option does not reach the step before."
       }
     ],
     "source_checks": [
       {
         "ref": "owner: \"Rewinding a whole step or two seems fine to me. Either say \\\"up to 5 actions\\\" or \\\"restart this step\\\"\" (2026-10-16)",
         "supports": "partial",
-        "note": "supports five actions / this step / the step before; the engine now also offers the proposer's own last action at any depth, which the record's exhaustive 'one of' list omits"
-      },
-      {
-        "ref": "485-agreed-fix-rooms.test.ts",
-        "supports": "partial",
-        "note": "§4 itself excludes the 'last action' option from its at-most-five count (`!/last action/.test(o.label)`)"
+        "note": "Supports the five-action limit, the start of this step and the step before. It does not speak to the own-last-action option, the per-seat naming, the hidden-step restriction or the forced-action skip; those rest on server code (CT-323/CT-325) and the tests and probes above."
       }
     ],
     "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "export const FIX_REWIND_MAX = 5;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "const FIX_REWIND_WINDOW = 80;"
+      },
       {
         "file": "client/server/rooms.ts",
         "text": "// \"back to before your last action\" — first-class, however far back it is"
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "export const FIX_REWIND_MAX = 5;"
+        "text": "if (forced(i) || !ownOnly(i)) continue;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "if (to <= openStart) return false;   // that is the start of the step's own option"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "room.actions = restore.slice(0, to);"
+      },
+      {
+        "file": "client/server/rewind-cuts.ts",
+        "text": "const PUBLIC_IN_HIDDEN = new Set(['donePlanning', 'doneDeploying', 'amend']);"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));"
       },
       {
         "file": "client/server/test/485-agreed-fix-rooms.test.ts",
-        "text": "const steps = opts.filter(o => o.label.startsWith('Back to before') && !/last action/.test(o.label));"
+        "text": "assert.equal(sig(room), digest(signature(rebuilt)), 'the board is exactly the prefix replayed');"
       }
     ],
     "basis_ok": false,
-    "problem": "The list of rewind points is no longer complete. Besides the last five non-forced actions, the start of this step and the start of the step before, the server always offers 'back to before your last action' (CT-323), however far back it is. The probe shows that option at six non-forced actions back. Inside a hidden step it also refuses any in-step cut that would take back the other seat's hidden actions (CT-325), which the record does not mention. The removal sentence holds (§3: the log is truncated and the board is exactly the prefix replayed). Basis: the rule depends on the server's behaviour as well as the owner's quote, so 'owner' alone understates it ('mixed')."
+    "problem": "Almost all of it holds and is demonstrated (bound tests plus probes zz-U23-1..3). One clause fails: 'their public ones, such as finishing the step, may be taken back'. Finishing the step is public only in planning and deployment (PUBLIC_IN_HIDDEN = donePlanning, doneDeploying, amend). In the haste step the done-flag is hidden (view.ts redacts hasteDone), so no in-step cut over the other player's doneHaste is offered. Suggested fix: 'such as being done planning or done deploying'. Smaller points: the own-last-action option looks back only 80 logged actions (FIX_REWIND_WINDOW), and an agreed edit counts among the five. Basis: 'owner' covers only the five-actions and step-start options; the rest is server code plus tests, so the honest basis is mixed (owner + engine), which this pipeline cannot express because sources.engine takes only client/engine/src symbols. Divergence filed under bugs: the 'start of the step before' option can land on a forced action and then arrive at the start of the current step."
   },
   {
     "key": "annexd.undo.agreed-fix.timing",

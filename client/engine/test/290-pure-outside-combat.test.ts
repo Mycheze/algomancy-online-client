@@ -99,14 +99,26 @@ test('§2 a Pure recipient: the source\'s Powerful and Deadly do nothing to it',
 });
 
 test('§2 a Pure recipient\'s own Vulnerable is off too: a Pure source hitting a Vulnerable unit deals what it says', () => {
-  // the cheapest way to make the VICTIM side of the pairing Pure is to make the
-  // source Pure — the rule is "either side", and this pins the Vulnerable read
+  // first a Pure SOURCE ("either side" of the pairing) pins the Vulnerable read;
+  // the second half below makes the RECIPIENT itself Pure, as the title says
   const { h, A, D } = board(2893);
   const src = spawn(h, A, 'Chitin Shredder');
   const tgt = spawn(h, D, 'Crumbling Ancient');
   const evs = dealFrom(h, A, src, tgt, 2, ['Pure']);
   assert.equal(dealtTo(evs).get(tgt), 2, '2 → 2: neither the source doubling nor the receiver doubling');
   assert.ok(ent(h, tgt), 'a 3/8 with 2 damage on it is alive');
+
+  // CT-241 (7): and the case the title names — the RECIPIENT itself is Pure (and
+  // Vulnerable), the source is not: its own Vulnerable must still be off
+  const b2 = board(2896);
+  const src2 = spawn(b2.h, b2.A, 'Chitin Shredder');         // printed Powerful, NOT Pure
+  const tgt2 = spawn(b2.h, b2.D, 'Crumbling Ancient');       // printed Vulnerable
+  ent(b2.h, tgt2)!.tempAttrs = ['Pure'];                      // … and Pure until regroup
+  assert.ok(ownAttrs(b2.h, tgt2).has('Pure') && ownAttrs(b2.h, tgt2).has('Vulnerable'),
+    'premise: the recipient is both Pure and Vulnerable');
+  assert.ok(!ownAttrs(b2.h, src2).has('Pure'), 'premise: the source is not Pure');
+  const evs2 = dealFrom(b2.h, b2.A, src2, tgt2, 2);
+  assert.equal(dealtTo(evs2).get(tgt2), 2, 'a Pure recipient takes the printed 2: its own Vulnerable is off');
 });
 
 // ── §3 the pairing rule ──────────────────────────────────────────────────

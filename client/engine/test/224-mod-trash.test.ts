@@ -92,13 +92,17 @@ function moddedEnemyUnit(seed: number, mod = 'Ignis Sprite', host = 'Good Whale'
   return { h, A, D, hostId, mark: h.events.length };
 }
 
-// ── The engine's Unstable-body trash first (CT-246; CR 801.2h differs): the boundary this must not cross ──
+// ── The Unstable-body trash first (CR 801.2h: an Unstable card that dies is still trashed; CT-246): the boundary this must not cross ──
 
 test('CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods', () => {
   // ⚠ THIS TEST IS THE FENCE. The owner's call of 2026-08-24 (report #93) overruled
   // BOTH the printed reminder text ("If they would enter a bin, erase them
   // instead") AND a direct Caleb ruling, on purpose: an {Unstable} unit that
-  // dies passes THROUGH the bin, is trashed there, and is only then erased. CR 801.2h and 405.5 follow the print instead (CT-246).
+  // dies passes THROUGH the bin, is trashed there, and is only then erased. CR 801.2h now agrees
+  // (CT-246, owner 2026-10-22): trashing is part of the death. (This title and the
+  // whole-pool one below keep their old "CR 801.2h says not trashed / differs"
+  // words only because card-todo-closed.ts and playtest-ledger-closed.ts cite them
+  // in full; see CT-354.)
   // CR 720.8a changes what happens to its MODS and nothing else. If this reddens,
   // report #93 is open again and Dropslime is broken exactly as it was.
   const { h, A, hostId, mark } = moddedEnemyUnit(9200);
@@ -115,7 +119,7 @@ test('CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable
     'the bin is empty again before anybody can look');
 });
 
-test('CT-246 GUARD (engine; CR 801.2h says not trashed): the per-battle trashed ledger still counts an Unstable body', () => {
+test('CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the per-battle trashed ledger counts an Unstable body', () => {
   // The other half of #93, and the half Dropslime reads: its damage is the
   // battle-wide `trashed` counter, not a per-seat one. Derived from the card,
   // not from the counter key, so the guard cannot drift from what the card

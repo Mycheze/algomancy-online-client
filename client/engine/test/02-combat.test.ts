@@ -109,7 +109,7 @@ test('1v1 counterattack: NIT sends units at block time, they attack in round 2',
   assert.equal(ent(h, atk)!.region, e.homeRegion(A), 'regroup returned the attacker home');
 });
 
-test('Swift: swift column deals damage first, no priority between sub-steps', () => {
+test('Swift: swift column deals damage first and kills its blocker before the blocker can strike back (CR 608.3e)', () => {
   const h = new Harness(43);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -124,6 +124,12 @@ test('Swift: swift column deals damage first, no priority between sub-steps', ()
   h.do({ type: 'declareBlocks', seat: D, blocks: { 0: [blocker] } });
   pass(h); pass(h);   // damage: swift sub-step kills the blocker (4 ≥ 2)
   assert.ok(!ent(h, blocker), 'blocker died in the swift sub-step');
+  // the split step's boundary window (CR 608.3b) is open here; pass it so the
+  // normal sub-step really runs before the outcome is read
+  assert.equal(h.state.battle?.step, 'damageWindow', 'CR 608.3b: a window opens after the Swift sub-step');
+  pass(h); pass(h);
+  assert.notEqual(h.state.battle?.step, 'damageWindow', 'the normal sub-step has run');
   assert.ok(ent(h, swift) && ent(h, buddy), 'attackers untouched: blocker never dealt damage');
+  assert.equal(ent(h, swift)!.damage + ent(h, buddy)!.damage, 0, 'the dead blocker struck nothing in the normal sub-step');
   assert.equal(h.state.players[D]!.life, 30, 'blocked stays blocked: no damage through');
 });

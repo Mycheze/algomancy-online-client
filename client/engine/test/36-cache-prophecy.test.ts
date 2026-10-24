@@ -225,12 +225,12 @@ function sterile(seed: number): Harness {
   return h;
 }
 
-test('CR 803.7b: prophesying is a DEPLOYMENT action — illegal in planning, the haste step and battle', () => {
+test('CR 803.7b: prophesying is a DEPLOYMENT action — a banner not ending in [Haste] is illegal in planning, the haste step and battle (CR 504.9)', () => {
   const h = sterile(3600);
   const P = 0 as const;
   giveResources(h, P, 'fire', 4);
   const idx = give(h, P, 'Test Prophet');
-  give(h, P, 'Test Haste Spell');                    // so the haste step opens
+  give(h, P, 'Test Haste Spell');                    // something to play there (the step opens every turn, CR 504.5)
 
   // planning (resource step)
   assert.equal(h.state.phase, 'planning');
@@ -369,6 +369,13 @@ test('CR 803.7: "One Battle Passes" — both battles of a turn tick it, counted 
   assert.equal(h.q.cachePermission(P, 0), null, 'the battle has not finished yet');
   h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
   assert.equal(h.q.cachePermission(P, 0), 'prophecy', 'one completed battle round is enough');
+  // CT-241 (9): "BOTH battles of a turn tick it" — the counter the condition reads
+  // moves once per battle round, so the second round of this turn ticks it again
+  assert.equal(h.state.battlesCompleted, before! + 1, 'the first battle round ticked the count once');
+  assert.equal(h.state.phase, 'battle', 'premise: the second battle round is still to come');
+  h.do({ type: 'declareAttack', seat: h.state.battle!.attacker, columns: [] });
+  assert.notEqual(h.state.phase, 'battle', 'both battle rounds are over');
+  assert.equal(h.state.battlesCompleted, before! + 2, 'and the second ticked it again');
 });
 
 test('CR 803.7: "Your life is 5 or less" is a live check while the prophecy stands', () => {
@@ -817,7 +824,7 @@ test('CR 803.7a: a cached unit can carry a granted prophecy (Grob / Waxen Witnes
   assert.equal(h.q.cachePermission(P, 0), null, 'not yet — CR 803.7 counts forward');
 });
 
-test('CR 410.5c: a TOKEN cached from play is erased, not cached (there is no card)', () => {
+test('CR 410.5c: a TOKEN cached from play enters the cache and is then erased out of it', () => {
   const h = sterile(3662);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -825,7 +832,9 @@ test('CR 410.5c: a TOKEN cached from play is erased, not cached (there is no car
     const t = e.spawnUnit(P, 'Test Grunt', e.homeRegion(P), { token: true });
     e.cacheUnit(t);
   });
-  assert.deepEqual(cacheOf(h, P), [], 'nothing cached');
+  const cached = h.events.filter(ev => ev.type === 'cached').at(-1);
+  assert.equal(cached?.data?.['card'], 'Test Grunt', 'the token really entered the cache (the cached event fired)');
+  assert.deepEqual(cacheOf(h, P), [], 'and was erased out of it: nothing stays cached');
   assert.deepEqual(h.state.players[P]!.bin, [], 'and nothing binned');
   assert.equal(trashes(h).length, 0);
 });

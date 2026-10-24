@@ -130,7 +130,7 @@ export function tokensOf(h: Harness, seat: Seat): Entity[] {
   return Object.values(h.state.entities).filter(e => e.kind === 'spellToken' && e.controller === seat);
 }
 
-/** decline the haste step for both players if it engaged */
+/** finish the haste step for both players (it opens every turn, CR 504.5) */
 export function skipHasteStep(h: Harness): void {
   for (const seat of [0, 1]) {
     if (h.state.phase === 'planning' && h.state.hasteDone && !h.state.hasteDone[seat]) {

@@ -19,7 +19,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { radiantHook } from '../src/cards/dsl.ts';
+import { getCard, radiantHook } from '../src/cards/dsl.ts';
 import type { TokenRequest } from '../src/cards/dsl.ts';
 import { DECK_LIST, createsOf } from '../src/cards/registry.ts';
 import type { Entity, Seat } from '../src/types.ts';
@@ -127,6 +127,16 @@ interface Batch { orig: string[]; copies: string[] }
 test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the printed stats of its original', () => {
   const cls = DECK_LIST.filter(n => createsOf(n).includes('Unit Token'));
   assert.ok(cls.length >= 20, `the class is derived from createsOf (${cls.length})`);
+  // CT-292: the cards whose PRINTED text creates a Unit Token of any size other
+  // than 1/1 ("a 2/2 unit", "an X/X unit"). Derived from the text, like the class.
+  // Only these can show the defect this sweep exists for — a request that does
+  // not carry its stats is copied as a 1/1, which a 1/1 original cannot tell
+  // apart — so only these get the expensive press-mode drill (below).
+  const SIZED = /\b(\d+|X)\/(\d+|X)\s+units?\b/gi;
+  const sizedCreator = new Set(cls.filter(n =>
+    [...getCard(n).text.replace(/\{\/?n\}|\{\/?i1?\}/g, ' ').matchAll(SIZED)]
+      .some(m => !(m[1] === '1' && m[2] === '1'))));
+  assert.ok(sizedCreator.size >= 15, `the non-1/1 creators are derived from printed text (${sizedCreator.size})`);
   // The instrument: each creation REQUEST is tagged with the printed stats of
   // the body it produced (newEntity runs just before noteTokenCreated inside
   // spawnUnit), so a settled batch knows what its originals really were even
@@ -172,12 +182,17 @@ test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the
   };
   const bad: string[] = [];
   const reachedBig = new Set<string>();
+  let sawOneOne = false;
   try {
     for (const card of cls) {
       for (const press of [false, true]) {
         // press mode (the fixture library, two battles) is the expensive half:
-        // run it only for a card the plain cast did not already prove
-        if (press && reachedBig.has(card)) continue;
+        // run it only for a card the plain cast did not already prove, and
+        // (CT-292) only for a card that creates a token bigger than 1/1. Before,
+        // every 1/1-only creator was pressed too, which cost about 85% of this
+        // file's time and could only ever add 1/1 -> 1/1 batches (most of them
+        // the fixture board's own tokens, not the card's).
+        if (press && (reachedBig.has(card) || !sizedCreator.has(card))) continue;
         batches = [];
         drillCard(card, 900_000, {
           press, activate: true,
@@ -191,6 +206,7 @@ test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the
         for (const b of batches) {
           const want = [...new Set(b.orig)].sort(), got = [...new Set(b.copies)].sort();
           if (b.orig.some(st => st !== '1/1')) reachedBig.add(card);
+          if (b.orig.includes('1/1')) sawOneOne = true;
           if (JSON.stringify(want) !== JSON.stringify(got)) {
             bad.push(`${card}${press ? ' (press)' : ''}: originals ${want.join(',')} → copies ${got.join(',')}`);
           }
@@ -203,8 +219,11 @@ test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the
       createToken: orig.createToken, settleTokenBatch: orig.settle,
     });
   }
-  // a positive control: the sweep must actually reach the non-1/1 class
-  for (const c of ['Mirage Walker', 'Spawntender', 'Feed to Hooba', 'Flesh Tithe']) {
+  // a positive control: the sweep must actually reach the non-1/1 class, and
+  // the 1/1 path is still exercised by the plain casts
+  assert.ok(sawOneOne, 'some batch copied a 1/1 original (the plain casts still reach the 1/1 path)');
+  for (const c of ['Mirage Walker', 'Spawntender', 'Feed to Hooba', 'Flesh Tithe', 'Forager of the Fallen',
+    'Xenopod Progenitor', 'Stoneborn Progenitor', 'Tidelurker', 'Embermaw Fledgling']) {
     assert.ok(reachedBig.has(c), `the sweep reached ${c}'s own non-1/1 creation (reached: ${[...reachedBig].join(', ')})`);
   }
   assert.deepEqual(bad, [], 'an Automaton copy with different printed stats from its original');
