@@ -329,10 +329,12 @@ const CORE: Record<string, Scenario> = {
     },
     opponent: {
       hand: [],
-      // 10/15. Its own printed text is an [Augment] box, which does nothing
-      // while it is a body in play — so as a host it is inert, and it survives
-      // the 6 with room to spare. A host that DIED to the Arc would make the
-      // owner adjudicate two clauses at once.
+      // 10/15, so it survives the 6 with room to spare: a host that DIED to the
+      // Arc would make the owner adjudicate two clauses at once. Its own
+      // [Augment] line ("Enemies gain +2/+2") is LIVE while it is a body in play
+      // (CR 721.1d; scenarios-d.ts says the same of this card), so your The
+      // Foretold stands at 5/5 here. That touches nothing the expected text
+      // reads: the trigger's 6 lands on the opponent before any combat damage.
       play: [{ card: 'Towering Colossus' }],
       resources: { earth: 2 },
     },
