@@ -360,15 +360,11 @@ card('Tempest Oracle', {
 // not the card's defect — it has been deleted from KNOWN_WRONG for that
 // reason and not because anything was fixed. Do not "correct" it back.
 //
-// The SAME ruling kept the second half of the ticket alive, and this is the
-// subtle part. He was offered "both scale, and X=0 therefore does nothing"
-// (which would have closed the ticket outright) and did NOT take it — he took
-// "both scale, but still fire the second sentence at X=0". So the sacrifice
-// clause is UNCONDITIONAL with scaling on top, not gated on the first
-// sentence: it happens at least once, and once more per ally beyond the
-// first. `you lose 1 life for each ally recalled` is purely scaled, so at
-// X = 0 nobody loses life and everybody still sacrifices. That is
-// max(1, recalled.length) rounds, and it is why the early return is gone.
+// SUPERSEDED (CT-375, below): the same 2026-08-28 ruling also kept one
+// sacrifice round at X = 0 — he was offered "both scale, and X=0 therefore
+// does nothing" and took "both scale, but still fire the second sentence at
+// X=0", i.e. max(1, recalled.length) rounds. The designer's answer says
+// otherwise, and it outranks the owner's, so that floor is gone.
 //
 // ⚠⚠ AND THIS CARD WAS ALREADY RULED ON, WHICH NOBODY NOTICED FOR THREE DAYS.
 // **The owner settled the scaling question on 2026-08-25** — "the card checks how
@@ -381,13 +377,17 @@ card('Tempest Oracle', {
 // repository would have said a word. The later X = 0 answer (CR 107.2b) agrees with the 2026-08-25 one; the agreement
 // is luck, not a check.
 //
-// ⚠ THE ONE PLACE THE TWO TORRENTIAL RECLAMATION ANSWERS GENUINELY PULL APART, recorded rather than
-// smoothed over. Read literally, "sacrifice THAT MANY units" gives ZERO at
-// X = 0, which is the early return this change just deleted. But the earlier answer was
-// answering "does the for-each distribute?", and was never asked about X = 0;
-// the owner, on 2026-08-28 (now CR 107.2b), was asked exactly that, was shown the "X = 0 therefore does nothing"
-// option, and declined it. The later and more specific answer governs, so the
-// floor stands — but if the owner ever revisits this, THIS is the seam.
+// CT-375 (2026-10-24) — THE FLOOR IS GONE, by the designer. The owner's
+// 2026-08-28 call (CR 107.2b's example) kept one sacrifice round at X = 0
+// ("both scale, but still fire the second sentence"). The designer had
+// already answered, in rules-questions 1064279804741955646: "That's why we
+// allow X and the "for each" to be different" [1223287609388957737], "So you
+// can remove targets to prevent the sacrifice" [1223287683804037202]; and to
+// _passer's "If you recall 0 units, enemy sacs 0 units" [1365004568278208725]
+// he answered "Hahaha" [1365004579103707249]. Designer outranks owner, so the
+// sacrifice is exactly one round per ally recalled: none recalled, none
+// sacrificed (632). The earlier owner answer of 2026-08-25 ("forces each
+// player to sacrifice that many units") already read it this way.
 card('Torrential Reclamation', {
   spellEffect: {
     // CR 110.7 (CT-303): "X target nontoken allies" is exactly X — `min: 'X'`
@@ -402,18 +402,16 @@ card('Torrential Reclamation', {
     run: (g, ctx) => {
       const x = ctx.x ?? 0;   // chosen and paid at cast (CR 107.2a)
       const recalled = ctx.targets.filter(isEntityTarget).map(t => g.entity(t.id)).filter((u): u is Entity => !!u);
-      // CR 107.2b: neither of these is a reason to skip the sacrifice clause any
-      // more — it is not gated on the recall. Both still ANNOUNCE, because a
-      // player who paid for X = 0, or whose targets all left play, is owed the
-      // reason his recall did nothing.
+      // Both ANNOUNCE, because a player who paid for X = 0, or whose targets
+      // all left play, is owed the reason his recall did nothing — and with
+      // nothing recalled, nothing is sacrificed either (CT-375).
       if (x <= 0) g.ev('info', 'Torrential Reclamation: X = 0 — nothing is recalled.');
       else if (!recalled.length) {
         g.ev('info', 'Torrential Reclamation: every targeted ally has left play — nothing is recalled.');
       }
-      // plan the sacrifices: one round per recalled ally, each player picks —
-      // and CR 107.2b floors it at one round, so the printed "each player
-      // sacrifices a unit" happens even when nothing was recalled.
-      const rounds = Math.max(1, recalled.length);
+      // plan the sacrifices: one round per recalled ally, each player picks.
+      // No floor (CT-375, the designer): recall none and nobody sacrifices.
+      const rounds = recalled.length;
       const sacs: EntityId[] = [];
       for (let r = 0; r < rounds; r++) {
         for (const seat of g.s.regions[ctx.region]!.presentSeats.slice()) {
@@ -430,7 +428,9 @@ card('Torrential Reclamation', {
       // WHOLLY silent run — CT-81). The sacrifice clause still promised
       // something and still has to say when it delivers nothing.
       if (!sacs.length) {
-        g.ev('info', 'Torrential Reclamation: nobody here has a unit to sacrifice.');
+        g.ev('info', rounds
+          ? 'Torrential Reclamation: nobody here has a unit to sacrifice.'
+          : 'Torrential Reclamation: no ally was recalled, so nobody sacrifices a unit.');
       }
       for (const u of recalled) g.recall(u);
       for (const id of sacs) {
