@@ -359,6 +359,9 @@ export function appendSigs(row: SigsRow): boolean {
 export const runOwner = (runId: string): string | null => db().byId.get(runId)?.user ?? null;
 export const runMeta = (runId: string): Omit<RunMeta, 'off' | 'len' | 'hash'> | null => db().byId.get(runId) ?? null;
 
+/** how many runs are stored on this challenge (the admin view) */
+export const runCount = (challengeId: string): number => db().byChallenge.get(challengeId)?.length ?? 0;
+
 /** how many distinct players have a run on this challenge */
 export function entrants(challengeId: string): number {
   return new Set((db().byChallenge.get(challengeId) ?? []).map(r => r.user)).size;
