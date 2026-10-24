@@ -596,7 +596,7 @@ const OPEN: Entry[] = [
     slug: 'learn-to-play',
     title: 'Learn to play — the UI tutorial plus the actual game, via a contrived game',
     area: 'teaching',
-    size: 'L',
+    size: 'S',
     status: 'open',
     track: 'feature',
     said: 'And learn to play is the UI PLUS actual game functions with a contrived game of some kind.',
@@ -618,7 +618,7 @@ const OPEN: Entry[] = [
       'It ends with the buy links. Owner, 2026-08-25: "Yes. Give them the links and recommend buying the game or AT LEAST the print and play version to support the creator of this excellent game." — the two exact URLs are recorded on BL-15; use those, do not go looking for others.',
     ],
     asks: [],
-    deps: ['BL-11', 'BL-03'],
+    deps: [],
     touches: [
       'client/ui/main.ts',
       'client/ui/glossary.ts',
@@ -627,62 +627,14 @@ const OPEN: Entry[] = [
     ],
     notes:
       'Depends on BL-03 because the scripted-opponent machinery is what lets a contrived '
-      + 'game have a cooperative opponent that does the thing the lesson needs.',
-  },
-  {
-    id: 'BL-13',
-    slug: 'metagame-database',
-    title: 'Metagame database — public aggregates, private lists',
-    area: 'accounts',
-    size: 'M',
-    status: 'open',
-    track: 'feature',
-    said: 'Constructed/metagame saving/database ... Yeah, keep lists secret but aggregate stats public',
-    means:
-      'A public metagame page built as a fold over the saved games, the same way profiles '
-      + 'are. What is being played and how it does: card play rates, win rates by element '
-      + 'and trio, how archetypes fare against each other. Individual decklists stay PRIVATE '
-      + 'to their owner — only aggregates are published.',
-    doneWhen: [
-      'A metagame page shows aggregate play/win rates and says over what sample',
-      'No UNPUBLISHED decklist is reachable from it, by URL or otherwise (revised 2026-08-28 — see decided)',
-      'It is recomputed by the same fold as profiles, so the two can never disagree',
-      'A format with too few games says so rather than showing noise as signal',
-      'The same aggregates can be read all-time and over a recent window, off one fold rather than two code paths',
-    ],
-    decided: [
-      'Decklists are secret; aggregates are public. Owner, 2026-08-24, unprompted and explicit.',
-      'Archetypes are COMPUTED, not tagged — and not soon. Owner, 2026-08-25: "We won\'t implement this for a long while, but I think we can do it based on calculations of \'cards in common\' and multidimentional space. Something like \'this set of XYZ cards in this combination of elements defines this deck\'. Then players can give it a name somehow." — cluster on card overlap plus element combination, and let players name a cluster after the fact. Note the first clause: he expects this to be far off, so SHIP THE PAGE WITHOUT ARCHETYPES. Card, element and trio aggregates are a complete first version.',
-      'Both time windows. Owner, 2026-08-25, asked all-time only or 30-day slices: "Both, why not."',
-      'REVISED 2026-08-28 — publishing is opt-in, and a published list IS public. The owner asked '
-      + 'for it directly: "I want to be able to set decks public so that they appear in a list of '
-      + 'some kind. I want to be able to share my decks with people on my profile" and "decks that '
-      + 'are public can start showing up in a \'meta game\' list page which has some basic filters '
-      + 'and sorts (by default) by winrate". That does NOT overturn the 2026-08-24 decision, it '
-      + 'scopes it: a deck is private until its owner publishes it, which is what BL-14\'s means '
-      + 'already anticipated ("a shareable deck link if you choose to share it — sharing is opt-in, '
-      + 'because BL-13 keeps lists private by default"). What survives unchanged is the note below: '
-      + 'the page LISTS decks somebody published and never reconstructs one from an aggregate.',
-      'The published-deck list, the share link and descriptions shipped as BL-35/BL-36. What is '
-      + 'still open here is the AGGREGATE half — card play rates, win rates by element and trio, '
-      + 'and the recent-window fold. Those are what this entry is now about.',
-    ],
-    asks: [],
-    deps: ['BL-14'],
-    touches: [
-      'client/server/stats.ts',
-      'client/server/history.ts',
-      'client/server/decks.ts',
-      'client/server/publicdecks.ts',
-      'client/ui/account.ts',
-      'client/ui/meta.ts',
-    ],
-    notes:
-      'Aggregates must be computed server-side from lists nobody can read back out. Do not build '
-      + 'a "top decks" view that reconstructs a list from its aggregate — a deck reaches the '
-      + 'metagame page because its owner published it, never because a fold inferred it. That '
-      + 'distinction is the whole of the 2026-08-28 revision above, and server/publicdecks.ts '
-      + 'states it in its header.',
+      + 'game have a cooperative opponent that does the thing the lesson needs. '
+      + 'UPDATE 2026-10-24 (housework audit): EVERYTHING SHIPPED EXCEPT THE BUY LINKS. Learn to Play '
+      + '(ca3488f + 058c15d, 2026-09-18) is a scripted played game with a tutorial bot and '
+      + 'lessons, reachable signed out. The one unmet doneWhen is the last: the END lesson '
+      + '(ui/lessons.ts, "Where next") has no buy link, and BUY_PNP is used only in ui/legal.ts. '
+      + 'Left: add the two BL-15 URLs and the owner\'s "support the creator" line to that page, then '
+      + 'close with Learn to Play\'s guards. Size is now S and the deps were dropped: Learn to Play '
+      + 'brought its own tutorial bot (ui/bot.ts), so BL-03 and BL-11 no longer gate anything here.',
   },
   {
     id: 'BL-16',
@@ -816,7 +768,7 @@ const OPEN: Entry[] = [
   {
     id: 'BL-28',
     slug: 'claiming-past-games',
-    title: 'Name-claiming is wrong on a public deploy — claim the game you just played, nothing else',
+    title: '\u26a0 Name-claiming is wrong on a public deploy — a signed-out stranger\'s game lands in a real account today',
     area: 'accounts',
     size: 'M',
     status: 'open',
@@ -861,59 +813,20 @@ const OPEN: Entry[] = [
       + 'The "right after finishing" half needs something the server does not have yet: a '
       + 'handle on the game you just played that survives you leaving the page and '
       + 'registering. The post-game screen is the natural place to hang it (server/history.ts '
-      + 'already summarises the finished game there).',
-  },
-  {
-    id: 'BL-31',
-    slug: 'per-game-achievements',
-    title: 'Eleven single-game achievements, and the per-game counters they need',
-    area: 'accounts',
-    size: 'M',
-    status: 'open',
-    track: 'feature',
-    said:
-      'More achievements: Trigger a graft effect with 5 or more parts / Deal 30 damage with a '
-      + 'single non-combat effect / Deal 100 damage in a single combat / Have a unit 50/50 (or '
-      + 'larger) unit in play / Have at least 25 units in play / Win a game without dealing '
-      + 'combat damage to any opponent / Play the same named spell 5 times in a single game / '
-      + 'Win a game with 3 or fewer resources in play (which is longer than 3 turns) / Make 12 '
-      + 'or more resources in a single game / Win a game with 0 cards in your deck / Win a game '
-      + 'where you play cards from 4 or more elements (Play the Rainbow)',
-    means:
-      'Eleven new rows in server/achievements.ts. The list is the owner\'s verbatim and he named '
-      + 'one of them himself ("Play the Rainbow"). ⚠ THE REASON THIS IS M AND NOT S: ten of the '
-      + 'eleven are PER-GAME FACTS ("in a single combat", "in a single game", "at least 25 units '
-      + 'in play"), and the achievements table can only express a COUNTER-VS-GOAL over a '
-      + 'Profile, which is a pure SUM over saved games. A sum cannot answer "the most you ever '
-      + 'did in one game". So each needs a new per-game HIGHLIGHT counter written during the '
-      + 'fold in server/stats.ts — flawlessWins/closeWins are the existing pattern to copy.',
-    doneWhen: [
-      'All eleven appear in the achievements UI with honest progress, using the same counter-vs-goal shape as the existing 28 — no bespoke predicates',
-      'Each new per-game highlight is computed in the stats fold and has a test driving a real saved game through it',
-      'The retroactivity limit is STATED in the entry and in the code: a highlight is only as retroactive as the fold can see it, so games played before the counter existed may read zero',
-      'An existing achievement\'s progress is unchanged — adding these must not perturb the 28 already there',
-    ],
-    decided: [
-      'These are single-game facts, not career totals. The five nearest existing achievements (tinkerer, swarm, spellslinger, elementalist, aggressor) are all career sums and none of them is one of these eleven — verified 2026-08-28 by importing the live module, not by grepping it.',
-      'Unlocks stay sticky (accounts.ts stamps first-earned and never clears), so a later goal change cannot take a badge away.',
-      'ANSWERED 2026-08-30, the open ask: the parenthesis in "3 or fewer resources (which is longer than 3 turns)" is a CONDITION. Owner: "A condition — turn > 3". A freak turn-3 win does not earn Ascetic.',
-      'ANSWERED 2026-08-30: "trigger a graft effect with 5 or more parts" means THE TRIGGERED ABILITY, not a board scan of mod stacks. Owner picked it over the two cheaper readings. It is exact rather than approximate: composeParts() in engine.ts already returns one EffectPart per grafted mod that joins the ability\'s graftCause, so "parts" is the engine\'s own word for the thing being counted. queueTrigger now puts `parts` and `controller` on its `triggered` event — the single choke point all trigger dispatch shares — and stats.ts takes the max.',
-      'ANSWERED 2026-08-30: damage counts EVERYTHING YOU DAMAGED, units and faces, not face-only. Owner chose it over the face-only reading. For the non-combat one this needed no summing of ours: the engine already puts `total` on the damage event, defined as "the damage this effect dealt" across the whole batch, past prevention and {Vulnerable} doubling.',
-      'Comeback Kid was tightened during implementation: "win after dropping to 5 life or less" also has to END above 5. Without that it is Close Call with extra steps — the same win at 4 life would earn both, and neither would mean anything.',
-    ],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/server/achievements.ts',
-      'client/server/stats.ts',
-      'client/server/accounts.ts',
-    ],
-    notes:
-      'Folded in from ~/Downloads/next-algomancy.txt on 2026-08-28, which was the only copy. '
-      + 'ACHIEVEMENTS.length was 28 at that point and none of the eleven was among them. '
-      + '⚠ Do not implement any of these as a bespoke predicate — the table\'s whole design is '
-      + 'that every row is a counter and a goal, which is what lets the UI show "7 / 10" '
-      + 'uniformly and what makes a new achievement retroactive by construction.',
+      + 'already summarises the finished game there). '
+      + '\u26a0 RAISED 2026-10-24 (housework audit, probed): THIS IS A LIVE DATA-INTEGRITY HOLE, NOT HYGIENE. '
+      + 'A signed-out player who types an existing account\'s username into a private room gets that '
+      + 'game folded into that account: stats, achievements, record and the card ledger\'s "my games". '
+      + 'Probe: registered `mycheze` in a scratch store, dropped one finished game with seat names '
+      + '[Mycheze, Stranger] and users [null, null], ran syncGamesDir: the account went from 0 games to '
+      + 'games=1 wins=1. The same sweep runs after EVERY recorded game (server/history.ts:232, '
+      + '`for (const a of allAccounts()) claimSeats(a)`), and main.ts takes the typed name for a '
+      + 'signed-out seat. Ratings are safe (a rated room needs an account or a guest). The sweeps to '
+      + 'remove: register() (accounts.ts), claimGuest() (accounts.ts), after every recorded game '
+      + '(history.ts:232) and syncGamesDir (history.ts). The "just finished" half already exists for '
+      + 'queue guests (BL-42): mint a guest at join for a signed-out private-room player and the same '
+      + 'mechanism covers it. Extend server/e2e/test-accounts.ts with the probe above. This shape has '
+      + 'no priority field; the title carries the \u26a0 instead. Still waiting on doneWhen 4 (the LAN-era claims).',
   },
   {
     id: 'BL-44',
@@ -955,59 +868,6 @@ const OPEN: Entry[] = [
       + 'resourceMenuElements; the engine check is the real change, and it will drift every '
       + 'draft fuzz walk, so expect to re-seed the fixtures that pin one (143, 171, test-accounts '
       + 'search for theirs now).',
-  },
-  {
-    id: 'BL-45',
-    slug: 'regions-board',
-    title: 'The regions board — two interlocking Ls, region ≠ control, never scrolls (behind a toggle)',
-    area: 'client',
-    size: 'L',
-    status: 'open',
-    track: 'feature',
-    said:
-      'I think it\'d be more logical to split the play area vertically(ish), rather than '
-      + 'horizontally, as we do now. […] massively help players visualize where the different '
-      + 'regions are. The actual game/engine side wouldn\'t change at all. […] For now, I want it '
-      + 'to be a toggle that can be changed to switch between the current layout and this new '
-      + 'one. […] the goal is to have no scrolling. (2026-09-22)',
-    means:
-      'A second arrangement of the SAME zone pieces (`regionParts` / `battleHtml`) placed by a '
-      + 'CSS grid into the owner\'s 6×9 topology (docs/18-board-layout-v2.md): the opponent\'s '
-      + 'region is the right column plus an info offshoot top-left, yours the mirror. Vertical '
-      + 'position says who controls a card, the L\'s colour says whose region it is in, the seam '
-      + 'is the crossing. The battle panel is drawn in the block of the region the battle is IN; '
-      + 'the idle block shows the counterattackers heading for it. A fit pass (ui/fit.ts, '
-      + 'ui/layout.ts) sizes every zone\'s cards to its box and fans them past the floor, so '
-      + '`.main` never scrolls. The stack window sits over the non-focus region\'s battle band. '
-      + 'The ▦ board button in the rail flips `algoLayout`; classic is the default.',
-    doneWhen: [
-      'The ▦ board toggle draws the regions board online and in Learn to Play; the classic board is byte-identical with it off',
-      'Every anchor, affordance and handler is the classic board\'s (test/318), and nothing on the board scrolls at 1440×900 or 1280×720',
-      'The owner has played on it and either flips the default (one character in ui/layout.ts layoutV2) or lists what still reads wrong',
-    ],
-    decided: [
-      'Owner, 2026-09-22: overlap (fan) past the floor — never scroll, never hide; the two battle blocks shrink to bands outside a battle; online + solo first, the hotseat rig keeps classic; outside a battle YOUR region is the focus, so the stack covers theirs.',
-      'Classic output stays byte-identical at every step — proven by a fixture diff over 16 states before any regions markup landed.',
-    ],
-    touches: [
-      'client/ui/main.ts',
-      'client/ui/layout.ts',
-      'client/ui/fit.ts',
-      'client/ui/style.css',
-      'client/ui/legal.ts',
-      'client/ui/tutorial.ts',
-      'client/ui/test/317-fit-pass.test.ts',
-      'client/ui/test/318-board-layout-v2.test.ts',
-      'client/docs/18-board-layout-v2.md',
-    ],
-    notes:
-      'Shipped 2026-09-22 behind the toggle. Left for after the owner\'s playtest: '
-      + '(the formation arrow anchor was on this list until report #170, RCPN — done 2026-09-27, '
-      + 'each battle half carries data-fside); weighting the '
-      + 'In Play / In Battle rows by card count (fixed 1 : 1.5 during a battle); the hotseat rig. '
-      + 'At 1280×720 the whole board is ~330px tall once the dock and the action bar have '
-      + 'theirs — everything fits at the 46px floor, but it is small; the dock tucking during '
-      + 'battle would give the fight the room.',
   },
 ];
 

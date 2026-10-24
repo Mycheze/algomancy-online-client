@@ -2217,4 +2217,269 @@ export const CLOSED: Entry[] = [
       ],
     },
   },
+  {
+    id: 'BL-13',
+    slug: 'metagame-database',
+    title: 'Metagame database — public aggregates, private lists',
+    area: 'accounts',
+    size: 'M',
+    status: 'done',
+    evidence: {
+      commit: '5c7f0e2',
+      guards: [
+        '334-cardstats-fold.test.ts::GIH, OH, played, GNS and the deck rate, from both seats',
+        '334-cardstats-fold.test.ts::filters: mode, dates, rated, both signed in',
+        '334-cardstats-fold.test.ts::the public floor refuses a filter narrow enough to show one game',
+        '335-cardstats-route.test.ts::the public answer folds every counted game, recorded as played, and names nobody',
+        '335-cardstats-route.test.ts::a public filter narrow enough to show one game',
+      ],
+    },
+    track: 'feature',
+    said: 'Constructed/metagame saving/database ... Yeah, keep lists secret but aggregate stats public',
+    means:
+      'A public metagame page built as a fold over the saved games, the same way profiles '
+      + 'are. What is being played and how it does: card play rates, win rates by element '
+      + 'and trio, how archetypes fare against each other. Individual decklists stay PRIVATE '
+      + 'to their owner — only aggregates are published.',
+    doneWhen: [
+      'A metagame page shows aggregate play/win rates and says over what sample',
+      'No UNPUBLISHED decklist is reachable from it, by URL or otherwise (revised 2026-08-28 — see decided)',
+      'It is recomputed by the same fold as profiles, so the two can never disagree',
+      'A format with too few games says so rather than showing noise as signal',
+      'The same aggregates can be read all-time and over a recent window, off one fold rather than two code paths',
+    ],
+    decided: [
+      'Decklists are secret; aggregates are public. Owner, 2026-08-24, unprompted and explicit.',
+      'Archetypes are COMPUTED, not tagged — and not soon. Owner, 2026-08-25: "We won\'t implement this for a long while, but I think we can do it based on calculations of \'cards in common\' and multidimentional space. Something like \'this set of XYZ cards in this combination of elements defines this deck\'. Then players can give it a name somehow." — cluster on card overlap plus element combination, and let players name a cluster after the fact. Note the first clause: he expects this to be far off, so SHIP THE PAGE WITHOUT ARCHETYPES. Card, element and trio aggregates are a complete first version.',
+      'Both time windows. Owner, 2026-08-25, asked all-time only or 30-day slices: "Both, why not."',
+      'REVISED 2026-08-28 — publishing is opt-in, and a published list IS public. The owner asked '
+      + 'for it directly: "I want to be able to set decks public so that they appear in a list of '
+      + 'some kind. I want to be able to share my decks with people on my profile" and "decks that '
+      + 'are public can start showing up in a \'meta game\' list page which has some basic filters '
+      + 'and sorts (by default) by winrate". That does NOT overturn the 2026-08-24 decision, it '
+      + 'scopes it: a deck is private until its owner publishes it, which is what BL-14\'s means '
+      + 'already anticipated ("a shareable deck link if you choose to share it — sharing is opt-in, '
+      + 'because BL-13 keeps lists private by default"). What survives unchanged is the note below: '
+      + 'the page LISTS decks somebody published and never reconstructs one from an aggregate.',
+      'The published-deck list, the share link and descriptions shipped as BL-35/BL-36. What is '
+      + 'still open here is the AGGREGATE half — card play rates, win rates by element and trio, '
+      + 'and the recent-window fold. Those are what this entry is now about.',
+    ],
+    asks: [],
+    deps: ['BL-14'],
+    touches: [
+      'client/server/stats.ts',
+      'client/server/history.ts',
+      'client/server/decks.ts',
+      'client/server/publicdecks.ts',
+      'client/ui/account.ts',
+      'client/ui/meta.ts',
+    ],
+    notes:
+      'Aggregates must be computed server-side from lists nobody can read back out. Do not build '
+      + 'a "top decks" view that reconstructs a list from its aggregate — a deck reaches the '
+      + 'metagame page because its owner published it, never because a fold inferred it. That '
+      + 'distinction is the whole of the 2026-08-28 revision above, and server/publicdecks.ts '
+      + 'states it in its header. '
+      + 'DONE 2026-09-27 (5c7f0e2, closed in the 2026-10-24 housework pass): the Card Stats tab on '
+      + 'the Metagame page has card play and win rates, element win rates and pairs, draft trio '
+      + 'counts, all-time / 30-day / 7-day windows, rated and my-games filters, and a 5-game floor '
+      + 'that refuses a filter narrow enough to show one game. The doneWhen line "recomputed by the '
+      + 'same fold as profiles" was settled differently by the owner on 2026-09-27: a separate card '
+      + 'ledger stamped live and never recomputed. Archetypes stay "not for a long while" (decided).',
+  },
+  {
+    id: 'BL-31',
+    slug: 'per-game-achievements',
+    title: 'Eleven single-game achievements, and the per-game counters they need',
+    area: 'accounts',
+    size: 'M',
+    status: 'done',
+    evidence: {
+      commit: 'e048ba5',
+      guards: [
+        // the server script runs through the suite runner; its \u00a75c is "the per-game highlights (BL-31)"
+        'suite.test.ts::test-accounts.ts \u2014 accounts: the stat fold, achievements',
+      ],
+    },
+    track: 'feature',
+    said:
+      'More achievements: Trigger a graft effect with 5 or more parts / Deal 30 damage with a '
+      + 'single non-combat effect / Deal 100 damage in a single combat / Have a unit 50/50 (or '
+      + 'larger) unit in play / Have at least 25 units in play / Win a game without dealing '
+      + 'combat damage to any opponent / Play the same named spell 5 times in a single game / '
+      + 'Win a game with 3 or fewer resources in play (which is longer than 3 turns) / Make 12 '
+      + 'or more resources in a single game / Win a game with 0 cards in your deck / Win a game '
+      + 'where you play cards from 4 or more elements (Play the Rainbow)',
+    means:
+      'Eleven new rows in server/achievements.ts. The list is the owner\'s verbatim and he named '
+      + 'one of them himself ("Play the Rainbow"). ⚠ THE REASON THIS IS M AND NOT S: ten of the '
+      + 'eleven are PER-GAME FACTS ("in a single combat", "in a single game", "at least 25 units '
+      + 'in play"), and the achievements table can only express a COUNTER-VS-GOAL over a '
+      + 'Profile, which is a pure SUM over saved games. A sum cannot answer "the most you ever '
+      + 'did in one game". So each needs a new per-game HIGHLIGHT counter written during the '
+      + 'fold in server/stats.ts — flawlessWins/closeWins are the existing pattern to copy.',
+    doneWhen: [
+      'All eleven appear in the achievements UI with honest progress, using the same counter-vs-goal shape as the existing 28 — no bespoke predicates',
+      'Each new per-game highlight is computed in the stats fold and has a test driving a real saved game through it',
+      'The retroactivity limit is STATED in the entry and in the code: a highlight is only as retroactive as the fold can see it, so games played before the counter existed may read zero',
+      'An existing achievement\'s progress is unchanged — adding these must not perturb the 28 already there',
+    ],
+    decided: [
+      'These are single-game facts, not career totals. The five nearest existing achievements (tinkerer, swarm, spellslinger, elementalist, aggressor) are all career sums and none of them is one of these eleven — verified 2026-08-28 by importing the live module, not by grepping it.',
+      'Unlocks stay sticky (accounts.ts stamps first-earned and never clears), so a later goal change cannot take a badge away.',
+      'ANSWERED 2026-08-30, the open ask: the parenthesis in "3 or fewer resources (which is longer than 3 turns)" is a CONDITION. Owner: "A condition — turn > 3". A freak turn-3 win does not earn Ascetic.',
+      'ANSWERED 2026-08-30: "trigger a graft effect with 5 or more parts" means THE TRIGGERED ABILITY, not a board scan of mod stacks. Owner picked it over the two cheaper readings. It is exact rather than approximate: composeParts() in engine.ts already returns one EffectPart per grafted mod that joins the ability\'s graftCause, so "parts" is the engine\'s own word for the thing being counted. queueTrigger now puts `parts` and `controller` on its `triggered` event — the single choke point all trigger dispatch shares — and stats.ts takes the max.',
+      'ANSWERED 2026-08-30: damage counts EVERYTHING YOU DAMAGED, units and faces, not face-only. Owner chose it over the face-only reading. For the non-combat one this needed no summing of ours: the engine already puts `total` on the damage event, defined as "the damage this effect dealt" across the whole batch, past prevention and {Vulnerable} doubling.',
+      'Comeback Kid was tightened during implementation: "win after dropping to 5 life or less" also has to END above 5. Without that it is Close Call with extra steps — the same win at 4 life would earn both, and neither would mean anything.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/server/achievements.ts',
+      'client/server/stats.ts',
+      'client/server/accounts.ts',
+    ],
+    notes:
+      'Folded in from ~/Downloads/next-algomancy.txt on 2026-08-28, which was the only copy. '
+      + 'ACHIEVEMENTS.length was 28 at that point and none of the eleven was among them. '
+      + '⚠ Do not implement any of these as a bespoke predicate — the table\'s whole design is '
+      + 'that every row is a counter and a goal, which is what lets the UI show "7 / 10" '
+      + 'uniformly and what makes a new achievement retroactive by construction. '
+      + 'DONE 2026-08-30 (e048ba5, closed in the 2026-10-24 housework pass): all eleven are rows in '
+      + 'server/achievements.ts (grafter, big-hit, big-combat, titan, horde, pacifist, broken-record, '
+      + 'ascetic, engine, decked, rainbow), fed by per-game highlights in the stats.ts fold; '
+      + 'server/e2e/test-accounts.ts \u00a75c "the per-game highlights (BL-31)" drives a real fuzzed game through them.',
+  },
+  {
+    id: 'BL-45',
+    slug: 'regions-board',
+    title: 'The regions board — two interlocking Ls, region ≠ control, never scrolls (behind a toggle)',
+    area: 'client',
+    size: 'L',
+    status: 'done',
+    evidence: {
+      commit: 'ad2d289',
+      guards: [
+        '318-board-layout-v2.test.ts::\u00a71 regions by default; the rail button flips it; the guide has a step',
+        '318-board-layout-v2.test.ts::\u00a72 every anchor, once, in both boards, for every state',
+        '317-fit-pass.test.ts::\u00a72 room keeps the base width; a crowd shrinks it; the floor holds',
+      ],
+    },
+    track: 'feature',
+    said:
+      'I think it\'d be more logical to split the play area vertically(ish), rather than '
+      + 'horizontally, as we do now. […] massively help players visualize where the different '
+      + 'regions are. The actual game/engine side wouldn\'t change at all. […] For now, I want it '
+      + 'to be a toggle that can be changed to switch between the current layout and this new '
+      + 'one. […] the goal is to have no scrolling. (2026-09-22)',
+    means:
+      'A second arrangement of the SAME zone pieces (`regionParts` / `battleHtml`) placed by a '
+      + 'CSS grid into the owner\'s 6×9 topology (docs/18-board-layout-v2.md): the opponent\'s '
+      + 'region is the right column plus an info offshoot top-left, yours the mirror. Vertical '
+      + 'position says who controls a card, the L\'s colour says whose region it is in, the seam '
+      + 'is the crossing. The battle panel is drawn in the block of the region the battle is IN; '
+      + 'the idle block shows the counterattackers heading for it. A fit pass (ui/fit.ts, '
+      + 'ui/layout.ts) sizes every zone\'s cards to its box and fans them past the floor, so '
+      + '`.main` never scrolls. The stack window sits over the non-focus region\'s battle band. '
+      + 'The ▦ board button in the rail flips `algoLayout`; classic is the default.',
+    doneWhen: [
+      'The ▦ board toggle draws the regions board online and in Learn to Play; the classic board is byte-identical with it off',
+      'Every anchor, affordance and handler is the classic board\'s (test/318), and nothing on the board scrolls at 1440×900 or 1280×720',
+      'The owner has played on it and either flips the default (one character in ui/layout.ts layoutV2) or lists what still reads wrong',
+    ],
+    decided: [
+      'Owner, 2026-09-22: overlap (fan) past the floor — never scroll, never hide; the two battle blocks shrink to bands outside a battle; online + solo first, the hotseat rig keeps classic; outside a battle YOUR region is the focus, so the stack covers theirs.',
+      'Classic output stays byte-identical at every step — proven by a fixture diff over 16 states before any regions markup landed.',
+    ],
+    touches: [
+      'client/ui/main.ts',
+      'client/ui/layout.ts',
+      'client/ui/fit.ts',
+      'client/ui/style.css',
+      'client/ui/legal.ts',
+      'client/ui/tutorial.ts',
+      'client/ui/test/317-fit-pass.test.ts',
+      'client/ui/test/318-board-layout-v2.test.ts',
+      'client/docs/18-board-layout-v2.md',
+    ],
+    notes:
+      'Shipped 2026-09-22 behind the toggle. Left for after the owner\'s playtest: '
+      + '(the formation arrow anchor was on this list until report #170, RCPN — done 2026-09-27, '
+      + 'each battle half carries data-fside); weighting the '
+      + 'In Play / In Battle rows by card count (fixed 1 : 1.5 during a battle); the hotseat rig. '
+      + 'At 1280×720 the whole board is ~330px tall once the dock and the action bar have '
+      + 'theirs — everything fits at the 46px floor, but it is small; the dock tucking during '
+      + 'battle would give the fight the room. '
+      + 'DONE 2026-09-26 (ad2d289, closed in the 2026-10-24 housework pass): the owner played on it '
+      + 'and flipped the default, which is doneWhen 3, and 318 \u00a71 asserts regions by default. Of the '
+      + 'after-playtest list, the hotseat rig is moot (hotseat removed 2026-09-23); row weighting is '
+      + 'not filed, and is re-filed only if the owner asks for it.',
+  },
+  {
+    id: 'BL-42',
+    slug: 'guest-accounts-and-open-games',
+    title: 'Play now, sign up later: guest accounts, the open-games list, and click-to-join',
+    area: 'play',
+    size: 'M',
+    status: 'done',
+    track: 'feature',
+    evidence: {
+      commit: '76912fb',
+      guards: [
+        '283-open-games.test.ts::BL-42 \u00a71 a count still reads well, but is no longer the whole answer',
+        '283-open-games.test.ts::BL-42 \u00a72 \u2b50 draft is open to guests; constructed needs a deck',
+        '283-open-games.test.ts::BL-42 \u00a73 \u2b50 the searching line never shows a band for a challenge',
+        // the server scripts run through the suite runner — see BL-01 above.
+        // test-queue.ts \u00a71b is the direct challenge; test-bot.ts \u00a78a is "BL-42: guests, and the open-games list"
+        'suite.test.ts::test-queue.ts \u2014 BL-01 the matchmaking queue',
+        'suite.test.ts::test-bot.ts \u2014 BL-40/BL-41 the /api/bot/* gate',
+      ],
+    },
+    said:
+      'just assume it\'s going to be a fresh account starting at 1000 elo. After the game, they can '
+      + 'make an account and that game is added to their ledger. [\u2026] you can see \'Oh, that person '
+      + 'is waiting for ranked live draft. I\'d do that, sure\' then just click on it and go. '
+      + '(2026-09-02, quoted in the commit that built it, 76912fb)',
+    means:
+      'Three changes to the BL-01 queue after the owner used it. (1) DRAFT NEEDS NO ACCOUNT: a '
+      + 'signed-out player who queues gets a GUEST, which is an ordinary account with a generated '
+      + 'name (Guest-XXXX) and a password nobody knows. It has a rating of 1000, plays rated games '
+      + 'and is in history like anyone else, so claiming it after the game (/api/auth/claim, the '
+      + 'post-game "keep this account") is a rename, and the game it played is already on it. '
+      + 'Constructed still needs an account, because a matchmade constructed game deals at accept '
+      + 'and needs a deck at queue time. (2) THE HOME SCREEN LISTS THE OPEN GAMES BY NAME, not a '
+      + 'count, and /api/queue names who is waiting. (3) A CLICK JOINS THAT GAME: `?queue=<mode>&vs=<id>` '
+      + 'is a direct challenge that pairs with that person only, ahead of the pool and outside the band.',
+    doneWhen: [
+      'A signed-out player can queue for live draft and play a rated game without signing up first',
+      'After that game the post-game screen offers to keep the account, and keeping it keeps the game and the rating',
+      'The home screen lists who is waiting in which format, and clicking one joins that player\'s game',
+      'A direct challenge never shows a rating band the server is not using',
+    ],
+    decided: [
+      'Owner, 2026-09-02: a guest is "a fresh account starting at 1000 elo"; the game is added to their ledger when they make an account.',
+      'Owner, 2026-09-02: the open games are listed by name, reversing the earlier "never who is waiting" rule on /api/queue.',
+      'Constructed still needs an account and a deck at queue time; the refusal names the deck, not signing in.',
+    ],
+    asks: [],
+    deps: ['BL-01'],
+    touches: [
+      'client/server/accounts.ts',
+      'client/server/api-accounts.ts',
+      'client/server/queue.ts',
+      'client/server/main.ts',
+      'client/ui/queue.ts',
+      'client/ui/postgame.ts',
+      'client/ui/account.ts',
+      'client/server/e2e/test-queue.ts',
+      'client/server/e2e/test-bot.ts',
+      'client/ui/test/283-open-games.test.ts',
+    ],
+    notes:
+      'DONE 2026-09-02 (76912fb). Filed after the fact in the 2026-10-24 housework pass: the work '
+      + 'shipped and is cited as BL-42 in ten files, but the ledger never had the entry, so those '
+      + 'citations resolved to nothing. The private-room half of "claim the game you just played" '
+      + 'is still open as BL-28, which can reuse this guest mechanism.',
+  },
 ];
