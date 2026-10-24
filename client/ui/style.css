@@ -1015,6 +1015,11 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .binempty { color: var(--dim); font-size: 11px; }
 .binbox .bindialog { max-height: 60vh; overflow-y: auto; }
 .bindialog .card { width: 92px; }
+/* CT-381: a usable bin card and, on touch only, the button that uses it (a
+   finger's tap on the card itself only reads it — report #201) */
+.binentry { display: flex; flex-direction: column; gap: 4px; width: 92px; }
+.binuse { display: none; }
+html.touch .binuse { display: block; width: 100%; padding: 4px 2px; font-size: 12px; }
 
 /* help + judge */
 .helpbox, .judgebox { width: min(92vw, 640px); }

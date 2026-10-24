@@ -23,10 +23,12 @@ installable-app (PWA) polish.*
   plays anything. On an info block's resources it is the resource window.
   Android's long-press `contextmenu` is suppressed while a peek holds.
 - **A tap only reads** (report #201, owner: "the game forced me to play my card
-  in battle when I was just trying to look at it"). A tap on a card in your hand
-  or cache opens the same zoom as the peek and leaves it up; the next tap
+  in battle when I was just trying to look at it"). A tap on a card in your hand,
+  cache or bin opens the same zoom as the peek and leaves it up; the next tap
   anywhere, or Escape, puts it away and does nothing else. Playing from the
-  hand is a drag (below) or the rail's buttons. A tap that answers a question —
+  hand is a drag (below) or the rail's buttons. The bin has no drag, so in the bin dialog a usable
+  card has a button under it (shown on touch only), and a tap on a glowing bin
+  thumb in your region opens the bin (CT-381). A tap that answers a question —
   a discard, a hand card the prompt is asking for — still answers it. It is the
   last pointer that decides, not the device: a mouse click still plays.
 - **Full control** — a held Ctrl on a desktop — is a tap on its chip.
