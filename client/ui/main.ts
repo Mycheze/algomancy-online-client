@@ -4554,10 +4554,18 @@ function binDialogHtml(): string {
     }
     if (canProph) badges.push({ t: '📜 prophesy from bin', cls: 'proph on' });
     if (canPlay) badges.push({ t: '▶ playable from bin', cls: 'proph on' });
-    return cardHtml(n, {
+    const card = cardHtml(n, {
       playable: usable, badges, anim: binKeys[i],
       data: `data-act="bin" data-p="${p}" data-i="${i}"${tgt.includes(i) ? ' data-bintgt="1"' : ''}`,
     });
+    // CT-381 (report #201): a finger's tap on the card only READS it, and a
+    // dialog's cards never drag — so a usable card carries a button, the
+    // finger's route to the same handleBinClick a mouse click on the card
+    // reaches. Shown on touch only (style.css .binuse); a button is a button.
+    if (!usable) return card;
+    const routes = [canPlay, canProph, canAug || canGraft].filter(Boolean).length;
+    const verb = routes > 1 ? 'Use…' : canPlay ? '▶ Play' : canProph ? '📜 Prophesy' : `${txtIcon('augment', '+')} Use as mod`;
+    return `<div class="binentry">${card}<button class="binuse" data-btn="binuse" data-p="${p}" data-i="${i}">${verb}</button></div>`;
   }).join('');
   return `<div class="overlay mainonly"><div class="overlaybox binbox">
     <h3>${esc(pl.name)}'s bin (${pl.bin.length})</h3>
@@ -4565,7 +4573,7 @@ function binDialogHtml(): string {
       // CR 723.4: not always a unit — a virus from the bin can go onto a spell on
       // the stack too, and this banner used to deny that in so many words.
       modHostPhrase(modHosts(legal, { from: 'bin', mode: 'augment' }, h.state))
-    } as a mod right now — click one, then pick a host.</div>` : ''}
+    } as a mod right now — <span class="mouseonly">click one</span><span class="touchonly">tap its button</span>, then pick a host.</div>` : ''}
     <div class="zone binzone bindialog">${items || '<span class="binempty">empty</span>'}</div>
     <button data-btn="binclose">Close</button>
   </div></div>`;
@@ -10883,7 +10891,20 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   // playable (CR 405.9), prophesiable (CR 803.7c) or applicable as a mod (#4). It
   // hands to `handleBinClick`, the dialog's own handler, so the panel and the
   // dialog can never come to do different things with the same card.
+  //
+  // CT-381 (report #201: on touch, a tap only reads): a FINGER's tap on a live
+  // thumb opens the bin, as a tap on any other thumb in this panel does — the
+  // dialog is where a finger reads the card full size and uses it (binuse).
+  // No bin card is ever an option of a question (ui/boardpick.ts has no bin
+  // spelling), so there is no pick to let through here.
   binplay: (btn, e) => {
+    const p = Number(btn.dataset['p']) as Seat;
+    if (!pointerCanHover()) { ui.menu = null; binView = p; return; }
+    handleBinClick(p, Number(btn.dataset['i']), e);
+  },
+  // CT-381: the bin dialog's button under a usable card — the finger's route,
+  // since a tap on the card itself only reads it. Any pointer may press it.
+  binuse: (btn, e) => {
     handleBinClick(Number(btn.dataset['p']) as Seat, Number(btn.dataset['i']), e);
   },
   binclose: () => { binView = null; },
@@ -11245,7 +11266,11 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     handleHandClick(p, i, e);
   }
   if (kind === 'bin') {
-    handleBinClick(Number(t.dataset['p']) as Seat, Number(t.dataset['i']), e);
+    // CT-381: the bin was the one zone #201's gate missed. No bin card is ever
+    // a question's option (no bin spelling in ui/boardpick.ts), so no pick key.
+    const p = Number(t.dataset['p']) as Seat, i = Number(t.dataset['i']);
+    if (tapOnlyReads(t, null, e)) { render(); return; }
+    handleBinClick(p, i, e);
   }
   if (kind === 'cache') {
     const p = Number(t.dataset['p']) as Seat, i = Number(t.dataset['i']);
@@ -11262,7 +11287,7 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
  * card vs trying to read or look at it."* The owner's answer: ON TOUCH, A TAP
  * ONLY READS; DRAG PLAYS.
  *
- * So a finger's tap on a card in your hand or cache opens the zoom (ui/touch.ts
+ * So a finger's tap on a card in your hand, cache or bin (CT-381) opens the zoom (ui/touch.ts
  * tapRead) and does nothing else — no play, no recycle menu, no mod. It is the
  * last pointer's TYPE that decides (pointerCanHover), never the device: a
  * laptop with a touch screen still plays on a mouse click. A drag still plays,
