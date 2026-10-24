@@ -518,6 +518,28 @@ const OPEN: TodoEntry[] = [
     verify: "Compare data/cards/Torrential-Reclamation.jpg and the oracle row with a current printed copy.",
     status: 'open',
   },
+  {
+    id: 376, area: "client", severity: "minor",
+    cards: [],
+    title: "an agreed fix's \"start of the step before\" option can land just before a forced action, which is re-taken at once",
+    detail: "server/rooms.ts rewindPlans offers `{ to: prev, kind: 'prev' }` without the forced-action check the \"before <action>\" cuts get. With seed 48593 the step before begins with an empty forced declareBlocks at index 43; the cut lands just before it, main.ts's drain re-takes it at once, so the option really ends at the start of the CURRENT step.",
+    evidence: "CR pass round 2026-10-24 (finding F-U23-10, CR Annex D4.5d).",
+    fix: "Give the prev cut the same forced-action skip as the before-cuts (or drop the option when it would collapse onto the current step); guard with the seed-48593 shape.",
+    proof: null,
+    verify: "Seed 48593: offer the step-before rewind and check where the rewound game stands.",
+    status: 'open',
+  },
+  {
+    id: 377, area: "client", severity: "minor",
+    cards: [],
+    title: "the hidden-step comment and PUBLIC_IN_HIDDEN disagree about what the other seat sees",
+    detail: "Finding F-U23-9 (CR pass 2026-10-24): the comment beside PUBLIC_IN_HIDDEN (server/rewind-cuts.ts) and the set itself name different things as public inside a hidden step. One of them is wrong; decide which from CR Annex D and make them agree.",
+    evidence: "CR pass round 2026-10-24 (finding F-U23-9).",
+    fix: "Read both, decide from the CR which is meant, fix the other, and pin the set in a test.",
+    proof: null,
+    verify: "Compare the comment with PUBLIC_IN_HIDDEN's members.",
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
