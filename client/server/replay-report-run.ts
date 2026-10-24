@@ -113,8 +113,9 @@ export function runLines(row: ReportRunRow, opts: { at?: number; quiet?: boolean
     const cal = challengeById(run.def.id);
     L.push(`═ challenge run ${run.def.id} "${run.def.title}" · seed ${run.def.seed} · deck of ${run.deck.length} · ${run.actions.length} actions logged`);
     if (!cal) L.push('  · not on the calendar this checkout has — replayed from the challenge as the browser had it');
-    else if (cal.seed !== run.def.seed || JSON.stringify(cal.goal) !== JSON.stringify(run.def.goal)) {
-      L.push(`  ⚠ the calendar's row differs (seed ${cal.seed}, goal ${JSON.stringify(cal.goal)}) — replayed from the browser's`);
+    else if (cal.seed !== run.def.seed || JSON.stringify(cal.goal) !== JSON.stringify(run.def.goal)
+      || JSON.stringify(cal.setup ?? {}) !== JSON.stringify(run.def.setup ?? {})) {
+      L.push(`  ⚠ the calendar's row differs (seed ${cal.seed}, goal ${JSON.stringify(cal.goal)}, setup ${JSON.stringify(cal.setup ?? {})}) — replayed from the browser's`);
     }
   } else {
     L.push(`═ Learn to Play game · seed ${run.deal.seed} · ${run.deal.names.join(' vs ')} · ${run.actions.length} actions logged`);

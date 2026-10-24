@@ -27,7 +27,7 @@
  */
 import type { CardName } from '../engine/src/types.ts';
 import {
-  BOARD_KINDS, TROPHY_KINDS, goalText, type BoardKind, type ChallengeDef, type RunScore,
+  BOARD_KINDS, TROPHY_KINDS, goalText, setupLines, type BoardKind, type ChallengeDef, type RunScore,
 } from '../engine/src/challenge.ts';
 import * as acct from './account.ts';
 import * as cb from './cards.ts';
@@ -294,6 +294,7 @@ function weekCardHtml(c: ChallengeView): string {
   return `<div class="acctcard chweek">
     <h3>${esc(c.title)}</h3>
     <p class="chgoal">${esc(goalText(c.goal))}</p>
+    ${setupLines(c.setup).map(l => `<p class="chsetup">${esc(l)}</p>`).join('')}
     ${c.blurb ? `<p>${esc(c.blurb)}</p>` : ''}
     <p class="dim">${esc(timeLeft(c.closes))} · ${c.entrants} entrant${c.entrants === 1 ? '' : 's'}</p>
     <p class="dim">Three first places: fewest turns, fewest cards, fewest elements.</p>
@@ -420,7 +421,9 @@ function setList(next: string[], replacing?: string): void {
 function play(id: string): void {
   const def = viewOf(id);
   if (!def) return;
-  freshRun({ id: def.id, week: def.week, title: def.title, blurb: def.blurb, goal: def.goal, seed: def.seed, par: def.par }, list);
+  // `setup` is part of the deal (the dummy's life, an emblem): the run must carry it
+  freshRun({ id: def.id, week: def.week, title: def.title, blurb: def.blurb, goal: def.goal, seed: def.seed, par: def.par,
+    ...(def.setup ? { setup: def.setup } : {}) }, list);
   location.search = `?challenge=play&id=${encodeURIComponent(id)}`;
 }
 

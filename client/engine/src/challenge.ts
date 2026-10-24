@@ -19,13 +19,13 @@
  * its arguments, which is what lets the server's verdict and the browser's
  * meter agree to the action.
  */
-import type { Action, CardName, EngineEvent, GameState, Seat } from './types.ts';
+import type { Action, CardName, EngineEvent, GameState, Seat, StackItem } from './types.ts';
 import { apply, createGame, forcedAction, legalActions } from './apply.ts';
 import { E, IllegalAction } from './engine.ts';
 import { Harness } from './harness.ts';
 import { canonicalCardName, getCard } from './cards/dsl.ts';
 import { DECK_LIST } from './cards/registry.ts';
-import type { LessonDeal } from './lessondeal.ts';
+import { ANY_ACTIVATIONS, type LessonDeal } from './lessondeal.ts';
 
 // ── the definition ────────────────────────────────────────────────────
 
@@ -34,7 +34,32 @@ export type Goal =
   | { kind: 'spellTokens'; n: number }   // seat 0 has created ≥ n spell tokens (cumulative)
   | { kind: 'unitSize'; p: number; t: number } // seat 0 controls a unit with effStats ≥ p/t
   | { kind: 'counters'; n: number }      // ≥ n +1/+1 counters placed on seat 0's units (cumulative)
-  | { kind: 'unitsPlayed'; n: number };  // seat 0 has played ≥ n unit cards (cumulative)
+  | { kind: 'unitsPlayed'; n: number }   // seat 0 has played ≥ n unit cards (cumulative)
+  // ── added 2026-10-24 (the weeks from 22 Nov) ──
+  | { kind: 'tokenSet'; tokens: Record<CardName, number> } // seat 0 controls ≥ tokens[name] tokens of each name at once
+  | { kind: 'drawsInTurn'; n: number }   // seat 0 draws ≥ n cards in one turn
+  | { kind: 'dummyWins' }                // the dummy wins, by an effect the dummy controls
+  | { kind: 'oneShot' }                  // the dummy dies, having lost no life before the action that kills it
+  | { kind: 'graftLadder'; n: number }   // seat 0 fires a graft effect of exactly k parts, for every k in 1..n
+  | { kind: 'manaSpent'; n: number }     // seat 0 spends ≥ n mana (cumulative)
+  | { kind: 'stackDepth'; n: number }    // ≥ n effects on the stack at once
+  | { kind: 'life'; n: number };         // seat 0 has ≥ n life
+
+/** A rule a challenge adds to the game, shown to the player as an emblem. */
+export type ChallengeEmblem = 'anyActivations';
+export const EMBLEM_TEXT: Record<ChallengeEmblem, string> = {
+  anyActivations: 'You may activate any number of dormant resources during your planning step.',
+};
+
+/** What a challenge changes about the deal. Part of the deal, so everything
+ * that re-deals a run (the server's verifyRun, the browser, Watch, a report
+ * replay) must carry it with the row — it rides ChallengeDef as one field. */
+export interface ChallengeSetup {
+  /** the dummy's starting life (default DUMMY_LIFE, 99) */
+  dummyLife?: number;
+  /** a rule the player has all game */
+  emblem?: ChallengeEmblem;
+}
 
 export interface ChallengeDef {
   id: string;
@@ -49,6 +74,8 @@ export interface ChallengeDef {
    * once its week opens (server/challenges.ts), and test 506 holds it equal to
    * what the reference run scores. */
   par: number;
+  /** absent: the standard deal */
+  setup?: ChallengeSetup;
 }
 
 export const PLAYER: Seat = 0;
@@ -67,9 +94,15 @@ const CONSTRUCTED_OPENING_HAND = 4;
 
 const SEAT_NAMES: [string, string] = ['Challenger', 'Dummy'];
 
-/** The deal a challenge game is created with (CR D8.1). `def` is taken so a
- * later challenge can vary it; today every challenge deals the same game. */
-export function challengeDeal(_def: ChallengeDef): LessonDeal {
+/** the dummy's starting life unless a row's setup says otherwise */
+export const DUMMY_LIFE = 99;
+
+/** The deal a challenge game is created with (CR D8.1): the same game every
+ * week, except what a row's `setup` changes — the dummy's starting life, and
+ * an emblem (the activation cap lifted). A row without `setup` deals exactly
+ * what every challenge always dealt. */
+export function challengeDeal(def: ChallengeDef): LessonDeal {
+  const setup = def.setup ?? {};
   return {
     openingHand: [CONSTRUCTED_OPENING_HAND, 0],
     drawPerTurn: [0, 0],   // seat 0's is unread: it is on the constructed card step
@@ -78,9 +111,10 @@ export function challengeDeal(_def: ChallengeDef): LessonDeal {
     firstShardTurn: 1,
     shardState: 'open',
     prismites: [2, 0],
-    startingLife: [30, 99],
+    startingLife: [30, setup.dummyLife ?? DUMMY_LIFE],
     initiative: PLAYER,
     cardStep: ['constructed', 'lesson'],
+    ...(setup.emblem === 'anyActivations' ? { activations: [ANY_ACTIVATIONS, 2] as [number, number] } : {}),
   };
 }
 
@@ -228,6 +262,20 @@ export interface RunAcc {
   tokens: number;
   counters: number;
   played: number;
+  // the tallies the 2026-10-24 goals read; optional, so a RunAcc kept before
+  // they existed (a browser's saved run) still folds
+  /** cards drawn this turn, the turn they are for, and the most in any one turn */
+  draws?: { turn: number; n: number; best: number };
+  /** the part counts of the graft composites seat 0 has fired, each once, ascending */
+  graftSizes?: number[];
+  manaSpent?: number;
+  /** the most effects the stack has held at once */
+  stackBest?: number;
+  /** the dummy won the game by an effect it controls (dummyWins) / died (oneShot) */
+  ended?: 'dummyWon' | 'dummyDied';
+  /** the run broke a rule of its goal and cannot meet it any more (oneShot:
+   * the dummy lost life and lived); a sentence, and verifyRun's refusal */
+  failed?: string;
   used: Record<CardName, number>;
   usedInHand: Record<CardName, number>;
   usedInRecycle: Record<CardName, number>;
@@ -364,6 +412,16 @@ function unitsOf(state: GameState, seat: Seat) {
  * property of the board (the cumulative ones are tallied from events) */
 function boardValue(goal: Goal, state: GameState): number {
   if (goal.kind === 'unitsInPlay') return unitsOf(state, PLAYER).length;
+  if (goal.kind === 'life') return Math.max(0, state.players[PLAYER]!.life);
+  if (goal.kind === 'tokenSet') {
+    // the player's tokens by name: unit tokens (a Robot) and spell tokens alike
+    const have = new Map<CardName, number>();
+    for (const e of Object.values(state.entities)) {
+      if (!e || e.controller !== PLAYER || !(e.kind === 'spellToken' || (e.kind === 'unit' && e.token))) continue;
+      have.set(e.card, (have.get(e.card) ?? 0) + 1);
+    }
+    return Object.entries(goal.tokens).reduce((n, [name, want]) => n + Math.min(have.get(name) ?? 0, want), 0);
+  }
   if (goal.kind === 'unitSize') {
     // one number for a two-number goal: the best unit's progress on its
     // weaker side, scaled to the larger target — for the usual square goal
@@ -383,7 +441,93 @@ function boardValue(goal: Goal, state: GameState): number {
 }
 
 function goalTarget(goal: Goal): number {
-  return goal.kind === 'unitSize' ? Math.max(Math.max(1, goal.p), Math.max(1, goal.t)) : goal.n;
+  switch (goal.kind) {
+    case 'unitSize': return Math.max(Math.max(1, goal.p), Math.max(1, goal.t));
+    case 'tokenSet': return Object.values(goal.tokens).reduce((a, b) => a + b, 0);
+    case 'dummyWins': case 'oneShot': return 1;
+    default: return goal.n;
+  }
+}
+
+/** `ability:<card>#<i>` names a graft cause (CR 722.1a) */
+function isGraftCause(effectKey: string | undefined): boolean {
+  const m = effectKey ? /^ability:(.+)#(\d+)$/.exec(effectKey) : null;
+  if (!m) return false;
+  try { return !!getCard(m[1]!).abilities?.[Number(m[2])]?.graftCause; } catch { return false; }
+}
+
+/**
+ * The 2026-10-24 tallies, read off one action. Every one is cheap and they
+ * are kept whatever the goal, so the fold has one shape.
+ *  · draws: the cards seat 0 draws, per turn — the 'turn' event starts a new
+ *    count. The bottom step's "puts 2 on the bottom" is a 'draw' event too
+ *    (apply.ts doBottom) and is not a draw. Turn 1's card step happens in the
+ *    deal, before any action, so turn 1 counts only what effects draw.
+ *  · graftSizes: each graft-cause composite seat 0 puts on the stack (CR 722.4),
+ *    triggered or activated, by its parts — its own effect, each graft that
+ *    joined (a bounded graft already used this turn does not, CR 722.5a), and
+ *    a multiplier's repeats (CR 722.7). Outside a battle window an item
+ *    resolves inside the action and only 'stackFlash' carries it; in a window
+ *    it is still on the stack after the action.
+ *  · manaSpent: seat 0's resources that went from open to expended (E.payMana
+ *    is the one place mana is paid). Not seen: mana paid in an action that
+ *    also starts the next turn (the refresh reopens it first).
+ *  · stackBest: the most items on the stack after any action (only a battle
+ *    window holds a stack; outside one every item resolves at once).
+ *  · ended: how the game ended, for the two goals that are about the ending.
+ *    The dummy WON by an effect it controls when the item resolving as the
+ *    game ended is the dummy's (a concession is not an effect). The dummy
+ *    DIED in one blow when the action that killed it took life from it once.
+ *  · failed (oneShot): the dummy lost life and lived, or took two losses in
+ *    the action that killed it — "if it takes any amount of damage that
+ *    isn't lethal, you lose".
+ */
+function foldTallies(next: RunAcc, before: GameState, action: Action, after: GameState, events: EngineEvent[]): void {
+  const items = new Map<number, StackItem>();
+  let resolving: StackItem | undefined;
+  let dummyLosses = 0;
+  const seen = new Set<number>();
+  for (const ev of events) {
+    const d = (ev.data ?? {}) as Record<string, unknown>;
+    if (ev.type === 'turn') {
+      const best = next.draws?.best ?? 0;
+      next.draws = { turn: typeof d['turn'] === 'number' ? d['turn'] : after.turn, n: 0, best };
+    } else if (ev.type === 'draw' && d['seat'] === PLAYER && action.type !== 'bottomCards' && typeof d['n'] === 'number') {
+      const cur = next.draws ?? { turn: before.turn, n: 0, best: 0 };
+      const n = cur.n + d['n'];
+      next.draws = { turn: cur.turn, n, best: Math.max(cur.best, n) };
+    } else if (ev.type === 'stackFlash' || ev.type === 'stackPushed') {
+      const item = ev.type === 'stackFlash' ? d['item'] as StackItem | undefined : after.stack.find(it => it.id === d['id']);
+      if (!item) continue;
+      items.set(item.id, item);
+      if (!seen.has(item.id) && item.controller === PLAYER && (item.kind === 'triggered' || item.kind === 'activated')
+        && isGraftCause(item.parts[0]?.effectKey)) {
+        seen.add(item.id);
+        const have = next.graftSizes ?? [];
+        if (!have.includes(item.parts.length)) next.graftSizes = [...have, item.parts.length].sort((a, b) => a - b);
+      }
+    } else if (ev.type === 'resolved' && typeof d['id'] === 'number') {
+      resolving = items.get(d['id']) ?? before.stack.find(it => it.id === d['id']) ?? resolving;
+    } else if (ev.type === 'lifeLost' && d['seat'] === DUMMY) {
+      dummyLosses++;
+    } else if (ev.type === 'gameOver') {
+      if (d['winner'] === DUMMY && d['conceded'] === undefined && resolving?.controller === DUMMY) next.ended = 'dummyWon';
+      if (d['winner'] === PLAYER && d['conceded'] === undefined) next.ended = 'dummyDied';
+    }
+  }
+  // mana: open → expended, resource by resource, within one turn
+  if (after.turn === before.turn) {
+    const rb = before.players[PLAYER]!.resources, ra = after.players[PLAYER]!.resources;
+    let spent = 0;
+    for (let i = 0; i < Math.min(rb.length, ra.length); i++) if (rb[i]!.state === 'open' && ra[i]!.state === 'expended') spent++;
+    if (spent) next.manaSpent = (next.manaSpent ?? 0) + spent;
+  }
+  if (after.stack.length > (next.stackBest ?? 0)) next.stackBest = after.stack.length;
+  if (next.goal.kind === 'oneShot' && !next.failed) {
+    const alive = after.players[DUMMY]!.life > 0;
+    if (alive && dummyLosses > 0) next.failed = 'The dummy lost life and lived: the blow has to be the one that kills it.';
+    else if (!alive && dummyLosses > 1) next.failed = 'The dummy was hit more than once: the blow has to be the one that kills it.';
+  }
 }
 
 /**
@@ -393,13 +537,14 @@ function goalTarget(goal: Goal): number {
  * change nothing.
  */
 export function foldRun(acc: RunAcc, before: GameState, action: Action, after: GameState, events: EngineEvent[]): RunAcc {
-  if (acc.met) return acc;
+  if (acc.met || acc.failed) return acc;
   const next: RunAcc = {
     ...acc, used: { ...acc.used }, usedInHand: { ...acc.usedInHand },
     usedInRecycle: { ...acc.usedInRecycle }, usedInDeck: { ...acc.usedInDeck },
     actions: acc.actions + 1, turn: after.turn,
   };
   foldUsed(next, before, action, after, events);
+  foldTallies(next, before, action, after, events);
   for (const ev of events) {
     const d = (ev.data ?? {}) as Record<string, unknown>;
     if (ev.type === 'tokenCreated' && d['seat'] === PLAYER) next.tokens++;
@@ -418,13 +563,39 @@ export function foldRun(acc: RunAcc, before: GameState, action: Action, after: G
   next.value = g.kind === 'spellTokens' ? next.tokens
     : g.kind === 'counters' ? next.counters
     : g.kind === 'unitsPlayed' ? next.played
+    : g.kind === 'drawsInTurn' ? next.draws?.best ?? 0
+    : g.kind === 'graftLadder' ? (next.graftSizes ?? []).filter(k => k >= 1 && k <= g.n).length
+    : g.kind === 'manaSpent' ? next.manaSpent ?? 0
+    : g.kind === 'stackDepth' ? next.stackBest ?? 0
+    : g.kind === 'dummyWins' ? Number(next.ended === 'dummyWon')
+    : g.kind === 'oneShot' ? Number(next.ended === 'dummyDied' && !next.failed)
     : boardValue(g, after);
-  if (next.value >= goalTarget(g)) { next.met = true; next.metTurn = after.turn; }
+  if (!next.failed && next.value >= goalTarget(g)) { next.met = true; next.metTurn = after.turn; }
   return next;
 }
 
 export function progress(acc: RunAcc): { value: number; target: number; met: boolean } {
   return { value: acc.value, target: goalTarget(acc.goal), met: acc.met };
+}
+
+/** why the run can no longer meet its goal (a rule of the goal was broken), or null */
+export function runFailed(acc: RunAcc): string | null {
+  return acc.failed ?? null;
+}
+
+/** What a row's setup changes, as the sentences a player reads beside the goal;
+ * [] for the standard deal. */
+export function setupLines(setup: ChallengeSetup | undefined): string[] {
+  const out: string[] = [];
+  if (setup?.dummyLife !== undefined && setup.dummyLife !== DUMMY_LIFE) out.push(`The dummy starts with ${setup.dummyLife} life.`);
+  if (setup?.emblem) out.push(`You start with an emblem: “${EMBLEM_TEXT[setup.emblem]}”`);
+  return out;
+}
+
+/** "5 Robots, 5 Crystals and 5 Poisons" */
+function tokenList(tokens: Record<CardName, number>): string {
+  const parts = Object.entries(tokens).map(([name, n]) => plural(n, name, `${name}s`));
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts.join('');
 }
 
 const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
@@ -437,6 +608,15 @@ export function goalText(goal: Goal): string {
     case 'unitSize': return `Have a ${goal.p}/${goal.t} unit in play`;
     case 'counters': return `Put ${plural(goal.n, '+1/+1 counter', '+1/+1 counters')} on your units`;
     case 'unitsPlayed': return `Play ${plural(goal.n, 'unit card', 'unit cards')}`;
+    case 'tokenSet': return `Control ${tokenList(goal.tokens)} at once`;
+    case 'drawsInTurn': return `Draw ${plural(goal.n, 'card', 'cards')} in a single turn`;
+    case 'dummyWins': return 'Lose the game to an effect the dummy controls';
+    case 'oneShot': return 'Defeat the dummy with a single blow';
+    case 'graftLadder': return goal.n === 1 ? 'Fire a graft effect with exactly 1 part'
+      : `Fire a graft effect with exactly 1 part, one with exactly 2, … up to ${goal.n}`;
+    case 'manaSpent': return `Spend ${goal.n} mana`;
+    case 'stackDepth': return `Have ${plural(goal.n, 'effect', 'effects')} on the stack at once`;
+    case 'life': return `Reach ${goal.n} life`;
   }
 }
 
@@ -448,6 +628,14 @@ export function progressLabel(goal: Goal): string {
     case 'unitSize': return 'Biggest unit';
     case 'counters': return '+1/+1 counters';
     case 'unitsPlayed': return 'Units played';
+    case 'tokenSet': return 'Tokens in the set';
+    case 'drawsInTurn': return 'Most cards drawn in a turn';
+    case 'dummyWins': return 'Dummy wins';
+    case 'oneShot': return 'Dummy defeated';
+    case 'graftLadder': return 'Graft sizes fired';
+    case 'manaSpent': return 'Mana spent';
+    case 'stackDepth': return 'Deepest stack';
+    case 'life': return 'Life';
   }
 }
 
@@ -604,6 +792,7 @@ export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown,
     acc = foldRun(acc, state, a, r.state, r.events);
     state = r.state;
     opts.onStep?.(i, state);
+    if (acc.failed) return { ok: false, error: `action ${i}: ${acc.failed}`, at: i };
     // the goal first: met on the action that also ended the game still counts (CT-353)
     if (acc.met) return { ok: true, score: scoreRun(acc, def.par), actions: (actions as Action[]).slice(0, i + 1) };
     if (state.phase === 'gameover') {

@@ -14876,7 +14876,8 @@ export class E {
     this.ev('turn', `— Turn ${this.s.turn} (initiative: ${this.pname(this.initiative)}) —`, { turn: this.s.turn });
     for (const p of this.s.players) {
       for (const r of p.resources) if (r.state === 'expended') r.state = 'open';
-      p.activationsLeft = ACTIVATIONS_PER_TURN;
+      // a lesson deal may lift the cap (a Weekly Challenge emblem, lessondeal.ts)
+      p.activationsLeft = this.s.lesson?.activations?.[p.seat] ?? ACTIVATIONS_PER_TURN;
       // draft mode: turn 1's draws were dealt with the opening hand (Manual
       // p.16), and later draws go clockwise from initiative like the packs.
       // constructed: the combined draw phase (draw 4, bottom 2) is below.

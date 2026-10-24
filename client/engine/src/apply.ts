@@ -213,13 +213,15 @@ export function createGame(
       drawPerTurn: lesson.drawPerTurn, shardsPerTurn: lesson.shardsPerTurn, firstShardTurn: lesson.firstShardTurn, shardState: lesson.shardState,
       // absent unless a seat plays the real constructed card step (a Weekly Challenge)
       ...(lesson.cardStep ? { cardStep: lesson.cardStep } : {}),
+      // absent unless the deal lifts the activation cap (a challenge emblem)
+      ...(lesson.activations ? { activations: lesson.activations } : {}),
     } } : {}),
     players: names.map((name, seat) => ({
       seat, name, life: lesson?.startingLife[seat] ?? draftDeal?.startingLife ?? 30, hand: [], bin: [],
       // starting Prismites are dealt face-down (Manual: "they start dormant");
       // they typically receive turn 1's two activations
       resources: Array.from({ length: lesson?.prismites[seat] ?? 2 }, () => ({ kind: 'prismite' as const, state: 'dormant' as const })),
-      activationsLeft: ACTIVATIONS_PER_TURN,
+      activationsLeft: lesson?.activations?.[seat] ?? ACTIVATIONS_PER_TURN,
       // Light & Dark player counters (CR 112.15) and the cache zone (CR 403.1).
       // Optional on the type so pre-expansion saved games still load; new
       // games start them explicitly.
@@ -663,7 +665,7 @@ function doActivateResource(e: E, seat: Seat, index: number): void {
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
   const r = e.player(seat).resources[index];
   e.need(r && r.state === 'dormant', 'not a dormant resource');
-  e.need(e.player(seat).activationsLeft > 0, `max ${ACTIVATIONS_PER_TURN} activations per turn`);
+  e.need(e.player(seat).activationsLeft > 0, `max ${e.s.lesson?.activations?.[seat] ?? ACTIVATIONS_PER_TURN} activations per turn`);
   r.state = 'open';
   e.player(seat).activationsLeft--;
   e.ev('resourceActivated', `${e.pname(seat)} activates a ${r.kind} resource.`, { seat, kind: r.kind });

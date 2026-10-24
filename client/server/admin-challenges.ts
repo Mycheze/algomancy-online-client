@@ -27,7 +27,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ChallengeDef, Goal, RunScore } from '../engine/src/challenge.ts';
+import type { ChallengeDef, ChallengeSetup, Goal, RunScore } from '../engine/src/challenge.ts';
 import type { Action, CardName } from '../engine/src/types.ts';
 import { CHALLENGES, REFERENCE_RUNS_DIR, WEEK_MS, hasOpened, isClosed, weekWindow } from './challenges.ts';
 import { entrants, runCount } from './challenge-store.ts';
@@ -41,6 +41,8 @@ export type RefResult =
 
 export interface AdminChallengeRow {
   id: string; week: string; title: string; blurb: string; goal: Goal; seed: number; par: number;
+  /** what the row changes about the deal (the dummy's life, an emblem), when anything */
+  setup?: ChallengeSetup;
   /** epoch ms, UTC */
   opens: number; closes: number;
   status: 'closed' | 'open' | 'upcoming';
@@ -129,6 +131,7 @@ export async function adminChallenges(
     const status = isClosed(def, now) ? 'closed' : hasOpened(def, now) ? 'open' : 'upcoming';
     return {
       id: def.id, week: def.week, title: def.title, blurb: def.blurb, goal: def.goal, seed: def.seed, par: def.par,
+      ...(def.setup ? { setup: def.setup } : {}),
       opens, closes, status,
       ...(status === 'upcoming' ? { opensInDays: Math.ceil((opens - now) / DAY_MS) } : {}),
       ref: entries[i]!.done ?? { state: 'pending' },

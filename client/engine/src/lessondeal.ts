@@ -47,16 +47,26 @@ export interface LessonDeal {
    * as in every Learn to Play deal — is ['lesson', 'lesson'], and the sanitized
    * deal then carries no key at all, so those games replay unchanged. */
   cardStep?: [LessonCardStep, LessonCardStep];
+  /** Resource activations each seat may make in each planning step (the real
+   * game: 2, ACTIVATIONS_PER_TURN). A Weekly Challenge's emblem "You may
+   * activate any number of dormant resources during your planning step" is
+   * ANY_ACTIVATIONS here (challenge.ts). Absent — every other deal — is the
+   * real 2, and the sanitized deal then carries no key, so those games replay
+   * unchanged. */
+  activations?: [number, number];
 }
+
+/** "any number": more activations than a seat can have dormant resources */
+export const ANY_ACTIVATIONS = 99;
 
 export type LessonCardStep = 'lesson' | 'constructed';
 
 /** The part of the deal play reads after the deal itself, carried on GameState. */
-export type LessonRules = Pick<LessonDeal, 'drawPerTurn' | 'shardsPerTurn' | 'firstShardTurn' | 'shardState' | 'cardStep'>;
+export type LessonRules = Pick<LessonDeal, 'drawPerTurn' | 'shardsPerTurn' | 'firstShardTurn' | 'shardState' | 'cardStep' | 'activations'>;
 
 const BOUNDS = {
   openingHand: [0, 15], drawPerTurn: [0, 5], shardsPerTurn: [0, 5],
-  prismites: [0, 6], startingLife: [1, 99], firstShardTurn: [1, 50],
+  prismites: [0, 6], startingLife: [1, 99], firstShardTurn: [1, 50], activations: [0, 99],
 } as const;
 
 export const LESSON_DEFAULTS: LessonDeal = {
@@ -96,6 +106,7 @@ export function sanitizeLessonDeal(raw: unknown): LessonDeal | undefined {
     ...(r['initiative'] === 0 || r['initiative'] === 1 ? { initiative: r['initiative'] as Seat } : {}),
     // only when some seat leaves the default, so a lesson deal's state is byte-identical
     ...(cardStep.includes('constructed') ? { cardStep } : {}),
+    ...(Array.isArray(r['activations']) ? { activations: pair(r['activations'], BOUNDS.activations, [2, 2]) } : {}),
   };
 }
 

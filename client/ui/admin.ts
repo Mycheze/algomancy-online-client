@@ -35,7 +35,7 @@
  */
 import * as acct from './account.ts';
 import { esc } from './util.ts';
-import { goalText, type Goal, type RunScore } from '../engine/src/challenge.ts';
+import { goalText, setupLines, type ChallengeSetup, type Goal, type RunScore } from '../engine/src/challenge.ts';
 
 /* ── the shapes the server sends (server/admin.ts) ─────────────────── */
 
@@ -88,7 +88,7 @@ type RefResult =
   | { state: 'pending' };
 
 interface ChallengeRow {
-  id: string; week: string; title: string; blurb: string; goal: Goal; seed: number; par: number;
+  id: string; week: string; title: string; blurb: string; goal: Goal; seed: number; par: number; setup?: ChallengeSetup;
   opens: number; closes: number; status: 'closed' | 'open' | 'upcoming';
   opensInDays?: number; ref: RefResult; runs?: number; players?: number;
 }
@@ -408,7 +408,7 @@ function challengesHtml(): string {
     <tr class="${c.status === 'closed' ? 'dim' : ''}">
       <td>${challengeStatus(c)}</td>
       <td><b>${esc(c.title)}</b><br><span class="unk">${esc(c.id)}</span></td>
-      <td class="notecell"><b>${esc(goalText(c.goal))}</b><br>${esc(c.blurb)}</td>
+      <td class="notecell"><b>${esc(goalText(c.goal))}</b><br>${setupLines(c.setup).map(l => `${esc(l)}<br>`).join('')}${esc(c.blurb)}</td>
       <td>${esc(utc(c.opens))}<br>${esc(utc(c.closes))}</td>
       <td class="num">${c.seed}</td>
       <td class="num">${c.par}</td>

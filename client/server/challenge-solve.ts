@@ -8,6 +8,8 @@
  *
  *   node server/challenge-solve.ts <id>                 every policy for the row's goal kind; prints each score
  *   node server/challenge-solve.ts <id> --write         …and writes the best (lowest raw) as challenge-runs/<id>.json
+ *        (2026-11-29-hundred: --policy tithe-loop — prickly reaches 100/100 only near 51 units,
+ *         where the engine takes seconds an action and a solve takes hours)
  *        [--policy NAME] [--n N] [--turns T] [--trace]  one policy / another n (never written) / a turn cap / every move
  *   node server/challenge-solve.ts --measure [--kind K] [--policy NAME] [--turns 12] [--ns 20,40,100]
  *        each policy with the goal out of reach: its best progress by turn 8 / 12 / 20,
@@ -37,6 +39,8 @@
  *     dummy's moves and the player's passes, until the table is quiet)
  *   · combat: no attack unless the policy says 'probe' (the weakest unit, so
  *     battle-speed cards get a window) or 'all'; never a block
+ *   · a policy's `pick` hook, when it has one, is asked first and may name
+ *     the move itself (a scripted line: the puzzles whose order is the point)
  * Before each move it looks for a move that meets the goal outright and takes
  * it — the run ends on that action.
  *
@@ -55,8 +59,16 @@ import {
 import type { Action, CardName, EngineEvent, GameState, ResourceKind } from '../engine/src/types.ts';
 import { CHALLENGES, REFERENCE_RUNS_DIR, challengeById } from './challenges.ts';
 
+/** what a policy's `pick` hook sees: the state, the player's legal moves (no
+ * concede), the player, the run so far, and the row */
+export interface PickCtx { s: GameState; legal: Action[]; p: GameState['players'][number]; acc: RunAcc; def: ChallengeDef;
+  /** the card a hand/bin/cache index names, for the move given */
+  cardOf: (a: Action) => CardName | undefined }
+
 export interface Policy {
   name: string;
+  /** asked before the generic loop: a move, or undefined to let the loop choose */
+  pick?: (c: PickCtx) => Action | undefined;
   deck: CardName[];
   /** the element every recycle and every Prismite turns into, or one per resource in order (the last repeats) */
   element: ResourceKind | ResourceKind[];
@@ -81,6 +93,21 @@ export interface Policy {
   fodder?: CardName[];
   /** names played only when the played-out result meets the goal (a pump that lasts until regroup) */
   finish?: CardName[];
+  /** never play a card over one of the player's own effects: let the stack resolve first (a
+   * Life Channel cast over Equilibriate would count the life before Equilibriate gave it) */
+  resolveFirst?: boolean;
+  /** names never recycled (the one card the deck is built around) */
+  neverRecycle?: CardName[];
+  /** activateIfGain counts only the goal moving, not a better board */
+  goalOnly?: boolean;
+  /** names in `play` played only while the player controls none of that name (a single host) */
+  single?: boolean;
+  /** names grafted (from hand or bin) onto the player's `graftHost`, when no gainful activation is left */
+  graft?: CardName[];
+  graftHost?: CardName;
+  /** names never recycled or bottomed while another card will do (cards the policy plays some
+   * other way than `play`: a `finish`, a combo piece) */
+  keep?: CardName[];
   /** a name held until the player controls at least this many units (All-Consuming Blight waits for a crowd) */
   hold?: Record<CardName, number>;
 }
@@ -162,6 +189,25 @@ export const POLICIES: Record<Goal['kind'], Policy[]> = {
       deck: seq(['Celestial Shifter', 2], ['Nebula Drifter', 2], ['Recyclable Sentinel', 2], ['Refuse Reclaimer', 2], ['Astralith', 2], ['Monke', 2], ['Eldritch Dreamtender', 2], ['Self-Assembly', 2], ['Body Swap', 2], ['Unmake', 2], ['Unstable Refactor', 2], ['Discharge', 2], ['Worldbender', 2], ['A Pile of Rubbish', 2], ['Biomass Devourer', 2]),
       element: 'metal', play: ['Celestial Shifter'], activateIfGain: ['Celestial Shifter'],
     },
+    {
+      // Something Big at 80/80: Equilibriate lifts 30 to 64 (the dummy's 99
+      // pulls it up), Flesh Tithe pays 63 of it for a 63/63, and the next
+      // battle's second Equilibriate and two Life Channels pump it past 80
+      // before combat damage. Solve with --policy tithe-loop: prickly reaches
+      // 80/80 only on turn 11, on a board whose replay takes 14 s
+      name: 'tithe-loop',
+      deck: [
+        'Hand Peeper', ...rep('Seer of Empty Spaces', 2), 'Reap the Due',
+        'Equilibriate', 'Reap the Due', ...rep('Retribution Thing', 2),
+        ...rep('Insatiable Want', 2), ...rep('Divine Foresight', 2),
+        'Equilibriate', ...rep('Penance', 2), 'Hand Peeper',
+        'Flesh Tithe', ...rep('Life Channel', 2), 'Flesh Tithe',
+        ...rep('Shard Sprite', 2), ...rep('Prismatic Observer', 2),
+      ],
+      element: ['light', 'wood', 'light'],
+      fodder: seq(['Seer of Empty Spaces', 2], ['Reap the Due', 2], ['Retribution Thing', 2], ['Insatiable Want', 2], ['Divine Foresight', 2], ['Penance', 2], ['Shard Sprite', 2], ['Prismatic Observer', 2]),
+      play: ['Equilibriate', 'Life Channel', 'Flesh Tithe', 'Hand Peeper'], attack: 'all', resolveFirst: true,
+    },
   ],
   counters: [
     {
@@ -205,6 +251,268 @@ export const POLICIES: Record<Goal['kind'], Policy[]> = {
       ),
       element: 'wood',
       play: ['Growing Plague', 'Sprouter', 'Mycelial Mentor', 'Warbloom Herald', 'Guardian of the Grotto', 'Prickly Protector', 'Flourishing Flora'],
+    },
+  ],
+  tokenSet: [
+    {
+      // the grove crowd, then Cosmic Conspirator ("if you would create a
+      // Robot, Poison, Crystal or Fireball, you may instead create a token of
+      // any of these types") under one All-Consuming Blight: a Poison for each
+      // unit, each one asked which of the four it should be
+      name: 'conspiracy',
+      deck: [
+        ...interleave(
+          seq(['Pathogenic Enclave', 2], ['Pack Leader', 2], ['Bloomcaster', 2], ['Sylvan Sprouting', 2], ['Accelerated Germination', 2], ['Cosmic Conspirator', 1], ['All-Consuming Blight', 2]),
+          WOOD_FODDER,
+        ),
+      ],
+      element: ['wood', 'metal', 'wood'], fodder: WOOD_FODDER,
+      play: ['Pack Leader', 'Cosmic Conspirator', 'Sylvan Sprouting', 'Pathogenic Enclave', 'Bloomcaster', 'Accelerated Germination'],
+      single: true, finish: ['All-Consuming Blight'], keep: ['All-Consuming Blight'],
+      activate: ['Pack Leader'],
+    },
+  ],
+  drawsInTurn: [
+    {
+      // a board that draws when it attacks: four Luminary Leaders ("when I
+      // attack in a formation of four or more units, draw") and four
+      // Dreamfloat Drifters ("when I attack, you and target opponent each
+      // draw"); the turn they all attack, the card step's 4 and three
+      // Invigorates held for that battle make 15
+      name: 'draw-attack',
+      deck: [
+        ...interleave(
+          seq(['Luminary Leader', 4], ['Dreamfloat Drifter', 4]),
+          seq(['Sprouter', 2], ['Ralph', 2], ['Warbloom Herald', 2], ['Tidepool Terror', 2], ['Curio Drifter', 2], ['Mycelial Mentor', 2], ['Whispering Mantid', 2]),
+        ),
+        ...interleave(rep('Invigorate', 3), seq(['Guardian of the Grotto', 2], ['Mindspore Fiend', 2], ['Rider of the Tides', 2], ['Bloated Manablub', 2])),
+        ...seq(['Sprouter', 2], ['Ralph', 2], ['Warbloom Herald', 2], ['Tidepool Terror', 2]),
+      ],
+      element: ['wood', 'water', 'wood'],
+      fodder: seq(['Sprouter', 2], ['Ralph', 2], ['Warbloom Herald', 2], ['Tidepool Terror', 2], ['Curio Drifter', 2], ['Mycelial Mentor', 2], ['Whispering Mantid', 2],
+        ['Guardian of the Grotto', 2], ['Mindspore Fiend', 2], ['Rider of the Tides', 2], ['Bloated Manablub', 2]),
+      play: ['Luminary Leader', 'Dreamfloat Drifter'], keep: ['Invigorate'], attack: 'all',
+      // the Invigorates wait for the battle that can reach the goal with them
+      pick: ({ s, legal, acc, def, cardOf }) => {
+        if (def.goal.kind !== 'drawsInTurn' || !s.battle) return undefined;
+        const inv = legal.filter(a => a.type === 'playCard' && cardOf(a) === 'Invigorate');
+        if (!inv.length) return undefined;
+        const now = acc.draws && acc.draws.turn === s.turn ? acc.draws.n : 0;
+        const held = s.players[PLAYER]!.hand.filter(n => n === 'Invigorate').length;
+        return now + held >= def.goal.n && s.stack.length === 0 ? inv[0] : undefined;
+      },
+    },
+  ],
+  manaSpent: [
+    {
+      // the emblem lets every recycled card be opened the turn it is
+      // recycled; Celestial Shifter's "[x]: I become base X/X" drinks
+      // whatever is open, as often as there is mana
+      name: 'shifter-sink',
+      deck: [
+        'Celestial Shifter',
+        ...seq(['Nebula Drifter', 2], ['Refuse Reclaimer', 2], ['Astralith', 2], ['Monke', 2], ['Eldritch Dreamtender', 2],
+          ['A Pile of Rubbish', 2], ['Unmake', 2], ['Recyclable Sentinel', 2], ['Construct Overseer', 2], ['Synaptic Energizer', 2],
+          ['Void Memory', 2], ['Technological Superiority', 2], ['Body Swap', 2], ['Scrap For Parts', 2], ['Worldbender', 2]),
+      ],
+      element: 'metal',
+      fodder: seq(['Nebula Drifter', 2], ['Refuse Reclaimer', 2], ['Astralith', 2], ['Monke', 2], ['Eldritch Dreamtender', 2],
+        ['A Pile of Rubbish', 2], ['Unmake', 2], ['Recyclable Sentinel', 2], ['Construct Overseer', 2], ['Synaptic Energizer', 2],
+        ['Void Memory', 2], ['Technological Superiority', 2], ['Body Swap', 2], ['Scrap For Parts', 2], ['Worldbender', 2]),
+      play: ['Celestial Shifter'], single: true, activateIfGain: ['Celestial Shifter'], goalOnly: true, neverRecycle: ['Celestial Shifter'],
+    },
+  ],
+  life: [
+    {
+      // Equilibriate lifts 30 to 64 (the dummy's 99 pulls it up), Flesh Tithe
+      // pays 63 for a 63/63, and Stellar Fission erases it in the next battle:
+      // "its controller gains life equal to its power plus its defense"
+      name: 'fission',
+      deck: [
+        'Hand Peeper', ...rep('Seer of Empty Spaces', 2), 'Reap the Due',
+        'Equilibriate', 'Reap the Due', ...rep('Retribution Thing', 2),
+        ...rep('Insatiable Want', 2), ...rep('Divine Foresight', 2),
+        'Stellar Fission', ...rep('Penance', 2), 'Hand Peeper',
+        'Flesh Tithe', 'Stellar Fission', ...rep('Shard Sprite', 2), 'Flesh Tithe',
+        ...rep('Prismatic Observer', 2),
+      ],
+      element: ['light', 'wood', 'light'],
+      fodder: seq(['Seer of Empty Spaces', 2], ['Reap the Due', 2], ['Retribution Thing', 2], ['Insatiable Want', 2], ['Divine Foresight', 2], ['Penance', 2], ['Shard Sprite', 2], ['Prismatic Observer', 2]),
+      play: ['Equilibriate', 'Flesh Tithe', 'Hand Peeper'], finish: ['Stellar Fission'], keep: ['Stellar Fission'],
+      attack: 'all', resolveFirst: true,
+    },
+  ],
+  stackDepth: [
+    {
+      // a crowd of 30, one All-Consuming Blight (a Poison for each unit),
+      // then every Poison cast in one battle window, each over the last:
+      // the dummy passes and nothing resolves until the player passes too
+      name: 'poison-stack',
+      deck: interleave(
+        seq(['Pathogenic Enclave', 2], ['Pack Leader', 2], ['Bloomcaster', 2], ['Sylvan Sprouting', 2], ['All-Consuming Blight', 2]),
+        WOOD_FODDER,
+      ),
+      element: 'wood', fodder: WOOD_FODDER, hold: { 'All-Consuming Blight': 30 },   // the goal's 30 (a Poison a unit)
+      play: ['All-Consuming Blight', 'Pack Leader', 'Sylvan Sprouting', 'Pathogenic Enclave', 'Bloomcaster'],
+      activate: ['Pack Leader'], attack: 'probe', keep: ['All-Consuming Blight'],
+      pick: ({ s, legal, def }) => {
+        const want = def.goal.kind === 'stackDepth' ? def.goal.n : 30;
+        if (s.decision?.seat === PLAYER && /Poison/.test(s.decision.prompt) && s.decision.options.length) {
+          return { type: 'decide', seat: PLAYER, choice: 0 };
+        }
+        if (!s.battle) return undefined;
+        // the Poisons ride the attack into the battle's region (a spell token is
+        // cast where it is), beside the weakest unit, once there are enough
+        if (legal.some(a => a.type === 'declareAttack')) {
+          const poisons = Object.values(s.entities).filter(e => e && e.kind === 'spellToken' && e.card === 'Poison' && e.controller === PLAYER);
+          const unit = Object.values(s.entities).find(e => e && e.kind === 'unit' && e.controller === PLAYER
+            && legal.some(a => a.type === 'declareAttack' && a.columns.length === 1 && a.columns[0]![0] === e.id));
+          if (poisons.length >= want && unit) return { type: 'declareAttack', seat: PLAYER, columns: [[unit.id]], spellTokens: poisons.map(e => e.id) };
+          return undefined;
+        }
+        return legal.find(a => a.type === 'castSpellToken' && s.entities[a.entityId]?.card === 'Poison');
+      },
+    },
+  ],
+  dummyWins: [
+    {
+      // Spirit of Vengeance ("whenever a unit dies, I deal 1 damage to each
+      // opponent") attacks beside a Sprouter; Rebalance hands the Spirit to
+      // the dummy, and the Sprouter sacrifices itself — at 1 life (Flesh
+      // Tithe paid the rest), the dummy's Spirit deals the last point
+      name: 'vengeance',
+      deck: [
+        'Spirit of Vengeance', 'Sprouter', ...rep('Ignis Sprite', 2),
+        'Flesh Tithe', 'Rebalance', ...rep('Cinder Scuttler', 2),
+        ...rep('Seer of Empty Spaces', 2), ...rep('Reap the Due', 2), ...rep('Retribution Thing', 2),
+        ...rep('Insatiable Want', 2), ...rep('Divine Foresight', 2), ...rep('Penance', 2),
+      ],
+      element: ['fire', 'fire', 'light', 'wood', 'light'],
+      fodder: seq(['Ignis Sprite', 2], ['Cinder Scuttler', 2], ['Seer of Empty Spaces', 2], ['Reap the Due', 2], ['Retribution Thing', 2], ['Insatiable Want', 2], ['Divine Foresight', 2], ['Penance', 2]),
+      play: ['Spirit of Vengeance', 'Sprouter', 'Flesh Tithe'], keep: ['Rebalance'],
+      pick: ({ s, legal, p, cardOf }) => {
+        const mine = (card: CardName) => Object.values(s.entities).find(e => e && e.kind === 'unit' && e.card === card && e.controller === PLAYER);
+        const theirs = (card: CardName) => Object.values(s.entities).find(e => e && e.kind === 'unit' && e.card === card && e.controller === DUMMY);
+        const sov = mine('Spirit of Vengeance'), sprout = mine('Sprouter');
+        // a question: hand over the Spirit
+        if (s.decision?.seat === PLAYER && /Rebalance/.test(s.decision.prompt)) {
+          const i = s.decision.options.findIndex(o => /Spirit of Vengeance/.test(o.label));
+          if (i >= 0) return { type: 'decide', seat: PLAYER, choice: i };
+        }
+        if (legal.some(a => a.type === 'declareAttack')) {
+          const go = sov && sprout && p.life <= 1 && p.hand.includes('Rebalance');
+          return go ? { type: 'declareAttack', seat: PLAYER, columns: [[sov!.id], [sprout!.id]] }
+            : legal.find(a => a.type === 'declareAttack' && a.columns.length === 0 && !a.spellTokens?.length);
+        }
+        if (s.battle && s.stack.length === 0) {
+          // the Spirit is still ours: Rebalance; it is the dummy's: the Sprouter dies
+          if (sov) return legal.find(a => a.type === 'playCard' && cardOf(a) === 'Rebalance');
+          if (theirs('Spirit of Vengeance') && sprout) return legal.find(a => a.type === 'activateAbility' && a.entityId === sprout.id);
+        }
+        return undefined;
+      },
+    },
+  ],
+  oneShot: [
+    {
+      // Flesh Tithe pays 29 for a 29/29; it attacks alone, Life Channel makes
+      // it 32/32 and Burgeon doubles its power: one hit of 64 into 60
+      name: 'tithe-burgeon',
+      deck: [
+        'Flesh Tithe', ...rep('Seer of Empty Spaces', 2), 'Reap the Due',
+        'Life Channel', 'Burgeon', 'Reap the Due', ...rep('Retribution Thing', 2),
+        ...rep('Insatiable Want', 2), ...rep('Divine Foresight', 2), ...rep('Penance', 2),
+        ...rep('Shard Sprite', 2), ...rep('Prismatic Observer', 2),
+      ],
+      element: ['light', 'wood', 'light'],
+      fodder: seq(['Seer of Empty Spaces', 2], ['Reap the Due', 2], ['Retribution Thing', 2], ['Insatiable Want', 2], ['Divine Foresight', 2], ['Penance', 2], ['Shard Sprite', 2], ['Prismatic Observer', 2]),
+      play: ['Flesh Tithe', 'Life Channel', 'Burgeon'], keep: ['Life Channel', 'Burgeon'], resolveFirst: true,
+      // attack only with the Tithe's unit, and only when both pumps are in hand
+      pick: ({ s, legal, p }) => {
+        if (!legal.some(a => a.type === 'declareAttack')) return undefined;
+        const big = Object.values(s.entities).find(e => e && e.kind === 'unit' && e.controller === PLAYER && e.card !== 'Seer of Empty Spaces');
+        const ready = big && p.hand.includes('Life Channel') && p.hand.includes('Burgeon')
+          && legal.some(a => a.type === 'declareAttack' && a.columns.length === 1 && a.columns[0]![0] === big.id);
+        return ready ? { type: 'declareAttack', seat: PLAYER, columns: [[big!.id]] }
+          : legal.find(a => a.type === 'declareAttack' && a.columns.length === 0 && !a.spellTokens?.length);
+      },
+    },
+  ],
+  graftLadder: [
+    {
+      // an Omniwield Evoker ("[three]: [Switch] put a +1/+1 counter on me") is
+      // a graft cause that fires on demand: fire it, graft one more, fire
+      // again. A bounded graft (Recyclable Sentinel's [Switch1]) joins only the
+      // first firing of a turn (CR 722.5a), so a turn can fire two sizes
+      name: 'evoker-ladder',
+      deck: [
+        ...interleave(
+          seq(['Omniwield Evoker', 1], ['Sprouter', 2], ['Guardian of the Grotto', 2], ['Warbloom Herald', 2], ['Sudden Bloom', 3], ['Construct Overseer', 2]),
+          seq(['Nebula Drifter', 2], ['Refuse Reclaimer', 2], ['Astralith', 2], ['Monke', 2], ['Eldritch Dreamtender', 2], ['A Pile of Rubbish', 2], ['Unmake', 2], ['Body Swap', 2]),
+        ),
+        ...seq(['Void Memory', 2], ['Worldbender', 2], ['Scrap For Parts', 2], ['Technological Superiority', 2]),
+      ],
+      element: ['metal', 'metal', 'wood', 'metal'], maxResources: 10,
+      fodder: seq(['Nebula Drifter', 2], ['Refuse Reclaimer', 2], ['Astralith', 2], ['Monke', 2], ['Eldritch Dreamtender', 2], ['A Pile of Rubbish', 2], ['Unmake', 2], ['Body Swap', 2],
+        ['Void Memory', 2], ['Worldbender', 2], ['Scrap For Parts', 2], ['Technological Superiority', 2]),
+      play: ['Omniwield Evoker'], single: true,
+      neverRecycle: ['Omniwield Evoker', 'Sprouter', 'Guardian of the Grotto', 'Warbloom Herald', 'Sudden Bloom', 'Construct Overseer'],
+      keep: ['Sprouter', 'Guardian of the Grotto', 'Warbloom Herald', 'Sudden Bloom', 'Construct Overseer'],
+      pick: ({ s, legal, acc, def, cardOf }) => {
+        if (def.goal.kind !== 'graftLadder' || s.phase !== 'deploy' || s.decision) return undefined;
+        const top = def.goal.n;
+        const host = Object.values(s.entities).find(e => e && e.kind === 'unit' && e.controller === PLAYER && e.card === 'Omniwield Evoker');
+        if (!host) return undefined;
+        const have = new Set(acc.graftSizes ?? []);
+        const fresh = (r: Sim | null): number | null => {
+          const k = (r?.acc.graftSizes ?? []).find(n => !have.has(n) && n <= top);
+          return k ?? null;
+        };
+        const fireIn = (st: GameState) => legalActions(st, PLAYER).find(x => x.type === 'activateAbility' && x.entityId === host.id);
+        const fire = legal.find(x => x.type === 'activateAbility' && x.entityId === host.id);
+        if (fire && fresh(trySim(acc, s, fire)) !== null) return fire;
+        // a graft (or two: a spent bounded graft leaves one more graft at the
+        // size already fired) whose next firing is a new size: the smallest
+        // such size. Where a graft sits in the composite does not change its
+        // size, so one position per card name is enough
+        const grafts = (st: GameState): Action[] => {
+          const seen = new Set<string>();
+          const pl = st.players[PLAYER]!;
+          return legalActions(st, PLAYER).filter(x => {
+            if (x.type !== 'graft' || x.hostId !== host.id) return false;
+            const name = x.from === 'bin' ? pl.bin[x.index] : x.from === 'hand' ? pl.hand[x.index] : pl.cache?.[x.index]?.card;
+            const key = `${x.from}:${name}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+        };
+        let best: Action | undefined, bestK = Infinity;
+        for (const g of grafts(s)) {
+          const r = trySim(acc, s, g);
+          if (!r) continue;
+          const f = fireIn(r.state);
+          let k = f ? fresh(trySim(r.acc, r.state, f)) : null;
+          if (k === null) {
+            for (const g2 of grafts(r.state)) {
+              const r2 = trySim(r.acc, r.state, g2);
+              const f2 = r2 && fireIn(r2.state);
+              const k2 = f2 ? fresh(trySim(r2!.acc, r2!.state, f2)) : null;
+              if (k2 !== null && (k === null || k2 < k)) k = k2;
+            }
+          }
+          if (k !== null && k < bestK) { bestK = k; best = g; }
+        }
+        if (best) return best;
+        // fire for nothing new, when the firing after it is new (a bounded graft spent)
+        if (fire) {
+          const r = trySim(acc, s, fire);
+          const f2 = r && fireIn(r.state);
+          if (f2 && fresh(trySim(r!.acc, r!.state, f2)) !== null) return fire;
+        }
+        void cardOf;
+        return undefined;
+      },
     },
   ],
 };
@@ -290,12 +598,15 @@ function answer(s: GameState, acc: RunAcc, policy: Policy, deep = false): Action
  * `answer`, the dummy's by `dummyMove`, the player passing while the stack
  * holds something — until the table is quiet. What a play or an activation
  * will have done once it has resolved, which a one-ply look cannot see. */
-function rollout(acc: RunAcc, s0: GameState, a: Action, policy: Policy): Sim | null {
+function rollout(acc: RunAcc, s0: GameState, a: Action, policy: Policy, deepFirst = false): Sim | null {
   let r = trySim(acc, s0, a);
+  let deep = deepFirst;
   for (let i = 0; r && i < 300 && r.state.phase !== 'gameover'; i++) {
     const s = r.state;
     let next: Action | undefined;
-    if (s.decision?.seat === PLAYER) next = answer(s, r.acc, policy);
+    // deepFirst: the play's own first question (its target) is judged by
+    // what the effect will have done, as a top-level answer is
+    if (s.decision?.seat === PLAYER) { next = answer(s, r.acc, policy, deep); deep = false; }
     else if (s.decision || s.stack.length) {
       const dl = legalActions(s, DUMMY);
       if (dl.length) next = dummyMove(s, dl);
@@ -330,6 +641,8 @@ export function play(def: ChallengeDef, policy: Policy, maxTurns = 30, trace = f
   const rank = new Map<CardName, number>();
   policy.play.forEach((n, i) => rank.set(n, 100 - i));
   for (const n of policy.augment ?? []) if (!rank.has(n)) rank.set(n, 50);
+  for (const n of policy.keep ?? []) if (!rank.has(n)) rank.set(n, 60);
+  for (const n of policy.graft ?? []) if (!rank.has(n)) rank.set(n, 50);
   const fodder = new Set(policy.fodder ?? []);
   const value = (n: CardName): number => fodder.has(n) ? 0 : (rank.get(n) ?? 1);
   const elementFor = (k: number): ResourceKind => {
@@ -382,8 +695,17 @@ export function play(def: ChallengeDef, policy: Policy, maxTurns = 30, trace = f
     // (a measuring run's goal is out of reach: no need to look)
     const reachable = progress(acc).target < 10000;
     const winning = !reachable ? undefined : cheap.find(a => trySim(acc, s, a)?.acc.met)
-      ?? finishers.find(a => rollout(acc, s, a, policy)?.acc.met);
-    const pick = winning ?? choose();
+      ?? finishers.find(a => rollout(acc, s, a, policy, true)?.acc.met);
+    const cardOf = (a: Action): CardName | undefined => {
+      if ('handIndex' in a) return p.hand[a.handIndex];
+      if (a.type === 'augment' || a.type === 'graft' || a.type === 'prophesy') {
+        return a.from === 'bin' ? p.bin[a.index] : a.from === 'cache' ? p.cache?.[a.index]?.card : p.hand[a.index];
+      }
+      if (a.type === 'playFromBin') return p.bin[a.binIndex];
+      if (a.type === 'playCached') return p.cache?.[a.index]?.card;
+      return undefined;
+    };
+    const pick = winning ?? policy.pick?.({ s, legal, p, acc, def, cardOf }) ?? choose();
     if (!pick) return out(`no pick (turn ${s.turn}, ${s.phase}): ${[...new Set(legal.map(a => a.type))].join(' ')}`);
     if (trace && pick.type !== 'passPriority') {
       const card = 'handIndex' in pick ? p.hand[pick.handIndex] : pick.type === 'activateAbility' || pick.type === 'castSpellToken' ? s.entities[pick.entityId]?.card : '';
@@ -416,9 +738,10 @@ export function play(def: ChallengeDef, policy: Policy, maxTurns = 30, trace = f
           if (a) return a;
         }
         if (p.activationsLeft > 0 && !dormant.length && p.resources.length < (policy.maxResources ?? Infinity) && p.hand.length) {
-          const order = p.hand.map((n, i) => [value(n), i] as const).sort((x, y) => x[0] - y[0]);
-          const i = order[0]![1];
-          const a = legal.find(x => x.type === 'recycleForResource' && x.handIndex === i && x.element === elementFor(elementals));
+          const order = p.hand.map((n, i) => [value(n), i] as const)
+            .filter(([, i]) => !(policy.neverRecycle ?? []).includes(p.hand[i]!)).sort((x, y) => x[0] - y[0]);
+          const i = order[0]?.[1];
+          const a = i === undefined ? undefined : legal.find(x => x.type === 'recycleForResource' && x.handIndex === i && x.element === elementFor(elementals));
           if (a) return a;
         }
         return by('donePlanning');
@@ -426,9 +749,11 @@ export function play(def: ChallengeDef, policy: Policy, maxTurns = 30, trace = f
       // plays, in priority order
       const units = myUnits(s).length;
       const plays = legal.filter(a => a.type === 'playCard' && !a.mode && policy.play.includes(p.hand[a.handIndex]!)
-        && units >= (policy.hold?.[p.hand[a.handIndex]!] ?? 0) && !(policy.finish ?? []).includes(p.hand[a.handIndex]!))
+        && units >= (policy.hold?.[p.hand[a.handIndex]!] ?? 0) && !(policy.finish ?? []).includes(p.hand[a.handIndex]!)
+        && !(policy.single && myUnits(s).some(u => u.card === p.hand[a.handIndex])))
         .sort((x, y) => value(p.hand[(y as { handIndex: number }).handIndex]!) - value(p.hand[(x as { handIndex: number }).handIndex]!));
-      for (const a of plays) if (trySim(acc, s, a)) return a;
+      const mineOnTop = policy.resolveFirst && s.stack.length > 0 && s.stack[s.stack.length - 1]!.controller === PLAYER;
+      if (!mineOnTop) for (const a of plays) if (trySim(acc, s, a)) return a;
       // mods: the host chosen by what the mod does once it has resolved
       const mods = legal.filter(a => a.type === 'augment' && a.from === 'hand' && (policy.augment ?? []).includes(p.hand[a.index]!));
       if (mods.length) {
@@ -458,9 +783,37 @@ export function play(def: ChallengeDef, policy: Policy, maxTurns = 30, trace = f
         if (!key || (uses.get(key) ?? 0) >= 30) continue;
         const r = always ? trySim(acc, s, a) : rollout(acc, s, a, policy);
         if (!r || r.state.phase === 'gameover') continue;
-        if (!always && !(r.acc.value > acc.value || rate(r) > now)) continue;
+        // goalOnly: also worth it when firing AGAIN this turn moves the goal — a
+        // graft composite's second firing leaves its spent bounded grafts out
+        // (CR 722.5a), so the second is a different size
+        const again = (): boolean => {
+          if (!policy.goalOnly || !r) return false;
+          const a2 = legalActions(r.state, PLAYER).find(x => x.type === 'activateAbility' && x.entityId === (a as { entityId: number }).entityId);
+          const r2 = a2 ? rollout(r.acc, r.state, a2, policy) : null;
+          return !!r2 && r2.acc.value > acc.value;
+        };
+        if (!always && !(r.acc.value > acc.value || (!policy.goalOnly && rate(r) > now) || again())) continue;
         uses.set(key, (uses.get(key) ?? 0) + 1);
         return a;
+      }
+      // grafts: onto the named host, the one with the most grafts already —
+      // under goalOnly, only when the host can still fire after it this turn
+      // (a size skipped is a size to come back for)
+      const graftThenFire = (a: Action): boolean => {
+        const r = trySim(acc, s, a);
+        if (!r) return false;
+        if (!policy.goalOnly) return true;
+        const hostId = (a as { hostId: number }).hostId;
+        return legalActions(r.state, PLAYER).some(x => x.type === 'activateAbility' && x.entityId === hostId);
+      };
+      if (policy.graft?.length && policy.graftHost) {
+        const hosts = myUnits(s).filter(u => u.card === policy.graftHost).sort((x, y) => y.mods.length - x.mods.length);
+        for (const host of hosts) {
+          const g = legal.find(a => a.type === 'graft' && a.hostId === host.id
+            && policy.graft!.includes((a.from === 'bin' ? p.bin[a.index] : a.from === 'hand' ? p.hand[a.index] : undefined)!)
+            && graftThenFire(a));
+          if (g) return g;
+        }
       }
       if (by('doneHaste')) return by('doneHaste');
       if (s.battle && legal.some(a => a.type === 'declareAttack')) {
@@ -518,7 +871,10 @@ export function scoreAt(def: ChallengeDef, deck: CardName[], actions: Action[], 
 // ── the command line ──────────────────────────────────────────────────
 
 function withN(goal: Goal, n: number): Goal {
-  return goal.kind === 'unitSize' ? { kind: 'unitSize', p: n, t: n } : { ...goal, n };
+  if (goal.kind === 'unitSize') return { kind: 'unitSize', p: n, t: n };
+  if (goal.kind === 'tokenSet') return { kind: 'tokenSet', tokens: Object.fromEntries(Object.keys(goal.tokens).map(k => [k, n])) };
+  if (goal.kind === 'dummyWins' || goal.kind === 'oneShot') return goal;
+  return { ...goal, n };
 }
 
 function main(): void {

@@ -24,7 +24,7 @@
  * still written, saying the attachment was refused and why.
  */
 import type { Action, CardName } from '../engine/src/types.ts';
-import type { ChallengeDef, Goal } from '../engine/src/challenge.ts';
+import { EMBLEM_TEXT, type ChallengeDef, type ChallengeEmblem, type ChallengeSetup, type Goal } from '../engine/src/challenge.ts';
 import { sanitizeLessonDeal, type LessonDeal } from '../engine/src/lessondeal.ts';
 import type { SoloPointer } from './report-fields.ts';
 
@@ -43,7 +43,7 @@ const MAX_NAME = 80;
 export interface ChallengeReportRun {
   kind: 'challenge';
   /** the challenge as the browser dealt it — the calendar row may have moved since */
-  def: Pick<ChallengeDef, 'id' | 'week' | 'title' | 'goal' | 'seed' | 'par'>;
+  def: Pick<ChallengeDef, 'id' | 'week' | 'title' | 'goal' | 'seed' | 'par' | 'setup'>;
   /** the ordered deck, index 0 on top */
   deck: CardName[];
   /** the room's whole log, both seats, from the bare deal */
@@ -88,12 +88,43 @@ function actionList(v: unknown): Action[] | string {
   return v as Action[];
 }
 
-const GOALS = new Set<Goal['kind']>(['unitsInPlay', 'spellTokens', 'unitSize', 'counters', 'unitsPlayed']);
+/** every goal kind a run may carry, and the fields that kind has: a Record,
+ * so a new kind that is not named here fails the typecheck instead of turning
+ * its week's reports into "not a challenge" (a Set of names compiled happily
+ * while it went stale) */
+const GOALS: Record<Goal['kind'], 'n' | 'pt' | 'tokens' | 'none'> = {
+  unitsInPlay: 'n', spellTokens: 'n', unitSize: 'pt', counters: 'n', unitsPlayed: 'n',
+  tokenSet: 'tokens', drawsInTurn: 'n', dummyWins: 'none', oneShot: 'none', graftLadder: 'n',
+  manaSpent: 'n', stackDepth: 'n', life: 'n',
+};
 
 function goalOf(v: unknown): Goal | null {
-  if (!isObj(v) || !GOALS.has(v['kind'] as Goal['kind'])) return null;
-  if (v['kind'] === 'unitSize') return isNum(v['p']) && isNum(v['t']) ? { kind: 'unitSize', p: v['p'], t: v['t'] } : null;
-  return isNum(v['n']) ? { kind: v['kind'] as Exclude<Goal['kind'], 'unitSize'>, n: v['n'] } as Goal : null;
+  if (!isObj(v) || typeof v['kind'] !== 'string' || !Object.hasOwn(GOALS, v['kind'])) return null;
+  const kind = v['kind'] as Goal['kind'];
+  switch (GOALS[kind]) {
+    case 'pt': return isNum(v['p']) && isNum(v['t']) ? { kind: 'unitSize', p: v['p'], t: v['t'] } : null;
+    case 'none': return { kind } as Goal;
+    case 'tokens': {
+      const t = v['tokens'];
+      if (!isObj(t)) return null;
+      const out: Record<string, number> = {};
+      for (const [name, n] of Object.entries(t).slice(0, 8)) {
+        if (typeof name !== 'string' || name.length > MAX_NAME || !isNum(n)) return null;
+        out[name] = n;
+      }
+      return { kind: 'tokenSet', tokens: out };
+    }
+    default: return isNum(v['n']) ? { kind, n: v['n'] } as Goal : null;
+  }
+}
+
+/** a row's setup (challenge.ts ChallengeSetup), rebuilt field by field */
+function setupOf(v: unknown): ChallengeSetup | undefined {
+  if (!isObj(v)) return undefined;
+  const out: ChallengeSetup = {};
+  if (isNum(v['dummyLife'])) out.dummyLife = v['dummyLife'];
+  if (typeof v['emblem'] === 'string' && Object.hasOwn(EMBLEM_TEXT, v['emblem'])) out.emblem = v['emblem'] as ChallengeEmblem;
+  return Object.keys(out).length ? out : undefined;
 }
 
 const shortStr = (v: unknown, max: number): string => (typeof v === 'string' ? v.slice(0, max) : '');
@@ -119,13 +150,14 @@ export function sanitizeReportRun(v: unknown): { ok: true; run: ReportRun } | { 
     if (!isObj(d)) return { ok: false, why: 'no challenge' };
     const id = shortStr(d['id'], 64);
     const goal = goalOf(d['goal']);
+    const setup = setupOf(d['setup']);
     if (!/^[A-Za-z0-9_-]+$/.test(id) || !goal || !isNum(d['seed']) || !isNum(d['par'])) return { ok: false, why: 'not a challenge' };
     if (!deck || !deck.length) return { ok: false, why: 'not a deck' };
     return {
       ok: true,
       run: {
         kind: 'challenge',
-        def: { id, week: shortStr(d['week'], 16), title: shortStr(d['title'], 120), goal, seed: d['seed'], par: d['par'] },
+        def: { id, week: shortStr(d['week'], 16), title: shortStr(d['title'], 120), goal, seed: d['seed'], par: d['par'], ...(setup ? { setup } : {}) },
         deck: [...deck], actions, at,
       },
     };

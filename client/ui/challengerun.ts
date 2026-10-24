@@ -23,7 +23,7 @@
 import type { Action, CardName, EngineEvent, GameState } from '../engine/src/types.ts';
 import { legalActions } from '../engine/src/apply.ts';
 import {
-  BOARD_KINDS, DUMMY_DECK, challengeDeal, dummyMove, foldRun, newRun, progress, progressLabel, scoreRun,
+  BOARD_KINDS, DUMMY_DECK, challengeDeal, dummyMove, foldRun, newRun, progress, progressLabel, runFailed, scoreRun,
   type BoardKind, type ChallengeDef, type RunAcc, type RunScore,
 } from '../engine/src/challenge.ts';
 import type { BotPolicy } from './bot.ts';
@@ -170,7 +170,14 @@ export class ChallengeRun {
   /** the dummy died before the goal: the game is over and the run failed.
    * Met on the action that ended the game is NOT failed — engine verifyRun
    * judges the goal first too (CT-353). */
-  get failed(): boolean { return this.metAt === null && this.state.phase === 'gameover'; }
+  get failed(): boolean { return this.metAt === null && (this.state.phase === 'gameover' || runFailed(this.acc) !== null); }
+  /** why it failed, in a sentence: the goal's own rule (a one-shot that did not
+   * kill), else how the game ended */
+  failedWhy(): string {
+    const why = runFailed(this.acc);
+    if (why) return why;
+    return this.state.winner === 1 ? 'You lost before the goal was met.' : 'The dummy died before the goal was met.';
+  }
   /** the log to upload: both seats, cut at the action that met the goal */
   actions(): Action[] { const all = this.server.save.actions; return this.metAt === null ? all : all.slice(0, this.metAt); }
 
@@ -224,7 +231,7 @@ export function reportAttachment(run: ChallengeRun): ChallengeReportRun {
   const d = run.def;
   return {
     kind: 'challenge',
-    def: { id: d.id, week: d.week, title: d.title, goal: d.goal, seed: d.seed, par: d.par },
+    def: { id: d.id, week: d.week, title: d.title, goal: d.goal, seed: d.seed, par: d.par, ...(d.setup ? { setup: d.setup } : {}) },
     deck: [...run.deck], actions, at: actions.length,
   };
 }
@@ -309,7 +316,7 @@ export function layerHtml(run: ChallengeRun | null): string {
   if (run.failed) {
     return `<div class="chscrim"><div class="chbox" role="dialog" aria-label="Run failed">
       <h3>Run failed</h3>
-      <p>The dummy died before the goal was met.</p>
+      <p>${esc(run.failedWhy())}</p>
       <div class="chboxbtns">
         <button data-chal="rewind">↺ Rewind this turn</button>
         <button class="primary" data-chal="retry">Retry</button>
