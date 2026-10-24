@@ -16,7 +16,7 @@ import { ELEMENTS } from './stats.ts';
 /** The sections the UI lays the grid out in, in the order it shows them. */
 export const GROUPS = [
   'Getting started', 'Winning', 'Elements', 'On the table',
-  'Combat', 'One-game feats', 'Formats and people',
+  'Combat', 'One-game feats', 'Formats and people', 'League',
 ] as const;
 export type Group = (typeof GROUPS)[number];
 
@@ -64,6 +64,14 @@ export interface AchievementState {
 
 const distinct = (rec: Record<string, number>): number =>
   Object.values(rec).filter(n => n > 0).length;
+
+/** League seasons this account finished (docs/20-league.md §7). A row is
+ * written at the season's close for every entrant who played at least one
+ * decided league match that season (league-store.ts closeSeason) — so "played
+ * a season" here is exactly what the trophy chip shows, and a player who
+ * signed up but never played has no row and counts nothing. */
+const leagueSeasons = (a: Account): number => a.league?.seasons?.length ?? 0;
+const leagueWins = (a: Account): number => (a.league?.seasons ?? []).filter(h => h.place === 'champion').length;
 
 /** whole years between two ISO stamps, 0 when either is missing or unparseable —
  * a counter, like everything else here, so "still here a year later" can be a
@@ -213,6 +221,21 @@ export const ACHIEVEMENTS: Achievement[] = [
     group: 'Formats and people', tier: { of: 'Friends', rung: 2 }, count: (_p, a) => a.friends.length, goal: 5 },
   { id: 'anniversary', name: 'Anniversary', desc: 'Play games a year or more apart.', icon: '🎂',
     group: 'Formats and people', secret: true, count: p => yearsBetween(p.firstPlayed, p.lastPlayed), goal: 1 },
+
+  // ══ the league (docs/20-league.md §7, CT-372) ═══════════════════════
+  //
+  // Read off Account.league.seasons, not the profile: a season's honour is
+  // written when it closes (league-store.ts closeSeason → accounts.ts
+  // setLeagueHonour, which refreshes achievements then), so these unlock at
+  // the close and count every past season the account holds.
+  { id: 'league-regular', name: 'League Regular', desc: 'Play in a league season.', icon: '🏟️',
+    group: 'League', tier: { of: 'League seasons', rung: 1 }, count: (_p, a) => leagueSeasons(a), goal: 1 },
+  { id: 'league-stalwart', name: 'League Stalwart', desc: 'Play in 3 league seasons.', icon: '📯',
+    group: 'League', tier: { of: 'League seasons', rung: 2 }, count: (_p, a) => leagueSeasons(a), goal: 3 },
+  { id: 'league-lifer', name: 'League Lifer', desc: 'Play in 6 league seasons.', icon: '🏰',
+    group: 'League', tier: { of: 'League seasons', rung: 3 }, count: (_p, a) => leagueSeasons(a), goal: 6 },
+  { id: 'league-champion', name: 'League Champion', desc: 'Win a league season.', icon: '🥇',
+    group: 'League', count: (_p, a) => leagueWins(a), goal: 1 },
 ];
 
 export function evaluateAchievements(profile: Profile, account: Account): AchievementState[] {

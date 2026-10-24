@@ -616,7 +616,7 @@ function statsTab(p: Profile): string {
  * vanishing because the client is a deploy behind the server. */
 const GROUP_ORDER = [
   'Getting started', 'Winning', 'Elements', 'On the table',
-  'Combat', 'One-game feats', 'Formats and people',
+  'Combat', 'One-game feats', 'Formats and people', 'League',
 ];
 
 /**

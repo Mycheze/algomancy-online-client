@@ -212,12 +212,20 @@ export function setLeagueContact(account: Account, contact: string): void {
 }
 
 /** Record (or re-record — a season can be re-closed by the organizer) one
- * season's honour. */
-export function setLeagueHonour(account: Account, honour: LeagueHonour): void {
+ * season's honour, and stamp the league achievements it unlocks (docs/20 §7:
+ * "refreshAchievements runs at season close" — the close's only write to an
+ * account is this one). The stamp is persisted with the honour, so a restart
+ * after the close keeps both; and since the counters read `league.seasons`,
+ * they re-derive from the stored honours anyway. Unlocks are sticky: a
+ * re-close that changes the champion does not take the badge back. Returns
+ * what was just unlocked. */
+export function setLeagueHonour(account: Account, honour: LeagueHonour): AchievementState[] {
   const seasons = (account.league?.seasons ?? []).filter(h => h.season !== honour.season);
   seasons.push(honour);
   account.league = { ...account.league, seasons };
+  const fresh = refreshAchievements(account);
   persist();
+  return fresh;
 }
 
 /** see `Account.badge` */
