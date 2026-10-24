@@ -44,6 +44,15 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-24', kind: 'fix', text: 'Balanced now always applies after Tough, whatever gave each one, so a Balanced unit always has equal power and defense. A 3/8 given a Balanced augment and then a Tough one is now 16/16, not 8/16.' },
+  { date: '2026-10-24', kind: 'fix', text: 'The Everywhere names a card, and a token is not a card: Unit Tokens, Robots, Wisps and other tokens are no longer on its list.' },
+  { date: '2026-10-24', kind: 'new', text: 'Finished a league season? Your place (Champion, Finalist or Participant) now shows as a trophy on your profile, and the final standings mark the champion and finalist.' },
+  { date: '2026-10-24', kind: 'fix', text: 'Weekly challenges: a run whose last action both meets the goal and ends the game now counts, instead of failing to submit.' },
+  { date: '2026-10-24', kind: 'new', text: "Hover or tap a card in your hand that you can't play and it now says why: not enough mana, the wrong step, or nothing to aim it at." },
+  { date: '2026-10-24', kind: 'fix', text: 'A spell on the stack now shows the damage it will really deal, so a Powerful Fireball shows the doubled number.' },
+  { date: '2026-10-24', kind: 'change', text: "When every unit an \"up to one\" ability can hit is your own, like Minor Kraken's recall, the game now asks before you pick one." },
+  { date: '2026-10-24', kind: 'fix', text: 'Opening the link of a finished game now says the game is over and who won, instead of claiming there is no such game.' },
+  { date: '2026-10-24', kind: 'fix', text: "Ancient One now borrows only the augment text of a neighbour's mod, and keeps its neighbours' \"when I leave\" abilities when it is recalled, cached or dies alongside them." },
   { date: '2026-10-24', kind: 'new', text: 'Card search now has is:bounded and is:unbounded, to find just the once-per-turn grafts or just the unlimited ones.' },
   { date: '2026-10-23', kind: 'change', text: 'Weekly challenges now have three leaderboards, each with its own winner: Fastest (fewest turns), Leanest (fewest cards) and Purest (fewest elements), plus an Overall view. Skill is gone.' },
   { date: '2026-10-23', kind: 'fix', text: "Ancient One beside Echo of Despair now makes copies of Ancient One. It also borrows its neighbours' grafted and granted abilities, two Ancient Ones side by side share everything, and a dying one has its neighbours' when-I-die abilities." },
