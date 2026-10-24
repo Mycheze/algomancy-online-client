@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:7e253d7f384ecfe1",
+ "generated_from": "sha256:6fec37d079d1a7c9",
  "rules": [
   {
    "num": "100.1",
@@ -38762,7 +38762,7 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4.5",
-   "text": "A rewind takes the game back to one of: up to five of the last actions, counting only actions the player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before. The actions taken back are removed from the game, as if they had not been taken.",
+   "text": "A rewind takes the game back to one of: just before the proposing player's own last action, even when more than five actions came after it; just before any of the last five actions, counting only actions a player took (an action the game took for a player is neither counted nor a place to stop); the start of the current step; or the start of the step before. Each option names, in the proposing player's words, what it takes back. Inside a hidden step, a point within the step is offered only if it takes back none of the other player's hidden actions there (their public ones, such as finishing the step, may be taken back); the start of the step may take back the other player's hidden actions too. The actions taken back are removed from the game, as if they had not been taken.",
    "see": [
     "D1.2b"
    ],
@@ -38783,7 +38783,7 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4.5",
-   "text": "A proposal states the fix and the proposer's reason, which is required. It lapses after 60 seconds, or as soon as any action lands, and the proposer may withdraw it. Only the other player can accept it; after a decline the proposer must wait 15 seconds before proposing again. When a fix lands, the proposer's reason is filed as a bug report.",
+   "text": "A proposal states the fix and the proposer's reason, which is required. It lapses after 60 seconds, or as soon as any action lands, and the proposer may withdraw it. Only the other player can accept it; after a decline the proposer must wait 15 seconds before proposing again. The proposer's reason is filed as a bug report. Fixes made one after another, with no game action between them, are one run and file one report, with every fix's reason in order; the run is filed when it ends, for instance when the next game action lands, and a server restart before then does not lose it.",
    "see": [
     "D3.2"
    ],
@@ -38794,7 +38794,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "partial"
+   "verdict": "confirmed"
   },
   {
    "num": "D4.5f",
