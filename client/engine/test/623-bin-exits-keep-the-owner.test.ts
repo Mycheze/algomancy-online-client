@@ -209,10 +209,37 @@ test('CR 102.4 / CT-344 class guard: every bin exit that keeps the card in the g
     'a recall, a revival, a play, a cache or an agreed-fix move out of a bin must keep the owner (E.takeFromBin)');
 });
 
+/**
+ * Does a `takeFromBin(` call at the head of `next` use the owner it returns?
+ * Only the RESULT's `.owner` counts — never the bare word, which a local named
+ * `owner` (Necromorph has one) would satisfy while the result's owner is dropped:
+ *  · chained on the call: `takeFromBin(…)!.owner`;
+ *  · bound to a name: `const took = …takeFromBin(` and then `took.owner` / `took!.owner`;
+ *  · collected into a list (`push`/`unshift`, of the call or of its name) and
+ *    read off the elements: some `.owner` property read follows.
+ */
+function usesTakenOwner(next: string): boolean {
+  const line = next.split('\n')[0]!;
+  if (/takeFromBin\([^)]*\)[!?]*\.owner/.test(line)) return true;
+  const bound = line.match(/(?:const|let|var)\s+(\w+)\s*=\s*[\w.!]*takeFromBin\(/)?.[1];
+  if (bound && new RegExp(`\\b${bound}[!?]*\\.owner\\b`).test(next)) return true;
+  const collected = /\.(push|unshift)\([^)]*takeFromBin\(/.test(line)
+    || (bound !== undefined && new RegExp(`\\.(push|unshift)\\(${bound}\\)`).test(next));
+  return collected && /\w[!?]*\.owner\b/.test(next.split('\n').slice(1).join('\n'));
+}
+
+test('the takeFromBin-owner check is not blind: a same-named local does not satisfy it', () => {
+  assert.ok(usesTakenOwner("const took = g.takeFromBin(s, i, 'revived');\n g.spawnUnit(s, took.card, r, { owner: took.owner });"));
+  assert.ok(usesTakenOwner("if (bi !== -1) owner = g.takeFromBin(seat, bi, 'revived')!.owner;"));
+  assert.ok(usesTakenOwner("while (b.length) moved.unshift(g.takeFromBin(s, b.length - 1, 'recalled')!);\n g.toHand(s, moved.map(m => m.card), 'bin', { owner: moved.map(m => m.owner) });"));
+  assert.ok(!usesTakenOwner("const took = g.takeFromBin(owner, i, 'revived');\n g.exchangeInPlace(victim, name, owner);"),
+    'Necromorph with its owner dropped: the local `owner` must not count');
+  assert.ok(!usesTakenOwner("const took = g.takeFromBin(s, i, 'revived');\n g.spawnUnit(opp, took.card, r, { owner: seat });"),
+    'Uglk with its owner dropped');
+});
+
 test('CR 102.4 / CT-344 class guard: every takeFromBin in a card file uses the owner it returns', () => {
-  // (the next dozen lines must read the owner; Wake the Dead's own read is with
-  // the pick, before anything leaves, and its play passes `c.owner` below)
-  const unused = sweep(/\btakeFromBin\(/, h => h.at.startsWith('cards') && !/owner/.test(h.next));
+  const unused = sweep(/\btakeFromBin\(/, h => h.at.startsWith('cards') && !usesTakenOwner(h.next));
   assert.deepEqual(unused.map(b => `${b.at}  ${b.line}`), []);
 });
 
