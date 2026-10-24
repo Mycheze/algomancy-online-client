@@ -2884,6 +2884,32 @@ export function spliceable(room: Room, index: number, seat: Seat): boolean {
  * action and an id range, and the `via: { face }` corruption is only
  * observable in its OUTPUT — by the time the rebuild has run, a mangled
  * activation is indistinguishable from an action the engine simply refused. */
+/**
+ * CT-199 — A REFERENCE KEY, RENUMBERED THE WAY `renumberAction` RENUMBERS AN ACTION.
+ *
+ * A key names entities by creation identity (`symbolizer`), so a splice cannot
+ * move them — but a CACHED card is written whole into a key (`at(p.cache, i)`,
+ * and the zone delta's `c:{…}` entries), and its `uid` comes off the same
+ * `nextId` clock. Splicing out an action that allocated ids [lo, hi) moves
+ * every later uid down by hi − lo, exactly as it moves every later entity id,
+ * and the key read that as the later move meaning something else: undoing a
+ * spawn was refused because the opponent had cached a card after it.
+ *
+ * Only the COMPARISON renumbers (undoActionAt, the old key's side). What a key
+ * writes is unchanged — the files' `refs`/`posRefs` keep the uid, and the card
+ * ledger and `driftedAgainst` read them as they always have. A uid inside the
+ * spliced block is left alone: that card was cached by the action being taken
+ * back, so the rebuilt key cannot name it and the compare still refuses.
+ */
+export function renumberRefUids(ref: string, lo: number, hi: number): string {
+  if (!ref.includes('"uid":')) return ref;
+  const shift = hi - lo;
+  return ref.replace(/"uid":(\d+)/g, (m, d: string) => {
+    const uid = Number(d);
+    return uid < hi ? m : `"uid":${uid - shift}`;
+  });
+}
+
 export function renumberAction(a: Action, lo: number, hi: number): Action {
   const shift = hi - lo;
   let moved = false;
@@ -3000,7 +3026,11 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
     for (let j = index + 1; j < restore.length; j++) {
       const sameSeen = wasStart < 0 || j < wasStart
         || JSON.stringify(rb.segSeen[j - 1] ?? NOTHING_SEEN) === JSON.stringify(wasSeen[j] ?? NOTHING_SEEN);
-      if (rb.segRefs[j - 1] === wasRefs[j] && sameSeen) continue;
+      // CT-199: the old key with its cache uids renumbered as the splice
+      // renumbered the ids — a cached card's uid is off the same id clock
+      const was = lo !== undefined && hi !== undefined && hi > lo && wasRefs[j] !== undefined
+        ? renumberRefUids(wasRefs[j]!, lo, hi) : wasRefs[j];
+      if (rb.segRefs[j - 1] === was && sameSeen) continue;
       const a = restore[j]!;
       changed.push({
         i: j, type: a.type, seat: a.seat,
