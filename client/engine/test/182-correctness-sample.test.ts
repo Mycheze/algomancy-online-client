@@ -1089,20 +1089,16 @@ test('Stoneborn Progenitor: my unit SURVIVING damage makes one 2/2 — a death m
   finishBattle(h);
 });
 
-test('Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (CR 107.2b)', () => {
-  // The same sentence, the other end of it, and the half of the ticket that
-  // survived the ruling. "Recall X target nontoken allies. THEN each player
-  // sacrifices a unit …" — the sacrifice is not GATED on the recall, so X = 0
-  // still costs every player a unit and costs me 0 life. The engine used to
-  // return early on `x <= 0` and skip the printed sentence entirely.
+test('Torrential Reclamation: with X = 0 nothing is recalled, so nobody sacrifices and no life is lost (CT-375)', () => {
+  // The same sentence, the other end of it. "… Then each player sacrifices a
+  // unit and you lose 1 life for each ally recalled this way."
   //
-  // ⚠ WHY THIS SURVIVED WHEN THE ROW ABOVE DID NOT. The owner was offered
-  // "both clauses scale, and therefore X = 0 does nothing" — which would have
-  // closed this ticket outright — and did NOT take it. He took "both scale,
-  // and still fire the second sentence at X = 0". So the sacrifice clause is
-  // UNCONDITIONAL with the scaling on top: max(1, recalled) rounds. The life
-  // loss is purely scaled and stays at zero here, which is what separates the
-  // two halves of the sentence and is asserted below.
+  // ⚠ THIS USED TO ASSERT THE OPPOSITE. The owner, 2026-08-28, kept one
+  // sacrifice round at X = 0 (max(1, recalled)). CT-375 (2026-10-24) follows
+  // the designer instead, who outranks him: "That's why we allow X and the
+  // "for each" to be different", "So you can remove targets to prevent the
+  // sacrifice" (rules-questions 1223287609388957737, 1223287683804037202). So
+  // both clauses are purely scaled: recall none, sacrifice none, lose none.
   const { h, A, D } = open(18256);
   const mine = spawn(h, A, VANILLA), spare = spawn(h, A, VANILLA);
   spawn(h, D, VANILLA); spawn(h, D, VANILLA);
@@ -1117,13 +1113,10 @@ test('Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs 
     if (h.state.decision) h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
     else pass(h);
   }
-  assert.equal(unitsOf(h, A).length, 1, 'CR 107.2b: the sacrifice is not gated on the recall — 2 → 1');
-  assert.equal(unitsOf(h, D).length, 1, 'CR 107.2b: "EACH player" — the opponent sacrifices at X=0 too, 2 → 1');
-  assert.equal(h.state.players[A]!.life, lifeBefore,
-    'no ally recalled, no life lost. THIS IS THE ASSERTION THAT SEPARATES THE TWO CLAUSES: the '
-    + 'sacrifice is unconditional, the life loss is purely scaled. If a future change makes X=0 '
-    + 'cost life, it has collapsed them back together.');
-  ok('Torrential Reclamation', 'timing: the sacrifice clause is not gated on X > 0 (CR 107.2b)');
+  assert.equal(unitsOf(h, A).length, 2, 'CT-375: no ally recalled, so no sacrifice — 2 stay 2');
+  assert.equal(unitsOf(h, D).length, 2, 'CT-375: and the opponent sacrifices nothing either');
+  assert.equal(h.state.players[A]!.life, lifeBefore, 'no ally recalled, no life lost');
+  ok('Torrential Reclamation', 'timing: the sacrifice scales with the allies recalled, none at X = 0 (CT-375)');
   finishBattle(h);
 });
 
