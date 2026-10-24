@@ -196,7 +196,8 @@ function onPage(id: string): boolean {
  * setter drops these, and main.ts re-creates value and listeners.
  */
 // BL-46: the fix dialog's reason box is a layer's typing box, like the report's
-const TYPED = new Set(['report-note', 'amend-reason']);
+// BL-28: and the post-game sign-up form's name and password
+const TYPED = new Set(['report-note', 'amend-reason', 'pg-su-user', 'pg-su-pass']);
 const FIELDS = new Map<string, { el: Record<string, unknown>; on: Map<string, Listener[]> }>();
 function fieldEl(id: string): Record<string, unknown> | null {
   if (!(String(APP['innerHTML']) + layersHtml()).includes(`id="${id}"`)) return null;
@@ -414,9 +415,10 @@ g.getComputedStyle = () => new Proxy({}, { get: () => '' });
  * can build anything, so a driver test of the replay route has nothing to
  * drive until something answers. A test sets `globalThis.__UI_DRIVER_FETCH` to
  * a responder before importing this module; everything else still hangs. */
-g.fetch = (url: string) => {
-  const stub = g['__UI_DRIVER_FETCH'] as ((u: string) => Promise<unknown>) | undefined;
-  return stub ? stub(String(url)) : new Promise(() => {});
+g.fetch = (url: string, init?: unknown) => {
+  // BL-28: the request too, so a test can read what a POST carried
+  const stub = g['__UI_DRIVER_FETCH'] as ((u: string, init?: unknown) => Promise<unknown>) | undefined;
+  return stub ? stub(String(url), init) : new Promise(() => {});
 };
 
 /* HOTSEAT ONLY: every Harness main.ts builds, in construction order.
