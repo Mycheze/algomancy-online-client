@@ -4320,14 +4320,14 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
   .linfo .lresrow .resgroup.wake > .rescard { width: 30px; }
 }
 .linfo .lid { grid-area: id; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
-.linfo .lhand { grid-area: hand; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; overflow: hidden; }
+.linfo .lhand { grid-area: hand; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; overflow: hidden; overflow: clip; }
 /* CT-336: `clip`, not `hidden`, on the hand-and-deck line. A `hidden` box is a
    scroll container, so its row's automatic minimum is 0 — and with a
    spectator's full hand (`.lspect`) in a fourth row the block is over-full,
    the line's row collapsed to nothing, and "deck 948" drew over "HAND (2)"
    (1440x900, both hands shown). `clip` cuts the same overflow without being
-   a scroll container, so the row keeps the line's height. */
-@supports (overflow: clip) { .linfo .lhand { overflow: clip; } }
+   a scroll container, so the row keeps the line's height (a browser without
+   `clip` keeps the `hidden` declared before it). */
 .linfo .lhand .binline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; font-size: 13px; }
 .linfo .lres { grid-area: res; min-width: 0; }
 .linfo .lcache { grid-area: cache; }

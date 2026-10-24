@@ -199,5 +199,5 @@ test('§5 the frame round the board: a one-line top bar, an action bar that fits
 // its grid row may shrink to nothing; `clip` cuts the same overflow without
 // being one, so the row keeps the line's height.
 test('§6 CT-336: the hand-and-deck line clips without being a scroll container, so its row never collapses', () => {
-  assert.match(CSS, /@supports \(overflow: clip\) \{ \.linfo \.lhand \{ overflow: clip; \} \}/);
+  assert.match(CSS, /\.linfo \.lhand \{[^}]*overflow: hidden; overflow: clip; \}/);
 });
