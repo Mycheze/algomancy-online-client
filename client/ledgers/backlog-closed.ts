@@ -2482,4 +2482,77 @@ export const CLOSED: Entry[] = [
       + 'citations resolved to nothing. The private-room half of "claim the game you just played" '
       + 'is still open as BL-28, which can reuse this guest mechanism.',
   },
+  {
+    id: 'BL-28',
+    slug: 'claiming-past-games',
+    title: 'Name-claiming was wrong on a public deploy — a signed-out stranger\'s game lands in a real account today',
+    area: 'accounts',
+    size: 'M',
+    status: 'done',
+    track: 'feature',
+    evidence: {
+      commit: 'b068a117',
+      guards: [
+        "638-signup-after-game.test.ts::BL-28 \u00a71 a signed-out seat is offered the sign-up for the game just played",
+        "638-signup-after-game.test.ts::BL-28 \u00a72 no ticket means no offer",
+        "638-signup-after-game.test.ts::BL-28 \u00a73 signing up sends the ticket",
+      ],
+    },
+    said:
+      'When live, no, you will not claim the games unless you make an account right after '
+      + 'finishing playing, in which case that becomes your first tracked game.',
+    means:
+      'register() currently calls claimSeats(), which walks the entire saved history and '
+      + 'attaches every seat ever played under a matching name. That is right for a '
+      + 'two-person LAN box — it is how the first eight games landed in Ben\'s profile the '
+      + 'moment he registered — and wrong the instant strangers can register: "Ben" is not a '
+      + 'rare name. The owner\'s rule replaces it with something much narrower: no retroactive '
+      + 'sweep, but a player who finishes a signed-out game and registers RIGHT AFTER gets '
+      + 'that game, and it becomes their first tracked game.',
+    doneWhen: [
+      'Registering a username no longer sweeps up past games played under that name',
+      'A player who finishes a signed-out game and registers straight afterwards gets that game, and only that game, as their first tracked game',
+      'The window is bounded and defined in one place — a stranger cannot register tomorrow and take a game they did not play',
+      'What happens to the LAN-era claims already in the store is decided explicitly and written down, not left to whatever the code happens to do',
+      'server/e2e/test-accounts.ts covers both halves: the sweep is gone, and the just-finished attach works',
+    ],
+    decided: [
+      'Owner, 2026-10-24 (housework audit): the one name-only claim in the live store (Lolica, game WBPP, account made 5 minutes after the game) is the allowed case, so every existing claim is kept (legacy-claims.ts can drop them if ever wanted).',
+      'The sign-up window is SIGNUP_CLAIM_WINDOW_MS = 30 minutes (accounts.ts), the agent\'s choice; tickets are in memory, so a restart inside the window drops the offer.',
+            'THE RULE, from the owner, 2026-08-25: "When live, no, you will not claim the games unless you make an account right after finishing playing, in which case that becomes your first tracked game."',
+      'Split out of BL-16 (admin panel) deliberately: he was asked where the fix belongs and answered with the rule instead. The change lands in server/accounts.ts, which is not the admin page, so it is its own entry.',
+      'The LAN behaviour was not a bug — accounts.ts says so itself: "On a two-person LAN server \'whoever registers the name is that player\' is the right trade; on anything public it would not be." This entry is the public-deploy half of a trade that was made knowingly.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/server/accounts.ts',
+      'client/server/api-accounts.ts',
+      'client/server/history.ts',
+      'client/server/e2e/test-accounts.ts',
+      'client/ui/account.ts',
+    ],
+    notes:
+      'claimSeats() in server/accounts.ts is the exact function, called from register(). It '
+      + 'matches `game.names[seat]` lowercased against `account.key`, skips seats that '
+      + 'already have a user, and calls rebuildProfiles() — so profiles follow whatever this '
+      + 'ends up doing and the fold does not need touching. '
+      + 'The "right after finishing" half needs something the server does not have yet: a '
+      + 'handle on the game you just played that survives you leaving the page and '
+      + 'registering. The post-game screen is the natural place to hang it (server/history.ts '
+      + 'already summarises the finished game there). '
+      + '\u26a0 RAISED 2026-10-24 (housework audit, probed): THIS IS A LIVE DATA-INTEGRITY HOLE, NOT HYGIENE. '
+      + 'A signed-out player who types an existing account\'s username into a private room gets that '
+      + 'game folded into that account: stats, achievements, record and the card ledger\'s "my games". '
+      + 'Probe: registered `mycheze` in a scratch store, dropped one finished game with seat names '
+      + '[Mycheze, Stranger] and users [null, null], ran syncGamesDir: the account went from 0 games to '
+      + 'games=1 wins=1. The same sweep runs after EVERY recorded game (server/history.ts:232, '
+      + '`for (const a of allAccounts()) claimSeats(a)`), and main.ts takes the typed name for a '
+      + 'signed-out seat. Ratings are safe (a rated room needs an account or a guest). The sweeps to '
+      + 'remove: register() (accounts.ts), claimGuest() (accounts.ts), after every recorded game '
+      + '(history.ts:232) and syncGamesDir (history.ts). The "just finished" half already exists for '
+      + 'queue guests (BL-42): mint a guest at join for a signed-out private-room player and the same '
+      + 'mechanism covers it. Extend server/e2e/test-accounts.ts with the probe above. This shape has '
+      + 'no priority field; the title carries the \u26a0 instead. Still waiting on doneWhen 4 (the LAN-era claims).',
+  },
 ];
