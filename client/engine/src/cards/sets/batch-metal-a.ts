@@ -283,7 +283,7 @@ function aoStripped(g: E, n: Entity, holder: Entity, deep: boolean, at?: Paramet
 function aoHasText(g: E, u: Entity, deep: boolean): boolean {
   if (g.nameOf(u) === 'Ancient One' && !aoStripped(g, u, u, deep)) return true;
   for (const id of u.mods) {
-    const m = g.entity(id);
+    const m = g.entityOrBatchMate(id);           // CT-351: a batch-mate's mods too
     if (m && m.appliedAs === 'augment' && m.card === 'Ancient One' && !aoStripped(g, u, m, deep)) return true;
   }
   return (g.copiedAugments(u, 'behavior').includes('Ancient One')
@@ -302,19 +302,29 @@ function aoHasText(g: E, u: Entity, deep: boolean): boolean {
  * once however many paths reach it, which is the designer's other ruling:
  * the ability is "boolean … it doesn't stack or create a feedback loop".
  *
- * `firstRing` replaces the geometry for `self` alone: a dying Ancient One is
- * already out of the formation grid when its own death is announced, and
- * reads the allies it stood beside off the death event (E.destroy's
- * `adjacent` fact). Geometry and raw fields only — `projects` runs under effStats.
+ * `firstRing` replaces the geometry for `self` alone: an Ancient One leaving
+ * play is already out of the formation grid when its own death or despawn is
+ * announced, and reads the allies it stood beside off the event (the
+ * `adjacent` fact of E.destroy, recall, cacheUnit, exchangeInPlace and
+ * eraseFromPlay — CR 714.9, CT-350). In a simultaneous death batch an ally
+ * that left play earlier in the batch is still read as it was (CT-351:
+ * E.entityOrBatchMate, E.batchAdjacent). Geometry and raw fields only —
+ * `projects` runs under effStats.
  */
 function aoAllies(g: E, self: Entity, deep: boolean, firstRing?: Entity[]): Entity[] {
   const seen = new Set<EntityId>([self.id]);
   const out: Entity[] = [];
   let frontier: Entity[] = [self];
+  const ring = (m: Entity): Entity[] => {
+    if (m === self && firstRing) return firstRing;
+    // CT-351: a batch-mate already out of the grid, by its neighbours as the batch began
+    const was = g.entity(m.id) ? undefined : g.batchAdjacent(m.id);
+    return was ? aoResolve(g, was) : g.adjacentInFormation(m.id);
+  };
   while (frontier.length) {
     const next: Entity[] = [];
     for (const m of frontier) {
-      for (const n of m === self && firstRing ? firstRing : g.adjacentInFormation(m.id)) {
+      for (const n of ring(m)) {
         if (n.controller !== self.controller || seen.has(n.id)) continue;
         seen.add(n.id);
         out.push(n);
@@ -324,6 +334,11 @@ function aoAllies(g: E, self: Entity, deep: boolean, firstRing?: Entity[]): Enti
     frontier = next;
   }
   return out;
+}
+/** CR 714.9 / CT-351: ids to units — in play, or batch-mates that left play
+ * earlier in the death batch being disposed right now */
+function aoResolve(g: E, ids: EntityId[]): Entity[] {
+  return ids.map(id => g.entityOrBatchMate(id)).filter((u): u is Entity => !!u);
 }
 /** the FACES an Ancient One (or its host) borrows right now, and parallel to
  * them the unit whose own printed text each one is (`carriers`, for the grafts
@@ -377,10 +392,12 @@ card('Ancient One', {
       try {
         const src = ev.data?.['unit'] as EntityId | undefined;
         // report 271: my OWN death — I am out of the grid by now, so the allies I
-        // stood beside ride the event (CR 714.9)
-        const firstRing = ev.type === 'died' && src === self.id && !g.entity(self.id)
-          ? ((ev.data?.['adjacent'] as EntityId[] | undefined) ?? [])
-            .map(id => g.entity(id)).filter((u): u is Entity => !!u)
+        // stood beside ride the event (CR 714.9). CT-350: and my own despawn
+        // (recalled, cached, exchanged, erased), so a borrowed "when I
+        // despawn" hears it. CT-351: an ally that died earlier in my own
+        // death batch is read as it was.
+        const firstRing = (ev.type === 'died' || ev.type === 'despawned') && src === self.id && !g.entity(self.id)
+          ? aoResolve(g, (ev.data?.['adjacent'] as EntityId[] | undefined) ?? [])
           : undefined;
         for (const n of aoAllies(g, self, true, firstRing)) {
           // CR 710.4: a neighbour that is itself a COPY donates the face it wears
@@ -399,7 +416,7 @@ card('Ancient One', {
             { cardName: face, prefix: 'augment', use: `@n${n.id}` },
           ];
           for (const modId of n.mods) {
-            const m = g.entity(modId);
+            const m = g.entityOrBatchMate(modId);   // CT-351: a batch-mate's mods too
             if (m && m.appliedAs === 'augment' && !aoStripped(g, n, m, true)) {
               sources.push({ cardName: m.card, prefix: 'augment', use: `@m${m.id}` });
             }

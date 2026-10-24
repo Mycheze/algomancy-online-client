@@ -4165,6 +4165,8 @@ export class E {
    * printed text buys.
    */
   cacheUnit(u: Entity, opts: { prophecy?: string; playable?: boolean; to?: Seat } = {}): void {
+    // CR 714.9 / CT-350: the allies it stood beside, before leavePlay closes the gap
+    const adjacent = this.adjacentInFormation(u.id).map(n => n.id);
     const mods = this.leavePlay(u);
     if (!mods) return;
     // CR 801.8: `u.controller`, was `u.owner` — see recall() for the ruling. The
@@ -4175,7 +4177,7 @@ export class E {
     // CR 714.9: the facts ride the event. `cache` mirrors recall()'s `hand` — WHERE
     // the card went, which a listener cannot recover from `owner` once the two
     // can differ.
-    const evData = { ...this.leftPlayFacts(u), to: 'cache', cache: seat };
+    const evData = { ...this.leftPlayFacts(u), to: 'cache', cache: seat, ...(adjacent.length ? { adjacent } : {}) };
     const ev = this.ev('despawned',
       `${u.card} leaves play for ${this.pname(seat)}'s cache` +
       (mods.length ? ` (its ${mods.length} mod(s) stay behind → bin)` : '') +
@@ -6568,6 +6570,30 @@ export class E {
   /** CR 713.6a: which member of `deathBatch` is being disposed at this instant, so
    * it is not handed its own 'died'/'trashed' event twice. */
   private disposingSelf: EntityId | null = null;
+  /** CR 714.9 / CT-351: each member's adjacent units, read off the grid
+   * before the batch removes anyone — a death in a simultaneous batch is
+   * announced with the neighbours the unit had when the batch began, not
+   * after an earlier batch-mate's removal closed a gap beside it. */
+  private deathBatchAdjacent: Map<EntityId, EntityId[]> | null = null;
+  /** CR 714.9 / CT-351: the mods of batch members already disposed, by id —
+   * `destroy` resolves them before it deletes them, and a later member's
+   * death still reads them (Ancient One borrowing a dead neighbour's mod). */
+  private deathBatchMods = new Map<EntityId, Entity>();
+  /**
+   * CR 714.9 / CT-351: `entity(id)`, or — while a simultaneous death batch is
+   * being disposed — the batch member (or a member's mod) of that id that has
+   * already left play. Lets a later member of the batch read an earlier one as
+   * it was when the batch died (Ancient One's borrowed "when I die"). Outside
+   * a batch it is `entity(id)`.
+   */
+  entityOrBatchMate(id: EntityId): Entity | undefined {
+    return this.entity(id) ?? this.deathBatch.find(d => d.id === id) ?? this.deathBatchMods.get(id);
+  }
+  /** CR 714.9 / CT-351: a death-batch member's adjacent units as the batch began
+   * (ids), or undefined when `id` is not in the batch being disposed */
+  batchAdjacent(id: EntityId): EntityId[] | undefined {
+    return this.deathBatchAdjacent?.get(id);
+  }
 
   /** `u` is a unit the state-based check would kill right now. */
   isLethal(u: Entity): boolean {
@@ -6608,7 +6634,11 @@ export class E {
     // "excludes the trigger source itself" reading (CR 713.6a): a body never hears its OWN
     // departure through this seam, only its batch-mates'.
     const prevBatch = this.deathBatch, prevSelf = this.disposingSelf;
+    const prevAdj = this.deathBatchAdjacent, prevMods = this.deathBatchMods;
     this.deathBatch = dead;
+    // CR 714.9 / CT-351: every member's neighbours, before anyone is removed
+    this.deathBatchAdjacent = new Map(dead.map(u => [u.id, this.adjacentInFormation(u.id).map(n => n.id)]));
+    this.deathBatchMods = new Map();
     try {
       for (const u of dead) {
         this.disposingSelf = u.id;
@@ -6617,6 +6647,8 @@ export class E {
     } finally {
       this.deathBatch = prevBatch;
       this.disposingSelf = prevSelf;
+      this.deathBatchAdjacent = prevAdj;
+      this.deathBatchMods = prevMods;
     }
     this.repairFormation();
     return dead;
@@ -6952,6 +6984,8 @@ export class E {
     // resolved BEFORE the disposal runs — a mod id whose entity is
     // already gone is not a mod any more, and disposeToBin deletes them last.
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
+    // CR 714.9 / CT-351: a later member of this death batch still reads these
+    if (this.deathBatch.includes(u)) for (const m of mods) this.deathBatchMods.set(m.id, m);
     // CR 410.7: push, announce, trash, sweep, erased-pile, delete — the whole tail
     // is `disposeToBin`, shared verbatim with Hooba-Mon's exchange. Everything
     // left here is what makes this disposal a DEATH rather than some other way
@@ -6978,7 +7012,8 @@ export class E {
       // One's borrowed "when I die" text is its neighbours', and the designer
       // gives it "up to 4 tokens when an Ancient One dies with Reforge the
       // Dead in play, since it copies the ability from each adjacent unit".
-      const adjacent = this.adjacentInFormation(u.id).map(n => n.id);
+      // CT-351: in a simultaneous batch, the neighbours it had as the batch began
+      const adjacent = this.batchAdjacent(u.id) ?? this.adjacentInFormation(u.id).map(n => n.id);
       const evData: Record<string, unknown> = {
         ...this.leftPlayFacts(u), verb, to: 'bin',
         binSeat, binNth: binNthAt(this, binSeat, binIndex),
@@ -7096,6 +7131,8 @@ export class E {
     }
     const outgoing = u.card;
     this.stampLastKnown(u);                     // CR 714.1
+    // CR 714.9 / CT-350: its neighbours, before `fresh` takes its slot
+    const adjacent = this.adjacentInFormation(u.id).map(n => n.id);
     const fresh = this.spawnUnit(controller, name, u.region);
     if (slot) {
       slot.col[slot.idx] = fresh.id;   // take the exact position in play
@@ -7122,7 +7159,7 @@ export class E {
       // announces its despawn under the front face it is really leaving as.
       const ev = this.ev('despawned', `${u.card} is exchanged for ${name}`
         + (mods.length ? ` (its ${mods.length} mod(s) leave with it).` : '.'),
-        { ...this.leftPlayFacts(u), to: 'bin' });
+        { ...this.leftPlayFacts(u), to: 'bin', ...(adjacent.length ? { adjacent } : {}) });
       this.fireEvent('despawned', ev, u);
     });
     return fresh;
@@ -7902,7 +7939,11 @@ export class E {
    * afterDespawn(), after the despawn event, for log order — by the HOST's
    * controller, into that controller's bin (CR 801.2f, 410.4a).
    */
-  recall(u: Entity, opts: { to?: Seat; verb?: string } = {}): void {
+  recall(u: Entity, opts: { to?: Seat; verb?: string; adjacent?: EntityId[] } = {}): void {
+    // CR 714.9 / CT-350: the allies it stood beside, before leavePlay closes the
+    // gap (a dying unit's death event carries the same fact). `opts.adjacent`:
+    // a caller that has already changed the slot (ambushSwap) read it earlier.
+    const adjacent = opts.adjacent ?? this.adjacentInFormation(u.id).map(n => n.id);
     const mods = this.leavePlay(u);
     if (!mods) return;
     // CR 801.7a (round-32 Q2): `u.controller`, was `u.owner`. The owner extended
@@ -7926,7 +7967,7 @@ export class E {
     // CR 714.9: facts ride the event (see leftPlayFacts). `to` is where the card
     // went, which is what "when a unit is recalled to a HAND" wants to read —
     // it used to be recovered by matching the word "hand" in the log message.
-    const evData = { ...this.leftPlayFacts(u), to: 'hand', hand: seat };
+    const evData = { ...this.leftPlayFacts(u), to: 'hand', hand: seat, ...(adjacent.length ? { adjacent } : {}) };
     // CR 402.4: the card really enters the hand, so it goes through the ONE hand
     // entry point and announces itself as 'handEntered' — BEFORE the
     // 'despawned' line. (afterDespawn() is now HANDED that event, rather than
@@ -7965,9 +8006,11 @@ export class E {
     // Ambush item carries it when it was played out of a zone it was foreign in
     const r = this.s.resolving;
     const owner = r && r.kind === 'ambush' && r.card === name ? r.owner : undefined;
+    // CR 714.9 / CT-350: the target's neighbours, read before its slot is taken
+    const adjacent = this.adjacentInFormation(target.id).map(n => n.id);
     const u = this.spawnUnit(controller, name, region, owner !== undefined ? { owner } : {});
     if (slot) slot.col[slot.idx] = u.id;      // take the exact slot…
-    this.recall(target);                      // …then the target leaves play
+    this.recall(target, { adjacent });        // …then the target leaves play
     if (slot) this.ev('info', `${name} takes ${target.card}'s position in the formation.`);
   }
 
@@ -10698,6 +10741,8 @@ export class E {
     // that left the game is the printed card, not the side it was showing.
     this.revertFace(u);
     const mods = u.mods.map(id => this.entity(id)).filter((m): m is Entity => !!m);
+    // CR 714.9 / CT-350: its neighbours, before removeFromFormation closes the gap
+    const adjacent = this.adjacentInFormation(u.id).map(n => n.id);
     delete this.s.entities[u.id];
     this.removeFromFormation(u.id);
     // CR 410.4b: the host AND its mods reach the public erased pile, under the
@@ -10723,7 +10768,7 @@ export class E {
     // because no card enters a zone here.
     const ev = this.ev('despawned',
       `${u.card} despawns as it is erased — not a death, and not a trash.`,
-      { ...this.leftPlayFacts(u), to: 'erased' });
+      { ...this.leftPlayFacts(u), to: 'erased', ...(adjacent.length ? { adjacent } : {}) });
     this.fireEvent('despawned', ev, u);
     // CR 721.1f: last, exactly as `disposeToBin` and `afterDespawn` do it — see the
     // anchoring paragraph above.
