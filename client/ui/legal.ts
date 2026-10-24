@@ -127,6 +127,7 @@ export const STORED_GAME: readonly StoredLine[] = [
   { covers: ['single'], what: 'If the game was a Single Card Duel: the card each of you played. It stays in your match history, counts toward nothing of yours, and moves those two cards on the public card ladder.' },
   { covers: ['amended'], what: 'If you and your opponent agreed to fix the board during the game: how many times. It is shown as a "fixed" tag in your match history; the game counts like any other.' },
   { covers: ['disputed'], what: 'If either of you pressed "Dispute game" after it ended: which seat did. It is shown as a "disputed" tag in your match history; the result stands unless someone who reviews it changes it.' },
+  { covers: ['signedUp'], what: 'If you played a game signed out and made your account straight after it: that the seat became yours that way. That one game is the first on your profile.' },
   { covers: ['concession'], what: 'If the game ended by concession: which seat conceded and on which turn. That decides how much the game weighs — a turn-1 concession is a walkover that counts for nothing, a turn-2 one counts at half rating weight, later ones count in full.' },
 ];
 
@@ -157,6 +158,7 @@ export const STORED_FILES: readonly StoredLine[] = [
 export const BROWSER_KEYS: readonly StoredLine[] = [
   { covers: ['algoToken'], what: 'your session token — this is the one that goes back to the server' },
   { covers: ['algoName'], what: 'the name you type on the home screen when you are not signed in' },
+  { covers: ['algoSignupClaim'], what: 'after a game you played signed out: a short-lived code for that game, so signing up straight afterwards can keep it (it is dropped once used or expired)' },
   { covers: ['algoDeck', 'algoEls'], what: 'the deck and the element trio you last picked, so the home screen remembers' },
   { covers: ['algoCardQuery', 'algoCardSearches'], what: 'your last card-browser search and any searches you saved' },
   { covers: ['algoSound', 'algoMotion'], what: 'whether you turned sound and animation on or off' },

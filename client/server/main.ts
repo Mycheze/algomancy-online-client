@@ -86,7 +86,7 @@ import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
-import { accountById, accountByName, accountForToken, gameHistory, loadAccounts, privateView, setAdmin, setBadge } from './accounts.ts';
+import { accountById, accountByName, accountForToken, gameHistory, issueSignupClaim, loadAccounts, privateView, setAdmin, setBadge } from './accounts.ts';
 // #190: the trio picker's history, draft rows only — a pure function so a test can hold it
 import { trioHistoryRows } from './accounts.ts';
 import { ratedMode, type RatedMode } from './rating.ts';
@@ -1744,7 +1744,15 @@ function recordFinishedGame(room: Room): void {
           : { id, name: id, desc: '', icon: '🏅' });
       }
     }
-    sendGameOver(room, seat, { row: row?.game ?? null, unlocked, account });
+    // BL-28: a seat nobody was signed in on is offered THIS game, once, now —
+    // the owner's "make an account right after finishing playing". Issued here,
+    // at the transition, and never on a rejoin (that path sends no ticket), so
+    // whoever takes the chair over afterwards is offered nothing. Only when
+    // the game is in the history (a recorded row) and somebody is in the seat
+    // to be told.
+    const signup = !account && row && !row.game.users[seat] && room.sockets[seat]
+      ? issueSignupClaim(room.code, seat) : undefined;
+    sendGameOver(room, seat, { row: row?.game ?? null, unlocked, account, signup });
   }
 }
 
@@ -1760,6 +1768,8 @@ function sendGameOver(room: Room, seat: Seat, extra: {
   row: import('./accounts.ts').RecordedGame | null;
   unlocked: { id: string; name: string; desc: string; icon: string }[];
   account: ReturnType<typeof accountById>;
+  /** BL-28: this seat's sign-up ticket for this game (recordFinishedGame only) */
+  signup?: { ticket: string; until: number };
 }): void {
   // checked up front, not left to sendToSeat: summarizeRoom() replays the
   // whole game, which is not worth doing for an empty chair
@@ -1797,6 +1807,8 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     })(),
     ...(extra.unlocked.length ? { unlocked: extra.unlocked } : {}),
     ...(extra.account ? { me: privateView(extra.account, isOnline) } : {}),
+    // BL-28: "sign up now and this game is your first" — this seat's alone
+    ...(extra.signup ? { signup: extra.signup } : {}),
     // a single card duel names both cards — the table has shown them by now
     ...(singleCards(room) ? { single: singleCards(room)! } : {}),
     // BL-48: a game between two players can be disputed from this screen —

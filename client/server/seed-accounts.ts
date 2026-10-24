@@ -12,10 +12,11 @@
  * and forcing a full re-summarize after a change to how a stat is counted.
  *
  * Games whose seats belong to nobody are stored with the NAMES that were typed
- * at the time; registering under one of those names claims them (accounts.ts
- * claimSeats). So this can run before anybody has signed up, which is the
- * point — Ben and Rashi log in for the first time with their history already
- * in place.
+ * at the time, and stay nobody's. Registering under one of those names used to
+ * claim them (that is how Ben and Rashi met their LAN history on first login);
+ * since BL-28 it does not — a name is not proof of who sat there. The only
+ * way a signed-out seat becomes somebody's is the sign-up ticket handed out at
+ * the end of that game (accounts.ts SIGNUP_CLAIM_WINDOW_MS).
  */
 import { copyFileSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

@@ -4,8 +4,9 @@
  * server, no framework:
  *
  *   1. In-process: the stat fold, the achievement table, the friend graph,
- *      passwords, and the "register under a name and claim the games you
- *      already played" path.
+ *      passwords, and BL-28: registering under a name claims NOTHING played
+ *      under it; the one game a new account may start with is the one its
+ *      sign-up ticket names.
  *   2. Integration: spawn the real server against a throwaway accounts file
  *      and a throwaway games directory, then register / log in / join a room
  *      over a websocket and check the seat really is bound to the account.
@@ -13,10 +14,10 @@
  * Everything runs against ALGO_ACCOUNTS_FILE / ALGO_GAMES_DIR temp paths: the
  * real store holds password hashes and must never be a test fixture.
  */
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { spawnServer } from './test-util.ts';
+import { mintRoom, spawnServer } from './test-util.ts';
 
 const SCRATCH = mkdtempSync(join(tmpdir(), 'algo-accounts-test-'));
 const STORE = join(SCRATCH, 'accounts.json');
@@ -447,9 +448,9 @@ console.log('\n[achievements: one-game feats]');
   ok(Number.isFinite(oldie.profile.biggestUnit), 'and a missing max does not become NaN');
 }
 
-// ── 6. seeding real saved games + claiming by name ────────────────────
+// ── 6. seeding real saved games; BL-28: no claim by name, a ticket instead ─
 
-console.log('\n[seeding: import saved games, claim by name]');
+console.log('\n[seeding: import saved games; BL-28 no name claims, the sign-up ticket]');
 {
   // a saved room in exactly the shape rooms.ts writes
   writeFileSync(join(SCRATCH, 'store-before.json'), readFileSync(STORE));
@@ -492,30 +493,99 @@ console.log('\n[seeding: import saved games, claim by name]');
   eq(gameHistory()[0]?.finished, true, 'a stamped winner resolves the game');
   eq(gameHistory()[0]?.winner, 0, 'and names the winning seat');
 
+  // BL-28 (the owner, 2026-08-25): "When live, no, you will not claim the
+  // games unless you make an account right after finishing playing, in which
+  // case that becomes your first tracked game." Registering under a name that
+  // somebody typed into a seat gets you NOTHING — it used to sweep the whole
+  // history (claimSeats), which is how a stranger's game landed in a real
+  // account.
   const made = register('Ben', 'a good password');
   ok(made.ok, 'Ben signs up');
   const ben = accountByName('Ben')!;
-  eq(ben.profile.games, 1, 'and immediately owns the game he played under that name');
-  eq(gameHistory()[0]?.users[0], ben.id, 'the history row now names the account');
-  eq(gameHistory()[0]?.users[1], null, 'the seat nobody has claimed is still free');
+  eq(ben.profile.games, 0, 'BL-28: and does NOT pick up the game somebody played under that name');
+  eq(gameHistory()[0]?.users[0], null, 'BL-28: the history row still names nobody');
 
   register('Rashi', 'a good password');
   const rashi = accountByName('Rashi')!;
-  eq(rashi.profile.games, 1, 'Rashi claims the other seat on signup');
-  // claiming rebuilds every profile from the whole history, so Ben's
-  // head-to-head picks up an opponent who registered after him
-  eq(ben.profile.opponents[rashi.id]?.games, 1,
-    'a claim rebuilds, so an earlier account learns about a later one');
+  eq(rashi.profile.games, 0, 'BL-28: nor does Rashi');
+
+  // THE AUDIT PROBE (2026-10-24): an existing account, and a signed-out
+  // stranger who TYPES that account's name into a seat. Neither the boot sync
+  // nor the after-game record may hand the stranger's game to the account.
+  writeFileSync(join(GAMES, 'PRBE.json'), JSON.stringify({
+    seed: 4243, mode: 'shared', els: ['fire', 'water', 'earth'],
+    names: ['Ben', 'Stranger'], users: [null, null], winner: 0,
+    actions: [...recycles(0, 'fire', 5), ...recycles(1, 'water', 5)],
+  }));
+  syncGamesDir(GAMES);
+  eq(gameHistory().find(g => g.code === 'PRBE')?.users[0], null,
+    'BL-28 probe: a signed-out seat typing an existing name is not bound to that account by the sync');
+  eq(ben.profile.games, 0, 'BL-28 probe: and the account gains no game, no win');
+  const { recordLiveGame: recordLive } = await import('../history.ts');
+  recordLive({
+    code: 'PRBL', seed: 4244, mode: 'shared', els: ['fire', 'water', 'earth'],
+    names: ['Ben', 'Stranger'], users: [null, null], winner: 0,
+    actions: [...recycles(0, 'fire', 5), ...recycles(1, 'water', 5)] as never,
+    decks: undefined,
+  });
+  eq(gameHistory().find(g => g.code === 'PRBL')?.users[0], null,
+    'BL-28 probe: nor by the after-game record');
+  eq(ben.profile.games, 0, 'BL-28 probe: still no game on the account');
+
+  // THE JUST-FINISHED ATTACH: a signed-out seat is handed a single-use ticket
+  // when its game is decided; registering with it straight afterwards makes
+  // that game, and only that one, the first tracked game.
+  const acc = await import('../accounts.ts') as Record<string, any>;
+  ok(typeof acc['issueSignupClaim'] === 'function', 'BL-28: accounts.ts can issue a sign-up ticket');
+  ok(typeof acc['SIGNUP_CLAIM_WINDOW_MS'] === 'number' && acc['SIGNUP_CLAIM_WINDOW_MS'] > 0,
+    'BL-28: and the window is one named number');
+  if (typeof acc['issueSignupClaim'] === 'function') {
+    const issue = acc['issueSignupClaim'] as (code: string, seat: 0 | 1, now?: number) => { ticket: string; until: number };
+    const t = issue('PRBE', 1);
+    ok(t.until > Date.now(), 'the ticket says when it runs out');
+    const fresh = register('Stranger', 'a good password', t.ticket);
+    ok(fresh.ok && fresh.claimed === 1, 'BL-28: registering with the ticket claims the game');
+    const stranger = accountByName('Stranger')!;
+    eq(stranger.profile.games, 1, 'BL-28: it is the first tracked game');
+    eq(gameHistory().find(g => g.code === 'PRBE')?.users[1], stranger.id, 'the row names the new account');
+    eq(gameHistory().find(g => g.code === 'PRBL')?.users[1], null,
+      'BL-28: and ONLY that game: the other one played under the same name stays unowned');
+    ok(gameHistory().find(g => g.code === 'PRBE')?.signedUp?.includes(1),
+      'the row says this seat was claimed at sign-up (for the legacy-claims report)');
+
+    const reused = register('Copycat', 'a good password', t.ticket);
+    ok(reused.ok && !reused.claimed, 'BL-28: a ticket is single-use');
+    eq(accountByName('Copycat')!.profile.games, 0, 'the second account gets nothing');
+
+    const stale = issue('PRBL', 1, Date.now() - acc['SIGNUP_CLAIM_WINDOW_MS'] - 1);
+    const late = register('Latecomer', 'a good password', stale.ticket);
+    ok(late.ok && !late.claimed, 'BL-28: a ticket from yesterday claims nothing (the window is bounded)');
+    eq(gameHistory().find(g => g.code === 'PRBL')?.users[1], null, 'so that game stays unowned');
+
+    // a ticket never takes a seat somebody already holds
+    const bound = issue('PRBE', 1);
+    const thief = register('Thief', 'a good password', bound.ticket);
+    ok(thief.ok && !thief.claimed, 'a ticket for a seat that is already bound claims nothing');
+    eq(gameHistory().find(g => g.code === 'PRBE')?.users[1], stranger.id, 'and the seat keeps its owner');
+    // a forged ticket is just a registration
+    const forged = register('Forger', 'a good password', 'not-a-ticket');
+    ok(forged.ok && !forged.claimed, 'a made-up ticket registers normally and claims nothing');
+  }
+  // the probe games are not part of what the server half below expects
+  rmSync(join(GAMES, 'PRBE.json'), { force: true });
+
+  // a played game where both players were signed in still lands at once,
+  // which is what the rest of this section and the server half below lean on
 
   // re-syncing an unchanged directory must be a no-op
   const again = syncGamesDir(GAMES);
   eq(again.added, 0, 'a second sync adds nothing');
   eq(again.updated, 0, 'and updates nothing (unchanged files are skipped)');
-  eq(ben.profile.games, 1, 'so the stats did not double');
+  eq(ben.profile.games, 0, 'so the stats did not double (and a re-sync claims nothing by name)');
 
   const forced = syncGamesDir(GAMES, { force: true });
   eq(forced.updated, 1, '--force re-summarizes');
-  eq(ben.profile.games, 1, 'and still does not double the stats');
+  eq(ben.profile.games, 0, 'and still does not double the stats, or claim by name');
 
   // the live path a finished game takes (main.ts calls this on game over):
   // same summarize-stash-rebuild as the directory sync, from the room object
@@ -527,7 +597,7 @@ console.log('\n[seeding: import saved games, claim by name]');
     decks: undefined,
   });
   ok(live.isNew, 'a live game is recorded straight from the room');
-  eq(ben.profile.games, 2, 'and lands in the profile immediately');
+  eq(ben.profile.games, 1, 'and lands in the profile immediately');
   const liveAgain = recordLiveGame({
     code: 'LIVE', seed: 777, mode: 'shared', els: ['fire', 'water', 'earth'],
     names: ['Ben', 'Rashi'], users: [ben.id, accountByName('Rashi')!.id],
@@ -535,12 +605,26 @@ console.log('\n[seeding: import saved games, claim by name]');
     decks: undefined,
   });
   ok(!liveAgain.isNew, 'recording the same game twice replaces the row');
-  eq(ben.profile.games, 2, 'and does not double-count it — undo/re-finish is safe');
+  eq(ben.profile.games, 1, 'and does not double-count it — undo/re-finish is safe');
 
   saveAccounts();
 }
 
 // ── 7. the live server: a seat bound to an account ────────────────────
+
+// BL-28: a game from YESTERDAY, played signed-out under the name somebody is
+// about to register. The boot sync imports it; nothing may ever hand it over.
+{
+  const yesterday = new Date(Date.now() - 86_400_000);
+  const oldGame = join(GAMES, 'OLDN.json');
+  writeFileSync(oldGame, JSON.stringify({
+    seed: 4245, mode: 'shared', els: ['fire', 'water', 'earth'],
+    names: ['Newbie', 'Someone'], winner: 0,
+    actions: Array.from({ length: 10 }, (_, i) =>
+      ({ type: 'recycleForResource', seat: i % 2, handIndex: 0, element: 'fire' })),
+  }));
+  utimesSync(oldGame, yesterday, yesterday);
+}
 
 console.log('\n[server: joining while logged in]');
 // CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
@@ -565,8 +649,9 @@ try {
   const good = await post('/api/auth/login', { username: 'Ben', password: 'a good password' });
   ok(good['ok'] && typeof good['token'] === 'string', 'and accepts the right one');
   const token = good['token'] as string;
-  // the imported saved game + the live-recorded one from the section above
-  eq(good['me'].profile.games, 2, 'the login response carries the profile');
+  // the live-recorded game from the section above (BL-28: the imported one
+  // somebody played under his name is no longer his)
+  eq(good['me'].profile.games, 1, 'the login response carries the profile');
   eq(good['me'].achievements.find((a: any) => a.id === 'first-game')?.earned, true,
     'and the achievement states');
 
@@ -576,7 +661,8 @@ try {
   ok(me.ok, '/api/me with a token works');
 
   const players = await (await fetch(`${base}/api/players`)).json() as any;
-  eq(players.players.length, 2, 'the leaderboard lists both accounts');
+  // (Ben, Rashi, and the five the BL-28 ticket checks above signed up)
+  eq(players.players.length, allAccounts().length, 'the leaderboard lists every account');
 
   // the actual point: a websocket join carrying the token binds the seat
   const room = (await (await fetch(`${base}/api/new`)).json() as { code: string }).code;
@@ -602,6 +688,77 @@ try {
   ok(asked['ok'], 'a friend request goes through the API');
   eq(asked['me'].outgoing.length, 1, 'and comes back in the refreshed profile');
   ws.close();
+
+  // ── BL-28 over the wire: a signed-out game, and signing up right after it ──
+  console.log('\n[BL-28: a signed-out seat, and signing up straight after the game]');
+  {
+    type M = Record<string, any>;
+    const sock = async (): Promise<{ ws: WebSocket; msgs: M[]; next: (p: (m: M) => boolean) => Promise<M> }> => {
+      const w = new WebSocket(`ws://localhost:${PORT}`);
+      const msgs: M[] = [];
+      w.addEventListener('message', ev => msgs.push(JSON.parse(String((ev as MessageEvent).data))));
+      await new Promise<void>(res => w.addEventListener('open', () => res(), { once: true }));
+      const next = async (p: (m: M) => boolean): Promise<M> => {
+        for (let i = 0; i < 100; i++) {
+          const hit = msgs.find(p);
+          if (hit) return hit;
+          await new Promise(res => setTimeout(res, 50));
+        }
+        throw new Error('timed out waiting for a message');
+      };
+      return { ws: w, msgs, next };
+    };
+    const code = await mintRoom(PORT);
+    const p = await sock(), q = await sock();
+    // NO token on either: seat 0 TYPES the name of an existing account
+    p.ws.send(JSON.stringify({ t: 'join', room: code, seat: 0, name: 'Ben', mode: 'shared' }));
+    await p.next(m => m.t === 'joined');
+    q.ws.send(JSON.stringify({ t: 'join', room: code, seat: 1, name: 'Newbie' }));
+    await q.next(m => m.t === 'joined');
+    q.ws.send(JSON.stringify({ t: 'action', action: { type: 'concede', seat: 1 } }));
+    const overP = await p.next(m => m.t === 'gameover');
+    const overQ = await q.next(m => m.t === 'gameover');
+    await new Promise(res => setTimeout(res, 300));
+
+    const benNow = await (await fetch(`${base}/api/me`, { headers: { authorization: `Bearer ${token}` } })).json() as any;
+    ok(!benNow.me.history.some((r: any) => r.code === code),
+      'BL-28 probe: a signed-out seat that typed an existing name adds nothing to that account');
+    eq(benNow.me.profile.games, 1, 'BL-28 probe: the account record is unchanged');
+
+    ok(typeof overQ['signup']?.ticket === 'string', 'BL-28: the signed-out seat is handed a sign-up ticket at game over');
+    ok(typeof overP['signup']?.ticket === 'string', 'and so is the other signed-out seat (its own)');
+    ok(overQ['signup']?.ticket !== overP['signup']?.ticket, 'each seat its own');
+    ok(overQ['signup']?.until > Date.now(), 'saying when the offer runs out');
+
+    const reg = await post('/api/auth/register',
+      { username: 'Newbie', password: 'a good password', claim: overQ['signup']?.ticket });
+    ok(reg['ok'], 'Newbie signs up right after the game');
+    eq(reg['claimed'], 1, 'BL-28: and the game just played is claimed');
+    const rows = (reg['me']?.history ?? []) as { code: string }[];
+    eq(rows.length, 1, 'BL-28: exactly ONE game is on the new profile');
+    eq(rows[0]?.code, code, 'BL-28: it is the game just finished');
+    ok(!rows.some(r => r.code === 'OLDN'), 'BL-28: yesterday\'s game under the same name is not');
+
+    // the same ticket a second time is nothing
+    const again = await post('/api/auth/register',
+      { username: 'Newbie2', password: 'a good password', claim: overQ['signup']?.ticket });
+    ok(again['ok'] && !again['claimed'], 'BL-28: the ticket is single-use');
+    eq((again['me']?.history ?? []).length, 0, 'and the second account has no games');
+
+    // a signed-in seat is never offered one
+    const code2 = await mintRoom(PORT);
+    const r = await sock(), s2 = await sock();
+    r.ws.send(JSON.stringify({ t: 'join', room: code2, seat: 0, name: 'x', token, mode: 'shared' }));
+    await r.next(m => m.t === 'joined');
+    s2.ws.send(JSON.stringify({ t: 'join', room: code2, seat: 1, name: 'Anon' }));
+    await s2.next(m => m.t === 'joined');
+    r.ws.send(JSON.stringify({ t: 'action', action: { type: 'concede', seat: 0 } }));
+    const overR = await r.next(m => m.t === 'gameover');
+    const overS = await s2.next(m => m.t === 'gameover');
+    ok(!overR['signup'], 'a signed-in seat gets no ticket');
+    ok(typeof overS['signup']?.ticket === 'string', 'its signed-out opponent does');
+    for (const c of [p, q, r, s2]) c.ws.close();
+  }
 } finally {
   await server.stop();
   rmSync(SCRATCH, { recursive: true, force: true });

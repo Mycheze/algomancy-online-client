@@ -12,7 +12,7 @@
  */
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
 import { esc } from './util.ts';
-import { gameElementsHtml, isGuest, modeName } from './account.ts';
+import { currentUser, gameElementsHtml, isGuest, modeName, signupNoteHtml, signupOutcome } from './account.ts';
 
 /** NB: the wire carries more fields than the client reads (e.g. a per-seat
  * `won` — this screen reads GameOver.winner instead) — only what the UI
@@ -76,6 +76,14 @@ export interface GameOver {
    */
   disputable?: true;
   disputed?: [boolean, boolean];
+  /**
+   * BL-28 — this seat played signed out, and may make an account now and
+   * keep THIS game as its first: a single-use ticket and when it runs out
+   * (the server's window, never a copy of it here). Present only on the
+   * payload sent at the moment the game was decided — or put back from this
+   * browser's storage on a refresh (main.ts).
+   */
+  signup?: { ticket: string; until: number };
 }
 
 /**
@@ -207,8 +215,35 @@ function guestClaimHtml(): string {
     <div class="hint">You played as a guest. Sign up to keep this game and your rating.</div>
     <input name="username" placeholder="a name" autocomplete="username" maxlength="40">
     <input name="password" type="password" placeholder="a password" autocomplete="new-password">
-    <button class="primary" data-btn="pg-claim">Keep it</button>
+    <button type="button" class="primary" data-btn="pg-claim">Keep it</button>
     <div class="hint pgclaimerr"></div>
+  </form>`;
+}
+
+/**
+ * BL-28 — "keep this game", for somebody who played signed out. The owner,
+ * 2026-08-25: "you will not claim the games unless you make an account right
+ * after finishing playing, in which case that becomes your first tracked
+ * game." So the offer is on this screen, for this game, while the server's
+ * ticket lasts — and it creates an account, so it carries the owner's warning
+ * in his own capitals, as the Account screen's create form does.
+ *
+ * ⚠ `type="button"`: a bare <button> in a <form> SUBMITS it, which is a GET to
+ * this page with the name and password in the address.
+ */
+function signupClaimHtml(o: GameOver): string {
+  if (!o.signup) return '';
+  const done = signupOutcome(o.signup.ticket);
+  if (done) return signupNoteHtml(done);
+  if (currentUser()) return '';
+  return `<form class="pgclaim" id="pg-su-form" data-form="pg-signup">
+    <div class="pgclaimhead">Keep this game?</div>
+    <div class="hint">You played signed out. Make an account now and this game is the first one on your profile.</div>
+    <p class="pwwarn"><b>DO NOT FORGET YOUR PASSWORD. THERE IS NO PASSWORD RESET.</b></p>
+    <input id="pg-su-user" name="username" placeholder="a name" autocomplete="username" maxlength="20">
+    <input id="pg-su-pass" name="password" type="password" placeholder="a password" autocomplete="new-password">
+    <button type="button" class="primary" data-btn="pg-signup">Sign up and keep it</button>
+    <div class="hint pgclaimerr" id="pg-su-err"></div>
   </form>`;
 }
 
@@ -290,6 +325,7 @@ export function postGameHtml(o: GameOver): string {
 
     ${disputedNote(o)}
     ${guestClaimHtml()}
+    ${signupClaimHtml(o)}
 
     <div class="pgbtns">
       ${rematchHtml(o)}

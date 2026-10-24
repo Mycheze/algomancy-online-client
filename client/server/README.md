@@ -132,8 +132,12 @@ Profiles are recomputed, never incremented, so changing how a stat is counted
 means `node seed-accounts.ts --force`, not editing anybody's numbers. A game's
 result is stamped when it is decided and read back, never re-derived by
 replay, because an old log replayed by a newer engine can describe a
-different game. Registering with a name you already played under claims those
-games.
+different game. A name is never proof of who sat in a seat: registering, or
+typing a name into a seat, claims nothing (BL-28). The one way a signed-out
+seat becomes somebody's is the single-use ticket the post-game screen hands
+it, spent by signing up within `SIGNUP_CLAIM_WINDOW_MS` (accounts.ts); what
+the old name sweep already bound is reported, and only by hand unbound, by
+`node legacy-claims.ts`.
 
 `POST /api/auth/register` · `login` · `logout` · `password` ·
 `GET /api/me` · `/api/player?name=` · `/api/players[?mode=]` (the ladder) ·

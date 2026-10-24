@@ -106,7 +106,7 @@ const SUITE: { file: string; covers: string }[] = [
       + 'the downtime, reads a pre-timer file as UNKNOWN rather than as a nought-length game, and '
       + 'reports n and the median beside the mean so one game left open over lunch cannot be '
       + 'quoted as "the average game"' },
-  { file: 'test-accounts.ts', covers: 'accounts: the stat fold, achievements, friends, passwords, claiming past games, and the seat/account binding over a socket' },
+  { file: 'test-accounts.ts', covers: 'accounts: the stat fold, achievements, friends, passwords, BL-28 (a typed name claims nothing — the audit probe in-process and over the socket — and the single-use sign-up ticket that keeps the game just finished, only that one, inside its window), and the seat/account binding over a socket' },
   { file: 'test-collection.ts',
     covers: 'the saved deck collection: the starter five seeded once (and never re-seeded after a delete), the edits, a half-built deck saved but refused for play, the /api/decks routes, and — the load-bearing one — a deck id claimed over the wire that is not yours being ignored, so a win can never be credited to somebody else\'s deck' },
   { file: 'test-postgame.ts', covers: 'the post-game payload and the rematch handshake, from a saved decided game' },

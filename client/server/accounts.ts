@@ -452,6 +452,15 @@ export interface RecordedGame {
    * disputed.
    */
   disputed?: Seat[];
+  /**
+   * BL-28 — the seats that were bound by a SIGN-UP TICKET (`redeemSignupClaim`)
+   * rather than by the room: somebody played the seat signed out and made an
+   * account straight afterwards. The binding itself is in `users`; this only
+   * says where it came from, so `legacy-claims.ts` can tell a ticket claim
+   * from an old name claim (both show `users[seat]` set over a room file that
+   * says nobody was signed in). Absent on every other game.
+   */
+  signedUp?: Seat[];
 }
 
 export const emptyProfile = (): Profile => ({
@@ -582,7 +591,9 @@ export function passwordProblem(password: string): string | null {
   return null;
 }
 
-export type AuthResult = { ok: true; token: string; account: Account } | { ok: false; error: string };
+export type AuthResult =
+  | { ok: true; token: string; account: Account; /** BL-28: games a sign-up ticket claimed (0 or 1) */ claimed?: number }
+  | { ok: false; error: string };
 
 /** A short, unmistakably temporary name. Not chosen by the player: they pick a
  * real one when they claim the account, and letting them type one now would
@@ -646,16 +657,75 @@ export function claimGuest(account: Account, username: string, password: string)
   account.salt = salt;
   account.hash = hashPassword(password, salt);
   delete account.provisional;
-  // …and any older seeded game recorded under that NAME comes along too, the
-  // same way it would for a fresh registration.
-  const claimed = claimSeats(account);
+  // BL-28: and NOTHING recorded under that name comes along. A guest's games
+  // are already its own (same id); a game somebody else typed this name into
+  // is not, and sweeping those up is the hole BL-28 closed.
   persist();
-  console.log(`[accounts] guest became ${account.username}`
-    + (claimed ? ` (claimed ${claimed} past game(s))` : ''));
+  console.log(`[accounts] guest became ${account.username}`);
   return { ok: true, token: newSession(account.id), account };
 }
 
-export function register(username: string, password: string): AuthResult {
+/* ── BL-28: the game you just finished, and nothing else ─────────────────
+ *
+ * The owner, 2026-08-25: "When live, no, you will not claim the games unless
+ * you make an account right after finishing playing, in which case that
+ * becomes your first tracked game."
+ *
+ * It used to be a NAME match: registering (or naming a guest) walked the whole
+ * history and took every seat ever played under that name, and the same sweep
+ * ran after every finished game and every boot. Right for a two-person LAN
+ * box; on a public one it handed a stranger's game to whoever owned the name
+ * they typed. All of that is gone. What replaces it is a TICKET: when a game
+ * is decided, each seat that nobody was signed in on is handed a random,
+ * single-use ticket for that seat of that game (main.ts recordFinishedGame,
+ * sent to that seat's socket only, and never again on a rejoin). Registering
+ * with it inside the window binds that one seat to the new account.
+ *
+ * ⚠ THE WINDOW IS THIS ONE NUMBER. Nothing else in the tree may hold a copy:
+ * the client is told the expiry (`until`) with the ticket rather than knowing
+ * the rule. A stranger cannot register tomorrow and take a game they did not
+ * play: they never had the ticket, and the ticket is dead by then anyway.
+ *
+ * Held in memory on purpose. A restart inside the window drops the offer — the
+ * player then registers with nothing attached and is told so — which is a far
+ * smaller cost than a new persisted field of live secrets.
+ */
+export const SIGNUP_CLAIM_WINDOW_MS = 30 * 60_000;
+
+interface SignupClaim { code: string; seat: Seat; until: number }
+const signupClaims = new Map<string, SignupClaim>();
+
+/** Hand a signed-out seat its ticket. `now` is for tests. */
+export function issueSignupClaim(code: string, seat: Seat, now = Date.now()): { ticket: string; until: number } {
+  for (const [t, c] of signupClaims) if (c.until <= now) signupClaims.delete(t);
+  const ticket = randomBytes(18).toString('hex');
+  const until = now + SIGNUP_CLAIM_WINDOW_MS;
+  signupClaims.set(ticket, { code, seat, until });
+  return { ticket, until };
+}
+
+/**
+ * Spend a ticket on a just-made account: the seat must still be unowned, the
+ * ticket unexpired and unused. Returns how many games it claimed (0 or 1).
+ * Single-use whatever the outcome — a ticket is checked once.
+ */
+function redeemSignupClaim(account: Account, ticket: string | undefined, now = Date.now()): number {
+  if (!ticket) return 0;
+  const claim = signupClaims.get(ticket);
+  if (!claim) return 0;
+  signupClaims.delete(ticket);
+  if (claim.until <= now) return 0;
+  const game = store.history.find(g => g.code === claim.code);
+  if (!game || game.users[claim.seat]) return 0;
+  game.users[claim.seat] = account.id;
+  game.signedUp = [...new Set([...(game.signedUp ?? []), claim.seat])].sort() as Seat[];
+  historyRev++;
+  rebuildProfiles();
+  return 1;
+}
+
+/** `claim`: a BL-28 sign-up ticket from the game just finished, if any. */
+export function register(username: string, password: string, claim?: string): AuthResult {
   const uProblem = usernameProblem(username);
   if (uProblem) return { ok: false, error: uProblem };
   const pProblem = passwordProblem(password);
@@ -673,18 +743,17 @@ export function register(username: string, password: string): AuthResult {
     friends: [], incoming: [], outgoing: [], recorded: [],
   };
   store.accounts.push(account);
-  // Seeded games are stored with the seat NAMES the players typed and no
-  // account behind them. Registering under one of those names claims them —
-  // which is how Ben and Rashi walk into their first login with the eight
-  // games they had already played sitting in their profile. On a two-person
-  // LAN server "whoever registers the name is that player" is the right trade;
-  // on anything public it would not be.
-  const claimed = claimSeats(account);
+  // BL-28: a new account starts EMPTY, whatever games were played under its
+  // name. It used to claim them all (claimSeats) — how Ben and Rashi walked
+  // into their first login on the LAN box with their eight games in place,
+  // and how, on a public deploy, a stranger's game landed in a real account.
+  // The one game it may take is the one the ticket names.
+  const claimed = redeemSignupClaim(account, claim);
   const token = newSession(account.id);
   persist();
-  if (claimed) console.log(`[accounts] ${account.username} claimed ${claimed} past game(s)`);
-  console.log(`[accounts] registered ${account.username}`);
-  return { ok: true, token, account };
+  console.log(`[accounts] registered ${account.username}`
+    + (claimed ? ' (with the game just finished)' : ''));
+  return { ok: true, token, account, claimed };
 }
 
 /** A failed login is deliberately slow-ish (scrypt) and says the same thing
@@ -1074,25 +1143,6 @@ function applyRatings(): void {
       a.profile.ratedGames[mode] = stand[mode].games;
     }
   }
-}
-
-/**
- * Attach unclaimed history seats that were played under this account's name,
- * then rebuild so the fold happens in game order (streaks depend on it).
- * Returns how many seats were claimed.
- */
-export function claimSeats(account: Account): number {
-  let claimed = 0;
-  for (const game of store.history) {
-    for (const seat of [0, 1] as Seat[]) {
-      if (game.users[seat]) continue;
-      if ((game.names[seat] ?? '').trim().toLowerCase() !== account.key) continue;
-      game.users[seat] = account.id;
-      claimed++;
-    }
-  }
-  if (claimed) rebuildProfiles();
-  return claimed;
 }
 
 /** Add a game straight to the history without folding it (the seeder uses
