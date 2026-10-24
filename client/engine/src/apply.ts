@@ -1780,10 +1780,10 @@ function graftCostUnpayable(e: E, seat: Seat, ab: { graftCause?: boolean }, u: E
   if (!ab.graftCause) return null;
   // CR 722.4, 710.7 / report 271: the grafts that would JOIN this firing — the
   // carrier's (an Ancient One's borrowed cause brings its neighbour's), each
-  // skipped when its use is spent. Real graft mods only, as before: a copy's
-  // copied grafts are not gated here.
+  // skipped when its use is spent. CR 722.8, 710.2a / CT-352: and the grafts a
+  // copy copied, which have no mod entity but are paid (and withheld) at push
+  // exactly as real ones are (E.gateGraftCosts) — so they gate the offer too.
   for (const j of e.graftsJoining(u, carrier)) {
-    if (j.part.fromMod === undefined) continue;
     if (j.bounded && (j.on.budgets[j.key] ?? 0) > 0) continue;
     const cc = effectByKey(j.part.effectKey).castCost;
     if (cc && costAmount(cc) !== null && !e.canPayCastCost(seat, cc, region, 0, u.id, manaReserve)) {
