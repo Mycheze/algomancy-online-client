@@ -556,8 +556,12 @@ function canon(v: unknown): string {
  *
  * The run ends at the first action after which the goal is met, and the
  * actions after it are dropped. A game that ends first (the dummy dead, a
- * concede, the player dead) fails — even if the goal was met by the very
- * action that ended it — and so does a log that runs out first.
+ * concede, the player dead) fails, and so does a log that runs out first.
+ * The action that meets the goal COUNTS even when it also ends the game
+ * (CT-353): docs/21 ends the run "at the first action after which the goal
+ * is met", and the browser (ui/challengerun.ts) already showed such a run as
+ * Goal met and submitted it — this used to refuse it, so Try again could
+ * never succeed. The permissive reading; the spec does not separate the two.
  *
  * `onStep` sees the board after every action this replay applies, before it
  * is judged — the server fingerprints the run with it (server/challenge-sigs.ts),
@@ -600,10 +604,11 @@ export function verifyRun(def: ChallengeDef, deck: unknown, actions: unknown,
     acc = foldRun(acc, state, a, r.state, r.events);
     state = r.state;
     opts.onStep?.(i, state);
+    // the goal first: met on the action that also ended the game still counts (CT-353)
+    if (acc.met) return { ok: true, score: scoreRun(acc, def.par), actions: (actions as Action[]).slice(0, i + 1) };
     if (state.phase === 'gameover') {
       return { ok: false, error: `action ${i}: the game ended before the goal was met`, at: i };
     }
-    if (acc.met) return { ok: true, score: scoreRun(acc, def.par), actions: (actions as Action[]).slice(0, i + 1) };
   }
   return { ok: false, error: 'the run never meets the goal' };
 }
