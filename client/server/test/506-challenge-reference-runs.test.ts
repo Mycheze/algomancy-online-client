@@ -31,7 +31,7 @@ import { CHALLENGES, REFERENCE_RUNS_DIR } from '../challenges.ts';
 const PAR: Record<string, RunScore> = {
   '2026-10-25-crowd': { unique: 10, extra: 0, cards: 10, elements: 1, turns: 9, raw: 90, skill: 100 },
   '2026-11-01-tokens': { unique: 10, extra: 3, cards: 13, elements: 1, turns: 8, raw: 104, skill: 100 },
-  '2026-11-08-giant': { unique: 10, extra: 0, cards: 10, elements: 1, turns: 10, raw: 100, skill: 100 },
+  '2026-11-08-giant': { unique: 7, extra: 0, cards: 7, elements: 2, turns: 5, raw: 70, skill: 100 },
   '2026-11-15-counters': { unique: 9, extra: 0, cards: 9, elements: 1, turns: 9, raw: 81, skill: 100 },
   '2026-11-22-parade': { unique: 13, extra: 0, cards: 13, elements: 2, turns: 11, raw: 286, skill: 100 },
 };

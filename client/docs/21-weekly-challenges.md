@@ -259,4 +259,4 @@ different game. Owner, 2026-10-23: "Fingerprints + banner".
 - Test 506 replays each one through `verifyRun` and requires `ok`.
 - It proves the goal is achievable at its `n`, guards against drift, and requires its `raw` to
   equal the row's committed `par` (so it scores Skill 100).
-- Pars: crowd 90, tokens 104, giant 100, counters 81, parade 286.
+- Pars: crowd 90, tokens 104, giant 70 (raised from 60/60 to 80/80 before it opened, owner 2026-10-24), counters 81, parade 286.
