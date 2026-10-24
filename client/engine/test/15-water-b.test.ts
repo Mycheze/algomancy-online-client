@@ -520,7 +520,7 @@ test('Tidal Menace: {Haste} 7/2 — playable in the haste step, resolves immedia
   giveResources(h, 0, 'water', 3);                         // b / 3
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  assert.ok(h.state.hasteDone, 'haste step engaged (seat 0 holds a payable haste card)');
+  assert.ok(h.state.hasteDone, 'the haste step is open (it opens every turn, CR 504.5)');
   h.do({ type: 'playCard', seat: 0, handIndex: handIdx(h, 0, 'Tidal Menace') });
   const tm = unitsOf(h, 0).find(u => u.card === 'Tidal Menace');
   assert.ok(tm, 'resolved immediately — no stack in the haste step');

@@ -135,7 +135,7 @@ test('CR D1.2d: Flourishing Flora firing twice at once (one spell, two spawns) a
   const idx = give(h, p, 'Accelerated Germination');
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
-  assert.ok(h.state.hasteDone, 'the payable haste card engaged the haste step');
+  assert.ok(h.state.hasteDone, 'the haste step is open (it opens every turn, CR 504.5)');
   h.do({ type: 'playCard', seat: p, handIndex: idx });       // two 1/1s spawn at once
   assert.equal(h.state.decision, null,
     'two IDENTICAL Flora triggers — no orderTriggers decision (CR D1.2d)');

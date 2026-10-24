@@ -239,8 +239,8 @@ test('CR 712.1a, 710.1: suppression is a veto ABOVE copy — a silenced copy rad
   assert.equal(radiators().length, 1, 'silencing one copy switches ONLY its face off');
   whiteBox(h, e => e.suppress(e.entity(tok)!, 'Suppression Field', { attrs: true, abilities: true }));
   assert.equal(radiators().length, 0,
-    'CR 712.1a sits ABOVE layer 0: a silenced copy radiates nothing, all faces at once');
-  // …and the veto is about ABILITIES, not identity. The copy is still a
+    'CR 712.2: a strip applied after the copy takes the copied text too: a silenced copy radiates nothing, all faces at once');
+  // …and the strip takes ABILITIES, not identity. The copy is still a
   // Statweaver, and still has a Statweaver's printed 3/3 body.
   assert.equal(new E(h.state).nameOf(ent(h, tok)!), 'Aberrant Statweaver');
   assert.deepEqual(effStats(h, tok), [3, 3], 'the FACE survives suppression — only its text is off');

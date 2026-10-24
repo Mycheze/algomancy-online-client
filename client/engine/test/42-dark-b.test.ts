@@ -1414,7 +1414,7 @@ test('Thought Extraction: strip a card from a hand you can see, at the cost of a
 
 // ── Umbral Decay ──────────────────────────────────────────────────────
 
-test('Umbral Decay: two -1/-1 counters, and {Afflicting} rots the owner of what it kills', () => {
+test('Umbral Decay: two -1/-1 counters, and {Afflicting} rots the controller of what it kills', () => {
   const h = new Harness(4232);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1431,6 +1431,30 @@ test('Umbral Decay: two -1/-1 counters, and {Afflicting} rots the owner of what 
   assert.equal(rotOf(h, A), 0);
   assert.ok(getCard('Umbral Decay').attrs.includes('Afflicting'),
     'the attribute is printed data — nothing is hand-coded for it');
+});
+
+// CR 802.23a (CT-235): the card prints "those units' controllers gain a rot". In the
+// test above owner and controller are one seat, so it cannot tell them apart;
+// here A steals D's unit and kills it, so the rot must land on A (the
+// controller), not on D (the owner, who is also the caster's opponent).
+test('Umbral Decay: {Afflicting} rots the CONTROLLER of a stolen unit it kills, never its owner (CR 802.23a)', () => {
+  const h = new Harness(4234);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const atk = spawn(h, A, 'Unit Token');
+  const victim = spawn(h, D, 'Unit Token');                // owned by D
+  withE(h, e => e.giveControl(e.entity(victim)!, A));      // controlled by A
+  assert.equal(ent(h, victim)!.controller, A, 'premise: A controls it');
+  assert.equal(ent(h, victim)!.owner, D, 'premise: D still owns it');
+  giveResources(h, A, 'dark', 1);
+  give(h, A, 'Umbral Decay');
+  attackWith(h, A, [[atk], [victim]]);                     // the stolen unit joins the battle
+  h.do({ type: 'playCard', seat: A, handIndex: handIdx(h, A, 'Umbral Decay') });
+  pickRef(h, { unit: victim });
+  resolveAll(h);
+  assert.equal(ent(h, victim), undefined, 'killed purely by counters');
+  assert.equal(rotOf(h, A), 1, 'the CONTROLLER gains the rot');
+  assert.equal(rotOf(h, D), 0, 'the owner gains none');
 });
 
 test('Umbral Decay: a survivor just shrinks, and nobody gains a rot', () => {

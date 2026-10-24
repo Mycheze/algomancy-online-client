@@ -360,7 +360,7 @@ function costToPlay(h: Harness, seat: Seat, name: string): number {
 }
 const debtOf = (h: Harness, seat: Seat): number => new E(h.state).debt(seat);
 
-test('Deferral Drone: gain 4 debt → the next card you play this turn costs [3] less', () => {
+test('Deferral Drone: gain 4 debt → the next card you play this phase costs [3] less', () => {
   const h = new Harness(4535);
   toDeployment(h);
   const p = h.state.deployPlayer!;

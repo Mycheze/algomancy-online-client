@@ -123,7 +123,7 @@ test('cr:card.timing.none — a card with no timing icon is refused in the haste
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
   const p = h.state.initiative as Seat;
   giveResources(h, p, 'fire', 2);
-  give(h, p, 'Molten Upheaval');                       // a haste card, so the haste step opens
+  give(h, p, 'Molten Upheaval');                       // a haste card to play in the haste step (it opens every turn, CR 504.5)
   give(h, p, 'Curio Drifter');                         // a unit with no timing icon
   h.do({ type: 'donePlanning', seat: 0 });
   h.do({ type: 'donePlanning', seat: 1 });
