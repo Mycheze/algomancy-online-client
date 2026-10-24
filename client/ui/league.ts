@@ -697,10 +697,19 @@ function standingsHtml(s: SeasonView): string {
       <p class="lgbnames">${ins.map(e => `<span>${esc(e.name)}</span>`).join('')}</p></div>`;
   }
   const withdrawn = new Set(s.entrants.filter(e => e.withdrawn).map(e => e.id));
+  // a CLOSED season names its champion and finalist with the chip their
+  // profile carries (docs/20 §7) — the two players of its final match
+  const fin = s.phase >= s.weeks + 2 ? s.matches.find(m => m.final) : undefined;
+  const mark = (id: string): string => {
+    const place = s.champion?.id === id ? 'champion' as const
+      : fin && (fin.a.id === id || fin.b.id === id) ? 'finalist' as const : null;
+    if (place && s.phase >= s.weeks + 2) return acct.trophyChipHtml({ name: s.name, place }, false);
+    return s.champion?.id === id ? ' 🏆' : '';
+  };
   return `<div class="acctcard"><h3>Standings</h3>
     <table class="accttable"><thead><tr><th>#</th><th>player</th><th>W–L</th><th>pts</th><th title="opponents' match-win percentage — the tiebreak">OMW</th></tr></thead>
     <tbody>${s.standings.map(r => `<tr class="${withdrawn.has(r.id) ? 'dim' : ''}">
-      <td>${r.rank}</td><td>${esc(r.name)}${s.champion?.id === r.id ? ' 🏆' : ''}</td>
+      <td>${r.rank}</td><td>${esc(r.name)}${mark(r.id)}</td>
       <td>${r.w}–${r.l}${r.unplayed ? ` <span class="dim" title="matches not played">(${r.unplayed})</span>` : ''}</td>
       <td>${r.points}</td><td>${r.w + r.l + r.unplayed ? `${Math.round(r.omw * 100)}%` : '–'}</td></tr>`).join('')}</tbody></table>
     <p class="hint">3 points a win. Ties go to opponents' match-win percentage, then head to head.</p>

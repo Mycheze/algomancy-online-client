@@ -87,7 +87,9 @@ Skill    = par ÷ raw × 100, rounded half up    — HIGHER is better (skillOf)
     state. The browser and the server use this one definition.
 - **Initiative:** seat 0 holds it on turn 1, then it passes each turn as in any game.
 - **The run ends** at the first action after which the goal is met. If the dummy dies, the game
-  is over and the run failed. Nothing else ends it; the player can give up.
+  is over and the run failed. Nothing else ends it; the player can give up. The action that meets
+  the goal counts even if it also ends the game (CT-353, 2026-10-24: the permissive reading, the
+  same on the server's `verifyRun` and in the browser).
 
 ## Module contracts
 

@@ -77,6 +77,9 @@ ROWS = {
                     "from": {"id": "u2", "name": "Bob", "contact": "bob_typed"}},
     "time-reminder": {"season": "Pilot", "match": "p-w1-1", "at": T + 19 * 3600,
                       "opponent": {"id": "u2", "name": "Bob", "contact": "bob_typed"}},
+    "dispute": {"season": "Pilot", "match": "p-w1-1", "week": 1, "final": False, "code": "ABCD",
+                "by": {"id": "u2", "name": "Bob"}, "opponent": {"id": "u1", "name": "Ann"},
+                "note": "a trigger fired *twice*"},
 }
 
 
@@ -134,6 +137,9 @@ check("pairings: an unlinked one is their name", any("**Bob**" in f["value"] for
 check("pairings: no shared hours says so", any("No shared hours" in f["value"] for f in pair["fields"]))
 check("pairings: the short seat is told why", "one opponent fewer" in pair["description"])
 check("no public URL → no link button", lg.render(row("signup"), None).get("view") is None)
+dsp = lg.render(row("dispute"), None)["content"]
+check("⭐ dispute (CT-339): the organizer is told who, against whom, the game and what they said",
+      "**Bob** (bob_typed)" in dsp and "<@111>" in dsp and "ABCD" in dsp and "a trigger fired \\*twice\\*" in dsp)
 check("⭐ an unknown kind is None, not an exception",
       lg.render({"id": 9, "kind": "from-the-future", "data": {}}, None) is None)
 check("the channel's season post names the champion",

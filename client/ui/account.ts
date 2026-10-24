@@ -113,6 +113,10 @@ export interface Me {
   provisional?: boolean;
   /** BL-17 (first slice): the trust mark the owner set by hand, or null */
   badge?: { owner?: true; judge?: 1 | 2 | 3; since: string } | null;
+  /** the league seasons this account finished, oldest first, with the place
+   * each earned — written at the season's close (server league-store.ts
+   * closeSeason → accounts.ts setLeagueHonour), public like the badge */
+  trophies?: LeagueTrophy[];
   /** the favourite element the player CHOSE; null = the one played most */
   favoritePicked?: string | null;
   /** present (true) only on an admin's OWN profile — it draws the Admin
@@ -130,6 +134,37 @@ export function badgeChipsHtml(badge: Me['badge']): string {
   if (badge.owner) chips.push('<span class="badgechip owner" title="the site\'s owner">Owner</span>');
   if (badge.judge) chips.push(`<span class="badgechip judge" title="judge level ${badge.judge} — a trusted voice on rules and reports">Judge L${badge.judge}</span>`);
   return chips.join(' ');
+}
+
+/** One finished league season as the server keeps it on the account
+ * (server/accounts.ts LeagueHonour). */
+export interface LeagueTrophy {
+  season: string; name: string; place: 'champion' | 'finalist' | 'participant'; w: number; l: number;
+}
+
+const PLACE: Record<LeagueTrophy['place'], { icon: string; word: string }> = {
+  champion: { icon: '🏆', word: 'Champion' },
+  finalist: { icon: '🥈', word: 'Finalist' },
+  participant: { icon: '🏅', word: 'Participant' },
+};
+
+/** One league place as a chip: "🏆 Champion", or with the season's name when
+ * it is shown away from its season ("🏆 Champion · October 2026"). The record
+ * is the title. An unknown place (a newer server) shows nothing. */
+export function trophyChipHtml(t: Pick<LeagueTrophy, 'name' | 'place'> & Partial<LeagueTrophy>, withSeason = true): string {
+  const p = PLACE[t.place];
+  if (!p) return '';
+  const title = typeof t.w === 'number' && typeof t.l === 'number'
+    ? `${t.name}: ${p.word.toLowerCase()}, ${t.w}–${t.l} in the league` : `${p.word} of ${t.name}`;
+  return `<span class="badgechip trophy ${t.place}" title="${esc(title)}">${
+    p.icon} ${p.word}${withSeason ? ` · ${esc(t.name)}` : ''}</span>`;
+}
+
+/** Docs/20 §7: the league's trophies in the profile header, beside the badge —
+ * one chip per finished season, newest first. Nothing for somebody who never
+ * finished a season. */
+export function trophyChipsHtml(trophies: readonly LeagueTrophy[] | undefined): string {
+  return [...(trophies ?? [])].reverse().map(t => trophyChipHtml(t)).filter(Boolean).join(' ');
 }
 
 export interface LeaderRow {
@@ -432,7 +467,7 @@ function renderProfile(): void {
   $app!.innerHTML = `<div class="acctpage">
     <div class="accthead">
       <div>
-        <h1>${esc(me.username)} ${elChip(me.favoriteElement)} ${badgeChipsHtml(me.badge)}</h1>
+        <h1>${esc(me.username)} ${elChip(me.favoriteElement)} ${badgeChipsHtml(me.badge)} ${trophyChipsHtml(me.trophies)}</h1>
         <div class="hint">${p.games} game${p.games === 1 ? '' : 's'} · ${p.wins}W–${p.losses}L${
           p.unresolved ? ` · ${p.unresolved} with no recorded result` : ''
         } · playing since ${shortDate(p.firstPlayed ?? me.createdAt)}</div>

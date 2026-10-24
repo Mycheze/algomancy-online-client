@@ -167,7 +167,9 @@ export class ChallengeRun {
   get state(): GameState { return this.server.state; }
   progress(): { value: number; target: number; met: boolean } { return progress(this.acc); }
   score(): RunScore { return this.metScore ?? scoreRun(this.acc, this.def.par); }
-  /** the dummy died before the goal: the game is over and the run failed */
+  /** the dummy died before the goal: the game is over and the run failed.
+   * Met on the action that ended the game is NOT failed — engine verifyRun
+   * judges the goal first too (CT-353). */
   get failed(): boolean { return this.metAt === null && this.state.phase === 'gameover'; }
   /** the log to upload: both seats, cut at the action that met the goal */
   actions(): Action[] { const all = this.server.save.actions; return this.metAt === null ? all : all.slice(0, this.metAt); }

@@ -26,7 +26,7 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { leagueFile } from './statepaths.ts';
-import { accountById, setLeagueHonour, type Account, type LeagueHonour } from './accounts.ts';
+import { accountById, admins, setLeagueHonour, type Account, type LeagueHonour } from './accounts.ts';
 import {
   MIN_HOURS, calendarPhase, closedPhase, finalPhase, hoursIn, meetings, overlapScore, pairKey, pairWeek, phaseLabel,
   phaseStart, sharedWindows, standings, WEEK_MS,
@@ -100,7 +100,8 @@ export type OutboxKind =
   | 'season'         // the season is over: your place / channel: the champion
   | 'time'           // your opponent suggests a time for your match
   | 'time-agreed'    // your opponent accepted the time you suggested
-  | 'time-reminder'; // your match's agreed time is fifteen minutes away (to both)
+  | 'time-reminder'  // your match's agreed time is fifteen minutes away (to both)
+  | 'dispute';       // to each organizer: a player disputed the game that settled a match (BL-48, CT-339)
 
 interface LeagueStore { version: 1; seasons: Season[]; outbox: OutboxRow[]; nextId: number }
 
@@ -840,6 +841,18 @@ export function flagDispute(matchId: string, userId: string, code: string, noteT
     const text = noteText.trim().slice(0, 300);
     m.disputes = [...(m.disputes ?? []).filter(d => d.by !== userId), { by: userId, code, at: iso(now), note: text }];
     note(s, `${m.id}: ${nameOf(userId)} disputed the result (${code}): ${text.slice(0, 80)}`, now);
+    // CT-339: and TELL the organizers — a row each, which is both their bell
+    // line (notesFor) and the bot's DM, like every other league message. Not
+    // the one who filed it, should an organizer be playing.
+    const other = userId === m.a ? m.b : m.a;
+    for (const org of admins()) {
+      if (org.id === userId) continue;
+      send(s, org.id, 'dispute', {
+        season: s.name, match: m.id, week: m.week, final: m.final === true,
+        by: { id: userId, name: nameOf(userId) }, opponent: { id: other, name: nameOf(other) },
+        code, note: text, ids: [userId, other],
+      }, now);
+    }
     persist(now);
     return true;
   }
