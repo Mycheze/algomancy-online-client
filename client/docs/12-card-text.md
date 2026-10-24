@@ -101,12 +101,14 @@ the card is grafted; `[once]` transfers nothing.
 `budgetMarker()` reads the marker off the clause the spent budget belongs to, at all four
 emit sites: the host's own text (`ownClause`, the complement of `augmentClause`), its
 donated box, a grafted mod's `switchClause`, and an augment mod's `augmentClause`. Never a
-list of card names. The pool: 88 cards have a bounded ability, 64 print `[Switch1]`, 22
+list of card names. The pool: 87 cards have a bounded ability, 64 print `[Switch1]`, 23
 print `[once]`, **zero print both**, and none has two bounded abilities — so a per-clause
-read is exact. Two cards spell the budget in prose (The Bonesculptor, Gridxlan) and fall
-back to `[Once]`, which is the earlier ruling's answer kept where its argument still holds.
-`test/228-spent-marker.test.ts` spends all 88 through `E.composeParts` and re-derives every
-one of those numbers.
+read is exact. A card that spelled its budget in prose would fall back to `[Once]`, the
+earlier ruling's answer, but no card reaches that fallback any more: the two that did (The
+Bonesculptor, Gridxlan) became standing bin-play permissions on 2026-10-22 (CT-255, CR
+707.10), not bounded abilities, and each one's printed "one unit" is that card's own budget
+per deployment. `ui/test/228-spent-marker.test.ts` spends all 87 through `E.composeParts`
+and re-derives every one of those numbers.
 
 ### {Unstable}
 
