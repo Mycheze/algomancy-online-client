@@ -1168,8 +1168,12 @@ function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin' | 'cache', index: num
   e.need(e.mayProphesy(seat, c), 'prophesying is a deployment action');
   e.need(from === 'hand' || c.prophesyFromBin, 'that card cannot be prophesied from your bin');
   e.need(canPayProphecy(e, seat, banner), 'cannot pay the prophecy cost');
-  if (from === 'bin') e.removeFromBin(seat, index, 'prophesied');   // CR 405.7
-  else zone.splice(index, 1);
+  // CR 405.7; CR 102.4 / CT-344: out through the choke points, with the owner the
+  // card had there (the hand was a raw splice, which left the foreign-owner
+  // table's positions stale)
+  const owner = from === 'bin'
+    ? e.takeFromBin(seat, index, 'prophesied')!.owner
+    : e.takeFromHand(seat, index)!.owner;
   // CR 803.7d: the MANA is spent, the affinity is only required — the same shape
   // every other cost in the game has, and the reason this is still payMana().
   e.payMana(seat, banner.mana);
@@ -1177,7 +1181,7 @@ function doProphesy(e: E, seat: Seat, from: 'hand' | 'bin' | 'cache', index: num
     `${e.pname(seat)} prophesies ${name} from ${from} for [${banner.mana}${banner.cost}].`,
     { seat, card: name, from, mana: banner.mana, cost: banner.cost, condition: banner.condition });
   e.fireEvent('prophesied', ev);
-  e.cacheCard(seat, name, from, { prophecy: banner.condition });
+  e.cacheCard(seat, name, from, { prophecy: banner.condition, owner });
   e.settle();
 }
 
@@ -1285,7 +1289,7 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
     // printed timing — the permission widens it, as a CR 803.2b grant widens the
     // haste step (the activated-ability model this replaced offered the same set)
     playAtTiming(e, seat, c, 'deploy',
-      () => { e.removeFromBin(seat, binIndex, 'played'); },   // CR 405.7
+      () => e.takeFromBin(seat, binIndex, 'played')?.owner,   // CR 405.7; CR 102.4 / CT-344
       () => {
         // which grantor pays is chosen against the bin as it now is (this card
         // already taken): the cards still waiting for a grant
@@ -1299,11 +1303,7 @@ function doPlayFromBin(e: E, seat: Seat, binIndex: number): void {
   e.need(viaGrant || !!c.playsFromBin, 'you have no permission to play cards from your bin');
   e.need(e.canPayCard(seat, name), 'cannot pay for that');
   playAtTiming(e, seat, c, c.timing,
-    () => {
-      const owner = e.zoneOwner(seat, 'bin', binIndex);   // CT-233: before it leaves
-      e.removeFromBin(seat, binIndex, 'played');           // CR 405.7
-      return owner;
-    },
+    () => e.takeFromBin(seat, binIndex, 'played')?.owner,   // CR 405.7; CT-233: with its owner
     () => {
       e.payCard(seat, name);
       // "target spell" is singular — spend the grant as the play
@@ -1567,7 +1567,14 @@ function spellTokenItem(e: E, seat: Seat, region: number, t: Entity): StackItem 
   item.from = 'play';
   item.x = t.x;
   item.label = `${t.card} ${t.x ?? ''}`.trim();
-  if (riding.length) item.augments = riding.map(m => ({ card: m.card, by: m.owner }));
+  // CR 102.4 / CT-343: `by` is who APPLIED each one, and `owner` rides along when
+  // the card is somebody else's (it was `m.owner`, read as the applier)
+  if (riding.length) {
+    item.augments = riding.map(m => {
+      const by = e.appliedBy(m);
+      return { card: m.card, by, ...(m.owner !== by ? { owner: m.owner } : {}) };
+    });
+  }
   return item;
 }
 
@@ -1911,11 +1918,7 @@ function zoneTake(e: E, seat: Seat, from: ModZone, index: number): Seat {
   // your bin is now the exact reachable case this line exists for — it hears
   // its own exit and offers the pay-[1]. A defensive fix that acquired a real
   // caller within the day.
-  if (from === 'bin') {
-    const owner = e.zoneOwner(seat, 'bin', index);
-    e.removeFromBin(seat, index, 'modded');
-    return owner;
-  }
+  if (from === 'bin') return e.takeFromBin(seat, index, 'modded')?.owner ?? seat;
   return e.takeFromHand(seat, index)?.owner ?? seat;   // the hand choke point
 }
 
@@ -2214,7 +2217,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     // from the bin, a hardcoded `hand.splice(index)` deletes an unrelated card
     // out of the hand and leaves the bin card in place — the single most
     // dangerous line in this change, in both branches.
-    zoneTake(e, seat, from, index);
+    const owner = zoneTake(e, seat, from, index);   // CR 102.4 / CT-343: whose card it is
     // CR 701.2, 701.2b: a Virus augment is a mod. CR 720.4b: and a free one is free here too
     // — a fulfilled prophecy's Virus out of the cache (CR 403.3c) reaches this with
     // `free` set, and the price must not depend on which branch.
@@ -2223,6 +2226,7 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
       id: e.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${target!.label})`, controller: seat,
       region: target!.region, negated: false, parts: [], hostStack,
+      ...(owner !== seat ? { owner } : {}),
     };
     // CR 110.11's "when I become targeted" listeners all read `data.unit`; there is
     // no unit here, so they correctly do not match. The event is still fired
@@ -2274,12 +2278,13 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     e.need(host.region === e.s.battle!.region, 'that unit is in another region');
     e.need(virusHostOk(e, host.region, { unit: host.id }),
       'Gatekeeper of Souls must be targeted if able (CR 110.12)');
-    zoneTake(e, seat, from, index);
+    const owner = zoneTake(e, seat, from, index);   // CR 102.4 / CT-343: whose card it is
     payBattleAugment(e, seat, name, price!);   // CR 701.2b, 723.2a, as above
     const item: StackItem = {
       id: e.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${host.card})`, controller: seat,
       region: host.region, negated: false, parts: [], hostId: host.id,
+      ...(owner !== seat ? { owner } : {}),
     };
     const ev = e.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
     e.fireEvent('targeted', ev);
@@ -2290,7 +2295,8 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     // is the deployment branch verbatim.
     e.need(hasteMod || e.deploying(seat), 'not your deployment');
     e.need(host.region === e.homeRegion(seat), 'you can only mod units in your region');
-    zoneTake(e, seat, from, index);
+    const owner = zoneTake(e, seat, from, index);   // CR 102.4 / CT-343: whose card it is
+    const owned = owner !== seat ? { owner } : {};
     if (free) e.ev('info', `${name} augments for FREE — its prophecy is fulfilled.`);
     else e.payCard(seat, name, { purpose: 'mod' });
     // CR 801.9g: the glimpse waiver is the one thing a player cannot read off the
@@ -2306,9 +2312,9 @@ function doAugment(e: E, seat: Seat, from: ModZone, index: number,
     // attaches after (E.finishPendingMods). A spell-token host keeps the old
     // path: nothing listens for one, and its line below is said at once.
     if (!tokenHost && e.s.triggerQueue.length > queued) {
-      (e.s.pendingMods ??= []).push({ seat, host: host.id, card: name, appliedAs: 'augment' });
+      (e.s.pendingMods ??= []).push({ seat, host: host.id, card: name, appliedAs: 'augment', ...owned });
     } else {
-      e.attachMod(host, name, seat, 'augment');
+      e.attachMod(host, name, seat, 'augment', undefined, owned);
     }
     // CR 721.4a: "you can only do this with attributes" — the same restriction CR 721.4b
     // enforces on the stack, said out loud HERE because this is the moment the
@@ -2358,7 +2364,8 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
   e.need(modAffordable(e, seat, name, price!), 'cannot pay for that');  // CR 701.2b
   // new grafts insert anywhere below the base card, never reorder the rest
   e.need(Number.isInteger(position) && position >= 0 && position <= host.mods.length, 'bad graft position');
-  zoneTake(e, seat, from, index);
+  const owner = zoneTake(e, seat, from, index);   // CR 102.4 / CT-343: whose card it is
+  const owned = owner !== seat ? { owner } : {};
   if (free) e.ev('info', `${name} grafts for FREE — its prophecy is fulfilled.`);
   else e.payCard(seat, name, { purpose: 'mod' });
   if (!free && price!.ignoreAffinity) {   // CR 801.9g, as in doAugment
@@ -2372,9 +2379,9 @@ function doGraft(e: E, seat: Seat, from: ModZone, index: number, hostId: EntityI
   // waits until those triggers have resolved (E.finishPendingMods). With
   // nothing triggered it attaches at once, exactly as before.
   if (e.s.triggerQueue.length > queued) {
-    (e.s.pendingMods ??= []).push({ seat, host: host.id, card: name, appliedAs: 'graft', position });
+    (e.s.pendingMods ??= []).push({ seat, host: host.id, card: name, appliedAs: 'graft', position, ...owned });
   } else {
-    e.attachMod(host, name, seat, 'graft', position);
+    e.attachMod(host, name, seat, 'graft', position, owned);
   }
   e.settle();
 }
@@ -3596,13 +3603,15 @@ function doAmend(e: E, seat: Seat, by: Seat, edit: AmendEdit): void {
       break;
     case 'move': {
       const card = edit.card;
-      if (edit.from === 'hand') e.takeFromHand(seat, edit.index);
-      else if (edit.from === 'bin') e.removeFromBin(seat, edit.index, 'an agreed fix', { quiet: true });
-      else e.uncache(seat, edit.index);
-      if (edit.to === 'hand') e.toHand(seat, card, edit.from, { quiet: true });
-      else if (edit.to === 'bin') e.toBin(seat, card, 'amend');
+      // CR 102.4 / CT-344: a move between the player's own hand, bin and cache
+      // keeps the card's owner; the deck (shared) leaves it behind
+      const owner = edit.from === 'hand' ? e.takeFromHand(seat, edit.index)?.owner
+        : edit.from === 'bin' ? e.takeFromBin(seat, edit.index, 'an agreed fix', { quiet: true })?.owner
+        : e.uncache(seat, edit.index)?.owner;
+      if (edit.to === 'hand') e.toHand(seat, card, edit.from, { quiet: true, ...(owner !== undefined ? { owner } : {}) });
+      else if (edit.to === 'bin') e.toBin(seat, card, 'amend', owner);
       // (from the cache to the cache was refused by amendProblem)
-      else if (edit.to === 'cache') e.cacheCard(seat, card, edit.from as 'hand' | 'bin', { quiet: true });
+      else if (edit.to === 'cache') e.cacheCard(seat, card, edit.from as 'hand' | 'bin', { quiet: true, ...(owner !== undefined ? { owner } : {}) });
       else if (edit.to === 'deckTop') e.deckOf(seat).unshift(card);
       // CR 408.2: the bottom of a deck is past the mark, as for every card
       // that reaches it
@@ -3615,8 +3624,9 @@ function doAmend(e: E, seat: Seat, by: Seat, edit: AmendEdit): void {
       e.quietLeavePlay(u);
       // a token has no card to put anywhere (CR 410.5): it is simply gone
       if (u.token) break;
-      if (edit.to === 'hand') e.toHand(to, u.card, 'play', { unit: u.id, quiet: true });
-      else if (edit.to === 'bin') e.toBin(to, u.card, 'amend');
+      // CR 102.4 / CT-344: the card keeps its owner in the controller's hand or bin
+      if (edit.to === 'hand') e.toHand(to, u.card, 'play', { unit: u.id, quiet: true, owner: u.owner });
+      else if (edit.to === 'bin') e.toBin(to, u.card, 'amend', u.owner);
       else e.recycleToBottom(to, u.card);
       break;
     }
@@ -3654,12 +3664,14 @@ export function amendFrozen(frozen: GameState, action: Extract<Action, { type: '
       break;
     case 'move': {
       const p = e.player(seat);
-      if (edit.from === 'hand') { const i = p.hand.indexOf(edit.card); if (i >= 0) e.takeFromHand(seat, i); }
-      else if (edit.from === 'bin') { const i = p.bin.lastIndexOf(edit.card); if (i >= 0) e.removeFromBin(seat, i, 'an agreed fix', { quiet: true }); }
-      else { const i = e.cache(seat).findIndex(c => c.card === edit.card); if (i >= 0) e.uncache(seat, i); }
-      if (edit.to === 'hand') e.toHand(seat, edit.card, edit.from, { quiet: true });
-      else if (edit.to === 'bin') e.toBin(seat, edit.card, 'amend');
-      else if (edit.to === 'cache') e.cacheCard(seat, edit.card, edit.from as 'hand' | 'bin', { quiet: true });
+      let owner: Seat | undefined;   // CR 102.4 / CT-344, as in doAmend
+      if (edit.from === 'hand') { const i = p.hand.indexOf(edit.card); if (i >= 0) owner = e.takeFromHand(seat, i)?.owner; }
+      else if (edit.from === 'bin') { const i = p.bin.lastIndexOf(edit.card); if (i >= 0) owner = e.takeFromBin(seat, i, 'an agreed fix', { quiet: true })?.owner; }
+      else { const i = e.cache(seat).findIndex(c => c.card === edit.card); if (i >= 0) owner = e.uncache(seat, i)?.owner; }
+      const owned = owner !== undefined ? { owner } : {};
+      if (edit.to === 'hand') e.toHand(seat, edit.card, edit.from, { quiet: true, ...owned });
+      else if (edit.to === 'bin') e.toBin(seat, edit.card, 'amend', owner);
+      else if (edit.to === 'cache') e.cacheCard(seat, edit.card, edit.from as 'hand' | 'bin', { quiet: true, ...owned });
       else if (edit.to === 'deckTop') e.deckOf(seat).unshift(edit.card);
       else e.recycleToBottom(seat, edit.card);
       break;
@@ -3672,8 +3684,9 @@ export function amendFrozen(frozen: GameState, action: Extract<Action, { type: '
       const to = before.entities[edit.id]?.controller ?? seat;
       if (known) e.quietLeavePlay(u!);
       if (known && u!.token) break;
-      if (edit.to === 'hand') e.toHand(to, edit.card, 'play', { quiet: true });
-      else if (edit.to === 'bin') e.toBin(to, edit.card, 'amend');
+      const owned = known ? { owner: u!.owner } : {};   // CR 102.4 / CT-344, as in doAmend
+      if (edit.to === 'hand') e.toHand(to, edit.card, 'play', { quiet: true, ...owned });
+      else if (edit.to === 'bin') e.toBin(to, edit.card, 'amend', known ? u!.owner : undefined);
       else e.recycleToBottom(to, edit.card);
       break;
     }

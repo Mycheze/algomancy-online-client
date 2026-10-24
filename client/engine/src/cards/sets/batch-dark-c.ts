@@ -208,8 +208,8 @@ const blightwalkerRecall: EffectDef = {
     const name = g.player(seat).bin[t.binCard.index];
     if (name === undefined) { g.ev('info', 'Blightwalker: the card left the bin — nothing is recalled.'); return; }
     g.payMana(seat, 2);
-    g.removeFromBin(seat, t.binCard.index, 'recalled');   // CR 405.7
-    g.toHand(seat, name, 'bin');                          // CR 402.4
+    const took = g.takeFromBin(seat, t.binCard.index, 'recalled');   // CR 405.7
+    g.toHand(seat, name, 'bin', { owner: took!.owner });             // CR 402.4; CR 102.4
     g.ev('info', `Blightwalker recalls ${name} from ${g.pname(seat)}'s bin to their hand.`);
   },
 };
@@ -239,8 +239,9 @@ card('Collect Remains', {
         const bin = g.player(t.binCard.seat).bin;
         const name = bin[t.binCard.index];
         if (name !== undefined) {
-          g.removeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // CR 405.7
-          g.toHand(ctx.controller, name, 'bin');                          // CR 402.4
+          const took = g.takeFromBin(t.binCard.seat, t.binCard.index, 'recalled');   // CR 405.7
+          // CR 402.4; CR 102.4 / CT-344: out of either bin, still its owner's card
+          g.toHand(ctx.controller, name, 'bin', { owner: took!.owner });
           g.ev('info', `Collect Remains: ${name} goes from ${g.pname(t.binCard.seat)}'s bin to ${g.pname(ctx.controller)}'s hand.`);
         }
       }
@@ -291,8 +292,8 @@ card('Cthyrian Rector', {
         // `when` pins the trashed seat to the controller, so slot.seat is
         // "your bin" and the recall lands in the same player's hand.
         if (slot.index === -1) { g.ev('info', `Cthyrian Rector: ${slot.card} is no longer in the bin.`); return; }
-        g.removeFromBin(slot.seat, slot.index, 'recalled');   // CR 405.7
-        g.toHand(ctx.controller, slot.card, 'bin');          // CR 402.4
+        const took = g.takeFromBin(slot.seat, slot.index, 'recalled');   // CR 405.7
+        g.toHand(ctx.controller, slot.card, 'bin', { owner: took!.owner });   // CR 402.4; CR 102.4
         g.ev('info', `Cthyrian Rector recalls ${slot.card} to ${g.pname(ctx.controller)}'s hand.`);
       },
     },
@@ -463,7 +464,7 @@ const lurkingDread: EffectDef = {
     // take it out of whichever zone still holds it, then put it into play
     const bi = g.player(seat).bin.lastIndexOf('Lurking Dread');
     let owner: Seat = seat;                                // CR 102.4 / CT-233
-    if (bi !== -1) { owner = g.zoneOwner(seat, 'bin', bi); g.removeFromBin(seat, bi, 'revived'); }   // CR 405.7
+    if (bi !== -1) owner = g.takeFromBin(seat, bi, 'revived')!.owner;   // CR 405.7
     else {
       const ci = g.cache(seat).findIndex(cc => cc.card === 'Lurking Dread');
       if (ci !== -1) owner = g.uncache(seat, ci)?.owner ?? seat;
@@ -610,10 +611,11 @@ card('Necromorph', {
         return;
       }
       const name = b.binCard.card;
-      g.removeFromBin(owner, b.binCard.index, 'revived');   // CR 405.7
+      const took = g.takeFromBin(owner, b.binCard.index, 'revived');   // CR 405.7
       // CR 801.13a: a despawn and a trashing, and NOT a death. The replacement
-      // takes the victim's region and slot inside the primitive.
-      g.exchangeInPlace(victim, name, owner);
+      // takes the victim's region and slot inside the primitive. CR 102.4 / CT-344:
+      // it enters under the bin's seat and keeps the owner it had in that bin.
+      g.exchangeInPlace(victim, name, owner, { owner: took!.owner });
     },
   },
 });
@@ -1030,8 +1032,8 @@ card('Xzydris', {
         g.augmentWraith(host, seat);
         const i = g.player(seat).bin.lastIndexOf('Xzydris');
         if (i === -1) { g.ev('info', 'Xzydris: it left the bin — nothing is recalled.'); return; }
-        g.removeFromBin(seat, i, 'recalled');   // CR 405.7
-        g.toHand(seat, 'Xzydris', 'bin');       // CR 402.4
+        const took = g.takeFromBin(seat, i, 'recalled');   // CR 405.7
+        g.toHand(seat, 'Xzydris', 'bin', { owner: took!.owner });   // CR 402.4; CR 102.4
         g.ev('info', `Xzydris is recalled from ${g.pname(seat)}'s bin to their hand.`);
       },
     },

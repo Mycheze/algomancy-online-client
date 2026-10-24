@@ -773,7 +773,8 @@ card('Cosmic Reversal', {
           g.recallSpellTokenItem(item, 'Cosmic Reversal');
         } else {
           // CR 402.4: off the STACK and into a hand — `from: 'stack'`
-          g.toHand(item.controller, item.card!, 'stack');
+          // CR 102.4 / CT-344: still its owner's card in its controller's hand
+          g.toHand(item.controller, item.card!, 'stack', item.owner !== undefined ? { owner: item.owner } : {});
           g.ev('info', `Cosmic Reversal recalls ${item.label} to ${g.pname(item.controller)}'s hand.`);
         }
       }
@@ -923,8 +924,8 @@ card('Eldritch Reclaimer', {
       const bin = g.player(ctx.controller).bin;
       const name = bin[t.binCard.index];
       if (name === undefined) return;
-      g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
-      g.toHand(ctx.controller, name, 'bin');                          // CR 402.4
+      const took = g.takeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
+      g.toHand(ctx.controller, name, 'bin', { owner: took!.owner });             // CR 402.4; CR 102.4
       g.ev('info', `${name} is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
     },
   },

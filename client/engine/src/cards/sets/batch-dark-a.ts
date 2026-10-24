@@ -293,8 +293,8 @@ card('Exhume', {
         prompt: `Exhume: put which unit (cost ${x} or less) into play?`,
         options: units.map(([n, i]) => ({ label: n, value: i, card: n })),
       }) as number;
-      const name = g.removeFromBin(ctx.controller, idx, 'revived');   // CR 405.7
-      if (name !== undefined) g.spawnUnit(ctx.controller, name, ctx.region);
+      const took = g.takeFromBin(ctx.controller, idx, 'revived');   // CR 405.7
+      if (took !== undefined) g.spawnUnit(ctx.controller, took.card, ctx.region, { owner: took.owner });   // CR 102.4
     },
   },
 });
@@ -633,14 +633,16 @@ card('Spore of Regenesis', {
         }
         // highest index first so the earlier indices stay valid
         const idxs = [mine, ...revivable.map(([, i]) => i)].sort((a, z) => z - a);
-        const names: CardName[] = [];
+        const raised: { card: CardName; owner: Seat }[] = [];
         for (const i of idxs) {
-          const name = g.removeFromBin(ctx.controller, i, i === mine ? 'erased' : 'revived');   // CR 405.7
-          if (name !== undefined && i !== mine) names.push(name);
+          // CR 405.7; CR 102.4 / CT-344: the revived cards keep the owner they had in the bin
+          if (i === mine) { g.removeFromBin(ctx.controller, i, 'erased'); continue; }
+          const took = g.takeFromBin(ctx.controller, i, 'revived');
+          if (took !== undefined) raised.push(took);
         }
         g.ev('erased', 'Spore of Regenesis is ERASED from the bin (its own cost).',
           { card: 'Spore of Regenesis', seat: ctx.controller });
-        for (const name of names.reverse()) g.spawnUnit(ctx.controller, name, ctx.region);
+        for (const r of raised.reverse()) g.spawnUnit(ctx.controller, r.card, ctx.region, { owner: r.owner });
       },
     },
   }],
@@ -675,15 +677,17 @@ card('Tilling the Graves', {
         .filter((t): t is { binCard: { seat: Seat; index: number; card: CardName } } => 'binCard' in t)
         .map(t => t.binCard.index)
         .filter(i => i !== -1);
-      const taken: CardName[] = [];
+      const taken: { card: CardName; owner: Seat }[] = [];
       for (const i of [...new Set(chosen)].sort((a, z) => z - a)) {
-        const name = g.removeFromBin(seat, i, 'recalled');   // CR 405.7
-        if (name !== undefined) taken.push(name);
+        const took = g.takeFromBin(seat, i, 'recalled');   // CR 405.7
+        if (took !== undefined) taken.push(took);
       }
       // CR 706.6a: the whole recall is ONE move into a hand, so it announces ONE
       // 'handEntered' — the printed shape is "one or more cards enter".
-      const order = taken.reverse();
-      g.toHand(seat, order, 'bin');
+      // CR 102.4 / CT-344: each card with the owner it had in the bin
+      const back = taken.reverse();
+      const order = back.map(t => t.card);
+      g.toHand(seat, order, 'bin', { owner: back.map(t => t.owner) });
       for (const name of order) {
         g.ev('info', `Tilling the Graves: ${name} returns to ${g.pname(seat)}'s hand.`);
       }
@@ -764,7 +768,11 @@ card('Wake the Dead', {
       }
       if (!chosen.length) { g.ev('info', 'Wake the Dead: nothing playable in any bin.'); return; }
       // remove highest index first within each bin, then spawn in pick order
-      for (const c of [...chosen].sort((a, z) => z.idx - a.idx)) g.removeFromBin(c.seat, c.idx, 'revived');   // CR 405.7
+      // CR 405.7; CR 102.4 / CT-233: each card leaves with the owner it had in its bin
+      for (const c of [...chosen].sort((a, z) => z.idx - a.idx)) {
+        const took = g.takeFromBin(c.seat, c.idx, 'revived');
+        if (took) c.owner = took.owner;
+      }
       // CARD-TODO #17: "any bin" means the card may be the OPPONENT'S, and the
       // two seats are different facts. The CONTROLLER is the caster; the OWNER
       // is whichever bin it came out of. When it dies it goes to its CONTROLLER's bin, like

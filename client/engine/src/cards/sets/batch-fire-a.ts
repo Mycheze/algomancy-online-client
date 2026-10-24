@@ -233,8 +233,8 @@ card('Cinder Scuttler', {
           g.ev('info', 'Cinder Scuttler: it has already left the bin — nothing to recall.');
           return;
         }
-        g.removeFromBin(ctx.controller, i, 'recalled');   // CR 405.7
-        g.toHand(ctx.controller, 'Cinder Scuttler', 'bin');  // CR 402.4
+        const took = g.takeFromBin(ctx.controller, i, 'recalled');   // CR 405.7
+        g.toHand(ctx.controller, 'Cinder Scuttler', 'bin', { owner: took!.owner });  // CR 402.4; CR 102.4
         g.ev('info', `Cinder Scuttler is recalled from ${g.pname(ctx.controller)}'s bin to their hand.`);
       },
     },
@@ -298,9 +298,10 @@ card('Delver of Mysteries', {
     run: (g, ctx) => {
       const t = ctx.targets[0];
       if (!t || !('binCard' in t) || t.binCard.index === -1) return;
-      const name = g.removeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
-      if (name !== undefined) {
-        g.toHand(ctx.controller, name, 'bin');   // CR 402.4
+      const took = g.takeFromBin(ctx.controller, t.binCard.index, 'recalled');   // CR 405.7
+      if (took !== undefined) {
+        const name = took.card;
+        g.toHand(ctx.controller, name, 'bin', { owner: took.owner });   // CR 402.4; CR 102.4
         g.ev('info', `${name} is recalled to ${g.pname(ctx.controller)}'s hand.`);
       }
     },

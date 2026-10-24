@@ -2962,14 +2962,18 @@ export class E {
 
   toHand(seat: Seat, cards: CardName | readonly CardName[],
          from: 'deck' | 'bin' | 'play' | 'stack' | 'cache' | 'hand' | 'sandbox',
-         opts: { unit?: EntityId; token?: boolean; quiet?: boolean; owner?: Seat } = {}): void {
+         opts: { unit?: EntityId; token?: boolean; quiet?: boolean; owner?: Seat | readonly Seat[] } = {}): void {
     const names: CardName[] = typeof cards === 'string' ? [cards] : [...cards];
     if (!names.length) return;
     this.player(seat).hand.push(...names);
-    // CR 102.4 / CT-233: a card another player owns keeps that owner in this hand
+    // CR 102.4 / CT-233: a card another player owns keeps that owner in this hand.
+    // CT-344: one owner for every card, or one per card (a whole-bin recall)
     if (opts.owner !== undefined && !opts.token) {
       const len = this.player(seat).hand.length;
-      for (let i = len - names.length; i < len; i++) this.markForeign(seat, 'hand', i, opts.owner);
+      const owners = opts.owner;
+      for (let i = len - names.length, k = 0; i < len; i++, k++) {
+        this.markForeign(seat, 'hand', i, typeof owners === 'number' ? owners : owners[k]);
+      }
     }
     const ev = this.ev('handEntered', '', {
       seat, from, cards: names, card: names[0], n: names.length,
@@ -3715,6 +3719,23 @@ export class E {
     return name;
   }
 
+  /**
+   * CR 102.4 / CT-344: THE bin exit for a card that goes on to another zone of a
+   * player's own or into play — `removeFromBin` (the one bin-removal path, CR 405.7,
+   * with its 'leftBin') plus the owner the card had in that bin, read before it
+   * leaves. A recall to a hand passes `owner` to `toHand`, a revival passes it
+   * to `spawnUnit`. Only an erase (the card leaves the game) and a recycle (a
+   * shared pile, where ownership resets) call `removeFromBin` directly; 623
+   * holds the pool to that.
+   */
+  takeFromBin(seat: Seat, at: number, reason: string, opts: { quiet?: boolean } = {}):
+    { card: CardName; owner: Seat } | undefined {
+    if (at < 0 || at >= this.player(seat).bin.length) return undefined;
+    const owner = this.zoneOwner(seat, 'bin', at);
+    const card = this.removeFromBin(seat, at, reason, opts)!;
+    return { card, owner };
+  }
+
   // ── CR 102.4 / CT-233: whose card it is, in a player's own hand or bin ─────
   //
   // Owner ruling 2026-10-22: "The original owner holds while the card is in a
@@ -3793,10 +3814,9 @@ export class E {
   /** cache a card out of `seat`'s bin (Delver of the Ephemeral, Murkdrop
    * Distiller). The card LEAVES the bin — it is not copied. */
   cacheFromBin(seat: Seat, binIndex: number, opts: { prophecy?: string; playable?: boolean } = {}): CachedCard | undefined {
-    const owner = this.zoneOwner(seat, 'bin', binIndex);           // CT-233
-    const name = this.removeFromBin(seat, binIndex, 'cached');   // CR 405.7
-    if (name === undefined) return undefined;
-    return this.cacheCard(seat, name, 'bin', { ...opts, owner });
+    const took = this.takeFromBin(seat, binIndex, 'cached');   // CR 405.7; CT-233: with its owner
+    if (took === undefined) return undefined;
+    return this.cacheCard(seat, took.card, 'bin', { ...opts, owner: took.owner });
   }
 
   /** cache the top `n` cards of `seat`'s deck (Blurf; and the engine half of
@@ -7057,7 +7077,7 @@ export class E {
    * the triggering unit's controller for Hooba-Mon. Returns the fresh unit, or
    * null when `u` was already gone.
    */
-  exchangeInPlace(u: Entity, name: CardName, controller: Seat): Entity | null {
+  exchangeInPlace(u: Entity, name: CardName, controller: Seat, opts: { owner?: Seat } = {}): Entity | null {
     if (!this.entity(u.id)) return null;
     // resolved BEFORE `u` leaves the table, exactly as destroy() does —
     // a mod id whose entity is already gone is not a mod any more
@@ -7072,7 +7092,8 @@ export class E {
     }
     const outgoing = u.card;
     this.stampLastKnown(u);                     // CR 714.1
-    const fresh = this.spawnUnit(controller, name, u.region);
+    // CR 102.4 / CT-344: the replacement card keeps the owner it had in its bin
+    const fresh = this.spawnUnit(controller, name, u.region, opts.owner !== undefined ? { owner: opts.owner } : {});
     if (slot) {
       slot.col[slot.idx] = fresh.id;   // take the exact position in play
       this.ev('info', `${name} takes ${outgoing}'s position in the formation.`);
@@ -9280,7 +9301,12 @@ export class E {
     const name = zone[index];
     this.need(name !== undefined, 'no card there to apply');
     this.need(this.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that mod');
-    zone.splice(index, 1);
+    // CT-344: the hand through its choke point; the bin by hand, keeping the
+    // foreign-owner table's positions true (the card itself is erased with the
+    // spell, so its own owner does not matter). ⚠ The bin exit fires no
+    // 'leftBin' (CR 405.7) — a known gap, left as it was so no replay changes.
+    if (modFrom === 'hand') this.takeFromHand(seat, index);
+    else { zone.splice(index, 1); this.foreignSpliced(seat, 'bin', index, name); }
     this.payCard(seat, name, { purpose: 'mod' });
     (item.mods ??= []).push({ card: name, from: modFrom });
     // CR 724.4: only a GRAFT brings an EFFECT with it — `graft:${name}` is the key
@@ -11511,13 +11537,14 @@ export class E {
     for (const g of now) {
       const host = this.entity(g.host);
       if (!host || host.kind !== 'unit' || host.absent) {
-        this.toBin(g.seat, g.card, 'stack');
+        this.toBin(g.seat, g.card, 'stack', g.owner);   // CR 102.4 / CT-343: still its owner's card
         this.ev('info', `${g.card}: its host left play before it could attach — it goes to ${this.pname(g.seat)}'s bin.`,
           { seat: g.seat, card: g.card });
         continue;
       }
       this.attachMod(host, g.card, g.seat, g.appliedAs,
-        g.appliedAs === 'graft' ? Math.min(g.position ?? host.mods.length, host.mods.length) : undefined);
+        g.appliedAs === 'graft' ? Math.min(g.position ?? host.mods.length, host.mods.length) : undefined,
+        g.owner !== undefined ? { owner: g.owner } : {});   // CR 102.4 / CT-343
     }
     this.settle();
   }
@@ -11603,7 +11630,7 @@ export class E {
           fizzle('its host has left the stack');
           return;
         }
-        this.augmentStackItem(target, item.card!, item.controller);
+        this.augmentStackItem(target, item.card!, item.controller, item.owner);   // CT-343
         return;
       }
       const host = item.hostId !== undefined ? this.entity(item.hostId) : undefined;
@@ -11611,7 +11638,9 @@ export class E {
         fizzle('host is gone');
         return;
       }
-      this.attachMod(host, item.card!, item.controller, 'augment');
+      // CR 102.4 / CT-343: the applier is the item's controller; the card keeps its owner
+      this.attachMod(host, item.card!, item.controller, 'augment', undefined,
+        item.owner !== undefined ? { owner: item.owner } : {});
       return;
     }
     // spell / spellUnit / spellToken / triggered / activated: run live parts
@@ -12236,8 +12265,10 @@ export class E {
    * 'modApplied' means a mod reached a UNIT (every listener reads
    * `ev.data.host`) and there is no host entity here, so this logs like the
    * {Modular} path does. */
-  augmentStackItem(item: StackItem, name: CardName, byPlayer: Seat): void {
-    (item.augments ??= []).push({ card: name, by: byPlayer });
+  augmentStackItem(item: StackItem, name: CardName, byPlayer: Seat, owner?: Seat): void {
+    // CR 102.4 / CT-343: `owner` only when the card is not the applier's own
+    (item.augments ??= []).push({ card: name, by: byPlayer,
+      ...(owner !== undefined && owner !== byPlayer ? { owner } : {}) });
     const granted = this.card(name).augmentAttrs;
     this.ev('info',
       `${name} augments ${item.label} on the stack`
@@ -12355,7 +12386,10 @@ export class E {
       // it in, as the augment mods they always were, which is also what makes
       // the body Unstable. Erasing the card here instead would delete a unit
       // on its way into play, which no ruling asks for.
-      for (const a of item.augments ?? []) this.attachMod(u, a.card, a.by, 'augment');
+      for (const a of item.augments ?? []) {
+        // CR 102.4 / CT-343: applied by `by`, still owned by its owner
+        this.attachMod(u, a.card, a.by, 'augment', undefined, a.owner !== undefined ? { owner: a.owner } : {});
+      }
       // CR 803.8d: a spell UNIT played from a bin spawns a body, and the stamp goes
       // with it — the card said "THEY gain unstable until regroup", and the
       // body is what the card became. This is the "edge, noted for review" in
@@ -12476,10 +12510,17 @@ export class E {
    * when it leaves play instead of being binned (a mod has no card to bin,
    * CR 410.4c), which recall()/cacheUnit() honour. */
   attachMod(host: Entity, name: CardName, byPlayer: Seat, appliedAs: 'augment' | 'graft',
-    position?: number, opts: { token?: boolean } = {}): Entity {
+    position?: number, opts: { token?: boolean; owner?: Seat } = {}): Entity {
+    // CR 102.4 / CT-343: `byPlayer` APPLIES the mod; `opts.owner` is whose card it
+    // is, when the card came out of a zone where another player owned it (a
+    // stolen card in the applier's hand, bin or cache). The two used to be one
+    // field. `appliedBy` is stored only when they differ, so a mod applied by
+    // its owner is the entity it always was.
+    const owner = opts.owner ?? byPlayer;
     const mod = this.newEntity({
-      card: name, owner: byPlayer, controller: host.controller, kind: 'mod',
+      card: name, owner, controller: host.controller, kind: 'mod',
       region: host.region, modOf: host.id, appliedAs,
+      ...(owner !== byPlayer ? { appliedBy: byPlayer } : {}),
       ...(opts.token ? { token: true } : {}),
     });
     if (appliedAs === 'graft' && position !== undefined) host.mods.splice(position, 0, mod.id);
@@ -12490,6 +12531,13 @@ export class E {
       { host: host.id, mod: mod.id, appliedAs });
     this.fireEvent('modApplied', ev);
     return mod;
+  }
+
+  /** CR 102.4 / CT-343: the player who APPLIED `mod` — `Entity.appliedBy`, or
+   * its owner when that field is absent (a mod applied by its owner, and every
+   * mod in a state saved before the two were split). */
+  appliedBy(mod: Entity): Seat {
+    return mod.appliedBy ?? mod.owner;
   }
 
   /**
