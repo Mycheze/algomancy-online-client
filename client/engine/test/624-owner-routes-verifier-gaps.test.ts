@@ -152,4 +152,6 @@ test('CR 102.4 / CT-344: amendFrozen carries a foreign card owner through a move
   assert.equal(ownerIn(out, A, 'bin', 'Just a Unit'), D, 'the move keeps the owner');
   out = amendFrozen(frozen, amend(A, { kind: 'unit', id, card: 'Shard Sprite', to: 'hand' }), h.state);
   assert.equal(ownerIn(out, A, 'hand', 'Shard Sprite'), D, 'the unit removal keeps the owner');
+  out = amendFrozen(frozen, amend(A, { kind: 'unit', id, card: 'Shard Sprite', to: 'bin' }), h.state);
+  assert.equal(ownerIn(out, A, 'bin', 'Shard Sprite'), D, 'into the bin as well');
 });
