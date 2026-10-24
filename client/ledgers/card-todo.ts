@@ -603,17 +603,6 @@ const OPEN: TodoEntry[] = [
     verify: "Compare data/cards/Torrential-Reclamation.jpg and the oracle row with a current printed copy.",
     status: 'open',
   },
-  {
-    id: 375, area: "card", severity: "minor",
-    cards: ["Torrential Reclamation"],
-    title: "OWNER QUESTION: Torrential Reclamation at X = 0 still makes each player sacrifice once; the designer's thread says removing targets prevents the sacrifice",
-    detail: "The engine sacrifices max(1, recalled) times per player, so X = 0 still costs each player a unit (owner ruling 2026-08-28, pinned by 182 \"with X = 0 the sacrifice STILL happens\"). The designer's thread reads the other way: Caleb, 2024-03-29, \"That's why we allow X and the \"for each\" to be different\" / \"So you can remove targets to prevent the sacrifice\", after accepting the reword \"for each ally recalled this way, each player sacrifices a unit and you lose 1 life\", under which none recalled means none sacrificed. On 2025-04-24 _passer wrote \"If you recall 0 units, enemy sacs 0 units\" and Caleb answered \"Hahaha\" (not a confirmation).",
-    evidence: "Round 2026-10-24: found closing CT-356, reading the thread quoted in R1024-engine.md ([1223287683804037202], [1365004568278208725]) against 182-correctness-sample.test.ts.",
-    fix: "Ask the owner whether the designer's 2024 answer and the reworded print replace the 2026-08-28 X = 0 reading. If they do, drop the floor of one sacrifice and flip 182's X = 0 test; if not, cite the ruling and the thread in the CR record for the card.",
-    proof: null,
-    verify: "Cast Torrential Reclamation for X = 0 with units on both sides: today each player sacrifices one.",
-    status: 'open',
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

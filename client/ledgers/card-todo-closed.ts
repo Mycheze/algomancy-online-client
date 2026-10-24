@@ -5445,7 +5445,7 @@ export const CLOSED: TodoEntry[] = [
       'Both clauses do what the card prints, the KNOWN_WRONG rows are deleted, and 182 goes green '
       + 'with 127/127.',
     guards: [
-      '182-correctness-sample.test.ts::with X = 0 the sacrifice STILL happens, and costs no life',
+      '182-correctness-sample.test.ts::with X = 0 nothing is recalled, so nobody sacrifices',
       '182-correctness-sample.test.ts::"each player sacrifices a unit" happens ONCE PER RECALLED ALLY',
     ],
     closed:
@@ -12744,6 +12744,22 @@ export const CLOSED: TodoEntry[] = [
       "19-hybrids.test.ts::Torrential Reclamation: recall X nontoken allies",
     ],
     closed: "DONE (by ruling) 2026-10-24, no engine change. Caleb, rules-questions 2024-03-28 [1222932669516615743], \"Yeah\" to \"does the sacrificing also happen once for each returned unit?\"; the next day he accepted the reword \"for each ally recalled this way, each player sacrifices a unit and you lose 1 life\" (\"Alright lol I'll change it\", then \"alright I updated torrential reclamation with the print company\"). The engine already runs one sacrifice per player per recalled ally (owner ruling 2026-08-28). Two follow-ups: our oracle row and scan predate the reword (CT-374), and at X = 0 the engine still sacrifices once, which the same thread may contradict (CT-375).",
+    status: 'done',
+  },
+  {
+    id: 375, area: "card", severity: "minor",
+    cards: ["Torrential Reclamation"],
+    title: "OWNER QUESTION: Torrential Reclamation at X = 0 still makes each player sacrifice once; the designer's thread says removing targets prevents the sacrifice",
+    detail: "The engine sacrifices max(1, recalled) times per player, so X = 0 still costs each player a unit (owner ruling 2026-08-28, pinned by 182 \"with X = 0 the sacrifice STILL happens\"). The designer's thread reads the other way: Caleb, 2024-03-29, \"That's why we allow X and the \"for each\" to be different\" / \"So you can remove targets to prevent the sacrifice\", after accepting the reword \"for each ally recalled this way, each player sacrifices a unit and you lose 1 life\", under which none recalled means none sacrificed. On 2025-04-24 _passer wrote \"If you recall 0 units, enemy sacs 0 units\" and Caleb answered \"Hahaha\" (not a confirmation).",
+    evidence: "Round 2026-10-24: found closing CT-356, reading the thread quoted in R1024-engine.md ([1223287683804037202], [1365004568278208725]) against 182-correctness-sample.test.ts.",
+    fix: "Ask the owner whether the designer's 2024 answer and the reworded print replace the 2026-08-28 X = 0 reading. If they do, drop the floor of one sacrifice and flip 182's X = 0 test; if not, cite the ruling and the thread in the CR record for the card.",
+    proof: null,
+    guards: [
+      "632-torrential-sacrifice-per-recall.test.ts::CT-375: Torrential Reclamation for X = 0 recalls nothing, so nobody sacrifices and no life is lost",
+      "182-correctness-sample.test.ts::with X = 0 nothing is recalled, so nobody sacrifices",
+    ],
+    closed: "FIXED 2026-10-24 (50bb47f). The designer settled it: \"So you can remove targets to prevent the sacrifice\" (2024-03-29) and, asked whether it can be cast with no units, \"Torrential requires targets in order to be played\" (2025-04-24). The sacrifice now counts allies actually recalled, so X = 0 sacrifices nothing; this overrides the 2026-08-28 adoption on CR 107.2b.",
+    verify: "Cast Torrential Reclamation for X = 0 with units on both sides: today each player sacrifices one.",
     status: 'done',
   },
 ];
