@@ -4852,4 +4852,62 @@ export const CLOSED: LedgerEntry[] = [
     ],
     note: "Real. Life Plant (oracle and scan agree): \"[Augment][once] When you gain or lose life, create that many 1/1 units.\" Flesh Tithe's [Pay X life] was charged one point per answer, so paying 29 was 29 separate losses of 1, and Life Plant's [once] heard only the first. CR 112.1a (paying life is losing it); CR 702.6b sizes a variable cost one unit at a time, and nothing printed, from the designer or from the owner makes each unit its own life change. The life is now lost as one change of X when X closes, with CR 111.6b asked of the running total, so the offered range is unchanged; Torrential Reclamation's \"lose 1 life for each ally recalled\" is one change too. The dial's ceiling now counts the points already chosen. Fixed in f69d45f. Asked on the way and answered: Arbiter of Vitality doubling a life payment (CT-361).",
   },
+  {
+    id: 274, room: "FVJQ", date: "2026-10-23",
+    report: "Nyar, seat 1 (bug, medium): \"The Everywhere can't name a unit token as a \\\"card\\\" for its ability\"",
+    status: 'fixed',
+    guards: [
+      "602-everywhere-names-cards-not-tokens.test.ts::CR 108.2a / report 274: The Everywhere cannot name a token standing in play",
+      "602-everywhere-names-cards-not-tokens.test.ts::CR 712.6 / report 274: the menu still holds every card in play and out of it, and name no card",
+    ],
+    note: "Real: at action 372 the opponent named \"Unit Token\" with The Everywhere while Nyar's five Unit Tokens stood in play, so the menu OFFERED a token's name. The Everywhere prints \"name a card\", and CR 108.2a (owner: \"Tokens are NOT cards, however.\") keeps tokens out of \"card\". The menu unioned the card pool with every name standing in play to keep the old board-built menu's options, which put token faces back. The in-play names now pass the pool's card-only filter. Fixed in 61d84e9 (round 2026-10-24). FVJQ replays 441/441 with action 372 now naming another card (silent drift).",
+  },
+  {
+    id: 275, room: "VZDK", date: "2026-10-23",
+    report: "Nyar, seat 1, agreed fix: back to before Nyar's augment. \"missclicked\"",
+    status: 'agreed-fix',
+    note: "Took back Nyar's augment of Graxxlid onto Karanda's Enigmatic Warder [74]; Nyar then augmented Graxxlid onto their own Bumblecrab in the same fight. A wrong-unit misclick; no defect.",
+  },
+  {
+    id: 276, room: "DVAS", date: "2026-10-23",
+    report: "Karanda (judge), seat 0, agreed fix: back to before Karanda's attack (turn 6). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back the turn-6 attack [167] [[Bubb, Robot],[Recyclable Sentinel, Recyclable Sentinel]] and re-declared the same four units as [[Recyclable Sentinel, Bubb],[Recyclable Sentinel, Robot]]: a formation re-arranged, not an attack undone. The log cannot say how the formation was built; number keys cannot reach an empty column's back row, which yields exactly the removed shape. No defect shown; noted in the round's report (r1024).",
+  },
+  {
+    id: 277, room: "DVAS", date: "2026-10-23",
+    report: "Karanda (judge), seat 0, agreed fix: back to before Karanda's attack (turn 7). \"oop\"",
+    status: 'agreed-fix',
+    note: "Took back the turn-7 second attack [207] [[Bubb, Robot]] (one column) and re-declared [[Bubb],[Robot]] (two columns). A formation re-arranged; no defect.",
+  },
+  {
+    id: 278, room: "DVAS", date: "2026-10-23",
+    report: "Karanda (judge), seat 0, agreed fix: back to before Karanda's attack (turn 9 counterattack). \"osp\"",
+    status: 'agreed-fix',
+    note: "Took back the turn-9 counterattack [326] [[Bubb],[Scrapyard Custodian, Astralith]] and re-declared it with Astralith in front of Scrapyard Custodian. Front and back swapped (dropping a unit onto a standing one puts it in front, which yields exactly the removed shape); no defect shown.",
+  },
+  {
+    id: 279, room: "", date: "2026-10-23",
+    report: "LordZZX (judge), from a Weekly Challenge (Full House, bug, minor): \"Tough and Balanced don't seem to work together\"",
+    status: 'fixed',
+    guards: [
+      "603-balanced-applies-after-tough.test.ts::CR 802.7 / report 279: Crumbling Ancient augmented with Child of Aether and then Rampart Guardian is a 16/16",
+      "603-balanced-applies-after-tough.test.ts::CR 802.7 / report 279: Balanced augmented onto a Tough unit still applies last",
+      "603-balanced-applies-after-tough.test.ts::CR 802.7 / report 279: Tough granted by an effect to a Balanced unit doubles first",
+      "603-balanced-applies-after-tough.test.ts::CR 802.7 / report 279: a column of Child of Aether and Rampart Guardian is 2/2 and 8/8, the designer worked example",
+    ],
+    note: "Real. Crumbling Ancient (3/8) augmented with Child of Aether (Balanced), then Chitin Shredder, then Rampart Guardian (Tough) read 8/16: the engine applied stat attributes in the order their sources came, so Balanced ran before Tough. The designer: \"Balanced now always applies after Tough\" (2025-03-22) and, of Child of Aether + Rampart Guardian, \"balanced always applies last. So 8/8 and 2/2\" (2025-09-25); also \"after Tough, but before Inverted and Unaware\" (2025-01-31). Owner 2026-10-24: \"Caleb everywhere: 2/2\", superseding the effect-granted half of CT-257. effStats now doubles first, then balances, whatever the source. Fixed in f86f835 (round 2026-10-24); the run now reads 16/16.",
+  },
+  {
+    id: 280, room: "CBWN", date: "2026-10-24",
+    report: "StubTailDstroyer, seat 0, agreed fix: back to before Phytochemical Protection on Ralph (Karanda's). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back Phytochemical Protection cast on Karanda's Ralph [195], an enemy unit; the same spell then went on StubTailDstroyer's own Recyclable Sentinel. A wrong-target misclick; no defect.",
+  },
+  {
+    id: 281, room: "CQTW", date: "2026-10-24",
+    report: "Karanda (judge), seat 1, agreed fix: back to before Karanda's blocks (turn 7). \"oops\"",
+    status: 'agreed-fix',
+    note: "Took back 12 blocks with nothing sent to counterattack [376]; Karanda re-declared the blocks and sent 7 Swarmlings to counterattack. A re-plan (the counterattack forgotten); the block bar already offers Counterattack with the rest. No defect.",
+  },
 ];

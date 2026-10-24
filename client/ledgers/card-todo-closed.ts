@@ -11812,9 +11812,9 @@ export const CLOSED: TodoEntry[] = [
     verify: "Augment Child of Aether with Rampart Guardian and read its stats (2/4 today).",
     guards: [
       "08-cards2.test.ts::CR 709.4b / CT-257: Tough augmented onto a printed-Balanced unit doubles first, then balances",
-      "08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect balances first, then doubles",
+      "08-cards2.test.ts::CR 709.4b / CT-257: Tough APPLIED to a printed-Balanced unit by an effect still doubles first, then balances",
     ],
-    closed: "FIXED 2026-10-22 (750fb0b). Owner, 2026-10-22: the Manual p.42's first clause governs. Tough augmented onto a Balanced unit doubles, then balances (Child of Aether with a Rampart Guardian augment is a 2/2); Tough applied by an effect still balances first, then doubles (2/4), the Manual's second clause.",
+    closed: "FIXED 2026-10-22 (750fb0b). Owner, 2026-10-22: the Manual p.42's first clause governs. Tough augmented onto a Balanced unit doubles, then balances (Child of Aether with a Rampart Guardian augment is a 2/2); Tough applied by an effect still balances first, then doubles (2/4), the Manual's second clause. SUPERSEDED 2026-10-24 (report 279, f86f835): the designer, \"Balanced now always applies after Tough\" (2025-03-22) and \"balanced always applies last\" (2025-09-25); owner 2026-10-24: \"Caleb everywhere: 2/2\". Tough granted by an effect now doubles first too (2/2).",
     status: 'done',
   },
   {
