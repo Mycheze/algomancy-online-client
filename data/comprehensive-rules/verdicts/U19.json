@@ -866,27 +866,33 @@
   },
   {
     "key": "attr.flying.blocking",
-    "textHash": "51033ca0716c2818",
+    "textHash": "29ff80082e2baccb",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "loc": "client/engine/src/apply.ts:checkBlocks",
         "agrees": true,
-        "note": ""
+        "note": "if (atkAttrs.has('Flying')) e.need(e.colAttrs(col).has('Flying'), ...) — the BLOCKING COLUMN's attributes"
       }
     ],
     "tests_run": [
       {
-        "file": "02-combat.test.ts",
-        "pattern": "combat math: columns, flying, piercing overflow, deaths",
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "combat math: columns, flying",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "40-light-c.test.ts",
-        "pattern": "Just a Unit: {Pure} blocks a Flying column, and only it can",
+        "file": "client/engine/test/40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} blocks a Flying column",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/633-designer-answers-battle.test.ts",
+        "pattern": "CR 802.2a / designer",
         "passed": true,
         "asserts_claim": true
       }
@@ -896,23 +902,39 @@
       {
         "ref": "card: Greed Angel",
         "supports": "yes",
-        "note": ""
+        "note": "reminder '(Only flying units can block flying units.)'"
       },
       {
         "ref": "Manual p.24",
         "supports": "yes",
-        "note": ""
+        "note": "'the entire column can not be blocked unless the blocking unit has flying'"
+      },
+      {
+        "ref": "RQ 1348502069614612563",
+        "supports": "yes",
+        "note": "calebgannon, replying to 'If the front unit could block can you add a back unit who couldn't?': 'Columns share attributes, so if any unit in the column has flying, the entire column has flying'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/apply.ts",
-        "text": "if (atkAttrs.has('Flying')) e.need(e.colAttrs(col).has('Flying'), 'only flying units can block flying units');"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Only flying units can block flying units."
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "the Flying attribute and the entire column can not be"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "blocked unless the blocking unit has flying."
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Columns share attributes, so if any unit in the column has flying, the entire column has flying"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.flying.column",
@@ -1977,21 +1999,21 @@
   },
   {
     "key": "attr.inverted.base",
-    "textHash": "7c8fe8065e8df119",
+    "textHash": "6220e454cb322bd3",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
-        "agrees": true,
-        "note": "base = layers 1-2, so a base rewrite is what Inverted inverts from"
+        "loc": "client/engine/src/engine.ts:effStats (layer 5: p = 2*base[0] - p)",
+        "agrees": false,
+        "note": "F-U19-6: inverts from base (layers 1-2), so a base rewrite is never inverted; a 7/5 made base 3/3 stays 3/3 when Inverted, not 11/7"
       }
     ],
     "tests_run": [
       {
-        "file": "79-round17-layers.test.ts",
-        "pattern": "R93 layer 5: a base REWRITE is the thing inverted FROM, never inverted itself",
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "CR 802.8c layer 5: a base REWRITE",
         "passed": true,
         "asserts_claim": true
       }
@@ -1999,43 +2021,81 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R93",
+        "ref": "RQ 1167220853726007336",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon 'It does because it applies in a later layer', answering tapeworm711 'I assume inverted does NOT interact with stat \"setting\" like Reshape'"
+      },
+      {
+        "ref": "RQ 1167221076447744110",
+        "supports": "yes",
+        "note": "calebgannon, same thread: printed stats vs current stats, take the difference — 7/5 vs 3/3 is -4/-2, inverted 11/7"
+      },
+      {
+        "ref": "RQ 1443370771647828032",
+        "supports": "yes",
+        "note": "calebgannon on Aberrant Statweaver vs Bubb: 'base stat changes are still stat changes'"
+      },
+      {
+        "ref": "card: Aberrant Statweaver",
+        "supports": "yes",
+        "note": "'[Augment] Your units are base 3/3.'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "* `base` here is layers 1-2, which is exactly right: a base REWRITE"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "It does because it applies in a later layer"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "I assume inverted does NOT interact with stat \\\"setting\\\" like Reshape"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "base stat changes are still stat changes"
+      },
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "text": "'nothing changed the base, so there is no change to invert — NOT 2·3−3 off the printed 7/5');"
       }
     ],
     "basis_ok": true,
-    "problem": "Owner call. Note: the guarding test records that _passer argued the opposite in rules-questions (not in a RAQ thread); if that ever reaches a RAQ it outranks R93."
+    "problem": ""
   },
   {
     "key": "attr.inverted.net",
-    "textHash": "f12d6cece00f9d80",
+    "textHash": "ff3fdd06e72d0022",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:effStats (layer 5)",
         "agrees": true,
-        "note": ""
+        "note": "negates the net delta once, not per source"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:effStats (layer 5 uses base, not printed)",
+        "agrees": false,
+        "note": "F-U19-6: differs only when a base rewrite is present"
       }
     ],
     "tests_run": [
       {
-        "file": "79-round17-layers.test.ts",
-        "pattern": "R93 layer 5: the owner's Malformed Monstrosity",
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "CR 802.8a layer 5: the owner",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "43-dark-c.test.ts",
-        "pattern": "Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own",
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "pattern": "Its Dark Bubb: MULTI-SOURCE",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "CR 802.8c layer 5: a base REWRITE",
         "passed": true,
         "asserts_claim": true
       }
@@ -2045,12 +2105,22 @@
       {
         "ref": "Manual p.25",
         "supports": "yes",
-        "note": ""
+        "note": "Malformed Monstrosity with Reality Bender: 'It's -7/-7 ability now becomes +7/+7 turning it into a 17/16.'"
       },
       {
-        "ref": "R93",
+        "ref": "Manual p.25",
         "supports": "yes",
-        "note": ""
+        "note": "same passage"
+      },
+      {
+        "ref": "RQ 1167221076447744110",
+        "supports": "yes",
+        "note": "printed vs current, take the difference — the net change from PRINTED"
+      },
+      {
+        "ref": "owner (2026-08-23) x2",
+        "supports": "yes",
+        "note": "negate the accumulated delta; 'a mathematical operation'"
       }
     ],
     "quote_spans": [
@@ -2059,43 +2129,51 @@
         "text": "attribute, which reverses its stat changes. It’s -7/-7"
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "p = 2 * base[0]! - p;"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "ability now becomes +7/+7 turning it into a 17/16."
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.inverted.tough",
-    "textHash": "7e8640d068454c6f",
+    "textHash": "970446d747aa736f",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U19-r1",
+    "round": 4,
+    "verifier": "U19-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:effStats",
+        "loc": "client/engine/src/engine.ts:effStats (layer 4 Tough then layer 5 Inverted)",
         "agrees": true,
-        "note": ""
+        "note": "final defense = 2·base − 2·(base+Δ) = −2Δ"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:effStats (layer 5 uses base, not printed)",
+        "agrees": false,
+        "note": "F-U19-6: differs only under a base rewrite"
       }
     ],
     "tests_run": [
       {
-        "file": "79-round17-layers.test.ts",
-        "pattern": "R226: the TWO-attribute case, in either grant order",
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "CR 709.4d: the TWO-attribute case",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "79-round17-layers.test.ts",
-        "pattern": "R226: the special case his wording misses",
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "CR 802.8d: the special case his wording misses",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "79-round17-layers.test.ts",
-        "pattern": "R226: the column wipe",
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "CR 802.8d: the column wipe",
         "passed": true,
         "asserts_claim": true
       }
@@ -2103,15 +2181,29 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R226",
+        "ref": "RQ 1167221076447744110",
+        "supports": "yes",
+        "note": "the printed-vs-current difference method; applied to Tough it gives −2Δ"
+      },
+      {
+        "ref": "owner (2026-08-28) 'final defense = −2Δ. The base cancels out completely.'",
         "supports": "yes",
         "note": ""
+      },
+      {
+        "ref": "owner (2026-08-28) Caleb's 'tough + inverted always kills the unit since +0/+X is just -0/-X'",
+        "supports": "partial",
+        "note": "Caleb's shorthand for Δ ≥ 0. The record's 'unless that net change is a reduction' exception follows from his own difference method and is pinned by 79 'CR 802.8d: the special case'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> ### **final defense = −2Δ.** The base cancels out completely."
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
+      },
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "text": "'final defense = −2Δ = 2, and power flips to baseP − Δp = 1 − (−1) = 2');"
       }
     ],
     "basis_ok": true,

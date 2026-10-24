@@ -523,7 +523,7 @@
     "key": "turn.battle.rounds.no-round-2",
     "parent": "turn.battle.rounds",
     "order": 6,
-    "text": "If round 1 had a battle, only the units sent out at the block step can attack in round 2. If none were sent, there is no round 2.",
+    "text": "If round 1 had a battle, only the units sent out at the block step can attack in round 2. If none were sent, there is no round 2. This holds when an effect ends the battle during round 1 (Temporal Rift): ended before blocks, no unit was sent and there is no round 2; ended after blocks, the units already sent attack in round 2.",
     "examples": [
       {
         "text": "The initiative player attacks, the non-initiative player blocks and sends nobody: the battle phase ends after round 1, and the unit that stayed home is untouched.",
@@ -532,6 +532,14 @@
       {
         "text": "A Good Whale that stayed home while a Rune Channeler was sent out cannot be declared as a round-2 attacker.",
         "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      },
+      {
+        "text": "The initiative player attacks and the non-initiative player casts Temporal Rift in the attack window: the battle phase ends with no round 2, though the non-initiative player has a unit at home.",
+        "test": "633-designer-answers-battle.test.ts::CR 505.3f / designer: Temporal Rift cast before blocks ends the battle phase"
+      },
+      {
+        "text": "The non-initiative player sends Rune Channeler at the block step, then casts Temporal Rift: round 1 ends before combat damage, and in round 2 the Rune Channeler attacks.",
+        "test": "633-designer-answers-battle.test.ts::CR 505.3f / designer: Temporal Rift cast after blocks ends round 1 only"
       }
     ],
     "see": [
@@ -542,9 +550,18 @@
         {
           "ref": "Manual p.21",
           "quote": "was a counter-attack, the players"
+        },
+        {
+          "ref": "card: Temporal Rift",
+          "quote": "End this battle."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1353982561101025362",
+          "quote": "that's what it currently is"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -556,14 +573,17 @@
       "engine": [],
       "tests": [
         "21-fixes.test.ts",
-        "02-combat.test.ts"
+        "02-combat.test.ts",
+        "633-designer-answers-battle.test.ts"
       ]
     },
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.21 conditions the move to round 2 on \"if there was a counter-attack\". The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) states the rule. Temporal Rift ending round 1 before blocks is the open case: D-U09-4.",
-    "sourceHashes": {}
+    "notes": "Manual p.21 conditions the move to round 2 on \"if there was a counter-attack\". The owner ruling of 2026-08-18 (“Round-2 attackers when round 1 had…”) states the rule. Temporal Rift ending round 1 before blocks is the open case: D-U09-4. Owner question Q2 (D-U09-4) answered by the designer, 2026-10-24 housework: _passer asked \"Cast in NIT Region before blockers = No Counter-Attack for NIT / Cast in NIT Region after blockers = Counter-Attack is already sent and 2nd Battle happens?\" and Caleb answered \"that's what it currently is\" (RQ 1353982561101025362, 2025-03-25). In the same thread he added he might later allow counterattacks and wanted community feedback; revisit if he rules again.",
+    "sourceHashes": {
+      "RQ 1353982561101025362": "a0581be96a506a703eef9e44a76aa67abf37c032a6efa878f7d58f8a33f3a838"
+    }
   },
   {
     "key": "turn.battle.region-order",

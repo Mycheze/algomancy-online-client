@@ -798,7 +798,7 @@
     "key": "attr.flying.blocking",
     "parent": "attr.flying",
     "order": 1,
-    "text": "An attacking column that has Flying can't be blocked by a unit that does not have Flying.",
+    "text": "An attacking column that has Flying can't be blocked by a unit that does not have Flying. A blocking column has Flying if any unit in it has Flying, so a unit without Flying may block a Flying column together with a Flying unit in the same blocking column.",
     "examples": [
       {
         "text": "A ground 2/2 cannot block a column holding Ephemeral Skywalker (Flying).",
@@ -807,6 +807,10 @@
       {
         "text": null,
         "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can"
+      },
+      {
+        "text": "Good Whale cannot block a column holding Ephemeral Skywalker alone, but it can block that column together with another Ephemeral Skywalker in its blocking column.",
+        "test": "633-designer-answers-battle.test.ts::CR 802.2a / designer: a unit without Flying may block a Flying column together with a Flying unit"
       }
     ],
     "see": [
@@ -823,21 +827,29 @@
           "quote": "blocked unless the blocking unit has flying."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1348502069614612563",
+          "quote": "Columns share attributes, so if any unit in the column has flying, the entire column has flying"
+        }
+      ],
       "ours": [],
       "owner": [],
       "engine": [],
       "tests": [
         "02-combat.test.ts",
         "40-light-c.test.ts",
-        "422-cr-attacking-blocking.test.ts"
+        "422-cr-attacking-blocking.test.ts",
+        "633-designer-answers-battle.test.ts"
       ]
     },
-    "basis": "printed",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Whether a non-Flying unit may block a Flying column together with a Flying unit in the same blocking column is not settled by the sources: D-U19-7.",
-    "sourceHashes": {}
+    "notes": "Whether a non-Flying unit may block a Flying column together with a Flying unit in the same blocking column is not settled by the sources: D-U19-7. Owner question Q4 (D-U19-5) answered by the designer, 2026-10-24 housework: reading A. coobers asked \"If the front unit could block can you add a back unit who couldn't? Or do both blockers have to be legal?\" and Caleb answered with column sharing (RQ 1348502069614612563, 2025-03-10). The engine already checks the blocking column's attributes (checkBlocks, colAttrs).",
+    "sourceHashes": {
+      "RQ 1348502069614612563": "7fd29d0fe680ae145ab5a3eace445b08b27fc9617821757ddcd375a79b469aae"
+    }
   },
   {
     "key": "attr.flying.column",
@@ -2311,7 +2323,7 @@
     "key": "attr.inverted.net",
     "parent": "attr.inverted",
     "order": 1,
-    "text": "Inverted inverts the net change to a unit's stats. An Inverted unit's power is its base power minus the net change to its power, and its defense is its base defense minus the net change to its defense. It is worked out on the total change, not on each change separately.",
+    "text": "Inverted inverts the net change to a unit's stats from its printed stats. An Inverted unit's power is its printed power minus the net change to its power, and its defense is its printed defense minus the net change to its defense. It is worked out on the total change, not on each change separately.",
     "examples": [
       {
         "text": "Malformed Monstrosity (10/9) with its -7/-7, in a column with Reality Bender, is a 17/16.",
@@ -2336,7 +2348,12 @@
           "quote": "ability now becomes +7/+7 turning it into a 17/16."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1167221076447744110",
+          "quote": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -2359,8 +2376,13 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
-    "sourceHashes": {}
+    "notes": "2026-10-24 housework: \"base\" became \"printed\" with owner question Q5 (the designer: Inverted takes the difference from the printed stats, a base rewrite included). The two agree unless a base is rewritten; there the engine inverts from the new base: F-U19-6, CT-379.",
+    "sourceHashes": {
+      "RQ 1167221076447744110": "b4fc56a5b98be758e418de8e5947cd9285b66ac0380b91b169735a3fbc2594e8"
+    },
+    "engineDiffers": [
+      "F-U19-6"
+    ]
   },
   {
     "key": "attr.inverted.attributes",
@@ -2408,43 +2430,57 @@
     "key": "attr.inverted.base",
     "parent": "attr.inverted",
     "order": 3,
-    "text": "Setting a unit's base stats is not a stat change that Inverted inverts: the new base stats are what Inverted inverts from.",
-    "examples": [
-      {
-        "text": "A unit made base 3/3 by Aberrant Statweaver, with no other changes, is a 3/3 whether or not it is Inverted.",
-        "test": "79-round17-layers.test.ts::CR 802.8c layer 5: a base REWRITE is the thing inverted FROM, never inverted itself"
-      }
-    ],
+    "text": "Setting a unit's base stats is a stat change that Inverted inverts: Inverted inverts the difference between the unit's printed stats and its current stats. A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted.",
+    "examples": [],
     "see": [
       "206.5"
     ],
     "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
+      "printed": [
         {
-          "quote": "(R66) — redefines what base *is*, so it is the thing inverted FROM and is never",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
+          "ref": "card: Aberrant Statweaver",
+          "quote": "Your units are base 3/3."
         }
       ],
+      "designer": [
+        {
+          "ref": "RQ 1167220853726007336",
+          "quote": "It does because it applies in a later layer"
+        },
+        {
+          "ref": "RQ 1167221076447744110",
+          "quote": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
+        },
+        {
+          "ref": "RQ 1443370771647828032",
+          "quote": "base stat changes are still stat changes"
+        }
+      ],
+      "ours": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "79-round17-layers.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "designer",
     "scope": "game",
-    "confidence": "medium",
-    "notes": "Settled by the owner on 2026-08-22 (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) addendum) after seeing both worked examples. A _passer post in #rules-questions (not a RAQ write-up; found in the export) and the owner's own later the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) point the other way: D-U19-3.",
-    "sourceHashes": {}
+    "confidence": "high",
+    "notes": "Settled by the owner on 2026-08-22 (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) addendum) after seeing both worked examples. A _passer post in #rules-questions (not a RAQ write-up; found in the export) and the owner's own later the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) point the other way: D-U19-3. Owner question Q5 (D-U19-3) answered by the designer, 2026-10-24 housework: reading B, which replaces the owner call of 2026-08-23 (the designer outranks it). tapeworm711: \"I assume inverted does NOT interact with stat \\\"setting\\\" like Reshape\"; Caleb: \"It does because it applies in a later layer\" and \"Basically you just look at the stats printed on the card, then look at its current stats. Take the difference\" (2023-10-26); and on Aberrant Statweaver, \"base stat changes are still stat changes\" (2025-11-26). The engine inverts from the rewritten base: F-U19-6, CT-379. The 79 example asserted the old reading and is dropped.",
+    "sourceHashes": {
+      "RQ 1167220853726007336": "0de691dbc84b9d1ad57ddaff83bad150ab2d7d64d4dd9ab406e9120a58557bbf",
+      "RQ 1167221076447744110": "b4fc56a5b98be758e418de8e5947cd9285b66ac0380b91b169735a3fbc2594e8",
+      "RQ 1443370771647828032": "f51272170bc19a086ebe85d661afc31f564586659a84c632bf6c07f3af0ea57e"
+    },
+    "engineDiffers": [
+      "F-U19-6"
+    ]
   },
   {
     "key": "attr.inverted.tough",
     "parent": "attr.inverted",
     "order": 4,
-    "text": "If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from base. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction.",
+    "text": "If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from its printed defense. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction.",
     "examples": [
       {
         "text": "A 1/4 with Tough and Inverted is a 1/0, in either grant order, and dies.",
@@ -2465,7 +2501,12 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1167221076447744110",
+          "quote": "Basically you just look at the stats printed on the card, then look at its current stats. Take the difference"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -2484,11 +2525,16 @@
         "79-round17-layers.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner's words (\"always kills\") are the special case of the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”)’s law for a net change of zero or more; the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”) pins the law. See D-U19-9.",
-    "sourceHashes": {}
+    "notes": "The owner's words (\"always kills\") are the special case of the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”)’s law for a net change of zero or more; the owner ruling of 2026-08-28 (“{Tough} + {Inverted}: the owner's own…”) pins the law. See D-U19-9. 2026-10-24 housework: \"from base\" became \"from its printed defense\" with owner question Q5; the engine differs only under a base rewrite: F-U19-6, CT-379.",
+    "sourceHashes": {
+      "RQ 1167221076447744110": "b4fc56a5b98be758e418de8e5947cd9285b66ac0380b91b169735a3fbc2594e8"
+    },
+    "engineDiffers": [
+      "F-U19-6"
+    ]
   },
   {
     "key": "attr.unaware",

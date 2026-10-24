@@ -664,7 +664,7 @@
     "key": "combat.damage.split.boundary-window",
     "parent": "combat.damage.split",
     "order": 2,
-    "text": "In a split step, each sub-step that was scheduled, when the step began, to have a half-column strike in it is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens.",
+    "text": "In a split step, each scheduled sub-step (rule 608.3d) is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens.",
     "examples": [
       {
         "text": "Bripp (4 power) and Bloated Manablub (2 power) attack in normal columns, and Adversary of the Deep (2/2, Sluggish; 'Whenever a player loses life, put that many +1/+1 counters on me') attacks in a third column. None are blocked. The normal sub-step deals 6; the step stops, Adversary's trigger resolves with priority, and Adversary strikes in the Sluggish sub-step for 8.",
@@ -689,6 +689,10 @@
         {
           "ref": "RAQ 1363298910528864318#0",
           "quote": "There *may* be additional opportunity windows between swift-regular-sluggish"
+        },
+        {
+          "ref": "RQ 1363287109401710603",
+          "quote": "Before sluggish priority <- remaining columns will deal sluggish damange here"
         }
       ],
       "ours": [],
@@ -716,31 +720,36 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "'All players have passed priority in succession with the stack empty' is ordinary priority procedure (rule 703), not stated by a combat source. The owner ruling of 2026-09-16 (“A split damage step is several…”)’s prose says a window follows a sub-step that 'struck'; this rule follows its fixed schedule instead (D-U12-10).",
+    "notes": "'All players have passed priority in succession with the stack empty' is ordinary priority procedure (rule 703), not stated by a combat source. The owner ruling of 2026-09-16 (“A split damage step is several…”)’s prose says a window follows a sub-step that 'struck'; this rule follows its fixed schedule instead (D-U12-10). 2026-10-24 housework: \"scheduled when the step began\" now defers to 608.3d, which adds a Sluggish sub-step gained in the after-Swift window (owner question Q3, the designer's answer). The engine does not: F-U12-5, CT-378.",
     "sourceHashes": {
       "RAQ 1363298910528864318#0": "3bfd6b42b0de5ecc8690c43b87713aece9c7627312eeed9ca7313163b2b4dac2",
-      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
-    }
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228",
+      "RQ 1363287109401710603": "4d20cc6c7cc6e48bde3511a1117682279444b38950d7b2f66095573f96516766"
+    },
+    "engineDiffers": [
+      "F-U12-5"
+    ]
   },
   {
     "key": "combat.damage.split.empty-substep",
     "parent": "combat.damage.split",
     "order": 3,
-    "text": "A sub-step in which no half-column was scheduled to strike when the step began is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; a half-column that still strikes in a later sub-step (rule 608.2f) strikes without a window before it, and then the after combat step begins.",
+    "text": "A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; the after combat step begins.",
     "examples": [
       {
         "text": "Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps.",
         "test": "297-damage-substeps-are-steps.test.ts::CR 608.3c an EMPTY sub-step opens no window"
-      },
-      {
-        "text": "Dune Drifter (Swift) and a 1/1 attack in separate columns and are not blocked. At the window after the Swift sub-step, Dune Drifter's column gains Sluggish. The 1/1 strikes in the normal sub-step and no window follows; Dune Drifter's column then strikes in the Sluggish sub-step, and the after combat step begins.",
-        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step strikes with no window before it, then after combat begins"
       }
     ],
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1363288029799911664",
+          "quote": "you would have to add sluggish during the \"after swift\" window"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -765,14 +774,19 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The owner ruling of 2026-09-16 (“A split damage step is several…”)’s own condition is 'struck'; the pilot verifier measured that a window follows a scheduled sub-step whose strikers died, and that an unscheduled Sluggish sub-step still deals damage with no window before it (pilot probe P1, the illustrative example). The second and third sentences are engine-derived. See D-U12-10 and D-U12-11.",
-    "sourceHashes": {}
+    "notes": "The owner ruling of 2026-09-16 (“A split damage step is several…”)’s own condition is 'struck'; the pilot verifier measured that a window follows a scheduled sub-step whose strikers died, and that an unscheduled Sluggish sub-step still deals damage with no window before it (pilot probe P1, the illustrative example). The second and third sentences are engine-derived. See D-U12-10 and D-U12-11. 2026-10-24 housework: the sentence \"a half-column that still strikes in a later sub-step strikes without a window before it\" stated reading B of owner question Q3; the designer answered A (608.3d), so it is dropped, with the 423 example that pinned it. The engine still strikes such a column with no window: F-U12-5, CT-378.",
+    "sourceHashes": {
+      "RQ 1363288029799911664": "39fbc16e5b864de0e3d26da224dc7fe3bedb5f923d0f964a9f269dd9a2c217ed"
+    },
+    "engineDiffers": [
+      "F-U12-5"
+    ]
   },
   {
     "key": "combat.damage.split.schedule-fixed",
     "parent": "combat.damage.split",
     "order": 4,
-    "text": "Which sub-steps are separate steps is determined once, when the combat damage step begins. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit.",
+    "text": "Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one addition: if a half-column has Sluggish when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled too, so a window opens before it. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit.",
     "examples": [
       {
         "text": "Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens, and the death triggers can be answered there.",
@@ -782,7 +796,20 @@
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1363288029799911664",
+          "quote": "you would have to add sluggish during the \"after swift\" window"
+        },
+        {
+          "ref": "RQ 1363287109401710603",
+          "quote": "Before sluggish priority <- remaining columns will deal sluggish damange here"
+        },
+        {
+          "ref": "RQ 1363278470938890250",
+          "quote": "Before Sluggish priority window"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -796,11 +823,18 @@
         "297-damage-substeps-are-steps.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Owner ruling (owner ruling of 2026-09-16, “A split damage step is several…”) with no designer source; the designer's 'presence of Swift/Sluggish' does not say when presence is judged (D-U12-11).",
-    "sourceHashes": {}
+    "notes": "Owner ruling (owner ruling of 2026-09-16, “A split damage step is several…”) with no designer source; the designer's 'presence of Swift/Sluggish' does not say when presence is judged (D-U12-11). Owner question Q3 (D-U12-11) answered by the designer, 2026-10-24 housework: reading A. Caleb's damage-step scheme puts a before-Sluggish priority window before every Sluggish strike, and a Sluggish sub-step is had by adding Sluggish in the after-Swift window (RQ 1363278470938890250, 1363287109401710603, 1363288029799911664, 2025-04-20). The owner call of 2026-09-16 still carries the not-unsplit sentence. The engine fixes the schedule when the step opens, so no window opens before a gained Sluggish strike: F-U12-5, CT-378.",
+    "sourceHashes": {
+      "RQ 1363278470938890250": "0ceb45f3acbb9e586ad28bf303bced7e6e6dee986ef91668814f9d274f940b70",
+      "RQ 1363287109401710603": "4d20cc6c7cc6e48bde3511a1117682279444b38950d7b2f66095573f96516766",
+      "RQ 1363288029799911664": "39fbc16e5b864de0e3d26da224dc7fe3bedb5f923d0f964a9f269dd9a2c217ed"
+    },
+    "engineDiffers": [
+      "F-U12-5"
+    ]
   },
   {
     "key": "combat.damage.split.state-between",

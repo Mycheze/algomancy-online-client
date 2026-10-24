@@ -103,5 +103,22 @@
     ],
     "ct": "CT-257",
     "closed": "fixed on 2026-10-22 (CT-257; the owner took the Manual p.42 first clause, D-U16-1): Tough augmented onto a Balanced unit doubles, then balances (08-cards2)."
+  },
+  {
+    "id": "F-U19-6",
+    "rule": "attr.inverted.base",
+    "title": "The engine inverts from a rewritten base, not from the printed stats",
+    "summary": "The rule (the designer, 2023 and 2025) has Inverted invert the difference between a unit's printed stats and its current stats, a base rewrite included. The engine's layer 5 reflects the stats around the layer-2 base (p = 2 * base - p), so a base rewrite is never inverted: a printed 7/5 made base 3/3 by Aberrant Statweaver stays 3/3 when Inverted, where the rule makes it 11/7. 79-round17-layers pins the engine's reading.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "p = 2 * base[0]! - p;"
+      },
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "quote": "test('CR 802.8c layer 5: a base REWRITE is the thing inverted FROM, never inverted itself', () => {"
+      }
+    ],
+    "ct": "CT-379"
   }
 ]

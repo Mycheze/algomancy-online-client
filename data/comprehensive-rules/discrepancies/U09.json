@@ -43,7 +43,7 @@
     "id": "D-U09-4",
     "kind": "d-raq-open",
     "rule": "turn.battle.rounds.no-round-2",
-    "tier": 1,
+    "tier": 4,
     "summary": "If Temporal Rift ends round 1 before blocks, can the non-initiative player still attack in round 2? The RAQ thread is open, and Caleb said he was \"still working on the ruling\". Today the engine ends the battle phase: no counterattack and no round 2.",
     "seeAlso": [
       {
@@ -73,25 +73,7 @@
         "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
       }
     ],
-    "resolution": "Question for the owner, because the designer has not ruled: the RAQ thread is open ([Considered]). No rule states either reading. Revisit if Caleb rules.",
-    "question": {
-      "topic": "Battle",
-      "ask": "Does Temporal Rift's \"End this battle\" also cancel the second battle round (the counterattack)?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "No: it ends the current battle round in this region; the second round still happens, and cast before blocks the non-initiative player may still attack in round 2, as when the initiative player declines (Manual p.20 note).",
-          "table": "Engine change: a Rift no longer denies the counterattack."
-        },
-        {
-          "label": "B",
-          "text": "Yes: it ends the region's whole battle phase, so there is no second round.",
-          "table": "As today."
-        }
-      ],
-      "follows": "Neither: no rule is written, because the RAQ thread is open and Caleb said he was \"still working on the ruling\". The engine does B.",
-      "recommend": "A: the thread itself calls the second round a \"2nd Battle\", _passer lists it as the consideration for a cast after blocks, and it is the permissive reading. Revisit if Caleb rules."
-    }
+    "resolution": "Settled by the designer (2026-10-24 audit): _passer asked whether Temporal Rift cast before blockers means no counterattack and cast after blockers means the counterattack is already sent and the second battle happens, and Caleb answered \"that's what it currently is\" (RQ 1353982561101025362, 2025-03-25). That is reading B before blocks and the second round after them, which the engine already does; turn.battle.rounds.no-round-2 now states both halves, pinned by 633. Caleb said he might later allow the counterattack; revisit if he rules again. combat.counterattack.round-two needs no change."
   },
   {
     "id": "D-U09-6",

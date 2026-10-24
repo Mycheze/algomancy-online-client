@@ -2921,7 +2921,12 @@
           "quote": "instead create those tokens plus an additional copy of each unique token you created."
         }
       ],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1358924537160536247",
+          "quote": "it would be the second one"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -2949,8 +2954,10 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner's 2026-08-25 call names (name, X). The 2026-08-25 call is about Automaton of Abundance's wording and redefines nothing else. The stats clause is the owner's call of 2026-10-16 (asked whether a 3/3 and a 5/5 Unit Token made together are two unique tokens: \"Yeah, those would count as unique tokens.\"); D-U06-13 is resolved.",
-    "sourceHashes": {}
+    "notes": "The owner's 2026-08-25 call names (name, X). The 2026-08-25 call is about Automaton of Abundance's wording and redefines nothing else. The stats clause is the owner's call of 2026-10-16 (asked whether a 3/3 and a 5/5 Unit Token made together are two unique tokens: \"Yeah, those would count as unique tokens.\"); D-U06-13 is resolved. CT-294 (2026-10-24): Caleb, asked whether one effect making Robot 3 twice (Automaton with Omniweld Evoker) gives two extras or one, answered \"it would be the second one\" (one).",
+    "sourceHashes": {
+      "RQ 1358924537160536247": "e83d81209fa5cd69293fee342eec32ce7f8920d2abf081d8a91e03b8a6b068d1"
+    }
   },
   {
     "key": "types.tokens.unique.copy",

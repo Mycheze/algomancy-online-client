@@ -59,7 +59,7 @@
     "id": "D-U20-2",
     "kind": "g-other",
     "rule": "attr.sneaky.alone",
-    "tier": 1,
+    "tier": 4,
     "summary": "Sources are silent on WHEN \"attacking alone\" is judged. If a Sneaky unit attacks with one other unit and that unit is removed in the attack window, it is not said whether the Sneaky unit is then alone when blocks are declared.",
     "sides": [
       {
@@ -71,25 +71,7 @@
         "quote": "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
       }
     ],
-    "resolution": "Question for the owner. The owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”) says what \"alone\" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.",
-    "question": {
-      "topic": "Stats and attributes",
-      "ask": "Is a Sneaky unit \"attacking alone\" judged when attacks are declared, or when blocks are declared?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "When blocks are declared: if its fellow attackers are gone by then, it is alone and cannot be blocked.",
-          "table": "Removing a co-attacker in the attack window makes the Sneaky unit unblockable."
-        },
-        {
-          "label": "B",
-          "text": "When attacks are declared: only a unit declared as the only attacker is alone.",
-          "table": "It stays blockable once declared with company."
-        }
-      ],
-      "follows": "Neither: the rule states the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”) only.",
-      "recommend": "A: \"can't be blocked\" applies at the block, so \"attacking alone\" is read then; it is also the permissive reading."
-    }
+    "resolution": "Settled by the designer (2026-10-24 audit), reading A: a player sacrificed the other attackers before blockers, and Caleb answered \"Yep that works!\" and \"Attributes like that are only checked during the assign blockers step\" (RQ 1353935142573576214, 1353935255425388665, 1353935342495076463). attr.sneaky.alone now states it; the engine already counts the attackers at blocks, pinned by 633."
   },
   {
     "id": "D-U20-3",

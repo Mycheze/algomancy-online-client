@@ -43,7 +43,7 @@
     "id": "D-U19-3",
     "kind": "a-sources-disagree",
     "rule": "attr.inverted.base",
-    "tier": 1,
+    "tier": 2,
     "summary": "What Inverted inverts from when a base rewrite is in play: The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) (owner, 2026-08-22) inverts from the rewritten base; the owner's later general answer that any difference from printed stats is a stat change, and a _passer post in #rules-questions, invert from the printed stats instead.",
     "sides": [
       {
@@ -87,31 +87,13 @@
         "quote": "original stats (10/15) and add inverted values (+5/+10) to 15/25\""
       }
     ],
-    "resolution": "Question for the owner. The rule follows the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”), which the owner ruled on 2026-08-22 with both worked examples in view (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) addendum quotes _passer in full). The owner ruling of 2026-08-25 (“the owner's answers to the 27…”), three days later, defines a stat change generally (\"If they're different from the printed stats, they are changed\"), and Unaware (rule attr.unaware) already reads a base rewrite as a stat change under it. The _passer posts are in #rules-questions, not a [Solved] RAQ write-up, so they do not outrank the owner. If the owner chooses B, the engine change is one line in effStats (79-round17-layers.test.ts names it).",
-    "question": {
-      "topic": "Stats and attributes",
-      "ask": "Does Inverted invert from the printed stats, or from a rewritten base?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "From the rewritten base: a base rewrite is a new base, not a stat change (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”); spikeydog).",
-          "table": "A 10/15 made base 4/4 with a +1/+1 counter, Inverted, is a 3/3."
-        },
-        {
-          "label": "B",
-          "text": "From the printed stats: any difference from the printed stats is a stat change (the owner ruling of 2026-08-25 (“the owner's answers to the 27…”); _passer's two posts).",
-          "table": "The same unit, Inverted, is a 15/25."
-        }
-      ],
-      "follows": "A (owner ruling of 2026-08-23, “Stat layer 5: {Inverted} negates the…”), the owner's ruling of 2026-08-22.",
-      "recommend": "B, for one definition of a stat change: the owner's later general words (owner ruling of 2026-08-25, “the owner's answers to the 27…”) and _passer agree, and Unaware already reads a base rewrite as a change. Keep A only if the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) was meant as a deliberate exception for Inverted."
-    }
+    "resolution": "Settled by the designer (2026-10-24 audit), reading B: Inverted inverts from the printed stats, a base rewrite included (Caleb, RQ 1167220853726007336 and 1167221076447744110, 2023; \"base stat changes are still stat changes\", RQ 1443370771647828032, 2025). The designer outranks the owner ruling of 2026-08-23; attr.inverted.base now states B. The engine inverts from the rewritten base: F-U19-6, CT-379."
   },
   {
     "id": "D-U19-5",
     "kind": "a-sources-disagree",
     "rule": "attr.flying.blocking",
-    "tier": 1,
+    "tier": 4,
     "summary": "Whether a unit without Flying may block a Flying column together with a Flying unit in the same blocking column. The printed reminder names units; the Manual says \"the blocking unit\"; the Rulebook says \"unless the defending player also has flying units\"; the owner ruling of 2026-08-29 (“the reminder a player reads is…”) records that the client \"blocks by COLUMN\".",
     "sides": [
       {
@@ -135,25 +117,7 @@
         "quote": "Its column can only be blocked by a column with Flying."
       }
     ],
-    "resolution": "Question for the owner. No test plays the shared case and no designer source addresses it: the printed reminder names units, the Manual \"the blocking unit\", and the Rulebook \"the defending player\".",
-    "question": {
-      "topic": "Stats and attributes",
-      "ask": "May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Yes: attributes are shared in a column in all situations, so the non-Flying unit has Flying and the column may block.",
-          "table": "A Flying blocker lets its column-mate join the block."
-        },
-        {
-          "label": "B",
-          "text": "No: every unit that blocks a Flying column must have Flying itself.",
-          "table": "A non-Flying unit may never stand in a column blocking Flying."
-        }
-      ],
-      "follows": "Neither: the rule states only the restriction both readings share. Our glossary row and the owner ruling of 2026-08-29 (“the reminder a player reads is…”) (\"blocks by COLUMN\") describe A.",
-      "recommend": "A: Caleb says column-mates share attributes \"in all situations\" (owner ruling of 2026-08-23, “Stat layer 5: {Inverted} negates the…”), and A is the permissive reading."
-    }
+    "resolution": "Settled by the designer (2026-10-24 audit), reading A: asked whether a back unit that could not block may join a front unit that could, Caleb answered \"Columns share attributes, so if any unit in the column has flying, the entire column has flying\" (RQ 1348502069614612563). attr.flying.blocking now states it; the engine already checks the blocking column's attributes, pinned by 633."
   },
   {
     "id": "D-U19-6",

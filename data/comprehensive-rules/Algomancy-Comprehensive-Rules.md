@@ -2758,7 +2758,7 @@ order.
 
 > *Example: A unit token created with no stats set and one created as a 1/1 are one unique token.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Printed: card: Automaton of Abundance · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 136-triggers-and-modes.test.ts, 458-automaton-copies-stats.test.ts · Example tests: 136-triggers-and-modes.test.ts::CR 708.9: end to end, 136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s, 458-automaton-copies-stats.test.ts::CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens, 458-automaton-copies-stats.test.ts::CR 304.14: a Unit Token created with no stats and one created as a 1/1 are ONE unique token · Key: types.tokens.unique</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Printed: card: Automaton of Abundance · Designer: RQ 1358924537160536247 · Owner call · adopted 2026-10-16; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 136-triggers-and-modes.test.ts, 458-automaton-copies-stats.test.ts · Example tests: 136-triggers-and-modes.test.ts::CR 708.9: end to end, 136-triggers-and-modes.test.ts::CR 304.14: three IDENTICAL Robot 2s, 458-automaton-copies-stats.test.ts::CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens, 458-automaton-copies-stats.test.ts::CR 304.14: a Unit Token created with no stats and one created as a 1/1 are ONE unique token · Key: types.tokens.unique</sub>
 
 <sub>Discrepancies: D-U06-13 (discrepancies.md)</sub>
 
@@ -3864,13 +3864,17 @@ order.
 
 <sub>Discrepancies: D-U13-2 (discrepancies.md)</sub>
 
-<a id="r505.3f"></a>**505.3f** If round 1 had a battle, only the units sent out at the block step can attack in round 2. If none were sent, there is no round 2. See rule 610.
+<a id="r505.3f"></a>**505.3f** If round 1 had a battle, only the units sent out at the block step can attack in round 2. If none were sent, there is no round 2. This holds when an effect ends the battle during round 1 (Temporal Rift): ended before blocks, no unit was sent and there is no round 2; ended after blocks, the units already sent attack in round 2. See rule 610.
 
 > *Example: The initiative player attacks, the non-initiative player blocks and sends nobody: the battle phase ends after round 1, and the unit that stayed home is untouched.*
 
 > *Example: A Good Whale that stayed home while a Rune Channeler was sent out cannot be declared as a round-2 attacker.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.21 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 21-fixes.test.ts, 02-combat.test.ts · Example tests: 21-fixes.test.ts::round 2 after a real round-1 battle still restricts to the sent counterattackers, 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2 · Key: turn.battle.rounds.no-round-2</sub>
+> *Example: The initiative player attacks and the non-initiative player casts Temporal Rift in the attack window: the battle phase ends with no round 2, though the non-initiative player has a unit at home.*
+
+> *Example: The non-initiative player sends Rune Channeler at the block step, then casts Temporal Rift: round 1 ends before combat damage, and in round 2 the Rune Channeler attacks.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 3 gate test files · Printed: Manual p.21; card: Temporal Rift · Designer: RQ 1353982561101025362 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 21-fixes.test.ts, 02-combat.test.ts, 633-designer-answers-battle.test.ts · Example tests: 21-fixes.test.ts::round 2 after a real round-1 battle still restricts to the sent counterattackers, 02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2, 633-designer-answers-battle.test.ts::CR 505.3f / designer: Temporal Rift cast before blocks ends the battle phase, 633-designer-answers-battle.test.ts::CR 505.3f / designer: Temporal Rift cast after blocks ends round 1 only · Key: turn.battle.rounds.no-round-2</sub>
 
 <sub>Discrepancies: D-U09-4 (discrepancies.md)</sub>
 
@@ -5148,29 +5152,27 @@ order.
 
 <sub>Discrepancies: D-U12-1 (discrepancies.md)</sub>
 
-<a id="r608.3b"></a>**608.3b** In a split step, each sub-step that was scheduled, when the step began, to have a half-column strike in it is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens. See rules 703, 706.
+<a id="r608.3b"></a>**608.3b** In a split step, each scheduled sub-step (rule 608.3d) is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens. See rules 703, 706. *(Engine differs, see F-U12-5.)*
 
 > *Example: Bripp (4 power) and Bloated Manablub (2 power) attack in normal columns, and Adversary of the Deep (2/2, Sluggish; 'Whenever a player loses life, put that many +1/+1 counters on me') attacks in a third column. None are blocked. The normal sub-step deals 6; the step stops, Adversary's trigger resolves with priority, and Adversary strikes in the Sluggish sub-step for 8.*
 
 > *Example: At the boundary, the stack holds Adversary of the Deep's trigger. Its controller has the initiative and receives priority first; the other player may respond once they pass.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 9 tests (a probe it wrote), all passed; 3 gate test files · Designer: RAQ 1540678747953569832#2; RAQ 1363298910528864318#0 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 239-damage-triggers-after-combat.test.ts, 21-fixes.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::CR 802.5b the report, 297-damage-substeps-are-steps.test.ts::CR 608.3b the boundary is a real priority window · Key: combat.damage.split.boundary-window</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 3 gate test files · Designer: RAQ 1540678747953569832#2; RAQ 1363298910528864318#0; RQ 1363287109401710603 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 239-damage-triggers-after-combat.test.ts, 21-fixes.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::CR 802.5b the report, 297-damage-substeps-are-steps.test.ts::CR 608.3b the boundary is a real priority window · Key: combat.damage.split.boundary-window</sub>
 
-<a id="r608.3c"></a>**608.3c** A sub-step in which no half-column was scheduled to strike when the step began is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; a half-column that still strikes in a later sub-step (rule 608.2f) strikes without a window before it, and then the after combat step begins.
+<a id="r608.3c"></a>**608.3c** A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; the after combat step begins. *(Engine differs, see F-U12-5.)*
 
 > *Example: Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps.*
 
-> *Example: Dune Drifter (Swift) and a 1/1 attack in separate columns and are not blocked. At the window after the Swift sub-step, Dune Drifter's column gains Sluggish. The 1/1 strikes in the normal sub-step and no window follows; Dune Drifter's column then strikes in the Sluggish sub-step, and the after combat step begins.*
-
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 3 tests (2 probes it wrote), all passed; 2 gate test files · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 423-cr-combat-damage.test.ts · Example tests: 297-damage-substeps-are-steps.test.ts::CR 608.3c an EMPTY sub-step opens no window, 423-cr-combat-damage.test.ts::cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step strikes with no window before it, then after combat begins · Key: combat.damage.split.empty-substep</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Designer: RQ 1363288029799911664 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Engine: pumpCombatDamage · Tests: 297-damage-substeps-are-steps.test.ts, 423-cr-combat-damage.test.ts · Example test: 297-damage-substeps-are-steps.test.ts::CR 608.3c an EMPTY sub-step opens no window · Key: combat.damage.split.empty-substep</sub>
 
 <sub>Discrepancies: D-U12-10 (discrepancies.md)</sub>
 
-<a id="r608.3d"></a>**608.3d** Which sub-steps are separate steps is determined once, when the combat damage step begins. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit.
+<a id="r608.3d"></a>**608.3d** Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one addition: if a half-column has Sluggish when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled too, so a window opens before it. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit. *(Engine differs, see F-U12-5.)*
 
 > *Example: Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens, and the death triggers can be answered there.*
 
-<sub>Basis: Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 297-damage-substeps-are-steps.test.ts · Example test: 297-damage-substeps-are-steps.test.ts::CR 608.3d damageSubs is fixed when the step opens · Key: combat.damage.split.schedule-fixed</sub>
+<sub>Basis: Mixed · Verified: partial in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Designer: RQ 1363288029799911664; RQ 1363287109401710603; RQ 1363278470938890250 · Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Tests: 297-damage-substeps-are-steps.test.ts · Example test: 297-damage-substeps-are-steps.test.ts::CR 608.3d damageSubs is fixed when the step opens · Key: combat.damage.split.schedule-fixed</sub>
 
 <sub>Discrepancies: D-U12-11 (discrepancies.md)</sub>
 
@@ -7057,7 +7059,7 @@ order.
 
 > *Example: Beside a unit wearing Infernal Wispweaver as a mod, Ancient One has only the Wispweaver's [Augment] text, not the text of its body.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 8 tests, all passed; 7 gate test files · Printed: card: Ancient One; card: Ancient One · Designer: RQ 1359188053876408431 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-23, 2026-08-24 (quoted from the retired ruling register) · Engine: aoAllies, projectedFaces · Tests: 26-metal-a.test.ts, 117-copy-everything.test.ts, 585-ancient-one-per-neighbour-uses.test.ts, 589-ancient-one-whole-text-box.test.ts, 625-ancient-one-borrows-mod-box-only.test.ts, 626-ancient-one-despawn-neighbours.test.ts, 627-ancient-one-death-batch-neighbours.test.ts · Example tests: 26-metal-a.test.ts::CR 710.7: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks, 117-copy-everything.test.ts::CR 710.7: attributes are the ONE thing an adjacent ally does not donate, 26-metal-a.test.ts::CR 710.7: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Jollyglops makes two 1/1s per damage from each, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Debt Bleps has two activations, 589-ancient-one-whole-text-box.test.ts::CR 710.7 / report 271: two adjacent Ancient Ones both have the abilities of a unit adjacent to either, 589-ancient-one-whole-text-box.test.ts::CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead on it and two neighbours makes three Robots, 589-ancient-one-whole-text-box.test.ts::CR 712.2, 710.7 / report 271: an ally that has lost its abilities lends none, 589-ancient-one-whole-text-box.test.ts::CR 400.5 / report 271: an Ancient One does not borrow the bin text of a neighbour in play, 589-ancient-one-whole-text-box.test.ts::CR 714.9, 710.7 / report 271: a dying Ancient One has the when-I-die text of the allies it stood beside, 626-ancient-one-despawn-neighbours.test.ts::CR 721.1f, 714.9 / CT-350: a recalled Ancient One has the when-I-despawn text of the ally it stood beside, 627-ancient-one-death-batch-neighbours.test.ts::CR 714.9, 710.7 / CT-351: an Ancient One dying in one batch with both neighbours borrows both when-I-die lines, 625-ancient-one-borrows-mod-box-only.test.ts::CR 721.1c, 710.7 / CT-349: a mod body static does not reach through an Ancient One (Infernal Wispweaver on a Good Whale) · Key: effects.copies.all-abilities</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 8 tests, all passed; 7 gate test files · Printed: card: Ancient One; card: Ancient One · Designer: RQ 1359188053876408431; RQ 1349398974871769108 · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-23, 2026-08-24 (quoted from the retired ruling register) · Engine: aoAllies, projectedFaces · Tests: 26-metal-a.test.ts, 117-copy-everything.test.ts, 585-ancient-one-per-neighbour-uses.test.ts, 589-ancient-one-whole-text-box.test.ts, 625-ancient-one-borrows-mod-box-only.test.ts, 626-ancient-one-despawn-neighbours.test.ts, 627-ancient-one-death-batch-neighbours.test.ts · Example tests: 26-metal-a.test.ts::CR 710.7: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks, 117-copy-everything.test.ts::CR 710.7: attributes are the ONE thing an adjacent ally does not donate, 26-metal-a.test.ts::CR 710.7: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Jollyglops makes two 1/1s per damage from each, 585-ancient-one-per-neighbour-uses.test.ts::CR 710.7 / CT-342: Ancient One between two Debt Bleps has two activations, 589-ancient-one-whole-text-box.test.ts::CR 710.7 / report 271: two adjacent Ancient Ones both have the abilities of a unit adjacent to either, 589-ancient-one-whole-text-box.test.ts::CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead on it and two neighbours makes three Robots, 589-ancient-one-whole-text-box.test.ts::CR 712.2, 710.7 / report 271: an ally that has lost its abilities lends none, 589-ancient-one-whole-text-box.test.ts::CR 400.5 / report 271: an Ancient One does not borrow the bin text of a neighbour in play, 589-ancient-one-whole-text-box.test.ts::CR 714.9, 710.7 / report 271: a dying Ancient One has the when-I-die text of the allies it stood beside, 626-ancient-one-despawn-neighbours.test.ts::CR 721.1f, 714.9 / CT-350: a recalled Ancient One has the when-I-despawn text of the ally it stood beside, 627-ancient-one-death-batch-neighbours.test.ts::CR 714.9, 710.7 / CT-351: an Ancient One dying in one batch with both neighbours borrows both when-I-die lines, 625-ancient-one-borrows-mod-box-only.test.ts::CR 721.1c, 710.7 / CT-349: a mod body static does not reach through an Ancient One (Infernal Wispweaver on a Good Whale) · Key: effects.copies.all-abilities</sub>
 
 <a id="r710.7a"></a>**710.7a** In text a unit gets this way, "I" and "me" mean the unit that has the text, not the unit it came from.
 
@@ -8605,11 +8607,13 @@ order.
 
 <sub>Discrepancies: D-U12-3 (discrepancies.md)</sub>
 
-<a id="r802.2a"></a>**802.2a** An attacking column that has Flying can't be blocked by a unit that does not have Flying. See rule 606.2c.
+<a id="r802.2a"></a>**802.2a** An attacking column that has Flying can't be blocked by a unit that does not have Flying. A blocking column has Flying if any unit in it has Flying, so a unit without Flying may block a Flying column together with a Flying unit in the same blocking column. See rule 606.2c.
 
 > *Example: A ground 2/2 cannot block a column holding Ephemeral Skywalker (Flying).*
 
-<sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 3 gate test files · Printed: card: Greed Angel; Manual p.24 · Tests: 02-combat.test.ts, 40-light-c.test.ts, 422-cr-attacking-blocking.test.ts · Example test: 02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths · Demonstrated by test: 40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can · Key: attr.flying.blocking</sub>
+> *Example: Good Whale cannot block a column holding Ephemeral Skywalker alone, but it can block that column together with another Ephemeral Skywalker in its blocking column.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 4 gate test files · Printed: card: Greed Angel; Manual p.24 · Designer: RQ 1348502069614612563 · Tests: 02-combat.test.ts, 40-light-c.test.ts, 422-cr-attacking-blocking.test.ts, 633-designer-answers-battle.test.ts · Example tests: 02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths, 633-designer-answers-battle.test.ts::CR 802.2a / designer: a unit without Flying may block a Flying column together with a Flying unit · Demonstrated by test: 40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can · Key: attr.flying.blocking</sub>
 
 <sub>Discrepancies: D-U19-5 (discrepancies.md)</sub>
 
@@ -8809,11 +8813,11 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Its Dark Bubb; Manual p.25 · Our glossary (not a source): Inverted · Tests: 43-dark-c.test.ts · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim · Key: attr.inverted</sub>
 
-<a id="r802.8a"></a>**802.8a** Inverted inverts the net change to a unit's stats. An Inverted unit's power is its base power minus the net change to its power, and its defense is its base defense minus the net change to its defense. It is worked out on the total change, not on each change separately. See rule 206.4.
+<a id="r802.8a"></a>**802.8a** Inverted inverts the net change to a unit's stats from its printed stats. An Inverted unit's power is its printed power minus the net change to its power, and its defense is its printed defense minus the net change to its defense. It is worked out on the total change, not on each change separately. See rule 206.4. *(Engine differs, see F-U19-6.)*
 
 > *Example: Malformed Monstrosity (10/9) with its -7/-7, in a column with Reality Bender, is a 17/16.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Printed: Manual p.25; Manual p.25 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts, 43-dark-c.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8a layer 5: the owner's Malformed Monstrosity · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own · Key: attr.inverted.net</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.25; Manual p.25 · Designer: RQ 1167221076447744110 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts, 43-dark-c.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8a layer 5: the owner's Malformed Monstrosity · Demonstrated by test: 43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own · Key: attr.inverted.net</sub>
 
 <a id="r802.8b"></a>**802.8b** The changes Inverted inverts include those that Tough and Balanced make. Inverting Tough removes the defense Tough added; it does not halve the defense. See rules 802.6, 802.7.
 
@@ -8821,15 +8825,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 79-round17-layers.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8b layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0 · Key: attr.inverted.attributes</sub>
 
-<a id="r802.8c"></a>**802.8c** Setting a unit's base stats is not a stat change that Inverted inverts: the new base stats are what Inverted inverts from. See rule 206.5.
+<a id="r802.8c"></a>**802.8c** Setting a unit's base stats is a stat change that Inverted inverts: Inverted inverts the difference between the unit's printed stats and its current stats. A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted. See rule 206.5. *(Engine differs, see F-U19-6.)*
 
-> *Example: A unit made base 3/3 by Aberrant Statweaver, with no other changes, is a 3/3 whether or not it is Inverted.*
-
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 79-round17-layers.test.ts · Example test: 79-round17-layers.test.ts::CR 802.8c layer 5: a base REWRITE is the thing inverted FROM, never inverted itself · Key: attr.inverted.base</sub>
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Aberrant Statweaver · Designer: RQ 1167220853726007336; RQ 1167221076447744110; RQ 1443370771647828032 · Tests: 79-round17-layers.test.ts · Key: attr.inverted.base</sub>
 
 <sub>Discrepancies: D-U19-3 (discrepancies.md)</sub>
 
-<a id="r802.8d"></a>**802.8d** If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from base. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction. See rules 802.6, 713.
+<a id="r802.8d"></a>**802.8d** If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from its printed defense. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction. See rules 802.6, 713. *(Engine differs, see F-U19-6.)*
 
 > *Example: A 1/4 with Tough and Inverted is a 1/0, in either grant order, and dies.*
 
@@ -8837,7 +8839,7 @@ order.
 
 > *Example: Inverted on the front unit of a column and Tough on the back unit: both units have both attributes, and both die.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 3 tests, all passed; 1 gate test file · Tests: 79-round17-layers.test.ts · Example tests: 79-round17-layers.test.ts::CR 709.4d: the TWO-attribute case, in either grant order, 79-round17-layers.test.ts::CR 802.8d: the special case his wording misses, 79-round17-layers.test.ts::CR 802.8d: the column wipe · Key: attr.inverted.tough</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Designer: RQ 1167221076447744110 · Owner ruling, adopted 2026-08-28 (quoted from the retired ruling register) · Tests: 79-round17-layers.test.ts · Example tests: 79-round17-layers.test.ts::CR 709.4d: the TWO-attribute case, in either grant order, 79-round17-layers.test.ts::CR 802.8d: the special case his wording misses, 79-round17-layers.test.ts::CR 802.8d: the column wipe · Key: attr.inverted.tough</sub>
 
 <sub>Discrepancies: D-U19-9 (discrepancies.md)</sub>
 
@@ -9041,11 +9043,13 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Our glossary (not a source): Sneaky · Tests: 08-cards2.test.ts · Demonstrated by test: 08-cards2.test.ts::Whispering Mantid: Sneaky · Key: attr.sneaky</sub>
 
-<a id="r802.14a"></a>**802.14a** An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation. See rule 606.
+<a id="r802.14a"></a>**802.14a** An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation. Whether it is alone is judged when blocks are declared: if the other attacking units have left play by then, it cannot be blocked. See rule 606.
 
 > *Example: Whispering Mantid attacks alone and cannot be blocked. Attacking with another unit, it can be.*
 
-<sub>Basis: Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 08-cards2.test.ts · Example test: 08-cards2.test.ts::Whispering Mantid: Sneaky · Key: attr.sneaky.alone</sub>
+> *Example: Whispering Mantid attacks beside Lonely Forager, and the Forager is sacrificed before blocks: the Mantid is now attacking alone and cannot be blocked.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RQ 1353935255425388665; RQ 1353935342495076463 · Owner ruling, adopted 2026-08-18 (quoted from the retired ruling register) · Tests: 08-cards2.test.ts, 633-designer-answers-battle.test.ts · Example tests: 08-cards2.test.ts::Whispering Mantid: Sneaky, 633-designer-answers-battle.test.ts::CR 802.14a / designer: Sneaky "attacking alone" is judged when blocks are declared · Key: attr.sneaky.alone</sub>
 
 <sub>Discrepancies: D-U20-2, D-U20-3 (discrepancies.md)</sub>
 
@@ -10562,18 +10566,18 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | basis | rules |
 |---|---|
-| Printed | 453 |
-| Designer | 202 |
-| Owner call | 679 |
+| Printed | 452 |
+| Designer | 203 |
+| Owner call | 675 |
 | Engine only | 40 |
-| Mixed | 447 |
+| Mixed | 451 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1811 |
-| partial | 6 |
+| confirmed | 1810 |
+| partial | 7 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
@@ -10625,7 +10629,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Findings: where the engine differs
 
-79 divergences, filed as 128 findings. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.
+81 divergences, filed as 130 findings. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.
 
 - <a id="F-U01-1"></a><a id="F-U01-3"></a>**F-U01-1** Ownership is lost once a stolen card passes through the thief's hand (CT-233). Rule 102.4. Also found as F-U01-3.
   Zones follow control, so a stolen unit that is recalled goes to the thief's hand. The hand holds a bare card name, so when the thief replays it the new unit's owner defaults to the playing seat, and the engine records the thief as owner. The rulings say ownership never moves ("its OWNER's, always, forever"). The verifier's probe measured owner = thief after the replay. Low impact today because zones follow control, but the owner field no longer means what the ruling says it keeps meaning. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-233): a stolen card keeps its owner through the thief's own hand, bin and cache (551); the routes still open are F-U01-6. Re-checked (F-U01-3): fixed on 2026-10-22 with F-U01-1 (CT-233): 551 keeps the owner through a hand and a bin.
@@ -10743,6 +10747,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
   02-combat.test.ts 'the owner ruling of 2026-08-18 (“Formation changes during combat […]”)/Swift: swift column deals damage first, no priority between sub-steps' names the owner ruling of 2026-08-18 (“Formation changes during combat […]”)’s second clause, which the owner ruling of 2026-09-16 (“A split damage step is several…”) amended: a split damage step opens a priority window between sub-steps. The pilot verifier's probe found this test's own board stops at that window (damageSubs Swift and normal, step damageWindow); its assertions are made there and prove only the Swift strike. Retitle it. Re-checked: fixed on 2026-10-24 (CT-230): retitled, and the body passes the window between the sub-steps. Re-checked (F-U12-3): fixed on 2026-10-24 (CT-230): 239 passes the window, runs the normal sub-step and then asserts the dead Swift-step unit dealt nothing; retitled.
 - <a id="F-U12-4"></a>**F-U12-4** Vroot ('when my column deals combat damage', not 'to a player') does not trigger when its column's damage is wholly redirected into Oorblak. Rule 608.8c.
   Possible divergence outside this record's claim. The engine lumps Vroot with the 'deals combat damage to a player' listeners, so a column whose hit is wholly redirected into Oorblak gives Vroot nothing. But Vroot's trigger has no 'to a player'; Oorblak's text has the damage 'dealt to me instead', and the owner (2026-10-16) said it is still combat damage. Read that way, the column did deal combat damage (to Oorblak) and Vroot should pay out that much. Worth an owner check. Re-checked: fixed on 2026-10-23 (owner "Any combat damage", asked what Vroot counts): Vroot, Flowstone Arcanite and Blightmound count the combat damage their column deals to blockers, to Oorblak and to the player, and the "to a player" family is unchanged (601).
+- <a id="F-U12-5"></a>**F-U12-5** The engine opens no window before the Sluggish strike of a column that gained Sluggish after the step began (CT-378). Rules 608.3b, 608.3c, 608.3d.
+  The rule (the designer, 2025-04-20) has a column that gains Sluggish in the window after the Swift sub-step strike in the Sluggish sub-step, with the before-Sluggish window opening first. The engine fixes the damage step's sub-steps once, when the step opens (damageSubs), so a Sluggish sub-step that was not scheduled then gets no window before the gained Sluggish strike, and triggers from normal damage wait until after combat.
 - <a id="F-U13-1"></a><a id="F-U23-4"></a><a id="F-U23-7"></a><a id="F-U23-8"></a>**F-U13-1** The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) (a lone sent counterattacker auto-forms) is unmarked, but its guard was flipped to assert the opposite (CT-251). Rules 610.4e, D1.2b, D1.2c. Also found as F-U23-4, F-U23-7, F-U23-8.
   The owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) says that when a round-2 counterattack pool holds exactly one unit and no ridable spell token, the only-unit formation is auto-declared as a forced action. On 2026-08-24 (a decisions-for-the-player audit) test 32 was flipped: its comment says the auto-declare branch is deleted, and it asserts forcedAction is null and that both attacking and declining are legal. No ruling records the reversal, and the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading carries no reversal mark, so the register still presents the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”) as current. Register fix: write the reversing ruling (or mark the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)) and point the owner ruling of 2026-08-18 (“A lone sent counterattacker auto-forms in…”)’s heading at it. Re-checked: fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-4): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-7): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479). Re-checked (F-U23-8): fixed on 2026-10-16 (CT-251; owner 2026-10-16, CT-298: a sent counterattacker "MUST be put into formation"): the decline is gone, and forcedAction auto-forms a lone sent counterattacker with no ridable token again, as the owner ruling of 2026-08-18 says (32-cast-costs, 434, 479).
 - <a id="F-U14-1"></a><a id="F-U17-7"></a><a id="F-U17-9"></a>**F-U14-1** A graft trigger with no legal target goes on the stack and fizzles instead of not being put on the stack (CT-252). Rules 702.8b, 722.4e. Also found as F-U17-7, F-U17-9.
@@ -10771,6 +10777,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
   The owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) (and the owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”), as the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) reads it) keep the stat attributes Tough, Balanced and Inverted applying in a Pure pairing because "they are stat layers". Pure's printed reminder ignores all other attributes, and the Manual lists Tough as an attribute. Under the authority order the printed text wins (rule 802.1n; D-U19-2). Suspected engine behaviour: a Pure blocker facing a Tough unit is priced against the doubled defense. Measured by the round-1 verifier: a Pure source dealing 5 to Rampart Guardian leaves it alive as a Tough 0/8. Measured by the round-2 verifier: a Balanced 4/1 dealt 3 by a Pure source survives as a 4/4. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-260; the owner followed print): in a Pure interaction Tough, Balanced, Inverted and Unaware do not apply (555). Re-checked (F-U19-2): fixed on 2026-10-22 (CT-260; the owner followed print): in a Pure interaction Tough, Balanced, Inverted and Unaware do not apply (555).
 - <a id="F-U19-3"></a>**F-U19-3** Oorblak's combat-damage redirect doubles damage onto a Pure Vulnerable Oorblak (CT-227). Rule 802.11e.
   The pilot's round-2 probe (P5) gave Oorblak Pure and Vulnerable and redirected a non-Pure 3-power unblocked column into it: Oorblak was dealt 6 and died. The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”) and the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”) say a Pure recipient's own Vulnerable is off. The redirect is a damage commit in card code (the owner ruling of 2026-08-28 (“{Deadly} reaches every damage site, and…”) calls it "the fourth site") and appears not to read Pure. Exotic but reachable (Just a Unit is a Virus). Re-checked: fixed on 2026-10-22 (CT-227): Oorblak's redirect is attribute-blind when the column or Oorblak is Pure, so a Pure Vulnerable Oorblak is dealt the hit once (553).
+- <a id="F-U19-6"></a>**F-U19-6** The engine inverts from a rewritten base, not from the printed stats (CT-379). Rules 802.8a, 802.8c, 802.8d.
+  The rule (the designer, 2023 and 2025) has Inverted invert the difference between a unit's printed stats and its current stats, a base rewrite included. The engine's layer 5 reflects the stats around the layer-2 base (p = 2 * base - p), so a base rewrite is never inverted: a printed 7/5 made base 3/3 by Aberrant Statweaver stays 3/3 when Inverted, where the rule makes it 11/7. 79-round17-layers pins the engine's reading.
 - <a id="F-U20-1"></a><a id="F-U20-5"></a>**F-U20-1** The Electric path is asked of the effect's controller, not the Electric source's controller (CT-226). Rule 802.17c. Also found as F-U20-5.
   The owner ruling of 2026-08-18 (“Electric damage pathing […]”) (and the owner ruling of 2026-10-09 (“{Electric}'s jump is optional, and excess…”)) give the choice of the Electric path to the Electric source's controller. The orchestrator's known-divergence list and the pilot verifier record that the engine asks the effect's controller. Every Electric source in the pool today is a spell or a spell effect, so the two players coincide in every test; 05-rulings asserts the source's controller only in that coinciding case. The rule states the ruling. Round-1 verifier measured it: dealEffectDamageAll raises the electricPath decision for ctx.controller, while the Piercing split beside it already uses the source unit's controller (the probe for rule 802.17c). Re-checked: fixed on 2026-10-22 (CT-226): the Electric path is asked of the Electric source's controller (552). Re-checked (F-U20-5): fixed on 2026-10-22 (CT-226): the Electric path is asked of the Electric source's controller (552).
 - <a id="F-U20-3"></a>**F-U20-3** Modular would be shared through a column if a unit ever printed it (CT-261). Rule 802.26h.

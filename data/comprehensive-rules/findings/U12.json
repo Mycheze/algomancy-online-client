@@ -77,5 +77,22 @@
     ],
     "rule": "combat.damage.player.redirect",
     "closed": "fixed on 2026-10-23 (owner \"Any combat damage\", asked what Vroot counts): Vroot, Flowstone Arcanite and Blightmound count the combat damage their column deals to blockers, to Oorblak and to the player, and the \"to a player\" family is unchanged (601)."
+  },
+  {
+    "id": "F-U12-5",
+    "rule": "combat.damage.split.schedule-fixed",
+    "title": "The engine opens no window before the Sluggish strike of a column that gained Sluggish after the step began",
+    "summary": "The rule (the designer, 2025-04-20) has a column that gains Sluggish in the window after the Swift sub-step strike in the Sluggish sub-step, with the before-Sluggish window opening first. The engine fixes the damage step's sub-steps once, when the step opens (damageSubs), so a Sluggish sub-step that was not scheduled then gets no window before the gained Sluggish strike, and triggers from normal damage wait until after combat.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "b.damageSubs = this.subStepsWithStrikes(b);"
+      },
+      {
+        "file": "client/ledgers/card-todo.ts",
+        "quote": "a column that gains {Sluggish} during the damage step strikes in the Sluggish sub-step with no priority window before it"
+      }
+    ],
+    "ct": "CT-378"
   }
 ]

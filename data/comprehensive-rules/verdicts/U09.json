@@ -366,15 +366,15 @@
   },
   {
     "key": "turn.battle.rounds.no-round-2",
-    "textHash": "6b484e3d5899d559",
+    "textHash": "e398846d3a90394d",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U09-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:doDeclareAttack (attackerPool restriction); engine.ts:endBattleRound",
+        "loc": "client/engine/src/apply.ts:checkBlocks/doDeclareBlocks + counterattackersOwed",
         "agrees": true,
-        "note": ""
+        "note": "round 2 offers only the units sent at block time; no send ends the battle phase"
       }
     ],
     "tests_run": [
@@ -382,13 +382,25 @@
         "file": "client/engine/test/21-fixes.test.ts",
         "pattern": "round 2 after a real round-1 battle still restricts to the sent counterattackers",
         "passed": true,
-        "asserts_claim": "yes: IT attacks, NIT declares blocks {} and sends none; battle ends after round 1, home Geode untouched"
+        "asserts_claim": true
       },
       {
         "file": "client/engine/test/02-combat.test.ts",
         "pattern": "1v1 counterattack: NIT sends units at block time",
         "passed": true,
-        "asserts_claim": "yes: declaring the home Good Whale in round 2 throws IllegalAction"
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/633-designer-answers-battle.test.ts",
+        "pattern": "CR 505.3f / designer: Temporal Rift cast before blocks ends the battle phase",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/633-designer-answers-battle.test.ts",
+        "pattern": "CR 505.3f / designer: Temporal Rift cast after blocks ends round 1 only",
+        "passed": true,
+        "asserts_claim": true
       }
     ],
     "probes": [],
@@ -396,18 +408,44 @@
       {
         "ref": "Manual p.21",
         "supports": "yes",
-        "note": ""
+        "note": "'Once battle has been completed in the attacking region, if there was a counter-attack, the players will move to IT's region' — round 2 only if units were sent"
       },
       {
-        "ref": "R15",
+        "ref": "card: Temporal Rift",
         "supports": "yes",
-        "note": ""
+        "note": "printed text 'End this battle. Erase this spell.'"
+      },
+      {
+        "ref": "RQ 1353982561101025362",
+        "supports": "yes",
+        "note": "calebgannon; replyTo _passer: 'Cast in NIT Region before blockers = No Counter-Attack for NIT / Cast in NIT Region after blockers = Counter-Attack is already sent and 2nd Battle happens'"
+      },
+      {
+        "ref": "owner (2026-08-18)",
+        "supports": "yes",
+        "note": "round 2 is the units sent at block time, even if that set is empty; consistent with Manual p.20 phase 2 'The NIT puts their attacking units into formation'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "was a counter-attack, the players"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "will move to IT’s region and"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "that's what it currently is"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Cast in NIT Region after blockers = Counter-Attack is already sent and 2nd Battle happens"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "End this battle. Erase this spell."
       }
     ],
     "basis_ok": true,

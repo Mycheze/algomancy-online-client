@@ -197,7 +197,7 @@
     "id": "D-U12-11",
     "kind": "g-other",
     "rule": "combat.damage.split.schedule-fixed",
-    "tier": 1,
+    "tier": 2,
     "summary": "A half-column that gains Sluggish during the step when no Sluggish sub-step was scheduled: the designer says it strikes in the Sluggish sub-step and that the presence of Sluggish opens a new stack before the next damage step; the owner ruling of 2026-09-16 (“A split damage step is several…”) fixes the schedule when the step begins, so no window opens before that strike.",
     "sides": [
       {
@@ -213,25 +213,7 @@
         "quote": "when the damage step opens, and never recomputed. A Swift unit dying in the Swift"
       }
     ],
-    "resolution": "Question for the owner. The RAQ example that covers the gain had a Sluggish column already scheduled, so it does not decide this. The document states the owner ruling of 2026-09-16 (“A split damage step is several…”).",
-    "question": {
-      "topic": "Battle",
-      "ask": "If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?",
-      "readings": [
-        {
-          "label": "A",
-          "text": "Yes: Sluggish is present when the strike happens, so it opens a stack after the normal sub-step.",
-          "table": "Triggers from normal damage resolve in that window, before the Sluggish strike; engine change."
-        },
-        {
-          "label": "B",
-          "text": "No: presence is judged when the step begins (owner ruling of 2026-09-16, “A split damage step is several…”); the column still strikes in the Sluggish sub-step, but no window opens before it.",
-          "table": "As today: normal-damage triggers wait until after combat."
-        }
-      ],
-      "follows": "B (owner ruling of 2026-09-16, “A split damage step is several…”).",
-      "recommend": "A: the designer says the presence of Sluggish opens the stacks, and the gained Sluggish is present when it strikes; it is also the permissive reading."
-    }
+    "resolution": "Settled by the designer (2026-10-24 audit), reading A: Caleb's damage-step scheme opens a before-Sluggish window before every Sluggish strike, and a column gets the Sluggish strike by gaining Sluggish in the after-Swift window (RQ 1363278470938890250, 1363287109401710603, 1363288029799911664). The designer outranks the owner ruling of 2026-09-16 on this point; combat.damage.split.schedule-fixed now states it. The engine still fixes the schedule when the step opens: F-U12-5, CT-378. Left partial by the round-4 verifier (2026-10-24): Caleb's diagram (\"Need sluggish to exist after here---> Combat\") checks Sluggish at that later point in BOTH directions, so a Sluggish sub-step whose only Sluggish unit is gone (or lost Sluggish) by the end of the after-Swift window should have no window either, which 608.3d's \"determined when the step begins\" and 608.3c's \"keeps its window\" do not say. Redraft 608.3d (and 608.3c for the Sluggish sub-step) to Caleb's check point and re-verify; the engine follows neither half (CT-378)."
   },
   {
     "id": "D-U12-12",

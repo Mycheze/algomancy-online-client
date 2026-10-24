@@ -1171,6 +1171,10 @@
         {
           "ref": "RQ 1359188053876408431",
           "quote": "You could get up to 4 tokens when an ancient one dies with reforge the dead."
+        },
+        {
+          "ref": "RQ 1349398974871769108",
+          "quote": "two copies"
         }
       ],
       "ours": [],
@@ -1213,8 +1217,9 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Owner 2026-10-22 (CT-342): an Ancient One between two Jollyglops gets two uses, \"each neighbour's copy of the ability is separate\", the same as two mods each having their own use. Engine aligned the same day (563, 585). Report 271 (2026-10-23, 589): granted text, two adjacent Ancient Ones (the oracle ruling \"they would both have all the abilities of any creature adjacent to either of them\", not a citable source kind), stripped allies and zone text. Caleb 2025-04-08 (RQ 1359188053876408431) on Reforge the Dead. Its death: the died event carries the units adjacent to it (589); rule 714.5 (a count of a departed source's adjacent allies is 0) is about counting, not about which text it had. Round 2026-10-24: CT-349 (a neighbour's mod lends only its [Augment] box, 625), CT-350 (the neighbours are read before it leaves play by any route, so \"when I despawn\" text fires on a recall, cache, exchange or erase, 626) and CT-351 (a neighbour dying in the same batch still counts, 627).",
+    "notes": "Owner 2026-10-22 (CT-342): an Ancient One between two Jollyglops gets two uses, \"each neighbour's copy of the ability is separate\", the same as two mods each having their own use. Engine aligned the same day (563, 585). Report 271 (2026-10-23, 589): granted text, two adjacent Ancient Ones (the oracle ruling \"they would both have all the abilities of any creature adjacent to either of them\", not a citable source kind), stripped allies and zone text. Caleb 2025-04-08 (RQ 1359188053876408431) on Reforge the Dead. Its death: the died event carries the units adjacent to it (589); rule 714.5 (a count of a departed source's adjacent allies is 0) is about counting, not about which text it had. Round 2026-10-24: CT-349 (a neighbour's mod lends only its [Augment] box, 625), CT-350 (the neighbours are read before it leaves play by any route, so \"when I despawn\" text fires on a recall, cache, exchange or erase, 626) and CT-351 (a neighbour dying in the same batch still counts, 627). CT-355 (2026-10-24): asked whether two different adjacent units with \"your units get +1/+1\" give two copies or one, Caleb answered \"two copies\" (RQ 1349398974871769108); the same day, the same ability reached twice is not two copies (RQ 1349398647707537408).",
     "sourceHashes": {
+      "RQ 1349398974871769108": "ec2b2a2a81b6d8d3f25d6bb5c9450a6d57d94a08762ec0b8ebdaadeeb6a394f6",
       "RQ 1359188053876408431": "34541c6b810dfd39a0d1eb145b1021c033f1ae2691612754ef2d0517d92c0e0c"
     }
   },

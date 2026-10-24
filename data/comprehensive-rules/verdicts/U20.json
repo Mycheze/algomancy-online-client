@@ -5679,21 +5679,27 @@
   },
   {
     "key": "attr.sneaky.alone",
-    "textHash": "ea401f32da27e384",
+    "textHash": "42609c7dd0ee9de4",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "loc": "client/engine/src/apply.ts:checkBlocks (atkUnits = attackingUnits(e); length === 1 && Sneaky)",
         "agrees": true,
-        "note": ""
+        "note": "aloneness is read from the units still in play at the block declaration"
       }
     ],
     "tests_run": [
       {
-        "file": "08-cards2.test.ts",
+        "file": "client/engine/test/08-cards2.test.ts",
         "pattern": "Whispering Mantid: Sneaky",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/633-designer-answers-battle.test.ts",
+        "pattern": "CR 802.14a / designer",
         "passed": true,
         "asserts_claim": true
       }
@@ -5701,20 +5707,37 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R20",
+        "ref": "RQ 1353935255425388665",
         "supports": "yes",
-        "note": ""
+        "note": "calebgannon 'Attributes like that are only checked during the assign blockers step' — the question was codebearer72's: sacrifice the other attackers before blockers so the Sneaky one attacks alone. Caleb's previous message: 'Yep that works!'"
+      },
+      {
+        "ref": "RQ 1353935342495076463",
+        "supports": "yes",
+        "note": "'So as long as he's sneaky before he needs to be blocked you're good to go'"
+      },
+      {
+        "ref": "owner (2026-08-18)",
+        "supports": "yes",
+        "note": "a Sneaky column can't be blocked iff its unit is the only attacking unit"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "Attributes like that are only checked during the assign blockers step"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "sacrificed them before blockers were declared"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "So as long as he's sneaky before he needs to be blocked you're good to go"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.sneaky.pure",

@@ -2,7 +2,7 @@
 
 Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision, and owner-questions.md lists it on its own; every other item already says which source decides and which side the document follows. An item filed by more than one drafting unit is kept once, and names the others under "Also filed as".
 
-## 1. Questions for the owner (6)
+## 1. Questions for the owner (1)
 
 ### D-U06-9 · Other · rule 305.6
 
@@ -28,114 +28,7 @@ Sources do not say whether a Virus may be applied during battle to a spell token
 
 **Resolution:** Question for the owner. No rule states either reading: The owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) leaves it as "Bena to rule" and names the engine work reading A needs. The _passer remark the owner ruling of 2026-08-23 (“[…] missing half: a SPELL TOKEN may…”) quotes ("not without help of Rook") is from #rules-questions, not a [Solved] write-up.
 
-### D-U09-4 · RAQ open · rule 505.3f
-
-If Temporal Rift ends round 1 before blocks, can the non-initiative player still attack in round 2? The RAQ thread is open, and Caleb said he was "still working on the ruling". Today the engine ends the battle phase: no counterattack and no round 2.
-
-*Also filed as D-U13-1 (rule 610.4).*
-
-- RAQ 1353986897902567424#0: "calebgannon (2025-03-30): "Yeah I'm still working on the ruling""
-- RAQ 1353986897902567424#1: "Should allow for 2nd Battle to happen if it was cast AFTER blocker/counter-attack"
-- Manual p.20: "The NIT can still declare attacks even if the IT decides not to attack."
-- card: Temporal Rift: "End this battle. Erase this spell."
-- owner ruling, adopted 2026-08-18: "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
-
-**Question:** Does Temporal Rift's "End this battle" also cancel the second battle round (the counterattack)?
-
-- **Reading A.** No: it ends the current battle round in this region; the second round still happens, and cast before blocks the non-initiative player may still attack in round 2, as when the initiative player declines (Manual p.20 note). *At the table:* Engine change: a Rift no longer denies the counterattack.
-- **Reading B.** Yes: it ends the region's whole battle phase, so there is no second round. *At the table:* As today.
-
-**The document today:** Neither: no rule is written, because the RAQ thread is open and Caleb said he was "still working on the ruling". The engine does B.
-
-**Recommended:** A: the thread itself calls the second round a "2nd Battle", _passer lists it as the consideration for a cast after blocks, and it is the permissive reading. Revisit if Caleb rules.
-
-**Resolution:** Question for the owner, because the designer has not ruled: the RAQ thread is open ([Considered]). No rule states either reading. Revisit if Caleb rules.
-
-### D-U12-11 · Other · rule 608.3d
-
-A half-column that gains Sluggish during the step when no Sluggish sub-step was scheduled: the designer says it strikes in the Sluggish sub-step and that the presence of Sluggish opens a new stack before the next damage step; the owner ruling of 2026-09-16 (“A split damage step is several…”) fixes the schedule when the step begins, so no window opens before that strike.
-
-- RAQ 1363298910528864318#2: "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
-- RAQ 1540678747953569832#2: "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
-- owner ruling, adopted 2026-09-16: "when the damage step opens, and never recomputed. A Swift unit dying in the Swift"
-
-**Question:** If a column gains Sluggish during the damage step, does a priority window open before its Sluggish strike?
-
-- **Reading A.** Yes: Sluggish is present when the strike happens, so it opens a stack after the normal sub-step. *At the table:* Triggers from normal damage resolve in that window, before the Sluggish strike; engine change.
-- **Reading B.** No: presence is judged when the step begins (owner ruling of 2026-09-16, “A split damage step is several…”); the column still strikes in the Sluggish sub-step, but no window opens before it. *At the table:* As today: normal-damage triggers wait until after combat.
-
-**The document today:** B (owner ruling of 2026-09-16, “A split damage step is several…”).
-
-**Recommended:** A: the designer says the presence of Sluggish opens the stacks, and the gained Sluggish is present when it strikes; it is also the permissive reading.
-
-**Resolution:** Question for the owner. The RAQ example that covers the gain had a Sluggish column already scheduled, so it does not decide this. The document states the owner ruling of 2026-09-16 (“A split damage step is several…”).
-
-### D-U19-3 · Sources disagree · rule 802.8c
-
-What Inverted inverts from when a base rewrite is in play: The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) (owner, 2026-08-22) inverts from the rewritten base; the owner's later general answer that any difference from printed stats is a stat change, and a _passer post in #rules-questions, invert from the printed stats instead.
-
-- card: Its Dark Bubb: "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
-- owner ruling, adopted 2026-08-23: "(R66) — redefines what base *is*, so it is the thing inverted FROM and is never"
-- owner ruling, adopted 2026-08-23: "> "Inverted looks at Printed base stats, looks what unit is 'currently' and"
-- owner ruling, adopted 2026-08-25: "Literally any change to a unit's stats counts. If they're different from the"
-- owner ruling, adopted 2026-08-23: "Its base stats aren't being inverted. Just the modifications to those stats by counters, stat-altering augments, or attributes."
-- owner ruling, adopted 2026-08-23: "invert the difference""
-- owner ruling, adopted 2026-08-23: ""So if there was 10/15 which base stats were changed to be 4/4 (Formless does"
-- owner ruling, adopted 2026-08-23: "this), it had +1/+1 counter, then: 10/15 → 4/4 → 5/5. If you invert it now it"
-- owner ruling, adopted 2026-08-23: "sees that total diff from original stat is -5/-10, so it traces back to"
-- owner ruling, adopted 2026-08-23: "original stats (10/15) and add inverted values (+5/+10) to 15/25""
-
-**Question:** Does Inverted invert from the printed stats, or from a rewritten base?
-
-- **Reading A.** From the rewritten base: a base rewrite is a new base, not a stat change (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”); spikeydog). *At the table:* A 10/15 made base 4/4 with a +1/+1 counter, Inverted, is a 3/3.
-- **Reading B.** From the printed stats: any difference from the printed stats is a stat change (the owner ruling of 2026-08-25 (“the owner's answers to the 27…”); _passer's two posts). *At the table:* The same unit, Inverted, is a 15/25.
-
-**The document today:** A (owner ruling of 2026-08-23, “Stat layer 5: {Inverted} negates the…”), the owner's ruling of 2026-08-22.
-
-**Recommended:** B, for one definition of a stat change: the owner's later general words (owner ruling of 2026-08-25, “the owner's answers to the 27…”) and _passer agree, and Unaware already reads a base rewrite as a change. Keep A only if the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) was meant as a deliberate exception for Inverted.
-
-**Resolution:** Question for the owner. The rule follows the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”), which the owner ruled on 2026-08-22 with both worked examples in view (the owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) addendum quotes _passer in full). The owner ruling of 2026-08-25 (“the owner's answers to the 27…”), three days later, defines a stat change generally ("If they're different from the printed stats, they are changed"), and Unaware (rule 802.9) already reads a base rewrite as a stat change under it. The _passer posts are in #rules-questions, not a [Solved] RAQ write-up, so they do not outrank the owner. If the owner chooses B, the engine change is one line in effStats (79-round17-layers.test.ts names it).
-
-### D-U19-5 · Sources disagree · rule 802.2a
-
-Whether a unit without Flying may block a Flying column together with a Flying unit in the same blocking column. The printed reminder names units; the Manual says "the blocking unit"; the Rulebook says "unless the defending player also has flying units"; the owner ruling of 2026-08-29 (“the reminder a player reads is…”) records that the client "blocks by COLUMN".
-
-- card: Air Plant: "Only flying units can block flying units."
-- Manual p.24: "blocked unless the blocking unit has flying."
-- Rulebook 2023 p.12: "Flying attribute and the entire column cannot be blocked unless the defending player"
-- owner ruling, adopted 2026-08-29: "blocks by COLUMN and the authored row said so."
-- glossary: Flying: "Its column can only be blocked by a column with Flying."
-
-**Question:** May a unit without Flying block a Flying column together with a Flying unit in the same blocking column?
-
-- **Reading A.** Yes: attributes are shared in a column in all situations, so the non-Flying unit has Flying and the column may block. *At the table:* A Flying blocker lets its column-mate join the block.
-- **Reading B.** No: every unit that blocks a Flying column must have Flying itself. *At the table:* A non-Flying unit may never stand in a column blocking Flying.
-
-**The document today:** Neither: the rule states only the restriction both readings share. Our glossary row and the owner ruling of 2026-08-29 (“the reminder a player reads is…”) ("blocks by COLUMN") describe A.
-
-**Recommended:** A: Caleb says column-mates share attributes "in all situations" (owner ruling of 2026-08-23, “Stat layer 5: {Inverted} negates the…”), and A is the permissive reading.
-
-**Resolution:** Question for the owner. No test plays the shared case and no designer source addresses it: the printed reminder names units, the Manual "the blocking unit", and the Rulebook "the defending player".
-
-### D-U20-2 · Other · rule 802.14a
-
-Sources are silent on WHEN "attacking alone" is judged. If a Sneaky unit attacks with one other unit and that unit is removed in the attack window, it is not said whether the Sneaky unit is then alone when blocks are declared.
-
-- file: client/ui/scan-reminders.json: ""text": "Sneaky units can't be blocked if attacking alone.", "card": "Whispering Mantid""
-- owner ruling, adopted 2026-08-18: "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
-
-**Question:** Is a Sneaky unit "attacking alone" judged when attacks are declared, or when blocks are declared?
-
-- **Reading A.** When blocks are declared: if its fellow attackers are gone by then, it is alone and cannot be blocked. *At the table:* Removing a co-attacker in the attack window makes the Sneaky unit unblockable.
-- **Reading B.** When attacks are declared: only a unit declared as the only attacker is alone. *At the table:* It stays blockable once declared with company.
-
-**The document today:** Neither: the rule states the owner ruling of 2026-08-18 (“Sneaky's "attacking alone"”) only.
-
-**Recommended:** A: "can't be blocked" applies at the block, so "attacking alone" is read then; it is also the permissive reading.
-
-**Resolution:** Question for the owner. The owner ruling of 2026-08-18 (“Sneaky's "attacking alone"”) says what "alone" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.
-
-## 2. Record and test fixes (59)
+## 2. Record and test fixes (61)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -481,6 +374,16 @@ Whether a block step happens when every attacking unit has gone before blocks wa
 
 **Resolution:** Settled by the owner on 2026-10-16 (CT-297): no unit may block an emptied attack, head-on or to the side, but counterattackers may still be sent in round 1. rule 606.7 (basis owner) and rule 606.4 state it; the engine agrees (479, 53).
 
+### D-U12-11 · Other · rule 608.3d
+
+A half-column that gains Sluggish during the step when no Sluggish sub-step was scheduled: the designer says it strikes in the Sluggish sub-step and that the presence of Sluggish opens a new stack before the next damage step; the owner ruling of 2026-09-16 (“A split damage step is several…”) fixes the schedule when the step begins, so no window opens before that strike.
+
+- RAQ 1363298910528864318#2: "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+- RAQ 1540678747953569832#2: "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+- owner ruling, adopted 2026-09-16: "when the damage step opens, and never recomputed. A Swift unit dying in the Swift"
+
+**Resolution:** Settled by the designer (2026-10-24 audit), reading A: Caleb's damage-step scheme opens a before-Sluggish window before every Sluggish strike, and a column gets the Sluggish strike by gaining Sluggish in the after-Swift window (RQ 1363278470938890250, 1363287109401710603, 1363288029799911664). The designer outranks the owner ruling of 2026-09-16 on this point; rule 608.3d now states it. The engine still fixes the schedule when the step opens: F-U12-5, CT-378. Left partial by the round-4 verifier (2026-10-24): Caleb's diagram ("Need sluggish to exist after here---> Combat") checks Sluggish at that later point in BOTH directions, so a Sluggish sub-step whose only Sluggish unit is gone (or lost Sluggish) by the end of the after-Swift window should have no window either, which 608.3d's "determined when the step begins" and 608.3c's "keeps its window" do not say. Redraft 608.3d (and 608.3c for the Sluggish sub-step) to Caleb's check point and re-verify; the engine follows neither half (CT-378).
+
 ### D-U12-12 · Other · rule 608.2d
 
 Pure in combat is defined per attacking-half/blocking-half pair; an unblocked column holding a Pure unit has no pair, and no source says whether its own attributes (Swift, Powerful, Thieving) apply to its damage to the player.
@@ -693,6 +596,23 @@ Pure's printed reminder ignores "all other attributes"; the rulings keep the sta
 - owner ruling, adopted 2026-09-05: "{Unaware} are all off, against units and against players alike — "its own"
 
 **Resolution:** Settled by printed text, read literally: Pure ignores "all other attributes", and the Manual names Tough as an attribute ("4. Attributes like Tough"), so Tough, Balanced, Inverted and Unaware do not apply in a Pure interaction. The owner ruling of 2026-08-20 (“{Pure}: the attribute layer, switched off…”)’s "stats are not attributes" is our ruling and does not change what the Manual calls Tough. rule 802.1n states print; the owner followed print on 2026-10-22 and the engine was changed (CT-260; F-U19-1 closed, 555). Document fix: done 2026-10-10. rule 802.25e (which stated the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)) and rule 802.25f (which stated the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”)) contradicted rule 802.1n; both now state print and are marked engine-differs (F-U19-1, F-U19-2). Register fix: mark the owner ruling of 2026-09-05 (“{Pure} outside combat: the same switch…”)’s "still read" sentence and the owner ruling of 2026-08-23 (“STAT LAYER 6, {Unaware}: everything in…”)’s "survives {Pure}" as outranked by the printed reminder.
+
+### D-U19-3 · Sources disagree · rule 802.8c
+
+What Inverted inverts from when a base rewrite is in play: The owner ruling of 2026-08-23 (“Stat layer 5: {Inverted} negates the…”) (owner, 2026-08-22) inverts from the rewritten base; the owner's later general answer that any difference from printed stats is a stat change, and a _passer post in #rules-questions, invert from the printed stats instead.
+
+- card: Its Dark Bubb: "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
+- owner ruling, adopted 2026-08-23: "(R66) — redefines what base *is*, so it is the thing inverted FROM and is never"
+- owner ruling, adopted 2026-08-23: "> "Inverted looks at Printed base stats, looks what unit is 'currently' and"
+- owner ruling, adopted 2026-08-25: "Literally any change to a unit's stats counts. If they're different from the"
+- owner ruling, adopted 2026-08-23: "Its base stats aren't being inverted. Just the modifications to those stats by counters, stat-altering augments, or attributes."
+- owner ruling, adopted 2026-08-23: "invert the difference""
+- owner ruling, adopted 2026-08-23: ""So if there was 10/15 which base stats were changed to be 4/4 (Formless does"
+- owner ruling, adopted 2026-08-23: "this), it had +1/+1 counter, then: 10/15 → 4/4 → 5/5. If you invert it now it"
+- owner ruling, adopted 2026-08-23: "sees that total diff from original stat is -5/-10, so it traces back to"
+- owner ruling, adopted 2026-08-23: "original stats (10/15) and add inverted values (+5/+10) to 15/25""
+
+**Resolution:** Settled by the designer (2026-10-24 audit), reading B: Inverted inverts from the printed stats, a base rewrite included (Caleb, RQ 1167220853726007336 and 1167221076447744110, 2023; "base stat changes are still stat changes", RQ 1443370771647828032, 2025). The designer outranks the owner ruling of 2026-08-23; rule 802.8c now states B. The engine inverts from the rewritten base: F-U19-6, CT-379.
 
 ### D-U19-6 · Ruling chain wrong · rule 802.9h
 
@@ -1643,7 +1563,7 @@ The owner ruling of 2026-08-22 (“An item stays on the stack…”) left one pr
 
 **Resolution:** An owner-only presentation call. The owner ruling of 2026-08-22 (“An item stays on the stack…”) leaves "X resolves." logged when resolution starts, and asks the owner to rule. No rule states it (rule D6.3 covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved.
 
-## 4. Everything else (128)
+## 4. Everything else (131)
 
 ### D-GL-1 · Other · rule 304.11
 
@@ -2138,6 +2058,20 @@ The designer says grafting is always a deployment action, whatever the card's sp
 
 **Resolution:** No conflict once read as general rule and card exception: the RAQ answers a question about the card's own speed, and Slurpr is an explicit grant. The rule states the deployment default and the Slurpr-style exception; the engine agrees (verifier r2 probe). Not a question for the owner.
 
+### D-U09-4 · RAQ open · rule 505.3f
+
+If Temporal Rift ends round 1 before blocks, can the non-initiative player still attack in round 2? The RAQ thread is open, and Caleb said he was "still working on the ruling". Today the engine ends the battle phase: no counterattack and no round 2.
+
+*Also filed as D-U13-1 (rule 610.4).*
+
+- RAQ 1353986897902567424#0: "calebgannon (2025-03-30): "Yeah I'm still working on the ruling""
+- RAQ 1353986897902567424#1: "Should allow for 2nd Battle to happen if it was cast AFTER blocker/counter-attack"
+- Manual p.20: "The NIT can still declare attacks even if the IT decides not to attack."
+- card: Temporal Rift: "End this battle. Erase this spell."
+- owner ruling, adopted 2026-08-18: "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
+
+**Resolution:** Settled by the designer (2026-10-24 audit): _passer asked whether Temporal Rift cast before blockers means no counterattack and cast after blockers means the counterattack is already sent and the second battle happens, and Caleb answered "that's what it currently is" (RQ 1353982561101025362, 2025-03-25). That is reading B before blocks and the second round after them, which the engine already does; rule 505.3f now states both halves, pinned by 633. Caleb said he might later allow the counterattack; revisit if he rules again. rule 610.4 needs no change.
+
 ### D-U09-7 · Other · rule 506.2
 
 The owner ruling of 2026-08-18 (“Regroup order”) says regroup runs in a set order and takes the order from Manual p.7, with spell-token erasure added at the end. Manual p.26 lists the same five things with tokens erased fourth and formation left fifth, and it does not say the list is an order. The owner ruling of 2026-08-18 (“Regroup order”) itself says to verify the order when it first matters in play.
@@ -2592,6 +2526,18 @@ Sources silent on whether a Feeble unit may attack or be sent to counterattack. 
 
 **Resolution:** No rule is written beyond "can't block". The literal reading (Feeble restricts nothing else) is the permissive one; question for the owner only if a comparison CR restricts attacking.
 
+### D-U19-5 · Sources disagree · rule 802.2a
+
+Whether a unit without Flying may block a Flying column together with a Flying unit in the same blocking column. The printed reminder names units; the Manual says "the blocking unit"; the Rulebook says "unless the defending player also has flying units"; the owner ruling of 2026-08-29 (“the reminder a player reads is…”) records that the client "blocks by COLUMN".
+
+- card: Air Plant: "Only flying units can block flying units."
+- Manual p.24: "blocked unless the blocking unit has flying."
+- Rulebook 2023 p.12: "Flying attribute and the entire column cannot be blocked unless the defending player"
+- owner ruling, adopted 2026-08-29: "blocks by COLUMN and the authored row said so."
+- glossary: Flying: "Its column can only be blocked by a column with Flying."
+
+**Resolution:** Settled by the designer (2026-10-24 audit), reading A: asked whether a back unit that could not block may join a front unit that could, Caleb answered "Columns share attributes, so if any unit in the column has flying, the entire column has flying" (RQ 1348502069614612563). rule 802.2a now states it; the engine already checks the blocking column's attributes, pinned by 633.
+
 ### D-U20-1 · Other · rule 802.13
 
 Six attributes in this unit (Evasive, Sneaky, Alluring, Resonant, Thieving, Reaping) print their reminder only under the type line. The oracle text and the extract do not carry it, so the quote checker cannot verify the reminder sentence each 802.N rule states; those rules cite the rulings and RAQ claims that restate it instead.
@@ -2655,6 +2601,15 @@ No source applies the owner ruling of 2026-09-16 (“A unit in a column HAS…�
 - owner ruling, adopted 2026-09-05: "- **A Pure recipient takes plain damage from anyone.** The source's attributes"
 
 **Resolution:** Rule written as derived (basis owner, confidence medium). Question for the owner only if a judge disputes it.
+
+### D-U20-2 · Other · rule 802.14a
+
+Sources are silent on WHEN "attacking alone" is judged. If a Sneaky unit attacks with one other unit and that unit is removed in the attack window, it is not said whether the Sneaky unit is then alone when blocks are declared.
+
+- file: client/ui/scan-reminders.json: ""text": "Sneaky units can't be blocked if attacking alone.", "card": "Whispering Mantid""
+- owner ruling, adopted 2026-08-18: "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
+
+**Resolution:** Settled by the designer (2026-10-24 audit), reading A: a player sacrificed the other attackers before blockers, and Caleb answered "Yep that works!" and "Attributes like that are only checked during the assign blockers step" (RQ 1353935142573576214, 1353935255425388665, 1353935342495076463). rule 802.14a now states it; the engine already counts the attackers at blocks, pinned by 633.
 
 ### D-U20-22 · Other · rule 802.24d
 

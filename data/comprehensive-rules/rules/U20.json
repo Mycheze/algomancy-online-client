@@ -185,11 +185,15 @@
     "key": "attr.sneaky.alone",
     "parent": "attr.sneaky",
     "order": 1,
-    "text": "An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation.",
+    "text": "An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation. Whether it is alone is judged when blocks are declared: if the other attacking units have left play by then, it cannot be blocked.",
     "examples": [
       {
         "text": "Whispering Mantid attacks alone and cannot be blocked. Attacking with another unit, it can be.",
         "test": "08-cards2.test.ts::Whispering Mantid: Sneaky"
+      },
+      {
+        "text": "Whispering Mantid attacks beside Lonely Forager, and the Forager is sacrificed before blocks: the Mantid is now attacking alone and cannot be blocked.",
+        "test": "633-designer-answers-battle.test.ts::CR 802.14a / designer: Sneaky \"attacking alone\" is judged when blocks are declared"
       }
     ],
     "see": [
@@ -197,7 +201,16 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1353935255425388665",
+          "quote": "Attributes like that are only checked during the assign blockers step"
+        },
+        {
+          "ref": "RQ 1353935342495076463",
+          "quote": "So as long as he's sneaky before he needs to be blocked you're good to go"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -208,14 +221,18 @@
       ],
       "engine": [],
       "tests": [
-        "08-cards2.test.ts"
+        "08-cards2.test.ts",
+        "633-designer-answers-battle.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "\"Alone\" = the only attacking unit in the formation is the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”)’s reading (an owner/engine call, marked ⚠ in the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”)): D-U20-3.",
-    "sourceHashes": {}
+    "notes": "\"Alone\" = the only attacking unit in the formation is the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”)’s reading (an owner/engine call, marked ⚠ in the owner ruling of 2026-08-18 (“Sneaky's \"attacking alone\"”)): D-U20-3. Owner question Q6 (D-U20-2) answered by the designer, 2026-10-24 housework: reading A. codebearer72 sacrificed the other attackers before blockers so a Sneaky unit attacked alone; Caleb: \"Yep that works!\", \"Attributes like that are only checked during the assign blockers step\" (RQ 1353935142573576214, 1353935255425388665, 1353935342495076463, 2025-03-25). The engine counts the living attackers at blocks (checkBlocks).",
+    "sourceHashes": {
+      "RQ 1353935255425388665": "667c7d93b45d4d55b0c3ea8ce55181bef7af06d2233dd8cba93d3d6ed04c8f78",
+      "RQ 1353935342495076463": "d0cf10d6bf1fad27df44b321a87c3597f8b6be02612fba32d756733508432494"
+    }
   },
   {
     "key": "attr.sneaky.spell-tokens",

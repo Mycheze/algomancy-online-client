@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:fb419d98bb3c45ad",
+ "generated_from": "sha256:9f6cbe529d1248ea",
  "rules": [
   {
    "num": "100.1",
@@ -13230,13 +13230,15 @@
    "sectionTitle": "Battle Phase",
    "chapterTitle": "5. Turn Structure",
    "parent": "505.3",
-   "text": "If round 1 had a battle, only the units sent out at the block step can attack in round 2. If none were sent, there is no round 2.",
+   "text": "If round 1 had a battle, only the units sent out at the block step can attack in round 2. If none were sent, there is no round 2. This holds when an effect ends the battle during round 1 (Temporal Rift): ended before blocks, no unit was sent and there is no round 2; ended after blocks, the units already sent attack in round 2.",
    "see": [
     "610"
    ],
    "examples": [
     "The initiative player attacks, the non-initiative player blocks and sends nobody: the battle phase ends after round 1, and the unit that stayed home is untouched.",
-    "A Good Whale that stayed home while a Rune Channeler was sent out cannot be declared as a round-2 attacker."
+    "A Good Whale that stayed home while a Rune Channeler was sent out cannot be declared as a round-2 attacker.",
+    "The initiative player attacks and the non-initiative player casts Temporal Rift in the attack window: the battle phase ends with no round 2, though the non-initiative player has a unit at home.",
+    "The non-initiative player sends Rune Channeler at the block step, then casts Temporal Rift: round 1 ends before combat damage, and in round 2 the Rune Channeler attacks."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -13244,7 +13246,7 @@
    "discrepancies": [
     "D-U09-4"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },
@@ -17651,7 +17653,7 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.3",
-   "text": "In a split step, each sub-step that was scheduled, when the step began, to have a half-column strike in it is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens.",
+   "text": "In a split step, each scheduled sub-step (rule 608.3d) is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens.",
    "see": [
     "703",
     "706"
@@ -17662,7 +17664,7 @@
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": false,
+   "engineDiffers": true,
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
@@ -17676,15 +17678,14 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.3",
-   "text": "A sub-step in which no half-column was scheduled to strike when the step began is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; a half-column that still strikes in a later sub-step (rule 608.2f) strikes without a window before it, and then the after combat step begins.",
+   "text": "A sub-step in which no half-column is scheduled to strike (rule 608.3d) is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; the after combat step begins.",
    "see": [],
    "examples": [
-    "Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps.",
-    "Dune Drifter (Swift) and a 1/1 attack in separate columns and are not blocked. At the window after the Swift sub-step, Dune Drifter's column gains Sluggish. The 1/1 strikes in the normal sub-step and no window follows; Dune Drifter's column then strikes in the Sluggish sub-step, and the after combat step begins."
+    "Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps."
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": false,
+   "engineDiffers": true,
    "discrepancies": [
     "D-U12-10"
    ],
@@ -17700,20 +17701,20 @@
    "sectionTitle": "Combat Damage Step",
    "chapterTitle": "6. Regions, Formations and Battle",
    "parent": "608.3",
-   "text": "Which sub-steps are separate steps is determined once, when the combat damage step begins. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit.",
+   "text": "Which sub-steps are scheduled, and so are separate steps, is determined when the combat damage step begins, with one addition: if a half-column has Sluggish when the window after the Swift sub-step ends, the Sluggish sub-step is scheduled too, so a window opens before it. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit.",
    "see": [],
    "examples": [
     "Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens, and the death triggers can be answered there."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
-   "engineDiffers": false,
+   "engineDiffers": true,
    "discrepancies": [
     "D-U12-11"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "partial"
   },
   {
    "num": "608.3e",
@@ -19071,7 +19072,7 @@
    "discrepancies": [
     "D-U09-4"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },
@@ -29456,20 +29457,21 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.2",
-   "text": "An attacking column that has Flying can't be blocked by a unit that does not have Flying.",
+   "text": "An attacking column that has Flying can't be blocked by a unit that does not have Flying. A blocking column has Flying if any unit in it has Flying, so a unit without Flying may block a Flying column together with a Flying unit in the same blocking column.",
    "see": [
     "606.2c"
    ],
    "examples": [
-    "A ground 2/2 cannot block a column holding Ephemeral Skywalker (Flying)."
+    "A ground 2/2 cannot block a column holding Ephemeral Skywalker (Flying).",
+    "Good Whale cannot block a column holding Ephemeral Skywalker alone, but it can block that column together with another Ephemeral Skywalker in its blocking column."
    ],
-   "basis": "printed",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
     "D-U19-5"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },
@@ -30252,7 +30254,7 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.8",
-   "text": "Inverted inverts the net change to a unit's stats. An Inverted unit's power is its base power minus the net change to its power, and its defense is its base defense minus the net change to its defense. It is worked out on the total change, not on each change separately.",
+   "text": "Inverted inverts the net change to a unit's stats from its printed stats. An Inverted unit's power is its printed power minus the net change to its power, and its defense is its printed defense minus the net change to its defense. It is worked out on the total change, not on each change separately.",
    "see": [
     "206.4"
    ],
@@ -30261,7 +30263,7 @@
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": false,
+   "engineDiffers": true,
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
@@ -30299,20 +30301,18 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.8",
-   "text": "Setting a unit's base stats is not a stat change that Inverted inverts: the new base stats are what Inverted inverts from.",
+   "text": "Setting a unit's base stats is a stat change that Inverted inverts: Inverted inverts the difference between the unit's printed stats and its current stats. A unit printed 7/5 that Aberrant Statweaver makes base 3/3 is an 11/7 while it is Inverted.",
    "see": [
     "206.5"
    ],
-   "examples": [
-    "A unit made base 3/3 by Aberrant Statweaver, with no other changes, is a 3/3 whether or not it is Inverted."
-   ],
-   "basis": "owner",
+   "examples": [],
+   "basis": "designer",
    "scope": "game",
-   "engineDiffers": false,
+   "engineDiffers": true,
    "discrepancies": [
     "D-U19-3"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },
@@ -30324,7 +30324,7 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.8",
-   "text": "If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from base. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction.",
+   "text": "If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from its printed defense. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction.",
    "see": [
     "802.6",
     "713"
@@ -30334,9 +30334,9 @@
     "A 1/3 with one -1/-1 counter, Tough and Inverted survives as a 2/2.",
     "Inverted on the front unit of a column and Tough on the back unit: both units have both attributes, and both die."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
-   "engineDiffers": false,
+   "engineDiffers": true,
    "discrepancies": [
     "D-U19-9"
    ],
@@ -31046,21 +31046,22 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.14",
-   "text": "An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation.",
+   "text": "An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation. Whether it is alone is judged when blocks are declared: if the other attacking units have left play by then, it cannot be blocked.",
    "see": [
     "606"
    ],
    "examples": [
-    "Whispering Mantid attacks alone and cannot be blocked. Attacking with another unit, it can be."
+    "Whispering Mantid attacks alone and cannot be blocked. Attacking with another unit, it can be.",
+    "Whispering Mantid attacks beside Lonely Forager, and the Forager is sacrificed before blocks: the Mantid is now attacking alone and cannot be blocked."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
     "D-U20-2",
     "D-U20-3"
    ],
-   "openQuestion": true,
+   "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
   },

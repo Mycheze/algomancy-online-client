@@ -467,6 +467,7 @@ const OPEN: TodoEntry[] = [
     fix: "When a column gains Sluggish in the window after the Swift sub-step (or later), add the Sluggish sub-step to damageSubs so its before-Sluggish window opens. Keep the fixed-once rule for the other direction (a Swift unit dying never unsplits the step, 297). CR 608.3d, 608.3b and 608.3c already state the designer's reading (2026-10-24, engineDiffers F-U12-5): drop their engineDiffers when this lands. Flip 423 \"cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step strikes with no window before it\", which pins today's behaviour, and replay stored games for drift.",
     proof: null,
     verify: "A normal-damage column with a death trigger, given Sluggish by an effect in the window after Swift damage: watch whether a priority window opens before its Sluggish strike (today it does not).",
+    progress: "2026-10-24: CR 608.3d, 608.3b and 608.3c were redrafted to the designer's reading and re-verified (round 4): 608.3b and 608.3c confirmed, 608.3d PARTIAL. The verifier read Caleb's diagram (\"Need sluggish to exist after here---> Combat\") as checking Sluggish at that point in both directions: a Sluggish sub-step whose only Sluggish unit died or lost Sluggish by the end of the after-Swift window has no window either. So the fix here should schedule the Sluggish sub-step from the columns that have Sluggish when the after-Swift window ends (added or dropped), and 608.3d/608.3c need one more redraft and verify to say so (D-U12-11).",
     status: 'open',
   },
   {
