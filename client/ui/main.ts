@@ -11340,18 +11340,18 @@ function handleHandClick(p: Seat, i: number, e: MouseEvent, opts: { noMods?: boo
   // during an open draft step the hand is drafted from the panel, not recycled
   if (s.mode === 'draft' && s.draftDone && !s.draftDone[p]) return;
   if (s.phase === 'planning' && !s.planningDone[p]) {
-    // only the elements actually in this game (a fwe draft offers no wood/metal),
-    // and in constructed only the ones in YOUR deck (#63) — with every one of
-    // the seven still one click away, because an off-element resource is a real
-    // play whatever the deck holds (BL-44, the owner: "it's technically legal
-    // to make a Fire resource, even if you don't have any Fire cards").
+    // a draft's trio first, and in constructed only the elements in YOUR deck
+    // (#63) — with every one of the seven still one click away, because an
+    // off-element resource is a real play whatever the deck holds (BL-44, the
+    // owner: "it's technically legal to make a Fire resource, even if you don't
+    // have any Fire cards").
     const openRecycle = (expanded: boolean): void => {
       // CR D6.14b (#168), the owner's layout. The main menu: this deck's elements,
       // then a Prismite, then the expander. The expander holds only what the
       // main menu does not — the other elements of the game, then a Shard
       // (legal, almost never wanted). The expander shows in every game, since
       // the Shard is always behind it; "more…" when no element is hidden.
-      const { show, hidden } = resourceMenuElements(s, p, s.elements, false);
+      const { show, hidden } = resourceMenuElements(s, p, ALL_ELEMENTS, false);
       const recycleTo = (el: ResourceKind, label: string, icon?: string): MenuItem => ({
         label, icon,
         go: () => { act({ type: 'recycleForResource', seat: p, handIndex: i, element: el }); render(); },

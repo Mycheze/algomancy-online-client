@@ -41,6 +41,16 @@ export function defaultElements(count = 3): Element[] {
   return ALL_ELEMENTS.slice(0, count);
 }
 
+/** BL-44: the elements a resource may be made of that this game does not deal —
+ * in a draft, the ones outside its trio; everywhere else none (`elements` is all
+ * seven). Any element resource is legal (CR 105.9a's reasoning, owner 2026-09-19:
+ * "it's technically legal to make a Fire resource, even if you don't have any Fire
+ * cards in the deck"); these are offered after everything else so the menus keep
+ * them behind "more…". */
+export function offElements(s: Pick<GameState, 'elements'>): Element[] {
+  return ALL_ELEMENTS.filter(el => !s.elements.includes(el));
+}
+
 /** Sanitize a requested draft element set: exactly `count` distinct real
  * elements (3 unless a custom deal says otherwise), in canonical order —
  * anything else falls back to defaultElements(count). */
@@ -649,8 +659,12 @@ function doRecycle(e: E, seat: Seat, handIndex: number, element: ResourceKind): 
   // CR 106.6a: a Prismite or a Shard is a resource too — "Yep you can grab
   // prismites. If you meant shards technically yes you could" (Caleb
   // 2025-05-09). Any game can make either, whatever its elements.
-  e.need(element === 'prismite' || element === 'shard' || (e.s.elements as string[]).includes(element),
-    'not an element of this game');
+  // BL-44: and any of the seven elements, in a draft too — "it's technically
+  // legal to make a Fire resource, even if you don't have any Fire cards in the
+  // deck […] we should allow any color element to be made via the more menu"
+  // (owner, 2026-09-19). `elements` narrows what a draft DEALS, not what it may make.
+  e.need(element === 'prismite' || element === 'shard' || (ALL_ELEMENTS as string[]).includes(element),
+    'not an element');
   const card = e.player(seat).hand[handIndex];
   e.need(card !== undefined, 'no such card in hand');
   e.takeFromHand(seat, handIndex);   // CT-233: the choke point; the recycle pile resets ownership
@@ -706,9 +720,10 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
   e.need(!e.draftPending(seat), 'finish drafting first');
   e.need(!e.bottomPending(seat), 'finish your draw phase first');
   // CR 106.8d / CT-237: the printed Prismite reads "Create a NON-PRISMITE
-  // resource" — an element of the game, or a Shard; never another Prismite
-  e.need(element === 'shard' || (e.s.elements as string[]).includes(element),
-    'a Prismite becomes an element of this game or a Shard');
+  // resource" — any element (BL-44: a draft's trio included, as recycling),
+  // or a Shard; never another Prismite
+  e.need(element === 'shard' || (ALL_ELEMENTS as string[]).includes(element),
+    'a Prismite becomes an element resource or a Shard');
   const r = e.player(seat).resources[index];
   e.need(r && r.kind === 'prismite', 'not a prismite');
   // only ACTIVE (face-up) prismites can be exchanged (Manual p.18) — the
@@ -3892,6 +3907,9 @@ function legalPlanningActions(e: E, seat: Seat): Action[] {
     // the index it has always had
     out.push({ type: 'recycleForResource', seat, handIndex: i, element: 'prismite' });
     out.push({ type: 'recycleForResource', seat, handIndex: i, element: 'shard' });
+    // BL-44: then the elements outside a draft's trio — legal, and appended so
+    // every option above keeps its index (empty outside a draft: `elements` is all seven)
+    for (const el of offElements(s)) out.push({ type: 'recycleForResource', seat, handIndex: i, element: el });
   }
   if (e.player(seat).activationsLeft > 0) {
     e.player(seat).resources.forEach((r, i) => {
@@ -3904,6 +3922,8 @@ function legalPlanningActions(e: E, seat: Seat): Action[] {
       // CR 106.8d / CT-237: and a Shard, a non-prismite resource — appended, so
       // every element option keeps the index it has always had
       out.push({ type: 'exchangePrismite', seat, index: i, element: 'shard' });
+      // BL-44: then the elements outside a draft's trio, as recycling
+      for (const el of offElements(s)) out.push({ type: 'exchangePrismite', seat, index: i, element: el });
     }
   });
   out.push({ type: 'donePlanning', seat });

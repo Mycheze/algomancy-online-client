@@ -2155,8 +2155,10 @@ export interface GameState {
    */
   stampSeg?: { key: string; base: number; t0: number; hi: number; int: Seat };
   mode: GameMode;
-  /** the elements in this game (draft: the trio) — resources outside this
-   * list cannot be created and the UI never offers them */
+  /** the elements in this game (draft: the trio) — what a draft deals and what the
+   * resource menus lead with. NOT a limit on resources: any of the seven may be
+   * recycled or exchanged into (BL-44, `offElements` in apply.ts); the menus keep
+   * the ones outside this list behind "more…" */
   elements: Element[];
   /**
    * CR D6.14b, mode 'constructed' ONLY: the elements each seat's DECK is built from —

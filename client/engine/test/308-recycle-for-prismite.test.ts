@@ -25,7 +25,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { ALL_ELEMENTS, IllegalAction, legalActions } from '../src/apply.ts';
+import { ALL_ELEMENTS, IllegalAction, legalActions, offElements } from '../src/apply.ts';
 
 const recycleKinds = (h: Harness, seat: 0 | 1): string[] =>
   legalActions(h.state, seat)
@@ -42,7 +42,8 @@ test('CR 106.6a every hand card offers a Prismite, then a Shard, after the eleme
       h.do({ type: 'draftCommit', seat: 0, packIndices: h.state.packs[0]!.map((_, i) => H + i) });
     }
     const kinds = recycleKinds(h, 0);
-    assert.deepEqual(kinds, [...h.state.elements, 'prismite', 'shard'],
+    // BL-44: then, in a draft, the elements outside its trio (none in shared)
+    assert.deepEqual(kinds, [...h.state.elements, 'prismite', 'shard', ...offElements(h.state)],
       `${label}: the elements in their order, then the Prismite, then the Shard`);
   }
 });

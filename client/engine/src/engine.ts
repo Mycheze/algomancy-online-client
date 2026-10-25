@@ -9390,6 +9390,14 @@ export class E {
       // `chain` rides on every suspension the item can raise — the cast-time
       // ones via collectTargets, a mid-resolution one via commitItem — so the
       // items behind it survive the throw and doDecide resumes them.
+      // ⚠ CT-382, LATENT: not a NESTED one. With then === 'resolve', commitItem
+      // ends in settle(); a trigger that asks there (Voltwrath Behemoth's
+      // target) suspends with no chain on it, and the items behind this one
+      // are lost — measured on the engine directly, 2026-10-25. No action
+      // reaches it: the only chain longer than one item is a {Burst} group,
+      // every Burst card is battle timing, and a spell-token cast pushes in
+      // deployment too (CR 703.7). test/668 fails first if that changes; the
+      // fix then is to carry the rest on the state across the nested question.
       this.collectTargets(item, then, chain);
       this.commitItem(item, then, chain);
     }

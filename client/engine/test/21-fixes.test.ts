@@ -246,16 +246,26 @@ test('CR 106.8: the ANBB position — a third element reached BY PRISMITE pays, 
 
 // ── game elements ─────────────────────────────────────────────────────
 
-test('a fwe draft game refuses wood/metal resources and never offers them', () => {
+test('CR 105.9a / BL-44: a fwe draft game offers its trio first and still makes a wood or metal resource', () => {
+  // This test used to be "a fwe draft game refuses wood/metal resources and never
+  // offers them". BL-44, the owner 2026-09-19: "it's technically legal to make a
+  // Fire resource, even if you don't have any Fire cards in the deck […] we should
+  // allow any color element to be made via the more menu".
   const h = new Harness(2107, undefined, 'draft');
   const H = h.state.players[0]!.hand.length;
   h.do({ type: 'draftCommit', seat: 0, packIndices: h.state.packs[0]!.map((_, i) => H + i) });
-  assert.throws(() => h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'wood' }), IllegalAction);
-  const els = new Set(legalActions(h.state, 0)
-    .filter(a => a.type === 'recycleForResource')
-    .map(a => (a as { element: string }).element));
-  // CR 106.6a: plus a Prismite and a Shard, which every game offers whatever its elements
-  assert.deepEqual([...els].sort(), ['earth', 'fire', 'prismite', 'shard', 'water']);
+  const offered = legalActions(h.state, 0)
+    .filter(a => a.type === 'recycleForResource' && a.handIndex === 0)
+    .map(a => (a as { element: string }).element);
+  // the trio, then (CR 106.6a) a Prismite and a Shard, then the four elements the
+  // draft does not deal — appended, so every older option keeps its index
+  assert.deepEqual(offered, ['fire', 'water', 'earth', 'prismite', 'shard', 'wood', 'metal', 'light', 'dark']);
+  const before = h.state.players[0]!.resources.length;
+  h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'wood' });
+  assert.deepEqual(h.state.players[0]!.resources[before], { kind: 'wood', state: 'dormant' },
+    'a dormant wood resource in a fire-water-earth draft');
+  // not a resource kind at all is still refused
+  assert.throws(() => h.do({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'air' as never }), IllegalAction);
   // shared games still offer every element (7 since Light & Dark)
   const shared = new Harness(2107);
   const els2 = new Set(legalActions(shared.state, 0)
