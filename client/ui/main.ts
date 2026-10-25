@@ -107,6 +107,7 @@ import { E } from '../engine/src/engine.ts';
 import { fitBoard, focusRegion, layoutV2, ringBoard, setLayoutV2 } from './layout.ts';
 import { freeSpot, type Rect } from './freespot.ts';
 import { railClearance } from './railclear.ts';
+import { waitingFlights, type Parked } from './beatflight.ts';
 import {
   menuBeside, setZoomDecorator, zoomAfterPaint, zoomAt, zoomCheck, zoomHeld, zoomHold, zoomNotePointer, zoomOff,
   zoomOn, zoomRect,
@@ -8089,6 +8090,9 @@ function soundPass(): void {
  * card that goes hand → (stack) → bin has two equally plausible destinations
  * born in the same render, and the stack is the one worth watching.
  */
+/** CT-384: hand cards whose beat is still waiting its turn (ui/beatflight.ts) */
+const parkedFlights: Parked = new Map();
+
 function censusWithFlashes(s: GameState): Census {
   // ONE clock reading for both halves (ui/flash.ts beatCensus)
   const now = Date.now();
@@ -8112,7 +8116,8 @@ function render(): void {
     holdDeferred(deferredKeys(flashQueue, Date.now()));
     const after = censusWithFlashes(h.state);
     lastCensus = after;
-    if (before) playMotion(frame, diffCensus(before, after));
+    // CT-384: a quick second play's card waits in the hand's place for its beat
+    if (before) playMotion(frame, waitingFlights(frame, diffCensus(before, after), flashQueue, Date.now(), parkedFlights));
     updateArrows();
     soundPass();
     // CR D5.4: the narrative beats this paint just let out point at what they are
