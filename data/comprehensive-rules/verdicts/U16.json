@@ -2253,6 +2253,77 @@
     "carried": "reworded, equivalence-checked 2026-10-11"
   },
   {
+    "key": "effects.copies.spells.controller",
+    "textHash": "d90a978a832a5588",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U16-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:runSpellCopy (Earthbound Replicator)",
+        "agrees": true,
+        "note": "copy pushed under the player who played the spell"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Meteor Shower",
+        "agrees": true,
+        "note": "controller: it.controller"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:asYouPlay copySpell (Maelstrom Charger)",
+        "agrees": true,
+        "note": "controller: item.controller"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Earthbound Replicator: an enemy spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Earthbound Replicator",
+        "supports": "yes",
+        "note": "'they copy it' - the player who played the spell"
+      },
+      {
+        "ref": "card: Meteor Shower",
+        "supports": "yes",
+        "note": "'When you play me, copy me' - the player who played it"
+      },
+      {
+        "ref": "RAQ 1355613076506017894#0",
+        "supports": "yes",
+        "note": "both you and the enemy benefit"
+      },
+      {
+        "ref": "RAQ 1355613076506017894#2",
+        "supports": "yes",
+        "note": "the enemy gets the copy of its Fireballs/Poisons"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
+        "text": "for (let n = 0; n < 2; n++) g.pushSpellCopy(it, { controller: it.controller });"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const copy = this.pushSpellCopy(item, { controller: item.controller, ...(targets ? { targets } : {}) });"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+        "text": "g.pushSpellCopy(it, { controller, ...(targets ? { targets } : {}) });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The three spell-copying cards in the pool (Earthbound Replicator, Meteor Shower, Maelstrom Charger) all copy for the player who played the spell; Maelstrom Charger is not cited but its 'As you play ... copy that spell' agrees."
+  },
+  {
     "key": "effects.copies.spells.declared",
     "textHash": "417a697ece8beabb",
     "verdict": "confirmed",

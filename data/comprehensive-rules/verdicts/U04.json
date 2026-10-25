@@ -1799,56 +1799,43 @@
   },
   {
     "key": "concepts.costs.unpayable.life",
-    "textHash": "a18c8dd0eaaf4669",
+    "textHash": "9e37e39109ca4037",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:canPayLife",
+        "loc": "client/engine/src/engine.ts:E.canPayLife",
         "agrees": true,
-        "note": "life > n with the printed n; multiplier applied later in loseLife"
+        "note": "life > n"
       },
       {
-        "loc": "client/engine/src/engine.ts:castCostOptions (payLife)",
+        "loc": "client/engine/src/engine.ts:E.canPayCastCost payLife",
         "agrees": true,
-        "note": "variable life re-asks canPayLife(so + 1): running total incl. the point being chosen"
+        "note": "variable X checked at the running total"
       }
     ],
     "tests_run": [
       {
-        "file": "38-light-a.test.ts",
+        "file": "client/engine/test/38-light-a.test.ts",
         "pattern": "Glararr: CR 111.6b",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "590-life-cost-one-change.test.ts",
-        "pattern": "CR 111.6b / report 273: the life is lost when X closes",
+        "file": "client/engine/test/590-life-cost-one-change.test.ts",
+        "pattern": "CR 111.6b / report 273",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.costs.unpayable.life",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "client/engine/test/zz-probe-U04-1.test.ts",
-        "test": "probe U04-1a: with Arbiter of Vitality out, a player on 15 may pay Glararr's 9 life, loses 18 and dies",
-        "passed": true,
-        "demonstrates": "yes: printed N (9) gates payability; the payment is doubled to one loss of 18 and the payer dies"
-      },
-      {
-        "file": "client/engine/test/zz-probe-U04-1.test.ts",
-        "test": "probe U04-1b: with Arbiter of Vitality out, at exactly 9 life Glararr is still unpayable (N stays 9)",
-        "passed": true,
-        "demonstrates": "yes: N is still the printed 9 with Arbiter out"
-      },
-      {
-        "file": "client/engine/test/zz-probe-U04-1.test.ts",
-        "test": "probe U04-1c: without Arbiter, at 10 life Glararr pays 9 and leaves 1",
-        "passed": true,
-        "demonstrates": "yes: more than N life suffices without a multiplier"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Arbiter of Vitality",
@@ -1861,14 +1848,14 @@
         "note": ""
       },
       {
-        "ref": "owner register@72de434 (2026-08-19, 08-20)",
+        "ref": "owner register@72de434 x2",
         "supports": "yes",
-        "note": "more than N; last life refused"
+        "note": "more than N"
       },
       {
         "ref": "owner chat 2026-10-23",
         "supports": "yes",
-        "note": "'The printed N' answers exactly which N 111.6b checks with Arbiter out"
+        "note": "'The printed N' answers which N"
       }
     ],
     "quote_spans": [
@@ -1878,11 +1865,7 @@
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "return this.canPayLife(seat, so + 1)"
-      },
-      {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "Pay 9 life: [Switch1] Erase target unit."
+        "text": "case 'payLife': return this.canPayLife(seat, cost.n === 'X' ? Math.max(1, want) : want);"
       }
     ],
     "basis_ok": true,
@@ -2750,6 +2733,48 @@
     "carried": "demoted-example 2026-10-11"
   },
   {
+    "key": "concepts.debt.no-limit",
+    "textHash": "c1f91ab9eaf2d91e",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U04-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.canPayCastCost / E.gainDebt",
+        "agrees": true,
+        "note": "gainDebt cost always payable; gainDebt has no cap"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/689-cr-coverage-gaps.test.ts",
+        "pattern": "CR 112.14d / CT-399",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "engine",
+        "supports": "yes",
+        "note": "code + executed test"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "case 'gainDebt': return true;   // debt is always takeable"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "p.debt = this.debt(seat) + n;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "concepts.debt.partial",
     "textHash": "cb1d49b4fbdbf476",
     "verdict": "confirmed",
@@ -3063,65 +3088,53 @@
   },
   {
     "key": "concepts.life.multipliers",
-    "textHash": "6b5c3f87fb53ed8d",
+    "textHash": "3ad1dc63daf3e5a9",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:loseLife (lifeAmount before p.life -= n)",
+        "loc": "client/engine/src/engine.ts:E.loseLife / E.lifeAmount",
         "agrees": true,
         "note": "multiplied before the total moves and before the lethal check"
       }
     ],
     "tests_run": [
       {
-        "file": "137-multiplier-and-mode.test.ts",
+        "file": "client/engine/test/137-multiplier-and-mode.test.ts",
         "pattern": "CR 708.6: THREE Arbiters",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "137-multiplier-and-mode.test.ts",
-        "pattern": "Arbiter of Vitality: a LETHAL loss",
+        "file": "client/engine/test/137-multiplier-and-mode.test.ts",
+        "pattern": "Arbiter of Vitality: a LETHAL",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.costs.unpayable.life",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "client/engine/test/zz-probe-U04-1.test.ts",
-        "test": "probe U04-1a: with Arbiter of Vitality out, a player on 15 may pay Glararr's 9 life, loses 18 and dies",
-        "passed": true,
-        "demonstrates": "yes: printed N (9) gates payability; the payment is doubled to one loss of 18 and the payer dies"
-      },
-      {
-        "file": "client/engine/test/zz-probe-U04-1.test.ts",
-        "test": "probe U04-1b: with Arbiter of Vitality out, at exactly 9 life Glararr is still unpayable (N stays 9)",
-        "passed": true,
-        "demonstrates": "yes: N is still the printed 9 with Arbiter out"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "card: Arbiter of Vitality",
         "supports": "yes",
-        "note": "'all' life loss includes paid life"
+        "note": ""
       },
       {
-        "ref": "owner register@72de434 (2026-08-30)",
+        "ref": "owner register@72de434 x2",
         "supports": "yes",
-        "note": "factors multiply, 2^n"
-      },
-      {
-        "ref": "owner register@72de434 (2026-08-25)",
-        "supports": "yes",
-        "note": "committed in one go before the lethal check"
+        "note": "2^n; committed in one go before the lethal check"
       },
       {
         "ref": "owner chat 2026-10-23",
         "supports": "yes",
-        "note": "payability judged on the printed N"
+        "note": "printed N"
       }
     ],
     "quote_spans": [
@@ -3130,8 +3143,8 @@
         "text": "n = this.lifeAmount('lifeLoss', seat, n, why);"
       },
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "[Augment] Double all life gain and life loss. {i}(Damage causes loss of life.)"
+        "file": "client/engine/test/137-multiplier-and-mode.test.ts",
+        "text": "assert.equal(h.state.players[p]!.life, 24, '2 × 2^3 = 16 lost — not 12 (the old n*2*v)');"
       }
     ],
     "basis_ok": true,

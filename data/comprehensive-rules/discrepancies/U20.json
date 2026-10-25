@@ -85,7 +85,7 @@
         "quote": "attacking are NOT alone — both blockable. ⚠ Engine reading of \"unblockable if attacking"
       }
     ],
-    "resolution": "Stands as owner law (basis owner). Seek a designer answer if a judge disputes it."
+    "resolution": "Partly settled by the designer (2026-10-25 search): asked about a Sneaky unit whose co-attackers were sacrificed before blockers, Caleb answered \"Yep that works!\" and \"Attributes like that are only checked during the assign blockers step\" (RQ 1353935142573576214, 1353935255425388665), which attr.sneaky.alone already cites: \"alone\" is judged at blocks, as the only attacking unit left. That spell tokens do not count and that two Sneaky attackers are both blockable still rest on the owner ruling of 2026-08-18 alone."
   },
   {
     "id": "D-U20-4",

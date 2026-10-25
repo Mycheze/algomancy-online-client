@@ -540,7 +540,7 @@
       }
     ],
     "see": [
-      "formats.constructed.single-card"
+      "annexd.modes.single-card-duel"
     ],
     "sources": {
       "printed": [
@@ -565,7 +565,7 @@
     "basis": "printed",
     "scope": "game",
     "confidence": "high",
-    "notes": "Manual p.6 says \"the standard format allows\", leaving room for variants; Single Card Duel (formats.constructed.single-card) is the client's one exception.",
+    "notes": "Manual p.6 says \"the standard format allows\", leaving room for variants; Single Card Duel (annexd.modes.single-card-duel) is the client's one exception.",
     "sourceHashes": {}
   },
   {
@@ -910,165 +910,6 @@
     "scope": "digital",
     "confidence": "medium",
     "notes": "A shared game has no packs, no draft step and no draw phase: each turn draws a flat 2 (the owner ruling of 2026-08-25 (“the MULTIPLICATIVE amount layer, and 'shared'…”); 20-draft.test.ts::shared mode is untouched). So \"shared is constructed\" governs card text only, not the draw phase: D-U22-10. Digital-only; Annex D may carry the mode itself.",
-    "sourceHashes": {}
-  },
-  {
-    "key": "formats.constructed.single-card",
-    "parent": "901",
-    "order": 8,
-    "text": "Single Card Duel is a variant of constructed that the client offers. Each player picks a single card before the game, and their deck is 30 copies of that card.",
-    "examples": [
-      {
-        "text": null,
-        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card — a duel deck is 30 copies of one card, and a constructed game accepts it"
-      }
-    ],
-    "see": [
-      "formats.constructed.copies"
-    ],
-    "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
-        {
-          "quote": "single card, before the game, and that is your deck. 30 copies of the exact same card.",
-          "adopted": "2026-09-18",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room",
-          "adopted": "2026-09-18",
-          "from": "register@72de434"
-        }
-      ],
-      "engine": [],
-      "tests": [
-        "433-cr-formats.test.ts"
-      ]
-    },
-    "basis": "owner",
-    "scope": "digital",
-    "confidence": "high",
-    "notes": "Digital-only, an owner format (D-U22-8). Its guard is server/e2e/test-single-card.ts, an e2e script that is not in the tests index, so no example binds to it. Picking, the card ladder and stats are Annex D (U24).",
-    "sourceHashes": {}
-  },
-  {
-    "key": "formats.constructed.single-card.copies",
-    "parent": "formats.constructed.single-card",
-    "order": 1,
-    "text": "A Single Card Duel deck is the one exception to the limit of 2 copies of a card.",
-    "examples": [
-      {
-        "text": null,
-        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.copies — the duel deck breaks the two-copy cap: checkDeck refuses it, checkSingleDeck and createGame accept it"
-      }
-    ],
-    "see": [
-      "formats.constructed.copies"
-    ],
-    "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
-        {
-          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room",
-          "adopted": "2026-09-18",
-          "from": "register@72de434"
-        }
-      ],
-      "engine": [],
-      "tests": [
-        "433-cr-formats.test.ts"
-      ]
-    },
-    "basis": "owner",
-    "scope": "digital",
-    "confidence": "high",
-    "notes": "",
-    "sourceHashes": {}
-  },
-  {
-    "key": "formats.constructed.single-card.no-draw-phase",
-    "parent": "formats.constructed.single-card",
-    "order": 2,
-    "text": "A Single Card Duel has no draw phase. Each turn, each player simply draws 2 cards; nothing is put back. The opening hand is still 4 cards.",
-    "examples": [
-      {
-        "text": "Each player starts turn 1 with 6 cards (4 + 2) and nothing to put back, and draws exactly 2 more on turn 2.",
-        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.no-draw-phase — opening 4, a flat 2 each turn, nothing put back"
-      }
-    ],
-    "see": [
-      "503"
-    ],
-    "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
-        {
-          "quote": "turn's card step is `'shared'`'s flat draw of 2 (and Worldbender replaces it exactly as it",
-          "adopted": "2026-09-18",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`",
-          "adopted": "2026-09-18",
-          "from": "register@72de434"
-        }
-      ],
-      "engine": [],
-      "tests": [
-        "433-cr-formats.test.ts"
-      ]
-    },
-    "basis": "owner",
-    "scope": "digital",
-    "confidence": "high",
-    "notes": "",
-    "sourceHashes": {}
-  },
-  {
-    "key": "formats.constructed.single-card.no-units",
-    "parent": "formats.constructed.single-card",
-    "order": 3,
-    "text": "If neither player's card can make a unit, the game is not played. It is a draw: each player is told the other's card, and both choose again. A card can make a unit if it is a unit or spell-unit card, or if it creates a unit token.",
-    "examples": [
-      {
-        "text": "A unit card and Self-Assembly (which creates a Robot unit token) can make a unit; a spell that creates no unit cannot.",
-        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.no-units — makesUnits is true for a unit and a unit-token maker, false for a spell that makes none"
-      }
-    ],
-    "see": [
-      "104"
-    ],
-    "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
-        {
-          "quote": "both players choose Spells (which don't produce units), then end the game in a draw, tell",
-          "adopted": "2026-09-18",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "`makesUnits(name)` (apply.ts) is true for a unit or spell-unit card and for any card whose",
-          "adopted": "2026-09-18",
-          "from": "register@72de434"
-        }
-      ],
-      "engine": [],
-      "tests": [
-        "433-cr-formats.test.ts"
-      ]
-    },
-    "basis": "owner",
-    "scope": "digital",
-    "confidence": "high",
-    "notes": "The owner ruling of 2026-09-18 (“Single Card Duel: thirty copies of…”): the room does not deal, records nothing, and deals as soon as a new pair includes a unit-maker. \"Creates a unit token\" is the card's declared creates list (owner ruling of 2026-08-22, “A token entering a ZONE is…”), never read off the printed text.",
     "sourceHashes": {}
   },
   {

@@ -550,6 +550,53 @@
     "problem": "Note only: the bound test title still says \"⚠ OPEN\"; R157 §12 has since settled it in the tested direction."
   },
   {
+    "key": "zones.bin.play-from-bin.one-card",
+    "textHash": "067318fb2e23dce3",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U07-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.grantBinCardPlay/useBinCardPlay",
+        "agrees": true,
+        "note": "the grant is keyed on the card NAME and spent by one play; copies in a bin are bare fungible names, so 'that card only' and 'one play' hold as observed"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Spell Excavation",
+        "agrees": true,
+        "note": "declared binCard target, grant to that card"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "689-cr-coverage-gaps.test.ts",
+        "pattern": "CR 405.9b / CT-400",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spell Excavation",
+        "supports": "yes",
+        "note": "'play target spell' - one targeted spell, singular"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "/** spend one such grant — \"target spell\", singular, is now played. */"
+      },
+      {
+        "file": "client/engine/test/689-cr-coverage-gaps.test.ts",
+        "text": "'and the permission is used up: neither the other copy nor any other spell is offered'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "zones.bin.play-from-bin.unstable",
     "textHash": "002303d15b384958",
     "verdict": "confirmed",
@@ -1793,82 +1840,93 @@
   },
   {
     "key": "zones.changes.mods.exchanged",
-    "textHash": "44c5e68ac5ad2707",
+    "textHash": "52f0aa5d9da0d37f",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U07-r2-a2",
+    "round": 4,
+    "verifier": "U07-r4",
     "engine": [
       {
-        "loc": "engine.ts:exchangeInPlace -> disposeToBin",
-        "agrees": true,
-        "note": "a modded host is Unstable (isUnstable: mods.length>0); body and nontoken mods are pushed to the bin and swept to the erased pile; no 'died' event (a 'despawned' event)"
+        "loc": "client/engine/src/engine.ts:exchangeInPlace",
+        "agrees": false,
+        "note": "the exchange sends the Unstable host through the bin: it is trashed, then swept to the erased pile (declared engineDiffers F-U07-12). Erase of host and mods, and no death, agree."
       },
       {
-        "loc": "engine.ts:disposeToBin",
+        "loc": "client/engine/src/engine.ts:isUnstable",
         "agrees": true,
-        "note": "the engine passes the body through the bin and trashes it first (R137) — the same divergence zones.bin.unstable records"
+        "note": "a modded host is Unstable by derivation"
       }
     ],
     "tests_run": [
       {
-        "file": "42-dark-b.test.ts",
-        "pattern": "Hooba-Mon exchanges a MODDED host",
+        "file": "client/engine/test/42-dark-b.test.ts",
+        "pattern": "engine (CT-246; CR 410.4d",
         "passed": true,
-        "asserts_claim": "yes for the host; it does not assert the mod's fate"
+        "asserts_claim": true
       },
       {
-        "file": "42-dark-b.test.ts",
-        "pattern": "Hooba-Mon exchanges an UNMODDED host",
+        "file": "client/engine/test/42-dark-b.test.ts",
+        "pattern": "CR 405.4 control: Hooba-Mon",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/418-cr-zones.test.ts",
+        "pattern": "cr:zones.changes.mods.exchanged",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/129-disposal-tail.test.ts",
+        "pattern": "CR 410.7 (iii)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/135-exchange-and-zones.test.ts",
+        "pattern": "CR 801.13a: Necromorph",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
-        "title": "zones.changes.mods.exchanged: Hooba-Mon augmented onto a host exchanges the host — host AND the Hooba-Mon mod end on the erased pile, neither left in a bin",
-        "passed": true,
-        "demonstrates": "yes: host and its mod both erased, no death event"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.35",
-        "supports": "partly",
-        "note": "supports 'modded = unstable'; but its next paragraph says a modded card that leaves play without dying/being erased puts its mods back in the bin, which on its face cuts against the exchange case"
+        "supports": "yes",
+        "note": "verbatim; a modded card is unstable, and when erased it and all its mods are erased"
       },
       {
         "ref": "card: Abyssal Evocation",
         "supports": "yes",
-        "note": "Unstable reminder: would enter a bin -> erase instead"
+        "note": "verbatim reminder: unstable replaces entering a bin with an erase, so the exchanged host never enters a bin"
       },
       {
-        "ref": "R157 §3",
-        "supports": "partly",
-        "note": "exchange is not a death but is a despawn and trashing; says nothing about erasure"
-      },
-      {
-        "ref": "R152",
+        "ref": "owner register@72de434 (modded host Unstable)",
         "supports": "yes",
-        "note": "when the body is Unstable (a modded host always is) its mods are swept out of the bin"
+        "note": "fragment, but says what it is used for"
+      },
+      {
+        "ref": "owner CT-246 closing note 2026-10-22",
+        "supports": "yes",
+        "note": "trash is tied to death; exchange is no death, so the printed erase-instead reading stands for it"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "if (e.mods.length > 0 || e.unstable === true) return true;"
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> *\"It's not a death, but it is a despawn and trashing. Weird corner case.\"*"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(If they would enter a bin, erase them instead.)"
       },
       {
         "file": "client/engine/test/42-dark-b.test.ts",
-        "text": "assert.ok(new E(h.state).erased(A).includes('Rune Channeler'),"
+        "text": "assert.deepEqual(order, ['trashed', 'erased'], 'engine ordering (CT-246; CR 410.4d erases unbinned): bin → trashed → swept');"
       }
     ],
     "basis_ok": true,
-    "problem": "Example 1 wording is loose: in the bound test Hooba-Mon is the AUGMENT and the host it sits on (Rune Channeler) is what gets exchanged — 'Hooba-Mon exchanges itself while it carries a mod' misdescribes it. Engine also trashes the body before erasing (R137)."
+    "problem": ""
   },
   {
     "key": "zones.changes.mods.token-mod",

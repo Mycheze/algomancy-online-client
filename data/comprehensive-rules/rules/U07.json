@@ -3020,7 +3020,12 @@
     "see": [],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RQ 1352146353962352743",
+          "quote": "you should put something on the bottom of the deck to track when you hit recycled cards and then reshuffle when you hit that"
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -3049,11 +3054,13 @@
         "300-recycle-mark.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-09-16 (“Recycling puts a card past the…”): \"Not a printed rule anywhere in this repository\" — the owner learned it from a judge-level player. D-U07-12.",
-    "sourceHashes": {}
+    "notes": "The owner ruling of 2026-09-16 (“Recycling puts a card past the…”): \"Not a printed rule anywhere in this repository\" — the owner learned it from a judge-level player. D-U07-12. 2026-10-25: Caleb (RQ 1352146353962352743, 2025-03-20) describes the mark himself; D-U07-12 settled.",
+    "sourceHashes": {
+      "RQ 1352146353962352743": "9e5957d8e770f2481d92c7bbbc50bcf7845d5a5b850f4e932adec6454c4c4837"
+    }
   },
   {
     "key": "zones.recycle.mark.scope",
@@ -4082,7 +4089,7 @@
     "key": "zones.changes.mods.exchanged",
     "parent": "zones.changes.mods",
     "order": 4,
-    "text": "An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased, just as they would be if it died.",
+    "text": "An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased instead of entering the bin. It is not trashed, because it never enters a bin: only a death keeps its trash when {Unstable} erases a card (keywords.actions.trash.unstable-death).",
     "examples": [
       {
         "text": "Hooba-Mon exchanges itself while it carries a mod; it is erased, not left in a bin.",
@@ -4096,7 +4103,8 @@
     "see": [
       "zones.changes.mods.dies",
       "zones.bin.unstable",
-      "801"
+      "keywords.actions.trash",
+      "keywords.actions.trash.unstable-death"
     ],
     "sources": {
       "printed": [
@@ -4113,14 +4121,14 @@
       "ours": [],
       "owner": [
         {
-          "quote": "It's not a death, but it is a despawn and trashing. Weird corner case.",
+          "quote": "* when the body is `{Unstable}` — which a modded host always is, by derivation",
           "adopted": "2026-08-25",
           "from": "register@72de434"
         },
         {
-          "quote": "* when the body is `{Unstable}` — which a modded host always is, by derivation",
-          "adopted": "2026-08-25",
-          "from": "register@72de434"
+          "quote": "Trash isnt a trigger tho. Its a kind of death thing.",
+          "adopted": "2026-10-22",
+          "from": "CT-246 closing note"
         }
       ],
       "engine": [],
@@ -4133,8 +4141,11 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "Added in round 1: the verifier measured a modded unit exchanged by Necromorph ending on the erased pile with its mod, and no died event (u07-a2-probes). Printed text does not mention exchange; the rule follows from the Manual's \"modded = unstable\" plus the Unstable reminder, once the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) says an exchange enters a bin (\"trashing\"). Whether the exchanged body is trashed on the way is the D-U07-3 question again: D-U07-16.",
-    "sourceHashes": {}
+    "notes": "Added in round 1: the verifier measured a modded unit exchanged by Necromorph ending on the erased pile with its mod, and no died event (u07-a2-probes). Printed text does not mention exchange; the rule follows from the Manual's \"modded = unstable\" plus the Unstable reminder, once the owner ruling of 2026-08-25 (“the owner's answers to the 27…”) says an exchange enters a bin (\"trashing\"). Whether the exchanged body is trashed on the way is the D-U07-3 question again: D-U07-16. CT-388 (2026-10-25): no designer statement on an exchanged {Unstable} unit exists (rules-questions searched for exchange, Hooba-Mon and Necromorph with unstable, mod, erase or trash; the owner asked Caleb on 2026-08-25, RQ 1541714790769106964, and only players answered). Print decides it: the Unstable reminder erases the card instead of letting it enter a bin, and trashing is entering a bin (801.2). The owner's 2026-08-25 \"a despawn and trashing\" is about an exchange into the bin; his 2026-10-22 call keeps the trash of an {Unstable} card only for a death (\"a kind of death thing\"). The engine trashes the exchanged body before erasing it (42-dark-b, 129 (iii)): F-U07-12. A first draft stating the engine's order was contradicted by the round-4 verifier on exactly this ground.",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U07-12"
+    ]
   },
   {
     "key": "zones.changes.tokens",
@@ -4515,6 +4526,43 @@
     "scope": "game",
     "confidence": "high",
     "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-25 (“the disposal tail is one primitive…”) (only its announce-between-push-and-trash step survives uncovered) had no CR rule before the register is retired.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.bin.play-from-bin.one-card",
+    "parent": "zones.bin.play-from-bin",
+    "order": 2,
+    "text": "A permission to play a targeted card from a bin (\"You may play target spell from your bin until regroup\") covers that card only, and only one play of it. Once the player has played the card, the permission is used up: neither another copy of that card nor any other card in the bin can be played under it.",
+    "examples": [
+      {
+        "text": "Spell Excavation targets one of two Luminous Arcs in its caster's bin, with an Arc Lightning there too. The caster may play a Luminous Arc from the bin, not the Arc Lightning; after one Luminous Arc is played, the other cannot be.",
+        "test": "689-cr-coverage-gaps.test.ts::CR 405.9b / CT-400: Spell Excavation lets its caster"
+      }
+    ],
+    "see": [
+      "405.9",
+      "405.6"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spell Excavation",
+          "quote": "You may play target spell from your bin until regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "689-cr-coverage-gaps.test.ts",
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-400 (2026-10-25). Measured (689): after Spell Excavation targets copy #2 of two Luminous Arcs, the engine offers either bin index for the play (copies in a bin are told apart only by name and copy, 405.6), and after one play offers nothing. The text states what was measured and does not claim which copy is played.",
     "sourceHashes": {}
   }
 ]

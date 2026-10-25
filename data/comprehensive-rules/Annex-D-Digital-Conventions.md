@@ -946,6 +946,12 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 1 gate test file · Tests: 465-attributes-off-is-not-abilities-off.test.ts · Example tests: 465-attributes-off-is-not-abilities-off.test.ts::report 208 - a Formless-stamped unit greys its type bar and not its text box, 465-attributes-off-is-not-abilities-off.test.ts::report 208 - The Everywhere silencing a unit greys below the type bar, 465-attributes-off-is-not-abilities-off.test.ts::report 208 - Monke switching off both greys the bar and the box · Key: annexd.display.text-box.suppression-band</sub>
 
+<a id="rD6.10g"></a>**D6.10g** Every bracketed cost or mode printed in a card's text box is drawn as a box around its words, without the square brackets. This holds for every printed bracket, whether or not the transcription marks it; a bracket that offers two modes is drawn as two boxes (rule D6.10a). See rule 111.
+
+> *Example: Discharge's "[Remove X +1/+1 counters from allies]" is drawn as one box.*
+
+<sub>Basis: Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 1 gate test file · Tests: 122-cardtext-markup.test.ts · Example test: 122-cardtext-markup.test.ts::CR D6.10a: a COST bracket still draws exactly one box · Demonstrated by test: 122-cardtext-markup.test.ts::every printed bracket in the pool is a box · Key: annexd.display.text-box.brackets</sub>
+
 <a id="rD6.11"></a>**D6.11.** The reminder shown for a keyword is the game's own words wherever the game has them, in this order of preference: a reminder printed on a card in the pool; the Manual's sentence under a heading that names the term; a dated quote of a designer-posted card; and only then this client's own sentence.
 
 > *Example: {Piercing} reads "Excess damage from piercing sources is dealt to the recipient's controller." — the sentence Protective Adaptations prints.*
@@ -1061,6 +1067,16 @@ These are the conventions of this digital client: how it times, shows and confir
 > *Example: A target whose label is too big to clear keeps the usual stopping point.*
 
 <sub>Basis: Owner ruling, adopted 2026-08-29 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 234-arrowhead-clears-text.test.ts · Example tests: 234-arrowhead-clears-text.test.ts::[CR D6.18] every measured endpoint has an arrowhead that clears its text, 234-arrowhead-clears-text.test.ts::[CR D6.18] an endpoint with nothing legible in the middle is not moved at all, 234-arrowhead-clears-text.test.ts::[CR D6.18] a label too big to clear keeps the old inset rather than parking outside · Key: annexd.display.arrows</sub>
+
+<a id="rD6.19"></a>**D6.19.** A menu that offers units as targets names each unit's controller beside it, as in "Unit Token (Player 1's)", so that two copies of one card on opposite sides can be told apart.
+
+> *Example: With a Unit Token on each side, Luminous Arc's target menu lists them as "Unit Token (Player 1's)" and "Unit Token (Player 2's)", in the names of the two players.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-21 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 58-playtest-round9.test.ts · Example test: 58-playtest-round9.test.ts::a target menu says whose each unit is · Key: annexd.display.target-menu-controller</sub>
+
+<a id="rD6.20"></a>**D6.20.** During the battle phase and deployment, a dormant resource is drawn muted, with a note that it makes no mana, so that it is not counted as mana. During the planning phase, when a player acts on dormant resources, they are drawn normally. An expended resource is not muted. See rules 106.3b, 105.4c.
+
+<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 1 gate test file · Tests: 127-token-x-and-dormant.test.ts · Demonstrated by tests: 127-token-x-and-dormant.test.ts::CT-31: dormant resources are muted in battle and deployment, normal in planning, 127-token-x-and-dormant.test.ts::CR 105.4c/CT-31: only DORMANT is muted · Key: annexd.display.resources.dormant</sub>
 
 <a id="rD7"></a>
 ### D7. Confirmations and Misclicks
@@ -1236,13 +1252,15 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner call · adopted 2026-10-25 · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 656-deck-out.test.ts · Example test: 656-deck-out.test.ts::CR 104.5 / CT-385: a lesson deal (Learn to Play, Weekly Challenges) draws fewer and plays on · Key: annexd.modes.learn-to-play.deck-out</sub>
 
-<a id="rD8.2"></a>**D8.2.** In a Single Card Duel, each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (rule D8.2a). See rule 901.
+<a id="rD8.2"></a>**D8.2.** A Single Card Duel is a constructed game. Each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (rule D8.2a). See rules 901, 901.3.
 
-<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 435-cr-digital-2.test.ts · Demonstrated by test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel · Key: annexd.modes.single-card-duel</sub>
+<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 435-cr-digital-2.test.ts, 433-cr-formats.test.ts · Demonstrated by tests: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel, 433-cr-formats.test.ts::cr:formats.constructed.single-card — a duel deck is 30 copies of one card, and a constructed game accepts it, 433-cr-formats.test.ts::cr:formats.constructed.single-card.copies — the duel deck breaks the two-copy cap · Key: annexd.modes.single-card-duel</sub>
+
+<sub>Discrepancies: D-U22-8 (discrepancies.md)</sub>
 
 <a id="rD8.2a"></a>**D8.2a** A duel has no draw phase. Each turn's card step is a flat draw of 2, and the draw-4, bottom-2 step never happens. The opening hand is still 4, so turn 1 starts with six cards. See rule 503.
 
-<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 435-cr-digital-2.test.ts · Demonstrated by test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.draw — a duel has no bottom step, turn 1 starts on six cards, and turn 2 draws a flat 2 · Key: annexd.modes.single-card-duel.draw</sub>
+<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 435-cr-digital-2.test.ts, 433-cr-formats.test.ts · Demonstrated by tests: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.draw — a duel has no bottom step, turn 1 starts on six cards, and turn 2 draws a flat 2, 433-cr-formats.test.ts::cr:formats.constructed.single-card.no-draw-phase — opening 4, a flat 2 each turn, nothing put back · Key: annexd.modes.single-card-duel.draw</sub>
 
 <a id="rD8.2b"></a>**D8.2b** Cards are picked blind. Before the game, each player is told only whether the other has picked, not what.
 
@@ -1258,7 +1276,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD8.2d"></a>**D8.2d** A card can make a unit if it is a unit or spell unit, or if it is declared to create a unit token. What its printed text says is not read for this.
 
-<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 435-cr-digital-2.test.ts · Demonstrated by test: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.makes-units — unit cards and declared unit-token creators make units; a plain spell does not · Key: annexd.modes.single-card-duel.makes-units</sub>
+<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Tests: 435-cr-digital-2.test.ts, 433-cr-formats.test.ts · Demonstrated by tests: 435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.makes-units — unit cards and declared unit-token creators make units; a plain spell does not, 433-cr-formats.test.ts::cr:formats.constructed.single-card.no-units — makesUnits is true for a unit and a unit-token maker, false for a spell that makes none · Key: annexd.modes.single-card-duel.makes-units</sub>
 
 <a id="rD8.2e"></a>**D8.2e** A duel counts toward no player's record, rating or achievements. It counts toward the card duel ladder instead, which rates cards rather than players.
 

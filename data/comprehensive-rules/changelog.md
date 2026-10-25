@@ -4,7 +4,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ## First generation (draft)
 
-- New: 1830 rules and 99 sections.
+- New: 1844 rules and 99 sections.
   - 100.1 `concepts.general.goal`
   - 100.2 `concepts.general.turns`
   - 100.3 `concepts.general.formats`
@@ -18,6 +18,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 101.5b `concepts.golden.as-much-as-possible.costs`
   - 101.6 `concepts.golden.regions`
   - 101.6a `concepts.golden.regions.information`
+  - 101.7 `concepts.golden.no-qualifier`
   - 102.1 `concepts.players.region-and-life`
   - 102.2 `concepts.players.each-opponent`
   - 102.2a `concepts.players.each-opponent.none`
@@ -144,6 +145,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 109.3b `concepts.abilities.triggered.amount`
   - 109.3c `concepts.abilities.triggered.recheck`
   - 109.3d `concepts.abilities.triggered.per-target`
+  - 109.3e `concepts.abilities.triggered.event-amount`
   - 109.4 `concepts.abilities.static`
   - 109.5 `concepts.abilities.replacement`
   - 109.5a `concepts.abilities.replacement.targeted`
@@ -174,6 +176,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 110.2a `concepts.targets.not-target.traits`
   - 110.2b `concepts.targets.not-target.distribution`
   - 110.2c `concepts.targets.not-target.wraith`
+  - 110.2d `concepts.targets.not-target.no-candidate`
   - 110.3 `concepts.targets.legal`
   - 110.3a `concepts.targets.legal.clause`
   - 110.3b `concepts.targets.legal.effect`
@@ -266,6 +269,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 112.14a `concepts.debt.automatic`
   - 112.14b `concepts.debt.partial`
   - 112.14c `concepts.debt.as-cost`
+  - 112.14d `concepts.debt.no-limit`
   - 112.15 `concepts.player-counters`
   - 113.1 `concepts.timestamps.order`
   - 113.2 `concepts.timestamps.when`
@@ -467,6 +471,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 405.8a `zones.bin.mods-from-bin.virus`
   - 405.9 `zones.bin.play-from-bin`
   - 405.9a `zones.bin.play-from-bin.unstable`
+  - 405.9b `zones.bin.play-from-bin.one-card`
   - 406.1 `zones.stack.what`
   - 406.2 `zones.stack.not-in-play`
   - 406.3 `zones.stack.tokens`
@@ -999,6 +1004,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 707.8 `effects.static.declared-targets`
   - 707.9 `effects.static.from-mod`
   - 707.10 `effects.static.permission`
+  - 707.10a `effects.static.permission.no-count`
   - 708.1 `effects.replacement.what`
   - 708.2 `effects.replacement.no-stack`
   - 708.2a `effects.replacement.no-stack.targeted`
@@ -1050,6 +1056,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 710.8b `effects.copies.spells.targets`
   - 710.8c `effects.copies.spells.no-card`
   - 710.8d `effects.copies.spells.modular`
+  - 710.8e `effects.copies.spells.controller`
   - 710.9 `effects.faces.face-up`
   - 711.1 `effects.control.what`
   - 711.2 `effects.control.mods`
@@ -1181,6 +1188,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 722.6 `effects.graft.costs`
   - 722.6a `effects.graft.costs.unpayable`
   - 722.6b `effects.graft.costs.instant`
+  - 722.6c `effects.graft.costs.variable`
   - 722.7 `effects.graft.multiplier`
   - 722.7a `effects.graft.multiplier.order`
   - 722.7b `effects.graft.multiplier.bounded`
@@ -1204,6 +1212,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 723.4c `effects.virus.spell-host.spell-unit`
   - 723.4d `effects.virus.spell-host.resolving`
   - 723.4e `effects.virus.spell-host.not-hosts`
+  - 723.4f `effects.virus.spell-host.erased-piles`
   - 723.5 `effects.virus.permission`
   - 723.5a `effects.virus.permission.confers`
   - 723.5b `effects.virus.permission.zones`
@@ -1231,7 +1240,9 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - 801.2g `keywords.actions.trash.mods-erased-with-host`
   - 801.2h `keywords.actions.trash.unstable-death`
   - 801.2i `keywords.actions.trash.count-cards-only`
+  - 801.2j `keywords.actions.trash.own-trigger`
   - 801.3 `keywords.actions.discard`
+  - 801.3a `keywords.actions.discard.chooser`
   - 801.4 `keywords.actions.sacrifice`
   - 801.4a `keywords.actions.sacrifice.control`
   - 801.4b `keywords.actions.sacrifice.region`
@@ -1772,6 +1783,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D6.10d `annexd.display.text-box.prophecy`
   - D6.10e `annexd.display.text-box.transform`
   - D6.10f `annexd.display.text-box.suppression-band`
+  - D6.10g `annexd.display.text-box.brackets`
   - D6.11 `annexd.display.reminders`
   - D6.11a `annexd.display.reminders.no-numbers`
   - D6.11b `annexd.display.reminders.fuller-rule`
@@ -1788,6 +1800,8 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D6.16a `annexd.display.panels.cache-dialog-only`
   - D6.17 `annexd.display.hover-tip`
   - D6.18 `annexd.display.arrows`
+  - D6.19 `annexd.display.target-menu-controller`
+  - D6.20 `annexd.display.resources.dormant`
   - D7.1 `annexd.confirm.never-refuse`
   - D7.1a `annexd.confirm.never-refuse.x-zero`
   - D7.1b `annexd.confirm.never-refuse.ally`
@@ -1836,3 +1850,7 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
   - D8.5c `annexd.modes.concession.normal`
   - D8.5d `annexd.modes.concession.rated-only`
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
+- Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
+- Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
+- Removed: 901.8b `formats.constructed.single-card.no-draw-phase`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel.draw`)
+- Removed: 901.8c `formats.constructed.single-card.no-units`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel.no-units`)

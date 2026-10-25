@@ -1932,7 +1932,6 @@
     "term": "Single Card Duel",
     "text": "A variant of constructed in which each player picks a single card and their deck is 30 copies of it.",
     "see": [
-      "formats.constructed.single-card",
       "annexd.modes.single-card-duel"
     ],
     "examples": [],

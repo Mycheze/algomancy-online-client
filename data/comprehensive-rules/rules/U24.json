@@ -3408,15 +3408,24 @@
     "key": "annexd.modes.single-card-duel",
     "parent": "D8",
     "order": 2,
-    "text": "In a Single Card Duel, each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (annexd.modes.single-card-duel.draw).",
+    "text": "A Single Card Duel is a constructed game. Each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (annexd.modes.single-card-duel.draw).",
     "examples": [
       {
         "text": null,
         "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel"
+      },
+      {
+        "text": null,
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card — a duel deck is 30 copies of one card, and a constructed game accepts it"
+      },
+      {
+        "text": null,
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.copies — the duel deck breaks the two-copy cap"
       }
     ],
     "see": [
-      "901"
+      "901",
+      "formats.constructed.copies"
     ],
     "sources": {
       "printed": [],
@@ -3432,17 +3441,23 @@
           "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room",
           "adopted": "2026-09-18",
           "from": "register@72de434"
+        },
+        {
+          "quote": "is `'constructed'` and the engine deals it through the ordinary constructed path.",
+          "adopted": "2026-09-18",
+          "from": "register@72de434"
         }
       ],
       "engine": [],
       "tests": [
-        "435-cr-digital-2.test.ts"
+        "435-cr-digital-2.test.ts",
+        "433-cr-formats.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "digital",
     "confidence": "medium",
-    "notes": "Its guards are server/e2e/test-single-card.ts, which has no indexed titles; no executed example is bound here.",
+    "notes": "Its guards are server/e2e/test-single-card.ts, which has no indexed titles; no executed example is bound here. CT-389 (2026-10-25): 901.8 and its subrules stated the same mode in the main document; they are tombstoned in favour of this rule, which now also says the duel is a constructed game (the one thing only 901.8 said). Their 433 examples are bound here and to D8.2a/D8.2c.",
     "sourceHashes": {}
   },
   {
@@ -3454,6 +3469,10 @@
       {
         "text": null,
         "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.draw — a duel has no bottom step, turn 1 starts on six cards, and turn 2 draws a flat 2"
+      },
+      {
+        "text": null,
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.no-draw-phase — opening 4, a flat 2 each turn, nothing put back"
       }
     ],
     "see": [
@@ -3482,7 +3501,8 @@
       ],
       "engine": [],
       "tests": [
-        "435-cr-digital-2.test.ts"
+        "435-cr-digital-2.test.ts",
+        "433-cr-formats.test.ts"
       ]
     },
     "basis": "owner",
@@ -3583,6 +3603,10 @@
       {
         "text": null,
         "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.makes-units — unit cards and declared unit-token creators make units; a plain spell does not"
+      },
+      {
+        "text": null,
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.no-units — makesUnits is true for a unit and a unit-token maker, false for a spell that makes none"
       }
     ],
     "see": [],
@@ -3604,7 +3628,8 @@
       ],
       "engine": [],
       "tests": [
-        "435-cr-digital-2.test.ts"
+        "435-cr-digital-2.test.ts",
+        "433-cr-formats.test.ts"
       ]
     },
     "basis": "owner",
@@ -4634,6 +4659,126 @@
     "scope": "digital",
     "confidence": "medium",
     "notes": "CT-302 / report #219 (2026-10-16). No owner or designer words on how a deck reveal is displayed; the client draws it as a glimpse is drawn. Engine-derived, for owner sign-off (Annex P). The printed cards say \"Reveal\"; how the reveal is displayed is the client's.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.display.target-menu-controller",
+    "parent": "D6",
+    "order": 19,
+    "text": "A menu that offers units as targets names each unit's controller beside it, as in \"Unit Token (Player 1's)\", so that two copies of one card on opposite sides can be told apart.",
+    "examples": [
+      {
+        "text": "With a Unit Token on each side, Luminous Arc's target menu lists them as \"Unit Token (Player 1's)\" and \"Unit Token (Player 2's)\", in the names of the two players.",
+        "test": "58-playtest-round9.test.ts::a target menu says whose each unit is"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "names the controller of every unit it offers.",
+          "adopted": "2026-08-21",
+          "from": "register@72de434"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "58-playtest-round9.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "CT-404 (2026-10-25). From the 2026-08-21 playtest report (Discharge aimed at the player's own Unit Token: the menu read \"Unit Token, Unit Token\").",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.display.resources.dormant",
+    "parent": "D6",
+    "order": 20,
+    "text": "During the battle phase and deployment, a dormant resource is drawn muted, with a note that it makes no mana, so that it is not counted as mana. During the planning phase, when a player acts on dormant resources, they are drawn normally. An expended resource is not muted.",
+    "examples": [
+      {
+        "text": null,
+        "test": "127-token-x-and-dormant.test.ts::CT-31: dormant resources are muted in battle and deployment, normal in planning"
+      },
+      {
+        "text": null,
+        "test": "127-token-x-and-dormant.test.ts::CR 105.4c/CT-31: only DORMANT is muted"
+      }
+    ],
+    "see": [
+      "106.3b",
+      "105.4c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "them not show up (or something) during battle/deployment so players don't",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
+        },
+        {
+          "quote": "think they're active. During planning they should show normally tho.",
+          "adopted": "2026-08-25",
+          "from": "register@72de434"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "127-token-x-and-dormant.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "CT-405 (2026-10-25). Owner report #97 (CT-31). 106.3b states the game rule (a dormant resource cannot be spent).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.display.text-box.brackets",
+    "parent": "annexd.display.text-box",
+    "order": 7,
+    "text": "Every bracketed cost or mode printed in a card's text box is drawn as a box around its words, without the square brackets. This holds for every printed bracket, whether or not the transcription marks it; a bracket that offers two modes is drawn as two boxes (annexd.display.text-box.modal).",
+    "examples": [
+      {
+        "text": null,
+        "test": "122-cardtext-markup.test.ts::every printed bracket in the pool is a box"
+      },
+      {
+        "text": "Discharge's \"[Remove X +1/+1 counters from allies]\" is drawn as one box.",
+        "test": "122-cardtext-markup.test.ts::CR D6.10a: a COST bracket still draws exactly one box"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "a printed square bracket belongs to the OWNER of the effect, and it is drawn as its own box",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "122-cardtext-markup.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "digital",
+    "confidence": "high",
+    "notes": "CT-406 (2026-10-25). D6.10a states only the modal case.",
     "sourceHashes": {}
   }
 ]

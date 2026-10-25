@@ -2401,6 +2401,50 @@
     "carried": "demoted-example 2026-10-11"
   },
   {
+    "key": "annexd.display.resources.dormant",
+    "textHash": "425214d2b67338fb",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/resources.ts:resourceRow/emphasisOf",
+        "agrees": true,
+        "note": "dormant muted in battle/deploy with 'makes no mana' title; normal in planning; expended normal"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "pattern": "CT-31: dormant resources",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "pattern": "CR 105.4c/CT-31",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 'not show up (or something) during battle/deployment' / 'During planning they should show normally'",
+        "supports": "yes",
+        "note": "the expended clause rests on the test only"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "text": "assert.equal(emphasisOf({ state: 'expended' }, 'battle'), 'normal');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.display.stack-states",
     "textHash": "261adb9dd4fc52c9",
     "verdict": "confirmed",
@@ -2484,6 +2528,48 @@
     "carried": "example-label 2026-10-11"
   },
   {
+    "key": "annexd.display.target-menu-controller",
+    "textHash": "2327614f476ec5b8",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:9128",
+        "agrees": true,
+        "note": "label `${u.card} (${this.pname(u.controller)}'s)`; default names Player 1/Player 2 (apply.ts:138)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/58-playtest-round9.test.ts",
+        "pattern": "a target menu says whose",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 'names the controller of every unit it offers.'",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return u ? `${u.card} (${this.pname(u.controller)}'s)` : '(gone)';"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "names: [string, string] = ['Player 1', 'Player 2'],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "annexd.display.text-box",
     "textHash": "d216332568bff639",
     "verdict": "confirmed",
@@ -2532,6 +2618,61 @@
     "basis_ok": true,
     "problem": "",
     "carried": "example-label 2026-10-11"
+  },
+  {
+    "key": "annexd.display.text-box.brackets",
+    "textHash": "c8baba727c00d777",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U24-r4",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts:iconizeText",
+        "agrees": true,
+        "note": "every printed bracket (prose or / marked) becomes a costbox; modal ones two"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/122-cardtext-markup.test.ts",
+        "pattern": "every printed bracket in the pool",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/122-cardtext-markup.test.ts",
+        "pattern": "CR D6.10a",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U24-1.test.ts",
+        "test": "probe U24-1: every printed bracket (whitespace or / marker) draws one box per non-modal bracket and two per modal one; no square bracket survives around the words",
+        "passed": true,
+        "demonstrates": "yes: per-bracket box count across the whole pool (1 per cost bracket, 2 per modal), no surviving brackets, marked or not"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 'drawn as its own box'",
+        "supports": "yes",
+        "note": "the whether-or-not-marked clause is shown by test/probe"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/test/122-cardtext-markup.test.ts",
+        "text": "test('every printed bracket in the pool is a box — the `/` marker is not the gate', () => {"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "/[Remove X +1/+1 counters from allies]"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "annexd.display.text-box.modal",
@@ -3799,47 +3940,67 @@
   },
   {
     "key": "annexd.modes.single-card-duel",
-    "textHash": "8b60448273d70dbc",
+    "textHash": "74e235c984237f0a",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/engine/src/apply.ts:checkSingleDeck",
+        "loc": "client/engine/src/apply.ts:checkSingleDeck/createGame",
         "agrees": true,
-        "note": "exactly 30 of one deck card"
+        "note": "30 copies of one card; constructed mode; singleCard flag changes only the card step (engine.ts:15175/15210)"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
-        "title": "annexd.modes.single-card-duel.makes-units: unit cards and declared unit-token creators make units; a plain spell does not",
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.modes.single-card-duel ",
         "passed": true,
-        "demonstrates": "partly - 30 copies is accepted as a single-card deck, 29 is not"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "R298",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "asserts_claim": true
       },
       {
-        "ref": "R298",
+        "file": "client/engine/test/433-cr-formats.test.ts",
+        "pattern": "cr:formats.constructed.single-card",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/433-cr-formats.test.ts",
+        "pattern": "cr:formats.constructed.single-card.copies",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 '30 copies of the exact same card'",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 'ONE exception to the Manual's two-copy cap'",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "owner register@72de434 'ordinary constructed path'",
+        "supports": "yes",
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+        "file": "client/engine/test/433-cr-formats.test.ts",
+        "text": "assert.equal(checkDeck(deck).ok, false, 'over the two-copy cap');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((this.s.mode === 'shared' || this.s.singleCard) && !this.replaceCardStep(p.seat)) this.draw(p.seat, 2);"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.modes.single-card-duel.blind",
@@ -3880,61 +4041,47 @@
   },
   {
     "key": "annexd.modes.single-card-duel.draw",
-    "textHash": "80e751691ecc7b32",
+    "textHash": "4b6a443333fa7aee",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:startTurn",
+        "loc": "client/engine/src/engine.ts:15175,15210",
         "agrees": true,
-        "note": "singleCard takes the flat draw 2 and skips startConstructedDraw"
+        "note": "singleCard draws a flat 2 and skips startConstructedDraw"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.modes.single-card-duel.draw",
+        "passed": true,
+        "asserts_claim": true
       },
       {
-        "loc": "client/engine/src/apply.ts:createGame",
-        "agrees": true,
-        "note": "singleCard set when both decks pass checkSingleDeck"
-      }
-    ],
-    "tests_run": [],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
-        "title": "annexd.modes.single-card-duel.draw: a duel has no bottom step, turn 1 starts on six cards, turn 2 draws a flat 2",
+        "file": "client/engine/test/433-cr-formats.test.ts",
+        "pattern": "cr:formats.constructed.single-card.no-draw-phase",
         "passed": true,
-        "demonstrates": "yes - 6 cards on turn 1, no bottomDone, exactly one draw of 2 per seat on turn 2"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R298",
+        "ref": "owner register@72de434 flat draw of 2 / draw-4/bottom-2 never runs / opening hand still 4",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
-      },
-      {
-        "ref": "R298",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
-      },
-      {
-        "ref": "R298",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "    if (this.s.mode === 'constructed' && !this.s.lesson && !this.s.singleCard) this.startConstructedDraw();"
-      },
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "does there — the turn's 2 plus 1), and the draw-4/bottom-2 never runs. The opening hand is"
+        "file": "client/engine/test/433-cr-formats.test.ts",
+        "text": "assert.equal(h.state.players[seat]!.hand.length, 6, 'opening 4 + turn 1 draw 2');"
       }
     ],
     "basis_ok": true,
-    "problem": "No test bound; the e2e guard server/e2e/test-single-card.ts was not run. Probe measures it.",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.modes.single-card-duel.ladder",
@@ -3991,47 +4138,47 @@
   },
   {
     "key": "annexd.modes.single-card-duel.makes-units",
-    "textHash": "e9d62501101de874",
+    "textHash": "6d791541602a5324",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U24-r1",
+    "round": 4,
+    "verifier": "U24-r4",
     "engine": [
       {
         "loc": "client/engine/src/apply.ts:makesUnits",
         "agrees": true,
-        "note": "unit/spellUnit kind or createsOf includes a unit"
+        "note": "isUnit(name) || createsOf(name).some(isUnit); never reads text"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
-        "title": "annexd.modes.single-card-duel.makes-units: unit cards and declared unit-token creators make units; a plain spell does not",
+        "file": "client/engine/test/435-cr-digital-2.test.ts",
+        "pattern": "cr:annexd.modes.single-card-duel.makes-units",
         "passed": true,
-        "demonstrates": "yes"
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "R298",
-        "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "asserts_claim": true
       },
       {
-        "ref": "R298",
+        "file": "client/engine/test/433-cr-formats.test.ts",
+        "pattern": "cr:formats.constructed.single-card.no-units",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 makesUnits quotes",
         "supports": "yes",
-        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+        "note": ""
       }
     ],
     "quote_spans": [
       {
         "file": "client/engine/src/apply.ts",
-        "text": "  return isUnit(name) || createsOf(name).some(isUnit);"
+        "text": "return isUnit(name) || createsOf(name).some(isUnit);"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "annexd.modes.single-card-duel.no-units",

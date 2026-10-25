@@ -1161,41 +1161,41 @@
   },
   {
     "key": "concepts.abilities.triggered.amount",
-    "textHash": "dae1f349d5a2092a",
+    "textHash": "9ddccc6082971063",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/cards/registry.ts:Astral Tidewraith",
+        "loc": "client/engine/src/types.ts:event snapshot",
         "agrees": true,
-        "note": "tidewraithEffect reads hand sizes when the effect runs"
+        "note": "amounts read live state at resolution"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/05-rulings.test.ts",
-        "pattern": "R1: trigger conditions check at event time",
+        "pattern": "CR 109.3a",
         "passed": true,
-        "asserts_claim": "yes: Tidewraith attacks with D holding 2 cards; D responds with a Luminous Arc (hand 1); the trigger deals D 1, the count at resolution"
+        "asserts_claim": true
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R1",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": "Astral Tidewraith's hand count is measured when the trigger resolves"
+        "note": "hand count measured when the trigger resolves"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "  hand count is measured **when the trigger resolves**, so responses can change it."
+        "file": "client/engine/src/types.ts",
+        "text": "/** CR 109.3a, 109.3b event snapshot for triggered abilities (amounts still read live state) */"
       },
       {
-        "file": "client/engine/src/cards/printed.json",
-        "text": "When I attack or block, [Switch1] I deal damage to each player equal to the number of cards in their hand."
+        "file": "client/engine/test/05-rulings.test.ts",
+        "text": "'D took damage equal to their hand AT RESOLUTION (1 card left, not 2)');"
       }
     ],
     "basis_ok": true,
@@ -1255,6 +1255,84 @@
     "basis_ok": true,
     "problem": "",
     "carried": "demoted-example 2026-10-11"
+  },
+  {
+    "key": "concepts.abilities.triggered.event-amount",
+    "textHash": "bacd8ac09353068e",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U03-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Mirage Scuttler",
+        "agrees": true,
+        "note": "reads n off the triggering event"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-fwe.ts:Torrential Reclamation",
+        "agrees": true,
+        "note": "rounds = recalled.length"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "pattern": "Mirage Scuttler: surviving",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/166-face-damage-attribution.test.ts",
+        "pattern": "CR 608.9a — Vroot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/632-torrential-sacrifice-per-recall.test.ts",
+        "pattern": "CT-375: Torrential Reclamation for X = 2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Mirage Scuttler",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Lithoghul",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Torrential Reclamation",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RQ 1223287683804037202",
+        "supports": "yes",
+        "note": "calebgannon, after 'X and the for each to be different'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
+        "text": "const n = (ctx.event?.data?.n as number | undefined) ?? 0;"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+        "text": "const rounds = recalled.length;"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "So you can remove targets to prevent the sacrifice"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "concepts.abilities.triggered.per-target",
@@ -3430,6 +3508,48 @@
       {
         "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
         "text": "//  - RESOLUTION, not targets: the per-point distribution among that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.not-target.no-candidate",
+    "textHash": "d466176f8e0ccdf0",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U03-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-wood-c.ts:Rebalance",
+        "agrees": true,
+        "note": "a seat with no units is skipped; the rest resolves"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Another set: Rebalance is playable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1454169054402314362#1",
+        "supports": "yes",
+        "note": "calebgannon, verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "it doesn't target anything so there are no requirements for you having a unit"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+        "text": "if (!units.length) continue;"
       }
     ],
     "basis_ok": true,

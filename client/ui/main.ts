@@ -10419,7 +10419,7 @@ function handlePregameButton(b: string | undefined, btn: HTMLElement): boolean {
     saveHomeName();
     const m = btn.dataset['mode'];
     const mode = m === 'draft' ? 'draft' : m === 'constructed' ? 'constructed' : 'shared';
-    // CR 901.8: a single card duel is a constructed room that brings a card, not a deck
+    // CR D8.2: a single card duel is a constructed room that brings a card, not a deck
     const single = mode === 'constructed' && btn.dataset['single'] === '1';
     if (single ? !sc.chosen() : mode === 'constructed' && !savedDeck()) return true;   // button is disabled anyway
     // a draft with NO els opens the lobby and chooses the trio there; passing

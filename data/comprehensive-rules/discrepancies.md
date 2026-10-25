@@ -6,7 +6,7 @@ Every place where the sources disagree, the register contradicts itself, or a ru
 
 None.
 
-## 2. Record and test fixes (64)
+## 2. Record and test fixes (65)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -234,6 +234,16 @@ The owner ruling of 2026-08-30 (“zones follow control, in all four…”) says
 
 **Resolution:** The rule states the owner ruling of 2026-08-30 (“zones follow control, in all four…”). Find the sentence the owner ruling of 2026-08-30 (“zones follow control, in all four…”) means, or correct the owner ruling of 2026-08-30 (“zones follow control, in all four…”)’s attribution. Question for the owner only if the judge's CR quotes such a printed sentence.
 
+### D-U07-18 · Sources disagree · rule 410.4d
+
+Is an {Unstable} (modded) unit exchanged out of play trashed before it is erased (CT-388)? The printed Unstable reminder erases it instead of letting it enter a bin, and trashing is entering a bin. The owner's 2026-08-25 call says an exchange is "a despawn and trashing", and the engine bins the body, trashes it and then erases it.
+
+- card: Abyssal Evocation: "(If they would enter a bin, erase them instead.)"
+- owner ruling, adopted 2026-08-25: "It's not a death, but it is a despawn and trashing. Weird corner case."
+- owner ruling, adopted 2026-10-22: "Trash isnt a trigger tho. Its a kind of death thing."
+
+**Resolution:** Settled by the authority order: print outranks the owner's general exchange call, and the owner's own 2026-10-22 call keeps the trash of an {Unstable} card for a death only. rule 410.4d states that the exchanged unit is erased and not trashed; the engine differs (F-U07-12, a CT to file).
+
 ### D-U07-3 · Sources disagree · rule 405.5
 
 Does a dying {Unstable} card enter the bin (and get trashed) before it is erased? The printed reminder and Caleb say it is erased in place of entering the bin. The owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) (owner) says it enters the bin, is trashed there, and is then erased, and the engine does that.
@@ -249,7 +259,7 @@ Does a dying {Unstable} card enter the bin (and get trashed) before it is erased
 - owner ruling, adopted 2026-08-25: "It's not a death, but it is a despawn and trashing. Weird corner case."
 - owner ruling, adopted 2026-10-22: "Trash isnt a trigger tho. Its a kind of death thing."
 
-**Resolution:** Settled by the owner on 2026-10-22 (CT-246 closed by design): "Trash isnt a trigger tho. Its a kind of death thing." Trashing is part of a death, so a dying {Unstable} card is trashed, and it still ends on the erased pile as the printed reminder says ("erase them instead"); the engine's sequence (enters a bin, trashed there, then erased; register 2026-08-24) stands. rule 405.5 and rule 801.2h state it; the exchange route (rule 410.4d) follows. F-U07-6 closed.
+**Resolution:** Settled by the owner on 2026-10-22 (CT-246 closed by design): "Trash isnt a trigger tho. Its a kind of death thing." Trashing is part of a death, so a dying {Unstable} card is trashed, and it still ends on the erased pile as the printed reminder says ("erase them instead"); the engine's sequence (enters a bin, trashed there, then erased; register 2026-08-24) stands. rule 405.5 and rule 801.2h state it. F-U07-6 closed. The exchange route does not follow: an exchange is not a death, so an exchanged {Unstable} unit is erased without being trashed, as print says (rule 410.4d, 2026-10-25, CT-388); the engine trashes it first (F-U07-12).
 
 ### D-U07-4 · Ruling chain wrong · rule 400.4
 
@@ -872,6 +882,15 @@ Only the engine says a cost that removes counters from allies, or recalls an all
 
 **Resolution:** Stated as the engine's behaviour, basis engine (verifier r1: E.canPayCastCost draws removeCounters and recall candidates from unitsOf(seat, region)). Question for the owner only if a card's unit cost is meant to reach another region.
 
+### D-U04-14 · Engine only · rule 112.14d
+
+No source says whether a player's debt has a limit. The engine lets a player gain debt however much they already have, so a cost of gaining debt can always be paid (CT-399). Caleb's debt answers say only when debt is paid.
+
+- card: Debt Blep: "Gain 2 debt: I gain +3/+3 until regroup."
+- card: Reap the Due: "Erase target unit unless its controller gains debt equal to twice your [l]."
+
+**Resolution:** Stated as the engine's rule (rule 112.14d, basis engine, demonstrated by 689). Awaits the owner's sign-off, or a designer answer.
+
 ### D-U04-7 · Other · rule 112.13
 
 Sources silent: neither the Manual nor the Rulebook 2023 defines rot or debt. Both rules come from the owner ruling of 2026-08-19 (“Rot: start of deployment, damage equal…”) and the owner ruling of 2026-08-19 (“Debt: mandatory, automatic, paid at the…”), which cite Caleb (and a Rot Counter card in Caleb's card library) by date; no RAQ claim or printed page in the sources holds his words.
@@ -880,7 +899,7 @@ Sources silent: neither the Manual nor the Rulebook 2023 defines rot or debt. Bo
 - owner ruling, adopted 2026-08-19: "casting this turn. (Caleb 2024-09-10, refined 2024-12-02; via Bena 2026-08-19.)"
 - glossary: Rot: "At the start of deployment, you take damage equal to the number of rot you have. Rot does not go away."
 
-**Resolution:** The rot and debt rules ship with basis owner. Adding the Rot Counter card text (and Caleb's debt answers) to the printed sources would raise them to a printed or designer basis.
+**Resolution:** The rot and debt rules ship with basis owner. Adding the Rot Counter card text (and Caleb's debt answers) to the printed sources would raise them to a printed or designer basis. Partly grounded by the designer (2026-10-25 search): "initiative takes their deployment first and dies" and "rot isn't simultaneous" (RQ 1542923825904099349, 1542924008620564610), which rule 112.13 already cites, settle the order of rot damage at deployment. That rot and debt exist as counters, and how debt is paid, still rest on the owner's calls; Caleb's debt answers (RQ 1313311795913687112, 1352060737031241761) are not in the RQ snapshot.
 
 ### D-U05-15 · Owner call only · rule 202.3
 
@@ -938,19 +957,6 @@ That a spell unit which gives itself away enters play under the other player (ne
 - owner ruling, adopted 2026-08-24: "A spell unit whose text says another player gains control of it ENTERS as"
 
 **Resolution:** Owner call (owner ruling of 2026-08-24, “"…gains control of me" on a…”), stated with basis owner. Print says only that control changes, not when; the owner ruling of 2026-08-24 (“"…gains control of me" on a…”) reads both sentences as one resolution.
-
-### D-U07-12 · Owner call only · rule 408.2
-
-The recycle mark has no printed or designer source. Print says only that recycling puts a card "on the bottom of the deck"; the owner learned the mark from a judge-level player.
-
-*Also filed as D-U18-13 (rule 801.10).*
-
-- owner ruling, adopted 2026-09-16: "Not a printed rule anywhere in this repository. The owner, 2026-09-16, after a"
-- Rulebook 2023 p.7: "recycling a card in your hand (putting it on the bottom of the deck)"
-- Manual p.16: "recycled (put on the bottom of the deck) and each"
-- owner ruling, adopted 2026-09-16: "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
-
-**Resolution:** Owner call, stated as rule 408.2 with basis owner. It does not contradict print: print never says recycled cards keep their order.
 
 ### D-U07-13 · Engine only · rule 406.4b
 
@@ -1257,14 +1263,14 @@ The sources are silent on where an effect that switches power and defense applie
 
 **Resolution:** The rule states the engine's handling (a layer-3 change worked out at resolution, so a later change is not switched) with basis engine, and says the ruling is open. Question for the owner only if the judge's CR places the switch elsewhere.
 
-### D-U17-10 · Owner call only · rule 723.5c
+### D-U17-16 · Owner call only · rule 723.4f
 
-That Rook's permission works only in Rook's region rests on a player's chat remark, quoted in the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”). Players are not authority; Rook's printed text names no region.
+Whose erased pile a spell carrying a Virus, and the Virus itself, go to has no printed or designer source (CT-401). The owner's zones-follow-control calls name cards leaving play; the engine applies the same rule to a spell and its Virus leaving the stack: the spell to its caster's pile, the Virus to the pile of the player who applied it.
 
-- owner ruling, adopted 2026-08-23: "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
-- card: Rook: "You may augment cards from hand and bin during battle as if they were [Virus]."
+- owner ruling, adopted 2026-08-29: "Zones ALWAYS follow control. One rule, no split."
+- owner ruling, adopted 2026-08-30: "(a) All four follow control"
 
-**Resolution:** The rule states the engine's region scope, basis owner. It is the general region scope the client applies to every permission; owner sign-off needed.
+**Resolution:** Stated as the owner's rule extended to the stack (rule 723.4f), as the engine does (89). Awaits the owner's sign-off for the stack case.
 
 ### D-U17-2 · Engine only · rule 723.4e
 
@@ -1373,7 +1379,7 @@ What "attacking alone" means (the only attacking unit in the formation; spell to
 
 - owner ruling, adopted 2026-08-18: "attacking are NOT alone — both blockable. ⚠ Engine reading of "unblockable if attacking"
 
-**Resolution:** Stands as owner law (basis owner). Seek a designer answer if a judge disputes it.
+**Resolution:** Partly settled by the designer (2026-10-25 search): asked about a Sneaky unit whose co-attackers were sacrificed before blockers, Caleb answered "Yep that works!" and "Attributes like that are only checked during the assign blockers step" (RQ 1353935142573576214, 1353935255425388665), which rule 802.14a already cites: "alone" is judged at blocks, as the only attacking unit left. That spell tokens do not count and that two Sneaky attackers are both blockable still rest on the owner ruling of 2026-08-18 alone.
 
 ### D-U20-4 · Owner call only · rule 802.15k
 
@@ -1421,7 +1427,7 @@ Pull Under tells its caster to put the deleted unit and its mods into a bin; Uns
 
 **Resolution:** Stated as the engine's reading (basis owner). It agrees with "the card beats the rules" where Pull Under is the more specific text. Question for the owner only if a judge's CR erases Pull Under's victim.
 
-### D-U22-8 · Owner call only · rule 901.8
+### D-U22-8 · Owner call only · rule D8.2
 
 Single Card Duel is an owner format with no printed or designer source. It breaks the printed 2-copy limit (30 copies of one card) and replaces constructed's draw phase with a flat draw of 2.
 
@@ -1546,7 +1552,7 @@ The owner ruling of 2026-08-22 (“An item stays on the stack…”) left one pr
 
 **Resolution:** An owner-only presentation call. The owner ruling of 2026-08-22 (“An item stays on the stack…”) leaves "X resolves." logged when resolution starts, and asks the owner to rule. No rule states it (rule D6.3 covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved.
 
-## 4. Everything else (133)
+## 4. Everything else (135)
 
 ### D-GL-1 · Other · rule 304.11
 
@@ -1962,6 +1968,20 @@ Print names a "token pile" that tokens return to. No ruling treats it as a zone.
 - owner ruling, adopted 2026-09-28: "unchanged: the `died` event still says `to: 'bin'`, anything reading the bin in"
 
 **Resolution:** The token pile is the physical supply of token cards, not a game zone. Not listed in rule 400.1.
+
+### D-U07-12 · Owner call only · rule 408.2
+
+The recycle mark has no printed or designer source. Print says only that recycling puts a card "on the bottom of the deck"; the owner learned the mark from a judge-level player.
+
+*Also filed as D-U18-13 (rule 801.10).*
+
+- owner ruling, adopted 2026-09-16: "Not a printed rule anywhere in this repository. The owner, 2026-09-16, after a"
+- Rulebook 2023 p.7: "recycling a card in your hand (putting it on the bottom of the deck)"
+- Manual p.16: "recycled (put on the bottom of the deck) and each"
+- owner ruling, adopted 2026-09-16: "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+- RQ 1352146353962352743: "you should put something on the bottom of the deck to track when you hit recycled cards and then reshuffle when you hit that"
+
+**Resolution:** Settled by the designer (2026-10-25 search): Caleb, 2025-03-20, "Technically yes, you should put something on the bottom of the deck to track when you hit recycled cards and then reshuffle when you hit that" (RQ 1352146353962352743). rule 408.2 now cites it, basis mixed.
 
 ### D-U07-15 · Sources disagree · rule 410.1a
 
@@ -2385,6 +2405,16 @@ The sources are silent on what an ability that triggers on its own source leavin
 - owner ruling, adopted 2026-10-09: "A trigger queued *after* its source left play ("when I die") gets no"
 
 **Resolution:** No rule written for it beyond the departure facts (714.9). Question for the owner only if a card is printed whose "when I die" ability reads its own stats or attributes.
+
+### D-U17-10 · Owner call only · rule 723.5c
+
+That Rook's permission works only in Rook's region rests on a player's chat remark, quoted in the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”). Players are not authority; Rook's printed text names no region.
+
+- owner ruling, adopted 2026-08-23: "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
+- card: Rook: "You may augment cards from hand and bin during battle as if they were [Virus]."
+- RAQ 1454169054402314362#0: "Yes everything in the game is region specific."
+
+**Resolution:** Settled by the designer for the region half (2026-10-25 search): Caleb, asked about Ghord, "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps." (RAQ 1454169054402314362#0). Rook's permission is an effect of the game and is scoped to Rook's region like every other. rule 723.5c now cites it, basis mixed. That the permission belongs to the grantor's controller is unchanged (owner).
 
 ### D-U17-12 · Sources disagree · rule 722.3a
 

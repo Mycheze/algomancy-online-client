@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:697b4a9689dde8d2",
+ "generated_from": "sha256:17ccddac3b3bb11e",
  "rules": [
   {
    "num": "100.1",
@@ -303,6 +303,32 @@
    "discrepancies": [
     "D-U01-1"
    ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "101.7",
+   "key": "concepts.golden.no-qualifier",
+   "title": null,
+   "section": "101",
+   "sectionTitle": "Golden Rules",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "101",
+   "text": "Card text is read literally, and no qualifier is added to it. Text that names something with no qualifier means every such thing: \"target unit\" can be any unit, the player's own included. Only a word on the card, such as \"ally\", \"enemy\", \"your\" or \"opponent\", narrows it.",
+   "see": [
+    "101.6",
+    "110.3",
+    "707.7"
+   ],
+   "examples": [
+    "Luminous Arc (\"I deal 6 damage to target unit.\") may target its caster's own unit as well as an enemy unit.",
+    "Organic Exchange (\"Exchange control of two target units\") may target two of its caster's own units."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -3105,7 +3131,7 @@
    "sectionTitle": "Abilities",
    "chapterTitle": "1. Game Concepts",
    "parent": "109.3",
-   "text": "An amount a triggered ability uses is measured when the ability resolves, so responses can change it.",
+   "text": "An amount a triggered ability counts from the game as it stands (\"damage equal to the number of cards in their hand\") is measured when the ability resolves, so responses can change it. An amount taken from the event that triggered the ability is not measured again (rule 109.3e).",
    "see": [],
    "examples": [
     "Astral Tidewraith attacks: its trigger deals each player damage equal to the cards in their hand, counted as the trigger resolves, not when it triggered."
@@ -3162,6 +3188,31 @@
    "discrepancies": [
     "D-U03-4"
    ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "109.3e",
+   "key": "concepts.abilities.triggered.event-amount",
+   "title": null,
+   "section": "109",
+   "sectionTitle": "Abilities",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "109.3",
+   "text": "An amount that an ability takes from the event that triggered it (\"that much\", \"that many\") is the amount of that event, as it happened. Likewise, an amount that a later part of an effect takes from an earlier part (\"for each ally recalled this way\") counts what that earlier part actually did.",
+   "see": [
+    "109.3b"
+   ],
+   "examples": [
+    "Mirage Scuttler (\"Whenever I survive damage, put that many +1/+1 counters on me.\") survives 2 damage and gets 2 counters.",
+    "Vroot's \"that much\" is the combat damage its own column dealt, not the total every column dealt.",
+    "Torrential Reclamation is cast for X = 2 and one of its targets is removed in response: it recalls one ally, so each player sacrifices one unit and its caster loses 1 life."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -3837,6 +3888,30 @@
     "A 1/1 carrying two Wraith augments: the first shrink kills it, and the second finds no ally in play and fizzles."
    ],
    "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "110.2d",
+   "key": "concepts.targets.not-target.no-candidate",
+   "title": null,
+   "section": "110",
+   "sectionTitle": "Targets",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "110.2",
+   "text": "A choice that is not a target needs nothing to choose from. An effect that makes such a choice can be played when there is nothing to choose, and it resolves: that part does nothing and the rest of the effect still happens. It does not fizzle. The Wraith's trigger is the exception (rule 110.2c).",
+   "see": [
+    "110.2c",
+    "704"
+   ],
+   "examples": [
+    "A player with no unit casts Rebalance (\"Each player gives an opponent control of one of their units.\"). It can be played and it resolves: the caster gives nothing, and the opponent still gives the caster one of their units."
+   ],
+   "basis": "designer",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -4737,7 +4812,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "stale"
+   "verdict": "confirmed"
   },
   {
    "num": "111.7",
@@ -5432,7 +5507,7 @@
    ],
    "openQuestion": false,
    "untested": false,
-   "verdict": "stale"
+   "verdict": "confirmed"
   },
   {
    "num": "112.4",
@@ -5944,6 +6019,32 @@
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "112.14d",
+   "key": "concepts.debt.no-limit",
+   "title": null,
+   "section": "112",
+   "sectionTitle": "Life, Damage, Rot and Debt",
+   "chapterTitle": "1. Game Concepts",
+   "parent": "112.14",
+   "text": "There is no limit to how much debt a player may have. A cost of gaining debt can always be paid, however much debt the player already has.",
+   "see": [
+    "112.14b",
+    "112.14c"
+   ],
+   "examples": [
+    "A player with 40 debt activates Debt Blep (\"Gain 2 debt: I gain +3/+3 until regroup.\"): the cost is paid, the player has 42 debt, and Debt Blep gets +3/+3."
+   ],
+   "basis": "engine",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [
+    "D-U04-14"
+   ],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -10634,6 +10735,30 @@
    "verdict": "confirmed"
   },
   {
+   "num": "405.9b",
+   "key": "zones.bin.play-from-bin.one-card",
+   "title": null,
+   "section": "405",
+   "sectionTitle": "Bin",
+   "chapterTitle": "4. Zones",
+   "parent": "405.9",
+   "text": "A permission to play a targeted card from a bin (\"You may play target spell from your bin until regroup\") covers that card only, and only one play of it. Once the player has played the card, the permission is used up: neither another copy of that card nor any other card in the bin can be played under it.",
+   "see": [
+    "405.9",
+    "405.6"
+   ],
+   "examples": [
+    "Spell Excavation targets one of two Luminous Arcs in its caster's bin, with an Arc Lightning there too. The caster may play a Luminous Arc from the bin, not the Arc Lightning; after one Luminous Arc is played, the other cannot be."
+   ],
+   "basis": "printed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "406.1",
    "key": "zones.stack.what",
    "title": null,
@@ -11005,7 +11130,7 @@
    "text": "A deck has a mark where it originally ended. The recycle pile lies under the deck, past the mark, and is still part of the deck. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.",
    "see": [],
    "examples": [],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -11560,11 +11685,12 @@
    "sectionTitle": "Zone Changes",
    "chapterTitle": "4. Zones",
    "parent": "410.4",
-   "text": "An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased, just as they would be if it died.",
+   "text": "An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased instead of entering the bin. It is not trashed, because it never enters a bin: only a death keeps its trash when {Unstable} erases a card (rule 801.2h).",
    "see": [
     "410.4b",
     "405.5",
-    "801"
+    "801.2",
+    "801.2h"
    ],
    "examples": [
     "Hooba-Mon exchanges itself while it carries a mod; it is erased, not left in a bin.",
@@ -11572,8 +11698,9 @@
    ],
    "basis": "mixed",
    "scope": "game",
-   "engineDiffers": false,
+   "engineDiffers": true,
    "discrepancies": [
+    "D-U07-18",
     "D-U07-3"
    ],
    "openQuestion": false,
@@ -22963,6 +23090,30 @@
    "verdict": "confirmed"
   },
   {
+   "num": "707.10a",
+   "key": "effects.static.permission.no-count",
+   "title": null,
+   "section": "707",
+   "sectionTitle": "Static Abilities",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "707.10",
+   "text": "A permission that states no number of uses, such as Slurpr's \"You can apply other mods during [Haste] as if it was deployment\", may be used any number of times while it applies. A second card that grants the same permission adds nothing to it.",
+   "see": [
+    "504.7a",
+    "723.5"
+   ],
+   "examples": [
+    "With one Slurpr in play, a player applies two augments in the same haste step. With two Slurprs, exactly the same mods are offered as with one."
+   ],
+   "basis": "printed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "708.1",
    "key": "effects.replacement.what",
    "title": null,
@@ -24165,6 +24316,29 @@
    "discrepancies": [
     "D-U16-10"
    ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "710.8e",
+   "key": "effects.copies.spells.controller",
+   "title": null,
+   "section": "710",
+   "sectionTitle": "Copies and Faces",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "710.8",
+   "text": "A copy of a spell is controlled by the player who makes the copy. On every card that copies a spell, that player is the one who played the spell, so the copy is theirs even when another player's card made it happen: a spell played at an opponent's Earthbound Replicator is copied for the player who played it.",
+   "see": [
+    "710.8"
+   ],
+   "examples": [
+    "A player casts Channeled Boon at the opponent's Earthbound Replicator. The Replicator's trigger copies the Boon, and the copy is controlled by the player who cast the Boon."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -26370,9 +26544,10 @@
    "sectionTitle": "Augment",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "721.1",
-   "text": "Augment text that triggers on the host's own departure (\"When I despawn\") triggers whichever way the host leaves play: when it dies, is recalled or is cached.",
+   "text": "Augment text that triggers on the host's own departure (\"When I despawn\") triggers whichever way the host leaves play: when it dies, is recalled, is cached, is exchanged or is erased.",
    "see": [
-    "410"
+    "410",
+    "410.2"
    ],
    "examples": [],
    "basis": "owner",
@@ -26846,7 +27021,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "stale"
+   "verdict": "confirmed"
   },
   {
    "num": "722.4a",
@@ -27174,6 +27349,30 @@
    ],
    "examples": [],
    "basis": "designer",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "722.6c",
+   "key": "effects.graft.costs.variable",
+   "title": null,
+   "section": "722",
+   "sectionTitle": "Graft",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "722.6",
+   "text": "A grafted cost with an X in it (\"[Remove X +1/+1 counters from allies]\") sets the X of that graft's own effect. The player chooses how much to pay as the composite goes on the stack, and that graft's effect uses the amount paid as its X.",
+   "see": [
+    "722.6b",
+    "111"
+   ],
+   "examples": [
+    "Discharge (\"[Remove X +1/+1 counters from allies]: I deal X damage to target unit.\") is grafted under Guardian of the Grotto. When the Guardian attacks, its controller removes two counters from an attacking ally to pay the grafted cost, and the grafted part deals 2 damage."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -27725,6 +27924,32 @@
    "verdict": "confirmed"
   },
   {
+   "num": "723.4f",
+   "key": "effects.virus.spell-host.erased-piles",
+   "title": null,
+   "section": "723",
+   "sectionTitle": "Virus",
+   "chapterTitle": "7. Spells, Abilities and Effects",
+   "parent": "723.4",
+   "text": "When a spell carrying a Virus is erased, the spell goes to the erased pile of the player who played it, and the Virus goes to the erased pile of the player who applied it.",
+   "see": [
+    "723.4b",
+    "400.4"
+   ],
+   "examples": [
+    "A player casts Collect Remains and the opponent applies Chitin Shredder to it as a Virus. Collect Remains resolves and is erased onto its caster's erased pile; Chitin Shredder goes onto the erased pile of the player who applied it, and into no bin."
+   ],
+   "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [
+    "D-U17-16"
+   ],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "723.5",
    "key": "effects.virus.permission",
    "title": null,
@@ -27804,7 +28029,7 @@
     "720.6b"
    ],
    "examples": [],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [
@@ -28341,6 +28566,31 @@
    "verdict": "confirmed"
   },
   {
+   "num": "801.2j",
+   "key": "keywords.actions.trash.own-trigger",
+   "title": null,
+   "section": "801",
+   "sectionTitle": "Keyword Actions",
+   "chapterTitle": "8. Keywords",
+   "parent": "801.2",
+   "text": "A card's own \"When I am trashed\" ability triggers once the card has entered the bin it was trashed into. The card is in that bin when the ability triggers, so \"another\" in the ability excludes only that copy of the card (rule 405.6a).",
+   "see": [
+    "801.2",
+    "405.6a"
+   ],
+   "examples": [
+    "Blightwalker is discarded with an older Blightwalker already in the bin: its trigger may recall the older copy, but not itself.",
+    "Blightwalker discarded into an otherwise empty bin has nothing to recall: the only card there is itself."
+   ],
+   "basis": "mixed",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "801.3",
    "key": "keywords.actions.discard",
    "title": null,
@@ -28356,6 +28606,30 @@
    ],
    "examples": [],
    "basis": "owner",
+   "scope": "game",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "801.3a",
+   "key": "keywords.actions.discard.chooser",
+   "title": null,
+   "section": "801",
+   "sectionTitle": "Keyword Actions",
+   "chapterTitle": "8. Keywords",
+   "parent": "801.3",
+   "text": "The player who discards chooses which card to discard. \"Each opponent discards a card\" is each opponent's own choice from their own hand. A card that says what kind of card is discarded limits the choice to cards of that kind: under Void Memory, each opponent chooses which card of the declared kind to discard.",
+   "see": [
+    "801.3",
+    "110.2"
+   ],
+   "examples": [
+    "Void Memory is cast and its caster declares \"unit\". The opponent, holding a spell and two units, chooses which of the two units to discard."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -35505,7 +35779,7 @@
    "parent": "901",
    "text": "A constructed deck may hold at most 2 copies of any one card.",
    "see": [
-    "901.8"
+    "D8.2"
    ],
    "examples": [
     "A third copy of a card makes the deck illegal."
@@ -35699,96 +35973,6 @@
    "discrepancies": [
     "D-U22-10"
    ],
-   "openQuestion": false,
-   "untested": false,
-   "verdict": "confirmed"
-  },
-  {
-   "num": "901.8",
-   "key": "formats.constructed.single-card",
-   "title": null,
-   "section": "901",
-   "sectionTitle": "Constructed",
-   "chapterTitle": "9. Multiplayer and Formats",
-   "parent": "901",
-   "text": "Single Card Duel is a variant of constructed that the client offers. Each player picks a single card before the game, and their deck is 30 copies of that card.",
-   "see": [
-    "901.3"
-   ],
-   "examples": [],
-   "basis": "owner",
-   "scope": "digital",
-   "engineDiffers": false,
-   "discrepancies": [
-    "D-U22-8"
-   ],
-   "openQuestion": false,
-   "untested": false,
-   "verdict": "confirmed"
-  },
-  {
-   "num": "901.8a",
-   "key": "formats.constructed.single-card.copies",
-   "title": null,
-   "section": "901",
-   "sectionTitle": "Constructed",
-   "chapterTitle": "9. Multiplayer and Formats",
-   "parent": "901.8",
-   "text": "A Single Card Duel deck is the one exception to the limit of 2 copies of a card.",
-   "see": [
-    "901.3"
-   ],
-   "examples": [],
-   "basis": "owner",
-   "scope": "digital",
-   "engineDiffers": false,
-   "discrepancies": [],
-   "openQuestion": false,
-   "untested": false,
-   "verdict": "confirmed"
-  },
-  {
-   "num": "901.8b",
-   "key": "formats.constructed.single-card.no-draw-phase",
-   "title": null,
-   "section": "901",
-   "sectionTitle": "Constructed",
-   "chapterTitle": "9. Multiplayer and Formats",
-   "parent": "901.8",
-   "text": "A Single Card Duel has no draw phase. Each turn, each player simply draws 2 cards; nothing is put back. The opening hand is still 4 cards.",
-   "see": [
-    "503"
-   ],
-   "examples": [
-    "Each player starts turn 1 with 6 cards (4 + 2) and nothing to put back, and draws exactly 2 more on turn 2."
-   ],
-   "basis": "owner",
-   "scope": "digital",
-   "engineDiffers": false,
-   "discrepancies": [],
-   "openQuestion": false,
-   "untested": false,
-   "verdict": "confirmed"
-  },
-  {
-   "num": "901.8c",
-   "key": "formats.constructed.single-card.no-units",
-   "title": null,
-   "section": "901",
-   "sectionTitle": "Constructed",
-   "chapterTitle": "9. Multiplayer and Formats",
-   "parent": "901.8",
-   "text": "If neither player's card can make a unit, the game is not played. It is a draw: each player is told the other's card, and both choose again. A card can make a unit if it is a unit or spell-unit card, or if it creates a unit token.",
-   "see": [
-    "104"
-   ],
-   "examples": [
-    "A unit card and Self-Assembly (which creates a Robot unit token) can make a unit; a spell that creates no unit cannot."
-   ],
-   "basis": "owner",
-   "scope": "digital",
-   "engineDiffers": false,
-   "discrepancies": [],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -40489,6 +40673,29 @@
    "verdict": "confirmed"
   },
   {
+   "num": "D6.10g",
+   "key": "annexd.display.text-box.brackets",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6.10",
+   "text": "Every bracketed cost or mode printed in a card's text box is drawn as a box around its words, without the square brackets. This holds for every printed bracket, whether or not the transcription marks it; a bracket that offers two modes is drawn as two boxes (rule D6.10a).",
+   "see": [
+    "111"
+   ],
+   "examples": [
+    "Discharge's \"[Remove X +1/+1 counters from allies]\" is drawn as one box."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
    "num": "D6.11",
    "key": "annexd.display.reminders",
    "title": null,
@@ -40836,6 +41043,49 @@
     "An arrow to a unit whose picture has loaded ends in the usual place.",
     "A target whose label is too big to clear keeps the usual stopping point."
    ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D6.19",
+   "key": "annexd.display.target-menu-controller",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6",
+   "text": "A menu that offers units as targets names each unit's controller beside it, as in \"Unit Token (Player 1's)\", so that two copies of one card on opposite sides can be told apart.",
+   "see": [],
+   "examples": [
+    "With a Unit Token on each side, Luminous Arc's target menu lists them as \"Unit Token (Player 1's)\" and \"Unit Token (Player 2's)\", in the names of the two players."
+   ],
+   "basis": "owner",
+   "scope": "digital",
+   "engineDiffers": false,
+   "discrepancies": [],
+   "openQuestion": false,
+   "untested": false,
+   "verdict": "confirmed"
+  },
+  {
+   "num": "D6.20",
+   "key": "annexd.display.resources.dormant",
+   "title": null,
+   "section": "D6",
+   "sectionTitle": "Reveal Timing of Simultaneous Steps",
+   "chapterTitle": "Annex D — Digital Play Conventions",
+   "parent": "D6",
+   "text": "During the battle phase and deployment, a dormant resource is drawn muted, with a note that it makes no mana, so that it is not counted as mana. During the planning phase, when a player acts on dormant resources, they are drawn normally. An expended resource is not muted.",
+   "see": [
+    "106.3b",
+    "105.4c"
+   ],
+   "examples": [],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
@@ -41419,15 +41669,18 @@
    "sectionTitle": "Tutorial and Single-Card Modes",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D8",
-   "text": "In a Single Card Duel, each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (rule D8.2a).",
+   "text": "A Single Card Duel is a constructed game. Each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (rule D8.2a).",
    "see": [
-    "901"
+    "901",
+    "901.3"
    ],
    "examples": [],
    "basis": "owner",
    "scope": "digital",
    "engineDiffers": false,
-   "discrepancies": [],
+   "discrepancies": [
+    "D-U22-8"
+   ],
    "openQuestion": false,
    "untested": false,
    "verdict": "confirmed"
@@ -43230,7 +43483,6 @@
    "obsolete": false,
    "text": "A variant of constructed in which each player picks a single card and their deck is 30 copies of it.",
    "see": [
-    "901.8",
     "D8.2"
    ]
   },

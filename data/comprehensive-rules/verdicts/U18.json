@@ -288,6 +288,80 @@
     "carried": "demoted-example 2026-10-11"
   },
   {
+    "key": "keywords.actions.discard.chooser",
+    "textHash": "32af10cf964ba577",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U18-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-c.ts:Void Memory",
+        "agrees": true,
+        "note": "discard decision seat is the discarding opponent, menu filtered to the declared half"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-c.ts:Thoughtripper",
+        "agrees": true,
+        "note": "ctx.choose(`drop:${foe}`, {seat: foe}) — each opponent picks from their own hand"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/97-mode-conformance.test.ts",
+        "pattern": "Void Memory's victim still picks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Void Memory: the caster declares the half",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U18-1.test.ts",
+        "test": "probe U18-1: \"each opponent discards a card\" (Thoughtripper) — the opponent picks which card from their own hand",
+        "passed": true,
+        "demonstrates": "yes: a plain 'each opponent discards a card' asks the opponent (not the controller) which of their two hand cards to discard"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Void Memory",
+        "supports": "yes",
+        "note": "verbatim in printed.json"
+      },
+      {
+        "ref": "card: Plague Ritual",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "owner register@72de434 R67 discard not a target",
+        "supports": "yes",
+        "note": "the discarded card is the hand owner's pick"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Each opponent discards a /[unit {i1}or spell] if {/n}able."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Each player discards a card"
+      },
+      {
+        "file": "client/engine/test/97-mode-conformance.test.ts",
+        "text": "assert.equal(h.state.decision?.seat, A, 'the discard is the HAND OWNER\\'s pick');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "keywords.actions.erase",
     "textHash": "2065b1595ccbbe60",
     "verdict": "confirmed",
@@ -2324,6 +2398,69 @@
       {
         "file": "client/engine/test/15-water-b.test.ts",
         "text": "    'a free play that RESOLVED is not a trash (CR 801.2b)');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.actions.trash.own-trigger",
+    "textHash": "3004457c25b19368",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U18-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:discardFromHand",
+        "agrees": true,
+        "note": "every trash path pushes into the bin before firing trashed (binNth)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/121-another-identity.test.ts",
+        "pattern": "CR 405.6a Blightwalker",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+        "pattern": "Swarmling: discarding IT",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/121-another-identity.test.ts",
+        "pattern": "CR 405.6: 'trashed' stamps WHICH copy",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Blightwalker",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "owner register@72de434 'Trashing: a card entering a bin from anywhere but the stack'",
+        "supports": "yes",
+        "note": "trashing is the entry into the bin"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I am trashed, [Switch1] You may pay [2] to recall another target unit from your bin."
+      },
+      {
+        "file": "client/engine/test/121-another-identity.test.ts",
+        "text": "'exactly ONE of the two Blightwalkers is excluded — the copy that just landed');"
+      },
+      {
+        "file": "client/engine/test/121-another-identity.test.ts",
+        "text": "'the third Grox — every trash path pushes into the bin before firing');"
       }
     ],
     "basis_ok": true,

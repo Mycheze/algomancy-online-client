@@ -137,7 +137,7 @@
         "quote": "At the start of deployment, you take damage equal to the number of rot you have. Rot does not go away."
       }
     ],
-    "resolution": "The rot and debt rules ship with basis owner. Adding the Rot Counter card text (and Caleb's debt answers) to the printed sources would raise them to a printed or designer basis."
+    "resolution": "The rot and debt rules ship with basis owner. Adding the Rot Counter card text (and Caleb's debt answers) to the printed sources would raise them to a printed or designer basis. Partly grounded by the designer (2026-10-25 search): \"initiative takes their deployment first and dies\" and \"rot isn't simultaneous\" (RQ 1542923825904099349, 1542924008620564610), which concepts.rot already cites, settle the order of rot damage at deployment. That rot and debt exist as counters, and how debt is paid, still rest on the owner's calls; Caleb's debt answers (RQ 1313311795913687112, 1352060737031241761) are not in the RQ snapshot."
   },
   {
     "id": "D-U04-8",
@@ -270,5 +270,23 @@
       }
     ],
     "resolution": "Stated as the engine's behaviour, basis engine (verifier r1: E.canPayCastCost draws removeCounters and recall candidates from unitsOf(seat, region)). Question for the owner only if a card's unit cost is meant to reach another region."
+  },
+  {
+    "id": "D-U04-14",
+    "kind": "b-engine-only",
+    "rule": "concepts.debt.no-limit",
+    "tier": 3,
+    "summary": "No source says whether a player's debt has a limit. The engine lets a player gain debt however much they already have, so a cost of gaining debt can always be paid (CT-399). Caleb's debt answers say only when debt is paid.",
+    "sides": [
+      {
+        "source": "card: Debt Blep",
+        "quote": "Gain 2 debt: I gain +3/+3 until regroup."
+      },
+      {
+        "source": "card: Reap the Due",
+        "quote": "Erase target unit unless its controller gains debt equal to twice your [l]."
+      }
+    ],
+    "resolution": "Stated as the engine's rule (concepts.debt.no-limit, basis engine, demonstrated by 689). Awaits the owner's sign-off, or a designer answer."
   }
 ]

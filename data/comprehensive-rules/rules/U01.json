@@ -2269,5 +2269,65 @@
     "confidence": "medium",
     "notes": "Split out of concepts.starting.constructed.first-draw in round 2. Basis engine: the verifier measured createGame dealing 4 in constructed. The printed setup deals 4 for the starting hand only in the draft setup (Manual p.11 / Rulebook 2023 p.6), together with the first turn's draws. D-U01-13 (b). Awaits owner sign-off (Annex P).",
     "sourceHashes": {}
+  },
+  {
+    "key": "concepts.golden.no-qualifier",
+    "parent": "101",
+    "order": 7,
+    "text": "Card text is read literally, and no qualifier is added to it. Text that names something with no qualifier means every such thing: \"target unit\" can be any unit, the player's own included. Only a word on the card, such as \"ally\", \"enemy\", \"your\" or \"opponent\", narrows it.",
+    "examples": [
+      {
+        "text": "Luminous Arc (\"I deal 6 damage to target unit.\") may target its caster's own unit as well as an enemy unit.",
+        "test": "182-correctness-sample.test.ts::Luminous Arc: exactly 6 damage, to the ONE unit chosen, and any unit is choosable"
+      },
+      {
+        "text": "Organic Exchange (\"Exchange control of two target units\") may target two of its caster's own units.",
+        "test": "396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units"
+      }
+    ],
+    "see": [
+      "101.6",
+      "110.3",
+      "707.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#2",
+          "quote": "You can target your own 2 units"
+        },
+        {
+          "ref": "RAQ 1355115946032889914#15",
+          "quote": "player would still need to target something to be deleted"
+        }
+      ],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "All the cards in Algomancy are pretty literal.",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
+        },
+        {
+          "quote": "carries no qualifier, do not invent one. The narrow reading here was not a",
+          "adopted": "2026-08-24",
+          "from": "register@72de434"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "182-correctness-sample.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "CT-394 (2026-10-25). Generalises 110.3 (targets) and 707.7 (statics). Caleb RQ 1310794232352735262 (\"if it just says \\\"unit\\\" the spell should still resolve\") also supports it but is not in the RQ snapshot.",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#15": "e0be6ade854b768d70790c837d9194c9624e35d2aeeab38d789e2fc926535cd6",
+      "RAQ 1454169054402314362#2": "b3c1d6d85b56be21075308f74a85f88594cd2eeffac19ed21962bdeecd7a25d3"
+    }
   }
 ]

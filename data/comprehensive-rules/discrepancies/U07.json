@@ -71,7 +71,7 @@
         "quote": "Trash isnt a trigger tho. Its a kind of death thing."
       }
     ],
-    "resolution": "Settled by the owner on 2026-10-22 (CT-246 closed by design): \"Trash isnt a trigger tho. Its a kind of death thing.\" Trashing is part of a death, so a dying {Unstable} card is trashed, and it still ends on the erased pile as the printed reminder says (\"erase them instead\"); the engine's sequence (enters a bin, trashed there, then erased; register 2026-08-24) stands. zones.bin.unstable and keywords.actions.trash.unstable-death state it; the exchange route (zones.changes.mods.exchanged) follows. F-U07-6 closed."
+    "resolution": "Settled by the owner on 2026-10-22 (CT-246 closed by design): \"Trash isnt a trigger tho. Its a kind of death thing.\" Trashing is part of a death, so a dying {Unstable} card is trashed, and it still ends on the erased pile as the printed reminder says (\"erase them instead\"); the engine's sequence (enters a bin, trashed there, then erased; register 2026-08-24) stands. zones.bin.unstable and keywords.actions.trash.unstable-death state it. F-U07-6 closed. The exchange route does not follow: an exchange is not a death, so an exchanged {Unstable} unit is erased without being trashed, as print says (zones.changes.mods.exchanged, 2026-10-25, CT-388); the engine trashes it first (F-U07-12)."
   },
   {
     "id": "D-U07-4",
@@ -271,7 +271,7 @@
     "id": "D-U07-12",
     "kind": "c-owner-call-only",
     "rule": "zones.recycle.mark",
-    "tier": 3,
+    "tier": 4,
     "summary": "The recycle mark has no printed or designer source. Print says only that recycling puts a card \"on the bottom of the deck\"; the owner learned the mark from a judge-level player.",
     "seeAlso": [
       {
@@ -295,9 +295,13 @@
       {
         "source": "owner ruling, adopted 2026-09-16",
         "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+      },
+      {
+        "source": "RQ 1352146353962352743",
+        "quote": "you should put something on the bottom of the deck to track when you hit recycled cards and then reshuffle when you hit that"
       }
     ],
-    "resolution": "Owner call, stated as zones.recycle.mark with basis owner. It does not contradict print: print never says recycled cards keep their order."
+    "resolution": "Settled by the designer (2026-10-25 search): Caleb, 2025-03-20, \"Technically yes, you should put something on the bottom of the deck to track when you hit recycled cards and then reshuffle when you hit that\" (RQ 1352146353962352743). zones.recycle.mark now cites it, basis mixed."
   },
   {
     "id": "D-U07-13",
@@ -348,5 +352,27 @@
       }
     ],
     "resolution": "Resolved without asking, both sources being tier 1: Caleb was answering whether a second effect aimed at a unit Organic Exchange also targets still resolves, where the unit stayed a legal target; the _passer write-up answers the case where a target stops being legal, and the owner ruling of 2026-10-09 (“Every target is re-checked against its…”) encodes it. The rule states both. Question for the owner only if Caleb's \"only\" is meant to cover a target that is still in play but no longer legal."
+  },
+  {
+    "id": "D-U07-18",
+    "kind": "a-sources-disagree",
+    "rule": "zones.changes.mods.exchanged",
+    "tier": 2,
+    "summary": "Is an {Unstable} (modded) unit exchanged out of play trashed before it is erased (CT-388)? The printed Unstable reminder erases it instead of letting it enter a bin, and trashing is entering a bin. The owner's 2026-08-25 call says an exchange is \"a despawn and trashing\", and the engine bins the body, trashes it and then erases it.",
+    "sides": [
+      {
+        "source": "card: Abyssal Evocation",
+        "quote": "(If they would enter a bin, erase them instead.)"
+      },
+      {
+        "source": "owner ruling, adopted 2026-08-25",
+        "quote": "It's not a death, but it is a despawn and trashing. Weird corner case."
+      },
+      {
+        "source": "owner ruling, adopted 2026-10-22",
+        "quote": "Trash isnt a trigger tho. Its a kind of death thing."
+      }
+    ],
+    "resolution": "Settled by the authority order: print outranks the owner's general exchange call, and the owner's own 2026-10-22 call keeps the trash of an {Unstable} card for a death only. zones.changes.mods.exchanged states that the exchanged unit is erased and not trashed; the engine differs (F-U07-12, a CT to file)."
   }
 ]

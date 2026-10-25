@@ -257,6 +257,14 @@ order.
 
 <sub>Discrepancies: D-U01-1 (discrepancies.md)</sub>
 
+<a id="r101.7"></a>**101.7.** Card text is read literally, and no qualifier is added to it. Text that names something with no qualifier means every such thing: "target unit" can be any unit, the player's own included. Only a word on the card, such as "ally", "enemy", "your" or "opponent", narrows it. See rules 101.6, 110.3, 707.7.
+
+> *Example: Luminous Arc ("I deal 6 damage to target unit.") may target its caster's own unit as well as an enemy unit.*
+
+> *Example: Organic Exchange ("Exchange control of two target units") may target two of its caster's own units.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1454169054402314362#2; RAQ 1355115946032889914#15 · Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Tests: 182-correctness-sample.test.ts, 396-raq-timing.test.ts · Example tests: 182-correctness-sample.test.ts::Luminous Arc: exactly 6 damage, to the ONE unit chosen, and any unit is choosable, 396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units · Key: concepts.golden.no-qualifier</sub>
+
 <a id="r102"></a>
 ### 102. Players, Ownership and Control
 
@@ -1021,7 +1029,7 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1355613076506017894#3 · Owner ruling, adopted 2026-08-18, 2026-08-25 (quoted from the retired ruling register) · Tests: 05-rulings.test.ts, 151-copy-and-moved-mods.test.ts · Example test: 151-copy-and-moved-mods.test.ts::CR 706.9 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy · Demonstrated by test: 05-rulings.test.ts::CR 109.3a: trigger conditions check at event time; amounts compute at resolution · Key: concepts.abilities.triggered.condition</sub>
 
-<a id="r109.3b"></a>**109.3b** An amount a triggered ability uses is measured when the ability resolves, so responses can change it.
+<a id="r109.3b"></a>**109.3b** An amount a triggered ability counts from the game as it stands ("damage equal to the number of cards in their hand") is measured when the ability resolves, so responses can change it. An amount taken from the event that triggered the ability is not measured again (rule 109.3e).
 
 > *Example: Astral Tidewraith attacks: its trigger deals each player damage equal to the cards in their hand, counted as the trigger resolves, not when it triggered.*
 
@@ -1040,6 +1048,16 @@ order.
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 1 test, passed; 1 gate test file · Tests: 136-triggers-and-modes.test.ts · Example test: 136-triggers-and-modes.test.ts::CR 109.3d: two targeted allies are TWO TRIGGERS on the stack · Key: concepts.abilities.triggered.per-target</sub>
 
 <sub>Discrepancies: D-U03-4 (discrepancies.md)</sub>
+
+<a id="r109.3e"></a>**109.3e** An amount that an ability takes from the event that triggered it ("that much", "that many") is the amount of that event, as it happened. Likewise, an amount that a later part of an effect takes from an earlier part ("for each ally recalled this way") counts what that earlier part actually did. See rule 109.3b.
+
+> *Example: Mirage Scuttler ("Whenever I survive damage, put that many +1/+1 counters on me.") survives 2 damage and gets 2 counters.*
+
+> *Example: Vroot's "that much" is the combat damage its own column dealt, not the total every column dealt.*
+
+> *Example: Torrential Reclamation is cast for X = 2 and one of its targets is removed in response: it recalls one ally, so each player sacrifices one unit and its caster loses 1 life.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Mirage Scuttler; card: Lithoghul; card: Torrential Reclamation · Designer: RQ 1223287683804037202 · Tests: 17-earth-b.test.ts, 166-face-damage-attribution.test.ts, 632-torrential-sacrifice-per-recall.test.ts · Example tests: 17-earth-b.test.ts::Mirage Scuttler: surviving damage grows it by that much; lethal damage does not, 166-face-damage-attribution.test.ts::CR 608.9a — Vroot, 632-torrential-sacrifice-per-recall.test.ts::CT-375: Torrential Reclamation for X = 2 with one target removed recalls one, so each player sacrifices one · Key: concepts.abilities.triggered.event-amount</sub>
 
 <a id="r109.4"></a>**109.4.** A static ability makes a continuous change to the game for as long as its card is in play. See rule 707.
 
@@ -1233,6 +1251,12 @@ order.
 > *Example: A 1/1 carrying two Wraith augments: the first shrink kills it, and the second finds no ally in play and fizzles.*
 
 <sub>Basis: Owner call · adopted 2026-10-16 · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Tests: 37-attrs-wight.test.ts, 460-wraith-chooses-on-resolution.test.ts, 461-wraith-no-ally-and-one-ally.test.ts · Example tests: 37-attrs-wight.test.ts::CR 706.12: three Wraith triggers and one 1/1 choose as each resolves, so only the first is offered the 1/1 and none fizzles, 461-wraith-no-ally-and-one-ally.test.ts::report 2026-10-16: a Wraith shrink that finds no ally in play asks nothing and fizzles · Key: concepts.targets.not-target.wraith</sub>
+
+<a id="r110.2d"></a>**110.2d** A choice that is not a target needs nothing to choose from. An effect that makes such a choice can be played when there is nothing to choose, and it resolves: that part does nothing and the rest of the effect still happens. It does not fizzle. The Wraith's trigger is the exception (rule 110.2c). See rules 110.2c, 704.
+
+> *Example: A player with no unit casts Rebalance ("Each player gives an opponent control of one of their units."). It can be played and it resolves: the caster gives nothing, and the opponent still gives the caster one of their units.*
+
+<sub>Basis: Designer · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1454169054402314362#1 · Tests: 396-raq-timing.test.ts · Example test: 396-raq-timing.test.ts::RAQ Another set: Rebalance is playable with no unit of your own · Key: concepts.targets.not-target.no-candidate</sub>
 
 <a id="r110.3"></a>**110.3.** Only a legal target can be chosen. Whether a target is legal depends on the kind of thing the text names (a unit, an ally, a player, an effect, a card in a bin) and on any restriction written on the target itself.
 
@@ -1513,7 +1537,7 @@ order.
 
 > *Example: With Arbiter of Vitality in play, a player at 15 life may pay Glararr's 9 life: they lose 18 and the game is over for them.*
 
-<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 4 gate test files · Printed: card: Arbiter of Vitality; card: Glararr · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-19, 2026-08-20 (quoted from the retired ruling register) · Tests: 38-light-a.test.ts, 47-costs-events.test.ts, 590-life-cost-one-change.test.ts, 415-cr-costs-life-timestamps.test.ts · Example tests: 38-light-a.test.ts::Glararr: CR 111.6b — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL, 590-life-cost-one-change.test.ts::CR 111.6b / report 273: the life is lost when X closes, and the running total is what is asked, 415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr · Key: concepts.costs.unpayable.life</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 4 gate test files · Printed: card: Arbiter of Vitality; card: Glararr · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-19, 2026-08-20 (quoted from the retired ruling register) · Tests: 38-light-a.test.ts, 47-costs-events.test.ts, 590-life-cost-one-change.test.ts, 415-cr-costs-life-timestamps.test.ts · Example tests: 38-light-a.test.ts::Glararr: CR 111.6b — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL, 590-life-cost-one-change.test.ts::CR 111.6b / report 273: the life is lost when X closes, and the running total is what is asked, 415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr · Key: concepts.costs.unpayable.life</sub>
 
 <sub>Discrepancies: D-U04-1 (discrepancies.md)</sub>
 
@@ -1728,7 +1752,7 @@ order.
 
 > *Example: With Arbiter of Vitality in play, paying Glararr's 9 life loses 18.*
 
-<sub>Basis: Mixed · Verified: not verified (the text changed after verification); 3 gate test files · Printed: card: Arbiter of Vitality · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-25, 2026-08-30 (quoted from the retired ruling register) · Tests: 137-multiplier-and-mode.test.ts, 45-hybrids-ld-b.test.ts, 415-cr-costs-life-timestamps.test.ts · Example tests: 137-multiplier-and-mode.test.ts::CR 708.6: THREE Arbiters multiply — the fold is EXPONENTIAL in n, 415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr · Demonstrated by test: 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check · Key: concepts.life.multipliers</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 3 gate test files · Printed: card: Arbiter of Vitality · Owner call · adopted 2026-10-23; Owner ruling, adopted 2026-08-25, 2026-08-30 (quoted from the retired ruling register) · Tests: 137-multiplier-and-mode.test.ts, 45-hybrids-ld-b.test.ts, 415-cr-costs-life-timestamps.test.ts · Example tests: 137-multiplier-and-mode.test.ts::CR 708.6: THREE Arbiters multiply — the fold is EXPONENTIAL in n, 415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, a player on 15 may pay the 9 life of Glararr · Demonstrated by test: 137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check · Key: concepts.life.multipliers</sub>
 
 <sub>Discrepancies: D-U15-4 (discrepancies.md)</sub>
 
@@ -1873,6 +1897,14 @@ order.
 > *Example: Tides of the Cosmos plays Hyper Beam in a battle window: its caster gains the 4 debt.*
 
 <sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 4 gate test files · Printed: card: Deferral Drone · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 47-costs-events.test.ts, 44-hybrids-ld-a.test.ts, 415-cr-costs-life-timestamps.test.ts, 556-inline-play-is-a-whole-play.test.ts · Example tests: 415-cr-costs-life-timestamps.test.ts::cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no damage, and the debt gained to play it stays, 556-inline-play-is-a-whole-play.test.ts::CR 112.14c / CT-332: a [Gain N debt] spell played in place gains the debt, 556-inline-play-is-a-whole-play.test.ts::CR 702.4e / CT-332: Tides of the Cosmos playing Hyper Beam in a battle window gains the debt · Demonstrated by test: 47-costs-events.test.ts::CR 112.14c: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt · Key: concepts.debt.as-cost</sub>
+
+<a id="r112.14d"></a>**112.14d** There is no limit to how much debt a player may have. A cost of gaining debt can always be paid, however much debt the player already has. See rules 112.14b, 112.14c.
+
+> *Example: A player with 40 debt activates Debt Blep ("Gain 2 debt: I gain +3/+3 until regroup."): the cost is paid, the player has 42 debt, and Debt Blep gets +3/+3.*
+
+<sub>Basis: Engine only · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 689-cr-coverage-gaps.test.ts · Example test: 689-cr-coverage-gaps.test.ts::CR 112.14d / CT-399: a player already carrying 40 debt · Key: concepts.debt.no-limit</sub>
+
+<sub>Discrepancies: D-U04-14 (discrepancies.md)</sub>
 
 <a id="r112.15"></a>**112.15.** Rot and debt are counters on players. An effect that removes counters from players removes them. An effect that changes the number of counters "put on" a player does not change how many are removed.
 
@@ -3199,6 +3231,12 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Printed: card: Abyssal Evocation · Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Tests: 12-fire-a.test.ts · Example test: 12-fire-a.test.ts::Abyssal Evocation: a bin-played spell is {Unstable} · Key: zones.bin.play-from-bin.unstable</sub>
 
+<a id="r405.9b"></a>**405.9b** A permission to play a targeted card from a bin ("You may play target spell from your bin until regroup") covers that card only, and only one play of it. Once the player has played the card, the permission is used up: neither another copy of that card nor any other card in the bin can be played under it. See rules 405.9, 405.6.
+
+> *Example: Spell Excavation targets one of two Luminous Arcs in its caster's bin, with an Arc Lightning there too. The caster may play a Luminous Arc from the bin, not the Arc Lightning; after one Luminous Arc is played, the other cannot be.*
+
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Printed: card: Spell Excavation · Tests: 689-cr-coverage-gaps.test.ts, 15-water-b.test.ts · Example test: 689-cr-coverage-gaps.test.ts::CR 405.9b / CT-400: Spell Excavation lets its caster · Key: zones.bin.play-from-bin.one-card</sub>
+
 <a id="r406"></a>
 ### 406. The Stack
 
@@ -3310,7 +3348,7 @@ order.
 
 <a id="r408.2"></a>**408.2.** A deck has a mark where it originally ended. The recycle pile lies under the deck, past the mark, and is still part of the deck. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.
 
-<sub>Basis: Owner call · adopted 2026-10-21; Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 300-recycle-mark.test.ts · Demonstrated by test: 300-recycle-mark.test.ts::CR 408.2 a recycled card stays behind the mark · Key: zones.recycle.mark</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Designer: RQ 1352146353962352743 · Owner call · adopted 2026-10-21; Owner ruling, adopted 2026-09-16 (quoted from the retired ruling register) · Tests: 300-recycle-mark.test.ts · Demonstrated by test: 300-recycle-mark.test.ts::CR 408.2 a recycled card stays behind the mark · Key: zones.recycle.mark</sub>
 
 <sub>Discrepancies: D-U07-12 (discrepancies.md)</sub>
 
@@ -3450,15 +3488,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-29 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 141-despawn-mods.test.ts · Demonstrated by test: 35-rot-debt-trash.test.ts::CR 410.4c: a TOKEN mod on a dying Unstable carrier is erased, never binned or trashed · Key: zones.changes.mods.token-mod</sub>
 
-<a id="r410.4d"></a>**410.4d** An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased, just as they would be if it died. See rules 410.4b, 405.5, 801.
+<a id="r410.4d"></a>**410.4d** An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased instead of entering the bin. It is not trashed, because it never enters a bin: only a death keeps its trash when {Unstable} erases a card (rule 801.2h). See rules 410.4b, 405.5, 801.2, 801.2h. *(Engine differs, see F-U07-12.)*
 
 > *Example: Hooba-Mon exchanges itself while it carries a mod; it is erased, not left in a bin.*
 
 > *Example: An unmodded Hooba-Mon exchanged the same way stays in the bin.*
 
-<sub>Basis: Mixed · Verified: confirmed in round 2; verifier ran 3 tests (a probe it wrote), all passed; 3 gate test files · Printed: Manual p.35; card: Abyssal Evocation · Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 42-dark-b.test.ts, 135-exchange-and-zones.test.ts, 418-cr-zones.test.ts · Example tests: 42-dark-b.test.ts::engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED (not left in a bin), 42-dark-b.test.ts::CR 405.4 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there · Key: zones.changes.mods.exchanged</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 5 tests, all passed; 3 gate test files · Printed: Manual p.35; card: Abyssal Evocation · Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Tests: 42-dark-b.test.ts, 135-exchange-and-zones.test.ts, 418-cr-zones.test.ts · Example tests: 42-dark-b.test.ts::engine (CT-246; CR 410.4d erases it unbinned): Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED (not left in a bin), 42-dark-b.test.ts::CR 405.4 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there · Key: zones.changes.mods.exchanged</sub>
 
-<sub>Discrepancies: D-U07-3 (discrepancies.md)</sub>
+<sub>Discrepancies: D-U07-18, D-U07-3 (discrepancies.md)</sub>
 
 <a id="r410.5"></a>**410.5.** A token that leaves play goes to the zone it was sent to (a hand, a bin, a cache) and really is there. It ceases to exist there the next time state-based actions are checked, which is before anything it caused to trigger can resolve. See rules 304, 713, 400.2.
 
@@ -6758,6 +6796,12 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 558-bonesculptor-permission.test.ts, 559-gridxlan-permission.test.ts · Example tests: 558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: using the permission puts no ability on the stack, and the unit is played, 558-bonesculptor-permission.test.ts::CR 707.10 / CT-255: one play each deployment for each Bonesculptor, 559-gridxlan-permission.test.ts::CR 707.10: Gridxlan has no activated ability, and with an empty hand it offers ANY unit in the bin as a play · Key: effects.static.permission</sub>
 
+<a id="r707.10a"></a>**707.10a** A permission that states no number of uses, such as Slurpr's "You can apply other mods during [Haste] as if it was deployment", may be used any number of times while it applies. A second card that grants the same permission adds nothing to it. See rules 504.7a, 723.5.
+
+> *Example: With one Slurpr in play, a player applies two augments in the same haste step. With two Slurprs, exactly the same mods are offered as with one.*
+
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Slurpr; card: Rook · Tests: 689-cr-coverage-gaps.test.ts · Example test: 689-cr-coverage-gaps.test.ts::CR 707.10a / CT-397: under one Slurpr · Key: effects.static.permission.no-count</sub>
+
 <a id="r708"></a>
 ### 708. Replacement and Prevention Effects
 
@@ -7170,6 +7214,12 @@ order.
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 427-cr-continuous-effects.test.ts · Example test: 427-cr-continuous-effects.test.ts::cr:effects.copies.spells.modular — a copy of Spellbind cast with Primordial Coalescence carries the same Modular mods · Key: effects.copies.spells.modular</sub>
 
 <sub>Discrepancies: D-U16-10 (discrepancies.md)</sub>
+
+<a id="r710.8e"></a>**710.8e** A copy of a spell is controlled by the player who makes the copy. On every card that copies a spell, that player is the one who played the spell, so the copy is theirs even when another player's card made it happen: a spell played at an opponent's Earthbound Replicator is copied for the player who played it. See rule 710.8.
+
+> *Example: A player casts Channeled Boon at the opponent's Earthbound Replicator. The Replicator's trigger copies the Boon, and the copy is controlled by the player who cast the Boon.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Printed: card: Earthbound Replicator; card: Meteor Shower · Designer: RAQ 1355613076506017894#0; RAQ 1355613076506017894#2 · Tests: 393-raq-mods.test.ts · Example test: 393-raq-mods.test.ts::RAQ Earthbound Replicator: an enemy spell aimed at it is copied for the ENEMY · Key: effects.copies.spells.controller</sub>
 
 <a id="r710.9"></a>**710.9.** A card that transforms in play is the same unit with its other face up: its name, stats and text are those of the face that is up. It keeps that face while it stays in play, and turns back over as it leaves play (rule 410.3). See rules 108.3, 410.3.
 
@@ -7781,9 +7831,9 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 142-static-conformance.test.ts, 16-earth-a.test.ts · Demonstrated by test: 142-static-conformance.test.ts::CR 721.1e: Aetherflux Golem is a STATIC · Key: effects.augment.what.kind-kept</sub>
 
-<a id="r721.1f"></a>**721.1f** Augment text that triggers on the host's own departure ("When I despawn") triggers whichever way the host leaves play: when it dies, is recalled or is cached. See rule 410.
+<a id="r721.1f"></a>**721.1f** Augment text that triggers on the host's own departure ("When I despawn") triggers whichever way the host leaves play: when it dies, is recalled, is cached, is exchanged or is erased. See rules 410, 410.2.
 
-<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file · Tests: 141-despawn-mods.test.ts · Demonstrated by tests: 141-despawn-mods.test.ts::CR 721.1f (i): a donated "[Augment] When I despawn" fires on a RECALL, 141-despawn-mods.test.ts::CR 721.1f (ii): a donated "[Augment] When I despawn" fires on a CACHE · Key: effects.augment.what.despawn</sub>
+<sub>Basis: Owner ruling, adopted 2026-08-25 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 6 tests (a probe it wrote), all passed; 2 gate test files · Tests: 141-despawn-mods.test.ts, 626-ancient-one-despawn-neighbours.test.ts · Demonstrated by tests: 141-despawn-mods.test.ts::CR 721.1f (i): a donated "[Augment] When I despawn" fires on a RECALL, 141-despawn-mods.test.ts::CR 721.1f (ii): a donated "[Augment] When I despawn" fires on a CACHE, 626-ancient-one-despawn-neighbours.test.ts::CR 721.1f, 714.9 / CT-350: an erased Ancient One has the when-I-despawn text of the ally it stood beside, 626-ancient-one-despawn-neighbours.test.ts::CR 721.1f, 410.2a / CT-350: an Ancient One exchanged out of play · Key: effects.augment.what.despawn</sub>
 
 <a id="r721.2"></a>**721.2.** A card can be applied as an augment if it prints the augment symbol, in its text box or on its type line, whether or not its augment text does anything. See rule 208.4.
 
@@ -7908,7 +7958,7 @@ order.
 
 > *Example: An Ancient One activating an adjacent ally's grafted cause runs the graft too.*
 
-<sub>Basis: Printed · Verified: not verified (the text changed after verification); 2 gate test files · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Tests: 588-ancient-one-borrows-grafts.test.ts, 428-cr-modifications.test.ts · Example tests: 428-cr-modifications.test.ts::cr:effects.graft.composite — Accelerated Germination grafted onto Oracle of the Flame, 588-ancient-one-borrows-grafts.test.ts::CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause runs the graft too · Key: effects.graft.composite</sub>
+<sub>Basis: Printed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: Manual p.33; Manual p.33; Rulebook 2023 p.16 · Tests: 588-ancient-one-borrows-grafts.test.ts, 428-cr-modifications.test.ts · Example tests: 428-cr-modifications.test.ts::cr:effects.graft.composite — Accelerated Germination grafted onto Oracle of the Flame, 588-ancient-one-borrows-grafts.test.ts::CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause runs the graft too · Key: effects.graft.composite</sub>
 
 <a id="r722.4a"></a>**722.4a** The host's own graft cause decides when the whole composite triggers or can be activated.
 
@@ -7989,6 +8039,12 @@ order.
 <a id="r722.6b"></a>**722.6b** The cost is paid as the composite goes on the stack. No player can respond to the payment, and units the composite itself would create cannot pay it. See rule 111.
 
 <sub>Basis: Designer · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Designer: RAQ 1355115946032889914#12 · Tests: 17-earth-b.test.ts · Demonstrated by test: 17-earth-b.test.ts::graft under Lost Guardian pays its cost TWICE and resolves twice · Key: effects.graft.costs.instant</sub>
+
+<a id="r722.6c"></a>**722.6c** A grafted cost with an X in it ("[Remove X +1/+1 counters from allies]") sets the X of that graft's own effect. The player chooses how much to pay as the composite goes on the stack, and that graft's effect uses the amount paid as its X. See rules 722.6b, 111.
+
+> *Example: Discharge ("[Remove X +1/+1 counters from allies]: I deal X damage to target unit.") is grafted under Guardian of the Grotto. When the Guardian attacks, its controller removes two counters from an attacking ally to pay the grafted cost, and the grafted part deals 2 damage.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 1 test, passed; 2 gate test files · Printed: card: Discharge · Designer: RAQ 1355115946032889914#12 · Tests: 689-cr-coverage-gaps.test.ts, 50-ui-inspect.test.ts · Example test: 689-cr-coverage-gaps.test.ts::CR 722.6c / CT-396: a grafted Discharge pays its own · Key: effects.graft.costs.variable</sub>
 
 <a id="r722.7"></a>**722.7.** Some graft causes trigger several copies of the graft ability as one single trigger: Lost Guardian two, Amphivore and Witness of the Crossing three. The copies are one effect on the stack. See rule 111.14.
 
@@ -8143,6 +8199,14 @@ order.
 
 <sub>Discrepancies: D-U17-2 (discrepancies.md)</sub>
 
+<a id="r723.4f"></a>**723.4f** When a spell carrying a Virus is erased, the spell goes to the erased pile of the player who played it, and the Virus goes to the erased pile of the player who applied it. See rules 723.4b, 400.4.
+
+> *Example: A player casts Collect Remains and the opponent applies Chitin Shredder to it as a Virus. Collect Remains resolves and is erased onto its caster's erased pile; Chitin Shredder goes onto the erased pile of the player who applied it, and into no bin.*
+
+<sub>Basis: Owner ruling, adopted 2026-08-29, 2026-08-30 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 1 test, passed; 1 gate test file · Tests: 89-self-erase.test.ts · Example test: 89-self-erase.test.ts::a virus rides a self-erasing spell · Key: effects.virus.spell-host.erased-piles</sub>
+
+<sub>Discrepancies: D-U17-16 (discrepancies.md)</sub>
+
 <a id="r723.5"></a>**723.5.** A card can let other cards be augmented during battle as if they were Viruses. Rook: "You may augment cards from hand and bin during battle as if they were [Virus]." See rule 720.2b.
 
 > *Example: Applying a non-Virus augment from hand during battle is not allowed without Rook, and is with it.*
@@ -8161,7 +8225,7 @@ order.
 
 <a id="r723.5c"></a>**723.5c** Such a permission belongs to the controller of the card that grants it (the host's controller, when it is a mod), and works only in that card's region. See rule 720.6b.
 
-<sub>Basis: Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Tests: 29-hybrids-wm-a.test.ts, 136-triggers-and-modes.test.ts · Demonstrated by tests: 29-hybrids-wm-a.test.ts::Rook: the permission is REGION-scoped, and does not reach the opponent, 29-hybrids-wm-a.test.ts::Rook: the [Augment] half works, and the permission belongs to the HOST · Key: effects.virus.permission.region</sub>
+<sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 2 tests, all passed; 2 gate test files · Designer: RAQ 1454169054402314362#0 · Owner ruling, adopted 2026-08-23 (quoted from the retired ruling register) · Tests: 29-hybrids-wm-a.test.ts, 136-triggers-and-modes.test.ts · Demonstrated by tests: 29-hybrids-wm-a.test.ts::Rook: the permission is REGION-scoped, and does not reach the opponent, 29-hybrids-wm-a.test.ts::Rook: the [Augment] half works, and the permission belongs to the HOST · Key: effects.virus.permission.region</sub>
 
 <sub>Discrepancies: D-U17-10 (discrepancies.md)</sub>
 
@@ -8312,9 +8376,23 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Printed: card: Dropslime · Owner ruling, adopted 2026-09-28 (quoted from the retired ruling register) · Tests: 338-tokens-are-not-trashed.test.ts · Example test: 338-tokens-are-not-trashed.test.ts::CR 801.2i: Dropslime deals damage for the CARDS trashed this battle and not for the tokens · Key: keywords.actions.trash.count-cards-only</sub>
 
+<a id="r801.2j"></a>**801.2j** A card's own "When I am trashed" ability triggers once the card has entered the bin it was trashed into. The card is in that bin when the ability triggers, so "another" in the ability excludes only that copy of the card (rule 405.6a). See rules 801.2, 405.6a.
+
+> *Example: Blightwalker is discarded with an older Blightwalker already in the bin: its trigger may recall the older copy, but not itself.*
+
+> *Example: Blightwalker discarded into an otherwise empty bin has nothing to recall: the only card there is itself.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Printed: card: Blightwalker · Owner ruling, adopted 2026-08-19 (quoted from the retired ruling register) · Tests: 121-another-identity.test.ts, 46-hybrids-ld-c.test.ts · Example tests: 121-another-identity.test.ts::CR 405.6a Blightwalker: a Blightwalker ALREADY in the bin is "another" and is offered, 121-another-identity.test.ts::CR 405.6a Blightwalker: alone in the bin it is still the only thing excluded · Demonstrated by test: 46-hybrids-ld-c.test.ts::Swarmling: discarding IT fires its own trigger from the bin · Key: keywords.actions.trash.own-trigger</sub>
+
 <a id="r801.3"></a>**801.3.** To discard a card is to put it from a hand into the bin. A discarded card is trashed. Discarding is not playing the card, and a cached card cannot be discarded. See rules 402.5, 403.4, 801.2.
 
 <sub>Basis: Owner ruling, adopted 2026-08-19, 2026-08-21, 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 2; verifier ran 2 tests (a probe it wrote), all passed; 2 gate test files · Tests: 35-rot-debt-trash.test.ts, 429-cr-keyword-actions.test.ts · Demonstrated by tests: 35-rot-debt-trash.test.ts::discarding from hand trashes, by the owner of the bin it enters, 429-cr-keyword-actions.test.ts::cr:keywords.actions.discard — a discard from a hand puts nothing on the stack and is not played, and a cached card cannot be discarded · Key: keywords.actions.discard</sub>
+
+<a id="r801.3a"></a>**801.3a** The player who discards chooses which card to discard. "Each opponent discards a card" is each opponent's own choice from their own hand. A card that says what kind of card is discarded limits the choice to cards of that kind: under Void Memory, each opponent chooses which card of the declared kind to discard. See rules 801.3, 110.2.
+
+> *Example: Void Memory is cast and its caster declares "unit". The opponent, holding a spell and two units, chooses which of the two units to discard.*
+
+<sub>Basis: Mixed · Verified: confirmed in round 4; verifier ran 3 tests (a probe it wrote), all passed; 2 gate test files · Printed: card: Void Memory; card: Plague Ritual · Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Tests: 97-mode-conformance.test.ts, 28-metal-c.test.ts · Example test: 97-mode-conformance.test.ts::Void Memory's victim still picks WHICH card, among the ones the half admits · Key: keywords.actions.discard.chooser</sub>
 
 <a id="r801.4"></a>**801.4.** To sacrifice a unit is for a player to choose a unit they control and put it into their bin. A sacrificed unit dies. See rules 111.3, 111.8.
 
@@ -10294,7 +10372,7 @@ order.
 
 <sub>Discrepancies: D-U22-7 (discrepancies.md)</sub>
 
-<a id="r901.3"></a>**901.3.** A constructed deck may hold at most 2 copies of any one card. See rule 901.8.
+<a id="r901.3"></a>**901.3.** A constructed deck may hold at most 2 copies of any one card. See rule D8.2.
 
 > *Example: A third copy of a card makes the deck illegal.*
 
@@ -10346,27 +10424,13 @@ order.
 
 <sub>Discrepancies: D-U22-10 (discrepancies.md)</sub>
 
-<a id="r901.8"></a>**901.8.** *(Digital client)* Single Card Duel is a variant of constructed that the client offers. Each player picks a single card before the game, and their deck is 30 copies of that card. See rule 901.3.
+<a id="r901.8"></a>**901.8.** [Removed: duplicate of Annex D8.2 (CT-389)] Replaced by D8.2.
 
-<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 433-cr-formats.test.ts · Demonstrated by test: 433-cr-formats.test.ts::cr:formats.constructed.single-card — a duel deck is 30 copies of one card, and a constructed game accepts it · Key: formats.constructed.single-card</sub>
+<a id="r901.8a"></a>**901.8a** [Removed: duplicate of Annex D8.2 (CT-389)] Replaced by D8.2.
 
-<sub>Discrepancies: D-U22-8 (discrepancies.md)</sub>
+<a id="r901.8b"></a>**901.8b** [Removed: duplicate of Annex D8.2 (CT-389)] Replaced by D8.2a.
 
-<a id="r901.8a"></a>**901.8a** *(Digital client)* A Single Card Duel deck is the one exception to the limit of 2 copies of a card. See rule 901.3.
-
-<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 433-cr-formats.test.ts · Demonstrated by test: 433-cr-formats.test.ts::cr:formats.constructed.single-card.copies — the duel deck breaks the two-copy cap: checkDeck refuses it, checkSingleDeck and createGame accept it · Key: formats.constructed.single-card.copies</sub>
-
-<a id="r901.8b"></a>**901.8b** *(Digital client)* A Single Card Duel has no draw phase. Each turn, each player simply draws 2 cards; nothing is put back. The opening hand is still 4 cards. See rule 503.
-
-> *Example: Each player starts turn 1 with 6 cards (4 + 2) and nothing to put back, and draws exactly 2 more on turn 2.*
-
-<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 433-cr-formats.test.ts · Example test: 433-cr-formats.test.ts::cr:formats.constructed.single-card.no-draw-phase — opening 4, a flat 2 each turn, nothing put back · Key: formats.constructed.single-card.no-draw-phase</sub>
-
-<a id="r901.8c"></a>**901.8c** *(Digital client)* If neither player's card can make a unit, the game is not played. It is a draw: each player is told the other's card, and both choose again. A card can make a unit if it is a unit or spell-unit card, or if it creates a unit token. See rule 104.
-
-> *Example: A unit card and Self-Assembly (which creates a Robot unit token) can make a unit; a spell that creates no unit cannot.*
-
-<sub>Basis: Owner ruling, adopted 2026-09-18 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test (a probe it wrote), passed; 1 gate test file · Tests: 433-cr-formats.test.ts · Example test: 433-cr-formats.test.ts::cr:formats.constructed.single-card.no-units — makesUnits is true for a unit and a unit-token maker, false for a spell that makes none · Key: formats.constructed.single-card.no-units</sub>
+<a id="r901.8c"></a>**901.8c** [Removed: duplicate of Annex D8.2 (CT-389)] Replaced by D8.2c.
 
 <a id="r902"></a>
 ### 902. Draft and Cube
@@ -10644,33 +10708,34 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Basis
 
-1829 numbered rules.
+1839 numbered rules.
 
 | basis | rules |
 |---|---|
-| Printed | 451 |
-| Designer | 202 |
-| Owner call | 669 |
-| Engine only | 40 |
-| Mixed | 467 |
+| Printed | 453 |
+| Designer | 203 |
+| Owner call | 667 |
+| Engine only | 41 |
+| Mixed | 475 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1819 |
+| confirmed | 1832 |
 | partial | 6 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
 | not verified | 1 |
-| text changed | 3 |
+| text changed | 0 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 
 - [103.3b](#r103.3b) In constructed, each player's opening hand is 4 cards. No source gives the constructed opening hand; it is the client's convention.
 - [109.9n](#r109.9n) A bounded "When I am trashed" ability is limited for each trashed card, not for each player and card name: two copies of one card trashed in the same turn each trigger.
 - [111.3a](#r111.3a) A cost that removes counters from the player's allies, or recalls an ally, likewise uses only the player's own units in the region where the cost is paid.
+- [112.14d](#r112.14d) There is no limit to how much debt a player may have. A cost of gaining debt can always be paid, however much debt the player already has.
 - [406.4b](#r406.4b) A self-erasing spell that is negated or fails to resolve goes to the bin. Its "Erase me" never happened.
 - [603.1c](#r603.1c) Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot.
 - [713.3a](#r713.3a) Deaths are also checked while an effect is still resolving, not only at safe points. Each time an effect puts counters on a unit, and after each part of an effect made of several parts, units that should be dead die at once, before the rest of the effect happens.
@@ -10711,7 +10776,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Findings: where the engine differs
 
-81 divergences, filed as 130 findings. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.
+82 divergences, filed as 131 findings. A divergence that more than one drafting unit found is listed once, under its first id; divergences that share a CT ticket are listed under it.
 
 - <a id="F-U01-1"></a><a id="F-U01-3"></a>**F-U01-1** Ownership is lost once a stolen card passes through the thief's hand (CT-233). Rule 102.4. Also found as F-U01-3.
   Zones follow control, so a stolen unit that is recalled goes to the thief's hand. The hand holds a bare card name, so when the thief replays it the new unit's owner defaults to the playing seat, and the engine records the thief as owner. The rulings say ownership never moves ("its OWNER's, always, forever"). The verifier's probe measured owner = thief after the replay. Low impact today because zones follow control, but the owner field no longer means what the ruling says it keeps meaning. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-233): a stolen card keeps its owner through the thief's own hand, bin and cache (551); the routes still open are F-U01-6. Re-checked (F-U01-3): fixed on 2026-10-22 with F-U01-1 (CT-233): 551 keeps the owner through a hand and a bin.
@@ -10813,6 +10878,8 @@ Generated from the records and the verdicts. Nothing here is a rule.
   Per the owner ruling of 2026-08-24 (“an {Unstable} unit that dies IS…”) the engine pushes a dying {Unstable} card into the bin, trashes it there, then sweeps it to the erased pile. The printed reminder ("If they would enter a bin, erase them instead.") and Caleb's glossary line in the owner ruling of 2026-08-25 (“the ACTIVE ZONE: in play and…”) make it a replacement for entering the bin, which would mean no trash. Under the authority order rule 405.5 states the printed reading. A divergence, not necessarily a bug: it is open as D-U07-3 and depends on the owner's answer there. Re-checked: by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it. Re-checked (F-U07-10): by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it. Re-checked (F-U07-11): by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it. Re-checked (F-U18-1): by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it. Re-checked (F-U18-3): by design 2026-10-22 (CT-246 closed): the owner, "Trash isnt a trigger tho. Its a kind of death thing." A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it.
 - <a id="F-U07-7"></a><a id="F-U07-9"></a><a id="F-REG-1"></a>**F-U07-7** A stolen unit erased from play is filed on its OWNER's erased pile, not its controller's (CT-229). Rule 400.4. Also found as F-U07-9, F-REG-1.
   The owner ruling of 2026-08-30 (“zones follow control, in all four…”) ("All four follow control") corrected the owner ruling of 2026-08-25 (“an ERASE is a despawn; the…”) item 3, and every other route (bin, hand, cache, a mod erased off a host, an {Unstable} death's sweep) files the card under the controller. Erasing a unit from play still emits the erased event with the owner's seat, so a stolen unit erased by Banishment or Celestial Purge lands on its owner's erased pile. Measured by the round-1 verifier probe; test 246 covers only the mod route. (Measured by a verifier probe; the probe files are not committed.) Re-checked: fixed on 2026-10-22 (CT-229): a stolen unit erased from play is filed on its controller's erased pile, with its mods (246). Re-checked (F-U07-9): fixed on 2026-10-22 with F-U07-7 (CT-229, 246). Re-checked (F-REG-1): fixed on 2026-10-22 with F-U07-7 (CT-229, 246).
+- <a id="F-U07-12"></a>**F-U07-12** An Unstable (modded) body exchanged out of play is binned and trashed before it is erased. Rule 410.4d.
+  The engine puts an exchanged {Unstable} (modded) body into the bin, trashes it there and then sweeps it to the erased pile (exchangeInPlace through disposeToBin), as it does for a death. Print erases it instead of letting it enter a bin, so it is not trashed; the owner's 2026-10-22 call (CT-246, closed) keeps the trash for a death only. Needs its own CT (CT-388 measured it).
 - <a id="F-U08-1"></a><a id="F-U09-3"></a>**F-U08-1** Resource, haste and deployment steps run simultaneously and hidden instead of initiative player first, then non-initiative player (CT-247). Rules 501.4, 507.3. Also found as F-U09-3.
   Print (Manual p.27 legend for 1v1, Rulebook 2023 p.5, Manual p.20) has the initiative player take the resource step and the haste step (and deployment) first and the non-initiative player after, seeing what was done. The engine runs these as hidden simultaneous segments: both seats act at once, interleaved, and the non-initiative player never gets the information print gives them. The verifier measured it: the non-initiative seat activated a resource, finished the resource step and played a haste card before the initiative seat acted. Initiative-first order holds in battle only. The draft-step sync is the separate finding F-U08-4. (Measured by a verifier probe; the probe files are not committed.) Re-checked: wontfix 2026-10-22 (CT-247): the owner keeps the simultaneous hidden resource, haste and deployment steps as a house rule; rule D1.5 states the convention. Re-checked (F-U09-3): wontfix 2026-10-22 (CT-247): the owner keeps the simultaneous hidden resource, haste and deployment steps as a house rule; rule D1.5 states the convention.
 - <a id="F-U08-4"></a>**F-U08-4** Planning steps do not sync: a seat that has drafted starts its resource step while the other still drafts (CT-248). Rule 501.4a.
@@ -10884,7 +10951,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 ### Digital-client rules in the main document
 
-[100.4](#r100.4), [103.3b](#r103.3b), [500.2a](#r500.2a), [507.3a](#r507.3a), [507.5a](#r507.5a), [900.6](#r900.6), [901.7b](#r901.7b), [901.8](#r901.8), [901.8a](#r901.8a), [901.8b](#r901.8b), [901.8c](#r901.8c), [902.5](#r902.5), [902.5a](#r902.5a), [902.5b](#r902.5b), [902.5c](#r902.5c), [902.5d](#r902.5d), [902.5e](#r902.5e), [902.5f](#r902.5f), [902.5g](#r902.5g), [902.5h](#r902.5h). Each is true of this client, not of a game at a table; Annex D holds the rest.
+[100.4](#r100.4), [103.3b](#r103.3b), [500.2a](#r500.2a), [507.3a](#r507.3a), [507.5a](#r507.5a), [900.6](#r900.6), [901.7b](#r901.7b), [902.5](#r902.5), [902.5a](#r902.5a), [902.5b](#r902.5b), [902.5c](#r902.5c), [902.5d](#r902.5d), [902.5e](#r902.5e), [902.5f](#r902.5f), [902.5g](#r902.5g), [902.5h](#r902.5h). Each is true of this client, not of a game at a table; Annex D holds the rest.
 
 ## Glossary
 
@@ -11188,7 +11255,7 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 **Side-block**: A defending unit placed blocking where no attacker is. See rule 606.4.
 
-**Single Card Duel**: A variant of constructed in which each player picks a single card and their deck is 30 copies of it. See rules 901.8, D8.2.
+**Single Card Duel**: A variant of constructed in which each player picks a single card and their deck is 30 copies of it. See rule D8.2.
 
 **Skirmish** (Obsolete): The old rules glossary's name for the place where attackers meet defenders, one per player; the current term is region. See rule 601.1.
 
@@ -11270,5 +11337,9 @@ Keyed by rule key. A number never moves, so a rule is new, removed or renamed; t
 
 ### First generation (draft)
 
-- New: 1830 rules and 99 sections.
+- New: 1844 rules and 99 sections.
 - Removed: 801.12c `keywords.actions.rockfall.repeated`: No card prints "Rockfall N, X times": Meteor Shower copies itself twice instead (its current card, owner 2026-10-18), and each copy is its own spell (replaced by `effects.copies.spells`)
+- Removed: 901.8 `formats.constructed.single-card`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
+- Removed: 901.8a `formats.constructed.single-card.copies`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel`)
+- Removed: 901.8b `formats.constructed.single-card.no-draw-phase`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel.draw`)
+- Removed: 901.8c `formats.constructed.single-card.no-units`: duplicate of Annex D8.2 (CT-389) (replaced by `annexd.modes.single-card-duel.no-units`)

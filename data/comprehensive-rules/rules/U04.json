@@ -3378,5 +3378,36 @@
     "confidence": "medium",
     "notes": "The owner ruling of 2026-08-18 (“Bracketed [costs] and X on spells…”) predates the removeCounters cost kind (added by the owner ruling of 2026-08-21 (“A bracketed cost is paid at…”)), so its \"region-scoped\" was written about sacrifice; the extension to other unit costs is the engine's (D-U04-13). Added round 1. Verifier r1: E.canPayCastCost draws sacrifice, removeCounters and recall candidates from unitsOf(seat, region).",
     "sourceHashes": {}
+  },
+  {
+    "key": "concepts.debt.no-limit",
+    "parent": "concepts.debt",
+    "order": 4,
+    "text": "There is no limit to how much debt a player may have. A cost of gaining debt can always be paid, however much debt the player already has.",
+    "examples": [
+      {
+        "text": "A player with 40 debt activates Debt Blep (\"Gain 2 debt: I gain +3/+3 until regroup.\"): the cost is paid, the player has 42 debt, and Debt Blep gets +3/+3.",
+        "test": "689-cr-coverage-gaps.test.ts::CR 112.14d / CT-399: a player already carrying 40 debt"
+      }
+    ],
+    "see": [
+      "112.14b",
+      "112.14c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "689-cr-coverage-gaps.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-399 (2026-10-25). The engine treats gaining debt as always payable (\"debt is always takeable\"). No printed text, designer statement or owner call names a cap or says there is none; Caleb's debt answers (RQ 1313311795913687112, 1352060737031241761) are about when debt is paid. Engine-only: awaits sign-off (D-U04-14).",
+    "sourceHashes": {}
   }
 ]
