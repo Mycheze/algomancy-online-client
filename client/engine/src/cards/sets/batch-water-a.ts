@@ -267,7 +267,7 @@ export const inlineModes = (g: E, name: string, region: number, seat: Seat): Inl
  * spell tokens standing in play there, narrowed by CR 110.12 (Gatekeeper of
  * Souls, CT-331) because applying a Virus targets its host (CR 110.10a).
  *
- * CT-416: this used to be the units alone. The RAQ write-up of Tides
+ * CT-416: the stack spells and spell tokens are hosts here too. The RAQ write-up of Tides
  * (1396955380000755795): "Tides allows you to play Ambushes/Prophecy and apply
  * Viruses"; Caleb, asked whether Tides can put a Virus on an enemy unit: "So,
  * I want it to be yes" (1356456406206775407). A Virus Tides plays is applied
