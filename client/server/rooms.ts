@@ -2958,6 +2958,27 @@ export function renumberRefUids(ref: string, lo: number, hi: number): string {
   });
 }
 
+/**
+ * CT-365 — WHY NO CACHED-CARD `uid` IS SHIFTED HERE. A `{ cached: { seat, uid } }`
+ * target (types.ts `TargetRef` / `CachedRef`) never rides in an action payload,
+ * so there is none to move. Measured 2026-10-25 against types.ts `ActionBody`:
+ * no variant has a TargetRef, a CachedRef or a `uid` field. A target is chosen
+ * on a decision and answered by `decide`, whose payload is `choice: number |
+ * number[]` — an index into the options the rebuilt state offers, not a ref. The
+ * cache-reading actions name a card by its cache INDEX (`playCached`, `prophesy`
+ * / `augment` / `graft` with `from: 'cache'`, an amend `move` from 'cache'), and
+ * an index does not come off the `nextId` clock. The one place a cached uid
+ * reaches a comparison is the reference key, which `renumberRefUids` above
+ * shifts. `ActionCarriesUid` below makes this a compile error rather than a
+ * comment: give an action a `uid` (or a TargetRef) and the server typecheck
+ * fails here, which is where it would have to be renumbered.
+ */
+type ActionCarriesUid<T> = T extends readonly (infer U)[] ? ActionCarriesUid<U>
+  : T extends object ? { [K in keyof T]-?: K extends 'uid' ? true : ActionCarriesUid<T[K]> }[keyof T]
+  : false;
+const _noUidInActions: [ActionCarriesUid<Action>] extends [false] ? true : never = true;
+void _noUidInActions;
+
 export function renumberAction(a: Action, lo: number, hi: number): Action {
   const shift = hi - lo;
   let moved = false;
