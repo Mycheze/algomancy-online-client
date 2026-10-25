@@ -200,7 +200,7 @@ interface TokenBatch {
  * Proliferating Slime change the number of, and Counter Thief redirects */
 interface CounterEv { target: Entity; n: number }
 
-interface ReplacementPick { label: string; card: CardName; unit: EntityId; pick: number; mod?: EntityId }
+interface ReplacementPick { label: string; card: CardName; unit?: EntityId; pick: number; mod?: EntityId }
 
 /** CR 708.4a: one replacement effect that could apply to one event (engine-internal; see `E.replaceEvent`) */
 interface Replacer<Ev> {
@@ -1081,6 +1081,139 @@ export class E {
       }
     } finally { this.inAmountMods = false; }
     return total;
+  }
+
+  /**
+   * CR 708.6a — an ADDITION and a DOUBLING on one amount of effect damage:
+   * Conduit of Pain ("it deals that much damage plus 1 instead") beside a
+   * {Powerful} source. Which applies first changes the number — (2+1)×2 = 6
+   * or 2×2+1 = 5 — and the additions first is never worse for the dealer (RAQ
+   * "[Solved] Resonant, Combat Damage, Conduit and Powerful": "(1+1)x2"; Caleb
+   * 2026-02-23: "which usually would mean doing +1 then doubling … for max
+   * damage"). So it is the ONE-CLICK DEFAULT, and the dealer may click the one
+   * to apply first instead (the owner, 2026-10-25, Q5: "give them the option
+   * to choose, but be like 'Yo, this will be a higher number'").
+   *
+   * WHO: each owner orders their own, the initiative player's first (the
+   * owner, 2026-10-25, Q1). The additions are the dealer's ("an ALLIED
+   * source"); {Powerful} is the source's controller's. One player: asked.
+   * Two (a Fight makes an opponent's unit the source): no question, the
+   * initiative player's applies first.
+   *
+   * Asked once per batch; the answer prices every hit of it.
+   */
+  private additionOrder(ctx: EffectCtx, addCtx: import('./cards/dsl.ts').AmountCtx, base: number, plus: number): 'add' | 'double' {
+    const src = ctx.sourceId !== undefined ? this.entity(ctx.sourceId) : undefined;
+    const dblSeat = src?.controller ?? ctx.controller;
+    if (dblSeat !== ctx.controller) return this.initiative === ctx.controller ? 'add' : 'double';
+    const adders = this.amountReplacers(addCtx.region ?? -1, addCtx.region === undefined)
+      .filter(a => this.amountQuery(() => a.mod.delta(this, a.anchor, addCtx)) !== 0);
+    const hi = (base + plus) * 2, lo = base * 2 + plus;
+    const faces = [...new Set(adders.map(a => a.face))];
+    const got = this.askReplacement(ctx.controller,
+      `${ctx.sourceName}: ${faces.join(' and ') || 'an addition'} and {Powerful} both change its ${base} damage — which applies first?`,
+      [
+        ...adders.map(a => ({ label: `${this.replacerLabel(a.face, a.anchor)} first: ${hi} damage`, card: a.face,
+          unit: a.anchor.id, pick: 0, ...(a.holder.id !== a.anchor.id ? { mod: a.holder.id } : {}) })),
+        { label: `{Powerful} first: ${lo} damage`, card: src ? this.faceName(src) : ctx.sourceName,
+          ...(src ? { unit: src.id } : {}), pick: 1 },
+      ],
+      { label: `Default: ${hi} damage (the higher number)`, pick: 0 });
+    return got === 1 ? 'double' : 'add';
+  }
+
+  /**
+   * CR 708.6a — the same two families one event later: an addition went into
+   * the damage a player is dealt (Conduit of Pain's "plus 1", `share` of it
+   * after any {Powerful}), and that damage becomes a life loss that is doubled
+   * (Arbiter of Vitality: "Double all life gain and life loss. (Damage causes
+   * loss of life.)"). Additions first — the default, never fewer — doubles the
+   * whole loss; a doubling first doubles the damage without the addition and
+   * adds it after.
+   *
+   * The replacements here may belong to two players (an Arbiter is anyone's),
+   * so this runs on the seam (`replaceEvent`): each owner orders their own, the
+   * initiative player's first (the owner, 2026-10-25, Q1), and one player who
+   * holds both is asked, with the default first.
+   *
+   * Returns the loss as priced when that differs from the default (which
+   * `loseLife` then prices as it always has), else undefined.
+   */
+  private lossOrder(ctx: EffectCtx, seat: Seat, n: number, share: number): { out: number; note: string } | undefined {
+    if (n <= 0 || share <= 0 || this.lifeLocked(seat)) return undefined;
+    const lossCtx: import('./cards/dsl.ts').AmountCtx = {
+      kind: 'lifeLoss', region: this.s.battle ? this.s.battle.region : undefined,
+      player: seat, combat: false, amount: n,
+    };
+    const dbl = this.multiplierReplacers(lossCtx);
+    if (!dbl.length) return undefined;
+    // the additions that went into this player's damage — the dealer's ("an
+    // ALLIED source") — as ONE replacer: they add `share` together
+    const addCtx: import('./cards/dsl.ts').AmountCtx = {
+      kind: 'effectDamage', region: ctx.region, amount: Math.max(1, n - share), player: seat,
+      sourceSeat: ctx.controller, sourceName: ctx.sourceName, combat: false,
+    };
+    const adders = this.amountReplacers(ctx.region ?? -1, ctx.region === undefined)
+      .filter(a => this.amountQuery(() => a.mod.delta(this, a.anchor, addCtx)) !== 0);
+    if (!adders.length) return undefined;
+    type Loss = { v: number; first: CardName[] };
+    const reps: Replacer<Loss>[] = [
+      { face: adders[0]!.face, anchor: adders[0]!.anchor, seat: ctx.controller, same: 'add', tier: 0, rank: 0,
+        apply: ev => ({ v: ev.v + share, first: [...ev.first, 'add'] }) },
+      ...dbl.map((m, i): Replacer<Loss> => ({
+        face: m.face, anchor: m.anchor, ...(m.holder.id !== m.anchor.id ? { mod: m.holder } : {}),
+        seat: m.anchor.controller, same: `x${i}`, tier: 0, rank: 1,
+        apply: ev => ({ v: Math.max(0, Math.round(ev.v * m.factor)), first: [...ev.first, m.face] }),
+      })),
+    ];
+    const factor = dbl.reduce((f, m) => f * m.factor, 1);
+    const hi = Math.max(0, Math.round(n * factor));
+    const end = this.replaceEvent(reps, { v: n - share, first: [] }, (groups, ev, at) => {
+      const hasAdd = groups.some(g => g.same === 'add');
+      if (!hasAdd) return groups;
+      const rest = groups.filter(g => g.same !== 'add');
+      const lo = Math.max(0, Math.round(ev.v * rest.reduce((f, g) => f * dbl[reps.indexOf(g) - 1]!.factor, 1))) + share;
+      const now = Math.max(0, Math.round((ev.v + share) * rest.reduce((f, g) => f * dbl[reps.indexOf(g) - 1]!.factor, 1)));
+      const addRep = groups.find(g => g.same === 'add')!;
+      const got = this.askReplacement(at.seat,
+        `${this.pname(seat)} would lose life from ${ctx.sourceName}'s damage: ${addRep.face} and `
+        + `${[...new Set(rest.map(r => r.face))].join(' and ')} both apply — which applies first?`,
+        [
+          ...adders.map(a => ({ label: `${this.replacerLabel(a.face, a.anchor)} first: ${now} life`, card: a.face,
+            unit: a.anchor.id, pick: 0, ...(a.holder.id !== a.anchor.id ? { mod: a.holder.id } : {}) })),
+          ...rest.map(r => ({ label: `${this.replacerLabel(r.face, r.anchor)} first: ${lo} life`, card: r.face,
+            unit: r.anchor.id, pick: reps.indexOf(r), ...(r.mod ? { mod: r.mod.id } : {}) })),
+        ],
+        { label: `Default: ${now} life (the higher number)`, pick: 0 });
+      const pick = got ? groups.find(g => reps.indexOf(g) === got) : undefined;
+      return pick ? [pick, ...groups.filter(g => g !== pick)] : groups;
+    });
+    if (end.v === hi || end.first[0] === 'add') return undefined;
+    return { out: end.v, note: `${end.first.filter(f => f !== 'add').join(', ')} first, then ${reps[0]!.face}` };
+  }
+
+  /** CR 708.6: the doublings claiming one quantity, one per printed multiplier,
+   * the same walk as `amountFactor` */
+  private multiplierReplacers(ctx: import('./cards/dsl.ts').AmountCtx):
+    { face: CardName; anchor: Entity; holder: Entity; factor: number }[] {
+    if (this.inAmountMultipliers) return [];
+    const out: { face: CardName; anchor: Entity; holder: Entity; factor: number }[] = [];
+    this.inAmountMultipliers = true;
+    try {
+      const live = this.radiates();
+      for (const { holder, anchor } of this.anchored((h, a) =>
+        this.donates(h, a, 'amountMultipliers')
+        && (ctx.region === undefined || a.region === ctx.region)
+        && live(h, a))) {
+        for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
+          for (const mod of def.amountMultipliers ?? []) {
+            const f = mod.factor(this, anchor, ctx);
+            if (f !== 1) out.push({ face, anchor, holder, factor: f });
+          }
+        }
+      }
+    } finally { this.inAmountMultipliers = false; }
+    return out;
   }
 
   /**
@@ -5046,7 +5179,8 @@ export class E {
   /** `extra` (CR 608.9a) is stamped onto the emitted 'lifeLost' — combat damage
    * uses it to carry `hits`, the per-column breakdown of an aggregated loss.
    * It is never read here; it is data for whoever hears the event. */
-  loseLife(seat: Seat, n: number, why: string, extra?: Record<string, unknown>): void {
+  loseLife(seat: Seat, n: number, why: string, extra?: Record<string, unknown>,
+    priced?: { out: number; note: string }): void {
     // CR 708.10: "Target player's life total CAN'T CHANGE during this battle"
     // (Suspend) is not "can't be gained" — it locks both directions, so a
     // locked player cannot be burned out, cannot take rot damage to the face
@@ -5064,7 +5198,13 @@ export class E {
     // used to be a trigger that dealt a second helping AFTER the first landed,
     // so a loss that was already lethal ended the game before the doubling
     // resolved — the multiplied number never appeared anywhere.
-    n = this.lifeAmount('lifeLoss', seat, n, why);
+    if (priced && n > 0) {
+      // CR 708.6a: the loss was priced where the order was chosen (`lossOrder`)
+      this.ev('info',
+        `${priced.note}: the ${n} life ${this.pname(seat)} would lose (${why}) becomes ${priced.out}.`,
+        { seat, was: n, now: priced.out, why });
+      n = priced.out;
+    } else n = this.lifeAmount('lifeLoss', seat, n, why);
     const p = this.player(seat);
     p.life -= n;
     // per-battle life-loss ledger (CR 505.6 battle counters; read by e.g. Soul Siphon)
@@ -5329,7 +5469,7 @@ export class E {
         // CR 708.4a: an [Augment] mod's text acts from its host, so where two
         // choices would name one unit the mod's own badge is the click (`mod`)
         ...picks.map(p => ({ label: p.label, card: p.card,
-          value: p.mod !== undefined ? { mod: p.mod, unit: p.unit, pick: p.pick } : { unit: p.unit, pick: p.pick } })),
+          value: { ...(p.mod !== undefined ? { mod: p.mod } : {}), ...(p.unit !== undefined ? { unit: p.unit } : {}), pick: p.pick } })),
       ],
     };
     const known = (v: unknown): v is number => typeof v === 'number'
@@ -5734,14 +5874,14 @@ export class E {
    * same walk as `amountDelta` (which sums the same list for every quantity
    * that is not counters on a unit).
    */
-  private amountReplacers(region: number): { face: CardName; anchor: Entity; holder: Entity; mod: import('./cards/dsl.ts').AmountMod }[] {
+  private amountReplacers(region: number, anyRegion = false): { face: CardName; anchor: Entity; holder: Entity; mod: import('./cards/dsl.ts').AmountMod }[] {
     if (this.inAmountMods) return [];
     const out: { face: CardName; anchor: Entity; holder: Entity; mod: import('./cards/dsl.ts').AmountMod }[] = [];
     this.inAmountMods = true;
     try {
       const live = this.radiates();
       for (const { holder, anchor } of this.anchored((h, a) =>
-        this.donates(h, a, 'amountMods') && a.region === region && live(h, a))) {
+        this.donates(h, a, 'amountMods') && (anyRegion || a.region === region) && live(h, a))) {
         for (const { face, def } of this.behaviorBlocks(holder, anchor)) {
           for (const mod of def.amountMods ?? []) out.push({ face, anchor, holder, mod });
         }
@@ -6581,6 +6721,9 @@ export class E {
       });
       return typeof v === 'number' && v >= floor && v <= pool ? v : floor;
     };
+    // CR 708.6a: the batch's answer to "the additions or the doubling first"
+    let damageOrder: 'add' | 'double' | undefined;
+    const addShare = new Map<Seat, number>();
     for (const [hi, hit] of hits.entries()) {
       let n = hit.n;
       if (n <= 0) continue;
@@ -6605,22 +6748,40 @@ export class E {
        * recipient NAMED twice into one commit, but the two hits are still two
        * dealings, and {Powerful} has always doubled both.)
        */
-      n += this.amountDelta({
+      const addCtx: import('./cards/dsl.ts').AmountCtx = {
         kind: 'effectDamage', region: ctx.region, amount: n,
         ...('player' in (hit.target as object)
           ? { player: (hit.target as { player: Seat }).player }
           : { unit: hit.target as Entity }),
         sourceSeat: ctx.controller, sourceName: ctx.sourceName, combat: false,
-      });
+      };
+      const base = n;
+      const plus = this.amountDelta(addCtx);
       // Powerful source: double the damage dealt (to units and players alike),
       // once, AFTER the additive modifiers (CR 802.10b) and before Electric
       // distribution or Vulnerable's receive-side doubling.
       // CR 802.25g, 802.25i: read against THIS recipient — off when either side is Pure.
-      if (n > 0 && attrsVs(hitUnit).has('Powerful')) n *= 2;
+      const powerful = attrsVs(hitUnit).has('Powerful');
+      // CR 708.6a, the owner 2026-10-25 (Q5): the additions first is the DEFAULT,
+      // and where both apply the dealer may choose the doubling first
+      // (`additionOrder`, asked once per batch)
+      let plusShare = plus;
+      if (plus && powerful && base > 0 && base + plus > 0) {
+        damageOrder ??= this.additionOrder(ctx, addCtx, base, plus);
+        n = damageOrder === 'add' ? (base + plus) * 2 : base * 2 + plus;
+        plusShare = damageOrder === 'add' ? plus * 2 : plus;
+      } else {
+        n += plus;
+        if (n > 0 && powerful) { n *= 2; plusShare *= 2; }
+      }
       if (n <= 0) continue;
       const target = hit.target;
       if ('player' in (target as object)) {
-        add({ seat: (target as { player: Seat }).player }, n);
+        const ps = (target as { player: Seat }).player;
+        add({ seat: ps }, n);
+        // what the additions put into a player's damage: the life-loss
+        // doubling question below is about whether it is doubled too
+        if (plusShare > 0) addShare.set(ps, (addShare.get(ps) ?? 0) + plusShare);
         continue;
       }
       const first = target as Entity;
@@ -6732,6 +6893,14 @@ export class E {
       }
     }
     if (!order.length) return;
+    // CR 708.6a: a player's life loss doubled (Arbiter of Vitality) where an
+    // addition (Conduit of Pain) went into the damage — the order is asked here,
+    // before anything is committed. Undefined: the default, priced as always.
+    const lossPriced = new Map<Seat, { out: number; note: string }>();
+    for (const [ps, share] of addShare) {
+      const got = this.lossOrder(ctx, ps, dealt.get(`p${ps}`) ?? 0, share);
+      if (got) lossPriced.set(ps, got);
+    }
 
     // What each recipient RECEIVES — a Vulnerable victim doubles it, and CR 802.22a
     // {Blessed} says what the victim receives is what the source dealt, so the
@@ -6774,7 +6943,7 @@ export class E {
         // damage, so it is committed here — before loseLife runs the lethal
         // check. A blessed source therefore cannot kill its own controller.
         if (attrsVs(undefined).has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);
-        this.loseLife(seat, n, ctx.sourceName);
+        this.loseLife(seat, n, ctx.sourceName, undefined, lossPriced.get(seat));
         continue;
       }
       const u = r.u!;

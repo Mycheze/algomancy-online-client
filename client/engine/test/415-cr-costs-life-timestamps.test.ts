@@ -284,6 +284,9 @@ test('cr:concepts.damage.amount-order — Conduit adds, Powerful doubles, then a
   grant(h, wall, 'Vulnerable');
   h.do({ type: 'declareAttack', seat: A, columns: [[boulder], [conduit]] });
   pass(h); pass(h);
+  // CR 708.6a (owner 2026-10-25): the additions first is the one-click default
+  assert.match(h.state.decision?.options[0]?.label ?? '', /^Default: 4 damage/);
+  h.do({ type: 'decide', seat: A, choice: 0 });
   assert.equal(ent(h, ctrl)!.damage, 4, '(1+1)x2 = 4 on a plain unit');
   assert.equal(ent(h, wall)!.damage, 8, 'and the Vulnerable unit is dealt double that: 8');
   finishBattle(h);

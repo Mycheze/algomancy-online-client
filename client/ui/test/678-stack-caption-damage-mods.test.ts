@@ -68,6 +68,10 @@ test('CR 112.9 / CT-370: Conduit of Pain and Powerful together, the addition fir
   const { h, it, victim } = fireball(67801, { conduit: true, powerful: true });
   assert.equal(line(h, it), 'Deal 4 damage to Good Whale (Powerful, +1 Conduit of Pain)');
   resolve(h);
+  // CR 708.6a (owner 2026-10-25): the caption's order is the one-click DEFAULT of
+  // the order question the dealer is now asked
+  assert.equal(h.state.decision?.options[0]?.label, 'Default: 4 damage (the higher number)');
+  h.do({ type: 'decide', seat: h.state.decision!.seat, choice: 0 });
   assert.equal(ent(h, victim)!.damage, 4);
 });
 
