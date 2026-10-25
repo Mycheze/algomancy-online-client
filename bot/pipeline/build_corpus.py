@@ -149,11 +149,10 @@ OBSOLETE_GLOSSARY_TERMS = {
 # A card's oracle `rulings` line that the designer has since called outdated.
 # The oracle JSON is canonical and is corrected in place (CLAUDE.md); until it
 # is, the line is left out of the card's chunk so the bot cannot cite it.
-OUTDATED_CARD_RULINGS = {
-    # Caleb called this outdated (rules-questions 1064279804741955646 #22656,
-    # #22659); ticketed for the oracle fix 2026-10-11.
-    "Worldbender": {"All draft skipping cards are not legal in formats without a draft."},
-}
+# Empty since 2026-10-25: Worldbender's "All draft skipping cards are not legal
+# in formats without a draft." (Caleb: outdated, rules-questions #22656/#22659)
+# was deleted from the oracle row itself (CT-386).
+OUTDATED_CARD_RULINGS = {}
 
 approx_tokens = lambda s: len(s) // 4
 

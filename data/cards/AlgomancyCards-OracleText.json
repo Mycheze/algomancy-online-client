@@ -8523,9 +8523,7 @@
             "factions": [
                 "metal"
             ],
-            "rulings": [
-                "All draft skipping cards are not legal in formats without a draft."
-            ],
+            "rulings": [],
             "complexity": "Complex",
             "Side": "Front",
             "Num_Copies": "1",
