@@ -3009,6 +3009,11 @@ export class E {
    */
   deckedOut(seat: Seat): void {
     if (this.s.winner !== null || this.s.lesson) return;
+    // CR 104.5, 104.1b / CT-418 (owner, 2026-10-25, "Check both at the end"): inside one
+    // effect (a `lifeBatch`) the deck-out waits for the effect to finish, as a 0
+    // life total does, and `checkLifeTotals` judges both together. The draw has
+    // drawn what was there; the effect goes on.
+    if (this.lifeBatchDepth > 0) { this.deckedInBatch.add(seat); return; }
     let loser: Seat = seat;
     const shared = this.s.mode !== 'constructed';
     if (shared) {
@@ -5088,11 +5093,20 @@ export class E {
     this.lifeBatchDepth++;
     try {
       body();
+    } catch (sig) {
+      // a suspension or rewind: the work is replayed, and so is any deck-out in it
+      if (this.lifeBatchDepth === 1) this.deckedInBatch.clear();
+      throw sig;
     } finally {
       this.lifeBatchDepth--;
     }
     if (this.lifeBatchDepth === 0) this.checkLifeTotals();
   }
+
+  /** CR 104.5, 104.1b / CT-418: the seats whose draw found an empty deck and recycle pile
+   * inside the current `lifeBatch` — judged with the life totals when it ends.
+   * Per-apply, never serialized, like `lifeBatchDepth`. */
+  private deckedInBatch = new Set<Seat>();
 
   /**
    * CR 104.1a / CT-409: end the game if a life total is at 0 or less.
@@ -5105,6 +5119,9 @@ export class E {
    */
   checkLifeTotals(): void {
     if (this.s.winner !== null) return;
+    const decked = [...this.deckedInBatch];
+    this.deckedInBatch.clear();
+    if (decked.length) { this.judgeDeckOutWithLife(decked); return; }
     const down = this.s.players.filter(p => p.life <= 0);
     if (!down.length) return;
     let loser: Seat;
@@ -5127,6 +5144,50 @@ export class E {
           : `the tie at ${w}: it goes against the initiative player. ***`),
         { winner, alsoAtZero: winner });
     }
+    throw new GameEnded();
+  }
+
+  /**
+   * CR 104.5, 104.1b / CT-418 — a deck-out inside one effect, judged when the effect has
+   * finished, together with the life totals. Owner, 2026-10-25, asked about one
+   * effect that brings the opponent to 0 and then makes you draw from nothing:
+   * "Check both at the end".
+   *
+   * The rule chosen: a decked seat and a seat at 0 or less have each LOST at the
+   * same moment.
+   *   · constructed: the losers are every decked seat and every seat at 0 or
+   *     less. One loser loses. Two losers are a double loss, decided as CR 104.1b
+   *     decides two players at 0: the higher life total wins (negative totals
+   *     count), and on equal totals the initiative player loses.
+   *   · a shared deck (live draft): a deck-out ends the game on the higher life
+   *     total whoever drew (CR 104.5b), so that is the answer here too — it
+   *     already covers a player at 0.
+   * Outside an effect (the card step) `deckedOut` still ends the game at once.
+   */
+  private judgeDeckOutWithLife(decked: Seat[]): void {
+    const [a, b] = this.s.players as [PlayerState, PlayerState];
+    const byLife = (): Seat => (a.life < b.life ? a.seat : b.life < a.life ? b.seat : this.initiative);
+    const shared = this.s.mode !== 'constructed';
+    const losers = new Set<Seat>(shared ? [] : decked);
+    if (!shared) for (const p of this.s.players) if (p.life <= 0) losers.add(p.seat);
+    const loser: Seat = shared || losers.size > 1 ? byLife() : [...losers][0]!;
+    const winner = other(loser);
+    this.s.winner = winner;
+    this.s.phase = 'gameover';
+    this.s.resolving = null;   // nothing is resolving any more — the game is over
+    const w = this.player(winner).life, l = this.player(loser).life;
+    const onLife = w > l ? `on the higher life total (${w} to ${l})` : `the tie at ${w}: it goes against the initiative player`;
+    const msg = shared
+      ? `*** The deck has run out — the game ends. ${this.pname(winner)} wins ${onLife}. ***`
+      : losers.size > 1
+        ? `*** Both players lost at once (out of cards or at 0 life) — ${this.pname(winner)} wins ${onLife}. ***`
+        : decked.includes(loser)
+          ? `*** ${this.pname(loser)} has to draw from an empty deck and loses — ${this.pname(winner)} wins! ***`
+          : `*** ${this.pname(winner)} wins! ***`;
+    this.ev('gameOver', msg, {
+      winner, deckedOut: decked[0]!,
+      ...(!shared && losers.size > 1 && this.player(winner).life <= 0 ? { alsoAtZero: winner } : {}),
+    });
     throw new GameEnded();
   }
 

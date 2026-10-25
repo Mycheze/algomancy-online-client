@@ -683,7 +683,10 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // less" in the loss check (CR 104.1a, CT-409) both carry the winner, which the
   // game-over screen shows. "<virus> augments <spell token>" (CR 721.4a, CT-407) is the
   // battle twin of doAugment's deployment line.
-  assert.equal(sites.length, 229,`the engine and apply make ${sites.length} announcements`);
+  // 229 → 230 with CT-418 (owner 2026-10-25, "Check both at the end"): the game-over
+  // E.judgeDeckOutWithLife says when a deck-out inside an effect is judged with
+  // the life totals. It carries the winner, which the game-over screen shows.
+  assert.equal(sites.length, 230,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
