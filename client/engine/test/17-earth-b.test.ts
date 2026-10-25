@@ -665,7 +665,7 @@ test('CR 111.14: all or nothing — one card in hand cannot pay a doubled [Disca
 // bin") — destroy()'s erase branch fires the same 'died' event, which the
 // existing tests already pin for the modded and stamped ways in (CR 803.8i).
 //
-// ⚠ The owner's 2026-08-24 Unstable-trash call (engine only; CR 801.2h differs, CT-246) repairs the PROSE of the two tests below without moving
+// ⚠ The owner's 2026-08-24 Unstable-trash call (CT-246; now CR 801.2h) repairs the PROSE of the two tests below without moving
 // their outcome. They used to say "the bin never sees it" — that is no longer
 // how the engine gets there. An Unstable unit that dies now enters the bin, is
 // trashed there, and is swept out by a state-based action, exactly as a dying

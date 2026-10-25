@@ -113,7 +113,7 @@ test('CR 714.9: a dying TOKEN says so on the event (it used to be a log-message 
     'and the old string-matched phrase is gone — which is exactly why the flag exists');
 });
 
-// The engine's Unstable-death route (2026-08-24; CR 801.2h differs, CT-246) inverted the destination half of this test in place. It
+// The owner's Unstable-death call (2026-08-24, CT-246; now CR 801.2h) inverted the destination half of this test in place. It
 // used to be named "…says its destination was the erased pile" and assert
 // `to === 'erased'`, with "nothing reached a bin" as the reason. The owner
 // ruled that an Unstable death goes through the bin exactly as a token's does,
@@ -133,7 +133,7 @@ test('engine (CT-246; CR 801.2h: erased instead of binned): an Unstable death sa
   const ev = died(h);
   assert.equal(ev.type, 'died', 'Unstable replaces the BIN, not the death (Caleb 2025-04-08)');
   assert.equal(ev.data!['to'], 'bin',
-    'engine (CT-246; CR 801.2h differs): the same answer a dying token gives — it really is in a bin while this fires');
+    'CR 801.2h (CT-246): the same answer a dying token gives — it really is in a bin while this fires');
   assert.deepEqual(h.state.players[P]!.bin, [], 'and the sweep took it back out again');
   const erased = h.events.filter(x => x.type === 'erased');
   assert.ok(erased.some(x => x.data?.['card'] === 'T62 Ally' && x.data?.['from'] === 'bin'),

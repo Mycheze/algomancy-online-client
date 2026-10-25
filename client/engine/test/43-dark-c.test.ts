@@ -83,7 +83,7 @@ test('Blightwalker: trashed from hand → pay [2] to recall another unit from yo
 // playtest-#93 fixture in 42-dark-b; this is the second witness, and it also
 // shows the ⚠ consequence: unlike a trash from HAND, this card cannot leave
 // itself in the bin to be recurred later — the sweep takes it.
-test('engine (CT-246; CR 801.2h differs): Blightwalker dying while {Unstable} fires its own "when I am trashed" trigger', () => {
+test('CR 801.2h (CT-246): Blightwalker dying while {Unstable} fires its own "when I am trashed" trigger', () => {
   const h = new Harness(4392);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -188,7 +188,7 @@ test('Cthyrian Rector: Virus-donated, "me" is the HOST and "you" is the host\'s 
   assert.ok(hand(h, D).includes('Rotling'), "and the host controller's card is recalled");
 });
 
-// ENGINE HAZARD 1 (the Unstable-trash route, CT-246; CR 801.2h differs). The Rector reaches for the trashed card IN THE BIN, and an
+// ENGINE HAZARD 1 (the Unstable-trash route, CT-246; CR 801.2h). The Rector reaches for the trashed card IN THE BIN, and an
 // Unstable card is in a bin only for the trigger window. The answer is NOT new
 // and is not invented here: the TOKEN path has faced exactly this since tokens were ruled to really enter zones (CR 410.5),
 // and the Rector already reads `bin.lastIndexOf(name)` and says so when the
@@ -242,7 +242,7 @@ test('CR 405.6: the Rector does NOT recall an innocent older copy when the trash
   const rector = spawn(h, P, 'Cthyrian Rector');
   const victim = spawn(h, P, 'Good Whale');
   whiteBox(h, e => {
-    e.entity(victim)!.unstable = true;                     // CR 803.8c stamp → engine route (CT-246; CR 801.2h differs): bin, trash, sweep
+    e.entity(victim)!.unstable = true;                     // CR 803.8c stamp → the CR 801.2h route (CT-246): bin, trash, sweep
     e.destroy(e.entity(victim)!, 'dies');
   });
   assert.ok(!ent(h, rector), 'the Rector triggered and made its sacrifice as the trigger resolved (CR 111.8)');

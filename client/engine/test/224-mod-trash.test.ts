@@ -94,15 +94,12 @@ function moddedEnemyUnit(seed: number, mod = 'Ignis Sprite', host = 'Good Whale'
 
 // ── The Unstable-body trash first (CR 801.2h: an Unstable card that dies is still trashed; CT-246): the boundary this must not cross ──
 
-test('CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods', () => {
+test('CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods', () => {
   // ⚠ THIS TEST IS THE FENCE. The owner's call of 2026-08-24 (report #93) overruled
   // BOTH the printed reminder text ("If they would enter a bin, erase them
   // instead") AND a direct Caleb ruling, on purpose: an {Unstable} unit that
   // dies passes THROUGH the bin, is trashed there, and is only then erased. CR 801.2h now agrees
-  // (CT-246, owner 2026-10-22): trashing is part of the death. (This title and the
-  // whole-pool one below keep their old "CR 801.2h says not trashed / differs"
-  // words only because card-todo-closed.ts and playtest-ledger-closed.ts cite them
-  // in full; see CT-354.)
+  // (CT-246, owner 2026-10-22): trashing is part of the death.
   // CR 720.8a changes what happens to its MODS and nothing else. If this reddens,
   // report #93 is open again and Dropslime is broken exactly as it was.
   const { h, A, hostId, mark } = moddedEnemyUnit(9200);
@@ -277,7 +274,7 @@ test('the bin ref names the copy just trashed, not the innocent older one', () =
 
 // ── the whole-pool sweep ────────────────────────────────────────────────
 
-test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and in the engine (CT-246; CR 801.2h differs) the body always is', () => {
+test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)', () => {
   // Derived over every card that can BE a nontoken mod (203 of them today),
   // not over the one card the report named. Three of them — the [Augment] "I
   // gain -X/-X" viruses, Malformed Monstrosity among them — shrink the host to

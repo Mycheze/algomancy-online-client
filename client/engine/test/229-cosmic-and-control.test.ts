@@ -667,7 +667,7 @@ test('CT-246 GUARD (engine, not CR 801.2h): a stolen Unstable body is still tras
   // body's bin must not quietly stop the body TRASHING on the way through it —
   // that is playtest report #93 (Dropslime trashed from a hand fired, the same
   // Dropslime dying under a grafted Wraith fired nothing), and it is the one
-  // thing the engine's Unstable-trash route exists to prevent (CT-246; CR 801.2h differs).
+  // thing the Unstable-trash route exists to prevent (CT-246; CR 801.2h).
   const h = new Harness(9434);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

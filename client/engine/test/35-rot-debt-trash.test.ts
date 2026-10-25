@@ -390,7 +390,7 @@ test('CR 304.10: the erase lands before anything the visit queued can RESOLVE', 
   });
 });
 
-// The owner's call of 2026-08-24 (playtest #93/room ANBB) INVERTS this test in place; CR 801.2h would invert it back (CT-246).
+// The owner's call of 2026-08-24 (playtest #93/room ANBB) INVERTS this test in place, and CR 801.2h now states it (CT-246, owner 2026-10-22).
 // It used to read "a modded unit dying is ERASED, so nothing is trashed" and
 // assert `trashes(h).length === 0` — the reading the printed reminder text
 // ("If they would enter a bin, erase them instead.") and Caleb 2025-04-08

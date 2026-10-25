@@ -252,7 +252,7 @@ test('Dropslime: trashed DURING battle, it zaps for everything trashed in that b
   assert.equal(h.state.players[D]!.life, lifeD - 2, "1 already trashed + Dropslime's own = 2 damage");
 });
 
-/* ── PLAYTEST REPORT #93, room ANBB, 2026-08-24 (engine Unstable-trash route; CR 801.2h differs, CT-246) ───────────────────
+/* ── PLAYTEST REPORT #93, room ANBB, 2026-08-24 (the Unstable-trash route, CT-246; now CR 801.2h) ───────────────────
  *
  * The owner: "I'm pretty sure we're doing death and trashing wrong for
  * Unstable units. Dropslime wouldn't make sense otherwise. But here, it died
@@ -269,7 +269,7 @@ test('Dropslime: trashed DURING battle, it zaps for everything trashed in that b
  * trashed and fired correctly. Two disposals that look identical to a player,
  * behaving differently — which is what the engine's Unstable-trash route removes (CT-246; under CR 801.2h the two do differ).
  */
-test('playtest #93 (engine, CT-246; CR 801.2h differs): Dropslime fires from HAND *and* dying while Unstable — the same card, both halves', () => {
+test('playtest #93 (CR 801.2h, CT-246): Dropslime fires from HAND *and* dying while Unstable — the same card, both halves', () => {
   const h = new Harness(4290);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -312,7 +312,7 @@ test('playtest #93 (engine, CT-246; CR 801.2h differs): Dropslime fires from HAN
     'and the log tells it in order: dies → bin, trashes, erased');
 });
 
-test('ANBB (engine, CT-246; CR 801.2h differs): an Unstable death and an unmodded death on the SAME damage step both trash and both fire', () => {
+test('ANBB (CR 801.2h, CT-246): an Unstable death and an unmodded death on the SAME damage step both trash and both fire', () => {
   const h = new Harness(4291);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -348,7 +348,7 @@ test('ANBB (engine, CT-246; CR 801.2h differs): an Unstable death and an unmodde
   assert.ok(h.q.erased(D).includes('Dropslime'), 'into the public erased pile (CR 407.1)');
 });
 
-test('engine (CT-246; CR 801.2h differs): Muck Rummager sees an Unstable death — "when you trash a card during battle, draw"', () => {
+test('CR 801.2h (CT-246): Muck Rummager sees an Unstable death — "when you trash a card during battle, draw"', () => {
   const h = new Harness(4292);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -690,9 +690,9 @@ test('CR 720.8a: a NONTOKEN mod erased with an exchanged host is not trashed and
   // the same is true of Hooba-Mon, which is a mod on this line as well
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Hooba-Mon').length, 0,
     'Hooba-Mon is a mod here too, and takes the same route');
-  // and the BODY is untouched by all of this — the engine's Unstable-trash route still governs it (CT-246; CR 801.2h differs)
+  // and the BODY is untouched by all of this — the Unstable-trash route still governs it (CT-246; CR 801.2h)
   assert.equal(trashes(h).filter(t => t.data!['card'] === 'Rune Channeler').length, 1,
-    'engine boundary (CT-246; CR 801.2h differs): the {Unstable} body is still binned and still trashed');
+    'the boundary (CT-246; CR 801.2h): the {Unstable} body is still binned and still trashed');
 });
 
 test('CR 410.4d: the mods reach the public ERASED pile with the Unstable body (CR 410.4b)', () => {

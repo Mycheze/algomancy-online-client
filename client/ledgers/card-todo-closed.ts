@@ -7031,8 +7031,8 @@ export const CLOSED: TodoEntry[] = [
     guards: [
       '224-mod-trash.test.ts::CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all',
       '224-mod-trash.test.ts::CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner',
-      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and in the engine (CT-246; CR 801.2h differs) the body always is',
-      '224-mod-trash.test.ts::CT-246 GUARD (engine; CR 801.2h says not trashed): the BODY of an Unstable unit that dies is still trashed, mods or no mods',
+      '224-mod-trash.test.ts::CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body always is (CR 801.2h)',
+      '224-mod-trash.test.ts::CT-246 GUARD (CR 801.2h: an Unstable card that dies is still trashed): the BODY of an Unstable unit that dies is trashed, mods or no mods',
     ],
     closed:
       'RULED AND FIXED 2026-08-29 (now CR 720.8 and 720.8a). '

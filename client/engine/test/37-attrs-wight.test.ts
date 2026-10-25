@@ -652,7 +652,7 @@ test('CR 721.1a: an augmented Wraith donates BOTH lines to its host', () => {
 // CR 803.8e — the branch order in destroy(). This is game UZRG's bug: the token
 // test used to come FIRST, so a modded token never reached the Unstable branch.
 //
-// The owner's 2026-08-24 Unstable-trash call (engine only, CT-246; CR 801.2h differs) inverted the trash half in place. This test used to be
+// The owner's 2026-08-24 Unstable-trash call (CT-246; now CR 801.2h) inverted the trash half in place. This test used to be
 // named "…no bin, no trash" and assert `trashes(h).length === 0`; the owner
 // ruled that an Unstable death takes the token's route through the bin, so a
 // Wraith body carrying a Wraith mod now trashes exactly ONCE — for the body,

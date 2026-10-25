@@ -7008,7 +7008,7 @@ export class E {
     // presence of its own to trash; it goes where the host goes, and the
     // host's single trash above is the whole unit's.
     //
-    // ⚠ THE ENGINE'S UNSTABLE-BODY TRASH IS NOT WEAKENED (CR 801.2h differs, CT-246). The line above still fires for an
+    // ⚠ THE UNSTABLE-BODY TRASH IS NOT WEAKENED (CR 801.2h, CT-246). The line above still fires for an
     // {Unstable} carrier that dies and is erased a statement later — that is
     // the exact defect the owner's 2026-08-24 call exists to fix (report #93: Dropslime trashing from
     // hand and not from play), and it is asserted by name in
@@ -7121,7 +7121,7 @@ export class E {
    * 2025-04-08: "unstable units still die, they just get erased instead of
    * ending up in the bin"), so every branch below fires 'died'.
    *
-   * **Engine (the owner's call, 2026-08-24; CR 801.2h differs, CT-246) — an Unstable unit that dies IS TRASHED.** It
+   * **CR 801.2h (the owner's call, 2026-08-24 and 2026-10-22, CT-246) — an Unstable unit that dies IS TRASHED.** It
    * takes the token's route (into the bin, `died`, then the sweep) PLUS the
    * trash a card gets and a token no longer does (CR 801.2d): `trashed` (ledger and
    * "when I am trashed" and every watcher), then the state-based sweep erases
