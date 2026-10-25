@@ -44,6 +44,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-25', kind: 'fix', text: "The deployment stack now resolves in the same order as the battle stack. An ability you activate goes on it like a card you play, so anything it triggers (a unit sacrificed to pay for it, say) resolves first." },
   { date: '2026-10-24', kind: 'new', text: "League achievements: play in a league season to earn League Regular (with rungs for 3 and 6 seasons), and win one for League Champion. They unlock when the season closes." },
   { date: '2026-10-24', kind: 'fix', text: "Playing without an account? When a game ends you can sign up right there and keep that game as your first. A name typed into a game no longer puts it on someone else's profile." },
   { date: '2026-10-24', kind: 'fix', text: "On a touch screen, tapping a card in your bin now just shows it instead of playing it. To use it, open your bin and tap the button under the card." },

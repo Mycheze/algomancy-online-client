@@ -4072,11 +4072,11 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-24 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 1 gate test file · Tests: 37-attrs-wight.test.ts · Demonstrated by test: 37-attrs-wight.test.ts::CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves · Key: turn.deploy.start.triggers</sub>
 
-<a id="r507.5"></a>**507.5.** Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule 703.7). See rule 703.
+<a id="r507.5"></a>**507.5.** Deployment uses the stack. Each player's plays, activated abilities, spell tokens and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule 703.7). See rule 703.
 
 > *Example: In deployment, a player cannot ask to keep priority: the ask is refused.*
 
-<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 4 tests, all passed; 2 gate test files · Tests: 276-deployment-stack.test.ts, 568-hold-priority.test.ts · Example test: 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused · Demonstrated by test: 276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack · Key: turn.deploy.stack</sub>
+<sub>Basis: Owner call · adopted 2026-10-22, 2026-10-25; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 3 gate test files · Tests: 276-deployment-stack.test.ts, 568-hold-priority.test.ts, 650-deployment-stack-is-battle-stack.test.ts · Example test: 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused · Demonstrated by test: 276-deployment-stack.test.ts::CR 507.5: the play really went ON a stack · Key: turn.deploy.stack</sub>
 
 <sub>Discrepancies: D-U09-2 (discrepancies.md)</sub>
 
@@ -6144,13 +6144,15 @@ order.
 
 <sub>Basis: Owner ruling, adopted 2026-08-22 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran no tests; 1 gate test file · Tests: 425-cr-casting-and-stack.test.ts · Example test: 425-cr-casting-and-stack.test.ts::cr:effects.priority.resolving — while Premonition is resolving it cannot be targeted, negated, augmented or responded to · Key: effects.priority.resolving</sub>
 
-<a id="r703.7"></a>**703.7.** Deployment uses the stack, but each player has a stack of their own there, which only that player sees *(Digital client)*; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. A player's plays still go on that stack, and it resolves on its own. See rule 507.
+<a id="r703.7"></a>**703.7.** Deployment uses the stack, but each player has a stack of their own there, which only that player sees *(Digital client)*; no other player can respond to it or is made to wait on it. No player holds priority in deployment: a player cannot keep priority there or respond to an item on their own deployment stack. Otherwise that stack works exactly as the battle stack does: a player's plays, activated abilities and spell tokens go on it, an ability triggered by an item goes on it above that item and resolves first, and it resolves on its own, top first. See rule 507.
 
 > *Example: In deployment a player plays a deploy-timing spell at their Earthbound Replicator; the spell goes on that player's own stack, so the Replicator can copy it.*
 
 > *Example: In deployment a player asks to keep priority as they play a card. The ask is refused: nobody can hold priority there.*
 
-<sub>Basis: Owner call · adopted 2026-10-22; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 3 tests, all passed; 2 gate test files · Tests: 138-spell-copy.test.ts, 568-hold-priority.test.ts · Example tests: 138-spell-copy.test.ts::CR 507.5/CT-176: a deploy-timing play names a REAL stack item, 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused · Key: effects.priority.deployment</sub>
+> *Example: In deployment a player activates Lilbot and sacrifices Seer of Empty Spaces to pay for it. Seer's death trigger goes on the stack above Lilbot's ability and resolves first, as it would in battle.*
+
+<sub>Basis: Owner call · adopted 2026-10-22, 2026-10-25; Owner ruling, adopted 2026-09-01 (quoted from the retired ruling register) · Verified: confirmed in round 4; verifier ran 5 tests (a probe it wrote), all passed; 3 gate test files · Tests: 138-spell-copy.test.ts, 568-hold-priority.test.ts, 650-deployment-stack-is-battle-stack.test.ts · Example tests: 138-spell-copy.test.ts::CR 507.5/CT-176: a deploy-timing play names a REAL stack item, 568-hold-priority.test.ts::CR 507.5 / CT-253: in deployment the ask is refused, 650-deployment-stack-is-battle-stack.test.ts::CR 703.7: Lilbot sacrificing Seer of Empty Spaces resolves in the SAME order in deployment as in battle · Key: effects.priority.deployment</sub>
 
 <a id="r703.8"></a>**703.8.** There is no priority in the haste step. Haste cards are played there as special actions. See rule 504.
 

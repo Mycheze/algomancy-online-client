@@ -1928,7 +1928,7 @@
     "key": "turn.deploy.stack",
     "parent": "507",
     "order": 5,
-    "text": "Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule effects.priority.deployment).",
+    "text": "Deployment uses the stack. Each player's plays, activated abilities, spell tokens and triggered abilities in deployment go on that player's own deployment stack, and that stack resolves without anyone acting: no player holds priority in deployment (rule effects.priority.deployment).",
     "examples": [
       {
         "text": null,
@@ -1961,18 +1961,24 @@
           "quote": "Plays stay as they are",
           "adopted": "2026-10-22",
           "from": "owner, chat 2026-10-22 (CT-185)"
+        },
+        {
+          "quote": "The stack needs to function exactly identically to battle. The only difference is that players do not get priority to put anything new onto the stack unless its empty.",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (invi, room ZAKG)"
         }
       ],
       "engine": [],
       "tests": [
         "276-deployment-stack.test.ts",
-        "568-hold-priority.test.ts"
+        "568-hold-priority.test.ts",
+        "650-deployment-stack-is-battle-stack.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "The full stack rule is 703 (effects.priority.deployment). Owner 2026-10-22 (CT-185 closed wontfix): no priority in deployment; plays still go on the stack. The register's \"the default is still auto-resolve\" (a default a player could stop) is replaced by that call. D-U09-2.",
+    "notes": "The full stack rule is 703 (effects.priority.deployment). Owner 2026-10-22 (CT-185 closed wontfix): no priority in deployment; plays still go on the stack. The register's \"the default is still auto-resolve\" (a default a player could stop) is replaced by that call. D-U09-2. Owner 2026-10-25: the deployment stack works exactly as the battle stack, without priority; activations and spell tokens go on it too.",
     "sourceHashes": {}
   },
   {
