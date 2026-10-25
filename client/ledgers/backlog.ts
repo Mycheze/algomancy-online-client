@@ -828,7 +828,7 @@ const OPEN: Entry[] = [
       'Owner 2026-10-24: The Parade removed ("maybe we\'ll put it in later"); Something Big raised to 80/80 (deployed 2e951ea).',
     ],
     asks: [],
-    notes: "ACTIVE 2026-10-24 (the double-KO rule for normal games is tracked as CT-409, an owner confirmation; that one week waits on it): the calendar agent is building it on branch pa-cal (worktree .claude/worktrees/pa-cal); design menu in ~/.claude/projects/-home-bena-Documents-Algomancy/zero-handoff/PA-cal-menu.md.",
+    notes: "ACTIVE. 2026-10-25: eight of the nine weeks (15 Nov to 3 Jan) approved by the owner (\"Ship it\") and merged from branch pa-cal; the calendar now runs to Sun 10 Jan. The double KO (10 Jan slot) waits on CT-409, whose rule the owner settled the same day (highest total wins, tie: the initiative player loses). Design menu in ~/.claude/projects/-home-bena-Documents-Algomancy/zero-handoff/PA-cal-menu.md.",
     touches: [
       'client/server/challenges.ts',
       'client/server/challenge-runs/',
