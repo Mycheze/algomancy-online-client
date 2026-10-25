@@ -771,9 +771,13 @@ export interface CachedRef { seat: Seat; uid: number }
  *
  * `nth` is the 0-based occurrence among entries with that name, and exists so
  * a two-target spell can reach both copies of one card ("Recall two target
- * units in your bin"). If that copy has left by resolution the ref simply
- * slides to whichever copies remain — which is exactly right, because copies
- * of one card in a bin are interchangeable. */
+ * units in your bin"). CR 405.6b / CT-380: a ref names ONE copy and follows it.
+ * This used to say a ref whose copy had left "simply slides to whichever copies
+ * remain", because copies are interchangeable — and they are not: a copy can be
+ * another player's card (CT-233's foreign table), and CR 405.6b says the effect
+ * then finds nothing. `E.removeFromBin` re-indexes every live ref as a copy
+ * leaves (`E.reindexBinRefs`): the leaving copy's refs become `nth: -1` (gone),
+ * later copies' refs move down one. */
 export interface BinRef { seat: Seat; card: CardName; nth?: number }
 
 /**

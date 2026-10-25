@@ -253,3 +253,48 @@ test('CR 102.4 / CT-344 class guard: no raw hand or bin splice skips the foreign
   const bad = sweep(RAW_SPLICE, h => !/foreignSpliced\(/.test(h.next));
   assert.deepEqual(bad.map(b => `${b.at}  ${b.line}`), []);
 });
+
+// ══ §3 · CT-367: every stack item a card file builds carries the owner ══
+
+/**
+ * The text of each `StackItem = {` literal in a file: from that line to the
+ * first line closing the object (`};`), plus the line after it, where an
+ * owner assigned just after the literal would sit.
+ */
+function stackItemLiterals(rel: string, text: string): Hit[] {
+  const lines = text.split('\n');
+  const out: Hit[] = [];
+  lines.forEach((line, i) => {
+    if (COMMENT.test(line) || !/\bStackItem = \{/.test(line)) return;
+    let j = i;
+    while (j < lines.length && !/^\s*\};/.test(lines[j]!)) j++;
+    out.push({ at: `${rel}:${i + 1}`, line: line.trim(), next: lines.slice(i, j + 2).join('\n') });
+  });
+  return out;
+}
+
+/** the one literal a card file may build without an owner: inlineMode's stand-in
+ * (helpers.ts), which only `modes.options` reads and never reaches the stack */
+const STAND_IN = /id: -1, kind: 'spell', label: o\.card \?\? ctx\.sourceName/;
+
+test('the stack-item owner sweep is not blind: it flags an item with no owner and passes the right shapes', () => {
+  const bare = "    const item: StackItem = {\n      id: g.s.nextId++, kind: 'virus', card: name, controller: seat,\n      parts: [], hostId: host.id,\n    };\n    g.pushItem(item);";
+  const hits = stackItemLiterals('x.ts', bare);
+  assert.equal(hits.length, 1, 'the literal is found');
+  assert.ok(!/\bowner\b/.test(hits[0]!.next), 'and has no owner');
+  const owned = bare.replace("hostId: host.id,", "hostId: host.id,\n      ...(owner !== undefined && owner !== seat ? { owner } : {}),");
+  assert.ok(/\bowner\b/.test(stackItemLiterals('x.ts', owned)[0]!.next), 'an owner spread passes');
+  const after = bare.replace('g.pushItem(item);', 'if (owner !== seat) item.owner = owner;');
+  assert.ok(/\bowner\b/.test(stackItemLiterals('x.ts', after)[0]!.next), 'an owner set on the next line passes');
+});
+
+test('CR 102.4 / CT-367 class guard: every stack item a card file builds for a card carries its owner', () => {
+  const cards = path.join(SRC, 'cards');
+  const found: Hit[] = [];
+  for (const f of tsFiles(cards)) found.push(...stackItemLiterals(path.relative(SRC, f), fs.readFileSync(f, 'utf8')));
+  assert.ok(found.some(h => h.at.startsWith('cards/sets/batch-water-a.ts')),
+    'positive control: the inline plays (batch-water-a) build stack items');
+  const bare = found.filter(h => !STAND_IN.test(h.next) && !/\bowner\b/.test(h.next));
+  assert.deepEqual(bare.map(b => `${b.at}  ${b.line}`), [],
+    'a card played out of a hand or a bin in any mode is still its owner card on the stack (StackItem.owner)');
+});

@@ -21,7 +21,7 @@ import type {
   PendingTrigger, Phase, PlayerState, Seat, SpawnFace, StackItem, StateFrame, Suspension, TargetRef, Stamp,
 } from './types.ts';
 import {
-  affinityPips, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
+  affinityPips, binIndexOfNth, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
   isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, requiresTargets, slotRestrict, slotWhat, specForSlot,
   stopMinimum, targetMinimum, zoneTriggersFor,
   type AsYouPlayOption,
@@ -516,7 +516,19 @@ export class E {
    */
   acting: Seat | null = null;
 
-  constructor(state: GameState) { this.s = state; }
+  constructor(state: GameState) {
+    this.s = state;
+    // CR 405.6b / CT-380: the suspension this action resumes is nulled by
+    // doDecide BEFORE its item is paid for or pushed, so it is remembered here
+    // for `reindexBinRefs` — a {Modular} mod or an "erase cards in your bin"
+    // cost paid on the answer can move the bin under the item's own targets.
+    this.resumedSuspension = state.suspension ?? null;
+  }
+  private readonly resumedSuspension: Suspension | null;
+  /** CR 405.6b / CT-380: items being declared or resolved by THIS action, which
+   * no field of the state may hold at the moment a bin card leaves (see
+   * `reindexBinRefs`). Registered by `collectTargets` and `resolveParts`. */
+  private readonly liveItems = new Set<StackItem>();
 
   // ── infrastructure ──────────────────────────────────────────────────
   ev(type: EventType, msg: string, data?: Record<string, unknown>): EngineEvent {
@@ -3802,8 +3814,10 @@ export class E {
   removeFromBin(seat: Seat, binIndex: number, reason: string, opts: { quiet?: boolean } = {}): CardName | undefined {
     const bin = this.player(seat).bin;
     if (binIndex < 0 || binIndex >= bin.length) return undefined;
+    const nth = binNthAt(this, seat, binIndex);   // which copy of its name, read before it goes
     const [name] = bin.splice(binIndex, 1);
     this.foreignSpliced(seat, 'bin', binIndex, name!);   // CT-233: read zoneOwner BEFORE this call
+    this.reindexBinRefs(seat, name!, nth);               // CR 405.6b / CT-380
     const ev = this.ev('leftBin', '', { seat, card: name!, reason });
     if (!opts.quiet) this.fireEvent('leftBin', ev);   // BL-46: an agreed fix is quiet
     return name;
@@ -8621,14 +8635,63 @@ export class E {
     });
   }
 
-  /** CR 405.6: where a BinRef points RIGHT NOW — the nth surviving copy of that
-   * card, or the last one left if the pile has shrunk past it. -1 if gone. */
+  /** CR 405.6, 405.6b: where a BinRef points RIGHT NOW — the nth copy of that
+   * card in that bin, or -1 when that copy has gone. There is no "the last one
+   * left" fallback (CT-380): it handed a target whose copy had left to a
+   * different copy of the same name. A live ref's nth is kept true by
+   * `reindexBinRefs`, so the copy it names is always the copy it was aimed at. */
   binIndexOf(ref: BinRef): number {
-    const bin = this.player(ref.seat).bin;
-    const hits: number[] = [];
-    bin.forEach((n, i) => { if (n === ref.card) hits.push(i); });
-    if (!hits.length) return -1;
-    return hits[Math.min(ref.nth ?? 0, hits.length - 1)]!;
+    return binIndexOfNth(this, ref.seat, ref.card, ref.nth ?? 0);
+  }
+
+  /**
+   * CR 405.6b / CT-380 — A BIN TARGET FOLLOWS ITS COPY.
+   *
+   * A bin holds bare names, so a declared bin target is (seat, card, nth): the
+   * nth copy of that name. When a copy leaves (`removeFromBin`, the one bin
+   * exit), the copies after it move down one, and an nth read later names a
+   * DIFFERENT physical card. So every live ref is re-indexed here, at the
+   * removal: a ref to the copy that left is marked gone (nth -1, which
+   * `binIndexOf` answers with -1 — CR 405.6b "the effect finds nothing"), a ref
+   * to a later copy moves down one, a ref to an earlier copy stays.
+   *
+   * Live refs are the declared targets of every stack item the state holds
+   * (the stack, the resolving item, a suspension's items, the tokens of a
+   * burst already aimed) and of the items this action is declaring or resolving
+   * (`liveItems`), which may be held only by a local. Never a decision's
+   * options (answered before anything can leave a bin) and never a
+   * suspension's answers or snapshot (a replay re-runs from the snapshot).
+   * Each ref object is adjusted once, however many paths reach it.
+   */
+  private reindexBinRefs(seat: Seat, card: CardName, removedNth: number): void {
+    const items = new Set<StackItem>(this.liveItems);
+    const add = (it: StackItem | null | undefined): void => { if (it) items.add(it); };
+    for (const it of this.s.stack) add(it);
+    add(this.s.resolving);
+    for (const sus of [this.s.suspension, this.resumedSuspension]) {
+      if (!sus) continue;
+      const held = sus as { item?: StackItem; moreItems?: StackItem[]; aimed?: StackItem[] };
+      add(held.item);
+      for (const it of held.moreItems ?? []) add(it);
+      for (const it of held.aimed ?? []) add(it);
+    }
+    for (const it of [...items]) for (const a of it.burstRest?.aimed ?? []) add(a);   // a burst being aimed
+    const done = new Set<BinRef>();
+    const fix = (t: TargetRef): void => {
+      if (!('bin' in t)) return;
+      const ref = t.bin;
+      if (done.has(ref) || ref.seat !== seat || ref.card !== card) return;
+      done.add(ref);
+      const n = ref.nth ?? 0;
+      if (n < 0 || n < removedNth) return;
+      if (n === removedNth) ref.nth = -1;
+      else if (n - 1) ref.nth = n - 1;
+      else delete ref.nth;   // the canonical spelling of copy 0 (binRefs)
+    };
+    for (const it of items) {
+      for (const part of it.parts) part.targets.forEach(fix);
+      for (const c of it.asYouPlay?.copies ?? []) c.targets?.forEach(fix);
+    }
   }
 
   /**
@@ -9511,12 +9574,13 @@ export class E {
     const name = zone[index];
     this.need(name !== undefined, 'no card there to apply');
     this.need(this.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that mod');
-    // CT-344: the hand through its choke point; the bin by hand, keeping the
-    // foreign-owner table's positions true (the card itself is erased with the
-    // spell, so its own owner does not matter). ⚠ The bin exit fires no
-    // 'leftBin' (CR 405.7) — a known gap, left as it was so no replay changes.
+    // CT-344: the hand through its choke point. CR 405.7 (CT-366): the bin through
+    // ITS choke point too, so 'leftBin' fires — a Rotling paid as a {Modular}
+    // cost out of the bin hears its own exit, as it does from every other bin
+    // exit. The owner `takeFromBin` returns is not kept: the mod is erased with
+    // the spell (CR 724.5), and the erased pile records no owner.
     if (modFrom === 'hand') this.takeFromHand(seat, index);
-    else { zone.splice(index, 1); this.foreignSpliced(seat, 'bin', index, name); }
+    else this.takeFromBin(seat, index, 'modded');
     this.payCard(seat, name, { purpose: 'mod' });
     (item.mods ??= []).push({ card: name, from: modFrom });
     // CR 724.4: only a GRAFT brings an EFFECT with it — `graft:${name}` is the key
@@ -10563,6 +10627,7 @@ export class E {
    * player who cannot aim the ability anywhere still has their unit.
    */
   collectTargets(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+    this.liveItems.add(item);   // CR 405.6b / CT-380: its bin targets follow their copies
     // CR 111.6a: FIRST, before any collector charges anything — a COMPOUND
     // activation cost is all or nothing (CR 111.14's rule, one scope up).
     this.gateCompoundCost(item);
@@ -11853,6 +11918,16 @@ export class E {
       // CR 102.4 / CT-343: the applier is the item's controller; the card keeps its owner
       this.attachMod(host, item.card!, item.controller, 'augment', undefined,
         item.owner !== undefined ? { owner: item.owner } : {});
+      // CR 721.4a / CT-407: a battle Virus onto a spell token in play — said as the
+      // deployment branch says it (apply.ts doAugment): a spell gains only attributes
+      if (host.kind === 'spellToken') {
+        const granted = this.card(item.card!).augmentAttrs;
+        this.ev('info', `${item.card} augments ${host.card}`
+          + (granted.length
+            ? ` — the spell gains {${granted.join('} {')}} when it is played.`
+            : ' — but a spell can only gain ATTRIBUTES, and this grants none, so nothing changes.'),
+          { unit: host.id, card: item.card, seat: item.controller });
+      }
       return;
     }
     // spell / spellUnit / spellToken / triggered / activated: run live parts
@@ -12052,6 +12127,7 @@ export class E {
    */
   resolveParts(item: StackItem, from: number, answers: Record<string, unknown>, shownEvents = 0,
     chain?: ChainRest): void {
+    this.liveItems.add(item);   // CR 405.6b / CT-380: a later part's bin targets follow their copies
     for (let pi = from; pi < item.parts.length; pi++) {
       const part = item.parts[pi]!;
       if (part.spent) continue;
@@ -12166,6 +12242,11 @@ export class E {
       // CR D6.3b: the rollback state, carried ON the suspension and applied when
       // the answer comes back rather than here.
       const snap = structuredClone(this.s);
+      // CR 405.6b / CT-380: the item's own declared targets as they stand at the
+      // boundary. A bin card this part takes re-indexes them (reindexBinRefs),
+      // and the item is the one object the snapshot does not hand back — the
+      // suspension carries it live — so a replay must start from these.
+      const aimedAtBoundary = structuredClone(item.parts.map(p => p.targets));
       const evLen = this.events.length;
       // events of THIS part the table has already been shown (a replay of a
       // part that has suspended before); the re-emission is dropped below.
@@ -12203,6 +12284,7 @@ export class E {
         if (batch?.length) this.settleTokenBatch(batch);
       } catch (sig) {
         if (sig instanceof PartChoice) {
+          item.parts.forEach((p, i) => { p.targets = aimedAtBoundary[i]!; });   // CT-380, above
           // Everything this part has emitted so far, INCLUDING the prefix it
           // just re-emitted: that total is what the table will have seen once
           // this suspension is published, so it is what the next replay must
