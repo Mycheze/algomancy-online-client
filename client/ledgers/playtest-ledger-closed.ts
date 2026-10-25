@@ -4929,6 +4929,16 @@ export const CLOSED: LedgerEntry[] = [
     note: "Dropslime counted what CR 801.2 calls trashed. In the turn-9 battle it dealt 5, then 6: Void Mandible (sacrificed), Murkstalker (died), Dropslime itself (DISCARDED from hand, so not only creatures dying), Seer of Empty Spaces and Prismatic Observer (sacrificed), then the second Dropslime discard. Not counted: Feed to Hooba (negated), Arc Lightning and Spell Excavation (resolved), All-Consuming Blaze (erased) and the Fireball tokens — CR 801.2b (a card that goes to a bin from the stack, resolved, negated or fizzled, is not trashed), 801.2c (erasing is not trashing), 801.2i (tokens never count). Every card that happened to count was a unit card. The report reads trashed as \"goes to the bin\"; the owner is checking that definition with invi (2026-10-25). Replay: WVEC is faithful on the engine it was played on.",
   },
   {
+    id: 284, room: "VRRS", date: "2026-10-24",
+    report: "invi, seat 0 (bug, minor): \"bripp can be moved to a block column during declare blockers\"",
+    status: 'fixed',
+    guards: [
+      "671-placement-warning-badge.test.ts::CR 802.12 / CT-410: on the board, a Feeble unit clicked into a block column wears the (!) before Confirm",
+      "671-placement-warning-badge.test.ts::CR 802.12 / CT-410: the Feeble unit in a block column is the card marked, in the engine words",
+    ],
+    note: "The rules hold: at [122] Bripp ({Feeble}, CR 802.12) is not among the engine's block options and a block naming it is refused (\"Feeble units cannot block\"); Yagamino declared no blocks. The board still lets a Feeble unit be dragged into a block column and only refuses on Confirm. Owner 2026-10-25: keep the drag, mark the card — BL-50 (a (!) badge on any card placed where submit will be refused, Feeble and Alluring first). Closes when BL-50 ships. FIXED 2026-10-25 (98014d51, BL-50 / CT-410): a Feeble unit placed in a block column now wears a red (!) before Confirm and the bar says \"Feeble units cannot block\"; the drag is kept.",
+  },
+  {
     id: 285, room: "ZAKG", date: "2026-10-24",
     report: "invi, seat 0, agreed fix: back to before Yagamino's choice: Done (turn 5). \"sdf\"",
     status: 'agreed-fix',

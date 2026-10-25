@@ -121,12 +121,6 @@ import { CLOSED } from './playtest-ledger-closed.ts';
 /** Everything still open. The closed entries — the bulk of the file until
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
-  {
-    id: 284, room: "VRRS", date: "2026-10-24",
-    report: "invi, seat 0 (bug, minor): \"bripp can be moved to a block column during declare blockers\"",
-    status: 'live',
-    note: "The rules hold: at [122] Bripp ({Feeble}, CR 802.12) is not among the engine's block options and a block naming it is refused (\"Feeble units cannot block\"); Yagamino declared no blocks. The board still lets a Feeble unit be dragged into a block column and only refuses on Confirm. Owner 2026-10-25: keep the drag, mark the card — BL-50 (a (!) badge on any card placed where submit will be refused, Feeble and Alluring first). Closes when BL-50 ships.",
-  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

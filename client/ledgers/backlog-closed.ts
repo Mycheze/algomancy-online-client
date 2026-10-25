@@ -2634,4 +2634,125 @@ export const CLOSED: Entry[] = [
       + 'words, the screen, and that no reset ROUTE has quietly appeared under the shouting. '
       + 'The admin-panel half of this entry is untouched and still open.',
   },
+  {
+    id: 'BL-44',
+    slug: 'draft-any-element-resource',
+    title: 'Draft: let "more…" make a resource of ANY element, not only the game\'s three',
+    area: 'engine',
+    size: 'S',
+    status: 'done',
+    evidence: {
+      commit: "c19e97b7",
+      guards: [
+        "667-draft-any-element-resource.test.ts::CR 105.9a / BL-44: the draft recycle menu leads with the trio and keeps the other four elements, then the Shard, behind more",
+        "667-draft-any-element-resource.test.ts::CR 106.8d / BL-44: an active Prismite in a draft exchanges into an element outside the trio, through more",
+        "21-fixes.test.ts::CR 105.9a / BL-44: a fwe draft game offers its trio first and still makes a wood or metal resource",
+      ],
+    },
+    track: 'qol',
+    said:
+      'The "More" sub menu for a game does need to have all the other elements in it. They\'re '
+      + 'just hidden. But it\'s technically legal to make a Fire resource, even if you don\'t have '
+      + 'any Fire cards in the deck. […] note that as being technically wrong and that we should '
+      + 'allow any color element to be made via the more menu. It might literally never happen, '
+      + 'but we should be faithful to the game. (2026-09-19)',
+    means:
+      'A draft game narrows `GameState.elements` to its trio, and `doRecycle` / '
+      + '`doExchangePrismite` refuse any element outside it (21-fixes: "a fwe draft game refuses '
+      + 'wood/metal resources and never offers them"). The rules do not: any resource can be '
+      + 'created by recycling. So in draft, the other elements should be legal too — offered '
+      + 'behind the recycle menu\'s "more…" (and the Prismite exchange menu\'s), never on the '
+      + 'main menu, exactly as a constructed deck\'s off-elements already are (CR D6.14b).',
+    doneWhen: [
+      'In a draft game, recycling a hand card → "more…" lists the four elements not in the trio, then Shard',
+      'Choosing one makes that resource, and an active Prismite can be exchanged into one too',
+      'The main recycle menu in draft is unchanged: the trio, then Prismite, then "more…"',
+    ],
+    decided: [
+      'Owner, 2026-09-19: the rules allow it; the client is "technically wrong" until it does. Low priority — "it might literally never happen".',
+    ],
+    touches: [
+      'client/engine/src/apply.ts',
+      'client/ui/main.ts',
+      'client/ui/inspect.ts',
+      'client/engine/test/21-fixes.test.ts',
+    ],
+    notes:
+      "DONE 2026-10-25 (c19e97b7). doRecycle and doExchangePrismite accept any of ALL_ELEMENTS; offElements(s) is the four elements outside a draft's trio (empty outside draft), and legalActions appends them AFTER the Shard per hand card and per active Prismite, so every older option keeps its index and constructed's legal list is byte-identical. GameState.elements keeps its meaning (what a draft deals). Client: resourceMenuElements really falls back to state.elements, the recycle menu passes ALL_ELEMENTS, and prismiteClickPlan puts the Shard last on the expanded menu. In a fire/water/earth draft the main recycle menu is unchanged; \"more elements… (4)\" holds wood, metal, light, dark, then Shard. Both 667 tests failed with the hunks reverse-applied; 21-fixes, 413, 31 and 308 were updated where they asserted the old refusal. No fuzz fixture drifted. "
+      + 'Found shipping the recycle-for-Prismite change (#168). The menu already splits show/hidden through '
+      + 'resourceMenuElements; the engine check is the real change, and it will drift every '
+      + 'draft fuzz walk, so expect to re-seed the fixtures that pin one (143, 171, test-accounts '
+      + 'search for theirs now).',
+  },
+  {
+    id: 'BL-49',
+    slug: 'weekly-challenges-owner-weeks',
+    title: 'Weekly Challenges: the owner\'s nine new weeks, 15 Nov to 10 Jan (12 Grafts of Christmas on 20 Dec)',
+    area: 'teaching',
+    size: 'L',
+    status: 'done',
+    evidence: {
+      commit: "f510a93c",
+      guards: [
+        "645-challenge-calendar-winter-2026.test.ts::§1 The Parade is parked, and the nine new weeks run from Sun 15 Nov",
+        "645-challenge-calendar-winter-2026.test.ts::§2 each reference run does what its goal says",
+        "506-challenge-reference-runs.test.ts::§1 every calendar row has a reference run file that names it",
+        "655-challenge-goal-double-ko.test.ts::§1 CR 104.1a / CT-409: doubleKO is met by a game-over that says the winner fell too",
+      ],
+    },
+    track: 'feature',
+    said: "Owner, 2026-10-24: \"Force the dummy to win the game from an effect it controls · Put 30 effects to go onto the stack at once · Reach 100 life · Kill the dummy and yourself simultaneously (via the same effect) · Kill the dummy in 'one shot' (if it takes any amount of damage that isn't lethal, you lose). It starts at 60 life. · Draw 15 cards in a single turn · Control, simultaneously, 5 robot tokens, 5 crystal tokens, 5 fireball tokens and 5 poison tokens · Spend 50 mana. You start the game with an emblem that says 'You may activate any number of dormant resources during your planning step.'\" And: \"let's make it the 12 Grafts of Christmas.\" \"The challenges can't overlap basically at all\" (clarified: only the exact same goal); \"We need more unique challenges that will make people actually think and dive into the options.\"",
+    means: "Nine new calendar rows from Sun 15 Nov (The Parade removed from the rotation, parked): token checklist (5 Robot + 5 Crystal + 5 Fireball + 5 Poison at once), draw 15 in one turn, the dummy wins from its own effect, one-shot the dummy from 60 life (non-lethal damage fails the run), 12 Grafts of Christmas on the week of 20 Dec (graft effects of exactly 1..12 parts, multipliers count), spend 50 mana with the dormant-resource emblem, 30 effects on the stack at once, reach 100 life, and a double KO (one effect brings both to 0). Shared machinery built once: per-week dummy starting life, a per-week emblem/rule, a fail condition. Each row has a reference run (challenge-solve.ts) the gate replays; par = its raw.",
+    doneWhen: [
+      'Nine rows on the calendar from Sun 15 Nov, 12 Grafts of Christmas on the week of Sun 20 Dec, no two with the same goal',
+      'Each row has a reference run that test 506 replays green, and Watch, the three boards, report runs and the admin Challenges tab handle every new goal kind',
+      'The Parade is off the calendar with its reference run parked, not replayed',
+      'The owner has seen the finished list (title, blurb, reference turns/cards/elements) before it deploys, and it is live before Sun 15 Nov',
+    ],
+    decided: [
+      'Owner 2026-10-24: only the exact same goal cannot repeat ("100 life, 100 units, 100/100 are totally different").',
+      'Owner 2026-10-24: 12 Grafts counts PARTS, multipliers count; it goes over Christmas. Order otherwise does not matter.',
+      'Owner 2026-10-24: The Parade removed ("maybe we\'ll put it in later"); Something Big raised to 80/80 (deployed 2e951ea).',
+    ],
+    asks: [],
+    notes: "DONE 2026-10-25: all nine weeks are built. Eight (15 Nov to 3 Jan) were approved by the owner (\"Ship it\") and merged to master from branch pa-cal (342638e3). The ninth, Double Knockout, opens Sun 10 Jan 2027 (f510a93c, plus the test rename f224d2a6): \"Defeat the dummy and yourself with the same effect. Fall alone, or let the dummy fall first, and the run is over.\" Goal kind doubleKO, read off the engine's alsoAtZero stamp (CT-409); reference run 5 turns, 7 cards, 2 elements, par 70 (Equilibriate after combat, Flesh Tithe for 63, the 63/63 hits the dummy to 1, Penance on both). Worth showing the owner: its reference line shares its first half (Equilibriate, Flesh Tithe 63/63, 5 · 7 · 2) with Picture of Health on 13 Dec; the goals differ. Design menu in ~/.claude/projects/-home-bena-Documents-Algomancy/zero-handoff/PA-cal-menu.md; the double KO build in zero-handoff/PB-end.md.",
+    touches: [
+      'client/server/challenges.ts',
+      'client/server/challenge-runs/',
+      'client/engine/src/challenge.ts',
+      'client/docs/21-weekly-challenges.md',
+    ],
+  },
+  {
+    id: 'BL-50',
+    slug: 'illegal-placement-marker',
+    title: 'A (!) on any card placed where the engine will refuse it on submit (Feeble blocker, Alluring duty, …)',
+    area: 'client',
+    size: 'M',
+    status: 'done',
+    evidence: {
+      commit: "98014d51",
+      guards: [
+        "671-placement-warning-badge.test.ts::CR D1.3 / 802.12 / CT-410: the badge shows exactly when the engine refuses the plan",
+        "671-placement-warning-badge.test.ts::CR 606.2e / CT-410: an unmet Alluring duty marks the lured unit, wherever it is",
+        "671-placement-warning-badge.test.ts::CR 802.12 / CT-410: on the board, a Feeble unit clicked into a block column wears the (!) before Confirm",
+      ],
+    },
+    track: 'qol',
+    said: "Owner, 2026-10-25 (invi's report: \"bripp can be moved to a block column during declare blockers\"): \"blocking with feeble units isn't allowed to be submitted, but you can drag them into the column. So the engine isn't wrong there, but maybe we should add a sorta (!) icon onto cards (in the same place the big die is for token spells) when there's a card in a formation in an illegal way (a way that the engine won't allow upon submission). So feeble, but also alluring come to mind.\"",
+    means: "While a player is building blocks (and any other formation the engine validates on submit), every card whose current placement makes the plan illegal shows a (!) badge centred over its art, where the X die sits on a spell token (.xdie). Room VRRS, 2026-10-24: Bripp ({Feeble}) could be dragged into a block column and was only refused on Confirm. The answer must be the ENGINE's verdict, read the way blockPlanIssue already reads allureViolation (ui/inspect.ts: \"a READ of the engine's own validator, never a second opinion\"), so the badge can never disagree with what submit does: Feeble (and Pure overriding it), Alluring duties, Flying/Evasive/Sneaky. A card that is fine shows nothing; the badge names the reason on hover/tap.",
+    doneWhen: [
+      'A Feeble unit dragged into a block column shows the (!) badge before Confirm, and loses it when moved out (a Pure + Feeble unit never shows it)',
+      'An Alluring duty left unmet marks the unit(s) whose placement breaks it',
+      'The badge is driven by the engine validator, and a test proves that for every placement the badge shows exactly when submitting would be refused',
+    ],
+    decided: [],
+    asks: [],
+    notes: "DONE 2026-10-25 (98014d51). ui/placewarn.ts placementWarnings reads the engine's own blockVerdict (blockDeclarationIssue on the whole plan, then its offenders, then the required units an Alluring duty misses): every card in the map wears a red (!) centred where a spell token's X die sits, with the reason as its title, and the bar names the cards and reasons so a finger can read them. The badge takes no clicks, is hidden in the card zoom, and Confirm stays live. Only the block step can hold a placement the engine refuses: the attack builder places only formationCandidates and deployment places one card at a time from the engine's slots. 671's sweeps prove the badge shows exactly when the engine refuses (343 placements; 125 under an Alluring duty; a lone Sneaky attacker). Playtest report #284 (VRRS) closes with it, as does CT-410. Cost: one structuredClone of the state per paint during your own block step, not measured on a long live game.",
+    touches: [
+      'client/ui/inspect.ts',
+      'client/ui/battle.ts',
+      'client/ui/style.css',
+    ],
+  },
 ];
