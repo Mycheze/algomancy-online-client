@@ -28,7 +28,11 @@ installable-app (PWA) polish.*
   anywhere, or Escape, puts it away and does nothing else. Playing from the
   hand is a drag (below) or the rail's buttons. The bin has no drag, so in the bin dialog a usable
   card has a button under it (shown on touch only), and a tap on a glowing bin
-  thumb in your region opens the bin (CT-381). A tap that answers a question —
+  thumb in your region opens the bin (CT-381). The same for your own spell
+  token and a resource whose tap would act at once (CT-408, owner 2026-10-25:
+  "Casting a spell token, Activating a resource"): a tap reads it and puts a
+  button on it, ▶ Cast or Activate, and under the zoom too; the button does it
+  (`ui/tapgo.ts`). A unit's only ability stays one tap. A tap that answers a question —
   a discard, a hand card the prompt is asking for — still answers it. It is the
   last pointer that decides, not the device: a mouse click still plays.
 - **Full control** — a held Ctrl on a desktop — is a tap on its chip.

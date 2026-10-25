@@ -1020,6 +1020,24 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
 .binentry { display: flex; flex-direction: column; gap: 4px; width: 92px; }
 .binuse { display: none; }
 html.touch .binuse { display: block; width: 100%; padding: 4px 2px; font-size: 12px; }
+/* CT-408: the button a finger's tap leaves on its own spell token (Cast) or a
+   resource (Activate): the tap read the card, the button does it. Only a tap
+   ever draws one (ui/tapgo.ts), so it needs no html.touch gate. Hung over the
+   token's lower art, and under the resource tile, which is too small to hold it. */
+.tapgo { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); z-index: 6;
+  background: #3c5a2f; border: 1px solid #5b8747; color: var(--text); font-weight: 700;
+  font-size: 13px; line-height: 1.2; padding: 7px 12px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,.6); }
+/* under the tile, growing LEFT from its right edge: on the regions board your
+   resources end at the region's right edge, which clips anything past it */
+.rescard .tapgo { bottom: auto; top: calc(100% + 4px); left: auto; right: 0; transform: none; }
+/* the zoom's copy of the token is a picture: its button is not drawn there.
+   The read carries its own, hung under the copy (ui/tapgo.ts zoomGoHtml) and
+   pressed through ui/touch.ts (the zoom layer takes no pointer events) */
+#cardzoom button.tapgo { display: none; }
+#cardzoom .zoomhang.zoomgo { background: none; border: 0; box-shadow: none; padding: 0; min-width: 0; }
+#cardzoom .zoomgo .tapgo { position: static; transform: none; display: inline-block;
+  font-size: 16px; padding: 10px 26px; border-radius: 8px; }
 
 /* help + judge */
 .helpbox, .judgebox { width: min(92vw, 640px); }
