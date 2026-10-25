@@ -1,6 +1,35 @@
 # 07 — Visual & UX redesign spec ("MTGO-grade" client)
 
-Status: **draft for review** (2026-07-17). Supersedes the M1 "dumb terminal" hotseat UI
+> **STATUS: HISTORICAL SPEC — not a brief, not a plan, nothing in it is pending.**
+> Written by an agent on 2026-07-17 "from Bena's brief" and committed 2026-08-18.
+> On 2026-08-25 the owner, asked whether this was still what he wanted visually,
+> answered: "I don't know what docs/07 is." Its milestones (§10) were therefore
+> never sanctioned work, and nothing here is a requirement. The owner's real visual
+> brief is BL-10's ("just some general light sprucing up ... Mostly in non gameplay
+> related areas"). The board itself was later rebuilt on the owner's own sketch:
+> [`18-board-layout-v2.md`](18-board-layout-v2.md). Code comments still cite a few
+> sections (§2, §4.5, §9.2, §15) as the design note behind what they build; that is
+> history, not a to-do. Reconciled 2026-10-25 (BL-09).
+>
+> **What became of it**, checked against the client on 2026-10-25:
+>
+> | section | today |
+> |---|---|
+> | §2 home → lobby → game | shipped: home screen, lobby with a room code and share bar (`ui/lobby.ts`). Local hotseat was removed 2026-09-23. |
+> | §3, §15 table layout and per-phase layouts | superseded: the regions board of docs/18 (the default since 2026-09-26), a fit pass rather than a per-phase layout table. `layouts.json`, the layout editor and `focus-board.html` were never used by the client and were deleted on 2026-10-25 (they remain in git history under `client/docs/prototypes/`). |
+> | §4.1 the stack | shipped as the stack on the table with targeting arrows (docs/09, docs/11). The stack is not a box the player positions; the card being played places itself where it covers nothing (`ui/freespot.ts`). |
+> | §4.2 resources as cards | shipped as the literal resource scans (§9.2). |
+> | §4.5 phase track and action bar | shipped (`ui/main.ts`, "Phase track"). |
+> | §5 sound | shipped, synthesized with Web Audio (`ui/audio.ts`, docs/10). |
+> | §6 priority model | auto-pass, per-card auto-yield and full control shipped; the settable list of stops described there was not built. |
+> | §7 architecture | a motion layer with FLIP (`ui/anim.ts`, `ui/motion.ts`, docs/09) and no framework; the proposed `render/*.ts` split did not happen as written. |
+> | §11 accessibility | `prefers-reduced-motion` is honoured. "Phone is out of scope" is superseded: touch and tablets are supported (docs/19). |
+> | §13 onboarding | shipped as Learn to Play (a scripted game with a tutorial bot) and the glossary. |
+> | §15 undo and the opponent's replay | shipped: single-step undo in the solo phases, and the recap of the opponent's committed phase. |
+>
+> The original status line follows, unchanged.
+
+Status (2026-07-17, historical): **draft for review**. Supersedes the M1 "dumb terminal" hotseat UI
 (`ui/main.ts`) as the *product* client. The engine, server, and redaction layer are
 kept; this is a client rebuild plus modest server/home-screen additions.
 
@@ -289,6 +318,8 @@ The rebuild introduces a thin persistent-DOM layer while keeping the engine/back
 
 ## 9. Open decisions (Bena's call)
 
+*(Historical. 2 and 4 were decided as marked; the rest are moot, settled by what was built.)*
+
 1. **Render approach**: framework-free keyed-DOM + FLIP (matches repo ethos, ~150 LOC to maintain) vs.
    pull in a tiny reactive/animation lib. *Recommendation: framework-free.*
 2. **Resource card look**: ✅ **DECIDED — use the literal `*-Resource.jpg` scans.** The art already
@@ -306,6 +337,9 @@ The rebuild introduces a thin persistent-DOM layer while keeping the engine/back
    *Recommendation: minimal + settings; reconnect is already handled by rejoining a code.*
 
 ## 10. Milestones
+
+*(Historical: never run as milestones and never sanctioned; see the status block at the top for
+what of them exists today.)*
 
 - **R0 — scaffolding**: split the client into modules; introduce the keyed-render + FLIP layer behind
   the existing look (no visual change yet, proves the architecture). Home/lobby shell.
@@ -429,7 +463,7 @@ track / life / stack captions; keep `system-ui` for body/log.
 
 The board is **not one static layout**. It reorganizes per phase, and within battle per *which region
 is contested*, always enlarging what matters right now and shrinking what doesn't. Reference layouts
-(3 views, with mirrors to be derived) live in `docs/prototypes/layouts.json`. The rules:
+(3 views, with mirrors to be derived) lived in `docs/prototypes/layouts.json`, deleted 2026-10-25. The rules:
 
 - **Battle = the contested region is the centerpiece, and combat is *combined into that region*.** When
   you attack, the **opponent's region + combat** fill the center huge (their region is where the fight
@@ -455,7 +489,7 @@ is contested*, always enlarging what matters right now and shrinking what doesn'
 
 Implementation: ship a small **layout table keyed by (phase, contested-region, seat)** producing each
 zone's rect + card-scale (exactly the editor's output shape). The renderer places zones from that table
-and transitions between them when the phase/focus changes. `layouts.json` is the seed; the floating
+and transitions between them when the phase/focus changes. `layouts.json` was the seed; the floating
 stack position and "expand opponent" toggles are user prefs layered on top.
 
 New engine-facing needs this surfaces: **undo during planning/deploy** (action-log truncation + replay,
@@ -474,5 +508,6 @@ back). Both fit the existing seed+action-log architecture.
   **plus a Targeting/Response overlay** (dim board, highlight candidates, draw target arrows) **and a
   Game-over/results screen**. Regroup/End-of-turn reuse the solo-goldfish shape (not distinct views);
   no separate mulligan/game-start view for v1.
-- Reference layouts (Planning/Battle/Deploy, Bena-authored) live in `docs/prototypes/layouts.json`; the live
-  renderer that consumes them is `docs/prototypes/focus-board.html` (the seed of the real layout engine).
+- Reference layouts (Planning/Battle/Deploy) lived in `docs/prototypes/layouts.json`, with a static
+  renderer in `docs/prototypes/focus-board.html` and an editor in `docs/prototypes/layout-editor.html`.
+  The client never read them, and all three were deleted on 2026-10-25 (BL-09); see git history.

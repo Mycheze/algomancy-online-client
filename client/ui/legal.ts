@@ -520,7 +520,7 @@ let installed = false;
 /**
  * Put the footer (which carries the notice) and the three pages on the page. Idempotent, safe
  * to call before or after the first render, and a no-op in any document with no
- * `#app` (the mockup and layout-editor rigs).
+ * `#app`.
  */
 export function installLegal(): void {
   if (installed) return;

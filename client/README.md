@@ -63,7 +63,7 @@ subsystem and is kept current when that subsystem changes.
 
 | doc | what |
 |---|---|
-| [`07-visual-redesign.md`](docs/07-visual-redesign.md) | the board: layout, per-phase focus, the interaction model. `prototypes/` holds the layout editor and reference layouts it was designed with |
+| [`07-visual-redesign.md`](docs/07-visual-redesign.md) | HISTORICAL: a 2026-07 agent-written redesign spec the owner did not recognise as his brief; its status block says what of it shipped. Not the board spec: that is [`18-board-layout-v2.md`](docs/18-board-layout-v2.md) |
 | [`08-light-and-dark.md`](docs/08-light-and-dark.md) | the expansion's attributes and mechanics |
 | [`09-visual-clarification.md`](docs/09-visual-clarification.md) | card motion and targeting arrows: a state-census diff, not an event feed |
 | [`10-sound.md`](docs/10-sound.md) | the cues, the one-cue rule, silence on a resync |
