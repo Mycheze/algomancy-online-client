@@ -284,15 +284,19 @@ const virusHosts = (g: E, region: number): Entity[] => {
  */
 const playInlineMode = (
   g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, mode: InlineMode, from: InlinePlayZone,
+  owner: Seat | undefined,
 ): InlinePlay => {
   const c = getCard(name);
+  // CR 102.4, 102.5a (CT-367): `owner` is the card's owner, when somebody else's
+  // card is played. Every item and cache entry a mode builds carries it, as the
+  // plain play's does (declareInlinePlay); absent when the player owns it.
   if (mode === 'prophecy') {
     const banner = c.prophecy!;
     const ev = g.ev('prophesied',
       `${g.pname(seat)} prophesies ${name} (via ${ctx.sourceName}), for free.`,
       { seat, card: name, from, mana: 0, cost: '', condition: banner.condition });
     g.fireEvent('prophesied', ev);
-    g.cacheCard(seat, name, from === 'deck' ? 'deck' : 'effect', { prophecy: banner.condition });
+    g.cacheCard(seat, name, from === 'deck' ? 'deck' : 'effect', { prophecy: banner.condition, owner });
     return { outcome: 'cached' };
   }
   if (mode === 'virus') {
@@ -306,6 +310,7 @@ const playInlineMode = (
       id: g.s.nextId++, kind: 'virus', card: name,
       label: `${name} (Virus augment on ${host.card})`, controller: seat,
       region: host.region, negated: false, parts: [], hostId: host.id,
+      ...(owner !== undefined && owner !== seat ? { owner } : {}),
     };
     const ev = g.ev('targeted', `${name} targets ${host.card}.`, { unit: host.id, region: host.region });
     g.fireEvent('targeted', ev);
@@ -322,6 +327,7 @@ const playInlineMode = (
     id: g.s.nextId++, kind: 'ambush', card: name, label: `${name} (Ambush)`,
     controller: seat, region: ctx.region, negated: false,
     parts: [{ effectKey: `ambush:${name}`, targets: [target] }], from,
+    ...(owner !== undefined && owner !== seat ? { owner } : {}),
   };
   g.commitItem(item, 'push');
   return { outcome: 'stacked' };
@@ -464,7 +470,7 @@ const declareInlinePlay = (
 const pushInlinePlay = (
   g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts,
 ): InlinePlay => {
-  if (opts.mode) return playInlineMode(g, ctx, name, key, seat, opts.mode, opts.from);
+  if (opts.mode) return playInlineMode(g, ctx, name, key, seat, opts.mode, opts.from, opts.owner);
   g.commitItem(declareInlinePlay(g, ctx, name, key, seat, opts, true), 'push');
   return { outcome: 'stacked' };
 };
