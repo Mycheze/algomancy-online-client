@@ -443,58 +443,6 @@ const OPEN: Entry[] = [
       + 'at 1v1. Generalizing IT is the most promising path, not inventing something new.',
   },
   {
-    id: 'BL-09',
-    slug: 'docs-07-reconcile',
-    title: 'docs/07 is not a brief — reconcile it with what shipped, and stop citing it',
-    area: 'client',
-    size: 'M',
-    status: 'open',
-    track: 'feature',
-    said: 'Visual sprucing up',
-    means:
-      'THIS ENTRY CHANGED ON 2026-08-25 and the old version should not be resurrected. It '
-      + 'used to be "finish the docs/07 visual redesign (R0–R5)", on the assumption that '
-      + 'docs/07-visual-redesign.md was the owner\'s standing visual brief. Asked to confirm '
-      + 'that, he answered "I don\'t know what docs/07 is". The doc is real — it is in the '
-      + 'tree, dated 2026-07-17, and it says on its own first page that it is written from '
-      + '"Bena\'s brief" — but it is an agent-authored spec he does not recognise as a thing '
-      + 'he is waiting on, and its R0–R5 are therefore NOT sanctioned work. What is left is a '
-      + 'documentation job: a spec nobody has read in a month, describing as pending things '
-      + 'that shipped, is exactly the rot this backlog exists to catch. Mark what it is, '
-      + 'reconcile it with the client that actually exists, and point the next agent at '
-      + 'BL-10, which now carries the owner\'s real and much smaller visual brief.',
-    doneWhen: [
-      'docs/07 carries a status line saying it is a historical spec, when it was written, and that the owner did not recognise it as a current brief on 2026-08-25',
-      'Anything in docs/07 that has since shipped is no longer described there as pending',
-      'Any R0–R5 item that is still genuinely wanted is moved to BL-10 as a named sub-task, in the owner\'s terms — light, mostly non-gameplay — rather than left in a doc nobody is reading',
-      'The per-phase layouts in layouts.json are actually used by the client, or the file is retired',
-      'Nothing anywhere cites docs/07 as a source of pending requirements',
-    ],
-    decided: [
-      'THE OWNER DOES NOT KNOW THIS DOCUMENT. Owner, 2026-08-25, asked whether docs/07 is still what he wants visually: "I don\'t know what docs/07 is." That is an answer, not a non-answer: it removes docs/07 as evidence of what he wants. Do not build R0–R5 off the strength of it.',
-      'The real visual brief is BL-10\'s. Owner, 2026-08-25, in the very next question: "It\'s honestly pretty much, just some general light sprucing up is all that\'s needed. Mostly in non gameplay related areas." A ground-up client rebuild is not that.',
-      'The entry is kept rather than dropped because the doc is still in the tree and still reads as a live plan. Deleting the entry would leave the misleading document behind with nobody assigned to it; that is how the last three "wait, is this still true?" surprises happened.',
-      'Correction to this entry\'s own question, which said "~13 months after writing it": docs/07 is dated 2026-07-17 and came into the repo on 2026-08-18. It was about five weeks old when the question was asked, not thirteen months.',
-    ],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/docs/07-visual-redesign.md',
-      'client/docs/09-visual-clarification.md',
-      'client/docs/prototypes/layouts.json',
-      'client/docs/prototypes/layout-editor.html',
-      'client/ui/style.css',
-      'client/ui/main.ts',
-    ],
-    notes:
-      'The slug was `visual-redesign-r0-r5` until 2026-08-25 — grep for that if an older note '
-      + 'or branch name cites it. The id is unchanged, as ids always are. '
-      + 'Size dropped L → M with the scope: this is now a reconciliation pass over one doc '
-      + 'plus a decision about layouts.json, not a client rebuild. '
-      + '2026-09-03: layouts.json, layout-editor.html and focus-board.html moved from ui/ (where the '
-      + 'server\'s catch-all served them to anyone) to docs/prototypes/; mockup.html, referenced by nothing, deleted.',
-  },
-  {
     id: 'BL-10',
     slug: 'visual-polish',
     title: 'Visual polish pass — art, motion, typography, table',
@@ -590,51 +538,6 @@ const OPEN: Entry[] = [
       + 'you click to pass priority, how you set up a graft, how a spell token comes along — '
       + 'and leave WHY you would to BL-12. If you cannot do one without the other for a '
       + 'given item, build it once, here, and have BL-12 reuse it rather than repeat it.',
-  },
-  {
-    id: 'BL-12',
-    slug: 'learn-to-play',
-    title: 'Learn to play — the UI tutorial plus the actual game, via a contrived game',
-    area: 'teaching',
-    size: 'S',
-    status: 'open',
-    track: 'feature',
-    said: 'And learn to play is the UI PLUS actual game functions with a contrived game of some kind.',
-    means:
-      'The full onboarding for someone who has never played Algomancy: everything BL-11 '
-      + 'teaches, plus the rules and concepts — affinity, elements, the planning/battle/'
-      + 'regroup/deployment cycle, why the counterattack exists, what grafting is — taught '
-      + 'through a CONTRIVED GAME with a controlled board, not through a wall of text.',
-    doneWhen: [
-      'Someone who has never played can finish it and then play a real game without asking a human what to do',
-      'It teaches through a played game with a stacked/scripted board, not a document',
-      'It covers the concepts a new player actually stumbles on: affinity and resources, the counterattack, columns sharing attributes, grafting',
-      'It is one of the first things visible to a signed-out visitor — this client exists partly to teach newcomers',
-      'It ends by pointing at the shop: both links from BL-15, with an honest line about supporting the creator',
-    ],
-    decided: [
-      'Contrived game, not a rules document. The owner said "with a contrived game of some kind".',
-      'Teaching newcomers is a stated reason the project exists, so this is not a nice-to-have.',
-      'It ends with the buy links. Owner, 2026-08-25: "Yes. Give them the links and recommend buying the game or AT LEAST the print and play version to support the creator of this excellent game." — the two exact URLs are recorded on BL-15; use those, do not go looking for others.',
-    ],
-    asks: [],
-    deps: [],
-    touches: [
-      'client/ui/main.ts',
-      'client/ui/glossary.ts',
-      'data/comprehensive-rules',
-      'data/rules',
-    ],
-    notes:
-      'Depends on BL-03 because the scripted-opponent machinery is what lets a contrived '
-      + 'game have a cooperative opponent that does the thing the lesson needs. '
-      + 'UPDATE 2026-10-24 (housework audit): EVERYTHING SHIPPED EXCEPT THE BUY LINKS. Learn to Play '
-      + '(ca3488f + 058c15d, 2026-09-18) is a scripted played game with a tutorial bot and '
-      + 'lessons, reachable signed out. The one unmet doneWhen is the last: the END lesson '
-      + '(ui/lessons.ts, "Where next") has no buy link, and BUY_PNP is used only in ui/legal.ts. '
-      + 'Left: add the two BL-15 URLs and the owner\'s "support the creator" line to that page, then '
-      + 'close with Learn to Play\'s guards. Size is now S and the deps were dropped: Learn to Play '
-      + 'brought its own tutorial bot (ui/bot.ts), so BL-03 and BL-11 no longer gate anything here.',
   },
   {
     id: 'BL-17',

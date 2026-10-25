@@ -127,14 +127,14 @@ function ignoredSpans(rel: string, text: string): [number, number][] {
  */
 const ALLOWED: { file: string; match: string; why: string }[] = [
   { file: 'docs/07-visual-redesign.md', match: 'R', why: 'the visual redesign\'s rounds R0–R5, not rulings' },
-  { file: 'ledgers/backlog.ts', match: 'R0', why: 'the visual redesign\'s rounds R0–R5, not rulings' },
+  { file: 'ledgers/backlog-closed.ts', match: 'R0', why: 'the visual redesign\'s rounds R0–R5, not rulings (BL-09, closed 2026-10-25)' },
   { file: 'ui/test/286-rules-reference.test.ts', match: 'R', why: 'fixture and doc of the player-copy guard: it must still be shown an R-number to catch' },
   { file: 'ui/test/227-reminder-text.test.ts', match: 'R', why: 'the leak detector\'s fixtures, and the verbatim string a player once saw (report #118)' },
   { file: 'ui/test/323-recent-updates.test.ts', match: "'per R303, cached cards play'", why: 'fixture: the updates guard must still be shown a retired number to catch' },
   { file: 'ui/test/214-deck-page-wiring.test.ts', match: 'R1: it works', why: 'fixture: an arbitrary rulings line the card panel must show and not leak; not a citation' },
   { file: 'engine/test/184-ruling-register.test.ts', match: 'R', why: 'this file: the scans\' own positive controls and the allowlist itself' },
   { file: 'engine/scripts/cr/check.mjs', match: 'R', why: 'machinery: the doc of uncite(), which still reads the retired forms in frozen verdict spans' },
-  { file: 'ledgers/card-todo.ts', match: 'R157 §20 —', why: 'machinery: CT-235 quotes 133\'s pre-migration titles as its evidence; the retitle resolved its item (1)' },
+  { file: 'ledgers/card-todo-closed.ts', match: 'R157 §20 —', why: 'freeze: CT-235 quotes 133\'s pre-migration titles as its evidence; the retitle resolved its item (1) (closed 2026-10-25)' },
   { file: 'ledgers/card-todo-closed.ts', match: 'R11: regroup runs its exact sequence', why: 'freeze: CT-241\'s evidence quotes a test title as it stood when filed (closed 2026-10-24)' },
   { file: 'ledgers/card-todo-closed.ts', match: 'R157 §17', why: 'freeze: CT-101\'s closing notes describe the retired 202 guard\'s control, as history' },
   { file: 'engine/test/229-cosmic-and-control.test.ts', match: ' *     ', why: 'freeze: a quotation of the test as it used to read (its R3 GUARD), kept verbatim' },

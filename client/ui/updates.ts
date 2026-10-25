@@ -44,6 +44,17 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-25', kind: 'fix', text: 'Automaton of Abundance and Cosmic Conspirator: when you make a token you now choose which applies first, so you can copy a Robot and then swap both. Automaton copies each kind of token once per effect, grafted cards included.' },
+  { date: '2026-10-25', kind: 'change', text: 'If the order of two effects only changes how big a number gets (Conduit of Pain with Powerful or Arbiter of Vitality, Proliferating Slime with Counter Thief), the bigger result is a one-click default; you can still pick the other order.' },
+  { date: '2026-10-25', kind: 'change', text: "When both players have effects that could change the same thing, the initiative player's now apply first and nobody is asked. With a Counter Thief on each side, the other player's thief ends up with the counters." },
+  { date: '2026-10-25', kind: 'fix', text: 'Units killed by Deadly, and units sacrificed by the same card (Perish, Cull and the rest), now die at the same moment as the others, so cards that react to deaths see all of them.' },
+  { date: '2026-10-25', kind: 'change', text: 'If one card drops your opponent to 0 and also makes you draw from an empty deck, the game now waits for the card to finish, and then the higher life total wins.' },
+  { date: '2026-10-25', kind: 'change', text: 'A Virus played by Tides of the Cosmos can now go onto a spell on the stack or a spell token in play, just like a Virus played from your hand.' },
+  { date: '2026-10-25', kind: 'fix', text: 'Biomass Devourer, Cthyrian Rector and Murkdrop Distiller no longer lose track of their card when another copy of it leaves the bin first.' },
+  { date: '2026-10-25', kind: 'fix', text: "The line under a spell on the stack now counts Arbiter of Vitality, Flux Resonator, Proliferating Slime and damage shields. On a touch screen, a bin card's Play button now works on the first tap." },
+  { date: '2026-10-25', kind: 'fix', text: "Watching a game, the top player's hand no longer disappears when they have a lot of resources, and it is drawn bigger on smaller screens." },
+  { date: '2026-10-25', kind: 'new', text: "The Learn to Play tutorial now ends with links to buy Algomancy or its print-and-play edition from the creator's shop." },
+  { date: '2026-10-25', kind: 'fix', text: 'Torrential Reclamation now shows its current card text and image: for each ally recalled, each player sacrifices a unit and you lose 1 life. How it plays has not changed.' },
   { date: '2026-10-25', kind: 'change', text: 'If one effect drops both players to 0 life, the higher life total wins, even below 0. On an exact tie the player with initiative loses.' },
   { date: '2026-10-25', kind: 'change', text: 'Running out of cards now ends the game. In constructed, the player who has to draw from an empty deck and recycle pile loses. In live draft the game ends and the higher life total wins.' },
   { date: '2026-10-25', kind: 'fix', text: 'Inverted now reverses base stat changes too: a 7/5 made a 3/3 by Aberrant Statweaver is an 11/7 while Inverted. Ruinbringer and the other "delete all" cards now delete everything at once, so death triggers hear every unit.' },

@@ -2755,4 +2755,116 @@ export const CLOSED: Entry[] = [
       'client/ui/style.css',
     ],
   },
+  {
+    id: 'BL-09',
+    slug: 'docs-07-reconcile',
+    title: 'docs/07 is not a brief — reconcile it with what shipped, and stop citing it',
+    area: 'client',
+    size: 'M',
+    status: 'done',
+    evidence: {
+      commit: "c01b4ba0",
+      guards: [
+        "184-ruling-register.test.ts::§3: every allowlist entry still matches a token",
+      ],
+    },
+    track: 'feature',
+    said: 'Visual sprucing up',
+    means:
+      'THIS ENTRY CHANGED ON 2026-08-25 and the old version should not be resurrected. It '
+      + 'used to be "finish the docs/07 visual redesign (R0–R5)", on the assumption that '
+      + 'docs/07-visual-redesign.md was the owner\'s standing visual brief. Asked to confirm '
+      + 'that, he answered "I don\'t know what docs/07 is". The doc is real — it is in the '
+      + 'tree, dated 2026-07-17, and it says on its own first page that it is written from '
+      + '"Bena\'s brief" — but it is an agent-authored spec he does not recognise as a thing '
+      + 'he is waiting on, and its R0–R5 are therefore NOT sanctioned work. What is left is a '
+      + 'documentation job: a spec nobody has read in a month, describing as pending things '
+      + 'that shipped, is exactly the rot this backlog exists to catch. Mark what it is, '
+      + 'reconcile it with the client that actually exists, and point the next agent at '
+      + 'BL-10, which now carries the owner\'s real and much smaller visual brief.',
+    doneWhen: [
+      'docs/07 carries a status line saying it is a historical spec, when it was written, and that the owner did not recognise it as a current brief on 2026-08-25',
+      'Anything in docs/07 that has since shipped is no longer described there as pending',
+      'Any R0–R5 item that is still genuinely wanted is moved to BL-10 as a named sub-task, in the owner\'s terms — light, mostly non-gameplay — rather than left in a doc nobody is reading',
+      'The per-phase layouts in layouts.json are actually used by the client, or the file is retired',
+      'Nothing anywhere cites docs/07 as a source of pending requirements',
+    ],
+    decided: [
+      'THE OWNER DOES NOT KNOW THIS DOCUMENT. Owner, 2026-08-25, asked whether docs/07 is still what he wants visually: "I don\'t know what docs/07 is." That is an answer, not a non-answer: it removes docs/07 as evidence of what he wants. Do not build R0–R5 off the strength of it.',
+      'The real visual brief is BL-10\'s. Owner, 2026-08-25, in the very next question: "It\'s honestly pretty much, just some general light sprucing up is all that\'s needed. Mostly in non gameplay related areas." A ground-up client rebuild is not that.',
+      'The entry is kept rather than dropped because the doc is still in the tree and still reads as a live plan. Deleting the entry would leave the misleading document behind with nobody assigned to it; that is how the last three "wait, is this still true?" surprises happened.',
+      'Correction to this entry\'s own question, which said "~13 months after writing it": docs/07 is dated 2026-07-17 and came into the repo on 2026-08-18. It was about five weeks old when the question was asked, not thirteen months.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/docs/07-visual-redesign.md',
+      'client/docs/09-visual-clarification.md',
+      'client/README.md',
+      'client/ui/style.css',
+      'client/ui/main.ts',
+    ],
+    notes:
+      'The slug was `visual-redesign-r0-r5` until 2026-08-25 — grep for that if an older note '
+      + 'or branch name cites it. The id is unchanged, as ids always are. '
+      + 'Size dropped L → M with the scope: this is now a reconciliation pass over one doc '
+      + 'plus a decision about layouts.json, not a client rebuild. '
+      + '2026-09-03: layouts.json, layout-editor.html and focus-board.html moved from ui/ (where the '
+      + 'server\'s catch-all served them to anyone) to docs/prototypes/; mockup.html, referenced by nothing, deleted.'
+      + "\n\nDONE 2026-10-25 (c01b4ba0). docs/07 opens with a historical status block: who wrote it and when, the owner's \"I don't know what docs/07 is\", BL-10 as the real brief and docs/18 as what was built, and a table of what became of each section, checked against the code; sections 9 and 10 are labelled historical. docs/prototypes/ is deleted (layouts.json, layout-editor.html, focus-board.html): nothing referenced them but docs/07, the README and this entry, so the layouts doneWhen is met by retiring the file. The README row says historical and points at docs/18, and a legal.ts comment naming the deleted rigs is fixed. No R0-R5 item moved to BL-10: nothing in docs/07 is evidence the owner wants one. `touches` drops the two deleted files. A doc's wording has no test that can fail; the guard named only keeps docs/07 known as the redesign's rounds, not rulings, and goes red if the file goes.",
+  },
+  {
+    id: 'BL-12',
+    slug: 'learn-to-play',
+    title: 'Learn to play — the UI tutorial plus the actual game, via a contrived game',
+    area: 'teaching',
+    size: 'S',
+    status: 'done',
+    evidence: {
+      commit: "4bed755e",
+      guards: [
+        "693-learn-to-play-shop.test.ts::CR D8.1 / BL-12: the last page of the end lesson links both shop URLs, the physical game first",
+        "693-learn-to-play-shop.test.ts::CR D8.1 / BL-12: both shop links open a new tab, so the learner keeps the game",
+        "693-learn-to-play-shop.test.ts::CR D8.1 / BL-12: the end lesson recommends buying the game to support its creator",
+      ],
+    },
+    track: 'feature',
+    said: 'And learn to play is the UI PLUS actual game functions with a contrived game of some kind.',
+    means:
+      'The full onboarding for someone who has never played Algomancy: everything BL-11 '
+      + 'teaches, plus the rules and concepts — affinity, elements, the planning/battle/'
+      + 'regroup/deployment cycle, why the counterattack exists, what grafting is — taught '
+      + 'through a CONTRIVED GAME with a controlled board, not through a wall of text.',
+    doneWhen: [
+      'Someone who has never played can finish it and then play a real game without asking a human what to do',
+      'It teaches through a played game with a stacked/scripted board, not a document',
+      'It covers the concepts a new player actually stumbles on: affinity and resources, the counterattack, columns sharing attributes, grafting',
+      'It is one of the first things visible to a signed-out visitor — this client exists partly to teach newcomers',
+      'It ends by pointing at the shop: both links from BL-15, with an honest line about supporting the creator',
+    ],
+    decided: [
+      'Contrived game, not a rules document. The owner said "with a contrived game of some kind".',
+      'Teaching newcomers is a stated reason the project exists, so this is not a nice-to-have.',
+      'It ends with the buy links. Owner, 2026-08-25: "Yes. Give them the links and recommend buying the game or AT LEAST the print and play version to support the creator of this excellent game." — the two exact URLs are recorded on BL-15; use those, do not go looking for others.',
+    ],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/main.ts',
+      'client/ui/glossary.ts',
+      'data/comprehensive-rules',
+      'data/rules',
+    ],
+    notes:
+      'Depends on BL-03 because the scripted-opponent machinery is what lets a contrived '
+      + 'game have a cooperative opponent that does the thing the lesson needs. '
+      + 'UPDATE 2026-10-24 (housework audit): EVERYTHING SHIPPED EXCEPT THE BUY LINKS. Learn to Play '
+      + '(ca3488f + 058c15d, 2026-09-18) is a scripted played game with a tutorial bot and '
+      + 'lessons, reachable signed out. The one unmet doneWhen is the last: the END lesson '
+      + '(ui/lessons.ts, "Where next") has no buy link, and BUY_PNP is used only in ui/legal.ts. '
+      + 'Left: add the two BL-15 URLs and the owner\'s "support the creator" line to that page, then '
+      + 'close with Learn to Play\'s guards. Size is now S and the deps were dropped: Learn to Play '
+      + 'brought its own tutorial bot (ui/bot.ts), so BL-03 and BL-11 no longer gate anything here.'
+      + "\n\nDONE 2026-10-25 (4bed755e). The END lesson's last page (\"Where next\") has a figure before the reference cards: \"Buy the game, or at least the print-and-play, to support the creator of this excellent game.\" (the owner's 2026-08-25 words) and the two BL-15 links, the boxed game first, each in a new tab with noopener. legal.ts exports shopLinksHtml(), which the footer and About pitch already used, so their output is unchanged. A figure because lesson markdown never emits an href. All three 693 tests failed against the old lessons.ts. Not driven in a browser.",
+  },
 ];

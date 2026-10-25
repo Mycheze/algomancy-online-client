@@ -4962,4 +4962,17 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "Took back invi's recycle of Seer of Empty Spaces for a dormant resource [20]; invi recycled it again for dark, activated it, then recycled Void Mandible for metal. The reason says the first pick was the wrong element; no defect.",
   },
+  {
+    id: 289, room: "", date: "2026-10-25",
+    report: "Nyar, from a Weekly Challenge (bug, gamebreaking): \"The replacement effects of Automaton of Abundance and Cosmic Conspirator could be ordered in any way. It is not timestamp dependent. So if i would create a robot, then i SHOULD be able to replace that event with 2 robots because of AoA and then replace the 2 robots with 2 fireballs because of CC, but the client asks me directly the CC effect.\"",
+    status: 'fixed',
+    guards: [
+      "697-replacement-order-tokens.test.ts::CR 708.4a: Automaton of Abundance and Cosmic Conspirator, the creator is asked which applies first",
+      "697-replacement-order-tokens.test.ts::CR 708.4a: Automaton first, both Robots are offered to Cosmic Conspirator",
+      "697-replacement-order-tokens.test.ts::CR 708.4a: Nyar run, Automaton first and every Robot a Fireball, Manufacture gives six Fireballs",
+      "700-token-batch-is-the-effect.test.ts::CR 708.9: Omniwield Evoker grafted with Manufacture and Construct Overseer, one extra Robot 1, not two",
+      "701-replacement-order-picks.test.ts::CR 708.4a: two token replacements, the question is drawn on the board",
+    ],
+    note: "Real. Token Gesture run (challenge 2026-11-01-tokens), replayed from the attached run to action 73: Cosmic Conspirator was asked for each Robot as it was created and Automaton of Abundance was never offered first, so at most 5 spell tokens were reachable from action 70 where the rules give 8 (CR 708.4a: the player orders their own replacement effects; Caleb RQ 1151673983960359022, \"You basically stack your replacement effects\"). FIXED 2026-10-25 by the replacement-order round (CT-422): the creator is asked which applies first, on the board; Automaton first lets the Conspirator swap each Robot; and the batch is the whole effect (Caleb RQ 1358924537160536247), so his activation now gives 8. His run refuses at action 70 on the new engine, as expected; the owner chose to deploy anyway.",
+  },
 ];
