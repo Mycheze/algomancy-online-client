@@ -251,9 +251,7 @@ const deleteCountered: EffectDef = {
   run: (g, ctx) => {
     const doomed = g.unitsIn(ctx.region).filter(u => u.counters < 0);
     if (!doomed.length) { g.ev('info', `${ctx.sourceName}: no unit carries a -1/-1 counter — nothing is deleted.`); return; }
-    for (const u of doomed) {
-      if (g.entity(u.id)) g.destroy(u, 'is deleted');
-    }
+    g.destroyBatch(doomed, 'is deleted');   // CR 706.8c / CT-363: one simultaneous batch
   },
 };
 card('Sporebloom Siren', {

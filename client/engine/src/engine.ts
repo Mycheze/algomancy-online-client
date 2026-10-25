@@ -6659,24 +6659,43 @@ export class E {
    * state-based action nobody can forget to run is the whole point. */
   checkDeaths(): Entity[] {
     const dead = Object.values(this.s.entities).filter(u => this.isLethal(u));
-    // CR 706.8c — THE BATCH IS SIMULTANEOUS TO ITS LISTENERS TOO. The loop below
-    // disposes one body at a time and `destroy`'s second line deletes each one
-    // from `s.entities`, which `fireEvent` scans; without `deathBatch` the
-    // first corpse out of a batch cannot hear the rest of it, and Muck
-    // Rummager missed three cards its controller trashed in one combat-damage
-    // step (report #155, room ZSPG action 218). `disposingSelf` keeps the
-    // "excludes the trigger source itself" reading (CR 713.6a): a body never hears its OWN
-    // departure through this seam, only its batch-mates'.
+    this.destroyBatch(dead, 'dies');
+    this.repairFormation();
+    return dead;
+  }
+
+  /**
+   * CR 706.8c, 713.6 — ONE SIMULTANEOUS BATCH of units leaving play, the
+   * state-based death check's and every "delete all …" effect's alike.
+   *
+   * The loop below disposes one body at a time and `destroy`'s second line
+   * deletes each one from `s.entities`, which `fireEvent` scans; without
+   * `deathBatch` the first corpse out of a batch cannot hear the rest of it,
+   * and Muck Rummager missed three cards its controller trashed in one
+   * combat-damage step (report #155, room ZSPG action 218). `disposingSelf`
+   * keeps the "excludes the trigger source itself" reading (CR 713.6a): a body
+   * never hears its OWN departure through this seam, only its batch-mates'.
+   *
+   * CT-363: the delete-all sweepers (Ruinbringer, Ominous Growth, Deformant,
+   * Pathogenic Enclave, Sporebloom Siren) used to loop `destroy` themselves,
+   * outside this batch, so their victims were never one batch: a deleted
+   * Muck Rummager stopped hearing the rest, and an Ancient One deleted after
+   * its neighbour lost that neighbour's "when I die" (CT-351's snapshot).
+   * They come through here now. A unit already out of play is skipped.
+   */
+  destroyBatch(units: readonly Entity[], verb: 'dies' | 'is deleted' | 'is sacrificed'): void {
+    const batch = units.filter(u => this.entity(u.id) === u);
+    if (!batch.length) return;
     const prevBatch = this.deathBatch, prevSelf = this.disposingSelf;
     const prevAdj = this.deathBatchAdjacent, prevMods = this.deathBatchMods;
-    this.deathBatch = dead;
+    this.deathBatch = batch;
     // CR 714.9 / CT-351: every member's neighbours, before anyone is removed
-    this.deathBatchAdjacent = new Map(dead.map(u => [u.id, this.adjacentInFormation(u.id).map(n => n.id)]));
+    this.deathBatchAdjacent = new Map(batch.map(u => [u.id, this.adjacentInFormation(u.id).map(n => n.id)]));
     this.deathBatchMods = new Map();
     try {
-      for (const u of dead) {
+      for (const u of batch) {
         this.disposingSelf = u.id;
-        this.destroy(u, 'dies');
+        this.destroy(u, verb);
       }
     } finally {
       this.deathBatch = prevBatch;
@@ -6684,8 +6703,6 @@ export class E {
       this.deathBatchAdjacent = prevAdj;
       this.deathBatchMods = prevMods;
     }
-    this.repairFormation();
-    return dead;
   }
 
   /**

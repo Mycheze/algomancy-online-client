@@ -337,9 +337,7 @@ card('Pathogenic Enclave', {
       run: (g, ctx) => {
         const toks = g.unitsOf(ctx.controller, ctx.region).filter(u => u.token);
         if (!toks.length) { g.ev('info', 'Pathogenic Enclave: there is no token ally here to delete.'); return; }
-        for (const u of toks) {
-          if (g.entity(u.id)) g.destroy(u, 'is deleted');
-        }
+        g.destroyBatch(toks, 'is deleted');   // CR 706.8c / CT-363: one simultaneous batch
       },
     },
   }],

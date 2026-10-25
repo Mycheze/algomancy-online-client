@@ -977,9 +977,8 @@ card('Deformant', {
         const total = paid.reduce((n, r) => n + r.counters, 0);
         g.ev('info', `Deformant: ${paid.map(r => r.card).join(' and ')} were sacrificed with `
           + `${total} counter${total === 1 ? '' : 's'} between them — deleting all units with cost ${total}.`);
-        for (const u of g.unitsIn(ctx.region)) {
-          if (g.costOf(u) === total) g.destroy(u, 'is deleted');   // CR 710.1a: the face's cost
-        }
+        // CR 706.8c / CT-363: "delete all" is one simultaneous batch
+        g.destroyBatch(g.unitsIn(ctx.region).filter(u => g.costOf(u) === total), 'is deleted');   // CR 710.1a: the face's cost
       },
     },
   }],
