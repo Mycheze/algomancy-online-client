@@ -72,8 +72,35 @@ export interface SlotContext {
   /** escapes the template's own words (main.ts passes esc; tests identity) */
   text: (s: string) => string;
   /** CT-194: the item deals double damage ({Powerful}) — its own "Deal N
-   * damage" says the doubled number, and why (`doublesDamage`) */
+   * damage" says the doubled number, and why (`doublesDamage`). The simple
+   * case of `damage`, which wins when both are given. */
   powerful?: boolean;
+  /** CT-370: the item's own damage as it will land (`damagePricer`) */
+  damage?: DamagePricer;
+}
+
+/** CT-370: one damage number as it will land, and the words that say why
+ * (already escaped) */
+export interface Priced { n: number; why: string[] }
+/**
+ * CT-370: the printed amount `n` → what lands. `named` is the target indices
+ * the sentence names after its damage verb ({0}, {1+}), or null for a
+ * sentence that names none ("each unit"), which is priced for a plain
+ * recipient — with a note for the units on the table that take otherwise when
+ * `unitsHit` (the sentence says "unit": "each player" has no such note).
+ */
+export type DamagePricer = (n: number, named: number[] | null, unitsHit?: boolean) => Priced;
+const POWERFUL: DamagePricer = n => ({ n: 2 * n, why: ['Powerful'] });
+
+/** CT-370: the target indices a sentence names ({0}, {1+}), or null for none */
+function namedAfter(rest: string, count: number): number[] | null {
+  const out: number[] = [];
+  for (const m of rest.matchAll(/\{(\d+)(\+)?\}/g)) {
+    const i = Number(m[1]);
+    if (m[2]) for (let j = i; j < count; j++) out.push(j);
+    else out.push(i);
+  }
+  return out.length ? [...new Set(out)] : null;
 }
 
 /** every slot token a template may use — test/344 holds templates to it */
@@ -93,21 +120,46 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
     let live = false;
     // CT-194: a {Powerful} item deals double (CR 802.10d) — say the number it
     // will really deal, and why, rather than the printed one
+    // CT-370: …and the additive modifiers before it (Conduit of Pain), and a
+    // named recipient's {Vulnerable} after it — `damagePricer`, below
     let sentence = raw;
-    let doubled = false;
-    let doubleX = false;
-    const dm = c.powerful ? OWN_DAMAGE_RE.exec(raw) : null;
-    if (dm) {
-      doubled = true;
+    let why: string[] = [];
+    let priceX: ((n: number) => Priced) | null = null;
+    const price = c.damage ?? (c.powerful ? POWERFUL : undefined);
+    const dm = price ? OWN_DAMAGE_RE.exec(raw) : null;
+    if (dm && price) {
       const n = dm[3];
       const head = raw.slice(0, dm.index) + dm[1] + dm[2];
-      const rest = raw.slice(dm.index + dm[0].length)
-        .replace(/\bsplit (\d+)\b/, (_m, k: string) => `split ${2 * Number(k)}`);   // Channel Through's points
-      if (n === undefined) sentence = `${head} double damage${rest}`;
-      else if (n === '{X}') { doubleX = true; sentence = `${head} {X} damage${rest}`; }
-      else sentence = `${head} ${2 * Number(n)} damage${rest}`;
+      let rest = raw.slice(dm.index + dm[0].length);
+      const named = namedAfter(rest, c.count);
+      const unitsHit = /\bunits?\b/.test(rest);
+      const at = (k: number): Priced => price(k, named, unitsHit);
+      // Channel Through's points: each is one more dealing, doubled as the rest
+      // is (its "+1" per point is not said: the split is the controller's)
+      // the multiple a plain recipient is dealt: (k + add) x mult is linear
+      const mult = price(2, null).n - price(1, null).n;
+      rest = rest.replace(/\bsplit (\d+)\b/, (_m, k: string) => `split ${mult > 0 ? mult * Number(k) : k}`);
+      if (n === undefined) {
+        // "deal damage equal to …": no number to price, so say the multiple
+        const p = at(1);
+        const m = at(2).n - p.n;
+        why = p.why;
+        sentence = `${head} ${m === 2 ? 'double ' : m > 2 ? `${m}× ` : ''}damage${rest}`;
+      } else if (n === '{X}') {
+        priceX = at;
+        sentence = `${head} {X} damage${rest}`;
+      } else {
+        const p = at(Number(n));
+        why = p.why;
+        sentence = `${head} ${p.n} damage${rest}`;
+      }
     }
-    const xNow = (): number => (doubleX ? 2 : 1) * c.amount!.x;
+    const xNow = (): number => {
+      if (!priceX) return c.amount!.x;
+      const p = priceX(c.amount!.x);
+      why = p.why;
+      return p.n;
+    };
     let out = '';
     let last = 0;
     for (const m of sentence.matchAll(SLOT_RE)) {
@@ -141,7 +193,9 @@ export function renderTemplate(tpl: string, c: SlotContext): string | null {
     const tail = sentence.slice(last);
     // a live amount says what it is now, once, at the end of its sentence;
     // a doubled one says why
-    const now = live ? ` (currently ${xNow()}${doubled ? ', Powerful' : ''})` : doubled ? ' (Powerful)' : '';
+    const cur = live ? xNow() : 0;
+    const now = live ? ` (currently ${cur}${why.length ? `, ${why.join(', ')}` : ''})`
+      : why.length ? ` (${why.join(', ')})` : '';
     return out + c.text(tail.replace(/\.$/, '')) + now + (tail.endsWith('.') ? '.' : '');
   }).filter((s): s is string => s !== null && s.trim() !== '');
   // "Put 1 -1/-1 counters" → "counter": a filled number of one takes the singular
@@ -361,7 +415,7 @@ export function doesLine(item: StackItem, state: GameState, label: (t: TargetRef
       controllerOf: i => { const s = seatOrKnown(p.targets[i]); return s === null ? null : names[s] ?? null; },
       me: me ? text(me) : null, you: you ? text(you) : null, opponent: opp ? text(opp) : null,
       amount: amountOf(item, p, state), mode: p.mode, text,
-      powerful: doublesDamage(item, p, state),
+      damage: damagePricer(item, p, state, label, text),
     };
     // an optional target left empty, and nothing else to say: "Negate nothing"
     // (owner, 2026-09-30, on Nothyr's "up to one")
@@ -392,6 +446,93 @@ export function doublesDamage(item: StackItem, part: EffectPart, state: GameStat
       return !!u && e.effAttrs(u).has('Pure');
     });
   } catch { return false; }
+}
+
+/**
+ * CT-370: what the item's own damage will be when it lands, asked of the
+ * engine's own pieces in `dealEffectDamageAllIn`'s order (CR 112.9) — the
+ * additive amount modifiers first (`E.amountDeltaPreview`: Conduit of Pain's
+ * "plus 1"), then {Powerful} (CR 802.10d, the item's attributes as
+ * `E.stackItemAttrs` assembles them for resolution), then, per recipient, what
+ * it RECEIVES under {Vulnerable} (CR 802.16a). {Pure} on either side of a
+ * pairing switches both attribute steps off for it (CR 802.25g); it does not
+ * touch an amount modifier, which is not an attribute.
+ *
+ * A sentence naming its recipients is priced for each of them: one number when
+ * they agree, else the number a plain recipient is dealt and who takes
+ * otherwise. A sentence naming none ("each unit") is priced for a plain
+ * recipient, with a note for the Pure or Vulnerable units on the table in the
+ * item's region, which take otherwise if they are hit.
+ *
+ * NOT priced, and said nowhere on the line (CT-370's sweep): prevention
+ * (`preventUnitDamage`), the life-amount layer a player's loss goes through
+ * after damage (Arbiter of Vitality doubles it, `E.lifeAmount`), {Piercing} or
+ * {Electric} overflow, and the counter / rot / debt modifiers (Flux
+ * Resonator, Proliferating Slime), which change no damage line.
+ * Undefined when the engine cannot read the state.
+ */
+export function damagePricer(item: StackItem, part: EffectPart, state: GameState,
+  label: (t: TargetRef) => string, text: (s: string) => string = s => s): DamagePricer | undefined {
+  let e: E;
+  let attrs: Set<string>;
+  try { e = new E(state); attrs = e.stackItemAttrs(item, part); } catch { return undefined; }
+  const srcPure = attrs.has('Pure'), srcPowerful = attrs.has('Powerful');
+  const sourceName = item.card ?? item.label;
+  type Recipient = { unit?: Entity; player?: Seat };
+  const one = (r: Recipient, n: number): Priced => {
+    if (n <= 0) return { n, why: [] };
+    let d = { delta: 0, by: [] as string[] };
+    try {
+      d = e.amountDeltaPreview({
+        kind: 'effectDamage', region: item.region, amount: n,
+        ...(r.unit ? { unit: r.unit } : r.player !== undefined ? { player: r.player } : {}),
+        sourceSeat: item.controller, sourceName, combat: false,
+      });
+    } catch { /* an unreadable board adds nothing */ }
+    let k = n + d.delta;
+    if (k <= 0) return { n: 0, why: [] };
+    const pure = srcPure || (!!r.unit && e.effAttrs(r.unit).has('Pure'));
+    const why: string[] = [];
+    if (!pure && srcPowerful) { k *= 2; why.push('Powerful'); }
+    if (d.delta) why.push(text(`${d.delta > 0 ? '+' : ''}${d.delta} ${d.by.join(', ')}`.trim()));
+    if (!pure && r.unit && e.effAttrs(r.unit).has('Vulnerable')) { k *= 2; why.push('Vulnerable'); }
+    return { n: k, why };
+  };
+  const recipientOf = (t: TargetRef | undefined): Recipient | null => {
+    if (!t) return null;
+    if ('player' in t) return { player: t.player };
+    if ('unit' in t) { const u = e.entity(t.unit); return u ? { unit: u } : null; }
+    return null;
+  };
+  // a board the engine cannot read (a hand-built test state) prices nothing
+  return (n, named, unitsHit = false) => {
+    try { return priced(n, named, unitsHit); } catch { return { n, why: [] }; }
+  };
+  function priced(n: number, named: number[] | null, unitsHit: boolean): Priced {
+    const plain = one({}, n);
+    if (named) {
+      const each = named.flatMap(i => {
+        const r = recipientOf(part.targets[i]);
+        return r ? [{ t: part.targets[i]!, p: one(r, n) }] : [];
+      });
+      if (!each.length) return plain;
+      if (each.every(x => x.p.n === each[0]!.p.n)) return each[0]!.p;
+      const base = each.find(x => x.p.n === plain.n) ? plain : each[0]!.p;
+      return {
+        n: base.n,
+        why: [...base.why, ...each.filter(x => x.p.n !== base.n).map(x => `${label(x.t)} takes ${x.p.n}`)],
+      };
+    }
+    // nobody named: the units on the table that would take otherwise, by kind
+    const notes = new Set<string>();
+    for (const u of unitsHit ? e.unitsIn(item.region) : []) {
+      const p = one({ unit: u }, n);
+      if (p.n === plain.n) continue;
+      const kind = srcPure || e.effAttrs(u).has('Pure') ? 'Pure' : 'Vulnerable';
+      notes.add(`${kind} units take ${p.n}`);
+    }
+    return { n: plain.n, why: [...plain.why, ...notes] };
+  }
 }
 
 const TIMES = ['', '', 'twice', 'three times', 'four times'];
