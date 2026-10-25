@@ -2241,5 +2241,103 @@
     "confidence": "medium",
     "notes": "A pointer to 803 (U21). The owner ruling of 2026-08-19 (“Prophecy: cache during deployment for the…”) is not in the U18 pack: added for the definition. When and from where a card may be prophesied belong to 803.",
     "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.trash.own-trigger",
+    "parent": "keywords.actions.trash",
+    "order": 10,
+    "text": "A card's own \"When I am trashed\" ability triggers once the card has entered the bin it was trashed into. The card is in that bin when the ability triggers, so \"another\" in the ability excludes only that copy of the card (zones.bin.identity.another).",
+    "examples": [
+      {
+        "text": "Blightwalker is discarded with an older Blightwalker already in the bin: its trigger may recall the older copy, but not itself.",
+        "test": "121-another-identity.test.ts::CR 405.6a Blightwalker: a Blightwalker ALREADY in the bin is \"another\" and is offered"
+      },
+      {
+        "text": "Blightwalker discarded into an otherwise empty bin has nothing to recall: the only card there is itself.",
+        "test": "121-another-identity.test.ts::CR 405.6a Blightwalker: alone in the bin it is still the only thing excluded"
+      },
+      {
+        "text": null,
+        "test": "46-hybrids-ld-c.test.ts::Swarmling: discarding IT fires its own trigger from the bin"
+      }
+    ],
+    "see": [
+      "801.2",
+      "405.6a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Blightwalker",
+          "quote": "When I am trashed, [Switch1] You may pay [2] to recall another target unit from your bin."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Trashing: a card entering a bin from anywhere but the stack",
+          "adopted": "2026-08-19",
+          "from": "register@72de434"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "121-another-identity.test.ts",
+        "46-hybrids-ld-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-392 (2026-10-25). The engine fires a card's own trash trigger with the card already in the bin (fireOwnTrashTrigger). Trashing is entering a bin (801.2; owner R40, Caleb 2025-02-01 \"its basically when a card enters your bin but wasn't played\", RQ 1335309492610531380, not in the RQ snapshot). Blightwalker's \"another target unit from your bin\" reads as excluding the trashed card, which only makes sense if it is in the bin. No designer statement on the trigger's source zone itself.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.discard.chooser",
+    "parent": "keywords.actions.discard",
+    "order": 1,
+    "text": "The player who discards chooses which card to discard. \"Each opponent discards a card\" is each opponent's own choice from their own hand. A card that says what kind of card is discarded limits the choice to cards of that kind: under Void Memory, each opponent chooses which card of the declared kind to discard.",
+    "examples": [
+      {
+        "text": "Void Memory is cast and its caster declares \"unit\". The opponent, holding a spell and two units, chooses which of the two units to discard.",
+        "test": "97-mode-conformance.test.ts::Void Memory's victim still picks WHICH card, among the ones the half admits"
+      }
+    ],
+    "see": [
+      "801.3",
+      "110.2"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Void Memory",
+          "quote": "Each opponent discards a /[unit {i1}or spell] if {/n}able."
+        },
+        {
+          "ref": "card: Plague Ritual",
+          "quote": "Each player discards a card"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "R67 says the *card being discarded* is not a target and is therefore the hand owner's pick.",
+          "adopted": "2026-09-01",
+          "from": "register@72de434"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "97-mode-conformance.test.ts",
+        "28-metal-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "CT-398 (2026-10-25). Caleb, 2023-10-24 (not in the RQ snapshot): \"Controlled discard where you choose the cards, you will be the one doing the discarding\" / \"But like \\\"each player discards two cards\\\"\" / \"They would\" (RQ 1166164792172613672, 1166164839828299846, 1166164857398239282). No card in the pool lets another player choose the discarded card.",
+    "sourceHashes": {}
   }
 ]

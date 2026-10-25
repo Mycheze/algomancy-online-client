@@ -3900,5 +3900,56 @@
     "confidence": "high",
     "notes": "",
     "sourceHashes": {}
+  },
+  {
+    "key": "effects.copies.spells.controller",
+    "parent": "effects.copies.spells",
+    "order": 5,
+    "text": "A copy of a spell is controlled by the player who makes the copy. On every card that copies a spell, that player is the one who played the spell, so the copy is theirs even when another player's card made it happen: a spell played at an opponent's Earthbound Replicator is copied for the player who played it.",
+    "examples": [
+      {
+        "text": "A player casts Channeled Boon at the opponent's Earthbound Replicator. The Replicator's trigger copies the Boon, and the copy is controlled by the player who cast the Boon.",
+        "test": "393-raq-mods.test.ts::RAQ Earthbound Replicator: an enemy spell aimed at it is copied for the ENEMY"
+      }
+    ],
+    "see": [
+      "710.8"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Earthbound Replicator",
+          "quote": "Whenever a player plays a nonunit spell targeting me, they copy it and may choose new targets for the copy."
+        },
+        {
+          "ref": "card: Meteor Shower",
+          "quote": "When you play me, copy me twice."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355613076506017894#0",
+          "quote": "So both you and enemy can benefit off from it."
+        },
+        {
+          "ref": "RAQ 1355613076506017894#2",
+          "quote": "Enemy can remove him easily with Fireballs / Poisons and get copy of them."
+        }
+      ],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "CT-393 (2026-10-25). The engine stamps the original's controller on a copy unless the effect names one (pushSpellCopy). Every printed copier (Meteor Shower \"copy me\", Earthbound Replicator \"they copy it\", Maelstrom Charger \"As you play a nonunit spell ... copy that spell\") has the spell's player make the copy, so the two agree on the pool.",
+    "sourceHashes": {
+      "RAQ 1355613076506017894#0": "36dd9db1d1e664720cc3e1a5cc0b6c4323af0f2676d270c30513b1aa9976a6c5",
+      "RAQ 1355613076506017894#2": "2dd9b2daf310853804a217b78876419d78d4ea3d8be4c5e126da9ab6fec53ae7"
+    }
   }
 ]

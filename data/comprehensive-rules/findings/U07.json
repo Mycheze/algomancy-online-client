@@ -202,5 +202,17 @@
     ],
     "ct": "CT-246",
     "closed": "by design 2026-10-22 (CT-246 closed): the owner, \"Trash isnt a trigger tho. Its a kind of death thing.\" A dying {Unstable} card is trashed as part of its death and ends erased; rules 405.5 and 801.2h now state it."
+  },
+  {
+    "id": "F-U07-12",
+    "title": "An Unstable (modded) body exchanged out of play is binned and trashed before it is erased",
+    "summary": "The engine puts an exchanged {Unstable} (modded) body into the bin, trashes it there and then sweeps it to the erased pile (exchangeInPlace through disposeToBin), as it does for a death. Print erases it instead of letting it enter a bin, so it is not trashed; the owner's 2026-10-22 call (CT-246, closed) keeps the trash for a death only. Needs its own CT (CT-388 measured it).",
+    "evidence": [
+      {
+        "file": "client/engine/test/42-dark-b.test.ts",
+        "quote": "assert.deepEqual(order, ['trashed', 'erased'], 'engine ordering (CT-246; CR 410.4d erases unbinned): bin → trashed → swept');"
+      }
+    ],
+    "rule": "zones.changes.mods.exchanged"
   }
 ]

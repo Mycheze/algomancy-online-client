@@ -3192,5 +3192,45 @@
     "confidence": "high",
     "notes": "Drafted 2026-10-11 (coverage round): The owner ruling of 2026-08-26 (“the item the event NAMES, and…”) and the owner ruling of 2026-08-26 (“the WIDE play event learns which…”) (their game half: which item a play-triggered ability acts on). Not drafted: The owner ruling of 2026-08-26 (“the WIDE play event learns which…”)’s \"an item-less play leaves nothing to negate\" (it is the asPlay spawn approximation; 703.5 states the owner ruling of 2026-08-26 (“a card played mid-resolution is PLAYED…”), and the divergence is already a CT entry), and the owner ruling of 2026-08-26 (“the item the event NAMES, and…”)-§4 (log event types, despawn dispatch, restore drift: not game rules). had no CR rule before the register is retired. Round 2026-10-22 (CT-245): Wake the Dead's plays now have stack items, so the item-less case the notes left out is gone; 178 (c) shows the Mandible negating the raised item by id.",
     "sourceHashes": {}
+  },
+  {
+    "key": "effects.static.permission.no-count",
+    "parent": "effects.static.permission",
+    "order": 1,
+    "text": "A permission that states no number of uses, such as Slurpr's \"You can apply other mods during [Haste] as if it was deployment\", may be used any number of times while it applies. A second card that grants the same permission adds nothing to it.",
+    "examples": [
+      {
+        "text": "With one Slurpr in play, a player applies two augments in the same haste step. With two Slurprs, exactly the same mods are offered as with one.",
+        "test": "689-cr-coverage-gaps.test.ts::CR 707.10a / CT-397: under one Slurpr"
+      }
+    ],
+    "see": [
+      "turn.haste.grants.each-turn",
+      "723.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Slurpr",
+          "quote": "You can apply other mods during [Haste] as if it was deployment."
+        },
+        {
+          "ref": "card: Rook",
+          "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "689-cr-coverage-gaps.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-397 (2026-10-25). The engine OR-folds such a permission (\"one grantor is enough, two Slurprs are no stronger\"). The printed texts state no count, read literally (101.7). A permission that states a count (\"Each turn\", Dispatch Courier) is per grantor: turn.haste.grants.each-turn. No designer statement found on two Rooks or two Slurprs.",
+    "sourceHashes": {}
   }
 ]

@@ -555,48 +555,72 @@
   },
   {
     "key": "effects.augment.what.despawn",
-    "textHash": "7a234674bc15f510",
+    "textHash": "c8d2cf9382a192a8",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "engine.ts:fireEvent",
+        "loc": "client/engine/src/engine.ts:exchangeInPlace / leavePlay / destroy",
         "agrees": true,
-        "note": "despawned fired before the mod entities are deleted (R167)"
+        "note": "every exit fires 'despawned' anchored on the leaving unit"
       }
     ],
     "tests_run": [
       {
         "file": "141-despawn-mods.test.ts",
-        "pattern": "R167 (i): a donated \"[Augment] When I despawn\" fires on a RECALL",
+        "pattern": "CR 721.1f (i)",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "141-despawn-mods.test.ts",
-        "pattern": "R167 (ii): a donated \"[Augment] When I despawn\" fires on a CACHE",
+        "pattern": "CR 721.1f (ii)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "CR 721.1f (iii)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "626-ancient-one-despawn-neighbours.test.ts",
+        "pattern": "CR 721.1f, 714.9 / CT-350: an erased",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "626-ancient-one-despawn-neighbours.test.ts",
+        "pattern": "CR 721.1f, 410.2a / CT-350",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U17-1.test.ts",
+        "test": "probe U17-1: a donated \"[Augment] When I despawn\" (A Pile of Runes on Rune Channeler) fires when the host is erased / exchanged",
+        "passed": true,
+        "demonstrates": "yes: the donated augment text (not an Ancient One's borrowed text) fires once and resolves on erase and on exchange"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R167",
+        "ref": "owner register@72de434 R167 heading",
         "supports": "yes",
-        "note": ""
+        "note": "'when I despawn' whichever way the unit leaves play"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "## R167 — a printed \"when I despawn\" means it whichever way the unit leaves play"
+        "file": "client/engine/src/engine.ts",
+        "text": "this.fireEvent('despawned', ev, u);"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.augment.what.kind-kept",
@@ -1399,71 +1423,59 @@
   },
   {
     "key": "effects.graft.composite",
-    "textHash": "2b96234a9246a437",
+    "textHash": "3f5788e07a3ae071",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.composeParts / E.withGrafts",
+        "loc": "client/engine/src/engine.ts:collectModular / graft composite",
         "agrees": true,
-        "note": "base part of the host's cause, then each joining graft in mod order, as ONE stack item"
+        "note": "one stack item, parts in graft order"
       }
     ],
     "tests_run": [
       {
+        "file": "428-cr-modifications.test.ts",
+        "pattern": "cr:effects.graft.composite — Accelerated",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
         "file": "588-ancient-one-borrows-grafts.test.ts",
-        "pattern": "CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause runs the graft too",
+        "pattern": "CR 722.4 / report 271: an Ancient One activating",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 9",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "client/engine/test/zz-probe-U17-1.test.ts",
-        "test": "probe U17-1: Oracle of the Flame + Accelerated Germination — sacrifice makes a Fireball 1 and two 1/1s, one composite",
-        "passed": true,
-        "demonstrates": "yes: the Manual's worked example (example 1, which has no bound test) — one resolving ability makes a Fireball 1 and two 1/1s"
-      },
-      {
-        "file": "client/engine/test/zz-probe-U17-1.test.ts",
-        "test": "probe U17-1b: grafts join the composite in the order they sit under the host",
-        "passed": true,
-        "demonstrates": "yes: a graft inserted above another resolves first: parts = [cause, Self-Assembly, Accelerated Germination]"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
         "ref": "Manual p.33",
         "supports": "yes",
-        "note": "both quotes verbatim; the same page gives the Oracle/Germination example verbatim and 'resolve as one ability from top to bottom'"
+        "note": "grafts add effects onto the cause of the topmost card"
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": "read as Cause - effect1 AND effect2 ..., resolving 'from top to bottom' (order)"
       },
       {
         "ref": "Rulebook 2023 p.16",
         "supports": "yes",
-        "note": "verbatim (the hyphen break 'Ef-/fect3' normalised)"
+        "note": "same template"
       }
     ],
     "quote_spans": [
       {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "adding additional effects onto the cause of the top-"
-      },
-      {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "“Cause — effect1 AND effect2 AND effect3... etc.”"
-      },
-      {
-        "file": "data/rules/Algomancy-Manual.txt",
-        "text": "“Sacrifice me: Create a Fireball 1 AND (once per turn)"
-      },
-      {
-        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
-        "text": "cause. Then the resulting card is read as “Cause -> Effect1 AND Effect2 AND Ef-"
-      },
-      {
         "file": "client/engine/src/engine.ts",
-        "text": "const parts: EffectPart[] = [base, ...grafts];"
+        "text": "(Manual p.33 — the composite resolves as ONE ability)"
       }
     ],
     "basis_ok": true,
@@ -2068,6 +2080,49 @@
     "basis_ok": true,
     "problem": "",
     "carried": "demoted-example 2026-10-11"
+  },
+  {
+    "key": "effects.graft.costs.variable",
+    "textHash": "d17b9ee6f3776e46",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U17-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectCastCosts(...,'variable')",
+        "agrees": true,
+        "note": "variable bracketed cost paid as the composite goes on the stack; costPaid.x on the grafted part"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "689-cr-coverage-gaps.test.ts",
+        "pattern": "CR 722.6c / CT-396",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Discharge",
+        "supports": "yes",
+        "note": "the X in the cost is the X of the effect"
+      },
+      {
+        "ref": "RAQ 1355115946032889914#12",
+        "supports": "yes",
+        "note": "paid as the effect goes on the stack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.collectCastCosts(item, then, moreItems, 'variable');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
   },
   {
     "key": "effects.graft.multiplier",
@@ -5597,6 +5652,49 @@
     "basis_ok": true,
     "problem": "",
     "carried": "demoted-example 2026-10-11"
+  },
+  {
+    "key": "effects.virus.spell-host.erased-piles",
+    "textHash": "e6c47b50ab769ca8",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U17-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem (CR 723.4b)",
+        "agrees": true,
+        "note": "spell to its controller's pile, each virus to its applier's"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "89-self-erase.test.ts",
+        "pattern": "a virus rides a self-erasing spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "owner register@72de434 'Zones ALWAYS follow control.'",
+        "supports": "yes",
+        "note": "piles follow control: the spell's player, the virus's applier"
+      },
+      {
+        "ref": "owner register@72de434 '(a) All four follow control'",
+        "supports": "yes",
+        "note": "fragment, same call"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "pile of the seat that played it (the spell's controller, each virus's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Test 89's applier is also the virus's owner, so it does not separate applier from owner; the engine code keys the virus pile on the applier (v.by)."
   },
   {
     "key": "effects.virus.spell-host.not-hosts",

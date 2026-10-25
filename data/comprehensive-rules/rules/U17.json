@@ -1834,7 +1834,7 @@
     "key": "effects.augment.what.despawn",
     "parent": "effects.augment.what",
     "order": 6,
-    "text": "Augment text that triggers on the host's own departure (\"When I despawn\") triggers whichever way the host leaves play: when it dies, is recalled or is cached.",
+    "text": "Augment text that triggers on the host's own departure (\"When I despawn\") triggers whichever way the host leaves play: when it dies, is recalled, is cached, is exchanged or is erased.",
     "examples": [
       {
         "text": null,
@@ -1843,10 +1843,19 @@
       {
         "text": null,
         "test": "141-despawn-mods.test.ts::CR 721.1f (ii): a donated \"[Augment] When I despawn\" fires on a CACHE"
+      },
+      {
+        "text": null,
+        "test": "626-ancient-one-despawn-neighbours.test.ts::CR 721.1f, 714.9 / CT-350: an erased Ancient One has the when-I-despawn text of the ally it stood beside"
+      },
+      {
+        "text": null,
+        "test": "626-ancient-one-despawn-neighbours.test.ts::CR 721.1f, 410.2a / CT-350: an Ancient One exchanged out of play"
       }
     ],
     "see": [
-      "410"
+      "410",
+      "zones.changes.despawn"
     ],
     "sources": {
       "printed": [],
@@ -1861,13 +1870,14 @@
       ],
       "engine": [],
       "tests": [
-        "141-despawn-mods.test.ts"
+        "141-despawn-mods.test.ts",
+        "626-ancient-one-despawn-neighbours.test.ts"
       ]
     },
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "Moving the host's mods (Reconfigure) is not a despawn: 720.10.",
+    "notes": "Moving the host's mods (Reconfigure) is not a despawn: 720.10. CT-387 (2026-10-25): the list now names every route 410.2 counts as a despawn (exchanged, erased), as the owner call says (\"whichever way the unit leaves play\"); 626 demonstrates the erased and exchanged routes.",
     "sourceHashes": {}
   },
   {
@@ -4686,7 +4696,12 @@
     ],
     "sources": {
       "printed": [],
-      "designer": [],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#0",
+          "quote": "Yes everything in the game is region specific."
+        }
+      ],
       "ours": [],
       "owner": [
         {
@@ -4706,11 +4721,13 @@
         "136-triggers-and-modes.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "medium",
-    "notes": "The region scope rests on a player's chat remark (rodanaw), quoted in the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”); players are not authority: D-U17-10.",
-    "sourceHashes": {}
+    "notes": "The region scope rests on a player's chat remark (rodanaw), quoted in the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”); players are not authority: D-U17-10. 2026-10-25: the region half rests on Caleb (RAQ 1454169054402314362#0, \"everything in the game is region specific\"); D-U17-10 settled for the region half.",
+    "sourceHashes": {
+      "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
+    }
   },
   {
     "key": "effects.modular.what",
@@ -5182,6 +5199,92 @@
     "scope": "game",
     "confidence": "high",
     "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.graft.costs.variable",
+    "parent": "effects.graft.costs",
+    "order": 3,
+    "text": "A grafted cost with an X in it (\"[Remove X +1/+1 counters from allies]\") sets the X of that graft's own effect. The player chooses how much to pay as the composite goes on the stack, and that graft's effect uses the amount paid as its X.",
+    "examples": [
+      {
+        "text": "Discharge (\"[Remove X +1/+1 counters from allies]: I deal X damage to target unit.\") is grafted under Guardian of the Grotto. When the Guardian attacks, its controller removes two counters from an attacking ally to pay the grafted cost, and the grafted part deals 2 damage.",
+        "test": "689-cr-coverage-gaps.test.ts::CR 722.6c / CT-396: a grafted Discharge pays its own"
+      }
+    ],
+    "see": [
+      "722.6b",
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Discharge",
+          "quote": "/[Remove X +1/+1 counters from allies]: I deal X damage to target unit."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#12",
+          "quote": "The cost is paid instantly as the effect goes on the stack"
+        }
+      ],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "689-cr-coverage-gaps.test.ts",
+        "50-ui-inspect.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-396 (2026-10-25). Measured (689): the grafted part carries its own costPaid.x. Caleb, 2023-08-13 (RQ 1140295042444038184, not in the snapshot): a grafted Volatile Toxicity reads \"where X was the sacrificed units health\", its own cost defining its X. 50-ui-inspect shows the stack keeps the two X's apart.",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#12": "56640f1cc69f429df0aabe8a1988a0f16a646a596cc37162b8c55144564ff72c"
+    }
+  },
+  {
+    "key": "effects.virus.spell-host.erased-piles",
+    "parent": "effects.virus.spell-host",
+    "order": 6,
+    "text": "When a spell carrying a Virus is erased, the spell goes to the erased pile of the player who played it, and the Virus goes to the erased pile of the player who applied it.",
+    "examples": [
+      {
+        "text": "A player casts Collect Remains and the opponent applies Chitin Shredder to it as a Virus. Collect Remains resolves and is erased onto its caster's erased pile; Chitin Shredder goes onto the erased pile of the player who applied it, and into no bin.",
+        "test": "89-self-erase.test.ts::a virus rides a self-erasing spell"
+      }
+    ],
+    "see": [
+      "723.4b",
+      "400.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "owner": [
+        {
+          "quote": "Zones ALWAYS follow control. One rule, no split.",
+          "adopted": "2026-08-29",
+          "from": "register@72de434"
+        },
+        {
+          "quote": "(a) All four follow control",
+          "adopted": "2026-08-30",
+          "from": "register@72de434"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "89-self-erase.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-401 (2026-10-25). The owner's zones-follow-control calls name cards leaving play; this applies them to a spell and its Virus leaving the stack, as the engine does (89). The player who applied a Virus from hand is also its owner, so the test cannot tell owner from controller. No printed or designer source; D-U17-16 files it for sign-off.",
     "sourceHashes": {}
   }
 ]

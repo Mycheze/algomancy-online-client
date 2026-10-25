@@ -1105,6 +1105,68 @@
     "problem": "The general principle rests on one designer statement plus the RAQ-authority stance (see raq-over-rulings). The example quotes the oracle with a single space; the oracle has \"Abilities cost  [one] more\"."
   },
   {
+    "key": "concepts.golden.no-qualifier",
+    "textHash": "3fa3c76f3c41c139",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U01-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/registry.ts:Luminous Arc",
+        "agrees": true,
+        "note": "targets { what: 'unit' } with no side filter"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/182-correctness-sample.test.ts",
+        "pattern": "Luminous Arc: exactly 6",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Another set: Organic Exchange may target two",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1454169054402314362#2",
+        "supports": "yes",
+        "note": "calebgannon, covered"
+      },
+      {
+        "ref": "RAQ 1355115946032889914#15",
+        "supports": "yes",
+        "note": "_passer [Solved]: a grafted delete must still target something, own unit if nothing else"
+      },
+      {
+        "ref": "owner register@72de434 x2",
+        "supports": "yes",
+        "note": "literal reading, no invented qualifier"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/registry.ts",
+        "text": "targets: { what: 'unit', prompt: 'Luminous Arc deals 6 damage to target unit' },"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You can target your own 2 units"
+      },
+      {
+        "file": "client/engine/test/182-correctness-sample.test.ts",
+        "text": "'\"target unit\" is unqualified — my own unit is a legal target too');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "concepts.golden.permissive",
     "textHash": "6028c12133bd076f",
     "verdict": "confirmed",

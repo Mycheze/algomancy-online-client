@@ -115,7 +115,7 @@
     "id": "D-U17-10",
     "kind": "c-owner-call-only",
     "rule": "effects.virus.permission.region",
-    "tier": 3,
+    "tier": 4,
     "summary": "That Rook's permission works only in Rook's region rests on a player's chat remark, quoted in the owner ruling of 2026-08-23 (“ModPermission: an opt-in permission to apply…”). Players are not authority; Rook's printed text names no region.",
     "sides": [
       {
@@ -125,9 +125,13 @@
       {
         "source": "card: Rook",
         "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      },
+      {
+        "source": "RAQ 1454169054402314362#0",
+        "quote": "Yes everything in the game is region specific."
       }
     ],
-    "resolution": "The rule states the engine's region scope, basis owner. It is the general region scope the client applies to every permission; owner sign-off needed."
+    "resolution": "Settled by the designer for the region half (2026-10-25 search): Caleb, asked about Ghord, \"Yes everything in the game is region specific. Just add 'in this region' to every card if it helps.\" (RAQ 1454169054402314362#0). Rook's permission is an effect of the game and is scoped to Rook's region like every other. effects.virus.permission.region now cites it, basis mixed. That the permission belongs to the grantor's controller is unchanged (owner)."
   },
   {
     "id": "D-U17-12",
@@ -186,5 +190,23 @@
       }
     ],
     "resolution": "The owner, 2026-10-25 (CT-390): \"No (printed text)\". The write-up's Rook line is not followed: Rook reaches the hand and the bin only, so Tides of the Cosmos applies only true Viruses, with or without Rook. effects.virus.permission.zones carries the call; the engine is unchanged."
+  },
+  {
+    "id": "D-U17-16",
+    "kind": "c-owner-call-only",
+    "rule": "effects.virus.spell-host.erased-piles",
+    "tier": 3,
+    "summary": "Whose erased pile a spell carrying a Virus, and the Virus itself, go to has no printed or designer source (CT-401). The owner's zones-follow-control calls name cards leaving play; the engine applies the same rule to a spell and its Virus leaving the stack: the spell to its caster's pile, the Virus to the pile of the player who applied it.",
+    "sides": [
+      {
+        "source": "owner ruling, adopted 2026-08-29",
+        "quote": "Zones ALWAYS follow control. One rule, no split."
+      },
+      {
+        "source": "owner ruling, adopted 2026-08-30",
+        "quote": "(a) All four follow control"
+      }
+    ],
+    "resolution": "Stated as the owner's rule extended to the stack (effects.virus.spell-host.erased-piles), as the engine does (89). Awaits the owner's sign-off for the stack case."
   }
 ]

@@ -110,7 +110,7 @@
   {
     "id": "D-U22-8",
     "kind": "c-owner-call-only",
-    "rule": "formats.constructed.single-card",
+    "rule": "annexd.modes.single-card-duel",
     "tier": 3,
     "summary": "Single Card Duel is an owner format with no printed or designer source. It breaks the printed 2-copy limit (30 copies of one card) and replaces constructed's draw phase with a flat draw of 2.",
     "sides": [

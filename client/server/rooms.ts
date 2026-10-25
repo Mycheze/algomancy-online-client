@@ -2029,7 +2029,7 @@ function decksFor(room: Pick<Room, 'decks'>): [CardName[], CardName[]] {
  *
  * So the mode check is the fix, and it belongs here rather than at the call
  * site: registering a deck is a thing only a constructed room does, and every
- * caller now gets that for free. `single` rooms are constructed rooms (CR 901.8),
+ * caller now gets that for free. `single` rooms are constructed rooms (CR D8.2),
  * so they are covered.
  */
 export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: string | null = null): boolean {
@@ -2478,7 +2478,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ...(scenario ? { scenario } : {}),
     // BL-43: likewise only a custom room, and persisted only then
     ...(custom ? { custom } : {}),
-    // CR 901.8: only ever constructed, and persisted only when set
+    // CR D8.2: only ever constructed, and persisted only when set
     ...(single && mode === 'constructed' ? { single: true as const } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,

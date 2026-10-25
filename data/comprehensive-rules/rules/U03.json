@@ -1014,7 +1014,7 @@
     "key": "concepts.abilities.triggered.amount",
     "parent": "concepts.abilities.triggered",
     "order": 2,
-    "text": "An amount a triggered ability uses is measured when the ability resolves, so responses can change it.",
+    "text": "An amount a triggered ability counts from the game as it stands (\"damage equal to the number of cards in their hand\") is measured when the ability resolves, so responses can change it. An amount taken from the event that triggered the ability is not measured again (concepts.abilities.triggered.event-amount).",
     "examples": [
       {
         "text": "Astral Tidewraith attacks: its trigger deals each player damage equal to the cards in their hand, counted as the trigger resolves, not when it triggered.",
@@ -1041,7 +1041,7 @@
     "basis": "owner",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "CT-395 (2026-10-25): narrowed to amounts counted from the game; amounts read off the triggering event are the new event-amount rule.",
     "sourceHashes": {}
   },
   {
@@ -3787,5 +3787,103 @@
     "confidence": "medium",
     "notes": "Owner ruling (2026-08-22/23); the Manual says replacement effects don't use the stack: D-U03-12. The owner ruling of 2026-08-23 (“a REPLACEMENT may put a triggered…”) was not in the U03 pack; read from the register.",
     "sourceHashes": {}
+  },
+  {
+    "key": "concepts.abilities.triggered.event-amount",
+    "parent": "concepts.abilities.triggered",
+    "order": 5,
+    "text": "An amount that an ability takes from the event that triggered it (\"that much\", \"that many\") is the amount of that event, as it happened. Likewise, an amount that a later part of an effect takes from an earlier part (\"for each ally recalled this way\") counts what that earlier part actually did.",
+    "examples": [
+      {
+        "text": "Mirage Scuttler (\"Whenever I survive damage, put that many +1/+1 counters on me.\") survives 2 damage and gets 2 counters.",
+        "test": "17-earth-b.test.ts::Mirage Scuttler: surviving damage grows it by that much; lethal damage does not"
+      },
+      {
+        "text": "Vroot's \"that much\" is the combat damage its own column dealt, not the total every column dealt.",
+        "test": "166-face-damage-attribution.test.ts::CR 608.9a — Vroot"
+      },
+      {
+        "text": "Torrential Reclamation is cast for X = 2 and one of its targets is removed in response: it recalls one ally, so each player sacrifices one unit and its caster loses 1 life.",
+        "test": "632-torrential-sacrifice-per-recall.test.ts::CT-375: Torrential Reclamation for X = 2 with one target removed recalls one, so each player sacrifices one"
+      }
+    ],
+    "see": [
+      "109.3b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Mirage Scuttler",
+          "quote": "Whenever I survive damage, put that many +1/+1 counters on me."
+        },
+        {
+          "ref": "card: Lithoghul",
+          "quote": "Whenever I am dealt damage, I deal that much damage to you."
+        },
+        {
+          "ref": "card: Torrential Reclamation",
+          "quote": "you lose 1 life for each ally recalled this way."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RQ 1223287683804037202",
+          "quote": "So you can remove targets to prevent the sacrifice"
+        }
+      ],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts",
+        "166-face-damage-attribution.test.ts",
+        "632-torrential-sacrifice-per-recall.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "scope": "game",
+    "confidence": "medium",
+    "notes": "CT-395 (2026-10-25). About eleven card sites read such amounts off the triggering event. The literal reading of \"that much\" is the event's amount. Torrential: Caleb answered \"Yeah\" (RQ 1222932669516615743) to whether the sacrifice happens once per returned unit, and \"So you can remove targets to prevent the sacrifice\"; the sacrifice half is card-specific (concepts.numbers.x-cost.zero carries it), the life half is printed \"this way\".",
+    "sourceHashes": {
+      "RQ 1223287683804037202": "5e2d9899291f752dc61717e1d4b67c20a29b86a936ce1835a009b67c4198ba58"
+    }
+  },
+  {
+    "key": "concepts.targets.not-target.no-candidate",
+    "parent": "concepts.targets.not-target",
+    "order": 4,
+    "text": "A choice that is not a target needs nothing to choose from. An effect that makes such a choice can be played when there is nothing to choose, and it resolves: that part does nothing and the rest of the effect still happens. It does not fizzle. The Wraith's trigger is the exception (concepts.targets.not-target.wraith).",
+    "examples": [
+      {
+        "text": "A player with no unit casts Rebalance (\"Each player gives an opponent control of one of their units.\"). It can be played and it resolves: the caster gives nothing, and the opponent still gives the caster one of their units.",
+        "test": "396-raq-timing.test.ts::RAQ Another set: Rebalance is playable with no unit of your own"
+      }
+    ],
+    "see": [
+      "110.2c",
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#1",
+          "quote": "it doesn't target anything so there are no requirements for you having a unit"
+        }
+      ],
+      "ours": [],
+      "owner": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "scope": "game",
+    "confidence": "high",
+    "notes": "CT-402 (2026-10-25). The Wraith exception (110.2c) stands as stated there.",
+    "sourceHashes": {
+      "RAQ 1454169054402314362#1": "e3eaa692bd1e8228402516f598571780911a7bff2101b2445bcf4ac14055a0a1"
+    }
   }
 ]

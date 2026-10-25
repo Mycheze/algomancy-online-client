@@ -2214,6 +2214,53 @@
     "problem": ""
   },
   {
+    "key": "effects.static.permission.no-count",
+    "textHash": "98d26f802382ec95",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U15-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-c.ts:Slurpr",
+        "agrees": true,
+        "note": "unbudgeted OR-fold"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/689-cr-coverage-gaps.test.ts",
+        "pattern": "CR 707.10a / CT-397",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Slurpr",
+        "supports": "yes",
+        "note": "prints no count"
+      },
+      {
+        "ref": "card: Rook",
+        "supports": "yes",
+        "note": "prints no count"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/sets/batch-light-c.ts",
+        "text": "unbudgeted OR-FOLD in Rook's shape: one grantor is enough, two Slurprs are"
+      },
+      {
+        "file": "client/engine/test/689-cr-coverage-gaps.test.ts",
+        "text": "'two Slurprs offer exactly the same mods onto that unit as one');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
     "key": "effects.static.printed-form",
     "textHash": "5e639cf6ba69116d",
     "verdict": "confirmed",
