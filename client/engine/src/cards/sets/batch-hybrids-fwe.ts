@@ -341,9 +341,12 @@ card('Tempest Oracle', {
   }],
 });
 
-// "Recall X target nontoken allies. Then each player sacrifices a unit and
-// you lose 1 life for each ally recalled this way." — br/X 1/3 {Battle}
-// Elemental Spell. X is chosen and paid AT CAST (CR 107.2a) and read from item.x
+// "Recall X target nontoken allies. For each ally recalled this way, each
+// player sacrifices a unit and you lose 1 life." — br/X 1/3 {Battle}
+// Elemental Spell. (The designer's 2024-03-29 reword, CT-374; the older
+// printing read "Then each player sacrifices a unit and you lose 1 life for
+// each ally recalled this way.", which is the sentence the rulings below
+// argue over.) X is chosen and paid AT CAST (CR 107.2a) and read from item.x
 // here. CR 110.1a: "X target nontoken allies" are CAST-TIME targets — they used to
 // be picked mid-resolution, so the spell went on the stack aiming at nobody.
 // The "for each" distributes over both clauses: per recalled ally, each

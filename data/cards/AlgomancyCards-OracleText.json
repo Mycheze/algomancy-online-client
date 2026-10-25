@@ -7755,7 +7755,7 @@
             "cost": "br",
             "total_cost": "X",
             "type": "{Battle} Elemental Spell",
-            "text": "Recall X target nontoken allies. Then each player sacrifices a unit and you lose 1 life for each ally recalled this way.",
+            "text": "Recall X target nontoken allies. For each ally recalled this way, each player sacrifices a unit and you lose 1 life.",
             "image": "images_out/Stable/bstuff.png",
             "revision_date_time": "2024-03-14 14:26:18.421979",
             "details": "",

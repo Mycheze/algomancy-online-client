@@ -639,8 +639,10 @@ test('Soul Tithe: they pay [one] → their effect resolves and NOBODY draws', ()
 
 // ════════════════════════════════════════════════════════════════════════
 // TORRENTIAL RECLAMATION — br/X {Battle} Elemental Spell
-//   "Recall X target nontoken allies. Then each player sacrifices a unit and
-//    you lose 1 life for each ally recalled this way."
+//   "Recall X target nontoken allies. For each ally recalled this way, each
+//    player sacrifices a unit and you lose 1 life." (the 2024-03-29 reword,
+//    CT-374; the sample was taken against the older "Then each player
+//    sacrifices a unit and you lose 1 life for each ally recalled this way.")
 // ════════════════════════════════════════════════════════════════════════
 
 test('Torrential Reclamation: the targets are X NONTOKEN ALLIES, recalled to my hand', () => {
@@ -693,8 +695,10 @@ test('Torrential Reclamation: the targets are X NONTOKEN ALLIES, recalled to my 
 });
 
 test('Torrential Reclamation: "each player sacrifices a unit" happens ONCE PER RECALLED ALLY (owner ruling, 2026-08-28)', () => {
-  // PRINTED: "Recall X target nontoken allies. Then each player sacrifices a
-  // unit and you lose 1 life for each ally recalled this way."
+  // PRINTED, before the designer's 2024-03-29 reword: "Recall X target
+  // nontoken allies. Then each player sacrifices a unit and you lose 1 life
+  // for each ally recalled this way." Now: "For each ally recalled this way,
+  // each player sacrifices a unit and you lose 1 life." (CT-374).
   //
   // ⚠ THIS TEST USED TO BE A `wrong()` ROW AND IT SHOULD NEVER HAVE BEEN ONE.
   // It read "for each ally recalled this way" as modifying only the LIFE LOSS
@@ -1090,8 +1094,8 @@ test('Stoneborn Progenitor: my unit SURVIVING damage makes one 2/2 — a death m
 });
 
 test('Torrential Reclamation: with X = 0 nothing is recalled, so nobody sacrifices and no life is lost (CT-375)', () => {
-  // The same sentence, the other end of it. "… Then each player sacrifices a
-  // unit and you lose 1 life for each ally recalled this way."
+  // The same sentence, the other end of it. "… For each ally recalled this
+  // way, each player sacrifices a unit and you lose 1 life."
   //
   // ⚠ THIS USED TO ASSERT THE OPPOSITE. The owner, 2026-08-28, kept one
   // sacrifice round at X = 0 (max(1, recalled)). CT-375 (2026-10-24) follows

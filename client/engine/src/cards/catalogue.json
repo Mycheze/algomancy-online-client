@@ -11975,7 +11975,7 @@
   "virus": false,
   "burst": false,
   "augmentAttrs": [],
-  "text": "Recall X target nontoken allies. Then each player sacrifices a unit and you lose 1 life for each ally recalled this way.",
+  "text": "Recall X target nontoken allies. For each ally recalled this way, each player sacrifices a unit and you lose 1 life.",
   "image": "Torrential-Reclamation.jpg",
   "class": "card",
   "supertype": "Spell",
