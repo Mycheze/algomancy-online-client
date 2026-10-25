@@ -721,6 +721,17 @@ const OPEN: TodoEntry[] = [
     verify: "Both players at 1 life; one effect makes each lose 1: who wins?",
     status: 'open',
   },
+  {
+    id: 410, area: "client", severity: "minor", reportId: 284,
+    cards: ['Bripp'],
+    title: "a Feeble unit can be dragged into a block column and is only refused on Confirm",
+    detail: "invi, room VRRS 2026-10-24: \"bripp can be moved to a block column during declare blockers\". The engine is right: Bripp ({Feeble}, CR 802.12) is not among the block options and a block naming it is refused (\"Feeble units cannot block\"). The board lets the drag happen and says nothing until submit.",
+    evidence: "Playtest report #284; VRRS rebuilt at [122]: legalActions offers no block with Bripp, and apply() refuses one.",
+    fix: "BL-50 (owner 2026-10-25: keep the drag, mark the card): a (!) badge, where a spell token's X die sits, on any card placed where submit will be refused, read off the engine's own validator (Feeble, Alluring, Flying/Evasive/Sneaky).",
+    proof: null,
+    verify: "Declare blocks with a Feeble unit dragged into a column: the card shows the (!) before Confirm.",
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
