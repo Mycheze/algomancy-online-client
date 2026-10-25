@@ -301,8 +301,8 @@ test('Nectar Ridge Oracle: defense>power ally spawn draws, once per turn ([once]
 //
 // "[Augment] If combat damage would be dealt to you, that damage is dealt to
 // me instead." Assertions stop just after the combat-damage sub-step rather
-// than running finishBattle, because Oorblak is {Unstable} and regroup would
-// erase the very entity whose damage we are reading.
+// than running finishBattle, because regroup removes all damage on units
+// (CR 506.2), the very damage we are reading.
 
 /** attack unblocked with `columns` and stop with combat damage dealt */
 function unblockedCombat(h: Harness, attacker: Seat, columns: EntityId[][]): void {

@@ -534,7 +534,7 @@ test('CR 608.9b: Unstable Singularity dies in combat and deletes target unit AFT
   // A combat DEATH trigger no longer resolves inside the damage sub-step — the
   // owner's RAQ names "When I die" in the list of things that go on the stack
   // in the after-combat window. The rest is untouched: the deletion is still
-  // a deletion and still not a death. What moved is WHEN the question is asked.
+  // a deletion, which is one way to die (CR 713.8, 801.5). What moved is WHEN the question is asked.
   pass(h); pass(h);                                         // → combat damage
   assert.ok(!ent(h, us), 'the Singularity died to the blocker');
   // ⚠ TARGETING DID NOT MOVE, ONLY RESOLUTION DID — the distinction this test
@@ -549,7 +549,7 @@ test('CR 608.9b: Unstable Singularity dies in combat and deletes target unit AFT
   resolveAfterCombat(h);
   assert.ok(!ent(h, blk), 'the blocker is deleted, after combat');
   assert.ok(h.state.players[A]!.bin.includes('Unstable Singularity'), 'I went to the bin');
-  assert.ok(h.state.players[D]!.bin.includes('Unit Token'), 'deleted (nontoken) → owner\'s bin');
+  assert.ok(h.state.players[D]!.bin.includes('Unit Token'), 'deleted (nontoken) → the bin a dying unit goes to, its controller (CR 801.5, 400.4)');
   finishBattle(h);
 });
 

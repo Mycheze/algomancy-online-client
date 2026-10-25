@@ -431,8 +431,8 @@ const MECHANIC_RULES: GlossEntry[] = [
     text: 'A battle-timing card: playable only during a battle, in a response window. It cannot be played during planning, deployment or the haste step.',
   },
   // CT-80: both halves of the second sentence were too narrow.
-  // `startHasteStep`'s `canHaste` (engine.ts:10599-10657) opens the step on
-  // FIVE conditions, only the first of which is a payable haste card in hand:
+  // `startHasteStep`'s `canHaste` (engine.ts:10599-10657) USED TO open the step
+  // on FIVE conditions, only the first of which was a payable haste card in hand:
   // a grant from a unit in play (Dispatch Courier), a CR 504.7 grantor in a
   // BIN (Writhing Host), a CR 504.8a mod window (Slurpr), and a cached release
   // timed [Haste] (Divine Intervention). Each of those four WAS report #74's

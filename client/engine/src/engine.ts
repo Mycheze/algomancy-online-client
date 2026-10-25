@@ -4050,8 +4050,9 @@ export class E {
    * Shared leave-play-WITHOUT-DYING bookkeeping (cacheUnit / recall — NOT
    * destroy, whose mods are erased by Unstable rather than binned and whose
    * formation cleanup lands after the death event): pull the unit out of
-   * s.entities, resolve its mods, push each nontoken mod into its owner's bin
-   * (CR 410.4c: a token mod has no card of its own — erased), and close the
+   * s.entities, resolve its mods, push each nontoken mod into its controller's
+   * bin, which is the host controller's (CR 400.4, 410.4a; CR 410.4c: a token
+   * mod has no card of its own — erased), and close the
    * formation gap. Returns the detached mods, or null when the unit was
    * already gone. The despawn event, the CR 801.2f mod trashes (afterDespawn) and
    * where the CARD goes stay with the caller — that is where the verbs differ.
@@ -7107,7 +7108,7 @@ export class E {
    * for the mods, but it no longer decides whether a bin is touched: the
    * engine merged the two destinations into one path (CR 405.5 keeps them apart, CT-246).
    *
-   * CR 410.5a — a dying TOKEN really does enter its owner's bin, and is then
+   * CR 410.5a — a dying TOKEN really does enter its controller's bin (CR 400.4), and is then
    * erased by a state-based sweep. CR 801.2d: it is NOT trashed there — a token is
    * not a card, and `noteTrashed` returns before any trash for it. Its entry is
    * still real for anything that reads the bin inside the event window
@@ -10313,9 +10314,11 @@ export class E {
       const copies = this.costCopySiblings(item, part);
       for (const p of copies) p.spent = true;
       this.ev('info', `${item.label}: the [cost] is declined — that effect is skipped${copies.length > 1 ? ` (all ${copies.length} copies)` : ''}.`);
-      // CARD-TODO #18, and the MOST reachable shape of it in the pool: a
-      // bounded [Switch1] rider met as a graft, whose cost is declined at
-      // composite cast time. The part is spent before it ever runs, so it can
+      // CARD-TODO #18. Its most reachable shape was a bounded [Switch1] rider
+      // met as a graft, declined at composite cast time; CR 111.15 (CT-216)
+      // since made a grafted cost mandatory, so no graft reaches this branch
+      // now and it is believed dead (kept, not deleted, in a no-behaviour
+      // pass). Where a part is declined here, it is spent before it ever runs, so it can
       // never reach `ctx.refundBudget()` — but the ruling is about the
       // OUTCOME, not the route: the player said no and the ability did
       // nothing, so the use is not spent. Paid here rather than deferred to
@@ -14739,10 +14742,11 @@ export class E {
       if (atk.length && this.strikes(b, 'atk', ci, atk, sub, pure)) {
         this.markStruck(b, 'atk', ci, sub);   // CR 608.2e
         const pow = this.dealtColPower(atk, atkAttrs, collapsed);
-        // `ci` is only an identity for the length of THIS sub-step. The
-        // key is a local bucket label for the afflicting diff below and is
-        // never stored, because the formation may collapse (and every index
-        // move) before the next sub-step runs.
+        // The key is a local bucket label for the afflicting diff below and
+        // is never stored. `ci` names a column, which keeps its place for the
+        // rest of the battle (CR 602.5a), but what stands in it can change
+        // before the next sub-step runs: units with lethal damage are
+        // destroyed and a back unit steps forward (CR 608.3e).
         const src = { dealer: b.attacker, key: `atk:${ci}`, label: this.colLabel(atk), resonantSrc: this.attrCarrier(atk, 'Resonant') };
         let toPlayer = 0;
         if (blk.length) {

@@ -26,7 +26,8 @@
  *  2. PAIRWISE — in an interaction involving an Unaware card, EVERY
  *     participant reads at printed, not just the Unaware one. Scoped, exactly
  *     as the owner scoped it, to dealing/receiving damage and to combat.
- *     Targeting is out of scope and is the Unaware rule's one open edge.
+ *     Targeting is out of scope: Unaware does not stop a card being
+ *     targeted (CR 802.9h).
  *
  * The three worked examples above are named tests below, quoting him.
  *

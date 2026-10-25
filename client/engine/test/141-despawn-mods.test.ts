@@ -174,8 +174,9 @@ test('CR 721.1f (iii): a donated "[Augment] When I despawn" still fires exactly 
 // stays there and is trashed; a mod erased with its host is not trashed at
 // all, because it is PART of that unit and never had a presence of its own.
 // The other half of the ruling is here too: where a mod IS trashed, it is
-// trashed by the HOST'S CONTROLLER — `A` on this board — while the card still
-// goes to its own owner's bin (`D`). What must still be identical across the
+// trashed by the HOST'S CONTROLLER — `A` on this board — and the card goes to
+// that same controller's bin, not to its owner `D` (CR 400.4, 410.4a: zones
+// follow control; the assertions below check both bins). What must still be identical across the
 // routes is that nothing happens TWICE.
 test('CR 801.2f (iv): a nontoken mod is binned and trashed exactly once on all three routes', () => {
   for (const [i, route] of ROUTES.entries()) {

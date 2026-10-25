@@ -195,15 +195,14 @@ card('Equilibriate', {
 //    subtracted in one go and the lethal check sees it, where the trigger
 //    version ended the game on the first helping and never dealt the second.
 //    (Harmless for the win/loss, wrong for every life total anyone reads.)
-//  - TWO ARBITERS GIVE 4x. Each declares ×2, the engine SUMS the claiming
-//    factors (E.amountFactor), and 2+2 = 4. The trigger pair gave 3× because
-//    each Arbiter heard only the original event.
+//  - TWO ARBITERS GIVE 4x. Each declares ×2, the engine MULTIPLIES the
+//    claiming factors (E.amountFactor, CR 708.6), and 2×2 = 4. The trigger
+//    pair gave 3× because each Arbiter heard only the original event.
 //
-// ⚠ n ≥ 3 WAS NOT SEPARATELY CONFIRMED. v × 2 × n is LINEAR in n, so three
-// Arbiters sextuple; a purely multiplicative reading would give 2^n = ×8. The
-// owner wrote the formula out rather than the word "double", so the formula is
-// what is implemented — but he was answering about TWO, and the third has
-// never been put to him.
+// n ≥ 3 IS RULED (CR 708.6): the factors multiply, so three Arbiters give
+// 2^3 = ×8. The owner's first formula, "n*2*v", was linear past two; asked
+// about three, he answered "Make it exponential." (137 keeps the old
+// expectation quoted beside the new one).
 //
 // ⚠ AND ITS COMPOSITION WITH AN ADDITIVE `AmountMod` IS STILL UNRULED. The
 // 2026-08-25 interim decision (now CR 708.6a) — multiplier AFTER the additive layer — lives in

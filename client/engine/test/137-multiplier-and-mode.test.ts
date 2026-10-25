@@ -20,12 +20,11 @@
  *
  * §25 is a printed-data correction with no behaviour — guarded at the bottom.
  *
- * ⚠ TWO THINGS HERE ARE NOT RULED, and both are pinned deliberately so that a
- * future ruling has a failing test rather than a silent drift:
- *   - n ≥ 3. `v × 2 × n` is LINEAR, so three Arbiters sextuple where a purely
- *     multiplicative reading would give 2^n = ×8. The owner wrote the formula
- *     out while answering about TWO.
- *   - composition with an ADDITIVE `AmountMod`. CR 708.6a now states the
+ * TWO THINGS HERE WERE ONCE UNRULED, and both are ruled now:
+ *   - n ≥ 3. The owner's first formula, `v × 2 × n`, was LINEAR, so three
+ *     Arbiters sextupled. CR 708.6 multiplies the factors: ×2^n, so ×8 at
+ *     three (the owner: "Make it exponential.").
+ *   - composition with an ADDITIVE `AmountMod`. CR 708.6a states the
  *     decision — multiplier AFTER the additive layer, `(v + Σdelta) × factor`.
  *
  * Seeds 13700-13799.

@@ -161,8 +161,8 @@ export const BATCH_I: Record<string, Scenario> = {
       resources: { fire: 4 },
     },
     opponent: { hand: [], play: [{ card: 'Bubb' }], resources: { earth: 2 } },
-    // the haste step opens because you hold a payable haste card; the
-    // opponent holds none, so they are marked done the moment it opens
+    // the haste step opens every turn (CR 504.5); the opponent holds no
+    // haste card, so they are marked done the moment it opens
     prologue: () => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },

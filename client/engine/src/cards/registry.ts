@@ -664,8 +664,9 @@ export function transformingCardNames(): string[] {
 //
 // Neither line prints the word "target", so neither picks a target (CR 110.2): the
 // ally is chosen ON RESOLUTION with a plain ctx.choose. It cannot be redirected,
-// "when I become targeted" never fires for it, and it cannot fizzle for want of
-// a legal ally — it just does nothing. This is a deliberate exception to CR 110.1a
+// "when I become targeted" never fires for it, and it cannot lose its ally:
+// the ally is picked from the allies in play as it resolves, and with none in
+// play it fizzles (CR 110.2c). This is a deliberate exception to CR 110.1a
 // ("targets are chosen at cast") and is an exception PRECISELY because the word
 // "target" is absent; do not "fix" it by adding a TargetSpec.
 //

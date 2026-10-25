@@ -792,11 +792,36 @@ test("Waxen Witness: caches target unit with 'One Battle Passes', then arrives a
   pick(h, { unit: whale });
   pass(h); pass(h);
   assert.ok(!ent(h, whale), 'the target left play');
-  assert.equal(cacheOf(h, D)[0]!.card, 'Good Whale', "into its owner's cache");
+  assert.equal(cacheOf(h, D)[0]!.card, 'Good Whale', "into its controller's cache (CR 400.4), D here");
   assert.equal(cacheOf(h, D)[0]!.prophecy!.norm, '1 battle passes');
   const body = unitsOf(h, A).find(u => u.card === 'Waxen Witness');
   assert.ok(body, 'the spell unit then spawns its body');
   assert.deepEqual(effStats(h, body!.id), [3, 3]);
+  finishBattle(h);
+});
+
+// CT-391: the test above cannot tell owner from controller (D is both). Here
+// the whale is owned by D and controlled by A when it leaves play, so CR 400.4
+// ("goes to that zone of the player who controlled it when it left play, not to
+// its owner's") decides which cache it lands in.
+test('CR 400.4 / CT-391: Waxen Witness caches a stolen unit into its CONTROLLER cache, not its owner cache', () => {
+  const h = new Harness(3926);
+  toDeployment(h);
+  const A = h.state.deployPlayer!, D = 1 - A;
+  const atk = spawn(h, A, 'Unit Token');
+  const whale = spawn(h, D, 'Good Whale');
+  withE(h, e => e.giveControl(e.entity(whale)!, A));
+  assert.equal(ent(h, whale)!.owner, D, 'precondition: D owns the whale');
+  assert.equal(ent(h, whale)!.controller, A, 'precondition: A controls it');
+  giveResources(h, A, 'light', 4);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[atk], [whale]] });   // the stolen whale attacks, so it is in the fight
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Waxen Witness') });
+  pick(h, { unit: whale });
+  pass(h); pass(h);
+  assert.ok(!ent(h, whale), 'the target left play');
+  assert.deepEqual(cacheOf(h, A).map(c => c.card), ['Good Whale'], 'into the cache of A, who controlled it');
+  assert.deepEqual(cacheOf(h, D).map(c => c.card), [], 'not into the cache of D, its owner');
   finishBattle(h);
 });
 

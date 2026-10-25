@@ -712,8 +712,8 @@ export function binIndexOfNth(g: E, seat: Seat, name: CardName, nth: number): nu
  *
  * This is the reader for the stamp `E.noteTrashed` and `E.destroy`
  * put on their events (CR 405.6): `card`, the bin's seat (`binSeat` when the event
- * names one — a death bins to the OWNER's bin while `seat` is the controller —
- * else `seat`), and `binNth`, which occurrence of that name in that bin the
+ * names one, else `seat`; since zones follow control (CR 400.4, 410.4a) a
+ * death bins to the controller's bin and the two are the same seat), and `binNth`, which occurrence of that name in that bin the
  * event's copy is. Resolving (name, nth) against the live bin is the ONLY
  * honest way for a responder to find it again: a bin holds bare card names, so
  * `lastIndexOf(name)` answers "the last copy of that name there NOW", which is
@@ -1996,21 +1996,14 @@ export interface AmountMod {
  * "no opinion" and takes the mod out of the composition entirely — that is the
  * whole opt-out, and it matters because of how these compose:
  *
- *   THE COMPOSITION RULE IS THE OWNER'S FORMULA, VERBATIM (as first stated for two Arbiters;
- *   CR 708.6 since makes it exponential):
+ *   THE COMPOSITION RULE IS CR 708.6: the factors of the mods that CLAIM the
+ *   quantity MULTIPLY, so n Arbiters each declaring ×2 give ×2^n
+ *   (`E.amountFactor` folds a product). The owner's first formula, stated for
+ *   two Arbiters, was
  *     "quadruple it!! So always n*2*v (n is num of arbiters, v is original
  *      damage/life gain value)"
- *
- * so the factors of the mods that CLAIM the quantity are SUMMED, not
- * multiplied: n Arbiters each declaring ×2 give ×2n. That is LINEAR in n. A
- * purely multiplicative reading would give 2^n and therefore ×8 at three
- * Arbiters, where the formula gives ×6. The owner wrote the formula out, so the
- * formula is what is implemented.
- *
- * ⚠ n ≥ 3 WAS NOT SEPARATELY CONFIRMED. The owner was asked about two Arbiters
- * and answered with a general formula; ×6 at three is that formula's own
- * arithmetic and nothing more. If it is ever re-asked, `E.amountFactor` is the
- * one line to change.
+ *   which agrees at n = 2 (×4) and was LINEAR beyond it (×6 at three). Asked
+ *   about three (round-32 Q4), he answered "Make it exponential.": ×8.
  *
  * ⚠ AND HOW A MULTIPLIER COMPOSES WITH AN ADDITIVE `AmountMod` IS *NOT*
  * ANSWERED. The interim decision, now CR 708.6a, is to apply the multiplier AFTER

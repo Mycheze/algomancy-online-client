@@ -342,8 +342,8 @@ const CORE: Record<string, Scenario> = {
     prologue: (ids, s) => [
       { type: 'donePlanning', seat: YOU },
       { type: 'donePlanning', seat: OPPONENT },
-      // The haste step only engages when somebody holds a payable haste
-      // card, and neither side does here.
+      // The haste step happens every turn (CR 504.5); neither side holds a
+      // haste card here, so both are done in it at once.
       //
       // ⚠ THIS COMMENT USED TO CLAIM `dealScenario` SKIPS THE HASTE STEP
       // IF IT IS OPEN. IT DOES NOT. `runPrologue` does no such thing, and batch
